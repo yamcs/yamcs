@@ -2,6 +2,7 @@ package org.yamcs.mdb;
 
 import java.util.Map;
 
+import org.yamcs.logging.Log;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.EnumeratedValue;
@@ -25,6 +26,8 @@ import org.yamcs.xtce.StringDataType;
 import org.yamcs.xtce.ValueEnumeration;
 
 public class DataTypeProcessor {
+
+    private static final Log log = new Log(DataTypeProcessor.class);
 
     /**
      * converts a (boxed) java value from the XTCE type to Yamcs Value
@@ -190,12 +193,20 @@ public class DataTypeProcessor {
             return ValueUtility.getBooleanValue(v.getUint64Value() != 0);
         case STRING:
             String s = v.getStringValue();
-            if ("true".equalsIgnoreCase(s)) {
+            if (type.getOneStringValue().equals(s)) {
                 return ValueUtility.getBooleanValue(true);
-            } else if ("false".equalsIgnoreCase(s)) {
+            } else if (type.getZeroStringValue().equals(s)) {
+                return ValueUtility.getBooleanValue(false);
+            } else if ("true".equalsIgnoreCase(s)) { // TODO remove eventually
+                log.warn("Boolean conversion which does not use oneStringValue/zeroStringValue");
+                return ValueUtility.getBooleanValue(true);
+            } else if ("false".equalsIgnoreCase(s)) { // TODO remove eventually
+                log.warn("Boolean conversion which does not use oneStringValue/zeroStringValue");
                 return ValueUtility.getBooleanValue(false);
             } else {
-                throw new IllegalArgumentException("Cannot convert '" + v + " to boolean");
+                throw new IllegalArgumentException(String.format(
+                        "Cannot convert '%s' to boolean. Expecting either '%s' or '%s'",
+                        v, type.getOneStringValue(), type.getZeroStringValue()));
             }
         default:
             throw new IllegalArgumentException(MSG_CANT_CONVERT(v.getType(), type));

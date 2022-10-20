@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ErrorInCommand;
@@ -99,6 +100,7 @@ public class XtceBooleansTest {
     }
 
     @Test
+    @Disabled("Test to be enabled only when BooleanDataType deprecated handling is removed")
     public void testNumericCmdTrueCaseSensitive() {
         assertThrows(ErrorInCommand.class, () -> {
             MetaCommand mc = mdb.getMetaCommand("/Booleans/command1");
@@ -121,6 +123,7 @@ public class XtceBooleansTest {
     }
 
     @Test
+    @Disabled("Test to be enabled only when BooleanDataType deprecated handling is removed")
     public void testNumericCmdFalseCaseSensitive() {
         assertThrows(ErrorInCommand.class, () -> {
             MetaCommand mc = mdb.getMetaCommand("/Booleans/command1");

@@ -803,6 +803,13 @@ public class V7Loader extends V7LoaderBase {
             param.setDataSource(dataSource);
             if (hasColumn(cells, CN_PARAM_INITVALUE)) {
                 String initValue = getContent(cells, CN_PARAM_INITVALUE);
+                if (ptype instanceof BooleanParameterType) {
+                    if ("true".equalsIgnoreCase(initValue)) {
+                        initValue = BooleanParameterType.DEFAULT_ONE_STRING_VALUE;
+                    } else if ("false".equalsIgnoreCase(initValue)) {
+                        initValue = BooleanParameterType.DEFAULT_ZERO_STRING_VALUE;
+                    }
+                }
                 param.setInitialValue(ptype.convertType(initValue));
             }
 
