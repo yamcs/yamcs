@@ -73,6 +73,7 @@
       <tr>
         <th>Type</th>
         <th>Ref</th>
+        <th>Size in bits</th>
         <th>Location in Bits</th>
         <th>Reference Location</th>
       </tr>
@@ -82,13 +83,15 @@
           <td>
             <a [routerLink]="['/mdb/parameters/', entry.parameter!.qualifiedName]"
                [queryParams]="{c: yamcs.context}">
-              {{ entry.parameter!.qualifiedName }}
+              {{ entry.parameter.type.qualifiedName }}
             </a>
           </td>
+          <td>{{ entry.parameter.type.dataEncoding.sizeInBits }}</td>
         </ng-container>
         <ng-container *ngIf="entry.container">
           <td>Container</td>
-          <td>{{ entry.container!.qualifiedName }}</td>
+          <td>{{ entry.container.qualifiedName }}</td>
+          <td>{{ entry.container.sizeInBits ?? '-' }}</td>
         </ng-container>
         <td>{{ entry.locationInBits }}</td>
         <td>{{ entry.referenceLocation }}</td>
