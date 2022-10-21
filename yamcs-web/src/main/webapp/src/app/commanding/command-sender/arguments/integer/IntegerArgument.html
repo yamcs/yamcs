@@ -29,6 +29,9 @@
   </div>
 
   {{ label }}
+  <app-help *ngIf="description">
+    {{ description }}
+  </app-help>
 
   <app-errors #err [controlName]="controlName"></app-errors>
 

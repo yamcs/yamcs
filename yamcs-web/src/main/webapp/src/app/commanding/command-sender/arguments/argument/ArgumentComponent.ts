@@ -73,6 +73,9 @@ export class ArgumentComponent implements OnInit {
   name: string;
 
   @Input()
+  description?: string;
+
+  @Input()
   type: ArgumentType;
 
   @Input()

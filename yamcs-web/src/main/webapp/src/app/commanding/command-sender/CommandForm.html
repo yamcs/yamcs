@@ -6,6 +6,7 @@
     <ng-container *ngFor="let argument of arguments; let first = first">
       <br *ngIf="!first">
       <app-argument [name]="argument.name"
+                    [description]="argument.description"
                     [type]="argument.type"
                     [initialValue]="argument.initialValue"
                     [templateProvider]="templateProvider"></app-argument>
@@ -14,6 +15,7 @@
     <ng-container *ngFor="let argument of argumentsWithInitial; let first = first">
       <br class="hasInitial" *ngIf="!first || arguments.length">
       <app-argument [name]="argument.name"
+                    [description]="argument.description"
                     [type]="argument.type"
                     [initialValue]="argument.initialValue"
                     [templateProvider]="templateProvider"

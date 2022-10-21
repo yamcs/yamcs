@@ -25,6 +25,9 @@ export class TimeArgument implements ControlValueAccessor, OnInit, Validator, On
   name: string;
 
   @Input()
+  description: string;
+
+  @Input()
   type: ArgumentType;
 
   @Input()

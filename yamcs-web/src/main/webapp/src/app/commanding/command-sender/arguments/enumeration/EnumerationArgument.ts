@@ -28,6 +28,9 @@ export class EnumerationArgument implements ControlValueAccessor, OnInit, Valida
   name: string;
 
   @Input()
+  description?: string;
+
+  @Input()
   type: ArgumentType;
 
   @Input()
