@@ -113,6 +113,7 @@ public class StringDataEncoding extends DataEncoding {
         this.encoding = sde.encoding;
     }
 
+    @Override
     public Builder toBuilder() {
         return new Builder(this);
     }
@@ -147,6 +148,10 @@ public class StringDataEncoding extends DataEncoding {
 
     public int getMaxSizeInBytes() {
         return maxSizeInBytes;
+    }
+
+    public void setMaxSizeInBytes(int maxSizeInBytes) {
+        this.maxSizeInBytes = maxSizeInBytes;
     }
 
     @Override
@@ -222,10 +227,12 @@ public class StringDataEncoding extends DataEncoding {
             super();
         }
 
+        @Override
         public StringDataEncoding build() {
             return new StringDataEncoding(this);
         }
 
+        @Override
         public Builder setSizeInBits(Integer sizeInBits) {
             if (sizeInBits > 0) {
                 if (sizeInBits % 8 != 0) {
@@ -234,9 +241,7 @@ public class StringDataEncoding extends DataEncoding {
                 this.maxSizeInBytes = sizeInBits / 8;
             }
             super.setSizeInBits(sizeInBits);
-            return
-
-            self();
+            return self();
         }
 
         public Builder setSizeType(SizeType sizeType) {
