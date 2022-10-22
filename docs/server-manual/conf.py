@@ -127,13 +127,6 @@ man_pages = [
         1,
     ),
     (
-        "programs/yamcsadmin_parchive",
-        "yamcsadmin-parchive",
-        "Parameter Archive operations",
-        author,
-        1,
-    ),
-    (
         "programs/yamcsadmin_password-hash",
         "yamcsadmin-password-hash",
         "Generate password hash for use in users.yaml",
