@@ -404,7 +404,9 @@ public class TableApi extends AbstractTableApi<Context> {
                     public void start(TupleDefinition tdef) {
                         for (int i = 0; i < tdef.size(); i++) {
                             ColumnDefinition cdef = tdef.getColumn(i);
-                            rsBuilder.addColumns(ColumnInfo.newBuilder().setName(cdef.getName()));
+                            rsBuilder.addColumns(ColumnInfo.newBuilder()
+                                    .setName(cdef.getName())
+                                    .setType(cdef.getType().toString()));
                         }
                         this.tdef = tdef.copy();
                     }
@@ -459,7 +461,9 @@ public class TableApi extends AbstractTableApi<Context> {
                     public void start(TupleDefinition tdef) {
                         for (int i = 0; i < tdef.size(); i++) {
                             ColumnDefinition cdef = tdef.getColumn(i);
-                            rsBuilder.addColumns(ColumnInfo.newBuilder().setName(cdef.getName()));
+                            rsBuilder.addColumns(ColumnInfo.newBuilder()
+                                    .setName(cdef.getName())
+                                    .setType(cdef.getType().toString()));
                         }
                         this.tdef = tdef.copy();
                     }
