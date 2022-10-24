@@ -29,6 +29,15 @@ export interface Link {
   status: LinkStatus;
   detailedStatus: string;
   parentName?: string;
+  actions?: LinkAction[];
+}
+
+export interface LinkAction {
+  id: string;
+  label: string;
+  style: 'CHECK_BOX' | 'PUSH_BUTTON';
+  enabled: boolean;
+  checked: boolean;
 }
 
 export interface SubscribeLinksRequest {

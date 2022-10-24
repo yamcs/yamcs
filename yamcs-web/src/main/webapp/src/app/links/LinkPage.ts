@@ -46,9 +46,7 @@ export class LinkPage implements OnDestroy {
   }
 
   private changeLink(name: string) {
-    if (this.cop1Subscription) {
-      this.cop1Subscription.cancel();
-    }
+    this.cop1Subscription?.cancel();
 
     this.cop1Status$.next(null);
     this.cop1Config$.next(null);
@@ -81,21 +79,18 @@ export class LinkPage implements OnDestroy {
   }
 
   private initiateCop1(link: string, options: InitiateCop1Request) {
-    this.yamcs.yamcsClient.initiateCop1(this.yamcs.instance!, link, options).catch(err => {
-      this.messageService.showError(err);
-    });
+    this.yamcs.yamcsClient.initiateCop1(this.yamcs.instance!, link, options)
+      .catch(err => this.messageService.showError(err));
   }
 
   disableCop1(link: string) {
-    this.yamcs.yamcsClient.disableCop1(this.yamcs.instance!, link).catch(err => {
-      this.messageService.showError(err);
-    });
+    this.yamcs.yamcsClient.disableCop1(this.yamcs.instance!, link)
+      .catch(err => this.messageService.showError(err));
   }
 
   resumeCop1(link: string) {
-    this.yamcs.yamcsClient.resumeCop1(this.yamcs.instance!, link).catch(err => {
-      this.messageService.showError(err);
-    });
+    this.yamcs.yamcsClient.resumeCop1(this.yamcs.instance!, link)
+      .catch(err => this.messageService.showError(err));
   }
 
   mayControlLinks() {
@@ -103,29 +98,27 @@ export class LinkPage implements OnDestroy {
   }
 
   enableLink(link: string) {
-    this.yamcs.yamcsClient.enableLink(this.yamcs.instance!, link).catch(err => {
-      this.messageService.showError(err);
-    });
+    this.yamcs.yamcsClient.enableLink(this.yamcs.instance!, link)
+      .catch(err => this.messageService.showError(err));
   }
 
   disableLink(link: string) {
-    this.yamcs.yamcsClient.disableLink(this.yamcs.instance!, link).catch(err => {
-      this.messageService.showError(err);
-    });
+    this.yamcs.yamcsClient.disableLink(this.yamcs.instance!, link)
+      .catch(err => this.messageService.showError(err));
   }
 
   resetCounters(link: string) {
-    this.yamcs.yamcsClient.resetLinkCounters(this.yamcs.instance!, link).catch(err => {
-      this.messageService.showError(err);
-    });
+    this.yamcs.yamcsClient.resetLinkCounters(this.yamcs.instance!, link)
+      .catch(err => this.messageService.showError(err));
+  }
+
+  runAction(link: string, action: string) {
+    this.yamcs.yamcsClient.runLinkAction(this.yamcs.instance!, link, action)
+      .catch(err => this.messageService.showError(err));
   }
 
   ngOnDestroy() {
-    if (this.linkSubscription) {
-      this.linkSubscription.cancel();
-    }
-    if (this.cop1Subscription) {
-      this.cop1Subscription.cancel();
-    }
+    this.linkSubscription?.cancel();
+    this.cop1Subscription?.cancel();
   }
 }

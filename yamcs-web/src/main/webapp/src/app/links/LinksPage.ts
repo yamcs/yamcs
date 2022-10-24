@@ -5,6 +5,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
+import { MessageService } from '../../lib';
 import { LinkEvent, LinkSubscription } from '../client';
 import { AuthService } from '../core/services/AuthService';
 import { YamcsService } from '../core/services/YamcsService';
@@ -49,6 +50,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
     private changeDetection: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router,
+    private messageService: MessageService,
   ) {
     title.setTitle('Links');
 
@@ -133,16 +135,24 @@ export class LinksPage implements AfterViewInit, OnDestroy {
     $event.stopPropagation();
   }
 
-  enableLink(name: string) {
-    this.yamcs.yamcsClient.enableLink(this.yamcs.instance!, name);
+  enableLink(link: string) {
+    this.yamcs.yamcsClient.enableLink(this.yamcs.instance!, link)
+      .catch(err => this.messageService.showError(err));
   }
 
-  disableLink(name: string) {
-    this.yamcs.yamcsClient.disableLink(this.yamcs.instance!, name);
+  disableLink(link: string) {
+    this.yamcs.yamcsClient.disableLink(this.yamcs.instance!, link)
+      .catch(err => this.messageService.showError(err));
   }
 
-  resetCounters(name: string) {
-    this.yamcs.yamcsClient.resetLinkCounters(this.yamcs.instance!, name);
+  resetCounters(link: string) {
+    this.yamcs.yamcsClient.resetLinkCounters(this.yamcs.instance!, link)
+      .catch(err => this.messageService.showError(err));
+  }
+
+  runAction(link: string, action: string) {
+    this.yamcs.yamcsClient.runLinkAction(this.yamcs.instance!, link, action)
+      .catch(err => this.messageService.showError(err));
   }
 
   mayControlLinks() {
@@ -262,6 +272,12 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   disableSelectedLinks() {
     for (const item of this.selection.selected) {
       this.disableLink(item.link.name);
+    }
+  }
+
+  resetCountersForSelectedLinks() {
+    for (const item of this.selection.selected) {
+      this.resetCounters(item.link.name);
     }
   }
 

@@ -3,7 +3,9 @@ package org.yamcs.tctm;
 import static org.yamcs.parameter.SystemParametersService.getPV;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.yamcs.ConfigurationException;
@@ -31,7 +33,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
  * @author nm
  *
  */
-public abstract class AbstractLink extends AbstractService implements Link, SystemParametersProducer {
+public abstract class AbstractLink extends AbstractService
+        implements Link, SystemParametersProducer, LinkActionProvider {
     protected String yamcsInstance;
     protected String linkName;
     protected Log log;
@@ -40,6 +43,7 @@ public abstract class AbstractLink extends AbstractService implements Link, Syst
     protected AtomicBoolean disabled = new AtomicBoolean(false);
     private Parameter spLinkStatus, spDataOutCount, spDataInCount;
     protected TimeService timeService;
+    private Map<String, LinkAction> actions = new LinkedHashMap<>(); // Keep them in order of registration
 
     /**
      * singleton for netty worker group. In the future we may have an option to create different worker groups for
@@ -55,7 +59,7 @@ public abstract class AbstractLink extends AbstractService implements Link, Syst
         log = new Log(getClass(), instance);
         log.setContext(name);
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, name, 10000);
-        this.timeService = YamcsServer.getTimeService(yamcsInstance);
+        timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
     @Override
@@ -189,4 +193,23 @@ public abstract class AbstractLink extends AbstractService implements Link, Syst
         list.add(getPV(spDataInCount, time, getDataInCount()));
     }
 
+    @Override
+    public void addAction(LinkAction action) {
+        if (actions.containsKey(action.getId())) {
+            throw new IllegalArgumentException("Action '" + action.getId() + "' already registered");
+        }
+        actions.put(action.getId(), action);
+        var linkManager = YamcsServer.getServer().getInstance(yamcsInstance).getLinkManager();
+        action.addChangeListener(() -> linkManager.notifyChanged(this));
+    }
+
+    @Override
+    public List<LinkAction> getActions() {
+        return new ArrayList<>(actions.values());
+    }
+
+    @Override
+    public LinkAction getAction(String actionId) {
+        return actions.get(actionId);
+    }
 }
