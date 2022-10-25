@@ -26,6 +26,7 @@ import org.yamcs.parameter.ParameterCacheConfig;
 import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.protobuf.ServiceState;
+import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
@@ -327,13 +328,28 @@ public class Processor extends AbstractService {
     }
 
     public void seek(long instant) {
+        seek(instant, true);
+    }
+
+    public void seek(long instant, boolean autostart) {
         getTmProcessor().resetStatistics();
-        ((ArchiveTmPacketProvider) tmPacketProvider).seek(instant);
+        ((ArchiveTmPacketProvider) tmPacketProvider).seek(instant, autostart);
         propagateProcessorStateChange();
     }
 
     public void changeSpeed(ReplaySpeed speed) {
         ((ArchiveTmPacketProvider) tmPacketProvider).changeSpeed(speed);
+        propagateProcessorStateChange();
+    }
+
+    public void changeRange(long start, long stop) {
+        ((ArchiveTmPacketProvider) tmPacketProvider).changeRange(start, stop);
+        ((ArchiveTmPacketProvider) tmPacketProvider).seek(start, false);
+        propagateProcessorStateChange();
+    }
+
+    public void changeEndAction(EndAction endAction) {
+        ((ArchiveTmPacketProvider) tmPacketProvider).changeEndAction(endAction);
         propagateProcessorStateChange();
     }
 
@@ -477,6 +493,10 @@ public class Processor extends AbstractService {
      */
     public ReplayState getReplayState() {
         return ((ArchiveTmPacketProvider) tmPacketProvider).getReplayState();
+    }
+
+    public ReplayRequest getCurrentReplayRequest() {
+        return ((ArchiveTmPacketProvider) tmPacketProvider).getCurrentReplayRequest();
     }
 
     public ServiceState getState() {

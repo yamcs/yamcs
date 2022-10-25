@@ -47,7 +47,6 @@ public class YarchReplay implements StreamSubscriber {
     private volatile ReplayState state = ReplayState.INITIALIZATION;
     static Logger log = LoggerFactory.getLogger(YarchReplay.class.getName());
     private volatile String errorString = "";
-    int numPacketsSent;
     final String instance;
     static AtomicInteger counter = new AtomicInteger();
     XtceDb xtceDb;
@@ -77,11 +76,11 @@ public class YarchReplay implements StreamSubscriber {
 
         if (log.isDebugEnabled()) {
             log.debug("Replay request for time: [{}, {}]",
-                    (req.hasStart() ? TimeEncoding.toString(req.getStart()) : "-"),
-                    (req.hasStop() ? TimeEncoding.toString(req.getStop()) : "-"));
+                    (req.hasRangeStart() ? TimeEncoding.toString(req.getRangeStart()) : "-"),
+                    (req.hasRangeStop() ? TimeEncoding.toString(req.getRangeStop()) : "-"));
         }
 
-        if (req.hasStart() && req.hasStop() && req.getStart() > req.getStop()) {
+        if (req.hasRangeStart() && req.hasRangeStop() && req.getRangeStart() > req.getRangeStop()) {
             log.warn("throwing new packetexception: stop time has to be greater than start time");
             throw new YamcsException("stop has to be greater than start");
         }
@@ -209,11 +208,35 @@ public class YarchReplay implements StreamSubscriber {
         ydb.execute(query, args.toArray());
         Stream s = ydb.getStream(streamName);
         s.addSubscriber(this);
-        numPacketsSent = 0;
         s.start();
     }
 
-    public void seek(long newReplayTime) throws YamcsException {
+    public void seek(long newReplayTime, boolean autostart) throws YamcsException {
+        closeExistingStream();
+        currentRequest.setPlayFrom(newReplayTime);
+        for (ReplayHandler rh : handlers.values()) {
+            rh.setRequest(currentRequest);
+        }
+        if (autostart) {
+            start();
+        }
+    }
+
+    public void changeRange(long start, long stop) throws YamcsException {
+        YarchDatabaseInstance db = YarchDatabase.getInstance(instance);
+        Stream stream = db.getStream(streamName);
+        if (stream != null && !stream.isClosed()) {
+            closeExistingStream();
+        }
+
+        currentRequest.setRangeStart(start);
+        currentRequest.setRangeStop(stop);
+        for (ReplayHandler rh : handlers.values()) {
+            rh.setRequest(currentRequest);
+        }
+    }
+
+    private void closeExistingStream() {
         if (state != ReplayState.INITIALIZATION) {
             boolean wasPaused = (state == ReplayState.PAUSED);
             state = ReplayState.INITIALIZATION;
@@ -241,11 +264,6 @@ public class YarchReplay implements StreamSubscriber {
                 signalStateChange();
             }
         }
-        currentRequest.setStart(newReplayTime);
-        for (ReplayHandler rh : handlers.values()) {
-            rh.setRequest(currentRequest);
-        }
-        start();
     }
 
     public void changeSpeed(ReplaySpeed newSpeed) {
@@ -262,6 +280,11 @@ public class YarchReplay implements StreamSubscriber {
             ((SpeedLimitStream) s).setSpeedSpec(toSpeedSpec(newSpeed));
         }
         currentRequest.setSpeed(newSpeed);
+    }
+
+    public void changeEndAction(EndAction endAction) {
+        log.debug("Changing end action to {}", endAction);
+        currentRequest.setEndAction(endAction);
     }
 
     private SpeedSpec toSpeedSpec(ReplaySpeed speed) {
@@ -354,11 +377,12 @@ public class YarchReplay implements StreamSubscriber {
             state = ReplayState.STOPPED;
             signalStateChange();
         } else if (currentRequest.getEndAction() == EndAction.LOOP) {
-            if (numPacketsSent == 0) {
+            if (stream.getDataCount() == 0) {
                 state = ReplayState.STOPPED; // there is no data in this stream
                 signalStateChange();
             } else {
                 state = ReplayState.INITIALIZATION;
+                currentRequest.setPlayFrom(currentRequest.getRangeStart());
                 start();
             }
         }
@@ -382,7 +406,10 @@ public class YarchReplay implements StreamSubscriber {
     }
 
     public ReplayRequest getCurrentReplayRequest() {
-        return currentRequest.toProtobuf();
+        if (currentRequest != null) {
+            return currentRequest.toProtobuf();
+        } else {
+            return null;
+        }
     }
-
 }

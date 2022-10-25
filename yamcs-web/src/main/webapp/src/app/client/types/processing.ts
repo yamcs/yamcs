@@ -72,6 +72,7 @@ export interface ReplayRequest {
   start: string;
   stop: string;
   speed: ReplaySpeed;
+  endAction: string;
 }
 
 export interface ReplaySpeed {

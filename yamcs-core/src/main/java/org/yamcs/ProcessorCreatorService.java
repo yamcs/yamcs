@@ -25,6 +25,7 @@ public class ProcessorCreatorService extends AbstractYamcsService {
         spec.addOption("spec", OptionType.STRING);
 
         spec.mutuallyExclusive("config", "spec");
+
         return spec;
     }
 
@@ -40,7 +41,7 @@ public class ProcessorCreatorService extends AbstractYamcsService {
         } else if (config.containsKey("spec")) {
             processorConfig = config.getString("spec");
         }
-        log.debug("Creating a new processor instance: {}, procName: {}, procType: {}", yamcsInstance, processorName,
+        log.debug("Creating a new processor [instance={}, procName={}, procType={}]", yamcsInstance, processorName,
                 processorType);
         try {
             SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();

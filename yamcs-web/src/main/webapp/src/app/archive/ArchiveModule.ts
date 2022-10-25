@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
 import { ArchiveRoutingModule, routingComponents } from './ArchiveRoutingModule';
 import { DownloadDumpDialog } from './DownloadDumpDialog';
+import { ModifyReplayDialog } from './ModifyReplayDialog';
 import { JumpToDialog } from './JumpToDialog';
 import { TimelineTooltip } from './TimelineTooltip';
 
@@ -14,6 +15,7 @@ import { TimelineTooltip } from './TimelineTooltip';
     routingComponents,
     DownloadDumpDialog,
     JumpToDialog,
+    ModifyReplayDialog,
     TimelineTooltip,
   ],
 })

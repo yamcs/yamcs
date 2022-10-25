@@ -89,9 +89,6 @@ public class ReplayService extends AbstractProcessorService
     @Override
     public void init(Processor proc, YConfiguration args, Object spec) {
         super.init(proc, args, spec);
-        if (spec == null) {
-            throw new IllegalArgumentException("Please provide the spec");
-        }
         xtceDb = XtceDbFactory.getInstance(getYamcsInstance());
         securityStore = YamcsServer.getServer().getSecurityStore();
         if (args.containsKey("excludeParameterGroups")) {
@@ -103,7 +100,7 @@ public class ReplayService extends AbstractProcessorService
         parameterProcessorManager.addParameterProvider(this);
 
         if (spec instanceof ReplayOptions) {
-            this.originalReplayRequest = (ReplayOptions) spec;
+            originalReplayRequest = (ReplayOptions) spec;
         } else if (spec instanceof String) {
             ReplayRequest.Builder rrb = ReplayRequest.newBuilder();
             try {
@@ -114,7 +111,15 @@ public class ReplayService extends AbstractProcessorService
             if (!rrb.hasSpeed()) {
                 rrb.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.REALTIME).setParam(1));
             }
-            this.originalReplayRequest = new ReplayOptions(rrb.build());
+            originalReplayRequest = new ReplayOptions(rrb.build());
+        } else if (spec == null) { // For example, created by ProcessorCreatorService
+            originalReplayRequest = new ReplayOptions();
+            originalReplayRequest.setSpeed(ReplaySpeed.newBuilder()
+                    .setType(ReplaySpeedType.REALTIME)
+                    .setParam(1)
+                    .build());
+            originalReplayRequest.setEndAction(EndAction.STOP);
+            originalReplayRequest.setAutostart(false);
         } else {
             throw new IllegalArgumentException("Unknown spec of type " + spec.getClass());
         }
@@ -334,9 +339,9 @@ public class ReplayService extends AbstractProcessorService
     }
 
     @Override
-    public void seek(long time) {
+    public void seek(long time, boolean autostart) {
         try {
-            yarchReplay.seek(time);
+            yarchReplay.seek(time, autostart);
         } catch (YamcsException e) {
             throw new RuntimeException(e);
         }
@@ -413,6 +418,11 @@ public class ReplayService extends AbstractProcessorService
     }
 
     @Override
+    public ReplayRequest getCurrentReplayRequest() {
+        return yarchReplay != null ? yarchReplay.getCurrentReplayRequest() : getReplayRequest();
+    }
+
+    @Override
     public ReplayState getReplayState() {
         if (state() == State.NEW) {
             return ReplayState.INITIALIZATION;
@@ -431,13 +441,24 @@ public class ReplayService extends AbstractProcessorService
     @Override
     public void changeSpeed(ReplaySpeed speed) {
         yarchReplay.changeSpeed(speed);
-        // need to change the replay request to get the proper value when getReplayRequest() is called
-        originalReplayRequest.setSpeed(speed);
+    }
+
+    @Override
+    public void changeEndAction(EndAction endAction) {
+        yarchReplay.changeEndAction(endAction);
+    }
+
+    @Override
+    public void changeRange(long start, long stop) {
+        try {
+            yarchReplay.changeRange(start, stop);
+        } catch (YamcsException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void setCommandHistoryRequestManager(CommandHistoryRequestManager chrm) {
         this.commandHistoryRequestManager = chrm;
     }
-
 }

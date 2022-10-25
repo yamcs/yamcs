@@ -12,8 +12,9 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.utils.TimeEncoding;
 
 public class ReplayOptions {
-    long start = TimeEncoding.INVALID_INSTANT;
-    long stop = TimeEncoding.INVALID_INSTANT;
+    long rangeStart = TimeEncoding.INVALID_INSTANT;
+    long rangeStop = TimeEncoding.INVALID_INSTANT;
+    long playFrom = TimeEncoding.INVALID_INSTANT;
     EndAction endAction;
     ReplaySpeed speed;
     boolean reverse;
@@ -31,10 +32,10 @@ public class ReplayOptions {
 
     public ReplayOptions(ReplayRequest protoRequest) {
         if (protoRequest.hasStart()) {
-            start = TimeEncoding.fromProtobufTimestamp(protoRequest.getStart());
+            rangeStart = TimeEncoding.fromProtobufTimestamp(protoRequest.getStart());
         }
         if (protoRequest.hasStop()) {
-            stop = TimeEncoding.fromProtobufTimestamp(protoRequest.getStop());
+            rangeStop = TimeEncoding.fromProtobufTimestamp(protoRequest.getStop());
         }
         endAction = protoRequest.getEndAction();
         if (protoRequest.hasSpeed()) {
@@ -55,20 +56,21 @@ public class ReplayOptions {
     }
 
     public ReplayOptions(long start, long stop) {
-        this.start = start;
-        this.stop = stop;
+        this.rangeStart = start;
+        this.rangeStop = stop;
     }
 
     public ReplayOptions() {
     }
 
     public ReplayOptions(ReplayOptions other) {
-        this.start = other.start;
-        this.stop = other.stop;
+        this.rangeStart = other.rangeStart;
+        this.rangeStop = other.rangeStop;
         this.speed = other.speed;
         this.endAction = other.endAction;
         this.reverse = other.reverse;
         this.autostart = other.autostart;
+        this.playFrom = other.playFrom;
 
         this.packetReplayRequest = other.packetReplayRequest;
         this.ppRequest = other.ppRequest;
@@ -95,13 +97,24 @@ public class ReplayOptions {
         this.speed = speed;
     }
 
-    public void setStart(long start) {
-        this.start = start;
+    public void setRangeStart(long start) {
+        this.rangeStart = start;
+    }
 
+    public void setRangeStop(long stop) {
+        this.rangeStop = stop;
+    }
+
+    public void setPlayFrom(long playFrom) {
+        this.playFrom = playFrom;
     }
 
     public ReplaySpeed getSpeed() {
         return speed;
+    }
+
+    public long getPlayFrom() {
+        return playFrom;
     }
 
     public boolean isReverse() {
@@ -110,11 +123,11 @@ public class ReplayOptions {
 
     public ReplayRequest toProtobuf() {
         ReplayRequest.Builder rr = ReplayRequest.newBuilder();
-        if (start != TimeEncoding.INVALID_INSTANT) {
-            rr.setStart(TimeEncoding.toProtobufTimestamp(start));
+        if (rangeStart != TimeEncoding.INVALID_INSTANT) {
+            rr.setStart(TimeEncoding.toProtobufTimestamp(rangeStart));
         }
-        if (stop != TimeEncoding.INVALID_INSTANT) {
-            rr.setStart(TimeEncoding.toProtobufTimestamp(stop));
+        if (rangeStop != TimeEncoding.INVALID_INSTANT) {
+            rr.setStop(TimeEncoding.toProtobufTimestamp(rangeStop));
         }
         rr.setSpeed(speed);
         rr.setEndAction(endAction);
@@ -162,28 +175,28 @@ public class ReplayOptions {
         return false;
     }
 
-    public long getStart() {
-        return start;
+    public long getRangeStart() {
+        return rangeStart;
     }
 
-    public long getStop() {
-        return stop;
+    public long getRangeStop() {
+        return rangeStop;
     }
 
-    public boolean hasStart() {
-        return start != TimeEncoding.INVALID_INSTANT;
+    public boolean hasPlayFrom() {
+        return playFrom != TimeEncoding.INVALID_INSTANT;
     }
 
-    public boolean hasStop() {
-        return stop != TimeEncoding.INVALID_INSTANT;
+    public boolean hasRangeStart() {
+        return rangeStart != TimeEncoding.INVALID_INSTANT;
+    }
+
+    public boolean hasRangeStop() {
+        return rangeStop != TimeEncoding.INVALID_INSTANT;
     }
 
     public void setEndAction(EndAction endAction) {
         this.endAction = endAction;
-    }
-
-    public void setStop(long stop) {
-        this.stop = stop;
     }
 
     public PpReplayRequest getPpRequest() {
@@ -237,7 +250,6 @@ public class ReplayOptions {
 
     public void setCommandHistoryRequest(CommandHistoryReplayRequest commandHistoryReplayRequest) {
         this.commandHistoryReplayRequest = commandHistoryReplayRequest;
-
     }
 
     public EventReplayRequest getEventRequest() {
@@ -258,5 +270,4 @@ public class ReplayOptions {
     public boolean isReplayAllParameters() {
         return isReplayAll() || (parameterReplayRequest != null && parameterReplayRequest.getNameFilterCount() == 0);
     }
-
 }

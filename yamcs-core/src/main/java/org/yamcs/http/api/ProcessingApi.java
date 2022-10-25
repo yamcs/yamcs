@@ -67,6 +67,7 @@ import org.yamcs.protobuf.SubscribeParametersData;
 import org.yamcs.protobuf.SubscribeParametersRequest;
 import org.yamcs.protobuf.SubscribeProcessorsRequest;
 import org.yamcs.protobuf.SubscribeTMStatisticsRequest;
+import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
@@ -189,6 +190,16 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             default:
                 throw new BadRequestException("Invalid processor state '" + request.getState() + "'");
             }
+        }
+
+        if (request.hasStart() && request.hasStop()) {
+            long start = TimeEncoding.fromProtobufTimestamp(request.getStart());
+            long stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
+            processor.changeRange(start, stop);
+        }
+
+        if (request.hasLoop()) {
+            processor.changeEndAction(request.getLoop() ? EndAction.LOOP : EndAction.STOP);
         }
 
         if (request.hasSeek()) {

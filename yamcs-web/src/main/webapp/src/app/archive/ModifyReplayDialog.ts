@@ -1,25 +1,24 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { YamcsService } from '../../core/services/YamcsService';
-import * as utils from '../../shared/utils';
-import { generateRandomName } from '../../shared/utils';
+import { EditReplayProcessorRequest } from '../client';
+import { YamcsService } from '../core/services/YamcsService';
+import * as utils from '../shared/utils';
 
 @Component({
-  selector: 'app-start-replay-dialog',
-  templateUrl: './StartReplayDialog.html',
+  selector: 'app-modify-replay-dialog',
+  templateUrl: './ModifyReplayDialog.html',
 })
-export class StartReplayDialog {
+export class ModifyReplayDialog {
 
   form: UntypedFormGroup;
 
   constructor(
-    private dialogRef: MatDialogRef<StartReplayDialog>,
+    private dialogRef: MatDialogRef<ModifyReplayDialog>,
     formBuilder: UntypedFormBuilder,
     private yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
-
     let initialStart = yamcs.getMissionTime();
     let initialStop;
 
@@ -33,7 +32,6 @@ export class StartReplayDialog {
     }
 
     this.form = formBuilder.group({
-      name: [generateRandomName(), Validators.required],
       start: [utils.toISOString(initialStart), [
         Validators.required,
       ]],
@@ -41,21 +39,14 @@ export class StartReplayDialog {
     });
   }
 
-  start() {
-    const replayConfig: { [key: string]: any; } = {
+  submit() {
+    const replayConfig: EditReplayProcessorRequest = {
       start: utils.toISOString(this.form.value.start),
-      endAction: 'STOP',
     };
     if (this.form.value.stop) {
       replayConfig.stop = utils.toISOString(this.form.value.stop);
     }
 
-    this.dialogRef.close({
-      instance: this.yamcs.instance!,
-      name: this.form.value.name,
-      type: 'Archive', // TODO make configurable?
-      persistent: true,
-      config: JSON.stringify(replayConfig),
-    });
+    this.dialogRef.close(replayConfig);
   }
 }
