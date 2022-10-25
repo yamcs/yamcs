@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator, ValidatorFn, Validators } from '@angular/forms';
+import { ControlValueAccessor, FormControl, FormGroup, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator, ValidatorFn, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ArgumentType } from '../../../../client';
 import { unflattenIndex } from '../../../../shared/utils';
@@ -33,7 +33,9 @@ export class BooleanArgument implements ControlValueAccessor, OnInit, Validator,
   @Input()
   dimensions?: number[];
 
-  formControl = new UntypedFormControl();
+  // Wrap in a group to avoid interference between multiple
+  // BooleanArgument instances. See #729
+  formGroup: FormGroup;
 
   controlName: string;
 
@@ -41,10 +43,16 @@ export class BooleanArgument implements ControlValueAccessor, OnInit, Validator,
   private onChange = (_: string | null) => { };
   private subscriptions: Subscription[] = [];
 
+  constructor() {
+    this.formGroup = new FormGroup({
+      enabled: new FormControl(null),
+    });
+  }
+
   ngOnInit() {
     this.subscriptions.push(
-      this.formControl.valueChanges.subscribe(() => {
-        let value = this.formControl.value;
+      this.formGroup.valueChanges.subscribe(() => {
+        let value = this.formGroup.get('enabled')!.value;
         this.onChange(value);
       })
     );
@@ -68,7 +76,11 @@ export class BooleanArgument implements ControlValueAccessor, OnInit, Validator,
   }
 
   writeValue(obj: any) {
-    this.formControl.setValue(obj);
+    if (obj === 'true') {
+      this.formGroup.setValue({ 'enabled': 'true' });
+    } else if (obj === 'false') {
+      this.formGroup.setValue({ 'enabled': 'false' });
+    }
   }
 
   registerOnChange(fn: any) {

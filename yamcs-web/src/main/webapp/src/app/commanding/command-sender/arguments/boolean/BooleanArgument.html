@@ -17,10 +17,12 @@
 
   <app-errors #err [controlName]="controlName"></app-errors>
   <br>
-  <input type="radio"
-         [formControl]="formControl"
-         value="true"> {{ type.oneStringValue }}
-  <input type="radio"
-         [formControl]="formControl"
-         value="false"> {{ type.zeroStringValue }}
+  <ng-container [formGroup]="formGroup">
+    <input type="radio"
+          formControlName="enabled"
+          value="true"> {{ type.oneStringValue }}
+    <input type="radio"
+          formControlName="enabled"
+          value="false"> {{ type.zeroStringValue }}
+  </ng-container>
 </label>
