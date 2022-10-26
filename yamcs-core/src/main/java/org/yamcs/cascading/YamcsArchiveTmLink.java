@@ -70,6 +70,7 @@ public class YamcsArchiveTmLink extends AbstractTmDataLink {
 
     @Override
     public void doEnable() {
+        permanentGaps.clear();
         scheduleDataRetrieval();
     }
 
@@ -96,9 +97,10 @@ public class YamcsArchiveTmLink extends AbstractTmDataLink {
     }
 
     void retrieveGaps() {
-        if (isEffectivelyDisabled()) {
+        if(connectionStatus() != Status.OK || isEffectivelyDisabled()) {
             return;
         }
+
         if (runningTask != null && !runningTask.isDone()) {
             return;
         }
@@ -158,7 +160,7 @@ public class YamcsArchiveTmLink extends AbstractTmDataLink {
         while (it.hasNext()) {
             Gap g = it.next();
             if (Collections.binarySearch(permanentGaps, g) >= 0) {
-                log.debug("Not retrieving gap {} because it is in the permanent list");
+                log.debug("Not retrieving gap {} because it is in the permanent list", g);
                 it.remove();
             }
         }
