@@ -10,7 +10,7 @@ Synopsis
 
     | **yamcsd** [--version] [--help] [--check] [--log <*LEVEL*>] [--log-config <*FILE*>]
        [--no-color] [--no-stream-redirect] [--etc-dir <*DIR*>] [--data-dir <*DIR*>]
-       [--netty-leak-detection <*LEVEL*>]
+       [--cache-dir <*DIR*>] [--netty-leak-detection <*LEVEL*>]
 
 
 Description
@@ -46,6 +46,10 @@ Options
 .. option:: --data-dir <DIR>
 
    Path to data directory. When unspecified the location is read from the ``yamcs.yaml`` configuration file.
+
+.. option:: --cache-dir <DIR>
+
+   Path to cache directory. When unspecified the location is read from the ``yamcs.yaml`` configuration file.
 
 .. option:: --check
 
@@ -87,6 +91,10 @@ The following environment variables may be specified.
 .. describe:: YAMCS_ETC_DIR
 
     Path to configuration directory.
+
+.. describe:: YAMCS_CACHE_DIR
+
+    Path to cache directory.
 
 .. describe:: YAMCS_NO_COLOR, NO_COLOR
 

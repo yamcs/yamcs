@@ -48,7 +48,7 @@ public abstract class AbstractCliTest {
         Path etcdata = Files.createTempDirectory("etcdata-");
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(etcdata.resolve("yamcs.yaml").toFile()))) {
-            writer.write("dataDir: " + etcdata.toAbsolutePath() + "/yamcs-data");
+            writer.write("dataDir: " + etcdata.toAbsolutePath().resolve("yamcs-data"));
         }
 
         YConfiguration.setResolver(new FileBasedConfigurationResolver(etcdata));
@@ -84,6 +84,7 @@ public abstract class AbstractCliTest {
 
         @Override
         public void println(String msg) {
+            // System.out.println("b");
             sb.append(msg).append("\n");
         }
 

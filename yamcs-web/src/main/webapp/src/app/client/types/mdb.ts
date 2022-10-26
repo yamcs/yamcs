@@ -81,6 +81,7 @@ export interface ParameterType {
   enumValue: EnumValue[];
   absoluteTimeInfo: AbsoluteTimeInfo;
   member: Member[];
+  signed?: boolean;
 }
 
 export interface ArrayInfo {

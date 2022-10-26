@@ -1,5 +1,9 @@
 package org.yamcs.parameter;
 
+import static org.yamcs.xtce.NameDescription.qualifiedName;
+import static org.yamcs.xtce.XtceDb.YAMCS_SPACESYSTEM_NAME;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -49,9 +53,6 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.io.Files;
-
-import static org.yamcs.xtce.XtceDb.YAMCS_SPACESYSTEM_NAME;
-import static org.yamcs.xtce.NameDescription.qualifiedName;
 
 /**
  * Collects each second system processed parameters from whomever registers and sends them on the sys_var stream
@@ -113,7 +114,11 @@ public class SystemParametersService extends AbstractYamcsService implements Run
         }
 
         if (config.getBoolean("provideFsVariables")) {
-            providers.add(new SysVarProducer(new FileStoreParameterProducer(this)));
+            try {
+                providers.add(new SysVarProducer(new FileStoreParameterProducer(this)));
+            } catch (IOException e) {
+                throw new InitException(e);
+            }
         }
 
         synchronized (instances) {

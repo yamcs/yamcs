@@ -75,6 +75,12 @@ public class YamcsServerInstance extends YamcsInstanceService {
         serviceSpec.addOption("name", OptionType.STRING);
         serviceSpec.addOption("enabledAtStartup", OptionType.BOOLEAN);
 
+        Spec mdbSpec = new Spec();
+        mdbSpec.addOption("type", OptionType.STRING).withRequired(true);
+        mdbSpec.addOption("spec", OptionType.STRING);
+        mdbSpec.addOption("args", OptionType.MAP).withSpec(Spec.ANY);
+        mdbSpec.addOption("subLoaders", OptionType.LIST).withElementType(OptionType.MAP).withSpec(mdbSpec);
+
         Spec spec = new Spec();
         spec.addOption("services", OptionType.LIST).withElementType(OptionType.MAP).withSpec(serviceSpec);
         spec.addOption("tablespace", OptionType.STRING);
@@ -84,12 +90,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
         spec.addOption("dataLinks", OptionType.LIST).withElementType(OptionType.MAP).withSpec(Spec.ANY);
         spec.addOption("streamConfig", OptionType.MAP).withSpec(Spec.ANY);
 
-        /*
-         * TODO not possible to activate this validation because mdb is being used
-         * ambiguously as both LIST and STRING with completely different meanings.
-         */
-        // spec.addOption("mdb", OptionType.LIST).withElementType(OptionType.MAP).withSpec(Spec.ANY);
-        spec.addOption("mdb", OptionType.ANY);
+        spec.addOption("mdb", OptionType.LIST).withElementType(OptionType.MAP).withSpec(mdbSpec);
         spec.addOption("mdbSpec", OptionType.STRING);
         spec.mutuallyExclusive("mdb", "mdbSpec");
 
@@ -179,7 +180,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
         for (ServiceWithConfig swc : services) {
             stopFutures.add(serviceStoppers.submit(() -> {
                 swc.service.stopAsync();
-                log.debug("Awaiting termination of service {}", swc.getName());
+                log.info("Awaiting termination of service {}", swc.getName());
                 ServiceUtil.awaitServiceTerminated(swc.service, YamcsServer.SERVICE_STOP_GRACE_TIME, log);
             }));
         }
@@ -188,6 +189,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
         Futures.addCallback(Futures.allAsList(stopFutures), new FutureCallback<Object>() {
             @Override
             public void onSuccess(Object result) {
+                log.info("Stopping Yamcs DB");
                 YarchDatabaseInstance ydb = YarchDatabase.getInstance(name);
                 ydb.close();
                 YarchDatabase.removeInstance(name);

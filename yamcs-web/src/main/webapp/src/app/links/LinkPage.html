@@ -4,12 +4,6 @@
       <mat-icon>arrow_back</mat-icon>
     </a> Links / {{ link.name }}
     &nbsp;&nbsp;&nbsp;
-    <!--button mat-button
-            color="primary"
-            *ngIf="mayControlLinks()">
-      <mat-icon>edit</mat-icon>
-      EDIT
-    </button-->
     <button mat-button
             color="primary"
             *ngIf="mayControlLinks()"
@@ -26,6 +20,34 @@
       <mat-icon>link_off</mat-icon>
       DISABLE
     </button>
+    <button mat-button
+            color="primary"
+            *ngIf="mayControlLinks()"
+            [matMenuTriggerFor]="moreActions">
+      MORE
+      <mat-icon>arrow_drop_down</mat-icon>
+    </button>
+    <mat-menu #moreActions class="ya-menu" yPosition="below" [overlapTrigger]="false">
+      <ng-template matMenuContent>
+        <button mat-menu-item
+                (click)="resetCounters(link.name)">
+          Reset counters
+        </button>
+        <ng-container *ngIf="link.actions">
+          <mat-divider></mat-divider>
+          <ng-container *ngFor="let action of link.actions">
+            <button mat-menu-item
+                    [disabled]="!action.enabled"
+                    (click)="runAction(link.name, action.id)">
+              <ng-container *ngIf="action.style === 'CHECK_BOX'">
+                <mat-icon [style.visibility]="action.checked ? 'visible' : 'hidden'">check</mat-icon>
+              </ng-container>
+              {{ action.label }}
+            </button>
+          </ng-container>
+        </ng-container>
+      </ng-template>
+    </mat-menu>
   </app-instance-toolbar>
 
   <div class="form-content">

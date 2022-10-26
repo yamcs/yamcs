@@ -8,11 +8,6 @@
   {{ link.type }}
 </div>
 
-<!--div class="block-title">Args</div>
-<div class="block">
-  <span [innerHTML]="link.spec | printJson"></span>
-</div-->
-
 <br>
 <mat-divider></mat-divider>
 
@@ -48,4 +43,30 @@
           *ngIf="link.status !== 'DISABLED'">
     DISABLE LINK
   </button>
+
+  <button class="ya-button" [matMenuTriggerFor]="moreActions">
+    MORE
+    <mat-icon>arrow_drop_down</mat-icon>
+  </button>
+  <mat-menu #moreActions class="ya-menu" yPosition="below" [overlapTrigger]="false">
+    <ng-template matMenuContent>
+      <button mat-menu-item
+              (click)="resetCounters()">
+        Reset counters
+      </button>
+      <ng-container *ngIf="link.actions">
+        <mat-divider></mat-divider>
+        <ng-container *ngFor="let action of link.actions">
+          <button mat-menu-item
+                  [disabled]="!action.enabled"
+                  (click)="runAction(action.id)">
+            <ng-container *ngIf="action.style === 'CHECK_BOX'">
+              <mat-icon [style.visibility]="action.checked ? 'visible' : 'hidden'">check</mat-icon>
+            </ng-container>
+            {{ action.label }}
+          </button>
+        </ng-container>
+      </ng-container>
+    </ng-template>
+  </mat-menu>
 </div>

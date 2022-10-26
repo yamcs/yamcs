@@ -155,6 +155,9 @@ export interface EditReplayProcessorRequest {
   state?: 'running' | 'paused';
   seek?: string;
   speed?: string;
+  start?: string;
+  stop?: string;
+  loop?: boolean;
 }
 
 export interface GetPacketsOptions {

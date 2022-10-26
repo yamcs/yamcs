@@ -7,7 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
@@ -28,13 +29,13 @@ public class HttpServerTest extends AbstractIntegrationTest {
 
     @Test
     public void testStaticFile() throws Exception {
-        YamcsServer.getServer().getGlobalService(HttpServer.class).addStaticRoot(Paths.get("/tmp/yamcs-web"));
+        Path dir = Path.of(System.getProperty("java.io.tmpdir"), "yamcs-web");
+        YamcsServer.getServer().getGlobalService(HttpServer.class).addStaticRoot(dir);
 
         HttpClient httpClient = new HttpClient();
-        File dir = new File("/tmp/yamcs-web/");
-        dir.mkdirs();
+        Files.createDirectories(dir);
 
-        File file1 = File.createTempFile("test1_", null, dir);
+        File file1 = File.createTempFile("test1_", null, dir.toFile());
         FileOutputStream file1Out = new FileOutputStream(file1);
         Random rand = new Random();
         byte[] b = new byte[1932];
@@ -44,7 +45,7 @@ public class HttpServerTest extends AbstractIntegrationTest {
         }
         file1Out.close();
 
-        File file2 = File.createTempFile("test2_", null, dir);
+        File file2 = File.createTempFile("test2_", null, dir.toFile());
         FileOutputStream file2Out = new FileOutputStream(file2);
 
         httpClient

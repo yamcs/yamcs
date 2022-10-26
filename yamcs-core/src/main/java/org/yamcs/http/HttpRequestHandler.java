@@ -21,16 +21,17 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 
+import javax.net.ssl.SSLHandshakeException;
+
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.http.auth.TokenStore;
 import org.yamcs.logging.Log;
-import org.yamcs.security.AuthModule;
+import org.yamcs.security.AbstractHttpRequestAuthModule;
+import org.yamcs.security.AbstractHttpRequestAuthModule.HttpRequestToken;
 import org.yamcs.security.AuthenticationException;
 import org.yamcs.security.AuthenticationInfo;
 import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.RemoteUserAuthModule;
-import org.yamcs.security.RemoteUserToken;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.security.User;
 import org.yamcs.security.UsernamePasswordToken;
@@ -48,6 +49,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.WriteBufferWaterMark;
+import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -233,44 +235,58 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     }
 
     private User authorizeUser(ChannelHandlerContext ctx, HttpRequest req) throws HttpException {
-        // Handle common case first: presence of an "Authorization" header
-        if (req.headers().contains(AUTHORIZATION)) {
-            String authorizationHeader = req.headers().get(AUTHORIZATION);
-            if (authorizationHeader.startsWith(AUTH_TYPE_BASIC)) { // Exact case only
-                return handleBasicAuth(ctx, req);
-            } else if (authorizationHeader.startsWith(AUTH_TYPE_BEARER)) {
-                return handleBearerAuth(ctx, req);
-            } else {
-                throw new BadRequestException("Unsupported Authorization header '" + authorizationHeader + "'");
-            }
-        }
-
-        // Instances of RemoteUserAuthModule derive the user from custom HTTP headers
-        // (anything other than Authorization)
-        for (AuthModule authModule : securityStore.getAuthModules()) {
-            if (authModule instanceof RemoteUserAuthModule) {
-                String headerName = ((RemoteUserAuthModule) authModule).getHeader();
-                if (req.headers().contains(headerName)) {
-                    return handleRemoteUserAuth(ctx, req, headerName);
+        if (securityStore.isEnabled()) {
+            // Handle common case first: presence of an "Authorization" header
+            if (req.headers().contains(AUTHORIZATION)) {
+                String authorizationHeader = req.headers().get(AUTHORIZATION);
+                if (authorizationHeader.startsWith(AUTH_TYPE_BASIC)) { // Exact case only
+                    return handleBasicAuth(ctx, req);
+                } else if (authorizationHeader.startsWith(AUTH_TYPE_BEARER)) {
+                    return handleBearerAuth(ctx, req);
+                } else {
+                    throw new BadRequestException("Unsupported Authorization header '" + authorizationHeader + "'");
                 }
             }
-        }
 
-        // Last resort:
-        // There may be an access token in the cookie. This use case is added because
-        // of web socket requests coming from the browser where it is not possible to
-        // set custom authorization headers. It'd be interesting if we communicate the
-        // access token via the websocket subprotocol instead (e.g. via temp. route).
-        String accessToken = getAccessTokenFromCookie(req);
-        if (accessToken != null) {
-            return handleAccessToken(ctx, req, accessToken);
+            // Instances of AbstractHttpRequestAuthModule derive the user
+            // from custom HTTP request information, typically headers.
+            var isHttpRequestAuth = securityStore.getAuthModules().stream().anyMatch(module -> {
+                return module instanceof AbstractHttpRequestAuthModule
+                        && ((AbstractHttpRequestAuthModule) module).handles(ctx, req);
+            });
+            if (isHttpRequestAuth) {
+                try {
+                    var token = new HttpRequestToken(ctx, req);
+                    var authenticationInfo = securityStore.login(token).get();
+                    return securityStore.getDirectory().getUser(authenticationInfo.getUsername());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return null;
+                } catch (ExecutionException e) {
+                    if (e.getCause() instanceof AuthenticationException) {
+                        throw new UnauthorizedException(e.getCause().getMessage());
+                    } else {
+                        throw new InternalServerErrorException(e.getCause());
+                    }
+                }
+            }
+
+            // Last resort:
+            // There may be an access token in the cookie. This use case is added because
+            // of web socket requests coming from the browser where it is not possible to
+            // set custom authorization headers. It'd be interesting if we communicate the
+            // access token via the websocket subprotocol instead (e.g. via temp. route).
+            String accessToken = getAccessTokenFromCookie(req);
+            if (accessToken != null) {
+                return handleAccessToken(ctx, req, accessToken);
+            }
         }
 
         if (securityStore.getGuestUser().isActive()) {
             return securityStore.getGuestUser();
-        } else {
-            throw new UnauthorizedException("Missing authentication");
         }
+
+        throw new UnauthorizedException("Missing authentication");
     }
 
     /**
@@ -393,6 +409,10 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             log.info("{} Closing channel: expected a TLS/SSL packet", channelId);
         } else if (cause instanceof IOException && cause.getMessage().contains("reset by peer")) {
             // Unclean client close. Don't care about stack trace
+            log.info("{} Closing channel: {}", channelId, cause.getMessage());
+        } else if (cause instanceof DecoderException
+                && ((DecoderException) cause).getCause() instanceof SSLHandshakeException) {
+            // Very common when using Chrome and unknown certificates. Don't care about stack trace
             log.info("{} Closing channel: {}", channelId, cause.getMessage());
         } else {
             log.error("{} Closing channel: {}", channelId, cause.getMessage(), cause);
@@ -532,25 +552,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         try {
             AuthenticationToken token = new UsernamePasswordToken(parts[0], parts[1].toCharArray());
-            AuthenticationInfo authenticationInfo = securityStore.login(token).get();
-            return securityStore.getDirectory().getUser(authenticationInfo.getUsername());
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return null;
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof AuthenticationException) {
-                throw new UnauthorizedException(e.getCause().getMessage());
-            } else {
-                throw new InternalServerErrorException(e.getCause());
-            }
-        }
-    }
-
-    private User handleRemoteUserAuth(ChannelHandlerContext ctx, HttpRequest req, String headerName)
-            throws HttpException {
-        String username = req.headers().get(headerName);
-        try {
-            AuthenticationToken token = new RemoteUserToken(headerName, username);
             AuthenticationInfo authenticationInfo = securityStore.login(token).get();
             return securityStore.getDirectory().getUser(authenticationInfo.getUsername());
         } catch (InterruptedException e) {

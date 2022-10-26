@@ -18,15 +18,13 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
-import org.yamcs.mdb.MetaCommandProcessor;
-import org.yamcs.mdb.ProcessorData;
-import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.mdb.MetaCommandProcessor.CommandBuildResult;
 import org.yamcs.parameter.Value;
 import org.yamcs.tctm.CcsdsPacket;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.BooleanDataType;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
 
@@ -161,7 +159,7 @@ public class RefMdbCommandEncodingTest {
     public void booleanCommandTrue() throws ErrorInCommand {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/BOOLEAN_ARG_TC");
         Map<String, Object> args = new HashMap<>();
-        args.put("bool_arg1", "true");
+        args.put("bool_arg1", BooleanDataType.DEFAULT_ONE_STRING_VALUE);
         byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
 
         assertEquals(0b11000000, b[0] & 0xFF);
@@ -171,7 +169,7 @@ public class RefMdbCommandEncodingTest {
     public void booleanCommandFalseTrue() throws ErrorInCommand {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/BOOLEAN_ARG_TC");
         Map<String, Object> args = new HashMap<>();
-        args.put("bool_arg1", "false");
+        args.put("bool_arg1", BooleanDataType.DEFAULT_ZERO_STRING_VALUE);
         byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
 
         // - assigned false
@@ -232,7 +230,7 @@ public class RefMdbCommandEncodingTest {
         args.put("string_arg", "string with \n special chars \"");
         args.put("binary_arg", "010A");
         args.put("enumerated_arg", "value1");
-        args.put("boolean_arg", "false");
+        args.put("boolean_arg", "False");
 
         byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
         String result = new String(b);

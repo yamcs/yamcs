@@ -3,6 +3,7 @@ package org.yamcs.yarch.rocksdb;
 import static org.yamcs.utils.ByteArrayUtils.decodeInt;
 import static org.yamcs.utils.ByteArrayUtils.encodeInt;
 import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
+import static org.yamcs.yarch.rocksdb.RdbStorageEngine.dbKey;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,15 +31,15 @@ import org.yamcs.utils.IntArray;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.Partition;
-import org.yamcs.yarch.TableColumnDefinition;
 import org.yamcs.yarch.Sequence;
 import org.yamcs.yarch.SequenceInfo;
+import org.yamcs.yarch.TableColumnDefinition;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWalker;
+import org.yamcs.yarch.TableWriter.InsertMode;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
-import org.yamcs.yarch.TableWriter.InsertMode;
 import org.yamcs.yarch.protobuf.Db;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ProtoTableDefinition;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.SecondaryIndex;
@@ -48,8 +49,6 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.TextFormat;
-
-import static org.yamcs.yarch.rocksdb.RdbStorageEngine.dbKey;
 
 /**
  * Tablespaces are used to store data by the {@link RdbStorageEngine}. Each tablespace can store data from one or more
@@ -78,22 +77,20 @@ import static org.yamcs.yarch.rocksdb.RdbStorageEngine.dbKey;
  * <p>
  * value: 1 byte version number (0x1), 4 bytes max tbsIndex
  * <p>
- * used to store the max tbsIndex and also stores
- * a version number in case the format will change in the future
+ * used to store the max tbsIndex and also stores a version number in case the format will change in the future
  * <li>key: 0x02, 1 byte record type, 4 bytes tbsIndex
  * <p>
  * value: protobuf encoded TablespaceRecord
  * <p>
  * Used to store the information corresponding to the given tbsIndex. The record type corresponds to the Type
- * enumerations from tablespace.proto
- * </li>
+ * enumerations from tablespace.proto</li>
  * <li>key: 0x03, 1 byte record type, sequence name encoded in UTF8
  * <p>
  * value: last sequence number 8 bytes big endian
  * </ul>
  */
 public class Tablespace {
-    static Log log = new Log(Tablespace.class);
+    private Log log;
 
     // unique name for this tablespace
     private final String name;
@@ -128,6 +125,8 @@ public class Tablespace {
     Map<String, RdbSequence> sequences = new HashMap<>();
 
     public Tablespace(String name) {
+        log = new Log(Tablespace.class);
+        log.setContext(name);
         this.name = name;
         this.executor = new ScheduledThreadPoolExecutor(1,
                 new ThreadFactoryBuilder().setNameFormat("Tablespace-" + name).build());
@@ -136,7 +135,7 @@ public class Tablespace {
     public void loadDb(boolean readonly) throws IOException {
         String dbDir = getDataDir();
         rdbFactory = new RDBFactory(dbDir, executor);
-        File f = new File(dbDir + "/CURRENT");
+        File f = new File(dbDir, "CURRENT");
         try {
             if (f.exists()) {
                 log.debug("Opening existing database {}", dbDir);
@@ -159,8 +158,9 @@ public class Tablespace {
                             "Wrong metadata version " + value[0] + " expected " + METADATA_VERSION);
                 }
                 maxTbsIndex = Integer.toUnsignedLong(decodeInt(value, 1));
-                log.info("Opened tablespace database {}, num records:{}, num metadata records: {}, maxTbsIndex: {}",
-                        dbDir, db.getApproxNumRecords(), db.getApproxNumRecords(cfMetadata), maxTbsIndex);
+                log.info("Opened tablespace database {}", dbDir);
+                log.info("Records: ~{}, metadata records: ~{}, maxTbsIndex: {}",
+                        db.getApproxNumRecords(), db.getApproxNumRecords(cfMetadata), maxTbsIndex);
             } else {
                 if (readonly) {
                     throw new IllegalStateException("Cannot create a new db when readonly is set to true");
@@ -375,7 +375,7 @@ public class Tablespace {
     public String getDataDir() {
         String dir = customDataDir;
         if (dir == null) {
-            dir = YarchDatabase.getDataDir() + "/" + name + ".rdb";
+            dir = YarchDatabase.getDataDir() + File.separator + name + ".rdb";
         }
         return dir;
     }
@@ -618,7 +618,7 @@ public class Tablespace {
         for (TablespaceRecord tr : filter(Type.TABLE_DEFINITION, yamcsInstance, tr -> true)) {
             if (!tr.hasTableName()) {
                 throw new DatabaseCorruptionException(
-                        "Found table definition metadata record without a table name :" + tr);
+                        "Found table definition metadata record without a table name:" + tr);
             }
 
             TableDefinition tblDef = TableDefinitionSerializer.fromProtobuf(tr.getTableDefinition());
@@ -633,7 +633,7 @@ public class Tablespace {
             list.add(tblDef);
             log.debug("Loaded table {}", tblDef);
         }
-        log.info("Tablespace {}: loaded {} tables for instance {}", name, list.size(), yamcsInstance);
+        log.info("Loaded {} tables for instance {}", list.size(), yamcsInstance);
         return list;
     }
 

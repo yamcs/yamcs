@@ -7,7 +7,7 @@ instances:
  - yproctest0
  - yproctest1
 
-incomingDir: /tmp/yamcs-incoming
-dataDir: /tmp/yamcs-data
+incomingDir: ${java.io.tmpdir}/yamcs-incoming
+dataDir: ${java.io.tmpdir}/yamcs-data
 
 secretKey: testtest

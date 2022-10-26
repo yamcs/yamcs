@@ -13,7 +13,6 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,6 +54,7 @@ import org.yamcs.templating.Variable;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ExceptionUtil;
+import org.yamcs.utils.SDNotify;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.yarch.YarchDatabase;
@@ -127,8 +127,10 @@ public class YamcsServer {
     int maxOnlineInstances = 1000;
     int maxNumInstances = 20;
     Path incomingDir;
-    Path cacheDir;
     Path instanceDefDir;
+
+    // Set when the shutdown hook triggers
+    private boolean shuttingDown = false;
 
     /**
      * Creates services at global (if instance is null) or instance level. The services are not yet initialized. This
@@ -242,20 +244,24 @@ public class YamcsServer {
 
     public void shutDown() {
         long t0 = System.nanoTime();
-        LOG.debug("Yamcs is shutting down");
+        LOG.info("Yamcs is shutting down");
+        if (SDNotify.isSupported()) {
+            SDNotify.sendStoppingNotification();
+        }
         for (YamcsServerInstance ys : instances.values()) {
             ys.stopAsync();
         }
         for (YamcsServerInstance ys : instances.values()) {
             LOG.debug("Awaiting termination of instance {}", ys.getName());
             ys.awaitOffline();
+            LOG.info("Stopped instance '{}'", ys.getName());
         }
         if (globalServiceList != null) {
             for (ServiceWithConfig swc : globalServiceList) {
                 swc.getService().stopAsync();
             }
             for (ServiceWithConfig swc : globalServiceList) {
-                LOG.debug("Awaiting termination of service {}", swc.getName());
+                LOG.info("Awaiting termination of service {}", swc.getName());
                 swc.getService().awaitTerminated();
             }
         }
@@ -263,7 +269,7 @@ public class YamcsServer {
         RdbStorageEngine.getInstance().shutdown();
 
         long stopTime = System.nanoTime() - t0;
-        LOG.debug("Yamcs stopped in {}ms", NANOSECONDS.toMillis(stopTime));
+        LOG.info("Yamcs stopped in {}ms", NANOSECONDS.toMillis(stopTime));
         YamcsLogManager.shutdown();
         timer.shutdown();
     }
@@ -912,7 +918,7 @@ public class YamcsServer {
     }
 
     public Path getCacheDirectory() {
-        return cacheDir;
+        return options.cacheDir;
     }
 
     /**
@@ -982,12 +988,11 @@ public class YamcsServer {
         try {
             LOG.info("Yamcs {}, build {}", YamcsVersion.VERSION, YamcsVersion.REVISION);
             YAMCS.start();
+            YAMCS.reportReady(System.nanoTime() - t0);
         } catch (Exception e) {
             LOG.error("Could not start Yamcs", ExceptionUtil.unwind(e));
             System.exit(-1);
         }
-
-        YAMCS.reportReady(System.nanoTime() - t0);
     }
 
     private static void parseArgs(String[] args) {
@@ -1199,6 +1204,7 @@ public class YamcsServer {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
+                shuttingDown = true;
                 shutDown();
             }
         });
@@ -1212,6 +1218,13 @@ public class YamcsServer {
             LOG.error(msg);
             globalCrashHandler.handleCrash("UncaughtException", msg);
         });
+    }
+
+    /**
+     * Returns true when Yamcs is shutting down.
+     */
+    public boolean isShuttingDown() {
+        return shuttingDown;
     }
 
     private void discoverTemplates() throws IOException {
@@ -1278,18 +1291,18 @@ public class YamcsServer {
             globalCrashHandler = new LogCrashHandler();
         }
         if (options.dataDir == null) {
-            options.dataDir = Paths.get(config.getString("dataDir"));
+            options.dataDir = Path.of(config.getString("dataDir"));
         }
-        YarchDatabase.setHome(options.dataDir.toAbsolutePath().toString());
-        incomingDir = Paths.get(config.getString("incomingDir"));
+        YarchDatabase.setHome(options.dataDir.toString());
+        incomingDir = Path.of(config.getString("incomingDir"));
         instanceDefDir = options.dataDir.resolve("instance-def");
 
         if (YConfiguration.configDirectory != null) {
-            cacheDir = YConfiguration.configDirectory.getAbsoluteFile().toPath();
-        } else {
-            cacheDir = Paths.get(config.getString("cacheDir")).toAbsolutePath();
+            options.cacheDir = YConfiguration.configDirectory.toPath().toAbsolutePath();
+        } else if (options.cacheDir == null) {
+            options.cacheDir = Path.of(config.getString("cacheDir")).toAbsolutePath();
         }
-        Files.createDirectories(cacheDir);
+        Files.createDirectories(options.cacheDir);
 
         Path globalDir = options.dataDir.resolve(GLOBAL_INSTANCE);
         Files.createDirectories(globalDir);
@@ -1303,6 +1316,7 @@ public class YamcsServer {
 
         try {
             securityStore = new SecurityStore();
+            LOG.debug("Security: " + (securityStore.isEnabled() ? "enabled" : "disabled"));
         } catch (InitException e) {
             if (e.getCause() instanceof ValidationException) {
                 throw (ValidationException) e.getCause();
@@ -1376,7 +1390,7 @@ public class YamcsServer {
         }
     }
 
-    private void reportReady(long bootTime) {
+    private void reportReady(long bootTime) throws IOException {
         int instanceCount = getOnlineInstanceCount();
         int serviceCount = globalServiceList.size() + getInstances().stream()
                 .map(instance -> instance.services != null ? instance.services.size() : 0)
@@ -1392,19 +1406,8 @@ public class YamcsServer {
             LOG.info(msg);
         }
 
-        // If started through systemd with Type=notify, Yamcs will have NOTIFY_SOCKET
-        // env set.
-
-        // Normally we would use systemd-notify to report success, but it suffers from
-        // a race condition. See https://www.lukeshu.com/blog/x11-systemd.html
-        String notifySocket = System.getenv("NOTIFY_SOCKET");
-        if (notifySocket != null) {
-            try {
-                String cmd = String.format("echo 'READY=1' | socat STDIO UNIX-SENDTO:%s", notifySocket);
-                new ProcessBuilder("sh", "-c", cmd).inheritIO().start();
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
+        if (SDNotify.isSupported()) {
+            SDNotify.sendStartupNotification();
         }
 
         // Report start success to internal listeners

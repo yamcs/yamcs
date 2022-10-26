@@ -1,5 +1,9 @@
 <label>
   {{ label }}
+  <app-help *ngIf="description">
+    {{ description }}
+  </app-help>
+
   <app-errors #err [controlName]="name"></app-errors>
 
   <div class="meta" [class.error]="err.invalid$ | async">

@@ -192,10 +192,10 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         if (request.hasStart()) {
-            repl.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
+            repl.setRangeStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
         }
         if (request.hasStop()) {
-            repl.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
+            repl.setRangeStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
 
         for (NamedObjectId id : request.getIdsList()) {
@@ -258,10 +258,10 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         String namespace = null;
 
         if (request.hasStart()) {
-            repl.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
+            repl.setRangeStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
         }
         if (request.hasStop()) {
-            repl.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
+            repl.setRangeStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
         for (String id : request.getParametersList()) {
             ParameterWithId paramWithId = MdbApi.verifyParameterWithId(ctx, mdb, id);

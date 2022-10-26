@@ -16,6 +16,14 @@ import org.yamcs.utils.YObjectLoader;
 @Experimental
 public class SingleUserAuthModule implements AuthModule {
 
+    protected static final String OPTION_USERNAME = "username";
+    protected static final String OPTION_PASSWORD = "password";
+    protected static final String OPTION_NAME = "name";
+    protected static final String OPTION_EMAIL = "email";
+    protected static final String OPTION_SUPERUSER = "superuser";
+    protected static final String OPTION_PRIVILEGES = "privileges";
+    protected static final String OPTION_HASHER = "hasher";
+
     private AuthenticationInfo authenticationInfo;
     private AuthorizationInfo authorizationInfo;
 
@@ -25,35 +33,35 @@ public class SingleUserAuthModule implements AuthModule {
     @Override
     public Spec getSpec() {
         Spec spec = new Spec();
-        spec.addOption("username", OptionType.STRING).withRequired(true);
-        spec.addOption("password", OptionType.STRING).withRequired(true).withSecret(true);
-        spec.addOption("name", OptionType.STRING);
-        spec.addOption("email", OptionType.STRING);
-        spec.addOption("superuser", OptionType.BOOLEAN);
-        spec.addOption("privileges", OptionType.ANY);
-        spec.addOption("hasher", OptionType.STRING);
+        spec.addOption(OPTION_USERNAME, OptionType.STRING).withRequired(true);
+        spec.addOption(OPTION_PASSWORD, OptionType.STRING).withRequired(true).withSecret(true);
+        spec.addOption(OPTION_NAME, OptionType.STRING);
+        spec.addOption(OPTION_EMAIL, OptionType.STRING);
+        spec.addOption(OPTION_SUPERUSER, OptionType.BOOLEAN).withDefault(false);
+        spec.addOption(OPTION_PRIVILEGES, OptionType.ANY);
+        spec.addOption(OPTION_HASHER, OptionType.STRING);
         return spec;
     }
 
     @Override
     public void init(YConfiguration args) throws InitException {
-        String username = args.getString("username");
+        String username = args.getString(OPTION_USERNAME);
         authenticationInfo = new AuthenticationInfo(this, username);
 
-        expectedHash = args.getString("password");
+        expectedHash = args.getString(OPTION_PASSWORD);
 
-        String name = args.getString("name", username);
+        String name = args.getString(OPTION_USERNAME, username);
         authenticationInfo.setDisplayName(name);
 
-        String email = args.getString("email", null);
+        String email = args.getString(OPTION_EMAIL, null);
         authenticationInfo.setEmail(email);
 
         authorizationInfo = new AuthorizationInfo();
-        if (args.getBoolean("superuser")) {
+        if (args.getBoolean(OPTION_SUPERUSER)) {
             authorizationInfo.grantSuperuser();
         }
-        if (args.containsKey("privileges")) {
-            YConfiguration privilegeConfigs = args.getConfig("privileges");
+        if (args.containsKey(OPTION_PRIVILEGES)) {
+            var privilegeConfigs = args.getConfig(OPTION_PRIVILEGES);
             for (String privilegeName : privilegeConfigs.getKeys()) {
                 List<String> objects = privilegeConfigs.getList(privilegeName);
                 if (privilegeName.equals("System")) {
@@ -61,7 +69,7 @@ public class SingleUserAuthModule implements AuthModule {
                         authorizationInfo.addSystemPrivilege(new SystemPrivilege(object));
                     }
                 } else {
-                    ObjectPrivilegeType type = new ObjectPrivilegeType(privilegeName);
+                    var type = new ObjectPrivilegeType(privilegeName);
                     for (String object : objects) {
                         authorizationInfo.addObjectPrivilege(new ObjectPrivilege(type, object));
                     }
@@ -69,8 +77,8 @@ public class SingleUserAuthModule implements AuthModule {
             }
         }
 
-        if (args.containsKey("hasher")) {
-            String className = args.getString("hasher");
+        if (args.containsKey(OPTION_HASHER)) {
+            String className = args.getString(OPTION_HASHER);
             passwordHasher = YObjectLoader.loadObject(className);
         }
     }
@@ -103,7 +111,7 @@ public class SingleUserAuthModule implements AuthModule {
     @Override
     public AuthorizationInfo getAuthorizationInfo(AuthenticationInfo authenticationInfo) throws AuthorizationException {
         String incomingUsername = authenticationInfo.getUsername();
-        if (incomingUsername.equals(this.authenticationInfo.getUsername())) {
+        if (incomingUsername.equals(authenticationInfo.getUsername())) {
             return authorizationInfo;
         } else {
             return new AuthorizationInfo();

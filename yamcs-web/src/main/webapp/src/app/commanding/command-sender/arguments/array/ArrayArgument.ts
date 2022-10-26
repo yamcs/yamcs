@@ -25,6 +25,9 @@ export class ArrayArgument implements OnInit, OnDestroy {
   name: string;
 
   @Input()
+  description: string;
+
+  @Input()
   type: ArgumentType;
 
   @Input()

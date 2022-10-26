@@ -2,14 +2,17 @@ package org.yamcs.mdb;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.yamcs.ConfigurationException;
+import org.yamcs.ErrorInCommand;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
 import org.yamcs.parameter.ParameterValue;
@@ -90,10 +93,22 @@ public class XtceBooleansTest {
         MetaCommand mc = mdb.getMetaCommand("/Booleans/command1");
         Map<String, Object> args = new HashMap<>();
 
-        args.put("bool1", "true");
+        args.put("bool1", "True");
         byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
         byte[] expected = { 1 };
         assertArrayEquals(expected, b);
+    }
+
+    @Test
+    @Disabled("Test to be enabled only when BooleanDataType deprecated handling is removed")
+    public void testNumericCmdTrueCaseSensitive() {
+        assertThrows(ErrorInCommand.class, () -> {
+            MetaCommand mc = mdb.getMetaCommand("/Booleans/command1");
+            Map<String, Object> args = new HashMap<>();
+
+            args.put("bool1", "true");
+            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        });
     }
 
     @Test
@@ -101,10 +116,22 @@ public class XtceBooleansTest {
         MetaCommand mc = mdb.getMetaCommand("/Booleans/command1");
         Map<String, Object> args = new HashMap<>();
 
-        args.put("bool1", "false");
+        args.put("bool1", "False");
         byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
         byte[] expected = { 0 };
         assertArrayEquals(expected, b);
+    }
+
+    @Test
+    @Disabled("Test to be enabled only when BooleanDataType deprecated handling is removed")
+    public void testNumericCmdFalseCaseSensitive() {
+        assertThrows(ErrorInCommand.class, () -> {
+            MetaCommand mc = mdb.getMetaCommand("/Booleans/command1");
+            Map<String, Object> args = new HashMap<>();
+
+            args.put("bool1", "false");
+            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        });
     }
 
     @Test

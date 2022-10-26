@@ -3,7 +3,7 @@ package org.yamcs.parameterarchive;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,10 +33,10 @@ public class ArrayAndAggregatesTest {
 
     @BeforeEach
     public void openDb() throws Exception {
-        String dbroot = YarchDatabase.getInstance(instance).getRoot();
-        FileUtils.deleteRecursivelyIfExists(Paths.get(dbroot));
-        FileUtils.deleteRecursivelyIfExists(Paths.get(dbroot + ".rdb"));
-        FileUtils.deleteRecursivelyIfExists(Paths.get(dbroot + ".tbs"));
+        Path dbroot = Path.of(YarchDatabase.getDataDir(), instance);
+        FileUtils.deleteRecursivelyIfExists(dbroot);
+        FileUtils.deleteRecursivelyIfExists(Path.of(dbroot + ".rdb"));
+        FileUtils.deleteRecursivelyIfExists(Path.of(dbroot + ".tbs"));
         RdbStorageEngine rse = RdbStorageEngine.getInstance();
         if (rse.getTablespace(instance) != null) {
             rse.dropTablespace(instance);

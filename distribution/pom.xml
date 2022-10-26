@@ -14,20 +14,6 @@
     <dependency>
       <groupId>org.rocksdb</groupId>
       <artifactId>rocksdbjni</artifactId>
-      <version>${rocksdbVersion}</version>
-      <classifier>linux64</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.rocksdb</groupId>
-      <artifactId>rocksdbjni</artifactId>
-      <version>${rocksdbVersion}</version>
-      <classifier>osx</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.rocksdb</groupId>
-      <artifactId>rocksdbjni</artifactId>
-      <version>${rocksdbVersion}</version>
-      <classifier>win64</classifier>
     </dependency>
     <dependency>
       <groupId>org.yamcs</groupId>
@@ -79,8 +65,12 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
             <executions>
+              <!-- Unpack rocksdbjni fat jar.
+                   This effectively excludes the jar as a
+                   Maven dependency too, so its automatically
+                   gets excluded from maven assemblies. -->
               <execution>
-                <id>unpack-rocksdbjni-linux64</id>
+                <id>unpack-rocksdbjni</id>
                 <phase>package</phase>
                 <goals>
                   <goal>unpack</goal>
@@ -90,16 +80,7 @@
                     <artifactItem>
                       <groupId>org.rocksdb</groupId>
                       <artifactId>rocksdbjni</artifactId>
-                      <classifier>linux64</classifier>
-                      <outputDirectory>target/rocksdbjni-repack/linux-aarch64</outputDirectory>
-                      <excludes>librocksdbjni-linux64.so,librocksdbjni-linux-ppc64le.so</excludes>
-                    </artifactItem>
-                    <artifactItem>
-                      <groupId>org.rocksdb</groupId>
-                      <artifactId>rocksdbjni</artifactId>
-                      <classifier>linux64</classifier>
-                      <outputDirectory>target/rocksdbjni-repack/linux-x86_64</outputDirectory>
-                      <excludes>librocksdbjni-linux-aarch64.so,librocksdbjni-linux-ppc64le.so</excludes>
+                      <outputDirectory>target/rocksdbjni-${rocksdbVersion}</outputDirectory>
                     </artifactItem>
                   </artifactItems>
                 </configuration>
@@ -110,34 +91,34 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-assembly-plugin</artifactId>
             <executions>
+              <!--
+                Create a rocksdbjni jar that excludes
+                classpath native libraries.
+               -->
               <execution>
-                <id>pack-rocksdbjni-linux-aarch64</id>
+                <id>pack-rocksdbjni-java</id>
                 <phase>package</phase>
                 <goals>
                   <goal>single</goal>
                 </goals>
                 <configuration>
                   <descriptors>
-                    <descriptor>rocksdbjni-linux-aarch64.descriptor.xml</descriptor>
+                    <descriptor>rocksdbjni-java.descriptor.xml</descriptor>
                   </descriptors>
-                  <finalName>rocksdbjni-linux-aarch64</finalName>
+                  <finalName>rocksdbjni-${rocksdbVersion}</finalName>
                   <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
               </execution>
-              <execution>
-                <id>pack-rocksdbjni-linux-x86_64</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>single</goal>
-                </goals>
-                <configuration>
-                  <descriptors>
-                    <descriptor>rocksdbjni-linux-x86_64.descriptor.xml</descriptor>
-                  </descriptors>
-                  <finalName>rocksdbjni-linux-x86_64</finalName>
-                  <appendAssemblyId>false</appendAssemblyId>
-                </configuration>
-              </execution>
+              <!--
+                Make OS-specific Yamcs distributions, each
+                containing only the applicable rocksdbjni
+                native library.
+
+                The library is deployed to lib (must be added to
+                java.library.path, and is loaded by a static
+                initializer in the RocksDB class using the call
+                System.loadLibrary("rocksdbjni");
+               -->
               <execution>
                 <id>yamcs-assembly</id>
                 <phase>package</phase>

@@ -77,7 +77,7 @@ Algorithms with windowed parameters will only trigger as soon as each of these p
 JavaScript algorithms
 ---------------------
 
-The JavaScript algorithms are executed by the Nashorn engine. The engine is builtin the JDK versions 8 to 14; (it has been deprecated starting with Java 15 - should be replaced with one provided by the GraalVM project but this has not been tested).
+The JavaScript algorithms are executed by the Nashorn engine.
 
 The algorithm text is expected to contain the full function body. The body will be encapsulated in a javascript function like:
 

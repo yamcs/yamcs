@@ -40,6 +40,7 @@ import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.BinaryParameterType;
 import org.yamcs.xtce.BooleanArgumentType;
 import org.yamcs.xtce.BooleanDataEncoding;
+import org.yamcs.xtce.BooleanDataType;
 import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.CheckWindow;
@@ -1690,7 +1691,14 @@ public class V6Loader extends V6LoaderBase {
         if (hasColumn(cells, IDX_CMD_DEFVALUE)) {
             String v = cells[IDX_CMD_DEFVALUE].getContents();
             try {
-                arg.setInitialValue(atype.build().convertType(v));
+                if (atype instanceof BooleanArgumentType.Builder) {
+                    if ("true".equalsIgnoreCase(v)) {
+                        v = BooleanDataType.DEFAULT_ONE_STRING_VALUE;
+                    } else if ("false".equalsIgnoreCase(v)) {
+                        v = BooleanDataType.DEFAULT_ZERO_STRING_VALUE;
+                    }
+                    arg.setInitialValue(atype.build().convertType(v));
+                }
             } catch (Exception e) {
                 throw new SpreadsheetLoadException(ctx, "Cannot parse default value '" + v + "'");
             }

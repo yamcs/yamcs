@@ -26,6 +26,7 @@ import org.yamcs.parameter.ParameterCacheConfig;
 import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.protobuf.ServiceState;
+import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
@@ -83,6 +84,7 @@ public class Processor extends AbstractService {
 
     private String creator = "system";
     private boolean persistent = false;
+    private boolean protected_ = false;
 
     final Log log;
     static Set<ProcessorListener> listeners = new CopyOnWriteArraySet<>(); // send notifications for added and removed
@@ -326,13 +328,28 @@ public class Processor extends AbstractService {
     }
 
     public void seek(long instant) {
+        seek(instant, true);
+    }
+
+    public void seek(long instant, boolean autostart) {
         getTmProcessor().resetStatistics();
-        ((ArchiveTmPacketProvider) tmPacketProvider).seek(instant);
+        ((ArchiveTmPacketProvider) tmPacketProvider).seek(instant, autostart);
         propagateProcessorStateChange();
     }
 
     public void changeSpeed(ReplaySpeed speed) {
         ((ArchiveTmPacketProvider) tmPacketProvider).changeSpeed(speed);
+        propagateProcessorStateChange();
+    }
+
+    public void changeRange(long start, long stop) {
+        ((ArchiveTmPacketProvider) tmPacketProvider).changeRange(start, stop);
+        ((ArchiveTmPacketProvider) tmPacketProvider).seek(start, false);
+        propagateProcessorStateChange();
+    }
+
+    public void changeEndAction(EndAction endAction) {
+        ((ArchiveTmPacketProvider) tmPacketProvider).changeEndAction(endAction);
         propagateProcessorStateChange();
     }
 
@@ -429,6 +446,17 @@ public class Processor extends AbstractService {
         this.persistent = systemSession;
     }
 
+    /**
+     * Returns if this processor is protected. A protected processor may not be deleted.
+     */
+    public boolean isProtected() {
+        return protected_;
+    }
+
+    public void setProtected(boolean protected_) {
+        this.protected_ = protected_;
+    }
+
     public boolean isSynchronous() {
         return synchronous;
     }
@@ -465,6 +493,10 @@ public class Processor extends AbstractService {
      */
     public ReplayState getReplayState() {
         return ((ArchiveTmPacketProvider) tmPacketProvider).getReplayState();
+    }
+
+    public ReplayRequest getCurrentReplayRequest() {
+        return ((ArchiveTmPacketProvider) tmPacketProvider).getCurrentReplayRequest();
     }
 
     public ServiceState getState() {

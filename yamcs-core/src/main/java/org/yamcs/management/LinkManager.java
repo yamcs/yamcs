@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
@@ -32,9 +33,13 @@ import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.protobuf.links.LinkActionInfo;
 import org.yamcs.protobuf.links.LinkInfo;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.Link;
+import org.yamcs.tctm.LinkAction;
+import org.yamcs.tctm.LinkAction.ActionStyle;
+import org.yamcs.tctm.LinkActionProvider;
 import org.yamcs.tctm.ParameterDataLink;
 import org.yamcs.tctm.StreamPbParameterSender;
 import org.yamcs.tctm.TcDataLink;
@@ -77,6 +82,7 @@ public class LinkManager {
     List<LinkWithInfo> links = new CopyOnWriteArrayList<>();
     final CommandHistoryPublisher cmdHistPublisher;
     Map<Stream, TcStreamSubscriber> tcStreamSubscribers = new HashMap<>();
+    Set<Link> linksWithChanges = ConcurrentHashMap.newKeySet();
 
     public LinkManager(String instanceName) throws InitException {
         this.yamcsInstance = instanceName;
@@ -106,16 +112,7 @@ public class LinkManager {
 
     private void createDataLink(YConfiguration linkConfig) throws IOException {
         String className = linkConfig.getString("class");
-        YConfiguration args = null;
         String linkName = linkConfig.getString("name");
-        if (linkConfig.containsKey("args")) {
-            args = linkConfig.getConfig("args");
-            log.warn(
-                    "Deprecation warning: the 'args' parameter in the link {} configuration is deprecated; please move all properties one level up",
-                    linkName);
-            mergeConfig(linkConfig, args);
-        }
-
         if (linksByName.containsKey(linkName)) {
             throw new ConfigurationException(
                     "Instance " + yamcsInstance + ": there is already a link named '" + linkName + "'");
@@ -151,16 +148,6 @@ public class LinkManager {
             link = YObjectLoader.loadObject(linkClass, yamcsInstance, linkName, linkConfig);
         }
         return link;
-    }
-
-    private void mergeConfig(YConfiguration linkConfig, YConfiguration args) {
-        for (String k : args.getKeys()) {
-            if (linkConfig.containsKey(k)) {
-                throw new ConfigurationException(linkConfig, "key '" + k
-                        + "' present both in link config and args; these two are merged together and this is not allowed");
-            }
-            linkConfig.getRoot().put(k, args.get(k));
-        }
     }
 
     void configureDataLink(Link link, YConfiguration linkArgs) {
@@ -317,10 +304,14 @@ public class LinkManager {
         });
         linksByName.forEach((name, link) -> {
             if (link instanceof Service) {
-                log.debug("Awaiting termination of link {}", link.getName());
+                log.info("Awaiting termination of link {}", link.getName());
                 ServiceUtil.awaitServiceTerminated((Service) link, YamcsServer.SERVICE_STOP_GRACE_TIME, log);
             }
         });
+    }
+
+    public void notifyChanged(Link link) {
+        linksWithChanges.add(link);
     }
 
     private void checkLinkUpdate() {
@@ -469,7 +460,8 @@ public class LinkManager {
         boolean hasChanged() {
             try {
                 String prevDetailedStatus = linkInfo.hasDetailedStatus() ? linkInfo.getDetailedStatus() : null;
-                if (!linkInfo.getStatus().equals(link.getLinkStatus().name())
+                if (linksWithChanges.remove(link)
+                        || !linkInfo.getStatus().equals(link.getLinkStatus().name())
                         || linkInfo.getDisabled() != link.isDisabled()
                         || linkInfo.getDataInCount() != link.getDataInCount()
                         || linkInfo.getDataOutCount() != link.getDataOutCount()
@@ -484,6 +476,12 @@ public class LinkManager {
                     if (ds != null) {
                         lib.setDetailedStatus(ds);
                     }
+                    if (link instanceof LinkActionProvider) {
+                        lib.clearActions();
+                        for (LinkAction action : ((LinkActionProvider) link).getActions()) {
+                            lib.addActions(toLinkActionInfo(action));
+                        }
+                    }
                     linkInfo = lib.build();
                     return true;
                 } else {
@@ -493,6 +491,18 @@ public class LinkManager {
                 log.error("Error checking link status for {}", link.getName(), e);
                 return false;
             }
+        }
+
+        private LinkActionInfo toLinkActionInfo(LinkAction linkAction) {
+            LinkActionInfo.Builder b = LinkActionInfo.newBuilder()
+                    .setId(linkAction.getId())
+                    .setLabel(linkAction.getLabel())
+                    .setStyle(linkAction.getStyle().name())
+                    .setEnabled(linkAction.isEnabled());
+            if (linkAction.getStyle() == ActionStyle.CHECK_BOX) {
+                b.setChecked(linkAction.isChecked());
+            }
+            return b.build();
         }
 
         public Link getLink() {
@@ -547,5 +557,4 @@ public class LinkManager {
             log.debug("Stream {} closed", s.getName());
         }
     }
-
 }

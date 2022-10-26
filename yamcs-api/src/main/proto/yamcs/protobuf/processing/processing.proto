@@ -282,6 +282,15 @@ message EditProcessorRequest {
   // * a speed factor relative to the original speed. Example: ``2x``
   // * a fixed delay value in milliseconds. Example: ``2000``
   optional string speed = 5;
+
+  // New start time
+  optional google.protobuf.Timestamp start = 6;
+
+  // New stop time
+  optional google.protobuf.Timestamp stop = 7;
+
+  // Continue replaying from ``start`` after having reached ``stop``.
+  optional bool loop = 8;
 }
 
 message GetParameterValueRequest {

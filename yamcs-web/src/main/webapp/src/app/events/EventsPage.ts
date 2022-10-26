@@ -127,11 +127,19 @@ export class EventsPage {
           {
             id: source,
             label: source,
-          }]);
+          },
+        ]);
       }
     });
 
     this.dataSource = new EventsDataSource(yamcs, synchronizer);
+
+    // Add new sources to source filter
+    this.dataSource.sources$.subscribe(sources => {
+      this.sourceOptions$.next(sources.map(source => {
+        return { id: source, label: source };
+      }));
+    });
 
     this.initializeOptions();
     this.loadData();

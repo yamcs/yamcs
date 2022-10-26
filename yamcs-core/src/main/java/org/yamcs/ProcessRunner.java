@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -66,6 +67,7 @@ public class ProcessRunner extends AbstractYamcsService {
         spec.addOption("successExitCode", OptionType.LIST_OR_ELEMENT)
                 .withElementType(OptionType.INTEGER)
                 .withDefault(0);
+        spec.addOption("environment", OptionType.MAP).withSpec(Spec.ANY);
         return spec;
     }
 
@@ -81,6 +83,13 @@ public class ProcessRunner extends AbstractYamcsService {
 
         pb.redirectErrorStream(true);
         pb.environment().put("YAMCS", "1");
+
+        if (config.containsKey("environment")) {
+            Map<String, Object> map = config.getMap("environment");
+            for (var entry : map.entrySet()) {
+                pb.environment().put(entry.getKey(), "" + entry.getValue());
+            }
+        }
 
         if (config.containsKey("directory")) {
             pb.directory(new File(config.getString("directory")));
@@ -101,9 +110,10 @@ public class ProcessRunner extends AbstractYamcsService {
             return;
         }
 
-        ScheduledExecutorService exec = YamcsServer.getServer().getThreadPoolExecutor();
+        YamcsServer yamcs = YamcsServer.getServer();
+        ScheduledExecutorService exec = yamcs.getThreadPoolExecutor();
         watchdog = exec.scheduleWithFixedDelay(() -> {
-            if (!process.isAlive() && isRunning()) {
+            if (!process.isAlive() && isRunning() && !yamcs.isShuttingDown()) {
                 int code = process.exitValue();
 
                 boolean restart = false;
@@ -141,7 +151,7 @@ public class ProcessRunner extends AbstractYamcsService {
 
         // Start a thread for reading process output. The thread lifecycle is linked to the process.
         new Thread(() -> {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            try (var reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 reader.lines().forEach(line -> {
                     line = CharMatcher.whitespace().trimTrailingFrom(line);
                     switch (logLevel) {
@@ -165,7 +175,7 @@ public class ProcessRunner extends AbstractYamcsService {
             } catch (IOException e) {
                 log.error("Exception while gobbling process output", e);
             }
-        }).start();
+        }, getClass().getSimpleName() + " Gobbler").start();
     }
 
     protected void onProcessOutput(String line) {

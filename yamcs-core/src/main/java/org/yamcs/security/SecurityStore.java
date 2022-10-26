@@ -26,6 +26,11 @@ public class SecurityStore {
     private static final Log log = new Log(SecurityStore.class);
 
     /**
+     * Whether authorization is checked.
+     */
+    private boolean enabled;
+
+    /**
      * Baked-in user for system operations. Not manageable through a directory, not available for login.
      */
     private User systemUser;
@@ -73,6 +78,7 @@ public class SecurityStore {
         } catch (ValidationException e) {
             throw new InitException(e);
         }
+        enabled = config.getBoolean("enabled");
 
         // Create the system and guest user. These are not stored in the directory,
         // and can not be used to log in directly.
@@ -126,7 +132,7 @@ public class SecurityStore {
         guestUser.setId(2);
         guestUser.setDisplayName(guestConfig.getString("displayName", username));
         guestUser.setSuperuser(guestConfig.getBoolean("superuser"));
-        guestUser.setActive(!config.getBoolean("enabled"));
+        guestUser.setActive(!enabled);
         if (guestConfig.containsKey("privileges")) {
             YConfiguration privilegeConfigs = guestConfig.getConfig("privileges");
             for (String privilegeName : privilegeConfigs.getKeys()) {
@@ -194,6 +200,13 @@ public class SecurityStore {
         objectPrivilegeTypes.add(ObjectPrivilegeType.ReadParameter);
         objectPrivilegeTypes.add(ObjectPrivilegeType.Stream);
         objectPrivilegeTypes.add(ObjectPrivilegeType.WriteParameter);
+    }
+
+    /**
+     * Returns true if security features are activated.
+     */
+    public boolean isEnabled() {
+        return enabled;
     }
 
     public void addSystemPrivilege(SystemPrivilege privilege) {

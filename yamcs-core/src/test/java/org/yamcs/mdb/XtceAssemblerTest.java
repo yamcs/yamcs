@@ -11,6 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -19,8 +20,6 @@ import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
-import org.yamcs.mdb.XtceAssembler;
-import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Container;
 import org.yamcs.xtce.MetaCommand;
@@ -65,7 +64,7 @@ public class XtceAssemblerTest {
         String xml = new XtceAssembler().toXtce(db1);
         File f = File.createTempFile("test1", ".xml");
 
-        try (FileWriter fw = new FileWriter(f)) {
+        try (FileWriter fw = new FileWriter(f, StandardCharsets.UTF_8)) {
             fw.write(xml);
         }
 

@@ -13,7 +13,7 @@ import org.rocksdb.RocksDB;
 import org.yamcs.security.Directory;
 import org.yamcs.security.User;
 import org.yamcs.utils.FileUtils;
-import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 
 public class UsersCliTest extends AbstractCliTest {
     static Path etcdata;
@@ -26,12 +26,12 @@ public class UsersCliTest extends AbstractCliTest {
 
     @AfterAll
     public static void cleanup() throws IOException {
+        RdbStorageEngine.getInstance().shutdown();
         FileUtils.deleteRecursively(etcdata);
     }
 
     @Test
     public void test1() throws Exception {
-        System.out.println("dataDir: " + YarchDatabase.getDataDir());
         YamcsAdminCli yamcsCli = new YamcsAdminCli();
 
         Directory directory = new Directory();
@@ -65,7 +65,6 @@ public class UsersCliTest extends AbstractCliTest {
         // make a new directory to read the users from the rocksdb database
         directory = new Directory();
         assertTrue(directory.validateUserPassword("test1", password));
-
     }
 
     @Test

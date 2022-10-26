@@ -26,6 +26,9 @@ export class FloatArgument implements ControlValueAccessor, OnInit, Validator, O
   name: string;
 
   @Input()
+  description?: string;
+
+  @Input()
   type: ArgumentType;
 
   @Input()

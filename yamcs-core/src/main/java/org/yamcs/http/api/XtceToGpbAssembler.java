@@ -740,6 +740,7 @@ public class XtceToGpbAssembler {
 
             if (parameterType instanceof IntegerParameterType) {
                 IntegerParameterType ipt = (IntegerParameterType) parameterType;
+                infob.setSigned(ipt.isSigned());
                 if (ipt.getDefaultAlarm() != null) {
                     infob.setDefaultAlarm(toAlarmInfo(ipt.getDefaultAlarm()));
                 }

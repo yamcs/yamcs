@@ -8,6 +8,8 @@ option java_multiple_files = true;
 
 import "yamcs/api/annotations.proto";
 
+import "google/protobuf/struct.proto";
+
 
 service LinksApi {
   // List links
@@ -61,6 +63,18 @@ service LinksApi {
   rpc SubscribeLinks(SubscribeLinksRequest) returns (stream LinkEvent) {
     option (yamcs.api.websocket) = {
       topic: "links"
+    };
+  }
+
+  // Run a link-specific action.
+  //
+  // It is up to the link implementation to register and handle
+  // any link actions.
+  rpc RunAction(RunActionRequest) returns (google.protobuf.Struct) {
+    option (yamcs.api.route) = {
+      post: "/api/links/{instance}/{link}/actions/{action}"
+      body: "message"
+      log: "Action '{action}' performed on link '{link}'"
     };
   }
 }
@@ -118,6 +132,20 @@ message EditLinkRequest {
   optional bool resetCounters = 2;
 }
 
+message RunActionRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Link name.
+  optional string link = 2;
+
+  // Action name.
+  optional string action = 3;
+
+  // Action message.
+  optional google.protobuf.Struct message = 4;
+}
+
 message LinkEvent {
   enum Type {
     // A new link was registered. You also receive this event directly after you subscribe,
@@ -151,4 +179,15 @@ message LinkInfo {
 
   //if this is a sublink of an aggregated data link, this is the name of the parent
   optional string parentName = 12;
+
+  // Custom actions
+  repeated LinkActionInfo actions = 13;
+}
+
+message LinkActionInfo {
+  optional string id = 1;
+  optional string label = 2;
+  optional string style = 3;
+  optional bool enabled = 4;
+  optional bool checked = 5;
 }

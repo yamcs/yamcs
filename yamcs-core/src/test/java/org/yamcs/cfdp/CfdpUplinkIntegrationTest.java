@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -65,7 +64,7 @@ public class CfdpUplinkIntegrationTest {
     @BeforeAll
     public static void beforeClass() throws Exception {
         EventProducerFactory.setMockup(false);
-        Path dataDir = Paths.get("/tmp/yamcs-cfdp-data");
+        Path dataDir = Path.of(System.getProperty("java.io.tmpdir"), "yamcs-cfdp-data");
         FileUtils.deleteRecursivelyIfExists(dataDir);
         YConfiguration.setupTest("cfdp");
         YamcsServer.getServer().prepareStart();

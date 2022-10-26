@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -45,9 +46,9 @@ import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.util.ArgumentReference;
 import org.yamcs.xtce.util.NameReference;
+import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.util.ReferenceFinder;
 import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
-import org.yamcs.xtce.util.NameReference.Type;
 
 public class XtceDbFactory {
 
@@ -131,8 +132,11 @@ public class XtceDbFactory {
             try {
                 db = loadSerializedInstance(serializedFile);
                 serializedLoaded = true;
+            } catch (InvalidClassException e) {
+                log.debug("Cannot load serialized database: " + e.getMessage());
+                db = null;
             } catch (Exception e) {
-                log.info("Cannot load serialized database", e);
+                log.warn("Cannot load serialized database", e);
                 db = null;
             }
         }
@@ -503,12 +507,6 @@ public class XtceDbFactory {
                 instance2Db.put(yamcsInstance, db);
             } else if (instanceConfig.isList("mdb")) {
                 db = createInstance(instanceConfig.getConfigList("mdb"), true, true);
-                instance2Db.put(yamcsInstance, db);
-            } else {
-                log.warn(String.format(
-                        "DEPRECATION: [yamcs.%s.yaml] Use 'mdbSpec' instead of 'mdb' if the value refers to an entry in mdb.yaml",
-                        yamcsInstance));
-                db = getInstanceByConfig(yamcsInstance, instanceConfig.getString("mdb"));
                 instance2Db.put(yamcsInstance, db);
             }
         }

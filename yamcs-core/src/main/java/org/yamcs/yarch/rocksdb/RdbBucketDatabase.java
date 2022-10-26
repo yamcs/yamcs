@@ -133,4 +133,7 @@ public class RdbBucketDatabase implements BucketDatabase {
         }
     }
 
+    public Tablespace getTablespace() {
+        return tablespace;
+    }
 }

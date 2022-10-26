@@ -5,6 +5,7 @@ import org.yamcs.YamcsServerInstance;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
+import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.audit.AuditLog;
 import org.yamcs.management.LinkListener;
@@ -19,8 +20,17 @@ import org.yamcs.protobuf.links.LinkInfo;
 import org.yamcs.protobuf.links.ListLinksRequest;
 import org.yamcs.protobuf.links.ListLinksResponse;
 import org.yamcs.protobuf.links.ResetLinkCountersRequest;
+import org.yamcs.protobuf.links.RunActionRequest;
 import org.yamcs.protobuf.links.SubscribeLinksRequest;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.tctm.LinkActionProvider;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Struct;
+import com.google.protobuf.util.JsonFormat;
 
 public class LinksApi extends AbstractLinksApi<Context> {
 
@@ -196,6 +206,48 @@ public class LinksApi extends AbstractLinksApi<Context> {
 
         linkInfo = lmgr.getLinkInfo(request.getLink());
         observer.complete(linkInfo);
+    }
+
+    @Override
+    public void runAction(Context ctx, RunActionRequest request, Observer<Struct> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlLinks);
+        verifyLink(request.getInstance(), request.getLink());
+
+        Gson gson = new Gson();
+        JsonObject actionMessage = null;
+        try {
+            String json = JsonFormat.printer().print(request.getMessage());
+            actionMessage = gson.fromJson(json, JsonElement.class).getAsJsonObject();
+        } catch (InvalidProtocolBufferException e) {
+            // Should not happen, it's already been converted from JSON through transcoding
+            throw new InternalServerErrorException(e);
+        }
+
+        var linkManager = ManagementApi.verifyInstanceObj(request.getInstance()).getLinkManager();
+        var link = linkManager.getLink(request.getLink());
+
+        if (link instanceof LinkActionProvider) {
+            var action = ((LinkActionProvider) link).getAction(request.getAction());
+            if (action != null) {
+                JsonElement response = action.execute(link, actionMessage);
+                if (response == null) {
+                    observer.next(Struct.getDefaultInstance());
+                    return;
+                } else {
+                    var json = response.toString();
+                    var responseb = Struct.newBuilder();
+                    try {
+                        JsonFormat.parser().merge(json, responseb);
+                    } catch (InvalidProtocolBufferException e) {
+                        throw new InternalServerErrorException(e);
+                    }
+                    observer.next(responseb.build());
+                    return;
+                }
+            }
+        }
+
+        throw new BadRequestException("Unknown action '" + request.getAction() + "'");
     }
 
     public static LinkInfo verifyLink(String instance, String linkName) {

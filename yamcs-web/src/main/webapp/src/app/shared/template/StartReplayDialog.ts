@@ -44,6 +44,7 @@ export class StartReplayDialog {
   start() {
     const replayConfig: { [key: string]: any; } = {
       start: utils.toISOString(this.form.value.start),
+      endAction: 'STOP',
     };
     if (this.form.value.stop) {
       replayConfig.stop = utils.toISOString(this.form.value.stop);

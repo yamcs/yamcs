@@ -6,6 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.yamcs.xtce.ANDedConditions;
+import org.yamcs.xtce.BooleanDataType;
 import org.yamcs.xtce.BooleanExpression;
 import org.yamcs.xtce.Comparison;
 import org.yamcs.xtce.ComparisonList;
@@ -183,6 +184,10 @@ public class ConditionParser {
             if ((rValue.startsWith("\"") || rValue.startsWith("”")) &&
                     (rValue.endsWith("\"") || rValue.endsWith("”"))) {
                 rValue = rValue.substring(1, rValue.length() - 1);
+            } else if ("true".equalsIgnoreCase(rValue)) {
+                rValue = BooleanDataType.DEFAULT_ONE_STRING_VALUE;
+            } else if ("false".equalsIgnoreCase(rValue)) {
+                rValue = BooleanDataType.DEFAULT_ZERO_STRING_VALUE;
             }
             cond = new Condition(OperatorType.fromSymbol(op), lParamRef, rValue);
         }
@@ -229,6 +234,10 @@ public class ConditionParser {
         if ((value.startsWith("\"") || value.startsWith("”")) &&
                 (value.endsWith("\"") || value.endsWith("”"))) {
             value = value.substring(1, value.length() - 1);
+        } else if ("true".equalsIgnoreCase(value)) {
+            value = BooleanDataType.DEFAULT_ONE_STRING_VALUE;
+        } else if ("false".equalsIgnoreCase(value)) {
+            value = BooleanDataType.DEFAULT_ZERO_STRING_VALUE;
         }
         if ("=".equals(op)) {
             op = "==";

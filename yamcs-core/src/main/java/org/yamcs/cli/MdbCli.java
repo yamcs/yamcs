@@ -57,14 +57,20 @@ public class MdbCli extends Command {
             YConfiguration.setupTool();
             XtceDb xtcedb = getMdb(args.get(0));
             xtcedb.print(new PrintStream(System.err) {
+
                 @Override
                 public void print(String x) {
                     console.print(x);
                 }
 
                 @Override
-                public void println(Object x) {
-                    console.println(String.valueOf(x));
+                public void println() {
+                    console.println("");
+                }
+
+                @Override
+                public void println(String x) {
+                    console.println(x);
                 }
             });
         }

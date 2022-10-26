@@ -58,6 +58,7 @@ import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.BinaryParameterType;
 import org.yamcs.xtce.BooleanArgumentType;
 import org.yamcs.xtce.BooleanDataEncoding;
+import org.yamcs.xtce.BooleanDataType;
 import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.CheckWindow;
@@ -802,6 +803,13 @@ public class V7Loader extends V7LoaderBase {
             param.setDataSource(dataSource);
             if (hasColumn(cells, CN_PARAM_INITVALUE)) {
                 String initValue = getContent(cells, CN_PARAM_INITVALUE);
+                if (ptype instanceof BooleanParameterType) {
+                    if ("true".equalsIgnoreCase(initValue)) {
+                        initValue = BooleanParameterType.DEFAULT_ONE_STRING_VALUE;
+                    } else if ("false".equalsIgnoreCase(initValue)) {
+                        initValue = BooleanParameterType.DEFAULT_ZERO_STRING_VALUE;
+                    }
+                }
                 param.setInitialValue(ptype.convertType(initValue));
             }
 
@@ -1608,6 +1616,15 @@ public class V7Loader extends V7LoaderBase {
 
         if (hasColumn(cells, CN_CMD_DEFVALUE)) {
             String v = getContent(cells, CN_CMD_DEFVALUE);
+
+            // Allow Excel true/false to be case-insensitive
+            if (atype instanceof BooleanArgumentType) {
+                if ("true".equalsIgnoreCase(v)) {
+                    v = BooleanDataType.DEFAULT_ONE_STRING_VALUE;
+                } else if ("false".equalsIgnoreCase(v)) {
+                    v = BooleanDataType.DEFAULT_ZERO_STRING_VALUE;
+                }
+            }
             arg.setInitialValue(atype.convertType(v));
         }
 
@@ -2387,13 +2404,13 @@ public class V7Loader extends V7LoaderBase {
                 if (reportType != AlarmType.DEFAULT_REPORT_TYPE) {
                     ipt.createOrGetAlarm(context).setAlarmReportType(reportType);
                 }
-            } else if (ptypeb instanceof FloatParameterType) {
+            } else if (ptypeb instanceof FloatParameterType.Builder) {
                 FloatParameterType.Builder fpt = (FloatParameterType.Builder) ptypeb;
                 alarm = (context == null) ? fpt.getDefaultAlarm() : fpt.getNumericContextAlarm(context);
                 if (reportType != AlarmType.DEFAULT_REPORT_TYPE) {
                     fpt.createOrGetAlarm(context).setAlarmReportType(reportType);
                 }
-            } else if (ptypeb instanceof EnumeratedParameterType) {
+            } else if (ptypeb instanceof EnumeratedParameterType.Builder) {
                 EnumeratedParameterType.Builder ept = (EnumeratedParameterType.Builder) ptypeb;
                 alarm = (context == null) ? ept.getDefaultAlarm() : ept.getContextAlarm(context);
                 if (reportType != AlarmType.DEFAULT_REPORT_TYPE) {

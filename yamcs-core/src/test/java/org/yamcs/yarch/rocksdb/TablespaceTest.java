@@ -4,8 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -26,16 +27,16 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition;
 import com.google.protobuf.ByteString;
 
 public class TablespaceTest {
-    static String testDir = "/tmp/TablespaceTest";
+    static Path testDir = Path.of(System.getProperty("java.io.tmpdir"), "TablespaceTest");
 
     @BeforeEach
     public void cleanup() throws Exception {
-        FileUtils.deleteRecursivelyIfExists(Paths.get(testDir));
+        FileUtils.deleteRecursivelyIfExists(testDir);
     }
 
     @Test
     public void test1() throws Exception {
-        String dir = testDir + "/tablespace1";
+        String dir = testDir + File.separator + "tablespace1";
         Tablespace tablespace = new Tablespace("tablespace1");
         tablespace.setCustomDataDir(dir);
         tablespace.loadDb(false);
@@ -58,8 +59,8 @@ public class TablespaceTest {
         tablespace2.loadDb(false);
         verify1(tablespace2, tbl3p1, tbl3p2);
         assertEquals(5, tablespace2.maxTbsIndex);
+        tablespace2.close();
     }
-
 
     private void verify1(Tablespace tablespace, byte[] tbl3p1, byte[] tbl3p2) throws RocksDBException, IOException {
         List<TablespaceRecord> l = tablespace.getTablePartitions("inst", "tbl1");
@@ -99,7 +100,7 @@ public class TablespaceTest {
 
     @Test
     public void test2() throws Exception {
-        String dir = testDir + "/tablespace2";
+        String dir = testDir + File.separator + "tablespace2";
         Tablespace tablespace = new Tablespace("tablespace2");
         tablespace.setCustomDataDir(dir);
         tablespace.loadDb(false);
@@ -113,6 +114,7 @@ public class TablespaceTest {
         Tablespace tablespace2 = new Tablespace("tablespace2");
         tablespace2.setCustomDataDir(dir);
         tablespace2.loadDb(false);
+        tablespace2.close();
     }
 
     private void verify2(Tablespace tablespace) throws Exception {
@@ -123,7 +125,6 @@ public class TablespaceTest {
         l = tablespace.getTableHistograms("inst", "tbl2");
         assertEquals(1, l.size());
         assertTrEquals2("inst", "tbl2", "col2", "/tmp", l.get(0));
-
     }
 
     private void assertTrEquals2(String expectedInstance, String expectedTable, String expectedColumnName,
@@ -142,7 +143,7 @@ public class TablespaceTest {
 
     @Test
     public void testRenameTable() throws Exception {
-        String dir = testDir + "/tablespace3";
+        String dir = testDir + File.separator + "tablespace3";
         Tablespace tablespace = new Tablespace("tablespace3");
         tablespace.setCustomDataDir(dir);
         tablespace.loadDb(false);
@@ -151,7 +152,7 @@ public class TablespaceTest {
         TableDefinition tblDef = new TableDefinition("tbl1", tupleDef, Arrays.asList("x"));
         tablespace.createTable("inst", tblDef);
         createTablePartitionRecord(tablespace, "inst", "tbl1", null, null);
-        
+
         tablespace.renameTable("inst", tblDef, "tbl2");
         assertEquals("tbl2", tblDef.getName());
         tablespace.close();

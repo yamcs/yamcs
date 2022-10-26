@@ -6,9 +6,20 @@
             color="primary"
             (click)="replayRange()"
             [disabled]="!(rangeSelection$ | async)">
-      <mat-icon>play_circle_filled</mat-icon>
+      <mat-icon>video_settings</mat-icon>
       REPLAY RANGE
     </button>
+
+    <ng-container *ngIf="processor$ | async as processor">
+      <button *ngIf="processor.replayRequest as replayRequest"
+              mat-button
+              color="primary"
+              (click)="enableLoop(processor, replayRequest.endAction !== 'LOOP')"
+              [disabled]="!replayRequest.start || !replayRequest.stop">
+        <mat-icon>{{ replayRequest.endAction === 'LOOP' ? 'repeat_on' : 'repeat' }}</mat-icon>
+        REPEAT: {{ replayRequest.endAction === 'LOOP' ? 'ON' : 'OFF' }}
+      </button>
+    </ng-container>
 
     <button mat-button
             color="primary"

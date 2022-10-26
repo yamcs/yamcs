@@ -484,15 +484,17 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
             for (AlarmServer<?, ?> alarmServer : alarmServers) {
                 for (ActiveAlarm<?> alarm : alarmServer.getActiveAlarms().values()) {
-                    if (alarm.isShelved()) {
-                        shelvedCount++;
-                        shelvedActive |= !alarm.isProcessOK();
-                    } else if (alarm.isAcknowledged()) {
-                        acknowledgedCount++;
-                        acknowledgedActive |= !alarm.isProcessOK();
-                    } else {
-                        unacknowledgedCount++;
-                        unacknowledgedActive |= !alarm.isProcessOK();
+                    if (alarm.isTriggered()) {
+                        if (alarm.isShelved()) {
+                            shelvedCount++;
+                            shelvedActive |= !alarm.isProcessOK();
+                        } else if (alarm.isAcknowledged()) {
+                            acknowledgedCount++;
+                            acknowledgedActive |= !alarm.isProcessOK();
+                        } else {
+                            unacknowledgedCount++;
+                            unacknowledgedActive |= !alarm.isProcessOK();
+                        }
                     }
                 }
             }

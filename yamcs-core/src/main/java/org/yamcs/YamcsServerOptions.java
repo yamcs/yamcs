@@ -31,6 +31,9 @@ public class YamcsServerOptions {
     @Parameter(names = "--data-dir", description = "Path to data directory", converter = PathConverter.class)
     Path dataDir;
 
+    @Parameter(names = "--cache-dir", description = "Path to cache directory", converter = PathConverter.class)
+    Path cacheDir;
+
     @Parameter(names = "--no-stream-redirect", description = "Do not redirect stdout/stderr to the log system")
     boolean noStreamRedirect;
 
@@ -55,6 +58,9 @@ public class YamcsServerOptions {
 
         String envDataDir = System.getenv("YAMCS_DATA_DIR");
         dataDir = (envDataDir != null) ? Path.of(envDataDir).toAbsolutePath() : null;
+
+        String envCacheDir = System.getenv("YAMCS_CACHE_DIR");
+        cacheDir = (envCacheDir != null) ? Path.of(envCacheDir).toAbsolutePath() : null;
     }
 
     // Keep public, required by JCommander
@@ -69,6 +75,17 @@ public class YamcsServerOptions {
                         "Unknown value for --netty-leak-detection. Possible values: "
                                 + Arrays.asList(ResourceLeakDetector.Level.values()));
             }
+        }
+    }
+
+    /**
+     * Convert a string into an absolute, normalized path.
+     */
+    public class AbsolutePathConverter implements IStringConverter<Path> {
+
+        @Override
+        public Path convert(String value) {
+            return Path.of(value).toAbsolutePath().normalize();
         }
     }
 }

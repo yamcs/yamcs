@@ -10,7 +10,7 @@ author = "Yamcs Team"
 version = yamcs_version_el.text
 release = version
 source_suffix = ".rst"
-language = None
+language = "en"
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 pygments_style = "sphinx"
 
@@ -19,6 +19,9 @@ extensions = [
     "sphinxcontrib.fulltoc",
     "sphinxcontrib.yamcs",
 ]
+
+# Force-disable conversion of -- to en-dash
+smartquotes = False
 
 extlinks = {
     "source": ("https://github.com/yamcs/yamcs/blob/master/%s", ""),

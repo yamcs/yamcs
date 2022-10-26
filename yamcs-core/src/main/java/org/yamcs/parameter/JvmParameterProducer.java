@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.UnitType;
 

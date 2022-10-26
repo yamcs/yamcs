@@ -368,4 +368,14 @@ public class SpecTest {
         assertNull(result.get("modules1"));
         assertNull(result.get("modules2")); // The "key" is specified, so default does not apply
     }
+
+    @Test
+    public void testRemoveOption() {
+        var spec = new Spec();
+        assertFalse(spec.containsOption("bla"));
+        spec.addOption("bla", OptionType.STRING);
+        assertTrue(spec.containsOption("bla"));
+        spec.removeOption("bla");
+        assertFalse(spec.containsOption("bla"));
+    }
 }

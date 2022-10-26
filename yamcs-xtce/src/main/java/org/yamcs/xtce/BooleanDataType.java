@@ -1,13 +1,18 @@
 package org.yamcs.xtce;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 
 public class BooleanDataType extends BaseDataType {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
+    private static final Logger log = LoggerFactory.getLogger(BooleanDataType.class);
+    public static final String DEFAULT_ONE_STRING_VALUE = "True";
+    public static final String DEFAULT_ZERO_STRING_VALUE = "False";
     Boolean initialValue;
 
-    String oneStringValue = "True";
-    String zeroStringValue = "False";
+    String oneStringValue = DEFAULT_ONE_STRING_VALUE;
+    String zeroStringValue = DEFAULT_ZERO_STRING_VALUE;
 
     protected BooleanDataType(Builder<?> builder) {
         super(builder);
@@ -49,9 +54,17 @@ public class BooleanDataType extends BaseDataType {
     public Boolean convertType(Object value) {
         if (value instanceof String) {
             String stringValue = (String) value;
-            if (oneStringValue.equalsIgnoreCase(stringValue)) {
+            if (oneStringValue.equals(stringValue)) {
+                return Boolean.TRUE;
+            } else if (zeroStringValue.equals(stringValue)) {
+                return Boolean.FALSE;
+            } else if (oneStringValue.equalsIgnoreCase(stringValue)) {
+                log.warn("DEPRECATION: Boolean conversion from string should use '{}' instead of '{}'. "
+                        + "This check will be enforced in a future release of Yamcs", oneStringValue, value);
                 return Boolean.TRUE;
             } else if (zeroStringValue.equalsIgnoreCase(stringValue)) {
+                log.warn("DEPRECATION: Boolean conversion from string should use '{}' instead of '{}'. "
+                        + "This check will be enforced in a future release of Yamcs", zeroStringValue, value);
                 return Boolean.FALSE;
             } else {
                 throw new IllegalArgumentException(

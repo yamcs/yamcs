@@ -27,6 +27,13 @@
     </span>
   </dd>
 
+  <ng-container *ngIf="ptype$ | async as ptype">
+    <ng-container *ngIf="ptype.signed !== undefined">
+      <dt>Signed</dt>
+      <dd>{{ ptype.signed }}</dd>
+    </ng-container>
+  </ng-container>
+
   <dt>Source</dt>
   <dd>{{ (parameter.dataSource | titlecase) || '-' }}</dd>
 
@@ -88,6 +95,11 @@
     </span>
   </dd>
 
+  <ng-container *ngIf="parameter.type?.signed !== undefined">
+    <dt>Signed</dt>
+    <dd>{{ parameter.type?.signed }}</dd>
+  </ng-container>
+
   <ng-container *ngIf="!offset">
     <dt>Source</dt>
     <dd>{{ (parameter.dataSource | titlecase) || '-' }}</dd>
@@ -132,7 +144,12 @@
             </span>
           </td>
           <td>{{ (parameter | entryForOffset:memberOffset)?.shortDescription || '-' }}</td>
-          <td>{{ value.aggregateValue!.value[i] | value }}</td>
+          <td>
+            {{ value.aggregateValue!.value[i] | value }}
+            <ng-container *ngIf="(parameter | entryForOffset:memberOffset)?.type?.unitSet as unitSet">
+              {{ unitSet | units }}
+            </ng-container>
+          </td>
         </ng-container>
       </tr>
     </table>
@@ -155,7 +172,9 @@
           <app-alarm-level [level]="pval.monitoringResult"></app-alarm-level>&nbsp;
         </ng-container>
         {{ value | value }}
-        <span *ngIf="parameter.type?.unitSet">{{ parameter.type?.unitSet | units }}</span>
+        <ng-container *ngIf="(parameter | parameterTypeForPath)?.unitSet as unitSet">
+          {{ unitSet | units }}
+        </ng-container>
       </app-expirable>
     </span>
     <br>

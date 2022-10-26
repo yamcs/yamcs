@@ -3,7 +3,7 @@ package org.yamcs.parameterarchive;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.ByteBuffer;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,14 +25,14 @@ public class TestStructure {
     int numSamplesPerBloc = 900; // number of samples per block
 
     int numBlocks = 30 * 24 * 3600 / numSamplesPerBloc; // 30 days of data
-    String path = "/tmp/testparamsinonecf";
+    Path path = Path.of(System.getProperty("java.io.tmpdir"), "testparamsinonecf");
     String datacf = "data";
 
     RocksDB rdb;
     ColumnFamilyHandle cfh;
 
     void populate() throws Exception {
-        rdb = RocksDB.open(path);
+        rdb = RocksDB.open(path.toString());
         ColumnFamilyOptions cfo = new ColumnFamilyOptions();
 
         cfo.optimizeLevelStyleCompaction();
@@ -62,7 +62,7 @@ public class TestStructure {
         cfdList.add(new ColumnFamilyDescriptor("default".getBytes()));
         ArrayList<ColumnFamilyHandle> cfhList = new ArrayList<>();
 
-        rdb = RocksDB.open(path, cfdList, cfhList);
+        rdb = RocksDB.open(path.toString(), cfdList, cfhList);
         cfh = cfhList.get(0);
         System.out.println("stats: " + rdb.getProperty(cfh, "rocksdb.stats"));
 
@@ -91,7 +91,7 @@ public class TestStructure {
                 it.next();
             }
             assertEquals(4 * numSamplesPerBloc * numBlocks, length);
-            it.dispose();
+            it.close();
         }
 
         rdb.close();
@@ -108,7 +108,7 @@ public class TestStructure {
     public void testAllParamsInOneCf() throws Exception {
         System.out.println("------------ numParams: " + numParams + " numBlocks: " + numBlocks + " numSamplesPerBloc: "
                 + numSamplesPerBloc);
-        FileUtils.deleteRecursivelyIfExists(Paths.get(path));
+        FileUtils.deleteRecursivelyIfExists(path);
 
         long t0 = System.currentTimeMillis();
         // populate();
@@ -130,7 +130,6 @@ public class TestStructure {
 
     byte[] key(int pid, long t) {
         return ByteBuffer.allocate(12).putInt(pid).putLong(t).array();
-
     }
 
     byte[] getBlock(int numSamplesPerBlock) {
@@ -147,10 +146,10 @@ public class TestStructure {
     @Test
     @Disabled
     public void testPlainTableVsHashMap() throws Exception {
-        String path = "/tmp/dbtest";
-        FileUtils.deleteRecursivelyIfExists(Paths.get(path));
+        Path path = Path.of(System.getProperty("java.io.tmpdir", "dbtest"));
+        FileUtils.deleteRecursivelyIfExists(path);
 
-        RocksDB db = RocksDB.open(path);
+        RocksDB db = RocksDB.open(path.toString());
         ColumnFamilyOptions cfo = new ColumnFamilyOptions();
         PlainTableConfig ptc = new PlainTableConfig();
         // ptc.setKeySize(keySize)
@@ -207,8 +206,8 @@ public class TestStructure {
                     s += bbv.getInt(0);
                 }
             }
-            System.out
-                    .println("s: " + s + " time to retrieve all from db:" + (System.currentTimeMillis() - t1) + " ms");
+            System.out.println(
+                    "s: " + s + " time to retrieve all from db:" + (System.currentTimeMillis() - t1) + " ms");
         }
     }
 }

@@ -20,15 +20,15 @@
     </fileSet>
   </fileSets>
 
-  <dependencySets>
-    <dependencySet>
+  <files>
+    <file>
+      <source>target/rocksdbjni-${rocksdbVersion}/librocksdbjni-osx.jnilib</source>
       <outputDirectory>lib</outputDirectory>
-      <useProjectArtifact>false</useProjectArtifact>
-      <useTransitiveDependencies>true</useTransitiveDependencies>
-      <useTransitiveFiltering>true</useTransitiveFiltering>
-      <includes>
-        <include>org.rocksdb:rocksdbjni:jar:osx</include>
-      </includes>
-    </dependencySet>
-  </dependencySets>
+      <!--
+        Named so that System.loadLibrary("rocksdbjni") can find it when lib
+        is added to java.library.path.
+      -->
+      <destName>librocksdbjni.dylib</destName>
+    </file>
+  </files>
 </assembly>

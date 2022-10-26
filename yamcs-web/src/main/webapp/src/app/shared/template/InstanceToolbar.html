@@ -24,12 +24,12 @@
             PAUSE REPLAY
           </button>
 
-          <button mat-button *ngIf="processor.replay && processor.replayState === 'PAUSED'"
+          <button mat-button *ngIf="processor.replay && (processor.replayState !== 'RUNNING')"
                   (menuOpened)="switchProcessorMenuOpened()"
                   color="primary"
                   (click)="resumeReplay()">
             <mat-icon>play_arrow</mat-icon>
-            RESUME REPLAY
+            PLAY
           </button>
 
           <button mat-button color="primary" [matMenuTriggerFor]="processorMenu"
@@ -68,6 +68,9 @@
           <button mat-menu-item (click)="changeSpeed('16x')">
             <mat-icon [class.hide]="processor.replayRequest?.speed.param !== 16">check</mat-icon> 16x
           </button>
+          <button mat-menu-item (click)="changeSpeed('afap')">
+            <mat-icon [class.hide]="processor.replayRequest?.speed.type !== 'AFAP'">check</mat-icon> As Fast As Possible
+          </button>
         </ng-container>
         <mat-divider></mat-divider>
         <button mat-menu-item *ngFor="let otherProcessor of allProcessors$ | async"
@@ -77,7 +80,7 @@
         </button>
         <ng-container *ngIf="processor.replay">
           <mat-divider></mat-divider>
-          <button mat-menu-item (click)="leaveAndCloseReplay()">
+          <button mat-menu-item (click)="leaveAndCloseReplay()" [disabled]="processor.protected">
             <mat-icon>exit_to_app</mat-icon>
             Leave &amp; close replay
           </button>

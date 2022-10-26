@@ -25,6 +25,9 @@ export class StringArgument implements ControlValueAccessor, OnInit, Validator, 
   name: string;
 
   @Input()
+  description: string;
+
+  @Input()
   type: ArgumentType;
 
   @Input()

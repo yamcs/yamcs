@@ -3,6 +3,7 @@ import { SharedModule } from '../shared/SharedModule';
 import { ChangeLevelDialog } from './clearances/ChangeLevelDialog';
 import { ClearancesPageTabs } from './clearances/ClearancesPageTabs';
 import { AcknowledgmentIcon } from './command-history/AcknowledgmentIcon';
+import { CascadingPrefixPipe } from './command-history/CascadingPrefixPipe';
 import { CommandDetail } from './command-history/CommandDetail';
 import { CommandHistoryPrintable } from './command-history/CommandHistoryPrintable';
 import { ExtraAcknowledgmentsTable } from './command-history/ExtraAcknowledgmentsTable';
@@ -32,6 +33,7 @@ import { StackedCommandDetail } from './stacks/StackedCommandDetail';
 import { StackFilePageDirtyDialog } from './stacks/StackFilePageDirtyDialog';
 
 const pipes = [
+  CascadingPrefixPipe,
   CommandDownloadLinkPipe,
 ];
 

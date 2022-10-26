@@ -21,9 +21,24 @@ import java.util.stream.Stream;
  *
  */
 public class GlobFileFinder {
+
+    // Unlikely escape patterns for a glob wildcards
+    private static final String GLOB_ANY = "*";
+    private static final String GLOB_ANY_ESCAPE = "__GLOB_ANY__";
+    private static final String GLOB_ANY_SINGLE = "?";
+    private static final String GLOB_ANY_SINGLE_ESCAPE = "__GLOB_SINGLE_ANY__";
+
     List<Path> result;
     long ioLimit = 1000;
     long ioCount;
+
+    /**
+     * Calls {@link #find(Path, String)} for the current working directory.
+     */
+    public List<Path> find(String pattern) {
+        Path start = FileSystems.getDefault().getPath("");
+        return find(start, pattern);
+    }
 
     /**
      * Find a list of regular files (not directories) which match glob pattern.
@@ -33,22 +48,29 @@ public class GlobFileFinder {
      * {@code **} for recursive directory matching is not supported.
      * <p>
      * The find will limit the number of operations in order to avoid too much I/O due to a pattern requiring lot of I/O
-     * operations. A IO operation is roughly file stat.
+     * operations. An I/O operation is roughly file stat.
      * 
      * @param pattern
-     * @return
+     *            glob pattern
+     * 
+     * @return Matched files
      */
-    public List<Path> find(String pattern) {
+    public List<Path> find(Path start, String pattern) {
         result = new ArrayList<Path>();
         ioCount = 0;
 
-        Path patternPath = FileSystems.getDefault().getPath(pattern);
-        List<Path> plist = new ArrayList<Path>();
-        patternPath.forEach(plist::add);
+        // Use a Path to split the pattern in segments.
+        // On windows, Path refuses some glob symbols, so temporarily escape them.
+        pattern = escapePattern(pattern);
+        Path patternPath = start.getFileSystem().getPath(pattern);
+        List<String> plist = new ArrayList<>();
+        patternPath.forEach(segment -> {
+            plist.add(restorePattern(segment.toString()));
+        });
 
-        ListIterator<Path> pitr = plist.listIterator();
+        ListIterator<String> pitr = plist.listIterator();
         if (pitr.hasNext()) {
-            Path current = patternPath.isAbsolute() ? patternPath.getRoot() : FileSystems.getDefault().getPath("");
+            Path current = patternPath.isAbsolute() ? patternPath.getRoot() : start;
             findMatchingFiles(current, pitr);
         }
         return result;
@@ -63,44 +85,61 @@ public class GlobFileFinder {
         this.ioLimit = ioLimit;
     }
 
-    private void findMatchingFiles(Path current, ListIterator<Path> pitr) throws UncheckedIOException {
+    private void findMatchingFiles(Path current, ListIterator<String> pitr) throws UncheckedIOException {
         if (!pitr.hasNext()) {
-            if(Files.isRegularFile(current)) {
+            if (Files.isRegularFile(current)) {
                 result.add(current);
             }
             return;
         }
 
-        Path pattern = pitr.next();
-        String patterns = pattern.toString();
+        String segment = pitr.next();
 
-        if (isPattern(patterns)) {
-            PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + patterns);
-            try (Stream<Path> files =Files.list(current)){
-                        files.filter(p -> incrIoCount())
-                            .map(p -> p.getFileName())
-                            .filter(p -> matcher.matches(p))
-                            .map(p -> current.resolve(p))
-                            .filter(p -> Files.isDirectory(p) == pitr.hasNext())
-                            .forEach(p -> findMatchingFiles(p, pitr));
+        if (isPattern(segment)) {
+            PathMatcher matcher = current.getFileSystem().getPathMatcher("glob:" + segment);
+            try (Stream<Path> files = Files.list(current)) {
+                files.filter(p -> incrIoCount())
+                        .map(p -> p.getFileName())
+                        .filter(p -> matcher.matches(p))
+                        .map(p -> current.resolve(p))
+                        .filter(p -> Files.isDirectory(p) == pitr.hasNext())
+                        .forEach(p -> findMatchingFiles(p, pitr));
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
-        } else if (Files.exists(current.resolve(pattern))) {
+        } else if (Files.exists(current.resolve(segment))) {
             incrIoCount();
-            findMatchingFiles(current.resolve(pattern), pitr);
+            findMatchingFiles(current.resolve(segment), pitr);
         }
         pitr.previous();
     }
 
     private boolean incrIoCount() {
         if (++ioCount >= ioLimit) {
-            throw new IllegalArgumentException("Pattern require too many IO operations");
+            throw new IllegalArgumentException("Pattern requires too many I/O operations");
         }
         return true;
     }
 
-    private boolean isPattern(String p) {
+    /**
+     * Escape '?' and '*' glob symbols to form a 'legal'-appearing path.
+     */
+    private static String escapePattern(String pattern) {
+        pattern = pattern.replace(GLOB_ANY, GLOB_ANY_ESCAPE);
+        pattern = pattern.replace(GLOB_ANY_SINGLE, GLOB_ANY_SINGLE_ESCAPE);
+        return pattern;
+    }
+
+    /**
+     * Restore a glob that previously passed through {@link #escapePattern(String)}
+     */
+    private static String restorePattern(String pattern) {
+        pattern = pattern.replace(GLOB_ANY_ESCAPE, GLOB_ANY);
+        pattern = pattern.replace(GLOB_ANY_SINGLE_ESCAPE, GLOB_ANY_SINGLE);
+        return pattern;
+    }
+
+    private static boolean isPattern(String p) {
         return Arrays.asList('*', '?', '[', '{').stream().anyMatch(c -> p.indexOf(c) >= 0);
     }
 }

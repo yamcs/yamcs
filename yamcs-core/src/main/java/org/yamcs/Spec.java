@@ -61,6 +61,13 @@ public class Spec {
     private List<WhenCondition> whenConditions = new ArrayList<>(0);
 
     /**
+     * Returns true if this spec contains the specified option.
+     */
+    public boolean containsOption(String name) {
+        return options.containsKey(name);
+    }
+
+    /**
      * Add an {@link Option} to this spec.
      * 
      * @throws IllegalArgumentException
@@ -73,6 +80,13 @@ public class Spec {
         var option = new Option(this, name, type);
         options.put(name, option);
         return option;
+    }
+
+    /**
+     * Remove an {@link Option} from this spec.
+     */
+    public void removeOption(String name) {
+        options.remove(name);
     }
 
     public void allowUnknownKeys(boolean allowUnknownKeys) {

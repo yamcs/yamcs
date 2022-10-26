@@ -23,6 +23,9 @@ extensions = [
     "sphinxcontrib.yamcs",
 ]
 
+# Force-disable conversion of -- to en-dash
+smartquotes = False
+
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = ['_templates']
 
@@ -37,7 +40,7 @@ source_suffix = ".rst"
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -124,13 +127,6 @@ man_pages = [
         1,
     ),
     (
-        "programs/yamcsadmin_parchive",
-        "yamcsadmin-parchive",
-        "Parameter Archive operations",
-        author,
-        1,
-    ),
-    (
         "programs/yamcsadmin_password-hash",
         "yamcsadmin-password-hash",
         "Generate password hash for use in users.yaml",
@@ -151,6 +147,6 @@ man_pages = [
         author,
         1,
     ),
-    ("programs/yamcsd", "yamcsd", "Yamcs Server", author, 1),
+    ("programs/yamcsd", "yamcsd", "Yamcs Server", author, 8),
     ("programs/packet-viewer", "packet-viewer", "Packet Viewer", author, 1),
 ]
