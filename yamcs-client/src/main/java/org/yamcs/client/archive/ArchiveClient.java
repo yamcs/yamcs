@@ -40,6 +40,7 @@ import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.CommandsApiClient;
 import org.yamcs.protobuf.Event;
 import org.yamcs.protobuf.EventsApiClient;
+import org.yamcs.protobuf.GetCommandRequest;
 import org.yamcs.protobuf.GetParameterRangesRequest;
 import org.yamcs.protobuf.IndexGroup;
 import org.yamcs.protobuf.IndexResponse;
@@ -129,7 +130,7 @@ public class ArchiveClient {
             if (option instanceof LimitOption) {
                 requestb.setLimit(((LimitOption) option).limit);
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         return new CommandIndexPage(requestb.build()).future();
@@ -148,7 +149,7 @@ public class ArchiveClient {
             if (option instanceof LimitOption) {
                 requestb.setLimit(((LimitOption) option).limit);
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         return new PacketIndexPage(requestb.build()).future();
@@ -167,7 +168,7 @@ public class ArchiveClient {
             if (option instanceof LimitOption) {
                 requestb.setLimit(((LimitOption) option).limit);
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         return new ParameterIndexPage(requestb.build()).future();
@@ -186,7 +187,7 @@ public class ArchiveClient {
             if (option instanceof LimitOption) {
                 requestb.setLimit(((LimitOption) option).limit);
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         return new EventIndexPage(requestb.build()).future();
@@ -206,7 +207,7 @@ public class ArchiveClient {
             if (option instanceof LimitOption) {
                 requestb.setLimit(((LimitOption) option).limit);
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         return new CompletenessIndexPage(requestb.build()).future();
@@ -231,7 +232,7 @@ public class ArchiveClient {
             } else if (option instanceof MergeTimeOption) {
                 requestb.setMergeTime(((MergeTimeOption) option).mergeTime);
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
 
@@ -396,6 +397,15 @@ public class ArchiveClient {
         return new CommandPage(requestb.build()).future();
     }
 
+    public CompletableFuture<Command> getCommand(String id) {
+        GetCommandRequest.Builder requestb = GetCommandRequest.newBuilder()
+                .setInstance(instance)
+                .setId(id);
+        CompletableFuture<CommandHistoryEntry> f = new CompletableFuture<>();
+        commandService.getCommand(null, requestb.build(), new ResponseObserver<>(f));
+        return f.thenApply(response -> new Command(response));
+    }
+
     public CompletableFuture<Void> streamCommands(StreamReceiver<Command> consumer, Instant start,
             Instant stop, StreamOption... options) {
         StreamCommandsRequest.Builder requestb = StreamCommandsRequest.newBuilder()
@@ -412,7 +422,7 @@ public class ArchiveClient {
                     requestb.addName(command);
                 }
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         CompletableFuture<Void> f = new CompletableFuture<>();
@@ -472,7 +482,7 @@ public class ArchiveClient {
                     requestb.addSource(source);
                 }
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         CompletableFuture<Void> f = new CompletableFuture<>();
@@ -512,7 +522,7 @@ public class ArchiveClient {
                     requestb.addName(packet);
                 }
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         CompletableFuture<Void> f = new CompletableFuture<>();
@@ -653,7 +663,7 @@ public class ArchiveClient {
             } else if (option instanceof SourceOption) {
                 requestb.setSource(((SourceOption) option).source);
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         return new ValuePage(requestb.build()).future();
@@ -683,7 +693,7 @@ public class ArchiveClient {
             } else if (option instanceof MinimumRangeOption) {
                 requestb.setMinRange(((MinimumRangeOption) option).millis);
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         CompletableFuture<Ranges> f = new CompletableFuture<>();
