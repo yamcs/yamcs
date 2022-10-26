@@ -133,7 +133,7 @@ public class TmGapFinder {
                     if (down.getNum() < up.getNum()) {
                         gapCollector.addGap(up.getFirst(), up.getLast());
                     } else if (down.getNum() > up.getNum()) {
-                        log.warn("Downstream record has more data that the related upstream record");
+                        log.warn("Downstream record has more data that the related upstream record - DOWN: " + toString(down) + ", UP: " + toString(up));
                     }
                     prevUp = up;
                     keep = false; // Get next record
