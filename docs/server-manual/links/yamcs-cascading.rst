@@ -62,6 +62,9 @@ archiveTm (boolean)
 tmArchiveStream (string)
   Stream to which the TM packets will be archived. Default: "tm_dump".
 
+gapFillingInterval (integer)
+  Number of seconds between each archive gap filling attempt. Default: 300.
+
 pp (boolean) 
   Subscribe parameters (pp stands for "processed parameters"). The list of parameters has to be specified using the parameters option. Default: true
 

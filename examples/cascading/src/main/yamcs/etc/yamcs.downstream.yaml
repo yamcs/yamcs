@@ -47,6 +47,7 @@ dataLinks:
     tcStream: "tc_realtime"
     #ppRealtimeStream: "pp_realtime"
     connectionAttempts: 5
+    #gapFillingInterval: 300
 
 mdb:
   # Configuration of the active loaders

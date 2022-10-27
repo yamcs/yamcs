@@ -18,7 +18,6 @@ import java.util.concurrent.CompletableFuture;
 public class ContainerFetcher {
 
     public static CompletableFuture<List<String>> fetch(MissionDatabaseClient mdbClient, Log log) {
-        System.out.println("fetch");
         return getPages(mdbClient.listContainers(), null, log);
     }
 

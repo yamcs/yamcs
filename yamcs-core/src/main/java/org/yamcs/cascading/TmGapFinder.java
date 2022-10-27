@@ -48,9 +48,9 @@ public class TmGapFinder {
 
     /**
      * retrieves the TM index from upstream and compares it with the local
-     * 
+     *
      * @return
-     * 
+     *
      * @return
      */
     List<Gap> identifyGaps(long start, long stop) {
@@ -181,7 +181,7 @@ public class TmGapFinder {
 
         while (iterator.hasNext()) {
             down = iterator.next();
-            if(Timestamps.compare(down.getLast(), prevUp.getLast()) > 0) {
+            if (prevUp == null || Timestamps.compare(down.getLast(), prevUp.getLast()) > 0) {
                 log.warn("Downstream archive has more data than upstream: " + toString(down));
             }
         }
