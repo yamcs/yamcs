@@ -181,7 +181,9 @@ public class TmGapFinder {
 
         while (iterator.hasNext()) {
             down = iterator.next();
-            log.warn("Downstream archive has more data than upstream: " + toString(down));
+            if(Timestamps.compare(down.getLast(), prevUp.getLast()) > 0) {
+                log.warn("Downstream archive has more data than upstream: " + toString(down));
+            }
         }
     }
 

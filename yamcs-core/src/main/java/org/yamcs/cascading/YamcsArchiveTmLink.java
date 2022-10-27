@@ -1,11 +1,6 @@
 package org.yamcs.cascading;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 import org.yamcs.YConfiguration;
@@ -26,7 +21,7 @@ import org.yamcs.utils.TimeEncoding;
 public class YamcsArchiveTmLink extends AbstractTmDataLink {
     YamcsLink parentLink;
 
-    List<String> containers;
+    private List<String> containers;
 
     int retrievalDays;
     int mergeTime;
@@ -45,7 +40,6 @@ public class YamcsArchiveTmLink extends AbstractTmDataLink {
     public void init(String instance, String name, YConfiguration config) {
         config = YamcsTmLink.swapConfig(config, "tmArchiveStream", "tmStream", "tm_dump");
         super.init(instance, name, config);
-        this.containers = config.getList("containers");
         this.retrievalDays = config.getInt("retrievalDays", 120);
         // when retrieving archive indexes, merge all the gaps smaller than 300 seconds
         this.mergeTime = config.getInt("mergeTime", 300) * 1000;
@@ -71,7 +65,10 @@ public class YamcsArchiveTmLink extends AbstractTmDataLink {
     @Override
     public void doEnable() {
         permanentGaps.clear();
-        scheduleDataRetrieval();
+
+        if (containers != null) {
+            scheduleDataRetrieval();
+        }
     }
 
     @Override
@@ -207,6 +204,11 @@ public class YamcsArchiveTmLink extends AbstractTmDataLink {
     private boolean isPacketRequired(String name) {
         return containers.contains(name);
     }
+
+    public void setContainers(List<String> containers) {
+        this.containers = containers;
+    }
+
 
     static class Gap implements Comparable<Gap> {
         long start;

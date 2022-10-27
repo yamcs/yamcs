@@ -10,7 +10,6 @@ import org.yamcs.client.ClientException;
 import org.yamcs.client.ContainerSubscription;
 import org.yamcs.client.MessageListener;
 import org.yamcs.client.YamcsClient;
-import org.yamcs.client.base.WebSocketClient;
 import org.yamcs.protobuf.ContainerData;
 import org.yamcs.protobuf.SubscribeContainersRequest;
 import org.yamcs.tctm.AbstractTmDataLink;
@@ -25,6 +24,10 @@ import org.yamcs.utils.TimeEncoding;
 public class YamcsTmLink extends AbstractTmDataLink {
     YamcsLink parentLink;
 
+    public void setContainers(List<String> containers) {
+        this.containers = containers;
+    }
+
     List<String> containers;
     ContainerSubscription subscription;
 
@@ -35,7 +38,6 @@ public class YamcsTmLink extends AbstractTmDataLink {
     public void init(String instance, String name, YConfiguration config) {
         config = swapConfig(config, "tmRealtimeStream", "tmStream", "tm_realtime");
         super.init(instance, name, config);
-        this.containers = config.getList("containers");
     }
 
     // a little bit of a hack: because we use only one config for the parent,
@@ -73,13 +75,13 @@ public class YamcsTmLink extends AbstractTmDataLink {
         if (subscription != null && !subscription.isDone()) {
             return;
         }
-        WebSocketClient wsclient = parentLink.getClient().getWebSocketClient();
-        if (wsclient.isConnected()) {
+
+        if (containers != null) {
             subscribeContainers();
         }
     }
 
-    private void subscribeContainers() {
+    void subscribeContainers() {
         YamcsClient yclient = parentLink.getClient();
 
         subscription = yclient.createContainerSubscription();
