@@ -178,7 +178,7 @@ public class BackFiller implements StreamSubscriber {
             String timePeriod = '[' + TimeEncoding.toString(start) + "-" + TimeEncoding.toString(stop) + ')';
             log.debug("Starting parameter archive fillup for interval {}", timePeriod);
             long t0 = System.nanoTime();
-            ReplayOptions rrb = ReplayOptions.getAfapReplay(start - warmupTime, stop);
+            ReplayOptions rrb = ReplayOptions.getAfapReplay(start - warmupTime, stop, false);
             Processor proc = ProcessorFactory.create(parchive.getYamcsInstance(),
                     "ParameterArchive-backfilling_" + count.incrementAndGet(), "ParameterArchive", "internal",
                     rrb);

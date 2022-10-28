@@ -342,7 +342,6 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testReplayAggregateAlgoOutput() throws Exception {
         generatePkt1AndTm2Pkt1("2022-06-01T10:00:00", 300);
-
         Page<ParameterValue> page = archiveClient
                 .listValues("/REFMDB/SUBSYS1/AlgoJavaAggr4.member2", Instant.parse("2022-06-01T10:00:00Z"), null,
                         ListOptions.source("replay"),

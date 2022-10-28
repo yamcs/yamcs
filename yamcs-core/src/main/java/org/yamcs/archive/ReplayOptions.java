@@ -7,8 +7,6 @@ import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
 import org.yamcs.protobuf.Yamcs.PpReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
-import org.yamcs.protobuf.Yamcs.ReplaySpeed;
-import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.utils.TimeEncoding;
 
 public class ReplayOptions {
@@ -16,7 +14,7 @@ public class ReplayOptions {
     long rangeStop = TimeEncoding.INVALID_INSTANT;
     long playFrom = TimeEncoding.INVALID_INSTANT;
     EndAction endAction;
-    ReplaySpeed speed;
+    SpeedSpec speed;
     boolean reverse;
     boolean autostart = true;
 
@@ -39,9 +37,9 @@ public class ReplayOptions {
         }
         endAction = protoRequest.getEndAction();
         if (protoRequest.hasSpeed()) {
-            speed = protoRequest.getSpeed();
+            speed = SpeedSpec.fromProtobuf(protoRequest.getSpeed());
         } else {
-            speed = ReplaySpeed.newBuilder().setType(ReplaySpeedType.REALTIME).setParam(1).build();
+            speed = new SpeedSpec(SpeedSpec.Type.ORIGINAL, 1);
         }
         reverse = protoRequest.hasReverse() && protoRequest.getReverse();
 
@@ -53,11 +51,14 @@ public class ReplayOptions {
             this.ppRequest = protoRequest.getPpRequest();
         }
         autostart = protoRequest.getAutostart();
+        this.playFrom = reverse ? this.rangeStop : this.rangeStart;
     }
 
-    public ReplayOptions(long start, long stop) {
+    public ReplayOptions(long start, long stop, boolean reverse) {
         this.rangeStart = start;
         this.rangeStop = stop;
+        this.reverse = reverse;
+        this.playFrom = reverse ? this.rangeStop : this.rangeStart;
     }
 
     public ReplayOptions() {
@@ -79,21 +80,21 @@ public class ReplayOptions {
         this.eventReplayRequest = other.eventReplayRequest;
     }
 
-    public static ReplayOptions getAfapReplay(long start, long stop) {
-        ReplayOptions repl = new ReplayOptions(start, stop);
-        repl.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build());
+    public static ReplayOptions getAfapReplay(long start, long stop, boolean reverse) {
+        ReplayOptions repl = new ReplayOptions(start, stop, reverse);
+        repl.setSpeed(new SpeedSpec(SpeedSpec.Type.AFAP));
         repl.setEndAction(EndAction.QUIT);
         return repl;
     }
 
     public static ReplayOptions getAfapReplay() {
         ReplayOptions repl = new ReplayOptions();
-        repl.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build());
+        repl.setSpeed(new SpeedSpec(SpeedSpec.Type.AFAP));
         repl.setEndAction(EndAction.QUIT);
         return repl;
     }
 
-    public void setSpeed(ReplaySpeed speed) {
+    public void setSpeed(SpeedSpec speed) {
         this.speed = speed;
     }
 
@@ -109,7 +110,7 @@ public class ReplayOptions {
         this.playFrom = playFrom;
     }
 
-    public ReplaySpeed getSpeed() {
+    public SpeedSpec getSpeed() {
         return speed;
     }
 
@@ -129,7 +130,7 @@ public class ReplayOptions {
         if (rangeStop != TimeEncoding.INVALID_INSTANT) {
             rr.setStop(TimeEncoding.toProtobufTimestamp(rangeStop));
         }
-        rr.setSpeed(speed);
+        rr.setSpeed(speed.toProtobuf());
         rr.setEndAction(endAction);
         rr.setReverse(reverse);
         rr.setAutostart(autostart);
@@ -233,10 +234,6 @@ public class ReplayOptions {
 
     public void clearParameterRequest() {
         this.parameterReplayRequest = null;
-    }
-
-    public void setReverse(boolean reverse) {
-        this.reverse = reverse;
     }
 
     public void setAutostart(boolean autostart) {

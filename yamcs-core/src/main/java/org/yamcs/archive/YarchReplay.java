@@ -5,22 +5,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
+import org.yamcs.archive.SpeedSpec.Type;
 import org.yamcs.protobuf.Yamcs.EndAction;
-import org.yamcs.protobuf.Yamcs.ReplayRequest;
-import org.yamcs.protobuf.Yamcs.ReplaySpeed;
-import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.yarch.SpeedLimitStream;
-import org.yamcs.yarch.SpeedSpec;
 import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -32,7 +29,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 
 /**
  * Performs a replay from Yarch So far supported are: TM packets, PP groups, Events, Parameters and Command History.
- * 
+ * <p>
  * It relies on handlers for each data type. Each handler creates a stream, the streams are merged and the output is
  * sent to the listener This class can also handle pause/resume: simply stop sending data seek: closes the streams and
  * creates new ones with a different starting time.
@@ -41,6 +38,12 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
  *
  */
 public class YarchReplay implements StreamSubscriber {
+    /**
+     * maximum time to wait if SPEED is ORIGINAL meaning that if there is a gap in the data longer than this, we
+     * continue)
+     */
+    public final static long MAX_WAIT_TIME = 10000;
+
     ReplayServer replayServer;
     volatile String streamName;
     volatile boolean quitting = false;
@@ -55,10 +58,16 @@ public class YarchReplay implements StreamSubscriber {
 
     Map<ProtoDataType, ReplayHandler> handlers;
 
-    private Semaphore pausedSemaphore = new Semaphore(0);
+    private long lastDataSentTime = -1; // time when the last data has been sent
+    private long lastDataTime; // time of the last data
+
+    private Semaphore semaphore = new Semaphore(0);
     boolean dropTuple = false; // set to true when jumping to a different time
     volatile boolean ignoreClose;
+    volatile boolean sleeping;
     ReplayListener listener;
+    volatile long replayTime;
+
 
     public YarchReplay(ReplayServer replayServer, ReplayOptions rr, ReplayListener listener, XtceDb xtceDb)
             throws YamcsException {
@@ -86,6 +95,7 @@ public class YarchReplay implements StreamSubscriber {
         }
 
         currentRequest = req;
+     
         handlers = new HashMap<>();
 
         if (currentRequest.hasParameterRequest()) {
@@ -133,7 +143,6 @@ public class YarchReplay implements StreamSubscriber {
             break;
         case PAUSED:
             state = ReplayState.RUNNING;
-            pausedSemaphore.release();
             break;
         case ERROR:
         case CLOSED:
@@ -187,32 +196,30 @@ public class YarchReplay implements StreamSubscriber {
             sb.append(" ORDER DESC");
         }
 
-        ReplaySpeed rs = currentRequest.getSpeed();
-
-        switch (rs.getType()) {
-        case AFAP:
-        case STEP_BY_STEP: // Step advancing is controlled from within this class
-            sb.append(" SPEED AFAP");
-            break;
-        case FIXED_DELAY:
-            sb.append(" SPEED FIXED_DELAY " + (long) rs.getParam());
-            break;
-        case REALTIME:
-            sb.append(" SPEED ORIGINAL gentime," + (long) rs.getParam());
-            break;
-        }
-
         String query = sb.toString();
         log.debug("running query {} with args {} ", query, args);
+
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         ydb.execute(query, args.toArray());
         Stream s = ydb.getStream(streamName);
+
         s.addSubscriber(this);
+
+
+        lastDataTime = replayTime = currentRequest.playFrom;
+
         s.start();
     }
 
     public void seek(long newReplayTime, boolean autostart) throws YamcsException {
+        if (newReplayTime < currentRequest.rangeStart) {
+            newReplayTime = currentRequest.rangeStart;
+        }
+        log.debug("Seek at {} autostart: {}", TimeEncoding.toString(newReplayTime), autostart);
         closeExistingStream();
+        lastDataSentTime = -1;
+        lastDataTime = newReplayTime;
+
         currentRequest.setPlayFrom(newReplayTime);
         for (ReplayHandler rh : handlers.values()) {
             rh.setRequest(currentRequest);
@@ -238,47 +245,32 @@ public class YarchReplay implements StreamSubscriber {
 
     private void closeExistingStream() {
         if (state != ReplayState.INITIALIZATION) {
-            boolean wasPaused = (state == ReplayState.PAUSED);
             state = ReplayState.INITIALIZATION;
-            String query = "CLOSE STREAM " + streamName;
-            ignoreClose = true;
-            try {
-                YarchDatabaseInstance db = YarchDatabase.getInstance(instance);
-                if (db.getStream(streamName) != null) {
-                    log.debug("running query: {}", query);
+            YarchDatabaseInstance db = YarchDatabase.getInstance(instance);
+            Stream s = db.getStream(streamName);
+            if (s != null) {
+                s.removeSubscriber(this);
+                String query = "CLOSE STREAM " + streamName;
+                log.debug("running query: {}", query);
+                try {
                     db.executeDiscardingResult(query);
-                } else {
-                    log.debug("Stream already closed");
+                } catch (StreamSqlException | ParseException e) {
+                    throw new RuntimeException(e);
                 }
+            }
 
-                // Do this _after_ the stream was closed, to prevent more tuples
-                // from the (paused) stream to be pushed.
-                if (wasPaused) {
-                    dropTuple = true;
-                    pausedSemaphore.release();
-                }
-            } catch (Exception e) {
-                log.error("Got exception when closing the stream: ", e);
-                errorString = e.toString();
-                state = ReplayState.ERROR;
-                signalStateChange();
+            // if paused, there is a tuple already emitted and ready to be processed in the onTuple method.
+            // we want to get rid of it
+            if (sleeping) {
+                dropTuple = true;
+                log.debug("Releasing semaphore");
+                semaphore.release();
             }
         }
     }
 
-    public void changeSpeed(ReplaySpeed newSpeed) {
+    public void changeSpeed(SpeedSpec newSpeed) {
         log.debug("Changing speed to {}", newSpeed);
-
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
-        Stream s = ydb.getStream(streamName);
-        if (s == null) {
-            throw new IllegalStateException("Cannot change speed while not started");
-        }
-        if (!(s instanceof SpeedLimitStream)) {
-            throw new IllegalStateException("Cannot change speed on a " + s.getClass() + " stream");
-        } else {
-            ((SpeedLimitStream) s).setSpeedSpec(toSpeedSpec(newSpeed));
-        }
         currentRequest.setSpeed(newSpeed);
     }
 
@@ -287,24 +279,6 @@ public class YarchReplay implements StreamSubscriber {
         currentRequest.setEndAction(endAction);
     }
 
-    private SpeedSpec toSpeedSpec(ReplaySpeed speed) {
-        SpeedSpec ss;
-        switch (speed.getType()) {
-        case AFAP:
-        case STEP_BY_STEP: // Step advancing is controlled from within this class
-            ss = new SpeedSpec(SpeedSpec.Type.AFAP);
-            break;
-        case FIXED_DELAY:
-            ss = new SpeedSpec(SpeedSpec.Type.FIXED_DELAY, (int) speed.getParam());
-            break;
-        case REALTIME:
-            ss = new SpeedSpec(SpeedSpec.Type.ORIGINAL, "gentime", speed.getParam());
-            break;
-        default:
-            throw new IllegalArgumentException("Unknown speed type " + speed.getType());
-        }
-        return ss;
-    }
 
     public void pause() {
         state = ReplayState.PAUSED;
@@ -333,32 +307,85 @@ public class YarchReplay implements StreamSubscriber {
         if (quitting) {
             return;
         }
+        long time = t.getTimestampColumn("gentime");
+
         try {
-            while (state == ReplayState.PAUSED) {
-                pausedSemaphore.acquire();
-            }
+            sleepUntilTime(time);
+
             if (dropTuple) {
                 dropTuple = false;
                 return;
             }
+
+            replayTime = time;
 
             ProtoDataType type = ProtoDataType.forNumber((Integer) t.getColumn(0));
             Object data = handlers.get(type).transform(t);
             if (data != null) {
                 listener.newData(type, data);
             }
+            lastDataSentTime = System.currentTimeMillis();
+            lastDataTime = time;
 
-            if (currentRequest.getSpeed().getType() == ReplaySpeedType.STEP_BY_STEP) {
+            if (currentRequest.getSpeed().getType() == Type.STEP_BY_STEP) {
                 // Force user to trigger next step.
                 state = ReplayState.PAUSED;
                 signalStateChange();
             }
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
             if (!quitting) {
-                log.warn("Exception received: ", e);
+                log.warn("Interrupted: ", e);
                 quit();
             }
         }
+    }
+
+    private void sleepUntilTime(long time) throws InterruptedException {
+        long waitTime = 0;
+        SpeedSpec speed = currentRequest.getSpeed();
+        switch (speed.getType()) {
+        case AFAP:
+            break;
+        case FIXED_DELAY:
+            long ctime = System.currentTimeMillis();
+            if (lastDataSentTime != -1) {
+                waitTime = (long) (speed.getFixedDelay() - (ctime - lastDataSentTime));
+            }
+            break;
+        case ORIGINAL:
+            waitTime = (long) ((time - lastDataTime) / speed.getMultiplier());
+            if (waitTime > MAX_WAIT_TIME) {
+                waitTime = MAX_WAIT_TIME;
+            }
+            break;
+        case STEP_BY_STEP:
+            break;
+        }
+
+        if (waitTime > 0) {
+            sleeping = true;
+
+            double d = (time - lastDataTime) / (double) waitTime;
+
+            // update the replay time every second
+            while (true) {
+                long sleepTime = Math.min(waitTime, 1000);
+
+                if (semaphore.tryAcquire(sleepTime, TimeUnit.MILLISECONDS)) {
+                    break;
+                }
+                if (state == ReplayState.PAUSED) {
+                    continue;
+                }
+                waitTime -= sleepTime;
+                if (waitTime > 0) {
+                    replayTime += d * sleepTime;
+                } else {
+                    break;
+                }
+            }
+        }
+        sleeping = false;
     }
 
     @Override
@@ -405,11 +432,11 @@ public class YarchReplay implements StreamSubscriber {
         }
     }
 
-    public ReplayRequest getCurrentReplayRequest() {
-        if (currentRequest != null) {
-            return currentRequest.toProtobuf();
-        } else {
-            return null;
-        }
+    public ReplayOptions getCurrentReplayRequest() {
+        return currentRequest;
+    }
+
+    public long getReplayTime() {
+        return replayTime;
     }
 }

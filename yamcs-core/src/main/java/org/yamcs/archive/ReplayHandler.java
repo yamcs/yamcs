@@ -30,6 +30,7 @@ public interface ReplayHandler {
         if (request.isReverse()) {
             before = minTime(before, request.getPlayFrom());
         }
+
         if (before != TimeEncoding.INVALID_INSTANT) {
             sqlb.whereColBefore("gentime", before);
         }

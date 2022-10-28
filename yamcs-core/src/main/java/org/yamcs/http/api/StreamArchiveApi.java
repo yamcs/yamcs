@@ -148,7 +148,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         if (request.hasStop()) {
             stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
         }
-        ReplayOptions repl = ReplayOptions.getAfapReplay(start, stop);
+        ReplayOptions repl = ReplayOptions.getAfapReplay(start, stop, false);
         NamedObjectId id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
         repl.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(id).build());
 
@@ -333,8 +333,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
     private static ReplayOptions toParameterReplayRequest(NamedObjectId parameterId, long start, long stop,
             boolean descend) {
 
-        ReplayOptions repl = ReplayOptions.getAfapReplay(start, stop);
-        repl.setReverse(descend);
+        ReplayOptions repl = ReplayOptions.getAfapReplay(start, stop, descend);
         repl.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(parameterId).build());
         return repl;
     }

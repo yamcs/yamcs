@@ -20,6 +20,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.archive.ReplayListener;
 import org.yamcs.archive.ReplayOptions;
 import org.yamcs.archive.ReplayServer;
+import org.yamcs.archive.SpeedSpec;
 import org.yamcs.archive.XtceTmReplayHandler.ReplayPacket;
 import org.yamcs.archive.YarchReplay;
 import org.yamcs.cmdhistory.CommandHistoryProvider;
@@ -72,7 +73,6 @@ public class ReplayService extends AbstractProcessorService
     private ParameterProcessorManager parameterProcessorManager;
     TmProcessor tmProcessor;
     XtceDb xtceDb;
-    volatile long replayTime;
 
     YarchReplay yarchReplay;
     // the originalReplayRequest contains possibly only parameters.
@@ -114,10 +114,7 @@ public class ReplayService extends AbstractProcessorService
             originalReplayRequest = new ReplayOptions(rrb.build());
         } else if (spec == null) { // For example, created by ProcessorCreatorService
             originalReplayRequest = new ReplayOptions();
-            originalReplayRequest.setSpeed(ReplaySpeed.newBuilder()
-                    .setType(ReplaySpeedType.REALTIME)
-                    .setParam(1)
-                    .build());
+            originalReplayRequest.setSpeed(new SpeedSpec(SpeedSpec.Type.ORIGINAL, 1));
             originalReplayRequest.setEndAction(EndAction.STOP);
             originalReplayRequest.setAutostart(false);
         } else {
@@ -132,11 +129,9 @@ public class ReplayService extends AbstractProcessorService
 
     @Override
     public void newData(ProtoDataType type, Object data) {
-
         switch (type) {
         case TM_PACKET:
             ReplayPacket rp = (ReplayPacket) data;
-            replayTime = rp.getGenerationTime();
             String qn = rp.getQualifiedName();
             SequenceContainer container = xtceDb.getSequenceContainer(qn);
             if (container == null) {
@@ -155,7 +150,6 @@ public class ReplayService extends AbstractProcessorService
             @SuppressWarnings("unchecked")
             List<ParameterValue> pvals = (List<ParameterValue>) data;
             if (!pvals.isEmpty()) {
-                replayTime = pvals.get(0).getGenerationTime();
                 ProcessingData processingData = ProcessingData.createForTmProcessing(processor.getLastValueCache());
                 calibrate(pvals, processingData);
                 parameterProcessorManager.process(processingData);
@@ -163,12 +157,10 @@ public class ReplayService extends AbstractProcessorService
             break;
         case CMD_HISTORY:
             CommandHistoryEntry che = (CommandHistoryEntry) data;
-            replayTime = che.getCommandId().getGenerationTime();
             commandHistoryRequestManager.addCommand(PreparedCommand.fromCommandHistoryEntry(che));
             break;
         case EVENT:
             Event evt = (Event) data;
-            replayTime = evt.getGenerationTime();
             break;
         default:
             log.error("Unexpected data type {} received", type);
@@ -409,7 +401,7 @@ public class ReplayService extends AbstractProcessorService
 
     @Override
     public ReplaySpeed getSpeed() {
-        return originalReplayRequest.getSpeed();
+        return originalReplayRequest.getSpeed().toProtobuf();
     }
 
     @Override
@@ -419,7 +411,7 @@ public class ReplayService extends AbstractProcessorService
 
     @Override
     public ReplayRequest getCurrentReplayRequest() {
-        return yarchReplay != null ? yarchReplay.getCurrentReplayRequest() : getReplayRequest();
+        return yarchReplay != null ? yarchReplay.getCurrentReplayRequest().toProtobuf() : getReplayRequest();
     }
 
     @Override
@@ -435,12 +427,16 @@ public class ReplayService extends AbstractProcessorService
 
     @Override
     public long getReplayTime() {
-        return replayTime;
+        if (yarchReplay != null) {
+            return yarchReplay.getReplayTime();
+        } else {
+            return originalReplayRequest.getRangeStart();
+        }
     }
 
     @Override
     public void changeSpeed(ReplaySpeed speed) {
-        yarchReplay.changeSpeed(speed);
+        yarchReplay.changeSpeed(SpeedSpec.fromProtobuf(speed));
     }
 
     @Override

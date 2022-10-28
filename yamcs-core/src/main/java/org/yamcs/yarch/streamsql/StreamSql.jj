@@ -182,8 +182,6 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_SHRT:"SHORT">
 |   <K_SMALLINT:"SMALLINT">
 |   <K_SEQUENCES:"SEQUENCES">
-|   <K_SPEED:"SPEED">
-|   <K_STEP_BY_STEP:"STEP_BY_STEP">
 |   <K_STREAM:"STREAM">
 |   <K_STREAMS:"STREAMS">
 |   <K_STRING:"STRING">
@@ -407,28 +405,22 @@ PartitioningSpec PartitioningSpec() throws StreamSqlException: {
     }
 }
 
-CreateOutputStreamStatement CreateOutputStreamStatement() throws StreamSqlException: {
-    String name;
-    StreamExpression expression;
-} {
-    "CREATE" "OUTPUT" "STREAM" name=ObjectName() "AS" expression=SpeedLimitStreamExpression()
-    {
-	return new CreateOutputStreamStatement(name,expression);
-    }
-}
-
 CreateStreamStatement CreateStreamStatement() throws StreamSqlException: {
     String name;
     StreamExpression expression;
     TupleDefinition tupleDefinition;
+    boolean follow = true;
 } {
     <K_CREATE> <K_STREAM> name=ObjectName() (
-        <K_AS> expression=SpeedLimitStreamExpression() 
-        { 
-            return new CreateStreamStatement(name,expression); 
+      <K_AS>  expression=StreamExpression() [<K_NOFOLLOW> {follow=false;}]
+       { 
+        	if(expression instanceof SelectExpression) {
+        		((SelectExpression) expression).setFollow(follow);
+    		}
+            return new CreateStreamStatement(name, expression); 
         }
-   |
-        tupleDefinition=TupleDefinition()
+     |
+         tupleDefinition=TupleDefinition()
         {
             return new CreateStreamStatement(name,tupleDefinition);
         }
@@ -444,22 +436,6 @@ SelectTableStatement SelectTableStatement() throws StreamSqlException: {
         return new SelectTableStatement(expression); 
     }
 }
-
-SpeedLimitStreamExpression SpeedLimitStreamExpression() throws StreamSqlException: {
-    StreamExpression expression;
-    SpeedSpec speedSpec=null;
-    boolean follow=true; 
-} {
-    expression=StreamExpression() [<K_SPEED> {speedSpec=SpeedSpec();}] [<K_NOFOLLOW> {follow=false;}]
-    {
-    if(expression instanceof SelectExpression) {
-        ((SelectExpression) expression).setFollow(follow);
-    }
-	return new SpeedLimitStreamExpression(expression,speedSpec);
-    }
-	
-}
-
 
 CloseStreamStatement CloseStreamStatement() throws StreamSqlException: {
     String name;
@@ -673,17 +649,6 @@ UpdateTableStatement UpdateTableStatement() throws StreamSqlException: {
     {
 	return new UpdateTableStatement(tableName, updateList, whereExpr, limit.longValue());
     }
-}
-
-SpeedSpec SpeedSpec() throws StreamSqlException: {
-  String columnName;
-  BigDecimal bd;
-  float x=1;
-} {
-    "AFAP" {return new SpeedSpec(SpeedSpec.Type.AFAP);}
-  | "FIXED_DELAY" <S_INTEGER> {return new SpeedSpec(SpeedSpec.Type.FIXED_DELAY, Integer.parseInt(token.image));}
-  | "ORIGINAL" columnName=ObjectName() ["," bd=NumericConstant() {x=bd.floatValue();}] {return new SpeedSpec(SpeedSpec.Type.ORIGINAL, columnName, x);}
-  | "STEP_BY_STEP" <S_INTEGER> {return new SpeedSpec(SpeedSpec.Type.STEP_BY_STEP, Integer.parseInt(token.image));}
 }
 
 // Expression and its children
