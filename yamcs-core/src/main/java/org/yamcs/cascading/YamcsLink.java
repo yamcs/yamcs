@@ -13,6 +13,7 @@ import org.yamcs.client.ClientException;
 import org.yamcs.client.ConnectionListener;
 import org.yamcs.client.YamcsClient;
 import org.yamcs.client.base.WebSocketClient;
+import org.yamcs.client.mdb.MissionDatabaseClient;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.tctm.AbstractLink;
 import org.yamcs.tctm.AggregatedDataLink;
@@ -37,6 +38,9 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
 
     long reconnectionDelay;
 
+    private String username;
+    private char[] password;
+
     @Override
     public void init(String instance, String name, YConfiguration config) {
         super.init(instance, name, config);
@@ -48,6 +52,17 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
                 .withVerifyTls(config.getBoolean("verifyTls", true))
                 .build();
         yclient.addConnectionListener(this);
+
+        if(config.containsKey("username")) {
+            if(config.containsKey("password")) {
+                username = config.getString("username");
+                password = config.getString("password").toCharArray();
+            } else {
+                throw new ConfigurationException("Username provided with no password");
+            }
+        } else if(config.containsKey("password")) {
+            throw new ConfigurationException("Password provided with no username");
+        }
 
         if (config.getBoolean("tm", true)) {
             tmLink = new YamcsTmLink(this);
@@ -94,6 +109,12 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
         spec.addOption("yamcsUrl", OptionType.STRING).withRequired(true)
                 .withDescription("The URL to connect to the server.");
 
+        spec.addOption("username", OptionType.STRING)
+                .withDescription("Username to connect to the server");
+
+        spec.addOption("password", OptionType.STRING)
+                .withDescription("Password to connect to the server");
+
         spec.addOption("upstreamInstance", OptionType.STRING).withRequired(true)
                 .withDescription("The instance to connect to.");
 
@@ -107,7 +128,7 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
                 .withDescription("Subscribe telemetry containers (packets). "
                         + "The list of containers (packets) has to be specified using the containers option.");
 
-        spec.addOption("parameter", OptionType.BOOLEAN).withDefault(true)
+        spec.addOption("pp", OptionType.BOOLEAN).withDefault(true)
                 .withDescription("Subscribe parameters. "
                         + "The list of parameters has to be specified using the parameters option.");
 
@@ -200,6 +221,9 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
         }
 
         try {
+            if(username != null) {
+                yclient.login(username, password);
+            }
             yclient.connectWebSocket();
         } catch (ClientException cause) {
             log.warn("Connection to upstream Yamcs server failed", cause);
@@ -207,12 +231,8 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
             return;
         }
 
-        if (tmLink != null && !tmLink.isDisabled()) {
-            tmLink.doEnable();
-        }
-
-        if (archiveTmLink != null && !archiveTmLink.isDisabled()) {
-            archiveTmLink.doEnable();
+        if (tmLink != null || archiveTmLink != null) {
+            retrieveContainers();
         }
 
         if (tcLink != null && !tcLink.isDisabled()) {
@@ -226,6 +246,29 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
         if (eventLink != null && !eventLink.isDisabled()) {
             eventLink.doEnable();
         }
+    }
+
+    private void retrieveContainers() {
+        MissionDatabaseClient mdbClient = getClient().createMissionDatabaseClient(getUpstreamInstance());
+        ContainerFetcher.fetchAndMatch(mdbClient, config.getList("containers"), log)
+                .whenComplete((list, t) -> {
+                    if (t != null) {
+                        log.warn("Failed to fetch containers from remote: {}", t);
+                    }
+
+                    if (tmLink != null) {
+                        tmLink.setContainers(list);
+                        if (!tmLink.isDisabled()) {
+                            tmLink.subscribeContainers();
+                        }
+                    }
+                    if (archiveTmLink != null) {
+                        archiveTmLink.setContainers(list);
+                        if (!archiveTmLink.isDisabled()) {
+                            archiveTmLink.scheduleDataRetrieval();
+                        }
+                    }
+                });
     }
 
     @Override

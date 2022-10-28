@@ -1,12 +1,8 @@
 package org.yamcs.cascading;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.yamcs.YConfiguration;
 import org.yamcs.TmPacket;
@@ -26,7 +22,7 @@ import org.yamcs.utils.TimeEncoding;
 public class YamcsArchiveTmLink extends AbstractTmDataLink {
     YamcsLink parentLink;
 
-    List<String> containers;
+    private List<String> containers;
 
     int retrievalDays;
     int mergeTime;
@@ -34,9 +30,9 @@ public class YamcsArchiveTmLink extends AbstractTmDataLink {
 
     Queue<Gap> queue = new ArrayDeque<>();
     List<Gap> prevGaps;
-    List<Gap> permanentGaps = new ArrayList<>();
-
     CompletableFuture<Void> runningTask;
+    private long start;
+    private long stop;
 
     public YamcsArchiveTmLink(YamcsLink parentLink) {
         this.parentLink = parentLink;
@@ -45,7 +41,6 @@ public class YamcsArchiveTmLink extends AbstractTmDataLink {
     public void init(String instance, String name, YConfiguration config) {
         config = YamcsTmLink.swapConfig(config, "tmArchiveStream", "tmStream", "tm_dump");
         super.init(instance, name, config);
-        this.containers = config.getList("containers");
         this.retrievalDays = config.getInt("retrievalDays", 120);
         // when retrieving archive indexes, merge all the gaps smaller than 300 seconds
         this.mergeTime = config.getInt("mergeTime", 300) * 1000;
@@ -70,7 +65,9 @@ public class YamcsArchiveTmLink extends AbstractTmDataLink {
 
     @Override
     public void doEnable() {
-        scheduleDataRetrieval();
+        if (containers != null) {
+            scheduleDataRetrieval();
+        }
     }
 
     @Override
@@ -92,13 +89,14 @@ public class YamcsArchiveTmLink extends AbstractTmDataLink {
     }
 
     void scheduleDataRetrieval() {
-        parentLink.getExecutor().execute(() -> retrieveGaps());
+        parentLink.getExecutor().execute(this::retrieveGaps);
     }
 
     void retrieveGaps() {
-        if (isEffectivelyDisabled()) {
+        if(connectionStatus() != Status.OK || isEffectivelyDisabled()) {
             return;
         }
+
         if (runningTask != null && !runningTask.isDone()) {
             return;
         }
@@ -108,7 +106,11 @@ public class YamcsArchiveTmLink extends AbstractTmDataLink {
                 log.debug("Retrieval finished, looking for new gaps");
                 runningTask = null;
             }
-            identifyGaps();
+            if (prevGaps == null) {
+                identifyGaps();
+            } else {
+                checkRemainingGaps();
+            }
         }
         if (queue.isEmpty()) {
             return;
@@ -137,9 +139,8 @@ public class YamcsArchiveTmLink extends AbstractTmDataLink {
      * @return
      */
     void identifyGaps() {
-
-        long start = timeService.getMissionTime() - 86400_000 * retrievalDays;
-        long stop = timeService.getMissionTime();
+        start = timeService.getMissionTime() - 86400_000 * retrievalDays;
+        stop = timeService.getMissionTime();
 
         TmGapFinder gapFinder = new TmGapFinder(yamcsInstance, parentLink, eventProducer, retrievalDays,
                 p -> isPacketRequired(p));
@@ -148,41 +149,35 @@ public class YamcsArchiveTmLink extends AbstractTmDataLink {
 
         if (gaps.size() == 0) {
             log.debug("No gap identified.");
-            prevGaps = null;
+            log.debug("Scheduling next gap filling in {} seconds", gapFillingInterval);
+            parentLink.getExecutor().schedule(this::retrieveGaps, gapFillingInterval, TimeUnit.SECONDS);
             return;
         }
 
         Collections.sort(gaps);
 
-        Iterator<Gap> it = gaps.iterator();
-        while (it.hasNext()) {
-            Gap g = it.next();
-            if (Collections.binarySearch(permanentGaps, g) >= 0) {
-                log.debug("Not retrieving gap {} because it is in the permanent list");
-                it.remove();
-            }
-        }
-
-        if (prevGaps != null) {
-            it = gaps.iterator();
-            boolean needsSorting = false;
-            while (it.hasNext()) {
-                Gap g = it.next();
-                if (Collections.binarySearch(prevGaps, g) >= 0) {
-                    log.warn("Gap {} still remains after replay, adding it to the permament list", g);
-                    permanentGaps.add(g);
-                    needsSorting = true;
-                    it.remove();
-                }
-
-            }
-            if (needsSorting) {
-                Collections.sort(permanentGaps);
-            }
-        }
         prevGaps = gaps;
         log.info("Identified {} gaps for the retrieval", gaps.size());
         queue.addAll(gaps);
+    }
+
+    void checkRemainingGaps() {
+        TmGapFinder gapFinder = new TmGapFinder(yamcsInstance, parentLink, eventProducer, retrievalDays,
+                p -> isPacketRequired(p));
+
+        var gaps = gapFinder.identifyGaps(start, stop);
+
+        for (Gap gap : gaps) {
+            if (Collections.binarySearch(prevGaps, gap) >= 0) {
+                if (gap.stop < stop) {
+                    log.warn("Gap {} still remains after replay", gap);
+                }
+            }
+        }
+
+        prevGaps = null;
+        log.debug("Scheduling next gap filling in {} seconds", gapFillingInterval);
+        parentLink.getExecutor().schedule(this::retrieveGaps, gapFillingInterval, TimeUnit.SECONDS);
     }
 
     void retrieveGap(Gap g) {
@@ -205,6 +200,11 @@ public class YamcsArchiveTmLink extends AbstractTmDataLink {
     private boolean isPacketRequired(String name) {
         return containers.contains(name);
     }
+
+    public void setContainers(List<String> containers) {
+        this.containers = containers;
+    }
+
 
     static class Gap implements Comparable<Gap> {
         long start;

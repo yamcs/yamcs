@@ -262,6 +262,29 @@ public class TestTmGapFinder {
         assertEquals(23, log.warns.size()); // Number of 3 (preceded by 2 and 4), 4, 5.1 and 5.2 in sequence
     }
 
+    @Test
+    void testDiffEdgeCases() {
+        GapCollector collector = new GapCollector();
+        MyLog log = new MyLog();
+
+        // Downstream longer than upstream but still covered by upstream
+        List<ArchiveRecord> upstreamRecords = getRecords(
+                1, 4,
+                5, 10 // gap
+        );
+        List<ArchiveRecord> downstreamRecords = getRecords(
+                1, 4,
+                5, 6, // gap
+                7, 8 // no warning
+        );
+        TmGapFinder.addMissing(log, collector, upstreamRecords, downstreamRecords);
+
+        assertEquals(1, collector.gaps.size());
+        assertEquals(0, log.warns.size());
+        checkEquals_s(5, 10, collector.gaps.get(0));
+        // TODO: more cases
+    }
+
     private List<ArchiveRecord> getRecords(long... t) {
         List<ArchiveRecord> r = new ArrayList<>();
         for (int i = 0; i < t.length; i += 2) {

@@ -48,9 +48,9 @@ public class TmGapFinder {
 
     /**
      * retrieves the TM index from upstream and compares it with the local
-     * 
+     *
      * @return
-     * 
+     *
      * @return
      */
     List<Gap> identifyGaps(long start, long stop) {
@@ -133,7 +133,7 @@ public class TmGapFinder {
                     if (down.getNum() < up.getNum()) {
                         gapCollector.addGap(up.getFirst(), up.getLast());
                     } else if (down.getNum() > up.getNum()) {
-                        log.warn("Downstream record has more data that the related upstream record");
+                        log.warn("Downstream record has more data that the related upstream record - DOWN: " + toString(down) + ", UP: " + toString(up));
                     }
                     prevUp = up;
                     keep = false; // Get next record
@@ -181,7 +181,9 @@ public class TmGapFinder {
 
         while (iterator.hasNext()) {
             down = iterator.next();
-            log.warn("Downstream archive has more data than upstream: " + toString(down));
+            if (prevUp == null || Timestamps.compare(down.getLast(), prevUp.getLast()) > 0) {
+                log.warn("Downstream archive has more data than upstream: " + toString(down));
+            }
         }
     }
 
