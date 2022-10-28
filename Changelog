@@ -1,3 +1,9 @@
+Version 5.7.9 released 28-Oct-2022
+- Added cascading feature (one Yamcs downstream Yamcs server connecting to an upstream Yamcs server)
+- Improved the replay capabilities in yamcs-web
+- Various tweaks and fixes
+
+
 Version 5.7.8 released 5-Oct-2022
 - Fix for a case when CFDP service was configured with enableAtStartup: false. Before the fix, the service was still processing incoming PDUs.
 
