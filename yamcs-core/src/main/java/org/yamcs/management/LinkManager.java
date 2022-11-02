@@ -516,6 +516,7 @@ public class LinkManager {
                     if (!tcLink.isEffectivelyDisabled()) {
                         tcLink.sendTc(pc);
                         sent = true;
+                    }
                 }
 
                 if (!sent && failIfNoLinkAvailable) {
