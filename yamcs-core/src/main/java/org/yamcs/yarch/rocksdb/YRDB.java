@@ -21,6 +21,7 @@ import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
+import org.rocksdb.Snapshot;
 import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 import org.yamcs.utils.ByteArrayWrapper;
@@ -370,5 +371,13 @@ public class YRDB {
 
     public void write(WriteOptions writeOpts, WriteBatch writeBatch) throws RocksDBException {
         db.write(writeOpts, writeBatch);
+    }
+
+    public Snapshot getSnapshot() {
+        return db.getSnapshot();
+    }
+
+    public void releaseSnapshot(Snapshot snapshot) {
+        db.releaseSnapshot(snapshot);
     }
 }

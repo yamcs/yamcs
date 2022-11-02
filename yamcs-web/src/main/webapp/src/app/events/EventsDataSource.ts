@@ -19,6 +19,8 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
   events$ = new BehaviorSubject<Event[]>([]);
   private eventBuffer: EventBuffer;
 
+  sources$ = new BehaviorSubject<string[]>([]);
+
   public loading$ = new BehaviorSubject<boolean>(false);
   public streaming$ = new BehaviorSubject<boolean>(false);
 
@@ -29,7 +31,8 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
     super();
     this.syncSubscription = synchronizer.sync(() => {
       if (this.eventBuffer.dirty && !this.loading$.getValue()) {
-        this.events$.next(this.eventBuffer.snapshot());
+        const events = this.eventBuffer.snapshot();
+        this.events$.next(events);
         this.eventBuffer.dirty = false;
       }
     });
@@ -50,14 +53,23 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
 
   loadEvents(options: GetEventsOptions) {
     this.loading$.next(true);
-    return this.loadPage({
-      ...options,
-      limit: this.pageSize + 1, // One extra to detect hasMore
-    }).then(events => {
+    return Promise.all([
+      this.yamcs.yamcsClient.getEventSources(this.yamcs.instance!),
+      this.loadPage({
+        ...options,
+        limit: this.pageSize + 1, // One extra to detect hasMore
+      }),
+    ]).then(results => {
+      const sources = results[0];
+      const events = results[1];
+
       this.loading$.next(false);
       this.eventBuffer.reset();
       this.blockHasMore = false;
       this.eventBuffer.addArchiveData(events);
+
+      this.sources$.next(sources);
+      return events;
     });
   }
 
@@ -108,11 +120,29 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
     this.realtimeSubscription = this.yamcs.yamcsClient.createEventSubscription({
       instance: this.yamcs.instance!,
     }, event => {
+      this.addEventSource(event);
       if (!this.loading$.getValue() && this.matchesFilter(event)) {
         (event as AnimatableEvent).animate = true;
         this.eventBuffer.addRealtimeEvent(event);
       }
     });
+  }
+
+  private addEventSource(event: Event) {
+    if (!event.source) {
+      return;
+    }
+
+    for (const source of this.sources$.value) {
+      if (source === event.source) {
+        return;
+      }
+    }
+
+    this.sources$.next([
+      ...this.sources$.value,
+      event.source,
+    ].sort((a, b) => a.toLowerCase().localeCompare(b.toLocaleLowerCase())));
   }
 
   private matchesFilter(event: Event) {
@@ -162,18 +192,15 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
   }
 
   stopStreaming() {
-    if (this.realtimeSubscription) {
-      this.realtimeSubscription.cancel();
-    }
+    this.realtimeSubscription?.cancel();
     this.streaming$.next(false);
   }
 
   disconnect() {
     this.stopStreaming();
-    if (this.syncSubscription) {
-      this.syncSubscription.unsubscribe();
-    }
+    this.syncSubscription?.unsubscribe();
     this.events$.complete();
+    this.sources$.complete();
     this.loading$.complete();
     this.streaming$.complete();
   }

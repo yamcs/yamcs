@@ -60,13 +60,15 @@ public class BackFiller implements StreamSubscriber {
     // how often (in seconds) the fillup based on the stream monitoring is started
     long streamUpdateFillFrequency;
 
+    // after how many backfilling tasks to trigger a parchive.compact()
+    int compactFrequency = 5;
+
+    int compactCount = 0;
+
     BackFiller(ParameterArchive parchive, YConfiguration config) {
         this.parchive = parchive;
         this.log = new Log(BackFiller.class, parchive.getYamcsInstance());
-     //   YamcsServer.getServer().getThreadPoolExecutor()
-        if (config != null) {
-            parseConfig(config);
-        }
+        parseConfig(config);
         timeService = YamcsServer.getTimeService(parchive.getYamcsInstance());
         executor = new ScheduledThreadPoolExecutor(1,
                 new ThreadFactoryBuilder().setNameFormat("ParameterArchive-BackFiller-"+parchive.getYamcsInstance()).build());
@@ -86,6 +88,7 @@ public class BackFiller implements StreamSubscriber {
         schedSpec.addOption("numIntervals", OptionType.INTEGER);
 
         spec.addOption("schedule", OptionType.MAP).withSpec(schedSpec);
+        spec.addOption("compactFrequency", OptionType.INTEGER).withDefault(5);
 
         return spec;
 
@@ -158,6 +161,7 @@ public class BackFiller implements StreamSubscriber {
                 subscribedStreams.add(s);
             }
         }
+        this.compactFrequency = config.getInt("compactFrequency", 5);
     }
 
     public Future<?> scheduleFillingTask(long start, long stop) {
@@ -174,7 +178,7 @@ public class BackFiller implements StreamSubscriber {
             String timePeriod = '[' + TimeEncoding.toString(start) + "-" + TimeEncoding.toString(stop) + ')';
             log.debug("Starting parameter archive fillup for interval {}", timePeriod);
             long t0 = System.nanoTime();
-            ReplayOptions rrb = ReplayOptions.getAfapReplay(start - warmupTime, stop);
+            ReplayOptions rrb = ReplayOptions.getAfapReplay(start - warmupTime, stop, false);
             Processor proc = ProcessorFactory.create(parchive.getYamcsInstance(),
                     "ParameterArchive-backfilling_" + count.incrementAndGet(), "ParameterArchive", "internal",
                     rrb);
@@ -190,6 +194,10 @@ public class BackFiller implements StreamSubscriber {
                 long t1 = System.nanoTime();
                 log.debug("Parameter archive fillup for interval {} finished, processed {} samples in {} millisec",
                         timePeriod, bft.getNumProcessedParameters(), (t1 - t0) / 1_000_000);
+            }
+            if (compactFrequency != -1 && ++compactCount >= compactFrequency) {
+                compactCount = 0;
+                parchive.compact();
             }
         } catch (Exception e) {
             log.error("Error when running the archive filler task", e);

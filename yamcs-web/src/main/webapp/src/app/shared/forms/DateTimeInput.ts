@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ElementRef, forwardRef, ViewChild } from '@angular/core';
-import { ControlValueAccessor, FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator } from '@angular/forms';
+import { ControlValueAccessor, UntypedFormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator } from '@angular/forms';
 import { DateAdapter } from '@angular/material/core';
 import { MatDatepicker } from '@angular/material/datepicker';
 import * as utils from '../utils';
@@ -81,7 +81,7 @@ export class DateTimeInput implements ControlValueAccessor, Validator {
   registerOnTouched(fn: any) {
   }
 
-  validate(control: FormControl): ValidationErrors | null {
+  validate(control: UntypedFormControl): ValidationErrors | null {
     if (control.value === INVALID_ISOSTRING) {
       return { date: true };
     }

@@ -9,6 +9,7 @@ import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.DbRange;
+import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.FilterableTarget;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TableColumnDefinition;
@@ -22,6 +23,7 @@ import com.google.common.collect.BiMap;
 public class TableWalkerBuilder implements FilterableTarget {
     static Log log = new Log(TableWalkerBuilder.class);
 
+    final private ExecutionContext ctx;
     final private YarchDatabaseInstance ydb;
     final private TableDefinition tableDefinition;
 
@@ -37,8 +39,9 @@ public class TableWalkerBuilder implements FilterableTarget {
     private boolean ascending = true;
     private boolean follow = false;
 
-    public TableWalkerBuilder(YarchDatabaseInstance ydb, TableDefinition tableDefinition) {
-        this.ydb = ydb;
+    public TableWalkerBuilder(ExecutionContext ctx, TableDefinition tableDefinition) {
+        this.ctx = ctx;
+        this.ydb = ctx.getDb();
         this.tableDefinition = tableDefinition;
     }
 
@@ -117,6 +120,8 @@ public class TableWalkerBuilder implements FilterableTarget {
         case NOT_EQUAL:
             // TODO support multiple ranges
             break;
+        case OVERLAP:
+            throw new IllegalStateException();
         }
     }
 
@@ -139,6 +144,8 @@ public class TableWalkerBuilder implements FilterableTarget {
         case NOT_EQUAL:
             // TODO - two ranges have to be created
             break;
+        case OVERLAP:
+            throw new IllegalStateException();
         }
     }
 
@@ -212,7 +219,7 @@ public class TableWalkerBuilder implements FilterableTarget {
         }
         TableWalker tw;
         if (skRange == null) {
-            tw = ydb.getStorageEngine(tableDefinition).newTableWalker(ydb, tableDefinition, ascending, follow);
+            tw = ydb.getStorageEngine(tableDefinition).newTableWalker(ctx, tableDefinition, ascending, follow);
             tw.setPartitionFilter(partitionTimeFilter, partitionValueFilter);
         } else {
             tw = ydb.getStorageEngine(tableDefinition).newSecondaryIndexTableWalker(ydb, tableDefinition, ascending,

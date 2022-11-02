@@ -152,15 +152,6 @@ public class PGSegment {
         }
         return pvSegments.get(idx);
     }
-    /**
-     * called before writing to disk to set the segment start to the first timestamp in the segment.
-     * 
-     * This is necessary in order to not overwrite some existing data in the archive (from a previous yamcs run in the
-     * same interval)
-     */
-    void trimSegmentStart() {
-        timeSegment.trimSegmentStart();
-    }
 
     public long getInterval() {
         return ParameterArchive.getInterval(timeSegment.getSegmentStart());
@@ -170,6 +161,10 @@ public class PGSegment {
         return timeSegment.getSegmentStart();
     }
 
+    /**
+     * 
+     * @return timestamp of the last parameter in this segment
+     */
     public long getSegmentEnd() {
         return timeSegment.getSegmentEnd();
     }

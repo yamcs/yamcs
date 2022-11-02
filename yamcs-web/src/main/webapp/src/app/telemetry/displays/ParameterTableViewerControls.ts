@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
+import { ConfigService } from '../../core/services/ConfigService';
 import { SelectParameterDialog } from '../../shared/dialogs/SelectParameterDialog';
 import { ExportArchiveDataDialog } from './ExportArchiveDataDialog';
 import { ParameterTableViewer } from './ParameterTableViewer';
@@ -13,6 +14,8 @@ import { ParameterTableViewer } from './ParameterTableViewer';
 })
 export class ParameterTableViewerControls {
 
+  private bucket: string;
+
   initialized$ = new BehaviorSubject<boolean>(false);
 
   viewer: ParameterTableViewer;
@@ -21,7 +24,10 @@ export class ParameterTableViewerControls {
     private dialog: MatDialog,
     private snackbar: MatSnackBar,
     private authService: AuthService,
-  ) {}
+    configService: ConfigService,
+  ) {
+    this.bucket = configService.getConfig().displayBucket;
+  }
 
   public init(viewer: ParameterTableViewer) {
     this.viewer = viewer;
@@ -45,7 +51,7 @@ export class ParameterTableViewerControls {
 
   mayManageDisplays() {
     const user = this.authService.getUser()!;
-    return user.hasObjectPrivilege('ManageBucket', 'displays')
+    return user.hasObjectPrivilege('ManageBucket', this.bucket)
       || user.hasSystemPrivilege('ManageAnyBucket');
   }
 

@@ -1,7 +1,5 @@
 package org.yamcs.timeline;
 
-import static org.yamcs.timeline.TimelineItemDb.CNAME_TYPE;
-
 import org.yamcs.protobuf.TimelineItem.Builder;
 import org.yamcs.protobuf.TimelineItemType;
 import org.yamcs.yarch.Tuple;
@@ -18,21 +16,19 @@ import org.yamcs.yarch.Tuple;
 public class TimelineEvent extends TimelineItem {
 
     public TimelineEvent(String id) {
-        super(id);
+        super(TimelineItemType.EVENT, id);
     }
 
     public TimelineEvent(Tuple tuple) {
-        super(tuple);
+        super(TimelineItemType.EVENT, tuple);
     }
 
     @Override
-    protected void addToProto(Builder protob) {
-        protob.setType(TimelineItemType.EVENT);
+    protected void addToProto(boolean detail, Builder protob) {
     }
 
     @Override
     protected void addToTuple(Tuple tuple) {
-        tuple.addEnumColumn(CNAME_TYPE, TimelineItemType.EVENT.name());
     }
 
     @Override

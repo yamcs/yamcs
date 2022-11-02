@@ -17,6 +17,7 @@ import org.yamcs.protobuf.CreateItemRequest;
 import org.yamcs.protobuf.DeleteBandRequest;
 import org.yamcs.protobuf.DeleteItemRequest;
 import org.yamcs.protobuf.DeleteTimelineGroupRequest;
+import org.yamcs.protobuf.GetItemLogRequest;
 import org.yamcs.protobuf.GetItemRequest;
 import org.yamcs.protobuf.ListBandsRequest;
 import org.yamcs.protobuf.ListBandsResponse;
@@ -29,6 +30,7 @@ import org.yamcs.protobuf.ListTimelineTagsResponse;
 import org.yamcs.protobuf.TimelineApiClient;
 import org.yamcs.protobuf.TimelineBand;
 import org.yamcs.protobuf.TimelineItem;
+import org.yamcs.protobuf.TimelineItemLog;
 import org.yamcs.protobuf.TimelineSourceCapabilities;
 import org.yamcs.protobuf.UpdateItemRequest;
 
@@ -79,6 +81,9 @@ public class TimelineClient {
         if (item.hasGroupId()) {
             requestb.setGroupId(item.getGroupId());
         }
+        if (item.hasDescription()) {
+            requestb.setDescription(item.getDescription());
+        }
         CompletableFuture<TimelineItem> f = new CompletableFuture<>();
         timelineService.createItem(null, requestb.build(), new ResponseObserver<>(f));
         return f;
@@ -112,6 +117,16 @@ public class TimelineClient {
         return f;
     }
 
+    public CompletableFuture<TimelineItemLog> getItemLog(String id) {
+        CompletableFuture<TimelineItemLog> f = new CompletableFuture<>();
+        GetItemLogRequest.Builder requestb = GetItemLogRequest.newBuilder()
+                .setInstance(instance)
+                .setSource(RDB_TIMELINE_SOURCE)
+                .setId(id);
+        timelineService.getItemLog(null, requestb.build(), new ResponseObserver<>(f));
+        return f;
+    }
+
     public CompletableFuture<TimelineItem> deleteTimelineGroup(String id) {
         return deleteTimelineGroup(RDB_TIMELINE_SOURCE, id);
     }
@@ -134,7 +149,7 @@ public class TimelineClient {
         ListSourcesRequest.Builder requestb = ListSourcesRequest.newBuilder().setInstance(instance);
         CompletableFuture<ListSourcesResponse> f = new CompletableFuture<>();
         timelineService.listSources(null, requestb.build(), new ResponseObserver<>(f));
-        return f.thenApply(r -> r.getSourcesMap());
+        return f.thenApply(ListSourcesResponse::getSourcesMap);
     }
 
     private class TimelineItemPage extends AbstractPage<ListItemsRequest, ListItemsResponse, TimelineItem>
@@ -154,7 +169,7 @@ public class TimelineClient {
         ListTimelineTagsRequest.Builder requestb = ListTimelineTagsRequest.newBuilder().setInstance(instance);
         CompletableFuture<ListTimelineTagsResponse> f = new CompletableFuture<>();
         timelineService.listTags(null, requestb.build(), new ResponseObserver<>(f));
-        return f.thenApply(r -> r.getTagsList());
+        return f.thenApply(ListTimelineTagsResponse::getTagsList);
     }
 
     public CompletableFuture<TimelineItem> updateItem(TimelineItem item) {
@@ -184,6 +199,10 @@ public class TimelineClient {
         if (item.hasGroupId()) {
             requestb.setGroupId(item.getGroupId());
         }
+        if (item.hasStatus()) {
+            requestb.setStatus(item.getStatus());
+        }
+
         CompletableFuture<TimelineItem> f = new CompletableFuture<>();
         timelineService.updateItem(null, requestb.build(), new ResponseObserver<>(f));
         return f;
@@ -193,7 +212,7 @@ public class TimelineClient {
         ListBandsRequest.Builder request = ListBandsRequest.newBuilder().setInstance(instance);
         CompletableFuture<ListBandsResponse> f = new CompletableFuture<>();
         timelineService.listBands(null, request.build(), new ResponseObserver<>(f));
-        return f.thenApply(r -> r.getBandsList());
+        return f.thenApply(ListBandsResponse::getBandsList);
     }
 
     public CompletableFuture<TimelineBand> deleteBand(String id) {
@@ -209,7 +228,7 @@ public class TimelineClient {
         AddBandRequest.Builder requestb = AddBandRequest.newBuilder()
                 .setType(band.getType())
                 .setInstance(instance);
-        requestb.addAllTags(band.getTagsList());
+        requestb.addAllFilters(band.getFiltersList());
         requestb.putAllProperties(band.getPropertiesMap());
         if (band.hasName()) {
             requestb.setName(band.getName());
@@ -220,6 +239,10 @@ public class TimelineClient {
         if (band.hasShared()) {
             requestb.setShared(band.getShared());
         }
+        if (band.hasSource()) {
+            requestb.setSource(band.getSource());
+        }
+
         CompletableFuture<TimelineBand> f = new CompletableFuture<>();
         timelineService.addBand(null, requestb.build(), new ResponseObserver<>(f));
         return f;

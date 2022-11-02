@@ -12,7 +12,9 @@ import org.yamcs.events.EventProducerFactory;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
+import org.yamcs.time.FixedSizeTimeDecoder;
 import org.yamcs.time.TimeCorrelationService;
+import org.yamcs.time.TimeDecoder;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
@@ -27,6 +29,7 @@ import org.yamcs.utils.TimeEncoding;
  *      packetPreprocessor: org.yamcs.tctm.concrete_classname
  *      packetPreprocessorArgs:
  *          byteOrder: LITTLE_ENDIAN
+ *          checkSequence: true
  *          timeEncoding:
  *              epoch: CUSTOM
  *              epochUTC: 1970-01-01T00:00:00Z
@@ -36,6 +39,9 @@ import org.yamcs.utils.TimeEncoding;
  * 
  * The {@code byteOrder} option (default is {@code BIG_ENDIAN}) is used by some implementing classes to decode parts of
  * the header.
+ * <p>
+ * The {@code checkSequence} option (default is true) can configure the implementing classes to raise an event if the
+ * sequence count is not continuous (this indicates packet loss).
  * <p>
  * The {@code timeEncoding} is used to convert the extracted time to Yamcs time.
  * 
@@ -71,10 +77,15 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
         TAI, J2000, UNIX, GPS, CUSTOM, NONE
     };
 
+    public static enum TimeDecoderType {
+        CUC, FIXED
+    }
+
     protected static final String CONFIG_KEY_ERROR_DETECTION = "errorDetection";
     protected static final String CONFIG_KEY_TIME_ENCODING = "timeEncoding";
     protected static final String CONFIG_KEY_TCO_SERVICE = "tcoService";
     protected static final String CONFIG_KEY_BYTE_ORDER = "byteOrder";
+    protected static final String CONFIG_KEY_CHECK_SEQUENCE = "checkSequence";
 
     static final String ETYPE_CORRUPTED_PACKET = "CORRUPTED_PACKET";
 
@@ -82,6 +93,8 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
     protected ErrorDetectionWordCalculator errorDetectionCalculator;
     protected EventProducer eventProducer;
     protected TimeService timeService;
+
+    protected boolean checkForSequenceDiscontinuity = true;
 
     // used by some preprocessors to convert the generation time in the packet to yamcs time
     protected TimeEpochs timeEpoch;
@@ -111,38 +124,30 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
         errorDetectionCalculator = getErrorDetectionWordCalculator(config);
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, this.getClass().getSimpleName(), 10000);
         timeService = YamcsServer.getTimeService(yamcsInstance);
+        this.checkForSequenceDiscontinuity = config.getBoolean(CONFIG_KEY_CHECK_SEQUENCE, true);
+
         configureTimeDecoder(config);
 
-        if (config != null) {
-            if (config.containsKey(CONFIG_KEY_TCO_SERVICE)) {
-                String tcoServiceName = config.getString(CONFIG_KEY_TCO_SERVICE);
-                tcoService = YamcsServer.getServer().getInstance(yamcsInstance).getService(TimeCorrelationService.class,
-                        tcoServiceName);
-                if (tcoService == null) {
-                    throw new ConfigurationException(
-                            "Cannot find a time correlation service with name " + tcoServiceName);
-                }
+        if (config.containsKey(CONFIG_KEY_TCO_SERVICE)) {
+            String tcoServiceName = config.getString(CONFIG_KEY_TCO_SERVICE);
+            tcoService = YamcsServer.getServer().getInstance(yamcsInstance).getService(TimeCorrelationService.class,
+                    tcoServiceName);
+            if (tcoService == null) {
+                throw new ConfigurationException(
+                        "Cannot find a time correlation service with name " + tcoServiceName);
             }
-            byteOrder = getByteOrder(config);
         }
+        byteOrder = getByteOrder(config);
     }
 
-    void configureTimeDecoder(YConfiguration config) {
+    private void configureTimeDecoder(YConfiguration config) {
         if (config != null) {
             useLocalGenerationTime = config.getBoolean("useLocalGenerationTime", false);
         }
 
         if (!useLocalGenerationTime && config != null && config.containsKey(CONFIG_KEY_TIME_ENCODING)) {
             YConfiguration c = config.getConfig(CONFIG_KEY_TIME_ENCODING);
-            String type = c.getString("type", "CUC");
-            if ("CUC".equals(type)) {
-                int implicitPField = c.getInt("implicitPField", -1);
-                int implicitPFieldCont = c.getInt("implicitPFieldCont", -1);
-                timeDecoder = new CucTimeDecoder(implicitPField, implicitPFieldCont);
-            } else {
-                throw new ConfigurationException("Time encoding of type '" + type
-                        + " not supported. Supported: CUC=CCSDS unsegmented time");
-            }
+            timeDecoder = getDecoder(c);
             timeEpoch = c.getEnum("epoch", TimeEpochs.class, TimeEpochs.GPS);
             if (timeEpoch == TimeEpochs.CUSTOM) {
                 customEpochIncludeLeapSecond = c.getBoolean("timeIncludesLeapSeconds", true);
@@ -152,11 +157,36 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
                     customEpoch = TimeEncoding.toUnixMillisec(customEpoch);
                 }
             }
-        } else {
-            timeEpoch = TimeEpochs.GPS;
-            timeDecoder = new CucTimeDecoder(-1);
+            log.debug("Using time decoder {}", timeDecoder);
         }
-        log.debug("Using time decoder {}", timeDecoder);
+
+    }
+
+    private TimeDecoder getDecoder(YConfiguration c) {
+        TimeDecoderType type = c.getEnum("type", TimeDecoderType.class, getDefaultDecoderType());
+
+        TimeDecoder timeDecoder;
+
+        switch (type) {
+        case CUC:
+            int implicitPField = c.getInt("implicitPField", -1);
+            int implicitPFieldCont = c.getInt("implicitPFieldCont", -1);
+            timeDecoder = new CucTimeDecoder(implicitPField, implicitPFieldCont);
+            break;
+        case FIXED:
+            int size = c.getInt("size", 8);
+            if (size != 4 && size != 8) {
+                throw new ConfigurationException(
+                        "Unsupported size " + size + " for fixed decoder. Only 4 and 8 bytes supported");
+            }
+            double multiplier = c.getDouble("multiplier", 1);
+            timeDecoder = new FixedSizeTimeDecoder(size, multiplier);
+            break;
+        default:
+            throw new UnsupportedOperationException("unknown time decoder type " + type);
+        }
+
+        return timeDecoder;
     }
 
     public void verifyCrc(TmPacket tmPacket) {
@@ -244,7 +274,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
                 tcoService.timestamp(obt, tmPacket);
             } else {
                 long t = timeDecoder.decode(packet, offset);
-                long gentime = timeEpoch == null ? t : shiftFromEpoch(t);
+                long gentime = shiftFromEpoch(t);
                 tmPacket.setGenerationTime(gentime);
                 if (tcoService != null) {
                     tcoService.verify(tmPacket);
@@ -289,4 +319,21 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
                     "Invalid '" + order + "' byte order specified. Use one of BIG_ENDIAN or LITTLE_ENDIAN");
         }
     }
+
+    /**
+     * return the default decoder type. The subclasses may override this for compatibility with old Yamcs releases
+     */
+    protected TimeDecoderType getDefaultDecoderType() {
+        return TimeDecoderType.CUC;
+    }
+
+    public boolean checkForSequenceDiscontinuity() {
+        return checkForSequenceDiscontinuity;
+    }
+
+    @Override
+    public void checkForSequenceDiscontinuity(boolean checkForSequenceDiscontinuity) {
+        this.checkForSequenceDiscontinuity = checkForSequenceDiscontinuity;
+    }
+
 }

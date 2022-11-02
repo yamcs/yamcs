@@ -13,17 +13,17 @@
 }
 
 .text-action:hover {
-  color: #1b61b9;
+  color: #009e87;
 }
 
 :host.active .text-action {
-  color: #1b61b9;
+  color: #009e87;
 }
 
 :host.active .action-content {
-  color: #1b61b9;
+  color: #009e87;
   margin-bottom: -2px;
-  border-bottom: 2px solid #1b61b9;
+  border-bottom: 2px solid #009e87;
 }
 
 :host.disabled .text-action {

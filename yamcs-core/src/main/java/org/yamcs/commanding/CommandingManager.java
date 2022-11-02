@@ -13,6 +13,8 @@ import org.yamcs.ValidationException;
 import org.yamcs.YamcsException;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
 import org.yamcs.management.ManagementService;
+import org.yamcs.mdb.MetaCommandProcessor;
+import org.yamcs.mdb.MetaCommandProcessor.CommandBuildResult;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.security.User;
@@ -22,8 +24,6 @@ import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.MetaCommandProcessor;
-import org.yamcs.xtceproc.MetaCommandProcessor.CommandBuildResult;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -60,7 +60,8 @@ public class CommandingManager extends AbstractService {
     }
 
     /**
-     * pc is a command whose source is included. parse the source populate the binary part and the definition.
+     * Creates a new {@link PreparedCommand} where the binary is created by processing the provided arguments and
+     * matching it against the MDB definition.
      */
     public PreparedCommand buildCommand(MetaCommand mc, Map<String, Object> argAssignmentList, String origin,
             int seq, User user) throws ErrorInCommand, YamcsException {
@@ -72,11 +73,29 @@ public class CommandingManager extends AbstractService {
                 .setSequenceNumber(seq).setGenerationTime(processor.getCurrentTime()).build();
         PreparedCommand pc = new PreparedCommand(cmdId);
         pc.setMetaCommand(mc);
+        pc.setUnprocessedBinary(cbr.getCmdPacket());
         pc.setBinary(cbr.getCmdPacket());
         pc.setUsername(user.getName());
 
         Set<String> userAssignedArgumentNames = new HashSet<>(argAssignmentList.keySet());
         pc.setArgAssignment(cbr.getArgs(), userAssignedArgumentNames);
+
+        return pc;
+    }
+
+    /**
+     * Creates a new {@link PreparedCommand} with raw provided binary.
+     */
+    public PreparedCommand buildRawCommand(MetaCommand mc, byte[] binary, String origin, int seq, User user) {
+        log.debug("Building raw command {} of length {}", mc.getName(), binary.length);
+
+        CommandId cmdId = CommandId.newBuilder().setCommandName(mc.getQualifiedName()).setOrigin(origin)
+                .setSequenceNumber(seq).setGenerationTime(processor.getCurrentTime()).build();
+        PreparedCommand pc = new PreparedCommand(cmdId);
+        pc.setMetaCommand(mc);
+        pc.setUnprocessedBinary(binary);
+        pc.setBinary(binary);
+        pc.setUsername(user.getName());
 
         return pc;
     }
@@ -130,7 +149,7 @@ public class CommandingManager extends AbstractService {
         if (!paramsToSubscribe.isEmpty()) {
             processor.getParameterProcessorManager().subscribeToProviders(paramsToSubscribe);
         } else {
-            log.debug("No parameter required for post transmission contraint check");
+            log.debug("No parameter required for post transmission constraint check");
         }
         commandQueueManager.startAsync();
         commandQueueManager.awaitRunning();
@@ -153,21 +172,22 @@ public class CommandingManager extends AbstractService {
             CommandVerificationHandler cvh = new CommandVerificationHandler(this, activeCommand);
             cvh.start();
         } else {
-            cmdHistoryManager.unsubscribeCommand(activeCommand.getCommandId(), activeCommand);
+            commandFinished(activeCommand);
         }
 
         commandReleaser.releaseCommand(activeCommand.getPreparedCommand());
     }
 
     public void failedCommand(ActiveCommand activeCommand) {
-        cmdHistoryManager.unsubscribeCommand(activeCommand.getCommandId(), activeCommand);
-    }
-
-    public void unhandledCommand(ActiveCommand activeCommand) {
-        cmdHistoryManager.unsubscribeCommand(activeCommand.getCommandId(), activeCommand);
+        commandFinished(activeCommand);
     }
 
     public void verificatonFinished(ActiveCommand activeCommand) {
+        commandFinished(activeCommand);
+    }
+
+    private void commandFinished(ActiveCommand activeCommand) {
         cmdHistoryManager.unsubscribeCommand(activeCommand.getCommandId(), activeCommand);
+        cmdHistoryManager.commandFinished(activeCommand.getCommandId());
     }
 }

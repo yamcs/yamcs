@@ -1,14 +1,14 @@
 package org.yamcs.parameterarchive;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.yamcs.parameterarchive.TestUtils.checkEquals;
 
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -16,13 +16,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.rocksdb.RocksDBException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
@@ -42,17 +39,8 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 
-@RunWith(Parameterized.class)
 public class ParameterArchiveTest {
     String instance = "ParameterArchiveTest";
-
-    @org.junit.runners.Parameterized.Parameter
-    public String partitioningSchema;
-
-    @Parameters
-    public static List<String> getPartitioningSchemas() {
-        return Arrays.asList("none", "YYYY", "YYYY/MM");
-    }
 
     static MockupTimeService timeService;
     static Parameter p1, p2, p3, p4, p5, a1;
@@ -60,7 +48,7 @@ public class ParameterArchiveTest {
     ParameterIdDb pidMap;
     ParameterGroupIdDb pgidMap;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         p1 = new Parameter("p1");
         p2 = new Parameter("p2");
@@ -82,12 +70,12 @@ public class ParameterArchiveTest {
         // org.yamcs.LoggingUtils.enableLogging();
     }
 
-    @Before
-    public void openDb() throws Exception {
-        String dbroot = YarchDatabase.getInstance(instance).getRoot();
-        FileUtils.deleteRecursivelyIfExists(Paths.get(dbroot));
-        FileUtils.deleteRecursivelyIfExists(Paths.get(dbroot + ".rdb"));
-        FileUtils.deleteRecursivelyIfExists(Paths.get(dbroot + ".tbs"));
+    public void openDb(String partitioningSchema) throws Exception {
+        Path dbroot = Path.of(YarchDatabase.getDataDir(), instance);
+        FileUtils.deleteRecursivelyIfExists(dbroot);
+        FileUtils.deleteRecursivelyIfExists(Path.of(dbroot + ".rdb"));
+        FileUtils.deleteRecursivelyIfExists(Path.of(dbroot + ".tbs"));
+
         RdbStorageEngine rse = RdbStorageEngine.getInstance();
         if (rse.getTablespace(instance) != null) {
             rse.dropTablespace(instance);
@@ -98,6 +86,10 @@ public class ParameterArchiveTest {
         if (partitioningSchema != null) {
             conf.put("partitioningSchema", partitioningSchema);
         }
+        Map<String, Object> bfc = new HashMap<>();
+        bfc.put("enabled", Boolean.FALSE);
+        conf.put("backFiller", bfc);
+
         parchive = new ParameterArchive();
         YConfiguration config = parchive.getSpec().validate(YConfiguration.wrap(conf));
         parchive.init(instance, "test", config);
@@ -107,21 +99,24 @@ public class ParameterArchiveTest {
         assertNotNull(pgidMap);
     }
 
-    @After
+    @AfterEach
     public void closeDb() throws Exception {
         RdbStorageEngine rse = RdbStorageEngine.getInstance();
         rse.dropTablespace(instance);
     }
 
-    @Test
-    public void test1() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = { "none", "YYYY", "YYYY/MM" })
+    public void test1(String partitioningSchema) throws Exception {
+        openDb(partitioningSchema);
+
         // create a parameter in the map
         int p1id = pidMap.createAndGet("/test/p1", Type.BINARY);
 
         // close and reopen the archive to check that the parameter is still there
 
         parchive = new ParameterArchive();
-        YConfiguration config = parchive.getSpec().validate(YConfiguration.emptyConfig());
+        YConfiguration config = parchive.getSpec().validate(ParameterArchiveTest.backFillerDisabledConfig());
         parchive.init(instance, "test", config);
         pidMap = parchive.getParameterIdDb();
         pgidMap = parchive.getParameterGroupIdDb();
@@ -133,8 +128,10 @@ public class ParameterArchiveTest {
         assertEquals(p1id, pidMap.createAndGet("/test/p1", Type.BINARY));
     }
 
-    @Test
-    public void testSingleParameter() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = { "none", "YYYY", "YYYY/MM" })
+    public void testSingleParameter(String partitioningSchema) throws Exception {
+        openDb(partitioningSchema);
 
         ParameterValue pv1_0 = getParameterValue(p1, 100, "blala100", 100);
 
@@ -236,8 +233,11 @@ public class ParameterArchiveTest {
     /**
      * If raw values are identical with engineering values, the Parameter Archive stores only the engineering values.
      */
-    @Test
-    public void testRawEqualsEngParameter() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = { "none", "YYYY", "YYYY/MM" })
+    public void testRawEqualsEngParameter(String partitioningSchema) throws Exception {
+        openDb(partitioningSchema);
+
         ParameterValue pv1_0 = getParameterValue(p1, 100, "blala100", "blala100");
         int p1id = parchive.getParameterIdDb().createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType(),
                 pv1_0.getRawValue().getType());
@@ -327,8 +327,11 @@ public class ParameterArchiveTest {
         return pv;
     }
 
-    @Test
-    public void testSingleParameterMultipleGroups() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = { "none", "YYYY", "YYYY/MM" })
+    public void testSingleParameterMultipleGroups(String partitioningSchema) throws Exception {
+        openDb(partitioningSchema);
+
         ParameterValue pv1_0 = getParameterValue(p1, 100, "pv1_0");
         ParameterValue pv2_0 = getParameterValue(p2, 100, "pv2_0");
         ParameterValue pv1_1 = getParameterValue(p1, 200, "pv1_1");
@@ -462,8 +465,11 @@ public class ParameterArchiveTest {
         return retrieveSingleValueMultigroup(start, stop, parameterId, parameterGroupIds, ascending, true, true, true);
     }
 
-    @Test
-    public void testMultipleParameters() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = { "none", "YYYY", "YYYY/MM" })
+    public void testMultipleParameters(String partitioningSchema) throws Exception {
+        openDb(partitioningSchema);
+
         ParameterValue pv1_0 = getParameterValue(p1, 100, "pv1_0");
         ParameterValue pv2_0 = getParameterValue(p2, 100, "pv2_0");
         ParameterValue pv1_1 = getParameterValue(p1, 200, "pv1_1");
@@ -597,8 +603,11 @@ public class ParameterArchiveTest {
         checkEquals(l7a.get(1), t2, pv1_3, pv2_1);
     }
 
-    @Test
-    public void testArrays() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = { "none", "YYYY", "YYYY/MM" })
+    public void testArrays(String partitioningSchema) throws Exception {
+        openDb(partitioningSchema);
+
         ParameterValue pva1_0 = getArrayValue(a1, 100, "a");
         ParameterValue pva1_1 = getArrayValue(a1, 100, "b", "c");
 
@@ -642,8 +651,11 @@ public class ParameterArchiveTest {
         checkEquals(c.list.get(1), t2, pva1_1);
     }
 
-    @Test
-    public void testExpireMillis() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = { "none", "YYYY", "YYYY/MM" })
+    public void testExpireMillis(String partitioningSchema) throws Exception {
+        openDb(partitioningSchema);
+
         long t = TimeEncoding.parse("2018-03-19T10:35:00");
         ParameterValue pv1_0 = getParameterValue(p1, t, "blala" + t, (int) t);
         pv1_0.setExpireMillis(1234);
@@ -664,7 +676,34 @@ public class ParameterArchiveTest {
         Pvalue.ParameterStatus pstatus = l0a.get(0).paramStatus[0];
         assertTrue(pstatus.hasExpireMillis());
         assertEquals(1234, pstatus.getExpireMillis());
+    }
 
+    @ParameterizedTest
+    @ValueSource(strings = { "none", "YYYY", "YYYY/MM" })
+    public void testSameTimestamp(String partitioningSchema) throws Exception {
+        openDb(partitioningSchema);
+
+        ParameterValue pv1_0 = getParameterValue(p1, 100, "blala100", 100);
+
+        int p1id = pidMap.createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType(),
+                pv1_0.getRawValue().getType());
+
+        int pg1id = pgidMap.createAndGet(IntArray.wrap(p1id));
+        PGSegment pgSegment1 = new PGSegment(pg1id, 0, IntArray.wrap(p1id));
+
+        pgSegment1.addRecord(100, Arrays.asList(pv1_0));
+        ParameterValue pv1_1 = getParameterValue(p1, 100, "blala200", 200);
+        pgSegment1.addRecord(100, Arrays.asList(pv1_1));
+
+        parchive.writeToArchive(pgSegment1);
+
+        List<ParameterValueArray> l1a = retrieveSingleParamSingleGroup(0, TimeEncoding.MAX_INSTANT, p1id, pg1id, true);
+        checkEquals(l1a.get(0), pv1_0, pv1_1);
+
+        List<ParameterIdValueList> l2a = retrieveMultipleParameters(0, TimeEncoding.MAX_INSTANT, new int[] { p1id },
+                new int[] { pg1id }, true);
+        assertEquals(1, l1a.size());
+        checkEquals(l2a.get(0), 100, pv1_0, pv1_1);
     }
 
     List<ParameterIdValueList> retrieveMultipleParameters(long start, long stop, int[] parameterIds,
@@ -686,6 +725,13 @@ public class ParameterArchiveTest {
         return c.list;
     }
 
+    public static YConfiguration backFillerDisabledConfig() {
+        Map<String, Object> pam = new HashMap<>();
+        Map<String, Object> bfm = new HashMap<>();
+        bfm.put("enabled", Boolean.FALSE);
+        pam.put("backFiller", bfm);
+        return YConfiguration.wrap(pam);
+    }
 
     class SingleValueConsumer implements Consumer<ParameterValueArray> {
         List<ParameterValueArray> list = new ArrayList<>();
@@ -696,7 +742,6 @@ public class ParameterArchiveTest {
             // "+Arrays.toString(x.paramStatus));
             list.add(x);
         }
-
     }
 
     class MultiValueConsumer implements Consumer<ParameterIdValueList> {
@@ -707,4 +752,5 @@ public class ParameterArchiveTest {
             list.add(x);
         }
     }
+
 }

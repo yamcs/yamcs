@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
@@ -10,14 +10,13 @@ import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
-  selector: 'app-select-instance-dialog',
   templateUrl: './SelectInstanceDialog.html',
   styleUrls: ['./SelectInstanceDialog.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SelectInstanceDialog implements AfterViewInit {
 
-  filterControl = new FormControl();
+  filterControl = new UntypedFormControl();
 
   @ViewChild(MatPaginator, { static: true })
   paginator: MatPaginator;

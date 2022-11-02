@@ -25,11 +25,11 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.protobuf.Clcw;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
-import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.protobuf.Cop1Config;
 import org.yamcs.protobuf.Cop1State;
 import org.yamcs.protobuf.Cop1Status;
 import org.yamcs.protobuf.TimeoutType;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.tctm.AbstractTcDataLink;
 import org.yamcs.tctm.ccsds.Cop1Monitor.AlertType;
 import org.yamcs.tctm.ccsds.TcManagedParameters.TcVcManagedParameters;
@@ -191,7 +191,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     }
 
     @Override
-    public void sendTc(PreparedCommand pc) {
+    public boolean sendCommand(PreparedCommand pc) {
         boolean tcBypassFlag = isBypass(pc);
         log.debug("state: {}; Received new TC: {}, cop1Bypass: {}, bypassAll: {}", strState(), pc.getLoggingId(),
                 tcBypassFlag,
@@ -204,8 +204,9 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
             failedCommand(pc.getCommandId(),
                     "Command too large to fit in a frame; cmd size: " + pcLength + "; max frame length: "
                             + vmp.maxFrameLength + "; frame overhead: " + framingLength);
-            return;
+            return true;
         }
+
         if (!cop1Active) {
             sendSingleTc(pc, bypassAll || tcBypassFlag);
         } else if ((vmp.bdAbsolutePriority || externalState >= 3) && tcBypassFlag) {
@@ -215,6 +216,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
                 queueTC(pc);
             });
         }
+        return true;
     }
 
     private String strState() {
@@ -248,9 +250,8 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     }
 
     private TcTransferFrame makeFrame(PreparedCommand pc, boolean bypassFlag) {
-        byte[] binary = cmdPostProcessor.process(pc);
+        byte[] binary = postprocess(pc);
         if (binary == null) {
-            log.warn("command postprocessor did not process the command");
             return null;
         }
 
@@ -317,11 +318,11 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         byte[] data = tf.getData();
         int offset = tf.getDataStart();
         for (PreparedCommand pc1 : l) {
-            byte[] binary = cmdPostProcessor.process(pc1);
+            byte[] binary = postprocess(pc1);
             if (binary == null) {
-                log.warn("command postprocessor did not process the command");
                 continue;
             }
+
             int length = binary.length;
             if (offset + length > data.length) {
                 log.error("TC of length " + length + " does not fit into the frame of length " + data.length
@@ -1276,5 +1277,4 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     protected Status connectionStatus() {
         return Status.OK;
     }
-
 }

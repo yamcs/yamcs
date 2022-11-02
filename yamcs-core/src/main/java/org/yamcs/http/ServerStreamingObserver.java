@@ -1,5 +1,9 @@
 package org.yamcs.http;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_DISPOSITION;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpHeaderNames.TRANSFER_ENCODING;
+import static io.netty.handler.codec.http.HttpHeaderValues.CHUNKED;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
@@ -22,8 +26,6 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.LastHttpContent;
@@ -110,7 +112,7 @@ public class ServerStreamingObserver implements Observer<Message> {
 
         String filename = null;
 
-        if (firstMessage != null && firstMessage instanceof HttpBody) {
+        if (firstMessage instanceof HttpBody) {
             HttpBody body = (HttpBody) firstMessage;
             mediaType = MediaType.from(body.getContentType());
             if (body.hasFilename()) {
@@ -170,7 +172,6 @@ public class ServerStreamingObserver implements Observer<Message> {
         }
 
         ctx.nettyContext.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
-                .addListener(ChannelFutureListener.CLOSE)
                 .addListener(l -> {
                     if (l.isSuccess()) {
                         ctx.requestFuture.complete(null);
@@ -193,13 +194,13 @@ public class ServerStreamingObserver implements Observer<Message> {
     private void startChunkedTransfer(MediaType contentType, String filename) {
         log.info("{}: {} {} 200 starting chunked transfer", ctx, ctx.nettyRequest.method(), ctx.nettyRequest.uri());
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
-        response.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, contentType);
+        response.headers().set(TRANSFER_ENCODING, CHUNKED);
+        response.headers().set(CONTENT_TYPE, contentType);
 
         // Set Content-Disposition header so that supporting clients will treat
         // response as a downloadable file
         if (filename != null) {
-            response.headers().set(HttpHeaderNames.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
+            response.headers().set(CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
         }
         ctx.nettyContext.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
     }

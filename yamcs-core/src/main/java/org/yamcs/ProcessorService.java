@@ -12,7 +12,7 @@ public interface ProcessorService extends Service {
     /**
      * Returns the valid configuration of the input args of this service.
      * 
-     * @return the argument specification, or <tt>null</tt> if the args should not be validated.
+     * @return the argument specification, or {@code null} if the args should not be validated.
      */
     default Spec getSpec() {
         return null;
@@ -21,10 +21,10 @@ public interface ProcessorService extends Service {
     /**
      * @param proc
      * @param config
-     *          service configuration as specified in processor.yaml
+     *            service configuration as specified in processor.yaml
      * @param spec
-     *          passed by the user when creating the processor (for instance via the REST API)
+     *            passed by the user when creating the processor (for instance via the REST API)
      * 
      */
-     void init(Processor proc, YConfiguration config, Object spec) throws InitException;
+    void init(Processor proc, YConfiguration config, Object spec) throws InitException;
 }

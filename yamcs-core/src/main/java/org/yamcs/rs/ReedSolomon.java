@@ -10,10 +10,7 @@ import java.util.Arrays;
 
 /**
  * Reed-Solomon encoder/decoder.
- * Works with up to 7 bits per symbol (due to the byte in Java being signed)
  * 
- * @author nm
- *
  */
 public class ReedSolomon {
     int nroots;
@@ -128,7 +125,6 @@ public class ReedSolomon {
             genpoly[i] = index_of(genpoly[i]);
         }
     }
-
 
     public void encode(byte[] data, byte[] parity) {
         int i, j;
@@ -264,7 +260,8 @@ public class ReedSolomon {
                      * lambda(x)
                      */
                     for (i = 0; i <= nroots; i++) {
-                        b[i] = (byte) ((lambda[i] == 0) ? A0 : modnn((0xFF&index_of(lambda[i])) - (0xFF&discr_r) + nn));
+                        b[i] = (byte) ((lambda[i] == 0) ? A0
+                                : modnn((0xFF & index_of(lambda[i])) - (0xFF & discr_r) + nn));
                     }
                 } else {
                     /* 2 lines below: B(x) <-- x*B(x) */
@@ -293,7 +290,7 @@ public class ReedSolomon {
             q = 1; /* lambda[0] is always 0 */
             for (j = deg_lambda; j > 0; j--) {
                 if (reg[j] != A0) {
-                    reg[j] = (byte) modnn((0xFF&reg[j]) + j);
+                    reg[j] = (byte) modnn((0xFF & reg[j]) + j);
                     q ^= alpha_to(reg[j]);
                 }
             }
@@ -339,7 +336,7 @@ public class ReedSolomon {
             num1 = 0;
             for (i = deg_omega; i >= 0; i--) {
                 if (omega[i] != A0)
-                    num1 ^= alpha_to(omega[i],  i * root[j]);
+                    num1 ^= alpha_to(omega[i], i * root[j]);
             }
             num2 = alpha_to(root[j] * (fcr - 1) + nn);
             den = 0;
@@ -347,11 +344,12 @@ public class ReedSolomon {
             /* lambda[i+1] for i even is the formal derivative lambda_pr of lambda[i] */
             for (i = Integer.min(deg_lambda, nroots - 1) & ~1; i >= 0; i -= 2) {
                 if (lambda[i + 1] != A0)
-                    den ^= alpha_to(lambda[i + 1],  i * root[j]);
+                    den ^= alpha_to(lambda[i + 1], i * root[j]);
             }
             /* Apply error to data */
             if (num1 != 0 && loc[j] >= pad) {
-                data[loc[j] - pad] ^= alpha_to((index_of(num1)&0xFF) + (index_of(num2)&0xFF) + nn - (index_of(den)&0xFF));
+                data[loc[j] - pad] ^= alpha_to(
+                        (index_of(num1) & 0xFF) + (index_of(num2) & 0xFF) + nn - (index_of(den) & 0xFF));
             }
         }
 
@@ -374,10 +372,10 @@ public class ReedSolomon {
         return _alpha_to[x];
     }
 
-    
     private byte alpha_to(byte x) {
-        return _alpha_to[x&0xFF];
+        return _alpha_to[x & 0xFF];
     }
+
     private byte alpha_to(byte x, int y) {
         return alpha_to(y + (x & 0xFF));
     }
@@ -391,5 +389,9 @@ public class ReedSolomon {
             x -= nn;
         }
         return x;
+    }
+
+    public int nroots() {
+        return nroots;
     }
 }

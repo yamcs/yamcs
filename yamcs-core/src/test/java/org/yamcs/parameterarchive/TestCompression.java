@@ -1,10 +1,10 @@
 package org.yamcs.parameterarchive;
 
-import java.io.File;
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;
@@ -16,12 +16,11 @@ import org.yamcs.utils.FileUtils;
 
 public class TestCompression {
 
-    @Ignore
     @Test
+    @Disabled
     public void test() throws Exception {
-        String path = "/tmp/testcompression";
-        File file = new File(path);
-        FileUtils.deleteRecursivelyIfExists(file.toPath());
+        Path path = Path.of(System.getProperty("java.io.tmpdir"), "testcompression");
+        FileUtils.deleteRecursivelyIfExists(path);
 
         Options options = new Options();
         options.setCreateIfMissing(true);
@@ -31,7 +30,7 @@ public class TestCompression {
         ColumnFamilyOptions cfo = new ColumnFamilyOptions();
         cfo.setCompressionType(CompressionType.SNAPPY_COMPRESSION);
         //
-        RocksDB rdb = RocksDB.open(options, path);
+        RocksDB rdb = RocksDB.open(options, path.toString());
         int numparam = 1;
         int pphour = 3600;
         int nhours = 10000;
@@ -73,5 +72,4 @@ public class TestCompression {
         }
         return v;
     }
-
 }

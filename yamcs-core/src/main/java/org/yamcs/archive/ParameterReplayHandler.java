@@ -11,10 +11,11 @@ import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersService;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.protobuf.Db.ProtoDataType;
 
 /**
  * Replays parameters from tables recorded by the {@link org.yamcs.archive.ParameterRecorder}
@@ -64,46 +65,19 @@ public class ParameterReplayHandler implements ReplayHandler {
      * The definition of the PP table is in {@link ParameterRecorder}
      */
     @Override
-    public String getSelectCmd() {
+    public SqlBuilder getSelectCmd() {
         if (emptyReplay) {
             return null;
         }
-        StringBuilder sb = new StringBuilder();
-        boolean first = true;
-        sb.append("SELECT ").append(ProtoDataType.PP.getNumber()).append(",* from pp ");
-        if (!includeGroups.isEmpty()) {
-            sb.append("WHERE group in(");
-            for (String g : includeGroups) {
-                if (first) {
-                    first = false;
-                } else {
-                    sb.append(", ");
-                }
-                sb.append("'").append(g).append("'");
-            }
-            sb.append(")");
-            XtceTmReplayHandler.appendTimeClause(sb, request, false);
-        } else if (!excludeGroups.isEmpty()) {
-            sb.append("WHERE group not in(");
-            for (String g : excludeGroups) {
-                if (first) {
-                    first = false;
-                } else {
-                    sb.append(", ");
-                }
-                sb.append("'").append(g).append("'");
-            }
-            sb.append(")");
-            XtceTmReplayHandler.appendTimeClause(sb, request, false);
-        } else {
-            sb.append("WHERE ");
-            XtceTmReplayHandler.appendTimeClause(sb, request, true);
-        }
 
-        if (request.isReverse()) {
-            sb.append(" ORDER DESC");
+        SqlBuilder sqlb = ReplayHandler.init(ParameterRecorder.TABLE_NAME, ProtoDataType.PP, request);
+
+        if (!includeGroups.isEmpty()) {
+            sqlb.whereColIn("group", includeGroups);
+        } else if (!excludeGroups.isEmpty()) {
+            sqlb.whereColNotIn("group", excludeGroups);
         }
-        return sb.toString();
+        return sqlb;
     }
 
     @Override

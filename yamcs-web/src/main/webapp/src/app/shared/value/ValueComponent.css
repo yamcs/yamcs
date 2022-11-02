@@ -1,0 +1,36 @@
+.indent {
+  background-color: red;
+  display: inline-block;
+  line-height: 0;
+}
+
+.toggle {
+  cursor: pointer;
+  padding-right: 0.5em;
+}
+
+table.detail td:not(:first-child) {
+  padding-left: 10px;
+}
+
+.key {
+  color: purple;
+  font-weight: 500;
+}
+
+.symbol {
+  color: black;
+}
+
+.value {
+  color: blue;
+}
+
+.value.expandable {
+  color: inherit;
+}
+
+table {
+  line-height: 1.1em;
+  font-family: 'Roboto Mono', monospace;
+}

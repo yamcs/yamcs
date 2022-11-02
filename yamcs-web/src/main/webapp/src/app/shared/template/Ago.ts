@@ -13,17 +13,20 @@ export class Ago implements OnChanges, OnDestroy {
   @Input()
   time: string;
 
+  @Input()
+  useMissionTime = true;
+
   value$ = new BehaviorSubject<string | null>(null);
   timerSubscription: Subscription;
 
   constructor(synchronizer: Synchronizer, private agoPipe: AgoPipe) {
     this.timerSubscription = synchronizer.sync(() => {
-      this.value$.next(agoPipe.transform(this.time));
+      this.value$.next(agoPipe.transform(this.time, this.useMissionTime));
     });
   }
 
   ngOnChanges() {
-    this.value$.next(this.agoPipe.transform(this.time));
+    this.value$.next(this.agoPipe.transform(this.time, this.useMissionTime));
   }
 
   ngOnDestroy() {

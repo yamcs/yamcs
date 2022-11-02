@@ -97,7 +97,7 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
                 verifier = new MatchCriteriaVerifier(this, cv);
                 break;
             case PARAMETER_VALUE_CHANGE:
-                verifier = new ValueChangeVerifier(this, cv, log);
+                verifier = new ValueChangeVerifier(this, cv);
                 break;
             default:
                 throw new IllegalStateException("Command verifier of type " + cv.getType() + " not implemented");
@@ -106,7 +106,7 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
             CheckWindow checkWindow = cv.getCheckWindow();
             boolean scheduleNow = true;
 
-            if (checkWindow.getTimeWindowIsRelativeTo() == TimeWindowIsRelativeToType.LastVerifier) {
+            if (checkWindow.getTimeWindowIsRelativeTo() == TimeWindowIsRelativeToType.LAST_VERIFIER) {
                 if (prevVerifier != null) {
                     prevVerifier.nextVerifier = verifier;
                     scheduleNow = false;

@@ -7,6 +7,10 @@ import { ServerMessage, WebSocketClient } from './WebSocketClient';
 export class WebSocketCall<O, D> {
 
   private _id?: number;
+  private seq = 0; // Mirror of received seq count on server messages
+  private _frameLoss = false;
+  private frameLossListeners = new Set<() => void>();
+  private replyListeners = new Set<() => void>();
 
   constructor(
     private client: WebSocketClient,
@@ -20,6 +24,41 @@ export class WebSocketCall<O, D> {
    */
   get id() {
     return this._id;
+  }
+
+  /**
+   * True if a WebSocket frame loss was detected specific to this call
+   * (at any point during this call).
+   */
+  get frameLoss() {
+    return this._frameLoss;
+  }
+
+  /**
+   * Receive a notification when a frame loss is detected. Only one
+   * such notification is sent.
+   */
+  addFrameLossListener(frameLossListener: () => void) {
+    this.frameLossListeners.add(frameLossListener);
+  }
+
+  removeFrameLossListener(frameLossListener: () => void) {
+    this.frameLossListeners.delete(frameLossListener);
+  }
+
+  /**
+   * Receive a notification when the WebSocket call was replied to.
+   * Only one such notification is sent.
+   */
+  addReplyListener(replyListener: () => void) {
+    this.replyListeners.add(replyListener);
+    if (this._id) { // Already replied to
+      replyListener();
+    }
+  }
+
+  removeReplyListener(replyListener: () => void) {
+    this.replyListeners.delete(replyListener);
   }
 
   sendMessage(options: O) {
@@ -48,12 +87,19 @@ export class WebSocketCall<O, D> {
         const errDetail = msg.data.exception['msg'];
         console.error(`Received ${errCode} ${errType} for topic '${this.type}': ${errDetail}`);
       }
+      this.replyListeners.forEach(listener => listener());
     } else if (msg.type === this.type && msg.call === this.id) {
+      if (!this.frameLoss && (this.seq + 1 !== msg.seq)) {
+        this._frameLoss = true;
+        this.frameLossListeners.forEach(listener => listener());
+      }
+      this.seq = msg.seq;
       this.observer(msg.data);
     }
   }
 
   cancel() {
     this.client.cancelCall(this);
+    this.frameLossListeners.clear();
   }
 }

@@ -14,6 +14,9 @@ import org.yamcs.Spec.OptionType;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.TmStreamConfigEntry;
+import org.yamcs.mdb.ContainerProcessingResult;
+import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.XtceTmExtractor;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
@@ -21,9 +24,6 @@ import org.yamcs.time.TimeService;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ContainerProcessingResult;
-import org.yamcs.xtceproc.XtceDbFactory;
-import org.yamcs.xtceproc.XtceTmExtractor;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -42,18 +42,19 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
  * the most specific (lowest in the XTCE hierarchy) container matching the telemetry packet.
  * 
  * <p>
- * It subscribes to all the streams configured with the "streams" config key or, if not present, to all TM streams defined
+ * It subscribes to all the streams configured with the "streams" config key or, if not present, to all TM streams
+ * defined
  * in the instance (streamConfig section of the instance configuration).
  * 
  * @author nm
  *
  */
 public class XtceTmRecorder extends AbstractYamcsService {
-    static public final String REC_STREAM_NAME = "xtce_tm_recorder_stream";
-    static public final String TABLE_NAME = "tm";
-    static public final String PNAME_COLUMN = "pname";
+    public static final String REC_STREAM_NAME = "xtce_tm_recorder_stream";
+    public static final String TABLE_NAME = "tm";
+    public static final String PNAME_COLUMN = "pname";
 
-    static public final TupleDefinition RECORDED_TM_TUPLE_DEFINITION;
+    public static final TupleDefinition RECORDED_TM_TUPLE_DEFINITION;
     static {
         RECORDED_TM_TUPLE_DEFINITION = StandardTupleDefinitions.TM.copy();
         RECORDED_TM_TUPLE_DEFINITION.addColumn(PNAME_COLUMN, DataType.ENUM); // container name (XTCE qualified name)
@@ -278,7 +279,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
         }
 
         /**
-         * saves a TM tuple. The definition is in * TmProviderAdapter
+         * saves a TM tuple. The definition is in {@link StandardTupleDefinitions#TM}
          * 
          * it finds the XTCE names and puts them inside the recording
          * 
@@ -287,10 +288,12 @@ public class XtceTmRecorder extends AbstractYamcsService {
         protected void saveTuple(Tuple t) {
             long gentime = (Long) t.getColumn(0);
             byte[] packet = (byte[]) t.getColumn(4);
+            int seqCount = (Integer) t.getColumn(1);
+
             totalNumPackets++;
 
             ContainerProcessingResult cpr = tmExtractor.processPacket(packet, gentime, timeService.getMissionTime(),
-                    rootSequenceContainer);
+                    seqCount, rootSequenceContainer);
 
             String pname = deriveArchivePartition(cpr);
 

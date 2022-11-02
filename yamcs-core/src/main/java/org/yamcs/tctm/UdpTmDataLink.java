@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
-import java.nio.ByteBuffer;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
@@ -12,11 +11,17 @@ import org.yamcs.YConfiguration;
 
 /**
  * Receives telemetry packets via UDP. One UDP datagram = one TM packet.
+ * <p>
+ * Options:
+ * <ul>
+ * <li>{@code port} - the UDP port to listen to</li>
+ * <li>{@code maxLength} - the maximum length of the datagram (and thus the TM packet length + initialBytesToStrip). If
+ * a datagram longer than this
+ * size will be received, it will be truncated. Default: 1500 (bytes)</li>
+ * <li>{@code initialBytesToStrip} - if configured, skip that number of bytes from the beginning of the datagram.
+ * Default: 0</li>
  * 
- * Keeps simple statistics about the number of datagram received and the number of too short datagrams
- * 
- * @author nm
- *
+ * </ul>
  */
 public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
     private volatile int invalidDatagramCount = 0;
@@ -24,9 +29,10 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
     private DatagramSocket tmSocket;
     private int port;
 
-    final static int MAX_LENGTH = 1500;
+    static final int MAX_LENGTH = 1500;
     DatagramPacket datagram;
     int maxLength;
+    int initialBytesToStrip;
 
     /**
      * Creates a new UDP TM Data Link
@@ -34,11 +40,14 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
      * @throws ConfigurationException
      *             if port is not defined in the configuration
      */
+    @Override
     public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
         super.init(instance, name, config);
         port = config.getInt("port");
         maxLength = config.getInt("maxLength", MAX_LENGTH);
+        initialBytesToStrip = config.getInt("initialBytesToStrip", 0);
         datagram = new DatagramPacket(new byte[maxLength], maxLength);
+
     }
 
     @Override
@@ -46,7 +55,9 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
         if (!isDisabled()) {
             try {
                 tmSocket = new DatagramSocket(port);
-                new Thread(this).start();
+                Thread thread = new Thread(this);
+                thread.setName("UdpTmDataLink-" + linkName);
+                thread.start();
             } catch (SocketException e) {
                 notifyFailed(e);
             }
@@ -79,14 +90,23 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
      * @return anything that looks as a valid packet, just the size is taken into account to decide if it's valid or not
      */
     public TmPacket getNextPacket() {
-        ByteBuffer packet = null;
+        byte[] packet = null;
 
         while (isRunning()) {
             try {
                 tmSocket.receive(datagram);
+                int pktLength = datagram.getLength() - initialBytesToStrip;
+
+                if (pktLength <= 0) {
+                    log.warn("received datagram of size {} <= {} (initialBytesToStrip); ignored.",
+                            datagram.getLength(), initialBytesToStrip);
+                    invalidDatagramCount++;
+                    continue;
+                }
+
                 updateStats(datagram.getLength());
-                packet = ByteBuffer.allocate(datagram.getLength());
-                packet.put(datagram.getData(), datagram.getOffset(), datagram.getLength());
+                packet = new byte[pktLength];
+                System.arraycopy(datagram.getData(), datagram.getOffset() + initialBytesToStrip, packet, 0, pktLength);
                 break;
             } catch (IOException e) {
                 if (!isRunning() || isDisabled()) {// the shutdown or disable will close the socket and that will
@@ -99,7 +119,7 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
         }
 
         if (packet != null) {
-            TmPacket tmPacket = new TmPacket(timeService.getMissionTime(), packet.array());
+            TmPacket tmPacket = new TmPacket(timeService.getMissionTime(), packet);
             tmPacket.setEarthRceptionTime(timeService.getHresMissionTime());
             return packetPreprocessor.process(tmPacket);
         } else {

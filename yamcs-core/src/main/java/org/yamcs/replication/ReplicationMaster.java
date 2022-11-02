@@ -27,9 +27,9 @@ import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
 import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.Spec.OptionType;
 import org.yamcs.replication.protobuf.ColumnInfo;
 import org.yamcs.replication.protobuf.Request;
 import org.yamcs.replication.protobuf.StreamInfo;
@@ -55,7 +55,6 @@ import io.netty.handler.ssl.SslContextBuilder;
  * 
  * Implements the master part of the replication. At any moment there is one current file where the replication data is
  * written.
- * <p>
  * 
  * @author nm
  *
@@ -83,6 +82,7 @@ public class ReplicationMaster extends AbstractYamcsService {
     private long fileCloseTime;
     Pattern filePattern;
     int maxTupleSize;
+    long timeMsgFreqMillis;
 
     @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
@@ -96,6 +96,8 @@ public class ReplicationMaster extends AbstractYamcsService {
         maxPages = config.getInt("maxPages", 500);
         maxFileSize = 1024 * config.getInt("maxFileSizeKB", 100 * 1024);
         this.maxTupleSize = config.getInt("maxTupleSize");
+        this.timeMsgFreqMillis = config.getLong("timeMsgFreqSec") * 1000;
+
         int hdrSize = ReplicationFile.headerSize(pageSize, maxPages);
         if (maxFileSize < hdrSize) {
             throw new InitException(
@@ -180,9 +182,12 @@ public class ReplicationMaster extends AbstractYamcsService {
         spec.addOption("slaves", OptionType.LIST).withElementType(OptionType.MAP).withSpec(slaveSpec);
         spec.addOption("maxTupleSize", OptionType.INTEGER).withDefault(65536)
                 .withDescription("Maximum size of the serialized tuple");
+        spec.addOption("timeMsgFreqSec", OptionType.INTEGER).withDefault(10)
+                .withDescription("How often (in seconds) to send the time message to the slaves");
 
         return spec;
     }
+
     private void initCurrentFile() throws IOException, InitException {
         if (replFiles.isEmpty()) {
             openNewFile(null);
@@ -229,7 +234,7 @@ public class ReplicationMaster extends AbstractYamcsService {
                 sa.client = new ReplicationClient(yamcsInstance, sa.host, sa.port,
                         sa.enableTls ? sslCtx : null, reconnectionInterval, maxTupleSize,
                         () -> {
-                            return new MasterChannelHandler(this, sa);
+                            return new MasterChannelHandler(YamcsServer.getTimeService(yamcsInstance), this, sa);
                         });
                 sa.client.start();
             }
@@ -328,7 +333,7 @@ public class ReplicationMaster extends AbstractYamcsService {
     }
 
     private Transaction getProtoTransaction(MessageLite msg) {
-        Transaction tx = new Transaction() {
+        return new Transaction() {
             @Override
             public byte getType() {
                 return Message.STREAM_INFO;
@@ -352,11 +357,10 @@ public class ReplicationMaster extends AbstractYamcsService {
                 return instanceId;
             }
         };
-        return tx;
     }
 
     public ChannelHandler newChannelHandler(Request req) {
-        return new MasterChannelHandler(this, req);
+        return new MasterChannelHandler(YamcsServer.getTimeService(yamcsInstance), this, req);
     }
 
     public List<String> getStreamNames() {
@@ -601,7 +605,7 @@ public class ReplicationMaster extends AbstractYamcsService {
                 if (!Files.isDirectory(path)) {
                     String name = path.getFileName().toString();
                     if (name.matches("RPL_[0-9a-fA-F]{16}\\.dat")) {
-                        Path newPath = replicationDir.resolve(name.replace("RPL_", serviceName+"_"));
+                        Path newPath = replicationDir.resolve(name.replace("RPL_", serviceName + "_"));
                         log.info("Renaming {} to {}", path, newPath);
                         Files.move(path, newPath, StandardCopyOption.ATOMIC_MOVE);
                     }

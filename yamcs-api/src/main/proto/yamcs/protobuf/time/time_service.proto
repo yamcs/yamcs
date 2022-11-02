@@ -25,6 +25,7 @@ service TimeApi {
   rpc SetTime(SetTimeRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       post: "/api/instances/{instance}:setTime"
+       body: "*"
     };
   }
 
@@ -43,7 +44,7 @@ message LeapSecondsTable {
     optional int32 leapSeconds = 3;
     optional int32 taiDifference = 4;
   }
-  repeated ValidityRange ranges = 1;      
+  repeated ValidityRange ranges = 1;
 }
 
 message SetTimeRequest {

@@ -99,7 +99,7 @@ outStream (string)
 incomingBucket (string)
     The name of the bucket where the CFDP incoming files are saved if no specific ones are defined per local or remote entity. Default: ``cfdpDown``
 
-localEntiess (map)
+localEntities (map)
     A list of entity definitions used to give names to the local (Yamcs) entity identifiers as well as to configure which bucket is used for storing the files received for that entity. The names can be used in the REST calls when initiating transfers. The list has to contain all identifiers which will be used by the remote system to send files.  If a PDU is received to an identifier not in this map, the PDU will be dropped and no transaction will be started.
     The ``bucket`` is optional; if missing, the file will be saved into the bucket specified for the remote entity and if that is missing too in the general bucket configured with the ``incomingBucket``.
     
@@ -109,16 +109,17 @@ remoteEntities (map)
     The list can contain also a bucket name used if the matching local entity does not define a bucket. In the example above if a file is downlinked having source (spacecraft) id = 7 and destination (Yamcs) id = 12, it will end up in bucket3.
 
 entityIdLength (integer)
-    The length in bytes of the entity id for the outgoing CFDP transfers. The entity id and the sequence number represent the CFDP transaction identifier - it is encoded in the 
-    header of all the CFDP PDUs.
-    These lengths determine the size of the PDU header. 
+    The length in bytes of the entity id for the outgoing CFDP transfers. The entity id and the sequence number represent the CFDP transaction identifier - it is encoded in the header of all the CFDP PDUs. These lengths together with the sequenceNrLength determine the size of the PDU header:    
+    
+    ``PDU_header_size(bytes) = 4 + 2 * entityIdLength + sequenceNrLength``
+    
     For the incoming transfers the remote peer specifies the lengths. Default: ``2``
      
 sequenceNrLength (integer)
     The length in bytes of the sequence number for the outgoing CFDP transfers. Default: ``4``
     
 maxPduSize (integer)
-    The maximum length of the PDU is used by the sender to determine how to split the file into segments (segment size = PDU size - header size). For the incoming transfers the peer specifies the PDU size. Default ``512``
+    The maximum length in bytes of the PDU is used by the sender to determine how to split the file into segments (segment size = PDU size - header size). For the incoming transfers the peer specifies the PDU size. Default ``512``
 
 sleepBetweenPdus (integer)
     The time in milliseconds used by the sender to wait in between sending two successive PDUs. This together with the PDU determine the uplink data rate. The data rate has to match the maximum uplink speed as well as the receiver expected data rate. No mechanism is implemented for auto-tuning the uplink rate. 
@@ -150,13 +151,13 @@ nakTimeout (integer)
    Valid for class 2 transfers; used by the receiver as the time interval between two successive NAK PDUs, assuming the data has not been recovered.  Default: ``5000``
 
 nakLimit (integer)
-    Valid for class 2 transfers; the number of times to send a NAK PDU with no data recovered before declaring a fault. The counter is reset to 0 if some previously unavailable data is received. Negative value means no limit. Default: ``-1``
+    Valid for class 2 transfers; the number of times to send a NAK PDU with no data recovered before declaring a fault. A value of 1 means that one NAK is sent and if no data is recovered within the nakTimeout milliseconds, a fault will be declared. Zero or negative value means no limit. Default: ``-1``
  
 
 senderFaultHandlers (map)
     A definitions of the actions to be taken when the sender encounters different faults. The definitions are in the form of ``conditionCode -> action`` map. The possible condition codes are:  
-    AckLimitReached, KeepAliveLimitReached, InvalidTransmissionMode, FilestoreRejection, FileChecksumFailure, FileSizeError, NakLimitReached, InactivityDetected, InvalidFileStructure, CheckLimitReached, UnsupportedChecksum.
-    The possible actions are: suspend, cancel or abandon. Suspend means the transfer will be suspended and can be resumed later (for example an ack limit reached may be caused by the lost of communication with the spacecraft and the transfer can be resumed when the communication is estabilished again). Cancel means that the remote peer is notified that the transaction is canceled. Abandon means to abort the transaction without notifying the peer.
+    AckLimitReached, KeepAliveLimitReached, InvalidTransmissionMode, FilestoreRejection, FileChecksumFailure, FileSizeError, NakLimitReached, InactivityDetected, InvalidFileStructure, CheckLimitReached and UnsupportedChecksum.
+    The possible actions are: suspend, cancel or abandon. Suspend means the transfer will be suspended and can be resumed later (for example an ack limit reached may be caused by the lost of communication with the spacecraft and the transfer can be resumed when the communication is established again). Cancel means that the remote peer is notified that the transaction is canceled. Abandon means to abort the transaction without notifying the peer.
     Note that the error can be generated locally or recieved from the peer in a FIN PDU.
 
 receiverFaultHandlers (map)
@@ -173,3 +174,7 @@ directoryTerminators (list)
 
 allowConcurrentFileOverwrites (boolean)
     If this option is true, when starting an upload, the CFDP service verifies if an upload witht the same destination filename is ongoing or queued and will raise an error. This is done in order to avoid overwriting the same destination file in case of multiple files are uploaded from the yamcs-web. Default: ``true``
+
+pendingAfterCompletion (integer)
+    Number of milliseconds to keep the incoming transaction in memory after completion. During this time, the newly received EOF PDUs belonging to the transaction are still answered. All the other PDUs belonging to the transaction are ignored. Default: 600000 (10 minutes).
+    Consequentially if a new transfer would start with the same id (for example following an on-board computer reboot), the transfer will not be recognized as new before this timer has expired.

@@ -1,7 +1,7 @@
 package org.yamcs.archive;
 
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
+import org.yamcs.yarch.protobuf.Db.ProtoDataType;
 
 public interface ReplayListener {
 

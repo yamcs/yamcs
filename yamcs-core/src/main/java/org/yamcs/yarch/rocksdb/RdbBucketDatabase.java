@@ -1,15 +1,16 @@
 package org.yamcs.yarch.rocksdb;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.BucketDatabase;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
@@ -56,11 +57,11 @@ public class RdbBucketDatabase implements BucketDatabase {
     final static byte TYPE_OBJ_METADATA = 1;
     final static byte TYPE_OBJ_DATA = 2;
 
-    final static long MAX_BUCKET_SIZE = 100l * 1024 * 1024; // 100MB
-    final static int MAX_NUM_OBJECTS_PER_BUCKET = 1000; //
+    final static long DEFAULT_MAX_BUCKET_SIZE = 100L * 1024 * 1024; // 100MB
+    final static int DEFAULT_MAX_OBJECTS_PER_BUCKET = 1000;
     private static final Logger log = LoggerFactory.getLogger(RdbBucketDatabase.class);
 
-    RdbBucketDatabase(String yamcsInstance, Tablespace tablespace) throws RocksDBException, IOException {
+    public RdbBucketDatabase(String yamcsInstance, Tablespace tablespace) throws RocksDBException, IOException {
         this.tablespace = tablespace;
         this.yamcsInstance = yamcsInstance;
         loadBuckets();
@@ -82,10 +83,14 @@ public class RdbBucketDatabase implements BucketDatabase {
                 if (buckets.containsKey(bucketName)) {
                     throw new IllegalArgumentException("Bucket already exists");
                 }
-                BucketProperties bucketProps = BucketProperties.newBuilder().setCreated(TimeEncoding.getWallclockTime())
-                        .setMaxNumObjects(MAX_NUM_OBJECTS_PER_BUCKET).setMaxSize(MAX_BUCKET_SIZE).setName(bucketName)
+                BucketProperties bucketProps = BucketProperties.newBuilder()
+                        .setName(bucketName)
+                        .setCreated(TimeEncoding.getWallclockTime())
+                        .setMaxNumObjects(DEFAULT_MAX_OBJECTS_PER_BUCKET)
+                        .setMaxSize(DEFAULT_MAX_BUCKET_SIZE)
                         .build();
-                TablespaceRecord.Builder trb = TablespaceRecord.newBuilder().setType(Type.BUCKET)
+                TablespaceRecord.Builder trb = TablespaceRecord.newBuilder()
+                        .setType(Type.BUCKET)
                         .setBucketProperties(bucketProps);
                 TablespaceRecord tr = tablespace.createMetadataRecord(yamcsInstance, trb);
                 RdbBucket bucket = new RdbBucket(yamcsInstance, tablespace, tr.getTbsIndex(), bucketProps);
@@ -105,9 +110,9 @@ public class RdbBucketDatabase implements BucketDatabase {
     }
 
     @Override
-    public List<BucketProperties> listBuckets() {
+    public List<Bucket> listBuckets() {
         synchronized (buckets) {
-            return buckets.values().stream().map(b -> b.bucketProps).collect(Collectors.toList());
+            return new ArrayList<>(buckets.values());
         }
     }
 
@@ -128,4 +133,7 @@ public class RdbBucketDatabase implements BucketDatabase {
         }
     }
 
+    public Tablespace getTablespace() {
+        return tablespace;
+    }
 }

@@ -9,11 +9,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.yamcs.ConfigurationException;
-import org.yamcs.xtce.BaseSpreadsheetLoader;
+import org.yamcs.mdb.BaseSpreadsheetLoader;
+import org.yamcs.mdb.SpreadsheetLoadContext;
+import org.yamcs.mdb.SpreadsheetLoadException;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding;
-import org.yamcs.xtce.SpreadsheetLoadContext;
-import org.yamcs.xtce.SpreadsheetLoadException;
 
 import jxl.Cell;
 import jxl.Sheet;

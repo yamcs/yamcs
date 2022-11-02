@@ -26,6 +26,20 @@ export class ParametersDataSource extends DataSource<Parameter> {
     });
   }
 
+  getAliasNamespaces() {
+    const namespaces: string[] = [];
+    for (const parameter of this.parameters$.value) {
+      if (parameter.alias) {
+        for (const alias of parameter.alias) {
+          if (alias.namespace && namespaces.indexOf(alias.namespace) === -1) {
+            namespaces.push(alias.namespace);
+          }
+        }
+      }
+    }
+    return namespaces.sort();
+  }
+
   disconnect() {
     this.parameters$.complete();
     this.totalSize$.complete();

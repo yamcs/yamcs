@@ -1,13 +1,15 @@
 package org.yamcs.yarch;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import org.yamcs.yarch.streamsql.StreamSqlResult;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
 
 public class StreamMergeTest extends YarchTestCase {
@@ -36,7 +38,7 @@ public class StreamMergeTest extends YarchTestCase {
     }
 
     private void verify(String streamQuery, final Checker c) throws Exception {
-        ydb.execute("create stream tm_out as " + streamQuery);
+        StreamSqlResult r = ydb.execute("create stream tm_out as " + streamQuery);
 
         final AtomicInteger ai = new AtomicInteger(0);
         final Semaphore semaphore = new Semaphore(0);
@@ -69,6 +71,12 @@ public class StreamMergeTest extends YarchTestCase {
         s.start();
         semaphore.tryAcquire(30, TimeUnit.SECONDS);
         assertEquals(1000, ai.get());
+        r.close();
+    }
+
+    @AfterAll
+    static public void afterAll() {
+        System.gc();
     }
 
     @Test

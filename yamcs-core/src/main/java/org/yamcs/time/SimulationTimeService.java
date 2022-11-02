@@ -11,15 +11,16 @@ import org.yamcs.utils.TimeEncoding;
  * timeService:
  *     class: org.yamcs.time.SimulationTimeService
  *     args:
- *         time0: 2020-10-02T18:10:00.000Z
+ *         time0: "2020-10-02T18:10:00.000Z"
  *         speed: 1.0
  * </pre>
  * 
  * By default the time0 is initialised with the time at the instance startup and the speed is 1.
  * <p>
- * The service mantains a simulated time which is running based on the computer clock according to speed (e.g. speed = 2
+ * The service maintains a simulated time which is running based on the computer clock according to speed (e.g. speed =
+ * 2
  * means it runs two times realtime speed). If the speed is 0, the simulated time never advances and it has to be
- * advanced from other place (see below).
+ * advanced externally (see below).
  * <p>
  * The simulation time service (as well as the speed) can be updated by various means:
  * <ul>
@@ -54,7 +55,7 @@ public class SimulationTimeService implements TimeService {
         } else {
             time0 = TimeEncoding.getWallclockTime();
         }
-        speed = config.getLong("speed", 1);
+        speed = config.getDouble("speed", 1);
 
         javaTime = System.currentTimeMillis();
         simElapsedTime = 0;
@@ -70,21 +71,32 @@ public class SimulationTimeService implements TimeService {
      * <p>
      * {@code time0 + simElapsedTime + speed * (System.currentTimeMillis() - javaTime)}
      * <p>
-     * where time0 is the value set with {@link #setTime0(long)}, simElapsedTime is the value set with
-     * {@link #setSimElapsedTime(long)}
-     * and the javaTime is the value returned by {@link System#currentTimeMillis()} last time when
-     * {@link #setSimElapsedTime(long)} has been called.
+     * where time0 is the value set with {@link #setTime0(long)}, speed is the value set with
+     * {@link #setSimSpeed(double)} and javaTime are the values set with {@link #setSimElapsedTime(long, long)}.
      */
     @Override
     public long getMissionTime() {
-        long t;
-        t = (long) (time0 + simElapsedTime + speed * (System.currentTimeMillis() - javaTime));
-        return t;
+        return (long) (time0 + simElapsedTime + speed * (System.currentTimeMillis() - javaTime));
     }
 
-    public void setSimElapsedTime(long simElapsedTime) {
-        javaTime = System.currentTimeMillis();
+    /**
+     * Sets the javaTime and simElapsedTime used to compute the mission time by {@link #getMissionTime()}
+     *
+     * @param javaTime
+     * @param simElapsedTime
+     */
+    public void setSimElapsedTime(long javaTime, long simElapsedTime) {
+        this.javaTime = javaTime;
         this.simElapsedTime = simElapsedTime;
+    }
+
+    /**
+     * Same as setSimElapsedTime(System.currentTimeMillis(), simElapsedTime).
+     *
+     * @param simElapsedTime
+     */
+    public void setSimElapsedTime(long simElapsedTime) {
+        setSimElapsedTime(System.currentTimeMillis(), simElapsedTime);
     }
 
     /**
@@ -103,5 +115,9 @@ public class SimulationTimeService implements TimeService {
      */
     public void setSimSpeed(double simSpeed) {
         this.speed = simSpeed;
+    }
+
+    public double getSpeed() {
+        return speed;
     }
 }

@@ -1,12 +1,13 @@
 package org.yamcs.yarch;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
-import org.yamcs.LoggingUtils;
+import org.junit.jupiter.api.Test;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 /**
@@ -42,7 +43,6 @@ public class ArrayTest extends YarchTestCase {
 
     @Test
     public void testAcrossShutdown() throws Exception {
-
         execute("create table testAcrossShutdown(id int, tag enum[], primary key(id))");
         execute("create stream testAcrossShutdown_in(id long, tag enum[])");
         execute("upsert into testAcrossShutdown select * from testAcrossShutdown_in");

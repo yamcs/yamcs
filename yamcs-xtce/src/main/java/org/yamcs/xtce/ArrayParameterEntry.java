@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Describe an entry that is an array parameter.
  * 
- * The size of the extracted array has to be specified in the <tt>size</tt> property which is a list of
+ * The size of the extracted array has to be specified in the {@code size} property which is a list of
  * {@link IntegerValue} that can be static or values of other parameters.
  * 
  * @author nm

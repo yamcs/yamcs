@@ -2,6 +2,7 @@ package org.yamcs.xtce;
 
 /**
  * Describe the name of an Argument its NameReference to an ArgumentType in ArgumentTypeSet
+ *
  * @author nm
  *
  */
@@ -19,7 +20,7 @@ public class Argument extends NameDescription {
      */
     Object initialValue;
 
-    public ArgumentType getArgumentType () {
+    public ArgumentType getArgumentType() {
         return argumentType;
     }
 
@@ -31,6 +32,7 @@ public class Argument extends NameDescription {
      * returns the initial value of this argument which would be better called default value
      * 
      * returns null if no initial value has been set
+     *
      * @return initial value or null if no initial value has been set
      */
     public Object getInitialValue() {
@@ -43,7 +45,8 @@ public class Argument extends NameDescription {
 
     @Override
     public String toString() {
-        return "ArgName: " + this.getName() + ((initialValue==null)?"":" initialValue: "+initialValue)+ " argType:" + argumentType;
+        return "ArgName: " + this.getName() + ((initialValue == null) ? "" : " initialValue: " + initialValue)
+                + " argType:" + argumentType;
     }
 
 }

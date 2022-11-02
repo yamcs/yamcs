@@ -1,20 +1,16 @@
 package org.yamcs.http.api;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
-import org.yamcs.http.api.XtceToGpbAssembler;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 
-/**
- * Created by msc on 05.04.16.
- */
 public class XtceToGpbAssemblerTest {
 
     @Test
@@ -50,7 +46,7 @@ public class XtceToGpbAssemblerTest {
         // Assert
         assertEquals("CCSDS_TC", commandInfo.getName());
         assertEquals("integer", commandInfo.getArgument(0).getType().getEngType());
-        assertTrue("should have a range set", commandInfo.getArgument(0).getType().hasRangeMin());
+        assertTrue(commandInfo.getArgument(0).getType().hasRangeMin(), "should have a range set");
         assertEquals(1, commandInfo.getArgument(0).getType().getRangeMin(), 0);
         assertEquals(3, commandInfo.getArgument(0).getType().getRangeMax(), 0);
     }
@@ -71,6 +67,6 @@ public class XtceToGpbAssemblerTest {
         assertEquals("enumeration", commandInfo.getArgument(3).getType().getEngType());
         assertEquals("value0", commandInfo.getArgument(3).getType().getEnumValue(0).getLabel());
         assertEquals("value2", commandInfo.getArgument(3).getType().getEnumValue(2).getLabel());
-        assertTrue("should not have a range set", !commandInfo.getArgument(0).getType().hasRangeMin());
+        assertTrue(!commandInfo.getArgument(0).getType().hasRangeMin(), "should not have a range set");
     }
 }

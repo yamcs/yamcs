@@ -9,6 +9,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.yamcs.InitException;
 import org.yamcs.logging.Log;
+import org.yamcs.timeline.protobuf.BandFilter;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -36,6 +37,8 @@ public class TimelineBandDb {
     public static final String CNAME_SHARED = "shared";
     public static final String CNAME_USERNAME = "username";
     public static final String CNAME_TAGS = "tags";
+    public static final String CNAME_SOURCE = "source";
+    public static final String CNAME_FILTER = "filter";
 
     protected static final String PROP_PREFIX = "prop_";
 
@@ -47,6 +50,8 @@ public class TimelineBandDb {
         TIMELINE_DEF.addColumn(CNAME_USERNAME, DataType.STRING);
         TIMELINE_DEF.addColumn(CNAME_TYPE, DataType.ENUM);
         TIMELINE_DEF.addColumn(CNAME_TAGS, DataType.array(DataType.ENUM));
+        TIMELINE_DEF.addColumn(CNAME_SOURCE, DataType.ENUM);
+        TIMELINE_DEF.addColumn(CNAME_FILTER, DataType.protobuf(BandFilter.class));
     }
 
     final Log log;

@@ -4,19 +4,13 @@
   <form [formGroup]="form" class="ya-form">
     <label>
       Message
-      <textarea formControlName="message"></textarea>
+      <textarea formControlName="message" rows="3"></textarea>
     </label>
     <br>
     <label>
-      Severity
-      <select formControlName="severity">
-        <option value="INFO">INFO</option>
-        <option value="WATCH">WATCH</option>
-        <option value="WARNING">WARNING</option>
-        <option value="DISTRESS">DISTRESS</option>
-        <option value="CRITICAL">CRITICAL</option>
-        <option value="SEVERE">SEVERE</option>
-      </select>
+      Severity<br>
+      <app-select formControlName="severity" [options]="severityOptions">
+      </app-select>
     </label>
     <br>
     <label>

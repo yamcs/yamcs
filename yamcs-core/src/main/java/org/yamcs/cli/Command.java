@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.function.IntFunction;
 
 import org.yamcs.Plugin;
 import org.yamcs.PluginManager;
@@ -21,6 +22,9 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterDescription;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.internal.Console;
+import com.google.protobuf.Message;
+import com.google.protobuf.util.JsonFormat;
+import com.google.protobuf.util.JsonFormat.Printer;
 
 /**
  * This represents a command together with its options and subcommands
@@ -30,13 +34,19 @@ import com.beust.jcommander.internal.Console;
  * </pre>
  */
 public abstract class Command {
-    static protected Console console = JCommander.getConsole();
+    protected static Console console = JCommander.getConsole();
+
+    // called to exit the VM, overwritten in unit tests
+    protected static IntFunction<Void> exitFunction = status -> {
+        System.exit(status);
+        return null;
+    };
 
     protected JCommander jc = new JCommander(this);
     protected Map<String, Command> subCommands = new LinkedHashMap<>();
     protected Command selectedCommand;
-    final private String name;
-    final Command parent;
+    private final String name;
+    protected final Command parent;
 
     @Parameter(names = { "-h", "--help" }, description = "Show usage", help = true)
     private boolean help;
@@ -50,17 +60,6 @@ public abstract class Command {
     protected void addSubCommand(Command cmd) {
         subCommands.put(cmd.name, cmd);
         jc.addCommand(cmd.name, cmd);
-    }
-
-    protected YamcsAdminCli getYamcsAdminCli() {
-        Command c = this;
-        while (c != null) {
-            if (c instanceof YamcsAdminCli) {
-                return (YamcsAdminCli) c;
-            }
-            c = c.parent;
-        }
-        return null;
     }
 
     public void parse(String... args) {
@@ -81,19 +80,19 @@ public abstract class Command {
             }
             if (help) {
                 console.println(getUsage());
-                System.exit(0);
+                exit(0);
             }
         } catch (ParameterException e) {
             console.println(e.getMessage());
             console.println(getUsage());
-            System.exit(1);
+            exit(1);
         }
         if (subCommands.isEmpty()) {
             return;
         }
 
         // Special case. Global --version flag prints version info and quits
-        if (this instanceof YamcsAdminCli && ((YamcsAdminCli) this).version) {
+        if (getRootCommand().version) {
             console.println("yamcs " + YamcsVersion.VERSION + ", build " + YamcsVersion.REVISION);
             PluginManager pluginManager;
             try {
@@ -105,12 +104,12 @@ public abstract class Command {
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
-            System.exit(0);
+            exit(0);
         }
 
         if (k == args.length) {
             console.println(getUsage());
-            System.exit(1);
+            exit(1);
         }
 
         String subcmdName = args[k];
@@ -125,9 +124,21 @@ public abstract class Command {
                     .append(fullcmd)
                     .append(" -h'");
             console.println(sb.toString());
-            System.exit(1);
+            exit(1);
         }
         selectedCommand.parse(Arrays.copyOfRange(args, k + 1, args.length));
+    }
+
+    OutputFormat getFormat() {
+        return getRootCommand().format;
+    }
+
+    private YamcsAdminCli getRootCommand() {
+        Command command = this;
+        while (command.parent != null) {
+            command = command.parent;
+        }
+        return (YamcsAdminCli) command;
     }
 
     int getArity(String arg) {
@@ -164,6 +175,22 @@ public abstract class Command {
             sb.append(" ");
         }
         return sb.toString();
+    }
+
+    String printJsonArray(List<? extends Message> messages) {
+        StringBuilder buf = new StringBuilder("[");
+        Printer printer = JsonFormat.printer();
+        try {
+            for (int i = 0; i < messages.size(); i++) {
+                if (i != 0) {
+                    buf.append(", ");
+                }
+                printer.appendTo(messages.get(i), buf);
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+        return buf.append("]").toString();
     }
 
     public String getName() {
@@ -205,7 +232,7 @@ public abstract class Command {
             }
         }
         out.append("\n");
-        if (sorted.size() > 0) {
+        if (!sorted.isEmpty()) {
             int maxLength = 3 + sorted.stream().map(pd -> pd.getNames().length()).max(Integer::max).get();
 
             out.append("Options:\n");
@@ -234,6 +261,10 @@ public abstract class Command {
             }
         }
         return out.toString();
+    }
+
+    protected static void exit(int status) {
+        exitFunction.apply(status);
     }
 
     private Comparator<? super ParameterDescription> parameterDescriptionComparator = (p0, p1) -> {

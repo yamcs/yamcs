@@ -1,16 +1,13 @@
 @font-face {
-  font-family: 'Material Icons';
+  font-family: 'Material Icons Outlined';
   font-style: normal;
   font-weight: 400;
-  src: local('Material Icons'),
-       local('MaterialIcons-Regular'),
-       url(material-icons/MaterialIcons-Regular.woff2) format('woff2'),
-       url(material-icons/MaterialIcons-Regular.woff) format('woff'),
-       url(material-icons/MaterialIcons-Regular.ttf) format('truetype');
+  src: url(material-icons/MaterialIcons-Outlined.woff2) format('woff2'),
+       url(material-icons/MaterialIcons-Outlined.woff) format('woff');
 }
 
 .material-icons {
-  font-family: 'Material Icons';
+  font-family: 'Material Icons Outlined';
   font-weight: normal;
   font-style: normal;
   font-size: 24px;  /* Preferred icon size */

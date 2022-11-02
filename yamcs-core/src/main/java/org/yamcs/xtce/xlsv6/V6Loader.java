@@ -19,6 +19,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.yamcs.YConfiguration;
+import org.yamcs.mdb.ConditionParser;
+import org.yamcs.mdb.JavaExpressionCalibratorFactory;
+import org.yamcs.mdb.SpreadsheetLoadContext;
+import org.yamcs.mdb.SpreadsheetLoadException;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.AlarmLevels;
@@ -36,6 +40,7 @@ import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.BinaryParameterType;
 import org.yamcs.xtce.BooleanArgumentType;
 import org.yamcs.xtce.BooleanDataEncoding;
+import org.yamcs.xtce.BooleanDataType;
 import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.CheckWindow;
@@ -44,7 +49,6 @@ import org.yamcs.xtce.CommandContainer;
 import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.CommandVerifier.TerminationAction;
 import org.yamcs.xtce.ComparisonList;
-import org.yamcs.xtce.ConditionParser;
 import org.yamcs.xtce.ContainerEntry;
 import org.yamcs.xtce.ContextCalibrator;
 import org.yamcs.xtce.CustomAlgorithm;
@@ -88,8 +92,6 @@ import org.yamcs.xtce.Significance;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.SplinePoint;
-import org.yamcs.xtce.SpreadsheetLoadContext;
-import org.yamcs.xtce.SpreadsheetLoadException;
 import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
@@ -104,7 +106,6 @@ import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.xml.XtceAliasSet;
-import org.yamcs.xtceproc.JavaExpressionCalibratorFactory;
 
 import com.google.common.base.Objects;
 import com.google.common.primitives.UnsignedLongs;
@@ -1427,7 +1428,7 @@ public class V6Loader extends V6LoaderBase {
                     String significance = cells[IDX_CMDOPT_SIGNIFICANCE].getContents();
                     Significance.Levels slevel;
                     try {
-                        slevel = Significance.Levels.valueOf(significance);
+                        slevel = Significance.Levels.valueOf(significance.toUpperCase());
                     } catch (IllegalArgumentException e) {
                         throw new SpreadsheetLoadException(ctx,
                                 "Invalid significance '" + significance + "' specified. Available values are: "
@@ -1500,17 +1501,16 @@ public class V6Loader extends V6LoaderBase {
                         throw new SpreadsheetLoadException(ctx,
                                 "Invalid checkwindow specified. Stop cannot be smaller than start");
                     }
-                    CheckWindow.TimeWindowIsRelativeToType cwr = TimeWindowIsRelativeToType.LastVerifier;
+                    CheckWindow.TimeWindowIsRelativeToType cwr = TimeWindowIsRelativeToType.LAST_VERIFIER;
 
                     if (hasColumn(cells, IDX_CMDVERIF_CHECKWINDOW_RELATIVETO)) {
                         String s = cells[IDX_CMDVERIF_CHECKWINDOW_RELATIVETO].getContents();
                         try {
-                            cwr = TimeWindowIsRelativeToType.valueOf(s);
+                            cwr = TimeWindowIsRelativeToType.fromXls(s);
                         } catch (IllegalArgumentException e) {
                             throw new SpreadsheetLoadException(ctx,
                                     "Invalid value '" + s
-                                            + "' specified for CheckWindow relative to parameter. Use one of "
-                                            + Arrays.toString(TimeWindowIsRelativeToType.values()));
+                                            + "' specified for CheckWindow relative to parameter. Use one of Use one of [CommandRelease, LastVerifier]");
                         }
                     }
                     CheckWindow cw = new CheckWindow(start, stop, cwr);
@@ -1691,7 +1691,14 @@ public class V6Loader extends V6LoaderBase {
         if (hasColumn(cells, IDX_CMD_DEFVALUE)) {
             String v = cells[IDX_CMD_DEFVALUE].getContents();
             try {
-                arg.setInitialValue(atype.build().convertType(v));
+                if (atype instanceof BooleanArgumentType.Builder) {
+                    if ("true".equalsIgnoreCase(v)) {
+                        v = BooleanDataType.DEFAULT_ONE_STRING_VALUE;
+                    } else if ("false".equalsIgnoreCase(v)) {
+                        v = BooleanDataType.DEFAULT_ZERO_STRING_VALUE;
+                    }
+                    arg.setInitialValue(atype.build().convertType(v));
+                }
             } catch (Exception e) {
                 throw new SpreadsheetLoadException(ctx, "Cannot parse default value '" + v + "'");
             }
@@ -2144,15 +2151,15 @@ public class V6Loader extends V6LoaderBase {
                     }
                 }
 
-                checkAndAddAlarm(cells, AlarmLevels.watch, paraRef, context, IDX_ALARM_WATCH_TRIGGER,
+                checkAndAddAlarm(cells, AlarmLevels.WATCH, paraRef, context, IDX_ALARM_WATCH_TRIGGER,
                         IDX_ALARM_WATCH_VALUE);
-                checkAndAddAlarm(cells, AlarmLevels.warning, paraRef, context, IDX_ALARM_WARNING_TRIGGER,
+                checkAndAddAlarm(cells, AlarmLevels.WARNING, paraRef, context, IDX_ALARM_WARNING_TRIGGER,
                         IDX_ALARM_WARNING_VALUE);
-                checkAndAddAlarm(cells, AlarmLevels.distress, paraRef, context, IDX_ALARM_DISTRESS_TRIGGER,
+                checkAndAddAlarm(cells, AlarmLevels.DISTRESS, paraRef, context, IDX_ALARM_DISTRESS_TRIGGER,
                         IDX_ALARM_DISTRESS_VALUE);
-                checkAndAddAlarm(cells, AlarmLevels.critical, paraRef, context, IDX_ALARM_CRITICAL_TRIGGER,
+                checkAndAddAlarm(cells, AlarmLevels.CRITICAL, paraRef, context, IDX_ALARM_CRITICAL_TRIGGER,
                         IDX_ALARM_CRITICAL_VALUE);
-                checkAndAddAlarm(cells, AlarmLevels.severe, paraRef, context, IDX_ALARM_SEVERE_TRIGGER,
+                checkAndAddAlarm(cells, AlarmLevels.SEVERE, paraRef, context, IDX_ALARM_SEVERE_TRIGGER,
                         IDX_ALARM_SEVERE_VALUE);
 
                 addAlarmDetails(paraRef, context, reportType, minViolations);

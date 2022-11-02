@@ -1,19 +1,18 @@
 package org.yamcs.http.api;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.http.api.NameDescriptionSearchMatcher;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 public class NameDescriptionSearchMatcherTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setupTest("refmdb");
         XtceDbFactory.reset();

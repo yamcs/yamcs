@@ -26,6 +26,20 @@ export class CommandsDataSource extends DataSource<Command> {
     });
   }
 
+  getAliasNamespaces() {
+    const namespaces: string[] = [];
+    for (const command of this.commands$.value) {
+      if (command.alias) {
+        for (const alias of command.alias) {
+          if (alias.namespace && namespaces.indexOf(alias.namespace) === -1) {
+            namespaces.push(alias.namespace);
+          }
+        }
+      }
+    }
+    return namespaces.sort();
+  }
+
   disconnect() {
     this.commands$.complete();
     this.totalSize$.complete();

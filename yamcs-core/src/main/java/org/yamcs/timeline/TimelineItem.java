@@ -1,13 +1,6 @@
 package org.yamcs.timeline;
 
-import static org.yamcs.timeline.TimelineItemDb.CNAME_DURATION;
-import static org.yamcs.timeline.TimelineItemDb.CNAME_GROUP_ID;
-import static org.yamcs.timeline.TimelineItemDb.CNAME_ID;
-import static org.yamcs.timeline.TimelineItemDb.CNAME_NAME;
-import static org.yamcs.timeline.TimelineItemDb.CNAME_RELTIME_ID;
-import static org.yamcs.timeline.TimelineItemDb.CNAME_RELTIME_START;
-import static org.yamcs.timeline.TimelineItemDb.CNAME_START;
-import static org.yamcs.timeline.TimelineItemDb.CNAME_TAGS;
+import static org.yamcs.timeline.TimelineItemDb.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -32,9 +25,11 @@ import com.google.protobuf.util.Durations;
  */
 public abstract class TimelineItem {
     protected final String id;
+    protected final TimelineItemType type;
+
     protected long start, duration;
 
-    // if the item start is relative to another item
+    // if relativeItemUuid!= null -> the item start is relative to another item
     protected UUID relativeItemUuid;
     protected long relativeStart;
 
@@ -48,20 +43,26 @@ public abstract class TimelineItem {
     protected String description;
     protected List<String> tags;
 
-    protected TimelineItem(Tuple tuple) {
+    protected TimelineItem(TimelineItemType type, Tuple tuple) {
         this.id = ((UUID) tuple.getColumn(CNAME_ID)).toString();
+        this.type = type;
         this.start = tuple.getTimestampColumn(CNAME_START);
         this.duration = tuple.getLongColumn(CNAME_DURATION);
+
         if (tuple.hasColumn(CNAME_NAME)) {
             this.name = tuple.getColumn(CNAME_NAME);
         }
         if (tuple.hasColumn(CNAME_TAGS)) {
             this.tags = tuple.getColumn(CNAME_TAGS);
         }
+        if (tuple.hasColumn(CNAME_DESCRIPTION)) {
+            this.description = tuple.getColumn(CNAME_DESCRIPTION);
+        }
     }
 
-    public TimelineItem(String id) {
+    public TimelineItem(TimelineItemType type, String id) {
         this.id = id;
+        this.type = type;
     }
 
     public long getStart() {
@@ -140,6 +141,10 @@ public abstract class TimelineItem {
         return id;
     }
 
+    public TimelineItemType getType() {
+        return type;
+    }
+
     public void setDuration(long duration) {
         this.duration = duration;
     }
@@ -148,10 +153,11 @@ public abstract class TimelineItem {
         this.tags = tags;
     }
 
-    protected abstract void addToProto(org.yamcs.protobuf.TimelineItem.Builder protob);
+    protected abstract void addToProto(boolean detail, org.yamcs.protobuf.TimelineItem.Builder protob);
 
-    public org.yamcs.protobuf.TimelineItem toProtoBuf() {
+    public org.yamcs.protobuf.TimelineItem toProtoBuf(boolean detail) {
         org.yamcs.protobuf.TimelineItem.Builder protob = org.yamcs.protobuf.TimelineItem.newBuilder();
+        protob.setType(type);
         protob.setId(id.toString());
         protob.setStart(TimeEncoding.toProtobufTimestamp(start));
         protob.setDuration(Durations.fromMillis(duration));
@@ -169,13 +175,22 @@ public abstract class TimelineItem {
         if (tags != null) {
             protob.addAllTags(tags);
         }
-        addToProto(protob);
+
+        if (detail) {
+            if (description != null) {
+                protob.setDescription(description);
+            }
+        }
+
+        addToProto(detail, protob);
         return protob.build();
     }
 
     public Tuple toTuple() {
         Tuple tuple = new Tuple();
+
         tuple.addColumn(CNAME_ID, DataType.UUID, UUID.fromString(id));
+        tuple.addEnumColumn(CNAME_TYPE, type.name());
         tuple.addTimestampColumn(CNAME_START, start);
         tuple.addColumn(CNAME_DURATION, duration);
         if (name != null) {
@@ -191,6 +206,10 @@ public abstract class TimelineItem {
         if (groupUuid != null) {
             tuple.addColumn(CNAME_GROUP_ID, DataType.UUID, groupUuid);
         }
+        if (description != null) {
+            tuple.addColumn(CNAME_DESCRIPTION, DataType.STRING, description);
+        }
+
         addToTuple(tuple);
         return tuple;
     }

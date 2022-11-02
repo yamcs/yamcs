@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>5.5.4-SNAPSHOT</version>
+    <version>5.7.9</version>
   </parent>
 
   <groupId>org.yamcs.examples</groupId>
@@ -32,13 +32,13 @@
     <module>cfdp</module>
     <module>perftest1</module>
     <module>perftest2</module>
+    <module>pus</module>
     <module>replication1</module>
     <module>replication2</module>
     <module>replication3</module>
     <module>simulation</module>
     <module>snippets</module>
     <module>templates</module>
-    <module>pus</module>
   </modules>
 
   <build>
@@ -57,7 +57,7 @@
           <configuration>
             <!--  Hook the webapp sources directly to the output of npm. This
                   allows running npm in watch mode without restarting Yamcs. -->
-            <jvmArgs combine.children="append">
+            <jvmArgs>
               <jvmArg>-Dyamcs.web.staticRoot=../../../../yamcs-web/src/main/webapp/dist</jvmArg>
             </jvmArgs>
           </configuration>
@@ -68,27 +68,6 @@
 
   <profiles>
     <profile>
-      <!-- Do this only on Java 9+. On Java 8 setting this property will silently
-           disable Nashorn entirely... -->
-      <id>no-nashorn-warnings</id>
-      <activation>
-        <jdk>[9,)</jdk>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.yamcs</groupId>
-            <artifactId>yamcs-maven-plugin</artifactId>
-            <configuration>
-              <jvmArgs combine.children="append">
-                <jvmArg>-Dnashorn.args=--no-deprecation-warning</jvmArg>
-              </jvmArgs>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
       <id>bundle-examples</id>
       <activation>
         <property>
@@ -96,37 +75,35 @@
         </property>
       </activation>
       <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-jar-plugin</artifactId>
-              <configuration>
-                <!-- yamcs-maven-plugin bundle goal requires an artifact -->
-                <skipIfEmpty>false</skipIfEmpty>
-              </configuration>
-            </plugin>
-            <plugin>
-              <groupId>org.yamcs</groupId>
-              <artifactId>yamcs-maven-plugin</artifactId>
-              <executions>
-                <execution>
-                  <id>bundle-yamcs</id>
-                  <phase>package</phase>
-                  <goals>
-                    <goal>bundle</goal>
-                  </goals>
-                  <configuration>
-                    <attach>false</attach>
-                    <formats>
-                      <format>tar.gz</format>
-                    </formats>
-                  </configuration>
-                </execution>
-              </executions>
-            </plugin>
-          </plugins>
-        </pluginManagement>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <configuration>
+              <!-- yamcs-maven-plugin bundle goal requires an artifact -->
+              <skipIfEmpty>false</skipIfEmpty>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.yamcs</groupId>
+            <artifactId>yamcs-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>bundle-yamcs</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>bundle</goal>
+                </goals>
+                <configuration>
+                  <attach>false</attach>
+                  <formats>
+                    <format>tar.gz</format>
+                  </formats>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
       </build>
     </profile>
   </profiles>

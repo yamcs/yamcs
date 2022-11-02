@@ -260,6 +260,25 @@ message ParameterTypeInfo {
   repeated MemberInfo member = 8;
   optional ArrayInfo arrayInfo = 9;
   map<string, AncillaryDataInfo> ancillaryData = 10;
+  
+  // Provides hints on how to format the engineering
+  // value as a string.
+  optional NumberFormatTypeInfo numberFormat = 11;
+  optional bool signed = 12;
+}
+
+message NumberFormatTypeInfo {
+  optional string numberBase = 1;
+  optional int32 minimumFractionDigits = 2;
+  optional int32 maximumFractionDigits = 3;
+  optional int32 minimumIntegerDigits = 4;
+  optional int32 maximumIntegerDigits = 5;
+  optional string negativeSuffix = 6;
+  optional string positiveSuffix = 7;
+  optional string negativePrefix = 8;
+  optional string positivePrefix = 9;
+  optional bool showThousandsGrouping = 10;
+  optional string notation = 11;
 }
 
 message GetContainerRequest {
@@ -292,11 +311,19 @@ message ArgumentMemberInfo {
   optional string longDescription = 4;
   repeated NamedObjectId alias = 5;
   optional ArgumentTypeInfo type = 6;
+  optional string initialValue = 7;
+}
+
+message ParameterDimensionInfo {
+  optional int64 fixedValue = 1;
+  optional ParameterInfo parameter = 2;
+  optional int64 slope = 3;
+  optional int64 intercept = 4;
 }
 
 message ArrayInfo {
   optional ParameterTypeInfo type = 1;
-  optional int32 dimensions = 2;
+  repeated ParameterDimensionInfo dimensions = 3;
 }
 
 message UsedByInfo {
@@ -354,14 +381,54 @@ message ArgumentTypeInfo {
   
   // Maximum character count (only used by string arguments)
   optional int32 maxChars = 12;
+  
+  // True if the engineering type supports signed representation.
+  // (only used by integer arguments)
+  optional bool signed = 13;
+  
+  // Minimum byte count (only used by binary arguments)
+  optional int32 minBytes = 14;
+  
+  // Maximum character count (only used by binary arguments)
+  optional int32 maxBytes = 15;
+
+  // Length of each dimension (only used by array arguments)
+  repeated ArgumentDimensionInfo dimensions = 16;
+
+  // Type of array entries (only used by array arguments)
+  optional ArgumentTypeInfo elementType = 17;
+}
+
+message ArgumentDimensionInfo {
+  // Use a fixed integer value. If set, no other options are applicable.
+  // This value describes the length.
+  optional int64 fixedValue = 1;
+
+  // Use the value of the referenced parameter.
+  // The value describes the zero-based ending index (length - 1)
+  //
+  // For a value ``v``, the dimension's length is determined
+  // as: ``(v * slope) + intercept``. 
+  optional ParameterInfo parameter = 2;
+
+  // Use the value of the referenced argument.
+  // The value describes the zero-based ending index (length - 1)
+  //
+  // For a value ``v``, the dimension's length is determined
+  // as: ``(v * slope) + intercept``.
+  optional string argument = 3;
+
+  // Scale the value obtained from a parameter or argument reference.
+  optional int64 slope = 4;
+
+  // Shift the value obtained from a parameter or argument reference.
+  optional int64 intercept = 5;
 }
 
 message ArgumentInfo {
   optional string name = 1;
   optional string description = 2;
-  //optional string type = 3;
   optional string initialValue = 4;
-  // repeated UnitInfo unitSet = 5;
   optional ArgumentTypeInfo type = 6;
 }
 

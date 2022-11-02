@@ -1,10 +1,11 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
+import { MessageService } from '../../lib';
 import { LinkEvent, LinkSubscription } from '../client';
 import { AuthService } from '../core/services/AuthService';
 import { YamcsService } from '../core/services/YamcsService';
@@ -18,7 +19,7 @@ import { LinkItem } from './LinkItem';
 })
 export class LinksPage implements AfterViewInit, OnDestroy {
 
-  filterControl = new FormControl();
+  filterControl = new UntypedFormControl();
 
   // Link to show detail pane (only on single selection)
   detailLink$ = new BehaviorSubject<LinkItem | null>(null);
@@ -27,9 +28,10 @@ export class LinksPage implements AfterViewInit, OnDestroy {
     { id: 'select', label: '', alwaysVisible: true },
     { id: 'status', label: '', alwaysVisible: true },
     { id: 'name', label: 'Name', alwaysVisible: true },
-    { id: 'className', label: 'Class Name' },
-    { id: 'in', label: 'In Count', visible: true },
-    { id: 'out', label: 'Out Count', visible: true },
+    { id: 'className', label: 'Class name' },
+    { id: 'in', label: 'In count', visible: true },
+    { id: 'out', label: 'Out count', visible: true },
+    { id: 'detailedStatus', label: 'Detail', visible: true },
     { id: 'actions', label: '', alwaysVisible: true },
   ];
 
@@ -48,6 +50,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
     private changeDetection: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router,
+    private messageService: MessageService,
   ) {
     title.setTitle('Links');
 
@@ -132,18 +135,24 @@ export class LinksPage implements AfterViewInit, OnDestroy {
     $event.stopPropagation();
   }
 
-  enableLink(name: string) {
-    this.yamcs.yamcsClient.enableLink(this.yamcs.instance!, name);
+  enableLink(link: string) {
+    this.yamcs.yamcsClient.enableLink(this.yamcs.instance!, link)
+      .catch(err => this.messageService.showError(err));
   }
 
-  disableLink(name: string) {
-    this.yamcs.yamcsClient.disableLink(this.yamcs.instance!, name);
+  disableLink(link: string) {
+    this.yamcs.yamcsClient.disableLink(this.yamcs.instance!, link)
+      .catch(err => this.messageService.showError(err));
   }
 
-  resetCounters(name: string) {
-    this.yamcs.yamcsClient.editLink(this.yamcs.instance!, name, {
-      resetCounters: true,
-    });
+  resetCounters(link: string) {
+    this.yamcs.yamcsClient.resetLinkCounters(this.yamcs.instance!, link)
+      .catch(err => this.messageService.showError(err));
+  }
+
+  runAction(link: string, action: string) {
+    this.yamcs.yamcsClient.runLinkAction(this.yamcs.instance!, link, action)
+      .catch(err => this.messageService.showError(err));
   }
 
   mayControlLinks() {
@@ -237,14 +246,14 @@ export class LinksPage implements AfterViewInit, OnDestroy {
 
   isAllSelected() {
     const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.data.length;
-    return numSelected === numRows;
+    const numRows = this.dataSource.filteredData.length;
+    return numSelected === numRows && numRows > 0;
   }
 
   masterToggle() {
     this.isAllSelected() ?
       this.selection.clear() :
-      this.dataSource.data.forEach(row => this.selection.select(row));
+      this.dataSource.filteredData.forEach(row => this.selection.select(row));
   }
 
   toggleOne(row: LinkItem) {
@@ -263,6 +272,12 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   disableSelectedLinks() {
     for (const item of this.selection.selected) {
       this.disableLink(item.link.name);
+    }
+  }
+
+  resetCountersForSelectedLinks() {
+    for (const item of this.selection.selected) {
+      this.resetCounters(item.link.name);
     }
   }
 
@@ -314,11 +329,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.selectionSubscription) {
-      this.selectionSubscription.unsubscribe();
-    }
-    if (this.linkSubscription) {
-      this.linkSubscription.cancel();
-    }
+    this.selectionSubscription?.unsubscribe();
+    this.linkSubscription?.cancel();
   }
 }

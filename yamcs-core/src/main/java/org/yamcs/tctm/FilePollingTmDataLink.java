@@ -15,6 +15,8 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.time.Instant;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 
 /**
@@ -35,8 +37,7 @@ import org.yamcs.utils.YObjectLoader;
  * <li>{@code delayBetweenPackets} - if configured, it is the number of milliseconds to wait in between sending two
  * packets. By default it is -1 meaning the packets are sent as fast as possible.</li>
  * <li>{@code headerSize} - if configured, the input files have a header which will be skipped before reading the first
- * packet.
- * </li>
+ * packet.</li>
  * </ul>
  *
  */
@@ -71,7 +72,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
             if (config.containsKey("packetInputStreamArgs")) {
                 packetInputStreamArgs = config.getConfig("packetInputStreamArgs");
             }
-        } else {//compatibility with the previous releases, should eventually be removed
+        } else {// compatibility with the previous releases, should eventually be removed
             this.packetInputStreamClassName = UsocPacketInputStream.class.getName();
             this.packetPreprocessor = new IssPacketPreprocessor(yamcsInstance);
         }
@@ -95,7 +96,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
     }
 
     private void play(File fdir) throws InterruptedException {
-
+        Instant erp = timeService.getHresMissionTime();
         File[] files = fdir.listFiles();
         Arrays.sort(files);
         for (File f : files) {
@@ -106,14 +107,20 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
                 continue;
             }
             log.info("Injecting the content of {}", f);
+            long count = 0;
+            long minTime = TimeEncoding.MAX_INSTANT;
+            long maxTime = TimeEncoding.MIN_INSTANT;
             try (PacketInputStream packetInputStream = getPacketInputStream(f.getAbsolutePath())) {
                 byte[] packet;
                 while ((packet = packetInputStream.readPacket()) != null) {
                     updateStats(packet.length);
-                    TmPacket tmpkt = packetPreprocessor.process(new TmPacket(timeService.getMissionTime(), packet));
-
+                    TmPacket tmPacket = new TmPacket(timeService.getMissionTime(), packet);
+                    tmPacket.setEarthRceptionTime(erp);
+                    TmPacket tmpkt = packetPreprocessor.process(tmPacket);
+                    minTime = Math.min(minTime, tmpkt.getGenerationTime());
+                    maxTime = Math.max(maxTime, tmpkt.getGenerationTime());
+                    count++;
                     processPacket(tmpkt);
-                    updateStats(tmpkt.getPacket().length);
                     if (delayBetweenPackets > 0) {
                         Thread.sleep(delayBetweenPackets);
                     }
@@ -123,13 +130,15 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
             } catch (IOException | PacketTooLongException e) {
                 log.warn("Got IOException while reading from " + f + ": ", e);
             }
+            String msg = String.format("Ingested %s; pkt count: %d, time range: [%s, %s]", f, count,
+                    TimeEncoding.toString(minTime), TimeEncoding.toString(maxTime));
+            eventProducer.sendInfo("FILE_INGESTION", msg);
             if (deleteAfterImport) {
                 if (!f.delete()) {
                     log.warn("Could not remove {}", f);
                 }
             }
         }
-
     }
 
     private PacketInputStream getPacketInputStream(String fileName) throws IOException {
@@ -161,7 +170,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
             inputStream.close();
             throw e;
         }
-        packetInputStream.init(inputStream, config);
+        packetInputStream.init(inputStream, packetInputStreamArgs);
         return packetInputStream;
     }
 

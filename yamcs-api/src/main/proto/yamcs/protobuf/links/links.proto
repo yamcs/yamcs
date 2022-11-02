@@ -1,0 +1,193 @@
+syntax="proto2";
+
+package yamcs.protobuf.links;
+
+option java_package = "org.yamcs.protobuf.links";
+option java_outer_classname = "LinksServiceProto";
+option java_multiple_files = true;
+
+import "yamcs/api/annotations.proto";
+
+import "google/protobuf/struct.proto";
+
+
+service LinksApi {
+  // List links
+  rpc ListLinks(ListLinksRequest) returns (ListLinksResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/links/{instance?}"
+    };
+  }
+  
+  // Get a link
+  rpc GetLink(GetLinkRequest) returns (LinkInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/links/{instance}/{link}"
+    };
+  }
+
+  // Update a link
+  rpc UpdateLink(EditLinkRequest) returns (LinkInfo) {
+    option (yamcs.api.route) = {
+      patch: "/api/links/{instance}/{link}"
+      body: "*"
+      deprecated: true
+      log: "Link '{link}' updated"
+    };
+  }
+
+  // Enable a link
+  rpc EnableLink(EnableLinkRequest) returns (LinkInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/links/{instance}/{link}:enable"
+      log: "Link '{link}' enabled"
+    };
+  }
+
+  // Disable a link
+  rpc DisableLink(DisableLinkRequest) returns (LinkInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/links/{instance}/{link}:disable"
+      log: "Link '{link}' disabled"
+    };
+  }
+
+  // Reset link counters
+  rpc ResetLinkCounters(ResetLinkCountersRequest) returns (LinkInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/links/{instance}/{link}:resetCounters"
+    };
+  }
+
+  // Receive link updates
+  rpc SubscribeLinks(SubscribeLinksRequest) returns (stream LinkEvent) {
+    option (yamcs.api.websocket) = {
+      topic: "links"
+    };
+  }
+
+  // Run a link-specific action.
+  //
+  // It is up to the link implementation to register and handle
+  // any link actions.
+  rpc RunAction(RunActionRequest) returns (google.protobuf.Struct) {
+    option (yamcs.api.route) = {
+      post: "/api/links/{instance}/{link}/actions/{action}"
+      body: "message"
+      log: "Action '{action}' performed on link '{link}'"
+    };
+  }
+}
+
+message ListLinksRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+}
+
+message ListLinksResponse {
+  repeated LinkInfo links = 1;
+}
+
+message GetLinkRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Link name. 
+  optional string link = 2;
+}
+
+message EnableLinkRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Link name.
+  optional string link = 2;
+}
+
+message DisableLinkRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Link name.
+  optional string link = 2;
+}
+
+message ResetLinkCountersRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Link name.
+  optional string link = 2;
+}
+
+message EditLinkRequest {
+  // Yamcs instance name.
+  optional string instance = 3;
+
+  // Link name.
+  optional string link = 4;
+  
+  // The state of the link. Either ``enabled`` or ``disabled``.
+  optional string state = 1;
+  optional bool resetCounters = 2;
+}
+
+message RunActionRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Link name.
+  optional string link = 2;
+
+  // Action name.
+  optional string action = 3;
+
+  // Action message.
+  optional google.protobuf.Struct message = 4;
+}
+
+message LinkEvent {
+  enum Type {
+    // A new link was registered. You also receive this event directly after you subscribe,
+    //  for every link that is registered at that time.
+    REGISTERED = 1;
+    // A link was unregistered.
+    UNREGISTERED = 2;
+    // A link was updated in one of its attributes, for example the dataCount has increased,
+    // or the status has changed.
+    UPDATED = 3;
+  }
+  optional Type type = 1;
+  optional LinkInfo linkInfo = 2;
+}
+
+message SubscribeLinksRequest {
+  optional string instance = 1;
+}
+
+message LinkInfo {
+  reserved 5,8;
+  optional string instance = 1;
+  optional string name = 2;
+  optional string type = 3;
+  optional string spec = 4;
+  optional bool disabled = 6;
+  optional string status = 7;
+  optional int64 dataInCount = 10;
+  optional int64 dataOutCount = 11;
+  optional string detailedStatus = 9;
+
+  //if this is a sublink of an aggregated data link, this is the name of the parent
+  optional string parentName = 12;
+
+  // Custom actions
+  repeated LinkActionInfo actions = 13;
+}
+
+message LinkActionInfo {
+  optional string id = 1;
+  optional string label = 2;
+  optional string style = 3;
+  optional bool enabled = 4;
+  optional bool checked = 5;
+}

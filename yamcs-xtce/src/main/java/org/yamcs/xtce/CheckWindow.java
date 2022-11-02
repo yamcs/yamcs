@@ -13,20 +13,30 @@ public class CheckWindow implements Serializable {
     private static final long serialVersionUID = 2L;
 
     public enum TimeWindowIsRelativeToType {
-        CommandRelease, LastVerifier;
+        COMMAND_RELEASE, LAST_VERIFIER;
         
         static public TimeWindowIsRelativeToType fromXtce(String xtceAttr) {
             if ("timeLastVerifierPassed".equals(xtceAttr)) {
-                return TimeWindowIsRelativeToType.LastVerifier;
+                return TimeWindowIsRelativeToType.LAST_VERIFIER;
             } else if ("commandRelease".equals(xtceAttr)) {
-                return TimeWindowIsRelativeToType.CommandRelease;
+                return TimeWindowIsRelativeToType.COMMAND_RELEASE;
             } else {
                 throw new IllegalArgumentException("Invalid value '" + xtceAttr + "' for timeWindowIsRelativeTo");
             }
         }
 
+        static public TimeWindowIsRelativeToType fromXls(String xlsStr) {
+            if ("LastVerifier".equals(xlsStr)) {
+                return TimeWindowIsRelativeToType.LAST_VERIFIER;
+            } else if ("CommandRelease".equals(xlsStr)) {
+                return TimeWindowIsRelativeToType.COMMAND_RELEASE;
+            } else {
+                throw new IllegalArgumentException("Invalid value '" + xlsStr + "' for timeWindowIsRelativeTo");
+            }
+        }
+
         public String toXtce() {
-            if (this == CommandRelease) {
+            if (this == COMMAND_RELEASE) {
                 return "commandRelease";
             } else {
                 return "timeLastVerifierPassed";

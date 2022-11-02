@@ -27,7 +27,7 @@ public class TimeEncoding {
     public static long MAX_INSTANT = 185539080470435999L;
 
     static final long GPS_EPOCH_YAMCS_EPOCH_DELTA = 315964819000L;
-    static final long TAI_EPOCH_YAMCS_EPOCH_DELTA = -378691191000L;
+    static final long TAI_EPOCH_YAMCS_EPOCH_DELTA = -378691200000L;
     static final long J2000_EPOCH_YAMCS_EPOCH_DELTA = 946727967816L;
 
     static final long GPS_TAI_DELTA = 19000;

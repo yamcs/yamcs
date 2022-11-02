@@ -135,6 +135,8 @@ public class TemplateProcessor {
                                 return;
                             }
                             break;
+                        default:
+                            continue;
                         }
                     }
                 } else {
@@ -192,6 +194,8 @@ public class TemplateProcessor {
                             return;
                         }
                         break;
+                    default:
+                        continue;
                     }
                 }
             } else {

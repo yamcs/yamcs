@@ -1,5 +1,9 @@
 package org.yamcs.parameter;
 
+import static org.yamcs.xtce.NameDescription.qualifiedName;
+import static org.yamcs.xtce.XtceDb.YAMCS_SPACESYSTEM_NAME;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,6 +31,7 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.ArrayParameterType;
+import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.BinaryParameterType;
 import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.EnumeratedParameterType;
@@ -38,6 +43,7 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtce.SystemParameter;
+import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -47,9 +53,6 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.io.Files;
-
-import static org.yamcs.xtce.XtceDb.YAMCS_SPACESYSTEM_NAME;
-import static org.yamcs.xtce.NameDescription.qualifiedName;
 
 /**
  * Collects each second system processed parameters from whomever registers and sends them on the sys_var stream
@@ -75,6 +78,7 @@ public class SystemParametersService extends AbstractYamcsService implements Run
 
     int seqCount = 0;
 
+    // /yamcs/<server_id>
     private String namespace;
     private String serverId;
     XtceDb mdb;
@@ -110,7 +114,11 @@ public class SystemParametersService extends AbstractYamcsService implements Run
         }
 
         if (config.getBoolean("provideFsVariables")) {
-            providers.add(new SysVarProducer(new FileStoreParameterProducer(this)));
+            try {
+                providers.add(new SysVarProducer(new FileStoreParameterProducer(this)));
+            } catch (IOException e) {
+                throw new InitException(e);
+            }
         }
 
         synchronized (instances) {
@@ -266,24 +274,38 @@ public class SystemParametersService extends AbstractYamcsService implements Run
      *            - any type except aggregate and array
      * @return
      */
-    public SystemParameter createSystemParameter(String relativeName, Yamcs.Value.Type basicType, String description) {
+    public SystemParameter createSystemParameter(String relativeName, Yamcs.Value.Type basicType, UnitType unit,
+            String description) {
         relativeName = Files.simplifyPath(relativeName);
         if (relativeName.startsWith("/")) {
             throw new IllegalArgumentException("The name has to be relative");
         }
-        return createSystemParameter(mdb, qualifiedName(namespace, relativeName), basicType, description);
+        return createSystemParameter(mdb, qualifiedName(namespace, relativeName), basicType, unit, description);
+    }
+
+    public SystemParameter createSystemParameter(String relativeName, Yamcs.Value.Type basicType, String description) {
+        return createSystemParameter(relativeName, basicType, null, description);
     }
 
     public static SystemParameter createSystemParameter(XtceDb mdb, String fqn, Value engValue) {
+        return createSystemParameter(mdb, fqn, engValue, null);
+    }
+
+    public static SystemParameter createSystemParameter(XtceDb mdb, String fqn, Value engValue, UnitType unit) {
         String name = NameDescription.getName(fqn);
-        ParameterType ptype = createSystemParameterType(mdb, name, engValue);
+        ParameterType ptype = createSystemParameterType(mdb, name, engValue, unit);
         return mdb.createSystemParameter(fqn, ptype, null);
     }
 
     public static SystemParameter createSystemParameter(XtceDb mdb, String fqn, Yamcs.Value.Type basicType,
-            String description) {
-        ParameterType ptype = getBasicType(mdb, basicType);
+            UnitType unit, String description) {
+        ParameterType ptype = getBasicType(mdb, basicType, unit);
         return mdb.createSystemParameter(fqn, ptype, description);
+    }
+
+    public static SystemParameter createSystemParameter(XtceDb mdb, String fqn, Yamcs.Value.Type basicType,
+            String description) {
+        return createSystemParameter(mdb, fqn, basicType, null, description);
     }
 
     public EnumeratedParameterType createEnumeratedParameterType(Class<? extends Enum<?>> enumClass) {
@@ -301,13 +323,16 @@ public class SystemParametersService extends AbstractYamcsService implements Run
         return type;
     }
 
-    public SystemParameter createEnumeratedSystemParameter(String name, Class<? extends Enum<?>> enumClass,
+    /**
+     * Creates an enumerated system parameter by deducing the possible enumeration states from the java enum.
+     */
+    public SystemParameter createEnumeratedSystemParameter(String relativeName, Class<? extends Enum<?>> enumClass,
             String description) {
         EnumeratedParameterType type = createEnumeratedParameterType(enumClass);
-        return mdb.createSystemParameter(qualifiedName(YAMCS_SPACESYSTEM_NAME, name), type, description);
+        return mdb.createSystemParameter(qualifiedName(namespace, relativeName), type, description);
     }
 
-    public static ParameterType createSystemParameterType(XtceDb mdb, String name, Value v) {
+    public static ParameterType createSystemParameterType(XtceDb mdb, String name, Value v, UnitType unit) {
         if (v instanceof AggregateValue) {
             AggregateValue aggrv = (AggregateValue) v;
             AggregateParameterType.Builder aggrType = new AggregateParameterType.Builder();
@@ -317,7 +342,7 @@ public class SystemParametersService extends AbstractYamcsService implements Run
                 String mname = aggrv.getMemberName(i);
                 Value mvalue = aggrv.getMemberValue(i);
                 Member m = new Member(mname);
-                ParameterType mtype = createSystemParameterType(mdb, name + "." + mname, mvalue);
+                ParameterType mtype = createSystemParameterType(mdb, name + "." + mname, mvalue, null);
                 m.setDataType(mtype);
                 aggrType.addMember(m);
             }
@@ -328,7 +353,7 @@ public class SystemParametersService extends AbstractYamcsService implements Run
                 throw new IllegalArgumentException("Cannot create a type for an empty array "
                         + "because the elemnt type cannot be determined");
             }
-            ParameterType elementType = createSystemParameterType(mdb, name + "[]", av.getElementValue(0));
+            ParameterType elementType = createSystemParameterType(mdb, name + "[]", av.getElementValue(0), null);
             ArrayParameterType arrayType = new ArrayParameterType.Builder()
                     .setName(name)
                     .setQualifiedName(qualifiedName(YAMCS_SPACESYSTEM_NAME, name))
@@ -336,8 +361,12 @@ public class SystemParametersService extends AbstractYamcsService implements Run
                     .build();
             return mdb.addSystemParameterType(arrayType);
         } else {
-            return getBasicType(mdb, v.getType());
+            return getBasicType(mdb, v.getType(), unit);
         }
+    }
+
+    public ParameterType getBasicType(Yamcs.Value.Type type) {
+        return getBasicType(mdb, type, null);
     }
 
     /**
@@ -348,59 +377,79 @@ public class SystemParametersService extends AbstractYamcsService implements Run
      * @param type
      * @return
      */
-    public ParameterType getBasicType(Yamcs.Value.Type type) {
-        return getBasicType(mdb, type);
+    public ParameterType getBasicType(Yamcs.Value.Type type, UnitType unit) {
+        return getBasicType(mdb, type, unit);
     }
 
-    public static ParameterType getBasicType(XtceDb mdb, Type type) {
+    public static ParameterType getBasicType(XtceDb mdb, Type type, UnitType unit) {
+
         switch (type) {
         case BINARY:
-            return getOrCreateType(mdb, "binary",
+            return getOrCreateType(mdb, "binary", unit,
                     () -> new BinaryParameterType.Builder());
         case BOOLEAN:
-            return getOrCreateType(mdb, "boolean",
+            return getOrCreateType(mdb, "boolean", unit,
                     () -> new BooleanParameterType.Builder());
         case STRING:
-            return getOrCreateType(mdb, "string",
+            return getOrCreateType(mdb, "string", unit,
                     () -> new StringParameterType.Builder());
         case FLOAT:
-            return getOrCreateType(mdb, "float32",
+            return getOrCreateType(mdb, "float32", unit,
                     () -> new FloatParameterType.Builder().setSizeInBits(32));
         case DOUBLE:
-            return getOrCreateType(mdb, "float64",
+            return getOrCreateType(mdb, "float64", unit,
                     () -> new FloatParameterType.Builder().setSizeInBits(64));
         case SINT32:
-            return getOrCreateType(mdb, "sint32",
+            return getOrCreateType(mdb, "sint32", unit,
                     () -> new IntegerParameterType.Builder().setSizeInBits(32).setSigned(true));
         case SINT64:
-            return getOrCreateType(mdb, "sint64",
+            return getOrCreateType(mdb, "sint64", unit,
                     () -> new IntegerParameterType.Builder().setSizeInBits(64).setSigned(true));
         case UINT32:
-            return getOrCreateType(mdb, "uint32",
+            return getOrCreateType(mdb, "uint32", unit,
                     () -> new IntegerParameterType.Builder().setSizeInBits(32).setSigned(false));
         case UINT64:
-            return getOrCreateType(mdb, "uint64",
+            return getOrCreateType(mdb, "uint64", unit,
                     () -> new IntegerParameterType.Builder().setSizeInBits(64).setSigned(false));
         case TIMESTAMP:
-            return getOrCreateType(mdb, "time", () -> new AbsoluteTimeParameterType.Builder());
+            return getOrCreateType(mdb, "time", unit, () -> new AbsoluteTimeParameterType.Builder());
         case ENUMERATED:
-            return getOrCreateType(mdb, "enum", () -> new EnumeratedParameterType.Builder());
+            return getOrCreateType(mdb, "enum", unit, () -> new EnumeratedParameterType.Builder());
         default:
             throw new IllegalArgumentException(type + "is not a basic type");
         }
     }
 
     public ParameterType getOrCreateType(String name, Supplier<ParameterType.Builder<?>> supplier) {
-        return getOrCreateType(mdb, name, supplier);
+        return getOrCreateType(mdb, name, null, supplier);
     }
 
-    static private ParameterType getOrCreateType(XtceDb mdb, String name, Supplier<ParameterType.Builder<?>> supplier) {
+    static private ParameterType getOrCreateType(XtceDb mdb, String name, UnitType unit,
+            Supplier<ParameterType.Builder<?>> supplier) {
+
+        String units;
+        if (unit != null) {
+            units = unit.getUnit();
+            if (!"1".equals(unit.getFactor())) {
+                units = unit.getFactor() + "x" + units;
+            }
+            if (unit.getPower() != 1) {
+                units = units + "^" + unit.getPower();
+            }
+            name = name + "_" + units.replaceAll("/", "_");
+        }
+
         String fqn = XtceDb.YAMCS_SPACESYSTEM_NAME + NameDescription.PATH_SEPARATOR + name;
         ParameterType ptype = mdb.getParameterType(fqn);
         if (ptype != null) {
             return ptype;
         }
-        ptype = supplier.get().setName(name).build();
+        ParameterType.Builder<?> typeb = supplier.get().setName(name);
+        if (unit != null) {
+            ((BaseDataType.Builder<?>) typeb).addUnit(unit);
+        }
+
+        ptype = typeb.build();
         ((NameDescription) ptype).setQualifiedName(fqn);
 
         return mdb.addSystemParameterType(ptype);

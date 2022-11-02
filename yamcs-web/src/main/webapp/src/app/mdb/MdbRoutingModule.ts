@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 import { AttachContextGuard } from '../core/guards/AttachContextGuard';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { MayGetMissionDatabaseGuard } from '../core/guards/MayGetMissionDatabaseGuard';
@@ -15,7 +15,7 @@ import { ParameterPage } from './parameters/ParameterPage';
 import { ParametersPage } from './parameters/ParametersPage';
 
 
-const routes = [{
+const routes: Routes = [{
   path: '',
   canActivate: [AuthGuard, AttachContextGuard, MayGetMissionDatabaseGuard],
   canActivateChild: [AuthGuard, MayGetMissionDatabaseGuard],

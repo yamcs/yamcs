@@ -37,12 +37,15 @@ public abstract class AbstractTableWalker implements TableWalker {
   
     volatile protected boolean running = false;
 
-    YarchDatabaseInstance ydb;
+    protected final YarchDatabaseInstance ydb;
+    protected final ExecutionContext ctx;
 
-    protected AbstractTableWalker(YarchDatabaseInstance ydb, TableDefinition tableDefinition, boolean ascending,
+    protected AbstractTableWalker(ExecutionContext ctx, TableDefinition tableDefinition, boolean ascending,
             boolean follow) {
         this.tableDefinition = tableDefinition;
-        this.ydb = ydb;
+        this.ctx = ctx;
+        this.ydb = ctx.getDb();
+
         this.ascending = ascending;
         this.follow = follow;
         log = new Log(getClass(), ydb.getName());

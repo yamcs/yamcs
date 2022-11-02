@@ -2,6 +2,10 @@ package org.yamcs.tctm.ccsds;
 
 import org.yamcs.tctm.TcTmException;
 
+/**
+ * Decodes raw frame data into a transfer frame of one of three CCSDS types AOS, TM or USLP
+ *
+ */
 public interface TransferFrameDecoder {
     enum CcsdsFrameType {
         /**

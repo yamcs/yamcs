@@ -39,6 +39,7 @@ service IamApi {
   rpc DeleteRoleAssignment(DeleteRoleAssignmentRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       delete: "/api/users/{name}/roles/{role}"
+      log: "Role '{role}' deleted from user {name}"
     };
   }
 
@@ -61,6 +62,7 @@ service IamApi {
     option (yamcs.api.route) = {
       post: "/api/users"
       body: "*"
+      log: "User '{name}' created"
     };
   }
   
@@ -69,6 +71,7 @@ service IamApi {
     option (yamcs.api.route) = {
       patch: "/api/users/{name}"
       body: "*"
+      log: "User '{name}' was changed"
     };
   }
   
@@ -83,6 +86,7 @@ service IamApi {
   rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       delete: "/api/users/{name}"
+      log: "User '{name}' deleted"
     };
   }
 
@@ -90,6 +94,7 @@ service IamApi {
   rpc DeleteIdentity(DeleteIdentityRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       delete: "/api/users/{name}/identities/{provider}"
+      log: "Identity '{provider}' deleted from user '{name}'"
     };
   }
   
@@ -112,6 +117,7 @@ service IamApi {
     option (yamcs.api.route) = {
       post: "/api/groups"
       body: "*"
+      log: "Group '{name}' created"
     };
   }
   
@@ -120,6 +126,7 @@ service IamApi {
     option (yamcs.api.route) = {
       patch: "/api/groups/{name}"
       body: "*"
+      log: "Group '{name}' was changed"
     };
   }
   
@@ -127,6 +134,7 @@ service IamApi {
   rpc DeleteGroup(DeleteGroupRequest) returns (GroupInfo) {
     option (yamcs.api.route) = {
       delete: "/api/groups/{name}"
+      log: "Group '{name}' deleted"
     };
   }
 
@@ -148,6 +156,7 @@ service IamApi {
   rpc DeleteServiceAccount(DeleteServiceAccountRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       delete: "/api/service-accounts/{name}"
+      log: "Service account '{name}' deleted"
     };
   }
   
@@ -156,6 +165,7 @@ service IamApi {
     option (yamcs.api.route) = {
       post: "/api/service-accounts"
       body: "*"
+      log: "Service account '{name}' created"
     };
   }
 }
@@ -169,17 +179,26 @@ message ListGroupsResponse {
 }
 
 message CreateGroupRequest {
+  // Group name
   optional string name = 1;
+  
+  // Group description
   optional string description = 2;
+  
+  // Usernames of users that should be added as member
   repeated string users = 3;
+  
+  // Names of service accounts that should be added as member
   repeated string serviceAccounts = 4;
 }
 
 message GetGroupRequest {
+  // Group name
   optional string name  = 1;
 }
 
 message DeleteGroupRequest {
+  // Group name
   optional string name  = 1;
 }
 
@@ -188,9 +207,16 @@ message UpdateGroupRequest {
     repeated string users = 1;
     repeated string serviceAccounts = 2;
   }
+  // Group name
   optional string name = 1;
+  
+  // New group name
   optional string newName = 2;
+  
+  // Group description
   optional string description = 3;
+  
+  // Group members
   optional MemberInfo memberInfo = 4;
 }
 
@@ -199,45 +225,71 @@ message ListServiceAccountsResponse {
 }
 
 message GetServiceAccountRequest {
+  // Service account name
   optional string name  = 1;
 }
 
 message CreateServiceAccountRequest {
+  // Service account name
   optional string name = 1;
 }
 
 message CreateServiceAccountResponse {
+  // Service account name
   optional string name = 1;
   optional string applicationId = 2;
   optional string applicationSecret = 3;
 }
 
 message DeleteServiceAccountRequest {
+  // Service account name
   optional string name = 1;
 }
 
 message GetUserRequest {
+  // Username
   optional string name  = 1;
 }
 
 message DeleteUserRequest {
+  // Username
   optional string name  = 1;
 }
 
 message CreateUserRequest {
+  // Username
   optional string name = 1;
+  
+  // Display name
   optional string displayName = 2;
+  
+  // Email address
   optional string email = 3;
-  optional string password = 4;
+  
+  // User password
+  optional string password = 4 [(yamcs.api.field_behavior) = SECRET];
 }
 
 message UpdateUserRequest {
+  // Username
   optional string name = 1;
+
+  // Display name
   optional string displayName = 2;
+
+  // Email address
   optional string email = 3;
+
+  // Whether the user may login
   optional bool active = 4;
+
+  // Whether the user has all privileges
   optional bool superuser = 5;
-  optional string password = 6;
+
+  // User password
+  optional string password = 6 [(yamcs.api.field_behavior) = SECRET];
+
+  // Assigned roles
   optional RoleAssignment roleAssignment = 7;
 }
 
@@ -246,58 +298,127 @@ message RoleAssignment {
 }
 
 message UserInfo {
+  // Username
   optional string name = 17;
+  
+  // Displayed name
   optional string displayName = 18;
+  
+  // Email address
   optional string email = 19;
+  
+  // Whether the user may login
   optional bool active = 16;
+  
+  // Whether the user has all privileges
   optional bool superuser = 13;
+  
+  // User that created this user account
   optional UserInfo createdBy = 20;
+  
+  // When this user was created
   optional google.protobuf.Timestamp creationTime = 14;
+  
+  // When this user was first activated
   optional google.protobuf.Timestamp confirmationTime = 21;
+  
+  // When this user last logged in
   optional google.protobuf.Timestamp lastLoginTime = 15;
-  repeated string systemPrivilege = 11;
-  repeated ObjectPrivilegeInfo objectPrivilege = 12;
+  
+  // System privileges
+  repeated string systemPrivileges = 26;
+  repeated string systemPrivilege = 11 [deprecated=true];
+  
+  // Object privileges
+  repeated ObjectPrivilegeInfo objectPrivileges = 27;
+  repeated ObjectPrivilegeInfo objectPrivilege = 12 [deprecated=true];
+  
+  // Groups that this user is member of
   repeated GroupInfo groups = 22;
+  
+  // External identities
   repeated ExternalIdentityInfo identities = 23;
+  
+  // Assigned roles
   repeated RoleInfo roles = 24;
+  
+  // Clearance level. If the command clearance feature is enabled,
+  // then this user attribute is used as an additional check whether
+  // the user may send certain commands.
+  //
+  // The command clearance feature is disabled by default.
   optional mdb.SignificanceInfo.SignificanceLevelType clearance = 25;
 }
 
 message DeleteIdentityRequest {
+  // Username
   optional string name = 1;
+  
+  // Name of an identity provider
   optional string provider = 2;
 }
 
 message ExternalIdentityInfo {
+  // External identity
   optional string identity = 1;
+  
+  // Name of the identity provider
   optional string provider = 2;
 }
 
 message DeleteRoleAssignmentRequest {
+  // Username
   optional string name = 1;
+  
+  // Role name
   optional string role = 2;
 }
 
 message GroupInfo {
+  // Group name
   optional string name = 1;
+  
+  // Group description
   optional string description = 2;
+  
+  // Users that are member of this group
   repeated UserInfo users = 3;
+  
+  // Service accounts that are member of this group
   repeated ServiceAccountInfo serviceAccounts = 4;
 }
 
 message ServiceAccountInfo {
+  // Service account name
   optional string name = 1;
+  
+  // Displayed name
   optional string displayName = 2;
+  
+  // Whether the account may login
   optional bool active = 3;
+  
+  // User that created this user account
   optional UserInfo createdBy = 4;
+  
+  // When this user was created
   optional google.protobuf.Timestamp creationTime = 5;
+  
+  // When this account was first activated
   optional google.protobuf.Timestamp confirmationTime = 6;
+  
+  // When this account last logged in
   optional google.protobuf.Timestamp lastLoginTime = 7;
 }
 
 message ObjectPrivilegeInfo {
+  // Privilege type
   optional string type = 1;
-  repeated string object = 2;
+
+  repeated string object = 2 [deprecated=true];
+  
+  // Objects of this type
+  repeated string objects = 3;
 }
 
 message ListPrivilegesResponse {
@@ -305,6 +426,7 @@ message ListPrivilegesResponse {
 }
 
 message GetRoleRequest {
+  // Role name
   optional string name  = 1;
 }
 
@@ -313,9 +435,18 @@ message ListRolesResponse {
 }
 
 message RoleInfo {
+  // Role name
   optional string name = 1;
+  
+  // Role description
   optional string description = 2;
+  
+  // System privileges
   repeated string systemPrivileges = 3;
+  
+  // Object privileges
   repeated ObjectPrivilegeInfo objectPrivileges = 4;
+
+  // Whether this role is assigned by default
   optional bool default = 5;
 }

@@ -1,0 +1,61 @@
+services:
+  - class: org.yamcs.archive.ParameterRecorder
+  - class: org.yamcs.archive.EventRecorder
+  - class: org.yamcs.archive.ReplayServer
+  - class: org.yamcs.archive.CcsdsTmIndex
+  - class: org.yamcs.archive.AlarmRecorder
+  - class: org.yamcs.parameterarchive.ParameterArchive
+  - class: org.yamcs.ProcessorCreatorService
+    args: 
+      name: "realtime"
+      type: "realtime"
+  - class: org.yamcs.archive.CommandHistoryRecorder
+
+dataLinks:
+  - name: tm_realtime
+    class: org.yamcs.tests.AbstractIntegrationTest$PacketProvider
+    num: 2
+    stream: tm_realtime
+  - name: tm2_realtime
+    class: org.yamcs.tests.AbstractIntegrationTest$PacketProvider
+    num: 3
+    stream: tm2_realtime
+            
+  - name: pp_realtime
+    class: org.yamcs.tests.AbstractIntegrationTest$ParameterProvider
+    stream: pp_realtime
+    num: 1
+  - name: datalink_tc1
+    class: org.yamcs.tests.AbstractIntegrationTest$TcDataLink
+    stream: tcstream1
+    num: 1
+  - name: datalink_tc2
+    class: org.yamcs.tests.AbstractIntegrationTest$TcDataLink
+    stream: tcstream2
+    num: 2
+
+mdb:
+  - type: "sheet"
+    args: 
+      file: "mdb/refmdb.xls"
+      enableAliasReferences: false
+
+streamConfig:
+  tm: 
+   - name: tm_realtime
+     processor: realtime
+   - name: tm2_realtime
+     processor: realtime
+     rootContainer: /REFMDB/tm2
+   - name: tm_dump
+  cmdHist: ["cmdhist_realtime",  "cmdhist_dump"]
+  event: ["events_realtime", "events_dump"]
+  param: ["sys_param", "pp_realtime", "proc_param"]
+  parameterAlarm: ["alarms_realtime"]
+  eventAlarm: ["event_alarms_realtime"]
+  tc:
+    - name: tcstream1
+      processor: realtime
+      tcPatterns: ["/REFMDB/SUBSYS1/ONE.*"]
+    - name: tcstream2
+      processor: realtime

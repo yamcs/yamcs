@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Member, Parameter, ParameterType, Value } from '../../client';
 import { requireFloat, requireInteger } from '../../shared/forms/validators';
@@ -11,7 +11,7 @@ import * as utils from '../../shared/utils';
 })
 export class SetParameterDialog {
 
-  form = new FormGroup({});
+  form = new UntypedFormGroup({});
 
   parameter: Parameter;
 
@@ -25,7 +25,7 @@ export class SetParameterDialog {
       this.addMemberControls(this.parameter.name + '.', this.parameter.type!.member || []);
     } else {
       this.form.addControl(
-        this.parameter.name, new FormControl(null, validators));
+        this.parameter.name, new UntypedFormControl(null, validators));
     }
   }
 
@@ -37,7 +37,7 @@ export class SetParameterDialog {
         const controlName = prefix + member.name;
         const validators = this.getValidatorsForType(member.type as ParameterType);
         this.form.addControl(
-          controlName, new FormControl('', validators));
+          controlName, new UntypedFormControl('', validators));
       }
     }
   }

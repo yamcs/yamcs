@@ -17,7 +17,7 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
 import static org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
-import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent;
+import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
 
 /**
  * Sends commands to yamcs streams
@@ -93,7 +93,7 @@ public class StreamTcCommandReleaser extends AbstractProcessorService implements
                 return;
             }
         }
-        commandHistoryPublisher.publishAck(pc.getCommandId(), AcknowledgeSent, processor.getCurrentTime(),
+        commandHistoryPublisher.publishAck(pc.getCommandId(), AcknowledgeSent_KEY, processor.getCurrentTime(),
                 AckStatus.NOK, "No stream available");
     }
 

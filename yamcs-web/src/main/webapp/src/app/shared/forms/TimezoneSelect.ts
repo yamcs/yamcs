@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, forwardRef } from '@angular/core';
-import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ControlValueAccessor, UntypedFormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 import tznames from '../tznames';
 import { Option } from './Select';
@@ -19,13 +19,13 @@ import { Option } from './Select';
 export class TimezoneSelect implements ControlValueAccessor {
 
   areaOptions: Option[] = [];
-  areaControl = new FormControl();
+  areaControl = new UntypedFormControl();
 
-  locationControl = new FormControl();
+  locationControl = new UntypedFormControl();
   locationOptionsByArea: { [key: string]: Array<Option>; } = {};
   locationOptions$ = new BehaviorSubject<Option[]>([]);
 
-  sublocationControl = new FormControl();
+  sublocationControl = new UntypedFormControl();
   sublocationOptionsByLocation: { [key: string]: Array<Option>; } = {};
   sublocationOptions$ = new BehaviorSubject<Option[]>([]);
 

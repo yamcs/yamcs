@@ -1,77 +1,53 @@
 <mat-toolbar color="primary" *ngIf="user$ | async as user">
   <mat-toolbar-row class="app-bar"
                    [class.replay]="(connectionInfo$ | async)?.processor?.replay">
+    <div *ngIf="tag" class="tag">
+      {{ tag }}
+    </div>
     <button mat-icon-button
             *ngIf="showMenuToggle$ | async"
             (click)="toggleSidebar()">
-      <mat-icon>menu</mat-icon>
+      <mat-icon>{{ (sidebar$ | async) ? 'menu_open' : 'menu' }}</mat-icon>
     </button>
-    <div class="logo-wrapper">
+    <div class="logo-wrapper" [class.nosidebar]="!(showMenuToggle$ | async)">
       <a routerLink="/">
-        <img src="static/yamcs.png" style="margin-top: 12px">
+        <img src="yamcs.png" style="margin-top: 12px">
       </a>
     </div>
     <ng-container *ngIf="connectionInfo$ | async as connectionInfo">
-      <button class="selected-instance" mat-button (click)="openInstanceDialog()">
-        <mat-icon class="icon14" style="padding-right: 4px">scatter_plot</mat-icon>
+      <button mat-button (click)="openInstanceDialog()">
         {{ connectionInfo.instance?.name }}
-        <mat-icon class="icon14">arrow_drop_down</mat-icon>
+        <mat-icon>arrow_drop_down</mat-icon>
       </button>
     </ng-container>
-    <span style="flex: 1 1 auto"></span>
-    <app-connected-label [connected]="connected$ | async"
-                         [tag]="tag"
-                         style="margin-top: 8px"></app-connected-label>
 
-    <mat-menu #replayMenu="matMenu" class="ya-menu" overlapTrigger="false">
-      <button mat-menu-item (click)="leaveReplay()">
-        <mat-icon>exit_to_app</mat-icon>
-        Leave replay
-      </button>
-    </mat-menu>
-    <div style="display: inline-block; margin-top: 8px" [matMenuTriggerFor]="replayMenu">
-      <app-slanted-label *ngIf="(connectionInfo$ | async)?.processor?.replay"
-                         color="white"
-                         iconColor="darkviolet"
-                         icon="ondemand_video"
-                         [selectable]="true">
-        REPLAY
-      </app-slanted-label>
-    </div>
+    <div style="flex: 1 1 auto"></div>
 
-    <app-alarm-label *ngIf="(connectionInfo$ | async)?.processor?.hasAlarms && mayReadAlarms()"
-                     style="margin-top: 8px"
-                     matTooltip="Alarm State"></app-alarm-label>
-
-    <mat-menu #appMenu="matMenu" overlapTrigger="false" xPosition="before">
-      <a mat-menu-item routerLink="storage/buckets">
-        <mat-icon>storage</mat-icon>
-        Storage
+    <nav mat-tab-nav-bar class="top-tabs">
+      <a mat-tab-link routerLink="storage" routerLinkActive="active">
+        <mat-icon>perm_media</mat-icon>
+        &nbsp;&nbsp;STORAGE
       </a>
-      <a mat-menu-item routerLink="admin" *ngIf="user | superuser">
+      <a mat-tab-link routerLink="admin" routerLinkActive="active" *ngIf="user | superuser">
         <mat-icon>security</mat-icon>
-        Admin Area
+        &nbsp;&nbsp;ADMIN AREA
       </a>
-    </mat-menu>
-    <button mat-icon-button
-            [matMenuTriggerFor]="appMenu">
-      <mat-icon>apps</mat-icon>
-    </button>
+      <a mat-tab-link [matMenuTriggerFor]="userMenu">
+        <mat-icon>support_agent</mat-icon>
+        &nbsp;&nbsp;{{ (user.getDisplayName() || user.getName()) | uppercase }}
+      </a>
+    </nav>
+
     <mat-menu #userMenu="matMenu" overlapTrigger="false" xPosition="before">
-      <a mat-menu-item routerLink="profile">
+      <a mat-menu-item routerLink="profile" routerLinkActive="active">
         <mat-icon>account_box</mat-icon>
-        Profile
+        &nbsp;Profile
       </a>
       <a mat-menu-item (click)="logout()" *ngIf="authInfo.requireAuthentication">
         <mat-icon>exit_to_app</mat-icon>
         Sign out
       </a>
     </mat-menu>
-    <button mat-button
-            [matMenuTriggerFor]="userMenu">
-      <mat-icon>support_agent</mat-icon>
-      {{ user.getDisplayName() || user.getName() }}
-    </button>
   </mat-toolbar-row>
 </mat-toolbar>
 <router-outlet></router-outlet>

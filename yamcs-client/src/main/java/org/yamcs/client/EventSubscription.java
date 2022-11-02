@@ -2,8 +2,8 @@ package org.yamcs.client;
 
 import org.yamcs.api.MethodHandler;
 import org.yamcs.client.base.AbstractSubscription;
+import org.yamcs.protobuf.Event;
 import org.yamcs.protobuf.SubscribeEventsRequest;
-import org.yamcs.protobuf.Yamcs.Event;
 
 /**
  * Subscription for receiving events.

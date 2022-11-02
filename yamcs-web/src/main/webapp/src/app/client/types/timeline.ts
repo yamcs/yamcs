@@ -1,3 +1,4 @@
+
 export interface CreateTimelineItemRequest {
   name: string;
   start: string;
@@ -21,6 +22,7 @@ export interface TimelineItem {
   start: string;
   duration: string;
   type: TimelineItemType;
+  tags?: string[];
 }
 
 export interface TimelineViewsPage {

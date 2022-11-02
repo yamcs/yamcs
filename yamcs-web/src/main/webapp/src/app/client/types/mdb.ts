@@ -81,6 +81,7 @@ export interface ParameterType {
   enumValue: EnumValue[];
   absoluteTimeInfo: AbsoluteTimeInfo;
   member: Member[];
+  signed?: boolean;
 }
 
 export interface ArrayInfo {
@@ -91,6 +92,8 @@ export interface ArrayInfo {
 export interface Member {
   name: string;
   type: ParameterType | ArgumentType;
+  initialValue?: string;
+  description: string;
 }
 
 export interface ArgumentMember extends Member {
@@ -202,13 +205,26 @@ export interface ArgumentType {
   dataEncoding: DataEncoding;
   unitSet: UnitInfo[];
   enumValue: EnumValue[];
+  signed: boolean;
   rangeMin: number;
   rangeMax: number;
   minChars: number;
   maxChars: number;
+  minBytes: number;
+  maxBytes: number;
   member: ArgumentMember[];
   zeroStringValue: string;
   oneStringValue: string;
+  dimensions: ArgumentDimension[];
+  elementType: ArgumentType;
+}
+
+export interface ArgumentDimension {
+  fixedValue: string;
+  argument: string;
+  parameter: Parameter;
+  slope: string;
+  intercept: string;
 }
 
 export interface ArgumentAssignment {
@@ -351,6 +367,7 @@ export interface GetParametersOptions {
   q?: string;
   system?: string;
   searchMembers?: boolean;
+  details?: boolean;
   pos?: number;
   limit?: number;
 }

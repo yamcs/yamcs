@@ -56,7 +56,7 @@ public class BinaryDataEncoding extends DataEncoding {
             this.dynamicSize = builder.dynamicSize;
         }
 
-        if (builder.baseEncoding != null && builder.baseEncoding instanceof BinaryDataEncoding) {
+        if (builder.baseEncoding instanceof BinaryDataEncoding) {
             BinaryDataEncoding baseEncoding = (BinaryDataEncoding) builder.baseEncoding;
 
             if (builder.type == null) {

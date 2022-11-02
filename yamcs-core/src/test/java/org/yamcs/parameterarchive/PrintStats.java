@@ -2,15 +2,16 @@ package org.yamcs.parameterarchive;
 
 import java.io.PrintStream;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.YarchDatabase;
 
 public class PrintStats {
-    @Ignore
+
     @Test
+    @Disabled
     public void test1() throws Exception {
         TimeEncoding.setUp();
         YarchDatabase.setHome("/storage/yamcs-data");

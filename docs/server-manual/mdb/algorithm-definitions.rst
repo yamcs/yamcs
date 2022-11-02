@@ -5,10 +5,10 @@ Algorithms are user scripts that can perform arbitrary logic on a set of incomin
 
 Output parameters are very much identical to regular parameters. They can be calibrated (in which case the algorithm's direct outcome is considered the raw value), and they can also be subject to alarm generation.
 
-Algorithms can be written in JavaScript, Python or Java. By default Yamcs ships with support for JavaScript algorithms since the standard Oracle Java distribution contains the Nashorn JavaScript engine. Support for other languages (e.g. Python) requires installing additional dependencies.
+Algorithms can be written in JavaScript, Python or Java. By default Yamcs supports JavaScript algorithms executed using the Nashorn JavaScript engine. Support for other languages (e.g. Python) requires installing additional dependencies.
 
 
-Yamcs will bind these input parameters in the script's execution context, so that they can be accessed from within there. In particular the following attributes are made available:
+Yamcs will bind these input parameters in the script's execution context, so that they can be accessed from within there. In particular the following attributes and methods are made available:
 
 value
     the engineering value
@@ -18,7 +18,16 @@ monitoringResult
     the result of the monitoring: *null*, ``DISABLED``, ``WATCH``, ``WARNING``, ``DISTRESS``, ``CRITICAL`` or ``SEVERE``.
 rangeCondition
     If set, one of ``LOW`` or ``HIGH``.
-
+generationTimeMillis
+    The paramer generation time - milliseconds since Yamcs epoch.
+aquisitionTimeMillis
+    The paramer acquisition time - milliseconds since Yamcs epoch.
+generationTime()
+    The paramer generation time converted to Java Instant (by removing the leap seconds).
+aquisitionTime()
+    The paramer acquisition time converted to Java Instant (by removing the leap seconds).
+    
+    
 If there was no update for a certain parameter, yet the algorithm is still being executed, the previous value of that parameter will be retained.
 
 
@@ -68,7 +77,7 @@ Algorithms with windowed parameters will only trigger as soon as each of these p
 JavaScript algorithms
 ---------------------
 
-The JavaScript algorithms are executed by the Nashorn engine. The engine is builtin the JDK versions 8 to 14; (it has been deprecated starting with Java 15 - should be replaced with one provided by the GraalVM project but this has not been tested).
+The JavaScript algorithms are executed by the Nashorn engine.
 
 The algorithm text is expected to contain the full function body. The body will be encapsulated in a javascript function like:
 
@@ -144,7 +153,7 @@ Yamcs will locate the given class which must be implementing the :javadoc:`org.y
 
 * ``algorithmDef`` represents the algorithm definition; it can be used for example to retrieve the MDB algorithm name, input parameters, etc.
 * ``context`` is an object holiding some contextual information related to where the algorithm is running. Generally this refers to a processor but for command verifiers there is a restricted context to distinguish the same algorithm running as verifier for different commands.
-* ``objs`` is an optional argument parsed from the yaml.
+* ``arg`` is an optional argument parsed using the snakeyaml parser (can be a Integer, Long, Double, Map or List).
 
 If the optional argument is not present in the algorithm text definition,  then the class constructor  should only have two parameters.
 
@@ -152,7 +161,7 @@ The class has two main methods ``updateParameters`` which is called each time on
 
 The abstract class :javadoc:`org.yamcs.algorithms.AbstractAlgorithmExecutor` offers some helper methods and can be used as base class for implementation of such algorithm.
 
-If the algorithm is used for data decoding, it has to implement the :javadoc:`org.yamcs.xtceproc.DataDecoder` interface instead (see below).
+If the algorithm is used for data decoding, it has to implement the :javadoc:`org.yamcs.mdb.DataDecoder` interface instead (see below).
 
 
 Command verifier algorithms
@@ -175,4 +184,4 @@ These algorithms work differently from the other ones and have are some limitati
 * only Java is supported as a language
 * not possible to specify input parameters
 
-These algorithms have to implement the interface :javadoc:`org.yamcs.xtceproc.DataDecoder`.
+These algorithms have to implement the interface :javadoc:`org.yamcs.mdb.DataDecoder`.

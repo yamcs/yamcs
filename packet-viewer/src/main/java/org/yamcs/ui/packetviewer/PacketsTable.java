@@ -37,6 +37,8 @@ import javax.swing.table.TableRowSorter;
 
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.TmPacket;
+import org.yamcs.mdb.ContainerProcessingResult;
+import org.yamcs.mdb.XtceTmExtractor;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.ui.packetviewer.filter.PacketFilter;
 import org.yamcs.utils.TimeEncoding;
@@ -44,8 +46,6 @@ import org.yamcs.utils.ValueComparator;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ContainerProcessingResult;
-import org.yamcs.xtceproc.XtceTmExtractor;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -158,7 +158,7 @@ public class PacketsTable extends JTable implements ListSelectionListener {
         this.packetFilter = packetFilter;
         RowFilter<PacketsTableModel, Object> rf = null;
         if (packetFilter != null) {
-            rf = new RowFilter<PacketsTableModel, Object>() {
+            rf = new RowFilter<>() {
                 @Override
                 public boolean include(Entry<? extends PacketsTableModel, ? extends Object> entry) {
                     ListPacket packet = (ListPacket) entry.getValue(2);
@@ -166,7 +166,6 @@ public class PacketsTable extends JTable implements ListSelectionListener {
                 }
             };
             for (Parameter parameter : packetFilter.getParameters()) {
-                System.out.println("Provide .. " + parameter.getQualifiedName());
                 tmExtractor.startProviding(parameter);
             }
         }
@@ -214,7 +213,7 @@ public class PacketsTable extends JTable implements ListSelectionListener {
     }
 
     /**
-     * Goes forward to the packet that was selected before the <tt>goBack()</tt> was used.
+     * Goes forward to the packet that was selected before the {@code goBack()} was used.
      */
     public void goForward() {
         if (historyPosition < history.size() - 1) {
@@ -282,7 +281,7 @@ public class PacketsTable extends JTable implements ListSelectionListener {
 
     private void createActions() {
         // Ctrl on win/linux, Command on mac
-        int menuKey = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+        int menuKey = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
 
         //
         // GO TO PACKET
@@ -529,7 +528,9 @@ public class PacketsTable extends JTable implements ListSelectionListener {
         final ListPacket packet = new ListPacket(buf, len);
         long gentime = data.getGenerationTime();
         packet.setGenerationTime(gentime);
-        ContainerProcessingResult cpr = tmExtractor.processPacket(buf, gentime, TimeEncoding.getWallclockTime());
+        SequenceContainer rootContainer = packetViewer.getCurrentRootContainer();
+        ContainerProcessingResult cpr = tmExtractor.processPacket(buf, gentime, TimeEncoding.getWallclockTime(),
+                data.getSeqCount(), rootContainer);
         ParameterValueList pvlist = cpr.getParameterResult();
         packet.setColumnParameters(pvlist);
 
@@ -585,7 +586,7 @@ public class PacketsTable extends JTable implements ListSelectionListener {
             return;
         }
         try {
-            JsonArray arr = new JsonParser().parse(json).getAsJsonArray();
+            JsonArray arr = JsonParser.parseString(json).getAsJsonArray();
             for (JsonElement name : arr) {
                 columnParaNames.add(name.getAsString());
             }

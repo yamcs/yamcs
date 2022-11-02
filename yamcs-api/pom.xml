@@ -4,13 +4,21 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>5.5.4-SNAPSHOT</version>
+    <version>5.7.9</version>
   </parent>
 
   <artifactId>yamcs-api</artifactId>
   <packaging>jar</packaging>
   <name>Yamcs :: API</name>
   <description>Used by external clients to communicate with Yamcs</description>
+
+  <licenses>
+    <license>
+      <name>GNU Lesser General Public License (LGPL)</name>
+      <url>https://www.gnu.org/licenses/lgpl-3.0.html</url>
+    </license>
+  </licenses>
+
 
   <properties>
     <javaModuleName>org.yamcs.api</javaModuleName>
@@ -59,7 +67,7 @@
               <id>yamcs</id>
               <groupId>org.yamcs</groupId>
               <artifactId>yamcs-protoc-plugin</artifactId>
-              <version>5.2.3</version>
+              <version>5.3.0</version>
               <mainClass>org.yamcs.protoc.ServiceGenerator</mainClass>
             </protocPlugin>
           </protocPlugins>

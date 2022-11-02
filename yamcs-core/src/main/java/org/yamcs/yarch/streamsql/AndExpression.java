@@ -21,10 +21,10 @@ public class AndExpression extends Expression {
     @Override
     public void fillCode_getValueReturn(StringBuilder code) throws StreamSqlException {
         boolean first = true;
-        code.append("(");
+        code.append("SqlExpressions.AND(");
         for (Expression expr : children) {
             if (!first) {
-                code.append(" && ");
+                code.append(", ");
             } else {
                 first = false;
             }

@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>5.5.4-SNAPSHOT</version>
+    <version>5.7.9</version>
   </parent>
 
   <artifactId>yamcs-core</artifactId>
@@ -12,6 +12,11 @@
 
   <properties>
     <javaModuleName>org.yamcs.core</javaModuleName>
+    <sonar.coverage.jacoco.xmlReportPaths>${basedir}/../${aggregate.report.dir}</sonar.coverage.jacoco.xmlReportPaths>
+
+    <!-- If empty, revision is derived using git command,
+         else the passed revision information is used. -->
+    <yamcs.revision></yamcs.revision>
   </properties>
 
   <dependencies>
@@ -44,7 +49,17 @@
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
-      <artifactId>netty-handler</artifactId>
+      <artifactId>netty-codec-http</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-transport-native-epoll</artifactId>
+      <classifier>linux-aarch_64</classifier>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-transport-native-epoll</artifactId>
+      <classifier>linux-x86_64</classifier>
     </dependency>
     <dependency>
       <groupId>net.sourceforge.javacsv</groupId>
@@ -57,6 +72,10 @@
     <dependency>
       <groupId>org.codehaus.janino</groupId>
       <artifactId>janino</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.openjdk.nashorn</groupId>
+      <artifactId>nashorn-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.rocksdb</groupId>
@@ -78,6 +97,11 @@
     <dependency>
       <groupId>org.python</groupId>
       <artifactId>jython-standalone</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -110,27 +134,22 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
         <executions>
           <execution>
             <id>generate-version</id>
             <phase>generate-resources</phase>
             <goals>
-              <goal>run</goal>
+              <goal>exec</goal>
             </goals>
             <configuration>
-              <target>
-                <exec executable="git" outputproperty="revision" failifexecutionfails="false">
-                  <arg value="rev-parse" />
-                  <arg value="HEAD" />
-                </exec>
-                <mkdir dir="target/generated-resources/version" />
-                <echo file="target/generated-resources/version/org.yamcs.core.properties">
-                  version = ${project.version}
-                  revision = ${revision}
-                </echo>
-              </target>
+              <executable>java</executable>
+              <arguments>
+                <argument>src/main/java/org/yamcs/YamcsVersion.java</argument>
+                <argument>VERSION=${project.version}</argument>
+                <argument>REVISION=${yamcs.revision}</argument>
+              </arguments>
             </configuration>
           </execution>
         </executions>

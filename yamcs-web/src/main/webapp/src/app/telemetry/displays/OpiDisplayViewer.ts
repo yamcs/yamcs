@@ -1,12 +1,16 @@
-import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import { APP_BASE_HREF } from '@angular/common';
+import { ChangeDetectionStrategy, Component, ElementRef, Inject, OnDestroy, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlarmSeverity, Display, PV, PVProvider, Sample } from '@yamcs/opi';
 import { Subscription } from 'rxjs';
 import { NamedObjectId, ParameterSubscription, ParameterValue, StorageClient } from '../../client';
+import { ConfigService } from '../../core/services/ConfigService';
 import { MessageService } from '../../core/services/MessageService';
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import * as utils from '../../shared/utils';
+import { OpiDisplayConsoleHandler } from './OpiDisplayConsoleHandler';
+import { OpiDisplayPathResolver } from './OpiDisplayPathResolver';
 import { Viewer } from './Viewer';
 import { YamcsScriptLibrary } from './YamcsScriptLibrary';
 
@@ -31,6 +35,10 @@ const OPS_DATASOURCE = "ops://";
 export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
 
   private storageClient: StorageClient;
+  private bucket: string;
+
+  // Parent element, used to calculate 100% bounds (excluding scroll size)
+  private viewerContainerEl: HTMLDivElement;
 
   @ViewChild('displayContainer', { static: true })
   private displayContainer: ElementRef;
@@ -49,8 +57,15 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
     private router: Router,
     private synchronizer: Synchronizer,
     private messageService: MessageService,
+    @Inject(APP_BASE_HREF) private baseHref: string,
+    configService: ConfigService,
   ) {
     this.storageClient = yamcs.createStorageClient();
+    this.bucket = configService.getConfig().displayBucket;
+  }
+
+  setViewerContainerEl(viewerContainerEl: HTMLDivElement) {
+    this.viewerContainerEl = viewerContainerEl;
   }
 
   private updateSubscription() {
@@ -154,6 +169,9 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
   public init(objectName: string) {
     const container: HTMLDivElement = this.displayContainer.nativeElement;
     this.display = new Display(container);
+    this.display.imagesPrefix = `${this.baseHref}static/`;
+    this.display.setPathResolver(new OpiDisplayPathResolver(this.storageClient, this.display));
+    this.display.setConsoleHandler(new OpiDisplayConsoleHandler(this.messageService));
 
     let currentFolder = '';
     if (objectName.lastIndexOf('/') !== -1) {
@@ -164,7 +182,11 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
       this.yamcs, this.messageService));
 
     this.display.addEventListener('opendisplay', evt => {
-      this.router.navigateByUrl(`/telemetry/displays/files/${currentFolder}${evt.path}?c=${this.yamcs.context}`);
+      if (evt.path.startsWith('/')) {
+        this.router.navigateByUrl(`/telemetry/displays/files${evt.path}?c=${this.yamcs.context}`);
+      } else {
+        this.router.navigateByUrl(`/telemetry/displays/files/${currentFolder}${evt.path}?c=${this.yamcs.context}`);
+      }
     });
 
     this.display.addEventListener('closedisplay', evt => {
@@ -190,12 +212,10 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
     });
 
     this.display.addProvider(this);
+    this.display.absPrefix = this.storageClient.getObjectURL('_global', this.bucket, '');
 
-    const objectUrl = this.storageClient.getObjectURL('_global', 'displays', objectName);
-
-    const idx = objectUrl.lastIndexOf('/') + 1;
-    this.display.baseUrl = objectUrl.substring(0, idx);
-    const promise = this.display.setSource(objectUrl.substring(idx));
+    const objectUrl = this.storageClient.getObjectURL('_global', this.bucket, objectName);
+    const promise = this.display.setSource(objectUrl);
     promise.then(() => {
       this.syncSubscription = this.synchronizer.sync(() => this.updateSubscription());
     });
@@ -239,12 +259,25 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
     this.display.scale -= 0.1;
   }
 
+  public resetZoom() {
+    this.display.scale = 1;
+  }
+
+  public fitZoom() {
+    const displayInstance = this.display.instance;
+    if (displayInstance && this.viewerContainerEl) {
+      const frameWidth = this.viewerContainerEl.clientWidth;
+      const frameHeight = this.viewerContainerEl.clientHeight;
+
+      const { width, height } = displayInstance.unscaledBounds;
+      const xScale = frameWidth / width;
+      const yScale = frameHeight / height;
+      this.display.scale = Math.min(xScale, yScale);
+    }
+  }
+
   ngOnDestroy() {
-    if (this.syncSubscription) {
-      this.syncSubscription.unsubscribe();
-    }
-    if (this.parameterSubscription) {
-      this.parameterSubscription.cancel();
-    }
+    this.syncSubscription?.unsubscribe();
+    this.parameterSubscription?.cancel();
   }
 }

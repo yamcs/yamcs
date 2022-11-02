@@ -83,8 +83,8 @@ public class GenericPacketInputStream implements PacketInputStream {
             break;
         case 3:
             length = byteOrder == ByteOrder.LITTLE_ENDIAN
-                    ? ByteArrayUtils.decode3BytesLE(b, lengthFieldOffset)
-                    : ByteArrayUtils.decode3Bytes(b, lengthFieldOffset);
+                    ? ByteArrayUtils.decodeUnsigned3BytesLE(b, lengthFieldOffset)
+                    : ByteArrayUtils.decodeUnsigned3Bytes(b, lengthFieldOffset);
             break;
         case 4:
             length = byteOrder == ByteOrder.LITTLE_ENDIAN

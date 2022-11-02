@@ -26,6 +26,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.yamcs.YConfiguration;
+import org.yamcs.mdb.ConditionParser;
+import org.yamcs.mdb.JavaExpressionCalibratorFactory;
+import org.yamcs.mdb.SpreadsheetLoadContext;
+import org.yamcs.mdb.SpreadsheetLoadException;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.AbsoluteTimeArgumentType;
@@ -54,6 +58,7 @@ import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.BinaryParameterType;
 import org.yamcs.xtce.BooleanArgumentType;
 import org.yamcs.xtce.BooleanDataEncoding;
+import org.yamcs.xtce.BooleanDataType;
 import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.CheckWindow;
@@ -61,7 +66,6 @@ import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
 import org.yamcs.xtce.CommandContainer;
 import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.CommandVerifier.TerminationAction;
-import org.yamcs.xtce.ConditionParser;
 import org.yamcs.xtce.ContainerEntry;
 import org.yamcs.xtce.ContextCalibrator;
 import org.yamcs.xtce.CustomAlgorithm;
@@ -113,8 +117,6 @@ import org.yamcs.xtce.Significance;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.SplinePoint;
-import org.yamcs.xtce.SpreadsheetLoadContext;
-import org.yamcs.xtce.SpreadsheetLoadException;
 import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
@@ -131,7 +133,6 @@ import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.util.ParameterReference;
 import org.yamcs.xtce.xml.XtceAliasSet;
-import org.yamcs.xtceproc.JavaExpressionCalibratorFactory;
 
 import com.google.common.primitives.UnsignedLongs;
 import com.google.gson.JsonElement;
@@ -652,7 +653,7 @@ public class V7Loader extends V7LoaderBase {
 
     private void setInitialValueAggregate(AggregateDataType.Builder<?> dtype, String initialValue) {
         try {
-            JsonElement el = new JsonParser().parse(initialValue);
+            JsonElement el = JsonParser.parseString(initialValue);
             if (!(el instanceof JsonObject)) {
                 throw new SpreadsheetLoadException(ctx,
                         "Expected an object as initial value but got a : " + el.getClass());
@@ -802,6 +803,13 @@ public class V7Loader extends V7LoaderBase {
             param.setDataSource(dataSource);
             if (hasColumn(cells, CN_PARAM_INITVALUE)) {
                 String initValue = getContent(cells, CN_PARAM_INITVALUE);
+                if (ptype instanceof BooleanParameterType) {
+                    if ("true".equalsIgnoreCase(initValue)) {
+                        initValue = BooleanParameterType.DEFAULT_ONE_STRING_VALUE;
+                    } else if ("false".equalsIgnoreCase(initValue)) {
+                        initValue = BooleanParameterType.DEFAULT_ZERO_STRING_VALUE;
+                    }
+                }
                 param.setInitialValue(ptype.convertType(initValue));
             }
 
@@ -1275,22 +1283,27 @@ public class V7Loader extends V7LoaderBase {
 
     private int addEntry(SequenceContainer container, int absoluteoffset, int counter, Cell[] cells) {
         String paraname = getContent(cells, CN_CONT_ENTRY);
-        int relpos = 0;
+        Position rapos = Position.RELATIVE_ZERO;
         if (hasColumn(cells, CN_CONT_RELPOS)) {
-            relpos = Integer.decode(getContent(cells, CN_CONT_RELPOS));
+            rapos = getPosition(ctx, getContent(cells, CN_CMD_POSITION));
         }
 
         int pos;
         ReferenceLocationType location;
-        // absoluteOffset = -1 means we have to add relative entries.
-        // We prefer absolute if possible because we can process them without processing the previous ones
-        if (absoluteoffset != -1) {
-            absoluteoffset += relpos;
-            pos = absoluteoffset;
-            location = ReferenceLocationType.CONTAINER_START;
+        if (rapos.relative) {
+            // absoluteOffset = -1 means we have to add relative entries.
+            // We prefer absolute if possible because we can process them without processing the previous ones
+            if (absoluteoffset != -1) {
+                absoluteoffset += rapos.pos;
+                pos = absoluteoffset;
+                location = ReferenceLocationType.CONTAINER_START;
+            } else {
+                pos = rapos.pos;
+                location = ReferenceLocationType.PREVIOUS_ENTRY;
+            }
         } else {
-            pos = relpos;
-            location = ReferenceLocationType.PREVIOUS_ENTRY;
+            pos = rapos.pos;
+            location = ReferenceLocationType.CONTAINER_START;
         }
         // the repeat string will contain the number of times a measurement (or container) should be
         // repeated. It is a String because at this point it can be either a number or a reference to another
@@ -1603,6 +1616,15 @@ public class V7Loader extends V7LoaderBase {
 
         if (hasColumn(cells, CN_CMD_DEFVALUE)) {
             String v = getContent(cells, CN_CMD_DEFVALUE);
+
+            // Allow Excel true/false to be case-insensitive
+            if (atype instanceof BooleanArgumentType) {
+                if ("true".equalsIgnoreCase(v)) {
+                    v = BooleanDataType.DEFAULT_ONE_STRING_VALUE;
+                } else if ("false".equalsIgnoreCase(v)) {
+                    v = BooleanDataType.DEFAULT_ZERO_STRING_VALUE;
+                }
+            }
             arg.setInitialValue(atype.convertType(v));
         }
 
@@ -1728,7 +1750,7 @@ public class V7Loader extends V7LoaderBase {
                     String significance = cells[IDX_CMDOPT_SIGNIFICANCE].getContents();
                     Significance.Levels slevel;
                     try {
-                        slevel = Significance.Levels.valueOf(significance);
+                        slevel = Significance.Levels.valueOf(significance.toUpperCase());
                     } catch (IllegalArgumentException e) {
                         throw new SpreadsheetLoadException(ctx,
                                 "Invalid significance '" + significance + "' specified. Available values are: "
@@ -1801,17 +1823,16 @@ public class V7Loader extends V7LoaderBase {
                         throw new SpreadsheetLoadException(ctx,
                                 "Invalid checkwindow specified. Stop cannot be smaller than start");
                     }
-                    CheckWindow.TimeWindowIsRelativeToType cwr = TimeWindowIsRelativeToType.LastVerifier;
+                    CheckWindow.TimeWindowIsRelativeToType cwr = TimeWindowIsRelativeToType.LAST_VERIFIER;
 
                     if (hasColumn(cells, CN_CMDVERIF_CHECKWINDOW_RELATIVETO)) {
                         String s = getContent(cells, CN_CMDVERIF_CHECKWINDOW_RELATIVETO);
                         try {
-                            cwr = TimeWindowIsRelativeToType.valueOf(s);
+                            cwr = TimeWindowIsRelativeToType.fromXls(s);
                         } catch (IllegalArgumentException e) {
                             throw new SpreadsheetLoadException(ctx,
                                     "Invalid value '" + s
-                                            + "' specified for CheckWindow relative to parameter. Use one of "
-                                            + Arrays.toString(TimeWindowIsRelativeToType.values()));
+                                            + "' specified for CheckWindow relative to parameter. Use one of [CommandRelease, LastVerifier]");
                         }
                     }
                     CheckWindow cw = new CheckWindow(start, stop, cwr);
@@ -2028,7 +2049,7 @@ public class V7Loader extends V7LoaderBase {
             // name
             if (hasColumn(cells, CN_ALGO_PARA_INOUT) || hasColumn(cells, CN_ALGO_PARA_REF)) {
                 throw new SpreadsheetLoadException(ctx,
-                        "Algorithm paramters have to start on the next line from the algorithm name and text definition");
+                        "Algorithm parameters have to start on the next line from the algorithm name and text definition");
             }
 
             // now we search for the matching last row of that algorithm
@@ -2281,15 +2302,15 @@ public class V7Loader extends V7LoaderBase {
                     spaceSystem.addParameterType(newPtype);
                 });
 
-                checkAndAddAlarm(spaceSystem, cells, AlarmLevels.watch, paraRef, context,
+                checkAndAddAlarm(spaceSystem, cells, AlarmLevels.WATCH, paraRef, context,
                         CN_ALARM_WATCH_TRIGGER, CN_ALARM_WATCH_VALUE);
-                checkAndAddAlarm(spaceSystem, cells, AlarmLevels.warning, paraRef, context,
+                checkAndAddAlarm(spaceSystem, cells, AlarmLevels.WARNING, paraRef, context,
                         CN_ALARM_WARNING_TRIGGER, CN_ALARM_WARNING_VALUE);
-                checkAndAddAlarm(spaceSystem, cells, AlarmLevels.distress, paraRef, context,
+                checkAndAddAlarm(spaceSystem, cells, AlarmLevels.DISTRESS, paraRef, context,
                         CN_ALARM_DISTRESS_TRIGGER, CN_ALARM_DISTRESS_VALUE);
-                checkAndAddAlarm(spaceSystem, cells, AlarmLevels.critical, paraRef, context,
+                checkAndAddAlarm(spaceSystem, cells, AlarmLevels.CRITICAL, paraRef, context,
                         CN_ALARM_CRITICAL_TRIGGER, CN_ALARM_CRITICAL_VALUE);
-                checkAndAddAlarm(spaceSystem, cells, AlarmLevels.severe, paraRef, context,
+                checkAndAddAlarm(spaceSystem, cells, AlarmLevels.SEVERE, paraRef, context,
                         CN_ALARM_SEVERE_TRIGGER, CN_ALARM_SEVERE_VALUE);
 
                 addAlarmDetails(spaceSystem, paraRef, context, reportType, minViolations);
@@ -2383,13 +2404,13 @@ public class V7Loader extends V7LoaderBase {
                 if (reportType != AlarmType.DEFAULT_REPORT_TYPE) {
                     ipt.createOrGetAlarm(context).setAlarmReportType(reportType);
                 }
-            } else if (ptypeb instanceof FloatParameterType) {
+            } else if (ptypeb instanceof FloatParameterType.Builder) {
                 FloatParameterType.Builder fpt = (FloatParameterType.Builder) ptypeb;
                 alarm = (context == null) ? fpt.getDefaultAlarm() : fpt.getNumericContextAlarm(context);
                 if (reportType != AlarmType.DEFAULT_REPORT_TYPE) {
                     fpt.createOrGetAlarm(context).setAlarmReportType(reportType);
                 }
-            } else if (ptypeb instanceof EnumeratedParameterType) {
+            } else if (ptypeb instanceof EnumeratedParameterType.Builder) {
                 EnumeratedParameterType.Builder ept = (EnumeratedParameterType.Builder) ptypeb;
                 alarm = (context == null) ? ept.getDefaultAlarm() : ept.getContextAlarm(context);
                 if (reportType != AlarmType.DEFAULT_REPORT_TYPE) {

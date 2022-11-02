@@ -1,8 +1,8 @@
 package org.yamcs.tctm.ccsds;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,10 +15,10 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.events.EventProducerFactory;
@@ -41,7 +41,7 @@ public class Cop1TcPacketHandlerTest {
     static TcManagedParameters tcParams;
     Semaphore dataAvailable;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         Map<String, Object> m = new HashMap<>();
         m.put("spacecraftId", 6);
@@ -57,14 +57,14 @@ public class Cop1TcPacketHandlerTest {
         vc0.put("clcwStream", "clcw");
 
         tcParams = new TcManagedParameters(YConfiguration.wrap(m));
-        tcFrameFactory = new TcFrameFactory(tcParams);
+        tcFrameFactory = new TcFrameFactory(tcParams.getVcParams(0));
         TimeEncoding.setUp();
         EventProducerFactory.setMockup(false);
 
         // org.yamcs.LoggingUtils.enableLogging();
     }
 
-    @Before
+    @BeforeEach
     public void init() {
         executor = new ScheduledThreadPoolExecutor(1);
         monitor = new MyMonitor();
@@ -81,7 +81,7 @@ public class Cop1TcPacketHandlerTest {
         adf2 = tcFrameFactory.makeFrame(0, 102);
     }
 
-    @After
+    @AfterEach
     public void stop() {
         executor.shutdown();
     }
@@ -543,7 +543,7 @@ public class Cop1TcPacketHandlerTest {
 
     @Test
     public void testBDFrame() throws Exception {
-        fop1ph.sendTc(makeTc(true, 0, 100, 200));
+        fop1ph.sendCommand(makeTc(true, 0, 100, 200));
 
         TcTransferFrame tf = fop1ph.getFrame();
         assertNotNull(tf);
@@ -674,7 +674,7 @@ public class Cop1TcPacketHandlerTest {
 
     private TcTransferFrame sendTcInOneFrame(int seqNum) throws Exception {
         PreparedCommand pc = makeTc(false, 100, seqNum, 800);
-        fop1ph.sendTc(pc);
+        fop1ph.sendCommand(pc);
         synchWithExecutor();
         TcTransferFrame tf = fop1ph.getFrame();
         assertNotNull(tf);

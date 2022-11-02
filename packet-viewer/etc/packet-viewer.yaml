@@ -1,17 +1,23 @@
-#the PacketInputStream is used when the Packet Viewer loads packets from file - it splits the file into packets
-#when the packets are received from the Yamcs server, this is not used
-packetInputStreamClassName: org.yamcs.tctm.GenericPacketInputStream
-packetInputStreamArgs:
-     lengthFieldOffset: 0
-     maxPacketLength: 1000
-     lengthFieldLength: 2
-     lengthAdjustment: 2
-     initialBytesToStrip: 2 #strip the length such that it is not part of the packet
+# A preprocessor is used to derive the time of the packet and to do checksum
+# computation. 
+packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
 
-
-#The preprocessor is used to derive the time of the packet and to do checksum computaion
-#it is used 
-packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
-packetPreprocessorArgs:
-     timestampOffset: -1
-     seqCountOffset: -1
+# File formats define how local files are interpreted. A packetInputStream splits
+# the files in packets. When opening a file, the user selects one of the available
+# formats.
+#
+# Required keys: name, packetInputStreamClassName
+# Optional keys: packetInputStreamArgs, packetPreprocessorClassName,
+#                packetPreprocessorArgs, rootContainer
+#
+# If a packetPreprocessorClassName is not specified, the format uses the same one
+# as used for realtime packets.
+fileFormats:
+    - name: CCSDS Packets
+      packetInputStreamClassName: org.yamcs.tctm.GenericPacketInputStream
+      packetInputStreamArgs:
+          lengthFieldOffset: 4
+          maxPacketLength: 1500
+          lengthFieldLength: 2
+          lengthAdjustment: 7
+          initialBytesToStrip: 0

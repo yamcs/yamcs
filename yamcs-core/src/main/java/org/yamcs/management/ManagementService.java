@@ -1,23 +1,16 @@
 package org.yamcs.management;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.ConnectedClient;
 import org.yamcs.InstanceStateListener;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
@@ -29,11 +22,11 @@ import org.yamcs.YamcsServerInstance;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueListener;
 import org.yamcs.commanding.CommandQueueManager;
+import org.yamcs.mdb.ProcessingStatistics;
 import org.yamcs.protobuf.ProcessorInfo;
 import org.yamcs.protobuf.ProcessorManagementRequest;
 import org.yamcs.protobuf.Statistics;
 import org.yamcs.protobuf.Table.StreamInfo;
-import org.yamcs.xtceproc.ProcessingStatistics;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 
@@ -42,7 +35,7 @@ import com.google.common.util.concurrent.Service;
 /**
  * Responsible for providing to interested listeners info related to creation/removal/update of:
  * <ul>
- * <li>instances, processors and clients - see {@link ManagementListener}
+ * <li>instances and processors - see {@link ManagementListener}
  * <li>streams and tables - see {@link TableStreamListener}
  * <li>command queues - see {@link CommandQueueListener}
  * </ul>
@@ -51,13 +44,9 @@ public class ManagementService implements ProcessorListener {
     static Logger log = LoggerFactory.getLogger(ManagementService.class.getName());
     static ManagementService managementService = new ManagementService();
 
-    Map<Integer, ConnectedClient> clients = Collections.synchronizedMap(new HashMap<Integer, ConnectedClient>());
-    private AtomicInteger clientIdGenerator = new AtomicInteger();
-
-    //streams is accessed only from the timer thread
+    // streams is accessed only from the timer thread
     List<StreamWithInfo> streams = new ArrayList<>();
-    
-    
+
     List<CommandQueueManager> qmanagers = new CopyOnWriteArrayList<>();
     List<Processor> processors = new CopyOnWriteArrayList<>();
 
@@ -108,47 +97,6 @@ public class ManagementService implements ProcessorListener {
         return qmanagers;
     }
 
-    public void registerClient(ConnectedClient client) {
-        int id = clientIdGenerator.incrementAndGet();
-        client.setClientId(id);
-        try {
-            clients.put(id, client);
-            managementListeners.forEach(l -> l.clientRegistered(client));
-        } catch (Exception e) {
-            log.warn("Got exception when registering a client", e);
-        }
-    }
-
-    public void unregisterClient(int id) {
-        ConnectedClient client = clients.remove(id);
-        if (client == null) {
-            return;
-        }
-        Processor processor = client.getProcessor();
-        if (processor != null) {
-            processor.disconnect(client);
-        }
-        try {
-            managementListeners.forEach(l -> l.clientUnregistered(client));
-        } catch (Exception e) {
-            log.warn("Got exception when unregistering a client", e);
-        }
-    }
-
-    private void switchProcessor(ConnectedClient client, Processor newProcessor) throws ProcessorException {
-        Processor oldProcessor = client.getProcessor();
-        if (oldProcessor != null) {
-            oldProcessor.disconnect(client);
-        }
-        client.setProcessor(newProcessor);
-        newProcessor.connect(client);
-        try {
-            managementListeners.forEach(l -> l.clientInfoChanged(client));
-        } catch (Exception e) {
-            log.warn("Got exception when switching processor", e);
-        }
-    }
-
     public void createProcessor(ProcessorManagementRequest pmr, String username) throws YamcsException {
         log.info("Creating new processor instance: {}, name: {}, type: {}, config: {}, persistent: {}",
                 pmr.getInstance(), pmr.getName(), pmr.getType(), pmr.getConfig(), pmr.getPersistent());
@@ -162,18 +110,8 @@ public class ManagementService implements ProcessorListener {
             }
             processor = ProcessorFactory.create(pmr.getInstance(), pmr.getName(), pmr.getType(), username, spec);
             processor.setPersistent(pmr.getPersistent());
-            for (int i = 0; i < pmr.getClientIdCount(); i++) {
-                ConnectedClient client = clients.get(pmr.getClientId(i));
-                if (client != null) {
-                    switchProcessor(client, processor);
-                    n++;
-                } else {
-                    log.warn("createProcessor called with invalid client id: {}; ignored.", pmr.getClientId(i));
-                }
-            }
             if (n > 0 || pmr.getPersistent()) {
-                log.info("Starting new processor '{}' with {} clients", processor.getName(),
-                        processor.getConnectedClients());
+                log.info("Starting new processor '{}'", processor.getName());
                 processor.startAsync();
                 processor.awaitRunning();
             } else {
@@ -192,37 +130,6 @@ public class ManagementService implements ProcessorListener {
         }
     }
 
-    public void connectToProcessor(Processor processor, int clientId) throws YamcsException, ProcessorException {
-        ConnectedClient client = clients.get(clientId);
-        if (client == null) {
-            throw new YamcsException("Invalid client id " + clientId);
-        }
-        switchProcessor(client, processor);
-    }
-
-    public void connectToProcessor(ProcessorManagementRequest cr) throws YamcsException {
-        YamcsServerInstance ysi = YamcsServer.getServer().getInstance(cr.getInstance());
-        if (ysi == null) {
-            throw new YamcsException("Unexisting yamcs instance " + cr.getInstance() + " specified");
-        }
-        Processor processor = ysi.getProcessor(cr.getName());
-        if (processor == null) {
-            throw new YamcsException("Unexisting processor " + cr.getInstance() + "/" + cr.getName() + " specified");
-        }
-
-        log.debug("Connecting clients {} to processor {}", cr.getClientIdList(), cr.getName());
-
-        try {
-            for (int i = 0; i < cr.getClientIdCount(); i++) {
-                int id = cr.getClientId(i);
-                ConnectedClient client = clients.get(id);
-                switchProcessor(client, processor);
-            }
-        } catch (ProcessorException e) {
-            throw new YamcsException(e.toString());
-        }
-    }
-
     public void registerCommandQueueManager(String instance, String processorName, CommandQueueManager cqm) {
         for (CommandQueue cq : cqm.getQueues()) {
             commandQueueListeners.forEach(l -> l.commandQueueRegistered(instance, processorName, cq));
@@ -234,7 +141,6 @@ public class ManagementService implements ProcessorListener {
                 l.updateQueue(q);
             }
         }
-
     }
 
     public void unregisterCommandQueueManager(String instance, String processorName, CommandQueueManager cqm) {
@@ -290,24 +196,6 @@ public class ManagementService implements ProcessorListener {
         boolean removed = commandQueueListeners.remove(l);
         qmanagers.forEach(m -> m.removeListener(l));
         return removed;
-    }
-
-    public Set<ConnectedClient> getClients() {
-        synchronized (clients) {
-            return new HashSet<>(clients.values());
-        }
-    }
-
-    public Set<ConnectedClient> getClients(String username) {
-        synchronized (clients) {
-            return clients.values().stream()
-                    .filter(client -> client.getUser().getName().equals(username))
-                    .collect(Collectors.toSet());
-        }
-    }
-
-    public ConnectedClient getClient(int clientId) {
-        return clients.get(clientId);
     }
 
     private void updateStatistics() {

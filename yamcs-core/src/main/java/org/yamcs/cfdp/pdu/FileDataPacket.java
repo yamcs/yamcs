@@ -4,22 +4,38 @@ import java.nio.ByteBuffer;
 
 import org.yamcs.cfdp.CfdpUtils;
 
+/**
+ * Structure is
+ * 
+ * <pre>
+ * offset - 4 bytes
+ * file data - variable
+ * </pre>
+ *
+ * The version 5 of the CFDP standard introduces some metadata. This is not supported.
+ */
 public class FileDataPacket extends CfdpPacket {
+    public static final int OFFSET_SIZE = 4;
 
     private long offset;
     private byte[] filedata;
 
-    public FileDataPacket(byte[] data, long offset, CfdpHeader header) {
+    public FileDataPacket(byte[] fileData, long offset, CfdpHeader header) {
         super(header);
         this.offset = offset;
-        this.filedata = data;
+        this.filedata = fileData;
     }
 
     public FileDataPacket(ByteBuffer buffer, CfdpHeader header) {
-        super(buffer, header);
+        super(header);
 
         this.offset = CfdpUtils.getUnsignedInt(buffer);
-        this.filedata = new byte[buffer.limit() - buffer.position()];
+        int fileDataSize = CfdpHeader.getDataLength(buffer) - OFFSET_SIZE;
+
+        if(header.withCrc()) {
+            fileDataSize -= 2;
+        }
+        this.filedata = new byte[fileDataSize];
         buffer.get(this.filedata);
     }
 
@@ -37,14 +53,9 @@ public class FileDataPacket extends CfdpPacket {
         buffer.put(filedata);
     }
 
-    public static CfdpHeader createHeader(byte[] filedata) {
-        // the '+4' originates from the length of the offset bytes
-        return new CfdpHeader(false, false, false, false, filedata.length + 4, 1, 1, 123, 111, 246);
-    }
-
     @Override
     public int getDataFieldLength() {
-        return 4 + this.filedata.length;
+        return OFFSET_SIZE + this.filedata.length;
     }
 
     @Override

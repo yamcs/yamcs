@@ -1,21 +1,32 @@
-import { Component, Inject } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Alarm, EditAlarmOptions } from '../client';
+import { Alarm, ShelveAlarmOptions } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
+import { Option } from '../shared/forms/Select';
 import * as utils from '../shared/utils';
 
 @Component({
   selector: 'app-shelve-alarm-dialog',
   templateUrl: './ShelveAlarmDialog.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShelveAlarmDialog {
 
-  formGroup: FormGroup;
+  formGroup: UntypedFormGroup;
+
+  durationOptions: Option[] = [
+    { id: 'PT15M', label: '15 minutes' },
+    { id: 'PT30M', label: '30 minutes' },
+    { id: 'PT1H', label: '1 hour' },
+    { id: 'PT2H', label: '2 hours' },
+    { id: 'P1D', label: '1 day' },
+    { id: 'UNLIMITED', label: 'unlimited' },
+  ];
 
   constructor(
     private dialogRef: MatDialogRef<ShelveAlarmDialog>,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     private yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
@@ -35,17 +46,15 @@ export class ShelveAlarmDialog {
     }
 
     for (const alarm of alarms) {
-      const options: EditAlarmOptions = {
-        state: 'shelved',
-      };
+      const options: ShelveAlarmOptions = {};
       if (comment) {
         options.comment = comment;
       }
       if (duration) {
         options.shelveDuration = duration;
       }
-      const alarmId = alarm.id.namespace + '/' + alarm.id.name;
-      this.yamcs.yamcsClient.editAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmId, alarm.seqNum, options);
+      const alarmName = alarm.id.namespace + (alarm.id.name ? '/' + alarm.id.name : '');
+      this.yamcs.yamcsClient.shelveAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmName, alarm.seqNum, options);
     }
     this.dialogRef.close();
   }

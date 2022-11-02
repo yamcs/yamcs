@@ -2,9 +2,9 @@ package org.yamcs;
 
 import org.yamcs.Spec.OptionType;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.ContainerProcessingOptions;
+import org.yamcs.mdb.MetaCommandProcessor;
 import org.yamcs.parameter.ParameterCacheConfig;
-import org.yamcs.xtceproc.ContainerProcessingOptions;
-import org.yamcs.xtceproc.MetaCommandProcessor;
 
 /**
  * Configuration options for a processor
@@ -38,12 +38,11 @@ public class ProcessorConfig {
     boolean generateEvents = false;
     boolean checkCommandClearance = false;
     boolean checkParameterValidityRanges = true;
-    
-    //if set to true, subscribe by default to all containers that have the useAsArchivePartiton flag set
+
+    // if set to true, subscribe by default to all containers that have the useAsArchivePartiton flag set
     // used to have nice statistics showing the number of each packet received for the realtime and replay processors
     boolean subscribeContainerArchivePartitions = true;
-    
-    
+
     /**
      * If this is set to true, the {@link MetaCommandProcessor} will release commands without binary encoding if a
      * MetaCommand has no container associated.
@@ -114,9 +113,9 @@ public class ProcessorConfig {
         spec.addOption(CONFIG_KEY_CHECK_PARAMETER_VALIDITY_RANGES, OptionType.ANY);
         spec.addOption(CONFIG_KEY_SUBSCRIBE_CONTAINER_ARCHPART, OptionType.BOOLEAN).withDefault(true);
 
-
         return spec;
     }
+
     /**
      * Default configuration
      */
@@ -128,15 +127,13 @@ public class ProcessorConfig {
     private void parseAlarmConfig(YConfiguration alarmConfig) {
 
         if (alarmConfig.containsKey("check")) {
-            log.warn(
+            throw new ConfigurationException(
                     "Deprecation: in processor.yaml, please replace config -> alarm -> check with config -> alarm -> parameterCheck");
-            checkParameterAlarms = alarmConfig.getBoolean("check");
         }
         checkParameterAlarms = alarmConfig.getBoolean("parameterCheck", checkParameterAlarms);
         if (alarmConfig.containsKey("server")) {
-            log.warn(
+            throw new ConfigurationException(
                     "Deprecation: in processor.yaml, please replace config -> alarm -> server with config -> alarm -> parameterServer");
-            parameterAlarmServerEnabled = "enabled".equalsIgnoreCase(alarmConfig.getString("server", null));
         }
         if (alarmConfig.containsKey("parameterServer")) {
             parameterAlarmServerEnabled = "enabled".equalsIgnoreCase(alarmConfig.getString("parameterServer"));
@@ -172,15 +169,15 @@ public class ProcessorConfig {
     public boolean checkCommandClearance() {
         return checkCommandClearance;
     }
-    
+
     public boolean checkParameterValidityRanges() {
         return checkParameterValidityRanges;
     }
-    
+
     public boolean subscribeContainerArchivePartitions() {
         return subscribeContainerArchivePartitions;
     }
-    
+
     public void setSubscribeContainerArchivePartitions(boolean b) {
         this.subscribeContainerArchivePartitions = b;
     }

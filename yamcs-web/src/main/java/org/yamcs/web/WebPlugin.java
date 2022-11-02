@@ -29,36 +29,13 @@ public class WebPlugin implements Plugin {
 
     @Override
     public void onLoad(YConfiguration config) throws PluginException {
-        YarchDatabaseInstance yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
-        try {
-            if (config.containsKey("displayPath")) {
-                Path displayPath = Paths.get(config.getString("displayPath")).toAbsolutePath().normalize();
-                yarch.addFileSystemBucket("displays", displayPath);
-            } else {
-                Bucket bucket = yarch.getBucket("displays");
-                if (bucket == null) {
-                    yarch.createBucket("displays");
-                }
-            }
-        } catch (IOException e) {
-            throw new PluginException("Could not create displays bucket", e);
-        }
+        String displayBucketName = config.getString("displayBucket");
+        createBucketIfNotExists(displayBucketName);
 
-        try {
-            if (config.containsKey("stackPath")) {
-                Path stackPath = Paths.get(config.getString("stackPath")).toAbsolutePath().normalize();
-                yarch.addFileSystemBucket("stacks", stackPath);
-            } else {
-                Bucket bucket = yarch.getBucket("stacks");
-                if (bucket == null) {
-                    yarch.createBucket("stacks");
-                }
-            }
-        } catch (IOException e) {
-            throw new PluginException("Could not create stacks bucket", e);
-        }
+        String stackBucketName = config.getString("stackBucket");
+        createBucketIfNotExists(stackBucketName);
 
-        HttpServer httpServer = YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0);
+        HttpServer httpServer = YamcsServer.getServer().getGlobalService(HttpServer.class);
 
         // Deploy the website, for practical reasons we have three different
         // mechanisms. In order:
@@ -105,6 +82,19 @@ public class WebPlugin implements Plugin {
                 log.info("Website deployed at {}{}", binding, httpServer.getContextPath());
             }
         });
+    }
+
+    private Bucket createBucketIfNotExists(String bucketName) throws PluginException {
+        YarchDatabaseInstance yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
+        try {
+            Bucket bucket = yarch.getBucket(bucketName);
+            if (bucket == null) {
+                bucket = yarch.createBucket(bucketName);
+            }
+            return bucket;
+        } catch (IOException e) {
+            throw new PluginException("Could not create '" + bucketName + "' bucket", e);
+        }
     }
 
     /**

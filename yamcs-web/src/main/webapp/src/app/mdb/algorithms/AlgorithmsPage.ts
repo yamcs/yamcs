@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -24,7 +24,7 @@ export class AlgorithmsPage implements AfterViewInit {
   @ViewChild(MatPaginator, { static: true })
   paginator: MatPaginator;
 
-  filterControl = new FormControl();
+  filterControl = new UntypedFormControl();
 
   dataSource: AlgorithmsDataSource;
 
@@ -33,6 +33,7 @@ export class AlgorithmsPage implements AfterViewInit {
     { id: 'language', label: 'Language', visible: true },
     { id: 'scope', label: 'Scope', visible: true },
     { id: 'shortDescription', label: 'Description' },
+    { id: 'actions', label: '', alwaysVisible: true },
   ];
 
   private selection = new SelectionModel<Algorithm>(false);

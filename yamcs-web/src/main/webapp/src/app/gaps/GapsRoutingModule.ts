@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { AttachContextGuard } from '../core/guards/AttachContextGuard';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { InstancePage } from '../shared/template/InstancePage';
+import { GapRequestsPage } from './GapRequestsPage';
 import { GapsPage } from './GapsPage';
 
 const routes: Routes = [
@@ -17,7 +18,10 @@ const routes: Routes = [
         path: '',
         pathMatch: 'full',
         component: GapsPage,
-      },
+      }, {
+        path: 'requests',
+        component: GapRequestsPage,
+      }
     ]
   }
 ];
@@ -29,5 +33,6 @@ const routes: Routes = [
 export class GapsRoutingModule { }
 
 export const routingComponents = [
+  GapRequestsPage,
   GapsPage,
 ];

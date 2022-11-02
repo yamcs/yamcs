@@ -22,7 +22,7 @@ public class EnumeratedDataType extends BaseDataType {
         this.enumerationList = builder.enumerationList;
         this.ranges = builder.ranges;
 
-        if (builder.baseType != null && builder.baseType instanceof EnumeratedDataType) {
+        if (builder.baseType instanceof EnumeratedDataType) {
             EnumeratedDataType baseType = (EnumeratedDataType) builder.baseType;
             if (builder.enumerationList.isEmpty()) {
                 enumerationList.addAll(baseType.enumerationList);

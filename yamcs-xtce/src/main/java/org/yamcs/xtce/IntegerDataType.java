@@ -23,6 +23,12 @@ public abstract class IntegerDataType extends NumericDataType {
      * DataEncoding.
      */
     IntegerValidRange validRange;
+    /**
+     * XTCE: This element provides the implementation with assistance rendering the value as a string for users.
+     * <p>
+     * Note that XTCE wraps NumberFormatType in another type ToStringType, which we don't do.
+     */
+    NumberFormatType numberFormat;
 
     protected IntegerDataType(Builder<?> builder) {
         super(builder);
@@ -36,8 +42,11 @@ public abstract class IntegerDataType extends NumericDataType {
         if (builder.validRange != null) {
             validRange = builder.validRange;
         }
+        if (builder.numberFormat != null) {
+            numberFormat = builder.numberFormat;
+        }
 
-        if (builder.baseType != null && builder.baseType instanceof IntegerDataType) {
+        if (builder.baseType instanceof IntegerDataType) {
             IntegerDataType baseType = (IntegerDataType) builder.baseType;
             if (builder.sizeInBits == null) {
                 this.sizeInBits = baseType.sizeInBits;
@@ -49,6 +58,9 @@ public abstract class IntegerDataType extends NumericDataType {
             if (builder.validRange == null && baseType.validRange != null) {
                 this.validRange = baseType.validRange;
             }
+            if (builder.numberFormat == null && baseType.numberFormat != null) {
+                this.numberFormat = baseType.numberFormat;
+            }
         }
         setInitialValue(builder);
     }
@@ -58,6 +70,7 @@ public abstract class IntegerDataType extends NumericDataType {
         this.sizeInBits = t.sizeInBits;
         this.signed = t.signed;
         this.validRange = t.validRange;
+        this.numberFormat = t.numberFormat;
     }
 
     public boolean isSigned() {
@@ -92,6 +105,10 @@ public abstract class IntegerDataType extends NumericDataType {
         return (Long) initialValue;
     }
 
+    public NumberFormatType getNumberFormat() {
+        return numberFormat;
+    }
+
     /**
      * In case the provided value is a String, it is parsed to a Long Base 10 (decimal) form unless:
      * <ul>
@@ -108,7 +125,23 @@ public abstract class IntegerDataType extends NumericDataType {
     @Override
     public Long convertType(Object value) {
         if (value instanceof Number) {
-            return ((Number) value).longValue();
+            long longValue = ((Number) value).longValue();
+            boolean negative = longValue < 0;
+
+            BigInteger bn = BigInteger.valueOf(negative ? -longValue : longValue);
+            int bs = sizeInBits;
+            if (signed) {
+                bs--;
+            }
+            if (bn.bitLength() > bs) {
+                throw new NumberFormatException("Number " + longValue + " does not fit the bit size (" + sizeInBits
+                        + (signed ? "/signed" : "unsigned") + ")");
+            }
+            long x = bn.longValue();
+            if (negative) {
+                x = -x;
+            }
+            return x;
         } else if (value instanceof String) {
             String stringValue = (String) value;
             String sv = stringValue.replace("_", "");
@@ -182,6 +215,7 @@ public abstract class IntegerDataType extends NumericDataType {
         Integer sizeInBits;
         Boolean signed;
         IntegerValidRange validRange;
+        NumberFormatType numberFormat;
 
         public Builder() {
         }
@@ -191,6 +225,7 @@ public abstract class IntegerDataType extends NumericDataType {
             this.sizeInBits = dataType.sizeInBits;
             this.signed = dataType.signed;
             this.validRange = dataType.validRange;
+            this.numberFormat = dataType.numberFormat;
         }
 
         public T setSizeInBits(int sizeInBits) {
@@ -209,6 +244,11 @@ public abstract class IntegerDataType extends NumericDataType {
 
         public T setValidRange(IntegerValidRange range) {
             this.validRange = range;
+            return self();
+        }
+
+        public T setNumberFormat(NumberFormatType numberFormat) {
+            this.numberFormat = numberFormat;
             return self();
         }
     }

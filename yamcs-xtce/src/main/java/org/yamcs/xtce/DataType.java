@@ -26,7 +26,7 @@ public interface DataType {
     /**
      * Converts to the canonical (boxed) java representation of this type.
      * <p>
-     * For example, if <tt>value</tt> is a <tt>String</tt>, an integer-like DataType should parse the String value, and
+     * For example, if {@code value} is a {@code String}, an integer-like DataType should parse the String value, and
      * return an Integer result.
      * 
      * 

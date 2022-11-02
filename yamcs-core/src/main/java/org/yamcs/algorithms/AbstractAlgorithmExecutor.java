@@ -2,23 +2,21 @@ package org.yamcs.algorithms;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.commanding.ArgumentValue;
+import org.yamcs.mdb.ProcessingData;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.RawEngValue;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.Algorithm;
-import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentInstanceRef;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.OnParameterUpdateTrigger;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.TriggerSetType;
-import org.yamcs.xtceproc.ProcessingData;
 
 /**
  * Skeleton implementation for algorithms conforming to the XTCE {@link Algorithm} definition.
@@ -96,7 +94,7 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
                 }
             }
             if (!skipRun && !triggered && log.isTraceEnabled()) {
-                log.trace("Not running algorithm {} because the parameter update triggers are not satisified: {}",
+                log.trace("Not running algorithm {} because the parameter update triggers are not satisfied: {}",
                         algorithmDef.getName(),
                         algorithmDef.getTriggerSet().getOnParameterUpdateTriggers());
             }

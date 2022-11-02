@@ -25,6 +25,7 @@ public class ProcessorCreatorService extends AbstractYamcsService {
         spec.addOption("spec", OptionType.STRING);
 
         spec.mutuallyExclusive("config", "spec");
+
         return spec;
     }
 
@@ -40,7 +41,7 @@ public class ProcessorCreatorService extends AbstractYamcsService {
         } else if (config.containsKey("spec")) {
             processorConfig = config.getString("spec");
         }
-        log.debug("Creating a new processor instance: {}, procName: {}, procType: {}", yamcsInstance, processorName,
+        log.debug("Creating a new processor [instance={}, procName={}, procType={}]", yamcsInstance, processorName,
                 processorType);
         try {
             SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
@@ -51,6 +52,7 @@ public class ProcessorCreatorService extends AbstractYamcsService {
             throw new InitException(e);
         }
         processor.setPersistent(true);
+        processor.setProtected(true);
     }
 
     @Override
@@ -60,8 +62,8 @@ public class ProcessorCreatorService extends AbstractYamcsService {
             processor.start();
             notifyStarted();
         } catch (Exception e) {
-            log.error("Starting a new processor {}.{} failed: {}. Cause: {}", yamcsInstance, processorName,
-                    e.toString(), e.getCause());
+            log.error("Starting a new processor {}.{} failed: {}", yamcsInstance, processorName,
+                    e.toString(), e);
             notifyFailed(e);
         }
     }

@@ -3,6 +3,7 @@ package org.yamcs.http.auth;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.InvalidKeyException;
@@ -34,18 +35,23 @@ import org.yamcs.security.AuthenticationException;
 import org.yamcs.security.AuthenticationInfo;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.AuthorizationException;
+import org.yamcs.security.Directory;
 import org.yamcs.security.OpenIDAuthModule;
 import org.yamcs.security.SecurityStore;
+import org.yamcs.security.SessionManager;
 import org.yamcs.security.SpnegoAuthModule;
 import org.yamcs.security.ThirdPartyAuthorizationCode;
 import org.yamcs.security.User;
+import org.yamcs.security.UserSession;
 import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.utils.FileUtils;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringEncoder;
@@ -74,22 +80,20 @@ public class AuthHandler extends Handler {
 
     private TokenStore tokenStore;
 
-    public AuthHandler(TokenStore tokenStore) {
-        this.tokenStore = tokenStore;
-
+    public AuthHandler(HttpServer httpServer) {
         try {
             YamcsServer yamcs = YamcsServer.getServer();
             Path staticRoot = yamcs.getCacheDirectory().resolve("auth");
             FileUtils.deleteRecursivelyIfExists(staticRoot);
             Files.createDirectory(staticRoot);
-            String[] staticFiles = new String[] { "console.svg", "auth.css", "yamcs300.png" };
+            String[] staticFiles = new String[] { "auth.css", "yamcs300.png" };
             for (String staticFile : staticFiles) {
                 try (InputStream resource = getClass().getResourceAsStream("/auth/static/" + staticFile)) {
                     Files.copy(resource, staticRoot.resolve(staticFile));
                 }
             }
-            HttpServer httpServer = YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0);
             httpServer.addStaticRoot(staticRoot);
+            tokenStore = httpServer.getTokenStore();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -148,10 +152,10 @@ public class AuthHandler extends Handler {
             if (err != null) {
                 if (err instanceof AuthenticationException || err instanceof AuthorizationException) {
                     log.info("Denying access to '" + request.getUsername() + "': " + err.getMessage());
-                    showLoginError(ctx, HttpResponseStatus.FORBIDDEN, "Access Denied");
+                    showLoginError(ctx, request, "Invalid username or password");
                 } else {
                     log.error("Unexpected error while attempting user login", err);
-                    showLoginError(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR, "Server Error");
+                    showLoginError(ctx, request, "Server Error");
                 }
             } else {
                 redirectWithCode(ctx, info, request);
@@ -188,13 +192,14 @@ public class AuthHandler extends Handler {
         ctx.render(HttpResponseStatus.OK, "/auth/templates/authorize.html", vars);
     }
 
-    private void showLoginError(HandlerContext ctx, HttpResponseStatus status, String errorMessage) {
+    private void showLoginError(HandlerContext ctx, LoginRequest request, String errorMessage) {
         Map<String, Object> vars = new HashMap<>();
         vars.put("contextPath", ctx.getContextPath());
+        vars.put("request", request.getMap());
         if (errorMessage != null) {
             vars.put("errorMessage", errorMessage);
         }
-        ctx.render(status, "/auth/templates/authorize.html", vars);
+        ctx.render(HttpResponseStatus.OK, "/auth/templates/authorize.html", vars);
     }
 
     private void redirectWithCode(HandlerContext ctx, AuthenticationInfo info, LoginRequest request) {
@@ -251,7 +256,8 @@ public class AuthHandler extends Handler {
         AuthenticationToken token = new UsernamePasswordToken(username, password.toCharArray());
         try {
             AuthenticationInfo authenticationInfo = getSecurityStore().login(token).get();
-            String refreshToken = tokenStore.generateRefreshToken(authenticationInfo);
+            UserSession session = createSession(ctx, authenticationInfo.getUsername());
+            String refreshToken = tokenStore.generateRefreshToken(authenticationInfo, session);
             sendNewAccessToken(ctx, authenticationInfo, refreshToken);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -275,8 +281,8 @@ public class AuthHandler extends Handler {
         // Maybe it's a code coming from one of the AuthModules
         if (authenticationInfo == null) {
             try {
-                authenticationInfo = getSecurityStore().login(new ThirdPartyAuthorizationCode(authcode)).get();
-
+                authenticationInfo = getSecurityStore()
+                        .login(new ThirdPartyAuthorizationCode(authcode)).get();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return;
@@ -292,14 +298,38 @@ public class AuthHandler extends Handler {
             }
         }
 
+        UserSession session = createSession(ctx, authenticationInfo.getUsername());
+
         // Don't support refresh on SPNEGO-backed sessions. Yamcs knows only about a SPNEGO ticket and cannot check
         // the lifetime of the client's TGT. Clients are required to be smart and fetch another authorization token
         // using the /auth/spnego route (= alternative refresh).
         String refreshToken = null;
-        if (!(authenticationInfo.getAuthenticator() instanceof SpnegoAuthModule)) {
-            refreshToken = tokenStore.generateRefreshToken(authenticationInfo);
+        if (authenticationInfo.getAuthenticator() instanceof SpnegoAuthModule) {
+            // We don't know the underlying expiration time. To be reconsidered when
+            // OP and RP are split (then spnego occurs only on the OP).
+            long lifespan = getSecurityStore().getAccessTokenLifespan();
+            session.setLifespan(lifespan);
+        } else {
+            refreshToken = tokenStore.generateRefreshToken(authenticationInfo, session);
         }
         sendNewAccessToken(ctx, authenticationInfo, refreshToken);
+    }
+
+    private UserSession createSession(HandlerContext ctx, String username) {
+        Channel channel = ctx.getNettyChannelHandlerContext().channel();
+        InetSocketAddress address = (InetSocketAddress) channel.remoteAddress();
+        String ipAddress = address.getAddress().getHostAddress();
+        String hostname = address.getHostName();
+        SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
+        SessionManager sessionManager = securityStore.getSessionManager();
+        UserSession session = sessionManager.createSession(username, ipAddress, hostname);
+
+        String userAgent = ctx.getHeader(HttpHeaderNames.USER_AGENT);
+        if (userAgent != null) {
+            session.getClients().add(userAgent);
+        }
+
+        return session;
     }
 
     /**
@@ -377,7 +407,7 @@ public class AuthHandler extends Handler {
         responseb.setTokenType("bearer");
         responseb.setAccessToken(jwt);
         responseb.setExpiresIn(ttl);
-        responseb.setUser(IamApi.toUserInfo(user, true));
+        responseb.setUser(IamApi.toUserInfo(user, true, getDirectory()));
 
         if (refreshToken != null) {
             responseb.setRefreshToken(refreshToken);
@@ -394,5 +424,9 @@ public class AuthHandler extends Handler {
 
     public static SecurityStore getSecurityStore() {
         return YamcsServer.getServer().getSecurityStore();
+    }
+
+    private static Directory getDirectory() {
+        return getSecurityStore().getDirectory();
     }
 }

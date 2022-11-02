@@ -1,10 +1,15 @@
 package org.yamcs.xtce;
 
 /**
- * Describe a member field in an AggregateDataType. Each member has a name and a type reference to a data type for the
- * aggregate member name. If this aggregate is a Parameter aggregate, then the typeRef is a parameter type reference. If
- * this aggregate is an Argument aggregate, then the typeRef is an argument type reference. References to an array data
- * type is currently not supported. Circular references are not allowed.
+ * Describe a member field in an AggregateDataType.
+ * <p>
+ * Each member has a name and a type reference to a data type for the aggregate member name.
+ * <p>
+ * If this aggregate is a Parameter aggregate, then the typeRef is a parameter type reference.
+ * <p>
+ * If this aggregate is an Argument aggregate, then the typeRef is an argument type reference.
+ * <p>
+ * References to an array data type is currently not supported. Circular references are not allowed.
  * 
  * @author nm
  *

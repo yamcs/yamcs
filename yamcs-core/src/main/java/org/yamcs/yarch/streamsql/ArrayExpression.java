@@ -2,10 +2,8 @@ package org.yamcs.yarch.streamsql;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.yamcs.time.Instant;
 import org.yamcs.yarch.DataType;
 
 public class ArrayExpression extends Expression {

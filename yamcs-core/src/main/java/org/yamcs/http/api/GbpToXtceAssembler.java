@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.yamcs.http.BadRequestException;
+import org.yamcs.mdb.ConditionParser;
 import org.yamcs.protobuf.Mdb.AlarmInfo;
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
 import org.yamcs.protobuf.Mdb.AlarmRange;
@@ -23,7 +24,6 @@ import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.Comparison;
 import org.yamcs.xtce.ComparisonList;
-import org.yamcs.xtce.ConditionParser;
 import org.yamcs.xtce.ContextCalibrator;
 import org.yamcs.xtce.EnumerationAlarm;
 import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
@@ -178,15 +178,15 @@ public class GbpToXtceAssembler {
     private static AlarmLevels toAlarmsLevel(AlarmLevelType level) throws BadRequestException {
         switch (level) {
         case CRITICAL:
-            return AlarmLevels.critical;
+            return AlarmLevels.CRITICAL;
         case DISTRESS:
-            return AlarmLevels.distress;
+            return AlarmLevels.DISTRESS;
         case SEVERE:
-            return AlarmLevels.severe;
+            return AlarmLevels.SEVERE;
         case WARNING:
-            return AlarmLevels.warning;
+            return AlarmLevels.WARNING;
         case WATCH:
-            return AlarmLevels.watch;
+            return AlarmLevels.WATCH;
         case NORMAL:
             throw new BadRequestException("Normal alarm range does not need to be specified");
         default:

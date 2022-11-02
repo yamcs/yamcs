@@ -88,7 +88,7 @@ public class Group {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof Group)) {
+        if (!(obj instanceof Group)) {
             return false;
         }
         Group other = (Group) obj;

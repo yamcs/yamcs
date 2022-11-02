@@ -3,6 +3,7 @@ package org.yamcs.yarch.streamsql;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
+import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 
@@ -30,6 +31,7 @@ public abstract class SimpleStreamSqlStatement implements StreamSqlStatement {
     public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
         StreamSqlResultList r = new StreamSqlResultList();
         execute(c, t -> r.addTuple(t));
+        c.close();
         return r.init();
     }
 

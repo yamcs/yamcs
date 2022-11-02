@@ -141,6 +141,26 @@ export function convertHexToBase64(hex: string) {
   return btoa(str);
 }
 
+export function toValue(value: any): Value {
+  if (Array.isArray(value)) {
+    const arrayValue: Value[] = [];
+    for (const item of value) {
+      arrayValue.push(toValue(item));
+    }
+    return { type: 'ARRAY', arrayValue };
+  } else if (typeof value === 'object') {
+    const names = [];
+    const values = [];
+    for (const name in value) {
+      names.push(name);
+      values.push(toValue(value[name]));
+    }
+    return { type: 'AGGREGATE', aggregateValue: { name: names, value: values } };
+  } else {
+    return { type: 'STRING', stringValue: value };
+  }
+}
+
 export function convertValue(value: Value) {
   switch (value.type) {
     case 'FLOAT':
@@ -158,12 +178,18 @@ export function convertValue(value: Value) {
     case 'BOOLEAN':
       return value.booleanValue;
     case 'TIMESTAMP':
-      return value.timestampValue;
+      return toDate(value.stringValue!);
     case 'BINARY':
       return window.atob(value.binaryValue!);
     case 'ENUMERATED':
     case 'STRING':
       return value.stringValue;
+    case 'ARRAY':
+      const arrayValue: any[] = [];
+      for (const item of (value.arrayValue || [])) {
+        arrayValue.push(convertValue(item));
+      }
+      return arrayValue;
     default:
       throw new Error(`Unexpected value type ${value.type}`);
   }
@@ -216,8 +242,9 @@ export function printValue(value: Value) {
     }
     return preview + '}';
   } else if (value.type === 'ARRAY') {
-    let preview = '[';
+    let preview = '';
     if (value.arrayValue) {
+      preview += `(${value.arrayValue.length}) [`;
       const n = Math.min(value.arrayValue.length, PREVIEW_LENGTH);
       for (let i = 0; i < n; i++) {
         if (i !== 0) {
@@ -228,9 +255,9 @@ export function printValue(value: Value) {
       if (n < value.arrayValue.length) {
         preview += ', …';
       }
-      preview += `] (${value.arrayValue.length})`;
+      preview += ']';
     } else {
-      preview += '] (0)';
+      preview += '(0) []';
     }
     return preview;
   } else {
@@ -241,7 +268,7 @@ export function printValue(value: Value) {
 function printValueWithoutPreview(value: Value): string {
   switch (value.type) {
     case 'AGGREGATE':
-      return 'aggregate';
+      return '{…}';
     case 'ARRAY':
       return 'array';
     case 'BOOLEAN':
@@ -381,4 +408,67 @@ export function generateUnsignedJWT(claims: { [key: string]: any; }) {
 
 export function lpad(nr: number, n: number) {
   return Array(n - String(nr).length + 1).join('0') + nr;
+}
+
+export function unflattenIndex(flatIndex: number, dimensions: number[]) {
+  let n = flatIndex;
+
+  let d = 1;
+  for (let i = 1; i < dimensions.length; i++) {
+    d *= dimensions[i];
+  }
+
+  let result = [];
+
+  let k;
+  for (k = 0; k < dimensions.length - 1; k++) {
+    result[k] = Math.floor(n / d);
+    n = n - d * result[k];
+    d = Math.floor(d / dimensions[k + 1]);
+  }
+  result[k] = n;
+  return result;
+}
+
+export function objectCompareFn(...fields: string[]) {
+  fields = [...fields];
+  const reverse: boolean[] = [];
+  for (let i = 0; i < fields.length; i++) {
+    if (fields[i].startsWith('-')) {
+      reverse.push(true);
+      fields[i] = fields[i].substring(1);
+    } else {
+      reverse.push(false);
+    }
+  }
+  return (a: any, b: any) => {
+    let rc = 0;
+    for (let i = 0; i < fields.length; i++) {
+      const field = fields[i];
+      let aField = (a.hasOwnProperty(field) ? (a as any)[field] : null) ?? null;
+      let bField = (b.hasOwnProperty(field) ? (b as any)[field] : null) ?? null;
+      if (typeof aField === 'string') {
+        aField = aField.toLowerCase();
+      }
+      if (typeof bField === 'string') {
+        bField = bField.toLowerCase();
+      }
+      if (aField === bField) {
+        rc = 0;
+      } else if (aField === null) {
+        rc = -1;
+      } else if (bField == null) {
+        rc = 1;
+      } else {
+        rc = (aField > bField) ? 1 : -1;
+      }
+      if (reverse[i]) {
+        rc = -rc;
+      }
+      if (rc !== 0) {
+        break;
+      }
+    }
+    return rc;
+  };
 }

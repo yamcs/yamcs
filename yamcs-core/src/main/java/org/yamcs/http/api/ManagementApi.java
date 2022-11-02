@@ -5,14 +5,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.UncheckedIOException;
 import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryUsage;
-import java.lang.management.OperatingSystemMXBean;
-import java.lang.management.RuntimeMXBean;
-import java.nio.file.FileStore;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,6 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
@@ -42,27 +37,20 @@ import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.logging.Log;
-import org.yamcs.management.LinkListener;
-import org.yamcs.management.LinkManager;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.AbstractManagementApi;
 import org.yamcs.protobuf.CreateInstanceRequest;
-import org.yamcs.protobuf.EditLinkRequest;
 import org.yamcs.protobuf.GetInstanceRequest;
 import org.yamcs.protobuf.GetInstanceTemplateRequest;
-import org.yamcs.protobuf.GetLinkRequest;
 import org.yamcs.protobuf.GetServiceRequest;
 import org.yamcs.protobuf.InstanceTemplate;
-import org.yamcs.protobuf.LinkEvent;
-import org.yamcs.protobuf.LinkInfo;
 import org.yamcs.protobuf.ListInstanceTemplatesResponse;
 import org.yamcs.protobuf.ListInstancesRequest;
 import org.yamcs.protobuf.ListInstancesResponse;
-import org.yamcs.protobuf.ListLinksRequest;
-import org.yamcs.protobuf.ListLinksResponse;
 import org.yamcs.protobuf.ListServicesRequest;
 import org.yamcs.protobuf.ListServicesResponse;
+import org.yamcs.protobuf.ProcessInfo;
 import org.yamcs.protobuf.ReconfigureInstanceRequest;
 import org.yamcs.protobuf.RestartInstanceRequest;
 import org.yamcs.protobuf.RootDirectory;
@@ -72,7 +60,6 @@ import org.yamcs.protobuf.StartInstanceRequest;
 import org.yamcs.protobuf.StartServiceRequest;
 import org.yamcs.protobuf.StopInstanceRequest;
 import org.yamcs.protobuf.StopServiceRequest;
-import org.yamcs.protobuf.SubscribeLinksRequest;
 import org.yamcs.protobuf.SystemInfo;
 import org.yamcs.protobuf.TemplateVariable;
 import org.yamcs.protobuf.YamcsInstance;
@@ -93,6 +80,8 @@ import org.yamcs.xtce.XtceDb;
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.google.protobuf.Empty;
+import com.google.protobuf.Timestamp;
+import com.google.protobuf.util.Durations;
 
 public class ManagementApi extends AbstractManagementApi<Context> {
 
@@ -101,62 +90,26 @@ public class ManagementApi extends AbstractManagementApi<Context> {
     public static final Pattern ALLOWED_INSTANCE_NAMES = Pattern.compile("\\w[\\w\\.-]*");
 
     @Override
-    public void getSystemInfo(Context ctx, Empty request, Observer<SystemInfo> observer) {
+    public void subscribeSystemInfo(Context ctx, Empty request, Observer<SystemInfo> observer) {
         if (!ctx.user.isSuperuser()) {
             throw new ForbiddenException("Access is limited to superusers");
         }
 
-        YamcsServer yamcs = YamcsServer.getServer();
+        var exec = YamcsServer.getServer().getThreadPoolExecutor();
+        var future = exec.scheduleAtFixedRate(() -> {
+            var systemInfo = toSystemInfo();
+            observer.next(systemInfo);
+        }, 0, 5, TimeUnit.SECONDS);
+        observer.setCancelHandler(() -> future.cancel(false));
+    }
 
-        SystemInfo.Builder b = SystemInfo.newBuilder()
-                .setYamcsVersion(YamcsVersion.VERSION)
-                .setRevision(YamcsVersion.REVISION)
-                .setServerId(yamcs.getServerId());
-
-        RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
-        b.setUptime(runtime.getUptime());
-        b.setJvm(runtime.getVmName() + " " + runtime.getVmVersion() + " (" + runtime.getVmVendor() + ")");
-        b.setWorkingDirectory(new File("").getAbsolutePath());
-        b.setConfigDirectory(yamcs.getConfigDirectory().toAbsolutePath().toString());
-        b.setDataDirectory(yamcs.getDataDirectory().toAbsolutePath().toString());
-        b.setCacheDirectory(yamcs.getCacheDirectory().toAbsolutePath().toString());
-        b.setJvmThreadCount(Thread.activeCount());
-
-        MemoryMXBean memory = ManagementFactory.getMemoryMXBean();
-        MemoryUsage heap = memory.getHeapMemoryUsage();
-        b.setHeapMemory(heap.getCommitted());
-        b.setUsedHeapMemory(heap.getUsed());
-        if (heap.getMax() != -1) {
-            b.setMaxHeapMemory(heap.getMax());
+    @Override
+    public void getSystemInfo(Context ctx, Empty request, Observer<SystemInfo> observer) {
+        if (!ctx.user.isSuperuser()) {
+            throw new ForbiddenException("Access is limited to superusers");
         }
-        MemoryUsage nonheap = memory.getNonHeapMemoryUsage();
-        b.setNonHeapMemory(nonheap.getCommitted());
-        b.setUsedNonHeapMemory(nonheap.getUsed());
-        if (nonheap.getMax() != -1) {
-            b.setMaxNonHeapMemory(nonheap.getMax());
-        }
-
-        OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
-        b.setOs(os.getName() + " " + os.getVersion());
-        b.setArch(os.getArch());
-        b.setAvailableProcessors(os.getAvailableProcessors());
-        b.setLoadAverage(os.getSystemLoadAverage());
-
-        try {
-            for (Path root : FileSystems.getDefault().getRootDirectories()) {
-                FileStore store = Files.getFileStore(root);
-                b.addRootDirectories(RootDirectory.newBuilder()
-                        .setDirectory(root.toString())
-                        .setType(store.type())
-                        .setTotalSpace(store.getTotalSpace())
-                        .setUnallocatedSpace(store.getUnallocatedSpace())
-                        .setUsableSpace(store.getUsableSpace()));
-            }
-        } catch (IOException e) {
-            throw new InternalServerErrorException(e);
-        }
-
-        observer.complete(b.build());
+        var systemInfo = toSystemInfo();
+        observer.complete(systemInfo);
     }
 
     @Override
@@ -506,127 +459,68 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         }
     }
 
-    @Override
-    public void listLinks(Context ctx, ListLinksRequest request, Observer<ListLinksResponse> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ReadLinks);
+    private static SystemInfo toSystemInfo() {
+        var yamcs = YamcsServer.getServer();
 
-        ListLinksResponse.Builder responseb = ListLinksResponse.newBuilder();
-
-        if (request.hasInstance()) {
-            LinkManager lmgr = verifyInstanceObj(request.getInstance()).getLinkManager();
-            for (LinkInfo link : lmgr.getLinkInfo()) {
-                responseb.addLinks(link);
-            }
-        } else {
-            for (YamcsServerInstance ysi : YamcsServer.getInstances()) {
-                LinkManager lmgr = ysi.getLinkManager();
-                for (LinkInfo link : lmgr.getLinkInfo()) {
-                    responseb.addLinks(link);
-                }
-            }
+        var b = SystemInfo.newBuilder()
+                .setServerId(yamcs.getServerId());
+        if (YamcsVersion.VERSION != null) {
+            b.setYamcsVersion(YamcsVersion.VERSION);
+        }
+        if (YamcsVersion.REVISION != null) {
+            b.setRevision(YamcsVersion.REVISION);
         }
 
-        observer.complete(responseb.build());
-    }
+        var process = ProcessHandle.current();
+        b.setProcess(toProcessInfo(process));
 
-    @Override
-    public void subscribeLinks(Context ctx, SubscribeLinksRequest request, Observer<LinkEvent> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ReadLinks);
-        String instance = verifyInstance(request.getInstance());
-        YamcsServerInstance ysi = verifyInstanceObj(instance);
+        var runtime = ManagementFactory.getRuntimeMXBean();
+        b.setUptime(runtime.getUptime());
+        b.setJvm(runtime.getVmName() + " " + runtime.getVmVersion() + " (" + runtime.getVmVendor() + ")");
+        b.setWorkingDirectory(new File("").getAbsolutePath());
+        b.setConfigDirectory(yamcs.getConfigDirectory().toAbsolutePath().toString());
+        b.setDataDirectory(yamcs.getDataDirectory().toAbsolutePath().toString());
+        b.setCacheDirectory(yamcs.getCacheDirectory().toAbsolutePath().toString());
+        b.setJvmThreadCount(Thread.activeCount());
 
-        LinkManager linkManager = ysi.getLinkManager();
-        for (LinkInfo linkInfo : linkManager.getLinkInfo()) {
-            if (instance.equals(linkInfo.getInstance())) {
-                observer.next(LinkEvent.newBuilder()
-                        .setType(LinkEvent.Type.REGISTERED)
-                        .setLinkInfo(linkInfo)
-                        .build());
-            }
+        var memory = ManagementFactory.getMemoryMXBean();
+        var heap = memory.getHeapMemoryUsage();
+        b.setHeapMemory(heap.getCommitted());
+        b.setUsedHeapMemory(heap.getUsed());
+        if (heap.getMax() != -1) {
+            b.setMaxHeapMemory(heap.getMax());
+        }
+        var nonheap = memory.getNonHeapMemoryUsage();
+        b.setNonHeapMemory(nonheap.getCommitted());
+        b.setUsedNonHeapMemory(nonheap.getUsed());
+        if (nonheap.getMax() != -1) {
+            b.setMaxNonHeapMemory(nonheap.getMax());
         }
 
-        LinkListener listener = new LinkListener() {
-            @Override
-            public void linkRegistered(LinkInfo linkInfo) {
-                if (instance.equals(linkInfo.getInstance())) {
-                    observer.next(LinkEvent.newBuilder()
-                            .setType(LinkEvent.Type.REGISTERED)
-                            .setLinkInfo(linkInfo)
-                            .build());
-                }
-            }
-
-            @Override
-            public void linkUnregistered(LinkInfo linkInfo) {
-                // TODO Currently not handled correctly by ManagementService
-            }
-
-            @Override
-            public void linkChanged(LinkInfo linkInfo) {
-                if (instance.equals(linkInfo.getInstance())) {
-                    observer.next(LinkEvent.newBuilder()
-                            .setType(LinkEvent.Type.UPDATED)
-                            .setLinkInfo(linkInfo)
-                            .build());
-                }
-            }
-        };
-
-        observer.setCancelHandler(() -> linkManager.removeLinkListener(listener));
-        linkManager.addLinkListener(listener);
-    }
-
-    @Override
-    public void getLink(Context ctx, GetLinkRequest request, Observer<LinkInfo> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ReadLinks);
-
-        LinkInfo linkInfo = verifyLink(request.getInstance(), request.getName());
-        observer.complete(linkInfo);
-    }
-
-    @Override
-    public void updateLink(Context ctx, EditLinkRequest request, Observer<LinkInfo> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ControlLinks);
-
-        LinkInfo linkInfo = verifyLink(request.getInstance(), request.getName());
-
-        String state = null;
-        if (request.hasState()) {
-            state = request.getState();
+        var os = ManagementFactory.getOperatingSystemMXBean();
+        b.setOs(os.getName() + " " + os.getVersion());
+        b.setArch(os.getArch());
+        b.setAvailableProcessors(os.getAvailableProcessors());
+        var systemLoadAverage = os.getSystemLoadAverage();
+        if (systemLoadAverage >= 0) {
+            b.setLoadAverage(os.getSystemLoadAverage());
         }
 
-        LinkManager lmgr = verifyInstanceObj(request.getInstance()).getLinkManager();
-        if (state != null) {
-            switch (state.toLowerCase()) {
-            case "enabled":
-                try {
-                    lmgr.enableLink(linkInfo.getName());
-                } catch (IllegalArgumentException e) {
-                    throw new NotFoundException(e);
-                }
-                break;
-            case "disabled":
-                try {
-                    lmgr.disableLink(linkInfo.getName());
-                } catch (IllegalArgumentException e) {
-                    throw new NotFoundException(e);
-                }
-                break;
-            default:
-                throw new BadRequestException("Unsupported link state '" + state + "'");
+        try {
+            for (var root : FileSystems.getDefault().getRootDirectories()) {
+                var store = Files.getFileStore(root);
+                b.addRootDirectories(RootDirectory.newBuilder()
+                        .setDirectory(root.toString())
+                        .setType(store.type())
+                        .setTotalSpace(store.getTotalSpace())
+                        .setUnallocatedSpace(store.getUnallocatedSpace())
+                        .setUsableSpace(store.getUsableSpace()));
             }
+        } catch (IOException e) {
+            throw new InternalServerErrorException(e);
         }
 
-        if (request.hasResetCounters() && request.getResetCounters()) {
-            try {
-                lmgr.resetCounters(linkInfo.getName());
-            } catch (IllegalArgumentException e) {
-                throw new NotFoundException(e);
-            }
-        }
-
-        linkInfo = lmgr.getLinkInfo(request.getName());
-        observer.complete(linkInfo);
+        return b.build();
     }
 
     private Predicate<YamcsServerInstance> getFilter(List<String> flist) throws HttpException {
@@ -690,6 +584,40 @@ public class ManagementApi extends AbstractManagementApi<Context> {
         } else {
             throw new BadRequestException("Unknown filter key '" + pr.key + "'");
         }
+    }
+
+    private static ProcessInfo toProcessInfo(ProcessHandle process) {
+        var processb = ProcessInfo.newBuilder()
+                .setPid(process.pid());
+        var processInfo = process.info();
+        if (processInfo.user().isPresent()) {
+            processb.setUser(processInfo.user().get());
+        }
+        if (processInfo.startInstant().isPresent()) {
+            var startTime = processInfo.startInstant().get();
+            processb.setStartTime(Timestamp.newBuilder()
+                    .setSeconds(startTime.getEpochSecond())
+                    .setNanos(startTime.getNano()));
+        }
+        if (processInfo.totalCpuDuration().isPresent()) {
+            var duration = processInfo.totalCpuDuration().get();
+            processb.setTotalCpuDuration(Durations.fromSeconds(duration.getSeconds()));
+        }
+        if (processInfo.command().isPresent()) {
+            var command = processInfo.command().get();
+            processb.setCommand(command);
+        }
+        if (processInfo.arguments().isPresent()) {
+            for (var argument : processInfo.arguments().get()) {
+                processb.addArguments(argument);
+            }
+        }
+
+        process.children()
+                .map(ManagementApi::toProcessInfo)
+                .forEach(processb::addChildren);
+
+        return processb.build();
     }
 
     public static ServiceInfo toServiceInfo(ServiceWithConfig serviceWithConfig, String instance, String processor) {
@@ -778,16 +706,6 @@ public class ManagementApi extends AbstractManagementApi<Context> {
             throw new NotFoundException("No instance named '" + instance + "'");
         }
         return ysi;
-    }
-
-    public static LinkInfo verifyLink(String instance, String linkName) {
-        YamcsServerInstance ysi = verifyInstanceObj(instance);
-        LinkManager lmgr = ysi.getLinkManager();
-        LinkInfo linkInfo = lmgr.getLinkInfo(linkName);
-        if (linkInfo == null) {
-            throw new NotFoundException("No link named '" + linkName + "' within instance '" + instance + "'");
-        }
-        return linkInfo;
     }
 
     private static YamcsInstance enrichYamcsInstance(YamcsInstance yamcsInstance) {

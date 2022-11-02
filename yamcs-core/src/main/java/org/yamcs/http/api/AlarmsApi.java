@@ -9,7 +9,7 @@ import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_TIME;
 import static org.yamcs.alarms.AlarmStreamer.CNAME_TRIGGER_TIME;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
@@ -23,6 +23,7 @@ import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmListener;
 import org.yamcs.alarms.AlarmSequenceException;
 import org.yamcs.alarms.AlarmServer;
+import org.yamcs.alarms.AlarmStreamer;
 import org.yamcs.alarms.EventAlarmServer;
 import org.yamcs.alarms.EventAlarmStreamer;
 import org.yamcs.alarms.EventId;
@@ -35,6 +36,8 @@ import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
+import org.yamcs.http.audit.AuditLog;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.AcknowledgeInfo;
 import org.yamcs.protobuf.AlarmData;
@@ -42,36 +45,38 @@ import org.yamcs.protobuf.AlarmNotificationType;
 import org.yamcs.protobuf.AlarmSeverity;
 import org.yamcs.protobuf.AlarmType;
 import org.yamcs.protobuf.ClearInfo;
+import org.yamcs.protobuf.Event.EventSeverity;
 import org.yamcs.protobuf.EventAlarmData;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.ParameterAlarmData;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.ShelveInfo;
-//import org.yamcs.protobuf.Yamcs.Event;
-import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.alarms.AbstractAlarmsApi;
+import org.yamcs.protobuf.alarms.AcknowledgeAlarmRequest;
+import org.yamcs.protobuf.alarms.ClearAlarmRequest;
 import org.yamcs.protobuf.alarms.EditAlarmRequest;
 import org.yamcs.protobuf.alarms.GlobalAlarmStatus;
 import org.yamcs.protobuf.alarms.ListAlarmsRequest;
 import org.yamcs.protobuf.alarms.ListAlarmsResponse;
-import org.yamcs.protobuf.alarms.ListParameterAlarmsRequest;
-import org.yamcs.protobuf.alarms.ListParameterAlarmsResponse;
 import org.yamcs.protobuf.alarms.ListProcessorAlarmsRequest;
 import org.yamcs.protobuf.alarms.ListProcessorAlarmsResponse;
+import org.yamcs.protobuf.alarms.ShelveAlarmRequest;
 import org.yamcs.protobuf.alarms.SubscribeAlarmsRequest;
 import org.yamcs.protobuf.alarms.SubscribeGlobalStatusRequest;
+import org.yamcs.protobuf.alarms.UnshelveAlarmRequest;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
+import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.protobuf.Db;
 
 import com.google.protobuf.Empty;
+import com.google.protobuf.Message;
 import com.google.protobuf.Timestamp;
 
 public class AlarmsApi extends AbstractAlarmsApi<Context> {
@@ -80,7 +85,8 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
     private static final AlarmSeverity[] PARAM_ALARM_SEVERITY = new AlarmSeverity[20];
     private static final AlarmSeverity[] EVENT_ALARM_SEVERITY = new AlarmSeverity[8];
-    public static Map<org.yamcs.alarms.AlarmNotificationType, AlarmNotificationType> protoNotificationType = new HashMap<>();
+    public static Map<org.yamcs.alarms.AlarmNotificationType, AlarmNotificationType> protoNotificationType = new EnumMap<>(
+            org.yamcs.alarms.AlarmNotificationType.class);
 
     static {
         PARAM_ALARM_SEVERITY[MonitoringResult.WATCH_VALUE] = AlarmSeverity.WATCH;
@@ -106,6 +112,15 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.UNSHELVED, AlarmNotificationType.UNSHELVED);
     }
 
+    private AuditLog auditLog;
+
+    public AlarmsApi(AuditLog auditLog) {
+        this.auditLog = auditLog;
+        auditLog.addPrivilegeChecker(getClass().getSimpleName(), user -> {
+            return user.hasSystemPrivilege(SystemPrivilege.ReadAlarms);
+        });
+    }
+
     @Override
     public void listAlarms(Context ctx, ListAlarmsRequest request, Observer<ListAlarmsResponse> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadAlarms);
@@ -127,68 +142,29 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             sqlbEvent.whereColBefore(CNAME_TRIGGER_TIME, request.getStop());
         }
 
-        /*
-         * if (req.hasRouteParam("triggerTime")) { sqlb.where("triggerTime = " + req.getDateRouteParam("triggerTime"));
-         * }
-         */
+        if (request.hasName()) {
+            String alarmName = request.getName();
+            if (!alarmName.startsWith("/")) {
+                alarmName = "/" + alarmName;
+            }
+            sqlbParam.where("parameter = ?", alarmName);
+            sqlbEvent.where("eventSource = ?", alarmName);
+        }
+
         sqlbParam.descend(!ascending);
         sqlbEvent.descend(!ascending);
-        sqlbParam.limit(pos, limit);
-        sqlbEvent.limit(pos, limit);
 
         ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
         String q = "MERGE (" + sqlbParam.toString() + "), (" + sqlbEvent.toString() + ") USING " + CNAME_TRIGGER_TIME
-                + " ORDER DESC";
-        StreamFactory.stream(instance, q, sqlbParam.getQueryArguments(), new StreamSubscriber() {
+                + " ORDER DESC LIMIT " + pos + "," + limit;
+
+        List<Object> sqlArgs = new ArrayList<>(sqlbParam.getQueryArguments());
+        sqlArgs.addAll(sqlbEvent.getQueryArguments());
+        StreamFactory.stream(instance, q, sqlArgs, new StreamSubscriber() {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
-                AlarmData alarm = tupleToAlarmData(tuple, true);
-                responseb.addAlarms(alarm);
-            }
-
-            @Override
-            public void streamClosed(Stream stream) {
-                observer.complete(responseb.build());
-            }
-        });
-    }
-
-    @Override
-    public void listParameterAlarms(Context ctx, ListParameterAlarmsRequest request,
-            Observer<ListParameterAlarmsResponse> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ReadAlarms);
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-
-        long pos = request.hasPos() ? request.getPos() : 0;
-        int limit = request.hasLimit() ? request.getLimit() : 100;
-        boolean ascending = request.getOrder().equals("asc");
-
-        SqlBuilder sqlb = new SqlBuilder(AlarmRecorder.PARAMETER_ALARM_TABLE_NAME);
-
-        if (request.hasStart()) {
-            sqlb.whereColAfterOrEqual(CNAME_TRIGGER_TIME, request.getStart());
-        }
-        if (request.hasStop()) {
-            sqlb.whereColBefore(CNAME_TRIGGER_TIME, request.getStop());
-        }
-
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
-        Parameter p = MdbApi.verifyParameter(ctx, mdb, request.getParameter());
-        sqlb.where("parameter = ?", p.getQualifiedName());
-
-        /*
-         * if (req.hasRouteParam("triggerTime")) { sqlb.where("triggerTime = " + req.getDateRouteParam("triggerTime"));
-         * }
-         */
-        sqlb.descend(!ascending);
-        sqlb.limit(pos, limit);
-        ListParameterAlarmsResponse.Builder responseb = ListParameterAlarmsResponse.newBuilder();
-        StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
-
-            @Override
-            public void onTuple(Stream stream, Tuple tuple) {
-                AlarmData alarm = tupleToAlarmData(tuple, request.getDetail());
+                AlarmData alarm = tupleToAlarmData(tuple);
                 responseb.addAlarms(alarm);
             }
 
@@ -282,6 +258,159 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
+    public void acknowledgeAlarm(Context ctx, AcknowledgeAlarmRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAlarms);
+
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+        String alarmName = request.getAlarm();
+        if (!alarmName.startsWith("/")) {
+            alarmName = "/" + alarmName;
+        }
+        int seqNum = request.getSeqnum();
+
+        ActiveAlarm<?> activeAlarm = verifyAlarm(processor, alarmName, seqNum);
+        String comment = request.hasComment() ? request.getComment() : null;
+        String username = ctx.user.getName();
+        try {
+            AlarmServer alarmServer;
+            if (activeAlarm.getTriggerValue() instanceof ParameterValue) {
+                alarmServer = verifyParameterAlarmServer(processor);
+            } else if (activeAlarm.getTriggerValue() instanceof Db.Event) {
+                alarmServer = verifyEventAlarmServer(processor);
+            } else {
+                throw new InternalServerErrorException("Can't find alarm server for alarm instance");
+            }
+
+            alarmServer.acknowledge(activeAlarm, username, processor.getCurrentTime(), comment);
+            logAlarmAction(ctx, request, processor, activeAlarm, "acknowledged");
+            observer.complete(Empty.getDefaultInstance());
+        } catch (IllegalStateException e) {
+            throw new BadRequestException(e.getMessage());
+        }
+    }
+
+    @Override
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void shelveAlarm(Context ctx, ShelveAlarmRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAlarms);
+
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+        String alarmName = request.getAlarm();
+        if (!alarmName.startsWith("/")) {
+            alarmName = "/" + alarmName;
+        }
+        int seqNum = request.getSeqnum();
+
+        ActiveAlarm<?> activeAlarm = verifyAlarm(processor, alarmName, seqNum);
+        String comment = request.hasComment() ? request.getComment() : null;
+        String username = ctx.user.getName();
+        try {
+            AlarmServer alarmServer;
+            if (activeAlarm.getTriggerValue() instanceof ParameterValue) {
+                alarmServer = verifyParameterAlarmServer(processor);
+            } else if (activeAlarm.getTriggerValue() instanceof Db.Event) {
+                alarmServer = verifyEventAlarmServer(processor);
+            } else {
+                throw new InternalServerErrorException("Can't find alarm server for alarm instance");
+            }
+
+            long shelveDuration = request.hasShelveDuration() ? request.getShelveDuration() : -1;
+            alarmServer.shelve(activeAlarm, username, comment, shelveDuration);
+            logAlarmAction(ctx, request, processor, activeAlarm, "shelved");
+            observer.complete(Empty.getDefaultInstance());
+        } catch (IllegalStateException e) {
+            throw new BadRequestException(e.getMessage());
+        }
+    }
+
+    @Override
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void unshelveAlarm(Context ctx, UnshelveAlarmRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAlarms);
+
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+        String alarmName = request.getAlarm();
+        if (!alarmName.startsWith("/")) {
+            alarmName = "/" + alarmName;
+        }
+        int seqNum = request.getSeqnum();
+
+        ActiveAlarm<?> activeAlarm = verifyAlarm(processor, alarmName, seqNum);
+        String username = ctx.user.getName();
+        try {
+            AlarmServer alarmServer;
+            if (activeAlarm.getTriggerValue() instanceof ParameterValue) {
+                alarmServer = verifyParameterAlarmServer(processor);
+            } else if (activeAlarm.getTriggerValue() instanceof Db.Event) {
+                alarmServer = verifyEventAlarmServer(processor);
+            } else {
+                throw new InternalServerErrorException("Can't find alarm server for alarm instance");
+            }
+
+            alarmServer.unshelve(activeAlarm, username);
+            logAlarmAction(ctx, request, processor, activeAlarm, "unshelved");
+            observer.complete(Empty.getDefaultInstance());
+        } catch (IllegalStateException e) {
+            throw new BadRequestException(e.getMessage());
+        }
+    }
+
+    private void logAlarmAction(Context ctx, Message request, Processor processor, ActiveAlarm<?> alarm,
+            String action) {
+        if (alarm.getTriggerValue() instanceof ParameterValue) {
+            String parameter = ((ParameterValue) alarm.getTriggerValue()).getParameterQualifiedName();
+            auditLog.addRecord(ctx, request, String.format(
+                    "Alarm for parameter '%s' %s for processor '%s'",
+                    parameter, action, processor.getName()));
+        } else if (alarm.getTriggerValue() instanceof Db.Event) {
+            Db.Event event = (Db.Event) alarm.getTriggerValue();
+            String alarmName = event.getSource();
+            if (event.hasType()) {
+                alarmName += "/" + event.getType();
+            }
+            auditLog.addRecord(ctx, request, String.format(
+                    "Alarm for event '%s' %s for processor '%s'",
+                    alarmName, action, processor.getName()));
+        } else {
+            throw new IllegalStateException("Unexpected alarm type");
+        }
+    }
+
+    @Override
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void clearAlarm(Context ctx, ClearAlarmRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAlarms);
+
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+        String alarmName = request.getAlarm();
+        if (!alarmName.startsWith("/")) {
+            alarmName = "/" + alarmName;
+        }
+        int seqNum = request.getSeqnum();
+
+        ActiveAlarm<?> activeAlarm = verifyAlarm(processor, alarmName, seqNum);
+        String comment = request.hasComment() ? request.getComment() : null;
+        String username = ctx.user.getName();
+        try {
+            AlarmServer alarmServer;
+            if (activeAlarm.getTriggerValue() instanceof ParameterValue) {
+                alarmServer = verifyParameterAlarmServer(processor);
+            } else if (activeAlarm.getTriggerValue() instanceof Db.Event) {
+                alarmServer = verifyEventAlarmServer(processor);
+            } else {
+                throw new InternalServerErrorException("Can't find alarm server for alarm instance");
+            }
+
+            alarmServer.clear(activeAlarm, username, processor.getCurrentTime(), comment);
+            logAlarmAction(ctx, request, processor, activeAlarm, "cleared");
+            observer.complete(Empty.getDefaultInstance());
+        } catch (IllegalStateException e) {
+            throw new BadRequestException(e.getMessage());
+        }
+    }
+
+    @Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void subscribeAlarms(Context ctx, SubscribeAlarmsRequest request, Observer<AlarmData> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadAlarms);
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
@@ -355,15 +484,17 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
             for (AlarmServer<?, ?> alarmServer : alarmServers) {
                 for (ActiveAlarm<?> alarm : alarmServer.getActiveAlarms().values()) {
-                    if (alarm.isShelved()) {
-                        shelvedCount++;
-                        shelvedActive |= !alarm.isProcessOK();
-                    } else if (alarm.isAcknowledged()) {
-                        acknowledgedCount++;
-                        acknowledgedActive |= !alarm.isProcessOK();
-                    } else {
-                        unacknowledgedCount++;
-                        unacknowledgedActive |= !alarm.isProcessOK();
+                    if (alarm.isTriggered()) {
+                        if (alarm.isShelved()) {
+                            shelvedCount++;
+                            shelvedActive |= !alarm.isProcessOK();
+                        } else if (alarm.isAcknowledged()) {
+                            acknowledgedCount++;
+                            acknowledgedActive |= !alarm.isProcessOK();
+                        } else {
+                            unacknowledgedCount++;
+                            unacknowledgedActive |= !alarm.isProcessOK();
+                        }
                     }
                 }
             }
@@ -388,7 +519,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
     /**
      * Finds the appropriate alarm server for the alarm.
-     * 
+     * <p>
      * FIXME why not one namespace and a single server?
      */
     public static ActiveAlarm<?> verifyAlarm(Processor processor, String alarmName, int id)
@@ -608,11 +739,39 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         return alarmb.build();
     }
 
-    private static AlarmData tupleToAlarmData(Tuple tuple, boolean detail) {
+    private static EventAlarmData tupleToEventAlarmData(Tuple tuple) {
+        EventAlarmData.Builder eventb = EventAlarmData.newBuilder();
+
+        Db.Event event = (Db.Event) tuple.getColumn(EventAlarmStreamer.CNAME_TRIGGER);
+        eventb.setTriggerEvent(EventsApi.fromDbEvent(event));
+
+        if (tuple.hasColumn(EventAlarmStreamer.CNAME_SEVERITY_INCREASED)) {
+            event = (Db.Event) tuple.getColumn(EventAlarmStreamer.CNAME_SEVERITY_INCREASED);
+            eventb.setMostSevereEvent(EventsApi.fromDbEvent(event));
+        }
+
+        return eventb.build();
+    }
+
+    private static AlarmData tupleToAlarmData(Tuple tuple) {
         AlarmData.Builder alarmb = AlarmData.newBuilder();
         alarmb.setSeqNum((int) tuple.getColumn("seqNum"));
         setAckInfo(alarmb, tuple);
         setClearInfo(alarmb, tuple);
+        setShelveInfo(alarmb, tuple);
+
+        if (tuple.hasColumn(AlarmStreamer.CNAME_UPDATE_TIME)) {
+            long updateTime = tuple.getTimestampColumn(AlarmStreamer.CNAME_UPDATE_TIME);
+            alarmb.setUpdateTime(TimeEncoding.toProtobufTimestamp(updateTime));
+        }
+        if (tuple.hasColumn(AlarmStreamer.CNAME_VALUE_COUNT)) {
+            int valueCount = tuple.getIntColumn(AlarmStreamer.CNAME_VALUE_COUNT);
+            alarmb.setCount(valueCount);
+        }
+        if (tuple.hasColumn(AlarmStreamer.CNAME_VIOLATION_COUNT)) {
+            int violationCount = tuple.getIntColumn(AlarmStreamer.CNAME_VIOLATION_COUNT);
+            alarmb.setViolations(violationCount);
+        }
 
         if (tuple.hasColumn(StandardTupleDefinitions.PARAMETER_COLUMN)) {
             String paraFqn = (String) tuple.getColumn(StandardTupleDefinitions.PARAMETER_COLUMN);
@@ -627,10 +786,8 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             }
             alarmb.setSeverity(AlarmsApi.getParameterAlarmSeverity(pval.getMonitoringResult()));
 
-            if (detail) {
-                ParameterAlarmData parameterAlarmData = tupleToParameterAlarmData(tuple);
-                alarmb.setParameterDetail(parameterAlarmData);
-            }
+            ParameterAlarmData parameterAlarmData = tupleToParameterAlarmData(tuple);
+            alarmb.setParameterDetail(parameterAlarmData);
         } else {
             alarmb.setType(AlarmType.EVENT);
             Db.Event ev = (Db.Event) tuple.getColumn(EventAlarmStreamer.CNAME_TRIGGER);
@@ -642,6 +799,8 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             }
             alarmb.setSeverity(AlarmsApi.getEventAlarmSeverity(ev.getSeverity()));
 
+            EventAlarmData eventAlarmData = tupleToEventAlarmData(tuple);
+            alarmb.setEventDetail(eventAlarmData);
         }
 
         return alarmb.build();

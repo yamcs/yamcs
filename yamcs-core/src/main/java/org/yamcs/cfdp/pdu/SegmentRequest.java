@@ -1,7 +1,6 @@
 package org.yamcs.cfdp.pdu;
 
 import java.nio.ByteBuffer;
-import java.util.Objects;
 
 import org.yamcs.cfdp.CfdpUtils;
 
@@ -44,28 +43,7 @@ public class SegmentRequest {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o == null) {
-            return false;
-        }
-        if (!(o instanceof SegmentRequest)) {
-            return false;
-        }
-        if (o == this) {
-            return true;
-        }
-        return this.getSegmentStart() == ((SegmentRequest) o).getSegmentStart()
-                && this.getSegmentEnd() == ((SegmentRequest) o).getSegmentEnd();
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getSegmentStart(), getSegmentEnd());
-    }
-
-    @Override
     public String toString() {
-        return "SegmentRequest [segmentStart=" + segmentStart + ", segmentEnd=" + segmentEnd + "]";
+        return segmentStart + "-" + segmentEnd;
     }
-
 }

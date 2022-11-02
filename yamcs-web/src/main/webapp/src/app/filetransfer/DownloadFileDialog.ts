@@ -1,5 +1,5 @@
 import { Component, Inject, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject } from 'rxjs';
@@ -14,8 +14,8 @@ import { ObjectSelector } from '../shared/forms/ObjectSelector';
 })
 export class DownloadFileDialog {
 
-  localForm: FormGroup;
-  remoteForm: FormGroup;
+  localForm: UntypedFormGroup;
+  remoteForm: UntypedFormGroup;
 
   service: FileTransferService;
   private storageClient: StorageClient;
@@ -32,7 +32,7 @@ export class DownloadFileDialog {
   constructor(
     private dialogRef: MatDialogRef<DownloadFileDialog>,
     readonly yamcs: YamcsService,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.service = data.service;

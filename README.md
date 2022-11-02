@@ -11,7 +11,7 @@ To start developing your own Yamcs application, follow our [Getting Started](htt
 ## Documentation
 
 * Server Manual: https://docs.yamcs.org/yamcs-server-manual/
-* Javadoc: https://yamcs.org/javadoc/yamcs/index.html?overview-summary.html
+* Javadoc: https://docs.yamcs.org/javadoc/yamcs/latest/
 
 
 ## License
@@ -23,7 +23,7 @@ For commercial licensing please contact [Space Applications Services](https://ww
 
 ## Development Setup
 
-To work on the core components of Yamcs you need JDK8, Maven and npm.
+To work on the core components of Yamcs you need JDK11, Maven and npm.
 
 Build Java jars:
 
@@ -45,6 +45,11 @@ For demo and development purposes we work with an all-in-one simulation environm
 This configuration stores data to `/storage/yamcs-data`. Ensure this folder exists and that you can write to it.
 
 When Yamcs started successfully, you can visit the built-in web interface by navigating to `http://localhost:8090`.
+
+**Note to Windows users:** This repository uses some relative symbolic links. To support this on Windows:
+* Enable "Developer Mode" in Windows (allows to use `mklink` without administrative privileges).
+* Enable msysgit symlink support: `git config --global core.symlinks true`
+* If you already cloned the repository prior to these steps, `git status` will tell you how to convert the symlinks. 
 
 
 ## Contributions

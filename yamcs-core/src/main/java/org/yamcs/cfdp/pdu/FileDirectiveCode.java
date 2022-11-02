@@ -1,6 +1,5 @@
 package org.yamcs.cfdp.pdu;
 
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -30,16 +29,11 @@ public enum FileDirectiveCode {
         return code;
     }
 
-    private static FileDirectiveCode fromCode(byte code) {
-        if (Lookup.containsKey(code)) {
-            return Lookup.get(code);
-        } else {
-            return RESERVED;
-        }
-    }
-
-    public static FileDirectiveCode readFileDirectiveCode(ByteBuffer buffer) {
-        return FileDirectiveCode.fromCode(buffer.get());
+    /**
+     * returns the FileDirectiveCode for the given code or null if it is not defined
+     */
+    public static FileDirectiveCode fromCode(byte code) {
+        return Lookup.get(code);
     }
 
     // In the ACK packets, the ACKed packet File Directive is present as the first half of a byte

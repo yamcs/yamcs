@@ -1,0 +1,45 @@
+<label>
+  <div class="meta" [class.error]="err.invalid$ | async">
+    <div class="item"
+         *ngIf="type.rangeMin !== undefined || type.rangeMax !== undefined">
+      <app-interval [left]="type.rangeMin"
+                    [right]="type.rangeMax">
+      </app-interval>
+    </div>
+    <div class="item" *ngIf="type.unitSet">
+      {{ type.unitSet | units }}
+    </div>
+    <div class="item" *ngIf="type.signed === false">unsigned</div>
+    <div class="item">{{ type.engType }}</div>
+
+    <mat-menu #argMenu="matMenu" class="ya-menu">
+      <button mat-menu-item (click)="hexToggle$.next(true)">
+        <mat-icon [style.visibility]="(hexToggle$ | async) ? 'visible' : 'hidden'">check</mat-icon>
+        Hex input
+      </button>
+      <button mat-menu-item (click)="hexToggle$.next(false)">
+        <mat-icon [style.visibility]="(hexToggle$ | async) ? 'hidden' : 'visible'">check</mat-icon>
+        Decimal input
+      </button>
+    </mat-menu>
+    <div class="item menu" matTooltip="Input options"
+         [matMenuTriggerFor]="argMenu"
+         (click)="$event.stopPropagation()"
+         *ngIf="type.signed === false">&#x2630;</div>
+  </div>
+
+  {{ label }}
+  <app-help *ngIf="description">
+    {{ description }}
+  </app-help>
+
+  <app-errors #err [controlName]="controlName"></app-errors>
+
+  <input *ngIf="!(hexToggle$ | async)"
+         [formControl]="formControl"
+         type="text"
+         autocomplete="off">
+  <app-hex-integer-input *ngIf="hexToggle$ | async"
+                         [formControl]="formControl">
+  </app-hex-integer-input>
+</label>

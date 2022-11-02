@@ -26,12 +26,12 @@ import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
-import org.yamcs.http.HttpServer;
 import org.yamcs.http.MediaType;
-import org.yamcs.http.ProtobufRegistry;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.AbstractEventsApi;
 import org.yamcs.protobuf.CreateEventRequest;
+import org.yamcs.protobuf.Event;
+import org.yamcs.protobuf.Event.EventSeverity;
 import org.yamcs.protobuf.ExportEventsRequest;
 import org.yamcs.protobuf.ListEventSourcesRequest;
 import org.yamcs.protobuf.ListEventSourcesResponse;
@@ -39,10 +39,9 @@ import org.yamcs.protobuf.ListEventsRequest;
 import org.yamcs.protobuf.ListEventsResponse;
 import org.yamcs.protobuf.StreamEventsRequest;
 import org.yamcs.protobuf.SubscribeEventsRequest;
-import org.yamcs.protobuf.Yamcs.Event;
-import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableDefinition;
@@ -55,14 +54,20 @@ import com.csvreader.CsvWriter;
 import com.google.common.collect.BiMap;
 import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.ExtensionRegistry.ExtensionInfo;
 import com.google.protobuf.util.Timestamps;
 
 public class EventsApi extends AbstractEventsApi<Context> {
 
+    static final String INFO = "INFO";
+    static final String WATCH = "WATCH";
+    static final String WARNING = "WARNING";
+    static final String DISTRESS = "DISTRESS";
+    static final String CRITICAL = "CRITICAL";
+    static final String SEVERE = "SEVERE";
+    static final String ERROR = "ERROR";
+
     private static final Log log = new Log(EventsApi.class);
 
-    private ProtobufRegistry protobufRegistry;
     private ConcurrentMap<String, EventProducer> eventProducerMap = new ConcurrentHashMap<>();
     private AtomicInteger eventSequenceNumber = new AtomicInteger();
 
@@ -76,7 +81,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
         long pos = request.hasPos() ? request.getPos() : 0;
         int limit = request.hasLimit() ? request.getLimit() : 100;
         boolean desc = !request.getOrder().equals("asc");
-        String severity = request.hasSeverity() ? request.getSeverity().toUpperCase() : "INFO";
+        String severity = request.hasSeverity() ? request.getSeverity().toUpperCase() : INFO;
 
         EventPageToken nextToken = null;
         if (request.hasNext()) {
@@ -95,27 +100,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
         if (request.getSourceCount() > 0) {
             sqlb.whereColIn(SOURCE_COLUMN, request.getSourceList());
         }
-        switch (severity) {
-        case "INFO":
-            break;
-        case "WATCH":
-            sqlb.where("body.severity != 'INFO'");
-            break;
-        case "WARNING":
-            sqlb.whereColIn("body.severity", Arrays.asList("WARNING", "DISTRESS", "CRITICAL", "SEVERE", "ERROR"));
-            break;
-        case "DISTRESS":
-            sqlb.whereColIn("body.severity", Arrays.asList("DISTRESS", "CRITICAL", "SEVERE", "ERROR"));
-            break;
-        case "CRITICAL":
-            sqlb.whereColIn("body.severity", Arrays.asList("CRITICAL", "SEVERE", "ERROR"));
-            break;
-        case "SEVERE":
-            sqlb.whereColIn("body.severity", Arrays.asList("SEVERE", "ERROR"));
-            break;
-        default:
-            sqlb.whereColIn("body.severity = ?", Arrays.asList(severity));
-        }
+
         if (request.hasQ()) {
             sqlb.where("body.message like ?", "%" + request.getQ() + "%");
         }
@@ -130,6 +115,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
                         nextToken.gentime, nextToken.gentime, nextToken.seqNum);
             }
         }
+        addSeverityFilter(sqlb, severity);
 
         sqlb.descend(desc);
         sqlb.limit(pos, limit + 1l); // one more to detect hasMore
@@ -174,6 +160,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
         Db.Event.Builder eventb = Db.Event.newBuilder();
         eventb.setCreatedBy(ctx.user.getName());
         eventb.setMessage(request.getMessage());
+        eventb.putAllExtra(request.getExtraMap());
 
         if (request.hasType()) {
             eventb.setType(request.getType());
@@ -241,7 +228,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
             for (Entry<String, Short> entry : enumValues.entrySet()) {
                 unsortedSources.add(entry.getKey());
             }
-            Collections.sort(unsortedSources);
+            Collections.sort(unsortedSources, String.CASE_INSENSITIVE_ORDER);
             responseb.addAllSource(unsortedSources);
         }
         observer.complete(responseb.build());
@@ -291,28 +278,8 @@ public class EventsApi extends AbstractEventsApi<Context> {
             sqlb.whereColIn(SOURCE_COLUMN, request.getSourceList());
         }
 
-        String severity = request.hasSeverity() ? request.getSeverity().toUpperCase() : "INFO";
-        switch (severity) {
-        case "INFO":
-            break;
-        case "WATCH":
-            sqlb.where("body.severity != 'INFO'");
-            break;
-        case "WARNING":
-            sqlb.whereColIn("body.severity", Arrays.asList("WARNING", "DISTRESS", "CRITICAL", "SEVERE", "ERROR"));
-            break;
-        case "DISTRESS":
-            sqlb.whereColIn("body.severity", Arrays.asList("DISTRESS", "CRITICAL", "SEVERE", "ERROR"));
-            break;
-        case "CRITICAL":
-            sqlb.whereColIn("body.severity", Arrays.asList("CRITICAL", "SEVERE", "ERROR"));
-            break;
-        case "SEVERE":
-            sqlb.whereColIn("body.severity", Arrays.asList("SEVERE", "ERROR"));
-            break;
-        default:
-            sqlb.whereColIn("body.severity = ?", Arrays.asList(severity));
-        }
+        String severity = request.hasSeverity() ? request.getSeverity().toUpperCase() : INFO;
+        addSeverityFilter(sqlb, severity);
 
         if (request.hasQ()) {
             sqlb.where("body.message like ?", "%" + request.getQ() + "%");
@@ -353,32 +320,13 @@ public class EventsApi extends AbstractEventsApi<Context> {
             sqlb.whereColIn(SOURCE_COLUMN, request.getSourceList());
         }
 
-        String severity = "INFO";
+        String severity = INFO;
         if (request.hasSeverity()) {
             severity = request.getSeverity().toUpperCase();
         }
 
-        switch (severity) {
-        case "INFO":
-            break;
-        case "WATCH":
-            sqlb.where("body.severity != 'INFO'");
-            break;
-        case "WARNING":
-            sqlb.whereColIn("body.severity", Arrays.asList("WARNING", "DISTRESS", "CRITICAL", "SEVERE", "ERROR"));
-            break;
-        case "DISTRESS":
-            sqlb.whereColIn("body.severity", Arrays.asList("DISTRESS", "CRITICAL", "SEVERE", "ERROR"));
-            break;
-        case "CRITICAL":
-            sqlb.whereColIn("body.severity", Arrays.asList("CRITICAL", "SEVERE", "ERROR"));
-            break;
-        case "SEVERE":
-            sqlb.whereColIn("body.severity", Arrays.asList("SEVERE", "ERROR"));
-            break;
-        default:
-            sqlb.whereColIn("body.severity = ?", Arrays.asList(severity));
-        }
+        addSeverityFilter(sqlb, severity);
+
         if (request.hasQ()) {
             sqlb.where("body.message like ?", "%" + request.getQ() + "%");
         }
@@ -401,7 +349,9 @@ public class EventsApi extends AbstractEventsApi<Context> {
                 throw new BadRequestException("Unexpected column delimiter");
             }
         }
-        StreamFactory.stream(instance, sql, sqlb.getQueryArguments(), new CsvEventStreamer(observer, delimiter));
+
+        CsvEventStreamer streamer = new CsvEventStreamer(observer, delimiter);
+        StreamFactory.stream(instance, sql, sqlb.getQueryArguments(), streamer);
     }
 
     /**
@@ -448,28 +398,19 @@ public class EventsApi extends AbstractEventsApi<Context> {
     private static class CsvEventStreamer implements StreamSubscriber {
 
         Observer<HttpBody> observer;
-        ProtobufRegistry protobufRegistry;
         char columnDelimiter;
 
         CsvEventStreamer(Observer<HttpBody> observer, char columnDelimiter) {
             this.observer = observer;
             this.columnDelimiter = columnDelimiter;
 
-            YamcsServer yamcs = YamcsServer.getServer();
-            List<HttpServer> services = yamcs.getGlobalServices(HttpServer.class);
-            protobufRegistry = services.get(0).getProtobufRegistry();
-
-            List<ExtensionInfo> extensionFields = protobufRegistry.getExtensions(Event.getDescriptor());
-            String[] rec = new String[5 + extensionFields.size()];
+            String[] rec = new String[5];
             int i = 0;
             rec[i++] = "Source";
             rec[i++] = "Generation Time";
             rec[i++] = "Reception Time";
             rec[i++] = "Event Type";
             rec[i++] = "Event Text";
-            for (ExtensionInfo extension : extensionFields) {
-                rec[i++] = "" + extension.descriptor.getName();
-            }
 
             String dateString = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
             String filename = "event_export_" + dateString + ".csv";
@@ -493,18 +434,13 @@ public class EventsApi extends AbstractEventsApi<Context> {
             Db.Event incoming = (Db.Event) tuple.getColumn("body");
             Event event = fromDbEvent(incoming);
 
-            List<ExtensionInfo> extensionFields = protobufRegistry.getExtensions(Event.getDescriptor());
-
-            String[] rec = new String[5 + extensionFields.size()];
+            String[] rec = new String[5];
             int i = 0;
             rec[i++] = event.getSource();
             rec[i++] = Timestamps.toString(event.getGenerationTime());
             rec[i++] = Timestamps.toString(event.getReceptionTime());
             rec[i++] = event.getType();
             rec[i++] = event.getMessage();
-            for (ExtensionInfo extension : extensionFields) {
-                rec[i++] = "" + event.getField(extension.descriptor);
-            }
 
             HttpBody body = HttpBody.newBuilder()
                     .setData(toByteString(rec))
@@ -532,8 +468,33 @@ public class EventsApi extends AbstractEventsApi<Context> {
         }
     }
 
+    private void addSeverityFilter(SqlBuilder sqlb, String severity) {
+        switch (severity) {
+        case INFO:
+            break;
+        case WATCH:
+            sqlb.where("body.severity != 'INFO'");
+            break;
+        case WARNING:
+            sqlb.whereColIn("body.severity", Arrays.asList(WARNING, DISTRESS, CRITICAL, SEVERE, ERROR));
+            break;
+        case DISTRESS:
+            sqlb.whereColIn("body.severity", Arrays.asList(DISTRESS, CRITICAL, SEVERE, ERROR));
+            break;
+        case CRITICAL:
+            sqlb.whereColIn("body.severity", Arrays.asList(CRITICAL, SEVERE, ERROR));
+            break;
+        case SEVERE:
+            sqlb.whereColIn("body.severity", Arrays.asList(SEVERE, ERROR));
+            break;
+        default:
+            sqlb.whereColIn("body.severity = ?", Arrays.asList(severity));
+        }
+    }
+
     public static Event fromDbEvent(Db.Event other) {
-        Event.Builder evb = Event.newBuilder();
+        Event.Builder evb = Event.newBuilder()
+                .putAllExtra(other.getExtraMap());
         if (other.hasSource()) {
             evb.setSource(other.getSource());
         }

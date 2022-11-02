@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Clearance } from '../../client';
 
@@ -10,16 +10,16 @@ import { Clearance } from '../../client';
 })
 export class ChangeLevelDialog {
 
-    form: FormGroup;
+    form: UntypedFormGroup;
 
     constructor(
         private dialogRef: MatDialogRef<ChangeLevelDialog>,
-        formBuilder: FormBuilder,
+        formBuilder: UntypedFormBuilder,
         @Inject(MAT_DIALOG_DATA) readonly data: any,
     ) {
 
         this.form = formBuilder.group({
-            'level': new FormControl(null, [Validators.required]),
+            'level': new UntypedFormControl(null, [Validators.required]),
         });
 
         if (data.clearance) {

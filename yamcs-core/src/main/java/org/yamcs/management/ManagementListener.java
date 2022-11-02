@@ -1,6 +1,5 @@
 package org.yamcs.management;
 
-import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.protobuf.ProcessorInfo;
@@ -20,15 +19,6 @@ public interface ManagementListener {
     }
 
     default void processorStateChanged(ProcessorInfo processorInfo) {
-    }
-
-    default void clientRegistered(ConnectedClient client) {
-    }
-
-    default void clientUnregistered(ConnectedClient client) {
-    }
-
-    default void clientInfoChanged(ConnectedClient client) {
     }
 
     /**

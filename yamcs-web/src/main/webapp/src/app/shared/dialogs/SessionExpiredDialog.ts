@@ -12,6 +12,6 @@ export class SessionExpiredDialog {
   }
 
   reload() {
-    window.location.reload(true);
+    window.location.reload();
   }
 }

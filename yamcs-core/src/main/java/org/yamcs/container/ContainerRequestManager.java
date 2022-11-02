@@ -10,10 +10,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.Processor;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.ContainerListener;
+import org.yamcs.mdb.XtceTmProcessor;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ContainerListener;
-import org.yamcs.xtceproc.XtceTmProcessor;
 
 /**
  * Keeps track of the subscribers to the containers of a processor.

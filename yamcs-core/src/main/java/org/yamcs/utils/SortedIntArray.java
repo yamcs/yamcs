@@ -57,7 +57,10 @@ public class SortedIntArray implements Serializable {
     }
 
     /**
-     * Inserts value to the array and return the position on which has been inserted
+     * Inserts value to the array and return the position on which has been inserted.
+     * <p>
+     * In case <code>x</code> is already present in the array, this function inserts the new value at a position after
+     * the values already present
      * 
      * @param x
      *            - value to be inserted
@@ -68,6 +71,10 @@ public class SortedIntArray implements Serializable {
         int pos = Arrays.binarySearch(a, 0, length, x);
         if (pos < 0) {
             pos = -pos - 1;
+        } else { // make sure we insert after the last value
+            while (pos < length && a[pos] == x) {
+                pos++;
+            }
         }
 
         ensureCapacity(length + 1);
@@ -195,7 +202,6 @@ public class SortedIntArray implements Serializable {
         }
     }
 
-  
     /**
      * Performs a binary search and returns true if this array contains the value.
      * 
@@ -207,7 +213,6 @@ public class SortedIntArray implements Serializable {
     public boolean contains(int x) {
         return Arrays.binarySearch(a, 0, length, x) >= 0;
     }
-
 
     public static SortedIntArray decodeFromVarIntArray(byte[] buf) {
         if (buf.length == 0) {
@@ -230,19 +235,23 @@ public class SortedIntArray implements Serializable {
             return true;
         }
 
-        if (obj == null)
+        if (obj == null) {
             return false;
+        }
 
-        if (getClass() != obj.getClass())
+        if (getClass() != obj.getClass()) {
             return false;
+        }
 
         SortedIntArray other = (SortedIntArray) obj;
-        if (length != other.length)
+        if (length != other.length) {
             return false;
+        }
 
         for (int i = 0; i < length; i++) {
-            if (a[i] != other.a[i])
+            if (a[i] != other.a[i]) {
                 return false;
+            }
         }
 
         return true;
@@ -258,7 +267,8 @@ public class SortedIntArray implements Serializable {
             a[i] += x;
         }
     }
-    
+
+    @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
         int n = length - 1;
@@ -266,8 +276,9 @@ public class SortedIntArray implements Serializable {
         b.append('[');
         for (int i = 0;; i++) {
             b.append(a[i]);
-            if (i == n)
+            if (i == n) {
                 return b.append(']').toString();
+            }
             b.append(", ");
         }
     }

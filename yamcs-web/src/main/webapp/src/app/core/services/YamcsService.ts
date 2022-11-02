@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { Clearance, ClearanceSubscription, ConnectionInfo, Processor, StorageClient, TimeSubscription, YamcsClient } from '../../client';
 import { DefaultProcessorPipe } from '../../shared/pipes/DefaultProcessorPipe';
+import { MessageService } from './MessageService';
 
 /**
  * Singleton service for facilitating working with a websocket connection
@@ -26,8 +27,9 @@ export class YamcsService {
     @Inject(APP_BASE_HREF) baseHref: string,
     private router: Router,
     private defaultProcessorPipe: DefaultProcessorPipe,
+    private messageService: MessageService,
   ) {
-    this.yamcsClient = new YamcsClient(baseHref);
+    this.yamcsClient = new YamcsClient(baseHref, messageService);
   }
 
   setContext(instanceId: string, processorId?: string) {

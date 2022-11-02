@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { GetAlarmsOptions } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -33,10 +33,10 @@ export class ParameterAlarmsTab {
   // range is actually applied.
   appliedInterval: string;
 
-  filter = new FormGroup({
-    interval: new FormControl(defaultInterval),
-    customStart: new FormControl(null),
-    customStop: new FormControl(null),
+  filter = new UntypedFormGroup({
+    interval: new UntypedFormControl(defaultInterval),
+    customStart: new UntypedFormControl(null),
+    customStop: new UntypedFormControl(null),
   });
 
   dataSource: ParameterAlarmsDataSource;

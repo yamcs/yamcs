@@ -1,9 +1,11 @@
 package org.yamcs.archive;
 
+import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -11,15 +13,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.archive.IndexRequestListener.IndexType;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
-import org.yamcs.protobuf.Yamcs.IndexRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.HistogramIterator;
@@ -40,6 +41,8 @@ import com.google.protobuf.util.Timestamps;
  *
  */
 public class IndexRequestProcessor implements Runnable {
+    static final SecureRandom random = new SecureRandom();
+
     final String yamcsInstance;
     final static AtomicInteger counter = new AtomicInteger();
     static Logger log = LoggerFactory.getLogger(IndexRequestProcessor.class.getName());
@@ -55,6 +58,7 @@ public class IndexRequestProcessor implements Runnable {
     Map<String, NamedObjectId> eventSources;
     Map<String, NamedObjectId> commands;
     Map<String, NamedObjectId> ppGroups;
+    Map<String, NamedObjectId> completenessGroups;
 
     boolean sendTms;
     int batchSize = 500;
@@ -65,9 +69,9 @@ public class IndexRequestProcessor implements Runnable {
     int count = 0;
     HistoRequest[] hreq = new HistoRequest[5];
     MergingResult mergingResult;
-    static Random random = new Random();
 
-    public IndexRequestProcessor(TmIndexService tmIndexer, IndexRequest req, int limit, String recToken, IndexRequestListener l) {
+    public IndexRequestProcessor(TmIndexService tmIndexer, IndexRequest req, int limit, String recToken,
+            IndexRequestListener l) {
         log.debug("new index request: {}", req);
         this.yamcsInstance = req.getInstance();
         this.req = req;
@@ -84,16 +88,16 @@ public class IndexRequestProcessor implements Runnable {
             this.token = recToken;
         }
 
-        if (req.getSendAllTm() || req.getTmPacketCount() > 0) {
+        if (req.isSendAllTm() || req.getTmPackets().size() > 0) {
             sendTms = true;
             XtceDb db = XtceDbFactory.getInstance(yamcsInstance);
 
-            if (req.getSendAllTm()) {
-                if (req.hasDefaultNamespace()) {
+            if (req.isSendAllTm()) {
+                if (req.getDefaultNamespace() != null) {
                     String defaultns = req.getDefaultNamespace();
                     tmpackets = new HashMap<>();
                     for (SequenceContainer sc : db.getSequenceContainers()) {
-                        if (req.hasDefaultNamespace() && (sc.getAlias(defaultns) != null)) {
+                        if (sc.getAlias(defaultns) != null) {
                             tmpackets.put(sc.getQualifiedName(), NamedObjectId.newBuilder()
                                     .setName(sc.getAlias(defaultns)).setNamespace(defaultns).build());
                         }
@@ -101,54 +105,58 @@ public class IndexRequestProcessor implements Runnable {
                 }
             } else {
                 tmpackets = new HashMap<>();
-                for (NamedObjectId id : req.getTmPacketList()) {
+                for (NamedObjectId id : req.getTmPackets()) {
                     SequenceContainer sc = db.getSequenceContainer(id);
                     if (sc != null) {
                         tmpackets.put(sc.getQualifiedName(), id);
                     }
                 }
             }
-            int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 2000);
+            int mergeTime = (req.getMergeTime() > 0 ? req.getMergeTime() : 2000);
             hreq[0] = new HistoRequest(XtceTmRecorder.TABLE_NAME, XtceTmRecorder.PNAME_COLUMN, mergeTime,
                     tmpackets);
         }
 
-        if (req.getSendAllEvent() || req.getEventSourceCount() > 0) {
+        if (req.isSendAllEvent() || req.getEventSources().size() > 0) {
             eventSources = new HashMap<>();
-            for (NamedObjectId id : req.getEventSourceList()) {
+            for (NamedObjectId id : req.getEventSources()) {
                 eventSources.put(id.getName(), id);
             }
-            int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 2000);
+            int mergeTime = (req.getMergeTime() > 0 ? req.getMergeTime() : 2000);
             hreq[1] = new HistoRequest(EventRecorder.TABLE_NAME, "source", mergeTime, eventSources);
         }
 
-        if (req.getSendAllCmd() || req.getCmdNameCount() > 0) {
+        if (req.isSendAllCmd() || req.getCommandNames().size() > 0) {
             commands = new HashMap<>();
-            for (NamedObjectId id : req.getCmdNameList()) {
+            for (NamedObjectId id : req.getCommandNames()) {
                 commands.put(id.getName(), id);
             }
-            int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 2000);
+            int mergeTime = (req.getMergeTime() > 0 ? req.getMergeTime() : 2000);
             hreq[2] = new HistoRequest(CommandHistoryRecorder.TABLE_NAME,
                     StandardTupleDefinitions.CMDHIST_TUPLE_COL_CMDNAME, mergeTime, commands);
         }
 
-        if (req.getSendAllPp() || req.getPpGroupCount() > 0) {
+        if (req.isSendAllPp() || req.getPpGroups().size() > 0) {
             ppGroups = new HashMap<>();
-            for (NamedObjectId id : req.getPpGroupList()) {
+            for (NamedObjectId id : req.getPpGroups()) {
                 ppGroups.put(id.getName(), id);
             }
             // use 20 sec for the PP to avoid millions of records
-            int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 20000);
+            int mergeTime = (req.getMergeTime() > 0 ? req.getMergeTime() : 20000);
             hreq[3] = new HistoRequest(ParameterRecorder.TABLE_NAME,
                     StandardTupleDefinitions.PARAMETER_COL_GROUP, mergeTime, ppGroups);
         }
 
-        if (req.getSendCompletenessIndex()) {
-            if(tmIndexer==null) {
+        if (req.isSendCompletenessIndex() || req.getCompletenessGroups().size() > 0) {
+            if (tmIndexer == null) {
                 throw new IllegalArgumentException("TmIndexer cannot be null if completeness is requested");
             }
-            int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : -1);
-            hreq[4] = new HistoRequest(null, null, mergeTime, null);
+            completenessGroups = new HashMap<>();
+            for (NamedObjectId id : req.getCompletenessGroups()) {
+                completenessGroups.put(id.getName(), id);
+            }
+            int mergeTime = (req.getMergeTime() > 0 ? req.getMergeTime() : -1);
+            hreq[4] = new HistoRequest(null, null, mergeTime, completenessGroups);
         }
 
         if (tokenData != null) {
@@ -157,7 +165,7 @@ public class IndexRequestProcessor implements Runnable {
             }
             HistoRequest hr = hreq[tokenData.lastHistoId];
             if (hr != null) {
-                hr.seekTime = tokenData.lastTime+1;
+                hr.seekTime = tokenData.lastTime + 1;
                 hr.seekValue = tokenData.lastName;
                 hr.seekId = tokenData.lastId;
             }
@@ -292,37 +300,46 @@ public class IndexRequestProcessor implements Runnable {
 
     private TimeInterval getTimeInterval(IndexRequest req) {
         TimeInterval r = new TimeInterval();
-        if (req.hasStart()) {
+        if (req.getStart() != TimeEncoding.INVALID_INSTANT) {
             r.setStart(req.getStart());
         }
-        if (req.hasStop()) {
+        if (req.getStop() != TimeEncoding.INVALID_INSTANT) {
             r.setEnd(req.getStop());
         }
         return r;
     }
 
     private boolean sendCompletenessIndex(HistoRequest hreq) {
-
-        long start = req.hasStart() ? req.getStart() : TimeEncoding.INVALID_INSTANT;
-        long stop = req.hasStop() ? req.getStop() : TimeEncoding.INVALID_INSTANT;
+        long start = req.getStart();
+        long stop = req.getStop();
 
         if (hreq.seekId != null) {
             start = hreq.seekTime;
         }
-        IndexIterator it = tmIndexer.getIterator(null, start, stop);
+        IndexIterator it;
 
-        ArchiveRecord ar;
-        while ((ar = it.getNextRecord()) != null) {
-            sendData(ar);
-            if (tokenData != null) {
-                tokenData.lastId = ar.getId();
-                tokenData.lastTime = TimeEncoding.fromProtobufTimestamp(ar.getLast());
-            }
-            if (limit > 0 && count >= limit) {
-                return false;
-            }
+        if (hreq.name2id == null || hreq.name2id.isEmpty()) {
+            it = tmIndexer.getIterator(null, start, stop);
+        } else {
+            List<NamedObjectId> names = new ArrayList<>(hreq.name2id.values());
+            it = tmIndexer.getIterator(names, start, stop);
         }
-        return true;
+        try {
+            ArchiveRecord ar;
+            while ((ar = it.getNextRecord()) != null) {
+                sendData(ar);
+                if (tokenData != null) {
+                    tokenData.lastId = ar.getId();
+                    tokenData.lastTime = TimeEncoding.fromProtobufTimestamp(ar.getLast());
+                }
+                if (limit > 0 && count >= limit) {
+                    return false;
+                }
+            }
+            return true;
+        } finally {
+            it.close();
+        }
     }
 
     void sendData(ArchiveRecord ar) {
@@ -395,7 +412,8 @@ public class IndexRequestProcessor implements Runnable {
             this.name2id = name2id;
         }
     }
-    
+
+    @SuppressWarnings("serial")
     static public class InvalidTokenException extends RuntimeException {
     }
 }

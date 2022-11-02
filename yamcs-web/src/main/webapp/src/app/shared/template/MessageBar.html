@@ -1,9 +1,10 @@
-<mat-toolbar class="message-bar"
-             [@openClose]="show$ | async"
-             *ngIf="errorMessage$ | async as message">
+<mat-toolbar *ngIf="siteMessage$ | async as siteMessage"
+             class="message-bar"
+             [class.warning]="siteMessage.level === 'WARNING'"
+             [@openClose]="show$ | async">
   <mat-toolbar-row>
     <span style="flex: 1 1 auto"></span>
-    <mat-icon>report_problem</mat-icon>&nbsp; {{ message }}
+    <mat-icon>report_problem</mat-icon>&nbsp; {{ siteMessage.message }}
     <span style="flex: 1 1 auto"></span>
 
     <div class="actions">

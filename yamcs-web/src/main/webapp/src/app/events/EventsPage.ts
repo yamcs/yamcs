@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -41,29 +41,29 @@ export class EventsPage {
   // range is actually applied.
   appliedInterval: string;
 
-  filterForm = new FormGroup({
-    filter: new FormControl(),
-    severity: new FormControl('INFO'),
-    source: new FormControl('ANY'),
-    interval: new FormControl(defaultInterval),
-    customStart: new FormControl(null),
-    customStop: new FormControl(null),
+  filterForm = new UntypedFormGroup({
+    filter: new UntypedFormControl(),
+    severity: new UntypedFormControl('INFO'),
+    source: new UntypedFormControl([]),
+    interval: new UntypedFormControl(defaultInterval),
+    customStart: new UntypedFormControl(null),
+    customStop: new UntypedFormControl(null),
   });
 
   dataSource: EventsDataSource;
 
   columns: ColumnInfo[] = [
     { id: 'severity', label: 'Severity', visible: true },
-    { id: 'gentime', label: 'Generation Time', alwaysVisible: true },
+    { id: 'gentime', label: 'Generation time', alwaysVisible: true },
     { id: 'message', label: 'Message', alwaysVisible: true },
-    { id: 'type', label: 'Type', visible: true },
     { id: 'source', label: 'Source', visible: true },
-    { id: 'rectime', label: 'Reception Time' },
-    { id: 'seqNumber', label: 'Sequence Number' },
+    { id: 'type', label: 'Type', visible: true },
+    { id: 'rectime', label: 'Reception time' },
+    { id: 'seqNumber', label: 'Sequence number' },
   ];
 
   /**
-   * Columns specific to a site
+   * Columns specific to a Yamcs deployment
    */
   extraColumns: ExtraColumnInfo[] = [];
 
@@ -76,9 +76,7 @@ export class EventsPage {
     { id: 'SEVERE', label: 'Severe level' },
   ];
 
-  sourceOptions$ = new BehaviorSubject<Option[]>([
-    { id: 'ANY', label: 'Any source' },
-  ]);
+  sourceOptions$ = new BehaviorSubject<Option[]>([]);
 
   intervalOptions: Option[] = [
     { id: 'PT1H', label: 'Last hour' },
@@ -93,7 +91,7 @@ export class EventsPage {
   // Would prefer to use formGroup, but when using valueChanges this
   // only is updated after the callback...
   private severity = 'INFO';
-  private source: string;
+  private source: string[] = [];
   private filter: string;
 
   constructor(
@@ -129,11 +127,19 @@ export class EventsPage {
           {
             id: source,
             label: source,
-          }]);
+          },
+        ]);
       }
     });
 
     this.dataSource = new EventsDataSource(yamcs, synchronizer);
+
+    // Add new sources to source filter
+    this.dataSource.sources$.subscribe(sources => {
+      this.sourceOptions$.next(sources.map(source => {
+        return { id: source, label: source };
+      }));
+    });
 
     this.initializeOptions();
     this.loadData();
@@ -151,7 +157,7 @@ export class EventsPage {
     });
 
     this.filterForm.get('source')!.valueChanges.forEach(source => {
-      this.source = (source !== 'ANY') ? source : null;
+      this.source = source;
       this.loadData();
     });
 
@@ -186,7 +192,7 @@ export class EventsPage {
       this.filterForm.get('severity')!.setValue(this.severity);
     }
     if (queryParams.has('source')) {
-      this.source = queryParams.get('source')!;
+      this.source = queryParams.getAll('source')!;
       this.filterForm.get('source')!.setValue(this.source);
     }
     if (queryParams.has('interval')) {
@@ -262,7 +268,7 @@ export class EventsPage {
     if (this.filter) {
       options.q = this.filter;
     }
-    if (this.source) {
+    if (this.source.length) {
       options.source = this.source;
     }
 
@@ -279,7 +285,7 @@ export class EventsPage {
     if (this.filter) {
       options.q = this.filter;
     }
-    if (this.source) {
+    if (this.source.length) {
       options.source = this.source;
     }
 
@@ -293,7 +299,7 @@ export class EventsPage {
       queryParams: {
         filter: this.filter || null,
         severity: this.severity,
-        source: this.source || null,
+        source: this.source.length ? this.source : null,
         interval: this.appliedInterval,
         customStart: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStart'] : null,
         customStop: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStop'] : null,
@@ -326,7 +332,7 @@ export class EventsPage {
         start: this.validStart,
         stop: this.validStop,
         q: this.filter,
-        source: this.source || 'ANY',
+        source: this.source,
         sourceOptions: this.sourceOptions$.value,
       },
     });

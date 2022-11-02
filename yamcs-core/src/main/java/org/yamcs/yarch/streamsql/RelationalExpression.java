@@ -9,7 +9,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 import org.yamcs.utils.parser.ParseException;
 
 /**
- * Expressions of type "x &gt; y"
+ * Expressions of type <code>x &gt; y</code> or <code>x=y</code>
  * 
  * @author nm
  *
@@ -97,20 +97,13 @@ public class RelationalExpression extends Expression {
 
     @Override
     public void fillCode_getValueReturn(StringBuilder code) throws StreamSqlException {
-        code.append("(");
         DataType ch0dt = children[0].getType();
-        if (DataType.isNumber(ch0dt)) {
-            children[0].fillCode_getValueReturn(code);
-            code.append(relOp.getSign());
-            children[1].fillCode_getValueReturn(code);
-        } else if (DataType.isComparable(ch0dt)) {
-            code.append("Comparators.compare(");
+        if (ch0dt.isComparable()) {
+            code.append("SqlExpressions." + relOp.name() + "(");
             children[0].fillCode_getValueReturn(code);
             code.append(", ");
             children[1].fillCode_getValueReturn(code);
             code.append(") ");
-            code.append(relOp.getSign());
-            code.append(" 0");
         } else {
             switch (relOp) {
             case NOT_EQUAL:
@@ -134,7 +127,6 @@ public class RelationalExpression extends Expression {
                         "Cannot use " + relOp + " not supported for data type " + ch0dt);
             }
         }
-        code.append(")");
     }
 
     @Override

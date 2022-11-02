@@ -10,3 +10,16 @@
 .bands-from td, .bands-to td {
   cursor: pointer;
 }
+
+.bands-from table, .bands-to table {
+  border-left: none;
+  border-right: none;
+}
+
+.bands-from th, .bands-to th {
+  border-top: none;
+}
+
+.bands-from tr:last-of-type td, .bands-to tr:last-of-type {
+  border-bottom: none;
+}

@@ -8,7 +8,6 @@ import org.yamcs.yarch.PartitionManager.Interval;
 
 /**
  * Iterates over time based intervals of a partition
- * <p>
  * 
  * @author nm
  *

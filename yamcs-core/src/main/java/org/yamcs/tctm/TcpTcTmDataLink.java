@@ -1,5 +1,7 @@
 package org.yamcs.tctm;
 
+import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -15,15 +17,13 @@ import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
-import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.utils.YObjectLoader;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.YObjectLoader;
 
 public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, Runnable {
 
-    // Stuff copied from AbstractTcDataLink
     protected CommandHistoryPublisher commandHistoryPublisher;
     protected AtomicLong dataOutCount = new AtomicLong();
     protected CommandPostprocessor cmdPostProcessor;
@@ -43,15 +43,10 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
 
     @Override
     public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
-        // Read arguments
         super.init(instance, name, config);
-        if (config.containsKey("tmHost")) { // this is when the config is specified in tcp.yaml
-            host = config.getString("tmHost");
-            port = config.getInt("tmPort");
-        } else {
-            host = config.getString("host");
-            port = config.getInt("port");
-        }
+        host = config.getString("host");
+        port = config.getInt("port");
+
         initialDelay = config.getLong("initialDelay", -1);
         // Input stream defaults to GenericPacketInputStream
         if (config.containsKey("packetInputStreamClassName")) {
@@ -215,27 +210,27 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
     // MARK: - TcDataLink
 
     @Override
-    public void sendTc(PreparedCommand pc) {
-        String reason;
-
-        byte[] binary = cmdPostProcessor.process(pc);
-        if (binary != null) {
-
-            try {
-                sendBuffer(binary);
-                dataOutCount.getAndIncrement();
-                ackCommand(pc.getCommandId());
-                return;
-            } catch (IOException e) {
-                reason = String.format("Error writing to TC socket to %s:%d; %s", host, port, e.toString());
-                log.warn(reason);
+    public boolean sendCommand(PreparedCommand pc) {
+        byte[] binary = pc.getBinary();
+        if (!pc.disablePostprocessing()) {
+            binary = cmdPostProcessor.process(pc);
+            if (binary == null) {
+                log.warn("command postprocessor did not process the command");
+                return true;
             }
-
-        } else {
-            reason = "Command postprocessor did not process the command";
         }
 
-        failedCommand(pc.getCommandId(), reason);
+        try {
+            sendBuffer(binary);
+            dataOutCount.getAndIncrement();
+            ackCommand(pc.getCommandId());
+            return true;
+        } catch (IOException e) {
+            String reason = String.format("Error writing to TC socket to %s:%d; %s", host, port, e.toString());
+            log.warn(reason);
+            failedCommand(pc.getCommandId(), reason);
+            return true;
+        }
     }
 
     @Override
@@ -248,7 +243,7 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
     protected void failedCommand(CommandId commandId, String reason) {
         log.debug("Failing command {}: {}", commandId, reason);
         long currentTime = getCurrentTime();
-        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent, currentTime, AckStatus.NOK, reason);
+        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent_KEY, currentTime, AckStatus.NOK, reason);
         commandHistoryPublisher.commandFailed(commandId, currentTime, reason);
     }
 
@@ -258,7 +253,7 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
      * @param commandId
      */
     protected void ackCommand(CommandId commandId) {
-        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent, getCurrentTime(), AckStatus.OK);
+        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent_KEY, getCurrentTime(), AckStatus.OK);
     }
 
     // MARK: - AbstractService (com.google.common.util.concurrent.AbstractService)
@@ -336,5 +331,4 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
     protected Status connectionStatus() {
         return !isSocketOpen() ? Status.UNAVAIL : Status.OK;
     }
-
 }

@@ -67,7 +67,6 @@ public class SecondaryIndexTableWalker implements TableWalker {
 
     boolean batchUpdates = false;
 
-    Snapshot snapshot = null;
     protected TableVisitor visitor;
 
     volatile boolean running = true;

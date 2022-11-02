@@ -3,12 +3,13 @@ package org.yamcs.management;
 import java.util.List;
 
 import org.yamcs.Processor;
+import org.yamcs.mdb.ProcessingStatistics;
 import org.yamcs.protobuf.ProcessorInfo;
 import org.yamcs.protobuf.Statistics;
 import org.yamcs.protobuf.TmStatistics;
+import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimestampUtil;
-import org.yamcs.xtceproc.ProcessingStatistics;
 
 /**
  * Provides common functionality to assemble and disassemble GPB messages
@@ -33,12 +34,14 @@ public final class ManagementGpbHelper {
                 .setHasAlarms(processor.hasAlarmServer())
                 .setState(processor.getState())
                 .setPersistent(processor.isPersistent())
+                .setProtected(processor.isProtected())
                 .setTime(TimeEncoding.toProtobufTimestamp(processor.getCurrentTime()))
                 .setReplay(processor.isReplay())
                 .setCheckCommandClearance(processor.getConfig().checkCommandClearance());
 
         if (processor.isReplay()) {
-            processorb.setReplayRequest(processor.getReplayRequest());
+            ReplayRequest request = processor.getCurrentReplayRequest();
+            processorb.setReplayRequest(request);
             processorb.setReplayState(processor.getReplayState());
         }
         return processorb.build();

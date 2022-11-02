@@ -29,6 +29,7 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.xtce.SystemParameter;
+import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -251,7 +252,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
             while (res.hasNext()) {
                 tmpl.add(TcoCoefficients.fromTuple(res.next()));
             }
-
+            res.close();
             if (!tmpl.isEmpty()) {
                 curCoefficients = tmpl.get(0);
             }
@@ -513,7 +514,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
         SystemParametersService collector = SystemParametersService.getInstance(yamcsInstance);
         if (collector != null) {
             makeParameterStatus();
-            spDeviation = collector.createSystemParameter(serviceName + "/deviation", Type.DOUBLE,
+            spDeviation = collector.createSystemParameter(serviceName + "/deviation", Type.DOUBLE, new UnitType("sec"),
                     "delta between the OBT computed using the coefficients and the OBT which is part of a time sample"
                             + " (after adjusting for delays)");
             collector.registerProducer(this);

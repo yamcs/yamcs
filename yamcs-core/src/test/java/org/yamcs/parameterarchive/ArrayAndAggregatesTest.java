@@ -1,16 +1,16 @@
 package org.yamcs.parameterarchive;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.parameter.ArrayValue;
@@ -31,12 +31,12 @@ public class ArrayAndAggregatesTest {
     static Parameter p1, p2, p3, p4, p5;
     MyFiller filler;
 
-    @Before
+    @BeforeEach
     public void openDb() throws Exception {
-        String dbroot = YarchDatabase.getInstance(instance).getRoot();
-        FileUtils.deleteRecursivelyIfExists(Paths.get(dbroot));
-        FileUtils.deleteRecursivelyIfExists(Paths.get(dbroot + ".rdb"));
-        FileUtils.deleteRecursivelyIfExists(Paths.get(dbroot + ".tbs"));
+        Path dbroot = Path.of(YarchDatabase.getDataDir(), instance);
+        FileUtils.deleteRecursivelyIfExists(dbroot);
+        FileUtils.deleteRecursivelyIfExists(Path.of(dbroot + ".rdb"));
+        FileUtils.deleteRecursivelyIfExists(Path.of(dbroot + ".tbs"));
         RdbStorageEngine rse = RdbStorageEngine.getInstance();
         if (rse.getTablespace(instance) != null) {
             rse.dropTablespace(instance);
@@ -44,7 +44,8 @@ public class ArrayAndAggregatesTest {
         rse.createTablespace(instance);
 
         parchive = new ParameterArchive();
-        YConfiguration config = parchive.getSpec().validate(YConfiguration.emptyConfig());
+
+        YConfiguration config = parchive.getSpec().validate(ParameterArchiveTest.backFillerDisabledConfig());
         parchive.init(instance, "test", config);
         pidDb = parchive.getParameterIdDb();
         ParameterGroupIdDb pgidMap = parchive.getParameterGroupIdDb();
@@ -53,7 +54,7 @@ public class ArrayAndAggregatesTest {
         filler = new MyFiller(parchive);
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         p1 = new Parameter("p1");
         p2 = new Parameter("p2");
@@ -72,7 +73,7 @@ public class ArrayAndAggregatesTest {
         // org.yamcs.LoggingUtils.enableLogging();
     }
 
-    @After
+    @AfterEach
     public void closeDb() throws Exception {
         RdbStorageEngine rse = RdbStorageEngine.getInstance();
         rse.dropTablespace(instance);
@@ -120,6 +121,5 @@ public class ArrayAndAggregatesTest {
             processParameters(pvlist);
             super.flush();
         }
-
     }
 }

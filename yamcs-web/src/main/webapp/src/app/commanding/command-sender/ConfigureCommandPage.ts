@@ -1,10 +1,10 @@
 import { Location } from '@angular/common';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Clearance, Command, CommandHistoryEntry } from '../../client';
+import { Clearance, Command, CommandHistoryEntry, CommandOptionType, Value } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { MessageService } from '../../core/services/MessageService';
@@ -33,7 +33,7 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
 
   private connectionInfoSubscription: Subscription;
 
-  armControl = new FormControl();
+  armControl = new UntypedFormControl();
 
   constructor(
     route: ActivatedRoute,
@@ -111,6 +111,7 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
     const extra = this.commandForm.getExtraOptions();
 
     const qname = this.command$.value!.qualifiedName;
+
     this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, qname, {
       args,
       comment,
@@ -185,6 +186,43 @@ export class CommandHistoryTemplateProvider implements TemplateProvider {
           return assignment.value;
         }
       }
+    }
+  }
+
+  getOption(id: string, expectedType: CommandOptionType) {
+    for (const attr of (this.entry.attr || [])) {
+      if (attr.name === id) {
+        switch (expectedType) {
+          case 'BOOLEAN':
+            return this.getBooleanOption(attr.value);
+          case 'NUMBER':
+            return this.getNumberOption(attr.value);
+          case 'STRING':
+            return this.getStringOption(attr.value);
+        }
+      }
+    }
+  }
+
+  private getBooleanOption(value: Value) {
+    if (value.type === 'BOOLEAN') {
+      return value;
+    }
+  }
+
+  private getNumberOption(value: Value) {
+    switch (value.type) {
+      case 'SINT32':
+      case 'UINT32':
+      case 'SINT64':
+      case 'UINT64':
+        return value;
+    }
+  }
+
+  private getStringOption(value: Value) {
+    if (value.type === 'STRING') {
+      return value;
     }
   }
 

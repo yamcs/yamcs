@@ -1,19 +1,23 @@
 package org.yamcs.algorithms;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.mdb.ContainerProcessingResult;
+import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.XtceTmExtractor;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterProcessor;
@@ -26,10 +30,6 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ContainerProcessingResult;
-import org.yamcs.xtceproc.ProcessingData;
-import org.yamcs.xtceproc.XtceDbFactory;
-import org.yamcs.xtceproc.XtceTmExtractor;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -41,7 +41,7 @@ public class RefXtceAlgorithmTest {
 
     private static MyProcService mpp = new MyProcService();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setupTest(instance);
         EventProducerFactory.setMockup(false);
@@ -107,7 +107,6 @@ public class RefXtceAlgorithmTest {
         return params;
     }
 
-
     static class MyProcService extends AbstractService implements ParameterProvider {
         ParameterProcessorManager ppm;
         XtceTmExtractor extractor;
@@ -123,7 +122,7 @@ public class RefXtceAlgorithmTest {
         }
 
         public void injectPacket(byte[] array, String name) {
-            ContainerProcessingResult cpr = extractor.processPacket(array, 0, 0, db.getSequenceContainer(name));
+            ContainerProcessingResult cpr = extractor.processPacket(array, 0, 0, 0, db.getSequenceContainer(name));
             ppm.process(cpr);
         }
 
@@ -188,7 +187,5 @@ public class RefXtceAlgorithmTest {
 
             return new AlgorithmExecutionResult(pv);
         }
-
-
     }
 }

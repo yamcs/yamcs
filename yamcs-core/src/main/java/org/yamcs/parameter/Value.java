@@ -8,43 +8,43 @@ public abstract class Value {
     public abstract org.yamcs.protobuf.Yamcs.Value.Type getType();
 
     public int getUint32Value() {
-        throw new UnsupportedOperationException("Cannot use getUint32Value() for " + getType() + " values");
+        throw cantUseException("getUint32Value()");
     }
 
     public int getSint32Value() {
-        throw new UnsupportedOperationException("Cannot use getSint32Value() for " + getType() + " values");
+        throw cantUseException("getSint32Value()");
     }
 
     public long getUint64Value() {
-        throw new UnsupportedOperationException("Cannot use getUint64Value() for " + getType() + " values");
+        throw cantUseException("getUint64Value()");
     }
 
     public long getSint64Value() {
-        throw new UnsupportedOperationException("Cannot use getSint64Value() for " + getType() + " values");
+        throw cantUseException("getSint64Value()");
     }
 
     public byte[] getBinaryValue() {
-        throw new UnsupportedOperationException("Cannot use getBinaryValue() for " + getType() + " values");
+        throw cantUseException("getBinaryValue()");
     }
 
     public String getStringValue() {
-        throw new UnsupportedOperationException("Cannot use getStringValue() for " + getType() + " values");
+        throw cantUseException("getStringValue()");
     }
 
     public float getFloatValue() {
-        throw new UnsupportedOperationException("Cannot use getFloatValue() for " + getType() + " values");
+        throw cantUseException("getFloatValue()");
     }
 
     public double getDoubleValue() {
-        throw new UnsupportedOperationException("Cannot use getDoubleValue() for " + getType() + " values");
+        throw cantUseException("getDoubleValue()");
     }
 
     public boolean getBooleanValue() {
-        throw new UnsupportedOperationException("Cannot use getBooleanValue() for " + getType() + " values");
+        throw cantUseException("getBooleanValue()");
     }
 
     public long getTimestampValue() {
-        throw new UnsupportedOperationException("Cannot use getTimestampValue() for " + getType() + " values");
+        throw cantUseException("getTimestampValue()");
     }
 
     /**
@@ -55,7 +55,7 @@ public abstract class Value {
      *             bits integer greater than {@link Long#MAX_VALUE}
      */
     public long toLong() {
-        throw new UnsupportedOperationException("Cannot use toLong() for " + getType() + " values");
+        throw cantUseException("toLong()");
     }
 
     /**
@@ -66,6 +66,10 @@ public abstract class Value {
      * 
      */
     public double toDouble() {
-        throw new UnsupportedOperationException("Cannot use toLong() for " + getType() + " values");
+        throw cantUseException("toDouble()");
+    }
+
+    private UnsupportedOperationException cantUseException(String method) {
+        return new UnsupportedOperationException("Cannot use " + method + " for " + getType() + " values");
     }
 }

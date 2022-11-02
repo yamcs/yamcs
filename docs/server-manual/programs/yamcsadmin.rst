@@ -3,64 +3,67 @@ yamcsadmin
 
 .. program:: yamcsadmin
 
-**NAME**
+Synopsis
+--------
 
-    yamcsadmin - Tool for local Yamcs administration
+.. rst-class:: synopsis
 
-
-**SYNOPSIS**
-
-    ``yamcsadmin [--etc-dir DIR] COMMAND``
+    | *yamcsadmin* [--etc-dir <*DIR*>] <*COMMAND*> [<*ARGS*>]
 
 
-**OPTIONS**
+Options
+-------
 
-    .. option:: --log LEVEL
+.. option:: --log <LEVEL>
 
-       Level of verbosity. From 0 (off) to 5 (all). Default: 2.
+    Level of verbosity. From 0 (off) to 5 (all). Default: 2.
 
-    .. option:: --etc-dir DIR
+.. option:: --etc-dir <DIR>
 
-        Override default Yamcs configuration directory.
-    
-    .. option:: --data-dir DIR
+    Override default Yamcs configuration directory.
 
-        Override default Yamcs data directory.
+.. option:: --data-dir <DIR>
 
-    .. option:: -h, --help
+    Override default Yamcs data directory.
 
-        Show usage.
+.. option:: -h, --help
 
-    .. option:: -v, --version
+    Show usage.
 
-        Print version information and quit.
+.. option:: -v, --version
 
-
-**COMMANDS**
-
-    :doc:`backup <yamcsadmin_backup>`
-        Perform and restore backups
-    :doc:`confcheck <yamcsadmin_confcheck>`
-        Check Yamcs configuration
-    :doc:`mdb <yamcsadmin_mdb>`
-        Provides MDB information
-    :doc:`parchive <yamcsadmin_parchive>`
-        Parameter Archive operations
-    :doc:`password-hash <yamcsadmin_password-hash>`
-        Generate password hash for use in users.yaml
-    :doc:`rocksdb <yamcsadmin_rocksdb>`
-        Provides low-level RocksDB data operations
-    :doc:`users <yamcsadmin_users>`
-        User operations
+    Print version information and quit.
 
 
-.. toctree::
-    :hidden:
+Commands
+--------
 
-    backup <yamcsadmin_backup>
-    confcheck <yamcsadmin_confcheck>
-    mdb <yamcsadmin_mdb>
-    parchive <yamcsadmin_parchive>
-    password-hash <yamcsadmin_password-hash>
-    rocksdb <yamcsadmin_rocksdb>
-    users <yamcsadmin_users>
+:doc:`backup <yamcsadmin_backup>`
+    Perform and restore backups. See :manpage:`yamcsadmin-backup(1)`.
+:doc:`confcheck <yamcsadmin_confcheck>`
+    Check Yamcs configuration. See :manpage:`yamcsadmin-confcheck(1)`.
+:doc:`mdb <yamcsadmin_mdb>`
+    Provides MDB information. See :manpage:`yamcsadmin-mdb(1)`.
+:doc:`password-hash <yamcsadmin_password-hash>`
+    Generate password hash for use in users.yaml.
+    See :manpage:`yamcsadmin-password-hash(1)`.
+:doc:`rocksdb <yamcsadmin_rocksdb>`
+    Provides low-level RocksDB data operations.
+    See :manpage:`yamcsadmin-rocksdb(1)`.
+:doc:`users <yamcsadmin_users>`
+    User operations. See :manpage:`yamcsadmin-users(1)`.
+
+
+.. only:: json and html
+
+    .. Purpose of "only" is to hide toctree content from the man builder
+
+    .. toctree::
+        :hidden:
+
+        backup <yamcsadmin_backup>
+        confcheck <yamcsadmin_confcheck>
+        mdb <yamcsadmin_mdb>
+        password-hash <yamcsadmin_password-hash>
+        rocksdb <yamcsadmin_rocksdb>
+        users <yamcsadmin_users>

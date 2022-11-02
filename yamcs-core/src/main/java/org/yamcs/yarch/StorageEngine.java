@@ -2,7 +2,6 @@ package org.yamcs.yarch;
 
 import java.util.List;
 
-import org.yamcs.archive.TagDb;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.TableWriter.InsertMode;
 
@@ -31,9 +30,8 @@ public interface StorageEngine {
      * 
      * <p>
      * The general table properties should be read from the tblDef argument but the column properties should be read
-     * from the extra arguments
-     * This is because the method is called with modified column content which is not reflected in the
-     * table definition until the data is saved in the database.
+     * from the extra arguments This is because the method is called with modified column content which is not reflected
+     * in the table definition until the data is saved in the database.
      * 
      * @param ydb
      * @param tblDef
@@ -69,13 +67,11 @@ public interface StorageEngine {
      * 
      * Creates a new table iterator.
      * 
-     * @param ydb
+     * @param ctx
      * @param tblDef
      */
-    public TableWalker newTableWalker(YarchDatabaseInstance ydb, TableDefinition tblDef, boolean ascending,
+    public TableWalker newTableWalker(ExecutionContext ctx, TableDefinition tblDef, boolean ascending,
             boolean follow);
-
-    public TagDb getTagDb(YarchDatabaseInstance ydb) throws YarchException;
 
     public HistogramIterator getHistogramIterator(YarchDatabaseInstance ydb, TableDefinition tblDef, String columnName,
             TimeInterval interval) throws YarchException;
@@ -118,5 +114,10 @@ public interface StorageEngine {
      * Gets the list of sequences togehter with their latest values
      */
     public List<SequenceInfo> getSequencesInfo(YarchDatabaseInstance ydb);
+
+    /**
+     * rename the table
+     */
+    public void renameTable(YarchDatabaseInstance ydb, TableDefinition tblDef, String newName);
 
 }

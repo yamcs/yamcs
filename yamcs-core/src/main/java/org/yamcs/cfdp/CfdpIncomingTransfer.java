@@ -3,6 +3,7 @@ package org.yamcs.cfdp;
 import static org.yamcs.cfdp.CfdpService.*;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,17 +40,16 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         /**
          * Receives metadata, data and EOF.
          * <p>
-         * Send NAK with missing segments.
+         * Sends NAK with missing segments.
          * <p>
-         * Goes into FINISHED as soon as the EOF and all data has been received.
+         * Goes into FIN as soon as the EOF and all data has been received.
          * <p>
-         * Also goes into FINISHED when an error is encountered
+         * Also goes into FIN when an error is encountered or if the transaction is cancelled.
          */
         RECEIVING_DATA,
         /**
          * Send Finished PDUs until ack then go into COMPLETED.
          *
-         * cancelling the transaction will also put it in this mode.
          */
         FIN,
         /**
@@ -72,7 +72,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
     final CfdpHeader directiveHeader;
 
-    long maxFileSize;
+    final long maxFileSize;
     /**
      * How often in millisec we should send the NAK PDUs
      */
@@ -106,33 +106,24 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     List<CfdpPacket> queuedPackets = new ArrayList<>();
 
     public CfdpIncomingTransfer(String yamcsInstance, long id, long creationTime, ScheduledThreadPoolExecutor executor,
-            YConfiguration config, MetadataPacket packet, Stream cfdpOut, Bucket target, EventProducer eventProducer,
-            TransferMonitor monitor, Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
-        this(yamcsInstance, id, creationTime, executor, config, packet.getHeader(), cfdpOut, target, eventProducer,
-                monitor, faultHandlerActions);
-        processMetadata(packet);
-
-    }
-
-    public CfdpIncomingTransfer(String yamcsInstance, long id, long creationTime, ScheduledThreadPoolExecutor executor,
             YConfiguration config, CfdpHeader hdr, Stream cfdpOut, Bucket target, EventProducer eventProducer,
             TransferMonitor monitor, Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
         super(yamcsInstance, id, creationTime, executor, config, hdr.getTransactionId(), hdr.getDestinationId(),
                 cfdpOut, eventProducer, monitor, faultHandlerActions);
         incomingBucket = target;
         rescheduleInactivityTimer();
-        long finAckTimeout = config.getLong("finAckTimeout", 10000);
+        long finAckTimeout = config.getLong("finAckTimeout", 10000l);
         int finAckLimit = config.getInt("finAckLimit", 5);
 
         this.acknowledged = hdr.isAcknowledged();
         this.finTimer = new Timer(executor, finAckLimit, finAckTimeout);
-        this.maxFileSize = config.getLong("maxFileSize", 100 * 1024 * 1024);
+        this.maxFileSize = config.getLong("maxFileSize", 100 * 1024 * 1024l);
         this.nakTimeout = config.getInt("nakTimeout", 5000);
         this.nakLimit = config.getInt("nakLimit", -1);
         this.immediateNak = config.getBoolean("immediateNak", true);
 
         if (!acknowledged) {
-            long checkAckTimeout = config.getLong("checkAckTimeout", 10000);
+            long checkAckTimeout = config.getLong("checkAckTimeout", 10000l);
             int checkAckLimit = config.getInt("checkAckLimit", 5);
             checkTimer = new Timer(executor, checkAckLimit, checkAckTimeout);
         }
@@ -176,7 +167,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             lastNakSentTime = now;
         }
 
-        executor.schedule(() -> sendOrSheduledNak(), nakTimeout, TimeUnit.MILLISECONDS);
+        executor.schedule(this::sendOrSheduledNak, nakTimeout, TimeUnit.MILLISECONDS);
     }
 
     private boolean sendNak() {
@@ -238,7 +229,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             log.debug("TXID{} Ignoring metadata packet {}", cfdpTransactionId, packet);
             return;
         }
-        if (packet.getChecksumType() != 0) {
+        if (packet.getChecksumType() != ChecksumType.MODULAR) {
             log.warn("TXID{} received metadata indicating unsupported checksum type {}", cfdpTransactionId,
                     packet.getChecksumType());
             handleFault(ConditionCode.UNSUPPORTED_CHECKSUM_TYPE);
@@ -246,8 +237,13 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         }
         long fileSize = packet.getFileLength();
         if (fileSize > maxFileSize) {
-            log.warn("TXID{} received metadata with file size {} exceeding the maximum allowed {}",
-                    cfdpTransactionId, fileSize, maxFileSize);
+            String err = String.format(
+                    "received metadata with file size %.02f KB exceeding the maximum allowed %.02f KB",
+                    fileSize / 1024.0, maxFileSize / 1024.0);
+
+            log.warn("TXID{} {}", cfdpTransactionId, err);
+            pushError(err);
+
             handleFault(ConditionCode.FILE_SIZE_ERROR);
             return;
         }
@@ -300,7 +296,8 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         if (eofPacket.getConditionCode() == ConditionCode.NO_ERROR) {
             checkFileComplete();
         } else if (eofPacket.getConditionCode() == ConditionCode.CANCEL_REQUEST_RECEIVED) {
-            complete(ConditionCode.CANCEL_REQUEST_RECEIVED, "Canceled by the Sender");
+            pushError("Canceled by the Sender");
+            complete(ConditionCode.CANCEL_REQUEST_RECEIVED);
         } else {
             log.warn("TXID{} EOF received indicating error {}", cfdpTransactionId, eofPacket.getConditionCode());
             handleFault(eofPacket.getConditionCode());
@@ -308,9 +305,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
         if (!acknowledged && inTxState == InTxState.RECEIVING_DATA) {
             // start the checkTimer
-            checkTimer.start(() -> {
-                checkFileComplete();
-            }, () -> {
+            checkTimer.start(this::checkFileComplete, () -> {
                 log.warn("TXID{} check limit reached", cfdpTransactionId);
                 handleFault(ConditionCode.CHECK_LIMIT_REACHED);
             });
@@ -336,15 +331,20 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         long fileSize = incomingDataFile.getSize();
         if (fileSize > 0) {
             if (dfs.getEndOffset() > fileSize) {
-                log.warn("TXID{} received data file whose end offset {} is larger than the file size {}",
-                        cfdpTransactionId, dfs.getEndOffset(), fileSize);
+                String err = String.format("Received data file whose end offset %d is larger than the file size %d",
+                        dfs.getEndOffset(), fileSize);
+                log.warn("TXID{} {}", cfdpTransactionId, err);
+                pushError(err);
                 handleFault(ConditionCode.FILE_SIZE_ERROR);
             }
         } else {
             if (dfs.getEndOffset() > maxFileSize) {
-                log.warn("TXID{} received data file whose end offset {} is larger than the maximum file size {}",
-                        cfdpTransactionId, dfs.getEndOffset(), maxFileSize);
-                handleFault(ConditionCode.FILESTORE_REJECTION);
+                String err = String.format(
+                        "Received data file whose end offset %d is larger than the maximum file size %d",
+                        dfs.getEndOffset(), maxFileSize);
+                pushError(err);
+                log.warn("TXID{} {}", cfdpTransactionId, err);
+                handleFault(ConditionCode.FILE_SIZE_ERROR);
             }
         }
 
@@ -389,7 +389,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
         finPacket = getFinishedPacket(code);
         this.inTxState = InTxState.FIN;
-		changeState(TransferState.CANCELLING);
+        changeState(TransferState.CANCELLING);
 
         sendFin();
     }
@@ -401,20 +401,16 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
                 () -> {
                     sendWarnEvent(ETYPE_FIN_LIMIT_REACHED, "resend attempts (" + finTimer.maxNumAttempts + ") of Finished PDU reached");
                     if (finPacket.getConditionCode() == ConditionCode.NO_ERROR) {
-                        complete(ConditionCode.ACK_LIMIT_REACHED,
-                                "File was received OK but the Finished PDU has not been acknowledged");
+                        pushError("File was received OK but the Finished PDU has not been acknowledged");
+                        complete(ConditionCode.ACK_LIMIT_REACHED);
                     } else {
-                        complete(ConditionCode.ACK_LIMIT_REACHED,
-                                failureReason + " and in addition the Finished PDU has not been acknowledged");
+                        pushError("The Finished PDU has not been acknowledged");
+                        complete(ConditionCode.ACK_LIMIT_REACHED);
                     }
                 });
     }
 
     private void complete(ConditionCode conditionCode) {
-        complete(conditionCode, conditionCode.toString());
-    }
-
-    private void complete(ConditionCode conditionCode, String failureReason) {
         inTxState = InTxState.COMPLETED;
         if (!acknowledged) {
             checkTimer.cancel();
@@ -424,11 +420,8 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             changeState(TransferState.COMPLETED);
             sendInfoEvent(ETYPE_TRANSFER_COMPLETED, " transfer completed (ack received from remote) successfully");
         } else {
-            sendWarnEvent(ETYPE_TRANSFER_COMPLETED, " transfer completed unsuccessfully: " + failureReason);
+            sendWarnEvent(ETYPE_TRANSFER_COMPLETED, " transfer completed unsuccessfully: " + getFailuredReason());
             changeState(TransferState.FAILED);
-            if (failureReason != null) {
-                this.failureReason = failureReason;
-            }
         }
     }
 
@@ -536,7 +529,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             objectName = getFileName(objectName);
             incomingBucket.putObject(objectName, null, metadata, incomingDataFile.getData());
         } catch (IOException e) {
-            throw new RuntimeException("cannot save incoming file in bucket " + incomingBucket.getName(), e);
+            throw new UncheckedIOException("cannot save incoming file in bucket " + incomingBucket.getName(), e);
         }
     }
 

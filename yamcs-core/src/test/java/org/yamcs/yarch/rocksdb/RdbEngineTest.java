@@ -1,15 +1,17 @@
 package org.yamcs.yarch.rocksdb;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.HistogramIterator;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TableDefinition;
@@ -78,8 +80,8 @@ public class RdbEngineTest extends YarchTestCase {
 
     private void checkNoReaderStreamPossible(RdbStorageEngine rse, TableDefinition tblDef) {
         IllegalArgumentException iae = null;
-        try {
-            rse.newTableWalker(ydb, tblDef, true, true);
+        try (ExecutionContext ctx = new ExecutionContext(ydb)) {
+            rse.newTableWalker(ctx, tblDef, true, true);
         } catch (IllegalArgumentException e) {
             iae = e;
         }
@@ -87,7 +89,7 @@ public class RdbEngineTest extends YarchTestCase {
     }
 
     public TableDefinition populate() throws Exception {
-        String query = "create table table1(gentime timestamp, seqNum int, name string, values string[], primary key(gentime, seqNum)) histogram(name) "
+        String query = "create table table1(gentime timestamp, seqNum int, name string, vals string[], primary key(gentime, seqNum)) histogram(name) "
                 + "partition by time(gentime) table_format=compressed engine rocksdb2";
         execute(query);
         long t1 = TimeEncoding.parse("2016-12-16T00:00:00");

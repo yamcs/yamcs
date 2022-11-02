@@ -13,6 +13,8 @@ import java.util.concurrent.Executors;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.logging.Log;
 import org.yamcs.management.LinkManager;
+import org.yamcs.mdb.DatabaseLoadException;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.protobuf.Mdb.MissionDatabase;
 import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
@@ -21,10 +23,8 @@ import org.yamcs.time.TimeService;
 import org.yamcs.utils.ExceptionUtil;
 import org.yamcs.utils.ServiceUtil;
 import org.yamcs.utils.YObjectLoader;
-import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
@@ -75,6 +75,12 @@ public class YamcsServerInstance extends YamcsInstanceService {
         serviceSpec.addOption("name", OptionType.STRING);
         serviceSpec.addOption("enabledAtStartup", OptionType.BOOLEAN);
 
+        Spec mdbSpec = new Spec();
+        mdbSpec.addOption("type", OptionType.STRING).withRequired(true);
+        mdbSpec.addOption("spec", OptionType.STRING);
+        mdbSpec.addOption("args", OptionType.MAP).withSpec(Spec.ANY);
+        mdbSpec.addOption("subLoaders", OptionType.LIST).withElementType(OptionType.MAP).withSpec(mdbSpec);
+
         Spec spec = new Spec();
         spec.addOption("services", OptionType.LIST).withElementType(OptionType.MAP).withSpec(serviceSpec);
         spec.addOption("tablespace", OptionType.STRING);
@@ -84,12 +90,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
         spec.addOption("dataLinks", OptionType.LIST).withElementType(OptionType.MAP).withSpec(Spec.ANY);
         spec.addOption("streamConfig", OptionType.MAP).withSpec(Spec.ANY);
 
-        /*
-         * TODO not possible to activate this validation because mdb is being used
-         * ambiguously as both LIST and STRING with completely different meanings.
-         */
-        // spec.addOption("mdb", OptionType.LIST).withElementType(OptionType.MAP).withSpec(Spec.ANY);
-        spec.addOption("mdb", OptionType.ANY);
+        spec.addOption("mdb", OptionType.LIST).withElementType(OptionType.MAP).withSpec(mdbSpec);
         spec.addOption("mdbSpec", OptionType.STRING);
         spec.mutuallyExclusive("mdb", "mdbSpec");
 
@@ -179,7 +180,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
         for (ServiceWithConfig swc : services) {
             stopFutures.add(serviceStoppers.submit(() -> {
                 swc.service.stopAsync();
-                log.debug("Awaiting termination of service {}", swc.getName());
+                log.info("Awaiting termination of service {}", swc.getName());
                 ServiceUtil.awaitServiceTerminated(swc.service, YamcsServer.SERVICE_STOP_GRACE_TIME, log);
             }));
         }
@@ -188,6 +189,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
         Futures.addCallback(Futures.allAsList(stopFutures), new FutureCallback<Object>() {
             @Override
             public void onSuccess(Object result) {
+                log.info("Stopping Yamcs DB");
                 YarchDatabaseInstance ydb = YarchDatabase.getInstance(name);
                 ydb.close();
                 YarchDatabase.removeInstance(name);
@@ -224,11 +226,11 @@ public class YamcsServerInstance extends YamcsInstanceService {
         if (config.containsKey("timeService")) {
             YConfiguration m = config.getConfig("timeService");
             String servclass = m.getString("class");
-            Object args = m.get("args");
-            if (args == null) {
-                timeService = YObjectLoader.loadObject(servclass, name);
-            } else {
+            if (m.containsKey("args")) {
+                YConfiguration args = m.getConfig("args");
                 timeService = YObjectLoader.loadObject(servclass, name, args);
+            } else {
+                timeService = YObjectLoader.loadObject(servclass, name);
             }
         } else {
             timeService = new RealtimeTimeService();

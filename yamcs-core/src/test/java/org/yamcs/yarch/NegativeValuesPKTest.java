@@ -1,10 +1,10 @@
 package org.yamcs.yarch;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.time.Instant;
 
 public class NegativeValuesPKTest extends YarchTestCase {
@@ -12,7 +12,7 @@ public class NegativeValuesPKTest extends YarchTestCase {
     int idLast = 10;
 
     private void populate(String tblname, String type) throws Exception {
-        ydb.execute("create table " + tblname + "(id "+type+", name string, primary key(id))");
+        ydb.execute("create table " + tblname + "(id " + type + ", name string, primary key(id))");
         ydb.execute("create stream " + tblname + "_in(id int, name string)");
         ydb.execute("insert into " + tblname + " select * from " + tblname + "_in");
 
@@ -55,7 +55,7 @@ public class NegativeValuesPKTest extends YarchTestCase {
             assertEquals("id" + i, (String) t.getColumn(1));
         }
     }
-    
+
     @Test
     public void testLong() throws Exception {
         populate("testlong", "long");
@@ -68,8 +68,7 @@ public class NegativeValuesPKTest extends YarchTestCase {
             assertEquals("id" + i, (String) t.getColumn(1));
         }
     }
-    
-        
+
     @Test
     public void testDouble() throws Exception {
         populate("testdouble", "double");
@@ -82,7 +81,7 @@ public class NegativeValuesPKTest extends YarchTestCase {
             assertEquals("id" + i, (String) t.getColumn(1));
         }
     }
-        
+
     @Test
     public void testTimestamp() throws Exception {
         populate("testtimestamp", "timestamp");
@@ -95,7 +94,7 @@ public class NegativeValuesPKTest extends YarchTestCase {
             assertEquals("id" + i, (String) t.getColumn(1));
         }
     }
-        
+
     @Test
     public void testHrTimestamp() throws Exception {
         populate("testhrtimestamp", "hres_timestamp");
@@ -108,5 +107,4 @@ public class NegativeValuesPKTest extends YarchTestCase {
             assertEquals("id" + i, (String) t.getColumn(1));
         }
     }
-        
 }

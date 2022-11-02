@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.yamcs.Spec.OptionType;
@@ -18,21 +20,54 @@ import com.google.common.base.CharMatcher;
  */
 public class ProcessRunner extends AbstractYamcsService {
 
+    private static enum RestartMode {
+        ALWAYS("always"),
+        ON_SUCCESS("on-success"),
+        ON_FAILURE("on-failure"),
+        NEVER("never");
+
+        String userOption;
+
+        RestartMode(String userOption) {
+            this.userOption = userOption;
+        }
+
+        static RestartMode fromUserOption(String userOption) {
+            for (RestartMode value : values()) {
+                if (value.userOption.equals(userOption)) {
+                    return value;
+                }
+            }
+            throw new IllegalArgumentException("Unexpected restart mode: '" + userOption + "'");
+        }
+    }
+
     private ProcessBuilder pb;
     private String logLevel;
     private String logPrefix;
 
     private Process process;
-    private ScheduledExecutorService watchdog;
+    private ScheduledFuture<?> watchdog;
+
+    private RestartMode restartMode;
+    private List<Integer> successExitCodes;
 
     @Override
     public Spec getSpec() {
         Spec spec = new Spec();
-        spec.addOption("command", OptionType.LIST_OR_ELEMENT).withElementType(OptionType.STRING)
+        spec.addOption("command", OptionType.LIST_OR_ELEMENT)
+                .withElementType(OptionType.STRING)
                 .withRequired(true);
         spec.addOption("directory", OptionType.STRING);
         spec.addOption("logLevel", OptionType.STRING).withDefault("INFO");
         spec.addOption("logPrefix", OptionType.STRING);
+        spec.addOption("restart", OptionType.STRING)
+                .withChoices("always", "on-success", "on-failure", "never")
+                .withDefault("never");
+        spec.addOption("successExitCode", OptionType.LIST_OR_ELEMENT)
+                .withElementType(OptionType.INTEGER)
+                .withDefault(0);
+        spec.addOption("environment", OptionType.MAP).withSpec(Spec.ANY);
         return spec;
     }
 
@@ -40,11 +75,21 @@ public class ProcessRunner extends AbstractYamcsService {
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         super.init(yamcsInstance, serviceName, config);
 
+        restartMode = RestartMode.fromUserOption(config.getString("restart"));
+        successExitCodes = config.getList("successExitCode");
+
         List<String> command = config.getList("command");
         pb = new ProcessBuilder(command);
 
         pb.redirectErrorStream(true);
         pb.environment().put("YAMCS", "1");
+
+        if (config.containsKey("environment")) {
+            Map<String, Object> map = config.getMap("environment");
+            for (var entry : map.entrySet()) {
+                pb.environment().put(entry.getKey(), "" + entry.getValue());
+            }
+        }
 
         if (config.containsKey("directory")) {
             pb.directory(new File(config.getString("directory")));
@@ -52,7 +97,6 @@ public class ProcessRunner extends AbstractYamcsService {
 
         logLevel = config.getString("logLevel");
         logPrefix = config.getString("logPrefix", "[" + pb.command().get(0) + "] ");
-        watchdog = YamcsServer.getServer().getThreadPoolExecutor();
     }
 
     @Override
@@ -66,13 +110,37 @@ public class ProcessRunner extends AbstractYamcsService {
             return;
         }
 
-        watchdog.scheduleWithFixedDelay(() -> {
-            if (!process.isAlive() && isRunning()) {
-                log.warn("Process terminated with exit value {}. Starting new process", process.exitValue());
-                try {
-                    startProcess();
-                } catch (IOException e) {
-                    log.error("Failed to start process", e);
+        YamcsServer yamcs = YamcsServer.getServer();
+        ScheduledExecutorService exec = yamcs.getThreadPoolExecutor();
+        watchdog = exec.scheduleWithFixedDelay(() -> {
+            if (!process.isAlive() && isRunning() && !yamcs.isShuttingDown()) {
+                int code = process.exitValue();
+
+                boolean restart = false;
+                if (successExitCodes.contains(code)) {
+                    if (restartMode == RestartMode.ALWAYS || restartMode == RestartMode.ON_SUCCESS) {
+                        log.info("Process exited with code {}. Starting new process", code);
+                        restart = true;
+                    } else {
+                        log.info("Process exited with code {}. Stopping service", code);
+                        stopAsync();
+                    }
+                } else {
+                    if (restartMode == RestartMode.ALWAYS || restartMode == RestartMode.ON_FAILURE) {
+                        log.warn("Process exited with code {}. Starting new process", code);
+                        restart = true;
+                    } else {
+                        log.warn("Process exited with code {}. Stopping service", code);
+                        stopAsync();
+                    }
+                }
+
+                if (restart) {
+                    try {
+                        startProcess();
+                    } catch (IOException e) {
+                        log.error("Failed to start process", e);
+                    }
                 }
             }
         }, 5, 5, TimeUnit.SECONDS);
@@ -83,7 +151,7 @@ public class ProcessRunner extends AbstractYamcsService {
 
         // Start a thread for reading process output. The thread lifecycle is linked to the process.
         new Thread(() -> {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            try (var reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 reader.lines().forEach(line -> {
                     line = CharMatcher.whitespace().trimTrailingFrom(line);
                     switch (logLevel) {
@@ -107,7 +175,7 @@ public class ProcessRunner extends AbstractYamcsService {
             } catch (IOException e) {
                 log.error("Exception while gobbling process output", e);
             }
-        }).start();
+        }, getClass().getSimpleName() + " Gobbler").start();
     }
 
     protected void onProcessOutput(String line) {
@@ -116,6 +184,7 @@ public class ProcessRunner extends AbstractYamcsService {
 
     @Override
     protected void doStop() {
+        watchdog.cancel(true);
         process.destroy();
 
         // Give the process some time to stop before reporting success. During

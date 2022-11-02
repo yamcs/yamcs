@@ -1,12 +1,13 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { ConnectionInfo, GetCommandsOptions } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
+import { ColumnChooser, ColumnInfo } from '../../shared/template/ColumnChooser';
 import { CommandsDataSource, ListItem } from './CommandsDataSource';
 
 @Component({
@@ -29,15 +30,22 @@ export class SendCommandPage implements AfterViewInit, OnDestroy {
   @ViewChild(MatPaginator)
   paginator: MatPaginator;
 
-  filterControl = new FormControl();
+  @ViewChild(ColumnChooser)
+  columnChooser: ColumnChooser;
+
+  filterControl = new UntypedFormControl();
 
   dataSource: CommandsDataSource;
 
-  displayedColumns = [
-    'name',
-    'significance',
-    'shortDescription',
+  columns: ColumnInfo[] = [
+    { id: 'name', label: 'Name', alwaysVisible: true },
+    { id: 'significance', label: 'Significance', visible: true },
+    { id: 'shortDescription', label: 'Description' },
+    { id: 'actions', label: '', alwaysVisible: true },
   ];
+
+  // Added dynamically based on actual commands.
+  aliasColumns$ = new BehaviorSubject<ColumnInfo[]>([]);
 
   private queryParamMapSubscription: Subscription;
 
@@ -101,6 +109,22 @@ export class SendCommandPage implements AfterViewInit, OnDestroy {
     this.dataSource.loadCommands(options).then(() => {
       this.selection.clear();
       this.updateBrowsePath();
+
+      // Reset alias columns
+      for (const aliasColumn of this.aliasColumns$.value) {
+        const idx = this.columns.indexOf(aliasColumn);
+        if (idx !== -1) {
+          this.columns.splice(idx, 1);
+        }
+      }
+      const aliasColumns = [];
+      for (const namespace of this.dataSource.getAliasNamespaces()) {
+        const aliasColumn = { id: namespace, label: namespace, alwaysVisible: true };
+        aliasColumns.push(aliasColumn);
+      }
+      this.columns.splice(1, 0, ...aliasColumns); // Insert after name column
+      this.aliasColumns$.next(aliasColumns);
+      this.columnChooser.recalculate(this.columns);
     });
   }
 

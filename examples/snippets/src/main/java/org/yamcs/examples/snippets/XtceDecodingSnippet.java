@@ -7,9 +7,9 @@ import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ContainerProcessingResult;
-import org.yamcs.xtceproc.XtceDbFactory;
-import org.yamcs.xtceproc.XtceTmExtractor;
+import org.yamcs.mdb.ContainerProcessingResult;
+import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.XtceTmExtractor;
 
 /**
  * Shows how to use Yamcs as a general-purpose library for decoding packets based on an XTCE XML definition.
@@ -43,7 +43,7 @@ public class XtceDecodingSnippet {
         }; // 4 Samples
 
         long t = TimeEncoding.getWallclockTime();
-        ContainerProcessingResult result = extractor.processPacket(new BitBuffer(p1), t, t);
+        ContainerProcessingResult result = extractor.processPacket(new BitBuffer(p1), t, t, 0);
 
         System.out.printf("%-30s %-15s %-15s\n", "Parameter", "Engineering", "Raw");
         System.out.printf("%-30s %-15s %-15s\n", "---------", "-----------", "---");

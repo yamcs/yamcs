@@ -3,7 +3,8 @@
 <mat-dialog-content class="mat-typography">
   <p>
     <ng-container *ngIf="data.alarms.length === 1">
-      {{ data.alarms[0].id.namespace }}/{{ data.alarms[0].id.name }}
+      {{ data.alarms[0].id.namespace }}<ng-container *ngIf="data.alarms[0].id.name">/{{ data.alarms[0].id.name }}
+      </ng-container>
     </ng-container>
     <ng-container *ngIf="data.alarms.length !== 1">
       {{ data.alarms.length }} selected alarms.
@@ -12,15 +13,10 @@
   <form [formGroup]="formGroup" class="ya-form">
     <label>
       Duration<br>
-      <select formControlName="duration">
-        <option value="PT15M">15 minutes</option>
-        <option value="PT30M">30 minutes</option>
-        <option value="PT1H">1 hour</option>
-        <option value="PT2H">2 hours</option>
-        <option value="P1D">1 day</option>
-        <option value="UNLIMITED">unlimited</option>
-      </select>
+      <app-select formControlName="duration" [options]="durationOptions">
+      </app-select>
     </label>
+    <br>
     <label>
       Comment
       <textarea formControlName="comment" rows="5" style="resize: none"></textarea>

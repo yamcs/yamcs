@@ -1,24 +1,25 @@
 package org.yamcs.parameterarchive;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.File;
+import java.nio.file.Path;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.IntArray;
 import org.yamcs.yarch.rocksdb.Tablespace;
 
 public class ParameterGroupIdMapTest {
+
     @Test
     public void test1() throws Exception {
-        File f = new File("/tmp/TestParameterGroupIdMap_test1");
-        FileUtils.deleteRecursivelyIfExists(f.toPath());
+        Path f = Path.of(System.getProperty("java.io.tmpdir"), "TestParameterGroupIdMap_test1");
+        FileUtils.deleteRecursivelyIfExists(f);
 
         Tablespace tablespace = new Tablespace("test1");
-        tablespace.setCustomDataDir(f.getAbsolutePath());
+        tablespace.setCustomDataDir(f.toString());
         tablespace.loadDb(false);
 
         ParameterGroupIdDb pgidMap = new ParameterGroupIdDb("test1", tablespace);

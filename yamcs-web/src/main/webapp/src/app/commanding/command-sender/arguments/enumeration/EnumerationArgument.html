@@ -1,0 +1,20 @@
+<label>
+  <div class="meta" [class.error]="err.invalid$ | async">
+    <div class="item">{{ type.engType }}</div>
+  </div>
+
+  {{ label }}
+  <app-help *ngIf="description">
+    {{ description }}
+  </app-help>
+
+  <app-errors #err [controlName]="controlName"></app-errors>
+  <div class="control-group">
+    <app-select [formControl]="formControl" [options]="selectOptions$ | async">
+    </app-select>&nbsp;
+    <button class="ya-button" matTooltip="Lookup enumeration state"
+            (click)="openSelectEnumerationDialog()">
+      <mat-icon>search</mat-icon>
+    </button>
+  </div>
+</label>

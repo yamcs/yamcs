@@ -1,7 +1,8 @@
 import { ChangeDetectorRef, Component, ElementRef, Inject, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { StorageClient } from '../../client';
+import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -13,23 +14,26 @@ export class CreateDisplayDialog {
   page = 1;
 
   // Page 1
-  typeForm: FormGroup;
+  typeForm: UntypedFormGroup;
 
   // Page 2
-  filenameForm: FormGroup;
+  filenameForm: UntypedFormGroup;
 
   @ViewChild('filename')
   filenameInput: ElementRef;
 
+  private config: WebsiteConfig;
   private storageClient: StorageClient;
 
   constructor(
     private dialogRef: MatDialogRef<CreateDisplayDialog>,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
     private changeDetector: ChangeDetectorRef,
+    configService: ConfigService,
   ) {
+    this.config = configService.getConfig();
     this.storageClient = yamcs.createStorageClient();
     this.typeForm = formBuilder.group({
       type: ['par', Validators.required],
@@ -71,8 +75,9 @@ export class CreateDisplayDialog {
     const b = new Blob([JSON.stringify(display, undefined, 2)], {
       type: 'application/json'
     });
+    const bucketName = this.config.displayBucket;
     const objectName = this.data.prefix + fullPath;
-    this.storageClient.uploadObject('_global', 'displays', objectName, b).then(() => {
+    this.storageClient.uploadObject('_global', bucketName, objectName, b).then(() => {
       this.dialogRef.close(fullPath);
     });
   }

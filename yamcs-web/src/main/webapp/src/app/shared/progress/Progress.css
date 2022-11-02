@@ -1,0 +1,30 @@
+/*
+ * Careful: the label should appear on top of the fill.
+ */
+.progress {
+  display: inline-block;
+  min-width: 100px;
+  position: relative;
+  text-align: center;
+  margin-right: 5px;
+  background-color: #eee;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background-color: var(--y-accent);
+  background: linear-gradient(to bottom, var(--y-accent), #bce3dd 50%, var(--y-accent));
+}
+
+.label {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+}

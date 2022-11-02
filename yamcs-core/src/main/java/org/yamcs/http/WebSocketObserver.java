@@ -1,28 +1,24 @@
 package org.yamcs.http;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.api.Observer;
+import org.yamcs.http.WebSocketServerMessageHandler.InternalServerMessage;
+import org.yamcs.http.WebSocketServerMessageHandler.Priority;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Reply;
-import org.yamcs.protobuf.ServerMessage;
 
-import com.google.protobuf.Any;
 import com.google.protobuf.Message;
 
 public class WebSocketObserver implements Observer<Message> {
 
     private Log log;
 
-    private TopicContext ctx;
-    private WebSocketFrameHandler frameHandler;
+    private final TopicContext ctx;
 
     private int messageCount = 0;
-    private int dropCount = 0;
-    private int maxDrops = 0;
+    private final boolean lowPriority;
     private boolean cancelled;
     private boolean completed;
     private Runnable cancelHandler;
@@ -30,10 +26,9 @@ public class WebSocketObserver implements Observer<Message> {
     private boolean replied;
     private List<Message> pendingMessages = new ArrayList<>(); // Messages received while not yet replied
 
-    public WebSocketObserver(TopicContext ctx, WebSocketFrameHandler frameHandler) {
+    public WebSocketObserver(TopicContext ctx) {
         this.ctx = ctx;
-        this.frameHandler = frameHandler;
-        this.maxDrops = ctx.getMaxDroppedWrites();
+        this.lowPriority = ctx.isLowPriority();
         log = new Log(WebSocketObserver.class);
         log.setContext(ctx.toString());
 
@@ -43,7 +38,7 @@ public class WebSocketObserver implements Observer<Message> {
     void sendReply(Reply reply) {
         synchronized (this) { // Guard 'replied' and 'pendingMessages'
             try {
-                sendMessage("reply", reply);
+                sendMessage("reply", reply, Priority.HIGH);
             } finally {
                 replied = true;
             }
@@ -53,56 +48,30 @@ public class WebSocketObserver implements Observer<Message> {
         }
     }
 
-    void sendOneof(String type, Message message) {
-        sendMessage(type, message);
-    }
-
+    /*
+     * Synchronize because we may get called from different threads and messages
+     * should be passed in-order to netty, matching messageCount.
+     */
     @Override
-    public void next(Message message) {
-        synchronized (this) {
-            if (!replied) {
-                pendingMessages.add(message);
-                return;
-            }
-        }
-
-        // Increase even if it not sent.
-        messageCount++;
-
-        boolean isOpen = ctx.nettyContext.channel().isOpen();
-        boolean isWritable = ctx.nettyContext.channel().isWritable();
-        if (!isOpen || !isWritable) {
-            dropCount++;
-            if (!isOpen) {
-                log.warn("Skipping frame because channel is not open");
-            } else {
-                log.warn("Skipping frame because channel is not writable");
-            }
-            if (dropCount >= maxDrops) {
-                log.warn("Too many ({}) dropped messages. Forcing disconnect", dropCount);
-                ctx.cancel(null); // Cancel the call first, to avoid log messages going beyond maxDrops
-                ctx.nettyContext.close();
-            }
+    public synchronized void next(Message message) {
+        if (!replied) {
+            pendingMessages.add(message);
             return;
         }
 
-        sendMessage(ctx.getTopic().getName(), message);
-        dropCount = 0;
+        messageCount++;
+
+        if (!ctx.nettyContext.channel().isOpen()) {
+            ctx.cancel(null);
+            return;
+        }
+
+        sendMessage(ctx.getTopic().getName(), message, lowPriority ? Priority.LOW : Priority.NORMAL);
     }
 
-    private void sendMessage(String type, Message data) {
-        ServerMessage message = ServerMessage.newBuilder()
-                .setType(type)
-                .setCall(ctx.getId())
-                .setSeq(messageCount)
-                .setData(Any.pack(data, HttpServer.TYPE_URL_PREFIX))
-                .build();
-        try {
-            frameHandler.writeMessage(ctx.nettyContext, message);
-        } catch (IOException e) {
-            cancelCall(e.getMessage());
-            throw new UncheckedIOException(e);
-        }
+    private void sendMessage(String type, Message data, Priority priority) {
+        ctx.nettyContext.channel()
+                .writeAndFlush(new InternalServerMessage(type, ctx.getId(), messageCount, data, priority));
     }
 
     void cancelCall(String reason) {

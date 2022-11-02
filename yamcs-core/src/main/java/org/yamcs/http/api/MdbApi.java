@@ -24,6 +24,7 @@ import org.yamcs.http.api.MdbPageBuilder.MdbPage;
 import org.yamcs.http.api.MdbSearchHelpers.EntryMatch;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.protobuf.AbstractMdbApi;
 import org.yamcs.protobuf.Mdb.AlgorithmInfo;
@@ -73,7 +74,6 @@ import org.yamcs.xtce.PathElement;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.google.protobuf.ByteString;
 

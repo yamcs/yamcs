@@ -43,6 +43,9 @@ services:
      sleepBetweenPdus: 1000
      #The simulator only supports one transfer at a time
      maxNumPendingUploads: 1
+     #How many milliseconds to keep the incoming transfer in the pending queue after completion
+     #During this time an incoming PDU with that transaction id will not be recognized as a new transaction
+     pendingAfterCompletion: 10000
      localEntities:
        - name: id11
          id: 11

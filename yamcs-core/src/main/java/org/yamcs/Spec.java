@@ -7,9 +7,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -41,10 +39,14 @@ public class Spec {
                 .withChoices(OptionType.class);
         OPTION_DESCRIPTOR.addOption("required", OptionType.BOOLEAN).withDefault(false);
         OPTION_DESCRIPTOR.addOption("secret", OptionType.BOOLEAN).withDefault(false);
+        OPTION_DESCRIPTOR.addOption("hidden", OptionType.BOOLEAN).withDefault(false);
         OPTION_DESCRIPTOR.addOption("default", OptionType.ANY);
+        OPTION_DESCRIPTOR.addOption("versionAdded", OptionType.STRING);
         OPTION_DESCRIPTOR.addOption("deprecationMessage", OptionType.STRING);
         OPTION_DESCRIPTOR.addOption("elementType", OptionType.STRING)
                 .withChoices(OptionType.class);
+        OPTION_DESCRIPTOR.addOption("choices", OptionType.LIST)
+                .withElementType(OptionType.ANY);
         OPTION_DESCRIPTOR.addOption("suboptions", OptionType.MAP)
                 .withSpec(ANY);
     }
@@ -59,6 +61,13 @@ public class Spec {
     private List<WhenCondition> whenConditions = new ArrayList<>(0);
 
     /**
+     * Returns true if this spec contains the specified option.
+     */
+    public boolean containsOption(String name) {
+        return options.containsKey(name);
+    }
+
+    /**
      * Add an {@link Option} to this spec.
      * 
      * @throws IllegalArgumentException
@@ -68,9 +77,16 @@ public class Spec {
         if (options.containsKey(name) || aliases.containsKey(name)) {
             throw new IllegalArgumentException("Option '" + name + "' is already defined");
         }
-        Option option = new Option(this, name, type);
+        var option = new Option(this, name, type);
         options.put(name, option);
         return option;
+    }
+
+    /**
+     * Remove an {@link Option} from this spec.
+     */
+    public void removeOption(String name) {
+        options.remove(name);
     }
 
     public void allowUnknownKeys(boolean allowUnknownKeys) {
@@ -104,7 +120,7 @@ public class Spec {
     }
 
     /**
-     * Add a condition that is only verified when <tt>key.equals(value)</tt>
+     * Add a condition that is only verified when {@code key.equals(value)}
      * 
      * @param key
      *            the name of an option
@@ -114,7 +130,7 @@ public class Spec {
      */
     public WhenCondition when(String key, Object value) {
         verifyKeys(key);
-        WhenCondition whenCondition = new WhenCondition(this, key, value);
+        var whenCondition = new WhenCondition(this, key, value);
         whenConditions.add(whenCondition);
         return whenCondition;
     }
@@ -129,10 +145,9 @@ public class Spec {
      *             when the specified arguments did not match this specification
      */
     public YConfiguration validate(YConfiguration args) throws ValidationException {
-        ValidationContext ctx = new ValidationContext();
-        ctx.path = args.getPath();
-        Map<String, Object> result = doValidate(ctx, args.getRoot(), "");
-        YConfiguration wrapped = YConfiguration.wrap(result);
+        var ctx = new ValidationContext(args.getPath());
+        var result = doValidate(ctx, args.getRoot(), "");
+        var wrapped = YConfiguration.wrap(result);
         wrapped.parent = args.parent;
         wrapped.parentKey = args.parentKey;
         wrapped.rootLocation = args.rootLocation;
@@ -149,15 +164,15 @@ public class Spec {
      *             when the specified arguments did not match this specification
      */
     public Map<String, Object> validate(Map<String, Object> args) throws ValidationException {
-        return doValidate(new ValidationContext(), args, "");
+        return doValidate(new ValidationContext(""), args, "");
     }
 
     private Map<String, Object> doValidate(ValidationContext ctx, Map<String, Object> args, String parent)
             throws ValidationException {
 
-        for (List<String> group : requiredOneOfGroups) {
+        for (var group : requiredOneOfGroups) {
             if (count(args, group) == 0) {
-                String msg = "One of the following is required: " + group;
+                var msg = "One of the following is required: " + group;
                 if (!"".equals(parent)) {
                     msg += " at " + parent;
                 }
@@ -165,9 +180,9 @@ public class Spec {
             }
         }
 
-        for (List<String> group : mutuallyExclusiveGroups) {
+        for (var group : mutuallyExclusiveGroups) {
             if (count(args, group) > 1) {
-                String msg = "The following arguments are mutually exclusive: " + group;
+                var msg = "The following arguments are mutually exclusive: " + group;
                 if (!"".equals(parent)) {
                     msg += " at " + parent;
                 }
@@ -175,10 +190,10 @@ public class Spec {
             }
         }
 
-        for (List<String> group : requireTogetherGroups) {
+        for (var group : requireTogetherGroups) {
             int n = count(args, group);
             if (n > 0 && n != group.size()) {
-                String msg = "The following arguments are required together: " + group;
+                var msg = "The following arguments are required together: " + group;
                 if (!"".equals(parent)) {
                     msg += " at " + parent;
                 }
@@ -186,14 +201,14 @@ public class Spec {
             }
         }
 
-        for (WhenCondition whenCondition : whenConditions) {
-            Object arg = args.get(whenCondition.key);
+        for (var whenCondition : whenConditions) {
+            var arg = args.get(whenCondition.key);
             if (arg != null && arg.equals(whenCondition.value)) {
-                List<String> missing = whenCondition.requiredKeys.stream()
+                var missing = whenCondition.requiredKeys.stream()
                         .filter(key -> !args.containsKey(key))
                         .collect(Collectors.toList());
                 if (!missing.isEmpty()) {
-                    String path = "".equals(parent) ? whenCondition.key : (parent + "->" + whenCondition.key);
+                    var path = "".equals(parent) ? whenCondition.key : (parent + "->" + whenCondition.key);
                     throw new ValidationException(ctx, String.format(
                             "%s is %s but the following arguments are missing: %s",
                             path, whenCondition.value, missing));
@@ -203,14 +218,14 @@ public class Spec {
 
         // Build a new set of args where defaults have been entered
         // Makes this a linked hashmap to keep the defined order
-        Map<String, Object> result = new LinkedHashMap<>();
+        var result = new LinkedHashMap<String, Object>();
 
         // Check the provided arguments
-        for (Entry<String, Object> entry : args.entrySet()) {
-            String argName = entry.getKey();
-            String path = "".equals(parent) ? argName : (parent + "->" + argName);
+        for (var entry : args.entrySet()) {
+            var argName = entry.getKey();
+            var path = "".equals(parent) ? argName : (parent + "->" + argName);
 
-            Option option = getOption(argName);
+            var option = getOption(argName);
             if (option == null) {
                 if (allowUnknownKeys) {
                     result.put(argName, entry.getValue());
@@ -221,15 +236,15 @@ public class Spec {
                 throw new ValidationException(ctx,
                         String.format("Argument '%s' already specified. Check for aliases.", option.name));
             } else {
-                Object arg = entry.getValue();
-                Object resultArg = option.validate(ctx, arg, path);
+                var arg = entry.getValue();
+                var resultArg = option.validate(ctx, arg, path);
                 result.put(option.name, resultArg);
             }
         }
 
-        for (Option option : options.values()) {
-            boolean specified = args.containsKey(option.name);
-            for (Entry<String, String> alias : aliases.entrySet()) {
+        for (var option : options.values()) {
+            var specified = args.containsKey(option.name);
+            for (var alias : aliases.entrySet()) {
                 if (alias.getValue().equals(option.name) && args.containsKey(alias.getKey())) {
                     specified = true;
                 }
@@ -237,11 +252,11 @@ public class Spec {
 
             if (!specified) {
                 if (option.required) {
-                    String path = "".equals(parent) ? option.name : parent + "->" + option.name;
+                    var path = "".equals(parent) ? option.name : parent + "->" + option.name;
                     throw new ValidationException(ctx, "Missing required argument " + path);
                 }
 
-                Object defaultValue = option.computeDefaultValue();
+                var defaultValue = option.computeDefaultValue();
                 if (defaultValue != null) {
                     result.put(option.name, defaultValue);
                 }
@@ -271,7 +286,7 @@ public class Spec {
     }
 
     /**
-     * Returns a copy of the given arguments but with all secret arguments masked as <tt>*****</tt>.
+     * Returns a copy of the given arguments but with all secret arguments masked as {@code *****}.
      * <p>
      * This method does not validate the arguments, however it will throw random exceptions if the input does not match
      * the expected structure. It is therefore best to validate the arguments before passing them.
@@ -282,9 +297,9 @@ public class Spec {
 
     @SuppressWarnings("unchecked")
     private Map<String, Object> makeSafe(Map<String, Object> unsafeArgs, boolean mask) {
-        Map<String, Object> safeArgs = new LinkedHashMap<>();
-        for (Entry<String, Object> arg : unsafeArgs.entrySet()) {
-            Option option = getOption(arg.getKey());
+        var safeArgs = new LinkedHashMap<String, Object>();
+        for (var arg : unsafeArgs.entrySet()) {
+            var option = getOption(arg.getKey());
             if (option == null) {
                 // No exception. Often this method is called while we are already
                 // handling another exception.
@@ -292,8 +307,8 @@ public class Spec {
                 continue;
             }
 
-            OptionType type = option.type;
-            Object argValue = arg.getValue();
+            var type = option.type;
+            var argValue = arg.getValue();
             if (type == OptionType.LIST_OR_ELEMENT && !(argValue instanceof List)) {
                 type = OptionType.LIST;
                 argValue = Arrays.asList(argValue);
@@ -304,16 +319,16 @@ public class Spec {
                     safeArgs.put(arg.getKey(), "*****");
                 }
             } else if (type == OptionType.MAP) {
-                Map<String, Object> map = (Map<String, Object>) argValue;
-                Map<String, Object> safeMap = option.spec.makeSafe(map, mask);
+                var map = (Map<String, Object>) argValue;
+                var safeMap = option.spec.makeSafe(map, mask);
                 safeArgs.put(arg.getKey(), safeMap);
             } else if (type == OptionType.LIST) {
-                List<Object> list = (List<Object>) argValue;
-                List<Object> safeList = new ArrayList<>();
-                for (Object element : list) {
+                var list = (List<Object>) argValue;
+                var safeList = new ArrayList<>();
+                for (var element : list) {
                     if (option.elementType == OptionType.MAP) {
-                        Map<String, Object> mapElement = (Map<String, Object>) element;
-                        Map<String, Object> safeMapElement = option.spec.makeSafe(mapElement, mask);
+                        var mapElement = (Map<String, Object>) element;
+                        var safeMapElement = option.spec.makeSafe(mapElement, mask);
                         if (!safeMapElement.isEmpty()) {
                             safeList.add(safeMapElement);
                         }
@@ -330,7 +345,7 @@ public class Spec {
     }
 
     private void verifyKeys(String... keys) {
-        for (String key : keys) {
+        for (var key : keys) {
             if (!options.containsKey(key)) {
                 throw new IllegalArgumentException("Unknown option " + key);
             }
@@ -369,21 +384,25 @@ public class Spec {
                 return arg;
             }
 
-            OptionType argType = forArgument(arg);
+            if (arg == null) {
+                return null;
+            }
+
+            var argType = forArgument(arg);
             if (this == argType) {
                 return arg;
             } else if (this == LIST_OR_ELEMENT) {
                 if (argType == LIST) {
                     return arg;
                 } else {
-                    Object elementArg = elementType.convertArgument(ctx, path, arg, null);
+                    var elementArg = elementType.convertArgument(ctx, path, arg, null);
                     return Arrays.asList(elementArg);
                 }
             } else if (this == FLOAT) {
                 if (arg instanceof Integer) {
-                    return new Double((Integer) arg);
+                    return Double.valueOf((Integer) arg);
                 } else if (arg instanceof Long) {
-                    return new Double((Long) arg);
+                    return Double.valueOf((Long) arg);
                 }
             }
             throw new ValidationException(ctx, String.format(
@@ -404,6 +423,8 @@ public class Spec {
                 return LIST;
             } else if (arg instanceof Map) {
                 return MAP;
+            } else if (arg == null) {
+                throw new IllegalArgumentException("Cannot derive type for null argument");
             } else {
                 throw new IllegalArgumentException(
                         "Cannot derive type for argument of class " + arg.getClass().getName());
@@ -426,7 +447,7 @@ public class Spec {
 
         public WhenCondition requireAll(String... keys) {
             spec.verifyKeys(keys);
-            for (String key : keys) {
+            for (var key : keys) {
                 requiredKeys.add(key);
             }
             return this;
@@ -442,8 +463,10 @@ public class Spec {
         private List<String> description;
         private boolean required;
         private boolean secret;
+        private boolean hidden;
         private Object defaultValue;
         private OptionType elementType;
+        private String versionAdded;
         private String deprecationMessage;
         private List<Object> choices;
         private Spec spec;
@@ -467,6 +490,10 @@ public class Spec {
             return required;
         }
 
+        public boolean isHidden() {
+            return hidden;
+        }
+
         public boolean isSecret() {
             return secret;
         }
@@ -481,6 +508,10 @@ public class Spec {
 
         public List<String> getDescription() {
             return description;
+        }
+
+        public String getVersionAdded() {
+            return versionAdded;
         }
 
         public String getDeprecationMessage() {
@@ -510,6 +541,14 @@ public class Spec {
          */
         public Option withRequired(boolean required) {
             this.required = required;
+            return this;
+        }
+
+        /**
+         * Hint that this option should be hidden from UIs.
+         */
+        public Option withHidden(boolean hidden) {
+            this.hidden = hidden;
             return this;
         }
 
@@ -544,6 +583,15 @@ public class Spec {
         }
 
         /**
+         * Which version of the software this specific option was added. For example: "1.2.3". In plugins, this must be
+         * the plugin version, not the Yamcs version.
+         */
+        public Option withVersionAdded(String versionAdded) {
+            this.versionAdded = versionAdded;
+            return this;
+        }
+
+        /**
          * Attach a deprecation message to this option.
          */
         public Option withDeprecationMessage(String deprecationMessage) {
@@ -572,7 +620,7 @@ public class Spec {
          * Add aliases for this option. During validation the alias will be converted to the real option name.
          */
         public Option withAliases(String... aliases) {
-            for (String alias : aliases) {
+            for (var alias : aliases) {
                 if (parentSpec.options.containsKey(alias)) {
                     throw new IllegalArgumentException("Option '" + alias + "' is already defined");
                 }
@@ -591,7 +639,7 @@ public class Spec {
         }
 
         /**
-         * In case the {@link #type} is set to {@link OptionType#MAP}, setting this property to <tt>true</tt> will cause
+         * In case the {@link #type} is set to {@link OptionType#MAP}, setting this property to {@code true} will cause
          * defaults within elements of that type to be applied even if the option itself is not defined.
          * <p>
          * Note that this is not a recursive property. You need to specify at every level if so required.
@@ -606,6 +654,10 @@ public class Spec {
             if (deprecationMessage != null) {
                 log.warn("Argument {} has been deprecated: {}", path, deprecationMessage);
             }
+            if (arg == null) {
+                return null;
+            }
+
             arg = type.convertArgument(ctx, path, arg, elementType);
 
             if (choices != null && !choices.contains(arg)) {
@@ -614,18 +666,18 @@ public class Spec {
             }
 
             if (type == OptionType.LIST || type == OptionType.LIST_OR_ELEMENT) {
-                List<Object> resultList = new ArrayList<>();
-                ListIterator<Object> it = ((List<Object>) arg).listIterator();
+                var resultList = new ArrayList<>();
+                var it = ((List<Object>) arg).listIterator();
                 while (it.hasNext()) {
-                    String elPath = path + "[" + it.nextIndex() + "]";
-                    Object argElement = it.next();
+                    var elPath = path + "[" + it.nextIndex() + "]";
+                    var argElement = it.next();
                     argElement = elementType.convertArgument(ctx, elPath, argElement, null);
 
                     if (elementType == OptionType.LIST) {
                         throw new UnsupportedOperationException("List of lists cannot be validated");
                     } else if (elementType == OptionType.MAP) {
-                        Map<String, Object> m = (Map<String, Object>) argElement;
-                        Object resultArg = spec.doValidate(ctx, m, elPath);
+                        var m = (Map<String, Object>) argElement;
+                        var resultArg = spec.doValidate(ctx, m, elPath);
                         resultList.add(resultArg);
                     } else {
                         resultList.add(argElement);
@@ -647,9 +699,9 @@ public class Spec {
                 return defaultValue;
             }
             if (applySpecDefaults) {
-                Map<String, Object> result = new LinkedHashMap<>();
-                for (Option option : spec.options.values()) {
-                    Object subDefaultValue = option.computeDefaultValue();
+                var result = new LinkedHashMap<String, Object>();
+                for (var option : spec.options.values()) {
+                    var subDefaultValue = option.computeDefaultValue();
                     if (subDefaultValue != null) {
                         result.put(option.name, subDefaultValue);
                     }
@@ -665,16 +717,18 @@ public class Spec {
      */
     @SuppressWarnings("unchecked")
     public static Spec fromDescriptor(Map<String, Map<String, Object>> optionDescriptors) throws ValidationException {
-        Spec spec = new Spec();
-        for (Entry<String, Map<String, Object>> entry : optionDescriptors.entrySet()) {
-            String optionName = entry.getKey();
-            Map<String, Object> optionDescriptor = OPTION_DESCRIPTOR.validate(entry.getValue());
+        var spec = new Spec();
+        for (var entry : optionDescriptors.entrySet()) {
+            var optionName = entry.getKey();
+            var optionDescriptor = OPTION_DESCRIPTOR.validate(entry.getValue());
 
-            Option option = spec.addOption(optionName, OptionType.valueOf((String) optionDescriptor.get("type")))
+            var option = spec.addOption(optionName, OptionType.valueOf((String) optionDescriptor.get("type")))
                     .withTitle((String) optionDescriptor.get("title"))
                     .withDefault(optionDescriptor.get("default"))
                     .withRequired((boolean) optionDescriptor.get("required"))
+                    .withHidden((boolean) optionDescriptor.get("hidden"))
                     .withSecret((boolean) optionDescriptor.get("secret"))
+                    .withVersionAdded((String) optionDescriptor.get("versionAdded"))
                     .withDeprecationMessage((String) optionDescriptor.get("deprecationMessage"));
             if (optionDescriptor.containsKey("description")) {
                 option.withDescription(((List<String>) optionDescriptor.get("description")).toArray(new String[0]));
@@ -683,10 +737,13 @@ public class Spec {
                 option.withElementType(OptionType.valueOf((String) optionDescriptor.get("elementType")));
             }
             if (optionDescriptor.containsKey("suboptions")) {
-                Map<String, Map<String, Object>> suboptionDescriptors = (Map<String, Map<String, Object>>) optionDescriptor
-                        .get("suboptions");
-                Spec subspec = fromDescriptor(suboptionDescriptors);
+                var suboptionDescriptors = (Map<String, Map<String, Object>>) optionDescriptor.get("suboptions");
+                var subspec = fromDescriptor(suboptionDescriptors);
                 option.withSpec(subspec);
+            }
+            if (optionDescriptor.containsKey("choices")) {
+                var choices = (List<Object>) optionDescriptor.get("choices");
+                option.withChoices(choices.toArray());
             }
         }
         return spec;
@@ -697,7 +754,11 @@ public class Spec {
      */
     public static final class ValidationContext {
 
-        private String path;
+        private final String path;
+
+        public ValidationContext(String path) {
+            this.path = path;
+        }
 
         public String getPath() {
             return path;

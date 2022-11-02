@@ -1,5 +1,5 @@
 import { Component, Inject, OnDestroy } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { DownloadEventsOptions } from '../client';
@@ -22,13 +22,13 @@ export class ExportEventsDialog implements OnDestroy {
 
   downloadURL$ = new BehaviorSubject<string | null>(null);
 
-  form = new FormGroup({
-    start: new FormControl(null),
-    stop: new FormControl(null),
-    severity: new FormControl(null, Validators.required),
-    q: new FormControl(null),
-    source: new FormControl(null),
-    delimiter: new FormControl(null, Validators.required),
+  form = new UntypedFormGroup({
+    start: new UntypedFormControl(null),
+    stop: new UntypedFormControl(null),
+    severity: new UntypedFormControl(null, Validators.required),
+    q: new UntypedFormControl(null),
+    source: new UntypedFormControl([]),
+    delimiter: new UntypedFormControl(null, Validators.required),
   });
 
   constructor(
@@ -40,7 +40,7 @@ export class ExportEventsDialog implements OnDestroy {
       start: data.start ? utils.toISOString(data.start) : '',
       stop: data.stop ? utils.toISOString(data.stop) : '',
       q: data.q || '',
-      source: data.source || '',
+      source: data.source,
       severity: data.severity,
       delimiter: 'TAB',
     });
@@ -71,9 +71,9 @@ export class ExportEventsDialog implements OnDestroy {
       if (this.form.value['q']) {
         dlOptions.q = this.form.value['q'];
       }
-      if (this.form.value['source']) {
+      if (this.form.value['source'].length) {
         const source = this.form.value['source'];
-        dlOptions.source = (source !== 'ANY') ? source : null;
+        dlOptions.source = source;
       }
       const url = this.yamcs.yamcsClient.getEventsDownloadURL(this.yamcs.instance!, dlOptions);
       this.downloadURL$.next(url);

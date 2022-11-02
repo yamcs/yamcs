@@ -33,15 +33,15 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.http.Route;
 import org.yamcs.http.RpcDescriptor;
 import org.yamcs.http.Topic;
+import org.yamcs.http.WebSocketFrameHandler;
 import org.yamcs.protobuf.AbstractServerApi;
 import org.yamcs.protobuf.ClientConnectionInfo;
 import org.yamcs.protobuf.ClientConnectionInfo.HttpRequestInfo;
-import org.yamcs.protobuf.CloseConnectionRequest;
 import org.yamcs.protobuf.GetServerInfoResponse;
 import org.yamcs.protobuf.GetServerInfoResponse.CommandOptionInfo;
 import org.yamcs.protobuf.GetServerInfoResponse.PluginInfo;
 import org.yamcs.protobuf.GetThreadRequest;
-import org.yamcs.protobuf.ListClientConnectionsResponse;
+import org.yamcs.protobuf.HttpTraffic;
 import org.yamcs.protobuf.ListRoutesResponse;
 import org.yamcs.protobuf.ListThreadsRequest;
 import org.yamcs.protobuf.ListThreadsResponse;
@@ -57,9 +57,11 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 
 import io.netty.channel.Channel;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
+import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import io.netty.handler.traffic.TrafficCounter;
 
 public class ServerApi extends AbstractServerApi<Context> {
@@ -73,8 +75,12 @@ public class ServerApi extends AbstractServerApi<Context> {
     @Override
     public void getServerInfo(Context ctx, Empty request, Observer<GetServerInfoResponse> observer) {
         GetServerInfoResponse.Builder responseb = GetServerInfoResponse.newBuilder();
-        responseb.setYamcsVersion(YamcsVersion.VERSION);
-        responseb.setRevision(YamcsVersion.REVISION);
+        if (YamcsVersion.VERSION != null) {
+            responseb.setYamcsVersion(YamcsVersion.VERSION);
+        }
+        if (YamcsVersion.REVISION != null) {
+            responseb.setRevision(YamcsVersion.REVISION);
+        }
         responseb.setServerId(YamcsServer.getServer().getServerId());
 
         PluginManager pluginManager = YamcsServer.getServer().getPluginManager();
@@ -156,6 +162,9 @@ public class ServerApi extends AbstractServerApi<Context> {
                 if (route.isDeprecated()) {
                     routeb.setDeprecated(true);
                 }
+                if (route.getLogFormat() != null) {
+                    routeb.setLogFormat(route.getLogFormat());
+                }
             }
             result.add(routeb.build());
         }
@@ -202,13 +211,31 @@ public class ServerApi extends AbstractServerApi<Context> {
     }
 
     @Override
-    public void listClientConnections(Context ctx, Empty request, Observer<ListClientConnectionsResponse> observer) {
+    public void getHttpTraffic(Context ctx, Empty request, Observer<HttpTraffic> observer) {
         if (!ctx.user.isSuperuser()) {
             throw new ForbiddenException("Insufficient privileges");
         }
 
+        HttpTraffic.Builder responseb = HttpTraffic.newBuilder();
+
+        GlobalTrafficShapingHandler globalTrafficHandler = httpServer.getGlobalTrafficShapingHandler();
+        if (globalTrafficHandler != null) {
+            TrafficCounter counter = globalTrafficHandler.trafficCounter();
+            if (counter != null) {
+                responseb.setReadThroughput(counter.lastReadThroughput());
+                responseb.setWriteThroughput(counter.lastWriteThroughput());
+                responseb.setReadBytes(counter.cumulativeReadBytes());
+                responseb.setWrittenBytes(counter.cumulativeWrittenBytes());
+            }
+        }
+
         List<ClientConnectionInfo> result = new ArrayList<>();
         for (Channel channel : httpServer.getClientChannels()) {
+            HttpRequest httpRequest = channel.attr(HttpRequestHandler.CTX_HTTP_REQUEST).get();
+            if (httpRequest == null) {
+                continue; // Could be in the process of being handled
+            }
+
             ClientConnectionInfo.Builder connectionb = ClientConnectionInfo.newBuilder()
                     .setId(channel.id().asShortText())
                     .setOpen(channel.isOpen())
@@ -232,25 +259,29 @@ public class ServerApi extends AbstractServerApi<Context> {
                 }
             }
 
-            HttpRequest httpRequest = channel.attr(HttpRequestHandler.CTX_HTTP_REQUEST).get();
-            if (httpRequest != null) {
-                HttpRequestInfo.Builder httpRequestb = HttpRequestInfo.newBuilder()
-                        .setKeepAlive(HttpUtil.isKeepAlive(httpRequest))
-                        .setProtocol(httpRequest.protocolVersion().text())
-                        .setMethod(httpRequest.method().name())
-                        .setUri(httpRequest.uri());
-                String userAgent = httpRequest.headers().getAsString("User-Agent");
-                if (userAgent != null) {
-                    httpRequestb.setUserAgent(userAgent);
-                }
-
-                connectionb.setHttpRequest(httpRequestb.build());
+            String username = channel.attr(HttpRequestHandler.CTX_USERNAME).get();
+            if (username != null) {
+                connectionb.setUsername(username);
             }
 
+            String protocol = httpRequest.protocolVersion().text();
+            if (channel.pipeline().get(WebSocketFrameHandler.class) != null) {
+                protocol = "WebSocket";
+            }
+            HttpRequestInfo.Builder httpRequestb = HttpRequestInfo.newBuilder()
+                    .setKeepAlive(HttpUtil.isKeepAlive(httpRequest))
+                    .setProtocol(protocol)
+                    .setMethod(httpRequest.method().name())
+                    .setUri(httpRequest.uri());
+            String userAgent = httpRequest.headers().getAsString(HttpHeaderNames.USER_AGENT);
+            if (userAgent != null) {
+                httpRequestb.setUserAgent(userAgent);
+            }
+
+            connectionb.setHttpRequest(httpRequestb.build());
             result.add(connectionb.build());
         }
 
-        ListClientConnectionsResponse.Builder responseb = ListClientConnectionsResponse.newBuilder();
         responseb.addAllConnections(result);
         observer.complete(responseb.build());
     }
@@ -373,15 +404,6 @@ public class ServerApi extends AbstractServerApi<Context> {
         } else {
             throw new NotFoundException("No thread with ID " + request.getId());
         }
-    }
-
-    @Override
-    public void closeConnection(Context ctx, CloseConnectionRequest request, Observer<Empty> observer) {
-        if (!ctx.user.isSuperuser()) {
-            throw new ForbiddenException("Insufficient privileges");
-        }
-        httpServer.closeChannel(request.getId());
-        observer.complete(Empty.getDefaultInstance());
     }
 
     private ThreadGroupInfo toThreadGroupInfo(ThreadGroup group) {

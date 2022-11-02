@@ -12,8 +12,6 @@ URL: https://yamcs.org
 Prefix: /opt/yamcs
 BuildArch: x86_64
 
-Requires: socat
-
 
 %description
 Yamcs Mission Control
@@ -23,7 +21,6 @@ Yamcs Mission Control
 cd %{name}-%{version}-%{release}
 
 mkdir -p %{buildroot}
-cp -r etc %{buildroot}
 cp -r opt %{buildroot}
 cp -r usr %{buildroot}
 
@@ -68,5 +65,3 @@ fi
 
 %attr(-,yamcs,yamcs) %{prefix}/cache
 %attr(-,yamcs,yamcs) %{prefix}/log
-
-%attr(755, root, root) /etc/init.d/*

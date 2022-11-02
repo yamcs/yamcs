@@ -20,24 +20,26 @@ export class CommandReportPage implements OnDestroy {
   ) {
     const id = route.snapshot.paramMap.get('commandId')!;
 
-    yamcs.yamcsClient.getCommandHistoryEntry(this.yamcs.instance!, id).then(entry => {
-      this.mergeEntry(entry);
-      this.commandSubscription = yamcs.yamcsClient.createCommandSubscription({
-        instance: yamcs.instance!,
-        processor: yamcs.processor!,
-        ignorePastCommands: false,
-      }, wsEntry => {
-        if (wsEntry.id === id) {
-          this.mergeEntry(wsEntry);
-        }
+    this.commandSubscription = yamcs.yamcsClient.createCommandSubscription({
+      instance: yamcs.instance!,
+      processor: yamcs.processor!,
+      ignorePastCommands: false,
+    }, wsEntry => {
+      if (wsEntry.id === id) {
+        this.mergeEntry(wsEntry, false);
+      }
+    });
+    this.commandSubscription.addReplyListener(() => {
+      yamcs.yamcsClient.getCommandHistoryEntry(this.yamcs.instance!, id).then(entry => {
+        this.mergeEntry(entry, true /* append ws replies to rest response */);
       });
     });
   }
 
-  private mergeEntry(entry: CommandHistoryEntry) {
+  private mergeEntry(entry: CommandHistoryEntry, reverse: boolean) {
     const rec = this.command$.value;
     if (rec) {
-      const mergedRec = rec.mergeEntry(entry);
+      const mergedRec = rec.mergeEntry(entry, reverse);
       this.command$.next(mergedRec);
     } else {
       this.command$.next(new CommandHistoryRecord(entry));
@@ -45,8 +47,6 @@ export class CommandReportPage implements OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.commandSubscription) {
-      this.commandSubscription.cancel();
-    }
+    this.commandSubscription?.cancel();
   }
 }

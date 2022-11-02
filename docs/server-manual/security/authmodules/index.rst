@@ -4,11 +4,11 @@ AuthModules
 .. toctree::
     :maxdepth: 1
 
-    directory
     ldap
     yaml
     kerberos
     remote-user
+    ip-address
     spnego
     openid
 
@@ -17,8 +17,6 @@ The security subsystem is modular by design and allows combining different AuthM
 
 The default set of AuthModules include:
 
-:doc:`directory`
-    Authenticates users against the internal Yamcs database.
 :doc:`ldap`
     Attempts to bind to LDAP with the provided credentials. Also capable of reading privileges for the user.
 :doc:`yaml`
@@ -27,6 +25,8 @@ The default set of AuthModules include:
     Supports authenticating against a Kerberos server.
 :doc:`remote-user`
     Supports authentication based on a custom HTTP header.
+:doc:`ip-address`
+    Supports authentication based on the remote IP address.
 :doc:`spnego`
     Supports authenticating against a Kerberos server using Single Sign On from a web context.
 :doc:`openid`

@@ -3,6 +3,7 @@ package org.yamcs.archive;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -69,7 +70,6 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
     protected Tablespace tablespace;
     int tbsIndex;
     List<String> streamNames;
-
 
     @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration args) throws InitException {
@@ -153,7 +153,6 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
             addPacket(apid, time, seq);
         } catch (RocksDBException e) {
             log.error("got exception while saving the packet into index", e);
-            e.printStackTrace();
         }
     }
 
@@ -346,12 +345,30 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
         }
     }
 
+    public List<Short> getApids() throws RocksDBException {
+        List<Short> apids = new ArrayList<>();
+        try (RocksIterator cur = tablespace.getRdb().newIterator()) {
+            Record ar;
+            short apid = 0;
+            while (true) {
+                cur.seek(Record.key(tbsIndex, apid, Long.MAX_VALUE, Short.MAX_VALUE));
+                ar = new Record(cur.key(), cur.value());
+                apid = ar.apid();
+                if (apid == Short.MAX_VALUE) {
+                    break;
+                }
+                apids.add(apid);
+            }
+        }
+        return apids;
+    }
+
     class CcsdsIndexIteratorAdapter implements IndexIterator {
         CcsdsIndexIterator iterator;
-        final Set<Integer> apids;
+        final Set<Short> apids;
 
-        CcsdsIndexIteratorAdapter(long start, long stop) {
-            apids = null;
+        CcsdsIndexIteratorAdapter(Set<Short> apids, long start, long stop) {
+            this.apids = apids;
             iterator = new CcsdsIndexIterator((short) -1, start, stop);
         }
 
@@ -368,7 +385,7 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
                     return null;
                 }
 
-                int apid = r.apid;
+                short apid = r.apid;
                 if ((apids == null) || (apids.contains(apid))) {
                     String pn = "apid_" + apid;
                     NamedObjectId id = NamedObjectId.newBuilder().setName(pn).build();
@@ -469,15 +486,17 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.yamcs.yarch.usoc.TmIndex#getIterator(short, long, long)
-     * names is ignored for the moment
-     */
     @Override
     public IndexIterator getIterator(List<NamedObjectId> names, long start, long stop) {
-        return new CcsdsIndexIteratorAdapter(start, stop);
+        if (names == null) {
+            return new CcsdsIndexIteratorAdapter(null, start, stop);
+        } else {
+            Set<Short> apids = names.stream()
+                    .filter(name -> name.getName().startsWith("apid_"))
+                    .map(name -> Short.valueOf(name.getName().substring(5)))
+                    .collect(Collectors.toSet());
+            return new CcsdsIndexIteratorAdapter(apids, start, stop);
+        }
     }
 
     @Override

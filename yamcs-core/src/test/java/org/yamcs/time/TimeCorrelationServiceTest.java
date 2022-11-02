@@ -1,12 +1,13 @@
 package org.yamcs.time;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.utils.TimeEncoding;
@@ -18,7 +19,7 @@ public class TimeCorrelationServiceTest {
     static String serviceName = "test";
     static String tableName = TimeCorrelationService.TABLE_NAME + serviceName;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         TimeEncoding.setUp();
         EventProducerFactory.setMockup(false);
@@ -110,10 +111,12 @@ public class TimeCorrelationServiceTest {
         assertEquals(Instant.INVALID_INSTANT, ots.getTime(0));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testUnsortedSample() throws Exception {
-        TimeCorrelationService ots = createAndStart(true);
-        ots.addSample(10, Instant.get(1000, 0));
-        ots.addSample(9, Instant.get(0, 0));
+    @Test
+    public void testUnsortedSample() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            TimeCorrelationService ots = createAndStart(true);
+            ots.addSample(10, Instant.get(1000, 0));
+            ots.addSample(9, Instant.get(0, 0));
+        });
     }
 }

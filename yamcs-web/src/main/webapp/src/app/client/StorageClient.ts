@@ -21,6 +21,11 @@ export class StorageClient {
     return wrapper.buckets || [];
   }
 
+  async getBucket(instance: string, bucket: string): Promise<Bucket> {
+    const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/buckets/${instance}/${bucket}`);
+    return await response.json() as Bucket;
+  }
+
   async deleteBucket(instance: string, name: string) {
     const url = `${this.yamcs.apiUrl}/buckets/${instance}/${name}`;
     return await this.yamcs.doFetch(url, {
@@ -34,12 +39,12 @@ export class StorageClient {
     return await response.json() as ListObjectsResponse;
   }
 
-  async getObject(instance: string, bucket: string, name: string) {
-    return await this.yamcs.doFetch(this.getObjectURL(instance, bucket, name));
+  async getObject(instance: string, bucket: string, objectName: string) {
+    return await this.yamcs.doFetch(this.getObjectURL(instance, bucket, objectName));
   }
 
-  getObjectURL(instance: string, bucket: string, name: string) {
-    const encodedName = encodeURIComponent(name);
+  getObjectURL(instance: string, bucket: string, objectName: string) {
+    const encodedName = this.encodeObjectName(objectName);
     return `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}/objects/${encodedName}`;
   }
 
@@ -53,18 +58,24 @@ export class StorageClient {
     });
   }
 
-  async deleteObject(instance: string, bucket: string, name: string) {
-    const encodedName = encodeURIComponent(name);
+  async deleteObject(instance: string, bucket: string, objectName: string) {
+    const encodedName = this.encodeObjectName(objectName);
     const url = `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}/objects/${encodedName}`;
     return await this.yamcs.doFetch(url, {
       method: 'DELETE',
     });
   }
 
-  private queryString(options: { [key: string]: any }) {
+  private queryString(options: { [key: string]: any; }) {
     const qs = Object.keys(options)
       .map(k => `${k}=${options[k]}`)
       .join('&');
     return qs === '' ? qs : '?' + qs;
+  }
+
+  private encodeObjectName(objectName: string) {
+    return objectName.split('/')
+      .map(component => encodeURIComponent(component))
+      .join('/');
   }
 }

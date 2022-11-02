@@ -248,9 +248,6 @@ message CreateProcessorRequest {
   // **Required.** The name of the processor. Must be unique for the Yamcs instance.
   optional string name = 2;
   
-  // The client IDs that should be connected to this processor.
-  repeated int32 clientId = 3;
-  
   // Keep the processor when terminated. Default: ``no``.
   optional bool persistent = 4;
   
@@ -285,6 +282,15 @@ message EditProcessorRequest {
   // * a speed factor relative to the original speed. Example: ``2x``
   // * a fixed delay value in milliseconds. Example: ``2000``
   optional string speed = 5;
+
+  // New start time
+  optional google.protobuf.Timestamp start = 6;
+
+  // New stop time
+  optional google.protobuf.Timestamp stop = 7;
+
+  // Continue replaying from ``start`` after having reached ``stop``.
+  optional bool loop = 8;
 }
 
 message GetParameterValueRequest {
@@ -318,6 +324,10 @@ message SetParameterValueRequest {
   
   // The new value.
   optional Value value = 4;
+
+  // The generation time of the value. If specified, must be a date
+  // string in ISO 8601 format.
+  optional google.protobuf.Timestamp generationTime = 5;
 }
 
 message BatchGetParameterValuesRequest {
@@ -342,6 +352,10 @@ message BatchSetParameterValuesRequest {
   message SetParameterValueRequest {
     optional NamedObjectId id = 1;
     optional Value value = 2;
+
+    // The generation time of the value. If specified, must be a date
+    // string in ISO 8601 format.
+    optional google.protobuf.Timestamp generationTime = 3;
   }
   
   // Yamcs instance name.

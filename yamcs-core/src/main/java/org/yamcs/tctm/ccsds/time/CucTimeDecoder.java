@@ -1,6 +1,7 @@
 package org.yamcs.tctm.ccsds.time;
 
-import org.yamcs.tctm.TimeDecoder;
+import org.yamcs.logging.Log;
+import org.yamcs.time.TimeDecoder;
 import org.yamcs.utils.ByteSupplier;
 
 /**
@@ -17,6 +18,7 @@ import org.yamcs.utils.ByteSupplier;
  *
  */
 public class CucTimeDecoder implements TimeDecoder {
+    public static final Log log = new Log(CucTimeDecoder.class);
     final int basicTimeBytes;
     final int fractionalTimeBytes;
 
@@ -54,10 +56,46 @@ public class CucTimeDecoder implements TimeDecoder {
         }
     }
 
+    @Override
+    public long decode(byte[] buf, int offset) {
+        return decode(getSupplier(buf, offset));
+    }
+
+    /**
+     * Returns the time in an unspecified unit.
+     * <p>
+     * Can be used when the on-board time is free running.
+     * 
+     * <p>
+     * It is assumed that the buffer will contain enough data; if not, an {@link ArrayIndexOutOfBoundsException} will be
+     * thrown.
+     * 
+     * @param buf
+     *            the time will be read from this buffer at the given offset.
+     * @param offset
+     *            offset in the buffer where to read the time from
+     * @return time
+     * 
+     */
+    @Override
+    public long decodeRaw(byte[] buf, int offset) {
+        return decodeRaw(getSupplier(buf, offset));
+    }
+
+    static ByteSupplier getSupplier(byte[] buf, int offset) {
+        return new ByteSupplier() {
+            int o = offset;
+
+            @Override
+            public byte getAsByte() {
+                return buf[o++];
+            }
+        };
+    }
+
     /**
      * Assuming that the basic time unit is second, return the number of milliseconds.
      */
-    @Override
     public long decode(ByteSupplier s) {
         int btBytes, ftBytes;
         if (basicTimeBytes < 0) {
@@ -78,7 +116,9 @@ public class CucTimeDecoder implements TimeDecoder {
             btBytes = basicTimeBytes;
             ftBytes = fractionalTimeBytes;
         }
-
+        if (log.isTraceEnabled()) {
+            log.trace("Extracting time with basic time {} bytes and fine time {} bytes", btBytes, ftBytes);
+        }
         long coarseTime = 0;
         while (btBytes > 0) {
             coarseTime = (coarseTime << 8) + (0xFF & s.getAsByte());
@@ -96,6 +136,9 @@ public class CucTimeDecoder implements TimeDecoder {
             }
             fineTime = 1000 * fineTime / (1 << (ftBytes * 8));
         }
+        if (log.isTraceEnabled()) {
+            log.trace("Extracted corseTime={} sec and fineTime={} millis", coarseTime, fineTime);
+        }
         return coarseTime * 1000 + fineTime;
     }
 
@@ -104,7 +147,6 @@ public class CucTimeDecoder implements TimeDecoder {
      * <p>
      * If the length of the basicTime and fractional time is greater than 8, an exception is thrown.
      */
-    @Override
     public long decodeRaw(ByteSupplier s) {
         int n;
         if (basicTimeBytes < 0) {
@@ -123,11 +165,18 @@ public class CucTimeDecoder implements TimeDecoder {
         if (n > 8) {
             throw new UnsupportedOperationException("Raw time encoding on " + n + " bytes not supported");
         }
+        if (log.isTraceEnabled()) {
+            log.trace("Extracting raw time on {} bytes", n);
+        }
 
         long t = 0;
         while (n > 0) {
             t = (t << 8) + (0xFF & s.getAsByte());
             n--;
+        }
+
+        if (log.isTraceEnabled()) {
+            log.trace("Extracted raw time {}", t);
         }
         return t;
     }
@@ -137,5 +186,4 @@ public class CucTimeDecoder implements TimeDecoder {
         return "CucTimeDecoder [basicTimeBytes=" + basicTimeBytes
                 + " fractionalTimeBytes=" + fractionalTimeBytes + "]";
     }
-
 }

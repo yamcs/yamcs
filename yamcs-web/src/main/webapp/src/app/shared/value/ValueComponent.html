@@ -1,0 +1,34 @@
+<ng-container *ngIf="(value?.type === 'AGGREGATE' || value?.type === 'ARRAY'); else simpleValue">
+  <table *ngIf="nodes$ | async as nodes">
+    <ng-container *ngFor="let node of nodes">
+      <tr *ngIf="!node.parent || node.parent.expanded">
+        <td>
+          <div class="indent" [style.width.px]="node.margin"></div>
+          <ng-container *ngIf="node.children">
+            <span class="toggle" *ngIf="!node.expanded"
+                  (click)="expandNode(node)">▸</span>
+            <span class="toggle" *ngIf="node.expanded"
+                  (click)="collapseNode(node)">▾</span>
+          </ng-container>
+
+          <ng-container *ngIf="node.key !== undefined">
+            <span class="key">{{ node.key }}</span><span class="symbol">: </span>
+          </ng-container>
+
+          <ng-container *ngIf="node.expanded">
+            <ng-container *ngIf="node.value.type === 'ARRAY'">
+              <span class="value expandable">Array({{ node.value.arrayValue?.length || 0 }})</span>
+            </ng-container>
+          </ng-container>
+          <ng-container *ngIf="!node.expanded || node.value.type !== 'ARRAY'">
+            <span class="value"
+                  [class.expandable]="node.children">{{ node.value | value }}</span>
+          </ng-container>
+        </td>
+      </tr>
+    </ng-container>
+  </table>
+</ng-container>
+<ng-template #simpleValue>
+  {{ (value | value) ?? '-' }}
+</ng-template>

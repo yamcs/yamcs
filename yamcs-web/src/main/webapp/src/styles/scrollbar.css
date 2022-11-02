@@ -1,0 +1,13 @@
+/* Works on Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+  width: 16px;
+}
+
+*::-webkit-scrollbar-thumb {
+  height: 56px;
+  background-color: var(--y-scrollbar-thumb);
+  border-radius: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  background-clip: content-box;
+}

@@ -6,8 +6,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.protobuf.Event.EventSeverity;
 import org.yamcs.yarch.protobuf.Db.Event;
-import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 
 /**
  * Default implementation of an EventProducer that provides shortcut methods for sending message of different severity
@@ -38,40 +38,6 @@ public abstract class AbstractEventProducer implements EventProducer {
         this.seqNo.set(sn);
     }
 
-    @Override
-    public synchronized void sendError(String type, String msg) {
-        sendMessage(EventSeverity.ERROR, type, msg);
-    }
-
-    @Override
-    public synchronized void sendWarning(String type, String msg) {
-        sendMessage(EventSeverity.WARNING, type, msg);
-    }
-
-    @Override
-    public synchronized void sendInfo(String type, String msg) {
-        sendMessage(EventSeverity.INFO, type, msg);
-    }
-
-    @Override
-    public synchronized void sendWatch(String type, String msg) {
-        sendMessage(EventSeverity.WATCH, type, msg);
-    }
-
-    @Override
-    public synchronized void sendDistress(String type, String msg) {
-        sendMessage(EventSeverity.DISTRESS, type, msg);
-    }
-
-    @Override
-    public synchronized void sendCritical(String type, String msg) {
-        sendMessage(EventSeverity.CRITICAL, type, msg);
-    }
-
-    @Override
-    public synchronized void sendSevere(String type, String msg) {
-        sendMessage(EventSeverity.SEVERE, type, msg);
-    }
 
     @Override
     public void sendInfo(String msg) {
@@ -110,7 +76,8 @@ public abstract class AbstractEventProducer implements EventProducer {
         return classname.substring(idx + 1);
     }
 
-    private void sendMessage(EventSeverity severity, String type, String msg) {
+    @Override
+    public void sendEvent(EventSeverity severity, String type, String msg) {
         if (logAllMessages) {
             log.debug("event: {}; {}; {}", severity, type, msg);
         }

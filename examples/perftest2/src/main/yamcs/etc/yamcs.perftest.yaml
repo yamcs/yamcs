@@ -107,7 +107,7 @@ dataLinks:
         enforceEvenNumberOfBytes: true
         
   - name: TSE
-    class: org.yamcs.tctm.TseDataLink
+    class: org.yamcs.tse.TseDataLink
     host: localhost
     port: 8135
     # Give the embedded simulator some time to boot up
@@ -121,7 +121,7 @@ mdb:
     subLoaders:
       - type: "sheet"
         spec: "mdb/landing.xls"
-  - type: "org.yamcs.xtce.TseLoader"
+  - type: "org.yamcs.tse.TseLoader"
     subLoaders:
       - type: "sheet"
         spec: "mdb/tse/simulator.xls"

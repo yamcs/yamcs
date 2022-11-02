@@ -17,7 +17,6 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -25,9 +24,11 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -84,12 +85,17 @@ import org.yamcs.client.ConnectionListener;
 import org.yamcs.client.MessageListener;
 import org.yamcs.client.PacketSubscription;
 import org.yamcs.client.YamcsClient;
+import org.yamcs.client.base.ServerURL;
+import org.yamcs.mdb.DatabaseLoadException;
+import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.XtceTmProcessor;
 import org.yamcs.parameter.ContainerParameterValue;
 import org.yamcs.parameter.ParameterProcessor;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.SubscribePacketsRequest;
-import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.protobuf.TmPacketData;
 import org.yamcs.tctm.CcsdsPacketInputStream;
 import org.yamcs.tctm.IssPacketPreprocessor;
 import org.yamcs.tctm.PacketInputStream;
@@ -100,13 +106,9 @@ import org.yamcs.ui.packetviewer.filter.ParseException;
 import org.yamcs.ui.packetviewer.filter.TokenMgrError;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
-import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ProcessingData;
-import org.yamcs.xtceproc.XtceDbFactory;
-import org.yamcs.xtceproc.XtceTmProcessor;
 
 import com.google.common.io.CountingInputStream;
 
@@ -147,17 +149,17 @@ public class PacketViewer extends JFrame implements ActionListener,
     private OpenFileDialog openFileDialog;
     private YamcsClient client;
     private ConnectDialog connectDialog;
+    private ConnectData connectData;
     Preferences uiPrefs;
 
     // used for decoding full packets
     private XtceTmProcessor tmProcessor;
 
-    String streamName;
     private String defaultNamespace;
-    private PacketPreprocessor packetPreprocessor;
+    private PacketPreprocessor realtimePacketPreprocessor;
 
-    private YConfiguration packetInputStreamArgs;
-    private String packetInputStreamClassName;
+    private Map<String, FileFormat> fileFormats = new LinkedHashMap<>();
+    private FileFormat currentFileFormat; // null if listening to server
 
     final static String CFG_PREPRO_CLASS = "packetPreprocessorClassName";
 
@@ -176,10 +178,12 @@ public class PacketViewer extends JFrame implements ActionListener,
             defaultNamespace = config.getString("defaultNamespace", null);
             readConfig(null, config);
         } else {
-            packetPreprocessor = new IssPacketPreprocessor(null);
+            realtimePacketPreprocessor = new IssPacketPreprocessor(null);
+            realtimePacketPreprocessor.checkForSequenceDiscontinuity(false);
+            FileFormat fileFormat = new FileFormat("CCSDS Packets", CcsdsPacketInputStream.class.getName(),
+                    YConfiguration.emptyConfig(), realtimePacketPreprocessor);
+            fileFormats.put(fileFormat.getName(), fileFormat);
         }
-
-        packetPreprocessor.checkForSequenceDiscontinuity(false);
 
         // table to the left which shows one row per packet
         packetsTable = new PacketsTable(this);
@@ -373,7 +377,7 @@ public class PacketViewer extends JFrame implements ActionListener,
         menuBar.add(fileMenu);
 
         // Ctrl on win/linux, Command on mac
-        int menuKey = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+        int menuKey = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
 
         JMenuItem menuitem = new JMenuItem("Open...", KeyEvent.VK_O);
         menuitem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, menuKey));
@@ -562,7 +566,7 @@ public class PacketViewer extends JFrame implements ActionListener,
         } else if (cmd.equals("open file")) {
             if (openFileDialog == null) {
                 try {
-                    openFileDialog = new OpenFileDialog();
+                    openFileDialog = new OpenFileDialog(fileFormats);
                 } catch (ConfigurationException e) {
                     showError("Cannot load local mdb config: " + e.getMessage());
                     return;
@@ -570,7 +574,8 @@ public class PacketViewer extends JFrame implements ActionListener,
             }
             int returnVal = openFileDialog.showDialog(this);
             if (returnVal == OpenFileDialog.APPROVE_OPTION) {
-                openFile(openFileDialog.getSelectedFile(), openFileDialog.getSelectedDbConfig());
+                FileFormat fileFormat = openFileDialog.getSelectedFileFormat();
+                openFile(openFileDialog.getSelectedFile(), fileFormat, openFileDialog.getSelectedDbConfig());
             }
         } else if (cmd.equals("connect-yamcs")) {
             if (connectDialog == null) {
@@ -578,20 +583,30 @@ public class PacketViewer extends JFrame implements ActionListener,
             }
             int ret = connectDialog.showDialog();
             if (ret == ConnectDialog.APPROVE_OPTION) {
-                streamName = connectDialog.getStreamName();
-                connectYamcs(connectDialog.getConnectData());
+                var connectData = connectDialog.getConnectData();
+                connectYamcs(connectData);
             }
         } else if (cmd.startsWith("recent-file-")) {
             JMenuItem mi = (JMenuItem) ae.getSource();
             for (String[] recentFile : getRecentFiles()) {
                 if (recentFile[0].equals(mi.getToolTipText())) {
-                    openFile(new File(recentFile[0]), recentFile[1]);
+                    if (recentFile.length == 3) {
+                        FileFormat fileFormat = fileFormats.get(recentFile[2]);
+                        if (fileFormat != null) {
+                            openFile(new File(recentFile[0]), fileFormat, recentFile[1]);
+                            break;
+                        }
+                    }
+
+                    FileFormat fileFormat = fileFormats.values().iterator().next();
+                    openFile(new File(recentFile[0]), fileFormat, recentFile[1]);
+                    break;
                 }
             }
         }
     }
 
-    private void openFile(File file, String xtceDb) {
+    private void openFile(File file, FileFormat fileFormat, String xtceDb) {
         if (!file.exists() || !file.isFile()) {
             JOptionPane.showMessageDialog(null, "File not found: " + file, "File not found", JOptionPane.ERROR_MESSAGE);
             return;
@@ -599,9 +614,10 @@ public class PacketViewer extends JFrame implements ActionListener,
         disconnect();
         lastFile = file;
         if (loadLocalXtcedb(xtceDb)) {
-            loadFile();
+            loadFile(fileFormat);
         }
-        updateRecentFiles(lastFile, xtceDb);
+        updateRecentFiles(lastFile, fileFormat, xtceDb);
+        currentFileFormat = fileFormat;
     }
 
     private boolean loadLocalXtcedb(String configName) {
@@ -634,7 +650,7 @@ public class PacketViewer extends JFrame implements ActionListener,
         if (tmProcessor != null) {
             tmProcessor.stopAsync();
         }
-        String instance = connectDialog.getInstance();
+        String instance = connectData.instance;
         log("Loading remote mission database for Yamcs instance " + instance);
         try {
             byte[] serializedMdb = client.createMissionDatabaseClient(instance).getSerializedJavaDump().get();
@@ -664,7 +680,7 @@ public class PacketViewer extends JFrame implements ActionListener,
         return new ProcessorConfig();
     }
 
-    void loadFile() {
+    void loadFile(FileFormat fileFormat) {
         new SwingWorker<Void, TmPacket>() {
             ProgressMonitor progress;
             int packetCount = 0;
@@ -672,7 +688,7 @@ public class PacketViewer extends JFrame implements ActionListener,
             @Override
             protected Void doInBackground() throws Exception {
                 try (CountingInputStream reader = new CountingInputStream(new FileInputStream(lastFile))) {
-                    PacketInputStream packetInputStream = getPacketInputStream(reader);
+                    PacketInputStream packetInputStream = fileFormat.newPacketInputStream(reader);
                     TmPacket packet;
 
                     clearWindow();
@@ -685,6 +701,7 @@ public class PacketViewer extends JFrame implements ActionListener,
                         if (p == null) {
                             break;
                         }
+                        PacketPreprocessor packetPreprocessor = fileFormat.getPacketPreprocessor();
                         packet = packetPreprocessor.process(new TmPacket(TimeEncoding.getWallclockTime(), p));
 
                         if (packet != null) {
@@ -806,6 +823,7 @@ public class PacketViewer extends JFrame implements ActionListener,
 
     void connectYamcs(ConnectData connectData) {
         disconnect();
+        this.connectData = connectData;
         String context = connectData.contextPath;
         if (context != null && context.isEmpty()) {
             context = null;
@@ -827,6 +845,7 @@ public class PacketViewer extends JFrame implements ActionListener,
             log.error("Error while connecting", e);
         }
 
+        currentFileFormat = null;
         updateTitle();
     }
 
@@ -926,11 +945,36 @@ public class PacketViewer extends JFrame implements ActionListener,
         try {
             currentPacket.load(lastFile);
             TmPacket packet = new TmPacket(TimeEncoding.getWallclockTime(), listPacket.buf);
-            tmProcessor.processPacket(packetPreprocessor.process(packet), xtcedb.getRootSequenceContainer());
+            PacketPreprocessor packetPreprocessor = getCurrentPacketPreprocessor();
+            SequenceContainer rootContainer = getCurrentRootContainer();
+            tmProcessor.processPacket(packetPreprocessor.process(packet), rootContainer);
         } catch (IOException x) {
-            final String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
+            String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
             log(msg);
             showError(msg);
+        }
+    }
+
+    SequenceContainer getCurrentRootContainer() {
+        SequenceContainer rootContainer;
+        if (currentFileFormat != null && currentFileFormat.getRootContainer() != null) {
+            rootContainer = xtcedb.getSequenceContainer(currentFileFormat.getRootContainer());
+        } else {
+            rootContainer = xtcedb.getRootSequenceContainer();
+        }
+        if (rootContainer.getBaseContainer() != null) {
+            log(rootContainer.getQualifiedName() +
+                    " is not a proper root container: it extends " +
+                    rootContainer.getBaseContainer().getQualifiedName());
+        }
+        return rootContainer;
+    }
+
+    private PacketPreprocessor getCurrentPacketPreprocessor() {
+        if (currentFileFormat != null) {
+            return currentFileFormat.getPacketPreprocessor();
+        } else {
+            return realtimePacketPreprocessor;
         }
     }
 
@@ -966,12 +1010,12 @@ public class PacketViewer extends JFrame implements ActionListener,
     public void connected() {
         try {
             log("connected to " + client.getHost() + ":" + client.getPort());
-            if (connectDialog.getUseServerMdb()) {
-                if (!loadRemoteMissionDatabase(connectDialog.getInstance())) {
+            if (connectData.useServerMdb) {
+                if (!loadRemoteMissionDatabase(connectData.instance)) {
                     return;
                 }
             } else {
-                if (!loadLocalXtcedb(connectDialog.getLocalMdbConfig())) {
+                if (!loadLocalXtcedb(connectData.localMdbConfig)) {
                     return;
                 }
             }
@@ -989,13 +1033,13 @@ public class PacketViewer extends JFrame implements ActionListener,
 
                 @Override
                 public void onError(Throwable t) {
-                    showError("Error subscribing to " + streamName + ": " + t.getMessage());
+                    showError("Error subscribing: " + t.getMessage());
                 }
             });
 
             subscription.sendMessage(SubscribePacketsRequest.newBuilder()
-                    .setInstance(connectDialog.getInstance())
-                    .setStream(streamName)
+                    .setInstance(connectData.instance)
+                    .setStream(connectData.streamName)
                     .build());
         } catch (Exception e) {
             log(e.toString());
@@ -1006,12 +1050,11 @@ public class PacketViewer extends JFrame implements ActionListener,
     @Override
     public void connecting() {
         log("connecting to " + client.getHost() + ":" + client.getPort());
-
     }
 
     @Override
-    public void connectionFailed(ClientException exception) {
-        log("connection to " + client.getHost() + ":" + client.getPort() + " failed: " + exception);
+    public void connectionFailed(Throwable cause) {
+        log("connection to " + client.getHost() + ":" + client.getPort() + " failed: " + cause);
     }
 
     @Override
@@ -1025,15 +1068,20 @@ public class PacketViewer extends JFrame implements ActionListener,
      */
     @SuppressWarnings("unchecked")
     public List<String[]> getRecentFiles() {
-        List<String[]> recentFiles = null;
+        List<String[]> recentFiles = new ArrayList<>();
         Object obj = PrefsObject.getObject(uiPrefs, "RecentlyOpened");
         if (obj instanceof ArrayList) {
-            recentFiles = (ArrayList<String[]>) obj;
+            recentFiles.addAll((ArrayList<String[]>) obj);
         }
-        return (recentFiles != null) ? recentFiles : new ArrayList<>();
+
+        // Remove outdated entries
+        return recentFiles.stream()
+                .filter(f -> f.length == 3)
+                .filter(f -> fileFormats.get(f[2]) != null)
+                .collect(Collectors.toList());
     }
 
-    private void updateRecentFiles(File file, String xtceDb) {
+    private void updateRecentFiles(File file, FileFormat fileFormat, String xtceDb) {
         String filename = file.getAbsolutePath();
         List<String[]> recentFiles = getRecentFiles();
         boolean exists = false;
@@ -1041,12 +1089,13 @@ public class PacketViewer extends JFrame implements ActionListener,
             String[] entry = recentFiles.get(i);
             if (entry[0].equals(filename)) {
                 entry[1] = xtceDb;
+                entry[2] = fileFormat.getName();
                 recentFiles.add(0, recentFiles.remove(i));
                 exists = true;
             }
         }
         if (!exists) {
-            recentFiles.add(0, new String[] { filename, xtceDb });
+            recentFiles.add(0, new String[] { filename, xtceDb, fileFormat.getName() });
         }
         PrefsObject.putObject(uiPrefs, "RecentlyOpened", recentFiles);
 
@@ -1096,27 +1145,34 @@ public class PacketViewer extends JFrame implements ActionListener,
     }
 
     private static void printUsageAndExit(boolean full) {
-        System.err.println("usage: packetviewer.sh [-h] [-l n] [-x name] [-s name] [file|url]");
+        System.err.println("usage: packet-viewer [-h] [-l n] -x MDB FILE");
+        System.err.println("   or: packet-viewer [-h] [-l n] [-x MDB] -i INSTANCE [-s STREAM] URL");
         if (full) {
             System.err.println();
-            System.err.println("    file       The file to open at startup. Requires the use of -db");
-            System.err.println("    url        Connect at startup to the given url");
+            System.err.println("    FILE         The file to open at startup. Requires the use of -x");
+            System.err.println();
+            System.err.println("    URL          Connect at startup to the given url. Requires the use of -i");
             System.err.println();
             System.err.println("OPTIONS");
-            System.err.println("    -h         Print a help message and exit");
+            System.err.println("    -h           Print a help message and exit");
             System.err.println();
-            System.err.println("    -l  n      Limit the view to n packets only. If the Packet Viewer is");
-            System.err.println("               connected to a live instance, only the last n packets will");
-            System.err.println("               be visible. For offline file consulting, only the first n");
-            System.err.println("               packets of the file will be displayed.");
-            System.err.println("               Defaults to 1000 for realtime connections. There is no");
-            System.err.println("               default limitation for viewing offline files.");
+            System.err.println("    -l n         Limit the view to n packets only. If the Packet Viewer is");
+            System.err.println("                 connected to a live instance, only the last n packets will");
+            System.err.println("                 be visible. For offline file consulting, only the first n");
+            System.err.println("                 packets of the file will be displayed.");
+            System.err.println("                 Defaults to 1000 for realtime connections. There is no");
+            System.err.println("                 default limitation for viewing offline files.");
             System.err.println();
-            System.err.println("    -x  name   Name of the applicable XTCE DB as specified in the");
-            System.err.println("               mdb.yaml configuration file.");
+            System.err.println("    -x MDB       Name of the applicable MDB as specified in the");
+            System.err.println("                 mdb.yaml configuration file.");
+            System.err.println();
+            System.err.println("    -i INSTANCE  Yamcs instance name.");
+            System.err.println();
+            System.err.println("    -s STREAM    Yamcs stream name. Default: tm_realtime.");
             System.err.println();
             System.err.println("EXAMPLES");
-            System.err.println("        packetviewer.sh -l 50 -x my-db packet-file");
+            System.err.println("        packet-viewer -l 50 -x my-db packet-file");
+            System.err.println("        packet-viewer -l 50 -i simulator http://localhost:8090");
         }
         System.exit(1);
     }
@@ -1128,7 +1184,7 @@ public class PacketViewer extends JFrame implements ActionListener,
 
     public static void main(String[] args) throws ConfigurationException, URISyntaxException {
         // Scan args
-        String file = null;
+        String fileOrURL = null;
         Map<String, String> options = new HashMap<>();
         for (int i = 0; i < args.length; i++) {
             if ("-h".equals(args[i])) {
@@ -1143,7 +1199,19 @@ public class PacketViewer extends JFrame implements ActionListener,
                 if (i + 1 < args.length) {
                     options.put(args[i], args[++i]);
                 } else {
-                    printArgsError("Name of XTCE DB not specified for -x option");
+                    printArgsError("Name of MDB not specified for -x option");
+                }
+            } else if ("-i".equals(args[i])) {
+                if (i + 1 < args.length) {
+                    options.put(args[i], args[++i]);
+                } else {
+                    printArgsError("Name of the instance not specified for -i option");
+                }
+            } else if ("-s".equals(args[i])) {
+                if (i + 1 < args.length) {
+                    options.put(args[i], args[++i]);
+                } else {
+                    printArgsError("Name of the stream not specified for -s option");
                 }
             } else if ("--etc-dir".equals(args[i])) {
                 if (i + 1 < args.length) {
@@ -1155,7 +1223,7 @@ public class PacketViewer extends JFrame implements ActionListener,
                 printArgsError("Unknown option: " + args[i]);
             } else { // i should now be positioned at [file|url]
                 if (i == args.length - 1) {
-                    file = args[i];
+                    fileOrURL = args[i];
                 } else {
                     printArgsError("Too many arguments. Only one file can be opened at a time");
                 }
@@ -1170,14 +1238,19 @@ public class PacketViewer extends JFrame implements ActionListener,
                 printArgsError("-l argument must be integer. Got: " + options.get("-l"));
             }
         }
-        if (file != null && file.startsWith("http://")) {
-            if (!options.containsKey("-l")) {
-                maxLines = 1000; // Default for realtime connections
-            }
-        }
-        if (file != null) {
-            if (!options.containsKey("-x")) {
-                printArgsError("-x argument must be specified when opening a file");
+        boolean isURL = fileOrURL != null && (fileOrURL.startsWith("http://") || fileOrURL.startsWith("https://"));
+        if (fileOrURL != null) {
+            if (isURL) {
+                if (!options.containsKey("-l")) {
+                    maxLines = 1000; // Default for realtime connections
+                }
+                if (!options.containsKey("-i")) {
+                    printArgsError("-i argument must be specified when opening a URL");
+                }
+            } else { // File
+                if (!options.containsKey("-x")) {
+                    printArgsError("-x argument must be specified when opening a file");
+                }
             }
         }
 
@@ -1189,8 +1262,27 @@ public class PacketViewer extends JFrame implements ActionListener,
             YConfiguration.setupTool();
         }
         theApp = new PacketViewer(maxLines);
-        if (file != null) {
-            theApp.openFile(new File(file), (String) options.get("-x"));
+        if (fileOrURL != null) {
+            if (isURL) {
+                var serverURL = ServerURL.parse(fileOrURL);
+                var connectData = new ConnectData();
+                connectData.host = serverURL.getHost();
+                connectData.port = serverURL.getPort();
+                connectData.contextPath = serverURL.getContext();
+                connectData.tls = serverURL.isTLS();
+                connectData.instance = options.get("-i");
+                connectData.streamName = options.getOrDefault("-s", "tm_realtime");
+                if (options.containsKey("-x")) {
+                    connectData.useServerMdb = false;
+                    connectData.localMdbConfig = options.get("-x");
+                } else {
+                    connectData.useServerMdb = true;
+                }
+                theApp.connectYamcs(connectData);
+            } else { // File
+                var fileFormat = theApp.fileFormats.values().iterator().next();
+                theApp.openFile(new File(fileOrURL), fileFormat, options.get("-x"));
+            }
         }
     }
 
@@ -1202,30 +1294,61 @@ public class PacketViewer extends JFrame implements ActionListener,
         return defaultNamespace;
     }
 
-    protected void readConfig(String instance, YConfiguration config) {
+    private PacketPreprocessor loadPacketPreprocessor(String instance, YConfiguration config) {
         String packetPreprocessorClassName = config.getString(CFG_PREPRO_CLASS, IssPacketPreprocessor.class.getName());
         try {
             if (config.containsKey("packetPreprocessorArgs")) {
                 YConfiguration packetPreprocessorArgs = config.getConfig("packetPreprocessorArgs");
-                packetPreprocessor = YObjectLoader.loadObject(packetPreprocessorClassName, instance,
+                PacketPreprocessor preprocessor = YObjectLoader.loadObject(packetPreprocessorClassName, instance,
                         packetPreprocessorArgs);
+                preprocessor.checkForSequenceDiscontinuity(false);
+                return preprocessor;
             } else {
-                packetPreprocessor = YObjectLoader.loadObject(packetPreprocessorClassName, instance);
+                PacketPreprocessor preprocessor = YObjectLoader.loadObject(packetPreprocessorClassName, instance);
+                preprocessor.checkForSequenceDiscontinuity(false);
+                return preprocessor;
             }
         } catch (ConfigurationException e) {
             log.error("Cannot instantiate the packet preprocessor", e);
             throw e;
         }
-
-        this.packetInputStreamClassName = config.getString("packetInputStreamClassName",
-                CcsdsPacketInputStream.class.getName());
-        this.packetInputStreamArgs = config.getConfigOrEmpty("packetInputStreamArgs");
     }
 
-    private PacketInputStream getPacketInputStream(InputStream inputStream) throws IOException {
-        PacketInputStream packetInputStream = YObjectLoader.loadObject(packetInputStreamClassName);
-        packetInputStream.init(inputStream, packetInputStreamArgs);
-        return packetInputStream;
-    }
+    protected void readConfig(String instance, YConfiguration config) {
+        realtimePacketPreprocessor = loadPacketPreprocessor(instance, config);
 
+        if (config.containsKey("fileFormats")) {
+            List<YConfiguration> fileFormatsConfig = config.getConfigList("fileFormats");
+            for (YConfiguration fileFormatConfig : fileFormatsConfig) {
+                String name = fileFormatConfig.getString("name");
+                String packetInputStreamClassName = fileFormatConfig.getString("packetInputStreamClassName");
+                YConfiguration packetInputStreamArgs = fileFormatConfig.getConfigOrEmpty("packetInputStreamArgs");
+
+                PacketPreprocessor filePacketPreprocessor = realtimePacketPreprocessor;
+                if (fileFormatConfig.containsKey(CFG_PREPRO_CLASS)) {
+                    filePacketPreprocessor = loadPacketPreprocessor(instance, fileFormatConfig);
+                }
+
+                FileFormat fileFormat = new FileFormat(name, packetInputStreamClassName, packetInputStreamArgs,
+                        filePacketPreprocessor);
+                fileFormat.setRootContainer(fileFormatConfig.getString("rootContainer", null));
+                fileFormats.put(name, fileFormat);
+            }
+        } else {
+            String defaultFormatName = "CCSDS Packets";
+            String defaultPacketInputStreamClassName = CcsdsPacketInputStream.class.getName();
+            YConfiguration defaultPacketInputStreamArgs = YConfiguration.emptyConfig();
+
+            // Legacy. Over time exclusive use of fileFormats is preferred
+            if (config.containsKey("packetInputStreamClassName")) {
+                defaultFormatName = "Default";
+                defaultPacketInputStreamClassName = config.getString("packetInputStreamClassName");
+                defaultPacketInputStreamArgs = config.getConfigOrEmpty("packetInputStreamArgs");
+            }
+
+            fileFormats.put(defaultFormatName, new FileFormat(
+                    defaultFormatName, defaultPacketInputStreamClassName, defaultPacketInputStreamArgs,
+                    realtimePacketPreprocessor));
+        }
+    }
 }

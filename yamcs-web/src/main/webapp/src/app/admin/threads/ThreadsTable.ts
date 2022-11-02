@@ -18,6 +18,7 @@ export class ThreadsTable implements AfterViewInit, OnChanges {
     'native',
     'suspended',
     'group',
+    'actions',
   ];
 
   @Input()

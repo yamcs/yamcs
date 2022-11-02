@@ -9,11 +9,13 @@ import { filter } from 'rxjs/operators';
 import { ListObjectsOptions, ListObjectsResponse, StorageClient } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService } from '../../core/services/ConfigService';
+import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 import * as dnd from '../../shared/dnd';
+import { CreateFolderDialog } from './CreateFolderDialog';
 import { CreateStackDialog } from './CreateStackDialog';
-import { ImportStackDialog } from './ImportStackDialog';
 import { RenameStackDialog } from './RenameStackDialog';
+
 
 @Component({
   templateUrl: './StackFolderPage.html',
@@ -25,6 +27,9 @@ export class StackFolderPage implements OnDestroy {
   @ViewChild('droparea', { static: true })
   dropArea: ElementRef;
 
+  @ViewChild('uploader')
+  private uploaderEl: ElementRef<HTMLInputElement>;
+
   breadcrumb$ = new BehaviorSubject<BreadCrumbItem[]>([]);
   dragActive$ = new BehaviorSubject<boolean>(false);
 
@@ -35,6 +40,7 @@ export class StackFolderPage implements OnDestroy {
   private routerSubscription: Subscription;
   private storageClient: StorageClient;
 
+  private bucket: string;
   private folderPerInstance: boolean;
 
   constructor(
@@ -44,11 +50,15 @@ export class StackFolderPage implements OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private authService: AuthService,
+    private messageService: MessageService,
     configService: ConfigService,
   ) {
     title.setTitle('Stacks');
     this.storageClient = yamcs.createStorageClient();
-    this.folderPerInstance = configService.getConfig().stackFolderPerInstance;
+
+    const config = configService.getConfig();
+    this.bucket = config.stackBucket;
+    this.folderPerInstance = config.stackFolderPerInstance;
 
     this.loadCurrentFolder();
     this.routerSubscription = router.events.pipe(
@@ -75,7 +85,7 @@ export class StackFolderPage implements OnDestroy {
       options.prefix = prefix;
     }
 
-    this.storageClient.listObjects('_global', 'stacks', options).then(dir => {
+    this.storageClient.listObjects('_global', this.bucket, options).then(dir => {
       this.updateBrowsePath();
       this.changedir(dir);
     });
@@ -101,12 +111,16 @@ export class StackFolderPage implements OnDestroy {
       });
     }
     for (const object of dir.objects || []) {
+      // Ignore fake objects that represent an empty directory
+      if (object.name.endsWith('/')) {
+        continue;
+      }
       items.push({
         folder: false,
         name: object.name,
         nameWithoutInstance: this.getNameWithoutInstance(object.name),
         modified: object.created,
-        objectUrl: this.storageClient.getObjectURL('_global', 'stacks', object.name),
+        objectUrl: this.storageClient.getObjectURL('_global', this.bucket, object.name),
       });
     }
     this.dataSource.data = items;
@@ -114,14 +128,14 @@ export class StackFolderPage implements OnDestroy {
 
   isAllSelected() {
     const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.data.length;
+    const numRows = this.dataSource.filteredData.length;
     return numSelected === numRows && numRows > 0;
   }
 
   masterToggle() {
     this.isAllSelected() ?
       this.selection.clear() :
-      this.dataSource.data.forEach(row => this.selection.select(row));
+      this.dataSource.filteredData.forEach(row => this.selection.select(row));
   }
 
   toggleOne(row: BrowseItem) {
@@ -146,19 +160,43 @@ export class StackFolderPage implements OnDestroy {
     });
   }
 
-  importStack() {
-    const dialogRef = this.dialog.open(ImportStackDialog, {
+  createFolder() {
+    this.dialog.open(CreateFolderDialog, {
       width: '400px',
       data: {
+        bucketInstance: '_global',
+        bucket: this.bucket,
         path: this.getCurrentPath(),
-        prefix: this.folderPerInstance ? (this.yamcs.instance! + '/') : '',
       }
+    }).afterClosed().subscribe({
+      next: () => this.loadCurrentFolder(),
     });
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadCurrentFolder();
+  }
+
+  importStack() {
+    let path = this.getCurrentPath();
+    // Full path should not have a leading slash
+    if (path.startsWith('/')) {
+      path = path.substring(1);
+    }
+
+    const files = this.uploaderEl.nativeElement.files;
+
+    const uploadPromises = [];
+    for (const key in files) {
+      if (!isNaN(parseInt(key, 10))) {
+        const file = files[key as any];
+        const fullPath = path ? path + '/' + file.name : file.name;
+        const prefix = this.folderPerInstance ? (this.yamcs.instance! + '/') : '';
+        const objectName = prefix + fullPath;
+        const promise = this.storageClient.uploadObject('_global', this.bucket, objectName, file);
+        uploadPromises.push(promise);
       }
-    });
+    }
+
+    Promise.all(uploadPromises)
+      .then(() => this.loadCurrentFolder())
+      .catch(err => this.messageService.showError(err));
   }
 
   private getCurrentPath() {
@@ -174,7 +212,7 @@ export class StackFolderPage implements OnDestroy {
     const findObjectPromises = [];
     for (const item of this.selection.selected) {
       if (item.folder) {
-        findObjectPromises.push(this.storageClient.listObjects('_global', 'stacks', {
+        findObjectPromises.push(this.storageClient.listObjects('_global', this.bucket, {
           prefix: item.name,
         }).then(response => {
           const objects = response.objects || [];
@@ -189,7 +227,7 @@ export class StackFolderPage implements OnDestroy {
       if (confirm(`You are about to delete ${deletableObjects.length} files. Are you sure you want to continue?`)) {
         const deletePromises = [];
         for (const object of deletableObjects) {
-          deletePromises.push(this.storageClient.deleteObject('_global', 'stacks', object));
+          deletePromises.push(this.storageClient.deleteObject('_global', this.bucket, object));
         }
 
         Promise.all(deletePromises).then(() => {
@@ -215,7 +253,7 @@ export class StackFolderPage implements OnDestroy {
 
   deleteFile(item: BrowseItem) {
     if (confirm(`Are you sure you want to delete ${item.nameWithoutInstance}?`)) {
-      this.storageClient.deleteObject('_global', 'stacks', item.name).then(() => {
+      this.storageClient.deleteObject('_global', this.bucket, item.name).then(() => {
         this.loadCurrentFolder();
       });
     }
@@ -256,7 +294,7 @@ export class StackFolderPage implements OnDestroy {
           if (this.folderPerInstance) {
             objectPath = this.yamcs.instance! + '/' + objectPath;
           }
-          const promise = this.storageClient.uploadObject('_global', 'stacks', objectPath, droppedFile);
+          const promise = this.storageClient.uploadObject('_global', this.bucket, objectPath, droppedFile);
           uploadPromises.push(promise);
         }
         Promise.all(uploadPromises).finally(() => {
@@ -272,7 +310,7 @@ export class StackFolderPage implements OnDestroy {
 
   mayManageStacks() {
     const user = this.authService.getUser()!;
-    return user.hasObjectPrivilege('ManageBucket', 'stacks')
+    return user.hasObjectPrivilege('ManageBucket', this.bucket)
       || user.hasSystemPrivilege('ManageAnyBucket');
   }
 

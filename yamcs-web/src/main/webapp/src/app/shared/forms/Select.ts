@@ -23,6 +23,9 @@ export interface Option {
 export class Select implements ControlValueAccessor {
 
   @Input()
+  emptyOption: string = '-- select an option --';
+
+  @Input()
   options: Option[] = [];
 
   @Input()

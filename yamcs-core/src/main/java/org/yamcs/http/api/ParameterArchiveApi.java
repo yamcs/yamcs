@@ -17,6 +17,7 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.Downsampler.Sample;
 import org.yamcs.http.api.ParameterRanger.Range;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.parameter.ParameterCache;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
@@ -25,7 +26,6 @@ import org.yamcs.parameterarchive.ConsumerAbortException;
 import org.yamcs.parameterarchive.MultiParameterRetrieval;
 import org.yamcs.parameterarchive.MultipleParameterRequest;
 import org.yamcs.parameterarchive.ParameterArchive;
-import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.parameterarchive.ParameterGroupIdDb;
 import org.yamcs.parameterarchive.ParameterId;
 import org.yamcs.parameterarchive.ParameterIdDb;
@@ -40,7 +40,6 @@ import org.yamcs.protobuf.ArchivedParameterGroupResponse;
 import org.yamcs.protobuf.ArchivedParameterInfo;
 import org.yamcs.protobuf.ArchivedParameterSegmentsResponse;
 import org.yamcs.protobuf.ArchivedParametersInfoResponse;
-import org.yamcs.protobuf.DeletePartitionsRequest;
 import org.yamcs.protobuf.GetArchivedParameterGroupRequest;
 import org.yamcs.protobuf.GetArchivedParameterSegmentsRequest;
 import org.yamcs.protobuf.GetArchivedParametersInfoRequest;
@@ -48,7 +47,6 @@ import org.yamcs.protobuf.GetParameterRangesRequest;
 import org.yamcs.protobuf.Pvalue.Ranges;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.RebuildRangeRequest;
-import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.DecodingException;
@@ -58,7 +56,6 @@ import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.google.protobuf.Empty;
 
@@ -92,45 +89,6 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         }
 
         observer.complete(Empty.getDefaultInstance());
-    }
-
-    @Override
-    public void deletePartitions(Context ctx, DeletePartitionsRequest request,
-            Observer<StringMessage> observer) {
-        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
-        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
-
-        if (!request.hasStart()) {
-            throw new BadRequestException("no start specified");
-        }
-        if (!request.hasStop()) {
-            throw new BadRequestException("no stop specified");
-        }
-
-        long start = TimeEncoding.fromProtobufTimestamp(request.getStart());
-        long stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
-
-        ParameterArchive parchive = getParameterArchive(ysi);
-        try {
-            List<Partition> removed = parchive.deletePartitions(start, stop);
-            StringBuilder sb = new StringBuilder();
-            sb.append("removed the following partitions: ");
-            boolean first = true;
-            for (Partition p : removed) {
-                if (first) {
-                    first = false;
-                } else {
-                    sb.append(", ");
-                }
-                sb.append(p.toString());
-            }
-
-            StringMessage sm = StringMessage.newBuilder().setMessage(sb.toString()).build();
-            observer.complete(sm);
-
-        } catch (RocksDBException e) {
-            throw new InternalServerErrorException(e.toString());
-        }
     }
 
     @Override
@@ -364,7 +322,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             throws RocksDBException, DecodingException, IOException {
 
         MutableLong lastParameterTime = new MutableLong(TimeEncoding.INVALID_INSTANT);
-        Consumer<ParameterIdValueList> consumer = new Consumer<ParameterIdValueList>() {
+        Consumer<ParameterIdValueList> consumer = new Consumer<>() {
             boolean first = true;
 
             @Override
@@ -374,10 +332,11 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
                     first = false;
                     sendFromCache(pid, pcache, false, lastParameterTime.getLong(), mpvr.getStop(), replayListener);
                 }
-                ParameterValue pv = pidvList.getValues().get(0);
-                replayListener.update(new ParameterValueWithId(pv, pid.getId()));
-                if (replayListener.isReplayAbortRequested()) {
-                    throw new ConsumerAbortException();
+                for (ParameterValue pv : pidvList.getValues()) {
+                    replayListener.update(new ParameterValueWithId(pv, pid.getId()));
+                    if (replayListener.isReplayAbortRequested()) {
+                        throw new ConsumerAbortException();
+                    }
                 }
             }
         };

@@ -1,3 +1,4 @@
+
 syntax="proto2";
 
 package yamcs.protobuf.archive;
@@ -46,19 +47,6 @@ service IndexesApi {
   rpc ListCompletenessIndex(ListCompletenessIndexRequest) returns (IndexResponse) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}/completeness-index"
-    };
-  }
-
-  // Streams back index records
-  //
-  // .. warning::
-  //     Avoid using this method. It is tagged for removal. Use other methods
-  //     that are specific in which type of index they are fetching.
-  rpc StreamIndex(StreamIndexRequest) returns (stream IndexResult) {
-    option (yamcs.api.route) = {
-      post: "/api/archive/{instance}:streamIndex"
-      body: "*"
-      deprecated: true
     };
   }
 
@@ -261,27 +249,6 @@ message IndexEntry {
   optional int64 seqStop = 5;
 }
 
-message StreamIndexRequest {
-  // Yamcs instance name.
-  optional string instance = 1;
-
-  // The time at which to start retrieving index records.
-  optional google.protobuf.Timestamp start = 2;
-  
-  // The time at which to stop retrieving index records.
-  optional google.protobuf.Timestamp stop = 3;
-
-  // The type of indexes to retrieve. Choose out of ``tm``, ``pp``,
-  // ``events``, ``commands`` or ``completeness``. By default all
-  // indexes are sent.
-  repeated string filters = 4;
-  
-  // Specify exact names for the TM packets for which you want to
-  // retrieve index records. Setting this parameter, automatically
-  // implies that ``tm`` is added to the filter.
-  repeated string packetnames = 5;
-}
-
 message StreamPacketIndexRequest {
   // Yamcs instance name.
   optional string instance = 1;
@@ -293,6 +260,9 @@ message StreamPacketIndexRequest {
   optional google.protobuf.Timestamp stop = 3;
 
   repeated string names = 4;
+  
+  //merge records which have less than this gap (in milliseconds) in between
+  optional uint32 mergeTime = 5;
 }
 
 message StreamParameterIndexRequest {

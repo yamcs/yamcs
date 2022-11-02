@@ -18,3 +18,21 @@ tr.disabled td, tr.disabled td a {
   font-style: italic;
   color: #aaa;
 }
+
+.legend {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  margin-top: 12px;
+  margin-left: 10px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.legend-item app-led {
+  margin-right: 4px;
+}

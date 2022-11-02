@@ -1,5 +1,113 @@
-Version 5.5.4
-- fixed the CLTU randomization sequence to conform to CCSDS 231.0 issue 4 when LDPC coding is enabled.
+Version 5.7.9 released 28-Oct-2022
+- Added cascading feature (one Yamcs downstream Yamcs server connecting to an upstream Yamcs server)
+- Improved the replay capabilities in yamcs-web
+- Various tweaks and fixes
+
+
+Version 5.7.8 released 5-Oct-2022
+- Fix for a case when CFDP service was configured with enableAtStartup: false. Before the fix, the service was still processing incoming PDUs.
+
+Version 5.7.7 released 3-Oct-2022
+- some fixes in the CFDP implementation:
+ - when the FIN ACK is lost: the sender will keep sending FIN ACK for each FIN packet received (even if the transaction from the sender point of view is completed)
+ - when the receiver is dead (or it does not acknowledge the EOF case). In that case Yamcs wanted to cancel the transaction but it got stuck
+ - when the service is stopped, do not process incoming packets
+- add support for (variable length) array command arguments (only one-dimensional arrays supported for now)
+- various tweaks and fixes
+
+Version 5.7.6 released 27-Jul-2022
+- added a low priority option when subscribing via websocket. This allows the yamcs-web to keep connected if there is high incoming data rate, at the expense of some of the messages not displayed.
+- bug fix parameter archive retrieval end conditions (sometimes it would send data that was past the stop time of the request)
+- allow java algorithms to specify their input list (if for any reason is not available in the xtce definition)
+
+Version 5.7.5 released 24-Jul-2022
+- CFDP fixes
+  - the pendingAfterCompletion parameter can be specified now
+  - when starting a new download the number of pending downloads excludes the ones just finished and also the uploads. The number is used to compare with the maxNumberDownloads parameter - if the maximum would be exceeded a new download transfer would not be initiated and the respective PDU dropped
+
+
+Version 5.7.4 released 15-Jun-2022
+- added an option to the /api/stream-archive/{instance}:streamParameterValues (which extracts parameters using replays) to filter the packets based on the tm links  
+on which they have been originally received.
+ For example typically a different link is used to receive dump (recorded on-board) packets; This option can be used to extract parameters only from those. Or could be used to retrieve only from the realtime packets skipping the dump.
+
+Version 5.7.3 released 9-Jun-2022
+- CCSDS TM/TC randomizer: fixed the interpretation of offset/length parameters (may affect custom encoders which want to randomize/derandomzie only parts of the frames).
+- Allow custom (Java) algorithms to provide the list of output parameters at runtime (rather than in the MDB definition) such that the algorithms are not skipped at replay time if no output parameter has been declared in the MDB def.
+- MDB: added internal support for ToString allowing to define how to display the values of parameters (will be implemented in the future in yamcs-web and Yamcs Studio)
+- yamcs-web:
+  - Show favicon badge when there is an alarm
+  - Add group action for queues
+  - Show process tree on system page
+  - Add Command detail page
+)
+Version 5.7.2 released 3-Jun-2022
+- yamcs-web: fix render issue with enumerated and command aggregate arguments
+
+Version 5.7.1 released 30-May-2022
+- Allow 200 aliaes in the yaml files (used to be 50). The number can be configured via the java property org.yamcs.yaml.maxAliases 
+- yamcs-web: Show detail field on links page
+- yamcs-client: fix generation of command source for command with binary arguments
+- fixed units in the data links synthesized parameters (e.g. /yamcs/<hostname>/tm_realtime/packetRate)
+
+
+Version 5.7.0 relased 27-May-2022
+- implemented backend support for raw TCs (telecommands which are not generated from the mission database) and bypassing the postprocessor.
+- Renamed several java packages to avoid having the same package in different jars (this practice has been discouraged since the introduction of java modules) 
+  The "org.yamcs.xtceproc" and "org.yamcs.xtce" in yamcs-core has bene renamed to "org.yamcs.mdb". May require update of custom plugins if they use classes from those packages.
+- Various tweaks and fixes
+
+
+Version 5.6.2 released 11-Apr-2022
+- Added support for Java 17 by using Nashorn javascript engine as a module
+- Removed support for Java 1.8 - 19
+- Various tweaks and fixes
+
+Version 5.6.1 released 4-Apr-2022
+- Replication: detect and recover dead replication links
+- Replication: allow to synchronize the mission time across replication
+- Buckets: allow configurable limits for total size and number of objects in a bucket
+- Various tweaks and fixes
+
+Version 5.6.0 released 2-Mar-2022
+- Keep a log of admin, link, queue and alarm activity
+- Add support for folder creation within buckets
+- Upgrade of protobuf dependency
+- Allow customizing message decoding of UdpParameterDataLink through extension
+- Add toggle to switch between hex/decimal input for unsigned integer arguments
+- API updates:
+    - Link actions are now separate (one method per action)
+    - Queue actions are now separate (one method per action)
+    - Alarm actions are now separate (one method per action)
+    - Old-style websocket is now fully removed (use new-style)
+    - Tags are gone (use timeline)
+- Various tweaks and fixes
+
+Version 5.5.7 released 3-Feb-2022
+- restored backward compatibility for GenericPacketPreprocessor time decoding (in version 5.5.6 it was using the CUC decoder by default instead of using the FIXED decoder)
+- allow raw frame decoding using Reed-Solomon and de-randomization.
+- allow enabling errorDetection for uplink at virtual channel level.
+- fixed bug in FilePollingTmDataLink which was double counting the packets
+
+Version 5.5.6 released 30-Jan-2022
+- added some functions to algorithms
+- allow disabling randomization for specific virtual channels
+- changed the time decoding handling in TM pre-processors to be more consistent
+- various tweaks and fixes
+
+Version 5.5.5 released 20-Oct-2021
+- yamcs-web: fixed display of command arguments in the command history
+
+Version 5.5.4 released 20-Oct-2021
+- Fixed the CLTU randomization sequence to conform to CCSDS 231.0 issue 4 when LDPC coding is enabled.
+- Accept numeric value of an enumeration command argument
+- Fixed lost frame count calculation
+- Allow DataSource=ground for parameters
+- Fixed CFDP reliable option not showing 
+- Fixed duplicate data in the parameter archive
+- Allow specification of generation time in set parameter value requests
+- minor tweaks and fixes
+
 
 Version 5.5.3 released 30-Jul-2021
 - first version of the Yamcs Timeline

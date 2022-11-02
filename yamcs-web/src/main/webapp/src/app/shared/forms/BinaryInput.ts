@@ -1,14 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, forwardRef, ViewChild } from '@angular/core';
-import { AbstractControl, ControlValueAccessor, FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator, ValidatorFn } from '@angular/forms';
-
-const requireHex: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
-  if (!control.value) {
-    return null;  // don't validate empty values to allow optional controls
-  }
-  const value: string = control.value;
-  return /^[a-fA-F0-9]+$/.test(value) ? null :
-    { 'notHex': true };
-};
+import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, Validator } from '@angular/forms';
+import { requireHex } from './validators';
 
 @Component({
   selector: 'app-binary-input',
@@ -51,10 +43,7 @@ export class BinaryInput implements ControlValueAccessor, Validator {
   registerOnTouched(fn: any) {
   }
 
-  validate(control: FormControl) {
-    if (!control.value) {
-      return null;
-    }
+  validate(control: UntypedFormControl) {
     return requireHex(control);
   }
 }

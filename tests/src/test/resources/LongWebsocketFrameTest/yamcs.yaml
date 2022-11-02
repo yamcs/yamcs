@@ -1,0 +1,14 @@
+services:
+  - class: org.yamcs.http.HttpServer
+    args:
+      port: 9191
+      webSocket:
+        maxFrameLength: 1048576
+
+instances:
+  - LongWebsocketFrameTest
+
+incomingDir: ${java.io.tmpdir}/yamcs-incoming
+dataDir: ${java.io.tmpdir}/yamcs-LongWebsocketFrameTest-data
+
+secretKey: testtest

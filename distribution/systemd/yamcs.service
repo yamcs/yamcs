@@ -11,11 +11,6 @@ Group=yamcs
 ExecStart=/opt/yamcs/bin/yamcsd --no-color
 TimeoutStartSec=120
 
-# The notify is being sent by a onetime child process of the
-# Yamcs java executable. Therefore provide entire cgroup access
-# to the notify socket.
-NotifyAccess=all
-
 # First attempt a graceful shutdown through the main process
 # Only if that fails kill remaining processes in the cgroup
 # directly.

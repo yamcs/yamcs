@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
 import { StorageClient } from '../../client';
+import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Viewer } from './Viewer';
 
@@ -20,13 +21,20 @@ export class TextViewer implements Viewer {
   text: string;
 
   private storageClient: StorageClient;
+  private bucket: string;
 
-  constructor(yamcs: YamcsService, private changeDetector: ChangeDetectorRef) {
+  constructor(
+    yamcs: YamcsService,
+    private changeDetector: ChangeDetectorRef,
+    configService: ConfigService,
+  ) {
     this.storageClient = yamcs.createStorageClient();
+    this.bucket = configService.getConfig().displayBucket;
+
   }
 
   public init(objectName: string) {
-    this.storageClient.getObject('_global', 'displays', objectName).then(response => {
+    this.storageClient.getObject('_global', this.bucket, objectName).then(response => {
       response.text().then(text => {
         this.text = text;
         this.changeDetector.detectChanges();

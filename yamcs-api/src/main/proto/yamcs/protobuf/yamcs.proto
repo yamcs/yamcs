@@ -5,18 +5,6 @@ option java_package = "org.yamcs.protobuf";
 
 import "google/protobuf/timestamp.proto";
 
-message StringMessage {
-  required string message = 1;
-}
-
-message Instant {
-  required int64 instant = 1;
-}
-
-message MessagingAddress {
-  required string address = 1;
-}
-
 // Union type for storing a value
 message Value {
   enum Type {
@@ -71,37 +59,6 @@ message NamedObjectList {
   repeated NamedObjectId list = 1;
 }
 
-//requesting index (histogram) information about tm packets, pp groups and commands
-message IndexRequest {
-  required string instance = 1;
-  optional int64 start = 2;
-  optional int64 stop = 3;
-
-  //namespace to use when sending all tm, pp or cmd (when using a filter, the namespace specified in the filter will be used)
-  //if not specified, the fully qualified canonical names will be sent
-  optional string defaultNamespace = 4;
-
-  //if sendAllTm is true, then all tm packets are sent, otherwise those in the tmPacket list (which can be empty)
-  optional bool sendAllTm = 5[default=false];
-  repeated NamedObjectId tmPacket = 6;
-
-  //if sendAllPp is true, then all PP groups are sent, otherwise those in the ppGroup list (which can be empty)
-  optional bool sendAllPp = 7[default=false];
-  repeated NamedObjectId ppGroup = 8;
-
-  optional bool sendCompletenessIndex = 9[default=false];
-
-  //if sendAllCmd is true, then all command names  are sent, otherwise those in the cmdName list (which can be empty)
-  optional bool sendAllCmd = 10 [default=false];
-  repeated NamedObjectId cmdName = 11;
-
-  //if sendAllEvent is true, then all events are sent, otherwise those in the eventSource list (which can be empty)
-  optional bool sendAllEvent = 12 [default=false];
-  repeated NamedObjectId eventSource = 13;
-  
-  optional uint32 mergeTime = 16;
-}
-
 //contains histogram data
 message ArchiveRecord {
   optional NamedObjectId id = 1;
@@ -111,31 +68,6 @@ message ArchiveRecord {
   optional google.protobuf.Timestamp first = 8;
   optional google.protobuf.Timestamp last = 9;
   map<string, string> extra = 10;
-}
-
-message IndexResult {
-  repeated ArchiveRecord records = 2;
-  //type can be histogram or completeness
-  optional string type = 3;
-  //if type=histogram, the tableName is the table for which the histogram is sent
-  optional string tableName = 4;
-}
-
-message ArchiveTag {
-  optional int32 id = 1;
-  optional string name = 2;
-  optional int64 start = 3;
-  optional int64 stop = 4;
-  optional string description = 5;
-  optional string color = 6;
-
-  optional google.protobuf.Timestamp startUTC = 7;
-  optional google.protobuf.Timestamp stopUTC = 8;
-}
-
-message TagResult {
-  optional string instance = 1;
-  repeated ArchiveTag tag = 2;
 }
 
 enum EndAction {
@@ -155,28 +87,12 @@ message ReplaySpeed {
   optional float param = 2;
 }
 
-enum ProtoDataType {
-  //error in replay
-  DT_ERROR = 1;
-
-  //the replay status has changed (e.g. stopped or closed) the body contains a ReplayStatus
-  STATE_CHANGE = 2;
-
-  TM_PACKET = 3;
-  PP = 4;
-  EVENT = 5;
-  ARCHIVE_INDEX = 6;
-  ARCHIVE_TAG = 7;
-  PARAMETER = 8;
-  CMD_HISTORY = 9;
-}
-
 //used to replay (concurrently) TM packets, parameters and events
 message ReplayRequest {
   // **Required.** The time at which the replay should start. 
   optional google.protobuf.Timestamp start = 13;
   
-  // The time at which the replay should stop. 
+  // The time at which the replay should stop.
   // If unspecified, the replay will keep going as long  as there is remaining data.
   optional google.protobuf.Timestamp stop = 14;
 
@@ -197,6 +113,10 @@ message ReplayRequest {
   optional EventReplayRequest eventRequest = 10;
   optional CommandHistoryReplayRequest commandHistoryRequest = 11;
   optional PpReplayRequest ppRequest = 12;
+
+  // Start the replay following initialization
+  // Defaults to true, if unspecified
+  optional bool autostart = 16 [default=true];
 }
 
 message ParameterReplayRequest {
@@ -208,6 +128,8 @@ message ParameterReplayRequest {
 message PacketReplayRequest {
   // No filter, means all packets for which privileges exist, are sent
   repeated NamedObjectId nameFilter = 1;
+  //if specified, only replay packets originally received on one of those links
+  repeated string tmLinks = 2;
 }
 
 message EventReplayRequest {
@@ -248,41 +170,4 @@ message ReplayStatus {
 
   // In case state is ERROR
   optional string errorMessage = 3;
-}
-
-message TmPacketData {
-  required bytes packet = 2;
-  optional int32 sequenceNumber = 4;
-  optional NamedObjectId id = 5;
-  optional google.protobuf.Timestamp receptionTime = 8;
-  optional google.protobuf.Timestamp generationTime = 9;
-}
-
-message Event {
-  enum EventSeverity {
-    INFO = 0;
-    WARNING = 1;
-    ERROR = 2;
-
-    //the levels below are compatible with XTCE
-    // we left the 4 out since it could be used 
-    // for warning if we ever decide to get rid of the old ones
-
-    WATCH = 3;
-    DISTRESS = 5;
-    CRITICAL = 6;
-    SEVERE = 7;
-  }
-  required string source = 1;
-  required google.protobuf.Timestamp generationTime = 2;
-  optional google.protobuf.Timestamp receptionTime = 3;
-  optional int32 seqNumber = 4;
-  optional string type = 5;
-  required string message = 6;
-  optional EventSeverity severity = 7[default=INFO];
-  
-  // Set by API when event was posted by a user
-  optional string createdBy = 10;
-
-  extensions 100 to 10000;
 }

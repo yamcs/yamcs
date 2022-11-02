@@ -18,10 +18,6 @@
         <include>org.yamcs:yamcs-web</include>
         <include>org.yamcs:yamcs-xtce</include>
       </includes>
-      <excludes>
-        <!-- Exclude big generic rocksdbjni dependency. -->
-        <exclude>org.rocksdb:*</exclude>
-      </excludes>
     </dependencySet>
   </dependencySets>
 
@@ -29,6 +25,13 @@
     <fileSet>
       <directory>etc</directory>
       <outputDirectory>etc</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>target</directory>
+      <outputDirectory>lib</outputDirectory>
+      <includes>
+        <include>rocksdbjni-${rocksdbVersion}.jar</include>
+      </includes>
     </fileSet>
 
     <!-- Tricks to add empty directories... -->

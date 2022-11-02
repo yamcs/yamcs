@@ -45,7 +45,7 @@ public class MathOperation implements Serializable {
             this.xtceName = xtceName;
         }
 
-        String xtceName() {
+        public String xtceName() {
             return xtceName;
         }
     }

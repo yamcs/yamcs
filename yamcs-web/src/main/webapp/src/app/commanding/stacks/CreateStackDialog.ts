@@ -1,7 +1,8 @@
 import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { StorageClient } from '../../client';
+import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -10,37 +11,34 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class CreateStackDialog {
 
-  filenameForm: FormGroup;
+  filenameForm: UntypedFormGroup;
 
   @ViewChild('filename')
   filenameInput: ElementRef;
 
   private storageClient: StorageClient;
+  private bucket: string;
 
   constructor(
     private dialogRef: MatDialogRef<CreateStackDialog>,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     yamcs: YamcsService,
+    configService: ConfigService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
+    this.bucket = configService.getConfig().stackBucket;
     this.storageClient = yamcs.createStorageClient();
     this.filenameForm = formBuilder.group({
-      path: [data.path, Validators.required],
       name: ['', [Validators.required]],
     });
   }
 
   save() {
-    let path: string = this.filenameForm.get('path')!.value.trim();
     const name: string = this.filenameForm.get('name')!.value.trim() + '.xml';
 
-    // Full path should not have a leading slash
-
+    let path = this.data.path;
     if (path.startsWith('/')) {
       path = path.substring(1);
-    }
-    if (path.endsWith('/')) {
-      path = path.substring(0, path.length - 1);
     }
     const fullPath = path ? path + '/' + name : name;
     const objectName = this.data.prefix + fullPath;
@@ -48,7 +46,7 @@ export class CreateStackDialog {
     const b = new Blob([], {
       type: 'application/xml'
     });
-    this.storageClient.uploadObject('_global', 'stacks', objectName, b).then(() => {
+    this.storageClient.uploadObject('_global', this.bucket, objectName, b).then(() => {
       this.dialogRef.close(fullPath);
     });
   }

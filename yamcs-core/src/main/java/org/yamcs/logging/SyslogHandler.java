@@ -2,7 +2,6 @@ package org.yamcs.logging;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.lang.management.ManagementFactory;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -23,7 +22,7 @@ import java.util.logging.LogRecord;
 public class SyslogHandler extends Handler {
 
     private static final String TAG = "yamcs";
-    private int pid;
+    private long pid;
 
     private SimpleDateFormat sdf = new SimpleDateFormat("MMM dd HH:mm:ss", Locale.US);
     private Date d = new Date();
@@ -40,9 +39,7 @@ public class SyslogHandler extends Handler {
         sdf.setTimeZone(TimeZone.getDefault()); // emit local time as per RFC 3164
         socket = new DatagramSocket();
         hostname = InetAddress.getLocalHost().getHostName();
-
-        String jvmName = ManagementFactory.getRuntimeMXBean().getName();
-        pid = Integer.parseInt(jvmName.split("@")[0]);
+        pid = ProcessHandle.current().pid();
 
         String host = getProperty("host", null);
         if (host == null) {
@@ -144,7 +141,7 @@ public class SyslogHandler extends Handler {
 
     @Override
     public void flush() {
-        //no flush necessary, messages are sent immediately
+        // no flush necessary, messages are sent immediately
     }
 
     @Override

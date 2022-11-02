@@ -109,6 +109,7 @@ export class DyDataSource {
           start: loadStart.toISOString(),
           stop: loadStop.toISOString(),
           count: 6000,
+          fields: ['time', 'n', 'avg', 'min', 'max'],
         })
       );
     }

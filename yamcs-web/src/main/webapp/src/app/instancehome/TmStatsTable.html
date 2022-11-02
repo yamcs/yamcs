@@ -1,14 +1,14 @@
 <table mat-table
        *ngIf="dataSource"
        [dataSource]="dataSource"
-       class="ya-data-table"
+       class="ya-data-table expand"
        matSort
        matSortActive="packetName"
        matSortDirection="asc"
        matSortDisableClear>
 
   <ng-container matColumnDef="packetName">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 250px">Packet</th>
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Packet</th>
     <td mat-cell *matCellDef="let tmstats">
       <a *ngIf="config.tmArchive"
          routerLink="/telemetry/packets"
@@ -21,7 +21,7 @@
   </ng-container>
 
   <ng-container matColumnDef="lastReceived">
-    <th mat-header-cell *matHeaderCellDef style="width: 100px">Received</th>
+    <th mat-header-cell *matHeaderCellDef>Received</th>
     <td mat-cell *matCellDef="let tmstats" style="text-align: right">
       {{ (tmstats.lastReceived | deltaWith:tmstats.lastPacketTime) || '-' }}
     </td>
@@ -29,7 +29,7 @@
   </ng-container>
 
   <ng-container matColumnDef="lastPacketTime">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 200px">Packet Time</th>
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Packet time</th>
     <td mat-cell *matCellDef="let tmstats">
       {{ (tmstats.lastPacketTime | datetime) || '-' }}
     </td>
@@ -37,7 +37,7 @@
   </ng-container>
 
   <ng-container matColumnDef="packetRate">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px">Packet&nbsp;Rate</th>
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Packet rate</th>
     <td mat-cell *matCellDef="let tmstats" style="text-align: right">
       {{ tmstats.packetRate }} p/s
     </td>
@@ -47,7 +47,7 @@
   </ng-container>
 
   <ng-container matColumnDef="dataRate">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 100px">Data&nbsp;Rate
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Data rate
     </th>
     <td mat-cell *matCellDef="let tmstats" style="text-align: right">
       {{ tmstats.dataRate | dataRate }}
@@ -55,6 +55,12 @@
     <td mat-footer-cell *matFooterCellDef style="text-align: right">
       {{ (totalDataRate$ | async) | dataRate }}
     </td>
+  </ng-container>
+
+  <ng-container matColumnDef="actions">
+    <th mat-header-cell *matHeaderCellDef class="expand"></th>
+    <td mat-cell *matCellDef></td>
+    <td mat-footer-cell *matFooterCellDef></td>
   </ng-container>
 
   <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

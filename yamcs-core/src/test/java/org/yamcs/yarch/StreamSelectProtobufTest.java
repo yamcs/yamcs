@@ -1,13 +1,13 @@
 package org.yamcs.yarch;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
-import org.junit.Test;
-import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
+import org.junit.jupiter.api.Test;
+import org.yamcs.protobuf.Event.EventSeverity;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.protobuf.Db.Event;
 import org.yamcs.yarch.streamsql.GenericStreamSqlException;

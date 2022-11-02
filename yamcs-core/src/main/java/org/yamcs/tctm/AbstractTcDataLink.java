@@ -1,6 +1,6 @@
 package org.yamcs.tctm;
 
-import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent;
+import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -33,6 +33,7 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
     protected long housekeepingInterval = 10000;
     private AggregatedDataLink parent = null;
 
+    @Override
     public void init(String yamcsInstance, String linkName, YConfiguration config) throws ConfigurationException {
         super.init(yamcsInstance, linkName, config);
         timeService = YamcsServer.getTimeService(yamcsInstance);
@@ -40,6 +41,7 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
         initPostprocessor(yamcsInstance, config);
     }
 
+    @Override
     protected long getCurrentTime() {
         if (timeService != null) {
             return timeService.getMissionTime();
@@ -79,6 +81,22 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
         cmdPostProcessor.setCommandHistoryPublisher(commandHistoryListener);
     }
 
+    /**
+     * Postprocesses the command, unless postprocessing is disabled.
+     * 
+     * @return potentially modified binary, or {@code null} to indicate that the command should not be handled further.
+     */
+    protected byte[] postprocess(PreparedCommand pc) {
+        byte[] binary = pc.getBinary();
+        if (!pc.disablePostprocessing()) {
+            binary = cmdPostProcessor.process(pc);
+            if (binary == null) {
+                log.warn("command postprocessor did not process the command");
+            }
+        }
+        return binary;
+    }
+
     @Override
     public long getDataInCount() {
         return 0;
@@ -108,7 +126,7 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
     protected void failedCommand(CommandId commandId, String reason) {
         log.debug("Failing command {}: {}", commandId, reason);
         long currentTime = getCurrentTime();
-        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent,
+        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent_KEY,
                 currentTime, AckStatus.NOK, reason);
         commandHistoryPublisher.commandFailed(commandId, currentTime, reason);
     }
@@ -119,7 +137,7 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
      * @param commandId
      */
     protected void ackCommand(CommandId commandId) {
-        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent, getCurrentTime(),
+        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent_KEY, getCurrentTime(),
                 AckStatus.OK);
     }
 

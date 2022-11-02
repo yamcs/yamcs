@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Subscription } from 'rxjs';
 import { ParameterValue } from '../../client';
@@ -46,13 +46,14 @@ export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {
 
   dataSource = new MatTableDataSource<ScrollRecord>([]);
 
-  bufferSizeControl = new FormControl('10');
+  bufferSizeControl = new UntypedFormControl('10');
   private bufferSizeControlSubscription: Subscription;
 
   private syncSubscription: Subscription;
 
   displayedColumns = [
     'generationTime',
+    'actions',
   ];
 
   constructor(readonly yamcs: YamcsService, private changeDetector: ChangeDetectorRef, synchronizer: Synchronizer) {
@@ -109,6 +110,7 @@ export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {
     this.displayedColumns = [
       'generationTime',
       ...this.model.parameters,
+      'actions',
     ];
   }
 

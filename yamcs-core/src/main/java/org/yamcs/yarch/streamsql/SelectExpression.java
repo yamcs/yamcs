@@ -9,6 +9,7 @@ import org.yamcs.yarch.CompiledAggregateExpression;
 import org.yamcs.yarch.CompiledExpression;
 import org.yamcs.yarch.ConstantValueCompiledExpression;
 import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.SelectStream;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;
@@ -286,5 +287,10 @@ public class SelectExpression implements StreamExpression {
         } else {
             return stream;
         }
+    }
+
+    @Override
+    public boolean isFinite() {
+        return tupleSourceExpression.isFinite();
     }
 }

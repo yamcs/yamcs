@@ -1,10 +1,10 @@
 .nav-item-group {
-  color: rgba(0, 0, 0, .654) !important;
+  color: #fff !important;
   position: relative;
 }
 
 .nav-item-group.active {
-  background-color: rgba(0, 0, 0, .04);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .arrow {
@@ -36,4 +36,8 @@
   border-radius: 4px;
   /* Prevent glitch during animation */
   overflow: hidden;
+}
+
+.mat-list-item:hover, .mat-list-item:focus {
+  background-color: rgba(255, 255, 255, 0.1) !important;
 }

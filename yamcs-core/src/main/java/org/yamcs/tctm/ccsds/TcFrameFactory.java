@@ -1,5 +1,6 @@
 package org.yamcs.tctm.ccsds;
 
+import org.yamcs.tctm.ccsds.TcManagedParameters.TcVcManagedParameters;
 import org.yamcs.tctm.ccsds.UplinkManagedParameters.FrameErrorDetection;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
@@ -7,11 +8,13 @@ import org.yamcs.utils.TimeEncoding;
 
 public class TcFrameFactory {
     final private TcManagedParameters tcParams;
+
     final CrcCciitCalculator crc;
 
-    public TcFrameFactory(TcManagedParameters tcParams) {
-        this.tcParams = tcParams;
-        if (tcParams.errorDetection == FrameErrorDetection.CRC16) {
+    public TcFrameFactory(TcVcManagedParameters vcParams) {
+        this.tcParams = vcParams.tcParams;
+        FrameErrorDetection err = vcParams.getErrorDetection();
+        if (err == FrameErrorDetection.CRC16) {
             crc = new CrcCciitCalculator();
         } else {
             crc = null;
@@ -82,14 +85,14 @@ public class TcFrameFactory {
         if (ttf.isCmdControl()) {
             w0 += (1 << 12);
         }
-        ByteArrayUtils.encodeShort(w0, data, 0);
+        ByteArrayUtils.encodeUnsignedShort(w0, data, 0);
         int w1 = (ttf.getVirtualChannelId() << 10) + (data.length - 1);
-        ByteArrayUtils.encodeShort(w1, data, 2);
+        ByteArrayUtils.encodeUnsignedShort(w1, data, 2);
         data[4] = (byte) ttf.getVcFrameSeq();
 
         if (crc != null) {
             int c = crc.compute(data, 0, data.length - 2);
-            ByteArrayUtils.encodeShort(c, data, data.length - 2);
+            ByteArrayUtils.encodeUnsignedShort(c, data, data.length - 2);
         }
         return data;
     }

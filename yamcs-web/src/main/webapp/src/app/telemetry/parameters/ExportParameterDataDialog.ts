@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { DownloadParameterValuesOptions } from '../../client';
@@ -24,10 +24,10 @@ export class ExportParameterDataDialog implements OnDestroy {
 
   downloadURL$ = new BehaviorSubject<string | null>(null);
 
-  form = new FormGroup({
-    start: new FormControl(null),
-    stop: new FormControl(null),
-    delimiter: new FormControl(null, Validators.required),
+  form = new UntypedFormGroup({
+    start: new UntypedFormControl(null),
+    stop: new UntypedFormControl(null),
+    delimiter: new UntypedFormControl(null, Validators.required),
   });
 
   constructor(

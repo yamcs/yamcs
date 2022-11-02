@@ -35,20 +35,10 @@ service ParameterArchiveApi {
     };
   }
 
-  // Delete partitions
-  //
-  // Response is of type string and list the partitions that have been removed.
-  rpc DeletePartitions(DeletePartitionsRequest) returns (StringMessage) {
-    option (yamcs.api.route) = {
-      post: "/api/archive/{instance}/parameterArchive:deletePartitions"
-      body: "*"
-    };
-  }
-
   // Get parameter samples
   //
   // This divides the query interval in a number of intervals and returns aggregated
-  // statistics (max,min,avg) about each interval.
+  // statistics (max, min, avg) about each interval.
   //
   // This operation is useful when making high-level overviews (such as plots) of a
   // parameter's value over large time intervals without having to retrieve each
@@ -142,19 +132,6 @@ message RebuildRangeRequest {
   // Rebuild until here. Specify a date string in ISO 8601 format.
   optional google.protobuf.Timestamp stop = 3;
 }
-
-message DeletePartitionsRequest {
-  // Yamcs instance name.
-  optional string instance = 1;
-  
-  // Start with the partition that contains this timestamp. Specify a date string in ISO 8601 format.
-  optional google.protobuf.Timestamp start = 2;
-  
-  // Stop with the partition that contains this timestamp. The stop partition will be removed as
-  // well. Specify a date string in ISO 8601 format.
-  optional google.protobuf.Timestamp stop = 3;
-}
-
 
 message GetParameterRangesRequest {
   // Yamcs instance name.
@@ -296,6 +273,7 @@ message GetArchivedParameterGroupRequest {
   // Group identifier
   optional uint32 gid = 2;
 }
+
 message ArchivedParameterGroupResponse {
   // Group identifier
   optional uint32 gid = 1;

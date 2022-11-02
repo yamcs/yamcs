@@ -1,23 +1,39 @@
 import { Overlay } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Params, Router } from '@angular/router';
-import { AbsoluteTimeAxis, Event, EventLine, MouseTracker, Timeline, TimeLocator, Tool } from '@fqqb/timeline';
-import { BehaviorSubject } from 'rxjs';
+import { MouseTracker, Timeline, TimeLocator, TimeRuler, Tool } from '@fqqb/timeline';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { IndexGroup } from '../client';
+import { EditReplayProcessorRequest, IndexGroup, Processor, ProcessorSubscription } from '../client';
 import { MessageService } from '../core/services/MessageService';
+import { Synchronizer } from '../core/services/Synchronizer';
 import { YamcsService } from '../core/services/YamcsService';
 import { DateTimePipe } from '../shared/pipes/DateTimePipe';
 import { StartReplayDialog } from '../shared/template/StartReplayDialog';
 import * as utils from '../shared/utils';
 import { DownloadDumpDialog } from './DownloadDumpDialog';
+import { IndexGroupBand } from './IndexGroupBand';
 import { JumpToDialog } from './JumpToDialog';
+import { ModifyReplayDialog } from './ModifyReplayDialog';
+import { ReplayOverlay } from './ReplayOverlay';
 import { TimelineTooltip } from './TimelineTooltip';
+import { TitleBand } from './TitleBand';
+
+const COMMANDS_BG = '#ffcc00';
+const COMMANDS_FG = '#1c4b8b';
+const COMPLETENESS_BG = 'orange';
+const COMPLETENESS_FG = 'rgb(173, 94, 0)';
+const EVENTS_BG = '#ffff66';
+const EVENTS_FG = '#1c4b8b';
+const PACKETS_BG = 'palegoldenrod';
+const PACKETS_FG = '#555';
+const PARAMETERS_BG = 'navajowhite';
+const PARAMETERS_FG = '#1c4b8b';
 
 interface DateRange {
   start: Date;
@@ -31,31 +47,23 @@ interface DateRange {
 })
 export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
 
-  completenessBg = 'orange';
-  completenessFg = 'rgb(173, 94, 0)';
-  packetsBg = 'palegoldenrod';
-  packetsFg = '#555';
-  parametersBg = 'navajowhite';
-  parametersFg = '#1c4b8b';
-  commandsBg = '#ffcc00';
-  commandsFg = '#1c4b8b';
-  eventsBg = '#ffff66';
-  eventsFg = '#1c4b8b';
-
   legendOptions = [
-    { id: 'packets', name: 'Packets', bg: this.packetsBg, fg: this.packetsFg, checked: true },
-    { id: 'parameters', name: 'Parameters', bg: this.parametersBg, fg: this.parametersFg, checked: true },
-    { id: 'commands', name: 'Commands', bg: this.commandsBg, fg: this.commandsFg, checked: false },
-    { id: 'events', name: 'Events', bg: this.eventsBg, fg: this.eventsFg, checked: false },
+    { id: 'packets', name: 'Packets', bg: PACKETS_BG, fg: PACKETS_FG, checked: true },
+    { id: 'parameters', name: 'Parameter Groups', bg: PARAMETERS_BG, fg: PARAMETERS_FG, checked: true },
+    { id: 'commands', name: 'Commands', bg: COMMANDS_BG, fg: COMMANDS_FG, checked: false },
+    { id: 'events', name: 'Events', bg: EVENTS_BG, fg: EVENTS_FG, checked: false },
   ];
 
   @ViewChild('container', { static: true })
   container: ElementRef;
 
-  filterForm: FormGroup;
+  filterForm: UntypedFormGroup;
 
   private timeline: Timeline;
   private moveInterval?: number;
+
+  processor$ = new BehaviorSubject<Processor | null>(null);
+  processorSubscription: ProcessorSubscription;
 
   rangeSelection$ = new BehaviorSubject<DateRange | null>(null);
   viewportRange$ = new BehaviorSubject<DateRange | null>(null);
@@ -64,6 +72,8 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
   private tooltipInstance: TimelineTooltip;
 
   private packetNames: string[] = [];
+
+  private subscriptions: Subscription[] = [];
 
   constructor(
     title: Title,
@@ -75,25 +85,36 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
     private snackBar: MatSnackBar,
     private dateTimePipe: DateTimePipe,
     private messageService: MessageService,
+    private synchronizer: Synchronizer,
   ) {
     title.setTitle('Archive Browser');
 
     const capabilities = yamcs.connectionInfo$.value?.instance?.capabilities || [];
     if (capabilities.indexOf('ccsds-completeness') !== -1) {
       this.legendOptions = [
-        { id: 'completeness', name: 'Completeness', bg: this.completenessBg, fg: this.completenessFg, checked: true },
+        { id: 'completeness', name: 'Completeness', bg: COMPLETENESS_BG, fg: COMPLETENESS_FG, checked: true },
         ... this.legendOptions,
       ];
     }
 
-    this.filterForm = new FormGroup({});
+    this.processor$.next(yamcs.getProcessor());
+    if (yamcs.processor) {
+      this.processorSubscription = this.yamcs.yamcsClient.createProcessorSubscription({
+        instance: yamcs.instance!,
+        processor: yamcs.processor,
+      }, processor => {
+        this.processor$.next(processor);
+      });
+    }
+
+    this.filterForm = new UntypedFormGroup({});
     const queryParams = this.route.snapshot.queryParamMap;
     for (const option of this.legendOptions) {
       let checked = option.checked;
       if (queryParams.has(option.id)) {
         checked = queryParams.get(option.id) === 'true';
       }
-      this.filterForm.addControl(option.id, new FormControl(checked));
+      this.filterForm.addControl(option.id, new UntypedFormControl(checked));
     }
 
     const bodyRef = new ElementRef(document.body);
@@ -153,38 +174,50 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
       });
     });
 
+    this.timeline.addViewportDoubleClickListener(event => {
+      const processor = this.yamcs.getProcessor();
+      if (processor?.replay) {
+        this.yamcs.yamcsClient.editReplayProcessor(this.yamcs.instance!, this.yamcs.processor!, {
+          seek: new Date(event.time).toISOString(),
+        }).catch(err => this.messageService.showError(err));
+      }
+    });
+
     const queryParams = this.route.snapshot.queryParamMap;
     if (queryParams.get('start') && queryParams.get('stop')) {
       const start = utils.toDate(queryParams.get('start'));
       const stop = utils.toDate(queryParams.get('stop'));
-      this.timeline.setBounds(start.getTime(), stop.getTime());
+      this.timeline.setViewRange(start.getTime(), stop.getTime());
     } else {
       // Show Today
       const start = this.yamcs.getMissionTime();
       start.setUTCHours(0, 0, 0, 0);
       const stop = new Date(start.getTime());
       stop.setUTCDate(start.getUTCDate() + 1);
-      this.timeline.setBounds(start.getTime(), stop.getTime());
+      this.timeline.setViewRange(start.getTime(), stop.getTime());
     }
 
-    const locator = new TimeLocator(this.timeline, () => this.yamcs.getMissionTime().getTime());
-    locator.knobColor = 'salmon';
+    const locator = new TimeLocator(this.timeline);
+    locator.time = this.yamcs.getMissionTime().getTime();
+
+    const replayOverlay = new ReplayOverlay(this.timeline);
+    this.subscriptions.push(
+      this.synchronizer.sync(() => {
+        locator.time = this.yamcs.getMissionTime().getTime();
+
+        const replayRequest = this.processor$.value?.replayRequest;
+        replayOverlay.replayRequest = replayRequest;
+      })
+    );
 
     new MouseTracker(this.timeline);
-    const axis = new AbsoluteTimeAxis(this.timeline);
+    const axis = new TimeRuler(this.timeline);
+    axis.contentHeight = 20;
     axis.label = 'UTC';
     axis.timezone = 'UTC';
     axis.frozen = true;
     axis.fullHeight = true;
 
-    this.timeline.addEventClickListener(clickEvent => {
-      const { start, stop } = clickEvent.event;
-      if (start && stop) {
-        this.timeline.setSelection(start, stop);
-      } else {
-        this.timeline.clearSelection();
-      }
-    });
     this.timeline.addViewportSelectionListener(evt => {
       if (evt.selection) {
         this.rangeSelection$.next({
@@ -194,25 +227,6 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
       } else {
         this.rangeSelection$.next(null);
       }
-    });
-    this.timeline.addEventMouseMoveListener(evt => {
-      const { start, stop, data } = evt.event;
-      let ttText = data.name + '<br>';
-      ttText += `Start: ${this.dateTimePipe.transform(new Date(start))}<br>`;
-      ttText += `Stop:&nbsp; ${this.dateTimePipe.transform(new Date(stop!))}<br>`;
-      if (data.count >= 0) {
-        const sec = (stop! - start) / 1000;
-        ttText += `Count: ${data.count}`;
-        if (data.count > 1) {
-          ttText += ` (${(data.count / sec).toFixed(3)} Hz)`;
-        }
-      } else if (data.description) {
-        ttText += data.description;
-      }
-      this.tooltipInstance.show(ttText, evt.clientX, evt.clientY);
-    });
-    this.timeline.addEventMouseOutListener(evt => {
-      this.tooltipInstance.hide();
     });
   }
 
@@ -232,7 +246,7 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
       if (startPromise.packet?.length && stopPromise.packet?.length) {
         const start = utils.toDate(startPromise.packet[0].generationTime);
         const stop = utils.toDate(stopPromise.packet[0].generationTime);
-        this.timeline.setBounds(start.getTime(), stop.getTime());
+        this.timeline.setViewRange(start.getTime(), stop.getTime());
       }
     }).catch(err => this.messageService.showError(err));
   }
@@ -243,7 +257,7 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
     const start = dt.getTime();
     dt.setUTCDate(dt.getUTCDate() + 1);
     const stop = dt.getTime();
-    this.timeline.setBounds(start, stop);
+    this.timeline.setViewRange(start, stop);
   }
 
   jumpToNow() {
@@ -297,39 +311,72 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
 
   setTool(tool: Tool) {
     this.tool$.next(tool);
-    this.timeline.setActiveTool(tool);
+    this.timeline.tool = tool;
   }
 
   replayRange() {
     const currentRange = this.rangeSelection$.value;
     if (currentRange) {
-      const dialogRef = this.dialog.open(StartReplayDialog, {
-        width: '400px',
-        data: {
-          start: currentRange.start,
-          stop: currentRange.stop,
-        },
-      });
-      dialogRef.afterClosed().subscribe(result => {
-        if (result) {
-          this.snackBar.open(`Initializing replay ${result.name}...`, undefined, {
+      const processor = this.processor$.value;
+      if (processor?.replay) {
+        this.modifyReplay(processor, currentRange);
+      } else {
+        this.startReplay(currentRange);
+      }
+    }
+  }
+
+  private startReplay(range: DateRange) {
+    this.dialog.open(StartReplayDialog, {
+      width: '400px',
+      data: {
+        start: range.start,
+        stop: range.stop,
+      },
+    }).afterClosed().subscribe(result => {
+      if (result) {
+        this.snackBar.open('Initializing replay...', undefined, {
+          horizontalPosition: 'end',
+        });
+        this.yamcs.yamcsClient.createProcessor(result).then(() => {
+          this.yamcs.switchContext(this.yamcs.instance!, result.name);
+          this.snackBar.open('Joining replay', undefined, {
+            duration: 3000,
             horizontalPosition: 'end',
           });
-          this.yamcs.yamcsClient.createProcessor(result).then(() => {
-            this.yamcs.switchContext(this.yamcs.instance!, result.name);
-            this.snackBar.open(`Joining replay ${result.name}`, undefined, {
-              duration: 3000,
-              horizontalPosition: 'end',
-            });
-          }).catch(err => {
-            this.snackBar.open(`Failed to initialize replay`, undefined, {
-              duration: 3000,
-              horizontalPosition: 'end',
-            });
+        }).catch(err => {
+          this.snackBar.open('Failed to initialize replay', undefined, {
+            duration: 3000,
+            horizontalPosition: 'end',
           });
-        }
-      });
-    }
+        });
+      }
+    });
+  }
+
+  private modifyReplay(processor: Processor, range: DateRange) {
+    this.dialog.open(ModifyReplayDialog, {
+      width: '400px',
+      data: {
+        start: range.start,
+        stop: range.stop,
+      },
+    }).afterClosed().subscribe((result: EditReplayProcessorRequest) => {
+      if (result) {
+        this.snackBar.open('Updating replay...', undefined, {
+          horizontalPosition: 'end',
+        });
+        this.yamcs.yamcsClient.editReplayProcessor(processor.instance, processor.name, result).catch(err => {
+          this.messageService.showError(err);
+        }).finally(() => this.snackBar.dismiss());
+      }
+    });
+  }
+
+  enableLoop(processor: Processor, loop: boolean) {
+    this.yamcs.yamcsClient.editReplayProcessor(processor.instance, processor.name, {
+      loop,
+    }).catch(err => this.messageService.showError(err));
   }
 
   downloadDump() {
@@ -398,226 +445,91 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
       const commandGroups = responses[3];
       const eventGroups = responses[4];
 
-      for (const line of this.timeline.getLines()) {
-        if (!(line instanceof AbsoluteTimeAxis)) {
-          this.timeline.removeChild(line);
+      for (const band of this.timeline.getBands()) {
+        if (!(band instanceof TimeRuler)) {
+          this.timeline.removeChild(band);
         }
       }
       for (let i = 0; i < completenessGroups.length; i++) {
         if (i === 0) {
-          const spacer = new EventLine(this.timeline);
-          spacer.label = 'Completeness';
-          spacer.backgroundColor = this.timeline.backgroundEvenColor;
-          spacer.eventHeight = 30;
-          spacer.marginTop = 0;
-          spacer.marginBottom = 0;
+          new TitleBand(this.timeline, 'Completeness');
         }
         const group = completenessGroups[i];
-        const events: Event[] = [];
-        for (const entry of group.entry) {
-          const start = utils.toDate(entry.start).getTime();
-          const stop = utils.toDate(entry.stop).getTime();
-          const event: Event = {
-            start, stop, data: {
-              name: group.id.name,
-              count: entry.count,
-            }
-          };
-          if (entry.count > 1) {
-            const sec = (stop - start) / 1000;
-            event.label = `${(entry.count / sec).toFixed(1)} Hz`;
-          }
-          events.push(event);
-        }
-        const line = new EventLine(this.timeline);
-        line.label = group.id.name;
-        line.borderWidth = 0;
-        line.wrap = false;
-        line.events = events;
-        line.marginTop = 0;
-        line.marginBottom = i === completenessGroups.length - 1 ? 30 : 0;
-        line.eventColor = this.completenessBg;
-        line.eventTextColor = this.completenessFg;
-        line.eventBorderWidth = 0;
-        line.eventCornerRadius = 0;
-        line.eventTextOverflow = 'hide';
-        line.backgroundColor = this.timeline.backgroundOddColor;
+        const band = new IndexGroupBand(this.timeline, group.id.name);
+        band.itemBackground = COMPLETENESS_BG;
+        band.itemTextColor = COMPLETENESS_FG;
+        band.borderWidth = i === completenessGroups.length - 1 ? 1 : 0;
+        band.marginBottom = i === completenessGroups.length - 1 ? 20 : 0;
+        band.setupTooltip(this.tooltipInstance, this.dateTimePipe);
+        band.loadData(group);
       }
 
       if (this.filterForm.value['packets']) {
         for (let i = 0; i < this.packetNames.length; i++) {
           if (i === 0) {
-            const spacer = new EventLine(this.timeline);
-            spacer.label = 'Packets';
-            spacer.backgroundColor = this.timeline.backgroundEvenColor;
-            spacer.eventHeight = 30;
-            spacer.marginTop = 0;
-            spacer.marginBottom = 0;
+            new TitleBand(this.timeline, 'Packets');
           }
           const packetName = this.packetNames[i];
-          const events: Event[] = [];
-          for (const group of tmGroups) {
-            if (group.id.name !== packetName) {
-              continue;
-            }
-            for (const entry of group.entry) {
-              const start = utils.toDate(entry.start).getTime();
-              const stop = utils.toDate(entry.stop).getTime();
-              const event: Event = {
-                start, stop, data: {
-                  name: group.id.name,
-                  count: entry.count,
-                }
-              };
-              if (entry.count > 1) {
-                const sec = (stop - start) / 1000;
-                event.label = `${(entry.count / sec).toFixed(1)} Hz`;
-              }
-              events.push(event);
-            }
+          const band = new IndexGroupBand(this.timeline, packetName);
+          band.itemBackground = PACKETS_BG;
+          band.itemTextColor = PACKETS_FG;
+          band.borderWidth = i === this.packetNames.length - 1 ? 1 : 0;
+          band.marginBottom = i === this.packetNames.length - 1 ? 20 : 0;
+          band.setupTooltip(this.tooltipInstance, this.dateTimePipe);
+          const group = tmGroups.find(candidate => candidate.id.name === packetName);
+          if (group) {
+            band.loadData(group);
           }
-          const line = new EventLine(this.timeline);
-          line.label = packetName;
-          line.borderWidth = i === this.packetNames.length - 1 ? 1 : 0;
-          line.wrap = false;
-          line.events = events;
-          line.marginTop = 0;
-          line.marginBottom = i === this.packetNames.length - 1 ? 30 : 0;
-          line.eventColor = this.packetsBg;
-          line.eventTextColor = this.packetsFg;
-          line.eventBorderWidth = 0;
-          line.eventCornerRadius = 0;
-          line.eventTextOverflow = 'hide';
-          line.backgroundColor = this.timeline.backgroundOddColor;
         }
       }
 
       for (let i = 0; i < parameterGroups.length; i++) {
         if (i === 0) {
-          const spacer = new EventLine(this.timeline);
-          spacer.label = 'Parameters';
-          spacer.backgroundColor = this.timeline.backgroundEvenColor;
-          spacer.eventHeight = 30;
-          spacer.marginTop = 0;
-          spacer.marginBottom = 0;
+          new TitleBand(this.timeline, 'Parameter Groups');
         }
         const group = parameterGroups[i];
-        const events: Event[] = [];
-        for (const entry of group.entry) {
-          const start = utils.toDate(entry.start).getTime();
-          const stop = utils.toDate(entry.stop).getTime();
-          const event: Event = {
-            start, stop, data: {
-              name: group.id.name,
-              count: entry.count,
-            }
-          };
-          if (entry.count > 1) {
-            const sec = (stop - start) / 1000;
-            event.label = `${(entry.count / sec).toFixed(1)} Hz`;
-          }
-          events.push(event);
-        }
-        const line = new EventLine(this.timeline);
-        line.label = group.id.name;
-        line.borderWidth = 0;
-        line.wrap = false;
-        line.events = events;
-        line.marginTop = 0;
-        line.marginBottom = i === parameterGroups.length - 1 ? 30 : 0;
-        line.eventColor = this.parametersBg;
-        line.eventTextColor = this.parametersFg;
-        line.eventBorderWidth = 0;
-        line.eventCornerRadius = 0;
-        line.eventTextOverflow = 'hide';
-        line.backgroundColor = this.timeline.backgroundOddColor;
+        const band = new IndexGroupBand(this.timeline, group.id.name);
+        band.itemBackground = PARAMETERS_BG;
+        band.itemTextColor = PARAMETERS_FG;
+        band.borderWidth = i === parameterGroups.length - 1 ? 1 : 0;
+        band.marginBottom = i === parameterGroups.length - 1 ? 20 : 0;
+        band.setupTooltip(this.tooltipInstance, this.dateTimePipe);
+        band.loadData(group);
       }
 
       for (let i = 0; i < commandGroups.length; i++) {
         if (i === 0) {
-          const spacer = new EventLine(this.timeline);
-          spacer.label = 'Commands';
-          spacer.backgroundColor = this.timeline.backgroundEvenColor;
-          spacer.eventHeight = 30;
-          spacer.marginTop = 0;
-          spacer.marginBottom = 0;
+          new TitleBand(this.timeline, 'Commands');
         }
         const group = commandGroups[i];
-        const events: Event[] = [];
-        for (const entry of group.entry) {
-          const start = utils.toDate(entry.start).getTime();
-          const stop = utils.toDate(entry.stop).getTime();
-          const event: Event = {
-            start, stop, data: {
-              name: group.id.name,
-              count: entry.count,
-            }
-          };
-          if (entry.count > 1) {
-            const sec = (stop - start) / 1000;
-            event.label = `${(entry.count / sec).toFixed(1)} Hz`;
-          }
-          events.push(event);
-        }
-        const line = new EventLine(this.timeline);
-        line.label = group.id.name;
-        line.borderWidth = 0;
-        line.wrap = false;
-        line.events = events;
-        line.marginTop = 0;
-        line.marginBottom = i === commandGroups.length - 1 ? 30 : 0;
-        line.eventColor = this.commandsBg;
-        line.eventTextColor = this.commandsFg;
-        line.eventBorderWidth = 0;
-        line.eventCornerRadius = 0;
-        line.eventTextOverflow = 'hide';
-        line.backgroundColor = this.timeline.backgroundOddColor;
+        const band = new IndexGroupBand(this.timeline, group.id.name);
+        band.itemBackground = COMMANDS_BG;
+        band.itemTextColor = COMMANDS_FG;
+        band.borderWidth = i === commandGroups.length - 1 ? 1 : 0;
+        band.marginBottom = i === commandGroups.length - 1 ? 30 : 0;
+        band.setupTooltip(this.tooltipInstance, this.dateTimePipe);
+        band.loadData(group);
       }
 
       for (let i = 0; i < eventGroups.length; i++) {
         if (i === 0) {
-          const spacer = new EventLine(this.timeline);
-          spacer.label = 'Events';
-          spacer.backgroundColor = this.timeline.backgroundEvenColor;
-          spacer.eventHeight = 30;
-          spacer.marginTop = 0;
-          spacer.marginBottom = 0;
+          new TitleBand(this.timeline, 'Events');
         }
         const group = eventGroups[i];
-        const events: Event[] = [];
-        for (const entry of group.entry) {
-          const start = utils.toDate(entry.start).getTime();
-          const stop = utils.toDate(entry.stop).getTime();
-          const event: Event = {
-            start, stop, data: {
-              name: group.id.name,
-              count: entry.count,
-            }
-          };
-          if (entry.count > 1) {
-            const sec = (stop - start) / 1000;
-            event.label = `${(entry.count / sec).toFixed(1)} Hz`;
-          }
-          events.push(event);
-        }
-        const line = new EventLine(this.timeline);
-        line.label = group.id.name;
-        line.borderWidth = 0;
-        line.wrap = false;
-        line.events = events;
-        line.marginTop = 0;
-        line.marginBottom = i === eventGroups.length - 1 ? 30 : 0;
-        line.eventColor = this.eventsBg;
-        line.eventTextColor = this.eventsFg;
-        line.eventBorderWidth = 0;
-        line.eventCornerRadius = 0;
-        line.eventTextOverflow = 'hide';
-        line.backgroundColor = this.timeline.backgroundOddColor;
+        const band = new IndexGroupBand(this.timeline, group.id.name);
+        band.itemBackground = EVENTS_BG;
+        band.itemTextColor = EVENTS_FG;
+        band.borderWidth = i === eventGroups.length - 1 ? 1 : 0;
+        band.marginBottom = i === eventGroups.length - 1 ? 20 : 0;
+        band.setupTooltip(this.tooltipInstance, this.dateTimePipe);
+        band.loadData(group);
       }
     });
   }
 
   ngOnDestroy() {
+    this.processorSubscription?.cancel();
+    this.subscriptions.forEach(subscription => subscription.unsubscribe());
     this.timeline.disconnect();
   }
 }

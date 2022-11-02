@@ -1,16 +1,16 @@
 package org.yamcs.archive;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.archive.CcsdsTmIndex.CcsdsIndexIterator;
 import org.yamcs.yarch.YarchTestCase;
@@ -21,8 +21,8 @@ public class CcsdsTmIndexTest extends YarchTestCase {
     static {
         config.put("streams", new ArrayList<String>());
     }
-    
-    @BeforeClass
+
+    @BeforeAll
     public static void oneTimeSetup() throws Exception {
         YConfiguration.setupTest(null);
     }
@@ -99,7 +99,7 @@ public class CcsdsTmIndexTest extends YarchTestCase {
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void testApidIndexSameTimeAndWraparound() throws Exception {
         CcsdsTmIndex tmindex = new CcsdsTmIndex();
         tmindex.init(ydb.getName(), "test", YConfiguration.emptyConfig());

@@ -86,6 +86,13 @@
       </span>
     </dd>
 
+    <ng-container *ngIf="parameter.type?.signed !== undefined">
+      <dt>Signed</dt>
+      <dd>
+        {{ parameter.type?.signed ?? '-' }}
+      </dd>
+    </ng-container>
+
     <ng-container *ngIf="!offset">
       <dt>Source</dt>
       <dd>{{ (parameter.dataSource | titlecase) || '-' }}</dd>
@@ -144,10 +151,10 @@
 
     <h4>Data Encoding</h4>
     <dl class="dl-horizontal no-trail">
-      <dt>Size in Bits</dt>
+      <dt>Size in bits</dt>
       <dd>{{ dataEncoding?.sizeInBits | nvl:'-' }}</dd>
       <ng-container *ngIf="dataEncoding?.littleEndian !== undefined">
-        <dt>Byte Order</dt>
+        <dt>Byte order</dt>
         <dd>
           <ng-container *ngIf="dataEncoding?.littleEndian !== undefined">
             {{ dataEncoding?.littleEndian ? 'Little Endian' : 'Big Endian' }}
@@ -225,35 +232,45 @@
       <mat-divider></mat-divider>
     </div>
 
-    <h4>Alarm Levels</h4>
+    <h4>Alarm Info</h4>
     <ng-container *ngIf="entry.type?.defaultAlarm || entry.type?.contextAlarm; else noLevels">
-      <table yaDataTable *ngIf="entry.type?.defaultAlarm">
-        <tr>
-          <th>Alarm Level (default)</th>
-          <th>Range</th>
-        </tr>
-        <tr *ngFor="let range of entry.type?.defaultAlarm?.staticAlarmRange">
-          <td>
-            <app-alarm-level [level]="range.level" [grayscale]="true"></app-alarm-level>
-            {{ range.level }}
-          </td>
-          <td>
-            <app-interval *ngIf="(range.minInclusive !== undefined
+      <ng-container *ngIf="entry.type?.defaultAlarm as alarm">
+        <dl class="dl-horizontal">
+          <dt>Min. violations</dt>
+          <dd>{{ alarm.minViolations ?? '-' }}</dd>
+        </dl>
+        <table yaDataTable>
+          <tr>
+            <th>Alarm Level (default)</th>
+            <th>Range</th>
+          </tr>
+          <tr *ngFor="let range of alarm.staticAlarmRange">
+            <td>
+              <app-alarm-level [level]="range.level" [grayscale]="true"></app-alarm-level>
+              {{ range.level }}
+            </td>
+            <td>
+              <app-interval *ngIf="(range.minInclusive !== undefined
                             || range.minExclusive !== undefined
                             || range.maxInclusive !== undefined
                             || range.maxExclusive !== undefined); else dash"
-                          [left]="range.minInclusive | nvl:range.minExclusive"
-                          [right]="range.maxInclusive | nvl:range.maxExclusive"
-                          [leftInclusive]="range.minInclusive !== undefined"
-                          [rightInclusive]="range.maxInclusive !== undefined">
-            </app-interval>
-            <ng-template #dash>-</ng-template>
-          </td>
-        </tr>
-      </table>
+                            [left]="range.minInclusive | nvl:range.minExclusive"
+                            [right]="range.maxInclusive | nvl:range.maxExclusive"
+                            [leftInclusive]="range.minInclusive !== undefined"
+                            [rightInclusive]="range.maxInclusive !== undefined">
+              </app-interval>
+              <ng-template #dash>-</ng-template>
+            </td>
+          </tr>
+        </table>
+      </ng-container>
       <ng-container *ngFor="let contextAlarm of entry.type?.contextAlarm; let first=first">
         <p *ngIf="!first">&nbsp;</p>
         <h5>Context: <code>{{ contextAlarm.context }}</code></h5>
+        <dl class="dl-horizontal">
+          <dt>Min. violations</dt>
+          <dd>{{ contextAlarm.minViolations ?? '-' }}</dd>
+        </dl>
         <table yaDataTable>
           <tr>
             <th>Level</th>

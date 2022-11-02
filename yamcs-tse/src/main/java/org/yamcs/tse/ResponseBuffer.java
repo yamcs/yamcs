@@ -53,8 +53,7 @@ public class ResponseBuffer {
             int idx = Bytes.indexOf(remainingBytes, responseTermination);
             if (idx != -1) {
                 view.position(view.position() + idx + responseTermination.length);
-                byte[] responseBytes = Arrays.copyOfRange(remainingBytes, 0, idx);
-                return responseBytes;
+                return Arrays.copyOfRange(remainingBytes, 0, idx);
             } else if (force) {
                 view.position(buf.position());
                 return remainingBytes; // Unterminated response

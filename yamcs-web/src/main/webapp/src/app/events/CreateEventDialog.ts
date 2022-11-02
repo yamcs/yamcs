@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { YamcsService } from '../core/services/YamcsService';
+import { Option } from '../shared/forms/Select';
 import * as utils from '../shared/utils';
 
 @Component({
@@ -10,11 +11,20 @@ import * as utils from '../shared/utils';
 })
 export class CreateEventDialog {
 
-  form: FormGroup;
+  form: UntypedFormGroup;
+
+  severityOptions: Option[] = [
+    { id: 'INFO', label: 'INFO' },
+    { id: 'WATCH', label: 'WATCH' },
+    { id: 'WARNING', label: 'WARNING' },
+    { id: 'DISTRESS', label: 'DISTRESS' },
+    { id: 'CRITICAL', label: 'CRITICAL' },
+    { id: 'SEVERE', label: 'SEVERE' },
+  ];
 
   constructor(
     private dialogRef: MatDialogRef<CreateEventDialog>,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     private yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {

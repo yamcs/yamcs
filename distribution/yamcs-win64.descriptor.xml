@@ -20,15 +20,15 @@
     </fileSet>
   </fileSets>
 
-  <dependencySets>
-    <dependencySet>
+  <files>
+    <file>
+      <source>target/rocksdbjni-${rocksdbVersion}/librocksdbjni-win64.dll</source>
       <outputDirectory>lib</outputDirectory>
-      <useProjectArtifact>false</useProjectArtifact>
-      <useTransitiveDependencies>true</useTransitiveDependencies>
-      <useTransitiveFiltering>true</useTransitiveFiltering>
-      <includes>
-        <include>org.rocksdb:rocksdbjni:jar:win64</include>
-      </includes>
-    </dependencySet>
-  </dependencySets>
+      <!--
+        Named so that System.loadLibrary("rocksdbjni") can find it when lib
+        is added to java.library.path.
+      -->
+      <destName>rocksdbjni.dll</destName>
+    </file>
+  </files>
 </assembly>

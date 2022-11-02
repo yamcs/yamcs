@@ -13,9 +13,9 @@ import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.ForbiddenException;
-import org.yamcs.http.HttpServer;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
+import org.yamcs.http.auth.TokenStore;
 import org.yamcs.protobuf.AbstractIamApi;
 import org.yamcs.protobuf.CreateGroupRequest;
 import org.yamcs.protobuf.CreateServiceAccountRequest;
@@ -59,6 +59,12 @@ import org.yamcs.utils.TimeEncoding;
 import com.google.protobuf.Empty;
 
 public class IamApi extends AbstractIamApi<Context> {
+
+    private TokenStore tokenStore;
+
+    public IamApi(TokenStore tokenStore) {
+        this.tokenStore = tokenStore;
+    }
 
     @Override
     public void listRoles(Context ctx, Empty request, Observer<ListRolesResponse> observer) {
@@ -121,12 +127,13 @@ public class IamApi extends AbstractIamApi<Context> {
     @Override
     public void listUsers(Context ctx, Empty request, Observer<ListUsersResponse> observer) {
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-        List<User> users = securityStore.getDirectory().getUsers();
+        Directory directory = securityStore.getDirectory();
+        List<User> users = directory.getUsers();
         Collections.sort(users, (u1, u2) -> u1.getName().compareToIgnoreCase(u2.getName()));
 
         ListUsersResponse.Builder responseb = ListUsersResponse.newBuilder();
         for (User user : users) {
-            UserInfo userb = toUserInfo(user, ctx.user.isSuperuser());
+            UserInfo userb = toUserInfo(user, ctx.user.isSuperuser(), directory);
             responseb.addUsers(userb);
         }
         observer.complete(responseb.build());
@@ -170,18 +177,19 @@ public class IamApi extends AbstractIamApi<Context> {
             throw new InternalServerErrorException(e);
         }
 
-        observer.complete(toUserInfo(user, ctx.user.isSuperuser()));
+        observer.complete(toUserInfo(user, ctx.user.isSuperuser(), directory));
     }
 
     @Override
     public void getUser(Context ctx, GetUserRequest request, Observer<UserInfo> observer) {
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
+        Directory directory = securityStore.getDirectory();
         String username = request.getName();
-        User user = securityStore.getDirectory().getUser(username);
+        User user = directory.getUser(username);
         if (user == null) {
             throw new NotFoundException();
         }
-        observer.complete(toUserInfo(user, ctx.user.isSuperuser()));
+        observer.complete(toUserInfo(user, ctx.user.isSuperuser(), directory));
     }
 
     @Override
@@ -233,7 +241,7 @@ public class IamApi extends AbstractIamApi<Context> {
         } catch (IOException e) {
             throw new InternalServerErrorException(e);
         }
-        observer.complete(toUserInfo(user, ctx.user.isSuperuser()));
+        observer.complete(toUserInfo(user, ctx.user.isSuperuser(), directory));
     }
 
     @Override
@@ -260,7 +268,9 @@ public class IamApi extends AbstractIamApi<Context> {
     @Override
     public void getOwnUser(Context ctx, Empty request, Observer<UserInfo> observer) {
         User user = ctx.user;
-        observer.complete(toUserInfo(user, true));
+        SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
+        Directory directory = securityStore.getDirectory();
+        observer.complete(toUserInfo(user, true, directory));
     }
 
     @Override
@@ -275,7 +285,7 @@ public class IamApi extends AbstractIamApi<Context> {
 
         ListServiceAccountsResponse.Builder responseb = ListServiceAccountsResponse.newBuilder();
         for (ServiceAccount serviceAccount : serviceAccounts) {
-            ServiceAccountInfo serviceAccountInfo = toServiceAccountInfo(serviceAccount, false);
+            ServiceAccountInfo serviceAccountInfo = toServiceAccountInfo(serviceAccount, false, directory);
             responseb.addServiceAccounts(serviceAccountInfo);
         }
         observer.complete(responseb.build());
@@ -294,7 +304,7 @@ public class IamApi extends AbstractIamApi<Context> {
         if (serviceAccount == null) {
             throw new NotFoundException();
         }
-        observer.complete(toServiceAccountInfo(serviceAccount, true));
+        observer.complete(toServiceAccountInfo(serviceAccount, true, directory));
     }
 
     @Override
@@ -325,9 +335,8 @@ public class IamApi extends AbstractIamApi<Context> {
         if (user == null) {
             throw new NotFoundException();
         }
-        HttpServer httpServer = YamcsServer.getServer().getGlobalServices(HttpServer.class).get(0);
         try {
-            httpServer.getTokenStore().forgetUser(user.getName());
+            tokenStore.forgetUser(user.getName());
             directory.deleteUser(user);
             observer.complete(Empty.getDefaultInstance());
         } catch (IOException e) {
@@ -375,7 +384,7 @@ public class IamApi extends AbstractIamApi<Context> {
 
         ListGroupsResponse.Builder responseb = ListGroupsResponse.newBuilder();
         for (Group group : groups) {
-            GroupInfo groupInfo = toGroupInfo(group, true);
+            GroupInfo groupInfo = toGroupInfo(group, true, directory);
             responseb.addGroups(groupInfo);
         }
         observer.complete(responseb.build());
@@ -390,7 +399,7 @@ public class IamApi extends AbstractIamApi<Context> {
         if (group == null) {
             throw new NotFoundException();
         }
-        observer.complete(toGroupInfo(group, true));
+        observer.complete(toGroupInfo(group, true, directory));
     }
 
     @Override
@@ -424,7 +433,7 @@ public class IamApi extends AbstractIamApi<Context> {
         } catch (IOException e) {
             throw new InternalServerErrorException(e);
         }
-        observer.complete(toGroupInfo(group, true));
+        observer.complete(toGroupInfo(group, true, directory));
     }
 
     @Override
@@ -469,7 +478,7 @@ public class IamApi extends AbstractIamApi<Context> {
         } catch (IOException e) {
             throw new InternalServerErrorException(e);
         }
-        observer.complete(toGroupInfo(group, true));
+        observer.complete(toGroupInfo(group, true, directory));
     }
 
     @Override
@@ -491,10 +500,10 @@ public class IamApi extends AbstractIamApi<Context> {
             throw new InternalServerErrorException(e);
         }
 
-        observer.complete(toGroupInfo(group, true));
+        observer.complete(toGroupInfo(group, true, directory));
     }
 
-    public static UserInfo toUserInfo(User user, boolean sensitiveDetails) {
+    public static UserInfo toUserInfo(User user, boolean sensitiveDetails, Directory directory) {
         UserInfo.Builder userb;
         userb = UserInfo.newBuilder();
         userb.setName(user.getName());
@@ -507,10 +516,9 @@ public class IamApi extends AbstractIamApi<Context> {
             userb.setEmail(user.getEmail());
         }
         if (sensitiveDetails) {
-            Directory directory = YamcsServer.getServer().getSecurityStore().getDirectory();
             User createdBy = directory.getUser(user.getCreatedBy());
             if (createdBy != null) {
-                userb.setCreatedBy(toUserInfo(createdBy, false));
+                userb.setCreatedBy(toUserInfo(createdBy, false, directory));
             }
             userb.setCreationTime(TimeEncoding.toProtobufTimestamp(user.getCreationTime()));
             if (user.getConfirmationTime() != TimeEncoding.INVALID_INSTANT) {
@@ -531,6 +539,7 @@ public class IamApi extends AbstractIamApi<Context> {
             }
             Collections.sort(unsortedSystemPrivileges);
             userb.addAllSystemPrivilege(unsortedSystemPrivileges);
+            userb.addAllSystemPrivileges(unsortedSystemPrivileges);
 
             List<ObjectPrivilegeInfo> unsortedObjectPrivileges = new ArrayList<>();
             for (Entry<ObjectPrivilegeType, Set<ObjectPrivilege>> privilege : user.getObjectPrivileges().entrySet()) {
@@ -538,11 +547,13 @@ public class IamApi extends AbstractIamApi<Context> {
                 infob.setType(privilege.getKey().toString());
                 for (ObjectPrivilege objectPrivilege : privilege.getValue()) {
                     infob.addObject(objectPrivilege.getObject());
+                    infob.addObjects(objectPrivilege.getObject());
                 }
                 unsortedObjectPrivileges.add(infob.build());
             }
             Collections.sort(unsortedObjectPrivileges, (p1, p2) -> p1.getType().compareTo(p2.getType()));
             userb.addAllObjectPrivilege(unsortedObjectPrivileges);
+            userb.addAllObjectPrivileges(unsortedObjectPrivileges);
 
             user.getIdentityEntrySet().forEach(entry -> {
                 userb.addIdentities(ExternalIdentityInfo.newBuilder()
@@ -566,7 +577,7 @@ public class IamApi extends AbstractIamApi<Context> {
             }
 
             for (Group group : directory.getGroups(user)) {
-                GroupInfo groupInfo = toGroupInfo(group, false);
+                GroupInfo groupInfo = toGroupInfo(group, false, directory);
                 userb.addGroups(groupInfo);
             }
         }
@@ -574,9 +585,7 @@ public class IamApi extends AbstractIamApi<Context> {
         return userb.build();
     }
 
-    private static GroupInfo toGroupInfo(Group group, boolean addMembers) {
-        Directory directory = YamcsServer.getServer().getSecurityStore().getDirectory();
-
+    private static GroupInfo toGroupInfo(Group group, boolean addMembers, Directory directory) {
         GroupInfo.Builder groupInfob = GroupInfo.newBuilder();
         groupInfob.setName(group.getName());
         if (group.getDescription() != null) {
@@ -585,14 +594,15 @@ public class IamApi extends AbstractIamApi<Context> {
         if (addMembers) {
             for (int memberId : group.getMembers()) {
                 User user = directory.getUser(memberId);
-                UserInfo userInfo = toUserInfo(user, false);
+                UserInfo userInfo = toUserInfo(user, false, directory);
                 groupInfob.addUsers(userInfo);
             }
         }
         return groupInfob.build();
     }
 
-    private static ServiceAccountInfo toServiceAccountInfo(ServiceAccount serviceAccount, boolean details) {
+    private static ServiceAccountInfo toServiceAccountInfo(ServiceAccount serviceAccount, boolean details,
+            Directory directory) {
         ServiceAccountInfo.Builder b = ServiceAccountInfo.newBuilder();
         b.setName(serviceAccount.getName());
         b.setActive(serviceAccount.isActive());
@@ -600,10 +610,9 @@ public class IamApi extends AbstractIamApi<Context> {
             b.setDisplayName(serviceAccount.getDisplayName());
         }
         if (details) {
-            Directory directory = YamcsServer.getServer().getSecurityStore().getDirectory();
             User createdBy = directory.getUser(serviceAccount.getCreatedBy());
             if (createdBy != null) {
-                b.setCreatedBy(toUserInfo(createdBy, false));
+                b.setCreatedBy(toUserInfo(createdBy, false, directory));
                 b.setCreationTime(TimeEncoding.toProtobufTimestamp(createdBy.getCreationTime()));
             }
         }
@@ -632,6 +641,7 @@ public class IamApi extends AbstractIamApi<Context> {
         for (ObjectPrivilege privilege : objectPrivileges) {
             b.addObjectPrivileges(ObjectPrivilegeInfo.newBuilder()
                     .setType(privilege.getType().toString())
+                    .addObjects(privilege.getObject())
                     .addObject(privilege.getObject()));
         }
         return b.build();

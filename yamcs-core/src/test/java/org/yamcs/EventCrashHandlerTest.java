@@ -1,13 +1,13 @@
 package org.yamcs;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Queue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.events.EventProducerFactory;
-import org.yamcs.yarch.protobuf.Db.Event;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.yarch.protobuf.Db.Event;
 
 public class EventCrashHandlerTest {
 

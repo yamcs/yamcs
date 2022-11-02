@@ -106,14 +106,16 @@
                 comment
               </mat-icon>
               <span *ngFor="let item of entry.extra | keyvalue">
-                [{{ item.key}}: {{ item.value | value }}]
+                [{{ item.key }}: {{ item.value | value }}]
               </span>
               <table class="args">
                 <tr *ngFor="let arg of entry.args | keyvalue">
                   <td class="key" width="1">
                     {{ arg.key }}
                   </td>
-                  <td class="value">{{ arg.value }}</td>
+                  <td class="value">
+                    <app-value [value]="arg.value | tovalue"></app-value>
+                  </td>
                 </tr>
               </table>
             </div>

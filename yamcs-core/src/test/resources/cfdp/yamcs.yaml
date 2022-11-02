@@ -3,7 +3,7 @@ services:
     args:
       port: 9193
 
-dataDir: /tmp/yamcs-cfdp-data/
+dataDir: ${java.io.tmpdir}/yamcs-cfdp-data/
 
 instances:
   - cfdp-test-inst

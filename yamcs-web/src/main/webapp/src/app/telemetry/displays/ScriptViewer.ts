@@ -4,6 +4,7 @@ import 'brace/mode/javascript';
 import 'brace/theme/eclipse';
 import 'brace/theme/twilight';
 import { StorageClient } from '../../client';
+import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Viewer } from './Viewer';
 
@@ -27,16 +28,19 @@ export class ScriptViewer implements Viewer {
   private editor: ace.Editor;
 
   private storageClient: StorageClient;
+  private bucket: string;
 
   constructor(
     yamcs: YamcsService,
     private changeDetector: ChangeDetectorRef,
+    configService: ConfigService,
   ) {
     this.storageClient = yamcs.createStorageClient();
+    this.bucket = configService.getConfig().displayBucket;
   }
 
   public init(objectName: string) {
-    this.storageClient.getObject('_global', 'displays', objectName).then(response => {
+    this.storageClient.getObject('_global', this.bucket, objectName).then(response => {
       response.text().then(text => {
         this.scriptContainer.nativeElement.innerHTML = text;
         this.editor = ace.edit(this.scriptContainer.nativeElement);

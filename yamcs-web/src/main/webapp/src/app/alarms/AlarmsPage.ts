@@ -1,15 +1,16 @@
-import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { Alarm, EditAlarmOptions } from '../client';
+import { Alarm } from '../client';
 import { AuthService } from '../core/services/AuthService';
+import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
 import { Option } from '../shared/forms/Select';
+import { TrackBySelectionModel } from '../shared/table/TrackBySelectionModel';
 import { AcknowledgeAlarmDialog } from './AcknowledgeAlarmDialog';
 import { AlarmsDataSource } from './AlarmsDataSource';
 import { ShelveAlarmDialog } from './ShelveAlarmDialog';
@@ -21,16 +22,18 @@ import { ShelveAlarmDialog } from './ShelveAlarmDialog';
 })
 export class AlarmsPage implements OnDestroy {
 
-  filterForm = new FormGroup({
-    filter: new FormControl(),
-    view: new FormControl('standard'),
+  filterForm = new UntypedFormGroup({
+    filter: new UntypedFormControl(),
+    view: new UntypedFormControl('standard'),
   });
 
   // Alarm to show in detail pane (only on single selection)
   detailAlarm$ = new BehaviorSubject<Alarm | null>(null);
 
   dataSource: AlarmsDataSource;
-  selection = new SelectionModel<Alarm>(false, []);
+  selection = new TrackBySelectionModel<Alarm>((index: number, alarm: Alarm) => {
+    return `${alarm.triggerTime}__${alarm.id.namespace}__${alarm.id.name}__${alarm.seqNum}`;
+  }, false, []);
 
   viewOptions: Option[] = [
     { id: 'standard', label: 'Standard view (ack & unack)' },
@@ -55,6 +58,7 @@ export class AlarmsPage implements OnDestroy {
     title: Title,
     private dialog: MatDialog,
     private authService: AuthService,
+    private messageService: MessageService,
   ) {
     title.setTitle('Alarms');
     this.selectionSubscription = this.selection.changed.subscribe(() => {
@@ -70,24 +74,14 @@ export class AlarmsPage implements OnDestroy {
     this.dataSource.loadAlarms();
 
     this.alarmsSubscription = this.dataSource.alarms$.subscribe(alarms => {
+      this.selection.matchNewValues(alarms);
+
       // Update detail pane
       const detailAlarm = this.detailAlarm$.value;
       if (detailAlarm) {
         for (const alarm of alarms) {
           if (this.isSameAlarm(alarm, detailAlarm)) {
             this.detailAlarm$.next(alarm);
-            break;
-          }
-        }
-      }
-
-      // Adjust selection model (object identities may have changed)
-      const oldAlarms = this.selection.selected;
-      this.selection.clear();
-      for (const oldAlarm of oldAlarms) {
-        for (const newAlarm of alarms) {
-          if (this.isSameAlarm(oldAlarm, newAlarm)) {
-            this.selection.toggle(newAlarm);
             break;
           }
         }
@@ -135,33 +129,29 @@ export class AlarmsPage implements OnDestroy {
     this.dialog.open(AcknowledgeAlarmDialog, {
       width: '400px',
       data: { alarms },
-    });
+    }).afterClosed().subscribe(() => this.selection.clear());
   }
 
   shelveAlarms(alarms: Alarm[]) {
     this.dialog.open(ShelveAlarmDialog, {
       width: '400px',
       data: { alarms },
-    });
+    }).afterClosed().subscribe(() => this.selection.clear());
   }
 
   unshelveAlarms(alarms: Alarm[]) {
     for (const alarm of alarms) {
-      const options: EditAlarmOptions = {
-        state: 'unshelved',
-      };
-      const alarmId = alarm.id.namespace + '/' + alarm.id.name;
-      this.yamcs.yamcsClient.editAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmId, alarm.seqNum, options);
+      const alarmName = alarm.id.namespace + (alarm.id.name ? '/' + alarm.id.name : '');
+      this.yamcs.yamcsClient.unshelveAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmName, alarm.seqNum)
+        .then(() => this.selection.clear())
+        .catch(err => this.messageService.showError(err));
     }
   }
 
   clearAlarms(alarms: Alarm[]) {
     for (const alarm of alarms) {
-      const options: EditAlarmOptions = {
-        state: 'cleared',
-      };
-      const alarmId = alarm.id.namespace + '/' + alarm.id.name;
-      this.yamcs.yamcsClient.editAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmId, alarm.seqNum, options);
+      const alarmName = alarm.id.namespace + (alarm.id.name ? '/' + alarm.id.name : '');
+      this.yamcs.yamcsClient.clearAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmName, alarm.seqNum, {});
     }
   }
 

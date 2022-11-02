@@ -64,6 +64,7 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
     SubIterator subIt;
 
     final boolean ascending, retrieveEngValues, retrieveRawValues, retrieveParameterStatus;
+    final long start, stop;
 
     ParameterValueSegment curValue;
     Iterator<ParameterValueSegment> rtIterator;
@@ -74,12 +75,16 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
         this.parameterId = parameterId;
         this.parameterGroupId = parameterGroupId;
         this.parchive = parchive;
+        this.start = req.start;
+        this.stop = req.stop;
         this.ascending = req.isAscending();
         this.retrieveEngValues = req.isRetrieveEngineeringValues();
         this.retrieveRawValues = (parameterId.getRawType() == null) ? false : req.isRetrieveRawValues();
         this.retrieveParameterStatus = req.isRetrieveParameterStatus();
 
         int pid = parameterId.getPid();
+        // we use the 0 and Byte.MAX_VALUE for the segment type to make sure we catch all types.
+        // ENG_VALUE=0 and PARAMETER_STATUS=2 could have been used as well
         rangeStart = new SegmentKey(pid, parameterGroupId, ParameterArchive.getIntervalStart(req.start),
                 (byte) 0).encode();
         rangeStop = new SegmentKey(pid, parameterGroupId, req.stop, Byte.MAX_VALUE).encode();
@@ -89,7 +94,7 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
             partitions = parchive.getPartitions(getIntervalStart(req.start), getIntervalEnd(req.stop), req.ascending);
             topIt = partitions.iterator();
 
-            if (rtfiller != null && req.isAscending()) {
+            if (rtfiller != null && !ascending) {
                 rtIterator = rtfiller.getSegments(pid, parameterGroupId, ascending).iterator();
             }
             next();
@@ -105,12 +110,21 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
     }
 
     public void next() {
-        if (ascending && rtIterator != null) {
-            if (rtIterator.hasNext()) {
+        // descending with a realtime filler: retrieve first the values from the realtime that are in range
+        if (!ascending && rtIterator != null) {
+            curValue = null;
+            while (rtIterator.hasNext()) {
                 curValue = rtIterator.next();
-                return;
-            } else {
+                if (curValue.getSegmentStart() <= stop && curValue.getSegmentEnd() >= start) {
+                    break;
+                } else {
+                    curValue = null;
+                }
+            }
+            if (curValue == null) {
                 rtIterator = null;
+            } else {
+                return;
             }
         }
 
@@ -123,12 +137,24 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
             curValue = null;
         }
 
-        if (!ascending && rtfiller != null) {
+        // ascending with a realtime filler: retrieve at the end the values from the realtime that are in range
+        if (ascending && rtfiller != null) {
             if (rtIterator == null) {
                 rtIterator = rtfiller.getSegments(parameterId.getPid(), parameterGroupId, ascending).iterator();
             }
-            if (rtIterator.hasNext()) {
+            long lastSegmentTime = curValue == null ? start : curValue.getSegmentEnd();
+            curValue = null;
+
+            while (rtIterator.hasNext()) {
                 curValue = rtIterator.next();
+                if (curValue.getSegmentStart() <= stop && curValue.getSegmentEnd() >= lastSegmentTime) {
+                    break;
+                } else {
+                    curValue = null;
+                }
+            }
+            if (curValue == null) {
+                rtIterator = null;
             }
         }
     }
@@ -175,6 +201,10 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
         private byte[] currentEngValueSegment;
         private byte[] currentRawValueSegment;
         private byte[] currentStatusSegment;
+        /**
+         * The dbIterator iterates over all segment types (raw value, eng value, parameter status). The time values are
+         * received using point loockups.
+         */
         DbIterator dbIterator;
         boolean valid;
 
@@ -294,7 +324,6 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
             } catch (RocksDBException | IOException e) {
                 throw new ParameterArchiveException("Failded extracting data from the parameter archive", e);
             }
-
             return pvs;
         }
 

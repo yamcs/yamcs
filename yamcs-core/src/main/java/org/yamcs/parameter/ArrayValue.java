@@ -131,7 +131,7 @@ public class ArrayValue extends Value {
     /**
      * unflatten the flatIndex into the idx array
      */
-    public void unFlattenIndex(int flatIndex, int[] idx) {
+    static public void unFlattenIndex(int flatIndex, int[] dim, int[] idx) {
         if (idx.length != dim.length) {
             throw new IllegalArgumentException("idx length is not the expected one");
         }
@@ -139,12 +139,25 @@ public class ArrayValue extends Value {
             idx[0] = flatIndex;
             return;
         }
+        int n = flatIndex;
 
+        int d = 1;
+        for (int i = 1; i < dim.length; i++) {
+            d *= dim[i];
+        }
+
+        int k;
+        for (k = 0; k < dim.length - 1; k++) {
+            idx[k] = n / d;
+            n = n - d * idx[k];
+            d /= dim[k + 1];
+        }
+        idx[k] = n;
     }
 
     public int[] unFlattenIndex(int flatIndex) {
         int[] idx = new int[dim.length];
-        unFlattenIndex(flatIndex, idx);
+        unFlattenIndex(flatIndex, dim, idx);
         return idx;
     }
 

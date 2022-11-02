@@ -40,7 +40,7 @@ public class TmPacket {
     private long gentime = TimeEncoding.INVALID_INSTANT; // generation time
     private Instant ertime = Instant.INVALID_INSTANT; // earth reception time
 
-    private long obt = Long.MIN_VALUE;//on-board time when the time is free running
+    private long obt = Long.MIN_VALUE;// on-board time when the time is free running
     private int seqCount;
     private byte[] pkt;
     private int status;
@@ -100,6 +100,10 @@ public class TmPacket {
 
     public byte[] getPacket() {
         return pkt;
+    }
+
+    public int length() {
+        return pkt.length;
     }
 
     public void setInvalid() {

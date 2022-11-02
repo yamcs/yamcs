@@ -1,9 +1,12 @@
 package org.yamcs.archive;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
+import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.protobuf.Db.ProtoDataType;
 
 import com.google.protobuf.MessageLite;
 
@@ -25,43 +28,18 @@ public class CommandHistoryReplayHandler implements ReplayHandler {
     }
 
     @Override
-    public String getSelectCmd() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("SELECT ").append(ProtoDataType.CMD_HISTORY.getNumber())
-                .append(",* from " + CommandHistoryRecorder.TABLE_NAME);
-        appendTimeClause(sb, repl);
+    public SqlBuilder getSelectCmd() {
+        SqlBuilder sqlb = ReplayHandler.init(CommandHistoryRecorder.TABLE_NAME, ProtoDataType.CMD_HISTORY, repl);
 
         CommandHistoryReplayRequest cmdHistReq = repl.getCommandHistoryRequest();
         if (cmdHistReq.getNameFilterCount() > 0) {
-            if (repl.hasStart() || (repl.hasStop())) {
-                sb.append(" AND ");
-            } else {
-                sb.append(" WHERE ");
-            }
-            sb.append("cmdName IN (");
-            boolean first = true;
-
-            for (NamedObjectId id : cmdHistReq.getNameFilterList()) {
-                // TODO - do something with the namespace
-                if (first) {
-                    first = false;
-                } else {
-                    sb.append(", ");
-                }
-                String cmdName = sanitize(id.getName());
-                sb.append("'").append(cmdName).append("'");
-            }
-            sb.append(")");
+            // TODO - do something with the namespace
+            List<String> cmdNames = cmdHistReq.getNameFilterList().stream().map(id -> id.getName())
+                    .collect(Collectors.toList());
+            sqlb.whereColIn("cmdName", cmdNames);
         }
 
-        if (repl.isReverse()) {
-            sb.append(" ORDER DESC");
-        }
-        return sb.toString();
-    }
-
-    private String sanitize(String name) {
-        return name.replace("'", "").replace("\n", "");
+        return sqlb;
     }
 
     @Override
@@ -69,17 +47,4 @@ public class CommandHistoryReplayHandler implements ReplayHandler {
         return GPBHelper.tupleToCommandHistoryEntry(t);
     }
 
-    static void appendTimeClause(StringBuilder sb, ReplayOptions request) {
-        if (request.hasStart() || (request.hasStop())) {
-            sb.append(" where ");
-            if (request.hasStart()) {
-                sb.append(" gentime>=" + request.getStart());
-                if (request.hasStop()) {
-                    sb.append(" and gentime<" + request.getStop());
-                }
-            } else {
-                sb.append(" gentime<" + request.getStop());
-            }
-        }
-    }
 }

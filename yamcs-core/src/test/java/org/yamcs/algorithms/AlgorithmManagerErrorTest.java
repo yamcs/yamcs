@@ -1,16 +1,16 @@
 package org.yamcs.algorithms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
 import org.yamcs.InvalidIdentification;
@@ -20,6 +20,8 @@ import org.yamcs.ProcessorException;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.ValidationException;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
@@ -30,11 +32,9 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ProcessingData;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 public class AlgorithmManagerErrorTest {
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         TimeEncoding.setUp();
         XtceDbFactory.reset();
@@ -50,7 +50,7 @@ public class AlgorithmManagerErrorTest {
     AlgorithmManager algMgr;
     Parameter p1, p2;
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() throws InitException, ProcessorException, ConfigurationException, ValidationException {
         EventProducerFactory.setMockup(true);
 

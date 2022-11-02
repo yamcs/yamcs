@@ -1,6 +1,6 @@
 package org.yamcs.parameter;
 
-import org.yamcs.xtceproc.ProcessingData;
+import org.yamcs.mdb.ProcessingData;
 
 /**
  * This is the interface implemented by the ParameterRequestManager to receive parameters from 

@@ -32,7 +32,7 @@ import org.yamcs.yarch.YarchException;
  *
  */
 public abstract class HistogramWriter {
-    static final int CLEANUP_Interval = 60_000;
+    static final int CLEANUP_INTERVAL = 60_000;
     final protected Tablespace tablespace;
     final protected TableDefinition tableDefinition;
     final protected RdbTable table;

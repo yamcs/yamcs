@@ -26,6 +26,7 @@ service ClearanceApi {
     option (yamcs.api.route) = {
       patch: "/api/clearances/{username}"
       body: "*"
+      log: "Clearance of '{username}' changed to {level}"
     };
   }
 
@@ -33,6 +34,7 @@ service ClearanceApi {
   rpc DeleteClearance(DeleteClearanceRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       delete: "/api/clearances/{username}"
+      log: "Clearance revoked from user '{username}'"
     };
   }
   

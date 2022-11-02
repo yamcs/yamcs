@@ -7,12 +7,15 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.events.EventProducer;
+import org.yamcs.mdb.ProcessingData;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.RawEngValue;
 import org.yamcs.protobuf.AlgorithmStatus;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Algorithm.Scope;
-import org.yamcs.xtceproc.ProcessingData;
+import org.yamcs.xtce.InputParameter;
+import org.yamcs.xtce.OutputParameter;
+import org.yamcs.xtce.TriggerSetType;
 
 import com.google.protobuf.util.Timestamps;
 
@@ -78,18 +81,12 @@ public class ActiveAlgorithm {
     /**
      * Algorithm execution listeners
      */
-    final protected CopyOnWriteArrayList<AlgorithmExecListener> execListeners = new CopyOnWriteArrayList<>();
+    protected final CopyOnWriteArrayList<AlgorithmExecListener> execListeners = new CopyOnWriteArrayList<>();
 
     public ActiveAlgorithm(Algorithm algorithm, AlgorithmExecutionContext context, AlgorithmExecutor executor) {
         this.algorithm = algorithm;
         this.context = context;
         this.executor = executor;
-    }
-
-    void algoRun(long lastRun, long duration) {
-        runCount++;
-        this.lastRun = lastRun;
-        totalExecTimeNs += duration;
     }
 
     void setError(long errorTime, String errorMessage) {
@@ -119,7 +116,7 @@ public class ActiveAlgorithm {
         try {
             AlgorithmExecutionResult result = executor.execute(acqTime, genTime, data);
             propagateResultToListeners(result);
-            output = result.outputValues;
+            output = result.getOutputValues();
         } catch (Exception e) {
             output = Collections.emptyList();
             setError(System.currentTimeMillis(), e.getMessage());
@@ -143,7 +140,8 @@ public class ActiveAlgorithm {
 
     private void propagateResultToListeners(AlgorithmExecutionResult result) {
         try {
-            execListeners.forEach(l -> l.algorithmRun(result.inputValues, result.returnValue, result.outputValues));
+            execListeners.forEach(
+                    l -> l.algorithmRun(result.getInputValues(), result.getReturnValue(), result.getOutputValues()));
         } catch (Exception e) {
             log.error("Error invoking algorithm listener", e);
         }
@@ -168,8 +166,7 @@ public class ActiveAlgorithm {
 
     /**
      * 
-     * gets the last error message produced by the algorithm or null if it never produced an error message (or if the
-     * resetError has been called)
+     * gets the last error message produced by the algorithm or null if it never produced an error message
      */
     public String getErrorMessage() {
         return errorMessage;
@@ -189,17 +186,11 @@ public class ActiveAlgorithm {
         return errorCount;
     }
 
-    public void resetError() {
-        this.errorMessage = null;
-        this.errorTime = Long.MIN_VALUE;
-        this.errorCount = 0;
-    }
-
     public Scope getScope() {
         return algorithm.getScope();
     }
 
-    public AlgorithmStatus getStatus(boolean tracingEnabled) {
+    public AlgorithmStatus.Builder getStatus() {
         AlgorithmStatus.Builder statusb = AlgorithmStatus.newBuilder()
                 .setActive(true)
                 .setRunCount(runCount)
@@ -210,15 +201,37 @@ public class ActiveAlgorithm {
         }
         statusb.setLastRun(Timestamps.fromMillis(lastRun));
         statusb.setExecTimeNs(totalExecTimeNs);
-        statusb.setTraceEnabled(tracingEnabled);
 
-        return statusb.build();
+        return statusb;
+    }
+
+    /**
+     *
+     * @see {@link AlgorithmExecutor#getInputList()}
+     */
+    public List<InputParameter> getInputList() {
+        return executor.getInputList();
+    }
+
+    /**
+     *
+     * @see {@link AlgorithmExecutor#getOutputList()}
+     */
+    public List<OutputParameter> getOutputList() {
+        return executor.getOutputList();
+    }
+
+    public TriggerSetType getTriggerSet() {
+        return algorithm.getTriggerSet();
+    }
+
+    public String getName() {
+        return algorithm.getName();
     }
 
     @Override
     public String toString() {
-        return "AlgorithmStatus [runCount=" + runCount + ", lastRun=" + lastRun + ", errorMessage=" + errorMessage
-                + ", errorCount=" + errorCount + ", errorTime=" + errorTime + "]";
+        return "ActiveAlgorithm " + algorithm.getName() + "[runCount=" + runCount + ", lastRun=" + lastRun
+                + ", errorMessage=" + errorMessage + ", errorCount=" + errorCount + ", errorTime=" + errorTime + "]";
     }
-
 }

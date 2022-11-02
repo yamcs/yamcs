@@ -60,12 +60,14 @@ public class TseCommander extends ProcessRunner {
             Map<String, Object> processRunnerConfig = new HashMap<>();
             processRunnerConfig.put("command", Arrays.asList(
                     new File(System.getProperty("java.home"), "bin/java").toString(),
-                    "-cp", System.getProperty("java.class.path"),
                     TseCommander.class.getName(),
                     "--etc-dir", configDirectory.toString(),
                     "--telnet-port", "" + telnetPort,
                     "--tctm-port", "" + tctmPort));
             processRunnerConfig.put("logPrefix", "");
+            Map<String, Object> processEnvironment = new HashMap<>();
+            processEnvironment.put("CLASSPATH", System.getProperty("java.class.path"));
+            processRunnerConfig.put("environment", processEnvironment);
             processRunnerConfig = super.getSpec().validate(processRunnerConfig);
             super.init(yamcsInstance, serviceName, YConfiguration.wrap(processRunnerConfig));
         } catch (ValidationException e) {
@@ -90,6 +92,7 @@ public class TseCommander extends ProcessRunner {
             @Override
             public void failure(Service service) {
                 // Stop entire process as soon as one service fails.
+                service.failureCause().printStackTrace(System.err);
                 System.exit(1);
             }
         }, MoreExecutors.directExecutor());

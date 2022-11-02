@@ -12,6 +12,10 @@ public class BadRequestException extends HttpException {
         super(message);
     }
 
+    public BadRequestException(String message, Throwable t) {
+        super(message, t);
+    }
+
     public BadRequestException(Throwable t) {
         super(t.getMessage(), t);
     }

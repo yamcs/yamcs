@@ -3,14 +3,13 @@ package org.yamcs.http.api;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
 import org.yamcs.archive.CcsdsTmIndex;
+import org.yamcs.archive.IndexRequest;
 import org.yamcs.archive.IndexRequestListener;
 import org.yamcs.archive.IndexRequestProcessor;
 import org.yamcs.archive.IndexRequestProcessor.InvalidTokenException;
@@ -32,12 +31,9 @@ import org.yamcs.protobuf.RebuildCcsdsIndexRequest;
 import org.yamcs.protobuf.StreamCommandIndexRequest;
 import org.yamcs.protobuf.StreamCompletenessIndexRequest;
 import org.yamcs.protobuf.StreamEventIndexRequest;
-import org.yamcs.protobuf.StreamIndexRequest;
 import org.yamcs.protobuf.StreamPacketIndexRequest;
 import org.yamcs.protobuf.StreamParameterIndexRequest;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
-import org.yamcs.protobuf.Yamcs.IndexRequest;
-import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.TimeEncoding;
@@ -57,29 +53,28 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
         int mergeTime = request.hasMergeTime() ? request.getMergeTime() : 2000;
         int limit = request.hasLimit() ? request.getLimit() : 500;
 
-        IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(instance);
-        requestb.setMergeTime(mergeTime);
+        IndexRequest indexRequest = new IndexRequest(instance);
+        indexRequest.setMergeTime(mergeTime);
 
         if (request.hasStart()) {
             long start = TimeEncoding.fromProtobufTimestamp(request.getStart());
-            requestb.setStart(start);
+            indexRequest.setStart(start);
         }
         if (request.hasStop()) {
             long stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
-            requestb.setStop(stop);
+            indexRequest.setStop(stop);
         }
         String next = request.hasNext() ? request.getNext() : null;
 
         if (request.getNameCount() > 0) {
             for (String name : request.getNameList()) {
-                requestb.addCmdName(NamedObjectId.newBuilder().setName(name.trim()));
+                indexRequest.getCommandNames().add(NamedObjectId.newBuilder().setName(name.trim()).build());
             }
         } else {
-            requestb.setSendAllCmd(true);
+            indexRequest.setSendAllCmd(true);
         }
 
-        handleOneIndexResult(tmIndex, requestb.build(), observer, limit, next);
+        handleOneIndexResult(tmIndex, indexRequest, observer, limit, next);
     }
 
     @Override
@@ -90,29 +85,28 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
         int mergeTime = request.hasMergeTime() ? request.getMergeTime() : 2000;
         int limit = request.hasLimit() ? request.getLimit() : 500;
 
-        IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(instance);
-        requestb.setMergeTime(mergeTime);
+        IndexRequest indexRequest = new IndexRequest(instance);
+        indexRequest.setMergeTime(mergeTime);
 
         if (request.hasStart()) {
             long start = TimeEncoding.fromProtobufTimestamp(request.getStart());
-            requestb.setStart(start);
+            indexRequest.setStart(start);
         }
         if (request.hasStop()) {
             long stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
-            requestb.setStop(stop);
+            indexRequest.setStop(stop);
         }
         String next = request.hasNext() ? request.getNext() : null;
 
         if (request.getSourceCount() > 0) {
             for (String source : request.getSourceList()) {
-                requestb.addEventSource(NamedObjectId.newBuilder().setName(source.trim()));
+                indexRequest.getEventSources().add(NamedObjectId.newBuilder().setName(source.trim()).build());
             }
         } else {
-            requestb.setSendAllEvent(true);
+            indexRequest.setSendAllEvent(true);
         }
 
-        handleOneIndexResult(indexServer, requestb.build(), observer, limit, next);
+        handleOneIndexResult(indexServer, indexRequest, observer, limit, next);
     }
 
     @Override
@@ -123,29 +117,28 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
         int mergeTime = request.hasMergeTime() ? request.getMergeTime() : 2000;
         int limit = request.hasLimit() ? request.getLimit() : 500;
 
-        IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(instance);
-        requestb.setMergeTime(mergeTime);
+        IndexRequest indexRequest = new IndexRequest(instance);
+        indexRequest.setMergeTime(mergeTime);
 
         if (request.hasStart()) {
             long start = TimeEncoding.fromProtobufTimestamp(request.getStart());
-            requestb.setStart(start);
+            indexRequest.setStart(start);
         }
         if (request.hasStop()) {
             long stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
-            requestb.setStop(stop);
+            indexRequest.setStop(stop);
         }
         String next = request.hasNext() ? request.getNext() : null;
 
         if (request.getNameCount() > 0) {
             for (String name : request.getNameList()) {
-                requestb.addTmPacket(NamedObjectId.newBuilder().setName(name.trim()));
+                indexRequest.getTmPackets().add(NamedObjectId.newBuilder().setName(name.trim()).build());
             }
         } else {
-            requestb.setSendAllTm(true);
+            indexRequest.setSendAllTm(true);
         }
 
-        handleOneIndexResult(indexServer, requestb.build(), observer, limit, next);
+        handleOneIndexResult(indexServer, indexRequest, observer, limit, next);
     }
 
     @Override
@@ -157,29 +150,28 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
         int mergeTime = request.hasMergeTime() ? request.getMergeTime() : 20000;
         int limit = request.hasLimit() ? request.getLimit() : 500;
 
-        IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(instance);
-        requestb.setMergeTime(mergeTime);
+        IndexRequest indexRequest = new IndexRequest(instance);
+        indexRequest.setMergeTime(mergeTime);
 
         if (request.hasStart()) {
             long start = TimeEncoding.fromProtobufTimestamp(request.getStart());
-            requestb.setStart(start);
+            indexRequest.setStart(start);
         }
         if (request.hasStop()) {
             long stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
-            requestb.setStop(stop);
+            indexRequest.setStop(stop);
         }
         String next = request.hasNext() ? request.getNext() : null;
 
         if (request.getGroupCount() > 0) {
             for (String group : request.getGroupList()) {
-                requestb.addPpGroup(NamedObjectId.newBuilder().setName(group.trim()));
+                indexRequest.getPpGroups().add(NamedObjectId.newBuilder().setName(group.trim()).build());
             }
         } else {
-            requestb.setSendAllPp(true);
+            indexRequest.setSendAllPp(true);
         }
 
-        handleOneIndexResult(indexServer, requestb.build(), observer, limit, next);
+        handleOneIndexResult(indexServer, indexRequest, observer, limit, next);
     }
 
     @Override
@@ -190,91 +182,46 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
         if (indexServer == null) {
             throw new BadRequestException("CCSDS Tm Index not enabled for instance '" + instance + "'");
         }
-        
+
         int limit = request.hasLimit() ? request.getLimit() : 500;
 
-        IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setSendCompletenessIndex(true);
-        requestb.setInstance(instance);
+        IndexRequest indexRequest = new IndexRequest(instance);
+        indexRequest.setSendCompletenessIndex(true);
 
         if (request.hasStart()) {
             long start = TimeEncoding.fromProtobufTimestamp(request.getStart());
-            requestb.setStart(start);
+            indexRequest.setStart(start);
         }
         if (request.hasStop()) {
             long stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
-            requestb.setStop(stop);
+            indexRequest.setStop(stop);
         }
         String next = request.hasNext() ? request.getNext() : null;
 
-        handleOneIndexResult(indexServer, requestb.build(), observer, limit, next);
-    }
-
-    @Override
-    public void streamIndex(Context ctx, StreamIndexRequest request, Observer<IndexResult> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-        TmIndexService indexService = getIndexService(instance);
-
-        IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(instance);
-
-        if (request.hasStart()) {
-            requestb.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
-        }
-        if (request.hasStop()) {
-            requestb.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
-        }
-
-        for (String name : request.getPacketnamesList()) {
-            requestb.addTmPacket(NamedObjectId.newBuilder().setName(name));
-        }
-
-        Set<String> filter = new HashSet<>();
-        for (String name : request.getFiltersList()) {
-            filter.add(name.toLowerCase());
-        }
-
-        if (filter.isEmpty() && requestb.getTmPacketCount() == 0) {
-            requestb.setSendAllTm(true);
-            requestb.setSendAllPp(true);
-            requestb.setSendAllCmd(true);
-            requestb.setSendAllEvent(true);
-            if (indexService != null) {
-                requestb.setSendCompletenessIndex(true);
-            }
-        } else {
-            requestb.setSendAllTm(filter.contains("tm") && requestb.getTmPacketCount() == 0);
-            requestb.setSendAllPp(filter.contains("pp"));
-            requestb.setSendAllCmd(filter.contains("commands"));
-            requestb.setSendAllEvent(filter.contains("events"));
-            if (filter.contains("completeness") && indexService == null) {
-                throw new BadRequestException("Index service not enabled for instance '" + instance + "'");
-            }
-            requestb.setSendCompletenessIndex(filter.contains("completeness"));
-        }
-
-        streamIndexResults(indexService, requestb.build(), observer);
+        handleOneIndexResult(indexServer, indexRequest, observer, limit, next);
     }
 
     @Override
     public void streamPacketIndex(Context ctx, StreamPacketIndexRequest request, Observer<ArchiveRecord> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
 
-        IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(instance);
+        IndexRequest indexRequest = new IndexRequest(instance);
 
         if (request.hasStart()) {
-            requestb.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
+            indexRequest.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
         }
         if (request.hasStop()) {
-            requestb.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
+            indexRequest.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
 
         for (String name : request.getNamesList()) {
-            requestb.addTmPacket(NamedObjectId.newBuilder().setName(name));
+            indexRequest.getTmPackets().add(NamedObjectId.newBuilder().setName(name).build());
         }
-        requestb.setSendAllTm(request.getNamesCount() == 0);
-        streamArchiveRecords(null, requestb.build(), observer);
+        indexRequest.setSendAllTm(request.getNamesCount() == 0);
+        if (request.hasMergeTime()) {
+            indexRequest.setMergeTime(request.getMergeTime());
+        }
+        streamArchiveRecords(null, indexRequest, observer);
     }
 
     @Override
@@ -282,54 +229,51 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
             Observer<ArchiveRecord> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
 
-        IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(instance);
-        requestb.setSendAllPp(true);
+        IndexRequest indexRequest = new IndexRequest(instance);
+        indexRequest.setSendAllPp(true);
 
         if (request.hasStart()) {
-            requestb.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
+            indexRequest.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
         }
         if (request.hasStop()) {
-            requestb.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
+            indexRequest.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
 
-        streamArchiveRecords(null, requestb.build(), observer);
+        streamArchiveRecords(null, indexRequest, observer);
     }
 
     @Override
     public void streamCommandIndex(Context ctx, StreamCommandIndexRequest request, Observer<ArchiveRecord> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
 
-        IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(instance);
-        requestb.setSendAllCmd(true);
+        IndexRequest indexRequest = new IndexRequest(instance);
+        indexRequest.setSendAllCmd(true);
 
         if (request.hasStart()) {
-            requestb.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
+            indexRequest.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
         }
         if (request.hasStop()) {
-            requestb.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
+            indexRequest.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
 
-        streamArchiveRecords(null, requestb.build(), observer);
+        streamArchiveRecords(null, indexRequest, observer);
     }
 
     @Override
     public void streamEventIndex(Context ctx, StreamEventIndexRequest request, Observer<ArchiveRecord> observer) {
         String instance = ManagementApi.verifyInstance(request.getInstance());
 
-        IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(instance);
-        requestb.setSendAllEvent(true);
+        IndexRequest indexRequest = new IndexRequest(instance);
+        indexRequest.setSendAllEvent(true);
 
         if (request.hasStart()) {
-            requestb.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
+            indexRequest.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
         }
         if (request.hasStop()) {
-            requestb.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
+            indexRequest.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
 
-        streamArchiveRecords(null, requestb.build(), observer);
+        streamArchiveRecords(null, indexRequest, observer);
     }
 
     @Override
@@ -341,18 +285,17 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
             throw new BadRequestException("Index service not enabled for instance '" + instance + "'");
         }
 
-        IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(instance);
-        requestb.setSendCompletenessIndex(true);
+        IndexRequest indexRequest = new IndexRequest(instance);
+        indexRequest.setSendCompletenessIndex(true);
 
         if (request.hasStart()) {
-            requestb.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
+            indexRequest.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
         }
         if (request.hasStop()) {
-            requestb.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
+            indexRequest.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
 
-        streamArchiveRecords(indexServer, requestb.build(), observer);
+        streamArchiveRecords(indexServer, indexRequest, observer);
     }
 
     @Override
@@ -391,12 +334,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
     private TmIndexService getIndexService(String instance) throws HttpException {
         ManagementApi.verifyInstance(instance);
         YamcsServer yamcs = YamcsServer.getServer();
-        List<TmIndexService> services = yamcs.getServices(instance, TmIndexService.class);
-        if (services.isEmpty()) {
-            return null;
-        } else {
-            return services.get(0);
-        }
+        return yamcs.getService(instance, TmIndexService.class);
     }
 
     /**
@@ -461,55 +399,6 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
         } catch (InvalidTokenException e) {
             observer.completeExceptionally(new BadRequestException("Invalid token specified"));
         }
-    }
-
-    private static void streamIndexResults(TmIndexService tmIndex, IndexRequest request,
-            Observer<IndexResult> observer) {
-
-        IndexRequestProcessor p = new IndexRequestProcessor(tmIndex, request, -1, null,
-                new IndexRequestListener() {
-
-                    private IndexResult.Builder indexResult;
-
-                    @Override
-                    public void begin(IndexType type, String tblName) {
-                        if (indexResult != null) {
-                            observer.next(indexResult.build());
-                        }
-                        indexResult = newBuilder(type.name(), tblName);
-                    }
-
-                    @Override
-                    public void processData(ArchiveRecord record) {
-                        indexResult.addRecords(record);
-                        if (indexResult.getRecordsCount() > 500) {
-                            observer.next(indexResult.build());
-                            indexResult = newBuilder(indexResult.getType(), indexResult.getTableName());
-                        }
-                    }
-
-                    @Override
-                    public void finished(String token, boolean success) {
-                        if (success) {
-                            if (indexResult != null && indexResult.getRecordsCount() > 0) {
-                                observer.next(indexResult.build());
-                            }
-                            observer.complete();
-                        } else {
-                            observer.completeExceptionally(
-                                    new InternalServerErrorException("Failure while streaming index"));
-                        }
-                    }
-
-                    private IndexResult.Builder newBuilder(String type, String tblName) {
-                        IndexResult.Builder b = IndexResult.newBuilder().setType(type);
-                        if (tblName != null) {
-                            b.setTableName(tblName);
-                        }
-                        return b;
-                    }
-                });
-        p.run();
     }
 
     private static void streamArchiveRecords(TmIndexService tmIndex, IndexRequest request,

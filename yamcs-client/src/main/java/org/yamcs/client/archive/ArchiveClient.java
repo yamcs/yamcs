@@ -15,9 +15,6 @@ import org.yamcs.client.Helpers;
 import org.yamcs.client.Page;
 import org.yamcs.client.StreamReceiver;
 import org.yamcs.client.StreamSender;
-import org.yamcs.client.archive.ArchiveClient.IndexOptions.FilterOption;
-import org.yamcs.client.archive.ArchiveClient.IndexOptions.IndexOption;
-import org.yamcs.client.archive.ArchiveClient.IndexOptions.PacketOption;
 import org.yamcs.client.archive.ArchiveClient.ListOptions.AscendingOption;
 import org.yamcs.client.archive.ArchiveClient.ListOptions.LimitOption;
 import org.yamcs.client.archive.ArchiveClient.ListOptions.ListOption;
@@ -29,6 +26,8 @@ import org.yamcs.client.archive.ArchiveClient.RangeOptions.MinimumRangeOption;
 import org.yamcs.client.archive.ArchiveClient.RangeOptions.RangeOption;
 import org.yamcs.client.archive.ArchiveClient.StreamOptions.CommandOption;
 import org.yamcs.client.archive.ArchiveClient.StreamOptions.EventSourceOption;
+import org.yamcs.client.archive.ArchiveClient.StreamOptions.MergeTimeOption;
+import org.yamcs.client.archive.ArchiveClient.StreamOptions.PacketOption;
 import org.yamcs.client.archive.ArchiveClient.StreamOptions.StreamOption;
 import org.yamcs.client.base.AbstractPage;
 import org.yamcs.client.base.ResponseObserver;
@@ -39,10 +38,9 @@ import org.yamcs.protobuf.Archive.ListParameterHistoryResponse;
 import org.yamcs.protobuf.Archive.StreamParameterValuesRequest;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.CommandsApiClient;
-import org.yamcs.protobuf.CreateTagRequest;
-import org.yamcs.protobuf.DeleteTagRequest;
-import org.yamcs.protobuf.EditTagRequest;
+import org.yamcs.protobuf.Event;
 import org.yamcs.protobuf.EventsApiClient;
+import org.yamcs.protobuf.GetCommandRequest;
 import org.yamcs.protobuf.GetParameterRangesRequest;
 import org.yamcs.protobuf.IndexGroup;
 import org.yamcs.protobuf.IndexResponse;
@@ -58,8 +56,6 @@ import org.yamcs.protobuf.ListEventsRequest;
 import org.yamcs.protobuf.ListEventsResponse;
 import org.yamcs.protobuf.ListPacketIndexRequest;
 import org.yamcs.protobuf.ListParameterIndexRequest;
-import org.yamcs.protobuf.ListTagsRequest;
-import org.yamcs.protobuf.ListTagsResponse;
 import org.yamcs.protobuf.PacketsApiClient;
 import org.yamcs.protobuf.ParameterArchiveApiClient;
 import org.yamcs.protobuf.Pvalue.ParameterData;
@@ -74,7 +70,6 @@ import org.yamcs.protobuf.StreamCommandsRequest;
 import org.yamcs.protobuf.StreamCompletenessIndexRequest;
 import org.yamcs.protobuf.StreamEventIndexRequest;
 import org.yamcs.protobuf.StreamEventsRequest;
-import org.yamcs.protobuf.StreamIndexRequest;
 import org.yamcs.protobuf.StreamPacketIndexRequest;
 import org.yamcs.protobuf.StreamPacketsRequest;
 import org.yamcs.protobuf.StreamParameterIndexRequest;
@@ -86,12 +81,8 @@ import org.yamcs.protobuf.Table.TableData.TableRecord;
 import org.yamcs.protobuf.Table.WriteRowsRequest;
 import org.yamcs.protobuf.Table.WriteRowsResponse;
 import org.yamcs.protobuf.TableApiClient;
-import org.yamcs.protobuf.TagApiClient;
+import org.yamcs.protobuf.TmPacketData;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
-import org.yamcs.protobuf.Yamcs.ArchiveTag;
-import org.yamcs.protobuf.Yamcs.Event;
-import org.yamcs.protobuf.Yamcs.IndexResult;
-import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.protobuf.alarms.AlarmsApiClient;
 import org.yamcs.protobuf.alarms.ListAlarmsRequest;
 import org.yamcs.protobuf.alarms.ListAlarmsResponse;
@@ -108,7 +99,6 @@ public class ArchiveClient {
     private AlarmsApiClient alarmService;
     private TableApiClient tableService;
     private EventsApiClient eventService;
-    private TagApiClient tagService;
     private PacketsApiClient packetService;
 
     public ArchiveClient(MethodHandler handler, String instance) {
@@ -120,7 +110,6 @@ public class ArchiveClient {
         alarmService = new AlarmsApiClient(handler);
         tableService = new TableApiClient(handler);
         eventService = new EventsApiClient(handler);
-        tagService = new TagApiClient(handler);
         packetService = new PacketsApiClient(handler);
     }
 
@@ -141,7 +130,7 @@ public class ArchiveClient {
             if (option instanceof LimitOption) {
                 requestb.setLimit(((LimitOption) option).limit);
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         return new CommandIndexPage(requestb.build()).future();
@@ -160,7 +149,7 @@ public class ArchiveClient {
             if (option instanceof LimitOption) {
                 requestb.setLimit(((LimitOption) option).limit);
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         return new PacketIndexPage(requestb.build()).future();
@@ -179,7 +168,7 @@ public class ArchiveClient {
             if (option instanceof LimitOption) {
                 requestb.setLimit(((LimitOption) option).limit);
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         return new ParameterIndexPage(requestb.build()).future();
@@ -198,7 +187,7 @@ public class ArchiveClient {
             if (option instanceof LimitOption) {
                 requestb.setLimit(((LimitOption) option).limit);
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         return new EventIndexPage(requestb.build()).future();
@@ -218,14 +207,14 @@ public class ArchiveClient {
             if (option instanceof LimitOption) {
                 requestb.setLimit(((LimitOption) option).limit);
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         return new CompletenessIndexPage(requestb.build()).future();
     }
 
     public CompletableFuture<Void> streamPacketIndex(StreamReceiver<ArchiveRecord> consumer, Instant start,
-            Instant stop) {
+            Instant stop, StreamOption... options) {
         StreamPacketIndexRequest.Builder requestb = StreamPacketIndexRequest.newBuilder()
                 .setInstance(instance);
         if (start != null) {
@@ -234,6 +223,19 @@ public class ArchiveClient {
         if (stop != null) {
             requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
         }
+
+        for (StreamOption option : options) {
+            if (option instanceof PacketOption) {
+                for (String packet : ((PacketOption) option).packets) {
+                    requestb.addNames(packet);
+                }
+            } else if (option instanceof MergeTimeOption) {
+                requestb.setMergeTime(((MergeTimeOption) option).mergeTime);
+            } else {
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
+            }
+        }
+
         CompletableFuture<Void> f = new CompletableFuture<>();
         indexService.streamPacketIndex(null, requestb.build(), new Observer<ArchiveRecord>() {
 
@@ -379,50 +381,6 @@ public class ArchiveClient {
         return f;
     }
 
-    public CompletableFuture<Void> streamIndex(StreamReceiver<IndexResult> consumer, Instant start, Instant stop,
-            IndexOption... options) {
-        StreamIndexRequest.Builder requestb = StreamIndexRequest.newBuilder()
-                .setInstance(instance);
-        if (start != null) {
-            requestb.setStart(Timestamp.newBuilder().setSeconds(start.getEpochSecond()).setNanos(start.getNano()));
-        }
-        if (stop != null) {
-            requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
-        }
-        for (IndexOption option : options) {
-            if (option instanceof FilterOption) {
-                for (String filter : ((FilterOption) option).filter) {
-                    requestb.addFilters(filter);
-                }
-            } else if (option instanceof PacketOption) {
-                for (String packet : ((PacketOption) option).packets) {
-                    requestb.addPacketnames(packet);
-                }
-            } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
-            }
-        }
-        CompletableFuture<Void> f = new CompletableFuture<>();
-        indexService.streamIndex(null, requestb.build(), new Observer<IndexResult>() {
-
-            @Override
-            public void next(IndexResult message) {
-                consumer.accept(message);
-            }
-
-            @Override
-            public void completeExceptionally(Throwable t) {
-                f.completeExceptionally(t);
-            }
-
-            @Override
-            public void complete() {
-                f.complete(null);
-            }
-        });
-        return f;
-    }
-
     public CompletableFuture<Page<Command>> listCommands() {
         return listCommands(null, null);
     }
@@ -437,6 +395,15 @@ public class ArchiveClient {
             requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
         }
         return new CommandPage(requestb.build()).future();
+    }
+
+    public CompletableFuture<Command> getCommand(String id) {
+        GetCommandRequest.Builder requestb = GetCommandRequest.newBuilder()
+                .setInstance(instance)
+                .setId(id);
+        CompletableFuture<CommandHistoryEntry> f = new CompletableFuture<>();
+        commandService.getCommand(null, requestb.build(), new ResponseObserver<>(f));
+        return f.thenApply(response -> new Command(response));
     }
 
     public CompletableFuture<Void> streamCommands(StreamReceiver<Command> consumer, Instant start,
@@ -455,7 +422,7 @@ public class ArchiveClient {
                     requestb.addName(command);
                 }
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         CompletableFuture<Void> f = new CompletableFuture<>();
@@ -515,7 +482,7 @@ public class ArchiveClient {
                     requestb.addSource(source);
                 }
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         CompletableFuture<Void> f = new CompletableFuture<>();
@@ -555,7 +522,7 @@ public class ArchiveClient {
                     requestb.addName(packet);
                 }
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         CompletableFuture<Void> f = new CompletableFuture<>();
@@ -581,6 +548,11 @@ public class ArchiveClient {
 
     public CompletableFuture<Void> streamValues(List<String> parameters,
             StreamReceiver<Map<String, ParameterValue>> consumer, Instant start, Instant stop) {
+        return streamValues(parameters, null, consumer, start, stop);
+    }
+
+    public CompletableFuture<Void> streamValues(List<String> parameters, List<String> tmLinks,
+            StreamReceiver<Map<String, ParameterValue>> consumer, Instant start, Instant stop) {
         StreamParameterValuesRequest.Builder requestb = StreamParameterValuesRequest.newBuilder()
                 .setInstance(instance);
         for (String parameter : parameters) {
@@ -592,6 +564,10 @@ public class ArchiveClient {
         if (stop != null) {
             requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
         }
+        if (tmLinks != null) {
+            requestb.addAllTmLinks(tmLinks);
+        }
+
         CompletableFuture<Void> f = new CompletableFuture<>();
         streamArchiveService.streamParameterValues(null, requestb.build(), new Observer<ParameterData>() {
 
@@ -617,52 +593,22 @@ public class ArchiveClient {
         return f;
     }
 
-    public CompletableFuture<ArchiveTag> createTag(CreateTagRequest request) {
-        CreateTagRequest.Builder requestb = request.toBuilder()
-                .setInstance(instance);
-        CompletableFuture<ArchiveTag> f = new CompletableFuture<>();
-        tagService.createTag(null, requestb.build(), new ResponseObserver<>(f));
-        return f;
-    }
-
-    public CompletableFuture<List<ArchiveTag>> listTags(Instant start, Instant stop) {
-        ListTagsRequest.Builder requestb = ListTagsRequest.newBuilder()
-                .setInstance(instance);
-        if (start != null) {
-            requestb.setStart(Timestamp.newBuilder().setSeconds(start.getEpochSecond()).setNanos(start.getNano()));
-        }
-        if (stop != null) {
-            requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
-        }
-        CompletableFuture<ListTagsResponse> f = new CompletableFuture<>();
-        tagService.listTags(null, requestb.build(), new ResponseObserver<>(f));
-        return f.thenApply(response -> response.getTagList());
-    }
-
-    public CompletableFuture<ArchiveTag> updateTag(EditTagRequest request) {
-        EditTagRequest.Builder requestb = request.toBuilder()
-                .setInstance(instance);
-        CompletableFuture<ArchiveTag> f = new CompletableFuture<>();
-        tagService.updateTag(null, requestb.build(), new ResponseObserver<>(f));
-        return f;
-    }
-
-    public CompletableFuture<ArchiveTag> deleteTag(long tagTime, int tagId) {
-        DeleteTagRequest.Builder requestb = DeleteTagRequest.newBuilder()
-                .setInstance(instance)
-                .setTagTime(tagTime)
-                .setTagId(tagId);
-        CompletableFuture<ArchiveTag> f = new CompletableFuture<>();
-        tagService.deleteTag(null, requestb.build(), new ResponseObserver<>(f));
-        return f;
-    }
-
     public CompletableFuture<List<AlarmData>> listAlarms() {
         // TODO add pagination on server
-        return listAlarms(null, null);
+        return listAlarms(null, null, null);
+    }
+
+    public CompletableFuture<List<AlarmData>> listAlarms(String parameter) {
+        // TODO add pagination on server
+        return listAlarms(parameter, null, null);
     }
 
     public CompletableFuture<List<AlarmData>> listAlarms(Instant start, Instant stop) {
+        // TODO add pagination on server
+        return listAlarms(null, null, null);
+    }
+
+    public CompletableFuture<List<AlarmData>> listAlarms(String alarmName, Instant start, Instant stop) {
         // TODO add pagination on server
         ListAlarmsRequest.Builder requestb = ListAlarmsRequest.newBuilder()
                 .setInstance(instance);
@@ -672,9 +618,12 @@ public class ArchiveClient {
         if (stop != null) {
             requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
         }
+        if (alarmName != null) {
+            requestb.setName(alarmName);
+        }
         CompletableFuture<ListAlarmsResponse> f = new CompletableFuture<>();
         alarmService.listAlarms(null, requestb.build(), new ResponseObserver<>(f));
-        return f.thenApply(response -> response.getAlarmsList());
+        return f.thenApply(ListAlarmsResponse::getAlarmsList);
     }
 
     public CompletableFuture<List<TableRecord>> listRecords(String table) {
@@ -714,7 +663,7 @@ public class ArchiveClient {
             } else if (option instanceof SourceOption) {
                 requestb.setSource(((SourceOption) option).source);
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         return new ValuePage(requestb.build()).future();
@@ -728,7 +677,7 @@ public class ArchiveClient {
                 .setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
         CompletableFuture<TimeSeries> f = new CompletableFuture<>();
         parameterArchiveService.getParameterSamples(null, requestb.build(), new ResponseObserver<>(f));
-        return f.thenApply(response -> response.getSampleList());
+        return f.thenApply(TimeSeries::getSampleList);
     }
 
     public CompletableFuture<List<Range>> getRanges(String parameter, Instant start, Instant stop,
@@ -744,12 +693,12 @@ public class ArchiveClient {
             } else if (option instanceof MinimumRangeOption) {
                 requestb.setMinRange(((MinimumRangeOption) option).millis);
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         CompletableFuture<Ranges> f = new CompletableFuture<>();
         parameterArchiveService.getParameterRanges(null, requestb.build(), new ResponseObserver<>(f));
-        return f.thenApply(ranges -> ranges.getRangeList());
+        return f.thenApply(Ranges::getRangeList);
     }
 
     public CompletableFuture<List<String>> getEventSources() {
@@ -1022,36 +971,6 @@ public class ArchiveClient {
         }
     }
 
-    public static final class IndexOptions {
-
-        public static interface IndexOption {
-        }
-
-        public static IndexOption filter(String... filter) {
-            return new FilterOption(filter);
-        }
-
-        public static IndexOption packets(String... packets) {
-            return new PacketOption(packets);
-        }
-
-        static final class FilterOption implements IndexOption {
-            final String[] filter;
-
-            public FilterOption(String... filter) {
-                this.filter = filter;
-            }
-        }
-
-        static final class PacketOption implements IndexOption {
-            final String[] packets;
-
-            public PacketOption(String... packets) {
-                this.packets = packets;
-            }
-        }
-    }
-
     public static final class StreamOptions {
 
         public static interface StreamOption {
@@ -1067,6 +986,10 @@ public class ArchiveClient {
 
         public static StreamOption packets(String... packets) {
             return new PacketOption(packets);
+        }
+
+        public static StreamOption mergeTime(int mergeTime) {
+            return new MergeTimeOption(mergeTime);
         }
 
         static final class CommandOption implements StreamOption {
@@ -1090,6 +1013,14 @@ public class ArchiveClient {
 
             public PacketOption(String... packets) {
                 this.packets = packets;
+            }
+        }
+
+        static final class MergeTimeOption implements StreamOption {
+            final int mergeTime;
+
+            public MergeTimeOption(int mergeTime) {
+                this.mergeTime = mergeTime;
             }
         }
     }

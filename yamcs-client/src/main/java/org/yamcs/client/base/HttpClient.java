@@ -84,6 +84,7 @@ public class HttpClient {
 
     private String tokenUrl;
     private Credentials credentials;
+    private String userAgent;
 
     public synchronized void login(String tokenUrl, String username, char[] password) throws ClientException {
         this.tokenUrl = tokenUrl;
@@ -170,6 +171,10 @@ public class HttpClient {
         return credentials;
     }
 
+    public void setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
+    }
+
     private CompletableFuture<Credentials> requestTokens(String url, Map<String, String> attrs)
             throws ClientException, IOException, GeneralSecurityException {
         URI uri;
@@ -190,6 +195,9 @@ public class HttpClient {
         request.headers().set(HttpHeaderNames.HOST, host);
         request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
         request.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/x-www-form-urlencoded");
+        if (userAgent != null) {
+            request.headers().set(HttpHeaderNames.USER_AGENT, userAgent);
+        }
 
         try {
             HttpPostRequestEncoder formEncoder = new HttpPostRequestEncoder(request, false);
@@ -447,6 +455,9 @@ public class HttpClient {
         request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
         request.headers().set(HttpHeaderNames.CONTENT_TYPE, sendMediaType);
         request.headers().set(HttpHeaderNames.ACCEPT, acceptMediaType);
+        if (userAgent != null) {
+            request.headers().set(HttpHeaderNames.USER_AGENT, userAgent);
+        }
         if (cookies != null) {
             String c = ClientCookieEncoder.STRICT.encode(cookies);
             request.headers().set(HttpHeaderNames.COOKIE, c);

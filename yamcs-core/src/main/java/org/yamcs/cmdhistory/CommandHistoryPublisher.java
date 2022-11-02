@@ -20,14 +20,14 @@ public interface CommandHistoryPublisher {
     };
 
     public final static String CommandComplete_KEY = "CommandComplete";
-    public final static String TransmissionContraints_KEY = "TransmissionConstraints";
+    public final static String TransmissionConstraints_KEY = "TransmissionConstraints";
     public final static String AcknowledgeQueued_KEY = "Acknowledge_Queued";
     public final static String AcknowledgeReleased_KEY = "Acknowledge_Released";
 
     /**
      * Used by the links to add entries in the command history when the command has been sent via the link.
      */
-    public final static String AcknowledgeSent = "Acknowledge_Sent";
+    public final static String AcknowledgeSent_KEY = "Acknowledge_Sent";
     public final static String Verifier_KEY_PREFIX = "Verifier";
     public final static String CcsdsSeq_KEY = "ccsds-seqcount";
     public final static String Queue_KEY = "queue";

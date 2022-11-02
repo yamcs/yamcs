@@ -29,17 +29,16 @@ export class ColumnChooser implements OnInit {
   }
 
   ngOnInit() {
-    let initialDisplayedColumns: string[] = [];
-    for (const column of this.columns) {
-      if (column.visible || column.alwaysVisible) {
-        initialDisplayedColumns.push(column.id);
-      }
-    }
+    this.recalculate(this.columns);
+  }
 
+  recalculate(columns: ColumnInfo[]) {
+    this.columns = columns;
 
+    let preferredColumns: string[] = [];
     if (this.preferenceKey) {
       const storedDisplayedColumns = this.preferenceStore.getVisibleColumns(this.preferenceKey);
-      const filteredCols = (storedDisplayedColumns || []).filter(el => {
+      preferredColumns = (storedDisplayedColumns || []).filter(el => {
         // Filter out unknown columns
         for (const column of this.columns) {
           if (column.id === el) {
@@ -47,12 +46,17 @@ export class ColumnChooser implements OnInit {
           }
         }
       });
-      if (filteredCols.length) {
-        initialDisplayedColumns = filteredCols;
+    }
+
+    // Keep a column if it's either from preferences, or is to be always visible.
+    const displayedColumns: string[] = [];
+    for (const column of this.columns) {
+      if (column.visible || column.alwaysVisible || preferredColumns.indexOf(column.id) !== -1) {
+        displayedColumns.push(column.id);
       }
     }
 
-    this.displayedColumns$.next(initialDisplayedColumns);
+    this.displayedColumns$.next(displayedColumns);
   }
 
   isVisible(column: ColumnInfo) {

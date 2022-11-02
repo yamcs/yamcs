@@ -8,6 +8,7 @@
         Print report
       </button>
     </mat-menu>
+
     <button mat-button
             [matMenuTriggerFor]="exportMenu"
             color="primary"
@@ -16,12 +17,31 @@
       <mat-icon>save_alt</mat-icon>
       EXPORT
     </button>
+
+    <button *ngIf="!(dataSource.streaming$ | async)"
+            mat-button
+            color="primary"
+            (click)="startStreaming()">
+      <mat-icon>play_arrow</mat-icon>
+      START STREAMING
+    </button>
+
+    <button *ngIf="dataSource.streaming$ | async"
+            mat-button
+            matTooltip="Pause streaming events"
+            color="primary"
+            (click)="stopStreaming()">
+      <mat-icon>pause</mat-icon>
+      STOP STREAMING
+    </button>
+
     <button mat-button
             matTooltip="Jump to now"
             color="primary"
             (click)="jumpToNow()">
       <mat-icon>refresh</mat-icon>
     </button>
+
   </app-instance-toolbar>
 
   <app-detail-pane>
@@ -64,6 +84,7 @@
                               preferenceKey="cmdhist"></app-column-chooser>
         </div>
         <div class="filter-bar">
+          <app-select [options]="queueOptions" formControlName="queue"></app-select>
           <app-select #intervalSelect
                       [options]="intervalOptions"
                       icon="access_time"
@@ -83,6 +104,11 @@
 
           <app-dots *ngIf="dataSource.loading$ | async">
           </app-dots>
+
+          <div style="text-align: right; flex: 1 1 150px" *ngIf="dataSource.streaming$ | async">
+            Listening for commands
+            <app-dots fontSize="16px" color="#1b61b9"></app-dots>
+          </div>
         </div>
       </form>
 
@@ -108,17 +134,18 @@
 
       <table mat-table
              [dataSource]="dataSource"
-             class="ya-data-table">
+             class="ya-data-table expand">
 
         <ng-container matColumnDef="commandId">
-          <th mat-header-cell *matHeaderCellDef style="width: 200px">ID</th>
+          <th mat-header-cell *matHeaderCellDef>ID</th>
           <td mat-cell *matCellDef="let item">
-            {{ item.id }}
+            <a [routerLink]="['/commanding/history', item.id]"
+               [queryParams]="{c: yamcs.context}">{{ item.id }}</a>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="generationTime">
-          <th mat-header-cell *matHeaderCellDef style="width: 200px">Time</th>
+          <th mat-header-cell *matHeaderCellDef>Time</th>
           <td mat-cell *matCellDef="let item">
             {{ item.generationTime | datetime }}
           </td>
@@ -135,21 +162,28 @@
         </ng-container>
 
         <ng-container matColumnDef="command">
-          <th mat-header-cell *matHeaderCellDef style="width: 350px">Command</th>
+          <th mat-header-cell *matHeaderCellDef>Command</th>
           <td mat-cell *matCellDef="let item">
             <app-highlight [text]="item.commandName" [term]="filterForm.value.filter"></app-highlight>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="issuer">
-          <th mat-header-cell *matHeaderCellDef style="width: 150px">Issuer</th>
+          <th mat-header-cell *matHeaderCellDef>Issuer</th>
           <td mat-cell *matCellDef="let item">
             {{ item.username }}<span *ngIf="item.origin">@{{ item.origin }}</span>
           </td>
         </ng-container>
 
+        <ng-container matColumnDef="queue">
+          <th mat-header-cell *matHeaderCellDef>Queue</th>
+          <td mat-cell *matCellDef="let item">
+            {{ item.queue || '-' }}
+          </td>
+        </ng-container>
+
         <ng-container matColumnDef="sequenceNumber">
-          <th mat-header-cell *matHeaderCellDef style="width: 70px">Sequence number</th>
+          <th mat-header-cell *matHeaderCellDef>Sequence number</th>
           <td mat-cell *matCellDef="let item">
             {{ item.sequenceNumber }}
           </td>
@@ -220,9 +254,9 @@
         </ng-container>
 
         <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef></th>
-          <td mat-cell *matCellDef="let item" style="text-align: right">
-            <mat-menu #itemMenu="matMenu" overlapTrigger="false" class="ya-menu">
+          <th mat-header-cell *matHeaderCellDef class="expand"></th>
+          <td mat-cell *matCellDef="let item">
+            <app-more>
               <ng-container *ngIf="showResend()">
                 <button mat-menu-item
                         [routerLink]="['/commanding/send', item.commandName]"
@@ -243,13 +277,7 @@
                   Download
                 </app-download-menu-item>
               </ng-container>
-            </mat-menu>
-            <button mat-button
-                    [matMenuTriggerFor]="itemMenu"
-                    class="icon"
-                    (click)="$event.stopPropagation()">
-              <mat-icon>more_vert</mat-icon>
-            </button>
+            </app-more>
           </td>
         </ng-container>
 

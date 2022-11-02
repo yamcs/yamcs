@@ -49,6 +49,7 @@ export interface Alarm {
   type: 'EVENT' | 'PARAMETER';
   notificationType: AlarmNotificationType;
   id: NamedObjectId;
+  updateTime: string;
   triggerTime: string;
   violations: number;
   count: number;
@@ -107,10 +108,17 @@ export interface GetAlarmsOptions {
   order?: 'asc' | 'desc';
 }
 
-export interface EditAlarmOptions {
-  state: 'acknowledged' | 'shelved' | 'unshelved' | 'cleared';
+export interface AcknowledgeAlarmOptions {
+  comment?: string;
+}
+
+export interface ShelveAlarmOptions {
   comment?: string;
   shelveDuration?: number;
+}
+
+export interface ClearAlarmOptions {
+  comment?: string;
 }
 
 export type GlobalAlarmStatusSubscription = WebSocketCall<SubscribeGlobalAlarmStatusRequest, GlobalAlarmStatus>;

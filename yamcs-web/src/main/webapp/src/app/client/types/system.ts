@@ -93,6 +93,7 @@ export interface Route {
   url: string;
   httpMethod: string;
   requestCount: number;
+  logFormat: string;
 }
 
 export interface Topic {
@@ -111,10 +112,12 @@ export interface PluginInfo {
   vendor: string;
 }
 
+export type CommandOptionType = 'BOOLEAN' | 'STRING' | 'NUMBER';
+
 export interface CommandOption {
   id: string;
   verboseName: string;
-  type: 'BOOLEAN' | 'STRING' | 'NUMBER';
+  type: CommandOptionType;
   help: string;
 }
 
@@ -167,6 +170,14 @@ export interface ConnectionInfo {
   processor?: Processor;
 }
 
+export interface HttpTraffic {
+  readBytes: number;
+  writtenBytes: number;
+  readThroughput: number;
+  writeThroughput: number;
+  connections: ClientConnectionInfo[];
+}
+
 export interface ClientConnectionInfo {
   id: string;
   open: boolean;
@@ -179,6 +190,36 @@ export interface ClientConnectionInfo {
   readThroughput: number;
   writeThroughput: number;
   httpRequest: HttpRequestInfo;
+}
+
+export interface AuditRecordsPage {
+  records: AuditRecord[];
+}
+
+export interface GetAuditRecordsOptions {
+  start?: string;
+  stop?: string;
+  q?: string;
+  service?: string;
+}
+
+export interface AuditRecord {
+  time: string;
+  service: string;
+  method: string;
+  user: string;
+  summary: string;
+  request: any;
+}
+
+export interface SessionInfo {
+  id: string;
+  username: string;
+  ipAddress: string;
+  hostname: string;
+  startTime: string;
+  lastAccessTime: string;
+  expirationTime: string;
 }
 
 export interface ResultSet {
@@ -229,8 +270,8 @@ export interface UserInfo {
   identities: ExternalIdentity[];
   clearance: string;
 
-  systemPrivilege: string[];
-  objectPrivilege: ObjectPrivilege[];
+  systemPrivileges: string[];
+  objectPrivileges: ObjectPrivilege[];
 }
 
 export interface ExternalIdentity {
@@ -281,7 +322,7 @@ export interface RoleAssignmentInfo {
 
 export interface ObjectPrivilege {
   type: string;
-  object: string[];
+  objects: string[];
 }
 
 export interface RoleInfo {
@@ -304,6 +345,8 @@ export type ClearanceSubscription = WebSocketCall<void, Clearance>;
 
 export type ReplicationInfoSubscription = WebSocketCall<void, ReplicationInfo>;
 
+export type SystemInfoSubscription = WebSocketCall<void, SystemInfo>;
+
 export interface Service {
   instance: string;
   name: string;
@@ -314,7 +357,10 @@ export interface Service {
 export interface Bucket {
   name: string;
   size: number;
+  maxSize: number;
   numObjects: number;
+  maxObjects: number;
+  directory?: string;
 }
 
 export interface ListObjectsResponse {

@@ -91,7 +91,7 @@ public class Binding {
     }
 
     /**
-     * Returns a URL string in the format <tt>PROTOCOL://ADDRESS</tt> or <tt>PROTOCOL://ADDRESS:PORT</tt> if the PORT is
+     * Returns a URL string in the format {@code PROTOCOL://ADDRESS} or {@code PROTOCOL://ADDRESS:PORT} if the PORT is
      * unconventional for the PROTOCOL.
      */
     public String getURI() {

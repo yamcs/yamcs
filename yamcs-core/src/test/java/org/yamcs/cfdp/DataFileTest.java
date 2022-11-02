@@ -1,11 +1,14 @@
 package org.yamcs.cfdp;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.python.bouncycastle.util.Arrays;
 import org.yamcs.cfdp.pdu.SegmentRequest;
 
@@ -13,7 +16,7 @@ public class DataFileTest {
     static int n = 100;
     static byte[] data = new byte[n];
 
-    @BeforeClass
+    @BeforeAll
     static public void beforeClass() {
         for (int i = 0; i < n; i++) {
             data[i] = (byte) i;
@@ -29,27 +32,25 @@ public class DataFileTest {
         assertEquals(1, lmissing.size());
         verifyEquals(3, n, lmissing.get(0));
 
-        df.addSegment(getSegment(5,5));
+        df.addSegment(getSegment(5, 5));
 
         lmissing = df.getMissingChunks();
         assertEquals(2, lmissing.size());
         verifyEquals(3, 5, lmissing.get(0));
         verifyEquals(10, n, lmissing.get(1));
-       
+
         assertFalse(df.isComplete());
         assertEquals(8, df.getReceivedSize());
-        
-        df.addSegment(getSegment(3,2));
-        df.addSegment(getSegment(10, n-10));
-        
+
+        df.addSegment(getSegment(3, 2));
+        df.addSegment(getSegment(10, n - 10));
+
         assertTrue(df.isComplete());
         lmissing = df.getMissingChunks();
         assertEquals(0, lmissing.size());
-        
+
         assertArrayEquals(data, df.getData());
     }
-
-  
 
     @Test
     public void test2() {
@@ -59,7 +60,7 @@ public class DataFileTest {
         List<SegmentRequest> lmissing = df.getMissingChunks();
         assertEquals(1, lmissing.size());
         verifyEquals(4, n, lmissing.get(0));
-        
+
         verify(df);
     }
 
@@ -72,10 +73,10 @@ public class DataFileTest {
         List<SegmentRequest> lmissing = df.getMissingChunks();
         assertEquals(1, lmissing.size());
         verifyEquals(4, n, lmissing.get(0));
-        
+
         verify(df);
     }
-    
+
     @Test
     public void test4() {
         DataFile df = new DataFile(n);
@@ -84,13 +85,13 @@ public class DataFileTest {
         assertEquals(2, lmissing.size());
         verifyEquals(0, 10, lmissing.get(0));
         verifyEquals(20, n, lmissing.get(1));
-        
+
         df.addSegment(getSegment(0, 10));
         lmissing = df.getMissingChunks();
         assertEquals(1, lmissing.size());
         verify(df);
     }
-    
+
     @Test
     public void test5() {
         DataFile df = new DataFile(n);
@@ -101,7 +102,7 @@ public class DataFileTest {
         verifyEquals(20, n, lmissing.get(0));
         verify(df);
     }
-    
+
     @Test
     public void test6() {
         DataFile df = new DataFile(n);
@@ -113,8 +114,7 @@ public class DataFileTest {
         verifyEquals(30, n, lmissing.get(0));
         verify(df);
     }
-    
-    
+
     @Test
     public void test7() {
         DataFile df = new DataFile(n);
@@ -126,6 +126,7 @@ public class DataFileTest {
         verifyEquals(30, n, lmissing.get(0));
         verify(df);
     }
+
     @Test
     public void test8() {
         DataFile df = new DataFile(n);
@@ -137,22 +138,21 @@ public class DataFileTest {
         verifyEquals(30, n, lmissing.get(0));
         verify(df);
     }
-    
+
     private DataFileSegment getSegment(int offset, int length) {
-        return new DataFileSegment(offset, Arrays.copyOfRange(data, offset, offset+length));
+        return new DataFileSegment(offset, Arrays.copyOfRange(data, offset, offset + length));
     }
 
     private void verifyEquals(long expectedStart, long expectedEnd, SegmentRequest sr) {
         assertEquals(expectedStart, sr.getSegmentStart());
         assertEquals(expectedEnd, sr.getSegmentEnd());
     }
-    
+
     private void verify(DataFile df) {
-        for(DataFileSegment dfs: df.getSegments()) {
-            for(int i = 0; i<dfs.getLength(); i++) {
-                assertEquals(data[(int)(dfs.getOffset()+i)], dfs.getData()[i]);
+        for (DataFileSegment dfs : df.getSegments()) {
+            for (int i = 0; i < dfs.getLength(); i++) {
+                assertEquals(data[(int) (dfs.getOffset() + i)], dfs.getData()[i]);
             }
         }
     }
-
 }

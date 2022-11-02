@@ -2,6 +2,7 @@ package org.yamcs.yarch.streamsql;
 
 import java.util.function.Consumer;
 
+import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;

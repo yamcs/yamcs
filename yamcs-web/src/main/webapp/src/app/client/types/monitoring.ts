@@ -66,7 +66,9 @@ export interface Sample {
   time: string;
   avg: number;
   min: number;
+  minTime: string;
   max: number;
+  maxTime: string;
   n: number;
 }
 
@@ -78,8 +80,15 @@ export interface Range {
   count: number;
 }
 
+export interface GetGapsOptions {
+  start?: string;
+  stop?: string;
+  apids?: number[];
+  limit?: number;
+}
+
 export interface IssueCommandOptions {
-  args?: {[key: string]: any};
+  args?: { [key: string]: any; };
   origin?: string;
   sequenceNumber?: number;
   dryRun?: boolean;
@@ -130,6 +139,7 @@ export interface GetCommandHistoryOptions {
   limit?: number;
   next?: string;
   q?: string;
+  queue?: string;
   order?: 'asc' | 'desc';
 }
 
@@ -145,6 +155,9 @@ export interface EditReplayProcessorRequest {
   state?: 'running' | 'paused';
   seek?: string;
   speed?: string;
+  start?: string;
+  stop?: string;
+  loop?: boolean;
 }
 
 export interface GetPacketsOptions {
@@ -198,6 +211,7 @@ export interface GetParameterSamplesOptions {
   stop?: string;
   count?: number;
   order?: 'asc' | 'desc';
+  fields?: Array<keyof Sample>;
 }
 
 export interface GetParameterRangesOptions {
@@ -266,24 +280,6 @@ export interface IndexEntry {
   count: number;
 }
 
-export interface GetTagsOptions {
-  start?: string;
-  stop?: string;
-}
-
-export interface TagsPage {
-  tag: ArchiveTag[];
-}
-
-export interface ArchiveTag {
-  id: number;
-  name: string;
-  startUTC: string;
-  stopUTC: string;
-  description: string;
-  color: string;
-}
-
 export interface Gap {
   apid: number;
   start: string;
@@ -291,6 +287,10 @@ export interface Gap {
   startSequenceCount: number;
   stopSequenceCount: number;
   missingPacketCount: number;
+}
+
+export interface ListApidsResponse {
+  apids: number[];
 }
 
 export interface ListGapsResponse {
@@ -306,4 +306,21 @@ export interface PlaybackRange {
 
 export interface RequestPlaybackRequest {
   ranges: PlaybackRange[];
+}
+
+export interface PlaybackInfo {
+  interval: string;
+  period: string;
+  requests: PlaybackRequest[];
+}
+
+export interface PlaybackRequest {
+  requestTime: string;
+  apid: number;
+  packetType: number;
+  privateHeaderSource: number;
+  start: string;
+  stop: string;
+  status: string;
+  tmCount: number;
 }

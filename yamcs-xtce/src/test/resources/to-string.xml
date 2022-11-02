@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem name="Example"
+  xmlns="http://www.omg.org/spec/XTCE/20180204"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  shortDescription="Example XTCE to test ToString parsing">
+
+  <TelemetryMetaData>
+    <ParameterTypeSet>
+      <FloatParameterType name="example1_t" sizeInBits="64">
+        <ToString>
+          <NumberFormat maximumFractionDigits="4" minimumIntegerDigits="4" positivePrefix="+" />
+        </ToString>
+      </FloatParameterType>
+      <FloatParameterType name="example2_t" sizeInBits="64">
+        <ToString>
+          <NumberFormat notation="scientific" />
+        </ToString>
+      </FloatParameterType>
+      <IntegerParameterType name="example3_t" sizeInBits="64">
+        <ToString>
+          <NumberFormat numberBase="Hexadecimal" />
+        </ToString>
+      </IntegerParameterType>
+    </ParameterTypeSet>
+    <ParameterSet>
+      <Parameter parameterTypeRef="example1_t" name="example1" />
+      <Parameter parameterTypeRef="example2_t" name="example2" />
+      <Parameter parameterTypeRef="example3_t" name="example3" />
+    </ParameterSet>
+  </TelemetryMetaData>
+
+</SpaceSystem>

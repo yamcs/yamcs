@@ -5,7 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { CommandSubscription, StorageClient } from '../../client';
+import { Command, CommandSubscription, StorageClient, Value } from '../../client';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
@@ -51,6 +51,7 @@ export class StackFilePage implements OnDestroy {
 
   private executionCounter = 0;
 
+  private bucket: string;
   private folderPerInstance: boolean;
 
   constructor(
@@ -58,9 +59,11 @@ export class StackFilePage implements OnDestroy {
     readonly yamcs: YamcsService,
     private route: ActivatedRoute,
     private title: Title,
-    configService: ConfigService,
+    private configService: ConfigService,
   ) {
-    this.folderPerInstance = configService.getConfig().displayFolderPerInstance;
+    const config = configService.getConfig();
+    this.bucket = config.stackBucket;
+    this.folderPerInstance = config.displayFolderPerInstance;
     this.storageClient = yamcs.createStorageClient();
 
     const initialObject = this.getObjectNameFromUrl();
@@ -138,7 +141,7 @@ export class StackFilePage implements OnDestroy {
 
     this.title.setTitle(this.filename);
 
-    const response = await this.storageClient.getObject('_global', 'stacks', objectName);
+    const response = await this.storageClient.getObject('_global', this.bucket, objectName);
     if (response.ok) {
       const text = await response.text();
       const xmlParser = new DOMParser();
@@ -163,9 +166,34 @@ export class StackFilePage implements OnDestroy {
         }
       }
 
+      // Convert arrays/aggregates from JSON to JavaScript
+      for (const entry of entries) {
+        if (entry.command) {
+          for (const argumentName in entry.args) {
+            if (this.isComplex(argumentName, entry.command)) {
+              entry.args[argumentName] = JSON.parse(entry.args[argumentName]);
+            }
+          }
+        }
+      }
+
       // Only now, update the page
       this.entries$.next(entries);
       this.selectedEntry$.next(entries.length ? entries[0] : null);
+    }
+  }
+
+  private isComplex(argumentName: string, info: Command): boolean {
+    for (const argument of (info.argument || [])) {
+      if (argument.name === argumentName) {
+        return argument.type.engType === 'aggregate'
+          || argument.type.engType.endsWith('[]');
+      }
+    }
+    if (info.baseCommand) {
+      return this.isComplex(argumentName, info.baseCommand);
+    } else {
+      return false;
     }
   }
 
@@ -241,11 +269,13 @@ export class StackFilePage implements OnDestroy {
   }
 
   private async runEntry(entry: StackEntry) {
+    const executionNumber = ++this.executionCounter;
     return this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, entry.name, {
+      sequenceNumber: executionNumber,
       args: entry.args,
       extra: entry.extra,
     }).then(response => {
-      entry.executionNumber = ++this.executionCounter;
+      entry.executionNumber = executionNumber;
       entry.id = response.id;
 
       // It's possible the WebSocket received data before we
@@ -258,7 +288,7 @@ export class StackFilePage implements OnDestroy {
       // Refresh subject, to be sure
       this.entries$.next([...this.entries$.value]);
     }).catch(err => {
-      entry.executionNumber = ++this.executionCounter;
+      entry.executionNumber = executionNumber;
       entry.err = err.message || err;
     });
   }
@@ -310,17 +340,31 @@ export class StackFilePage implements OnDestroy {
   }
 
   private parseEntry(node: Element): StackEntry {
-    const args: {[key: string]: any} = {};
+    const args: { [key: string]: any; } = {};
+    const extra: { [key: string]: Value; } = {};
     for (let i = 0; i < node.childNodes.length; i++) {
       const child = node.childNodes[i] as Element;
       if (child.nodeName === 'commandArgument') {
         const argumentName = this.getStringAttribute(child, 'argumentName');
         args[argumentName] = this.getStringAttribute(child, 'argumentValue');
+      } else if (child.nodeName === 'extraOptions') {
+        for (let j = 0; j < child.childNodes.length; j++) {
+          const extraChild = child.childNodes[j] as Element;
+          if (extraChild.nodeName === 'extraOption') {
+            const id = this.getStringAttribute(extraChild, 'id');
+            const stringValue = this.getStringAttribute(extraChild, 'value');
+            const value = this.convertOptionStringToValue(id, stringValue);
+            if (value) {
+              extra[id] = value;
+            }
+          }
+        }
       }
     }
     const entry: StackEntry = {
       name: this.getStringAttribute(node, 'qualifiedName'),
       args,
+      extra,
     };
 
     if (node.hasAttribute('comment')) {
@@ -328,6 +372,22 @@ export class StackFilePage implements OnDestroy {
     }
 
     return entry;
+  }
+
+  private convertOptionStringToValue(id: string, value: string): Value | null {
+    for (const option of this.configService.getCommandOptions()) {
+      if (option.id === id) {
+        switch (option.type) {
+          case 'BOOLEAN':
+            return { type: 'BOOLEAN', booleanValue: value === 'true' };
+          case 'NUMBER':
+            return { type: 'SINT32', sint32Value: Number(value) };
+          default:
+            return { type: 'STRING', stringValue: value };
+        }
+      }
+    }
+    return null;
   }
 
   addCommand() {
@@ -460,7 +520,7 @@ export class StackFilePage implements OnDestroy {
   saveStack() {
     const xml = new StackFormatter(this.entries$.value).toXML();
     const b = new Blob([xml]);
-    this.storageClient.uploadObject('_global', 'stacks', this.objectName, b).then(() => {
+    this.storageClient.uploadObject('_global', this.bucket, this.objectName, b).then(() => {
       this.dirty$.next(false);
     });
   }

@@ -245,10 +245,12 @@ public class Directory {
 
     /**
      * Validates the provided password against the stored password hash of a user.
+     * 
+     * @return true if the password is correct, false otherwise
      */
     public boolean validateUserPassword(String username, char[] password) {
         User user = users.get(username);
-        if (user.getHash() != null) {
+        if (user != null && user.getHash() != null) {
             return hasher.validatePassword(password, user.getHash());
         } else {
             return false;
@@ -278,9 +280,11 @@ public class Directory {
         if (user.isExternallyManaged()) {
             throw new IllegalArgumentException("The identity of this user is not managed by Yamcs");
         }
-        String hash = hasher.createHash(password);
-        user.setHash(hash);
-        persistChanges();
+        if (!validateUserPassword(user.getName(), password)) {
+            String hash = hasher.createHash(password);
+            user.setHash(hash);
+            persistChanges();
+        }
     }
 
     public Account getAccount(String name) {

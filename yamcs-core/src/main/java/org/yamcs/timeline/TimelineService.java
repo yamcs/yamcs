@@ -22,29 +22,16 @@ public class TimelineService extends AbstractYamcsService {
     public static final String COMMANDS_TIMELINE_SOURCE = "commands";
 
     Map<String, ItemProvider> timelineSources = new HashMap<>();
+
     TimelineBandDb timelineBandDb;
     TimelineViewDb timelineViewDb;
-
-    public TimelineBandDb getTimelineBandDb() {
-        return timelineBandDb;
-    }
-
-    public void setTimelineBandDb(TimelineBandDb timelineBandDb) {
-        this.timelineBandDb = timelineBandDb;
-    }
-
-    public TimelineViewDb getTimelineViewDb() {
-        return timelineViewDb;
-    }
-
-    public void setTimelineViewDb(TimelineViewDb timelineViewDb) {
-        this.timelineViewDb = timelineViewDb;
-    }
+    TimelineItemDb timelineItemDb;
 
     @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         super.init(yamcsInstance, serviceName, config);
-        timelineSources.put(RDB_TIMELINE_SOURCE, new TimelineItemDb(yamcsInstance));
+        timelineItemDb = new TimelineItemDb(yamcsInstance);
+        timelineSources.put(RDB_TIMELINE_SOURCE, timelineItemDb);
         timelineSources.put(COMMANDS_TIMELINE_SOURCE, new CommandItemProvider(yamcsInstance));
         timelineBandDb = new TimelineBandDb(yamcsInstance);
         timelineViewDb = new TimelineViewDb(yamcsInstance);
@@ -60,6 +47,18 @@ public class TimelineService extends AbstractYamcsService {
 
     public ItemProvider getSource(String source) {
         return timelineSources.get(source);
+    }
+
+    public TimelineBandDb getTimelineBandDb() {
+        return timelineBandDb;
+    }
+
+    public TimelineViewDb getTimelineViewDb() {
+        return timelineViewDb;
+    }
+
+    public TimelineItemDb getTimelineItemDb() {
+        return timelineItemDb;
     }
 
     @Override

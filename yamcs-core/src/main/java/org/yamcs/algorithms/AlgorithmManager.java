@@ -25,6 +25,7 @@ import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducer;
+import org.yamcs.mdb.ProcessingData;
 import org.yamcs.parameter.ParameterProcessor;
 import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterProvider;
@@ -43,7 +44,6 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ProcessingData;
 
 import com.google.common.collect.Lists;
 import com.google.protobuf.util.Timestamps;
@@ -67,6 +67,7 @@ import com.google.protobuf.util.Timestamps;
 public class AlgorithmManager extends AbstractProcessorService
         implements ParameterProvider, ProcessorService, ParameterProcessor {
     static final String KEY_ALGO_NAME = "algoName";
+    static final String JDK_BUILTIN_NASHORN_ENGINE_NAME = "Oracle Nashorn";
 
     XtceDb xtcedb;
 
@@ -123,6 +124,14 @@ public class AlgorithmManager extends AbstractProcessorService
     private static void registerScriptEngines() {
         ScriptEngineManager sem = new ScriptEngineManager();
         for (ScriptEngineFactory sef : sem.getEngineFactories()) {
+
+            // JDK11-14 are the last JDK versions to include a copy of Nashorn.
+            // Disable this copy, so that only Nashorn from the classpath is used.
+            // (both get detected by this loop with the same set of names).
+            if (JDK_BUILTIN_NASHORN_ENGINE_NAME.equals(sef.getEngineName())) {
+                continue;
+            }
+
             List<String> engineNames = sef.getNames();
             ScriptAlgorithmEngine engine = new ScriptAlgorithmEngine();
             for (String name : engineNames) {
@@ -149,8 +158,7 @@ public class AlgorithmManager extends AbstractProcessorService
         xtcedb = processor.getXtceDb();
         timer = processor.getTimer();
 
-        globalCtx = new AlgorithmExecutionContext("global", null, processor.getProcessorData(),
-                maxErrCount);
+        globalCtx = new AlgorithmExecutionContext("global", processor.getProcessorData(), maxErrCount);
         contexts.add(globalCtx);
 
         for (Algorithm algo : xtcedb.getAlgorithms()) {
@@ -161,14 +169,21 @@ public class AlgorithmManager extends AbstractProcessorService
     }
 
     private void loadAlgorithm(Algorithm algo, AlgorithmExecutionContext ctx) {
-        for (OutputParameter oParam : algo.getOutputSet()) {
+        for (OutputParameter oParam : algo.getOutputList()) {
             outParamIndex.add(oParam.getParameter());
         }
         // Eagerly activate the algorithm if no outputs (with lazy activation,
         // it would never trigger because there's nothing to subscribe to)
-        if (algo.getOutputSet().isEmpty() && !ctx.containsAlgorithm(algo.getQualifiedName())) {
-            activateAndInit(algo, ctx);
+        if (algo.getOutputList().isEmpty() && !ctx.containsAlgorithm(algo.getQualifiedName())) {
+            ActiveAlgorithm activeAlgo = activateAndInit(algo, ctx);
+            List<OutputParameter> outList = activeAlgo.getOutputList();
+            if (outList != null) {
+                for (OutputParameter oParam : outList) {
+                    outParamIndex.add(oParam.getParameter());
+                }
+            }
         }
+
         TriggerSetType tst = algo.getTriggerSet();
         if (tst == null) {
             eventProducer.sendWarning("No trigger set for algorithm '" + algo.getQualifiedName() + "'");
@@ -216,8 +231,7 @@ public class AlgorithmManager extends AbstractProcessorService
      * @return the newly created context
      */
     public AlgorithmExecutionContext createContext(String name) {
-        AlgorithmExecutionContext ctx = new AlgorithmExecutionContext(name, globalCtx,
-                processor.getProcessorData(), maxErrCount);
+        AlgorithmExecutionContext ctx = new AlgorithmExecutionContext(name, processor.getProcessorData(), maxErrCount);
         contexts.add(ctx);
         return ctx;
     }
@@ -254,10 +268,12 @@ public class AlgorithmManager extends AbstractProcessorService
 
         algorithmsInError.remove(algorithm.getQualifiedName());
 
-        subscribeRequiredParameters(algorithm);
+
 
         log.trace("Activating algorithm....{}", algorithm.getQualifiedName());
         activeAlgo = new ActiveAlgorithm(algorithm, execCtx, executor);
+
+        subscribeRequiredParameters(activeAlgo);
         execCtx.addAlgorithm(activeAlgo);
 
         return activeAlgo;
@@ -283,17 +299,17 @@ public class AlgorithmManager extends AbstractProcessorService
         return activeAlgo;
     }
 
-    private void subscribeRequiredParameters(Algorithm algorithm) {
-        enableBuffering(algorithm);
+    private void subscribeRequiredParameters(ActiveAlgorithm activeAlgo) {
+        enableBuffering(activeAlgo);
 
         ArrayList<Parameter> newItems = new ArrayList<>();
-        for (Parameter param : getParametersOfInterest(algorithm)) {
+        for (Parameter param : getParametersOfInterest(activeAlgo)) {
             if (!requiredInParams.contains(param)) {
                 requiredInParams.add(param);
                 // Recursively activate other algorithms on which this algorithm depends
                 if (canProvide(param)) {
                     for (Algorithm algo : xtcedb.getAlgorithms()) {
-                        if (algorithm != algo) {
+                        if (activeAlgo.getAlgorithm() != algo) {
                             for (OutputParameter oParam : algo.getOutputSet()) {
                                 if (oParam.getParameter() == param) {
                                     activateAndInit(algo, globalCtx);
@@ -310,14 +326,17 @@ public class AlgorithmManager extends AbstractProcessorService
                 }
             }
         }
+        if (log.isTraceEnabled()) {
+            log.trace("For algorithm {}, subscribing to the prm for {}", activeAlgo.getName(), newItems);
+        }
         if (!newItems.isEmpty()) {
             parameterProcessorManager.subscribeToProviders(newItems);
         }
     }
 
     // if the input parameters require old values, make sure the parameter LastValueCache is configured for it
-    private void enableBuffering(Algorithm algorithm) {
-        for (InputParameter inputPara : algorithm.getInputList()) {
+    private void enableBuffering(ActiveAlgorithm activeAlgo) {
+        for (InputParameter inputPara : activeAlgo.getInputList()) {
             ParameterInstanceRef pref = inputPara.getParameterInstance();
             if (pref != null && pref.getInstance() < 0) {
                 processor.getLastValueCache().enableBuffering(pref.getParameter(), -pref.getInstance() + 1);
@@ -327,26 +346,10 @@ public class AlgorithmManager extends AbstractProcessorService
 
     AlgorithmExecutor makeExecutor(Algorithm algorithm, AlgorithmExecutionContext execCtx) throws AlgorithmException {
         AlgorithmExecutor executor;
-
         if (algorithm instanceof CustomAlgorithm) {
             CustomAlgorithm calg = (CustomAlgorithm) algorithm;
-            String algLang = calg.getLanguage();
-            if (algLang == null) {
-                throw new AlgorithmException("no language specified for algorithm "
-                        + "'" + algorithm.getQualifiedName() + "'");
-            }
-            AlgorithmExecutorFactory factory = factories.get(algLang);
-            if (factory == null) {
-                AlgorithmEngine eng = algorithmEngines.get(algLang);
-                if (eng == null) {
-                    throw new AlgorithmException("no algorithm engine found for language '" + algLang + "'");
-                }
-                factory = eng.makeExecutorFactory(this, execCtx, algLang, config);
-                factories.put(algLang, factory);
-                for (String s : factory.getLanguages()) {
-                    factories.put(s, factory);
-                }
-            }
+            AlgorithmExecutorFactory factory = getFactory(calg, execCtx);
+
             try {
                 executor = factory.makeExecutor(calg, execCtx);
             } catch (AlgorithmException e) {
@@ -361,6 +364,27 @@ public class AlgorithmManager extends AbstractProcessorService
         }
 
         return executor;
+    }
+
+    private AlgorithmExecutorFactory getFactory(CustomAlgorithm calg, AlgorithmExecutionContext execCtx) {
+        String algLang = calg.getLanguage();
+        if (algLang == null) {
+            throw new AlgorithmException("no language specified for algorithm "
+                    + "'" + calg.getQualifiedName() + "'");
+        }
+        AlgorithmExecutorFactory factory = factories.get(algLang);
+        if (factory == null) {
+            AlgorithmEngine eng = algorithmEngines.get(algLang);
+            if (eng == null) {
+                throw new AlgorithmException("no algorithm engine found for language '" + algLang + "'");
+            }
+            factory = eng.makeExecutorFactory(this, execCtx, algLang, config);
+            factories.put(algLang, factory);
+            for (String s : factory.getLanguages()) {
+                factories.put(s, factory);
+            }
+        }
+        return factory;
     }
 
     @Override
@@ -378,8 +402,8 @@ public class AlgorithmManager extends AbstractProcessorService
             // engineByAlgorithm
             HashSet<Parameter> stillRequired = new HashSet<>(); // parameters still required by any other algorithm
             for (Iterator<ActiveAlgorithm> it = Lists.reverse(globalCtx.executionOrder).iterator(); it.hasNext();) {
-                ActiveAlgorithm engine = it.next();
-                Algorithm algo = engine.getAlgorithm();
+                ActiveAlgorithm activeAlgo = it.next();
+                Algorithm algo = activeAlgo.getAlgorithm();
                 boolean keep = false;
 
                 // Keep if any other output parameters are still subscribed to
@@ -388,29 +412,19 @@ public class AlgorithmManager extends AbstractProcessorService
                         keep = true;
                         break;
                     }
-                }
-
-                if (!algo.canProvide(paramDef)) { // Clean-up unused engines
-                    // For any of its outputs, check if it's still used by any algorithm
-                    for (OutputParameter op : algo.getOutputSet()) {
-                        if (requestedOutParams.contains(op.getParameter())) {
+                    for (var otherAlgo : globalCtx.getActiveAlgorithms()) {
+                        if (getParametersOfInterest(otherAlgo).contains(oParameter.getParameter())) {
                             keep = true;
                             break;
-                        }
-                        for (Algorithm otherAlgo : globalCtx.getAlgorithms()) {
-                            if (getParametersOfInterest(otherAlgo).contains(op.getParameter())) {
-                                keep = true;
-                                break;
-                            }
                         }
                     }
                 }
 
                 if (!keep) {
                     it.remove();
-                    globalCtx.remove(algo.getQualifiedName());
+                    globalCtx.removeAlgorithm(algo);
                 } else {
-                    stillRequired.addAll(getParametersOfInterest(algo));
+                    stillRequired.addAll(getParametersOfInterest(activeAlgo));
                 }
             }
             requiredInParams.retainAll(stillRequired);
@@ -451,6 +465,7 @@ public class AlgorithmManager extends AbstractProcessorService
      * Called by PRM when new parameters are received.
      * 
      */
+    @Override
     public void process(ProcessingData data) {
         for (AlgorithmExecutionContext ctx : contexts) {
             ctx.process(processor.getCurrentTime(), data);
@@ -485,7 +500,7 @@ public class AlgorithmManager extends AbstractProcessorService
         if (algOverr == null) {
             return;
         }
-        globalCtx.remove(algOverr.getQualifiedName());
+        globalCtx.removeAlgorithm(algOverr.getQualifiedName());
         activateAndInit(calg, globalCtx);
     }
 
@@ -497,13 +512,10 @@ public class AlgorithmManager extends AbstractProcessorService
      */
     public void overrideAlgorithm(CustomAlgorithm calg, String text) {
         CustomAlgorithm algOverr = algoOverrides.remove(calg);
-        globalCtx.remove(calg.getQualifiedName());
+        globalCtx.removeAlgorithm(calg.getQualifiedName());
 
-        AlgorithmExecutorFactory factory = factories.get(calg.getLanguage());
-        if (factory == null) {
-            throw new AlgorithmException(
-                    "No factory available for algorithms with language '" + calg.getLanguage() + "'");
-        }
+        AlgorithmExecutorFactory factory = getFactory(calg, globalCtx);
+
         algOverr = calg.copy();
         algOverr.setAlgorithmText(text);
         algorithmsInError.remove(calg.getQualifiedName());
@@ -560,14 +572,14 @@ public class AlgorithmManager extends AbstractProcessorService
      * Returns all the parameters that this algorithm want to receive updates on. This includes not only the input
      * parameters, but also any parameters that are part of the trigger set.
      */
-    private static Set<Parameter> getParametersOfInterest(Algorithm algorithm) {
-        Stream<Parameter> inputParams = algorithm.getInputList().stream()
+    private static Set<Parameter> getParametersOfInterest(ActiveAlgorithm activeAlgo) {
+        Stream<Parameter> inputParams = activeAlgo.getInputList().stream()
                 .filter(ip -> ip.getParameterInstance() != null).map(ip -> ip.getParameterInstance()
                         .getParameter());
-        if (algorithm.getTriggerSet() == null) {
+        if (activeAlgo.getTriggerSet() == null) {
             return inputParams.collect(Collectors.toSet());
         } else {
-            Stream<Parameter> triggerParams = algorithm.getTriggerSet().getOnParameterUpdateTriggers().stream()
+            Stream<Parameter> triggerParams = activeAlgo.getTriggerSet().getOnParameterUpdateTriggers().stream()
                     .map(t -> t.getParameter());
             return Stream.concat(triggerParams, inputParams).collect(Collectors.toSet());
         }

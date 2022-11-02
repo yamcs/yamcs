@@ -26,6 +26,11 @@ public class SecurityStore {
     private static final Log log = new Log(SecurityStore.class);
 
     /**
+     * Whether authorization is checked.
+     */
+    private boolean enabled;
+
+    /**
      * Baked-in user for system operations. Not manageable through a directory, not available for login.
      */
     private User systemUser;
@@ -39,6 +44,11 @@ public class SecurityStore {
      * Stores users, groups and applications in the Yamcs database.
      */
     private Directory directory;
+
+    /**
+     * Tracks user sessions.
+     */
+    private SessionManager sessionManager;
 
     /**
      * If true, successful login attempts of users that were not previously known by Yamcs (e.g. when authenticating to
@@ -68,6 +78,7 @@ public class SecurityStore {
         } catch (ValidationException e) {
             throw new InitException(e);
         }
+        enabled = config.getBoolean("enabled");
 
         // Create the system and guest user. These are not stored in the directory,
         // and can not be used to log in directly.
@@ -75,6 +86,7 @@ public class SecurityStore {
         generatePredefinedPrivileges();
 
         directory = new Directory();
+        sessionManager = new SessionManager();
         blockUnknownUsers = config.getBoolean("blockUnknownUsers");
         accessTokenLifespan = config.getInt("accessTokenLifespan");
 
@@ -89,14 +101,20 @@ public class SecurityStore {
         if (config.containsKey("authModules")) {
             for (YConfiguration moduleConfig : config.getConfigList("authModules")) {
                 AuthModule authModule = loadAuthModule(moduleConfig);
+
+                // TODO temp to not crash while built-in modules are manually added
+                // could become an exception in init() of those modules
+                if (authModule instanceof DirectoryAuthModule) {
+                    log.warn("Remove DirectoryAuthModule from security configuration. It is automatically added.");
+                    continue;
+                }
+
                 authModules.add(authModule);
             }
         }
 
-        if (!config.getBoolean("enabled", true) || authModules.isEmpty()) {
-            log.info("Enabling guest access");
-            guestUser.setActive(true);
-        }
+        // Add last, so external modules have a chance to redefine the user named 'admin'.
+        authModules.add(new DirectoryAuthModule());
     }
 
     /**
@@ -115,7 +133,7 @@ public class SecurityStore {
         guestUser.setId(2);
         guestUser.setDisplayName(guestConfig.getString("displayName", username));
         guestUser.setSuperuser(guestConfig.getBoolean("superuser"));
-        guestUser.setActive(false);
+        guestUser.setActive(!enabled);
         if (guestConfig.containsKey("privileges")) {
             YConfiguration privilegeConfigs = guestConfig.getConfig("privileges");
             for (String privilegeName : privilegeConfigs.getKeys()) {
@@ -185,6 +203,13 @@ public class SecurityStore {
         objectPrivilegeTypes.add(ObjectPrivilegeType.WriteParameter);
     }
 
+    /**
+     * Returns true if security features are activated.
+     */
+    public boolean isEnabled() {
+        return enabled;
+    }
+
     public void addSystemPrivilege(SystemPrivilege privilege) {
         systemPrivileges.add(privilege);
     }
@@ -235,17 +260,17 @@ public class SecurityStore {
         guestSpec.addOption("privileges", OptionType.ANY);
 
         Spec spec = new Spec();
-        spec.addOption("enabled", OptionType.BOOLEAN).withDeprecationMessage(
-                "Remove this argument. If you want to allow guest access, remove security.yaml");
         spec.addOption("blockUnknownUsers", OptionType.BOOLEAN).withDefault(false);
         spec.addOption("authModules", OptionType.LIST).withElementType(OptionType.MAP).withSpec(moduleSpec);
+
+        boolean securityConfigured = YConfiguration.isDefined("security");
+        spec.addOption("enabled", OptionType.BOOLEAN).withDefault(securityConfigured);
         spec.addOption("guest", OptionType.MAP).withSpec(guestSpec)
-                .withAliases("unauthenticatedUser") // Legacy, remove some day
                 .withApplySpecDefaults(true);
         spec.addOption("accessTokenLifespan", OptionType.INTEGER).withDefault(500_000); // Just over 8 minutes
 
         YConfiguration yconf = YConfiguration.emptyConfig();
-        if (YConfiguration.isDefined("security")) {
+        if (securityConfigured) {
             yconf = YConfiguration.getConfiguration("security");
         }
         yconf = spec.validate(yconf);
@@ -254,6 +279,10 @@ public class SecurityStore {
 
     public Directory getDirectory() {
         return directory;
+    }
+
+    public SessionManager getSessionManager() {
+        return sessionManager;
     }
 
     public List<AuthModule> getAuthModules() {

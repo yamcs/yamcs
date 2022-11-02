@@ -65,7 +65,7 @@ public class MasterChannelFrameMultiplexer {
     /**
      * Get the next frame blocking until one is available or until {@link #quit()} is called.
      * 
-     * @return next frame or null if the multiplexer has been closed
+     * @return next frame or null if the multiplexer has been closed or the thread interrupted
      */
     public TcTransferFrame getFrame() {
         while (!quitting) {

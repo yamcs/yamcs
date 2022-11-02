@@ -1,7 +1,8 @@
 import { Component, Inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { StorageClient } from '../../client';
+import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -10,15 +11,16 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class CreateBucketDialog {
 
-  form: FormGroup;
+  form: UntypedFormGroup;
 
   private storageClient: StorageClient;
 
   constructor(
     private dialogRef: MatDialogRef<CreateBucketDialog>,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     yamcs: YamcsService,
-    @Inject(MAT_DIALOG_DATA) readonly data: any
+    @Inject(MAT_DIALOG_DATA) readonly data: any,
+    private messageService: MessageService,
   ) {
     this.storageClient = yamcs.createStorageClient();
     this.form = formBuilder.group({
@@ -29,6 +31,10 @@ export class CreateBucketDialog {
   save() {
     this.storageClient.createBucket(this.data.bucketInstance, {
       name: this.form.value['name'],
-    }).then(() => this.dialogRef.close(true));
+    }).then(() => this.dialogRef.close(true))
+      .catch(err => {
+        this.dialogRef.close(false);
+        this.messageService.showError(err);
+      });
   }
 }

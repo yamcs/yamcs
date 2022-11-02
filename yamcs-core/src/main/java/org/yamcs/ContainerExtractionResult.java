@@ -6,13 +6,15 @@ import org.yamcs.xtce.SequenceContainer;
  * Holds the definition of a container, the content of its slice and some positioning information inside that slice
  */
 public class ContainerExtractionResult {
-    final private SequenceContainer container;
-    final private byte[] containerContent;
-    final private int offset;
-    final private int bitPosition;
+    private final SequenceContainer container;
+    private final byte[] containerContent;
+    private final int offset;
+    private final int bitPosition;
 
-    final private long acquisitionTime;
-    final private long generationTime;
+    private final long acquisitionTime;
+    private final long generationTime;
+    private final int seqCount;
+
     final boolean derivedFromRoot;
 
     public ContainerExtractionResult(SequenceContainer container,
@@ -21,6 +23,7 @@ public class ContainerExtractionResult {
             int bitPosition,
             long acquisitionTime,
             long generationTime,
+            int seqCount,
             boolean derivedFromRoot) {
         this.container = container;
         this.containerContent = containerContent;
@@ -28,6 +31,7 @@ public class ContainerExtractionResult {
         this.bitPosition = bitPosition;
         this.acquisitionTime = acquisitionTime;
         this.generationTime = generationTime;
+        this.seqCount = seqCount;
         this.derivedFromRoot = derivedFromRoot;
     }
 
@@ -73,8 +77,14 @@ public class ContainerExtractionResult {
         return derivedFromRoot;
     }
 
+    public int getSeqCount() {
+        return seqCount;
+    }
+
     @Override
     public String toString() {
         return container.toString();
     }
+
+
 }

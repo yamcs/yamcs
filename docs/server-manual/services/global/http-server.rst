@@ -53,7 +53,6 @@ tlsCert (string or list of strings)
 tlsKey (string)
     **Required** if ``tlsCert`` is specified. The key to the certificate.
 
-
 contextPath (string)
     Path string prepended to all routes. For example, a contextPath of ``/yamcs`` will make the api available on ``/yamcs/api`` instead of the default ``/api``. When using this property in combination with a reverse proxy, you should ensure that the proxy path matches with the context path because rewriting may lead to unexpected results.
     
@@ -67,6 +66,12 @@ maxContentLength (integer)
 
     Some routes may specify a custom ``maxBodySize`` option, in which case the maximum of the two values gets applied.
 
+nThreads (integer)
+    Configure the number of threads that handle HTTP requests. The value ``0`` resolves to two times the number of CPU cores. Default: ``0``
+
+reverseLookup (boolean)
+    If enabled, hostnames instead of IP addresses are used to identify clients. Use of this option may trigger name service reverse lookups. Default: ``false``
+
 webSocket (map)
     Configure WebSocket properties. Detailed below. If unset, Yamcs uses sensible defaults.
 
@@ -78,12 +83,12 @@ WebSocket sub-configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 maxFrameLength (integer)
-    Maximum frame length in bytes. Default: ``65536``
+    Maximum frame length in bytes. This is applied to incoming frames. Default: ``65536``
 
 writeBufferWaterMark (map)
     Water marks for the write buffer of each WebSocket connection. When the buffer is full, messages are dropped. High values lead to increased memory use, but connections will be more resilient against unstable networks (i.e. high jitter). Increasing the values also help if a large number of messages are generated in bursts. The map requires keys ``low`` and ``high`` indicating the low/high water mark in bytes.
 
-    Default: ``{ low: 32768, high: 65536}``
+    Default: ``{ low: 32768, high: 131072 }``
 
 
 CORS sub-configuration

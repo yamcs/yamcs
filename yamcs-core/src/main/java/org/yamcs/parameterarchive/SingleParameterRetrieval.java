@@ -82,15 +82,13 @@ public class SingleParameterRetrieval {
     // this is the easy case, one single parameter group -> no merging of segments necessary
     private void retrieveValueSingleGroup(ParameterId pid, int parameterGroupId,
             Consumer<ParameterValueArray> consumer) throws RocksDBException, IOException {
-        SegmentIterator it = new SegmentIterator(parchive, pid, parameterGroupId, req);
-        try {
+
+        try (SegmentIterator it = new SegmentIterator(parchive, pid, parameterGroupId, req)) {
             while (it.isValid()) {
                 ParameterValueSegment pvs = it.value();
                 sendValuesFromSegment(pid, pvs, req, consumer);
                 it.next();
             }
-        } finally {
-            it.close();
         }
     }
 
@@ -132,7 +130,6 @@ public class SingleParameterRetrieval {
         ValueSegment rawValueSegment = pvs.rawValueSegment;
         ParameterStatusSegment parameterStatusSegment = pvs.parameterStatusSegment;
         SortedTimeSegment timeSegment = pvs.timeSegment;
-
         int posStart, posStop;
         if (pvr.ascending) {
             posStart = timeSegment.search(pvr.start);

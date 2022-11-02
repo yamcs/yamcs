@@ -13,7 +13,7 @@ public abstract class BaseTimeDataType extends BaseDataType {
         this.scale = builder.scale;
         this.offset = builder.offset;
         
-        if(builder.baseType!=null && builder.baseType instanceof BaseTimeDataType) {
+        if (builder.baseType instanceof BaseTimeDataType) {
             BaseTimeDataType baseType = (BaseTimeDataType) builder.baseType;
             if(!builder.needsScaling && baseType.needsScaling) {
                 this.needsScaling = baseType.needsScaling;

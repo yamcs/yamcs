@@ -997,7 +997,7 @@ limitations under the License.
 			</xtce:TelemetryMetaData>
 			<xtce:CommandMetaData>
 				<xtce:ArgumentTypeSet>
-					<xtce:BooleanArgumentType name="Bool_Arg_Type" shortDescription="boolean argument type" initialValue="true">
+					<xtce:BooleanArgumentType name="Bool_Arg_Type" shortDescription="boolean argument type" initialValue="True">
 						<xtce:UnitSet/>
 						<IntegerDataEncoding sizeInBits="1"/>
 					</xtce:BooleanArgumentType>

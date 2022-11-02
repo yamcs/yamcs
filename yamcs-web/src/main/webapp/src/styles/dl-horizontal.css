@@ -1,0 +1,32 @@
+.dl-horizontal {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  padding: 0;
+}
+
+.dl-horizontal.no-lead {
+  margin-top: 0;
+}
+
+.dl-horizontal.no-trail {
+  margin-bottom: 0;
+}
+
+.dl-horizontal dt {
+  float: left;
+  width: 160px;
+  clear: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgba(0, 0, 0, .654);
+}
+
+.dl-horizontal dd {
+  margin-left: 180px;
+  min-height: 20px;
+}
+
+.dl-horizontal dd:after {
+  clear: both;
+}

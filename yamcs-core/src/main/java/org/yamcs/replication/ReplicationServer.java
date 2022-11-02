@@ -22,6 +22,8 @@ import javax.net.ssl.SSLException;
 
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.InitException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.replication.ReplicationSlave.SlaveChannelHandler;
@@ -66,11 +68,24 @@ public class ReplicationServer extends AbstractYamcsService {
     private Map<String, ReplicationSlave> slaves = new HashMap<>();
     Set<Channel> activeChannels = Collections.newSetFromMap(new ConcurrentHashMap<Channel, Boolean>());
     SslContext sslCtx;
+    int maxTupleSize;
+
+    @Override
+    public Spec getSpec() {
+        Spec spec = new Spec();
+        spec.addOption("port", OptionType.INTEGER).withRequired(true);
+        spec.addOption("tlsCert", OptionType.ANY);
+        spec.addOption("tlsKey", OptionType.STRING);
+        spec.addOption("maxTupleSize", OptionType.INTEGER).withDefault(131072);
+
+        return spec;
+    }
 
     @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         super.init(yamcsInstance, serviceName, config);
-        port = config.getInt("port");
+        this.port = config.getInt("port");
+        this.maxTupleSize = config.getInt("maxTupleSize");
 
         if (config.containsKey("tlsCert")) {
             List<String> tlsCerts;
@@ -111,7 +126,7 @@ public class ReplicationServer extends AbstractYamcsService {
                         if (sslCtx != null) {
                             ch.pipeline().addLast(sslCtx.newHandler(ch.alloc()));
                         }
-                        ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(8192, 1, 3));
+                        ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(maxTupleSize, 1, 3));
                         ch.pipeline().addLast(new MyChannelHandler());
                     }
                 })
@@ -183,6 +198,8 @@ public class ReplicationServer extends AbstractYamcsService {
                 log.warn("Failed to decode message", e);
                 sendErrorReturn(0, "Failed to decode message: " + e.getMessage());
                 return;
+            } finally {
+                ((ByteBuf) o).release();
             }
 
             if (msg.type == Message.WAKEUP) {// this is sent by a master when we are slave.

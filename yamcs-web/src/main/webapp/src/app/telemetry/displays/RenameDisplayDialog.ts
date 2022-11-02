@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { StorageClient } from '../../client';
 import { ConfigService } from '../../core/services/ConfigService';
@@ -12,19 +12,21 @@ import { FilenamePipe } from '../../shared/pipes/FilenamePipe';
 })
 export class RenameDisplayDialog {
 
-  filenameForm: FormGroup;
+  filenameForm: UntypedFormGroup;
 
   private storageClient: StorageClient;
+  private bucket: string;
 
   constructor(
     private dialogRef: MatDialogRef<RenameDisplayDialog>,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     yamcs: YamcsService,
     configService: ConfigService,
     filenamePipe: FilenamePipe,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.storageClient = yamcs.createStorageClient();
+    this.bucket = configService.getConfig().displayBucket;
 
     const filename = filenamePipe.transform(this.data.name);
     this.filenameForm = formBuilder.group({
@@ -39,12 +41,12 @@ export class RenameDisplayDialog {
       prefix = this.data.name.substring(0, idx + 1);
     }
 
-    const response = await this.storageClient.getObject('_global', 'displays', this.data.name);
+    const response = await this.storageClient.getObject('_global', this.bucket, this.data.name);
     const blob = await response.blob();
 
     const newObjectName = (prefix || '') + this.filenameForm.get('name')!.value;
-    await this.storageClient.uploadObject('_global', 'displays', newObjectName, blob);
-    await this.storageClient.deleteObject('_global', 'displays', this.data.name);
+    await this.storageClient.uploadObject('_global', this.bucket, newObjectName, blob);
+    await this.storageClient.deleteObject('_global', this.bucket, this.data.name);
     this.dialogRef.close(newObjectName);
   }
 }

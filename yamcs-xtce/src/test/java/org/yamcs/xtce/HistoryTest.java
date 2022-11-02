@@ -1,10 +1,11 @@
 package org.yamcs.xtce;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Arrays;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class HistoryTest {
 
@@ -16,7 +17,7 @@ public class HistoryTest {
         History h4 = new History("0.10", "01-05-2020", "abc", null);
         History h5 = new History("0.10.2", "01-05-2020", "abc", null);
 
-        History[] arr = new History[] { h3, h5, h1, h2, h4};
+        History[] arr = new History[] { h3, h5, h1, h2, h4 };
         Arrays.sort(arr);
         assertEquals(h1.getVersion(), arr[0].getVersion());
         assertEquals(h2.getVersion(), arr[1].getVersion());
@@ -25,9 +26,11 @@ public class HistoryTest {
         assertEquals(h5.getVersion(), arr[4].getVersion());
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test
     public void testInvalidVersion() {
-        // don't accept non-standard versions, our comparator can't deal with it
-        new History("v0.8", "01-05-2020", "abc", null);
+        assertThrows(IllegalArgumentException.class, () -> {
+            // don't accept non-standard versions, our comparator can't deal with it
+            new History("v0.8", "01-05-2020", "abc", null);
+        });
     }
 }

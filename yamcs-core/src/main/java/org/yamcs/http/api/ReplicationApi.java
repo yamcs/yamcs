@@ -90,10 +90,10 @@ public class ReplicationApi extends AbstractReplicationApi<Context> {
                     if (ch != null && ch.isActive()) {
                         InetSocketAddress address = (InetSocketAddress) ch.localAddress();
                         masterb.setLocalAddress(address.getAddress().getHostAddress() + ":" + address.getPort());
-                    }
-                    MasterChannelHandler handler = ch.pipeline().get(MasterChannelHandler.class);
-                    if (handler != null) {
-                        masterb.setNextTx(handler.getNextTxId());
+                        MasterChannelHandler handler = ch.pipeline().get(MasterChannelHandler.class);
+                        if (handler != null) {
+                            masterb.setNextTx(handler.getNextTxId());
+                        }
                     }
                 }
 
@@ -159,12 +159,16 @@ public class ReplicationApi extends AbstractReplicationApi<Context> {
         } else {
             ReplicationServer server = getReplicationServer();
             if (server != null) {
-                for (Channel ch : server.getActiveChannels(slave)) {
-                    ReplicationSlaveInfo.Builder slaveb = ReplicationSlaveInfo.newBuilder()
-                            .setInstance(slave.getYamcsInstance())
-                            .addAllStreams(streamNames)
-                            .setPush(true)
-                            .setTx(txid);
+                ReplicationSlaveInfo slavePrototype = ReplicationSlaveInfo.newBuilder()
+                        .setInstance(slave.getYamcsInstance())
+                        .addAllStreams(streamNames)
+                        .setPush(true)
+                        .setTx(txid)
+                        .buildPartial();
+
+                List<Channel> activeChannels = server.getActiveChannels(slave);
+                for (Channel ch : activeChannels) {
+                    ReplicationSlaveInfo.Builder slaveb = ReplicationSlaveInfo.newBuilder(slavePrototype);
 
                     InetSocketAddress address = (InetSocketAddress) ch.localAddress();
                     slaveb.setLocalAddress(address.getAddress().getHostAddress() + ":" + address.getPort());
@@ -174,6 +178,9 @@ public class ReplicationApi extends AbstractReplicationApi<Context> {
 
                     result.add(slaveb.build());
                 }
+                if (activeChannels.isEmpty()) {
+                    result.add(ReplicationSlaveInfo.newBuilder(slavePrototype).build());
+                }
             }
         }
 
@@ -182,13 +189,6 @@ public class ReplicationApi extends AbstractReplicationApi<Context> {
 
     private static ReplicationServer getReplicationServer() {
         YamcsServer yamcs = YamcsServer.getServer();
-        List<ReplicationServer> replicationServers = yamcs.getGlobalServices(ReplicationServer.class);
-        if (replicationServers.isEmpty()) {
-            return null;
-        } else if (replicationServers.size() == 1) {
-            return replicationServers.get(0);
-        } else {
-            throw new IllegalStateException("Was only expecting 1 replication server");
-        }
+        return yamcs.getGlobalService(ReplicationServer.class);
     }
 }

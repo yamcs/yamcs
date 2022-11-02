@@ -27,6 +27,7 @@ import org.yamcs.http.Context;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.MediaType;
 import org.yamcs.http.NotFoundException;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.protobuf.AbstractPacketsApi;
 import org.yamcs.protobuf.ContainerData;
 import org.yamcs.protobuf.ExportPacketRequest;
@@ -39,14 +40,14 @@ import org.yamcs.protobuf.ListPacketsResponse;
 import org.yamcs.protobuf.StreamPacketsRequest;
 import org.yamcs.protobuf.SubscribeContainersRequest;
 import org.yamcs.protobuf.SubscribePacketsRequest;
+import org.yamcs.protobuf.TmPacketData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
+import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableDefinition;
@@ -390,6 +391,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         if (request.getNamesCount() == 0) {
             throw new BadRequestException("At least one container name must be specified");
         }
+        ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadPacket, request.getNamesList());
 
         List<SequenceContainer> containers = new ArrayList<>(request.getNamesCount());
         for (String name : request.getNamesList()) {
@@ -408,6 +410,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
                     .setBinary(ByteString.copyFrom(result.getContainerContent()))
                     .setGenerationTime(TimeEncoding.toProtobufTimestamp(result.getGenerationTime()))
                     .setReceptionTime(TimeEncoding.toProtobufTimestamp(result.getAcquisitionTime()))
+                    .setSeqCount(result.getSeqCount())
                     .build();
             observer.next(packet);
         };

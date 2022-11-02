@@ -14,16 +14,23 @@ public abstract class FloatDataType extends NumericDataType {
      */
     FloatValidRange validRange;
     int sizeInBits = 32;
+    /**
+     * XTCE: This element provides the implementation with assistance rendering the value as a string for users.
+     * <p>
+     * Note that XTCE wraps NumberFormatType in another type ToStringType, which we don't do.
+     */
+    NumberFormatType numberFormat;
 
     protected FloatDataType(Builder<?> builder) {
         super(builder);
 
         this.validRange = builder.validRange;
+        this.numberFormat = builder.numberFormat;
         if (builder.sizeInBits != null) {
             this.sizeInBits = builder.sizeInBits;
         }
 
-        if (builder.baseType != null && builder.baseType instanceof FloatDataType) {
+        if (builder.baseType instanceof FloatDataType) {
             FloatDataType baseType = (FloatDataType) builder.baseType;
             if (builder.sizeInBits == null) {
                 this.sizeInBits = baseType.sizeInBits;
@@ -31,6 +38,10 @@ public abstract class FloatDataType extends NumericDataType {
 
             if (builder.validRange == null && baseType.validRange != null) {
                 this.validRange = baseType.validRange;
+            }
+
+            if (builder.numberFormat == null && baseType.numberFormat != null) {
+                this.numberFormat = baseType.numberFormat;
             }
         }
 
@@ -41,6 +52,7 @@ public abstract class FloatDataType extends NumericDataType {
         super(t);
         this.validRange = t.validRange;
         this.sizeInBits = t.sizeInBits;
+        this.numberFormat = t.numberFormat;
     }
 
     @Override
@@ -59,6 +71,10 @@ public abstract class FloatDataType extends NumericDataType {
 
     public FloatValidRange getValidRange() {
         return validRange;
+    }
+
+    public NumberFormatType getNumberFormat() {
+        return numberFormat;
     }
 
     @Override
@@ -90,6 +106,7 @@ public abstract class FloatDataType extends NumericDataType {
     public abstract static class Builder<T extends Builder<T>> extends BaseDataType.Builder<T> {
         private FloatValidRange validRange;
         Integer sizeInBits;
+        private NumberFormatType numberFormat;
 
         public Builder() {
         }
@@ -112,6 +129,11 @@ public abstract class FloatDataType extends NumericDataType {
 
         public T setInitialValue(double initialValue) {
             this.initialValue = Double.toString(initialValue);
+            return self();
+        }
+
+        public T setNumberFormat(NumberFormatType numberFormat) {
+            this.numberFormat = numberFormat;
             return self();
         }
     }

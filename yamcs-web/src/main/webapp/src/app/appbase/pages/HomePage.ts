@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -21,7 +21,7 @@ import { DefaultProcessorPipe } from '../../shared/pipes/DefaultProcessorPipe';
 })
 export class HomePage implements AfterViewInit, OnDestroy {
 
-  filterControl = new FormControl();
+  filterControl = new UntypedFormControl();
 
   @ViewChild(MatSort, { static: true })
   sort: MatSort;
@@ -101,14 +101,14 @@ export class HomePage implements AfterViewInit, OnDestroy {
 
   isAllSelected() {
     const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.data.length;
-    return numSelected === numRows;
+    const numRows = this.dataSource.filteredData.length;
+    return numSelected === numRows && numRows > 0;
   }
 
   masterToggle() {
     this.isAllSelected() ?
       this.selection.clear() :
-      this.dataSource.data.forEach(row => this.selection.select(row));
+      this.dataSource.filteredData.forEach(row => this.selection.select(row));
   }
 
   toggleOne(row: Instance) {

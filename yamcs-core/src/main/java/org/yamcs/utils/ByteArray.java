@@ -73,7 +73,7 @@ public class ByteArray {
 
     public void addShort(short x) {
         ensureCapacity(length + 2);
-        ByteArrayUtils.encodeShort(x, a, length);
+        ByteArrayUtils.encodeUnsignedShort(x, a, length);
         length += 2;
     }
 
@@ -134,7 +134,7 @@ public class ByteArray {
         length += 2;
         addUTF(v);
 
-        ByteArrayUtils.encodeShort(length - pos - 2, a, pos);
+        ByteArrayUtils.encodeUnsignedShort(length - pos - 2, a, pos);
     }
 
     /**
@@ -195,6 +195,7 @@ public class ByteArray {
         rangeCheck(pos + 4);
         ByteArrayUtils.encodeInt(x, a, pos);
     }
+
     public byte get() {
         rangeCheck(position + 1);
         return a[position++];

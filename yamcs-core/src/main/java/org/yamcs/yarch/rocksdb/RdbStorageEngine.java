@@ -10,11 +10,11 @@ import java.util.Map;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.yamcs.YamcsServer;
-import org.yamcs.archive.TagDb;
 import org.yamcs.logging.Log;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.BucketDatabase;
+import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.HistogramIterator;
 import org.yamcs.yarch.ProtobufDatabase;
 import org.yamcs.yarch.Sequence;
@@ -37,7 +37,6 @@ import org.yamcs.yarch.YarchException;
  */
 public class RdbStorageEngine implements StorageEngine {
     Map<String, Tablespace> tablespaces = new HashMap<>();
-    Map<String, RdbTagDb> tagDbs = new HashMap<>();
     Map<String, RdbBucketDatabase> bucketDbs = new HashMap<>();
     Map<String, RdbProtobufDatabase> protobufDbs = new HashMap<>();
 
@@ -49,7 +48,6 @@ public class RdbStorageEngine implements StorageEngine {
         RocksDB.loadLibrary();
     }
     static Log log = new Log(RdbStorageEngine.class);
-    RdbTagDb rdbTagDb = null;
     boolean ignoreVersionIncompatibility = false;
     static RdbStorageEngine instance = new RdbStorageEngine();
 
@@ -101,11 +99,11 @@ public class RdbStorageEngine implements StorageEngine {
     }
 
     @Override
-    public TableWalker newTableWalker(YarchDatabaseInstance ydb, TableDefinition tbl,
+    public TableWalker newTableWalker(ExecutionContext ctx, TableDefinition tbl,
             boolean ascending, boolean follow) {
-        Tablespace tblsp = getTablespace(ydb, tbl);
+        Tablespace tblsp = getTablespace(ctx.getDb(), tbl);
 
-        return tblsp.newTableWalker(ydb, tbl, ascending, follow);
+        return tblsp.newTableWalker(ctx, tbl, ascending, follow);
     }
 
     @Override
@@ -127,20 +125,6 @@ public class RdbStorageEngine implements StorageEngine {
     public RdbPartitionManager getPartitionManager(YarchDatabaseInstance ydb, TableDefinition tblDef) {
         Tablespace tblsp = getTablespace(ydb, tblDef);
         return tblsp.getTable(tblDef).getPartitionManager();
-    }
-
-    @Override
-    public synchronized TagDb getTagDb(YarchDatabaseInstance ydb) throws YarchException {
-        RdbTagDb rdbTagDb = tagDbs.get(ydb.getName());
-        if (rdbTagDb == null) {
-            try {
-                rdbTagDb = new RdbTagDb(ydb.getName(), getTablespace(ydb));
-                tagDbs.put(ydb.getName(), rdbTagDb);
-            } catch (RocksDBException e) {
-                throw new YarchException("Cannot create tag db", e);
-            }
-        }
-        return rdbTagDb;
     }
 
     /**
@@ -272,16 +256,13 @@ public class RdbStorageEngine implements StorageEngine {
         tablespace.close();
     }
 
-    public void closeTagDb(String instanceName) {
-        tagDbs.remove(instanceName);
-    }
-
     public synchronized void shutdown() {
         for (Tablespace t : tablespaces.values()) {
             t.close();
         }
         tablespaces.clear();
         bucketDbs.clear();
+        protobufDbs.clear();
     }
 
     @Override
@@ -290,6 +271,16 @@ public class RdbStorageEngine implements StorageEngine {
         try {
             return tablespace.loadTables(ydb.getYamcsInstance());
         } catch (RocksDBException | IOException e) {
+            throw new YarchException(e);
+        }
+    }
+
+    @Override
+    public void renameTable(YarchDatabaseInstance ydb, TableDefinition tblDef, String newName) {
+        Tablespace tablespace = getTablespace(ydb);
+        try {
+            tablespace.renameTable(ydb.getYamcsInstance(), tblDef, newName);
+        } catch (RocksDBException e) {
             throw new YarchException(e);
         }
     }
@@ -351,4 +342,5 @@ public class RdbStorageEngine implements StorageEngine {
     static final int tbsIndex(byte[] dbKey) {
         return ByteArrayUtils.decodeInt(dbKey, 0);
     }
+
 }

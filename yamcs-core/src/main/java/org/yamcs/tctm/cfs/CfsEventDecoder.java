@@ -1,7 +1,7 @@
 package org.yamcs.tctm.cfs;
 
-import static org.yamcs.StandardTupleDefinitions.TM_RECTIME_COLUMN;
 import static org.yamcs.StandardTupleDefinitions.GENTIME_COLUMN;
+import static org.yamcs.StandardTupleDefinitions.TM_RECTIME_COLUMN;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -24,8 +24,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
-import org.yamcs.yarch.protobuf.Db.Event;
-import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
+import org.yamcs.protobuf.Event.EventSeverity;
 import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ByteArrayUtils;
@@ -34,6 +33,7 @@ import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.protobuf.Db.Event;
 
 /**
  * Generate Yamcs events out of cFS event packets
@@ -65,7 +65,7 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
         spec.addOption("charset", OptionType.STRING);
         spec.addOption("appNameMax", OptionType.INTEGER).withDefault(20);
         spec.addOption("eventMsgMax", OptionType.INTEGER).withDefault(122);
-        
+
         return spec;
     }
 

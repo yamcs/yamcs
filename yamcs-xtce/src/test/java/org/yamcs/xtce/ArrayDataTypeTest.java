@@ -1,8 +1,9 @@
 package org.yamcs.xtce;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ArrayDataTypeTest {
     IntegerParameterType uint32 = new IntegerParameterType.Builder().setSizeInBits(31).build();
@@ -11,17 +12,17 @@ public class ArrayDataTypeTest {
             .setElementType(uint32)
             .build();
 
-    int[][] arr = { { 1, 2 }, { 3, 4, 5 } };
-
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void test1() {
-        type2d.convertType("[1, 2,3]");
+        assertThrows(IllegalArgumentException.class, () -> {
+            type2d.convertType("[1, 2,3]");
+        });
     }
 
     @Test
     public void test2() {
         Object[] o = (Object[]) type2d.convertType("[[1, 2], [3, 4]]");
-        long[][] arr = { { 1, 2 }, { 3, 4 } };
+        Long[][] arr = { { 1L, 2L }, { 3L, 4L } };
         assertArrayEquals(arr, o);
     }
 }

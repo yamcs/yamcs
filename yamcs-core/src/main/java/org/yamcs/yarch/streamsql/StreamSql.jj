@@ -168,6 +168,7 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_RANGE:"RANGE">
 |   <K_READ:"READ">
 |   <K_REAL:"REAL">
+|   <K_RENAME:"RENAME">
 |   <K_RESTART:"RESTART">
 |   <K_REVERSE:"REVERSE">
 |   <K_ROW:"ROW">
@@ -181,8 +182,6 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_SHRT:"SHORT">
 |   <K_SMALLINT:"SMALLINT">
 |   <K_SEQUENCES:"SEQUENCES">
-|   <K_SPEED:"SPEED">
-|   <K_STEP_BY_STEP:"STEP_BY_STEP">
 |   <K_STREAM:"STREAM">
 |   <K_STREAMS:"STREAMS">
 |   <K_STRING:"STRING">
@@ -192,6 +191,7 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_TABLESPACE:"TABLESPACE">
 |   <K_TIME:"TIME">
 |   <K_TIME_AND_VALUE:"TIME_AND_VALUE">
+|   <K_TO:"TO">
 |   <K_TUPLES:"TUPLES">
 |   <K_UNIQUE:"UNIQUE">
 |   <K_UPDATE:"UPDATE">
@@ -200,6 +200,7 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_USE:"USE">
 |   <K_USING:"USING">
 |   <K_VALUE:"VALUE">
+|   <K_VALUES:"VALUES">
 |   <K_WHEN:"WHEN">
 |   <K_WHERE:"WHERE">
 |   <K_WITH:"WITH">
@@ -287,17 +288,9 @@ StreamSqlStatement StreamSqlStatement() throws StreamSqlException: {StreamSqlSta
     |
     statement=InsertStatement()
     |
-    statement=InsertAppendStatement()
-    |
     statement=SelectTableStatement()
     |
     statement=UpdateTableStatement()
-    |
-    statement=UpsertStatement()
-    |
-    statement=UpsertAppendStatement()
-    |
-    statement=LoadStatement()
     |
     statement=CloseStreamStatement()
     |
@@ -318,6 +311,8 @@ StreamSqlStatement StreamSqlStatement() throws StreamSqlException: {StreamSqlSta
     LOOKAHEAD(2) statement=ShowSequencesStatement()
     |
     LOOKAHEAD(2) statement=AlterSequenceStatement()
+    |
+    LOOKAHEAD(2) statement=AlterTableStatement()
     )
     {
 	return statement;
@@ -410,28 +405,22 @@ PartitioningSpec PartitioningSpec() throws StreamSqlException: {
     }
 }
 
-CreateOutputStreamStatement CreateOutputStreamStatement() throws StreamSqlException: {
-    String name;
-    StreamExpression expression;
-} {
-    "CREATE" "OUTPUT" "STREAM" name=ObjectName() "AS" expression=SpeedLimitStreamExpression()
-    {
-	return new CreateOutputStreamStatement(name,expression);
-    }
-}
-
 CreateStreamStatement CreateStreamStatement() throws StreamSqlException: {
     String name;
     StreamExpression expression;
     TupleDefinition tupleDefinition;
+    boolean follow = true;
 } {
     <K_CREATE> <K_STREAM> name=ObjectName() (
-        <K_AS> expression=SpeedLimitStreamExpression() 
-        { 
-            return new CreateStreamStatement(name,expression); 
+      <K_AS>  expression=StreamExpression() [<K_NOFOLLOW> {follow=false;}]
+       { 
+        	if(expression instanceof SelectExpression) {
+        		((SelectExpression) expression).setFollow(follow);
+    		}
+            return new CreateStreamStatement(name, expression); 
         }
-   |
-        tupleDefinition=TupleDefinition()
+     |
+         tupleDefinition=TupleDefinition()
         {
             return new CreateStreamStatement(name,tupleDefinition);
         }
@@ -447,22 +436,6 @@ SelectTableStatement SelectTableStatement() throws StreamSqlException: {
         return new SelectTableStatement(expression); 
     }
 }
-
-SpeedLimitStreamExpression SpeedLimitStreamExpression() throws StreamSqlException: {
-    StreamExpression expression;
-    SpeedSpec speedSpec=null;
-    boolean follow=true; 
-} {
-    expression=StreamExpression() [<K_SPEED> {speedSpec=SpeedSpec();}] [<K_NOFOLLOW> {follow=false;}]
-    {
-    if(expression instanceof SelectExpression) {
-        ((SelectExpression) expression).setFollow(follow);
-    }
-	return new SpeedLimitStreamExpression(expression,speedSpec);
-    }
-	
-}
-
 
 CloseStreamStatement CloseStreamStatement() throws StreamSqlException: {
     String name;
@@ -552,6 +525,15 @@ AlterSequenceStatement AlterSequenceStatement() throws StreamSqlException: {
     }
 }
 
+AlterTableStatement AlterTableStatement() throws StreamSqlException: {
+    String name, newName;
+} {
+    <K_ALTER>  <K_TABLE> name=ObjectName() <K_RENAME> <K_TO> newName=ObjectName()
+    {
+	return new AlterTableStatement(name, newName);
+    }
+}
+
 StreamExpression StreamExpression() throws StreamSqlException:  {
     StreamExpression expression;
 } {
@@ -564,81 +546,53 @@ StreamExpression StreamExpression() throws StreamSqlException:  {
     }
 }
 
-
-
 void IntoClause() throws StreamSqlException:{
 } {
     "INTO" ObjectName()
 }
 
-
-void ColumnValues() throws StreamSqlException: {
-} {
-    ColumnValue() ("," ColumnValue())*
-  | "(" ObjectName() ("," ObjectName())* ")" "=" "(" SelectExpression() ")"
-}
-
-void ColumnValue() throws StreamSqlException: {
-} {
-    ObjectName() "=" Expression()
-}
-
 InsertStatement InsertStatement() throws StreamSqlException: {
     String name;
     StreamExpression expression;
+    List<String> columns = new ArrayList();
+    List<SelectItem> selectList;
+    String cn;
+    InsertMode insertMode;
 } {
-    "INSERT" "INTO" name=ObjectName() expression=StreamExpression()
-    {
-       return new InsertStatement(name, expression, InsertMode.INSERT);
-    }
+    (
+       <K_INSERT> {insertMode = InsertMode.INSERT;}
+       |
+       <K_UPSERT> {insertMode = InsertMode.UPSERT;}
+       |
+       <K_INSERT_APPEND> {insertMode = InsertMode.INSERT_APPEND;}
+       |
+       <K_UPSERT_APPEND> {insertMode = InsertMode.UPSERT_APPEND;}
+       |
+       <K_LOAD> {insertMode = InsertMode.LOAD;}
+    )
+    <K_INTO> name=ObjectName()
+    (
+         expression=StreamExpression()
+         {
+             return new InsertStatement(name, expression, insertMode);
+         }
+      |
+         "(" cn=ObjectName() {columns.add(cn);} ("," cn=ObjectName(){columns.add(cn);})* ")"
+         <K_VALUES>
+         "(" selectList = SelectList() ")"
+         {
+            return new InsertStatement(name, new InsertValuesExpression(columns, selectList), InsertMode.INSERT);
+         }
+    )
 }
-
-InsertStatement UpsertStatement() throws StreamSqlException: {
-    String name;
-    StreamExpression expression;
-} {
-    <K_UPSERT> "INTO" name=ObjectName() expression=StreamExpression()
-    {
-       return new InsertStatement(name, expression, InsertMode.UPSERT);
-    }
-}
-
-InsertStatement InsertAppendStatement() throws StreamSqlException: {
-    String name;
-    StreamExpression expression;
-} {
-    "INSERT_APPEND" "INTO" name=ObjectName() expression=StreamExpression()
-    {
-       return new InsertStatement(name, expression, InsertMode.INSERT_APPEND);
-    }
-}
-
-InsertStatement UpsertAppendStatement() throws StreamSqlException: {
-    String name;
-    StreamExpression expression;
-} {
-    "UPSERT_APPEND" "INTO" name=ObjectName() expression=StreamExpression()
-    {
-       return new InsertStatement(name, expression, InsertMode.UPSERT_APPEND);
-    }
-}
-
-InsertStatement LoadStatement() throws StreamSqlException: {
-    String name;
-    StreamExpression expression;
-} {
-    "LOAD" "INTO" name=ObjectName() expression=StreamExpression()
-    {
-       return new InsertStatement(name, expression, InsertMode.LOAD);
-    }
-}
-
 
 MergeExpression MergeExpression() throws StreamSqlException: {
     MergeExpression mergeExpr=new MergeExpression();
     TupleSourceExpression tsrc;
     String name;
-    boolean ascending=true;
+    boolean ascending = true;
+    BigDecimal offset = null;
+    BigDecimal limit = null;
 } {
     "MERGE" 
        tsrc=TupleSourceExpression() {mergeExpr.addTupleSourceExpression(tsrc);}
@@ -646,7 +600,12 @@ MergeExpression MergeExpression() throws StreamSqlException: {
         tsrc=TupleSourceExpression() {mergeExpr.addTupleSourceExpression(tsrc);}
        )*
     "USING" name=ObjectName() {mergeExpr.setMergeColumn(name);}
-    [ ascending=OrderClause() {mergeExpr.setAscending(ascending);} ] 
+    [ ascending=OrderClause() {mergeExpr.setAscending(ascending);} ]
+    [ 
+        <K_LIMIT>
+        [LOOKAHEAD(2) offset=NumericConstant() "," ]
+        limit=NumericConstant() { mergeExpr.setLimit(offset, limit); }
+    ]
     {
 	return mergeExpr;
     }
@@ -690,17 +649,6 @@ UpdateTableStatement UpdateTableStatement() throws StreamSqlException: {
     {
 	return new UpdateTableStatement(tableName, updateList, whereExpr, limit.longValue());
     }
-}
-
-SpeedSpec SpeedSpec() throws StreamSqlException: {
-  String columnName;
-  BigDecimal bd;
-  float x=1;
-} {
-    "AFAP" {return new SpeedSpec(SpeedSpec.Type.AFAP);}
-  | "FIXED_DELAY" <S_INTEGER> {return new SpeedSpec(SpeedSpec.Type.FIXED_DELAY, Integer.parseInt(token.image));}
-  | "ORIGINAL" columnName=ObjectName() ["," bd=NumericConstant() {x=bd.floatValue();}] {return new SpeedSpec(SpeedSpec.Type.ORIGINAL, columnName, x);}
-  | "STEP_BY_STEP" <S_INTEGER> {return new SpeedSpec(SpeedSpec.Type.STEP_BY_STEP, Integer.parseInt(token.image));}
 }
 
 // Expression and its children
@@ -761,6 +709,7 @@ Expression RelationalExpression() throws StreamSqlException: {
     List<Expression> list;
     LikeClause likeClause;
     InClause inClause;
+    IsNullClause isNullClause;
 } {
     expr = SimpleExpression() {retExpr=expr;}
     ( relOp=RelOp() expr = SimpleExpression() {retExpr=new RelationalExpression(retExpr,expr,relOp);}
@@ -771,7 +720,7 @@ Expression RelationalExpression() throws StreamSqlException: {
       |
       LOOKAHEAD(2) likeClause = LikeClause() { retExpr = new LikeExpression(expr, likeClause);}
       |
-      IsNullClause()
+      isNullClause = IsNullClause() { retExpr = new IsNullExpression(expr, isNullClause);}
    )?
     {
 	return retExpr;
@@ -819,9 +768,13 @@ LikeClause LikeClause() throws StreamSqlException:{
 
 }
 
-void IsNullClause() throws StreamSqlException:{
+IsNullClause IsNullClause() throws StreamSqlException:{
+	IsNullClause isNullClause = new IsNullClause();
 } {
-    "IS" ["NOT"] "NULL"
+    "IS" ["NOT" {isNullClause.setNegation(true);}] "NULL"
+    {
+    return isNullClause;
+    }
 }
 
 

@@ -1,3 +1,12 @@
+.tag-select {
+  display: flex;
+  align-items: center;
+}
+
+.tag-select input {
+  margin-right: 5px;
+}
+
 .tag-icon {
   vertical-align: middle;
   font-size: 12px !important;

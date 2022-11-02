@@ -8,10 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.yamcs.yarch.DataType;
-import org.yamcs.yarch.streamsql.AddOp;
-import org.yamcs.yarch.streamsql.Expression;
 import org.yamcs.utils.parser.ParseException;
-import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 
 public class AdditiveExpression extends Expression {

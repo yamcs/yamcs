@@ -15,8 +15,8 @@ export class AlarmsTable {
     'state',
     'severity',
     'time',
-    'system',
-    'source',
+    'alarm',
+    'type',
     'trip_value',
     'live_value',
     'actions',
@@ -44,7 +44,9 @@ export class AlarmsTable {
   unshelveAlarm = new EventEmitter<Alarm>();
 
   // Used in table trackBy to prevent continuous row recreation
-  tableTrackerFn = (index: number, alarm: Alarm) => alarm.id.name;
+  tableTrackerFn = (index: number, alarm: Alarm) => {
+    return `${alarm.triggerTime}__${alarm.id.namespace}__${alarm.id.name}__${alarm.seqNum}`;
+  };
 
   constructor(readonly yamcs: YamcsService) {
   }

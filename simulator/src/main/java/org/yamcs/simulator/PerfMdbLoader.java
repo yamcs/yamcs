@@ -6,8 +6,9 @@ import java.io.RandomAccessFile;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.mdb.DatabaseLoadException;
+import org.yamcs.mdb.SpaceSystemLoader;
 import org.yamcs.xtce.Comparison;
-import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.OperatorType;
@@ -21,7 +22,6 @@ import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.SpaceSystem;
-import org.yamcs.xtce.SpaceSystemLoader;
 
 /**
  * Generates a MDB used for performance testing.

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { MessageService } from '../../core/services/MessageService';
@@ -12,11 +12,11 @@ import { defaultProperties } from './ItemBandStyles';
 })
 export class CreateItemBandPage {
 
-  form: FormGroup;
+  form: UntypedFormGroup;
 
   constructor(
     title: Title,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     readonly yamcs: YamcsService,
     private messageService: MessageService,
     private router: Router,

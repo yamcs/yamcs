@@ -5,11 +5,7 @@ import org.yamcs.yarch.CompiledAggregateExpression;
 import org.yamcs.yarch.CompiledExpression;
 import org.yamcs.yarch.FieldReturnCompiledExpression;
 import org.yamcs.yarch.TupleDefinition;
-
-import org.yamcs.yarch.streamsql.Expression;
-import org.yamcs.yarch.streamsql.GenericStreamSqlException;
 import org.yamcs.utils.parser.ParseException;
-import org.yamcs.yarch.streamsql.StreamSqlException;
 
 /**
  * Expressions containing aggregates are computed in two phases:

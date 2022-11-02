@@ -1,29 +1,15 @@
-.step {
-  margin-right: 8px;
-}
-
-.step.mat-icon {
-  font-size: 14px !important;
-  vertical-align: middle;
-}
-
-.command-text {
-  font-size: 10px;
-  line-height: 12px;
-  font-family: 'Roboto Mono', monospace;
-}
-
 .command-text .args {
   margin: 0;
   margin-left: 10px;
 }
 
 .command-text .args .key {
-  min-width: 120px;
+  min-width: 80px;
   white-space: nowrap;
+  vertical-align: top;
 }
 
 .command-text .args .value {
-  color: #0055aa;
+  color: grey;
   padding-left: 10px;
 }

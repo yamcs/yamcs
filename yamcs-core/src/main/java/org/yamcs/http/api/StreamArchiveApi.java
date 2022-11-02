@@ -20,6 +20,7 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.MediaType;
 import org.yamcs.http.api.Downsampler.Sample;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.protobuf.AbstractStreamArchiveApi;
@@ -34,6 +35,7 @@ import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.utils.ParameterFormatter;
@@ -43,7 +45,6 @@ import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
@@ -147,7 +148,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         if (request.hasStop()) {
             stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
         }
-        ReplayOptions repl = ReplayOptions.getAfapReplay(start, stop);
+        ReplayOptions repl = ReplayOptions.getAfapReplay(start, stop, false);
         NamedObjectId id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
         repl.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(id).build());
 
@@ -191,10 +192,10 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         if (request.hasStart()) {
-            repl.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
+            repl.setRangeStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
         }
         if (request.hasStop()) {
-            repl.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
+            repl.setRangeStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
 
         for (NamedObjectId id : request.getIdsList()) {
@@ -214,6 +215,10 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             }
         }
         repl.setParameterRequest(ParameterReplayRequest.newBuilder().addAllNameFilter(ids).build());
+
+        if (request.getTmLinksCount() > 0) {
+            repl.setPacketRequest(PacketReplayRequest.newBuilder().addAllTmLinks(request.getTmLinksList()).build());
+        }
 
         ParameterReplayListener replayListener = new ParameterReplayListener() {
 
@@ -253,10 +258,10 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         String namespace = null;
 
         if (request.hasStart()) {
-            repl.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
+            repl.setRangeStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
         }
         if (request.hasStop()) {
-            repl.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
+            repl.setRangeStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
         for (String id : request.getParametersList()) {
             ParameterWithId paramWithId = MdbApi.verifyParameterWithId(ctx, mdb, id);
@@ -328,21 +333,23 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
     private static ReplayOptions toParameterReplayRequest(NamedObjectId parameterId, long start, long stop,
             boolean descend) {
 
-        ReplayOptions repl = ReplayOptions.getAfapReplay(start, stop);
-        repl.setReverse(descend);
+        ReplayOptions repl = ReplayOptions.getAfapReplay(start, stop, descend);
         repl.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(parameterId).build());
         return repl;
     }
 
     public static TimeSeries.Sample toGPBSample(Sample sample) {
         TimeSeries.Sample.Builder b = TimeSeries.Sample.newBuilder();
-        b.setTime(TimeEncoding.toString(sample.t));
+        b.setTimeString(TimeEncoding.toString(sample.t));
+        b.setTime(TimeEncoding.toProtobufTimestamp(sample.t));
         b.setN(sample.n);
 
         if (sample.n > 0) {
             b.setAvg(sample.avg);
             b.setMin(sample.min);
             b.setMax(sample.max);
+            b.setMinTime(TimeEncoding.toProtobufTimestamp(sample.minTime));
+            b.setMaxTime(TimeEncoding.toProtobufTimestamp(sample.maxTime));
         }
 
         return b.build();

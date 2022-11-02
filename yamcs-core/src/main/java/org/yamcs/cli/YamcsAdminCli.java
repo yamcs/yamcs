@@ -10,6 +10,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.logging.Log;
 import org.yamcs.yarch.YarchDatabase;
 
+import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.converters.PathConverter;
@@ -28,7 +29,6 @@ public class YamcsAdminCli extends Command {
         addSubCommand(new BackupCli(this));
         addSubCommand(new CheckConfig(this));
         addSubCommand(new MdbCli(this));
-        addSubCommand(new ParameterArchiveCli(this));
         addSubCommand(new PasswordHashCli(this));
         addSubCommand(new RocksDbCli(this));
         addSubCommand(new UsersCli(this));
@@ -39,6 +39,9 @@ public class YamcsAdminCli extends Command {
 
     @Parameter(names = "--data-dir", description = "Path to data directory", converter = PathConverter.class)
     private Path dataDir;
+
+    @Parameter(names = "--format", description = "Set the format for printing output", converter = OutputFormatConverter.class)
+    OutputFormat format = OutputFormat.DEFAULT;
 
     @Parameter(names = "--log", description = "Level of verbosity")
     private int verbose = 1;
@@ -62,28 +65,29 @@ public class YamcsAdminCli extends Command {
         selectedCommand.validate();
     }
 
+    // Keep public, required by JCommander
+    public static class OutputFormatConverter implements IStringConverter<OutputFormat> {
+
+        @Override
+        public OutputFormat convert(String value) {
+            try {
+                return OutputFormat.valueOf(value.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new ParameterException(
+                        "Unknown value for --format. Possible values: "
+                                + OutputFormat.joinOptions());
+            }
+        }
+    }
+
     public static void main(String[] args) {
         YamcsAdminCli cli = new YamcsAdminCli();
         cli.parse(args);
 
-        Level logLevel;
-        switch (cli.verbose) {
-        case 0:
-            logLevel = Level.OFF;
-            break;
-        case 1:
-            logLevel = Level.WARNING;
-            break;
-        case 2:
-            logLevel = Level.INFO;
-            break;
-        case 3:
-            logLevel = Level.FINE;
-            break;
-        default:
-            logLevel = Level.ALL;
-            break;
-        }
+        Level[] levels = { Level.OFF, Level.WARNING, Level.INFO, Level.FINE };
+
+        Level logLevel = cli.verbose >= levels.length ? Level.ALL : levels[cli.verbose];
+
         Log.forceStandardStreams(logLevel);
 
         YConfiguration.setResolver(new FileBasedConfigurationResolver(cli.configDirectory));
@@ -94,20 +98,15 @@ public class YamcsAdminCli extends Command {
             cli.execute();
         } catch (ExecutionException e) {
             System.err.println(e.getCause());
-            System.exit(1);
+            exit(1);
         } catch (Exception e) {
             if (cli.debug) {
                 e.printStackTrace();
             } else {
                 System.err.println(e);
             }
-            System.exit(1);
+            exit(1);
         }
-
-        System.exit(0);
-    }
-
-    public Path getConfigDirectory() {
-        return configDirectory;
+        exit(0);
     }
 }

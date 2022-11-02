@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Inject, OnInit, ViewChild } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
 import { debounceTime, map, switchMap } from 'rxjs/operators';
@@ -16,7 +16,7 @@ import { Thickness } from './Thickness';
 })
 export class CompareParameterDialog implements OnInit {
 
-  parameter = new FormControl(null, [Validators.required]);
+  parameter = new UntypedFormControl(null, [Validators.required]);
 
   filteredOptions: Observable<Parameter[]>;
 

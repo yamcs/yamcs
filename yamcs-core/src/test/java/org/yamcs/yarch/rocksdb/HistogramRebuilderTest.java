@@ -1,6 +1,7 @@
 package org.yamcs.yarch.rocksdb;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -8,9 +9,9 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Semaphore;
 
-import org.junit.After;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.utils.parser.ParseException;
@@ -22,10 +23,10 @@ import org.yamcs.yarch.HistogramRecord;
 import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWriter;
+import org.yamcs.yarch.TableWriter.InsertMode;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchTestCase;
 import org.yamcs.yarch.streamsql.StreamSqlException;
-import org.yamcs.yarch.TableWriter.InsertMode;
 
 public class HistogramRebuilderTest extends YarchTestCase {
     String tblName = "HistogramRebuilderTest";
@@ -54,7 +55,7 @@ public class HistogramRebuilderTest extends YarchTestCase {
         tw.close();
     }
 
-    @After
+    @AfterEach
     public void dropTable() throws Exception {
         ydb.execute("drop table " + tblName);
     }
@@ -179,7 +180,7 @@ public class HistogramRebuilderTest extends YarchTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore
+    @Disabled
     public void testConcurrencyDoubleThread() throws Exception {
         int n = 5;
         int m = 2;
@@ -236,5 +237,4 @@ public class HistogramRebuilderTest extends YarchTestCase {
         }
         iter.close();
     }
-
 }

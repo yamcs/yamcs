@@ -1,15 +1,16 @@
 package org.yamcs.tctm.ccsds;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.TcTmException;
 
@@ -38,18 +39,19 @@ public class AosFrameDecoderTest {
         assertTrue(pd.hasIncompletePacket());
 
         assertTrue(pktList.isEmpty());
-
     }
 
-    @Test(expected = TcTmException.class)
-    public void testCorruptedFrame01() throws TcTmException {
-        byte[] data = intToByteArray(AOS_FRAME_01);
-        data[10] = 12; // change a byte to break the crc
+    @Test
+    public void testCorruptedFrame01() {
+        assertThrows(TcTmException.class, () -> {
+            byte[] data = intToByteArray(AOS_FRAME_01);
+            data[10] = 12; // change a byte to break the crc
 
-        AosManagedParameters tmp = getParams();
-        AosFrameDecoder tfd = new AosFrameDecoder(tmp);
+            AosManagedParameters tmp = getParams();
+            AosFrameDecoder tfd = new AosFrameDecoder(tmp);
 
-        tfd.decode(data, 0, data.length);
+            tfd.decode(data, 0, data.length);
+        });
     }
 
     AosManagedParameters getParams() {
@@ -102,6 +104,5 @@ public class AosFrameDecoderTest {
             0x88, 0x88, 0x88, 0x88, 0x88, 0x77, 0x66, 0x77, 0x66, 0x66, 0x77, 0x66, 0x77, 0x66, 0x66, 0x66,
             0x55, 0x55, 0x66, 0x66, 0x66, 0x77, 0x88, 0x88, 0x88, 0x77, 0x88, 0x88, 0x77, 0x77, 0x77, 0x77,
             0x77, 0x66, 0x77, 0x77, 0x77, 0x77, 0x77, 0x88, 0x88, 0x88, 0x88, 0x77, 0x88, 0x77, 0x93, 0xfd
-    };;
-
+    };
 }

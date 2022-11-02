@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -24,7 +24,7 @@ export class ContainersPage implements AfterViewInit {
   @ViewChild(MatPaginator, { static: true })
   paginator: MatPaginator;
 
-  filterControl = new FormControl();
+  filterControl = new UntypedFormControl();
 
   dataSource: ContainersDataSource;
 
@@ -35,6 +35,7 @@ export class ContainersPage implements AfterViewInit {
     { id: 'baseContainer', label: 'Base Container', visible: true },
     { id: 'restrictionCriteria', label: 'Restriction Criteria', visible: true },
     { id: 'shortDescription', label: 'Description' },
+    { id: 'actions', label: '', alwaysVisible: true },
   ];
 
   private selection = new SelectionModel<Container>(false);

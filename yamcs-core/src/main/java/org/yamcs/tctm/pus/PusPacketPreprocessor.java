@@ -1,11 +1,16 @@
 package org.yamcs.tctm.pus;
 
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.tctm.CcsdsPacket;
+import org.yamcs.tctm.CcsdsPacketPreprocessor;
+import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
@@ -74,20 +79,24 @@ import static org.yamcs.tctm.pus.Constants.*;
  * @author nm
  *
  */
-public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
+public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
     // where to look for time in the telemetry
     int pktTimeOffset;
     // the offset of the time inside the PUS time packets
     int timePktTimeOffset;
 
     public PusPacketPreprocessor(String yamcsInstance) {
-        this(yamcsInstance, null);
+        this(yamcsInstance, YConfiguration.emptyConfig());
     }
 
     public PusPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         super(yamcsInstance, config);
         pktTimeOffset = config.getInt("pktTimeOffset", DEFAULT_PKT_TIME_OFFSET);
         timePktTimeOffset = config.getInt("timePktTimeOffset", DEFAULT_TIME_PACKET_TIME_OFFSET);
+        if (timeDecoder == null) {
+            this.timeDecoder = new CucTimeDecoder(-1);
+            this.timeEpoch = TimeEpochs.GPS;
+        }
     }
 
     @Override
@@ -103,12 +112,15 @@ public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
             // if the CRC has failed, do not go further
             return null;
         }
+        int apidseqcount = ByteArrayUtils.decodeInt(packet, 0);
+        int apid = (apidseqcount >> 16) & 0x07FF;
+        int seq = (apidseqcount) & 0x3FFF;
+        checkSequence(apid, seq);
 
         boolean secondaryHeaderFlag = CcsdsPacket.getSecondaryHeaderFlag(packet);
 
         if (!secondaryHeaderFlag) {
             // in PUS only time packets are allowed without secondary header and they should have apid = 0
-            int apid = CcsdsPacket.getAPID(packet);
             if (apid == 0) {
                 processTimePacket(tmPacket);
                 return tmPacket;
@@ -123,7 +135,7 @@ public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
                     + "; minimum required length is 14 bytes.");
             return null;
         }
-        int apidseqcount = ByteArrayUtils.decodeInt(packet, 0);
+
         tmPacket.setSequenceCount(apidseqcount);
 
         setRealtimePacketTime(tmPacket, pktTimeOffset);

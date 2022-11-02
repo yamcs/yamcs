@@ -16,6 +16,8 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.ProcessorData;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.protobuf.AbstractMdbOverrideApi;
 import org.yamcs.protobuf.AlgorithmTextOverride;
 import org.yamcs.protobuf.GetAlgorithmOverridesRequest;
@@ -36,8 +38,6 @@ import org.yamcs.xtce.NumericParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ProcessorData;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.google.protobuf.Empty;
 

@@ -59,8 +59,10 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         ListFileTransferServicesResponse.Builder responseb = ListFileTransferServicesResponse.newBuilder();
         YamcsServerInstance ysi = yamcs.getInstance(instance);
         for (ServiceWithConfig service : ysi.getServicesWithConfig(FileTransferService.class)) {
-            responseb.addServices(
-                    toFileTransferServiceInfo(service.getName(), (FileTransferService) service.getService()));
+            if (service.getService().isRunning()) {
+                responseb.addServices(
+                        toFileTransferServiceInfo(service.getName(), (FileTransferService) service.getService()));
+            }
         }
         observer.complete(responseb.build());
     }

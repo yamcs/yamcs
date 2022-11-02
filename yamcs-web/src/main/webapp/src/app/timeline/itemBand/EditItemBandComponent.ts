@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 import { TimelineBand } from '../../client/types/timeline';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -13,7 +13,7 @@ import { addDefaultItemBandProperties } from './ItemBandStyles';
 export class EditItemBandComponent implements AfterViewInit {
 
   @Input()
-  form: FormGroup;
+  form: UntypedFormGroup;
 
   @Input()
   band: TimelineBand;
@@ -50,10 +50,10 @@ export class EditItemBandComponent implements AfterViewInit {
       spaceBetweenLines: [props.spaceBetweenLines, [Validators.required]],
     };
 
-    const propertiesGroup = this.form.get('properties') as FormGroup;
+    const propertiesGroup = this.form.get('properties') as UntypedFormGroup;
     for (const controlName in propConfig) {
       const config = propConfig[controlName];
-      propertiesGroup.addControl(controlName, new FormControl(config[0], config[1]));
+      propertiesGroup.addControl(controlName, new UntypedFormControl(config[0], config[1]));
     }
 
     this.formConfigured$.next(true);

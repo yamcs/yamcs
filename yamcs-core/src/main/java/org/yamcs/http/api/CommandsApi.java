@@ -36,6 +36,7 @@ import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.MediaType;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.protobuf.AbstractCommandsApi;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
@@ -52,7 +53,6 @@ import org.yamcs.protobuf.SubscribeCommandsRequest;
 import org.yamcs.protobuf.UpdateCommandHistoryRequest;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
-import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Argument;
@@ -61,7 +61,7 @@ import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
+import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -145,7 +145,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
 
             if (request.hasDisableTransmissionConstraints()) {
                 ctx.checkSystemPrivilege(SystemPrivilege.CommandOptions);
-                preparedCommand.disableTransmissionContraints(request.getDisableTransmissionConstraints());
+                preparedCommand.disableTransmissionConstraints(request.getDisableTransmissionConstraints());
             } else if (request.getVerifierConfigCount() > 0) {
                 ctx.checkSystemPrivilege(SystemPrivilege.CommandOptions);
                 List<String> invalidVerifiers = new ArrayList<>();
@@ -203,7 +203,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
             if (ctx.user.getClearance() == null) {
                 throw new ForbiddenException("Not cleared for commanding");
             }
-            Levels clearance = Levels.valueOf(ctx.user.getClearance().getLevel().toLowerCase());
+            Levels clearance = Levels.valueOf(ctx.user.getClearance().getLevel().toUpperCase());
             Levels level = null;
             if (preparedCommand.getMetaCommand().getEffectiveDefaultSignificance() != null) {
                 level = preparedCommand.getMetaCommand().getEffectiveDefaultSignificance().getConsequenceLevel();
@@ -232,10 +232,14 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                 .setUsername(preparedCommand.getUsername())
                 .addAllAssignments(preparedCommand.getAssignments());
 
+        byte[] unprocessedBinary = preparedCommand.getUnprocessedBinary();
+        if (unprocessedBinary != null) {
+            responseb.setUnprocessedBinary(ByteString.copyFrom(unprocessedBinary));
+        }
+
         byte[] binary = preparedCommand.getBinary();
         if (binary != null) {
-            responseb.setBinary(ByteString.copyFrom(binary))
-                    .setHex(StringConverter.arrayToHexString(binary));
+            responseb.setBinary(ByteString.copyFrom(binary));
         }
 
         if (queue != null) {
@@ -310,7 +314,9 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
         if (request.hasStop()) {
             sqlb.whereColBefore("gentime", request.getStop());
         }
-
+        if (request.hasQueue()) {
+            sqlb.where("queue = ?", request.getQueue());
+        }
         if (request.hasQ()) {
             sqlb.where("cmdName like ?", "%" + request.getQ() + "%");
         }
@@ -383,7 +389,6 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                 .where("gentime = ?", gentime)
                 .where("seqNum = ?", seqNum)
                 .where("origin = ?", origin);
-
         List<CommandHistoryEntry> commands = new ArrayList<>();
         StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
 
@@ -492,6 +497,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                             .setSequenceNumber(pc.getSequenceNumber())
                             .setCommandId(pc.getCommandId())
                             .setGenerationTime(TimeEncoding.toProtobufTimestamp(pc.getCommandId().getGenerationTime()))
+                            .addAllAssignments(pc.getAssignments())
                             .addAllAttr(pc.getAttributes())
                             .build();
                     observer.next(entry);

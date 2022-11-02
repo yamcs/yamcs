@@ -1,17 +1,15 @@
 package org.yamcs.tctm;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.utils.StringConverter;
-
 
 public class Iso16CrcCalculatorTest {
     Iso16CrcCalculator crcCalculator = new Iso16CrcCalculator();
 
     @Test
     public void test1() {
-
         byte[] b1 = StringConverter.hexStringToArray("0000");
         assertEquals(0xFFFF, crcCalculator.compute(b1, 0, b1.length));
 
@@ -21,7 +19,6 @@ public class Iso16CrcCalculatorTest {
 
     @Test
     public void test2() {
-
         byte[] b1 = StringConverter.hexStringToArray("FFFF");
         assertEquals(0xFFFF, crcCalculator.compute(b1, 0, b1.length));
 

@@ -96,7 +96,7 @@ public class JwtHelper {
         }
 
         try {
-            return new JsonParser().parse(new String(decodedClaims, StandardCharsets.UTF_8)).getAsJsonObject();
+            return JsonParser.parseString(new String(decodedClaims, StandardCharsets.UTF_8)).getAsJsonObject();
         } catch (JsonSyntaxException e) {
             throw new JwtDecodeException("Could not decode JWT Payload as JSON");
         } catch (IllegalStateException e) {
@@ -129,7 +129,7 @@ public class JwtHelper {
         }
 
         try {
-            return new JsonParser().parse(new String(decodedClaims, StandardCharsets.UTF_8)).getAsJsonObject();
+            return JsonParser.parseString(new String(decodedClaims, StandardCharsets.UTF_8)).getAsJsonObject();
         } catch (JsonSyntaxException e) {
             throw new JwtDecodeException("Could not decode JWT Payload as JSON");
         } catch (IllegalStateException e) {

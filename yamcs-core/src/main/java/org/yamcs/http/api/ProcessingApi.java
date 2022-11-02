@@ -4,18 +4,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.yamcs.ConnectedClient;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.Processor;
@@ -30,11 +27,11 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpException;
-import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;
@@ -70,6 +67,7 @@ import org.yamcs.protobuf.SubscribeParametersData;
 import org.yamcs.protobuf.SubscribeParametersRequest;
 import org.yamcs.protobuf.SubscribeProcessorsRequest;
 import org.yamcs.protobuf.SubscribeTMStatisticsRequest;
+import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
@@ -82,7 +80,6 @@ import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.google.protobuf.Empty;
 
@@ -129,8 +126,8 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlProcessor);
 
         Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
-        if (!processor.isReplay()) {
-            throw new BadRequestException("Cannot delete a non-replay processor");
+        if (processor.isProtected()) {
+            throw new BadRequestException("Cannot delete a protected processor");
         }
 
         processor.quit();
@@ -158,15 +155,12 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         if (request.hasPersistent()) {
             reqb.setPersistent(request.getPersistent());
         }
-        Set<Integer> clientIds = new HashSet<>(request.getClientIdList());
-        // this will remove any invalid clientIds from the set
-        verifyPermissions(reqb.getPersistent(), processorType, clientIds, ctx.user);
+        verifyPermissions(reqb.getPersistent(), processorType, ctx.user);
 
         if (request.hasConfig()) {
             reqb.setConfig(request.getConfig());
         }
 
-        reqb.addAllClientId(clientIds);
         ManagementService mservice = ManagementService.getInstance();
         try {
             mservice.createProcessor(reqb.build(), ctx.user.getName());
@@ -196,6 +190,16 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             default:
                 throw new BadRequestException("Invalid processor state '" + request.getState() + "'");
             }
+        }
+
+        if (request.hasStart() && request.hasStop()) {
+            long start = TimeEncoding.fromProtobufTimestamp(request.getStart());
+            long stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
+            processor.changeRange(start, stop);
+        }
+
+        if (request.hasLoop()) {
+            processor.changeEndAction(request.getLoop() ? EndAction.LOOP : EndAction.STOP);
         }
 
         if (request.hasSeek()) {
@@ -249,16 +253,23 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         boolean fromCache = request.hasFromCache() ? request.getFromCache() : true;
 
         List<NamedObjectId> ids = Arrays.asList(id);
-        List<ParameterValue> pvals = doGetParameterValues(processor, ctx.user, ids, fromCache, timeout);
+        CompletableFuture<List<ParameterValue>> cf = doGetParameterValues(processor, ctx.user, ids, fromCache, timeout);
 
-        ParameterValue pval;
-        if (pvals.isEmpty()) {
-            pval = ParameterValue.newBuilder().setId(id).build();
-        } else {
-            pval = pvals.get(0);
-        }
+        cf.handle((pvals, t) -> {
+            if (t != null) {
+                observer.completeExceptionally(t.getCause());
+            } else {
+                ParameterValue pval;
+                if (pvals.isEmpty()) {
+                    pval = ParameterValue.newBuilder().setId(id).build();
+                } else {
+                    pval = pvals.get(0);
+                }
+                observer.complete(pval);
+            }
+            return null;
+        });
 
-        observer.complete(pval);
     }
 
     @Override
@@ -280,6 +291,10 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             pv = new PartialParameterValue(p, pid.getPath());
         }
         pv.setEngValue(v);
+        if (request.hasGenerationTime()) {
+            pv.setGenerationTime(TimeEncoding
+                    .fromProtobufTimestamp(request.getGenerationTime()));
+        }
         try {
             mgr.updateParameters(Arrays.asList(pv));
         } catch (IllegalArgumentException e) {
@@ -351,11 +366,19 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         boolean fromCache = request.hasFromCache() ? request.getFromCache() : true;
 
         List<NamedObjectId> ids = request.getIdList();
-        List<ParameterValue> pvals = doGetParameterValues(processor, ctx.user, ids, fromCache, timeout);
+        CompletableFuture<List<ParameterValue>> cf = doGetParameterValues(processor, ctx.user, ids, fromCache,
+                timeout);
 
-        BatchGetParameterValuesResponse.Builder responseb = BatchGetParameterValuesResponse.newBuilder();
-        responseb.addAllValue(pvals);
-        observer.complete(responseb.build());
+        cf.handle((pvals, t) -> {
+            if (t != null) {
+                observer.completeExceptionally(t.getCause());
+            } else {
+                BatchGetParameterValuesResponse.Builder responseb = BatchGetParameterValuesResponse.newBuilder();
+                responseb.addAllValue(pvals);
+                observer.complete(responseb.build());
+            }
+            return null;
+        });
     }
 
     @Override
@@ -386,6 +409,10 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
                 pv = new PartialParameterValue(p, pid.getPath());
             }
             pv.setEngValue(ValueUtility.fromGpb(r.getValue()));
+            if (r.hasGenerationTime()) {
+                pv.setGenerationTime(TimeEncoding
+                        .fromProtobufTimestamp(r.getGenerationTime()));
+            }
             List<org.yamcs.parameter.ParameterValue> l = pvmap.computeIfAbsent(p.getDataSource(),
                     k -> new ArrayList<>());
             l.add(pv);
@@ -490,58 +517,81 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         }
     }
 
-    private List<ParameterValue> doGetParameterValues(Processor processor, User user, List<NamedObjectId> ids,
+    private CompletableFuture<List<ParameterValue>> doGetParameterValues(Processor processor, User user,
+            List<NamedObjectId> ids,
             boolean fromCache, long timeout) throws HttpException {
-        if (timeout > 60000) {
-            throw new BadRequestException("Invalid timeout specified. Maximum is 60.000 milliseconds");
-        }
-
-        ParameterRequestManager prm = processor.getParameterRequestManager();
-        MyConsumer myConsumer = new MyConsumer();
-        ParameterWithIdRequestHelper pwirh = new ParameterWithIdRequestHelper(prm, myConsumer);
-        List<ParameterValue> pvals = new ArrayList<>();
         try {
             if (fromCache) {
-                List<ParameterValueWithId> l;
-                l = pwirh.getValuesFromCache(ids, user);
-                for (ParameterValueWithId pvwi : l) {
-                    pvals.add(pvwi.toGbpParameterValue());
-                }
+                return doGetParameterValuesFromCache(processor, user, ids);
             } else {
-
-                int reqId = pwirh.addRequest(ids, user);
-                long t0 = System.currentTimeMillis();
-                long t1;
-                while (true) {
-                    t1 = System.currentTimeMillis();
-                    long remaining = timeout - (t1 - t0);
-                    List<ParameterValueWithId> l = myConsumer.queue.poll(remaining, TimeUnit.MILLISECONDS);
-                    if (l == null) {
-                        break;
-                    }
-
-                    for (ParameterValueWithId pvwi : l) {
-                        pvals.add(pvwi.toGbpParameterValue());
-                    }
-                    // TODO: this may not be correct: if we get a parameter multiple times, we stop here before
-                    // receiving all parameters
-                    if (pvals.size() == ids.size()) {
-                        break;
-                    }
-                }
-                pwirh.removeRequest(reqId);
+                return doGetParameterValuesFromRealtime(processor, user, ids, timeout);
             }
         } catch (InvalidIdentification e) {
             // TODO - send the invalid parameters in a parsable form
-            throw new BadRequestException("Invalid parameters: " + e.getInvalidParameters().toString());
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new InternalServerErrorException("Interrupted while waiting for parameters");
+            throw new BadRequestException(
+                    "Invalid parameters: " + e.getInvalidParameters().toString());
         } catch (NoPermissionException e) {
             throw new ForbiddenException(e.getMessage(), e);
         }
+    }
 
-        return pvals;
+    // get the parameters waiting for new values
+    private CompletableFuture<List<ParameterValue>> doGetParameterValuesFromRealtime(Processor processor, User user,
+            List<NamedObjectId> ids, long timeout) throws HttpException, NoPermissionException, InvalidIdentification {
+
+        if (timeout > 60000) {
+            throw new BadRequestException("Invalid timeout specified. Maximum is 60.000 milliseconds");
+        }
+        CompletableFuture<List<ParameterValue>> cf = new CompletableFuture<>();
+
+        ParameterRequestManager prm = processor.getParameterRequestManager();
+
+        // we make the list synchronized because the timeout may expire (and send a partial list to the consumer) at the
+        // same time with some values just coming in and the list expanding.
+        List<ParameterValue> pvals = Collections.synchronizedList(new ArrayList<>());
+
+        ParameterWithIdRequestHelper pwirh = new ParameterWithIdRequestHelper(prm, (subscriptionId, params) -> {
+            if (!cf.isDone()) {
+                for (ParameterValueWithId pvwi : params) {
+                    pvals.add(pvwi.toGbpParameterValue());
+                }
+                // TODO: this may not be correct: if we get a parameter multiple times, we stop here before
+                // receiving all parameters
+                if (pvals.size() == ids.size()) {
+                    cf.complete(pvals);
+                }
+            }
+        });
+
+        int reqId = pwirh.addRequest(ids, user);
+
+        cf.thenApply(pvals1 -> {
+            pwirh.removeRequest(reqId);
+            return pvals1;
+        });
+
+        ScheduledExecutorService exec = YamcsServer.getServer().getThreadPoolExecutor();
+        exec.schedule(() -> cf.complete(pvals), timeout, TimeUnit.MILLISECONDS);
+
+        return cf;
+    }
+
+    private CompletableFuture<List<ParameterValue>> doGetParameterValuesFromCache(Processor processor, User user,
+            List<NamedObjectId> ids) throws NoPermissionException, InvalidIdentification {
+
+        CompletableFuture<List<ParameterValue>> cf = new CompletableFuture<>();
+
+        ParameterRequestManager prm = processor.getParameterRequestManager();
+        List<ParameterValue> pvals = new ArrayList<>();
+        MyConsumer myConsumer = new MyConsumer();
+        ParameterWithIdRequestHelper pwirh = new ParameterWithIdRequestHelper(prm, myConsumer);
+        List<ParameterValueWithId> l;
+        l = pwirh.getValuesFromCache(ids, user);
+        for (ParameterValueWithId pvwi : l) {
+            pvals.add(pvwi.toGbpParameterValue());
+        }
+        cf.complete(pvals);
+        return cf;
     }
 
     private static class MyConsumer implements ParameterWithIdConsumer {
@@ -577,35 +627,13 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         return b.build();
     }
 
-    private void verifyPermissions(boolean persistent, String processorType, Set<Integer> clientIds, User user)
-            throws ForbiddenException {
-        String username = user.getName();
+    private void verifyPermissions(boolean persistent, String processorType, User user) throws ForbiddenException {
         if (!user.hasSystemPrivilege(SystemPrivilege.ControlProcessor)) {
             if (persistent) {
                 throw new ForbiddenException("No permission to create persistent processors");
             }
             if (!"Archive".equals(processorType)) {
                 throw new ForbiddenException("No permission to create processors of type " + processorType);
-            }
-            verifyClientsBelongToUser(username, clientIds);
-        }
-    }
-
-    /**
-     * verifies that clients with ids are all belonging to this username. If not, throw a ForbiddenException If there is
-     * any invalid id (maybe client disconnected), remove it from the set
-     */
-    public static void verifyClientsBelongToUser(String username, Set<Integer> clientIds) throws ForbiddenException {
-        ManagementService mgrsrv = ManagementService.getInstance();
-        for (Iterator<Integer> it = clientIds.iterator(); it.hasNext();) {
-            int id = it.next();
-            ConnectedClient client = mgrsrv.getClient(id);
-            if (client == null) {
-                it.remove();
-            } else {
-                if (!username.equals(client.getUser().getName())) {
-                    throw new ForbiddenException("Not allowed to connect clients other than your own");
-                }
             }
         }
     }

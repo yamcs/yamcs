@@ -7,12 +7,18 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import org.yamcs.InitException;
 import org.yamcs.YamcsServer;
+import org.yamcs.http.AbstractHttpService;
+import org.yamcs.http.HttpServer;
 import org.yamcs.http.UnauthorizedException;
 import org.yamcs.http.auth.JwtHelper.JwtDecodeException;
-import org.yamcs.logging.Log;
 import org.yamcs.security.AuthenticationInfo;
 import org.yamcs.security.CryptoUtils;
+import org.yamcs.security.SecurityStore;
+import org.yamcs.security.SessionExpiredException;
+import org.yamcs.security.SessionManager;
+import org.yamcs.security.UserSession;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -24,18 +30,34 @@ import com.google.common.cache.CacheBuilder;
  * This class maintains a cache from a JWT bearer token to the original authentication info. This allows skipping the
  * login process as long as the bearer is valid.
  */
-public class TokenStore {
-
-    private static final Log log = new Log(TokenStore.class);
+public class TokenStore extends AbstractHttpService {
 
     private final ConcurrentHashMap<String, AuthenticationInfo> accessTokens = new ConcurrentHashMap<>();
     private int cleaningCounter = 0;
 
-    private Map<Hmac, AuthenticationInfo> refreshTokens = new HashMap<>();
+    private Map<Hmac, RefreshState> refreshTokens = new HashMap<>();
 
     private Cache<Hmac, RefreshResult> refreshCache = CacheBuilder.newBuilder()
             .expireAfterWrite(5, TimeUnit.SECONDS)
             .build();
+
+    @Override
+    public void init(HttpServer httpServer) throws InitException {
+    }
+
+    @Override
+    protected void doStart() {
+        notifyStarted();
+    }
+
+    @Override
+    protected void doStop() {
+        accessTokens.clear();
+        refreshTokens.clear();
+        refreshCache.invalidateAll();
+        cleaningCounter = 0;
+        notifyStopped();
+    }
 
     public void registerAccessToken(String accessToken, AuthenticationInfo authenticationInfo) {
         accessTokens.put(accessToken, authenticationInfo);
@@ -82,17 +104,17 @@ public class TokenStore {
 
     public synchronized void forgetUser(String username) {
         refreshTokens.entrySet().removeIf(entry -> {
-            return username.equals(entry.getValue().getUsername());
+            return username.equals(entry.getValue().authenticationInfo.getUsername());
         });
         accessTokens.entrySet().removeIf(entry -> {
             return username.equals(entry.getValue().getUsername());
         });
     }
 
-    public synchronized String generateRefreshToken(AuthenticationInfo authenticationInfo) {
+    public synchronized String generateRefreshToken(AuthenticationInfo authenticationInfo, UserSession session) {
         String refreshToken = UUID.randomUUID().toString();
         Hmac hmac = new Hmac(refreshToken);
-        refreshTokens.put(hmac, authenticationInfo);
+        refreshTokens.put(hmac, new RefreshState(authenticationInfo, session));
         return refreshToken;
     }
 
@@ -107,10 +129,15 @@ public class TokenStore {
      */
     public synchronized RefreshResult verifyRefreshToken(String refreshToken) {
         Hmac hmac = new Hmac(refreshToken);
-        AuthenticationInfo authenticationInfo = refreshTokens.get(hmac);
-        if (authenticationInfo != null) { // Token valid, generate new token (once only)
-            String nextToken = generateRefreshToken(authenticationInfo);
-            RefreshResult result = new RefreshResult(authenticationInfo, nextToken);
+        RefreshState state = refreshTokens.get(hmac);
+        if (state != null) { // Token valid, generate new token (once only)
+            String nextToken = generateRefreshToken(state.authenticationInfo, state.userSession);
+            try {
+                renewSession(state.userSession);
+            } catch (SessionExpiredException e) {
+                throw new UnauthorizedException("Token expired");
+            }
+            RefreshResult result = new RefreshResult(state.authenticationInfo, nextToken);
             refreshCache.put(hmac, result);
             refreshTokens.remove(hmac);
             return result;
@@ -125,10 +152,26 @@ public class TokenStore {
         }
     }
 
+    private void renewSession(UserSession userSession) throws SessionExpiredException {
+        SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
+        SessionManager sessionManager = securityStore.getSessionManager();
+        sessionManager.renewSession(userSession.getId());
+    }
+
     public synchronized void revokeRefreshToken(String refreshToken) {
         Hmac hmac = new Hmac(refreshToken);
         refreshTokens.remove(hmac);
         refreshCache.invalidate(hmac);
+    }
+
+    private static final class RefreshState {
+        final AuthenticationInfo authenticationInfo;
+        final UserSession userSession;
+
+        RefreshState(AuthenticationInfo authenticationInfo, UserSession userSession) {
+            this.authenticationInfo = authenticationInfo;
+            this.userSession = userSession;
+        }
     }
 
     /**
@@ -144,7 +187,7 @@ public class TokenStore {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof Hmac)) {
+            if (!(obj instanceof Hmac)) {
                 return false;
             }
             return Arrays.equals(hmac, ((Hmac) obj).hmac);

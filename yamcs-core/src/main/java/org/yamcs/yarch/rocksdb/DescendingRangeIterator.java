@@ -2,26 +2,19 @@ package org.yamcs.yarch.rocksdb;
 
 import org.rocksdb.RocksIterator;
 import org.yamcs.utils.ByteArrayUtils;
-import org.yamcs.utils.StringConverter;
 import org.yamcs.yarch.DbRange;
 
 /**
  * Wrapper around a rocksdb iterator that only supports prev() and is restricted to a range.
  * <p>
- * If the rangeStart or rangeEnd are specified, any key which starts or it's equal with them is considered as matching.
- * <p>
- * That means they will all be returned when {@code strictStart/End=false}
- * or they will all be skipped if {@code strictStart/End=true}.
- * 
+ * If the rangeStart or rangeEnd are specified, any key which starts or it is equal with them is considered as matching.
  * 
  * @author nm
  *
  */
-public class DescendingRangeIterator implements DbIterator {
-    final RocksIterator iterator;
+public class DescendingRangeIterator extends AbstractDbIterator {
     final byte[] rangeStart;
     final byte[] rangeEnd;
-    boolean valid = false;
     private byte[] curKey;
 
     /**
@@ -32,7 +25,7 @@ public class DescendingRangeIterator implements DbIterator {
      * @param rangeEnd
      */
     public DescendingRangeIterator(RocksIterator it, byte[] rangeStart, byte[] rangeEnd) {
-        this.iterator = it;
+        super(it);
         this.rangeStart = rangeStart;
         this.rangeEnd = rangeEnd;
         init();
@@ -81,15 +74,8 @@ public class DescendingRangeIterator implements DbIterator {
     }
 
     @Override
-    public boolean isValid() {
-        return valid;
-    }
-
-    @Override
     public void prev() {
-        if (!valid) {
-            throw new IllegalStateException("iterator is not valid");
-        }
+        checkValid();
 
         iterator.prev();
         if (iterator.isValid()) {
@@ -113,20 +99,12 @@ public class DescendingRangeIterator implements DbIterator {
     }
 
     public byte[] key() {
-        if (!valid)
-            throw new IllegalStateException("iterator is not valid");
+        checkValid();
         return curKey;
     }
 
     public byte[] value() {
-        if (!valid)
-            throw new IllegalStateException("iterator is not valid");
+        checkValid();
         return iterator.value();
-    }
-
-    @Override
-    public void close() {
-        valid = false;
-        iterator.close();
     }
 }

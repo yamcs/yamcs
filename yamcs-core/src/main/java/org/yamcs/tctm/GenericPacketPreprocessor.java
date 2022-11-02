@@ -4,7 +4,7 @@ import java.nio.ByteOrder;
 
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
-import org.yamcs.tctm.AbstractPacketPreprocessor.TimeEpochs;
+import org.yamcs.time.FixedSizeTimeDecoder;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
 
@@ -27,7 +27,10 @@ import org.yamcs.utils.TimeEncoding;
  * <tr>
  * <td>seqCountOffset</td>
  * <td>Offset in the packet where to read the sequence count from. If negative, do not read the sequence count from
- * within the packet and set it to 0 instead.</td>
+ * within the packet and set it to 0 instead.
+ * <p>
+ * Note: this class does not check for sequence count continuity.
+ * </td>
  * </tr>
  * <tr>
  * <td>errorDetection</td>
@@ -43,10 +46,8 @@ import org.yamcs.utils.TimeEncoding;
  * <td>timeEncoding</td>
  * <td>Can be used to configure the way the timestamp is translated to Yamcs time. See the
  * {@link AbstractPacketPreprocessor} for details. If this option is not specified, the default epoch used is UNIX.
- * See the
  * </table>
  * 
- * @author nm
  *
  */
 public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
@@ -61,7 +62,8 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
         super(yamcsInstance, config);
         timestampOffset = config.getInt("timestampOffset");
         seqCountOffset = config.getInt("seqCountOffset");
-        if (!config.containsKey(CONFIG_KEY_TIME_ENCODING)) {
+        if (timeDecoder == null) {
+            this.timeDecoder = new FixedSizeTimeDecoder(8, 1);
             this.timeEpoch = TimeEpochs.UNIX;
         }
     }
@@ -91,19 +93,10 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
                 corrupted = true;
             }
         }
-        long gentime;
         if (timestampOffset < 0) {
-            gentime = TimeEncoding.getWallclockTime();
+            tmPacket.setGenerationTime(TimeEncoding.getWallclockTime());
         } else {
-            if (packet.length < timestampOffset + 8) {
-                eventProducer.sendWarning(ETYPE_CORRUPTED_PACKET, "Packet too short to extract timestamp");
-                gentime = -1;
-                corrupted = true;
-            } else {
-                long t = byteOrder == ByteOrder.BIG_ENDIAN ? ByteArrayUtils.decodeLong(packet, timestampOffset)
-                        : ByteArrayUtils.decodeLongLE(packet, timestampOffset);
-                gentime = shiftFromEpoch(t);
-            }
+            setRealtimePacketTime(tmPacket, timestampOffset);
         }
 
         int seqCount = 0;
@@ -119,8 +112,11 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
         }
 
         tmPacket.setSequenceCount(seqCount);
-        tmPacket.setGenerationTime(gentime);
         tmPacket.setInvalid(corrupted);
         return tmPacket;
+    }
+
+    protected TimeDecoderType getDefaultDecoderType() {
+        return TimeDecoderType.FIXED;
     }
 }

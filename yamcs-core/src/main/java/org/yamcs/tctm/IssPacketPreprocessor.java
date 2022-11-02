@@ -1,9 +1,6 @@
 package org.yamcs.tctm;
 
 import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
@@ -50,14 +47,11 @@ import org.yamcs.utils.TimeEncoding;
  * @author nm
  *
  */
-public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
-    private Map<Integer, AtomicInteger> seqCounts = new HashMap<>();
-    private boolean checkForSequenceDiscontinuity = true;
+public class IssPacketPreprocessor extends CcsdsPacketPreprocessor {
 
     public IssPacketPreprocessor(String yamcsInstance) {
         this(yamcsInstance, YConfiguration.emptyConfig());
     }
-
 
     public IssPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         super(yamcsInstance, config);
@@ -70,7 +64,7 @@ public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
     @Override
     public TmPacket process(TmPacket tmPacket) {
         byte[] packet = tmPacket.getPacket();
-        
+
         if (packet.length < 16) {
             eventProducer.sendWarning("SHORT_PACKET",
                     "Short packet received, length: " + packet.length + "; minimum required length is 16 bytes.");
@@ -79,8 +73,6 @@ public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
         int apidseqcount = ByteBuffer.wrap(packet).getInt(0);
         int apid = (apidseqcount >> 16) & 0x07FF;
         int seq = (apidseqcount) & 0x3FFF;
-        AtomicInteger ai = seqCounts.computeIfAbsent(apid, k -> new AtomicInteger(-1));
-        int oldseq = ai.getAndSet(seq);
 
         if (log.isTraceEnabled()) {
             log.trace("processing packet apid: {}, seqCount:{}, length: {}", apid, seq, packet.length);
@@ -109,26 +101,13 @@ public class IssPacketPreprocessor extends AbstractPacketPreprocessor {
             }
         }
 
-        if (checkForSequenceDiscontinuity && oldseq != -1 && ((seq - oldseq) & 0x3FFF) != 1) {
-            eventProducer.sendWarning("SEQ_COUNT_JUMP",
-                    "Sequence count jump for apid: " + apid + " old seq: " + oldseq + " newseq: " + seq);
-        }
+        checkSequence(apid, seq);
 
-        
-        long genTime = TimeEncoding.fromGpsCcsdsTime( ByteArrayUtils.decodeInt(packet, 6), packet[10]);
+        long genTime = TimeEncoding.fromGpsCcsdsTime(ByteArrayUtils.decodeInt(packet, 6), packet[10]);
         tmPacket.setGenerationTime(genTime);
         tmPacket.setSequenceCount(apidseqcount);
         tmPacket.setInvalid(corrupted);
         return tmPacket;
-    }
-
-    public boolean checkForSequenceDiscontinuity() {
-        return checkForSequenceDiscontinuity;
-    }
-
-    @Override
-    public void checkForSequenceDiscontinuity(boolean checkForSequenceDiscontinuity) {
-        this.checkForSequenceDiscontinuity = checkForSequenceDiscontinuity;
     }
 
 }

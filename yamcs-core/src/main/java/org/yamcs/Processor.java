@@ -1,7 +1,6 @@
 package org.yamcs;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -18,12 +17,16 @@ import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.CommandingManager;
 import org.yamcs.container.ContainerRequestManager;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.ProcessorData;
+import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.XtceTmProcessor;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterCache;
 import org.yamcs.parameter.ParameterCacheConfig;
 import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.protobuf.ServiceState;
+import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
@@ -32,9 +35,6 @@ import org.yamcs.tctm.ArchiveTmPacketProvider;
 import org.yamcs.tctm.StreamParameterSender;
 import org.yamcs.time.TimeService;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ProcessorData;
-import org.yamcs.xtceproc.XtceDbFactory;
-import org.yamcs.xtceproc.XtceTmProcessor;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
@@ -84,6 +84,7 @@ public class Processor extends AbstractService {
 
     private String creator = "system";
     private boolean persistent = false;
+    private boolean protected_ = false;
 
     final Log log;
     static Set<ProcessorListener> listeners = new CopyOnWriteArraySet<>(); // send notifications for added and removed
@@ -99,8 +100,6 @@ public class Processor extends AbstractService {
     TimeService timeService;
 
     ProcessorData processorData;
-    @GuardedBy("this")
-    HashSet<ConnectedClient> connectedClients = new HashSet<>();
     List<ProcessorServiceWithConfig> serviceList;
     StreamParameterSender streamParameterSender;
     EventAlarmServer eventAlarmServer;
@@ -283,7 +282,7 @@ public class Processor extends AbstractService {
 
             notifyStarted();
         } catch (Exception e) {
-            notifyFailed(e.getCause());
+            notifyFailed(e);
         }
         propagateProcessorStateChange();
     }
@@ -329,13 +328,28 @@ public class Processor extends AbstractService {
     }
 
     public void seek(long instant) {
+        seek(instant, true);
+    }
+
+    public void seek(long instant, boolean autostart) {
         getTmProcessor().resetStatistics();
-        ((ArchiveTmPacketProvider) tmPacketProvider).seek(instant);
+        ((ArchiveTmPacketProvider) tmPacketProvider).seek(instant, autostart);
         propagateProcessorStateChange();
     }
 
     public void changeSpeed(ReplaySpeed speed) {
         ((ArchiveTmPacketProvider) tmPacketProvider).changeSpeed(speed);
+        propagateProcessorStateChange();
+    }
+
+    public void changeRange(long start, long stop) {
+        ((ArchiveTmPacketProvider) tmPacketProvider).changeRange(start, stop);
+        ((ArchiveTmPacketProvider) tmPacketProvider).seek(start, false);
+        propagateProcessorStateChange();
+    }
+
+    public void changeEndAction(EndAction endAction) {
+        ((ArchiveTmPacketProvider) tmPacketProvider).changeEndAction(endAction);
         propagateProcessorStateChange();
     }
 
@@ -370,43 +384,6 @@ public class Processor extends AbstractService {
 
     public void setCreator(String creator) {
         this.creator = creator;
-    }
-
-    public int getConnectedClients() {
-        return connectedClients.size();
-    }
-
-    /**
-     * Increase with one the number of connected clients
-     */
-    public synchronized void connect(ConnectedClient s) throws ProcessorException {
-        log.debug("Processor {} has one more user: {}", name, s);
-        if (quitting) {
-            throw new ProcessorException("This processor has been closed");
-        }
-        connectedClients.add(s);
-    }
-
-    /**
-     * Disconnects a client from this processor. If the processor has no more clients, quit.
-     *
-     */
-    public void disconnect(ConnectedClient s) {
-        if (quitting) {
-            return;
-        }
-        boolean hasToQuit = false;
-        synchronized (this) {
-            if (connectedClients.remove(s)) {
-                log.info("Processor {} has one less user: connectedUsers: {}", name, connectedClients.size());
-                if ((connectedClients.isEmpty()) && (!persistent)) {
-                    hasToQuit = true;
-                }
-            }
-        }
-        if (hasToQuit) {
-            stopAsync();
-        }
     }
 
     /**
@@ -451,11 +428,6 @@ public class Processor extends AbstractService {
         }
         // and now a CLOSED event
         listeners.forEach(l -> l.processorClosed(this));
-        synchronized (this) {
-            for (ConnectedClient s : connectedClients) {
-                s.processorQuit();
-            }
-        }
     }
 
     public static void addProcessorListener(ProcessorListener processorListener) {
@@ -472,6 +444,17 @@ public class Processor extends AbstractService {
 
     public void setPersistent(boolean systemSession) {
         this.persistent = systemSession;
+    }
+
+    /**
+     * Returns if this processor is protected. A protected processor may not be deleted.
+     */
+    public boolean isProtected() {
+        return protected_;
+    }
+
+    public void setProtected(boolean protected_) {
+        this.protected_ = protected_;
     }
 
     public boolean isSynchronous() {
@@ -510,6 +493,10 @@ public class Processor extends AbstractService {
      */
     public ReplayState getReplayState() {
         return ((ArchiveTmPacketProvider) tmPacketProvider).getReplayState();
+    }
+
+    public ReplayRequest getCurrentReplayRequest() {
+        return ((ArchiveTmPacketProvider) tmPacketProvider).getCurrentReplayRequest();
     }
 
     public ServiceState getState() {
@@ -551,7 +538,7 @@ public class Processor extends AbstractService {
     /**
      * Returns the processor time
      * 
-     * for realtime processors it is the mission time or simulation time for replay processors it is the replay time
+     * for realtime processors it is the mission time (could be simulated) for replay processors it is the replay time
      * 
      * @return
      */
@@ -633,7 +620,6 @@ public class Processor extends AbstractService {
 
     @Override
     public String toString() {
-        return "name: " + name + " type: " + type + " connectedClients:" + connectedClients.size();
+        return "name: " + name + " type: " + type;
     }
-
 }

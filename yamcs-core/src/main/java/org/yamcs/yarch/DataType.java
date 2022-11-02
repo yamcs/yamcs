@@ -8,6 +8,7 @@ import java.util.List;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
+import com.google.protobuf.MessageLite;
 
 /**
  * Types supported by yarch. Currently TUPLE and LIST do now work well.
@@ -28,15 +29,15 @@ public class DataType {
 
     public final _type val;
 
-    public static final DataType BYTE = new DataType(_type.BYTE, (byte) 1);
-    public static final DataType SHORT = new DataType(_type.SHORT, (byte) 2);
-    public static final DataType INT = new DataType(_type.INT, (byte) 3);
-    public static final DataType LONG = new DataType(_type.LONG, (byte) 4);
-    public static final DataType DOUBLE = new DataType(_type.DOUBLE, (byte) 5);
-    public static final DataType STRING = new DataType(_type.STRING, (byte) 6);
-    public static final DataType BINARY = new DataType(_type.BINARY, (byte) 7);
+    public static final DataType BYTE = new DataType(_type.BYTE, (byte) 1, true);
+    public static final DataType SHORT = new DataType(_type.SHORT, (byte) 2, true);
+    public static final DataType INT = new DataType(_type.INT, (byte) 3, true);
+    public static final DataType LONG = new DataType(_type.LONG, (byte) 4, true);
+    public static final DataType DOUBLE = new DataType(_type.DOUBLE, (byte) 5, true);
+    public static final DataType STRING = new DataType(_type.STRING, (byte) 6, true);
+    public static final DataType BINARY = new DataType(_type.BINARY, (byte) 7, true);
     public static final DataType BOOLEAN = new DataType(_type.BOOLEAN, (byte) 8);
-    public static final DataType TIMESTAMP = new DataType(_type.TIMESTAMP, (byte) 9);
+    public static final DataType TIMESTAMP = new DataType(_type.TIMESTAMP, (byte) 9, true);
     public static final DataType ENUM = new DataType(_type.ENUM, (byte) 10);
     public static final DataType PARAMETER_VALUE = new DataType(_type.PARAMETER_VALUE, (byte) 11);
 
@@ -44,15 +45,21 @@ public class DataType {
     public static final byte TUPLE_ID = 13;
     public static final byte ARRAY_ID = 14;
 
-    public static final DataType HRES_TIMESTAMP = new DataType(_type.HRES_TIMESTAMP, (byte) 15);
+    public static final DataType HRES_TIMESTAMP = new DataType(_type.HRES_TIMESTAMP, (byte) 15, true);
     public static final DataType UUID = new DataType(_type.UUID, (byte) 16);
 
     // since yamcs 5.3 the it is stored on disk before the column index, see TableDefinition
     private final byte id;
 
-    protected DataType(_type t, byte id) {
+    private final boolean comparable;
+
+    protected DataType(_type t, byte id, boolean comparable) {
         this.val = t;
         this.id = id;
+        this.comparable = comparable;
+    }
+    protected DataType(_type t, byte id) {
+        this(t, id, false);
     }
 
     public static DataType tuple(TupleDefinition td) {
@@ -65,6 +72,10 @@ public class DataType {
 
     public static DataType protobuf(String className) {
         return new ProtobufDataType(className);
+    }
+
+    public static DataType protobuf(Class<? extends MessageLite> clazz) {
+        return new ProtobufDataType(clazz.getName());
     }
 
     /**
@@ -106,16 +117,16 @@ public class DataType {
             return UUID;
         case "PARAMETER_VALUE":
             return PARAMETER_VALUE;
-        }
+        default:
+            if (name.toUpperCase().startsWith("PROTOBUF(")) {
+                return protobuf(name.substring(9, name.length() - 1));
+            }
+            if (name.toUpperCase().startsWith("ARRAY(")) {
+                return array(byName(name.substring(6, name.length() - 1)));
+            }
 
-        if (name.toUpperCase().startsWith("PROTOBUF(")) {
-            return protobuf(name.substring(9, name.length() - 1));
+            throw new IllegalArgumentException("invalid or unsupported DataType '" + name + "'");
         }
-        if (name.toUpperCase().startsWith("ARRAY(")) {
-            return array(byName(name.substring(6, name.length() - 1)));
-        }
-
-        throw new IllegalArgumentException("invalid or unsupported DataType '" + name + "'");
     }
 
     /**
@@ -285,7 +296,7 @@ public class DataType {
     }
 
     /**
-     * Performs casting of v from type1 to type2
+     * Performs casting of v from sourceType to targetType
      * 
      * @param sourceType
      * @param targetType
@@ -317,6 +328,8 @@ public class DataType {
             case STRING:
             case ENUM:
                 return n.toString();
+            default:
+                // throws exception below
             }
         } else if (v instanceof String) {
             String s = (String) v;
@@ -340,9 +353,10 @@ public class DataType {
             case STRING:
             case ENUM:
                 return s;
+            default:
+                // throws exception below
             }
-        }
-        if (v instanceof Instant) {
+        } else if (v instanceof Instant) {
             long n = ((Instant) v).getMillis();
             switch (targetType.val) {
             case BYTE:
@@ -359,6 +373,8 @@ public class DataType {
             case STRING:
             case ENUM:
                 return Long.toString(n);
+            default:
+                // throws exception below
             }
         }
 
@@ -395,17 +411,6 @@ public class DataType {
         }
     }
 
-    public static boolean isComparable(DataType dt) {
-        switch (dt.val) {
-        case HRES_TIMESTAMP:
-        case STRING:
-        case UUID:
-            return true;
-        default:
-            return false;
-        }
-    }
-
     public static boolean compatible(DataType dt1, DataType dt2) {
         if (dt1 == dt2) {
             return true;
@@ -433,5 +438,13 @@ public class DataType {
      */
     public boolean hasEnums() {
         return val == _type.ENUM;
+    }
+
+    /**
+     * 
+     * @return true if two values of this type are comparable (i.e. if they support a natural ordering)
+     */
+    public boolean isComparable() {
+        return comparable;
     }
 }

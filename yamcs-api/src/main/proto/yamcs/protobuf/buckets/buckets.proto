@@ -16,7 +16,7 @@ import "yamcs/api/httpbody.proto";
 //
 // Buckets represent a simple mechanism for storing user objects (binary data
 // chunks such as images, monitoring lists, displays...) together with some
-// metadata. Buckets can be created globally or asociated with an instance.
+// metadata.
 //
 // The metadata is represented by simple (key,value) pairs where both key and
 // value are strings.
@@ -26,7 +26,6 @@ import "yamcs/api/httpbody.proto";
 // user has the required privileges. The user bucket will be created
 // automatically when the user tries to access it.
 //
-// Buckets can be created at global level or at instance level. 
 // The following limitations are implemented in order to prevent disk over
 // consumption and keep the service responsive:
 //
@@ -42,6 +41,13 @@ service BucketsApi {
   rpc ListBuckets(ListBucketsRequest) returns (ListBucketsResponse) {
     option (yamcs.api.route) = {
       get: "/api/buckets/{instance}"
+    };
+  }
+  
+  // Get a bucket
+  rpc GetBucket(GetBucketRequest) returns (BucketInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/buckets/{instance}/{bucketName}"
     };
   }
   
@@ -219,6 +225,20 @@ message BucketInfo {
   
   // Number of objects in the bucket
   optional uint32 numObjects = 3;
+  
+  // Maximum allowed total size of all objects
+  optional uint64 maxSize = 4;
+  
+  // Maximum allowed number of objects
+  optional uint32 maxObjects = 5;
+  
+  // Creation time of this bucket
+  optional google.protobuf.Timestamp created = 6;
+
+  // Bucket root directory. This field is only set when the
+  // bucket is mapped to the file system. Therefore it is not
+  // set for buckets that store objects in RocksDB.
+  optional string directory = 7;
 }
 
 message ObjectInfo {
@@ -237,6 +257,14 @@ message ObjectInfo {
 message ListBucketsRequest {
   // Yamcs instance name. Or _global.
   optional string instance = 1;
+}
+
+message GetBucketRequest {
+  // Yamcs instance name. Or _global.
+  optional string instance = 1;
+
+  // Bucket name.
+  optional string bucketName = 2;
 }
 
 message ListBucketsResponse {

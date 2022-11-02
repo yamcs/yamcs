@@ -21,20 +21,34 @@ public class EventId {
     final String type;
 
     public EventId(String source, String type) {
+        if (source == null) {
+            throw new NullPointerException("Source cannot be null");
+        }
+
         this.source = source;
         this.type = type;
     }
 
     public EventId(String qualifiedName) {
-        if (qualifiedName.startsWith(CA_NAME)) {//FIXME: hack for events generated from custom algorithms
+        if (qualifiedName.startsWith(CA_NAME)) {// FIXME: hack for events generated from custom algorithms
             this.source = "CustomAlgorithm";
             this.type = qualifiedName.substring(CA_NAME.length());
+        } else if (qualifiedName.startsWith(DEFAULT_NAMESPACE)) {
+            String withoutPrefix = qualifiedName.substring(DEFAULT_NAMESPACE.length());
+            Matcher matcher = QNAME_PATTERN.matcher(withoutPrefix);
+            if (matcher.matches()) {
+                source = matcher.group(1);
+                type = matcher.group(2);
+            } else {
+                source = withoutPrefix;
+                type = null;
+            }
         } else {
             Matcher matcher = QNAME_PATTERN.matcher(qualifiedName);
             if (!matcher.matches()) {
                 throw new IllegalArgumentException("Invalid qualified name '" + qualifiedName + "'");
             }
-            source = matcher.group(1).replace(DEFAULT_NAMESPACE, "");
+            source = matcher.group(1);
             type = matcher.group(2);
         }
     }
@@ -43,7 +57,7 @@ public class EventId {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((source == null) ? 0 : source.hashCode());
+        result = prime * result + source.hashCode();
         result = prime * result + ((type == null) ? 0 : type.hashCode());
         return result;
     }
@@ -61,11 +75,7 @@ public class EventId {
         }
         EventId other = (EventId) obj;
 
-        if (source == null) {
-            if (other.source != null) {
-                return false;
-            }
-        } else if (!source.equals(other.source)) {
+        if (!source.equals(other.source)) {
             return false;
         }
         if (type == null) {
@@ -81,9 +91,9 @@ public class EventId {
     @Override
     public String toString() {
         if (source.startsWith("/")) {
-            return source + "/" + type;
+            return source + (type != null ? "/" + type : "");
         } else {
-            return DEFAULT_NAMESPACE + source + "/" + type;
+            return DEFAULT_NAMESPACE + source + (type != null ? "/" + type : "");
         }
     }
 }

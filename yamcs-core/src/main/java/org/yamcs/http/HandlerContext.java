@@ -1,11 +1,17 @@
 package org.yamcs.http;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.AUTHORIZATION;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpHeaderNames.HOST;
+import static io.netty.handler.codec.http.HttpHeaderNames.LOCATION;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -17,15 +23,15 @@ import java.util.Map;
 import org.yamcs.templating.TemplateProcessor;
 
 import com.google.common.io.CharStreams;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import com.google.protobuf.Message;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -34,6 +40,7 @@ import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType;
+import io.netty.handler.ssl.SslHandler;
 
 public class HandlerContext {
 
@@ -49,6 +56,47 @@ public class HandlerContext {
         nettyContext = ctx;
         nettyRequest = req;
         qsDecoder = new QueryStringDecoder(req.uri());
+    }
+
+    /**
+     * Attempts to derive the externally used URL to Yamcs based on request information
+     * 
+     * @return a url of the form [protocol]://[host]:[port][context]
+     */
+    public String getRequestBaseURL() {
+        boolean tls = nettyContext.channel().pipeline().get(SslHandler.class) != null;
+        String forwardedProto = nettyRequest.headers().get("x-forwarded-proto");
+        if ("https".equals(forwardedProto)) {
+            tls = true;
+        }
+
+        String host;
+        int port = tls ? 443 : 80;
+
+        String hostURL = nettyRequest.headers().get("x-forwarded-host");
+        if (hostURL == null) {
+            hostURL = nettyRequest.headers().get(HOST);
+        }
+
+        if (hostURL != null) {
+            int idx = hostURL.lastIndexOf(':');
+            if (idx == -1) {
+                host = hostURL;
+            } else {
+                host = hostURL.substring(0, idx);
+                port = Integer.parseInt(hostURL.substring(idx + 1));
+            }
+        } else {
+            InetSocketAddress address = (InetSocketAddress) nettyContext.channel().remoteAddress();
+            host = address.getHostName();
+            port = address.getPort();
+        }
+
+        if (tls) {
+            return String.format("https://%s%s", port == 443 ? host : host + ":" + port, contextPath);
+        } else {
+            return String.format("http://%s%s", port == 80 ? host : host + ":" + port, contextPath);
+        }
     }
 
     public ChannelHandlerContext getNettyChannelHandlerContext() {
@@ -128,11 +176,11 @@ public class HandlerContext {
     }
 
     public boolean isFormEncoded() {
-        return "application/x-www-form-urlencoded".equals(nettyRequest.headers().get(HttpHeaderNames.CONTENT_TYPE));
+        return "application/x-www-form-urlencoded".equals(nettyRequest.headers().get(CONTENT_TYPE));
     }
 
     public String getCredentials(String type) {
-        String authorizationHeader = getHeader(HttpHeaderNames.AUTHORIZATION);
+        String authorizationHeader = getHeader(AUTHORIZATION);
         if (authorizationHeader != null) {
             String prefix = type + " ";
             if (authorizationHeader.startsWith(prefix)) {
@@ -218,8 +266,8 @@ public class HandlerContext {
         ByteBuf body = nettyContext.alloc().buffer();
         body.writeCharSequence(processed, StandardCharsets.UTF_8);
         HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, body);
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html");
-        response.headers().set(HttpHeaderNames.CONTENT_LENGTH, body.readableBytes());
+        response.headers().set(CONTENT_TYPE, "text/html");
+        response.headers().set(CONTENT_LENGTH, body.readableBytes());
         sendResponse(response);
     }
 
@@ -242,14 +290,24 @@ public class HandlerContext {
         HttpRequestHandler.sendMessageResponse(nettyContext, nettyRequest, HttpResponseStatus.OK, message);
     }
 
+    public void sendOK(JsonObject jsonObject) {
+        ByteBuf body = nettyContext.alloc().buffer();
+        String json = new GsonBuilder().setPrettyPrinting().create().toJson(jsonObject);
+        body.writeCharSequence(json, StandardCharsets.UTF_8);
+        HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, body);
+        response.headers().set(CONTENT_TYPE, "application/json");
+        response.headers().set(CONTENT_LENGTH, body.readableBytes());
+        HttpRequestHandler.sendResponse(nettyContext, nettyRequest, response);
+    }
+
     public ChannelFuture sendResponse(HttpResponse response) {
         return HttpRequestHandler.sendResponse(nettyContext, nettyRequest, response);
     }
 
     public void sendRedirect(String location) {
         HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.FOUND);
-        response.headers().set(HttpHeaderNames.LOCATION, location);
-        HttpRequestHandler.sendResponse(nettyContext, nettyRequest, response)
-                .addListener(ChannelFutureListener.CLOSE);
+        response.headers().set(CONTENT_LENGTH, 0);
+        response.headers().set(LOCATION, location);
+        HttpRequestHandler.sendResponse(nettyContext, nettyRequest, response);
     }
 }

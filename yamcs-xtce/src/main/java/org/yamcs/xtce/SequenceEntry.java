@@ -45,7 +45,8 @@ public abstract class SequenceEntry implements Serializable, Comparable<Sequence
         ReferenceLocationType(String xtceName) {
             this.xtceName = xtceName;
         }
-        String xtceName() {
+
+        public String xtceName() {
             return xtceName;
         }
     };

@@ -1,21 +1,21 @@
 package org.yamcs.events;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Iterator;
 import java.util.Queue;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.yamcs.yarch.protobuf.Db.Event;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.yarch.protobuf.Db.Event;
 
 public class AbstractEventProducerTest {
 
     private Queue<Event> q;
     private AbstractEventProducer producer;
 
-    @Before
+    @BeforeEach
     public void beforeTest() {
         TimeEncoding.setUp();
         EventProducerFactory.setMockup(true);
@@ -89,7 +89,7 @@ public class AbstractEventProducerTest {
         Iterator<Event> e = q.iterator();
         int i = 0;
         while (e.hasNext()) {
-            assertEquals("Incorrect msg at index " + i, msg[i], e.next().getMessage());
+            assertEquals(msg[i], e.next().getMessage(), "Incorrect msg at index " + i);
             i++;
         }
     }
@@ -99,7 +99,7 @@ public class AbstractEventProducerTest {
         Iterator<Event> e = q.iterator();
         int i = 0;
         while (e.hasNext()) {
-            assertEquals("Incorrect seqNo at index " + i, seqNo[i], e.next().getSeqNumber());
+            assertEquals(seqNo[i], e.next().getSeqNumber(), "Incorrect seqNo at index " + i);
             i++;
         }
     }

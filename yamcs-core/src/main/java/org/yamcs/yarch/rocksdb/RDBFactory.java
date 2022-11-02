@@ -1,5 +1,6 @@
 package org.yamcs.yarch.rocksdb;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,9 +47,9 @@ public class RDBFactory implements Runnable {
      * 
      * 
      * @param relativePath
-     *            - relative path to the dataDir- should be a directory
+     *            Relative path to the dataDir. Should be a directory.
      * @param readonly
-     *            - open in readonly mode; if the database is open in readwrite mode, it will be returned like that
+     *            Open in readonly mode; if the database is open in readwrite mode, it will be returned like that
      * @return the database created or opened
      * @throws IOException
      */
@@ -65,13 +66,14 @@ public class RDBFactory implements Runnable {
 
     /**
      * use default visibility to be able to create a separate one from the unit test
-     * @param executor 
+     *
+     * @param executor
      */
     RDBFactory(String dataDir, ScheduledThreadPoolExecutor executor) {
         this.dataDir = dataDir;
         this.executor = executor;
         flushOptions.setWaitForFlush(false);
-        
+
         executor.scheduleAtFixedRate(this, 1, 1, TimeUnit.MINUTES);
         if (registerShutdownHooks) {
             Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook()));
@@ -92,16 +94,20 @@ public class RDBFactory implements Runnable {
                     }
                 }
                 if (minFile != null) {
-                    log.debug("Closing the database: {}  to not have more than {} open databases", minFile, maxOpenDbs);
+                    log.debug("Closing the database: '{}' to not have more than {} open databases", minFile,
+                            maxOpenDbs);
                     YRDB rdb = databases.remove(minFile);
                     rdb.close();
                 }
             }
-            String absolutePath = dataDir + "/" + relativePath;
-            log.debug("Creating or opening RDB {}  total rdb open: {}", absolutePath, databases.size());
+            String absolutePath = dataDir;
+            if (!relativePath.isEmpty()) {
+                absolutePath += File.separator + relativePath;
+            }
+            log.debug("Opening RDB {} (top dir has {} open already)", absolutePath, databases.size());
             try {
                 db = new YRDB(absolutePath, readonly);
-                log.debug("Opened {} with approximatively {} records", absolutePath, db.getApproxNumRecords());
+                log.debug("Opened {} with ~{} records", absolutePath, db.getApproxNumRecords());
             } catch (RocksDBException e) {
                 throw new IOException(e);
             }
@@ -141,7 +147,7 @@ public class RDBFactory implements Runnable {
     }
 
     synchronized void shutdown() {
-        log.debug("shutting down, closing {} databases under {}: {}", databases.size(), dataDir, databases.keySet());
+        log.debug("Shutting down. Closing {} databases under {}: {}", databases.size(), dataDir, databases.keySet());
         Iterator<Map.Entry<String, YRDB>> it = databases.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<String, YRDB> entry = it.next();
@@ -248,9 +254,8 @@ public class RDBFactory implements Runnable {
                 cf.completeExceptionally(e);
                 return;
             }
-            try( BackupableDBOptions opt = new BackupableDBOptions(backupDir);
-                BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
-               ) {
+            try (BackupableDBOptions opt = new BackupableDBOptions(backupDir);
+                    BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);) {
                 db = getRdb(relativePath, false);
                 backupEngine.createNewBackup(db.getDb());
                 cf.complete(null);
@@ -270,10 +275,9 @@ public class RDBFactory implements Runnable {
     public CompletableFuture<Void> restoreBackup(String backupDir, String relativePath) {
         CompletableFuture<Void> cf = new CompletableFuture<>();
         executor.execute(() -> {
-            try( BackupableDBOptions opt = new BackupableDBOptions(backupDir);
-                BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
-                RestoreOptions restoreOpt = new RestoreOptions(false);
-                ) {
+            try (BackupableDBOptions opt = new BackupableDBOptions(backupDir);
+                    BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
+                    RestoreOptions restoreOpt = new RestoreOptions(false);) {
                 String absolutePath = getAbsolutePath(relativePath);
                 backupEngine.restoreDbFromLatestBackup(absolutePath, absolutePath, restoreOpt);
 
@@ -295,9 +299,9 @@ public class RDBFactory implements Runnable {
         CompletableFuture<Void> cf = new CompletableFuture<>();
         executor.execute(() -> {
             try (BackupableDBOptions opt = new BackupableDBOptions(backupDir);
-                BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
-                RestoreOptions restoreOpt = new RestoreOptions(false)) {
-                
+                    BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
+                    RestoreOptions restoreOpt = new RestoreOptions(false)) {
+
                 String absolutePath = getAbsolutePath(relativePath);
                 if (backupId == -1) {
                     backupEngine.restoreDbFromLatestBackup(absolutePath, absolutePath, restoreOpt);

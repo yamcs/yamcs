@@ -42,10 +42,9 @@ public class ParameterInfoRetrieval {
             throws RocksDBException, IOException {
 
         ParameterRequest req = new ParameterRequest(start, stop, true, false, false, false);
-        SegmentIterator it = new SegmentIterator(parchive, parameterId, parameterGroupId, req);
 
-        try {
-            
+
+        try (SegmentIterator it = new SegmentIterator(parchive, parameterId, parameterGroupId, req)) {
             while (it.isValid()) {
                 ParameterValueSegment pvs = it.value();
                 SortedTimeSegment timeSegment = pvs.timeSegment;
@@ -58,8 +57,6 @@ public class ParameterInfoRetrieval {
                 consumer.accept(apsi);
                 it.next();
             }
-        } finally {
-            it.close();
         }
     }
 

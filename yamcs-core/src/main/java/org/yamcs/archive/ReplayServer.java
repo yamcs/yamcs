@@ -4,8 +4,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.YamcsException;
+import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 /**
  * Yarch replay server

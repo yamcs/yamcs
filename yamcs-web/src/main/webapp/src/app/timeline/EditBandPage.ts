@@ -1,6 +1,6 @@
 import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -14,7 +14,7 @@ import { YamcsService } from '../core/services/YamcsService';
 })
 export class EditBandPage implements OnDestroy {
 
-  form: FormGroup;
+  form: UntypedFormGroup;
   dirty$ = new BehaviorSubject<boolean>(false);
 
   private formSubscription: Subscription;
@@ -27,7 +27,7 @@ export class EditBandPage implements OnDestroy {
     private messageService: MessageService,
     private route: ActivatedRoute,
     private router: Router,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     readonly location: Location,
   ) {
     title.setTitle('Edit Band');
@@ -63,8 +63,6 @@ export class EditBandPage implements OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.formSubscription) {
-      this.formSubscription.unsubscribe();
-    }
+    this.formSubscription?.unsubscribe();
   }
 }

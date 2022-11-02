@@ -93,6 +93,11 @@ schedule (list of maps)
     
     frequency (integer)
     
+compactFrequency (integer)
+    After how many backfilling tasks to compact the underlying RocksDB database. Because the backfiller removes the previous data, RocksDB will have lots of thombstones to skip over when reading. Compacting will get rid of the thombstones. Compacting improves the reading at the expense of writing speed.
+    -1 means that no compaction will be performed (RocksDB merges by itself files, and that also gets rid of the thombstones).
+    Default value: 5
+    
 
 Realtime filler Options
 -----------------------

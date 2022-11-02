@@ -84,21 +84,19 @@ public class StandardTupleDefinitions {
     }
 
     public static final TupleDefinition PARAMETER_ALARM = new TupleDefinition();
-    // user time, parameter name sequence number and event
+    // user time, parameter name sequence number
     static {
         PARAMETER_ALARM.addColumn(AlarmStreamer.CNAME_TRIGGER_TIME, DataType.TIMESTAMP);
         PARAMETER_ALARM.addColumn(PARAMETER_COLUMN, DataType.STRING);
         PARAMETER_ALARM.addColumn(SEQNUM_COLUMN, DataType.INT);
-        PARAMETER_ALARM.addColumn("event", DataType.STRING);
     }
 
     public static final TupleDefinition EVENT_ALARM = new TupleDefinition();
-    // user time, parameter name sequence number and event
+    // user time, parameter name sequence number
     static {
         EVENT_ALARM.addColumn(AlarmStreamer.CNAME_TRIGGER_TIME, DataType.TIMESTAMP);
         EVENT_ALARM.addColumn("eventSource", DataType.STRING);
         EVENT_ALARM.addColumn(SEQNUM_COLUMN, DataType.INT);
-        EVENT_ALARM.addColumn("alarmEvent", DataType.STRING);
     }
 
 }

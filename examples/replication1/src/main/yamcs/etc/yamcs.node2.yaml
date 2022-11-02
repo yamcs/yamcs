@@ -32,7 +32,8 @@ services:
         masterHost: localhost
         masterPort: 8099
         masterInstance: node1
-        streams: ["tm_realtime", "sys_param", "tm2_realtime"]
+        updateSimTime: true
+        streams: ["tm_realtime", "sys_param", "tm2_realtime", "proc_param -> node1_proc_param"]
 
 
 dataLinks:
@@ -78,7 +79,13 @@ streamConfig:
   invalidTm: "invalid_tm_stream"
   cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
   event: ["events_realtime", "events_dump"]
-  param: ["pp_realtime", "pp_tse", "sys_param", "proc_param"]
+  param: ["pp_realtime", "pp_tse", "sys_param", "proc_param", "node1_proc_param"]
   parameterAlarm: ["alarms_realtime"]
   eventAlarm: ["event_alarms_realtime"]
   tc: ["tc_realtime"]
+
+timeService:
+     class: org.yamcs.time.SimulationTimeService
+     args:
+         time0: "2020-10-02T18:10:00.000Z"
+         speed: 1.0

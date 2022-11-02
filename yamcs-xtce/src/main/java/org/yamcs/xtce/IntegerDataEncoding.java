@@ -41,7 +41,7 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
 
         this.stringEncoding = builder.stringEncoding;
 
-        if (builder.baseEncoding != null && builder.baseEncoding instanceof IntegerDataEncoding) {
+        if (builder.baseEncoding instanceof IntegerDataEncoding) {
             IntegerDataEncoding baseEncoding = (IntegerDataEncoding) builder.baseEncoding;
             if (builder.defaultCalibrator == null) {
                 this.defaultCalibrator = baseEncoding.defaultCalibrator;

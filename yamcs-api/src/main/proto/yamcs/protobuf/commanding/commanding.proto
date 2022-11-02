@@ -46,15 +46,15 @@ message CommandQueueEntry {
   optional int32 sequenceNumber = 16;
   optional string commandName = 17;
 
-  // Deprecated. If you require a string representation of this
-  // command, you can build it based on the fields ``commandName``
-  // and ``assignments``.
-  optional string source = 5 [deprecated=true];
-  
   repeated CommandAssignment assignments = 18;
   optional bytes binary = 6;
   optional string username = 7;
-  optional string uuid = 9;
+  
+  // Deprecated. This used to be used for manual accept/reject
+  // of a single queued command, however this can now be done
+  // using the ``id`` field instead.
+  optional string uuid = 9 [deprecated=true];
+
   optional string comment = 11;
   optional google.protobuf.Timestamp generationTime = 12;
   
@@ -117,9 +117,5 @@ message CommandHistoryEntry {
   optional CommandId commandId = 1;
   repeated CommandHistoryAttribute attr = 3;
   optional google.protobuf.Timestamp generationTime = 6;
-
-  // Deprecated. Use the field ``assignments`` instead.
-  repeated CommandAssignment assignment = 5 [deprecated=true];
-
   repeated CommandAssignment assignments = 11;
 }

@@ -17,7 +17,9 @@ import org.yamcs.tctm.ccsds.error.BchCltuGenerator;
 import org.yamcs.tctm.ccsds.error.CltuGenerator;
 import org.yamcs.tctm.ccsds.error.Ldpc256CltuGenerator;
 import org.yamcs.tctm.ccsds.error.Ldpc64CltuGenerator;
+import org.yamcs.utils.IntArray;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.YObjectLoader;
 
 /**
  * Sends TC as TC frames (CCSDS 232.0-B-3) or TC frames embedded in CLTU (CCSDS 231.0-B-3).
@@ -26,40 +28,65 @@ import org.yamcs.utils.TimeEncoding;
  * @author nm
  *
  */
-public abstract class AbstractTcFrameLink extends AbstractLink implements AggregatedDataLink, TcDataLink{
+public abstract class AbstractTcFrameLink extends AbstractLink implements AggregatedDataLink, TcDataLink {
     protected int frameCount;
     boolean sendCltu;
     protected MasterChannelFrameMultiplexer multiplexer;
     List<Link> subLinks;
+    boolean randomize;
+
+    // do not randomize the virtual channels from this array
+    IntArray skipRandomizationForVcs = null;
 
     protected CommandHistoryPublisher commandHistoryPublisher;
     protected CltuGenerator cltuGenerator;
     final static String CLTU_START_SEQ_KEY = "cltuStartSequence";
     final static String CLTU_TAIL_SEQ_KEY = "cltuTailSequence";
-    
+
     public void init(String yamcsInstance, String linkName, YConfiguration config) {
         super.init(yamcsInstance, linkName, config);
-        
+        if (config.containsKey("skipRandomizationForVcs")) {
+            List<Integer> l = config.getList("skipRandomizationForVcs");
+            if (!l.isEmpty()) {
+                int[] a = l.stream().mapToInt(i -> i).toArray();
+                skipRandomizationForVcs = IntArray.wrap(a);
+                skipRandomizationForVcs.sort();
+            }
+        }
         String cltuEncoding = config.getString("cltuEncoding", null);
         if (cltuEncoding != null) {
             if ("BCH".equals(cltuEncoding)) {
                 byte[] startSeq = config.getBinary(CLTU_START_SEQ_KEY, BchCltuGenerator.CCSDS_START_SEQ);
                 byte[] tailSeq = config.getBinary(CLTU_TAIL_SEQ_KEY, BchCltuGenerator.CCSDS_TAIL_SEQ);
-                boolean randomize = config.getBoolean("randomizeCltu", false);
-                cltuGenerator = new BchCltuGenerator(randomize, startSeq, tailSeq);
+                this.randomize = config.getBoolean("randomizeCltu", false);
+                cltuGenerator = new BchCltuGenerator(startSeq, tailSeq);
             } else if ("LDPC64".equals(cltuEncoding)) {
                 checkSuperfluosLdpcRandomizationOption(config);
                 byte[] startSeq = config.getBinary(CLTU_START_SEQ_KEY, Ldpc64CltuGenerator.CCSDS_START_SEQ);
                 byte[] tailSeq = config.getBinary(CLTU_TAIL_SEQ_KEY, CltuGenerator.EMPTY_SEQ);
                 cltuGenerator = new Ldpc64CltuGenerator(startSeq, tailSeq);
+                this.randomize = true;
             } else if ("LDPC256".equals(cltuEncoding)) {
                 checkSuperfluosLdpcRandomizationOption(config);
                 byte[] startSeq = config.getBinary(CLTU_START_SEQ_KEY, Ldpc256CltuGenerator.CCSDS_START_SEQ);
                 byte[] tailSeq = config.getBinary(CLTU_TAIL_SEQ_KEY, CltuGenerator.EMPTY_SEQ);
                 cltuGenerator = new Ldpc256CltuGenerator(startSeq, tailSeq);
+                this.randomize = true;
+            } else if ("CUSTOM".equals(cltuEncoding)) {
+            	String cltuGeneratorClassName = config.getString("cltuGeneratorClassName", null);
+            	if (cltuGeneratorClassName == null) {
+            		throw new ConfigurationException("CUSTOM cltu generator requires value for cltuGeneratorClassName");
+            	}
+            	if (!config.containsKey("cltuGeneratorArgs")) {
+            		cltuGenerator = YObjectLoader.loadObject(cltuGeneratorClassName);
+            	} else {
+            		YConfiguration args = config.getConfig("cltuGeneratorArgs");
+            		cltuGenerator = YObjectLoader.loadObject(cltuGeneratorClassName, args);
+            	}
+                this.randomize = config.getBoolean("randomizeCltu", false);
             } else {
                 throw new ConfigurationException(
-                        "Invalid value '" + cltuEncoding + " for cltu. Valid values are BCH, LDPC64 or LDPC256");
+                        "Invalid value '" + cltuEncoding + " for cltu. Valid values are BCH, LDPC64, LDPC256, or CUSTOM");
             }
         }
 
@@ -80,7 +107,23 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
                     "CLTU randomization is always enabled for the LDPC codec, please remove the randomizeCltu option");
         }
     }
-    
+
+    /**
+     * optionally encode the data to CLTU if the CLTU generator is configured.
+     * <p>
+     * Randomization will also be performed if configured.
+     */
+    protected byte[] encodeCltu(int vcId, byte[] data) {
+        if (cltuGenerator != null) {
+            boolean rand = randomize
+                    && (skipRandomizationForVcs == null || skipRandomizationForVcs.binarySearch(vcId) < 0);
+            return cltuGenerator.makeCltu(data, rand);
+        } else {
+            return data;
+        }
+
+    }
+
     @Override
     public long getDataInCount() {
         return 0;
@@ -107,9 +150,9 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
     }
 
     @Override
-    public void sendTc(PreparedCommand preparedCommand) {
-        throw new ConfigurationException(
-                "This class cannot send command directly, please remove the stream associated to the main link");
+    public boolean sendCommand(PreparedCommand preparedCommand) {
+      throw new ConfigurationException(
+          "This class cannot send command directly, please remove the stream associated to the main link");
     }
 
     /**
@@ -121,7 +164,7 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
     protected void ackBypassFrame(TcTransferFrame tf) {
         if (tf.getCommands() != null) {
             for (PreparedCommand pc : tf.getCommands()) {
-                commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeSent,
+                commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeSent_KEY,
                         timeService.getMissionTime(), AckStatus.OK);
             }
         }
@@ -130,7 +173,7 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
     protected void failBypassFrame(TcTransferFrame tf, String reason) {
         if (tf.getCommands() != null) {
             for (PreparedCommand pc : tf.getCommands()) {
-                commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeSent,
+                commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeSent_KEY,
                         TimeEncoding.getWallclockTime(), AckStatus.NOK, reason);
 
                 commandHistoryPublisher.commandFailed(pc.getCommandId(), timeService.getMissionTime(), reason);

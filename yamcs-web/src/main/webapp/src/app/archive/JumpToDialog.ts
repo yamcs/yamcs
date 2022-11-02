@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import * as utils from '../shared/utils';
 
@@ -9,7 +9,7 @@ import * as utils from '../shared/utils';
 })
 export class JumpToDialog {
 
-  date = new FormControl(null, [
+  date = new UntypedFormControl(null, [
     Validators.required,
   ]);
 

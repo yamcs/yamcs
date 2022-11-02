@@ -25,24 +25,24 @@ import org.yamcs.YamcsServer;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.MatchCriteriaEvaluator;
+import org.yamcs.mdb.MatchCriteriaEvaluator.MatchResult;
+import org.yamcs.mdb.MatchCriteriaEvaluatorFactory;
+import org.yamcs.mdb.ProcessingData;
 import org.yamcs.parameter.ParameterProcessor;
 import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.parameter.SystemParametersProducer;
+import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.QueueState;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.security.User;
 import org.yamcs.time.TimeService;
-import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.TransmissionConstraint;
-import org.yamcs.xtceproc.ProcessingData;
-import org.yamcs.xtceproc.MatchCriteriaEvaluator;
-import org.yamcs.xtceproc.MatchCriteriaEvaluator.MatchResult;
-import org.yamcs.xtceproc.MatchCriteriaEvaluatorFactory;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -124,7 +124,7 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
                     q.stateExpirationTimeS = queueConfig.getInt("stateExpirationTimeS");
                 }
                 if (queueConfig.containsKey("minLevel")) {
-                    Levels minLevel = Levels.valueOf(queueConfig.getString("minLevel"));
+                    Levels minLevel = Levels.valueOf(queueConfig.getString("minLevel").toUpperCase());
                     q.setMinLevel(minLevel);
                 }
                 queues.put(queueName, q);
@@ -258,22 +258,22 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
             commandHistoryPublisher.publishAck(activeCommand.getCommandId(),
                     CommandHistoryPublisher.AcknowledgeQueued_KEY,
                     missionTime, AckStatus.OK);
-            preReleaseCommad(q, activeCommand);
+            preReleaseCommand(q, activeCommand);
 
         }
 
         return q;
     }
 
-    // if there are transmission constrains, start the checker;
+    // if there are transmission constraints, start the checker;
     // if not just release the command
-    private void preReleaseCommad(CommandQueue q, ActiveCommand pc) {
+    private void preReleaseCommand(CommandQueue q, ActiveCommand pc) {
         long missionTime = timeService.getMissionTime();
-        if (pc.getMetaCommand().hasTransmissionConstraints() && !pc.disableTransmissionContraints()) {
+        if (pc.getMetaCommand().hasTransmissionConstraints() && !pc.disableTransmissionConstraints()) {
             startTransmissionConstraintChecker(q, pc);
         } else {
             commandHistoryPublisher.publishAck(pc.getCommandId(),
-                    CommandHistoryPublisher.TransmissionContraints_KEY, missionTime, AckStatus.NA);
+                    CommandHistoryPublisher.TransmissionConstraints_KEY, missionTime, AckStatus.NA);
             q.remove(pc, true);
             releaseCommand(q, pc, true);
             commandHistoryPublisher.publishAck(pc.getCommandId(),
@@ -287,14 +287,14 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
         constraintChecker.checkImmediate();
     }
 
-    private void onTransmissionContraintCheckPending(TransmissionConstraintChecker tcChecker) {
+    private void onTransmissionConstraintCheckPending(TransmissionConstraintChecker tcChecker) {
         tcChecker.activeCommand.setPendingTransmissionConstraints(true);
         notifyUpdated(tcChecker.queue, tcChecker.activeCommand);
         commandHistoryPublisher.publishAck(tcChecker.activeCommand.getCommandId(),
-                CommandHistoryPublisher.TransmissionContraints_KEY, timeService.getMissionTime(), AckStatus.PENDING);
+                CommandHistoryPublisher.TransmissionConstraints_KEY, timeService.getMissionTime(), AckStatus.PENDING);
     }
 
-    private void onTransmissionContraintCheckFinished(TransmissionConstraintChecker tcChecker) {
+    private void onTransmissionConstraintCheckFinished(TransmissionConstraintChecker tcChecker) {
         ActiveCommand pc = tcChecker.activeCommand;
         pc.setPendingTransmissionConstraints(false);
         CommandQueue q = tcChecker.queue;
@@ -307,14 +307,14 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
 
         if (status == TCStatus.OK) {
             q.remove(pc, true);
-            commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY,
+            commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.TransmissionConstraints_KEY,
                     missionTime, AckStatus.OK);
             releaseCommand(q, pc, true);
             commandHistoryPublisher.publishAck(pc.getCommandId(),
                     CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.OK);
         } else if (status == TCStatus.TIMED_OUT) {
             q.remove(pc, false);
-            commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.TransmissionContraints_KEY,
+            commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.TransmissionConstraints_KEY,
                     missionTime, AckStatus.NOK);
             commandHistoryPublisher.publishAck(pc.getCommandId(),
                     CommandHistoryPublisher.AcknowledgeReleased_KEY, missionTime, AckStatus.NOK,
@@ -483,6 +483,7 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
     }
 
     // Used by REST API as a simpler identifier
+    @Deprecated
     public synchronized PreparedCommand rejectCommand(UUID uuid, String username) {
         for (CommandQueue q : queues.values()) {
             ActiveCommand activeCommand = q.getcommand(uuid);
@@ -491,6 +492,17 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
             }
         }
         log.warn("no active command found for uuid {}", uuid);
+        return null;
+    }
+
+    public synchronized PreparedCommand rejectCommand(String commandId, String username) {
+        for (CommandQueue q : queues.values()) {
+            ActiveCommand activeCommand = q.getcommand(commandId);
+            if (activeCommand != null) {
+                return rejectCommand(activeCommand.getCommandId(), username);
+            }
+        }
+        log.warn("no active command found for id {}", commandId);
         return null;
     }
 
@@ -512,7 +524,7 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
             }
         }
         if (command != null) {
-            preReleaseCommad(queue, command);
+            preReleaseCommand(queue, command);
             return command.getPreparedCommand();
         } else {
             return null;
@@ -521,6 +533,7 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
     }
 
     // Used by REST API as a simpler identifier
+    @Deprecated
     public synchronized PreparedCommand sendCommand(UUID uuid) {
         for (CommandQueue q : queues.values()) {
             ActiveCommand activeCommand = q.getcommand(uuid);
@@ -529,6 +542,17 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
             }
         }
         log.warn("no prepared command found for uuid {}", uuid);
+        return null;
+    }
+
+    public synchronized PreparedCommand sendCommand(String commandId) {
+        for (CommandQueue q : queues.values()) {
+            ActiveCommand activeCommand = q.getcommand(commandId);
+            if (activeCommand != null) {
+                return sendCommand(activeCommand.getCommandId());
+            }
+        }
+        log.warn("no prepared command found for id {}", commandId);
         return null;
     }
 
@@ -567,7 +591,7 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
         queue.state = newState;
         if (queue.state == QueueState.ENABLED) {
             for (ActiveCommand pc : queue.getCommands()) {
-                preReleaseCommad(queue, pc);
+                preReleaseCommand(queue, pc);
             }
         }
         if (queue.state == QueueState.DISABLED) {
@@ -748,10 +772,10 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
                 aggregateStatus = tcsUpdate.aggrStatus;
 
                 if (aggregateStatus == TCStatus.PENDING) {
-                    onTransmissionContraintCheckPending(this);
+                    onTransmissionConstraintCheckPending(this);
                     scheduleCheck(this, tcsUpdate.scheduleNextCheck);
                 } else {
-                    onTransmissionContraintCheckFinished(this);
+                    onTransmissionConstraintCheckFinished(this);
                 }
             });
 

@@ -38,8 +38,8 @@ The expression appearing in the `calib1` column will be enclosed and compiled in
 
 .. code-block:: java
 
-    package org.yamcs.xtceproc.jecf;
-    public class Expression665372494 implements org.yamcs.xtceproc.CalibratorProc {
+    package org.yamcs.mdb.jecf;
+    public class Expression665372494 implements org.yamcs.mdb.CalibratorProc {
         public double calibrate(double rv) {
                 return <expression>;
         }

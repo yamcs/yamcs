@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { YamcsService } from '../../core/services/YamcsService';
 import * as utils from '../../shared/utils';
@@ -11,11 +11,11 @@ import { generateRandomName } from '../../shared/utils';
 })
 export class StartReplayDialog {
 
-  form: FormGroup;
+  form: UntypedFormGroup;
 
   constructor(
     private dialogRef: MatDialogRef<StartReplayDialog>,
-    formBuilder: FormBuilder,
+    formBuilder: UntypedFormBuilder,
     private yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
@@ -44,6 +44,7 @@ export class StartReplayDialog {
   start() {
     const replayConfig: { [key: string]: any; } = {
       start: utils.toISOString(this.form.value.start),
+      endAction: 'STOP',
     };
     if (this.form.value.stop) {
       replayConfig.stop = utils.toISOString(this.form.value.stop);

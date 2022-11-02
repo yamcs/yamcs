@@ -3,9 +3,9 @@ package org.yamcs.alarms;
 import java.util.ArrayList;
 
 import org.yamcs.StandardTupleDefinitions;
-import org.yamcs.yarch.protobuf.Db.Event;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.protobuf.Db.Event;
 
 /**
  * Receives event alarms from the {@link AlarmServer} and sends them to the events_alarms stream to be recorded
@@ -15,17 +15,19 @@ import org.yamcs.yarch.Stream;
  */
 public class EventAlarmStreamer extends AlarmStreamer<Event> {
 
-    static public final DataType EVENT_DATA_TYPE = DataType
+    public static final DataType EVENT_DATA_TYPE = DataType
             .protobuf(Event.class.getName());
-    static public final String CNAME_TRIGGER = "triggerEvent";
-    static public final String CNAME_CLEAR = "clearEvent";
-    static public final String CNAME_SEVERITY_INCREASED = "severityIncreasedEvent";
-    
+    public static final String CNAME_LAST_EVENT = "event";
+    public static final String CNAME_TRIGGER = "triggerEvent";
+    public static final String CNAME_CLEAR = "clearEvent";
+    public static final String CNAME_SEVERITY_INCREASED = "severityIncreasedEvent";
+
     public EventAlarmStreamer(Stream s) {
-       super(s, EVENT_DATA_TYPE, StandardTupleDefinitions.EVENT_ALARM);
+        super(s, EVENT_DATA_TYPE, StandardTupleDefinitions.EVENT_ALARM);
     }
 
-    protected ArrayList<Object> getTupleKey(ActiveAlarm<Event> activeAlarm, AlarmNotificationType e) {
+    @Override
+    protected ArrayList<Object> getTupleKey(ActiveAlarm<Event> activeAlarm) {
         ArrayList<Object> al = new ArrayList<>(7);
         Event triggerValue = activeAlarm.getTriggerValue();
 
@@ -35,15 +37,13 @@ public class EventAlarmStreamer extends AlarmStreamer<Event> {
         al.add(triggerValue.getSource());
         // seqNum
         al.add(activeAlarm.getId());
-        // event
-        al.add(e.name());
 
         return al;
     }
 
     @Override
-    protected Object getYarchValue(Event currentValue) {
-        return currentValue;
+    protected String getColNameLastEvent() {
+        return CNAME_LAST_EVENT;
     }
 
     @Override
@@ -61,4 +61,8 @@ public class EventAlarmStreamer extends AlarmStreamer<Event> {
         return CNAME_SEVERITY_INCREASED;
     }
 
+    @Override
+    protected long getUpdateTime(Event alarmDetail) {
+        return alarmDetail.getGenerationTime();
+    }
 }

@@ -1,7 +1,7 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, Input, OnChanges, ViewChild } from '@angular/core';
+import { APP_BASE_HREF } from '@angular/common';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, Inject, Input, OnChanges, OnDestroy, ViewChild } from '@angular/core';
+import { EventHandler, Graphics } from '@fqqb/timeline';
 import { BitRange } from '../BitRange';
-import { EventHandler } from '../draw/EventHandler';
-import { Graphics } from '../draw/Graphics';
 import { HexModel, Line } from './model';
 
 @Component({
@@ -10,7 +10,9 @@ import { HexModel, Line } from './model';
   styleUrls: ['./Hex.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Hex implements AfterViewInit, OnChanges {
+export class Hex implements AfterViewInit, OnChanges, OnDestroy {
+
+  fontPreloaded$: Promise<boolean>;
 
   @ViewChild('canvasEl')
   canvasEl: ElementRef;
@@ -31,15 +33,40 @@ export class Hex implements AfterViewInit, OnChanges {
   private selection?: BitRange;
   private pressStart?: BitRange;
 
+  private mediaQueryList?: MediaQueryList;
+  private mediaQueryListEventListener: () => void;
+  private animationFrameRequest?: number;
+
+  constructor(@Inject(APP_BASE_HREF) baseHref: string) {
+    const resourceUrl = `url(${baseHref}static/RobotoMono-Regular.woff2)`;
+    this.fontPreloaded$ = new Promise(resolve => {
+      const robotoMono = new FontFace('Roboto Mono', resourceUrl);
+      robotoMono.load().then(() => resolve(true)).catch(() => resolve(false));
+    });
+  }
+
   ngAfterViewInit() {
+    this.fontPreloaded$.then(() => this.initCanvas());
+  }
+
+  private initCanvas() {
     const el = this.canvasEl.nativeElement as HTMLCanvasElement;
     const ctx = el.getContext('2d')!;
-    ctx.font = `${this.fontSize}px monospace`;
+    ctx.font = `${this.fontSize}px 'Roboto Mono', monospace`;
     this.charWidth = ctx.measureText('0').width;
 
     this.g = new Graphics(el);
-    window.requestAnimationFrame(() => this.redraw());
+
     new EventHandler(this.g.canvas, this.g.hitCanvas);
+
+    this.mediaQueryListEventListener = () => {
+      this.dirty = true;
+      this.mediaQueryList = matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+      this.mediaQueryList.addEventListener('change', this.mediaQueryListEventListener, { once: true });
+    };
+    this.mediaQueryListEventListener();
+
+    this.animationFrameRequest = window.requestAnimationFrame(() => this.step());
   }
 
   ngOnChanges() {
@@ -61,8 +88,8 @@ export class Hex implements AfterViewInit, OnChanges {
     this.highlight = undefined;
   }
 
-  private redraw() {
-    window.requestAnimationFrame(() => this.redraw());
+  private step() {
+    this.animationFrameRequest = window.requestAnimationFrame(() => this.step());
 
     if (!this.dirty) {
       return;
@@ -98,7 +125,7 @@ export class Hex implements AfterViewInit, OnChanges {
         this.highlight = line.range;
         this.dirty = true;
       },
-      mouseOut: () => {
+      mouseLeave: () => {
         this.highlight = undefined;
         this.dirty = true;
       },
@@ -116,7 +143,7 @@ export class Hex implements AfterViewInit, OnChanges {
       y,
       baseline: 'top',
       align: 'left',
-      font: `${this.fontSize}px monospace`,
+      font: `${this.fontSize}px 'Roboto Mono', monospace`,
       color: '#777777',
       text,
     });
@@ -125,7 +152,8 @@ export class Hex implements AfterViewInit, OnChanges {
   private drawHex(line: Line, y: number) {
     let x = this.charWidth * (line.charCountHex + ': ').length;
 
-    for (const component of line.hexComponents) {
+    for (let i = 0; i < line.hexComponents.length; i++) {
+      const component = line.hexComponents[i];
       if (component.type === 'word') {
 
         // Highlight entire word when any of its four nibbles is hovered
@@ -140,7 +168,7 @@ export class Hex implements AfterViewInit, OnChanges {
             this.highlight = component.range;
             this.dirty = true;
           },
-          mouseOut: () => {
+          mouseLeave: () => {
             this.highlight = undefined;
             this.dirty = true;
           },
@@ -156,10 +184,10 @@ export class Hex implements AfterViewInit, OnChanges {
         for (const nibble of component.nibbles) {
           let bgColor;
           let fgColor = '#000000';
-          if (this.highlight && this.highlight.overlaps(nibble.range)) {
-            bgColor = '#aec5d9';
+          if (!this.pressStart && this.highlight && this.highlight.overlaps(nibble.range)) {
+            bgColor = 'lightgrey';
           } else if (this.selection && this.selection.overlaps(nibble.range)) {
-            bgColor = '#5787b1';
+            bgColor = '#009e87';
             fgColor = '#ffffff';
           }
           if (bgColor) {
@@ -168,14 +196,14 @@ export class Hex implements AfterViewInit, OnChanges {
               y: Math.floor(y),
               width: Math.ceil(this.charWidth),
               height: this.fontSize,
-              color: bgColor,
+              fill: bgColor,
             });
           }
           this.g.fillText({
             x, y,
             baseline: 'top',
             align: 'left',
-            font: `${this.fontSize}px monospace`,
+            font: `${this.fontSize}px 'Roboto Mono', monospace`,
             color: fgColor,
             text: nibble.content,
           });
@@ -197,18 +225,18 @@ export class Hex implements AfterViewInit, OnChanges {
         }).addRect(x, y, component.content.length * this.charWidth, this.fontSize);
 
         let bgColor;
-        if (this.highlight && this.highlight.containsBitExclusive(component.bitpos)) {
-          bgColor = '#aec5d9';
+        if (!this.pressStart && this.highlight && this.highlight.containsBitExclusive(component.bitpos)) {
+          bgColor = 'lightgrey';
         } else if (this.selection && this.selection.containsBitExclusive(component.bitpos)) {
-          bgColor = '#5787b1';
+          bgColor = '#009e87';
         }
-        if (bgColor) {
+        if (bgColor && i !== line.hexComponents.length - 1) {
           this.g.fillRect({
             x: Math.floor(x),
             y: Math.floor(y),
             width: Math.ceil(this.charWidth * component.content.length),
             height: this.fontSize,
-            color: bgColor,
+            fill: bgColor,
           });
         }
         x += component.content.length * this.charWidth;
@@ -235,7 +263,7 @@ export class Hex implements AfterViewInit, OnChanges {
               this.highlight = c.range;
               this.dirty = true;
             },
-            mouseOut: () => {
+            mouseLeave: () => {
               this.highlight = undefined;
               this.dirty = true;
             },
@@ -250,10 +278,10 @@ export class Hex implements AfterViewInit, OnChanges {
 
           let bgColor;
           let fgColor = '#777';
-          if (this.highlight && this.highlight.overlaps(c.range)) {
-            bgColor = '#aec5d9';
+          if (!this.pressStart && this.highlight && this.highlight.overlaps(c.range)) {
+            bgColor = 'lightgrey';
           } else if (this.selection && this.selection.overlaps(c.range)) {
-            bgColor = '#5787b1';
+            bgColor = '#009e87';
             fgColor = '#ffffff';
           }
           if (bgColor) {
@@ -262,14 +290,14 @@ export class Hex implements AfterViewInit, OnChanges {
               y: Math.floor(y),
               width: Math.ceil(this.charWidth),
               height: this.fontSize,
-              color: bgColor,
+              fill: bgColor,
             });
           }
           this.g.fillText({
             x, y,
             baseline: 'top',
             align: 'left',
-            font: `${this.fontSize}px monospace`,
+            font: `${this.fontSize}px 'Roboto Mono', monospace`,
             color: fgColor,
             text: c.content,
           });
@@ -291,5 +319,10 @@ export class Hex implements AfterViewInit, OnChanges {
         }).addRect(x, y, component.content.length * this.charWidth, this.fontSize);
       }
     }
+  }
+
+  ngOnDestroy() {
+    this.mediaQueryList?.removeEventListener('change', this.mediaQueryListEventListener);
+    this.animationFrameRequest && window.cancelAnimationFrame(this.animationFrameRequest);
   }
 }

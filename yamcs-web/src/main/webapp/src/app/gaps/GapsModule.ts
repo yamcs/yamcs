@@ -1,7 +1,9 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
+import { GapsPageTabs } from './GapsPageTabs';
 import { GapsRoutingModule, routingComponents } from './GapsRoutingModule';
-import { RequestPlaybackDialog } from './RequestPlaybackDialog';
+import { RequestMultipleRangesPlaybackDialog } from './RequestMultipleRangesPlaybackDialog';
+import { RequestSingleRangePlaybackDialog } from './RequestSingleRangePlaybackDialog';
 
 @NgModule({
   imports: [
@@ -10,7 +12,9 @@ import { RequestPlaybackDialog } from './RequestPlaybackDialog';
   ],
   declarations: [
     routingComponents,
-    RequestPlaybackDialog,
+    GapsPageTabs,
+    RequestSingleRangePlaybackDialog,
+    RequestMultipleRangesPlaybackDialog,
   ],
 })
 export class GapsModule {

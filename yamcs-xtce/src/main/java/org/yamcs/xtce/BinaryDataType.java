@@ -18,7 +18,7 @@ public class BinaryDataType extends BaseDataType {
         super(builder);
         this.sizeRangeInBytes = builder.sizeRangeInBytes;
 
-        if (builder.baseType != null && builder.baseType instanceof BinaryDataType) {
+        if (builder.baseType instanceof BinaryDataType) {
             BinaryDataType baseType = (BinaryDataType) builder.baseType;
             if (builder.sizeRangeInBytes == null && baseType.sizeRangeInBytes != null) {
                 this.sizeRangeInBytes = baseType.sizeRangeInBytes;

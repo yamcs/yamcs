@@ -56,6 +56,8 @@ import { DownloadButton } from './forms/DownloadButton';
 import { DownloadMenuItem } from './forms/DownloadMenuItem';
 import { DurationInput } from './forms/DurationInput';
 import { Errors } from './forms/Errors';
+import { HexIntegerInput } from './forms/HexIntegerInput';
+import { MultiSelect } from './forms/MultiSelect';
 import { ObjectSelector } from './forms/ObjectSelector';
 import { SearchFilter } from './forms/SearchFilter';
 import { Select } from './forms/Select';
@@ -63,7 +65,10 @@ import { TimezoneSelect } from './forms/TimezoneSelect';
 import { Hex } from './hex/Hex';
 import { Highlight } from './highlight/Highlight';
 import { Markdown } from './markdown/Markdown';
+import { More } from './more/More';
+import { ActionLogFormatPipe } from './pipes/ActionLogFormat';
 import { AgoPipe } from './pipes/AgoPipe';
+import { AliasPipe } from './pipes/AliasPipe';
 import { ArrayContainsPipe } from './pipes/ArrayContainsPipe';
 import { BasenamePipe } from './pipes/BasenamePipe';
 import { BinarySizePipe } from './pipes/BinarySizePipe';
@@ -88,15 +93,16 @@ import { ReversePipe } from './pipes/ReversePipe';
 import { ShortNamePipe } from './pipes/ShortNamePipe';
 import { SpaceSystemPipe } from './pipes/SpaceSystemPipe';
 import { SuperuserPipe } from './pipes/SuperuserPipe';
+import { ToValuePipe } from './pipes/ToValuePipe';
 import { UnitsPipe } from './pipes/UnitsPipe';
 import { ValuePipe } from './pipes/ValuePipe';
 import { PrintableDirective } from './print/PrintableDirective';
 import { PrintZone } from './print/PrintZone';
+import { Progress } from './progress/Progress';
 import { SidebarNavGroup } from './sidebar/SidebarNavGroup';
 import { SidebarNavItem } from './sidebar/SidebarNavItem';
 import { YaDataTableComponent } from './table/DataTableDirective';
 import { YaSimpleTableComponent } from './table/SimpleTableDirective';
-import { TableContainer } from './table/TableContainer';
 import { YaTableComponent } from './table/TableDirective';
 import { ActionLink } from './template/ActionLink';
 import { Ago } from './template/Ago';
@@ -107,6 +113,7 @@ import { DetailToolbar } from './template/DetailToolbar';
 import { Dots } from './template/Dots';
 import { EmptyMessage } from './template/EmptyMessage';
 import { Expirable } from './template/Expirable';
+import { IconAction } from './template/IconAction';
 import { InstancePage } from './template/InstancePage';
 import { InstancePageTemplate } from './template/InstancePageTemplate';
 import { InstanceToolbar } from './template/InstanceToolbar';
@@ -120,8 +127,8 @@ import { TextAction } from './template/TextAction';
 import { ToolbarActions } from './template/ToolbarActions';
 import { WarningMessage } from './template/WarningMessage';
 import { TitleCopy } from './title-copy/TitleCopy';
+import { ValueComponent } from './value/ValueComponent';
 import { AlarmLabel } from './widgets/AlarmLabel';
-import { ConnectedLabel } from './widgets/ConnectedLabel';
 import { Help } from './widgets/Help';
 import { Label } from './widgets/Label';
 import { Labels } from './widgets/Labels';
@@ -183,7 +190,6 @@ const sharedComponents = [
   BreadcrumbTrail,
   ColumnChooser,
   CommandSelector,
-  ConnectedLabel,
   DateTimeInput,
   DetailPane,
   DetailToolbar,
@@ -197,7 +203,9 @@ const sharedComponents = [
   Help,
   HelpDialog,
   Hex,
+  HexIntegerInput,
   Highlight,
+  IconAction,
   InstancePage,
   InstancePageTemplate,
   InstanceToolbar,
@@ -208,11 +216,14 @@ const sharedComponents = [
   LiveExpression,
   Markdown,
   MessageBar,
+  More,
+  MultiSelect,
   ObjectSelector,
   ParameterLegend,
   ParameterPlot,
   ParameterSeries,
   PrintZone,
+  Progress,
   SearchFilter,
   SelectInstanceDialog,
   SelectParameterDialog,
@@ -224,16 +235,18 @@ const sharedComponents = [
   SlantedLabel,
   StartReplayDialog,
   TabDetailIcon,
-  TableContainer,
   TextAction,
   TimestampTracker,
   TimezoneSelect,
   TitleCopy,
   ToolbarActions,
+  ValueComponent,
   WarningMessage,
 ];
 
 const pipes = [
+  ActionLogFormatPipe,
+  AliasPipe,
   AgoPipe,
   ArrayContainsPipe,
   BasenamePipe,
@@ -259,6 +272,7 @@ const pipes = [
   ShortNamePipe,
   SpaceSystemPipe,
   SuperuserPipe,
+  ToValuePipe,
   UnitsPipe,
   ValuePipe,
 ];

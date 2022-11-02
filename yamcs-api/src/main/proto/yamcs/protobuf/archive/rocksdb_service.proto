@@ -24,6 +24,7 @@ service RocksDbApi {
   rpc BackupDatabase(BackupDatabaseRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       post: "/api/archive/rocksdb/{tablespace}/{dbpath*}:backup"
+      log: "Tablespace {tablespace} backed up to {backupDir}"
     };
   }
 
@@ -39,6 +40,7 @@ service RocksDbApi {
     option (yamcs.api.route) = {
       post: "/api/archive/rocksdb/{tablespace}/{dbpath**}:compact"
       offloaded: true
+      log: "Compaction triggered on tablespace {tablespace}"
     };
   }
 

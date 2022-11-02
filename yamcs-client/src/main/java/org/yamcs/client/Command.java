@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.yamcs.protobuf.Commanding.CommandAssignment;
@@ -18,6 +19,7 @@ public class Command implements Comparable<Command> {
 
     private static final String ATTR_BINARY = "binary";
     private static final String ATTR_QUEUE = "queue";
+    private static final String ATTR_UNPROCESSED_BINARY = "unprocessedBinary";
     private static final String ATTR_USERNAME = "username";
     private static final String ATTR_COMMENT = "comment";
     private static final String LEGACY_ATTR_SOURCE = "source";
@@ -25,15 +27,16 @@ public class Command implements Comparable<Command> {
             ATTR_BINARY,
             ATTR_COMMENT,
             ATTR_QUEUE,
+            ATTR_UNPROCESSED_BINARY,
             ATTR_USERNAME,
             LEGACY_ATTR_SOURCE,
     };
 
     private static final String PREFIX_COMMAND_COMPLETE = "CommandComplete";
-    private static final String PREFIX_TRANSMISSION_CONTRAINTS = "TransmissionConstraints";
+    private static final String PREFIX_TRANSMISSION_CONSTRAINTS = "TransmissionConstraints";
     private static final String[] STANDARD_ATTRIBUTE_PREFIXES = new String[] {
             PREFIX_COMMAND_COMPLETE,
-            PREFIX_TRANSMISSION_CONTRAINTS,
+            PREFIX_TRANSMISSION_CONSTRAINTS,
     };
 
     private static final String SUFFIX_TIME = "_Time";
@@ -45,18 +48,29 @@ public class Command implements Comparable<Command> {
             SUFFIX_STATUS,
     };
 
+    private static final char[] HEXCHARS = "0123456789abcdef".toCharArray();
+
+    // Entires that come from a cascading server are prefixed with one or more
+    // patterns of the kind: yamcs<SERVER>_
+    private static final Pattern CASCADED_PREFIX = Pattern.compile("^(yamcs<[^>]+>_)+(.+)");
+
     private final String id;
     private final String name;
+    private final List<CommandAssignment> assignments;
     private final String origin;
     private final int sequenceNumber;
     private final Instant generationTime;
     private final String source;
     private Map<String, Object> attributes = new LinkedHashMap<>();
 
+    // Command info that was relayed from an upstream (cascaded) server.
+    private Map<String, Command> cascadedRecordsByPrefix = new LinkedHashMap<>();
+
     public Command(String id, String name, List<CommandAssignment> assignments, String origin, int sequenceNumber,
             Instant generationTime) {
         this.id = id;
         this.name = name;
+        this.assignments = assignments;
         this.origin = origin;
         this.sequenceNumber = sequenceNumber;
         this.generationTime = generationTime;
@@ -66,11 +80,15 @@ public class Command implements Comparable<Command> {
     public Command(IssueCommandResponse response) {
         this.id = response.getId();
         this.name = response.getCommandName();
+        this.assignments = response.getAssignmentsList();
         this.origin = response.getOrigin();
         this.sequenceNumber = response.getSequenceNumber();
         this.generationTime = Helpers.toInstant(response.getGenerationTime());
         this.source = buildSource(name, response.getAssignmentsList());
 
+        if (response.hasUnprocessedBinary()) {
+            attributes.put(ATTR_UNPROCESSED_BINARY, response.getUnprocessedBinary().toByteArray());
+        }
         if (response.hasBinary()) {
             attributes.put(ATTR_BINARY, response.getBinary().toByteArray());
         }
@@ -82,6 +100,12 @@ public class Command implements Comparable<Command> {
         }
     }
 
+    public Command(CommandHistoryEntry entry) {
+        this(entry.getId(), entry.getCommandName(), entry.getAssignmentsList(), entry.getOrigin(),
+                entry.getSequenceNumber(), Helpers.toInstant(entry.getGenerationTime()));
+        merge(entry);
+    }
+
     private static String buildSource(String name, List<CommandAssignment> assignments) {
         StringBuilder buf = new StringBuilder(name).append("(");
         buf.append(assignments.stream()
@@ -90,6 +114,8 @@ public class Command implements Comparable<Command> {
                     Object value = Helpers.parseValue(assignment.getValue());
                     if (value instanceof String) {
                         return assignment.getName() + ": \"" + value + "\"";
+                    } else if (value instanceof byte[]) {
+                        return assignment.getName() + ": 0x" + toHex((byte[]) value);
                     } else {
                         return assignment.getName() + ": " + value;
                     }
@@ -136,6 +162,13 @@ public class Command implements Comparable<Command> {
      */
     public String getSource() {
         return source;
+    }
+
+    /**
+     * Unprocessed binary representation of the command (prior to postprocessing).
+     */
+    public byte[] getUnprocessedBinary() {
+        return (byte[]) attributes.get(ATTR_UNPROCESSED_BINARY);
     }
 
     /**
@@ -198,12 +231,34 @@ public class Command implements Comparable<Command> {
 
     public void merge(CommandHistoryEntry entry) {
         for (CommandHistoryAttribute attr : entry.getAttrList()) {
-            attributes.put(attr.getName(), Helpers.parseValue(attr.getValue()));
+            var matcher = CASCADED_PREFIX.matcher(attr.getName());
+            if (matcher.matches()) {
+                var prefix = matcher.group(1);
+                var cascadedCommand = cascadedRecordsByPrefix.get(prefix);
+                if (cascadedCommand == null) {
+                    cascadedCommand = new Command(id, name, assignments, origin, sequenceNumber, generationTime);
+                    cascadedRecordsByPrefix.put(prefix, cascadedCommand);
+                }
+                var truncatedName = matcher.group(2);
+                cascadedCommand.attributes.put(truncatedName, Helpers.parseValue(attr.getValue()));
+            } else {
+                attributes.put(attr.getName(), Helpers.parseValue(attr.getValue()));
+            }
         }
     }
 
     public void merge(Command other) {
         attributes.putAll(other.attributes);
+        for (var entry : other.cascadedRecordsByPrefix.entrySet()) {
+            var prefix = entry.getKey();
+            var cascadedRecord = entry.getValue();
+            var existing = cascadedRecordsByPrefix.get(prefix);
+            if (existing == null) {
+                cascadedRecordsByPrefix.put(prefix, cascadedRecord);
+            } else {
+                existing.attributes.putAll(cascadedRecord.attributes);
+            }
+        }
     }
 
     /**
@@ -285,6 +340,27 @@ public class Command implements Comparable<Command> {
         return null;
     }
 
+    /**
+     * Returns command records that capture state of upstream (cascaded) servers.
+     * <p>
+     * The returned map is keyed by the cascading prefix, for example: {@code yamcs<SERVER1>_} when the information is
+     * cascaded from SERVER1, or {@code yamcs<SERVER2>_yamcs<SERVER1>_} when the information is cascaded from SERVER 1
+     * over SERVER2.
+     */
+    public Map<String, Command> getCascadedRecords() {
+        return Collections.unmodifiableMap(cascadedRecordsByPrefix);
+    }
+
+    private static String toHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for (int j = 0; j < bytes.length; j++) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = HEXCHARS[v >>> 4];
+            hexChars[j * 2 + 1] = HEXCHARS[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
+
     @Override
     public int compareTo(Command other) {
         return id.compareTo(other.id);
@@ -292,7 +368,7 @@ public class Command implements Comparable<Command> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof Command)) {
+        if (!(obj instanceof Command)) {
             return false;
         }
         Command other = (Command) obj;

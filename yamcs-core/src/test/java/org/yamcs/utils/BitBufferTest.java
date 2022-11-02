@@ -1,12 +1,13 @@
 package org.yamcs.utils;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.ByteOrder;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class BitBufferTest {
+
     @Test
     public void testBigEndianRead() {
         BitBuffer bitbuf = new BitBuffer(new byte[] { 0x18, 0x7A, 0x23, (byte) 0xFF }, 0);
@@ -53,7 +54,6 @@ public class BitBufferTest {
         bitbuf.putBits(0xFF, 7);
         assertEquals(0x1F, x[0] & 0xFF);
         assertEquals(0xE0, x[1] & 0xFF);
-
     }
 
     @Test
@@ -163,25 +163,26 @@ public class BitBufferTest {
         assertEquals(0, bitbuf.getBits(12));
         assertEquals(0x1FFFFL, bitbuf.getBits(17));
     }
+
     @Test
     public void testLittleEndianWrite1() {
-        BitBuffer bitbuf = new BitBuffer(new byte[] {(byte)0xFF, (byte)0xFF, (byte)0x00, (byte)0x00});
+        BitBuffer bitbuf = new BitBuffer(new byte[] { (byte) 0xFF, (byte) 0xFF, (byte) 0x00, (byte) 0x00 });
         bitbuf.setByteOrder(ByteOrder.LITTLE_ENDIAN);
         bitbuf.putBits(3, 3);
         bitbuf.putBits(0, 12);
         bitbuf.putBits(0x1FFFF, 17);
-        
+
         assertEquals("0380FFFF", StringConverter.arrayToHexString(bitbuf.array()));
     }
-    
+
     @Test
     public void testDoubleSlice() {
-        BitBuffer bitbuf = new BitBuffer(new byte[] {(byte)0x01, (byte)0x02, (byte)0x03, (byte)0x04});
+        BitBuffer bitbuf = new BitBuffer(new byte[] { (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04 });
         assertEquals(1, bitbuf.getBits(8));
-        
-        BitBuffer bitbuf1 = bitbuf.slice();        
+
+        BitBuffer bitbuf1 = bitbuf.slice();
         assertEquals(2, bitbuf1.getBits(8));
-        
+
         BitBuffer bitbuf2 = bitbuf1.slice();
         assertEquals(3, bitbuf2.getBits(8));
     }

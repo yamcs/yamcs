@@ -3,10 +3,10 @@ package org.yamcs.algorithms;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yamcs.mdb.ProcessingData;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.OutputParameter;
-import org.yamcs.xtceproc.ProcessingData;
 
 public abstract class AbstractJavaExprExecutor extends AbstractAlgorithmExecutor {
 
@@ -36,15 +36,12 @@ public abstract class AbstractJavaExprExecutor extends AbstractAlgorithmExecutor
             outputValues.subList(k, outputValues.size()).clear();
             return new AlgorithmExecutionResult(inputValues, returnValue, outputValues);
 
+        } catch (AlgorithmException e) {
+            throw e;
         } catch (Exception e) {
-            if (e instanceof AlgorithmException) {
-                throw e;
-            } else {
-                throw new AlgorithmException(e);
-            }
+            throw new AlgorithmException(e);
         }
     }
 
-    protected abstract Object doExecute(long acqTime, long genTime,
-            List<ParameterValue> outputValues);
+    protected abstract Object doExecute(long acqTime, long genTime, List<ParameterValue> outputValues);
 }

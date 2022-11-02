@@ -82,24 +82,24 @@
       </form>
       <table mat-table
              [dataSource]="dataSource"
-             class="ya-data-table">
+             class="ya-data-table expand">
 
         <ng-container matColumnDef="packetName">
-          <th mat-header-cell *matHeaderCellDef>Packet Name</th>
+          <th mat-header-cell *matHeaderCellDef>Packet name</th>
           <td mat-cell *matCellDef="let packet">
             {{ packet.id.name }}
           </td>
         </ng-container>
 
         <ng-container matColumnDef="generationTime">
-          <th mat-header-cell *matHeaderCellDef>Generation Time</th>
+          <th mat-header-cell *matHeaderCellDef>Generation time</th>
           <td mat-cell *matCellDef="let packet">
             {{ packet.generationTime | datetime }}
           </td>
         </ng-container>
 
         <ng-container matColumnDef="receptionTime">
-          <th mat-header-cell *matHeaderCellDef>Reception Time</th>
+          <th mat-header-cell *matHeaderCellDef>Reception time</th>
           <td mat-cell *matCellDef="let packet">
             {{ packet.receptionTime | datetime }}
           </td>
@@ -120,9 +120,9 @@
         </ng-container>
 
         <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef></th>
-          <td mat-cell *matCellDef="let packet" style="text-align: right">
-            <mat-menu #packetMenu="matMenu" overlapTrigger="false" class="ya-menu">
+          <th mat-header-cell *matHeaderCellDef class="expand"></th>
+          <td mat-cell *matCellDef="let packet">
+            <app-more>
               <button mat-menu-item (click)="copyHex(packet)">
                 Copy Hex
               </button>
@@ -133,13 +133,7 @@
               <app-download-menu-item [link]="packet | packetDownloadLink">
                 Download
               </app-download-menu-item>
-            </mat-menu>
-            <button mat-button
-                    [matMenuTriggerFor]="packetMenu"
-                    class="icon"
-                    (click)="$event.stopPropagation()">
-              <mat-icon>more_vert</mat-icon>
-            </button>
+            </app-more>
           </td>
         </ng-container>
 

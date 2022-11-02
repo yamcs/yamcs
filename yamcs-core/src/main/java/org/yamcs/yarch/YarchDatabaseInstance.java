@@ -18,13 +18,10 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.archive.TagDb;
 import org.yamcs.management.ManagementService;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
-import org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties;
-import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.ResultListener;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlParser;
@@ -131,15 +128,24 @@ public class YarchDatabaseInstance {
         try {
             for (YConfiguration config : configs) {
                 String name = config.getString("name");
+                Bucket bucket;
                 if (config.containsKey("path")) {
                     Path path = Paths.get(config.getString("path"));
-                    addFileSystemBucket(name, path);
+                    bucket = addFileSystemBucket(name, path);
                 } else {
-                    Bucket bucket = getBucket(name);
+                    bucket = getBucket(name);
                     if (bucket == null) {
                         log.info("Creating bucket {}", name);
                         createBucket(name);
                     }
+                }
+                if (config.containsKey("maxSize")) {
+                    long maxSize = config.getLong("maxSize");
+                    bucket.setMaxSize(maxSize);
+                }
+                if (config.containsKey("maxObjects")) {
+                    int maxObjects = config.getInt("maxObjects");
+                    bucket.setMaxObjects(maxObjects);
                 }
             }
         } catch (IOException e) {
@@ -205,7 +211,7 @@ public class YarchDatabaseInstance {
         if (dirFiles.length == 0) {
             return;
         }
-        File oldTblDefs = new File(dir.getAbsolutePath() + "/" + "old-tbl-defs");
+        File oldTblDefs = new File(dir.getAbsolutePath(), "old-tbl-defs");
         oldTblDefs.mkdir();
 
         for (File f : dirFiles) {
@@ -307,12 +313,7 @@ public class YarchDatabaseInstance {
      * 
      */
     public void createTable(TableDefinition tbldef) throws YarchException {
-        if (tables.containsKey(tbldef.getName())) {
-            throw new YarchException("A table named '" + tbldef.getName() + "' already exists");
-        }
-        if (streams.containsKey(tbldef.getName())) {
-            throw new YarchException("A stream named '" + tbldef.getName() + "' already exists");
-        }
+        checkExisting(tbldef.getName());
 
         StorageEngine se = YarchDatabase.getStorageEngine(tbldef.getStorageEngineName());
         if (se == null) {
@@ -335,16 +336,31 @@ public class YarchDatabaseInstance {
      * @param stream
      * @throws YarchException
      */
-    public void addStream(Stream stream) throws YarchException {
-        if (tables.containsKey(stream.getName())) {
-            throw new YarchException("A table named '" + stream.getName() + "' already exists");
-        }
-        if (streams.containsKey(stream.getName())) {
-            throw new YarchException("A stream named '" + stream.getName() + "' already exists");
-        }
+    public synchronized void addStream(Stream stream) throws YarchException {
+        checkExisting(stream.getName());
         streams.put(stream.getName(), stream);
         if (managementService != null) {
             managementService.registerStream(instanceName, stream);
+        }
+    }
+
+    public synchronized void renameTable(String name, String newName) {
+        checkExisting(newName);
+        TableDefinition tblDef = tables.get(name);
+        if (tblDef == null) {
+            throw new YarchException("A table named '" + name + "' does not exists");
+        }
+        getStorageEngine(tblDef).renameTable(this, tblDef, newName);
+        tables.put(newName, tblDef);
+        tables.remove(name);
+    }
+
+    private void checkExisting(String name) {
+        if (tables.containsKey(name)) {
+            throw new YarchException("A table named '" + name + "' already exists");
+        }
+        if (streams.containsKey(name)) {
+            throw new YarchException("A stream named '" + name + "' already exists");
         }
     }
 
@@ -366,7 +382,7 @@ public class YarchDatabaseInstance {
         return streams.get(name);
     }
 
-    public void dropTable(String tblName) {
+    public synchronized void dropTable(String tblName) {
         log.info("Dropping table {}", tblName);
         TableDefinition tbl = tables.remove(tblName);
         if (tbl == null) {
@@ -401,7 +417,7 @@ public class YarchDatabaseInstance {
      * Returns the root directory for this database instance. It is usually home/instance_name.
      */
     public String getRoot() {
-        return YarchDatabase.getHome() + "/" + instanceName;
+        return YarchDatabase.getHome() + File.separator + instanceName;
     }
 
     public StreamSqlStatement createStatement(String query, Object... args) throws StreamSqlException, ParseException {
@@ -415,23 +431,25 @@ public class YarchDatabaseInstance {
     }
 
     public void execute(StreamSqlStatement stmt, ResultListener resultListener, long limit) throws StreamSqlException {
-        ExecutionContext context = new ExecutionContext(this);
-        stmt.execute(context, resultListener, limit);
+        try (ExecutionContext context = new ExecutionContext(this)) {
+            stmt.execute(context, resultListener, limit);
+        }
     }
 
     public void execute(StreamSqlStatement stmt, ResultListener resultListener) throws StreamSqlException {
-        ExecutionContext context = new ExecutionContext(this);
-        stmt.execute(context, resultListener, Long.MAX_VALUE);
+        try (ExecutionContext context = new ExecutionContext(this)) {
+            stmt.execute(context, resultListener, Long.MAX_VALUE);
+        }
     }
 
     public void executeUnchecked(StreamSqlStatement stmt, ResultListener resultListener) {
-        try {
-            ExecutionContext context = new ExecutionContext(this);
+        try (ExecutionContext context = new ExecutionContext(this)) {
             stmt.execute(context, resultListener, Long.MAX_VALUE);
         } catch (StreamSqlException e) {
             throw new YarchException(e);
         }
     }
+
     public StreamSqlResult execute(StreamSqlStatement stmt) throws StreamSqlException {
         ExecutionContext context = new ExecutionContext(this);
         return stmt.execute(context);
@@ -497,10 +515,6 @@ public class YarchDatabaseInstance {
         }
     }
 
-    public TagDb getTagDb() throws YarchException {
-        return YarchDatabase.getDefaultStorageEngine().getTagDb(this);
-    }
-
     public ProtobufDatabase getProtobufDatabase() throws YarchException {
         return YarchDatabase.getDefaultStorageEngine().getProtobufDatabase(this);
     }
@@ -538,11 +552,11 @@ public class YarchDatabaseInstance {
         return fileSystemBucketDatabase.registerBucket(bucketName, location);
     }
 
-    public List<BucketProperties> listBuckets() throws IOException {
-        List<BucketProperties> buckets = new ArrayList<>(fileSystemBucketDatabase.listBuckets());
+    public List<Bucket> listBuckets() throws IOException {
+        List<Bucket> buckets = new ArrayList<>(fileSystemBucketDatabase.listBuckets());
         List<String> names = buckets.stream().map(b -> b.getName()).collect(Collectors.toList());
 
-        for (BucketProperties bucket : bucketDatabase.listBuckets()) {
+        for (Bucket bucket : bucketDatabase.listBuckets()) {
             if (!names.contains(bucket.getName())) {
                 buckets.add(bucket);
             }
@@ -567,4 +581,5 @@ public class YarchDatabaseInstance {
         return YarchDatabase.getDefaultStorageEngine().getSequencesInfo(this);
 
     }
+
 }

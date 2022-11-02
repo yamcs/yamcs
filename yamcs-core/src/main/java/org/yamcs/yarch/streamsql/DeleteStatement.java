@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 
 import org.yamcs.yarch.CompiledExpression;
 import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWalker;
 import org.yamcs.yarch.TableVisitor;
@@ -64,7 +65,7 @@ public class DeleteStatement extends SimpleStreamSqlStatement {
         AtomicLong deleted = new AtomicLong();
         AtomicLong inspected = new AtomicLong();
         try {
-            TableWalkerBuilder twb = new TableWalkerBuilder(ydb, tblDef);
+            TableWalkerBuilder twb = new TableWalkerBuilder(context, tblDef);
             if (whereClause != null) {
                 whereClause.addFilter(twb);
             }

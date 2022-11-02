@@ -27,10 +27,6 @@ public class AggregateDataType extends NameDescription implements DataType {
         this.memberList = builder.memberList;
     }
 
-    public AggregateDataType(String name) {
-        super(name);
-    }
-
     protected AggregateDataType(AggregateDataType t) {
         super(t);
         this.memberList = t.memberList;
@@ -86,18 +82,20 @@ public class AggregateDataType extends NameDescription implements DataType {
         if (path.length == 0) {
             throw new IllegalArgumentException("path cannot be empty");
         }
-        Member m = getMember(path[0]);
-        for (int i = 1; i < path.length; i++) {
-            if (m == null) {
-                return null;
-            }
-            DataType ptype = m.getType();
-            if (ptype instanceof AggregateParameterType) {
-                m = ((AggregateParameterType) ptype).getMember(path[i]);
+        DataType ptype = this;
+        Member m = null;
+        for (int i = 0; i < path.length; i++) {
+
+            if (ptype instanceof AggregateDataType) {
+                m = ((AggregateDataType) ptype).getMember(path[i]);
+                if (m == null) {
+                    return null;
+                } else {
+                    ptype = m.getType();
+                }
             } else {
                 return null;
             }
-            m = getMember(path[i]);
         }
         return m;
     }
@@ -134,12 +132,11 @@ public class AggregateDataType extends NameDescription implements DataType {
      *             if the string cannot be parsed or if values cannot be determined for all members
      */
     @Override
-    @SuppressWarnings("unchecked")
     public Map<String, Object> convertType(Object value) {
         if (value instanceof String) {
             // Parse as JSON
             try {
-                JsonElement je = new JsonParser().parse((String) value);
+                JsonElement je = JsonParser.parseString((String) value);
                 if (je instanceof JsonObject) {
                     return fromJson((JsonObject) je);
                 } else {
@@ -156,10 +153,12 @@ public class AggregateDataType extends NameDescription implements DataType {
     }
 
     private Map<String, Object> fromJson(JsonObject jobj) {
+        // Copy, so that we can remove
+        JsonObject input = jobj.deepCopy();
         Map<String, Object> r = new HashMap<>();
         for (Member memb : memberList) {
-            if (jobj.has(memb.getName())) {
-                JsonElement jsel = jobj.remove(memb.getName());
+            if (input.has(memb.getName())) {
+                JsonElement jsel = input.remove(memb.getName());
                 String v;
                 if (jsel.isJsonPrimitive() && jsel.getAsJsonPrimitive().isString()) {
                     v = jsel.getAsString();
@@ -179,9 +178,9 @@ public class AggregateDataType extends NameDescription implements DataType {
                 r.put(memb.getName(), v);
             }
         }
-        if (jobj.size() > 0) {
+        if (input.size() > 0) {
             throw new IllegalArgumentException("Unknown members "
-                    + jobj.entrySet().stream().map(e -> e.getKey()).collect(Collectors.toList()));
+                    + input.entrySet().stream().map(e -> e.getKey()).collect(Collectors.toList()));
         }
         return r;
     }
@@ -207,16 +206,16 @@ public class AggregateDataType extends NameDescription implements DataType {
             }
         }
         if (input.size() > 0) {
-            throw new IllegalArgumentException("Unknown members " + input.keySet());
+            throw new IllegalArgumentException("Unknown members: " + input.keySet());
         }
         return r;
     }
 
     @Override
-    public Object parseStringForRawValue(String stringValue) {
+    public Map<String, Object> parseStringForRawValue(String stringValue) {
         // parse it as json
         try {
-            JsonElement je = new JsonParser().parse(stringValue);
+            JsonElement je = JsonParser.parseString(stringValue);
             if (je instanceof JsonObject) {
                 return fromJsonRaw((JsonObject) je);
             } else {
@@ -228,10 +227,12 @@ public class AggregateDataType extends NameDescription implements DataType {
     }
 
     private Map<String, Object> fromJsonRaw(JsonObject jobj) {
+        // Copy, so that we can remove
+        JsonObject input = jobj.deepCopy();
         Map<String, Object> r = new HashMap<>();
         for (Member memb : memberList) {
-            if (jobj.has(memb.getName())) {
-                JsonElement jsel = jobj.remove(memb.getName());
+            if (input.has(memb.getName())) {
+                JsonElement jsel = input.remove(memb.getName());
                 String v;
                 if (jsel.isJsonPrimitive() && jsel.getAsJsonPrimitive().isString()) {
                     v = jsel.getAsString();
@@ -243,9 +244,9 @@ public class AggregateDataType extends NameDescription implements DataType {
                 throw new IllegalArgumentException("No value for member '" + memb.getName() + "'");
             }
         }
-        if (jobj.size() > 0) {
+        if (input.size() > 0) {
             throw new IllegalArgumentException("Unknown members "
-                    + jobj.entrySet().stream().map(e -> e.getKey()).collect(Collectors.toList()));
+                    + input.entrySet().stream().map(e -> e.getKey()).collect(Collectors.joining(",", "[", "]")));
         }
         return r;
     }
@@ -271,23 +272,43 @@ public class AggregateDataType extends NameDescription implements DataType {
 
     @Override
     public String toString(Object v) {
-        if (v instanceof Map) {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> m1 = (Map<String, Object>) v;
-            Map<String, Object> m2 = new HashMap<>();
+        Gson gson = new Gson();
+        return gson.toJson(getMapStr(v));
+    }
 
-            for (Member memb : memberList) {
-                Object v2 = m1.get(memb.getName());
-                if (v != null) {
-                    DataType dt = memb.getType();
-                    m2.put(memb.getName(), dt.toString(v2));
+    // convert the map m to another one with the leafs converted to strings or primitive types
+    // also verifies that the m is valid for this type (all members present and no extra member)
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> getMapStr(Object v) {
+
+        if (!(v instanceof Map)) {
+            throw new IllegalArgumentException("Can only convert maps; got: " + v);
+        }
+        // Copy, so that we can remove
+        Map<String, Object> m = new HashMap<>((Map<String, Object>) v);
+
+        Map<String, Object> r = new HashMap<>();
+
+        for (Member memb : memberList) {
+            Object v1 = m.remove(memb.getName());
+            if (v1 == null) {
+                if (memb.getInitialValue() == null) {
+                    throw new IllegalArgumentException("no value provided for member '" + memb.getName() + "'");
+                }
+            } else {
+                DataType dt = memb.getType();
+                if (dt instanceof AggregateDataType) {
+                    r.put(memb.getName(), ((AggregateDataType) dt).getMapStr(v1));
+                } else {
+                    dt.toString(v1);
+                    r.put(memb.getName(), v1);
                 }
             }
-            Gson gson = new Gson();
-            return gson.toJson(m2);
-        } else {
-            throw new IllegalArgumentException("Can only convert maps");
         }
+        if (!m.isEmpty()) {
+            throw new IllegalArgumentException("Unknown members " + m.keySet());
+        }
+        return r;
     }
 
     public abstract static class Builder<T extends Builder<T>> extends NameDescription.Builder<T>

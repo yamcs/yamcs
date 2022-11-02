@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.MatchCriteriaEvaluator;
+import org.yamcs.mdb.MatchCriteriaEvaluatorFactory;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.protobuf.Mdb;
@@ -20,6 +22,7 @@ import org.yamcs.protobuf.Mdb.AlgorithmInfo;
 import org.yamcs.protobuf.Mdb.AlgorithmInfo.Scope;
 import org.yamcs.protobuf.Mdb.AncillaryDataInfo;
 import org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo;
+import org.yamcs.protobuf.Mdb.ArgumentDimensionInfo;
 import org.yamcs.protobuf.Mdb.ArgumentInfo;
 import org.yamcs.protobuf.Mdb.ArgumentMemberInfo;
 import org.yamcs.protobuf.Mdb.ArgumentTypeInfo;
@@ -40,7 +43,9 @@ import org.yamcs.protobuf.Mdb.HistoryInfo;
 import org.yamcs.protobuf.Mdb.InputParameterInfo;
 import org.yamcs.protobuf.Mdb.JavaExpressionCalibratorInfo;
 import org.yamcs.protobuf.Mdb.MemberInfo;
+import org.yamcs.protobuf.Mdb.NumberFormatTypeInfo;
 import org.yamcs.protobuf.Mdb.OutputParameterInfo;
+import org.yamcs.protobuf.Mdb.ParameterDimensionInfo;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
 import org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo;
@@ -68,9 +73,11 @@ import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentEntry;
 import org.yamcs.xtce.ArgumentInstanceRef;
 import org.yamcs.xtce.ArgumentType;
+import org.yamcs.xtce.ArrayArgumentType;
 import org.yamcs.xtce.ArrayParameterEntry;
 import org.yamcs.xtce.ArrayParameterType;
 import org.yamcs.xtce.BaseDataType;
+import org.yamcs.xtce.BinaryArgumentType;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.BooleanArgumentType;
 import org.yamcs.xtce.BooleanDataEncoding;
@@ -105,12 +112,14 @@ import org.yamcs.xtce.IntegerArgumentType;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.IntegerRange;
+import org.yamcs.xtce.IntegerValue;
 import org.yamcs.xtce.JavaExpressionCalibrator;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.MathOperationCalibrator;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
+import org.yamcs.xtce.NumberFormatType;
 import org.yamcs.xtce.NumericAlarm;
 import org.yamcs.xtce.NumericContextAlarm;
 import org.yamcs.xtce.OnParameterUpdateTrigger;
@@ -140,8 +149,6 @@ import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumeration;
-import org.yamcs.xtceproc.MatchCriteriaEvaluator;
-import org.yamcs.xtceproc.MatchCriteriaEvaluatorFactory;
 
 public class XtceToGpbAssembler {
     static final Log log = new Log(XtceToGpbAssembler.class);
@@ -547,17 +554,17 @@ public class XtceToGpbAssembler {
 
     public static SignificanceLevelType toSignificanceLevelType(Levels level) {
         switch (level) {
-        case none:
+        case NONE:
             return SignificanceLevelType.NONE;
-        case watch:
+        case WATCH:
             return SignificanceLevelType.WATCH;
-        case warning:
+        case WARNING:
             return SignificanceLevelType.WARNING;
-        case distress:
+        case DISTRESS:
             return SignificanceLevelType.DISTRESS;
-        case critical:
+        case CRITICAL:
             return SignificanceLevelType.CRITICAL;
-        case severe:
+        case SEVERE:
             return SignificanceLevelType.SEVERE;
         default:
             throw new IllegalStateException("Unexpected level " + level);
@@ -656,8 +663,7 @@ public class XtceToGpbAssembler {
             for (UnitType ut : bdt.getUnitSet()) {
                 infob.addUnitSet(toUnitInfo(ut));
             }
-        }
-        if (parameterType instanceof AggregateParameterType) {
+        } else if (parameterType instanceof AggregateParameterType) {
             AggregateParameterType apt = (AggregateParameterType) parameterType;
             for (Member member : apt.getMemberList()) {
                 MemberInfo.Builder memberb = MemberInfo.newBuilder();
@@ -681,18 +687,41 @@ public class XtceToGpbAssembler {
                 }
                 infob.addMember(memberb);
             }
-        }
-        if (parameterType instanceof ArrayParameterType) {
+        } else if (parameterType instanceof ArrayParameterType) {
             ArrayParameterType apt = (ArrayParameterType) parameterType;
             ArrayInfo.Builder arrayInfob = ArrayInfo.newBuilder();
-            arrayInfob.setDimensions(apt.getNumberOfDimensions());
+            List<IntegerValue> dims = apt.getSize();
+            for (int i = 0; i < apt.getNumberOfDimensions(); i++) {
+                if (dims != null) { // XTCE 1.2+
+                    IntegerValue dim = dims.get(i);
+                    if (dim instanceof FixedIntegerValue) {
+                        arrayInfob.addDimensions(ParameterDimensionInfo.newBuilder()
+                                .setFixedValue(((FixedIntegerValue) dim).getValue()));
+                    } else if (dim instanceof DynamicIntegerValue) {
+                        ParameterDimensionInfo.Builder dimb = ParameterDimensionInfo.newBuilder();
+                        DynamicIntegerValue dynamicValue = (DynamicIntegerValue) dim;
+                        ParameterInstanceRef ref = dynamicValue.getParameterInstanceRef();
+                        if (ref != null) {
+                            dimb.setParameter(toParameterInfo(ref.getParameter(), DetailLevel.SUMMARY));
+                            dimb.setSlope(dynamicValue.getSlope());
+                            dimb.setIntercept(dynamicValue.getIntercept());
+                        }
+                        arrayInfob.addDimensions(dimb);
+                    }
+                } else { // XTCE 1.1
+                    arrayInfob.addDimensions(ParameterDimensionInfo.getDefaultInstance());
+                }
+            }
 
             if (apt.getElementType() instanceof ParameterType) {
                 ParameterType elementType = (ParameterType) apt.getElementType();
                 arrayInfob.setType(toParameterTypeInfo(elementType, detail));
             }
             infob.setArrayInfo(arrayInfob);
+        } else {
+            throw new IllegalStateException("unknown parameter type " + parameterType);
         }
+
         if (detail == DetailLevel.FULL) {
             if (parameterType instanceof BaseDataType) {
                 BaseDataType bdt = (BaseDataType) parameterType;
@@ -711,6 +740,7 @@ public class XtceToGpbAssembler {
 
             if (parameterType instanceof IntegerParameterType) {
                 IntegerParameterType ipt = (IntegerParameterType) parameterType;
+                infob.setSigned(ipt.isSigned());
                 if (ipt.getDefaultAlarm() != null) {
                     infob.setDefaultAlarm(toAlarmInfo(ipt.getDefaultAlarm()));
                 }
@@ -718,6 +748,9 @@ public class XtceToGpbAssembler {
                     for (NumericContextAlarm contextAlarm : ipt.getContextAlarmList()) {
                         infob.addContextAlarm(toContextAlarmInfo(contextAlarm));
                     }
+                }
+                if (ipt.getNumberFormat() != null) {
+                    infob.setNumberFormat(toNumberFormatTypeInfo(ipt.getNumberFormat()));
                 }
             } else if (parameterType instanceof FloatParameterType) {
                 FloatParameterType fpt = (FloatParameterType) parameterType;
@@ -728,6 +761,9 @@ public class XtceToGpbAssembler {
                     for (NumericContextAlarm contextAlarm : fpt.getContextAlarmList()) {
                         infob.addContextAlarm(toContextAlarmInfo(contextAlarm));
                     }
+                }
+                if (fpt.getNumberFormat() != null) {
+                    infob.setNumberFormat(toNumberFormatTypeInfo(fpt.getNumberFormat()));
                 }
             } else if (parameterType instanceof EnumeratedParameterType) {
                 EnumeratedParameterType ept = (EnumeratedParameterType) parameterType;
@@ -775,6 +811,35 @@ public class XtceToGpbAssembler {
         return infob.build();
     }
 
+    private static NumberFormatTypeInfo toNumberFormatTypeInfo(NumberFormatType numberFormatType) {
+        NumberFormatTypeInfo.Builder infob = NumberFormatTypeInfo.newBuilder();
+        infob.setNumberBase(numberFormatType.getNumberBase().name());
+        infob.setMinimumFractionDigits(numberFormatType.getMinimumFractionDigits());
+        if (numberFormatType.getMaximumFractionDigits() >= 0) {
+            infob.setMaximumFractionDigits(numberFormatType.getMaximumFractionDigits());
+        }
+        infob.setMinimumIntegerDigits(numberFormatType.getMinimumIntegerDigits());
+        if (numberFormatType.getMaximumIntegerDigits() >= 0) {
+            infob.setMaximumIntegerDigits(numberFormatType.getMaximumIntegerDigits());
+        }
+        if (numberFormatType.getNegativeSuffix() != null) {
+            infob.setNegativeSuffix(numberFormatType.getNegativeSuffix());
+        }
+        if (numberFormatType.getPositiveSuffix() != null) {
+            infob.setPositiveSuffix(numberFormatType.getPositiveSuffix());
+        }
+        if (numberFormatType.getNegativePrefix() != null) {
+            infob.setNegativePrefix(numberFormatType.getNegativePrefix());
+        }
+        if (numberFormatType.getPositivePrefix() != null) {
+            infob.setPositivePrefix(numberFormatType.getPositivePrefix());
+        }
+        infob.setShowThousandsGrouping(numberFormatType.isShowThousandsGrouping());
+        infob.setNotation(numberFormatType.getNotation().name());
+
+        return infob.build();
+    }
+
     private static String getDataTypeInitialValue(DataType dataType) {
         if (dataType == null || dataType.getInitialValue() == null) {
             return null;
@@ -804,6 +869,13 @@ public class XtceToGpbAssembler {
                 if (member.getType() instanceof ArgumentType) {
                     ArgumentType ptype = (ArgumentType) member.getType();
                     memberb.setType(toArgumentTypeInfo(ptype));
+                    if (member.getInitialValue() != null) {
+                        String initialValue = ptype.toString(member.getInitialValue());
+                        memberb.setInitialValue(initialValue);
+                    } else if (ptype.getInitialValue() != null) {
+                        String initialValue = ptype.toString(ptype.getInitialValue());
+                        memberb.setInitialValue(initialValue);
+                    }
                 }
                 if (member.getShortDescription() != null) {
                     memberb.setShortDescription(member.getShortDescription());
@@ -820,10 +892,45 @@ public class XtceToGpbAssembler {
                 }
                 infob.addMember(memberb);
             }
-        }
-
-        if (argumentType instanceof IntegerArgumentType) {
+        } else if (argumentType instanceof ArrayArgumentType) {
+            ArrayArgumentType aat = (ArrayArgumentType) argumentType;
+            for (int i = 0; i < aat.getNumberOfDimensions(); i++) {
+                ArgumentDimensionInfo.Builder dimensionb = ArgumentDimensionInfo.newBuilder();
+                IntegerValue dimension = aat.getDimension(i);
+                if (dimension instanceof FixedIntegerValue) {
+                    var fixedIntegerValue = (FixedIntegerValue) dimension;
+                    dimensionb.setFixedValue(fixedIntegerValue.getValue());
+                } else if (dimension instanceof DynamicIntegerValue) {
+                    var dynamicIntegerValue = (DynamicIntegerValue) dimension;
+                    ParameterOrArgumentRef ref = dynamicIntegerValue.getDynamicInstanceRef();
+                    if (ref instanceof ParameterInstanceRef) {
+                        ParameterInstanceRef parameterRef = (ParameterInstanceRef) ref;
+                        dimensionb.setParameter(toParameterInfo(parameterRef.getParameter(), DetailLevel.SUMMARY));
+                    } else if (ref instanceof ArgumentInstanceRef) {
+                        ArgumentInstanceRef argumentRef = (ArgumentInstanceRef) ref;
+                        PathElement[] path = ref.getMemberPath();
+                        if (path == null) {
+                            dimensionb.setArgument(argumentRef.getName());
+                        } else {
+                            String memberPath = "";
+                            for (PathElement el : path) {
+                                memberPath += "." + el.toString();
+                            }
+                            dimensionb.setArgument(argumentRef.getName() + memberPath);
+                        }
+                    }
+                    dimensionb.setSlope(dynamicIntegerValue.getSlope());
+                    dimensionb.setIntercept(dynamicIntegerValue.getIntercept());
+                }
+                if (aat.getElementType() instanceof ArgumentType) {
+                    ArgumentType elementType = (ArgumentType) aat.getElementType();
+                    infob.setElementType(toArgumentTypeInfo(elementType));
+                }
+                infob.addDimensions(dimensionb);
+            }
+        } else if (argumentType instanceof IntegerArgumentType) {
             IntegerArgumentType iat = (IntegerArgumentType) argumentType;
+            infob.setSigned(iat.isSigned());
             if (iat.getValidRange() != null) {
                 if (iat.getValidRange().getMinInclusive() != Long.MIN_VALUE) {
                     infob.setRangeMin(iat.getValidRange().getMinInclusive());
@@ -860,6 +967,17 @@ public class XtceToGpbAssembler {
                 }
                 if (sizeRange.getMaxInclusive() != Long.MAX_VALUE) {
                     infob.setMaxChars((int) sizeRange.getMaxInclusive());
+                }
+            }
+        } else if (argumentType instanceof BinaryArgumentType) {
+            BinaryArgumentType bat = (BinaryArgumentType) argumentType;
+            IntegerRange sizeRange = bat.getSizeRangeInBytes();
+            if (sizeRange != null) {
+                if (sizeRange.getMinInclusive() != Long.MIN_VALUE) {
+                    infob.setMinBytes((int) sizeRange.getMinInclusive());
+                }
+                if (sizeRange.getMaxInclusive() != Long.MAX_VALUE) {
+                    infob.setMaxBytes((int) sizeRange.getMaxInclusive());
                 }
             }
         }
@@ -1083,22 +1201,22 @@ public class XtceToGpbAssembler {
         Mdb.EnumerationAlarm.Builder resultb = Mdb.EnumerationAlarm.newBuilder();
         resultb.setLabel(xtceAlarmItem.getEnumerationLabel());
         switch (xtceAlarmItem.getAlarmLevel()) {
-        case normal:
+        case NORMAL:
             resultb.setLevel(AlarmLevelType.NORMAL);
             break;
-        case watch:
+        case WATCH:
             resultb.setLevel(AlarmLevelType.WATCH);
             break;
-        case warning:
+        case WARNING:
             resultb.setLevel(AlarmLevelType.WARNING);
             break;
-        case distress:
+        case DISTRESS:
             resultb.setLevel(AlarmLevelType.DISTRESS);
             break;
-        case critical:
+        case CRITICAL:
             resultb.setLevel(AlarmLevelType.CRITICAL);
             break;
-        case severe:
+        case SEVERE:
             resultb.setLevel(AlarmLevelType.SEVERE);
             break;
         default:

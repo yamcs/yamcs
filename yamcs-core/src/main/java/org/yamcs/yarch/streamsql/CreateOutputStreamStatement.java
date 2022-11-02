@@ -3,6 +3,7 @@ package org.yamcs.yarch.streamsql;
 import java.util.function.Consumer;
 
 import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.OutputStream;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;

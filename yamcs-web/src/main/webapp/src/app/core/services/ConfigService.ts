@@ -13,12 +13,15 @@ export interface WebsiteConfig {
   twoStageCommanding: boolean;
   collapseInitializedArguments: boolean;
   commandOptions: CommandOption[];
+  queueNames: string[];
   hasTemplates: boolean;
   logoutRedirectUrl: string;
   dass: boolean;
   tc: boolean;
   tmArchive: boolean;
+  displayBucket: string;
   displayFolderPerInstance: boolean;
+  stackBucket: string;
   stackFolderPerInstance: boolean;
 }
 

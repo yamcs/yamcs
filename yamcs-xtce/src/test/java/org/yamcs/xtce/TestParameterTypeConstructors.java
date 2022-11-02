@@ -1,14 +1,14 @@
 package org.yamcs.xtce;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.yamcs.xtce.xml.XtceStaxReader;
 
 /**
@@ -24,8 +24,9 @@ public class TestParameterTypeConstructors {
         SpaceSystem ss = reader.readXmlDocument("src/test/resources/BogusSAT-1.xml");
         for (Parameter p : ss.getParameters()) {
             ParameterType t1 = p.getParameterType();
-            if (t1 == null)
+            if (t1 == null) {
                 continue;
+            }
             ParameterType t2 = clone(t1);
             assertNotEquals(t1, t2);
             try {
@@ -68,6 +69,7 @@ public class TestParameterTypeConstructors {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     private void verifyEquals(ParameterType p1, ParameterType p2)
             throws IllegalArgumentException, IllegalAccessException {
         Class c1 = p1.getClass();
@@ -77,7 +79,7 @@ public class TestParameterTypeConstructors {
             Field[] fa = c1.getDeclaredFields();
             for (Field f : fa) {
                 f.setAccessible(true);
-                assertEquals("When comparing "+f.getName(), f.get(p1), f.get(p2));
+                assertEquals(f.get(p1), f.get(p2), "When comparing " + f.getName());
             }
             c1 = c1.getSuperclass();
             c2 = c2.getSuperclass();

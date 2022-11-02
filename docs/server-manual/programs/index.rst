@@ -7,5 +7,5 @@ Programs
 
     yamcsadmin
     yamcsd
-    init-script
     systemd-unit
+    packet-viewer

@@ -5,6 +5,9 @@ import java.util.Arrays;
 import org.codehaus.commons.compiler.LocatedException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.SimpleCompiler;
+import org.yamcs.mdb.MathOperationCalibratorFactory;
+import org.yamcs.mdb.ParameterTypeUtils;
+import org.yamcs.mdb.ProcessingData;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
@@ -14,9 +17,6 @@ import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.MathAlgorithm;
 import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtceproc.MathOperationCalibratorFactory;
-import org.yamcs.xtceproc.ParameterTypeUtils;
-import org.yamcs.xtceproc.ProcessingData;
 
 /**
  * Executes XTCE math algorithms {@link MathAlgorithm}

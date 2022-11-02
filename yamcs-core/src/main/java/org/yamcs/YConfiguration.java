@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,11 +15,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.LogManager;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
 
@@ -52,9 +56,12 @@ public class YConfiguration {
     // this is used for the old style when the methods of YConfiguration were called in a static way
     // Nowadays, please use Yconfiguration.getConfig() to make a child config, and then use the .path() to get the
     // similar path.
-    static private IdentityHashMap<Object, String> staticConfPaths = new IdentityHashMap<>();
+    private static IdentityHashMap<Object, String> staticConfPaths = new IdentityHashMap<>();
 
-    static final private YConfiguration EMPTY_CONFIG = YConfiguration.wrap(Collections.emptyMap());
+    private static final YConfiguration EMPTY_CONFIG = YConfiguration.wrap(Collections.emptyMap());
+
+    public static final Pattern PROPERTY_PATTERN = Pattern
+            .compile("\\$\\{\\s*((?<name>[\\w\\.]+)(:(?<fallback>\\S+)?)?)\\s*\\}");
     /**
      * The parent configuration
      */
@@ -84,7 +91,8 @@ public class YConfiguration {
     @SuppressWarnings("unchecked")
     public YConfiguration(String subsystem, InputStream is, String confpath) {
         this.rootLocation = confpath;
-        Yaml yaml = new Yaml();
+        Yaml yaml = getYamlParser();
+
         try {
             Object o = yaml.load(is);
             if (o == null) {
@@ -96,8 +104,25 @@ public class YConfiguration {
             staticConfPaths.put(root, confpath);
         } catch (YAMLException e) {
             throw new ConfigurationException(confpath, e.toString(), e);
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
         }
         configurations.put(subsystem, this);
+    }
+
+    /**
+     * Create a Yaml parser by taking into account some system properties.
+     */
+    private Yaml getYamlParser() {
+        LoaderOptions loaderOptions = new LoaderOptions();
+        int maxAliases = Integer.parseInt(System.getProperty("org.yamcs.yaml.maxAliases", "200"));
+        loaderOptions.setMaxAliasesForCollections(maxAliases);
+
+        return new Yaml(loaderOptions);
     }
 
     /**
@@ -115,7 +140,7 @@ public class YConfiguration {
     /**
      * Sets up the Yamcs configuration system and loads the UTC-TAI offsets.
      * <p>
-     * This method is intended for client tools and make store or use files from <tt>~/.yamcs</tt>.
+     * This method is intended for client tools and make store or use files from {@code ~/.yamcs}.
      */
     public synchronized static void setupTool() {
         File userConfigDirectory = new File(System.getProperty("user.home"), ".yamcs");
@@ -131,8 +156,8 @@ public class YConfiguration {
      */
     public synchronized static void setupTool(File configDirectory) {
         if (System.getProperty("java.util.logging.config.file") == null) {
-            try {
-                LogManager.getLogManager().readConfiguration(resolver.getConfigurationStream("/logging.properties"));
+            try (InputStream in = resolver.getConfigurationStream("/logging.properties")) {
+                LogManager.getLogManager().readConfiguration(in);
             } catch (Exception e) {
                 // do nothing, the default java builtin logging is used
             }
@@ -164,16 +189,21 @@ public class YConfiguration {
     public static synchronized void setupTest(String configPrefix) {
         prefix = configPrefix;
         configurations.clear(); // forget any known config (useful in the maven unit tests called in the same VM)
+        resolver = new DefaultConfigurationResolver();
 
         if (System.getProperty("java.util.logging.config.file") == null) {
-            try {
-                LogManager.getLogManager().readConfiguration(resolver.getConfigurationStream("/logging.properties"));
+            try (InputStream in = resolver.getConfigurationStream("/logging.properties")) {
+                LogManager.getLogManager().readConfiguration(in);
             } catch (Exception e) {
                 // do nothing, the default java builtin logging is used
             }
         }
 
         TimeEncoding.setUp();
+    }
+
+    public static synchronized void clearConfigs() {
+        configurations.clear();
     }
 
     /**
@@ -303,7 +333,7 @@ public class YConfiguration {
         return root.keySet();
     }
 
-    private static String getUnqualfiedClassName(Object o) {
+    private static String getUnqualifiedClassName(Object o) {
         String name = o.getClass().getName();
         if (name.lastIndexOf('.') > 0) {
             name = name.substring(name.lastIndexOf('.') + 1); // Map$Entry
@@ -321,7 +351,9 @@ public class YConfiguration {
      * If the key is pointing to a map, creates and returns a configuration object out of that map
      * <p>
      * The returned object will have its parent set to this object
-     * <p>If the key does not exist a ConfigurationException is thrown.
+     * <p>
+     * If the key does not exist a ConfigurationException is thrown.
+     *
      * @param key
      * @return
      */
@@ -332,11 +364,12 @@ public class YConfiguration {
 
     /**
      * Same as {@link #getConfig(String)} but return an empty config if the key does not exist.
+     *
      * @param key
      * @return
      */
     public YConfiguration getConfigOrEmpty(String key) {
-        if(root.containsKey(key)) {
+        if (root.containsKey(key)) {
             return getConfig(key);
         } else {
             return YConfiguration.emptyConfig();
@@ -344,7 +377,7 @@ public class YConfiguration {
     }
 
     @SuppressWarnings("unchecked")
-    static public Map<String, Object> getMap(Map<String, Object> m, String key) throws ConfigurationException {
+    public static Map<String, Object> getMap(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
         Object o = m.get(key);
         if (o instanceof Map) {
@@ -382,19 +415,19 @@ public class YConfiguration {
      * @return
      * @throws ConfigurationException
      */
-    static public String getString(Map<String, Object> m, String key) throws ConfigurationException {
+    public static String getString(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
 
         Object o = m.get(key);
         if (o instanceof String) {
-            return (String) o;
+            return expandString(staticConfPaths.get(m), (String) o);
         } else {
             throw new ConfigurationException(staticConfPaths.get(m),
-                    "mapping for key '" + key + "' is of type " + getUnqualfiedClassName(o) + " and not String");
+                    "mapping for key '" + key + "' is of type " + getUnqualifiedClassName(o) + " and not String");
         }
     }
 
-    static public String getString(Map<String, Object> m, String key, String defaultValue)
+    public static String getString(Map<String, Object> m, String key, String defaultValue)
             throws ConfigurationException {
         if (m.containsKey(key)) {
             return getString(m, key);
@@ -404,8 +437,7 @@ public class YConfiguration {
     }
 
     public String getString(String key) throws ConfigurationException {
-        checkKey(key, String.class);
-        return (String) root.get(key);
+        return getString(root, key);
     }
 
     public String getString(String key, String defaultValue) throws ConfigurationException {
@@ -420,13 +452,42 @@ public class YConfiguration {
         return getString(m, subkey);
     }
 
+    private static String expandString(String confPath, String property) {
+        // Expand a system property like ${foo} or an environment property like ${env.foo}
+        if (property.contains("${")) {
+            StringBuilder buf = new StringBuilder();
+            Matcher matcher = PROPERTY_PATTERN.matcher(property);
+            while (matcher.find()) {
+                String name = matcher.group("name");
+
+                String replacement = null;
+                if (name.startsWith("env.")) {
+                    replacement = System.getenv(name.substring(4));
+                } else {
+                    replacement = System.getProperty(name);
+                }
+
+                if (replacement == null) {
+                    replacement = matcher.group("fallback");
+                }
+                if (replacement == null) {
+                    throw new ConfigurationException(confPath, "cannot resolve property '" + name + "'");
+                }
+                // Escape special replacement characters
+                replacement = replacement.replace("$", "\\$").replace("\\", "\\\\");
+                matcher.appendReplacement(buf, replacement);
+            }
+            matcher.appendTail(buf);
+            return buf.toString();
+        }
+        return property;
+    }
+
     /*
      * The key has to point to a list
      */
-    @SuppressWarnings("unchecked")
     public <T> List<T> getList(String key) throws ConfigurationException {
-        checkKey(key, List.class);
-        return (List<T>) root.get(key);
+        return getList(root, key);
     }
 
     @SuppressWarnings("unchecked")
@@ -446,14 +507,13 @@ public class YConfiguration {
             }
         } else {
             throw new ConfigurationException(staticConfPaths.get(root),
-                    "mapping for key '" + key + "' is of type " + getUnqualfiedClassName(o) + " and not List");
+                    "mapping for key '" + key + "' is of type " + getUnqualifiedClassName(o) + " and not List");
         }
         return r;
     }
 
     public double getDouble(String key) throws ConfigurationException {
-        checkKey(key, Number.class);
-        return ((Number) root.get(key)).doubleValue();
+        return getDouble(root, key);
     }
 
     public double getDouble(String key, double defaultValue) throws ConfigurationException {
@@ -492,7 +552,7 @@ public class YConfiguration {
             }
         } else {
             throw new ConfigurationException(staticConfPaths.get(root),
-                    "mapping for key '" + key + "' is of type " + getUnqualfiedClassName(o) + " and not List");
+                    "mapping for key '" + key + "' is of type " + getUnqualifiedClassName(o) + " and not List");
         }
         return r;
     }
@@ -515,35 +575,39 @@ public class YConfiguration {
      * @return the boolean config value
      * @throws ConfigurationException
      */
-    static public boolean getBoolean(Map<String, Object> m, String key, boolean defaultValue)
+    public static boolean getBoolean(Map<String, Object> m, String key, boolean defaultValue)
             throws ConfigurationException {
-        Object o = m.get(key);
-        if (o != null) {
-            if (o instanceof Boolean) {
-                return (Boolean) o;
-            } else {
-                throw new ConfigurationException(staticConfPaths.get(m), "mapping for key '" + key + "' is of type "
-                        + getUnqualfiedClassName(o) + " and not Boolean (use true or false without quotes)");
-            }
+        if (m.containsKey(key)) {
+            return getBoolean(m, key);
         } else {
             return defaultValue;
         }
     }
 
-    static public boolean getBoolean(Map<String, Object> m, String key) throws ConfigurationException {
+    public static boolean getBoolean(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
         Object o = m.get(key);
         if (o instanceof Boolean) {
             return (Boolean) o;
-        } else {
-            throw new ConfigurationException(staticConfPaths.get(m), "mapping for key '" + key + "' is of type "
-                    + getUnqualfiedClassName(o) + " and not Boolean (use true or false without quotes)");
+        } else if (o instanceof String) {
+            String stringValue = getString(m, key);
+            switch (stringValue) {
+            case "yes":
+            case "true":
+            case "on":
+                return true;
+            case "no":
+            case "false":
+            case "off":
+                return false;
+            }
         }
+        throw new ConfigurationException(staticConfPaths.get(m), "mapping for key '" + key + "' is of type "
+                + getUnqualifiedClassName(o) + " and not Boolean (use true or false without quotes)");
     }
 
     public boolean getBoolean(String key) throws ConfigurationException {
-        checkKey(key, Boolean.class);
-        return (Boolean) root.get(key);
+        return getBoolean(root, key);
     }
 
     public boolean getBoolean(String key, String key1) throws ConfigurationException {
@@ -556,16 +620,11 @@ public class YConfiguration {
     }
 
     public int getInt(String key) throws ConfigurationException {
-        checkKey(key, Integer.class);
-        return (Integer) root.get(key);
+        return getInt(root, key);
     }
 
     public int getInt(String key, int defaultValue) throws ConfigurationException {
-        if (root.containsKey(key)) {
-            return getInt(key);
-        } else {
-            return defaultValue;
-        }
+        return getInt(root, key, defaultValue);
     }
 
     public int getInt(String key, String key1) throws ConfigurationException {
@@ -583,15 +642,21 @@ public class YConfiguration {
         return getInt(m, key1, defaultValue);
     }
 
-    static public int getInt(Map<String, Object> m, String key) throws ConfigurationException {
+    public static int getInt(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
         Object o = m.get(key);
         if (o instanceof Integer) {
             return (Integer) o;
-        } else {
-            throw new ConfigurationException(staticConfPaths.get(m),
-                    "mapping for key '" + key + "' is of type " + getUnqualfiedClassName(o) + " and not Integer");
+        } else if (o instanceof String) {
+            String stringValue = getString(m, key);
+            try {
+                return Integer.parseInt(stringValue);
+            } catch (NumberFormatException e) {
+                // Ignore
+            }
         }
+        throw new ConfigurationException(staticConfPaths.get(m),
+                "mapping for key '" + key + "' is of type " + getUnqualifiedClassName(o) + " and not Integer");
     }
 
     /**
@@ -606,16 +671,11 @@ public class YConfiguration {
      * @throws ConfigurationException
      *             if the key is present but it's not an int
      */
-    static public int getInt(Map<String, Object> m, String key, int defaultValue) throws ConfigurationException {
+    public static int getInt(Map<String, Object> m, String key, int defaultValue) throws ConfigurationException {
         if (!m.containsKey(key)) {
             return defaultValue;
-        }
-        Object o = m.get(key);
-        if (o instanceof Integer) {
-            return (Integer) o;
         } else {
-            throw new ConfigurationException(staticConfPaths.get(m),
-                    "mapping for key '" + key + "' is of type " + getUnqualfiedClassName(o) + " and not Integer");
+            return getInt(m, key);
         }
     }
 
@@ -627,17 +687,23 @@ public class YConfiguration {
         return getLong(root, key, defaultValue);
     }
 
-    static public long getLong(Map<String, Object> m, String key) throws ConfigurationException {
+    public static long getLong(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
         Object o = m.get(key);
         if (o instanceof Integer) {
             return (Integer) o;
         } else if (o instanceof Long) {
             return (Long) o;
-        } else {
-            throw new ConfigurationException(staticConfPaths.get(m), "mapping for key '" + key + "' is of type "
-                    + getUnqualfiedClassName(o) + " and not Integer or Long");
+        } else if (o instanceof String) {
+            String stringValue = getString(m, key);
+            try {
+                return Long.parseLong(stringValue);
+            } catch (NumberFormatException e) {
+                // Ignore
+            }
         }
+        throw new ConfigurationException(staticConfPaths.get(m), "mapping for key '" + key + "' is of type "
+                + getUnqualifiedClassName(o) + " and not Integer or Long");
     }
 
     public byte[] getBinary(String key) {
@@ -653,21 +719,21 @@ public class YConfiguration {
         }
     }
 
-    static public byte[] getBinary(Map<String, Object> m, String key) throws ConfigurationException {
+    public static byte[] getBinary(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
         Object o = m.get(key);
         if (o instanceof byte[]) {
             return (byte[]) o;
         } else if (o instanceof String) {
-            String s = (String) o;
+            String stringValue = getString(m, key);
             try {
                 return StringConverter.hexStringToArray((String) o);
             } catch (IllegalArgumentException e) {
-                throw new ConfigurationException("'" + s + "' is not an hexadecimal string");
+                throw new ConfigurationException("'" + stringValue + "' is not a hexadecimal string");
             }
         } else {
             throw new ConfigurationException(staticConfPaths.get(m), "mapping for key '" + key + "' is of type "
-                    + getUnqualfiedClassName(o) + " and not binary or hexadecimal string");
+                    + getUnqualifiedClassName(o) + " and not binary or hexadecimal string");
         }
     }
 
@@ -681,32 +747,37 @@ public class YConfiguration {
      * @throws ConfigurationException
      *             if the key is present but it's not an long
      */
-    static public long getLong(Map<String, Object> m, String key, long v) throws ConfigurationException {
+    public static long getLong(Map<String, Object> m, String key, long v) throws ConfigurationException {
         if (!m.containsKey(key)) {
             return v;
-        }
-        Object o = m.get(key);
-        if (o instanceof Integer) {
-            return (Integer) o;
-        } else if (o instanceof Long) {
-            return (Long) o;
         } else {
-            throw new ConfigurationException(staticConfPaths.get(m), "mapping for key '" + key + "' is of type "
-                    + getUnqualfiedClassName(o) + " and not Integer or Long");
+            return getLong(m, key);
         }
     }
 
-    static public double getDouble(Map<String, Object> m, String key, double v) throws ConfigurationException {
+    public static double getDouble(Map<String, Object> m, String key, double v) throws ConfigurationException {
         if (!m.containsKey(key)) {
             return v;
+        } else {
+            return getDouble(m, key);
         }
+    }
+
+    public static double getDouble(Map<String, Object> m, String key) throws ConfigurationException {
+        checkKey(m, key);
         Object o = m.get(key);
         if (o instanceof Number) {
             return ((Number) o).doubleValue();
-        } else {
-            throw new ConfigurationException(staticConfPaths.get(m), "mapping for key '" + key + "' is of type "
-                    + getUnqualfiedClassName(o) + " and not Integer or Long");
+        } else if (o instanceof String) {
+            String stringValue = getString(m, key);
+            try {
+                return Double.parseDouble(stringValue);
+            } catch (NumberFormatException e) {
+                // Ignore
+            }
         }
+        throw new ConfigurationException(staticConfPaths.get(m), "mapping for key '" + key + "' is of type "
+                + getUnqualifiedClassName(o) + " and not Double");
     }
 
     public boolean isList(String key) {
@@ -823,7 +894,12 @@ public class YConfiguration {
      * @return root.get(key)
      */
     public Object get(String key) {
-        return root.get(key);
+        Object value = root.get(key);
+        if (value instanceof String) {
+            return getString(key); // Expand properties
+        } else {
+            return value;
+        }
     }
 
     /**
@@ -867,22 +943,26 @@ public class YConfiguration {
     }
 
     @SuppressWarnings("unchecked")
-    static public <T> List<T> getList(Map<String, Object> m, String key) throws ConfigurationException {
+    public static <T> List<T> getList(Map<String, Object> m, String key) throws ConfigurationException {
         checkKey(m, key);
         Object o = m.get(key);
         if (o instanceof List) {
-            List<T> l = (List<T>) o;
+            List<T> l = new ArrayList<>((List<T>) o);
             String parentPath = staticConfPaths.get(m);
             for (int i = 0; i < l.size(); i++) {
                 Object o1 = l.get(i);
                 if (!staticConfPaths.containsKey(o1)) {
                     staticConfPaths.put(o1, parentPath + "->" + key + "[" + i + "]");
                 }
+                if (o1 instanceof String) {
+                    String confPath = staticConfPaths.get(o1);
+                    l.set(i, (T) expandString(confPath, (String) o1));
+                }
             }
             return l;
         } else {
             throw new ConfigurationException(staticConfPaths.get(m),
-                    "mapping for key '" + key + "' is of type " + getUnqualfiedClassName(o) + " and not List");
+                    "mapping for key '" + key + "' is of type " + getUnqualifiedClassName(o) + " and not List");
         }
     }
 
@@ -907,7 +987,7 @@ public class YConfiguration {
         Object o = root.get(key);
         if (!(o instanceof List)) {
             throw new ConfigurationException(staticConfPaths.get(root),
-                    "mapping for key '" + key + "' is of type " + getUnqualfiedClassName(o) + " and not List");
+                    "mapping for key '" + key + "' is of type " + getUnqualifiedClassName(o) + " and not List");
         }
 
         List<?> l = (List<?>) o;
@@ -920,7 +1000,7 @@ public class YConfiguration {
         Object o1 = l.get(idx);
         if (!(o1 instanceof Map)) {
             throw new ConfigurationException(this,
-                    "The element " + idx + " in the list is not a map but " + getUnqualfiedClassName(o1));
+                    "The element " + idx + " in the list is not a map but " + getUnqualifiedClassName(o1));
         }
 
         return new YConfiguration(this, key + "[" + idx + "]", (Map<String, Object>) o1);

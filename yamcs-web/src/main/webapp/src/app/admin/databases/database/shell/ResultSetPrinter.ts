@@ -43,8 +43,8 @@ export class ResultSetPrinter {
     let line = '';
     for (let i = 0; i < this.columns.length; i++) {
       line += '| ';
-      line += ' '.repeat(this.widths[i] - values[i].length);
       line += values[i];
+      line += ' '.repeat(this.widths[i] - values[i].length);
       line += ' ';
     }
     return line + '|';

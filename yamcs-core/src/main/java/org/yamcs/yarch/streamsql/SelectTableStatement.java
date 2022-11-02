@@ -6,6 +6,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 import org.yamcs.logging.Log;
+import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -50,7 +51,7 @@ public class SelectTableStatement implements StreamSqlStatement {
     public StreamSqlResult execute(ExecutionContext context) throws StreamSqlException {
         Stream stream = createStream(context);
 
-        QueueStreamSqlResult result = new QueueStreamSqlResult(stream);
+        QueueStreamSqlResult result = new QueueStreamSqlResult(context, stream);
         stream.addSubscriber(result);
         stream.start();
         return result;
@@ -69,12 +70,15 @@ public class SelectTableStatement implements StreamSqlStatement {
 
     static class QueueStreamSqlResult implements StreamSqlResult, StreamSubscriber {
         final Stream stream;
+        final ExecutionContext context;
+
         BlockingQueue<Tuple> queue = new ArrayBlockingQueue<Tuple>(1024);
         Tuple next;
         static Log log = new Log(QueueStreamSqlResult.class);
 
-        QueueStreamSqlResult(Stream stream) {
+        QueueStreamSqlResult(ExecutionContext context, Stream stream) {
             this.stream = stream;
+            this.context = context;
         }
 
         @Override
@@ -117,6 +121,7 @@ public class SelectTableStatement implements StreamSqlStatement {
         @Override
         public void close() {
             stream.close();
+            context.close();
             queue.add(END_SIGNAL);
         }
 
@@ -131,7 +136,7 @@ public class SelectTableStatement implements StreamSqlStatement {
         }
 
         @Override
-        public void finalize() {
+        protected void finalize() {
             if (!stream.isClosed()) {
                 log.error("Stream {} left dangling (StreamSqlResult has been discarded before closing)",
                         stream.getName());

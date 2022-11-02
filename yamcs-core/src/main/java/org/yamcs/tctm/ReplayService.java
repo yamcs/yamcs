@@ -20,14 +20,20 @@ import org.yamcs.YamcsServer;
 import org.yamcs.archive.ReplayListener;
 import org.yamcs.archive.ReplayOptions;
 import org.yamcs.archive.ReplayServer;
+import org.yamcs.archive.SpeedSpec;
 import org.yamcs.archive.XtceTmReplayHandler.ReplayPacket;
 import org.yamcs.archive.YarchReplay;
 import org.yamcs.cmdhistory.CommandHistoryProvider;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.mdb.ParameterTypeProcessor;
+import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.Subscription;
+import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.XtceTmProcessor;
 import org.yamcs.parameter.ParameterProcessor;
-import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterProcessorManager;
+import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
@@ -38,7 +44,6 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.PpReplayRequest;
-import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
@@ -48,19 +53,13 @@ import org.yamcs.security.SecurityStore;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.ParameterTypeProcessor;
-import org.yamcs.xtceproc.ProcessingData;
-import org.yamcs.xtceproc.Subscription;
-import org.yamcs.xtceproc.XtceDbFactory;
-import org.yamcs.xtceproc.XtceTmProcessor;
 import org.yamcs.yarch.protobuf.Db.Event;
+import org.yamcs.yarch.protobuf.Db.ProtoDataType;
 
 import com.google.protobuf.util.JsonFormat;
 
 /**
  * Provides telemetry packets and processed parameters from the yamcs archive.
- * 
- * @author nm
  * 
  */
 public class ReplayService extends AbstractProcessorService
@@ -74,7 +73,6 @@ public class ReplayService extends AbstractProcessorService
     private ParameterProcessorManager parameterProcessorManager;
     TmProcessor tmProcessor;
     XtceDb xtceDb;
-    volatile long replayTime;
 
     YarchReplay yarchReplay;
     // the originalReplayRequest contains possibly only parameters.
@@ -91,9 +89,6 @@ public class ReplayService extends AbstractProcessorService
     @Override
     public void init(Processor proc, YConfiguration args, Object spec) {
         super.init(proc, args, spec);
-        if(spec == null) {
-            throw new IllegalArgumentException("Please provide the spec");
-        }
         xtceDb = XtceDbFactory.getInstance(getYamcsInstance());
         securityStore = YamcsServer.getServer().getSecurityStore();
         if (args.containsKey("excludeParameterGroups")) {
@@ -105,7 +100,7 @@ public class ReplayService extends AbstractProcessorService
         parameterProcessorManager.addParameterProvider(this);
 
         if (spec instanceof ReplayOptions) {
-            this.originalReplayRequest = (ReplayOptions) spec;
+            originalReplayRequest = (ReplayOptions) spec;
         } else if (spec instanceof String) {
             ReplayRequest.Builder rrb = ReplayRequest.newBuilder();
             try {
@@ -116,7 +111,12 @@ public class ReplayService extends AbstractProcessorService
             if (!rrb.hasSpeed()) {
                 rrb.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.REALTIME).setParam(1));
             }
-            this.originalReplayRequest = new ReplayOptions(rrb.build());
+            originalReplayRequest = new ReplayOptions(rrb.build());
+        } else if (spec == null) { // For example, created by ProcessorCreatorService
+            originalReplayRequest = new ReplayOptions();
+            originalReplayRequest.setSpeed(new SpeedSpec(SpeedSpec.Type.ORIGINAL, 1));
+            originalReplayRequest.setEndAction(EndAction.STOP);
+            originalReplayRequest.setAutostart(false);
         } else {
             throw new IllegalArgumentException("Unknown spec of type " + spec.getClass());
         }
@@ -129,11 +129,9 @@ public class ReplayService extends AbstractProcessorService
 
     @Override
     public void newData(ProtoDataType type, Object data) {
-
         switch (type) {
         case TM_PACKET:
             ReplayPacket rp = (ReplayPacket) data;
-            replayTime = rp.getGenerationTime();
             String qn = rp.getQualifiedName();
             SequenceContainer container = xtceDb.getSequenceContainer(qn);
             if (container == null) {
@@ -149,9 +147,9 @@ public class ReplayService extends AbstractProcessorService
             }
             break;
         case PP:
+            @SuppressWarnings("unchecked")
             List<ParameterValue> pvals = (List<ParameterValue>) data;
             if (!pvals.isEmpty()) {
-                replayTime = pvals.get(0).getGenerationTime();
                 ProcessingData processingData = ProcessingData.createForTmProcessing(processor.getLastValueCache());
                 calibrate(pvals, processingData);
                 parameterProcessorManager.process(processingData);
@@ -159,12 +157,10 @@ public class ReplayService extends AbstractProcessorService
             break;
         case CMD_HISTORY:
             CommandHistoryEntry che = (CommandHistoryEntry) data;
-            replayTime = che.getCommandId().getGenerationTime();
             commandHistoryRequestManager.addCommand(PreparedCommand.fromCommandHistoryEntry(che));
             break;
         case EVENT:
             Event evt = (Event) data;
-            replayTime = evt.getGenerationTime();
             break;
         default:
             log.error("Unexpected data type {} received", type);
@@ -233,7 +229,6 @@ public class ReplayService extends AbstractProcessorService
             }
         }
 
-
         if (ppRecFilter.isEmpty() && excludeParameterGroups == null) {
             log.debug("No additional pp group added or removed to/from the subscription");
         } else {
@@ -297,12 +292,11 @@ public class ReplayService extends AbstractProcessorService
     }
 
     private void createReplay() throws ProcessorException {
-        List<ReplayServer> services = YamcsServer.getServer().getServices(getYamcsInstance(), ReplayServer.class);
-        if (services.isEmpty()) {
+        ReplayServer replayServer = YamcsServer.getServer().getService(getYamcsInstance(), ReplayServer.class);
+        if (replayServer == null) {
             throw new ProcessorException("ReplayServer not configured for this instance");
         }
         try {
-            ReplayServer replayServer = services.get(0);
             yarchReplay = replayServer.createReplay(rawDataRequest, this);
         } catch (YamcsException e) {
             log.error("Exception creating the replay", e);
@@ -320,7 +314,9 @@ public class ReplayService extends AbstractProcessorService
             return;
         }
 
-        yarchReplay.start();
+        if (originalReplayRequest.isAutostart()) {
+            yarchReplay.start();
+        }
         notifyStarted();
     }
 
@@ -335,9 +331,9 @@ public class ReplayService extends AbstractProcessorService
     }
 
     @Override
-    public void seek(long time) {
+    public void seek(long time, boolean autostart) {
         try {
-            yarchReplay.seek(time);
+            yarchReplay.seek(time, autostart);
         } catch (YamcsException e) {
             throw new RuntimeException(e);
         }
@@ -405,12 +401,17 @@ public class ReplayService extends AbstractProcessorService
 
     @Override
     public ReplaySpeed getSpeed() {
-        return originalReplayRequest.getSpeed();
+        return originalReplayRequest.getSpeed().toProtobuf();
     }
 
     @Override
     public ReplayRequest getReplayRequest() {
         return originalReplayRequest.toProtobuf();
+    }
+
+    @Override
+    public ReplayRequest getCurrentReplayRequest() {
+        return yarchReplay != null ? yarchReplay.getCurrentReplayRequest().toProtobuf() : getReplayRequest();
     }
 
     @Override
@@ -426,19 +427,34 @@ public class ReplayService extends AbstractProcessorService
 
     @Override
     public long getReplayTime() {
-        return replayTime;
+        if (yarchReplay != null) {
+            return yarchReplay.getReplayTime();
+        } else {
+            return originalReplayRequest.getRangeStart();
+        }
     }
 
     @Override
     public void changeSpeed(ReplaySpeed speed) {
-        yarchReplay.changeSpeed(speed);
-        // need to change the replay request to get the proper value when getReplayRequest() is called
-        originalReplayRequest.setSpeed(speed);
+        yarchReplay.changeSpeed(SpeedSpec.fromProtobuf(speed));
+    }
+
+    @Override
+    public void changeEndAction(EndAction endAction) {
+        yarchReplay.changeEndAction(endAction);
+    }
+
+    @Override
+    public void changeRange(long start, long stop) {
+        try {
+            yarchReplay.changeRange(start, stop);
+        } catch (YamcsException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void setCommandHistoryRequestManager(CommandHistoryRequestManager chrm) {
         this.commandHistoryRequestManager = chrm;
     }
-
 }

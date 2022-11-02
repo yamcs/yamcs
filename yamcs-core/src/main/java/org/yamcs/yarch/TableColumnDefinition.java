@@ -92,6 +92,9 @@ public class TableColumnDefinition extends ColumnDefinition {
     }
 
     short addEnumValue(String value) {
+        if (value == null) {
+            throw new NullPointerException("Enum value cannot be null");
+        }
         if (enumValues.containsKey(value)) {
             throw new IllegalArgumentException("There is already a value '" + value + "'");
         }

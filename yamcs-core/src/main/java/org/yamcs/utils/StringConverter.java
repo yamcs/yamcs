@@ -52,27 +52,20 @@ public class StringConverter {
             return "{" + IntStream.range(0, agg.getNameCount())
                     .mapToObj(i -> agg.getName(i) + ": " + toString(agg.getValue(i)))
                     .collect(Collectors.joining(", ")) + "}";
+        default:
+            throw new IllegalStateException("unknown type " + rv.getType());
         }
-        return null;
     }
 
-    /**
-     * Use {@link #toString()} instead.
-     */
-    @Deprecated
-    public static String toString(Value rv, boolean withType) {
-        return toString(rv);
-    }
-    
     public static String arrayToHexString(byte[] b, int offset, int length) {
         return arrayToHexString(b, offset, length, false);
     }
 
     public static String arrayToHexString(byte[] b, int offset, int length, boolean beautify) {
         StringBuilder sb = new StringBuilder();
-        for (int i = offset; i < offset+length; i++) {
-            if(beautify && (i-offset) % 32 ==0) {
-                sb.append(String.format("\n0x%04X: ", (i-offset)));
+        for (int i = offset; i < offset + length; i++) {
+            if (beautify && (i - offset) % 32 == 0) {
+                sb.append(String.format("\n0x%04X: ", (i - offset)));
             }
             sb.append(String.format("%02X", b[i] & 0xFF));
             /*String s = Integer.toString(b[i] & 0xFF, 16);
@@ -80,24 +73,24 @@ public class StringConverter {
                 s = "0" + s;
             }
             sb.append(s.toUpperCase());*/
-            if(beautify && (i-offset) %2 == 1) {
+            if (beautify && (i - offset) % 2 == 1) {
                 sb.append(" ");
             }
         }
         return sb.toString();
     }
-    
+
     public static String arrayToHexString(byte[] b) {
-        if(b==null) {
+        if (b == null) {
             return "null";
         }
         return arrayToHexString(b, 0, b.length);
     }
-    
+
     public static String arrayToHexString(byte[] b, boolean beautify) {
         return arrayToHexString(b, 0, b.length, beautify);
     }
-    
+
     public static String byteBufferToHexString(ByteBuffer bb) {
         bb.mark();
         StringBuilder sb = new StringBuilder();
