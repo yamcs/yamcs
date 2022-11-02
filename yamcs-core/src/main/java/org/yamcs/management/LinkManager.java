@@ -512,6 +512,8 @@ public class LinkManager {
             PreparedCommand pc = PreparedCommand.fromTuple(tuple, xtcedb);            
             if(pc != null) {
                 boolean sent = false;
+                String reason = "no link available";
+
                 for (TcDataLink tcLink : tcLinks) {
                     if (!tcLink.isEffectivelyDisabled()) {
                         tcLink.sendTc(pc);
