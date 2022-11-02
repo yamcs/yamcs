@@ -53,7 +53,7 @@ public class FrameStreamHelper {
     }
     Stream goodFrameStream;
     Stream badFrameStream;
-
+ 
     public FrameStreamHelper(String yamcsInstance, String goodFrameStreamName, String badFrameStreamName) {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         if (goodFrameStreamName != null) {

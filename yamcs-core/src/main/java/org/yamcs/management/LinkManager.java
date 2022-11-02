@@ -508,23 +508,24 @@ public class LinkManager {
         @Override
         public void onTuple(Stream s, Tuple tuple) {
             XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
-            PreparedCommand pc = PreparedCommand.fromTuple(tuple, xtcedb);
-            boolean sent = false;
-            for (TcDataLink tcLink : tcLinks) {
-                if (!tcLink.isEffectivelyDisabled()) {
-                    tcLink.sendTc(pc);
-                    sent = true;
-                }
-            }
 
-            if (!sent && failIfNoLinkAvailable) {
-                CommandId commandId = pc.getCommandId();
-                String reason = "no link available";
-                log.info("Failing command stream: {}, cmdId: {}, reason: {}", s.getName(), pc.getCommandId(), reason);
-                long currentTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
-                cmdHistPublisher.publishAck(commandId, AcknowledgeSent,
+            PreparedCommand pc = PreparedCommand.fromTuple(tuple, xtcedb);            
+            if(pc != null) {
+                boolean sent = false;
+                for (TcDataLink tcLink : tcLinks) {
+                    if (!tcLink.isEffectivelyDisabled()) {
+                        tcLink.sendTc(pc);
+                        sent = true;
+                }
+
+                if (!sent && failIfNoLinkAvailable) {
+                    CommandId commandId = pc.getCommandId();
+                    log.info("Failing command stream: {}, cmdId: {}, reason: {}", s.getName(), pc.getCommandId(), reason);
+                    long currentTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
+                    cmdHistPublisher.publishAck(commandId, AcknowledgeSent,
                         currentTime, AckStatus.NOK, reason);
-                cmdHistPublisher.commandFailed(commandId, currentTime, reason);
+                    cmdHistPublisher.commandFailed(commandId, currentTime, reason);
+                }
             }
         }
 

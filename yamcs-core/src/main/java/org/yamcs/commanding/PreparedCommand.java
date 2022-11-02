@@ -175,9 +175,17 @@ public class PreparedCommand {
     }
 
     static public CommandId getCommandId(Tuple t) {
-        CommandId cmdId = CommandId.newBuilder().setGenerationTime((Long) t.getColumn(CNAME_GENTIME))
-                .setOrigin((String) t.getColumn(CNAME_ORIGIN)).setSequenceNumber((Integer) t.getColumn(CNAME_SEQNUM))
-                .setCommandName((String) t.getColumn(CNAME_CMDNAME)).build();
+    	CommandId cmdId;
+    	
+    	try {
+           cmdId = CommandId.newBuilder().setGenerationTime((Long) t.getColumn(CNAME_GENTIME))
+                    .setOrigin((String) t.getColumn(CNAME_ORIGIN)).setSequenceNumber((Integer) t.getColumn(CNAME_SEQNUM))
+                    .setCommandName((String) t.getColumn(CNAME_CMDNAME)).build();
+    	}
+    	catch ( java.lang.NullPointerException e ) {
+           cmdId = null; 
+        }
+    	
         return cmdId;
     }
 
@@ -270,38 +278,44 @@ public class PreparedCommand {
     }
 
     public static PreparedCommand fromTuple(Tuple t, XtceDb xtcedb) {
-        CommandId cmdId = getCommandId(t);
-        PreparedCommand pc = new PreparedCommand(cmdId);
-        pc.setMetaCommand(xtcedb.getMetaCommand(cmdId.getCommandName()));
-        for (int i = 0; i < t.size(); i++) {
-            ColumnDefinition cd = t.getColumnDefinition(i);
-            String name = cd.getName();
-            if (CNAME_GENTIME.equals(name) || CNAME_ORIGIN.equals(name) || CNAME_SEQNUM.equals(name)
-                    || CNAME_ASSIGNMENTS.equals(name) || CNAME_COMMENT.equals(name)) {
-                continue;
+    	PreparedCommand pc;
+    	CommandId cmdId = getCommandId(t);
+        if(cmdId != null) {
+            pc = new PreparedCommand(cmdId);
+            pc.setMetaCommand(xtcedb.getMetaCommand(cmdId.getCommandName()));
+            for (int i = 0; i < t.size(); i++) {
+                ColumnDefinition cd = t.getColumnDefinition(i);
+                String name = cd.getName();
+                if (CNAME_GENTIME.equals(name) || CNAME_ORIGIN.equals(name) || CNAME_SEQNUM.equals(name)
+                     || CNAME_ASSIGNMENTS.equals(name) || CNAME_COMMENT.equals(name)) {
+                    continue;
+                }
+                Value v = ValueUtility.getColumnValue(cd, t.getColumn(i));
+                CommandHistoryAttribute a = CommandHistoryAttribute.newBuilder().setName(name)
+                        .setValue(ValueUtility.toGbp(v)).build();
+                pc.attributes.add(a);
             }
-            Value v = ValueUtility.getColumnValue(cd, t.getColumn(i));
-            CommandHistoryAttribute a = CommandHistoryAttribute.newBuilder().setName(name)
-                    .setValue(ValueUtility.toGbp(v)).build();
-            pc.attributes.add(a);
-        }
-        pc.setBinary((byte[]) t.getColumn(CNAME_BINARY));
-        if (t.hasColumn(CNAME_COMMENT)) {
-            String comment = (String) t.getColumn(CNAME_COMMENT);
-            pc.setComment(comment);
-        }
+            pc.setBinary((byte[]) t.getColumn(CNAME_BINARY));
+            if (t.hasColumn(CNAME_COMMENT)) {
+                String comment = (String) t.getColumn(CNAME_COMMENT);
+                pc.setComment(comment);
+            }
 
-        AssignmentInfo assignments = (AssignmentInfo) t.getColumn(CNAME_ASSIGNMENTS);
-        if (assignments != null) {
-            pc.argAssignment = new LinkedHashMap<>();
-            for (Assignment assignment : assignments.getAssignmentList()) {
-                Argument arg = findArgument(pc.getMetaCommand(), assignment.getName());
-                Value v = ValueUtility.fromGpb(assignment.getValue());
-                ArgumentValue argv = new ArgumentValue(arg);
-                argv.setEngValue(v);
-                pc.argAssignment.put(arg, argv);
+            AssignmentInfo assignments = (AssignmentInfo) t.getColumn(CNAME_ASSIGNMENTS);
+            if (assignments != null) {
+                pc.argAssignment = new LinkedHashMap<>();
+                for (Assignment assignment : assignments.getAssignmentList()) {
+                    Argument arg = findArgument(pc.getMetaCommand(), assignment.getName());
+                    Value v = ValueUtility.fromGpb(assignment.getValue());
+                    ArgumentValue argv = new ArgumentValue(arg);
+                    argv.setEngValue(v);
+                    pc.argAssignment.put(arg, argv);
+                }
             }
+        } else {
+        	pc = null;
         }
+        
         return pc;
     }
 
@@ -314,11 +328,16 @@ public class PreparedCommand {
     }
 
     public static PreparedCommand fromCommandHistoryEntry(CommandHistoryEntry che) {
-        CommandId cmdId = che.getCommandId();
-        PreparedCommand pc = new PreparedCommand(cmdId);
+    	PreparedCommand pc;
+    	CommandId cmdId = che.getCommandId();
+        if(cmdId != null) {
+            pc = new PreparedCommand(cmdId);
 
-        pc.attributes = che.getAttrList();
-
+            pc.attributes = che.getAttrList();
+        } else {
+        	pc = null;
+        }
+        
         return pc;
     }
 
