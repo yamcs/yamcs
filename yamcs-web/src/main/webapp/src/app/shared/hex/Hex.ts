@@ -70,7 +70,7 @@ export class Hex implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges() {
-    const raw = atob(this.base64String);
+    const raw = window.atob(this.base64String);
     this.model = new HexModel(raw);
     this.highlight = undefined;
     this.selection = undefined;

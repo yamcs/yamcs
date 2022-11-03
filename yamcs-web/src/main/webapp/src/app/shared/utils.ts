@@ -120,7 +120,7 @@ export function convertValueToNumber(value: Value) {
 }
 
 export function convertBase64ToHex(base64: string) {
-  const raw = atob(base64);
+  const raw = window.atob(base64);
   let result = '';
   for (let i = 0; i < raw.length; i++) {
     const hex = raw.charCodeAt(i).toString(16);
@@ -138,7 +138,7 @@ export function convertHexToBase64(hex: string) {
     barr.push(parseInt(hex.substr(i, 2), 16));
   }
   const str = String.fromCharCode.apply(String, barr);
-  return btoa(str);
+  return window.btoa(str);
 }
 
 export function toValue(value: any): Value {

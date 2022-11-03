@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { ParameterDataDataSource } from './ParameterDataDataSource';
-
+import { ParameterValue } from '../../client';
 
 @Component({
   selector: 'app-parameter-values-table',
@@ -11,6 +11,9 @@ export class ParameterValuesTable {
 
   @Input()
   dataSource: ParameterDataDataSource;
+
+  @Output()
+  selectedValue = new EventEmitter<ParameterValue>();
 
   displayedColumns = [
     'severity',
