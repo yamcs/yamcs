@@ -12,6 +12,7 @@ import "yamcs/api/annotations.proto";
 import "yamcs/api/httpbody.proto";
 
 service RocksDbApi {
+  option (yamcs.api.label) = "Rocks DB";
 
   // List tablespaces
   rpc ListTablespaces(google.protobuf.Empty) returns (ListRocksDbTablespacesResponse) {

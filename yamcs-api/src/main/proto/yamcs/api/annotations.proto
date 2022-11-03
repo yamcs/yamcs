@@ -8,6 +8,19 @@ option java_multiple_files = true;
 option java_outer_classname = "AnnotationsProto";
 option java_package = "org.yamcs.api";
 
+extend google.protobuf.ServiceOptions {
+  // Short, human-friendly label describing this service.
+  // This is a hint to programs that process proto
+  // definitions, such as for document generation.
+  //
+  // Example:
+  //
+  //   service MdbApi {
+  //     option (yamcs.api.label) = "MDB";
+  //   }
+  optional string label = 2048;
+}
+
 extend google.protobuf.MethodOptions {
   optional HttpRoute route = 6433;
   optional WebSocketTopic websocket = 6443;
