@@ -82,6 +82,7 @@ import { EffectiveSignificancePipe } from './pipes/EffectiveSignificancePipe';
 import { EntryForOffsetPipe } from './pipes/EntryForOffsetPipe';
 import { FilenamePipe } from './pipes/FilenamePipe';
 import { FormatBytesPipe } from './pipes/FormatBytesPipe';
+import { HexDumpPipe } from './pipes/HexDumpPipe';
 import { HexPipe } from './pipes/HexPipe';
 import { MemberPathPipe } from './pipes/MemberPathPipe';
 import { NanosDurationPipe } from './pipes/NanosDurationPipe';
@@ -261,6 +262,7 @@ const pipes = [
   FilenamePipe,
   FormatBytesPipe,
   EntryForOffsetPipe,
+  HexDumpPipe,
   HexPipe,
   MemberPathPipe,
   NanosDurationPipe,
