@@ -48,7 +48,6 @@ export class ParametersDataSource extends DataSource<ListItem> {
     }
 
     return this.yamcs.yamcsClient.getParameters(this.yamcs.instance!, options).then(page => {
-      this.loading$.next(false);
       this.totalSize$.next(page.totalSize);
       const items: ListItem[] = [];
       for (const spaceSystem of (page.spaceSystems || [])) {
@@ -63,7 +62,7 @@ export class ParametersDataSource extends DataSource<ListItem> {
       }
       this.items$.next(items);
       this.startSubscription(page.parameters || []);
-    });
+    }).finally(() => this.loading$.next(false));
   }
 
   private refreshTable() {

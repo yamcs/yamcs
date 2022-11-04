@@ -29,7 +29,12 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
   shortName = false;
   pageSize = 100;
 
-  system: string | null = null;
+  // For use in this controller (immediately updated)
+  private system: string | null = null;
+
+  // For use in the template (update only when the data has arrived)
+  system$ = new BehaviorSubject<string | null>(null);
+
   breadcrumb$ = new BehaviorSubject<BreadCrumbItem[]>([]);
 
   @ViewChild('top', { static: true })
@@ -183,6 +188,7 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
     this.dataSource.loadParameters(options).then(() => {
       this.selection.clear();
       this.updateBrowsePath();
+      this.system$.next(this.system);
 
       // Reset alias columns
       for (const aliasColumn of this.aliasColumns$.value) {

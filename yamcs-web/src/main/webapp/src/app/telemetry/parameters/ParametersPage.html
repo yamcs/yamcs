@@ -32,6 +32,9 @@
         <app-column-chooser #columnChooser
                             [columns]="columns"
                             preferenceKey="tmParameters"></app-column-chooser>
+
+        <app-dots *ngIf="dataSource.loading$ | async">
+        </app-dots>
       </div>
     </form>
     <table mat-table
@@ -53,12 +56,12 @@
             <mat-icon class="icon12" style="vertical-align: middle">toll</mat-icon>
             <a [routerLink]="['/telemetry/parameters', item.name]"
                [queryParams]="{c: yamcs.context}">
-              <app-highlight *ngIf="!system"
+              <app-highlight *ngIf="!(system$ | async)"
                              [text]="item.name"
                              [term]="filterForm.value.filter">
               </app-highlight>
-              <app-highlight *ngIf="system"
-                             [text]="item.name | slice:(system!.length + 1)"
+              <app-highlight *ngIf="(system$ | async) as system"
+                             [text]="item.name | slice:(system.length + 1)"
                              [term]="filterForm.value.filter">
               </app-highlight>
             </a>
