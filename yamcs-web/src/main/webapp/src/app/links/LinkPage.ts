@@ -38,9 +38,15 @@ export class LinkPage implements OnDestroy {
     this.linkSubscription = this.yamcs.yamcsClient.createLinkSubscription({
       instance: this.yamcs.instance!,
     }, evt => {
-      const link = this.link$.value;
-      if (link && link.name === evt.linkInfo.name) {
-        this.link$.next(evt.linkInfo);
+      if (evt.type !== 'UPDATE_ALL') {
+        return; // Legacy type
+      }
+
+      for (const linkInfo of evt.links || []) {
+        const link = this.link$.value;
+        if (link && link.name === linkInfo.name) {
+          this.link$.next(linkInfo);
+        }
       }
     });
   }

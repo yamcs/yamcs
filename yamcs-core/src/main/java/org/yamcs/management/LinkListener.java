@@ -11,5 +11,7 @@ public interface LinkListener {
 
     void linkUnregistered(LinkInfo linkInfo);
 
-    void linkChanged(LinkInfo linkInfo);
+    @Deprecated
+    default void linkChanged(LinkInfo linkInfo) {
+    }
 }

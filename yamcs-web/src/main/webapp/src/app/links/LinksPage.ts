@@ -160,39 +160,47 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   }
 
   private processLinkEvent(evt: LinkEvent) {
-    // Update detail pane
-    const selectedItem = this.detailLink$.value;
-    if (selectedItem && selectedItem.link.name === evt.linkInfo.name) {
-      selectedItem.link = evt.linkInfo;
-      for (const subitem of Object.values(this.itemsByName)) {
-        if (subitem.link.parentName === evt.linkInfo.name) {
-          subitem.parentLink = evt.linkInfo;
-        }
-      }
-      this.detailLink$.next({ ...selectedItem });
+    if (evt.type !== 'UPDATE_ALL') {
+      return; // Legacy type
     }
 
-    switch (evt.type) {
-      case 'REGISTERED':
-      case 'UPDATED':
-        this.itemsByName[evt.linkInfo.name].link = evt.linkInfo;
-        for (const item of Object.values(this.itemsByName)) {
-          if (item.parentLink && item.parentLink.name === evt.linkInfo.name) {
-            item.parentLink = evt.linkInfo;
+    const linkNames: string[] = [];
+    for (const linkInfo of evt.links || []) {
+      linkNames.push(linkInfo.name);
+
+      // Update detail pane
+      const selectedItem = this.detailLink$.value;
+      if (selectedItem && selectedItem.link.name === linkInfo.name) {
+        selectedItem.link = linkInfo;
+        for (const subitem of Object.values(this.itemsByName)) {
+          if (subitem.link.parentName === linkInfo.name) {
+            subitem.parentLink = linkInfo;
           }
         }
-        this.updateDataSource();
-        break;
-      case 'UNREGISTERED':
-        const item = this.itemsByName[evt.linkInfo.name];
-        this.selection.deselect(item);
-        delete this.itemsByName[evt.linkInfo.name];
-        this.updateDataSource();
-        break;
-      default:
-        console.error('Unexpected link update of type ' + evt.type);
-        break;
+        this.detailLink$.next({ ...selectedItem });
+      }
+
+      this.itemsByName[linkInfo.name].link = linkInfo;
+      for (const item of Object.values(this.itemsByName)) {
+        if (item.parentLink && item.parentLink.name === linkInfo.name) {
+          item.parentLink = linkInfo;
+        }
+      }
     }
+
+    const toBeDeleted: string[] = [];
+    for (const itemName in this.itemsByName) {
+      if (linkNames.indexOf(itemName) === -1) {
+        const item = this.itemsByName[itemName];
+        this.selection.deselect(item);
+        toBeDeleted.push(itemName);
+      }
+    }
+    for (const itemName of toBeDeleted) {
+      delete this.itemsByName[itemName];
+    }
+
+    this.updateDataSource();
 
     // Needed to show table updates in combination with trackBy
     this.changeDetection.detectChanges();

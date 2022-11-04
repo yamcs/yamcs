@@ -137,8 +137,7 @@ public class LinkManager {
         try {
             link = YObjectLoader.loadObject(linkClass);
         } catch (ConfigurationException e) {
-            // TODO: set this to warn in the next version
-            log.info(
+            log.warn(
                     "Link {} does not have a no-argument constructor. Please add one and implement the initialisation in the init method",
                     linkClass);
             // Ignore for now. Fallback to constructor initialization.

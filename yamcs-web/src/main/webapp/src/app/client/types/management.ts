@@ -14,7 +14,7 @@ export interface CreateInstanceRequest {
 
 export interface LinkEvent {
   type: string;
-  linkInfo: Link;
+  links: Link[];
 }
 
 export interface Link {

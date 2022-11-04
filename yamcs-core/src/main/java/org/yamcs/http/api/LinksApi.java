@@ -1,5 +1,7 @@
 package org.yamcs.http.api;
 
+import java.util.concurrent.TimeUnit;
+
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.api.Observer;
@@ -106,7 +108,17 @@ public class LinksApi extends AbstractLinksApi<Context> {
             }
         };
 
-        observer.setCancelHandler(() -> linkManager.removeLinkListener(listener));
+        var exec = YamcsServer.getServer().getThreadPoolExecutor();
+        var future = exec.scheduleAtFixedRate(() -> {
+            var b = LinkEvent.newBuilder()
+                    .setType(LinkEvent.Type.UPDATE_ALL)
+                    .addAllLinks(linkManager.getLinkInfo());
+            observer.next(b.build());
+        }, 0, 1, TimeUnit.SECONDS);
+        observer.setCancelHandler(() -> {
+            future.cancel(false);
+            linkManager.removeLinkListener(listener);
+        });
         linkManager.addLinkListener(listener);
     }
 
