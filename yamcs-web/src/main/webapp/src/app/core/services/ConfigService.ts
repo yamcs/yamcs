@@ -23,6 +23,7 @@ export interface WebsiteConfig {
   displayFolderPerInstance: boolean;
   stackBucket: string;
   stackFolderPerInstance: boolean;
+  siteLinks: SiteLink[];
 }
 
 export interface EventsConfig {
@@ -36,6 +37,12 @@ export interface NavItem {
   label: string;
   icon?: string;
   condition?: (user: User) => boolean;
+}
+
+export interface SiteLink {
+  label: string;
+  url: string;
+  external: boolean;
 }
 
 export interface ExtraColumnInfo extends ColumnInfo {
@@ -83,6 +90,10 @@ export class ConfigService {
 
   getConfig() {
     return this.websiteConfig;
+  }
+
+  getSiteLinks() {
+    return this.websiteConfig.siteLinks || [];
   }
 
   getExtraNavItems(group: NavGroup) {

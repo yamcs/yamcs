@@ -25,8 +25,8 @@ export class CreateUserPage {
     title.setTitle('Create a User');
     this.form = formBuilder.group({
       name: new UntypedFormControl('', [Validators.required]),
-      displayName: new UntypedFormControl('', [Validators.required]),
-      email: new UntypedFormControl('', [Validators.required]),
+      displayName: new UntypedFormControl(),
+      email: new UntypedFormControl(),
       password: new UntypedFormControl(),
       passwordConfirmation: new UntypedFormControl(),
     });
@@ -37,9 +37,13 @@ export class CreateUserPage {
 
     const options: CreateUserRequest = {
       name: formValue.name,
-      displayName: formValue.displayName,
-      email: formValue.email,
     };
+    if (formValue.displayName) {
+      options.displayName = formValue.displayName;
+    }
+    if (formValue.email) {
+      options.email = formValue.email;
+    }
     if (formValue.password) {
       if (formValue.password !== formValue.passwordConfirmation) {
         alert('Password confirmation does not match password');

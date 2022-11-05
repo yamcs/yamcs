@@ -241,8 +241,8 @@ export interface EditClearanceRequest {
 
 export interface CreateUserRequest {
   name: string;
-  displayName: string;
-  email: string;
+  displayName?: string;
+  email?: string;
   password?: string;
 }
 
