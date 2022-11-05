@@ -48,6 +48,7 @@ An example of a UDP TM frame link specification is below:
             interleavingDepth: 5
             errorCorrectionCapability: 16
             derandomize: false
+        asmPresent: false
         frameType: "AOS"
         spacecraftId: 0xAB
         frameLength: 512
@@ -136,7 +137,7 @@ vcId (integer)
     **Required.** The configured Virtual Channel identifier.
 
 ocfPresent: (boolean)
-    Used for AOS frames to indicate that the Virtual Channel uses the  Operational Control Field (OCF) Service to transport the CLCW containing acknowledgemnts for the uplinked TC frames. For TM and USLP frames, there is a flag in each frame that indicates the presence or absence of OCF.
+    Used for AOS frames to indicate that the Virtual Channel uses the Operational Control Field (OCF) Service to transport the CLCW containing acknowledgemnts for the uplinked TC frames. For TM and USLP frames, there is a flag in each frame that indicates the presence or absence of OCF.
 
 service:
     **Required.** This specifies the type of data that is part of the Virtual Channel. One of ``PACKET``, ``IDLE`` or ``VCA``
@@ -147,10 +148,10 @@ service:
     IDLE:
        Supported for AOS and USLP to indicate that the Virtual Channel contains only idle frames . Normally, the AOS and USLP use the Virtual Channel 63 to transmit idle frames and you do not need to define this virtual channel (in conclusion ``IDLE`` is not very useful). The TM frames have a different mechanism to signal idle frames (first header pointer is 0x7FE).
     VCA:
-       VCA stands for Virtual Channel Access - it is  a mechanism for the user to plug a custom handler for the virtual channel data. The ``vcaHandlerClassName`` property has to be defined if this option is specified (see  below).
+       VCA stands for Virtual Channel Access - it is a mechanism for the user to plug a custom handler for the virtual channel data. The ``vcaHandlerClassName`` property has to be defined if this option is specified (see  below).
 
 maxPacketLength:
-    **Required if service=PACKET.**  Specifies the maximum size of a packet (header included). Valid for both CCSDS Space Packets and CCSDS encapsulation packets. If the header of a packet indicates a packet size larger than this value, a warning event is raised and the packet is droped including all the data until a new frame containing a packet start. 
+    **Required if service=PACKET.** Specifies the maximum size of a packet (header included). Valid for both CCSDS Space Packets and CCSDS encapsulation packets. If the header of a packet indicates a packet size larger than this value, a warning event is raised and the packet is droped including all the data until a new frame containing a packet start. 
 
 packetPreprocessorClassName and packetPreprocessorArgs
     **Required if service=PACKET.** Specfies the packet pre-processor and its configuration that will be used for the packets extracted from this Virtual Channel. See :doc:`packet-preprocessor` for details.
@@ -175,13 +176,15 @@ errorCorrectionCapability (int)
 derandomize (boolean)
     If true, the data will be passed through a derandomizer after being decoded. Default: false
 
+asmPresent (boolean)
+    Is true if you exchange a CADU frame that starts with the Attached Synchronization Marker (ASM), which typical hexadecimal value is 1ACFFC1D. Consequently, if the class realising the dataLink is UdpTmFrameLink.java, the ASM will be removed from the frame.
 
 Telecommand Frame Processing
 ----------------------------
 
 Yamcs supports packing telecommand packets into TC Transfer Frames and in addition encapsulating the frames into Communications Link Transmission Unit (CLTU).
 
-Currently the built-in way to send telecommand frames from  Yamcs is by using the UdpTcFrameLink data link. The yamcs-sle project provides an implementation of the Space Link Extension (SLE) which allows sending CLTUs to SLE-enabled Ground Stations. The options described below are valid for both link types.
+Currently the built-in way to send telecommand frames from Yamcs is by using the UdpTcFrameLink data link. The yamcs-sle project provides an implementation of the Space Link Extension (SLE) which allows sending CLTUs to SLE-enabled Ground Stations. The options described below are valid for both link types.
 
 An example of a UDP TC frame link specification is below:
 
@@ -227,7 +230,7 @@ cltuEncoding (string)
     One of ``BCH``, ``LDPC64``, ``LDPC256``, or ``CUSTOM``. If this parameter is present, the TC transfer frames will be encoded into CLTUs and this parameter configures the code to be used. If this parameter is not present, the frames will not be encapsulated into CLTUs and the following related parameters are ignored. If the value is ``CUSTOM``, the CLTU generator class must be specified as indicated below.
 
 cltuStartSequence (string)
-    This parameter can optionally set the  CLTU start sequence in hexadecimal if different than the CCSDS specs.
+    This parameter can optionally set the CLTU start sequence in hexadecimal if different than the CCSDS specs.
 
 cltuTailSequence (string)
     This parameter can optionally set the CLTU tail sequence in hexadecimal if different than the CCSDS specs.
@@ -318,7 +321,7 @@ COP-1 Support
 *************
 
 
-COP-1 is the protocol specified in  `CCSDS 232.1-B-2 <https://public.ccsds.org/Pubs/232x1b2e2c1.pdf>`_ for ensuring complete and correct transmission of TC frames. The protocol is using a sliding window principle based on the frame counter assigned by Yamcs to each uplinked frame.
+COP-1 is the protocol specified in `CCSDS 232.1-B-2 <https://public.ccsds.org/Pubs/232x1b2e2c1.pdf>`_ for ensuring complete and correct transmission of TC frames. The protocol is using a sliding window principle based on the frame counter assigned by Yamcs to each uplinked frame.
 
 The mechanism through which the on-board system reports the reception of commands is called Command Link Control Word (CLCW). This is a 4 byte word which is sent regularly by the on-board system to ground and contains the value of the latest received command counter and a few status bits. In Yamcs, we expect the CLCW to be made available on a stream (configured with the ``clcwStream`` parameter). The TM frame decoding can place the content of the OCF onto this stream. If the CLCW is sent as part of a regular TM packet, a StreamSQL statement like the following can be used:
 
