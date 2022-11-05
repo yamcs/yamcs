@@ -43,6 +43,14 @@ public class WellKnownTypes {
         return listb.build();
     }
 
+    public static ListValue toListValue(Object[] array) {
+        ListValue.Builder listb = ListValue.newBuilder();
+        for (Object el : array) {
+            listb.addValues(toValue(el));
+        }
+        return listb.build();
+    }
+
     @SuppressWarnings("unchecked")
     public static Value toValue(Object value) {
         if (value == null) {
@@ -61,6 +69,8 @@ public class WellKnownTypes {
             return Value.newBuilder().setNumberValue((Integer) value).build();
         } else if (value instanceof List) {
             return Value.newBuilder().setListValue(toListValue((List<?>) value)).build();
+        } else if (value.getClass().isArray()) {
+            return Value.newBuilder().setListValue(toListValue((Object[]) value)).build();
         } else if (value instanceof Map) {
             return Value.newBuilder().setStructValue(toStruct((Map<String, ?>) value)).build();
         } else { // Especially "Long", which we don't want to put in a double

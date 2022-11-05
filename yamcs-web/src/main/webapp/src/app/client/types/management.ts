@@ -30,6 +30,8 @@ export interface Link {
   detailedStatus: string;
   parentName?: string;
   actions?: LinkAction[];
+  extra?: { [key: string]: any; };
+  parameters?: string[];
 }
 
 export interface LinkAction {
