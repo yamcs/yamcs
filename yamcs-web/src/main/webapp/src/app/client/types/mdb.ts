@@ -370,6 +370,7 @@ export interface GetParametersOptions {
   details?: boolean;
   pos?: number;
   limit?: number;
+  next?: string;
 }
 
 export interface ParametersPage {
