@@ -2200,11 +2200,11 @@ public class XtceStaxReader {
         long maxInterval = -1;
         String v = readAttribute("minimumValue", xmlEvent.asStartElement(), null);
         if (v != null) {
-            maxInterval = (long) (1000 / parseDouble(v));
+            minInterval = (long) (1000 / parseDouble(v));
         }
         v = readAttribute("maximumValue", xmlEvent.asStartElement(), null);
         if (v != null) {
-            minInterval = (long) (1000 / parseDouble(v));
+            maxInterval = (long) (1000 / parseDouble(v));
         }
         RateInStream ris = new RateInStream(minInterval, maxInterval);
 
