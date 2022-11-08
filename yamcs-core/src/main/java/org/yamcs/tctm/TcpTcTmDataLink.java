@@ -56,7 +56,7 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
             this.packetInputStreamClassName = GenericPacketInputStream.class.getName();
             HashMap<String, Object> m = new HashMap<>();
             m.put("maxPacketLength", 1000);
-            m.put("lengthFieldOffset", 5);
+            m.put("lengthFieldOffset", 4);
             m.put("lengthFieldLength", 2);
             m.put("lengthAdjustment", 7);
             m.put("initialBytesToStrip", 0);
