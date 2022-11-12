@@ -167,7 +167,10 @@ message ListProcessorsResponse {
 }
 
 message SubscribeTMStatisticsRequest {
+  // Yamcs instance name.
   optional string instance = 1;
+
+  // Processor name.
   optional string processor = 2;
 }
 
@@ -180,9 +183,19 @@ message SubscribeProcessorsRequest {
 }
 
 message SubscribeParametersRequest {
+  // Specifies what Yamcs should do with the parameter identifiers
+  // that are specifiedwith the ``id`` field.
   enum Action {
+    // The parameter identifiers specified with ``id``, replace any that were
+    // previously subscribed to on this call.
     REPLACE = 0;
+
+    // The parameter identifiers specified with ``id`` are added to any
+    // that were previously subscribed to on this call.
     ADD = 1;
+
+    // The parameter identifiers specified with ``id`` are removed from those
+    // that were previously subscribed to on this call.
     REMOVE = 2;
   }
   
@@ -192,8 +205,14 @@ message SubscribeParametersRequest {
   // Processor name.
   optional string processor = 2;
 
+  // Parameter identifiers. Each identifier takes the form of
+  // a namespace and a name.
+  //
+  // For Yamcs-native naming only the name field is required and
+  // should be the fully qualified name. The namespace is only
+  // required when the name represents an alias of that parameter.
   repeated NamedObjectId id = 3;
-  
+
   // Send an error message if any parameter is invalid.
   // Default: true
   optional bool abortOnInvalid = 4;
@@ -211,17 +230,26 @@ message SubscribeParametersRequest {
   optional bool sendFromCache = 6;
   
   // How to interpret the submitted parameter ids. Default
-  // is to replace an exising subscription with the newly
+  // is to replace an existing subscription with the newly
   // submitted list.
   optional Action action = 7;
+
+  // If set, truncate binary values to the specified byte length.
+  // This may be necessary when Yamcs contains large binary values.
+  //
+  // A negative value implies no truncating, which is the default.
+  optional int32 maxBytes = 8;
 }
 
 message SubscribeParametersData {
-  // mapping between numeric and subscribed id
+  // Mapping between numeric and subscribed identifier.
   map<uint32, NamedObjectId> mapping = 1;
-  
+
+  // Parameter identifiers that were subscribed to, but that
+  // cannot be matched against the Mission Database.
   repeated NamedObjectId invalid = 2;
-  
+
+  // Values of updated parameters.
   repeated pvalue.ParameterValue values = 3;
 }
 
@@ -336,10 +364,17 @@ message BatchGetParameterValuesRequest {
   
   // Processor name.
   optional string processor = 5;
-  
+
+  // Parameter identifiers. Each identifier takes the form of
+  // a namespace and a name.
+  //
+  // For Yamcs-native naming only the name field is required and
+  // should be the fully qualified name. The namespace is only
+  // required when the name represents an alias of that parameter.
   repeated NamedObjectId id = 1;
+
   optional bool fromCache = 2;
-  
+
   // if not fromCache, wait this time (in milliseconds) to receive the parameter
   optional uint64 timeout = 3;
 }
@@ -350,7 +385,14 @@ message BatchGetParameterValuesResponse {
 
 message BatchSetParameterValuesRequest {
   message SetParameterValueRequest {
+    // Parameter identifier. This takes the form of a namespace and
+    // a name.
+    //
+    // For Yamcs-native naming only the name field is required and
+    // should be the fully qualified name. The namespace is only
+    // required when the name represents an alias of that parameter.
     optional NamedObjectId id = 1;
+
     optional Value value = 2;
 
     // The generation time of the value. If specified, must be a date
@@ -440,18 +482,39 @@ message AlgorithmStatus {
 }
 
 message AlgorithmTrace {
+
+  // A single execution of an algorithm
   message Run {
+    // When this run was started
     optional google.protobuf.Timestamp time = 1;
+
+    // Values of input parameters for this run
     repeated pvalue.ParameterValue inputs = 2;
+
+    // Values of output parameters for this run
     repeated pvalue.ParameterValue outputs = 3;
+
+    // The return value, if the algorithm returned something.
+    // This can be useful in the context of verifiers.
     optional string returnValue = 4;
+
+    // Error message, if any
     optional string error = 5;
   }
+
+  // A log message that was emitted by the algorithm
+  // using the `Yamcs.log` function.
   message Log {
+    // Log time
     optional google.protobuf.Timestamp time = 2;
+
+    // Logged message
     optional string msg = 3;
   }
 
+  // Latest algorithm runs
   repeated Run runs = 1;
+
+  // Latest log entries
   repeated Log logs = 2;
 }

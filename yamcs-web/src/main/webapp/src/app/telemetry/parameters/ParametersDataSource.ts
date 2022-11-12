@@ -14,6 +14,9 @@ export class ListItem {
 
 export class ParametersDataSource extends DataSource<ListItem> {
 
+  // Max bytes to fetch and show
+  readonly binaryPreview = 16;
+
   items$ = new BehaviorSubject<ListItem[]>([]);
   totalSize$ = new BehaviorSubject<number>(0);
   loading$ = new BehaviorSubject<boolean>(false);
@@ -88,6 +91,7 @@ export class ParametersDataSource extends DataSource<ListItem> {
         abortOnInvalid: false,
         sendFromCache: true,
         updateOnExpiration: true,
+        maxBytes: this.binaryPreview + 1, // 1 more, so we know when to show ellipsis
         action: 'REPLACE',
       }, data => {
         if (data.mapping) {
@@ -123,12 +127,8 @@ export class ParametersDataSource extends DataSource<ListItem> {
   }
 
   disconnect() {
-    if (this.syncSubscription) {
-      this.syncSubscription.unsubscribe();
-    }
-    if (this.dataSubscription) {
-      this.dataSubscription.cancel();
-    }
+    this.syncSubscription?.unsubscribe();
+    this.dataSubscription?.cancel();
 
     this.items$.complete();
     this.totalSize$.complete();

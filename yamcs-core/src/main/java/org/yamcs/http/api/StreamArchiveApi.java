@@ -70,6 +70,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             }
             Collections.sort(unsortedGroups);
             responseb.addAllGroup(unsortedGroups);
+            responseb.addAllGroups(unsortedGroups);
         }
         observer.complete(responseb.build());
     }
@@ -88,6 +89,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         int limit = request.hasLimit() ? request.getLimit() : 100;
         boolean noRepeat = request.getNorepeat();
         boolean descending = !request.getOrder().equals("asc");
+        int maxBytes = request.hasMaxBytes() ? request.getMaxBytes() : -1;
 
         long start = TimeEncoding.INVALID_INSTANT;
         if (request.hasStart()) {
@@ -106,7 +108,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             @Override
             public void onParameterData(List<ParameterValueWithId> params) {
                 for (ParameterValueWithId pvalid : params) {
-                    resultb.addParameter(pvalid.toGbpParameterValue());
+                    resultb.addParameter(toGpb(pvalid, maxBytes));
                 }
             }
 
@@ -123,6 +125,27 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         replayListener.setNoRepeat(noRepeat);
 
         ReplayFactory.replay(instance, ctx.user, rr, replayListener);
+    }
+
+    public static ParameterValue toGpb(ParameterValueWithId pvalWithId, int maxBytes) {
+        var gpb = pvalWithId.toGbpParameterValue();
+        if (maxBytes >= 0) {
+            var hasRawBinaryValue = gpb.hasRawValue() && gpb.getRawValue().hasBinaryValue();
+            var hasEngBinaryValue = gpb.hasEngValue() && gpb.getEngValue().hasBinaryValue();
+            if (hasRawBinaryValue || hasEngBinaryValue) {
+                var truncated = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder(gpb);
+                if (hasRawBinaryValue) {
+                    truncated.getRawValueBuilder().setBinaryValue(
+                            gpb.getRawValue().getBinaryValue().substring(0, maxBytes));
+                }
+                if (hasEngBinaryValue) {
+                    truncated.getEngValueBuilder().setBinaryValue(
+                            gpb.getEngValue().getBinaryValue().substring(0, maxBytes));
+                }
+                return truncated.build();
+            }
+        }
+        return gpb;
     }
 
     @Override

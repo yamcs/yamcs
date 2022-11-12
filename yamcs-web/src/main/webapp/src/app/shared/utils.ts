@@ -225,7 +225,11 @@ export function generateRandomName() {
   return `${adjective}_${animal}`;
 }
 
-export function printValue(value: Value) {
+export interface PrintValueOptions {
+  maxBytes?: number;
+}
+
+export function printValue(value: Value, options?: PrintValueOptions) {
   if (value.type === 'AGGREGATE') {
     let preview = '{';
     if (value.aggregateValue) {
@@ -234,7 +238,7 @@ export function printValue(value: Value) {
         if (i !== 0) {
           preview += ', ';
         }
-        preview += value.aggregateValue.name[i] + ': ' + printValueWithoutPreview(value.aggregateValue.value[i]);
+        preview += value.aggregateValue.name[i] + ': ' + printValueWithoutPreview(value.aggregateValue.value[i], options);
       }
       if (n < value.aggregateValue.value.length) {
         preview += `, …`;
@@ -250,7 +254,7 @@ export function printValue(value: Value) {
         if (i !== 0) {
           preview += ', ';
         }
-        preview += printValueWithoutPreview(value.arrayValue[i]);
+        preview += printValueWithoutPreview(value.arrayValue[i], options);
       }
       if (n < value.arrayValue.length) {
         preview += ', …';
@@ -261,11 +265,11 @@ export function printValue(value: Value) {
     }
     return preview;
   } else {
-    return printValueWithoutPreview(value);
+    return printValueWithoutPreview(value, options);
   }
 }
 
-function printValueWithoutPreview(value: Value): string {
+function printValueWithoutPreview(value: Value, options?: PrintValueOptions): string {
   switch (value.type) {
     case 'AGGREGATE':
       return '{…}';
@@ -282,7 +286,11 @@ function printValueWithoutPreview(value: Value): string {
     case 'SINT32':
       return '' + value.sint32Value;
     case 'BINARY':
-      return printHexPreview('' + value.binaryValue);
+      if (options?.maxBytes !== undefined) {
+        return printHexPreview('' + value.binaryValue, options.maxBytes);
+      } else {
+        return printHexPreview('' + value.binaryValue);
+      }
     case 'ENUMERATED':
     case 'STRING':
       return value.stringValue!;
@@ -299,10 +307,10 @@ function printValueWithoutPreview(value: Value): string {
   }
 }
 
-export function printHexPreview(binaryValue: string) {
+export function printHexPreview(binaryValue: string, maxBytes = 16) {
   const hex = convertBase64ToHex(binaryValue);
-  if (hex.length > 32) {
-    return '0x' + hex.slice(0, 32) + '…';
+  if (hex.length > maxBytes * 2) {
+    return '0x' + hex.slice(0, maxBytes * 2) + '…';
   } else if (hex.length > 0) {
     return '0x' + hex;
   } else {

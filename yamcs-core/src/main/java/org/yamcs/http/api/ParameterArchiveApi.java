@@ -219,6 +219,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         ParameterWithId requestedParamWithId = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
 
         int limit = request.hasLimit() ? request.getLimit() : 100;
+        int maxBytes = request.hasMaxBytes() ? request.getMaxBytes() : -1;
 
         long start = 0;
         if (request.hasStart()) {
@@ -249,6 +250,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             log.debug("No parameter id found in the parameter archive for {}", qn);
             mpvr = null;
         }
+
         // do not use set limit because the data can be filtered down (e.g. noRepeat) and the limit applies the final
         // filtered data not to the input
         // one day the parameter archive will be smarter and do the filtering inside
@@ -268,7 +270,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             @Override
             public void onParameterData(ParameterValueWithId pvwid) {
                 if (resultb.getParameterCount() < fLimit - 1) {
-                    resultb.addParameter(pvwid.toGbpParameterValue());
+                    resultb.addParameter(StreamArchiveApi.toGpb(pvwid, maxBytes));
                 } else {
                     TimeSortedPageToken token = new TimeSortedPageToken(pvwid.getParameterValue().getGenerationTime());
                     resultb.setContinuationToken(token.encodeAsString());

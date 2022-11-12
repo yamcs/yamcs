@@ -276,9 +276,7 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.queryParamMapSubscription) {
-      this.queryParamMapSubscription.unsubscribe();
-    }
+    this.queryParamMapSubscription?.unsubscribe();
     this.dataSource.disconnect();
   }
 }
