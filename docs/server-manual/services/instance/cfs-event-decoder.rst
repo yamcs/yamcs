@@ -57,4 +57,4 @@ eventMsgMax (integer):
     The size of the event message string in bytes. Default: ``122``
 
 streams ([string]):
-    The streams to process for events. Not required. If no stream is provided, all telemetry streams of type ``tm`` are used (these are configured in the instance configuration file uder the ``streamConfig`` section).
+    The streams to process for events. Not required. If no stream is provided, all telemetry streams of type ``tm`` are used (these are configured in the instance configuration file under the ``streamConfig`` section).

@@ -30,4 +30,4 @@ Configuration Options
 ---------------------
 
 stream (string)
-    The stream to send commands to. This option is deprecated in favour of the stream configuration defined at instance level. Among others, that configuration is preferred because it allows having different streams for different instances, whereas the ``processor.yaml`` which defines this service is common for all instances.
+    The stream to send commands to. This option is deprecated in favor of the stream configuration defined at instance level. Among others, that configuration is preferred because it allows having different streams for different instances, whereas the ``processor.yaml`` which defines this service is common for all instances.

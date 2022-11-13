@@ -115,17 +115,17 @@ insertZoneLength (integer)
     Currently Yamcs ignores any data in the insert zone. 
 
 errorDetection (string)
-    One of ``NONE``, ``CRC16`` or ``CRC32``. Specifies the error detection scheme used. TM and AOS frames support either NONE or CRC16 while USLP supports NONE, CRC16 or CRC32. If present, the last 2 resepectively 4 bytes of the frame will contain an error control field. If the CRC does not match the computation, the frame will be discarded (with a warning message).
+    One of ``NONE``, ``CRC16`` or ``CRC32``. Specifies the error detection scheme used. TM and AOS frames support either NONE or CRC16 while USLP supports NONE, CRC16 or CRC32. If present, the last 2 respectively 4 bytes of the frame will contain an error control field. If the CRC does not match the computation, the frame will be discarded (with a warning message).
 
 clcwStream (string)
-    Can be used to specify the name of the stream where the Command Link Control Words (CLCW) will be sent. The CLCW is the mechanism used by COP-1 to acknolwedge uplinked frames. For TM and USLP frames, there is an OCF flag part of the frame header indicating the presence or not of the CLCW. For AOS frames it has to be configured with the ``ocfPresent`` flag below.
+    Can be used to specify the name of the stream where the Command Link Control Words (CLCW) will be sent. The CLCW is the mechanism used by COP-1 to acknowledge uplinked frames. For TM and USLP frames, there is an OCF flag part of the frame header indicating the presence or not of the CLCW. For AOS frames it has to be configured with the ``ocfPresent`` flag below.
     If present, the CLCW is also extracted from idle frames (i.e. frames that are inserted when no data needs to be transmitted in order to keep the constant bitrate required for downlink).
     
 goodFrameStream (string)
     If specified, the good frames will be sent on a stream with that name. The stream will be created if it does not exist.
     
 badFrameStream (string)
-    If specified, the bad frames will be sent on a stream with that name. Bad frames are conisdered as those that fail decoding for various reasons: length in the header does not match the size of the data received, frame version does not match, bad CRC, bad spacecraft id, bad vcid.
+    If specified, the bad frames will be sent on a stream with that name. Bad frames are considered as those that fail decoding for various reasons: length in the header does not match the size of the data received, frame version does not match, bad CRC, bad spacecraft id, bad vcid.
 
 virtualChannels (map)
     **Required.** Used to specify the Virtual Channel specific configuration.
@@ -136,7 +136,7 @@ vcId (integer)
     **Required.** The configured Virtual Channel identifier.
 
 ocfPresent: (boolean)
-    Used for AOS frames to indicate that the Virtual Channel uses the  Operational Control Field (OCF) Service to transport the CLCW containing acknowledgemnts for the uplinked TC frames. For TM and USLP frames, there is a flag in each frame that indicates the presence or absence of OCF.
+    Used for AOS frames to indicate that the Virtual Channel uses the  Operational Control Field (OCF) Service to transport the CLCW containing acknowledgments for the uplinked TC frames. For TM and USLP frames, there is a flag in each frame that indicates the presence or absence of OCF.
 
 service:
     **Required.** This specifies the type of data that is part of the Virtual Channel. One of ``PACKET``, ``IDLE`` or ``VCA``
@@ -150,10 +150,10 @@ service:
        VCA stands for Virtual Channel Access - it is  a mechanism for the user to plug a custom handler for the virtual channel data. The ``vcaHandlerClassName`` property has to be defined if this option is specified (see  below).
 
 maxPacketLength:
-    **Required if service=PACKET.**  Specifies the maximum size of a packet (header included). Valid for both CCSDS Space Packets and CCSDS encapsulation packets. If the header of a packet indicates a packet size larger than this value, a warning event is raised and the packet is droped including all the data until a new frame containing a packet start. 
+    **Required if service=PACKET.**  Specifies the maximum size of a packet (header included). Valid for both CCSDS Space Packets and CCSDS encapsulation packets. If the header of a packet indicates a packet size larger than this value, a warning event is raised and the packet is dropped including all the data until a new frame containing a packet start. 
 
 packetPreprocessorClassName and packetPreprocessorArgs
-    **Required if service=PACKET.** Specfies the packet pre-processor and its configuration that will be used for the packets extracted from this Virtual Channel. See :doc:`packet-preprocessor` for details.
+    **Required if service=PACKET.** Specifies the packet pre-processor and its configuration that will be used for the packets extracted from this Virtual Channel. See :doc:`packet-preprocessor` for details.
 
 vcaHandlerClassName:
     **Required if the service = VCA** Specifies the name of the class which handles data for this virtual channel. The class has to implement :javadoc:`~org.yamcs.tctm.ccsds.VcDownlinkHandler` interface. Optionally it can implement :javadoc:`~org.yamcs.tctm.Link` interface to appear as a data link (e.g. in yamcs-web). An example implementation of such class can be found in the ccsds-frames example project.
@@ -167,7 +167,7 @@ codec (string)
    RS means the Reed-Solomon codec is used and the errorCorrectionCapability and interleavingDepth below can be used to configure the codec.
 
 interleavingDepth (int)
-   The interleving depth specifies the number of RS decoders running in "parallel" for one frame. Each interleavingDepth'th byte in the frame will be passed to a different decoder. Note howerver that as of Yamcs 5.5.7, the data is process sequentially not in parallel. Default: 5
+   The interleaving depth specifies the number of RS decoders running in "parallel" for one frame. Each interleavingDepth'th byte in the frame will be passed to a different decoder. Note however that as of Yamcs 5.5.7, the data is process sequentially not in parallel. Default: 5
 
 errorCorrectionCapability (int)
    This is either 8 or 16 determining the RS(255, 239) respectively RS(255,223) codec to be used. Default: 16
@@ -218,7 +218,7 @@ spacecraftId (integer)
     **Required.** The spacecraftId is encoded in the TC Transfer Frame primary header.
     
 maxFrameLength (integer)
-    **Required.** The maximum length of the frames sent over this link. The Virtual Channel can also specify an option for this but the VC specifc maximum frame length has to be smaller or equal than this. Note that since Yamcs does not support segmentation (i.e. spliting a TC packet over multiple frames), this value limits effectively the size of the TC packet that can be sent.
+    **Required.** The maximum length of the frames sent over this link. The Virtual Channel can also specify an option for this but the VC specific maximum frame length has to be smaller or equal than this. Note that since Yamcs does not support segmentation (i.e. splitting a TC packet over multiple frames), this value limits effectively the size of the TC packet that can be sent.
 
 priorityScheme (string)
     One of ``FIFO``, ``ABSOLUTE`` or ``POLLING_VECTOR``. This configures the priority of the different Virtual Channels. The different schemes are described below.
@@ -243,7 +243,7 @@ cltuGeneratorClassName (string)
     **Required if cltuEncoding is CUSTOM.** Specifies the name of the class which constructs the CLTU from the frame, if a custom format is required.
 
 cltuGeneratorArgs
-    Optional if cltuEncoding is CUSTOM, ignored otherwise. Arguments to pass to the constructor for the CLTU generator classs.
+    Optional if cltuEncoding is CUSTOM, ignored otherwise. Arguments to pass to the constructor for the CLTU generator class.
 
 virtualChannels (map)
     **Required.** Used to specify the Virtual Channel specific configuration.
@@ -265,7 +265,7 @@ service (string)
     Currently the only supported option is ``PACKET`` which is also the default.
 
 commandPostprocessorClassName (string) and commandPostprocessorArgs (string)
-   **Required if service=PACKET.** Specfies the command post-processor and its configuration. See :doc:`command-post-processor` for details.
+   **Required if service=PACKET.** Specifies the command post-processor and its configuration. See :doc:`command-post-processor` for details.
    
 stream (string)
      **Required.** The stream on which the commands are received.
@@ -286,7 +286,7 @@ cop1T1 (integer)
     If COP-1 is enabled, this specifies the value in seconds for the timeout associated to command acknowledgments. If the command frame is not acknowledged within that time, it will be retransmitted. The default value is 3 seconds.
 
 cop1TxLimit (integer)
-    If COP-1 is enabled, this specifies the number of retransmissions for each un-acknolwedged frame before suspending operations.
+    If COP-1 is enabled, this specifies the number of retransmissions for each un-acknowledged frame before suspending operations.
            
 bdAbsolutePriority (false)
     If COP-1 is enabled, this specifies that the BD frames have absolute priority over normal AD frames. This means that if there are a number of AD frames ready to be uplinked and a TC with ``cop1Bypass`` flag is received (see below for an explanation of this flag), it will pass in front of the queue so ti will be the first frame uplinked (once the multiplexer decides to uplink frames from this Virtual Channel). This flag only applies when the COP-1 state is active, if the COP-1 synchronization has not taken place, the BD frames are uplinked anyway (because all AD frames are waiting). 
@@ -295,7 +295,7 @@ tcQueueSize (integer)
     This is used if COP-1 is not enabled, to determine the size of the command queue. Note that this is number of commands (not frames!). If the queue is full, the new commands will be rejected. Commands are taken from the queue by the multiplexer, according to the priority scheme defined below. Default: ``10``.
 
 errorDetection (string)
-    One of ``NONE`` or ``CRC16``. Specifies the error detection scheme used for the virtual channel, overriding the setting at link level. This is not according to the CCSDS standard which specifies the frame error detection shall be configured at physical channel leve.
+    One of ``NONE`` or ``CRC16``. Specifies the error detection scheme used for the virtual channel, overriding the setting at link level. This is not according to the CCSDS standard which specifies the frame error detection shall be configured at physical channel level.
     If not specified (default), the setting at the link level will be used.
    
 
@@ -310,7 +310,7 @@ The multiplexing of command frames from the different Virtual Channels is done a
 ``ABSOLUTE`` means that the frames will be sent according to the priority set on each Virtual Channel (set by the ``priority`` parameter). This means that as long as a high priority VC has commands to be sent, the lower priority VC will not release any command.
 
 
-``POLLING_VECTOR`` means that a polling vector will be built and each Virtual Channel will have the number of entries in the vector according to its priority. The multiplexing algorithm will cycle throgugh the vector releasing the first command available. 
+``POLLING_VECTOR`` means that a polling vector will be built and each Virtual Channel will have the number of entries in the vector according to its priority. The multiplexing algorithm will cycle through the vector releasing the first command available. 
 For example if there are two VCs VC1 with priority 2 and VC2 with priority 4, the polling vector will look like: [VC1, VC1, VC2, VC2, VC2, VC2]. This means that if both VCs have a high number of frames to be sent, the multiplexer will send 2 frames from VC1 followed by 4 from VC2 and then again. If however VC2 has only one frame to be sent, it will lose its other three slots for that cycle and the multiplexer will go back to sending two frames from VC1.
 
 

@@ -5,7 +5,7 @@ Yamcs allows capturing runtime log messages at different verbosity levels to dif
 
 By default, if unconfigured, Yamcs will emit messages at INFO level to stdout.
 
-The ``yamcsd`` program acceps some options to modify these defaults. In particular:
+The ``yamcsd`` program accepts some options to modify these defaults. In particular:
 
 ``--log``
     The numeric verbosity level, where 0 = OFF, 1 = WARNING, 2 = INFO, 3 = FINE and 4 = ALL. Default: 2

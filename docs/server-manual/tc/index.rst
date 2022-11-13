@@ -81,7 +81,7 @@ Transmission Constraints
 
 When the is set to be released from the queue (either manually by an operator or automatically because the queue was in the Enabled state), the transmission constraints are verified.
 
-The command constraints are conditions set on parameters that have to be met in order for the command to be releasd. There can be multiple constraints for each command and each constraint can specify a timeout which means that the command will fail if the constraint is not met within the timeout. If the timeout is 0, the condition will be checked immediately.
+The command constraints are conditions set on parameters that have to be met in order for the command to be released. There can be multiple constraints for each command and each constraint can specify a timeout which means that the command will fail if the constraint is not met within the timeout. If the timeout is 0, the condition will be checked immediately.
 
 The transmission constraints can be defined in the Excel Spreadsheet in the CommandOptions tab.
 

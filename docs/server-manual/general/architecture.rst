@@ -32,14 +32,14 @@ The pre-processors run inside the TM data links and are responsible for doing ba
   
 The post-processor runs inside the TC data link and are responsible for doing command processing (e.g. computing a CRC or checksum) which is not described in the Mission Database.
 
-Please note in the picture above that while for telecommands there is a link sending realtime data, for telemetry we also have a data link retrieving dump data - this is data that has been recorded somewhere (on the spacecraft or some other intermediate point) and dumped later. Usually there is no continous visibility of the spacecraft from the ground and thus most spacecrafts are capable of recording data onboard. The dump data will not be sent to the relatime displays (because the display shows the realtime data coming in paralell) but it will be sent to the archive where it has to be merged with the old data and with the realtime incoming data.
+Please note in the picture above that while for telecommands there is a link sending realtime data, for telemetry we also have a data link retrieving dump data - this is data that has been recorded somewhere (on the spacecraft or some other intermediate point) and dumped later. Usually there is no continuous visibility of the spacecraft from the ground and thus most spacecrafts are capable of recording data onboard. The dump data will not be sent to the realtime displays (because the display shows the realtime data coming in parallel) but it will be sent to the archive where it has to be merged with the old data and with the realtime incoming data.
 
 Yamcs does not define the dump data as a special type of data, it is the configuration of which data is sent on which stream and which stream is connected to which processor (see below what streams and processors are) that determines what dump data is.
 
 
 The CCSDS standards specify a higher level entity called transport frame. Typically the telemetry transfer frames are fixed size and the variable size packets are encoded in the fixed size frames using a well defined procedure. The packets can be multiplexed on the same transmission channel with other types of data such as a video bitstream. The frames allows also multiplexing realtime data with dump data. In order to maintain a constant bitrate required for RF communication, the standards also define the idle data to be sent when no other data is available. 
 
-In Yamcs, all the CCSDS frame processing is performed at the level of Data Links - when frame procesisng is used, there is a data link that receives the frame (e.g. via SLE) and then demultiplexes it into multiple sub-links which in turn apply the pre-processor for TM and send the data on the streams to the processors and archive. There is a sub-link (or more) for realtime data and similarly a sub-link (or more) for dump data. Yamcs handles packets and parameters, other type of data (e.g. video) could be sent to external systems for processing and storage.
+In Yamcs, all the CCSDS frame processing is performed at the level of Data Links - when frame processing is used, there is a data link that receives the frame (e.g. via SLE) and then demultiplexes it into multiple sub-links which in turn apply the pre-processor for TM and send the data on the streams to the processors and archive. There is a sub-link (or more) for realtime data and similarly a sub-link (or more) for dump data. Yamcs handles packets and parameters, other type of data (e.g. video) could be sent to external systems for processing and storage.
 
 
  
@@ -105,7 +105,7 @@ Extension points
 In the diagram above, there are some components that have a build symbol; these is where we expect mission specific functionality to be added:
 
  * new data links have to be implemented if the connection to the target system uses a protocol that is not implemented in Yamcs.
- * packet pre-processor and command post-processor are componenets where the user can implement some specific TM/TC headers, time formats etc. 
+ * packet pre-processor and command post-processor are components where the user can implement some specific TM/TC headers, time formats etc. 
  * the Mission Database (MDB) contains the description of telecommands and telemetry and is entirely mission specific. 
  * user defined streams can implement command routing or basic operations on packets (e.g. extracting CLCW from a TM packet).
  * user defined services can add complete new functionality; an example of such functionality is to assemble telemetry packets into files (this is what the CFDP service does, but if the user's system does not use CFDP, a new service can be developed).

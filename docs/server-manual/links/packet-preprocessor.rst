@@ -62,14 +62,14 @@ There are a few common options for all time decoders:
         
     epoch (string)
         Specifies to which epoch the time relates to. Can be one of:
-         * TAI - the time is a delta from 1-Jan-1958, as recomended by CCSDS Time Code Formats.
+         * TAI - the time is a delta from 1-Jan-1958, as recommended by CCSDS Time Code Formats.
          * J2000 - the time is a delta from J2000 epoch which corresponds to 2000-01-01T11:58:55.816 UTC.
          * GPS - the time is a delta from GPS epoch which corresponds to 1980-01-6T00:00:00 UTC.
-         * UNIX - the time corresponds to the time as kept by UNIX - that is a pseudo-number of seconds from 1-Jan-1970. We say "pseudo" because this time does not include leap seconds and therefore it is not a true delta time from the epoch (and the epoch is anyway not well defined). However that number can be used to calculate a UTC time (by appliying Gregorian-calendar conventions). Yamcs will convert that time to the internal time format by adding the leap seconds.
+         * UNIX - the time corresponds to the time as kept by UNIX - that is a pseudo-number of seconds from 1-Jan-1970. We say "pseudo" because this time does not include leap seconds and therefore it is not a true delta time from the epoch (and the epoch is anyway not well defined). However that number can be used to calculate a UTC time (by applying Gregorian-calendar conventions). Yamcs will convert that time to the internal time format by adding the leap seconds.
          * CUSTOM - the time corresponds to a delta or pseudo delta specified in the option ``epochUTC``. 
          * NONE - the time read from the packet is not a delta from an epoch but rather the value of free running clock . A time correlation service can be used to translate that value to a real time.
          
-    epochUTC (iso8601 string)
+    epochUTC (ISO8601 string)
         If the epoch is defined as ``CUSTOM``, can be used to specify the UTC time from which the decoded time is a delta or pseudo-delta.
         
     timeIncludesLeapSeconds: (boolean)

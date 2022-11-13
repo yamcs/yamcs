@@ -22,7 +22,7 @@ Configuration Options
 ---------------------
 
 upstreamName (string)
-  **Required.** The name of the upstream Yamcs server. The name is used on the local Yamcs for the command history entries and for the sytem (/yamcs) parrameters.
+  **Required.** The name of the upstream Yamcs server. The name is used on the local Yamcs for the command history entries and for the system (/yamcs) parameters.
 
 yamcsUrl (string)
   **Required.** The URL to connect to the upstream Yamcs server; The URL has to include http or https.
@@ -37,7 +37,7 @@ upstreamInstance (string)
   **Required.** The instance of Yamcs on the upstream server.
 
 verifyTls (boolean)
-    If the connection is over SSL (when the yamcsUrl starts with https), this option can enable/disable the verification of the server certificate against
+    If the connection is over TLS (when the yamcsUrl starts with https), this option can enable/disable the verification of the server certificate against
     local accepted CA list. Default: true
 
 upstreamProcessor (string)
@@ -85,12 +85,12 @@ tc (boolean)
   Default: true
 
 keepUpstreamAcks (list of strings)
-  List of command acknowledgements names received from the upstream server to keep unmodified. 
+  List of command acknowledgments names received from the upstream server to keep unmodified. 
   Default is "ccsds-seqcount" - this key is used by one of the CCSDS links to set the sequence count associated to the command and 
   required in the simulation configuration to be able to verify the command execution (because the sequence count is reported in returning telemetry containing the command execution status).
 
 event (boolean)
-   Subscribe to realtime events. The events on the upstream server will be mirrorred to the local server.
+   Subscribe to realtime events. The events on the upstream server will be mirrored to the local server.
    Default: true
 
 eventRealtimeStream (string)

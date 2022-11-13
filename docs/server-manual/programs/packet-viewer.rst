@@ -20,7 +20,7 @@ Use :program:`packet-viewer` to extract parameters from packets by either loadin
 
 In *online mode*, the splitting of packets is done by Yamcs Server and :program:`packet-viewer` extracts parameters from each packet binary by using the same logic as Yamcs Server would.
 
-In *offline mode* :program:`packet-viewer` must in addition have access to a local MDB, and requires configuration so that it knows how to decode indidivual packets from a dump file. By default, dump files are assumed to contain concatenated CCSDS.
+In *offline mode* :program:`packet-viewer` must in addition have access to a local MDB, and requires configuration so that it knows how to decode individual packets from a dump file. By default, dump files are assumed to contain concatenated CCSDS.
 
 
 Options

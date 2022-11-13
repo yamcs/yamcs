@@ -194,7 +194,7 @@ Encoding:
     * - Encoding
       - Description
     * - ``fixed(<n>)``
-      - fized size byte array
+      - fixed size byte array
     * - ``PrependedSize(<x>)``
       - byte array whose size in bytes is specified in the first ``x`` bits of the array
     * - ``<n>``

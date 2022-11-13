@@ -6,9 +6,9 @@ The Parameter Archive stores time ordered parameter values. The parameter archiv
 An interval has always to be processed or reprocessed in full - this means if one data point is added in the interval, the full 139 minutes of data have to be reprocessed.
 
 Intervals are further split into segments such that each segment cannot contain more than a configurable maximum number of samples. This is done in order to limit the number of samples stored in memory when rebuilding an interval. 
-A parameter that comes at high frequency will be split into multple segments whereas for one that comes at low frequency there will be only one segment in each interval.
+A parameter that comes at high frequency will be split into multiple segments whereas for one that comes at low frequency there will be only one segment in each interval.
 
-The parameters are grouped such that the samples of all parameters from one group have the same timestamp. For example all parameters extracted from one TM packet have usually the same timestamp and are part of the same group. A special case is the aggregate parametes: these are decomposed into the individual members if scakar types but all values are belonging to the same group and thus the aggregate can be rebuilt even though the members are stored separately.
+The parameters are grouped such that the samples of all parameters from one group have the same timestamp. For example all parameters extracted from one TM packet have usually the same timestamp and are part of the same group. A special case is the aggregate parameters: these are decomposed into the individual members if scalar types but all values are belonging to the same group and thus the aggregate can be rebuilt even though the members are stored separately.
 
 
 Class Name
@@ -59,7 +59,7 @@ General Options
 maxSegmentSize (integer)
      The ParameterArchive stores data in segments, each segment storing multiple samples of the same parameter. This option configures the maximum segment size.
      The parameter archive accumulates data in memory to fill the segments, in parallel for all parameters. This option affects thus the memory consumed when the parameter archive is being filled. 
-     The segment size is limited by the duration of an interval, a segment cannot be larger than 2^23 milliseconds (approximatevely 139 minutes).
+     The segment size is limited by the duration of an interval, a segment cannot be larger than 2^23 milliseconds (approximately 139 minutes).
      Default: ``5000``
 
      
@@ -94,8 +94,8 @@ schedule (list of maps)
     frequency (integer)
     
 compactFrequency (integer)
-    After how many backfilling tasks to compact the underlying RocksDB database. Because the backfiller removes the previous data, RocksDB will have lots of thombstones to skip over when reading. Compacting will get rid of the thombstones. Compacting improves the reading at the expense of writing speed.
-    -1 means that no compaction will be performed (RocksDB merges by itself files, and that also gets rid of the thombstones).
+    After how many backfilling tasks to compact the underlying RocksDB database. Because the backfiller removes the previous data, RocksDB will have lots of tombstones to skip over when reading. Compacting will get rid of the tombstones. Compacting improves the reading at the expense of writing speed.
+    -1 means that no compaction will be performed (RocksDB merges by itself files, and that also gets rid of the tombstones).
     Default value: 5
     
 

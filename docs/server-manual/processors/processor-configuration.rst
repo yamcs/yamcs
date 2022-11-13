@@ -50,14 +50,14 @@ Options
 
 services (list)
     A list of services that are started together with the processor. The list is similar with the list of services used in the instance definitions. The reason is that originally (Yamcs v1) there were no instances but only processors and the data links were connected directly to them.
-    The different available services are described in the subseqent chapters after this one.
+    The different available services are described in the subsequent chapters after this one.
 
-The other options are under the `config` key and documented herebelow:
+The other options are under the `config` key:
 
 subscribeAll (boolean)
-    If true, all the services that provide parameters will provide all parameters starting at the processor creation. If set to false, the parameter are requested (subscribed) only when the external user asks for them (for example when opening a display, Yamcs Studio will subscribe to all parameters that are in the display). One service which can benefit of this is the XTCE TM processor: sometimes it is possible to extract only a selected list of parameters from packets and skip alltogether the packets for which no parameter is requested. The advantage is that there is less work to perform; the disatvantage is that no value is available when subscribing a parameter for the first time (e.g. when opening a display for the first time, there will be no value shown until a packet containing the parameters on the display will have arrived).
+    If true, all the services that provide parameters will provide all parameters starting at the processor creation. If set to false, the parameter are requested (subscribed) only when the external user asks for them (for example when opening a display, Yamcs Studio will subscribe to all parameters that are in the display). One service which can benefit of this is the XTCE TM processor: sometimes it is possible to extract only a selected list of parameters from packets and skip altogether the packets for which no parameter is requested. The advantage is that there is less work to perform; the disadvantage is that no value is available when subscribing a parameter for the first time (e.g. when opening a display for the first time, there will be no value shown until a packet containing the parameters on the display will have arrived).
     
-    The providers are free to ignore this option and to provide more parameters than subscribed. This is for example the case for the XTCE TM processor when extracting parameters from a packet where the position of the entries is not absolute but relative to a previous entry. In this case the only way to extract a parameter in the middle or end of the packet is to extact all the parameters appearing in front.
+    The providers are free to ignore this option and to provide more parameters than subscribed. This is for example the case for the XTCE TM processor when extracting parameters from a packet where the position of the entries is not absolute but relative to a previous entry. In this case the only way to extract a parameter in the middle or end of the packet is to extract all the parameters appearing in front.
     
 recordInitialValues
     The Mission database can contain initial (default) values for parameters. Enabling this option will cause an archive entry to be created at processor start with the values for all these parameters.
@@ -69,7 +69,7 @@ maxTcSize (integer)
     The maximum size of a telecommand packet. This value will set the maximum value regardless of the command definition in the Mission Database. There can be commands which have variable size arguments that do not specify a maximum size; this option will practically limit those cases to an overall maximum.
 
 subscribeContainerArchivePartitions (boolean)
-    If set to true (default) the containers declared to be used as archive partition are subscribed by default in the processor. Otherwise the containers are only subscribed when a user subscribes to them or to a parameter contained in them. If alarms are enabled, the subcription to the parameters that can trigger alarms will also cause some container subscriptions.
+    If set to true (default) the containers declared to be used as archive partition are subscribed by default in the processor. Otherwise the containers are only subscribed when a user subscribes to them or to a parameter contained in them. If alarms are enabled, the subscription to the parameters that can trigger alarms will also cause some container subscriptions.
     The only reason to switch this option off is for improving the performance when doing a archive retrieval that only extracts a few parameters. It is thus advisable to only configure it for the ArchiveRetrieval processor type.
     Note: the statistics shown on the yamcs-web instance home page contain the containers subscribed inside the currently selected processor. If no container is subscribed, only the root containers will be shown.
 
@@ -80,16 +80,16 @@ Alarm options
 These options are defined under the config -> alarm.
 
 parameterCheck (boolean)
-    If set to true, the parameters will be checked against the Mission Database defined limits. The users will receive the limit information as part of the parameter status. For example Yamcs Studio displays these parameters with a red or yellow border, depending on the severity of the limit. If set to false the limits will be ignored and all parameters will have the status unmonitored (equivalnet with having no limit defined in the Mission Database).
+    If set to true, the parameters will be checked against the Mission Database defined limits. The users will receive the limit information as part of the parameter status. For example Yamcs Studio displays these parameters with a red or yellow border, depending on the severity of the limit. If set to false the limits will be ignored and all parameters will have the status unmonitored (equivalent with having no limit defined in the Mission Database).
 
 parameterServer (string)
     Can be enabled or disabled. If enabled, an alarm server managing the alarm status of parameters will be started as part of the processor. This option requires the parameterCheck to be enabled. If disabled but the parameterCheck set to true, the parameters will still have their out of limit status associated but there will be no alarms generated.
 
 eventServer (string)
-    Can be enabled or disabled. If enabled, an alarm server managing the alarm status of events will be started as part of the processor. This works similarly with the alarms for parameters - the severity of the event is used to derive the severity of the alarm. However because the events do not have a definition similar with the parameters in the Mission Database, the event source/type is used as a key for the alarm. That means that if a second event with the same source,type is being received as one that has already triggered an alarm, it is considered another occurence of the same alarm. 
+    Can be enabled or disabled. If enabled, an alarm server managing the alarm status of events will be started as part of the processor. This works similarly with the alarms for parameters - the severity of the event is used to derive the severity of the alarm. However because the events do not have a definition similar with the parameters in the Mission Database, the event source/type is used as a key for the alarm. That means that if a second event with the same source,type is being received as one that has already triggered an alarm, it is considered another occurrence of the same alarm. 
 
 eventAlarmMinViolations (integer)
-    The number of occurences of a specific event (identified by its source and type) required to raise an alarm. By default it is 1. Note that the parameters do not have this setting because it is part of the Mission Database definition.
+    The number of occurrences of a specific event (identified by its source and type) required to raise an alarm. By default it is 1. Note that the parameters do not have this setting because it is part of the Mission Database definition.
 
 
 Parameter Cache options
@@ -101,7 +101,7 @@ The processors can make use optionally of a parameter cache that stores the last
 
 Note that regardless of this cache there is always a last value cache which holds only the last known value for each parameter. The last value cache cannot be disabled. 
 
-The parameter cache can cause huge amounts of memory (RAM) to be consumed. The current implementation :javadoc:`org.yamcs.parameter.ArrayParameterCache` tries to minimize the memory requirement by using arrays of primitive values instead of java objects but even then, the memory consumed can be significant. Updating the cache is also quite CPU intensive.
+The parameter cache can cause hug to be consumed. The current implementation :javadoc:`org.yamcs.parameter.ArrayParameterCache` tries to minimize the memory requirement by using arrays of primitive values instead of java objects but even then, the memory consumed can be significant. Updating the cache is also quite CPU intensive.
 
 enabled (boolean)
     If true, the parameter cache will be enabled.
@@ -123,11 +123,11 @@ TM (container) processing options
 These options are defined under the config -> tmProcessor.
 
 ignoreOutOfContainerEntries (boolean)
-    If set to false (default), when processing a TM packet, parameters whose position falls outside of the packet, will generate a warning. This option can be used to turn off that warning. Usually it is a sign of an ill-defined Mission Database and it is better to fix the Misison Database than setting this option.
+    If set to false (default), when processing a TM packet, parameters whose position falls outside of the packet, will generate a warning. This option can be used to turn off that warning. Usually it is a sign of an ill-defined Mission Database and it is better to fix the Mission Database than setting this option.
     
 expirationTolerance (double)
     The Mission Database can define an expected rate in stream for packets (containers) - that means how often a packet is expected to be sent by the remote system. The rate in stream property will cause Yamcs to set an expiration time for the parameters extracted from that packet. The expiration of parameters is used to warn the operators that they are potentially looking at stale data in the displays. 
-    Yamcs will compute the expiration time as the rate in stream defined in the Mission Databae multiplied by this configuration option. The tolerenace is needed in order to avoid generating false expiration warnings.
+    Yamcs will compute the expiration time as the rate in stream defined in the Mission Database multiplied by this configuration option. The tolerance is needed in order to avoid generating false expiration warnings.
 
 maxArraySize (integer)
     The maximum size of arrays extracted from TM packets. The arrays can be dynamically sized (meaning the size is given by a parameter in the packet) and this option configures the maximum size allowed. Default: ``10000``.

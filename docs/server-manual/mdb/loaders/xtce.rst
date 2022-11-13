@@ -98,7 +98,7 @@ The other elements are supported one way or another, exceptions or changes from 
   | Introduced in XTCE 1.2 for command arguments. Yamcs only supports one range in the set.
 
 * | BooleanDataType
-  | In XTCE, each ``BooleanDataType`` has a string representation. In Yamcs the value is mapped to a org.yacms.parameter.BooleanValue or the protobuf equivalent that is a wrapper for a boolean (either true or false in all sane programming languages). The string value is neverhteless supported in comparisons and mathalgorithms but they are converted internally to the boolean value. If you want to get to the string representation from the client, use an ``EnumeratedParameterType``.
+  | In XTCE, each ``BooleanDataType`` has a string representation. In Yamcs the value is mapped to a org.yacms.parameter.BooleanValue or the protobuf equivalent that is a wrapper for a boolean (either true or false in all sane programming languages). The string value is nevertheless supported in comparisons and math algorithms but they are converted internally to the boolean value. If you want to get to the string representation from the client, use an ``EnumeratedParameterType``.
 
 * | RelativeTimeDataType
   | Not supported.
@@ -126,7 +126,7 @@ The other elements are supported one way or another, exceptions or changes from 
   | ``IncludeCondition`` and ``RepeatEntry`` are not supported.
 
 * | Multiple CompleteVerifiers can be declared but the success of any of them will make the command complete successfully; XTCE specifies that all of them  have to succeed for the command to be declared successful. 
-  | Note that when a command is completed (with success or failure), all the pending verifies are canceled. This means that if mutiple CompleteVerifiers are declared, the first one finishing will decide the outcome of the command.
+  | Note that when a command is completed (with success or failure), all the pending verifies are canceled. This means that if multiple CompleteVerifiers are declared, the first one finishing will decide the outcome of the command.
 
 
 

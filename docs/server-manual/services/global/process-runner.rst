@@ -47,4 +47,4 @@ restart (string)
     When to start a new process if the original process exits. One of ``always``, ``on-success``, ``on-failure`` or ``never``. Default: ``never``.
 
 successExitCode (integer or integer[])
-    Exit codes of the subprocess that are considered successful. This is used to evaluate the appropriate ``restart`` behaviour. Default: ``0``.
+    Exit codes of the subprocess that are considered successful. This is used to evaluate the appropriate ``restart`` behavior. Default: ``0``.

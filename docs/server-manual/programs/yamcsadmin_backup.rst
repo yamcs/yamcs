@@ -59,7 +59,7 @@ Options
 
 .. option:: --backup-dir <DIR>
 
-    Directory containg backups.
+    Directory containing backups.
 
     When used with the ``create`` command, the directory is automatically created if it does not yet exist.
 
