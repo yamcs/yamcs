@@ -28,6 +28,7 @@
   </properties>
 
   <modules>
+    <module>cascading</module>
     <module>ccsds-frames</module>
     <module>cfdp</module>
     <module>perftest1</module>
