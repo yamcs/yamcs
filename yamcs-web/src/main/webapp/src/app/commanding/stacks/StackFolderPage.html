@@ -12,7 +12,7 @@
     <button mat-button
             *ngIf="mayManageStacks()"
             color="primary"
-            (click)="uploader.click()">
+            (click)="openUploadDialog()">
       <mat-icon>file_upload</mat-icon>
       UPLOAD STACK
       <input #uploader
@@ -160,7 +160,7 @@
             <p *ngIf="mayManageStacks()">
               <button class="ya-button primary" (click)="createStack()">Create a stack</button>
               or
-              <button class="ya-button" (click)="importStack()">Import a stack</button>
+              <button class="ya-button" (click)="openUploadDialog()">Import a stack</button>
             </p>
           </app-empty-message>
         </ng-container>
