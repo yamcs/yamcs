@@ -38,7 +38,7 @@ export class ContainersPage implements AfterViewInit {
     { id: 'actions', label: '', alwaysVisible: true },
   ];
 
-  private selection = new SelectionModel<Container>(false);
+  selection = new SelectionModel<Container>(false);
 
   constructor(
     readonly yamcs: YamcsService,

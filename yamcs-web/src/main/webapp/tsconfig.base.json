@@ -20,8 +20,8 @@
     "strictPropertyInitialization": false
   },
   "angularCompilerOptions": {
-    "strictTemplates": false,
-    "fullTemplateTypeCheck": false,
+    "strictTemplates": true,
+    "strictInputTypes": false,
     "strictInjectionParameters": true
   }
 }

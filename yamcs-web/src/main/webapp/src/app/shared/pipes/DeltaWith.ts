@@ -4,7 +4,7 @@ import * as utils from '../utils';
 @Pipe({ name: 'deltaWith' })
 export class DeltaWithPipe implements PipeTransform {
 
-  transform(second: Date | string, first: Date | string, showSign = true): string | null {
+  transform(second: Date | string | undefined, first: Date | string, showSign = true): string | null {
     if (!first || !second) {
       return null;
     }

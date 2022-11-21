@@ -76,7 +76,7 @@ export class ParametersPage implements AfterViewInit {
     { id: 'TELEMETERED', label: 'Telemetered' },
   ];
 
-  private selection = new SelectionModel<Parameter>(false);
+  selection = new SelectionModel<Parameter>(false);
 
   // Would prefer to use formGroup, but when using valueChanges this
   // only is updated after the callback...

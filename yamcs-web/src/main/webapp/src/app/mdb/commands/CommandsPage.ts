@@ -43,7 +43,7 @@ export class CommandsPage implements AfterViewInit {
   // Added dynamically based on actual commands.
   aliasColumns$ = new BehaviorSubject<ColumnInfo[]>([]);
 
-  private selection = new SelectionModel<Command>(false);
+  selection = new SelectionModel<Command>(false);
 
   constructor(
     readonly yamcs: YamcsService,

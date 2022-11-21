@@ -15,7 +15,7 @@
     </ng-container>
   </dd>
 
-  <ng-container *ngFor="let alias of (entry$ | async).alias">
+  <ng-container *ngFor="let alias of (entry$ | async)?.alias">
     <dt>{{ alias.namespace }}</dt>
     <dd>{{ alias.name }}</dd>
   </ng-container>

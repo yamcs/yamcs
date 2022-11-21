@@ -4,13 +4,13 @@
 
   <label *ngSwitchCase="'enumeration'">
     <div class="meta">
-      <div class="item">{{ parameter.type.engType }}</div>
+      <div class="item">{{ parameter.type?.engType }}</div>
     </div>
     {{ parameter.name }}
     <app-errors [controlName]="controlName"></app-errors>
     <select [formControlName]="controlName">
       <option hidden disabled selected value> -- select an option -- </option>
-      <option *ngFor="let enumValue of parameter.type.enumValue" [value]="enumValue.label">
+      <option *ngFor="let enumValue of parameter.type?.enumValue" [value]="enumValue.label">
         {{ enumValue.label }}</option>
     </select>
   </label>
@@ -31,7 +31,7 @@
 
   <label *ngSwitchCase="'binary'">
     <div class="meta">
-      <div class="item" [class.error]="err.invalid$ | async">{{ parameter.type.engType }}</div>
+      <div class="item" [class.error]="err.invalid$ | async">{{ parameter.type?.engType }}</div>
     </div>
     {{ parameter.name }}
     <app-errors #err [controlName]="controlName"></app-errors>
@@ -40,7 +40,7 @@
 
   <label *ngSwitchCase="'aggregate'">
     <div class="meta">
-      <div class="item">{{ parameter.type.engType }}</div>
+      <div class="item">{{ parameter.type?.engType }}</div>
     </div>
     {{ parameter.name }}
     <div class="members">
@@ -86,7 +86,7 @@
       <div class="item" *ngIf="parameter.type?.unitSet">
         {{ parameter.type?.unitSet | units }}
       </div>
-      <div class="item">{{ parameter.type.engType }}</div>
+      <div class="item">{{ parameter.type?.engType }}</div>
     </div>
     {{ parameter.name }}
     <app-errors #err [controlName]="controlName"></app-errors>

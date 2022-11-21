@@ -36,7 +36,7 @@ export class AlgorithmsPage implements AfterViewInit {
     { id: 'actions', label: '', alwaysVisible: true },
   ];
 
-  private selection = new SelectionModel<Algorithm>(false);
+  selection = new SelectionModel<Algorithm>(false);
 
   constructor(
     readonly yamcs: YamcsService,

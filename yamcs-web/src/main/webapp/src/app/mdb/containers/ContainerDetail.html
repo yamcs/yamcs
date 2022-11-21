@@ -41,10 +41,10 @@
   <dt>Base Container</dt>
   <dd>
     <a *ngIf="container.baseContainer"
-       [routerLink]="['/mdb/containers/', container.baseContainer?.qualifiedName]"
+       [routerLink]="['/mdb/containers/', container.baseContainer.qualifiedName]"
        [queryParams]="{c: yamcs.context}"
        class="ya-link">
-      {{ container.baseContainer?.qualifiedName || '-' }}
+      {{ container.baseContainer.qualifiedName || '-' }}
     </a>
     <span *ngIf="!container.baseContainer">-</span>
   </dd>

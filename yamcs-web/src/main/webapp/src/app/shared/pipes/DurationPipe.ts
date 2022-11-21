@@ -3,8 +3,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 @Pipe({ name: 'duration' })
 export class DurationPipe implements PipeTransform {
 
-  transform(millis: number | null): string | null {
-    if (millis == null) {
+  transform(millis?: number | null): string | null {
+    if (millis === null || millis === undefined) {
       return null;
     }
     const totalSeconds = Math.floor(millis / 1000);
