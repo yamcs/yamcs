@@ -10,6 +10,7 @@ import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import * as utils from '../../shared/utils';
 import { OpiDisplayConsoleHandler } from './OpiDisplayConsoleHandler';
+import { OpiDisplayFontResolver } from './OpiDisplayFontResolver';
 import { OpiDisplayPathResolver } from './OpiDisplayPathResolver';
 import { Viewer } from './Viewer';
 import { YamcsScriptLibrary } from './YamcsScriptLibrary';
@@ -169,9 +170,11 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
   public init(objectName: string) {
     const container: HTMLDivElement = this.displayContainer.nativeElement;
     this.display = new Display(container);
-    this.display.imagesPrefix = `${this.baseHref}static/`;
+    const staticPrefix = `${this.baseHref}static/`;
+    this.display.imagesPrefix = staticPrefix;
     this.display.setPathResolver(new OpiDisplayPathResolver(this.storageClient, this.display));
     this.display.setConsoleHandler(new OpiDisplayConsoleHandler(this.messageService));
+    this.display.setFontResolver(new OpiDisplayFontResolver(staticPrefix));
 
     let currentFolder = '';
     if (objectName.lastIndexOf('/') !== -1) {
