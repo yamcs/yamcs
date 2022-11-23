@@ -240,7 +240,7 @@ public class WebSocketClient {
         if (log.isLoggable(messageLogging)) {
             log.log(messageLogging, ">>> " + message);
         }
-        if (!isConnected()) {
+        if (nettyChannel == null) {
             throw new IllegalStateException("Not connected");
         }
         ByteBuf buf = nettyChannel.alloc().buffer();

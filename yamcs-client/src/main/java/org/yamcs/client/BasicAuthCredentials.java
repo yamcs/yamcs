@@ -13,7 +13,6 @@ public class BasicAuthCredentials implements Credentials {
     public BasicAuthCredentials(String username, char[] password) {
         authorizationHeader = "Basic " + Base64.getEncoder().encodeToString(
                 (username + ":" + new String(password)).getBytes(StandardCharsets.UTF_8));
-        System.out.println("Got " + authorizationHeader);
     }
 
     public String getAuthorizationHeader() {
