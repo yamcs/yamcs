@@ -245,6 +245,14 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
         return queue.getPVSegments(parameterId, ascending);
     }
 
+    public List<MultiParameterValueSegment> getSegments(ParameterId[] pids, int parameterGroupId, boolean ascending) {
+        SegmentQueue queue = queues.get(parameterGroupId);
+        if (queue == null) {
+            return Collections.emptyList();
+        }
+
+        return queue.getPVSegments(pids, ascending);
+    }
     /**
      * 
      * This class is used to accumulate "slightly" unsorted data and also keeps the data while is being written to the
@@ -463,6 +471,70 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
         }
 
         /**
+         * Returns a list of segments for the pid.
+         * 
+         * <p>
+         * The ascending argument can be used to sort the segments in ascending or descending order. The values inside
+         * the segments will always be ascending (but one can iterate the segment in descending order).
+         * 
+         */
+        public synchronized List<MultiParameterValueSegment> getPVSegments(ParameterId[] pids, boolean ascending) {
+            if (head == tail) {
+                return Collections.emptyList();
+            }
+
+            if (ascending) {
+                return getSegmentsAscending(pids);
+            } else {
+                return getSegmentsDescending(pids);
+            }
+        }
+
+        private List<MultiParameterValueSegment> getSegmentsAscending(ParameterId[] pids) {
+            List<MultiParameterValueSegment> r = new ArrayList<>();
+
+            int k = head;
+            while (k != tail && segments[dec(k)] != null) {
+                k = dec(k);
+            }
+
+            while (k != tail) {
+                PGSegment seg = segments[k];
+                if (seg == null) {
+                    continue;
+                }
+
+                MultiParameterValueSegment pvs = seg.getParametersValues(pids);
+                if (pvs != null) {
+                    r.add(pvs);
+                }
+                k = inc(k);
+            }
+
+            return r;
+        }
+
+        private List<MultiParameterValueSegment> getSegmentsDescending(ParameterId[] pids) {
+            List<MultiParameterValueSegment> r = new ArrayList<>();
+
+            int k = dec(tail);
+
+            while (true) {
+                PGSegment seg = segments[k];
+                if (seg == null) {
+                    break;
+                }
+                MultiParameterValueSegment pvs = seg.getParametersValues(pids);
+                if (pvs != null) {
+                    r.add(pvs);
+                }
+                k = dec(k);
+            }
+
+            return r;
+        }
+
+        /**
          * Circularly increment k
          */
         static final int inc(int k) {
@@ -476,4 +548,5 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
             return (k - 1) & MASK;
         }
     }
+
 }

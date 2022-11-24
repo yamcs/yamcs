@@ -12,8 +12,6 @@ public class MultiParameterValueSegment {
     ValueSegment[] rawValueSegments;
     ParameterStatusSegment[] parameterStatusSegments;
 
-
-
     public MultiParameterValueSegment(SortedTimeSegment timeSegment, ValueSegment[] engValueSegments,
             ValueSegment[] rawValueSegments, ParameterStatusSegment[] parameterStatuses) {
         this.timeSegment = timeSegment;

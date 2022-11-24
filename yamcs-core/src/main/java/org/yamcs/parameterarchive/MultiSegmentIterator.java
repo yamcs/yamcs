@@ -41,9 +41,10 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
     final boolean ascending, retrieveEngValues, retrieveRawValues, retrieveParameterStatus;
 
     MultiParameterValueSegment curValue;
+    final long start, stop;
 
     // iterates over the segments in the realtime filler
-    Iterator<ParameterValueSegment> rtIterator;
+    Iterator<MultiParameterValueSegment> rtIterator;
     final RealtimeArchiveFiller rtfiller;
 
     public MultiSegmentIterator(ParameterArchive parchive, ParameterId[] pids, int parameterGroupId,
@@ -51,23 +52,28 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
         this.pids = pids;
         this.parameterGroupId = parameterGroupId;
         this.parchive = parchive;
+        this.start = req.start;
+        this.stop = req.stop;
         this.ascending = req.isAscending();
         this.retrieveEngValues = req.isRetrieveEngineeringValues();
         this.retrieveRawValues = req.isRetrieveRawValues();
         this.retrieveParameterStatus = req.isRetrieveParameterStatus();
 
-        partitions = parchive.getPartitions(getIntervalStart(req.start), getIntervalEnd(req.stop), req.ascending);
+        partitions = parchive.getPartitions(getIntervalStart(start), getIntervalEnd(stop), req.ascending);
         topIt = partitions.iterator();
         int timeParaId = parchive.getParameterIdDb().getTimeParameterId();
 
         // the ranges below are used for iterating over the time segments - those use the SegmentKey.TYPE_ENG_VALUE as
         // segment type
-        rangeStart = new SegmentKey(timeParaId, parameterGroupId, ParameterArchive.getIntervalStart(req.start),
+        rangeStart = new SegmentKey(timeParaId, parameterGroupId, ParameterArchive.getIntervalStart(start),
                 SegmentKey.TYPE_ENG_VALUE).encode();
-        rangeStop = new SegmentKey(timeParaId, parameterGroupId, req.stop, SegmentKey.TYPE_ENG_VALUE).encode();
+        rangeStop = new SegmentKey(timeParaId, parameterGroupId, stop, SegmentKey.TYPE_ENG_VALUE).encode();
 
         rtfiller = parchive.getRealtimeFiller();
 
+        if (rtfiller != null && !ascending) {
+            rtIterator = rtfiller.getSegments(pids, parameterGroupId, ascending).iterator();
+        }
         next();
     }
 
@@ -80,6 +86,24 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
     }
 
     public void next() {
+        // descending with a realtime filler: retrieve first the values from the realtime that are in range
+        if (!ascending && rtIterator != null) {
+            curValue = null;
+            while (rtIterator.hasNext()) {
+                curValue = rtIterator.next();
+                if (curValue.getSegmentStart() <= stop && curValue.getSegmentEnd() >= start) {
+                    break;
+                } else {
+                    curValue = null;
+                }
+            }
+            if (curValue == null) {
+                rtIterator = null;
+            } else {
+                return;
+            }
+        }
+
         subIt = getPartitionIterator();
         if (subIt != null) {
             curValue = subIt.value();
@@ -87,6 +111,27 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
             return;
         } else {
             curValue = null;
+        }
+
+        // ascending with a realtime filler: retrieve at the end the values from the realtime that are in range
+        if (ascending && rtfiller != null) {
+            if (rtIterator == null) {
+                rtIterator = rtfiller.getSegments(pids, parameterGroupId, ascending).iterator();
+            }
+            long lastSegmentTime = curValue == null ? start : curValue.getSegmentEnd();
+            curValue = null;
+
+            while (rtIterator.hasNext()) {
+                curValue = rtIterator.next();
+                if (curValue.getSegmentStart() <= stop && curValue.getSegmentEnd() >= lastSegmentTime) {
+                    break;
+                } else {
+                    curValue = null;
+                }
+            }
+            if (curValue == null) {
+                rtIterator = null;
+            }
         }
     }
 
@@ -120,7 +165,6 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
     public int getParameterGroupId() {
         return parameterGroupId;
     }
-
 
     class SubIterator {
         final Partition partition;

@@ -153,6 +153,27 @@ public class PGSegment {
         return pvSegments.get(idx);
     }
 
+    public MultiParameterValueSegment getParametersValues(ParameterId[] pids) {
+
+        List<ValueSegment> engValueSegments = new ArrayList<>(pids.length);
+        List<ValueSegment> rawValueSegments = new ArrayList<>(pids.length);
+        List<ParameterStatusSegment> parameterStatusSegments = new ArrayList<>(pids.length);
+        for (ParameterId pid : pids) {
+            int idx = parameterIds.indexOf(pid.getPid());
+            if (idx >= 0) {
+                var pvs = pvSegments.get(idx);
+                engValueSegments.add(pvs.engValueSegment);
+                rawValueSegments.add(pvs.rawValueSegment);
+                parameterStatusSegments.add(pvs.parameterStatusSegment);
+            }
+        }
+
+        return new MultiParameterValueSegment(timeSegment,
+                engValueSegments.toArray(new ValueSegment[0]),
+                rawValueSegments.toArray(new ValueSegment[0]),
+                parameterStatusSegments.toArray(new ParameterStatusSegment[0]));
+    }
+
     public long getInterval() {
         return ParameterArchive.getInterval(timeSegment.getSegmentStart());
     }
@@ -201,6 +222,4 @@ public class PGSegment {
         return "groupId: " + parameterGroupId + ", [" + TimeEncoding.toString(getSegmentStart()) + ", "
                 + TimeEncoding.toString(getSegmentEnd()) + "], size: " + size();
     }
-
-
 }

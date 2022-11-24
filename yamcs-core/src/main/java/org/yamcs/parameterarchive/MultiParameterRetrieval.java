@@ -13,6 +13,20 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.utils.TimeEncoding;
 
+/**
+ * Retrieves multiple parameters from the Parameter Archive.
+ * 
+ * <p>
+ * The Parameter Archive stores parameters in segments - one segment contains multiple values for the same parameter.
+ * Even more, the values of one parameter may be split into multiple groups.
+ * <p>
+ * This class will merge (interleave) the segments such as the output is a list of parameters at each timestamp.
+ * <p>
+ * If we imagine the parameter values as a matrix where one line corresponds to all parameters timestamped at one
+ * specific time, the purpose of this class is to transform from columns (Parameter Archive representation) to rows
+ * (user requested representation)
+ *
+ */
 public class MultiParameterRetrieval {
     final ParameterArchive parchive;
     final MultipleParameterRequest mpvr;
@@ -34,7 +48,6 @@ public class MultiParameterRetrieval {
         ParameterGroupIdDb pgDb = parchive.getParameterGroupIdDb();
         PriorityQueue<ParameterIterator> queue = new PriorityQueue<>(new IteratorComparator(mpvr.ascending));
         int[] parameterGroupIds = mpvr.parameterGroupIds;
-
 
         for (int i = 0; i < mpvr.parameterIds.length; i++) {
             ParameterId paraId = mpvr.parameterIds[i];

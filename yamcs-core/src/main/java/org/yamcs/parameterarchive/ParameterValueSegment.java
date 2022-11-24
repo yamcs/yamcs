@@ -2,14 +2,18 @@ package org.yamcs.parameterarchive;
 
 import org.yamcs.utils.TimeEncoding;
 
+/**
+ * Stores parameter values for one parameter over a time range.
+ * <p>
+ * It is composed of a time, engineering, raw and parameter status segments;
+ * <p>
+ *
+ */
 public class ParameterValueSegment {
-
     SortedTimeSegment timeSegment;
     ValueSegment engValueSegment;
     ValueSegment rawValueSegment;
     ParameterStatusSegment parameterStatusSegment;
-
-
 
     public ParameterValueSegment(SortedTimeSegment timeSegment, ValueSegment engValueSegment,
             ValueSegment rawValueSegment,
