@@ -1,7 +1,6 @@
 package org.yamcs.xtce;
 
 public enum OperatorType {
-
     EQUALITY("=="),
     INEQUALITY("!="),
     LARGERTHAN(">"),

@@ -62,7 +62,7 @@ public class MatchCriteriaEvaluatorFactory {
         }
     }
 
-    static abstract class AbstractComparisonnEvaluator implements MatchCriteriaEvaluator {
+    static abstract class AbstractComparisonEvaluator implements MatchCriteriaEvaluator {
 
         final OperatorType comparisonOperator;
 
@@ -70,7 +70,7 @@ public class MatchCriteriaEvaluatorFactory {
 
         abstract ResolvedValue resolveRight(ProcessingData input);
 
-        AbstractComparisonnEvaluator(OperatorType comparisonOperator) {
+        AbstractComparisonEvaluator(OperatorType comparisonOperator) {
             this.comparisonOperator = comparisonOperator;
         }
 
@@ -116,7 +116,7 @@ public class MatchCriteriaEvaluatorFactory {
     }
 
     // evaluates [reference operator value] conditions
-    static class RefValueEvaluator extends AbstractComparisonnEvaluator {
+    static class RefValueEvaluator extends AbstractComparisonEvaluator {
 
         ParameterOrArgumentRef ref;
         ResolvedValue rValue;
@@ -160,7 +160,7 @@ public class MatchCriteriaEvaluatorFactory {
         }
     }
 
-    static class RefRefEvaluator extends AbstractComparisonnEvaluator {
+    static class RefRefEvaluator extends AbstractComparisonEvaluator {
         ParameterOrArgumentRef leftRef;
         ParameterOrArgumentRef rightRef;
 
@@ -544,7 +544,7 @@ public class MatchCriteriaEvaluatorFactory {
         }
     };
 
-    // Binary evaluator
+    // Boolean evaluator
     private static final Evaluator booleanEvaluator = new Evaluator() {
         @Override
         public boolean evaluate(OperatorType op, ResolvedValue lValue, ResolvedValue rValue) {
