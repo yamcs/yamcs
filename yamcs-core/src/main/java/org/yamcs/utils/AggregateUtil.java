@@ -170,6 +170,7 @@ public class AggregateUtil {
             pv1.setRawValue(rawValue);
             pv1.setGenerationTime(rev.getGenerationTime());
             pv1.setAcquisitionTime(pv.getAcquisitionTime());
+            pv1.setAcquisitionStatus(pv.getAcquisitionStatus());
             pv1.setExpireMillis(pv.getExpireMills());
             return (T) pv1;
         } else {
