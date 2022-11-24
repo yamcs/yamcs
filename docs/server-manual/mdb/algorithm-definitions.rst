@@ -19,13 +19,13 @@ monitoringResult
 rangeCondition
     If set, one of ``LOW`` or ``HIGH``.
 generationTimeMillis
-    The paramer generation time - milliseconds since Yamcs epoch.
+    The parameter generation time - milliseconds since Yamcs epoch.
 aquisitionTimeMillis
-    The paramer acquisition time - milliseconds since Yamcs epoch.
+    The parameter acquisition time - milliseconds since Yamcs epoch.
 generationTime()
-    The paramer generation time converted to Java Instant (by removing the leap seconds).
+    The parameter generation time converted to Java Instant (by removing the leap seconds).
 aquisitionTime()
-    The paramer acquisition time converted to Java Instant (by removing the leap seconds).
+    The parameter acquisition time converted to Java Instant (by removing the leap seconds).
     
     
 If there was no update for a certain parameter, yet the algorithm is still being executed, the previous value of that parameter will be retained.
@@ -69,7 +69,7 @@ If some kind of a shared state is required between multiple algorithms, the user
 Historic Values
 ---------------
 
-With what has been described so far, it would already be possible to store values in an algorithm's scope and perform windowing operations, such as averages. Yamcs goes a step further by allowing you to input a particular *instance* of a parameter. By default instance *0* is inputted, which means the parameter's actual value. But you could also define instance *-1* for inputting the parameter's value as it was on the previous parameter update. If you define input parameters for, say, each of the instances *-4*, *-3*, *-2*, *-1* and *0*, your user algorithm could be just a simple oneliner, since Yamcs is taking care of the administration.
+With what has been described so far, it would already be possible to store values in an algorithm's scope and perform windowing operations, such as averages. Yamcs goes a step further by allowing you to input a particular *instance* of a parameter. By default instance *0* is inputted, which means the parameter's actual value. But you could also define instance *-1* for inputting the parameter's value as it was on the previous parameter update. If you define input parameters for, say, each of the instances *-4*, *-3*, *-2*, *-1* and *0*, your user algorithm could be just a simple one-liner, since Yamcs is taking care of the administration.
 
 Algorithms with windowed parameters will only trigger as soon as each of these parameters have all instances defined (i.e. when the windows are full).
 
@@ -79,7 +79,7 @@ JavaScript algorithms
 
 The JavaScript algorithms are executed by the Nashorn engine.
 
-The algorithm text is expected to contain the full function body. The body will be encapsulated in a javascript function like:
+The algorithm text is expected to contain the full function body. The body will be encapsulated in a JavaScript function like:
 
 .. code-block:: javascript
 
@@ -88,7 +88,7 @@ The algorithm text is expected to contain the full function body. The body will 
     }
 
 
-``in_x`` and  ``out_x`` are names assigned to the inputs/outpus in the algorithm definition.
+``in_x`` and  ``out_x`` are names assigned to the inputs/outputs in the algorithm definition.
 
 The method can make use of the input variables and assign out_x.value (this is the engineering value) or out_x.rawValue (this is the raw value) and out_x.updated for each output variable.
 
@@ -102,7 +102,7 @@ Note that some algorithms (e.g. command verifiers) need to return a value.
 Python algorithms
 -----------------
 
-This works very similarly with the JavaScript algorithms. The thing to pay attention is the indentation. The algorithm text wihch is specified in the spreadsheet will be automatically indented with 4 characters:
+This works very similarly with the JavaScript algorithms. The thing to pay attention is the indentation. The algorithm text which is specified in the spreadsheet will be automatically indented with 4 characters:
 
 .. code-block:: python
 
@@ -114,7 +114,7 @@ This works very similarly with the JavaScript algorithms. The thing to pay atten
 Java expression algorithms
 --------------------------
 
-This works similarly with the JavaScript and Python algorithms: a java class is generated containing the user defined algorithm text. It offers better peformance than the scripting algorithms because no script engine is involved.
+This works similarly with the JavaScript and Python algorithms: a java class is generated containing the user defined algorithm text. It offers better performance than the scripting algorithms because no script engine is involved.
 
 .. code-block:: java
 
@@ -125,7 +125,7 @@ This works similarly with the JavaScript and Python algorithms: a java class is 
     }
 
 The first variables are the inputs, followed by the outputs.
-The java classe :javadoc:`org.yamcs.parameter.ParameterValue` has to be used to get the values of the inputs (e.g. ``getEngValue()`` will give the engineering value) and set the value of the outputs. For example the text to add two inputs ``pv0`` and ``pv1`` into ``AlgoFloatAdditionJe`` could be:
+The java class :javadoc:`org.yamcs.parameter.ParameterValue` has to be used to get the values of the inputs (e.g. ``getEngValue()`` will give the engineering value) and set the value of the outputs. For example the text to add two inputs ``pv0`` and ``pv1`` into ``AlgoFloatAdditionJe`` could be:
 
 .. code-block:: java
 
@@ -133,7 +133,7 @@ The java classe :javadoc:`org.yamcs.parameter.ParameterValue` has to be used to 
     float f1 = pv1.getEngValue().getFloatValue();
     AlgoFloatAdditionJe.setFloatValue(f0 + f1);
 
-The ``getFloatValue()`` in the code above is because the engineering type is Float with sizeInBits=32. If the wrong get is used on a  :javadoc:`org.yamcs.parameter.Value`, an exceptio will be thrown by the algorithm (should be visible in the yamcs-web as well as in the logs).
+The ``getFloatValue()`` in the code above is because the engineering type is Float with sizeInBits=32. If the wrong get is used on a  :javadoc:`org.yamcs.parameter.Value`, an exception will be thrown by the algorithm (should be visible in the yamcs-web as well as in the logs).
 
 The algorithm can leave the output values unset; in that case the values will not be used further.
 
@@ -143,7 +143,7 @@ In case the algorithm is used for a command verifier (see below), it has to retu
 Java algorithms
 ---------------
 
-The algorithm text is a class name with optionally parantheses enclosed string that is parsed into an object by a yaml parser. Unlike the java-expression algorithms, the Java algorithms require the user to pre-compile the classes into a jar and place it on the server in the lib/ext directory.
+The algorithm text is a class name with optionally parentheses enclosed string that is parsed into an object by a yaml parser. Unlike the java-expression algorithms, the Java algorithms require the user to pre-compile the classes into a jar and place it on the server in the lib/ext directory.
 
 Yamcs will locate the given class which must be implementing the :javadoc:`org.yamcs.algorithms.AlgorithmExecutor` interface and will create an object with a constructor with three parameters:
 
@@ -152,7 +152,7 @@ Yamcs will locate the given class which must be implementing the :javadoc:`org.y
     MyAlgorithmExecutor(Algorithm algorithmDef, AlgorithmExecutionContext context, Object arg)
 
 * ``algorithmDef`` represents the algorithm definition; it can be used for example to retrieve the MDB algorithm name, input parameters, etc.
-* ``context`` is an object holiding some contextual information related to where the algorithm is running. Generally this refers to a processor but for command verifiers there is a restricted context to distinguish the same algorithm running as verifier for different commands.
+* ``context`` is an object holding some contextual information related to where the algorithm is running. Generally this refers to a processor but for command verifiers there is a restricted context to distinguish the same algorithm running as verifier for different commands.
 * ``arg`` is an optional argument parsed using the snakeyaml parser (can be a Integer, Long, Double, Map or List).
 
 If the optional argument is not present in the algorithm text definition,  then the class constructor  should only have two parameters.

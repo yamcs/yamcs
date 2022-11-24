@@ -35,9 +35,7 @@
     <td mat-cell *cdkCellDef="let item" class="primary-td">
       <ng-container *ngIf="item.spaceSystem">
         <mat-icon class="icon12" style="vertical-align: middle">folder</mat-icon>
-        <a href="" (click)="selectRow(item)">
-          {{ item.name | filename }}/
-        </a>
+        <a href="" (click)="selectRow(item)">{{ item.name | filename }}/</a>
       </ng-container>
       <ng-container *ngIf="!item.spaceSystem">
         <mat-icon class="icon12" style="vertical-align: middle">rss_feed</mat-icon>

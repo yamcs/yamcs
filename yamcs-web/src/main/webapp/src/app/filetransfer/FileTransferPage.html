@@ -71,7 +71,7 @@
       <router-outlet></router-outlet>
     </div>
   </ng-container>
-  <app-empty-message *ngIf="!(services$ | async).length" headerTitle="File Transfer">
+  <app-empty-message *ngIf="!(services$ | async)!.length" headerTitle="File Transfer">
     <p>
       This instance has no file transfer services configured.
     </p>

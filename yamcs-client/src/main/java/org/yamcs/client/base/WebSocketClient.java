@@ -116,19 +116,18 @@ public class WebSocketClient {
         messageLogging = level;
     }
 
-    public ChannelFuture connect(String accessToken) throws SSLException, GeneralSecurityException {
+    public ChannelFuture connect(String authorization) throws SSLException, GeneralSecurityException {
         callback.connecting();
-        return createBootstrap(accessToken);
+        return createBootstrap(authorization);
     }
 
-    private ChannelFuture createBootstrap(String accessToken) throws SSLException, GeneralSecurityException {
+    private ChannelFuture createBootstrap(String authorization) throws SSLException, GeneralSecurityException {
         HttpHeaders header = new DefaultHttpHeaders();
         if (userAgent != null) {
             header.add(HttpHeaderNames.USER_AGENT, userAgent);
         }
 
-        if (accessToken != null) {
-            String authorization = "Bearer " + accessToken;
+        if (authorization != null) {
             header.add(HttpHeaderNames.AUTHORIZATION, authorization);
         }
         URI uri;
@@ -190,7 +189,7 @@ public class WebSocketClient {
         Call call = new Call(type, observer);
         calls.put(call.correlationId, call);
 
-        return new Observer<T>() {
+        return new Observer<>() {
 
             @Override
             public void next(T message) {
@@ -240,6 +239,9 @@ public class WebSocketClient {
     private void writeMessage(Message message) throws IOException {
         if (log.isLoggable(messageLogging)) {
             log.log(messageLogging, ">>> " + message);
+        }
+        if (!isConnected()) {
+            throw new IllegalStateException("Not connected");
         }
         ByteBuf buf = nettyChannel.alloc().buffer();
         try (ByteBufOutputStream bout = new ByteBufOutputStream(buf)) {

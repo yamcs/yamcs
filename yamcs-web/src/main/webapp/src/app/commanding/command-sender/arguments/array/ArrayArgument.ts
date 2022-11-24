@@ -39,7 +39,7 @@ export class ArrayArgument implements OnInit, OnDestroy {
 
   // Length of each dimension.
   // If any length is undefined, the array cannot be entered
-  private ownDimensions: Array<number | undefined> = [];
+  ownDimensions: Array<number | undefined> = [];
 
   @Input()
   initialValue: any[];

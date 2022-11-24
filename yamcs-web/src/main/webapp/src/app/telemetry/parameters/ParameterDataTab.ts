@@ -1,3 +1,4 @@
+import { Clipboard } from '@angular/cdk/clipboard';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
@@ -52,6 +53,7 @@ export class ParameterDataTab {
     private router: Router,
     readonly yamcs: YamcsService,
     private dialog: MatDialog,
+    private clipboard: Clipboard,
   ) {
     this.qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;
     this.dataSource = new ParameterDataDataSource(yamcs, this.qualifiedName);
@@ -165,6 +167,16 @@ export class ParameterDataTab {
       options.start = start.toISOString();
     }
     this.dataSource.loadMoreData(options);
+  }
+
+  copyHex(base64: string) {
+    const hex = utils.convertBase64ToHex(base64);
+    this.clipboard.copy(hex);
+  }
+
+  copyBinary(base64: string) {
+    const raw = window.atob(base64);
+    this.clipboard.copy(raw);
   }
 
   private updateURL() {

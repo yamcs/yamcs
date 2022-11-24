@@ -1,6 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Observable } from 'rxjs';
-import { PreferenceStore } from '../core/services/PreferenceStore';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
   selector: 'app-storage-toolbar',
@@ -9,19 +7,4 @@ import { PreferenceStore } from '../core/services/PreferenceStore';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StorageToolbar {
-
-  @Input()
-  hasDetailPane = false;
-
-  showDetailPane$: Observable<boolean>;
-
-  constructor(
-    private preferenceStore: PreferenceStore,
-  ) {
-    this.showDetailPane$ = preferenceStore.detailPane$;
-  }
-
-  showDetailPane(enabled: boolean) {
-    this.preferenceStore.setShowDetailPane(enabled);
-  }
 }

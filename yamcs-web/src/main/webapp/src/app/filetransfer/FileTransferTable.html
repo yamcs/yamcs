@@ -59,7 +59,7 @@
 
   <ng-container matColumnDef="detail">
     <td mat-cell *matCellDef="let item"
-        [attr.colspan]="(displayedColumns$ | async).length">
+        [attr.colspan]="(displayedColumns$ | async)!.length">
         <div *ngIf="item.transfer$ | async as transfer" class="detail-layout">
           {{ transferPercent(transfer) | percent:'1.1' }}
           <mat-progress-bar *ngIf="transfer.state === 'RUNNING' || transfer.state === 'PAUSED' || transfer.state === 'CANCELLING'"

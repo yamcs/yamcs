@@ -8,6 +8,7 @@ import "yamcs/api/httpbody.proto";
 import "yamcs/protobuf/yamcs.proto";
 
 service MdbApi {
+  option (yamcs.api.label) = "MDB";
 
   // Get a mission database
   rpc GetMissionDatabase(GetMissionDatabaseRequest) returns (MissionDatabase) {

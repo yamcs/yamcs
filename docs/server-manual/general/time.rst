@@ -29,7 +29,7 @@ The wall clock time is the computer time converted to Yamcs format. The getWallc
 
   TimeEncoding.getWallclockTime() = System.currentTimeMillis() + 37000.
 
-Note that Linux usually does time "smearing" around the leap seconds - it shortens the duration of the second for sevearal hours prior and several hours post the the leap second, to accomodate the extra second. Yamcs does not take the smearing into account, therefore the getWallclockTime() does not return entirely accurate times when the smearing takes place.
+Note that Linux usually does time "smearing" around the leap seconds - it shortens the duration of the second for several hours prior and several hours post the the leap second, to accommodate the extra second. Yamcs does not take the smearing into account, therefore the getWallclockTime() does not return entirely accurate times when the smearing takes place.
 
 Mission Time
 ------------
@@ -67,7 +67,7 @@ For telemetry packets, it is set by the pre-processor, normally with a time extr
 The timeEncoding option is used on the TM links to configure how to extract the time from the packet - which means how to covert a number (or more numbers) extracted from the packet to a Yamcs time. The various options for time decoding are documented in the :doc:`../links/packet-preprocessor`
 
 
-The spacecrafts which have no mean to syncrhonize time (e.g. no access to GPS) will usually use a free running on-board clock (initialized to 0 at startup) to timestamp the packets. In these cases, the on-board time needs to be correlated with the mission time. The :doc:`../services/instance/time-correlation` can be used for this purpose.
+The spacecrafts which have no mean to synchronize time (e.g. no access to GPS) will usually use a free running on-board clock (initialized to 0 at startup) to timestamp the packets. In these cases, the on-board time needs to be correlated with the mission time. The :doc:`../services/instance/time-correlation` can be used for this purpose.
 
 Finally, the TM links have an option ``updateSimulationTime`` which can be used to set the mission time to the time extracted from the packet. This works if the SimulationTimeService is used. 
 

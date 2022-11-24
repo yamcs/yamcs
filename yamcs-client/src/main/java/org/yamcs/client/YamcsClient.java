@@ -175,7 +175,7 @@ public class YamcsClient {
             logConnectionFailed(e);
             throw e;
         }
-        Credentials creds = baseClient.getCredentials();
+        var creds = (OAuth2Credentials) baseClient.getCredentials();
         creds.setSpnegoInfo(spnegoInfo); // Can get reused when the access token expires
     }
 
@@ -258,16 +258,22 @@ public class YamcsClient {
         Credentials creds = baseClient.getCredentials();
         if (creds == null) {
             connect(null, false);
+        } else if (creds instanceof OAuth2Credentials) {
+            String accessToken = ((OAuth2Credentials) creds).getAccessToken();
+            String authorization = "Bearer " + accessToken;
+            connect(authorization, true);
+        } else if (creds instanceof BasicAuthCredentials) {
+            String authorization = ((BasicAuthCredentials) creds).getAuthorizationHeader();
+            connect(authorization, true);
         } else {
-            String accessToken = creds.getAccessToken();
-            connect(accessToken, true);
+            throw new IllegalStateException("Unexpected credentials of type " + creds.getClass());
         }
     }
 
     /**
      * Establish a live communication channel using a previously acquired access token.
      */
-    private synchronized void connect(String accessToken, boolean bypassUpCheck) throws ClientException {
+    private synchronized void connect(String authorization, boolean bypassUpCheck) throws ClientException {
         if (!bypassUpCheck) {
             pollServer();
         }
@@ -277,7 +283,7 @@ public class YamcsClient {
         }
 
         try {
-            websocketClient.connect(accessToken).get(5000, TimeUnit.MILLISECONDS);
+            websocketClient.connect(authorization).get(5000, TimeUnit.MILLISECONDS);
 
             for (ConnectionListener cl : connectionListeners) {
                 cl.connected();
@@ -686,6 +692,7 @@ public class YamcsClient {
             YamcsClient client = new YamcsClient(serverURL, verifyTls, connectionAttempts, retryDelay);
             client.baseClient.setInsecureTls(!verifyTls);
             client.websocketClient.setInsecureTls(!verifyTls);
+            client.baseClient.setCredentials(credentials);
             if (caCertFile != null) {
                 try {
                     client.baseClient.setCaCertFile(caCertFile.toString());
@@ -709,5 +716,4 @@ public class YamcsClient {
             log.log(Level.WARNING, "Connection to " + serverURL + " failed", cause);
         }
     }
-
 }

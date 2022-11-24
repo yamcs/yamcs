@@ -519,7 +519,7 @@ export class StackFilePage implements OnDestroy {
 
   saveStack() {
     const xml = new StackFormatter(this.entries$.value).toXML();
-    const b = new Blob([xml]);
+    const b = new Blob([xml], { type: 'application/xml' });
     this.storageClient.uploadObject('_global', this.bucket, this.objectName, b).then(() => {
       this.dirty$.next(false);
     });
@@ -535,8 +535,6 @@ export class StackFilePage implements OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.commandSubscription) {
-      this.commandSubscription.cancel();
-    }
+    this.commandSubscription?.cancel();
   }
 }

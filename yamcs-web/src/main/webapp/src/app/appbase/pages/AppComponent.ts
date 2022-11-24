@@ -5,7 +5,7 @@ import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { AuthInfo, ConnectionInfo } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
-import { ConfigService } from '../../core/services/ConfigService';
+import { ConfigService, SiteLink } from '../../core/services/ConfigService';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { SelectInstanceDialog } from '../../shared/dialogs/SelectInstanceDialog';
@@ -26,6 +26,7 @@ export class AppComponent implements OnDestroy {
   title = 'Yamcs';
   tag: string;
   authInfo: AuthInfo;
+  siteLinks: SiteLink[];
 
   connectionInfo$: Observable<ConnectionInfo | null>;
   connected$: Observable<boolean>;
@@ -48,6 +49,7 @@ export class AppComponent implements OnDestroy {
   ) {
     this.tag = configService.getTag();
     this.authInfo = configService.getAuthInfo();
+    this.siteLinks = configService.getSiteLinks();
     this.connected$ = yamcs.yamcsClient.connected$;
     this.connectionInfo$ = yamcs.connectionInfo$;
     this.user$ = authService.user$;

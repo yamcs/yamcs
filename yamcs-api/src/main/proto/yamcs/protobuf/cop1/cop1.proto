@@ -15,6 +15,7 @@ import "google/protobuf/timestamp.proto";
 // performing various operations.
 // In addition, a websocket subscription is available that will allow receiving periodically the status.
 service Cop1Api {
+  option (yamcs.api.label) = "COP-1";
 
   // Initialize COP-1 in case state is UNITIALIZED
   rpc Initialize(InitializeRequest) returns (google.protobuf.Empty) {

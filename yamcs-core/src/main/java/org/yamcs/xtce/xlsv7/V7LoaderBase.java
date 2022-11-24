@@ -137,12 +137,13 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
     static final String CN_PARAM_NAME = "parameter name";
     static final String CN_PARAM_DTYPE = "data type";
     static final String CN_PARAM_INITVALUE = "initial value";
+    static final String CN_PARAM_DESCRIPTION = "description";
 
     protected static final String SHEET_DATATYPES = "DataTypes";
 
-    //final static Pattern AGGREGATE_PATTERN = Pattern.compile("aggregate:?\\(?\\{(.+)\\}\\)?");
+    // final static Pattern AGGREGATE_PATTERN = Pattern.compile("aggregate:?\\(?\\{(.+)\\}\\)?");
     final static Pattern AGGREGATE_PATTERN = Pattern.compile("\\s*\\(?\\s*\\{(.+)\\}\\s*\\)?");
-      
+
     // the list of sheets that can be part of subsystems with a sub1/sub2/sub3/SheetName notation
     static String[] SUBSYSTEM_SHEET_NAMES = {
             SHEET_CALIBRATION,
@@ -379,29 +380,30 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
      * @return
      */
     protected List<AggrMember> parseAggregateExpr(String engType) {
-        String s = engType.substring(1, engType.length()-1).replace("\n\r", "").trim();
+        String s = engType.substring(1, engType.length() - 1).replace("\n\r", "").trim();
         String[] a = s.split(";");
         List<AggrMember> l = new ArrayList<>();
-        for(String b:a) {
-            String[] c = b.trim().split("\\s",3);
-            if(c.length!=2) {
-                throw new SpreadsheetLoadException(ctx, "Cannot parse member type '"+s+"', expression '"+b+"'");
+        for (String b : a) {
+            String[] c = b.trim().split("\\s", 3);
+            if (c.length != 2) {
+                throw new SpreadsheetLoadException(ctx, "Cannot parse member type '" + s + "', expression '" + b + "'");
             }
             l.add(new AggrMember(c[1], c[0]));
         }
         return l;
     }
+
     static class AggrMember {
         final String name;
         final String dataType;
-        
+
         AggrMember(String name, String dataType) {
             this.name = name;
             this.dataType = dataType;
         }
-        
+
     }
-    
+
     static String getInvalidPositionMsg(String pos) {
         return "Invalid position '" + pos + "' specified. "
                 + "Use 'r:<d>' or 'a:<d>' for relative respectively absolute position. '<d>' can be used as a shortcut for 'r:<d>'";

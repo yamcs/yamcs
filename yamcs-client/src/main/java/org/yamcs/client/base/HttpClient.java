@@ -23,6 +23,7 @@ import org.yamcs.api.ExceptionMessage;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ClientException.ExceptionData;
 import org.yamcs.client.Credentials;
+import org.yamcs.client.OAuth2Credentials;
 import org.yamcs.client.UnauthorizedException;
 import org.yamcs.client.base.SpnegoUtils.SpnegoException;
 
@@ -138,7 +139,7 @@ public class HttpClient {
         }
     }
 
-    public synchronized void refreshAccessToken() throws ClientException {
+    private synchronized void refreshAccessToken(OAuth2Credentials credentials) throws ClientException {
         if (credentials.getRefreshToken() != null) {
             Map<String, String> attrs = new HashMap<>();
             attrs.put("grant_type", "refresh_token");
@@ -171,11 +172,15 @@ public class HttpClient {
         return credentials;
     }
 
+    public void setCredentials(Credentials credentials) {
+        this.credentials = credentials;
+    }
+
     public void setUserAgent(String userAgent) {
         this.userAgent = userAgent;
     }
 
-    private CompletableFuture<Credentials> requestTokens(String url, Map<String, String> attrs)
+    private CompletableFuture<OAuth2Credentials> requestTokens(String url, Map<String, String> attrs)
             throws ClientException, IOException, GeneralSecurityException {
         URI uri;
         try {
@@ -218,7 +223,7 @@ public class HttpClient {
             channelFuture.channel().writeAndFlush(request);
         });
 
-        return responseFuture.thenApply(data -> Credentials.fromJsonTokenResponse(new String(data)));
+        return responseFuture.thenApply(data -> OAuth2Credentials.fromJsonTokenResponse(new String(data)));
     }
 
     public CompletableFuture<byte[]> doAsyncRequest(String url, HttpMethod httpMethod, byte[] body)
@@ -463,8 +468,8 @@ public class HttpClient {
             request.headers().set(HttpHeaderNames.COOKIE, c);
         }
         if (credentials != null) {
-            if (credentials.isExpired()) {
-                refreshAccessToken(); // This blocks
+            if (credentials.isExpired() && credentials instanceof OAuth2Credentials) {
+                refreshAccessToken((OAuth2Credentials) credentials); // This blocks
             }
             credentials.modifyRequest(request);
         }

@@ -67,6 +67,7 @@ public class PreparedCommand {
     public final static String CNAME_NO_POSTPROCESSING = "noPostprocessing";
     public final static String CNAME_NO_TRANSMISSION_CONSTRAINTS = "noTransmissionConstraints";
     public final static String CNAME_NO_VERIFIERS = "noVerifiers";
+    public final static String CNAME_RAW = "raw";
 
     private static Set<String> reservedColumns = new HashSet<>();
     static {
@@ -353,6 +354,15 @@ public class PreparedCommand {
 
     public void setUnprocessedBinary(byte[] b) {
         setAttribute(CNAME_UNPROCESSED_BINARY, b);
+    }
+
+    public boolean isRaw() {
+        Boolean attr = getBooleanAttribute(CNAME_RAW);
+        return attr != null ? attr.booleanValue() : false;
+    }
+
+    public void setRaw(boolean raw) {
+        setAttribute(CNAME_RAW, raw);
     }
 
     public String getUsername() {

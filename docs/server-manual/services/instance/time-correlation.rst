@@ -55,7 +55,7 @@ Usage
 To use this service the preprocessor (or other mission specific service) will adds samples using the ``addSample(long, Instant)`` each time it receives a correlation sample from on-board. How the on-board system will send such samples is mission specific (for  example the PUS protocol defines some specific time packets for this purpose).
 
 The preprocessor can then use the method ``getTime(long obt)`` to get the time corresponding to the ``obt`` or call ``timestamp(long obt, TmPacket pkt)`` to timestamp the packet. 
-The second method will timestamp the packet with a time derived from the ``ert`` if the service is not synchronized. A corresponding flag will be set on the packet so it can be distingushed in the archive.
+The second method will timestamp the packet with a time derived from the ``ert`` if the service is not synchronized. A corresponding flag will be set on the packet so it can be distinguished in the archive.
 
 
 Time of flight estimation

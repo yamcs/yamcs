@@ -51,23 +51,38 @@ service StreamArchiveApi {
   }
 }
 
-//Retrieves parameters by performing a replay
+// Retrieves parameters by performing a replay
 message StreamParameterValuesRequest {
+  // Yamcs instance name.
   optional string instance = 1;
   optional google.protobuf.Timestamp start = 2;
   optional google.protobuf.Timestamp stop = 3;
+
+  // Parameter identifiers. Each identifier takes the form of
+  // a namespace and a name.
+  //
+  // For Yamcs-native naming only the name field is required and
+  // should be the fully qualified name. The namespace is only
+  // required when the name represents an alias of that parameter.
   repeated NamedObjectId ids = 4;
 
-  //Since version 5.4.0, Yamcs records the name of the TM link on which a TM packet is received together with the packet (in the tm table)
-  // This option, if specified, allows retrieving as part of replay only the packets originally received on one of the links specified
+  // Since version 5.4.0, Yamcs records the name of the TM link on which
+  // a TM packet is received together with the packet (in the tm table).
+  // This option, if specified, allows retrieving as part of replay only
+  // the packets originally received on one of the links specified.
   repeated string tmLinks = 5;
 }
 
 message ParameterGroupInfo {
-  repeated string group = 1;
+  // Parameter group names
+  repeated string group = 1 [deprecated=true];
+
+  // Parameter group names
+  repeated string groups = 2;
 }
 
 message ListParameterGroupsRequest {
+  // Yamcs instance name.
   optional string instance = 1;
 }
 
@@ -115,6 +130,10 @@ message ListParameterHistoryRequest {
   //
   // Default: ``ParameterArchive``.
   optional string source = 11;
+
+  // If set, truncate binary values to the specified byte length.
+  // This may be necessary when Yamcs contains large binary values.
+  optional int32 maxBytes = 13;
 
   // Continuation token returned by a previous page response.
   optional string next = 12;

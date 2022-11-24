@@ -19,7 +19,7 @@ export class ParameterSummaryTab implements OnDestroy {
 
   private dirty = false;
   private syncSubscription: Subscription;
-  private pval$ = new BehaviorSubject<ParameterValue | null>(null);
+  pval$ = new BehaviorSubject<ParameterValue | null>(null);
 
   constructor(route: ActivatedRoute, readonly yamcs: YamcsService, private synchronizer: Synchronizer) {
 

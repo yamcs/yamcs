@@ -23,6 +23,7 @@ export class CommandHistoryRecord {
 
   username: string;
 
+  raw: boolean;
   unprocessedBinary: string;
   binary: string;
 
@@ -82,6 +83,8 @@ export class CommandHistoryRecord {
           this.username = attr.value.stringValue!;
         } else if (attrName === 'source') {
           // Legacy, ignore.
+        } else if (attrName === 'raw') {
+          this.raw = attr.value.booleanValue!;
         } else if (attrName === 'unprocessedBinary') {
           this.unprocessedBinary = attr.value.binaryValue!;
         } else if (attrName === 'binary') {

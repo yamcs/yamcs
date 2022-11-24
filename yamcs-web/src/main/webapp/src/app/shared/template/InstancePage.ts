@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { NavigationEnd, Router } from '@angular/router';
@@ -17,6 +17,9 @@ import { User } from '../../shared/User';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InstancePage implements OnInit, OnDestroy {
+
+  @ViewChild('searchInput')
+  searchInput: ElementRef;
 
   connectionInfo$: Observable<ConnectionInfo | null>;
 
@@ -230,9 +233,23 @@ export class InstancePage implements OnInit, OnDestroy {
     return this.user.hasAnyObjectPrivilegeOfType('ReadPacket');
   }
 
-  ngOnDestroy() {
-    if (this.routerSubscription) {
-      this.routerSubscription.unsubscribe();
+  handleKeydown(event: KeyboardEvent) {
+    const el: HTMLInputElement = this.searchInput.nativeElement;
+    if (event.key === "/" && el !== document.activeElement) {
+      el.focus();
+      event.preventDefault();
+    } else if (event.key === "Enter") {
+      const value = this.searchControl.value;
+      if (value) {
+        this.searchControl.setValue('');
+        this.router.navigate(['/search'], {
+          queryParams: { c: this.yamcs.context, q: value },
+        });
+      }
     }
+  }
+
+  ngOnDestroy() {
+    this.routerSubscription?.unsubscribe();
   }
 }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
@@ -18,9 +18,6 @@ import { StartReplayDialog } from './StartReplayDialog';
 })
 export class InstanceToolbar implements OnDestroy {
 
-  @Input()
-  hasDetailPane = false;
-
   processor$ = new BehaviorSubject<Processor | null>(null);
   processorSubscription: ProcessorSubscription;
 
@@ -28,7 +25,6 @@ export class InstanceToolbar implements OnDestroy {
 
   connected$: Observable<boolean>;
   connectionInfo$: Observable<ConnectionInfo | null>;
-  showDetailPane$: Observable<boolean>;
 
   // For use in lazy dynamic population of Switch Processor menu.
   allProcessors$ = new BehaviorSubject<Processor[]>([]);
@@ -62,7 +58,6 @@ export class InstanceToolbar implements OnDestroy {
     });
 
     this.connectionInfo$ = this.yamcs.connectionInfo$;
-    this.showDetailPane$ = preferenceStore.detailPane$;
   }
 
   startReplay() {
@@ -113,10 +108,6 @@ export class InstanceToolbar implements OnDestroy {
     } catch (err: any) {
       this.messageService.showError(err);
     }
-  }
-
-  showDetailPane(enabled: boolean) {
-    this.preferenceStore.setShowDetailPane(enabled);
   }
 
   switchProcessorMenuOpened() {

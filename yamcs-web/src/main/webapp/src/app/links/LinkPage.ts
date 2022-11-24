@@ -38,9 +38,15 @@ export class LinkPage implements OnDestroy {
     this.linkSubscription = this.yamcs.yamcsClient.createLinkSubscription({
       instance: this.yamcs.instance!,
     }, evt => {
-      const link = this.link$.value;
-      if (link && link.name === evt.linkInfo.name) {
-        this.link$.next(evt.linkInfo);
+      if (evt.type !== 'UPDATE_ALL') {
+        return; // Legacy type
+      }
+
+      for (const linkInfo of evt.links || []) {
+        const link = this.link$.value;
+        if (link && link.name === linkInfo.name) {
+          this.link$.next(linkInfo);
+        }
       }
     });
   }
@@ -115,6 +121,21 @@ export class LinkPage implements OnDestroy {
   runAction(link: string, action: string) {
     this.yamcs.yamcsClient.runLinkAction(this.yamcs.instance!, link, action)
       .catch(err => this.messageService.showError(err));
+  }
+
+  getEntriesForValue(value: any) {
+    if (value === undefined || value === null) {
+      return [];
+    }
+    const entries: string[] = [];
+    if (Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++) {
+        entries.push('' + value[i]);
+      }
+    } else {
+      entries.push('' + value);
+    }
+    return entries;
   }
 
   ngOnDestroy() {

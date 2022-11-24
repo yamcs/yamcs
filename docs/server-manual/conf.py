@@ -51,8 +51,8 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 pygments_style = "sphinx"
 
 extlinks = {
-    "source": ("https://github.com/yamcs/yamcs/blob/master/%s", ""),
-    "apidoc": ("https://docs.yamcs.org/yamcs-http-api/%s", ""),
+    "source": ("https://github.com/yamcs/yamcs/blob/master/%s", "GitHub: %s"),
+    "apidoc": ("https://docs.yamcs.org/yamcs-http-api/%s", "API: %s"),
 }
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for

@@ -42,6 +42,9 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
     private ConcurrentMap<NamedObjectId, Integer> numericIdMap = new ConcurrentHashMap<>();
     private AtomicInteger numericIdGenerator = new AtomicInteger();
 
+    // Max emitted bytes for a singular binary value updates (either raw or eng)
+    private int maxBytes = -1;
+
     public SubscribeParameterObserver(User user, Observer<SubscribeParametersData> responseObserver) {
         this.user = user;
         this.responseObserver = responseObserver;
@@ -61,7 +64,7 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
                     ParameterValue pval = pvwi.getParameterValue();
                     Integer numericId = numericIdMap.get(pvwi.getId());
                     if (numericId != null) {
-                        datab.addValues(pval.toGpb(numericId));
+                        datab.addValues(toGpb(pval, numericId));
                     }
                 }
                 responseObserver.next(datab.build());
@@ -71,6 +74,10 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
         Action action = Action.REPLACE;
         if (request.hasAction()) {
             action = request.getAction();
+        }
+
+        if (request.hasMaxBytes()) {
+            maxBytes = request.getMaxBytes();
         }
 
         try {
@@ -120,7 +127,7 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
                     ParameterValue pval = rec.getParameterValue();
                     Integer numericId = mappingUpdate.get(rec.getId());
                     if (numericId != null) {
-                        datab.addValues(pval.toGpb(numericId));
+                        datab.addValues(toGpb(pval, numericId));
                     }
                 }
             }
@@ -159,6 +166,27 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
                 pidrm.removeItemsFromRequest(subscriptionId, idList, user);
             }
         }
+    }
+
+    private org.yamcs.protobuf.Pvalue.ParameterValue toGpb(ParameterValue pval, int numericId) {
+        var gpb = pval.toGpb(numericId);
+        if (maxBytes >= 0) {
+            var hasRawBinaryValue = gpb.hasRawValue() && gpb.getRawValue().hasBinaryValue();
+            var hasEngBinaryValue = gpb.hasEngValue() && gpb.getEngValue().hasBinaryValue();
+            if (hasRawBinaryValue || hasEngBinaryValue) {
+                var truncated = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder(gpb);
+                if (hasRawBinaryValue) {
+                    truncated.getRawValueBuilder().setBinaryValue(
+                            gpb.getRawValue().getBinaryValue().substring(0, maxBytes));
+                }
+                if (hasEngBinaryValue) {
+                    truncated.getEngValueBuilder().setBinaryValue(
+                            gpb.getEngValue().getBinaryValue().substring(0, maxBytes));
+                }
+                return truncated.build();
+            }
+        }
+        return gpb;
     }
 
     @Override

@@ -17,22 +17,42 @@
 </div>
 
 <ng-container *ngIf="command.unprocessedBinary && (command.unprocessedBinary !== command.binary)">
-  <div class="block-title">Unprocessed binary</div>
-  <div class="block no-print">
+  <div class="block-title">
+    Unprocessed binary
+    <app-more icon="more_horiz">
+      <button mat-menu-item (click)="copyHex(command.unprocessedBinary)">
+        Copy Hex
+      </button>
+      <button mat-menu-item (click)="copyBinary(command.unprocessedBinary)">
+        Copy Binary
+      </button>
+    </app-more>
+  </div>
+  <div class="block no-print" style="margin-top: 4px">
     <app-hex [base64String]="command.unprocessedBinary"></app-hex>
   </div>
   <div class="block print-only">
-    {{ (command.unprocessedBinary | hex) || '-' }}
+    <pre>{{ (command.unprocessedBinary | hexDump) || '-' }}</pre>
   </div>
 </ng-container>
 
 <ng-container *ngIf="command.binary">
-  <div class="block-title">Binary</div>
-  <div class="block no-print">
+  <div class="block-title">
+    Binary
+    <app-more icon="more_horiz">
+      <button mat-menu-item (click)="copyHex(command.binary)">
+        Copy Hex
+      </button>
+      <button mat-menu-item (click)="copyBinary(command.binary)">
+        Copy Binary
+      </button>
+    </app-more>
+  </div>
+  <div class="block no-print" style="margin-top: 4px">
     <app-hex [base64String]="command.binary"></app-hex>
   </div>
   <div class="block print-only">
-    {{ (command.binary | hex) || '-' }}
+    <pre>{{ (command.binary | hexDump) || '-' }}</pre>
   </div>
 </ng-container>
 
@@ -68,7 +88,7 @@
   <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
   <div class="block-title" style="padding-top: 0">Extra attributes</div>
   <div class="block">
-    <ul>
+    <ul style="margin-top: 0">
       <li *ngFor="let extra of command.extra">{{ extra.name }}: {{ extra.value }}</li>
     </ul>
   </div>

@@ -120,7 +120,7 @@ export function convertValueToNumber(value: Value) {
 }
 
 export function convertBase64ToHex(base64: string) {
-  const raw = atob(base64);
+  const raw = window.atob(base64);
   let result = '';
   for (let i = 0; i < raw.length; i++) {
     const hex = raw.charCodeAt(i).toString(16);
@@ -138,7 +138,7 @@ export function convertHexToBase64(hex: string) {
     barr.push(parseInt(hex.substr(i, 2), 16));
   }
   const str = String.fromCharCode.apply(String, barr);
-  return btoa(str);
+  return window.btoa(str);
 }
 
 export function toValue(value: any): Value {
@@ -225,7 +225,11 @@ export function generateRandomName() {
   return `${adjective}_${animal}`;
 }
 
-export function printValue(value: Value) {
+export interface PrintValueOptions {
+  maxBytes?: number;
+}
+
+export function printValue(value: Value, options?: PrintValueOptions) {
   if (value.type === 'AGGREGATE') {
     let preview = '{';
     if (value.aggregateValue) {
@@ -234,7 +238,7 @@ export function printValue(value: Value) {
         if (i !== 0) {
           preview += ', ';
         }
-        preview += value.aggregateValue.name[i] + ': ' + printValueWithoutPreview(value.aggregateValue.value[i]);
+        preview += value.aggregateValue.name[i] + ': ' + printValueWithoutPreview(value.aggregateValue.value[i], options);
       }
       if (n < value.aggregateValue.value.length) {
         preview += `, …`;
@@ -250,7 +254,7 @@ export function printValue(value: Value) {
         if (i !== 0) {
           preview += ', ';
         }
-        preview += printValueWithoutPreview(value.arrayValue[i]);
+        preview += printValueWithoutPreview(value.arrayValue[i], options);
       }
       if (n < value.arrayValue.length) {
         preview += ', …';
@@ -261,11 +265,11 @@ export function printValue(value: Value) {
     }
     return preview;
   } else {
-    return printValueWithoutPreview(value);
+    return printValueWithoutPreview(value, options);
   }
 }
 
-function printValueWithoutPreview(value: Value): string {
+function printValueWithoutPreview(value: Value, options?: PrintValueOptions): string {
   switch (value.type) {
     case 'AGGREGATE':
       return '{…}';
@@ -282,7 +286,11 @@ function printValueWithoutPreview(value: Value): string {
     case 'SINT32':
       return '' + value.sint32Value;
     case 'BINARY':
-      return printHexPreview('' + value.binaryValue);
+      if (options?.maxBytes !== undefined) {
+        return printHexPreview('' + value.binaryValue, options.maxBytes);
+      } else {
+        return printHexPreview('' + value.binaryValue);
+      }
     case 'ENUMERATED':
     case 'STRING':
       return value.stringValue!;
@@ -299,15 +307,56 @@ function printValueWithoutPreview(value: Value): string {
   }
 }
 
-export function printHexPreview(binaryValue: string) {
+export function printHexPreview(binaryValue: string, maxBytes = 16) {
   const hex = convertBase64ToHex(binaryValue);
-  if (hex.length > 32) {
-    return '0x' + hex.slice(0, 32) + '…';
+  if (hex.length > maxBytes * 2) {
+    return '0x' + hex.slice(0, maxBytes * 2) + '…';
   } else if (hex.length > 0) {
     return '0x' + hex;
   } else {
     return '';
   }
+}
+
+export function printHexDump(base64: string) {
+  function lpad(hex: string, width: number) {
+    if (hex.length >= width) {
+      return hex;
+    } else {
+      return new Array(width - hex.length + 1).join('0') + hex;
+    }
+  }
+
+  const raw = window.atob(base64);
+  let result = '';
+  let charCount = 0;
+  let lineAscii = '';
+  for (let i = 0; i < raw.length; i++) {
+    if (i % 16 === 0) {
+      const charCountHex = charCount.toString(16);
+      result += lpad(charCountHex, 8);
+      result += ': ';
+    }
+    const code = raw.charCodeAt(i);
+    const hex = code.toString(16);
+    if (32 <= code && code <= 126) {
+      lineAscii += raw[i];
+    } else {
+      lineAscii += '.';
+    }
+
+    result += (hex.length === 2 ? hex : '0' + hex);
+    if ((i + 1) % 2 === 0) {
+      result += ' ';
+    }
+
+    if ((i + 1) % 16 === 0) {
+      result += ' ' + lineAscii + '\n';
+      lineAscii = '';
+      charCount += 16;
+    }
+  }
+  return result;
 }
 
 export function printDateTime(date: Date | string, addTimezone = true): string {

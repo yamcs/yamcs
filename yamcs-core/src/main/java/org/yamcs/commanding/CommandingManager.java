@@ -96,6 +96,7 @@ public class CommandingManager extends AbstractService {
         pc.setUnprocessedBinary(binary);
         pc.setBinary(binary);
         pc.setUsername(user.getName());
+        pc.setRaw(true);
 
         return pc;
     }

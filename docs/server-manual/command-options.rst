@@ -56,7 +56,7 @@ Types
 
 There is support for these three types: ``BOOLEAN``, ``NUMBER`` and ``STRING``. These types are only a hint for use by UI clients. For example, the Yamcs web interface will use these types to determine which UI controls to render in a dynamic form, and how to encode the values for persisting in Command History. The HTTP API will not check which :javadoc:`~org.yamcs.protobuf.Value` types are used. Submitted values are pushed end-to-end in a type-preserving manner.
 
-The effective :javadoc:`~org.yamcs.protobuf.Value` type is intentionally loose, and depends on the client. The Yamcs web interface for example, will use doube for submitting the value of any ``NUMBER`` options.
+The effective :javadoc:`~org.yamcs.protobuf.Value` type is intentionally loose, and depends on the client. The Yamcs web interface for example, will use double for submitting the value of any ``NUMBER`` options.
 
 
 Permissions

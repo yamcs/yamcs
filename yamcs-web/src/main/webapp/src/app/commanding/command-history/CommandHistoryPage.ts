@@ -282,7 +282,7 @@ export class CommandHistoryPage {
   }
 
   copyBinary(command: CommandHistoryRecord) {
-    const raw = atob(command.binary);
+    const raw = window.atob(command.binary);
     this.clipboard.copy(raw);
   }
 

@@ -7,31 +7,19 @@ import { BehaviorSubject } from 'rxjs';
 export class PreferenceStore {
 
   sidebar$ = new BehaviorSubject<boolean>(true);
-  detailPane$ = new BehaviorSubject<boolean>(false);
 
   constructor() {
     const sidebar = !(localStorage.getItem('yamcs.sidebar') === 'false');
     this.sidebar$.next(sidebar);
-    const detailPane = !(localStorage.getItem('yamcs.detailPane') === 'false');
-    this.detailPane$.next(detailPane);
   }
 
   public showSidebar() {
     return this.sidebar$.getValue();
   }
 
-  public showDetailPane() {
-    return this.detailPane$.getValue();
-  }
-
   public setShowSidebar(enabled: boolean) {
     this.sidebar$.next(enabled);
     localStorage.setItem('yamcs.sidebar', String(enabled));
-  }
-
-  public setShowDetailPane(enabled: boolean) {
-    this.detailPane$.next(enabled);
-    localStorage.setItem('yamcs.detailPane', String(enabled));
   }
 
   public setVisibleColumns(source: string, columns: string[]) {

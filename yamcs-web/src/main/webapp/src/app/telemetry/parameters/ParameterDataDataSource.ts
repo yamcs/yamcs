@@ -30,9 +30,8 @@ export class ParameterDataDataSource extends DataSource<ParameterValue> {
       ...options,
       limit: this.pageSize + 1, // One extra to detect hasMore
     }).then(pvals => {
-      this.loading$.next(false);
       this.pvals$.next(pvals);
-    });
+    }).finally(() => this.loading$.next(false));
   }
 
   hasMore() {

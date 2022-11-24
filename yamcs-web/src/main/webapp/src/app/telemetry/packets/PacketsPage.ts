@@ -228,7 +228,7 @@ export class PacketsPage {
   }
 
   copyBinary(packet: Packet) {
-    const raw = atob(packet.packet);
+    const raw = window.atob(packet.packet);
     this.clipboard.copy(raw);
   }
 

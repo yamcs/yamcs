@@ -3,7 +3,7 @@
   <ng-container *ngIf="selected$ | async as selected">
     {{ getLabel(selected) }}
   </ng-container>
-  <span *ngIf="!(selected$ | async).length" style="color: grey">{{ emptyOption }}</span>
+  <span *ngIf="!(selected$ | async)!.length" style="color: grey">{{ emptyOption }}</span>
   <mat-icon class="icon12">arrow_drop_down</mat-icon>
 </button>
 

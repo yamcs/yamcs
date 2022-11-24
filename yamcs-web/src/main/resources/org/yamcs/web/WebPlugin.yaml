@@ -73,17 +73,6 @@ options:
     type: BOOLEAN
     default: true
 
-  commandClearances:
-    title: Require Level-based Command Clearance
-    description:
-      - Controls whether commands, in addition to privilege checking, require a user to
-        be cleared for sending them.
-      - This feature is primarily intended for an operational setting as an alternative
-        to supervised command queues.
-    type: BOOLEAN
-    default: false
-    deprecationMessage: This property is automatically derived. You can safely remove it from configuration.
-
   commandExports:
     title: Show Command Export Functionalities
     description:
@@ -91,28 +80,12 @@ options:
     type: BOOLEAN
     default: true
 
-  completeness:
-    title: Show CCSDS Completeness Functionalities
-    description:
-      - Controls whether functionalities related to CCSDS completeness are shown.
-      - Only enable when the service CcsdsTmIndex is used.
-    type: BOOLEAN
-    deprecationMessage: This property is automatically derived. You can safely remove it from configuration.
-    
   logoutRedirectUrl:
     title: Logout Redirect URL
     description:
       - The URL to redirect to after logging out of Yamcs. If unset, users are
         redirected to the built-in login page.
     type: STRING
-
-  cfdp:
-    title: Show CFDP Functionalities
-    description:
-      - Controls whether functionalities related to CFDP are shown.
-      - Only enable when the service CfdpService is used.
-    type: BOOLEAN
-    deprecationMessage: This property is automatically derived. You can safely remove it from configuration.
 
   dass:
     title: Show DaSS Functionalities
@@ -139,6 +112,32 @@ options:
       - Controls whether functionalities related to TM archiving are shown.
     type: BOOLEAN
     default: true
+
+  siteLinks:
+    title: Site Links
+    description:
+      - Configure custom site links that can be visited from the website header.
+    type: LIST
+    elementType: MAP
+    suboptions:
+      url:
+        title: URL
+        description:
+          - Site URL
+        type: STRING
+        required: true
+      label:
+        title: Label
+        description:
+          - Descriptive name of this URL.
+        type: STRING
+        required: true
+      external:
+        title: External Link
+        description:
+          - Mark this link as external. External links are opened in a new tab.
+        type: BOOLEAN
+        default: false
 
   events:
     title: Events

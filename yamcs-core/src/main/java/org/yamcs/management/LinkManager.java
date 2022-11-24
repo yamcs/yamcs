@@ -23,6 +23,7 @@ import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
+import org.yamcs.client.utils.WellKnownTypes;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
@@ -137,8 +138,7 @@ public class LinkManager {
         try {
             link = YObjectLoader.loadObject(linkClass);
         } catch (ConfigurationException e) {
-            // TODO: set this to warn in the next version
-            log.info(
+            log.warn(
                     "Link {} does not have a no-argument constructor. Please add one and implement the initialisation in the init method",
                     linkClass);
             // Ignore for now. Fallback to constructor initialization.
@@ -336,6 +336,10 @@ public class LinkManager {
         if (link.getDetailedStatus() != null) {
             linkb.setDetailedStatus(link.getDetailedStatus());
         }
+        var extra = link.getExtraInfo();
+        if (extra != null) {
+            linkb.setExtra(WellKnownTypes.toStruct(extra));
+        }
         Link parent = link.getParent();
         if (parent != null) {
             linkb.setParentName(parent.getName());
@@ -396,10 +400,18 @@ public class LinkManager {
         return linkListeners.remove(l);
     }
 
+    /**
+     * Use {@link #getLinks()} instead.
+     */
+    @Deprecated
     public List<LinkInfo> getLinkInfo() {
         return links.stream().map(lwi -> lwi.linkInfo).collect(Collectors.toList());
     }
 
+    /**
+     * Use {@link #getLink(String)} instead.
+     */
+    @Deprecated
     public LinkInfo getLinkInfo(String linkName) {
         Optional<LinkInfo> o = links.stream()
                 .map(lwi -> lwi.linkInfo)
@@ -475,6 +487,10 @@ public class LinkManager {
                     String ds = link.getDetailedStatus();
                     if (ds != null) {
                         lib.setDetailedStatus(ds);
+                    }
+                    var extra = link.getExtraInfo();
+                    if (extra != null) {
+                        lib.setExtra(WellKnownTypes.toStruct(extra));
                     }
                     if (link instanceof LinkActionProvider) {
                         lib.clearActions();

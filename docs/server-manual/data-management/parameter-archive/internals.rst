@@ -5,7 +5,7 @@ The Parameter Archive stores for each parameter tuples (t\ :sub:`i`, ev\ :sub:`i
 
 In a typical space data stream there are many parameters that do not change very often (like an device ON/OFF status). For these, the space required to store the timestamp can greatly exceed in size the space required for storing the value (if simple compression is used).
 
-In fact since the timestamps are 8 bytes long, they equal or execed in size the parameter values almost in all cases, even for parameters that do change.
+In fact since the timestamps are 8 bytes long, they equal or exceed in size the parameter values almost in all cases, even for parameters that do change.
 
 To reduce the size of the archive, some alternative parameter archives may choose to store only the values when they change with respect to the previous value. Often, like in the above "device ON/OFF" example, the exact timestamps of the non-changing parameter values, received in between actual (but rare) value changes are not very important. One has to take care that gaps in the data are not mistaken for non-changing parameter values.
 Storing the values on change only will reduce the space required not only for the value but also (and more importantly) for the timestamp.
@@ -33,7 +33,7 @@ The Parameter Archive partitions the data at two levels:
 
 This means that each parameter requires each ~70 minutes three segments for storing the raw, engineering and status plus a segment containing the timestamps. The timestamp segment is shared with other parameters. In order to be able to efficiently compress and work with the data, one segment stores data of one type only.
 
-Each (parameter_fqn, eng_type, raw_type) combination is given an unique 4 bytes parameter_id (fqn = fully qualified name). We do this in order to be able to accomodate changes in parameter definitions in subsequent versions of the mission database.
+Each (parameter_fqn, eng_type, raw_type) combination is given an unique 4 bytes parameter_id (fqn = fully qualified name). We do this in order to be able to accommodate changes in parameter definitions in subsequent versions of the mission database.
 
 The parameter_id=0 is reserved for the timestamp.
 
@@ -78,9 +78,9 @@ The segments are compressed in different ways depending on their types.
 
 * | **SortedTimeSegment**
 
-  | Stores the timestamps as uitn32 deltas from the beginning of the segment. The data is first encoded into deltas of deltas, then it's zigzag encoded (such that it becomes positive) and then it's encoded with FastPFOR and VarInt. FastPFOR encodes blocks of 128 bytes so VarInt encoding is used for the remaining data.
+  | Stores the timestamps as uint32 deltas from the beginning of the segment. The data is first encoded into deltas of deltas, then it's zigzag encoded (such that it becomes positive) and then it's encoded with FastPFOR and VarInt. FastPFOR encodes blocks of 128 bytes so VarInt encoding is used for the remaining data.
 
-  | Storing timestamps as deltas of deltas helps if the data is sampled at regular intervals (especially by a real-time sytem). In this case the encoded deltas of deltas become very close to 0 and that compresse very well.
+  | Storing timestamps as deltas of deltas helps if the data is sampled at regular intervals (especially by a real-time system). In this case the encoded deltas of deltas become very close to 0 and that compresses very well.
 
   | Description of the VarInt and zigzag encoding can be found in `Protocol Buffer docs <https://developers.google.com/protocol-buffers/docs/encoding>`_.
 

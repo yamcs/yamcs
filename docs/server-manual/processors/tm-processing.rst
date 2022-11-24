@@ -26,7 +26,7 @@ The processing returns to this step when processing sub-containers or inherited 
 
 Once a packet is matched to a container, Yamcs can proceed to extract the container entries. There are cases when, in order to improve the performance, Yamcs performs a partial retrieval - only a subset of the entries are processed. 
 This for example is done as part of the XtceTmRecorder service when Yamcs does not want to extract parameters but only to identify the packet to its lowest sub-container; it is also done when performing a reply for the purpose of extracting a parameter or a set of parameters.
-The property that configures this behaviour is ``config -> subscribeAll`` in the processor configuration in ``processor.yaml``. If the property is set to false, then only the parameter subscribed (and the dependent parameters) will be extracted.
+The property that configures this behavior is ``config -> subscribeAll`` in the processor configuration in ``processor.yaml``. If the property is set to false, then only the parameter subscribed (and the dependent parameters) will be extracted.
 
 **3. Entry processing**
 

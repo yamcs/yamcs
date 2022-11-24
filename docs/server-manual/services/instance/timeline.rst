@@ -1,12 +1,12 @@
 Timeline
 ========
 
-This supports the timeline functionality in yamcs-web. Esentially the timeline in yamcs-web shows items on bands.
+This supports the timeline functionality in yamcs-web. Essentially the timeline in yamcs-web shows items on bands.
 
 The following item types are supported:
 
 * events - general items which do not have execution state: for example can store information about day/night, ground station coverage, milestones (e.g. launch, a deadline), other items covering large time intervals (e.g. mission phase).
-* activities - used for items for which Yamcs keeps execution state. The following execution states are supported:  PLANNED, IN_PROGRESS, COMPLETED, ABORTED, FAILED. Activities can depend on eachother meaning that one activity is started after a previous one has finished.
+* activities - used for items for which Yamcs keeps execution state. The following execution states are supported:  PLANNED, IN_PROGRESS, COMPLETED, ABORTED, FAILED. Activities can depend on each other meaning that one activity is started after a previous one has finished.
 
 The activities are further subdivided in:
 
@@ -29,8 +29,8 @@ External sources do not need to support all features of the rdb source, for exam
 
 TBD: the service supports crontab like functionality. 
 
-Item templates can be placed into the crontab and they will be automatically instantiated at the set time. This allows for example automatically creating regular occuring activities.
-The service does not support complex instantiations of item or activity groups (e.g. items that depend on one-eachother) - if such functionality is desired, the user can script the creation as part of one activity.
+Item templates can be placed into the crontab and they will be automatically instantiated at the set time. This allows for example automatically creating regular occurring activities.
+The service does not support complex substantiations of item or activity groups (e.g. items that depend on each other) - if such functionality is desired, the user can script the creation as part of one activity.
 
 Bands
 =========

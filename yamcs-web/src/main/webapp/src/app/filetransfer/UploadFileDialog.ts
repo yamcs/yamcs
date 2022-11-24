@@ -101,7 +101,7 @@ export class UploadFileDialog {
     this.dialogRef.close();
   }
 
-  updateBreadcrumb(prefix: string) {
+  updateBreadcrumb(prefix: string | null) {
     if (!prefix) {
       this.breadcrumb$.next([]);
       return;

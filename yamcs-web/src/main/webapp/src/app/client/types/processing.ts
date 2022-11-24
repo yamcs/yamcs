@@ -38,6 +38,7 @@ export interface SubscribeParametersRequest {
   abortOnInvalid: boolean;
   updateOnExpiration: boolean;
   sendFromCache: boolean;
+  maxBytes?: number;
   action: 'REPLACE' | 'ADD' | 'REMOVE';
 }
 

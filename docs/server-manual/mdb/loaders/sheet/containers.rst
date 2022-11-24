@@ -35,4 +35,4 @@ Comment lines starting with ``#`` on the first column can appear everywhere and 
       * op is '&' (AND) or '|' (OR)
       * expi is a boolean expression or a simple condition
 
-  | Currently the only supported conditions are on the parameters of the parent container. This cover the usual case where the parent defines a header and the inheritance condition is based on paraemters from the header.
+  | Currently the only supported conditions are on the parameters of the parent container. This cover the usual case where the parent defines a header and the inheritance condition is based on parameters from the header.

@@ -53,7 +53,7 @@ export class AlgorithmsPage implements AfterViewInit, OnDestroy {
 
   private queryParamMapSubscription: Subscription;
 
-  private selection = new SelectionModel<ListItem>(false);
+  selection = new SelectionModel<ListItem>(false);
 
   // Would prefer to use formGroup, but when using valueChanges this
   // only is updated after the callback...

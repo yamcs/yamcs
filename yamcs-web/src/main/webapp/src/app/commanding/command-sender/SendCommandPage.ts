@@ -49,7 +49,7 @@ export class SendCommandPage implements AfterViewInit, OnDestroy {
 
   private queryParamMapSubscription: Subscription;
 
-  private selection = new SelectionModel<ListItem>(false);
+  selection = new SelectionModel<ListItem>(false);
 
   constructor(
     title: Title,
