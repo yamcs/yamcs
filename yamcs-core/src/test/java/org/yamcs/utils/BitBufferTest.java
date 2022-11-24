@@ -3,6 +3,7 @@ package org.yamcs.utils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.ByteOrder;
+import java.util.Random;
 
 import org.junit.jupiter.api.Test;
 
@@ -186,4 +187,34 @@ public class BitBufferTest {
         BitBuffer bitbuf2 = bitbuf1.slice();
         assertEquals(3, bitbuf2.getBits(8));
     }
+
+    // @Test
+    public void testSpeed() {
+        int n = 1000_000;
+        byte[] b = new byte[n];
+        BitBuffer bitbuf = new BitBuffer(b);
+
+        long s = 0;
+        Random r = new Random();
+        long t0 = System.currentTimeMillis();
+
+        long c = 0;
+
+        for (int i = 0; i < 3000; i++) {
+            bitbuf.setPosition(0);
+            b[r.nextInt(n)] = (byte) r.nextInt();
+            hopa: while (true) {
+                for (int j = 1; j < 33; j++) {
+                    if (bitbuf.getPosition() + 64 > n * 8) {
+                        break hopa;
+                    }
+                    c++;
+                    s += bitbuf.getBits(j);
+                }
+            }
+        }
+        long t1 = System.currentTimeMillis();
+        System.out.println("s: " + s + " t1-t0: " + (t1 - t0) + " millisecs c: " + c);
+    }
+
 }
