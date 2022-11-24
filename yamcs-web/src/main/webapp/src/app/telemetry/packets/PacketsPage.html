@@ -1,5 +1,5 @@
 <app-instance-page>
-  <app-instance-toolbar [hasDetailPane]="true">
+  <app-instance-toolbar>
     Packets
     &nbsp;&nbsp;&nbsp;
     <mat-menu #exportMenu="matMenu" class="ya-menu">
@@ -41,8 +41,22 @@
         <div class="block">
           {{ detailPacket.packet | binarySize | formatBytes }}
         </div>
-        <div class="block-title">Data</div>
-        <div class="block">
+        <div class="block-title">
+          Data
+          <app-more icon="more_horiz">
+            <button mat-menu-item (click)="copyHex(detailPacket)">
+              Copy Hex
+            </button>
+            <button mat-menu-item (click)="copyBinary(detailPacket)">
+              Copy Binary
+            </button>
+            <mat-divider></mat-divider>
+            <app-download-menu-item [link]="detailPacket | packetDownloadLink">
+              Download
+            </app-download-menu-item>
+          </app-more>
+        </div>
+        <div class="block" style="margin-top: 4px">
           <app-hex [base64String]="detailPacket.packet"></app-hex>
         </div>
       </div>

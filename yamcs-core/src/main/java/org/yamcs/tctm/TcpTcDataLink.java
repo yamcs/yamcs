@@ -5,6 +5,7 @@ import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.CancelledKeyException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
@@ -139,6 +140,10 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
             }
         } catch (IOException e) {
             log.warn("Exception caught when checking if the socket to {}:{} is open:", host, port, e);
+            connected = false;
+        } catch (CancelledKeyException e) {
+            // May happen during shutdown, don't be too verbose about it
+            log.debug(e.getMessage());
             connected = false;
         }
         return connected;

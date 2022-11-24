@@ -12,7 +12,7 @@
     <button mat-button
             *ngIf="mayManageStacks()"
             color="primary"
-            (click)="uploader.click()">
+            (click)="openUploadDialog()">
       <mat-icon>file_upload</mat-icon>
       UPLOAD STACK
       <input #uploader
@@ -91,16 +91,14 @@
               <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px">folder</mat-icon>
               <a [routerLink]="'/commanding/stacks/browse/' + item.nameWithoutInstance"
                  [queryParams]="{c: yamcs.context}"
-                 (click)="$event.stopPropagation()">
-                {{ item.name | filename }}
+                 (click)="$event.stopPropagation()">{{ item.name | filename }}
               </a>
             </ng-container>
             <ng-container *ngIf="!item.folder">
               <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px">description</mat-icon>
               <a [routerLink]="'/commanding/stacks/files/' + item.nameWithoutInstance"
                  [queryParams]="{c: yamcs.context}"
-                 (click)="$event.stopPropagation()">
-                {{ item.name | filename | basename }}
+                 (click)="$event.stopPropagation()">{{ item.name | filename | basename }}
               </a>
             </ng-container>
           </td>
@@ -162,7 +160,7 @@
             <p *ngIf="mayManageStacks()">
               <button class="ya-button primary" (click)="createStack()">Create a stack</button>
               or
-              <button class="ya-button" (click)="importStack()">Import a stack</button>
+              <button class="ya-button" (click)="openUploadDialog()">Import a stack</button>
             </p>
           </app-empty-message>
         </ng-container>

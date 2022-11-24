@@ -5,10 +5,10 @@ import * as utils from '../utils';
 @Pipe({ name: 'value' })
 export class ValuePipe implements PipeTransform {
 
-  transform(value: Value | null | undefined): string | null {
+  transform(value: Value | null | undefined, options?: utils.PrintValueOptions): string | null {
     if (!value) {
       return null;
     }
-    return utils.printValue(value);
+    return utils.printValue(value, options);
   }
 }

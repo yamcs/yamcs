@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, Input, ViewChild } from '@angular/core';
-import { ControlValueAccessor, UntypedFormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR, UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { BehaviorSubject } from 'rxjs';
 import { Command, GetCommandsOptions } from '../../client';
@@ -57,7 +57,7 @@ export class CommandSelector implements ControlValueAccessor, AfterViewInit {
   // Added dynamically based on actual commands.
   aliasColumns$ = new BehaviorSubject<ColumnInfo[]>([]);
 
-  private selection = new SelectionModel<ListItem>(false);
+  selection = new SelectionModel<ListItem>(false);
   selectedCommand$ = new BehaviorSubject<ListItem | null>(null);
 
   private onChange = (_: Command | null) => { };
@@ -207,6 +207,6 @@ export class ListItem {
 }
 
 export interface BreadCrumbItem {
-  name?: string;
+  name: string;
   system: string;
 }

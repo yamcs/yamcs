@@ -54,12 +54,12 @@ tlsKey (string)
     **Required** if ``tlsCert`` is specified. The key to the certificate.
 
 contextPath (string)
-    Path string prepended to all routes. For example, a contextPath of ``/yamcs`` will make the api available on ``/yamcs/api`` instead of the default ``/api``. When using this property in combination with a reverse proxy, you should ensure that the proxy path matches with the context path because rewriting may lead to unexpected results.
+    Path string prepended to all routes. For example, a contextPath of ``/yamcs`` will make the API available on ``/yamcs/api`` instead of the default ``/api``. When using this property in combination with a reverse proxy, you should ensure that the proxy path matches with the context path because rewriting may lead to unexpected results.
     
     Use this property only as a last resort. For multi-hosting situations, it is preferable to serve Yamcs from the root of its own subdomain.
 
 zeroCopyEnabled (boolean)
-    Indicates whether zero-copy can be used to optimize non-SSL static file serving. Default: ``true``
+    Indicates whether zero-copy can be used to optimize non-TLS static file serving. Default: ``true``
 
 maxContentLength (integer)
     Maximum allowed length of request bodies. This is applied to all non-streaming API requests. Default: ``65536``

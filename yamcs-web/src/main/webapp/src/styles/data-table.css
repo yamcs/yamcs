@@ -87,7 +87,7 @@
 
 .ya-data-table a, .ya-link a, a.ya-link {
   color: #009e87;
-  text-decoration: none;
+  text-decoration: underline;
 }
 
 .ya-data-table .mat-row:hover a:not(.secundary) {

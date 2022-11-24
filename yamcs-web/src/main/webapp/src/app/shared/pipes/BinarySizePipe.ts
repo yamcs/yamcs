@@ -7,7 +7,7 @@ export class BinarySizePipe implements PipeTransform {
     if (!base64) {
       return null;
     }
-    const raw = atob(base64);
+    const raw = window.atob(base64);
     return raw.length;
   }
 }

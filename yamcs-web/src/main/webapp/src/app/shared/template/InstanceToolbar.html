@@ -4,15 +4,6 @@
 
     <span style="flex: 1 1 auto"></span>
 
-    <ng-container *ngIf="hasDetailPane">
-      <button mat-button color="primary" *ngIf="!(showDetailPane$ | async)" (click)="showDetailPane(true)">
-        SHOW INFO PANEL
-      </button>
-      <button mat-button color="primary" *ngIf="showDetailPane$ | async" (click)="showDetailPane(false)">
-        HIDE INFO PANEL
-      </button>
-    </ng-container>
-
     <ng-container *ngIf="processor$ | async as processor">
       <ng-container *ngIf="connected$ | async">
         <ng-container *ngIf="connectionInfo$ | async as connectionInfo">

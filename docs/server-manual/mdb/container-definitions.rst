@@ -29,7 +29,7 @@ Containers can point to another container through the baseContainer property, me
 
 Little Endian Parameter Encoding
 --------------------------------
-Yamcs supports only little or big endian (XTCE allows in addition arbytrary byte orders, this is not supported).
+Yamcs supports only little or big endian (XTCE allows in addition arbitrary byte orders, this is not supported).
 
 For little endian parameters which occupy a non-integer number of bytes, the following algorithm is applied to extract the parameter from the packet:
 

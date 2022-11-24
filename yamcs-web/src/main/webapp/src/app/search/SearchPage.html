@@ -1,0 +1,29 @@
+<app-instance-page>
+  <app-instance-toolbar>Search results</app-instance-toolbar>
+
+  <div class="panel-content">
+    <ng-container *ngIf="result$ | async as result">
+      <div style="margin-bottom: 1em">
+        Showing {{ result.resources.length }} of {{ result.totalSize }}
+        result<ng-container *ngIf="result.totalSize !== 1">s</ng-container>
+        for "{{ term$ | async }}".
+      </div>
+
+      <div *ngFor="let resource of result.resources">
+        <mat-icon class="icon12"
+                  style="vertical-align: middle; margin-right: 4px">toll</mat-icon>
+        <a class="ya-link"
+           [routerLink]="resource.link"
+           [queryParams]="{c: yamcs.context}">{{ resource.label }}</a><br>
+      </div>
+
+      <mat-toolbar *ngIf="result.resources.length">
+        <span style="flex: 1 1 auto"></span>
+        <button [disabled]="!result.continuationToken"
+                class="ya-button"
+                (click)="loadMoreData()">Load More</button>
+        <span style="flex: 1 1 auto"></span>
+      </mat-toolbar>
+    </ng-container>
+  </div>
+</app-instance-page>

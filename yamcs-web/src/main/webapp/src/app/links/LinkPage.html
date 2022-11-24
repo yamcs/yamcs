@@ -67,6 +67,41 @@
       <dd>{{ link.detailedStatus || '-' }}</dd>
     </dl>
 
+    <ng-container *ngIf="link.extra">
+      <div class="section-divider">
+        <mat-divider></mat-divider>
+      </div>
+      <dl class="dl-horizontal">
+        <ng-container *ngFor="let entry of link.extra | keyvalue">
+          <dt>{{ entry.key }}</dt>
+          <dd>
+            <ng-container *ngIf="getEntriesForValue(entry.value) as subentries">
+              <ng-container *ngIf="subentries.length">
+                <ng-container *ngFor="let subentry of subentries">
+                  {{ subentry || '-' }}<br>
+                </ng-container>
+              </ng-container>
+              <ng-container *ngIf="!subentries.length">-</ng-container>
+            </ng-container>
+          </dd>
+        </ng-container>
+      </dl>
+    </ng-container>
+
+    <ng-container *ngIf="link.parameters">
+      <div class="section-divider">
+        <mat-divider></mat-divider>
+      </div>
+      <h4>System parameters</h4>
+      <ng-container *ngFor="let parameter of link.parameters">
+        <mat-icon class="icon12" style="vertical-align: middle">toll</mat-icon>&nbsp;
+        <a [routerLink]="['/telemetry/parameters', parameter]"
+           [queryParams]="{c: yamcs.context}"
+           class="ya-link">{{ parameter }}</a>
+        <br>
+      </ng-container>
+    </ng-container>
+
     <ng-container *ngIf="cop1Config$ | async as config">
       <ng-container *ngIf="cop1Status$ | async as status">
         <div class="section-divider">

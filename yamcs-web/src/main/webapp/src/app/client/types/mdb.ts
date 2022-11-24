@@ -93,7 +93,9 @@ export interface Member {
   name: string;
   type: ParameterType | ArgumentType;
   initialValue?: string;
-  description: string;
+  shortDescription: string;
+  longDescription: string;
+  alias: NamedObjectId[];
 }
 
 export interface ArgumentMember extends Member {
@@ -370,6 +372,7 @@ export interface GetParametersOptions {
   details?: boolean;
   pos?: number;
   limit?: number;
+  next?: string;
 }
 
 export interface ParametersPage {

@@ -12,6 +12,7 @@ import { ParameterTableViewer } from './displays/ParameterTableViewer';
 import { ParameterTableViewerControls } from './displays/ParameterTableViewerControls';
 import { RenameDisplayDialog } from './displays/RenameDisplayDialog';
 import { ScriptViewer } from './displays/ScriptViewer';
+import { ScriptViewerControls } from './displays/ScriptViewerControls';
 import { ScrollingParameterTable } from './displays/ScrollingParameterTable';
 import { TextViewer } from './displays/TextViewer';
 import { ViewerControlsHost } from './displays/ViewerControlsHost';
@@ -49,6 +50,7 @@ const viewers = [
   ParameterTableViewer,
   ParameterTableViewerControls,
   ScriptViewer,
+  ScriptViewerControls,
   TextViewer,
 ];
 

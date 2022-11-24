@@ -176,7 +176,7 @@ To illustrate these concepts with an example, consider this query command define
         | response=\`identification\`
       -
 
-When issued, this command will send the string ``*IDN?`` to the instrument named ``simulator``. A string response is expected and is read in its entirity as a value of the parameter ``/TSE/simulator/identification``.
+When issued, this command will send the string ``*IDN?`` to the instrument named ``simulator``. A string response is expected and is read in its entirety as a value of the parameter ``/TSE/simulator/identification``.
 
 The next example shows the definition of a TSE command that uses a dynamic argument in both the command and the response string templates:
 

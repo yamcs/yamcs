@@ -74,7 +74,7 @@ export class DownloadFileDialog {
     });
   }
 
-  updateBreadcrumb(prefix: string) {
+  updateBreadcrumb(prefix: string | null) {
     if (!prefix) {
       this.breadcrumb$.next([]);
       return;

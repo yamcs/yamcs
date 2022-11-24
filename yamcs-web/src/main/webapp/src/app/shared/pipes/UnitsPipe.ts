@@ -4,7 +4,7 @@ import { UnitInfo } from '../../client';
 @Pipe({ name: 'units' })
 export class UnitsPipe implements PipeTransform {
 
-  transform(unitSet: UnitInfo[]): string | null {
+  transform(unitSet?: UnitInfo[]): string | null {
     if (!unitSet || unitSet.length === 0) {
       return null;
     }

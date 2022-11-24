@@ -1,0 +1,10 @@
+<ng-container *ngIf="initialized$ | async">
+  <button mat-button
+          *ngIf="mayManageDisplays()"
+          color="primary"
+          [disabled]="!(viewer.hasUnsavedChanges$ | async)"
+          (click)="save()">
+    <mat-icon>save</mat-icon>
+    SAVE
+  </button>
+</ng-container>

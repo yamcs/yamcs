@@ -793,7 +793,7 @@ public class V7Loader extends V7LoaderBase {
             String dtype = getContent(cells, CN_PARAM_DTYPE);
             DataTypeRecord dtr = dataTypesDefs.get(dtype);
             if (dtr == null) {
-                throw new SpreadsheetLoadException(ctx, "Cannot find a  data type on name '" + dtype + "'");
+                throw new SpreadsheetLoadException(ctx, "Cannot find a data type on name '" + dtype + "'");
             }
             ParameterType ptype = (ParameterType) getOrCreateDataType(spaceSystem, dtr, true);
             final Parameter param = new Parameter(name);
@@ -801,6 +801,16 @@ public class V7Loader extends V7LoaderBase {
             parameters.put(name, param);
 
             param.setDataSource(dataSource);
+
+            String description = "";
+            if (hasColumn(cells, CN_PARAM_DESCRIPTION)) {
+                description = getContent(cells, CN_PARAM_DESCRIPTION);
+            }
+            if (!description.isEmpty()) {
+                param.setShortDescription(description);
+                param.setLongDescription(description);
+            }
+
             if (hasColumn(cells, CN_PARAM_INITVALUE)) {
                 String initValue = getContent(cells, CN_PARAM_INITVALUE);
                 if (ptype instanceof BooleanParameterType) {

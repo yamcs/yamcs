@@ -4,7 +4,7 @@ import { Command, Significance } from '../../client';
 @Pipe({ name: 'effectiveSignificance' })
 export class EffectiveSignificancePipe implements PipeTransform {
 
-  transform(command: Command | null): Significance | null {
+  transform(command: Command | null | undefined): Significance | null {
     if (!command) {
       return null;
     }

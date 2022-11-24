@@ -34,10 +34,10 @@
 <dl class="dl-horizontal">
   <dt>Base command</dt>
   <dd *ngIf="command.baseCommand">
-    <a [routerLink]="['/mdb/commands/', command.baseCommand?.qualifiedName]"
+    <a [routerLink]="['/mdb/commands/', command.baseCommand.qualifiedName]"
        [queryParams]="{c: yamcs.context}"
        class="ya-link">
-      {{ command.baseCommand?.qualifiedName }}
+      {{ command.baseCommand.qualifiedName }}
     </a>
   </dd>
   <dd *ngIf="!command.baseCommand">-</dd>

@@ -32,6 +32,24 @@
   {{ link.detailedStatus || '-' }}
 </div>
 
+<ng-container *ngIf="link.extra">
+  <br>
+  <mat-divider></mat-divider>
+  <ng-container *ngFor="let entry of link.extra | keyvalue">
+    <div class="block-title">{{ entry.key }}</div>
+    <div class="block">
+      <ng-container *ngIf="getEntriesForValue(entry.value) as subentries">
+        <ng-container *ngIf="subentries.length">
+          <ng-container *ngFor="let subentry of subentries">
+            {{ subentry || '-' }}<br>
+          </ng-container>
+        </ng-container>
+        <ng-container *ngIf="!subentries.length">-</ng-container>
+      </ng-container>
+    </div>
+  </ng-container>
+</ng-container>
+
 <div class="action-bar" *ngIf="mayControlLinks()">
   <button class="ya-button"
           (click)="enableLink()"

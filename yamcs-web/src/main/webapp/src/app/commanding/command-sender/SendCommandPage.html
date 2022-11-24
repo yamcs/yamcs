@@ -54,8 +54,7 @@
             <ng-container *ngIf="item.spaceSystem">
               <mat-icon class="icon12" style="vertical-align: middle">folder</mat-icon>
               <a [routerLink]="['/commanding/send']"
-                 [queryParams]="{c: yamcs.context, system: item.name}">
-                {{ item.name | filename }}/
+                 [queryParams]="{c: yamcs.context, system: item.name}">{{ item.name | filename }}/
               </a>
             </ng-container>
             <ng-container *ngIf="!item.spaceSystem">

@@ -24,7 +24,7 @@ extensions = [
 smartquotes = False
 
 extlinks = {
-    "source": ("https://github.com/yamcs/yamcs/blob/master/%s", ""),
+    "source": ("https://github.com/yamcs/yamcs/blob/master/%s", "GitHub: %s"),
 }
 
 html_theme = "nature"

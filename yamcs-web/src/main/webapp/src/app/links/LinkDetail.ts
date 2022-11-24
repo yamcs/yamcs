@@ -43,4 +43,19 @@ export class LinkDetail {
     this.yamcs.yamcsClient.runLinkAction(this.link.instance, this.link.name, action)
       .catch(err => this.messageService.showError(err));
   }
+
+  getEntriesForValue(value: any) {
+    if (value === undefined || value === null) {
+      return [];
+    }
+    const entries: string[] = [];
+    if (Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++) {
+        entries.push('' + value[i]);
+      }
+    } else {
+      entries.push('' + value);
+    }
+    return entries;
+  }
 }

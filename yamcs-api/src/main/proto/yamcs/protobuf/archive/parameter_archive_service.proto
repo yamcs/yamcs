@@ -80,21 +80,27 @@ service ParameterArchiveApi {
 
   // Get information about the archived parameters.
   //
-  // Each combination of (parameter name, raw type, enginnering type) is assigned a unique parameter id.
+  // Each combination of (parameter name, raw type, engineering type) is assigned a
+  // unique parameter id.
   // 
-  // The parameters are grouped such that the samples of all parameters from one group have the same timestamp.
-  // For example all parameters extracted from one TM packet have usually the same timestamp and are part of the same group.
+  // The parameters are grouped such that the samples of all parameters from one group
+  // have the same timestamp. For example all parameters extracted from one TM packet
+  // have usually the same timestamp and are part of the same group.
   //
   // Each group is assigned a unique group id.
   //
-  // A parameter can be part of multiple groups - for instance a parameter appearing in the header of a packet is part of all groups made
-  // by inherited containers (i.e. each packet with that header will compose another group).
+  // A parameter can be part of multiple groups. For instance a parameter appearing
+  // in the header of a packet is part of all groups made by inherited containers
+  // (i.e. each packet with that header will compose another group).
   //
-  // For each group, the parameter archive stores one common record for the timestamps and individual records for the raw and engineering
-  // values of each parameter. If a parameter appears in multiple groups, retrieving its value means combining (time based merge operation)
-  // the records beloging to the groups in which the parameter appears.
+  // For each group, the parameter archive stores one common record for the timestamps
+  // and individual records for the raw and engineering values of each parameter. If a
+  // parameter appears in multiple groups, retrieving its value means combining
+  // (time-based merge operation). The records beloging to the groups in which the
+  // parameter appears.
   //
-  // The response to this method contains the parameter id, name, engineering type, raw type and the groups of which this parameter is part of.
+  // The response to this method contains the parameter id, name, engineering type,
+  // raw type and the groups of which this parameter is part of.
   rpc GetArchivedParametersInfo(GetArchivedParametersInfoRequest) returns (ArchivedParametersInfoResponse) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}/parameterArchive/info/parameters"
@@ -102,8 +108,7 @@ service ParameterArchiveApi {
   }
 
   // For a given parameter id, get the list of segments available for that parameter.
-  // A segment contains multiple samples (maximum ~70 minutes) of the same parameter
-  //
+  // A segment contains multiple samples (maximum ~70 minutes) of the same parameter.
   rpc GetArchivedParameterSegments(GetArchivedParameterSegmentsRequest) returns (ArchivedParameterSegmentsResponse) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}/parameterArchive/info/segments/{pid*}"
@@ -119,9 +124,9 @@ service ParameterArchiveApi {
 
 }
 
-// Note that the archive is built in segments of approximatively 70 minutes, therefore the
-// real start will be before the specified start and the real stop will be after the
-// specified stop.
+// Note that the archive is built in segments of approximatively 70 minutes,
+// therefore the real start will be before the specified start and the real
+// stop will be after the specified stop.
 message RebuildRangeRequest {
   // Yamcs instance name.
   optional string instance = 1;
@@ -165,22 +170,29 @@ message GetParameterRangesRequest {
   // The name of the processor from which to use the parameter cache. Default: ``realtime``.
   optional string processor = 8;
 
+  // Specifies how to retrieve the parameters. Either ``ParameterArchive`` or
+  // ``replay``. If ``replay`` is specified, a replay processor will be created
+  // and data will be processed with the active Mission Database. Note that this
+  // is much slower than receiving data from the ParameterArchive.
+  //
+  // Default: ``ParameterArchive``.
   optional string source = 9;
-  
+
   // Time in milliseconds of the minimum range to be returned. If the data changes more often,
   //a new range will not be created but the data will be added to the old range.
   optional int64 minRange = 10;
-  
-  // Maximum number of distinct values to be returned. The maximum number applies across all ranges
-  // and is meant to limit the amount of data that is being retrieved.
-  // The retrieved data has a count for each value as well as a total count.
-  // The difference between the total count and the sum of the individual counts can be used to compute
-  // the number of unsent values.
+
+  // Maximum number of distinct values to be returned. The maximum number
+  // applies across all ranges and is meant to limit the amount of data that
+  // is being retrieved. The retrieved data has a count for each value as well
+  // as a total count. The difference between the total count and the sum of the
+  // individual counts can be used to compute the number of unsent values.
   optional int32 maxValues = 11;
 }
 
 // Get information about the parameters stored in the Parameter Archive 
 message GetArchivedParametersInfoRequest {
+  // Yamcs instance name.
   optional string instance = 1;
 
   // The search keywords.
@@ -197,11 +209,10 @@ message GetArchivedParametersInfoRequest {
   // high and you risk hitting the maximum response size limit enforced by the
   // server. Default: ``100``
   optional int32 limit = 7;
-
 }
 
 message GetArchivedParameterSegmentsRequest {
-  //Yamcs instance
+  // Yamcs instance name.
   optional string instance = 1;
 
   //parameter id
@@ -212,11 +223,10 @@ message GetArchivedParameterSegmentsRequest {
   optional google.protobuf.Timestamp stop = 4;
 }
 
-
-// This message contains information about one parameter in the parameter archive
+// This message contains information about one parameter in the parameter archive.
 // Each (parameter name, raw type, engineering type) is assigned a unique id and all 
 // the samples are stored with that id. 
-// If a MDB change results in the parameter having a different enginnering or raw type, 
+// If a MDB change results in the parameter having a different engineering or raw type, 
 // a new pid will be allocated.
 // This is why for the same parameter name, we can have multiple parameter ids.
 // The parameter archive will contain data even for parameters removed from the MDB
@@ -233,7 +243,7 @@ message ArchivedParameterInfo {
   //parameter engineering type
   optional Value.Type engType = 4;
   
-  //the groups from which this parameter is part of
+  //the groups which this parameter is part of
   repeated uint32 gids = 5;
 }
 

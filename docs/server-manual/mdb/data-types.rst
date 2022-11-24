@@ -36,7 +36,7 @@ As mentioned above, one important function of a data type is to describe how to 
 
 Note that ``xyz`` in the ``xyz data encoding`` refers to the type of the raw value whereas the ``xyz`` in ``xyz data type`` refers to type of the engineering value.
 
-One will certanly notice that there is no direct encoding for absolute times, enumerated, aggregated and array value types. Currently these can only be encoded/decoded by other means (e.g. an aggregate value will be decoded by decoding its members, an enumerated value by decoding its integer or string representation).
+One will certainly notice that there is no direct encoding for absolute times, enumerated, aggregated and array value types. Currently these can only be encoded/decoded by other means (e.g. an aggregate value will be decoded by decoding its members, an enumerated value by decoding its integer or string representation).
 
 The integer and float encodings have optionally a calibrator which allow transforming the raw value to engineering value or reverse.
 
@@ -83,7 +83,7 @@ The ``<ValidRange>`` construct is optional and used differently for parameters a
 
 Integer parameters can also have associated alarms and calibrators (see below an example for float parameters, it is identical for integer parameters).
  
-One important thing to mention about calibrators is that even when associated to the integers, they still work on (signed) double floating point numbers. Some precision will be lost when converting from a large (unsgined) integer to a double or viceversa.
+One important thing to mention about calibrators is that even when associated to the integers, they still work on (signed) double floating point numbers. Some precision will be lost when converting from a large (unsigned) integer to a double or vice versa.
  
 
 The integer parameters can also be encoded as strings, as in the following XTCE example:
@@ -235,7 +235,7 @@ This example can be defined in the spreadsheet with the encoding ``terminated(0x
 
 .. rubric:: Example 2: prefixed size string encoded in undefined buffer
 
-The buffer is not explicitely defined so it is effectively as long as the prefix + string.
+The buffer is not explicitly defined so it is effectively as long as the prefix + string.
 The ``maxSizeInBits`` refers to the size of the buffer, so in this example the maximum size of the string will be 4.
 
 Note the ``_yamcs_ignore`` parameter reference which is used to workaround XTCE mandating a dynamic value. Yamcs will accept the XML file without the ``DynamicValue`` section but the file will not validate with XTCE 1.2 xsd. An alternative for the ``_yamcs_ignore`` would be to derive the buffer length from the packet length.
@@ -257,7 +257,7 @@ This example can be best defined in the spreadsheet with the encoding ``Prepende
 
 .. rubric:: Example 3: null terminated string encoded in undefined buffer
 
-This examples provdides string argument type whose size is variable. The buffer is not defined which means the buffer will be effectively the string + terminator.
+This examples provides string argument type whose size is variable. The buffer is not defined which means the buffer will be effectively the string + terminator.
 
 The maxSizeInBits refers to the maximum size of the buffer; it means that the maximum size of the string in binary is ``maxSizeInBits/8 - 1``.
 
@@ -315,7 +315,7 @@ A parameter of this type will always be 16 bytes in length.
 
 .. rubric:: Example 2: binary parameter type of variable size with the size given by another parameter
 
-The example below defines a parameter type whose size is given by another parameter named ``size``. That parameter has to be of integer type and preceede the binary one in the packet.
+The example below defines a parameter type whose size is given by another parameter named ``size``. That parameter has to be of integer type and precede the binary one in the packet.
 
 .. code-block:: xml
 
@@ -334,7 +334,7 @@ Note the ``<LinearAdjustment>`` construct which allows to convert from number of
 
 .. rubric:: Example 3: binary argument type of variable size with the size encoded in front of the data
 
-The example above needs another parameter for the data size. When used in command it has the disatvantage that the user needs to enter the number of bytes in addition to the bytes themselves (with the risk of introducing inconsistencies). Yamcs allows to use an algorithm which will perform the encoding without the addition of the extra argument:
+The example above needs another parameter for the data size. When used in command it has the disadvantage that the user needs to enter the number of bytes in addition to the bytes themselves (with the risk of introducing inconsistencies). Yamcs allows to use an algorithm which will perform the encoding without the addition of the extra argument:
 
 
 .. code-block:: xml

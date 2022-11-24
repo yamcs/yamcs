@@ -90,16 +90,14 @@
               <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px">folder</mat-icon>
               <a [routerLink]="'/telemetry/displays/browse/' + item.nameWithoutInstance"
                  [queryParams]="{c: yamcs.context}"
-                 (click)="$event.stopPropagation()">
-                {{ item.name | filename }}
+                 (click)="$event.stopPropagation()">{{ item.name | filename }}
               </a>
             </ng-container>
             <ng-container *ngIf="!item.folder">
               <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px">description</mat-icon>
               <a [routerLink]="'/telemetry/displays/files/' + item.nameWithoutInstance"
                  [queryParams]="{c: yamcs.context}"
-                 (click)="$event.stopPropagation()">
-                {{ item.name | filename }}
+                 (click)="$event.stopPropagation()">{{ item.name | filename }}
               </a>
             </ng-container>
           </td>

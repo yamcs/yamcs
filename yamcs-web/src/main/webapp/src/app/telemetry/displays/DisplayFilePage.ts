@@ -15,6 +15,7 @@ import { OpiDisplayViewerControls } from './OpiDisplayViewerControls';
 import { ParameterTableViewer } from './ParameterTableViewer';
 import { ParameterTableViewerControls } from './ParameterTableViewerControls';
 import { ScriptViewer } from './ScriptViewer';
+import { ScriptViewerControls } from './ScriptViewerControls';
 import { TextViewer } from './TextViewer';
 import { Viewer } from './Viewer';
 import { ViewerControlsHost } from './ViewerControlsHost';
@@ -133,7 +134,10 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
     } else if (this.isImage()) {
       this.viewer = this.createViewer(ImageViewer);
     } else if (this.filename.toLocaleLowerCase().endsWith('.js')) {
-      this.viewer = this.createViewer(ScriptViewer);
+      const scriptViewer = this.createViewer(ScriptViewer);
+      const controls = this.createViewerControls(ScriptViewerControls);
+      controls.init(scriptViewer as ScriptViewer);
+      this.viewer = scriptViewer;
     } else {
       this.viewer = this.createViewer(TextViewer);
     }
@@ -165,11 +169,7 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.routerSubscription) {
-      this.routerSubscription.unsubscribe();
-    }
-    if (this.syncSubscription) {
-      this.syncSubscription.unsubscribe();
-    }
+    this.routerSubscription?.unsubscribe();
+    this.syncSubscription?.unsubscribe();
   }
 }

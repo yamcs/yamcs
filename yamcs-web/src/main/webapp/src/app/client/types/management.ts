@@ -14,7 +14,7 @@ export interface CreateInstanceRequest {
 
 export interface LinkEvent {
   type: string;
-  linkInfo: Link;
+  links: Link[];
 }
 
 export interface Link {
@@ -30,6 +30,8 @@ export interface Link {
   detailedStatus: string;
   parentName?: string;
   actions?: LinkAction[];
+  extra?: { [key: string]: any; };
+  parameters?: string[];
 }
 
 export interface LinkAction {

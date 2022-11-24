@@ -303,6 +303,10 @@ public class RestClient {
         return httpClient.getCredentials();
     }
 
+    public void setCredentials(Credentials credentials) {
+        httpClient.setCredentials(credentials);
+    }
+
     /**
      * if autoclose is set, the httpClient will be automatically closed at the end of the request, so the netty
      * eventgroup is shutdown. Otherwise it has to be done manually - but then the same object can be used to perform

@@ -66,4 +66,4 @@ eventAlarm
     streams used for event alarms. No additional option in addition to the stream name is supported.
 
 sqlFile (string)
-    this is not a stream type but a reference to a file cotaining Stream sql statements that will be executed on instance startup. The file can create additional (non-standard) streams or tables.
+    this is not a stream type but a reference to a file containing Stream sql statements that will be executed on instance startup. The file can create additional (non-standard) streams or tables.

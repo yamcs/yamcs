@@ -173,6 +173,10 @@ export class StackFolderPage implements OnDestroy {
     });
   }
 
+  openUploadDialog() {
+    this.uploaderEl.nativeElement.click();
+  }
+
   importStack() {
     let path = this.getCurrentPath();
     // Full path should not have a leading slash

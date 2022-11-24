@@ -16,6 +16,7 @@ import "yamcs/protobuf/mdb/mdb.proto";
 // These changes are always scoped to a processor, and do not persist across
 // server restarts.
 service MdbOverrideApi {
+  option (yamcs.api.label) = "MDB Override";
 
   // List MDB overrides
   rpc ListMdbOverrides(ListMdbOverridesRequest) returns (ListMdbOverridesResponse) {

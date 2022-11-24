@@ -4,6 +4,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { StorageClient } from '../../client';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
+import { StackFormatter } from './StackFormatter';
 
 @Component({
   selector: 'app-create-stack-dialog',
@@ -43,9 +44,8 @@ export class CreateStackDialog {
     const fullPath = path ? path + '/' + name : name;
     const objectName = this.data.prefix + fullPath;
 
-    const b = new Blob([], {
-      type: 'application/xml'
-    });
+    const xml = new StackFormatter([]).toXML();
+    const b = new Blob([xml], { type: 'application/xml' });
     this.storageClient.uploadObject('_global', this.bucket, objectName, b).then(() => {
       this.dialogRef.close(fullPath);
     });

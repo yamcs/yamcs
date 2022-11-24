@@ -1,5 +1,7 @@
 package org.yamcs.tctm;
 
+import java.util.Map;
+
 import org.yamcs.Spec;
 import org.yamcs.YConfiguration;
 import org.yamcs.parameter.SystemParametersProducer;
@@ -30,7 +32,6 @@ public interface Link {
          * the link has failed (like an internal crash while processing the data)
          */
         FAILED;
-
     }
 
     /**
@@ -39,9 +40,16 @@ public interface Link {
     public Status getLinkStatus();
 
     /**
-     * @return more detailed status information
+     * Returns a short detail status (one-line)
      */
     default String getDetailedStatus() {
+        return null;
+    }
+
+    /**
+     * Returns structured information, specific to the link.
+     */
+    default Map<String, Object> getExtraInfo() {
         return null;
     }
 

@@ -59,7 +59,7 @@ OnSuccess
     * none (default) – only a Verification_stage event is generated without an effect on the final execution status of the command.
 
 OnFail
-    Same like OnSuccess but the evnet is generated in case the verifier returns false.
+    Same like OnSuccess but the event is generated in case the verifier returns false.
 
 OnTimeout
     Same as OnSuccess but the event is generated in case the verifier times out.
