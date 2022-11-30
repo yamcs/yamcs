@@ -33,7 +33,8 @@ public class EventRecorder extends AbstractYamcsService {
         try {
             if (ydb.getTable(TABLE_NAME) == null) {
                 ydb.execute("create table " + TABLE_NAME
-                        + "(gentime timestamp, source enum, seqNum int, body PROTOBUF('"+Event.class.getName()+"'), primary key(gentime, source, seqNum)) histogram(source)"
+                        + "(gentime timestamp, source enum, seqNum int, body PROTOBUF('" + Event.class.getName()
+                        + "'), primary key(gentime, source, seqNum)) histogram(source)"
                         + " table_format=compressed");
             }
 

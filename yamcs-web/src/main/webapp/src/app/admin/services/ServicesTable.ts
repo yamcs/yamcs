@@ -6,6 +6,7 @@ import { Service } from '../../client';
 @Component({
   selector: 'app-services-table',
   templateUrl: './ServicesTable.html',
+  styleUrls: ['./ServicesTable.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ServicesTable implements AfterViewInit {
@@ -13,7 +14,7 @@ export class ServicesTable implements AfterViewInit {
   @ViewChild(MatSort, { static: true })
   sort: MatSort;
 
-  displayedColumns = ['state', 'name', 'className', 'actions'];
+  displayedColumns = ['state', 'name', 'className', 'failureMessage', 'actions'];
 
   @Input()
   dataSource = new MatTableDataSource<Service>();

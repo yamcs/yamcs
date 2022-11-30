@@ -4,7 +4,8 @@
        matSort
        matSortActive="name"
        matSortDirection="asc"
-       matSortDisableClear>
+       matSortDisableClear
+       multiTemplateDataRows>
 
   <ng-container matColumnDef="name">
     <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
@@ -20,6 +21,27 @@
     <th mat-header-cell *matHeaderCellDef class="status"></th>
     <td mat-cell *matCellDef="let service" class="status">
       <app-service-state [service]="service"></app-service-state>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="failureMessage">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Failure</th>
+    <td mat-cell *matCellDef="let service">
+      {{ service.failureMessage || '-' }}
+      <ng-container *ngIf="service.failureCause">
+        <app-icon-action *ngIf="!service.expanded"
+                         icon="expand_more"
+                         (click)="service.expanded=true"></app-icon-action>
+        <app-icon-action *ngIf="service.expanded"
+                         icon="expand_less"
+                         (click)="service.expanded=false"></app-icon-action>
+      </ng-container>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="detail">
+    <td mat-cell *matCellDef="let service" [attr.colspan]="displayedColumns.length">
+      <pre>{{ service.failureCause || '-' }}</pre>
     </td>
   </ng-container>
 
@@ -43,4 +65,8 @@
 
   <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
   <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  <tr mat-row *matRowDef="let row; columns: ['detail'];"
+      class="item-detail"
+      [class.expanded]="row.expanded"
+      (click)="row.expanded = !row.expanded"></tr>
 </table>
