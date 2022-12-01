@@ -381,7 +381,9 @@ public class ReplicationFile implements Closeable {
         if (readOnly) {
             throw new IllegalStateException("Read only file");
         } else if (!fc.isOpen()) {
-            throw new IllegalStateException("The file is closed");
+            // this may happen if the thread writing to the replication file is interrupted when writing
+            log.warn("Attempting to write to a closed file");
+            return -1;
         }
 
         rwlock.writeLock().lock();

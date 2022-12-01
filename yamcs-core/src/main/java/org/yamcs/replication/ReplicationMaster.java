@@ -278,9 +278,9 @@ public class ReplicationMaster extends AbstractYamcsService {
                             "Failed to write stream info at the beginning of the replication file. Is the file too small??");
                 }
             }
-        } catch (IOException e) {
-            log.error("Failed to open a replication file  ", e);
-            notifyFailed(e);
+        } catch (IOException | UncheckedIOException e) {
+            log.error("Failed to open a replication file", e);
+            abort(e.getMessage());
         }
     }
 
@@ -310,16 +310,23 @@ public class ReplicationMaster extends AbstractYamcsService {
 
     private void writeToFile(Transaction tx) {
         ReplicationFile cf = currentFile;
-        long txId = cf.writeData(tx);
-        if (txId == -1) {// file full
-            openNewFile(cf);
-            txId = currentFile.writeData(tx);
-            if (txId == -1) {
-                log.error(
-                        "New file cannot accomodate a single transaction. Please increase the maxFileSize. Consider the header size "
-                                + ReplicationFile.headerSize(pageSize, maxPages));
-                abort("maxFileSize too small; cannot accomodate a single transaction");
+        try {
+            long txId = cf.writeData(tx);
+            if (txId == -1) {// file full
+                openNewFile(cf);
+                cf = currentFile;
+                txId = cf.writeData(tx);
+                if (txId == -1) {
+                    log.error(
+                            "New file cannot accomodate a single transaction. Please increase the maxFileSize. Consider the header size "
+                                    + ReplicationFile.headerSize(pageSize, maxPages));
+                    abort("maxFileSize too small; cannot accomodate a single transaction");
+                }
             }
+        } catch (UncheckedIOException e) {
+            log.error("Got exception when writing transaction to file, forcefully opening a new replication file", e);
+            replFiles.remove(cf.getFirstId());
+            openNewFile(cf);
         }
     }
 
