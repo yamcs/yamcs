@@ -13,7 +13,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.rocksdb.BackupEngine;
-import org.rocksdb.BackupableDBOptions;
+import org.rocksdb.BackupEngineOptions;
 import org.rocksdb.Env;
 import org.rocksdb.FlushOptions;
 import org.rocksdb.RestoreOptions;
@@ -254,7 +254,7 @@ public class RDBFactory implements Runnable {
                 cf.completeExceptionally(e);
                 return;
             }
-            try (BackupableDBOptions opt = new BackupableDBOptions(backupDir);
+            try (BackupEngineOptions opt = new BackupEngineOptions(backupDir);
                     BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);) {
                 db = getRdb(relativePath, false);
                 backupEngine.createNewBackup(db.getDb());
@@ -275,7 +275,7 @@ public class RDBFactory implements Runnable {
     public CompletableFuture<Void> restoreBackup(String backupDir, String relativePath) {
         CompletableFuture<Void> cf = new CompletableFuture<>();
         executor.execute(() -> {
-            try (BackupableDBOptions opt = new BackupableDBOptions(backupDir);
+            try (BackupEngineOptions opt = new BackupEngineOptions(backupDir);
                     BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
                     RestoreOptions restoreOpt = new RestoreOptions(false);) {
                 String absolutePath = getAbsolutePath(relativePath);
@@ -298,7 +298,7 @@ public class RDBFactory implements Runnable {
     public CompletableFuture<Void> restoreBackup(int backupId, String backupDir, String relativePath) {
         CompletableFuture<Void> cf = new CompletableFuture<>();
         executor.execute(() -> {
-            try (BackupableDBOptions opt = new BackupableDBOptions(backupDir);
+            try (BackupEngineOptions opt = new BackupEngineOptions(backupDir);
                     BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
                     RestoreOptions restoreOpt = new RestoreOptions(false)) {
 

@@ -1,5 +1,5 @@
 <assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
-  <id>osx</id>
+  <id>osx-x86_64</id>
 
   <formats>
     <format>tar.gz</format>
@@ -22,7 +22,7 @@
 
   <files>
     <file>
-      <source>target/rocksdbjni-${rocksdbVersion}/librocksdbjni-osx.jnilib</source>
+      <source>target/rocksdbjni-${rocksdbVersion}/librocksdbjni-osx-x86_64.jnilib</source>
       <outputDirectory>lib</outputDirectory>
       <!--
         Named so that System.loadLibrary("rocksdbjni") can find it when lib

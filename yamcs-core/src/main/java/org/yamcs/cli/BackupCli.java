@@ -17,8 +17,8 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 import org.rocksdb.BackupEngine;
+import org.rocksdb.BackupEngineOptions;
 import org.rocksdb.BackupInfo;
-import org.rocksdb.BackupableDBOptions;
 import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;
@@ -114,7 +114,7 @@ public class BackupCli extends Command {
                 }
                 BackupUtils.verifyBackupDirectory(backupDir, false);
                 try (Options opt = new Options();
-                        BackupableDBOptions bopt = new BackupableDBOptions(backupDir);
+                        BackupEngineOptions bopt = new BackupEngineOptions(backupDir);
                         ColumnFamilyOptions cfOptions = new ColumnFamilyOptions();
                         DBOptions dbOptions = new DBOptions();
                         BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), bopt);) {
@@ -160,7 +160,7 @@ public class BackupCli extends Command {
         @Override
         void execute() throws Exception {
             BackupUtils.verifyBackupDirectory(backupDir, true);
-            try (BackupableDBOptions opt = new BackupableDBOptions(backupDir);
+            try (BackupEngineOptions opt = new BackupEngineOptions(backupDir);
                     BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
                     RestoreOptions restoreOpt = new RestoreOptions(true);) {
                 if (mainParameters.size() > 1) {
@@ -186,7 +186,7 @@ public class BackupCli extends Command {
         void execute() throws Exception {
             BackupUtils.verifyBackupDirectory(backupDir, true);
 
-            try (BackupableDBOptions opt = new BackupableDBOptions(backupDir);
+            try (BackupEngineOptions opt = new BackupEngineOptions(backupDir);
                     BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt)) {
                 TableStringBuilder b = new TableStringBuilder("backup id", "size (bytes)", "num files", "time");
                 final DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME.withZone(ZoneId.of("UTC"));
@@ -212,7 +212,7 @@ public class BackupCli extends Command {
         @Override
         void execute() throws Exception {
             BackupUtils.verifyBackupDirectory(backupDir, true);
-            try (BackupableDBOptions opt = new BackupableDBOptions(backupDir);
+            try (BackupEngineOptions opt = new BackupEngineOptions(backupDir);
                     BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);) {
 
                 for (String mainParameter : mainParameters) {
@@ -237,7 +237,7 @@ public class BackupCli extends Command {
         @Override
         void execute() throws Exception {
             BackupUtils.verifyBackupDirectory(backupDir, true);
-            try (BackupableDBOptions opt = new BackupableDBOptions(backupDir);
+            try (BackupEngineOptions opt = new BackupEngineOptions(backupDir);
                     BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);) {
                 backupEngine.purgeOldBackups(backupsToKeep);
                 int n = backupEngine.getBackupInfo().size();
