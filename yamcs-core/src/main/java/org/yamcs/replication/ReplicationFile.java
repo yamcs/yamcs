@@ -102,9 +102,8 @@ public class ReplicationFile implements Closeable {
     final private Header2 hdr2;
     private boolean fileFull = false;
     final Path path;
-    int syncNumTx = 500;
-    int syncCount = syncNumTx;
     CRC32 crc32 = new CRC32();
+    private boolean syncRequired;
 
     class Header1 { // this is the first part - fixed - of the header
 
@@ -445,13 +444,6 @@ public class ReplicationFile implements Closeable {
             log.trace("Wrote transaction {} of type {} at position {}, total size: {}", txid, type, txStartPos,
                     size + 4);
             hdr2.incrNumTx();
-
-            syncCount--;
-            if (sync || syncCount == 0) {
-                doForceWrite();
-                syncCount = syncNumTx;
-            }
-
             return txid;
         } finally {
             rwlock.writeLock().unlock();
@@ -496,7 +488,6 @@ public class ReplicationFile implements Closeable {
     private int abortWriteFileFull(int txStartPos) {
         fileFull = true;
         buf.position(txStartPos);
-        doForceWrite();
         log.debug("File {} full, numTx: {}", path, hdr2.numTx());
         return -1;
     }
@@ -641,35 +632,6 @@ public class ReplicationFile implements Closeable {
         return new MetadataIterator();
     }
 
-    /**
-     * Force writing the content on disk.
-     * <p>
-     * The method will call first {@link FileChannel#force(boolean)}, write the number of transactions to the header and
-     * then call again {@link FileChannel#force(boolean)} to force also the header on the disk.
-     * <p>
-     * This way should guarantee that the transaction data is written on the disk before the header
-     */
-    public void forceWrite() {
-        if (!readOnly) {
-            rwlock.readLock().lock();
-            try {
-                doForceWrite();
-            } finally {
-                rwlock.readLock().unlock();
-            }
-        }
-    }
-
-    private void doForceWrite() {
-        try {
-            fc.force(true);
-            hdr2.write();
-            fc.force(true);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
     public void close() {
         try {
             if (!readOnly) {
@@ -686,6 +648,27 @@ public class ReplicationFile implements Closeable {
             fc.close();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
+        }
+    }
+
+    /**
+     * Force writing the content on disk.
+     * <p>
+     * The method will call first {@link FileChannel#force(boolean)}, write the number of transactions to the header and
+     * then call again {@link FileChannel#force(boolean)} to force also the header on the disk.
+     * <p>
+     * This way should guarantee that the transaction data is written on the disk before the header
+     */
+    public void sync() throws IOException {
+        if (!readOnly) {
+            rwlock.readLock().lock();
+            try {
+                fc.force(true);
+                hdr2.write();
+                fc.force(true);
+            } finally {
+                rwlock.readLock().unlock();
+            }
         }
     }
 
@@ -746,5 +729,18 @@ public class ReplicationFile implements Closeable {
 
     public int numTx() {
         return hdr2.numTx();
+    }
+
+    public boolean isSyncRequired() {
+        return syncRequired;
+    }
+
+    /**
+     * Set the sync required flag such that the file is synchronized by the ReplicationMaster
+     * 
+     * @param syncRequired
+     */
+    public void setSyncRequired(boolean syncRequired) {
+        this.syncRequired = syncRequired;
     }
 }
