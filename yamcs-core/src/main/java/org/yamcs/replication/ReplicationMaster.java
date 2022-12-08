@@ -80,6 +80,9 @@ public class ReplicationMaster extends AbstractYamcsService {
     SslContext sslCtx = null;
     // files not accessed longer than this will be closed
     private long fileCloseTime;
+
+    // how often to run the sync on the current file
+    private long fileSyncTime;
     Pattern filePattern;
     int maxTupleSize;
     long timeMsgFreqMillis;
@@ -111,6 +114,10 @@ public class ReplicationMaster extends AbstractYamcsService {
 
         YamcsServer.getServer().getThreadPoolExecutor().scheduleAtFixedRate(() -> deleteExpiredFiles(), fileCloseTime,
                 fileCloseTime, TimeUnit.MILLISECONDS);
+
+        fileSyncTime = config.getLong("fileSyncTime", 10) * 1000;
+        YamcsServer.getServer().getThreadPoolExecutor().scheduleAtFixedRate(() -> syncCurrentFile(), fileSyncTime,
+                fileSyncTime, TimeUnit.MILLISECONDS);
 
         if (tcpRole == TcpRole.SERVER) {
             List<ReplicationServer> servers = YamcsServer.getServer().getGlobalServices(ReplicationServer.class);
@@ -265,7 +272,13 @@ public class ReplicationMaster extends AbstractYamcsService {
         if (rf != currentFile) {// some other thread has already open a new file
             return;
         }
-        long firstTxId = (currentFile == null) ? 0 : currentFile.getNextTxId();
+        long firstTxId = 0;
+
+        if (currentFile != null) {
+            firstTxId = currentFile.getNextTxId();
+            currentFile.setSyncRequired(true);
+        }
+
         try {
             currentFile = ReplicationFile.newFile(yamcsInstance, getPath(firstTxId), firstTxId, pageSize,
                     maxPages,
@@ -534,16 +547,25 @@ public class ReplicationMaster extends AbstractYamcsService {
      */
     private void closeUnusedFiles() {
         long t = System.currentTimeMillis() - fileCloseTime;
-        for (ReplFileAccess rfa : replFiles.values()) {
-            synchronized (rfa) {
-                if (rfa.rf != currentFile && rfa.rf != null && rfa.lastAccess < t) {
-                    log.debug("Closing {} because it has not been accessed since {}", rfa.path,
-                            Instant.ofEpochMilli(rfa.lastAccess));
-                    rfa.rf.close();
-                    rfa.rf = null;
+        try {
+            for (ReplFileAccess rfa : replFiles.values()) {
+                synchronized (rfa) {
+                    if (rfa.rf != currentFile && rfa.rf != null && rfa.lastAccess < t) {
+                        log.debug("Closing {} because it has not been accessed since {}", rfa.path,
+                                Instant.ofEpochMilli(rfa.lastAccess));
+                        rfa.rf.close();
+                        rfa.rf = null;
+                    } else if (rfa.rf.isSyncRequired()) {
+                        // the file has just been rotated by the data thread
+                        rfa.rf.sync();
+                        currentFile.setSyncRequired(false);
+                    }
                 }
             }
+        } catch (IOException e) {
+            log.warn("Caught exception when closing or syncing files", e);
         }
+
         try {
             for (ReplFileAccess rfa : toDeleteList) {
                 synchronized (rfa) {
@@ -563,7 +585,6 @@ public class ReplicationMaster extends AbstractYamcsService {
     }
 
     private void deleteExpiredFiles() {
-
         try (java.util.stream.Stream<Path> stream = Files.list(replicationDir)) {
             List<Path> files = stream.collect(Collectors.toList());
             for (Path file : files) {
@@ -578,6 +599,15 @@ public class ReplicationMaster extends AbstractYamcsService {
             }
         } catch (IOException e) {
             log.warn("Caught exception when looking for files to remove ", e);
+        }
+    }
+
+    private void syncCurrentFile() {
+        try {
+            log.trace("Syncing current replication file {}", currentFile.path);
+            currentFile.sync();
+        } catch (Exception e) {
+            log.error("Error syncing current replication file", e);
         }
     }
 
