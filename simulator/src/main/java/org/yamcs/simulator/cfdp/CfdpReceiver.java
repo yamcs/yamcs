@@ -101,7 +101,7 @@ public class CfdpReceiver {
                 if (option.getType() == TLV.TYPE_MESSAGE_TO_USER) {
                     byte[] value = option.getValue();
                     if (value.length >= 5 && new String(Arrays.copyOfRange(value, 0, 4)).equals(
-                            "cfdp")) { // Reserved CFDP message: 32bits = "cfdp" + 8bits message type
+                            ReservedMessageToUser.MESSAGE_IDENTIFIER)) { // Reserved CFDP message: 32bits = "cfdp" + 8bits message type
                         ReservedMessageToUser reservedMessage = new ReservedMessageToUser(ByteBuffer.wrap(value));
                         switch (reservedMessage.getMessageType()) {
                         case PROXY_PUT_REQUEST:

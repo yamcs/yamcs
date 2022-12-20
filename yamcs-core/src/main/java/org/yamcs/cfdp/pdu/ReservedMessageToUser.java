@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
 
 public class ReservedMessageToUser extends MessageToUser {
 
-    public final static String MESSAGE_IDENTIFIER = "cfdp";
+    public static final String MESSAGE_IDENTIFIER = "cfdp";
     private final MessageType messageType;
     private final byte[] content;
 
@@ -121,8 +121,8 @@ public class ReservedMessageToUser extends MessageToUser {
     public ReservedMessageToUser(ByteBuffer buffer) {
         super(buffer.array());
 
-        this.messageType = MessageType.fromByte(buffer.get(4));
-        buffer.position(5);
+        this.messageType = MessageType.fromByte(buffer.get(MESSAGE_IDENTIFIER.getBytes().length));
+        buffer.position(MESSAGE_IDENTIFIER.getBytes().length + 1);
         this.content = new byte[buffer.remaining()];
         buffer.get(content);
     }

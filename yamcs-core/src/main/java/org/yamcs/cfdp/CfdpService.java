@@ -762,6 +762,11 @@ public class CfdpService extends AbstractYamcsService
             sourceId = remoteEntities.get(sourceEntity).id;
         }
 
+        if(objectName.strip().equals("")) {
+            String[] splitPath = sourcePath.split("[\\\\/]");
+            objectName = splitPath[splitPath.length - 1];
+        }
+
         // Prepare request
         ArrayList<MessageToUser> messagesToUser = new ArrayList<>(
                 List.of(new ProxyPutRequest(destinationId, sourcePath, objectName)));
