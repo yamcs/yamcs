@@ -104,7 +104,7 @@ public class FileSaveHandler {
             name = name.replaceAll("[.]{2,}[/\\\\]", "");
         }
 
-        name = name.trim();
+        name = name.strip();
 
         if (allowDownloadOverwrites || bucket.findObject(name) == null) {
             return name;
