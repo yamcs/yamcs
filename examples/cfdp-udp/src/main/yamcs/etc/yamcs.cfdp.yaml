@@ -117,7 +117,7 @@ mdb:
       - type: "sheet"
         spec: "mdb/landing.xls"
   - type: "sheet"
-    spec: "mdb/cfdp_pdu.xls"
+    spec: "mdb/cfdp-pdu.xls"
 
 #Configuration for streams created at server startup
 streamConfig:

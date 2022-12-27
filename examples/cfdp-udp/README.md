@@ -1,6 +1,7 @@
-This example demonstrates the usage of the CCSDS File Delivery Protocol. 
+This example demonstrates the usage of the CCSDS File Delivery Protocol over UDP. 
 
-The simulator supports receving files, it stores the content into a temporary file. To simulate data loss, it drops about a fifth of the Data packets and about half of the EOF packets.
+It expects two external UDP connections (incoming and outgoing) that sends and receives the CFDP packets.
+The _yamcs.cfdp.yaml_ configuration file defines the TM/TC UDP links, processors, and streams that make it possible.
 
-Be sure to check the src/main/yamcs/etc/extra_streams.sql to see how the CFDP packets are inserted/extracted as CCSDS packets in the tm/tc streams.
-
+Be sure to check the _src/main/yamcs/etc/extra_streams.sql_ to see how the CFDP packets are inserted/extracted as CCSDS packets in the TM/TC streams,
+as well as _src/main/yamcs/mdb/cfdp-pdu.xls_ that describes the packet structure and data types for insertion into the MDB container.
