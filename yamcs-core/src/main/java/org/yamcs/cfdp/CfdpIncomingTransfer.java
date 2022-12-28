@@ -248,7 +248,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
         transferType = getTransferType(metadataPacket);
 
-        if(metadataPacket.getOptions() != null && metadataPacket.getOptions().size() > 0) {
+        if(metadataPacket.getOptions() != null && !metadataPacket.getOptions().isEmpty()) {
             for (TLV option : metadataPacket.getOptions()) {
                 if (option.getType() == TLV.TYPE_MESSAGE_TO_USER) {
                     byte[] value = option.getValue();
@@ -434,6 +434,9 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             changeState(TransferState.COMPLETED);
             sendInfoEvent(ETYPE_TRANSFER_COMPLETED, " transfer completed (ack received from remote) successfully");
         } else {
+            if(errors.isEmpty()) {
+                pushError(conditionCode.toString());
+            }
             sendWarnEvent(ETYPE_TRANSFER_COMPLETED, " transfer completed unsuccessfully: " + getFailuredReason());
             changeState(TransferState.FAILED);
         }

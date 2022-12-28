@@ -17,7 +17,7 @@ public class FinishedPacket extends CfdpPacket implements FileDirective {
     private boolean generatedByEndSystem;
 
     // false = delivery incomplete; true = delivery complete
-    private boolean dataComplete;
+    private boolean dataComplete; // Delivery Code
     private FileStatus fileStatus;
     private TLV faultLocation = null;
 
@@ -41,7 +41,7 @@ public class FinishedPacket extends CfdpPacket implements FileDirective {
             return code;
         }
 
-        private static FileStatus fromCode(byte code) {
+        static FileStatus fromCode(byte code) {
             return Lookup.get(code);
         }
     }

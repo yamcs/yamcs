@@ -60,6 +60,7 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
             options = new ArrayList<>();
             while (buffer.hasRemaining()) {
                 try {
+                    // TODO: cast and decode at this point
                     options.add(TLV.readTLV(buffer));
                 } catch (IndexOutOfBoundsException e) {
                     throw new PduDecodingException("TLV options in Metadata packet wrongly formatted", buffer.array(), e);
@@ -146,7 +147,7 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
                 + "    sourceFileName=" + sourceFileName + ",\n"
                 + "    destinationFileName=" + destinationFileName + ",\n"
                 + "    options=[" + (options == null ? "" : "\n"
-                + "        " + options.stream().map(TLV::toJson).collect(Collectors.joining(",\n        ")))
+                + "        " + options.stream().map((option) -> option.toJson()).collect(Collectors.joining(",\n        ")))
                 + "],\n"
                 + "}";
     }

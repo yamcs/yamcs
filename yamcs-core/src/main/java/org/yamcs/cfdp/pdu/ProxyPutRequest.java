@@ -55,4 +55,10 @@ public class ProxyPutRequest extends ReservedMessageToUser {
         return "{type=" + getType() + ", length=" + getValue().length + ", messageType=" + MessageType.PROXY_PUT_REQUEST
                 + ", destinationEntityId=" + destinationEntityId + ", sourceFileName=" + sourceFileName + ", destinationFileName=" + destinationFileName + "}";
     }
+
+
+    @Override
+    public String toString() {
+        return "ProxyPutRequest(destinationEntityId: " + destinationEntityId + ", sourceFileName: " + sourceFileName + ", destinationFileName: " + destinationFileName + ")";
+    }
 }

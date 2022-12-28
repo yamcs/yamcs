@@ -43,4 +43,15 @@ public class OriginatingTransactionId extends ReservedMessageToUser {
     public long getTransactionSequenceNumber() {
         return transactionSequenceNumber;
     }
+
+    @Override
+    public String toJson() {
+        return "{type=" + getType() + ", length=" + getValue().length + ", messageType=" + MessageType.ORIGINATING_TRANSACTION_ID
+                + ", sourceEntityId=" + sourceEntityId + ", transactionSequenceNumber=" + transactionSequenceNumber + "}";
+    }
+
+    @Override
+    public String toString() {
+        return "OriginatingTransactionId(sourceEntityID: " + sourceEntityId +", seqNum: " + transactionSequenceNumber +")";
+    }
 }
