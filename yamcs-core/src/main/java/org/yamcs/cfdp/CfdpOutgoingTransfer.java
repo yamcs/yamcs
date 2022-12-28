@@ -419,19 +419,24 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
 
         long duration = (System.currentTimeMillis() - wallclockStartTime) / 1000;
 
+        String eventMessageSuffix;
+        if (metadata.getFileLength() > 0 || directiveHeader.isLargeFile()) {
+            eventMessageSuffix = request.getSourceFileName() + " -> " + request.getDestinationFileName();
+        } else {
+            // TODO: loop options with \n
+            eventMessageSuffix = "Fileless transfer (metadata options: \n" + metadata.getOptions() + ")";
+        }
+
         if (conditionCode == ConditionCode.NO_ERROR) {
             changeState(TransferState.COMPLETED);
             sendInfoEvent(ETYPE_TRANSFER_FINISHED,
                     "transfer finished successfully in " + duration + " seconds: "
-                            + request.getSourceFileName() + " -> "
-                            + request.getDestinationFileName());
+                            + eventMessageSuffix);
         } else {
             failTransfer(conditionCode.toString());
             sendWarnEvent(ETYPE_TRANSFER_FINISHED,
                     "transfer finished with error in " + duration + " seconds: "
-                            + request.getSourceFileName()
-                            + " -> "
-                            + request.getDestinationFileName() + " error: " + finishedPacket.getConditionCode());
+                            + eventMessageSuffix + ", error: " + finishedPacket.getConditionCode());
         }
     }
 

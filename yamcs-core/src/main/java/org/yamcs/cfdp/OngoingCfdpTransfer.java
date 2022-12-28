@@ -113,30 +113,45 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
         String transferType;
         if(metadata.getFileLength() == 0) {
             if(!metadata.getHeader().isLargeFile()) {
-                if(metadata.getOptions() != null && metadata.getOptions().size() > 0) { // TODO: maybe put it outside of file checks?
+                if(metadata.getOptions() != null && !metadata.getOptions().isEmpty()) {// TODO: maybe put it outside of file checks?
                     transferType = PredefinedTransferTypes.UNSUPPORTED_METADATA_OPTIONS.toString();
+                    ArrayList<String> options = new ArrayList<>();
                     for (TLV option : metadata.getOptions()) {
                         if (option.getType() == TLV.TYPE_MESSAGE_TO_USER) {
                             transferType = PredefinedTransferTypes.UNSUPPORTED_METADATA_MESSAGE.toString();
 
                             byte[] value = option.getValue();
                             if (value.length >= 5 && new String(Arrays.copyOfRange(value, 0, 4)).equals("cfdp")) { // Reserved CFDP message: 32bits = "cfdp" + 8bits message type
-                                transferType = PredefinedTransferTypes.UNSUPPORTED_METADATA_RESERVED_MESSAGES.toString();
 
                                 ReservedMessageToUser reservedMessage = new ReservedMessageToUser(
                                         ByteBuffer.wrap(value));
                                 switch (reservedMessage.getMessageType()) {
+                                case ORIGINATING_TRANSACTION_ID:
+                                    // Ignoring originating transaction ID if there are other types
+                                    transferType = PredefinedTransferTypes.ORIGINATING_TRANSACTION_ID_ONLY.toString();
+                                    break;
                                 case PROXY_PUT_REQUEST:
-                                    return PredefinedTransferTypes.DOWNLOAD_REQUEST.toString();
+                                    ProxyPutRequest proxyPutRequest = new ProxyPutRequest(reservedMessage.getContent());
+                                    options.add(PredefinedTransferTypes.DOWNLOAD_REQUEST + " (" + proxyPutRequest.getDestinationFileName() + " ⟵ " + proxyPutRequest.getSourceFileName() + ")");
+                                    break;
                                 case PROXY_PUT_RESPONSE:
-                                    return PredefinedTransferTypes.DOWNLOAD_REQUEST_RESPONSE.toString();
+                                    ProxyPutResponse proxyPutResponse = new ProxyPutResponse(reservedMessage.getContent());
+                                    options.add(PredefinedTransferTypes.DOWNLOAD_REQUEST_RESPONSE.toString() + " (" + proxyPutResponse.getConditionCode() + ", " + (proxyPutResponse.isDataComplete() ? "Complete" : "Incomplete") + ", " + proxyPutResponse.getFileStatus() + ")");
+                                    break;
                                 case DIRECTORY_LISTING_REQUEST:
-                                    return PredefinedTransferTypes.DIRECTORY_LISTING_REQUEST.toString();
+                                    options.add(PredefinedTransferTypes.DIRECTORY_LISTING_REQUEST.toString());
+                                    break;
                                 case DIRECTORY_LISTING_RESPONSE:
-                                    return PredefinedTransferTypes.DIRECTORY_LISTING_RESPONSE.toString();
+                                    options.add(PredefinedTransferTypes.DIRECTORY_LISTING_RESPONSE.toString());
+                                    break;
+                                default:
+                                    options.add(reservedMessage.getMessageType().toString());
                                 }
                             }
                         }
+                    }
+                    if(!options.isEmpty()) {
+                        transferType = String.join(", ", options);
                     }
                 }
                 else {

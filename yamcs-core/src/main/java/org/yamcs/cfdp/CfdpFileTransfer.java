@@ -11,10 +11,11 @@ public interface CfdpFileTransfer extends FileTransfer {
         DOWNLOAD_REQUEST_RESPONSE("Download Request Response"),
         DIRECTORY_LISTING_REQUEST("Directory Listing Request"),
         DIRECTORY_LISTING_RESPONSE("Directory Listing Response"),
+        ORIGINATING_TRANSACTION_ID_ONLY("Originating Transaction ID only"),
         UNSUPPORTED_METADATA_OPTIONS("Unsupported Metadata Options"),
         UNSUPPORTED_METADATA_MESSAGE("Unsupported Metadata Messages"),
 
-        UNSUPPORTED_METADATA_RESERVED_MESSAGES("Unsupported Metadata Reserved Messages"),
+        UNSUPPORTED_METADATA_RESERVED_MESSAGES("Unsupported Metadata Reserved Messages"), // Unused
         UNKNOWN_EMPTY_FILE("Unknown Empty File"),
         UNKNOWN("Unknown");
 

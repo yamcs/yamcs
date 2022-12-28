@@ -391,9 +391,15 @@ public class CfdpService extends AbstractYamcsService
         stateChanged(transfer);
         pendingTransfers.put(transfer.getTransactionId(), transfer);
 
-        eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
-                "Starting new CFDP upload TXID[" + transfer.getTransactionId() + "] " + transfer.getObjectName()
-                        + " -> " + transfer.getRemotePath());
+        if(request.getFileLength() > 0) {
+            eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
+                    "Starting new CFDP upload TXID[" + transfer.getTransactionId() + "] " + transfer.getObjectName()
+                            + " -> " + transfer.getRemotePath());
+        } else {
+            // TODO: loop options with \n
+            eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
+                    "Starting new CFDP upload TXID[" + transfer.getTransactionId() + "] Fileless transfer (metadata options: \n" + (request.getMetadata() != null ? request.getMetadata().getOptions() : "") + ")");
+        }
         transfer.start();
         return transfer;
     }
