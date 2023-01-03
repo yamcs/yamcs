@@ -5,7 +5,7 @@ import org.yamcs.cfdp.pdu.FinishedPacket.FileStatus;
 
 public class ProxyPutResponse extends ReservedMessageToUser {
     private final ConditionCode conditionCode;
-    private final boolean dataComplete; // delivery code (0 - true, 1 - false)
+    private final boolean dataComplete; // delivery code (0 - true, 1 - false) TODO: maybe use correct name
     private final FileStatus fileStatus;
 
     public ProxyPutResponse(ConditionCode conditionCode, boolean dataComplete, FinishedPacket.FileStatus fileStatus) {
