@@ -373,7 +373,7 @@ The following example displays the use of a ``IntegerDataEncoding`` element wher
 .. rubric:: Example 1: integer encoding for a AbsoluteTimeParameterType parameter
 
 The example below is using UNIX as its reference time, whose count starts at January 1 1970 and is used by modern computers, linux systems etc. The offset and the scale are part of a linear transformation which has the form y = ax + b where "b" represents the offset, "a" represents the scale and "x" is the input. 
-
+This transformation could be used for a system whose internal clock counts in seconds from 1/1/2000, so we need to add ``946677600`` seconds to that time in order to get the appropriate UNIX timestamp. 
     - ``<ReferenceTime>`` describes origin(epoch or reference) of this time type
     - ``<Epoch>`` may be specified as an XS date where time is implied to be 00:00:00, xs dateTime, or string enumeration of common epochs. The enumerations are TAI(used by CCSDS and others), J2000, UNIX(also known as POSIX) and GPS
 
@@ -392,7 +392,23 @@ The example below is using UNIX as its reference time, whose count starts at Jan
 
 Enumerated data type
 --------------------
-TBW
+
+The EnumeratedParameterType supports the description of enumerations, which are a list of values and their associated labels. Below is an example that demonstrates how an enumerated parameter type is declared and its mostly used attributes:
+
+.. rubric:: Example 1: simple enumerated parameter declaration
+
+.. code-block:: xml
+
+    <xtce:EnumeratedParameterType name="enumerated_parameter_type_example">
+        <xtce:IntegerDataEncoding sizeInBits="16"/>
+            <xtce:EnumerationList>
+                <xtce:Enumeration value="0" label="label_1" />
+                <xtce:Enumeration value="2" label="label_2" />
+                <xtce:Enumeration value="4" label="label_3" />
+                <xtce:Enumeration value="6" label="label_4" />
+            </xtce:EnumerationList>
+    </xtce:EnumeratedParameterType>
+
 
 Aggregate data type
 -------------------
