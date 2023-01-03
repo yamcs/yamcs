@@ -366,7 +366,7 @@ Note also the minLength and maxLength which are used to configure the minimum/ma
     
 Absolute time data type
 -----------------------
-Instead of encoding and decoding time using raw integer or binary parameters, Yamcs supports the AbsoluteTimeParameterType to describe time. This parameter can be encoded using ``BinaryDataEncoding``, ``FloatDataEncoding``, ``IntegerDataEncoding`` and ``StringDataEncoding`` elements. 
+Instead of encoding and decoding time using raw integer or binary parameters, Yamcs supports the AbsoluteTimeParameterType to describe time. This parameter can be encoded using on of ``BinaryDataEncoding``, ``FloatDataEncoding``, ``IntegerDataEncoding`` and ``StringDataEncoding`` elements. 
 
 The following example displays the use of a ``IntegerDataEncoding`` element where ``scale`` and ``offset`` attributes are used to apply a linear transformation to the incoming value in order to parse the proper time value. 
 
@@ -381,7 +381,7 @@ The example below is using UNIX as its reference time, whose count starts at Jan
 .. code-block:: xml
 
     <xtce:AbsoluteTimeParameterType name="absolute_time_param_type_example">
-        <xtce:Encoding offset="num_1" scale="num_2">
+        <xtce:Encoding offset="946677600" scale="1">
             <xtce:IntegerDataEncoding sizeInBits="32" />
         </xtce:Encoding>
         <xtce:ReferenceTime>
