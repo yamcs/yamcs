@@ -412,7 +412,24 @@ The EnumeratedParameterType supports the description of enumerations, which are 
 
 Aggregate data type
 -------------------
-TBW
+
+The AggregateParameterType is used to describe aggregates. It is similar to C-structs or records
+in other languages. The ArrayParameterType is defined as shown in the example below:
+
+.. rubric:: Example 1: simple aggregate parameter declaration
+
+``<xtce:Member>`` is used to ceclate members of the aggregate. Each member has a ``name``, a ``typeRef`` for its type and an optional ``initialValue`` for a possible predefined value.
+
+.. code-block:: xml
+
+    <xtce:AggregateParameterType name="aggregate_parameter_type_example"  shortDescription="Aggregate Parameter Type Example">
+        <xtce:MemberList>
+            <xtce:Member name="member_1" typeRef="bool_t"/>
+            <xtce:Member name="member_1" typeRef="uint16_t" initialValue="5"/>
+            <xtce:Member name="member_1" typeRef="float_t"/>
+        </xtce:MemberList>
+    </xtce:AggregateParameterType>
+
 
 Array data type
 ---------------
