@@ -433,4 +433,51 @@ in other languages. The ArrayParameterType is defined as shown in the example be
 
 Array data type
 ---------------
-TBW
+
+
+The ArrayParameterType is used to describe arrays of other ParameterTypes. It is used in containers that are formed dynamically. 
+This happens when the number of the container's parameters depends on a specific parameter's value. In that part of the container that will be dynamically repeated an ``ArrayParameterRefEntry`` is injected.
+The ArrayParameterType is defined as shown in the example below:
+
+- ``arrayTypeRef`` is a reference to another ParameterType from which the array cells are formed. Any parameter type can be used.
+- ``DimensionList`` describes the dimensions of the array. Can be static or dynamic (value from another parameter).
+
+
+.. rubric:: Example 1: simple array parameter declaration with predefined size = 6
+
+.. code-block:: xml
+
+    <xtce:ArrayParameterType name="array_parameter_type_example" arrayTypeRef="other_parameter_type">
+        <xtce:DimensionList>
+            <xtce:Dimension>
+                <xtce:StartingIndex>
+                    <xtce:FixedValue>0</xtce:FixedValue>
+                </xtce:StartingIndex>
+                <xtce:EndingIndex>
+                    <xtce:FixedValue>5</xtce:FixedValue>
+                </xtce:EndingIndex>
+            </xtce:Dimension>
+        </xtce:DimensionList>
+    </xtce:ArrayParameterType>
+
+.. rubric:: Example 2: simple array parameter declaration with dynamic size
+
+In this exmaple, the size of the array is equal to the integer parameter ``number_of_parameters``. The ``<LinearAdjustment>`` element is used because the final array size will be equal to ``<EndingIOndex> - <StartindIndex> + 1``   
+
+.. code-block:: xml
+
+    <xtce:ArrayParameterType name="array_parameter_type_example" arrayTypeRef="other_parameter_type">
+        <xtce:DimensionList>
+            <xtce:Dimension>
+                <xtce:StartingIndex>
+                    <xtce:FixedValue>0</xtce:FixedValue>
+                </xtce:StartingIndex>
+                    <EndingIndex>
+                        <DynamicValue>
+                            <ArgumentInstanceRef argumentRef="number_of_parameters" />
+                            <LinearAdjustment intercept="-1" />
+                        </DynamicValue>
+                    </EndingIndex>
+            </xtce:Dimension>
+        </xtce:DimensionList>
+    </xtce:ArrayParameterType>
