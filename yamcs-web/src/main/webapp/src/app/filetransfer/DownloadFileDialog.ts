@@ -1,5 +1,5 @@
 import { Component, Inject, OnDestroy, ViewChild } from '@angular/core';
-import { Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject } from 'rxjs';
@@ -82,18 +82,18 @@ export class DownloadFileDialog implements OnDestroy {
     });
 
     // Subscribe to some form variables to determine enabled state of buttons
-    this.filesForm.get('object')?.valueChanges.subscribe(value => {
+    this.filesForm.get('object')?.valueChanges.subscribe((value: any) => {
       this.updateButtonStates(value, this.filesForm.get('remoteFile')!.value, this.optionsForm.get('remotePath')!.value);
     });
-    this.filesForm.get('remoteFile')?.valueChanges.subscribe(value => {
+    this.filesForm.get('remoteFile')?.valueChanges.subscribe((value: any) => {
       this.updateButtonStates(this.filesForm.get('object')!.value, value, this.optionsForm.get('remotePath')!.value);
     });
-    this.optionsForm.get('remotePath')?.valueChanges.subscribe(value => {
+    this.optionsForm.get('remotePath')?.valueChanges.subscribe((value: any) => {
       this.updateButtonStates(this.filesForm.get('object')!.value, this.filesForm.get('remoteFile')!.value, value);
     });
 
     // If a new destination is selected -> display cached file list if any
-    this.optionsForm.get('destination')?.valueChanges.subscribe(dest => {
+    this.optionsForm.get('destination')?.valueChanges.subscribe((dest: any) => {
       // New destination selected -> Go to root folder
       this.getFileList(dest, '');
     });
