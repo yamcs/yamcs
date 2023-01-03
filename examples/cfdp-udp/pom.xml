@@ -8,12 +8,12 @@
     <version>5.7.10-SNAPSHOT</version>
   </parent>
 
-  <artifactId>cfdp</artifactId>
+  <artifactId>cfdp-udp</artifactId>
   <packaging>jar</packaging>
 
-  <name>Yamcs :: Examples :: CFDP</name>
+  <name>Yamcs :: Examples :: CFDP-UDP</name>
   <description>
-    Example demonstrating the use of the CCSDS File Delivery Protocol (CFDP). 
+    Example demonstrating the use of the CCSDS File Delivery Protocol over UDP.
   </description>
 
   <dependencies>
