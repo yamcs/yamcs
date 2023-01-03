@@ -50,7 +50,7 @@ export class FailedTransfersTab implements OnDestroy {
     const time1 = a.creationTime || a.startTime || "";
     const time2 = b.creationTime || b.startTime || "";
     // most recent transfers on top
-    return time2.localeCompare(time1)
+    return time2.localeCompare(time1);
   }
 
   private switchService(service: string | null) {

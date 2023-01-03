@@ -104,18 +104,10 @@
     <div class="option">
       <label>
         Remote Entity
-        <select formControlName="source">
+        <select formControlName="destination">
           <option *ngFor="let entity of service.remoteEntities"
                   [value]="entity.name">{{ entity.name }} [id={{ entity.id }}]</option>
         </select>
-        <br>
-        <label>
-          Local Entity
-          <select formControlName="destination">
-            <option *ngFor="let entity of service.localEntities"
-                    [value]="entity.name">{{ entity.name }} [id={{ entity.id}}]</option>
-          </select>
-        </label>
       </label>
     </div>
 

@@ -29,7 +29,7 @@ export class DownloadFileDialog implements OnDestroy {
   selectedBucket$ = new BehaviorSubject<Bucket | null>(null);
   breadcrumb$ = new BehaviorSubject<BreadcrumbItem[]>([]);
   remoteBreadcrumb$ = new BehaviorSubject<BreadcrumbItem[]>([]);
-  lastFileListTime$ = new BehaviorSubject<String>('-');
+  lastFileListTime$ = new BehaviorSubject<string>('-');
 
   private fileListSubscription: RemoteFileListSubscription;
 
@@ -47,12 +47,15 @@ export class DownloadFileDialog implements OnDestroy {
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.service = data.service;
-    const firstDestination = this.service.localEntities.length ? this.service.localEntities[0].name : '';
-    const firstSource = this.service.remoteEntities.length ? this.service.remoteEntities[0].name : '';
+    const firstSource = this.service.localEntities.length ? this.service.localEntities[0].name : '';
+    const firstDestination = this.service.remoteEntities.length ? this.service.remoteEntities[0].name : '';
 
     this.storageClient = yamcs.createStorageClient();
     this.storageClient.getBuckets('_global').then(buckets => {
       this.dataSource.data = buckets || [];
+      if (buckets) {
+        this.selectBucket(buckets[0]);
+      }
     });
 
     // Subscribe to remote file list updates
@@ -156,8 +159,9 @@ export class DownloadFileDialog implements OnDestroy {
       bucket: this.selectedBucket$.value!.name,
       objectName: localPath,
       remotePath: remotePath,
-      source: this.optionsForm.get('source')!.value,
-      destination: this.optionsForm.get('destination')!.value,
+      // TODO: rename source-destination to local and remote
+      source: this.optionsForm.get('destination')!.value,
+      destination: this.optionsForm.get('source')!.value,
       uploadOptions: {
         reliable: this.optionsForm.get('reliable')!.value
       }
@@ -250,7 +254,7 @@ export class DownloadFileDialog implements OnDestroy {
     }
   }
 
-  updateLocalBreadcrumb(prefix: string) {
+  updateLocalBreadcrumb(prefix: string | null) {
     if (!prefix) {
       this.breadcrumb$.next([]);
       return;
@@ -280,7 +284,7 @@ export class DownloadFileDialog implements OnDestroy {
   }
 
   // Called when a folder is selected in the object selector
-  updateRemoteBreadcrumb(prefix: string) {
+  updateRemoteBreadcrumb(prefix: string | null) {
     if (!prefix) {
       this.remoteBreadcrumb$.next([]);
       this.getFileList(this.optionsForm.value['destination'], '');

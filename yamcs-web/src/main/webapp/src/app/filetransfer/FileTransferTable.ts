@@ -24,7 +24,7 @@ export class FileTransferTable implements OnChanges {
     'transferType'
   ];
 
-  displayedColumns$ = new BehaviorSubject<String[]>(this.defaultColumns);
+  displayedColumns$ = new BehaviorSubject<string[]>(this.defaultColumns);
 
   isIncomplete = (index: number, item: TransferItem) => {
     return item.transfer.state !== 'COMPLETED';
