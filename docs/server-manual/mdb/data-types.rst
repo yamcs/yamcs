@@ -366,7 +366,29 @@ Note also the minLength and maxLength which are used to configure the minimum/ma
     
 Absolute time data type
 -----------------------
-TBW
+Instead of encoding and decoding time using raw integer or binary parameters, Yamcs supports the AbsoluteTimeParameterType to describe time. This parameter can be encoded using ``BinaryDataEncoding``, ``FloatDataEncoding``, ``IntegerDataEncoding`` and ``StringDataEncoding`` elements. 
+
+The following example displays the use of a ``IntegerDataEncoding`` element where ``scale`` and ``offset`` attributes are used to apply a linear transformation to the incoming value in order to parse the proper time value. 
+
+.. rubric:: Example 1: integer encoding for a AbsoluteTimeParameterType parameter
+
+The example below is using UNIX as its reference time, whose count starts at January 1 1970 and is used by modern computers, linux systems etc. The offset and the scale are part of a linear transformation which has the form y = ax + b where "b" represents the offset, "a" represents the scale and "x" is the input. 
+
+    - ``<ReferenceTime>`` describes origin(epoch or reference) of this time type
+    - ``<Epoch>`` may be specified as an XS date where time is implied to be 00:00:00, xs dateTime, or string enumeration of common epochs. The enumerations are TAI(used by CCSDS and others), J2000, UNIX(also known as POSIX) and GPS
+
+
+.. code-block:: xml
+
+    <xtce:AbsoluteTimeParameterType name="absolute_time_param_type_example">
+        <xtce:Encoding offset="num_1" scale="num_2">
+            <xtce:IntegerDataEncoding sizeInBits="32" />
+        </xtce:Encoding>
+        <xtce:ReferenceTime>
+            <xtce:Epoch>UNIX</xtce:Epoch>
+        </xtce:ReferenceTime>
+    </xtce:AbsoluteTimeParameterType>
+
 
 Enumerated data type
 --------------------
