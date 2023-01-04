@@ -23,7 +23,7 @@ import org.yamcs.yarch.Stream;
 
 public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     private final FileSaveHandler fileSaveHandler;
-    private CfdpTransactionId originatingTransactionID;
+    private CfdpTransactionId originatingTransactionId;
 
     private enum InTxState {
         /**
@@ -248,18 +248,11 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
         transferType = getTransferType(metadataPacket);
 
-        if(metadataPacket.getOptions() != null && !metadataPacket.getOptions().isEmpty()) {
-            for (TLV option : metadataPacket.getOptions()) {
-                if (option.getType() == TLV.TYPE_MESSAGE_TO_USER) {
-                    byte[] value = option.getValue();
-                    if (value.length >= 5 && new String(Arrays.copyOfRange(value, 0, 4)).equals("cfdp")) { // Reserved CFDP message: 32bits = "cfdp" + 8bits message type
-                        ReservedMessageToUser reservedMessage = new ReservedMessageToUser(ByteBuffer.wrap(value));
-                        if(reservedMessage.getMessageType() == ReservedMessageToUser.MessageType.ORIGINATING_TRANSACTION_ID) {
-                            OriginatingTransactionId originatingTransactionID = new OriginatingTransactionId(reservedMessage.getContent());
-                            this.originatingTransactionID = new CfdpTransactionId(originatingTransactionID.getSourceEntityId(), originatingTransactionID.getTransactionSequenceNumber());
-                            break;
-                        }
-                    }
+        if(metadataPacket.getOptions() != null) {
+            for(TLV option : metadataPacket.getOptions()) {
+                if(option instanceof OriginatingTransactionId) {
+                    this.originatingTransactionId = ((OriginatingTransactionId) option).toCfdpTransactionId();
+                    break;
                 }
             }
         }
@@ -545,7 +538,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
         // TODO: source data in metadata
 
-        fileSaveHandler.saveFile(incomingDataFile, metadata, originatingTransactionID);
+        fileSaveHandler.saveFile(incomingDataFile, metadata, originatingTransactionId);
     }
 
     private AckPacket getAckEofPacket(ConditionCode code) {

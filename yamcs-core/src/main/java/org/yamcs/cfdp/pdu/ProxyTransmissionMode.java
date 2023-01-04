@@ -22,4 +22,15 @@ public class ProxyTransmissionMode extends ReservedMessageToUser {
     public CfdpPacket.TransmissionMode getTransmissionMode() {
         return transmissionMode;
     }
+
+    @Override
+    public String toJson() {
+        return "{type=" + getType() + ", length=" + getValue().length + ", messageType=" + MessageType.PROXY_TRANSMISSION_MODE
+                + ", transmissionMode=" + transmissionMode + "}";
+    }
+
+    @Override
+    public String toString() {
+        return "ProxyTransmissionMode(" + transmissionMode + ")";
+    }
 }

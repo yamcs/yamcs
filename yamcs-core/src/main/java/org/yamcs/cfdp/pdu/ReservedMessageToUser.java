@@ -4,6 +4,7 @@ import com.google.common.primitives.Bytes;
 import org.yamcs.utils.StringConverter;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class ReservedMessageToUser extends MessageToUser {
 
@@ -64,7 +65,8 @@ public class ReservedMessageToUser extends MessageToUser {
         SFO_FAULT_HANDLER_OVERRIDE((byte) 0x43),
         SFO_FILESTORE_REQUEST((byte) 0x44),
         SFO_REPORT((byte) 0x45),
-        SFO_FILESTORE_RESPONSE((byte) 0x46);
+        SFO_FILESTORE_RESPONSE((byte) 0x46),
+        UNKNOWN_MESSAGE_TYPE((byte) 0xFF); // 0xFF is arbitrary (not in CFDP spec)
 
         private final byte[] bytes;
 
@@ -105,7 +107,7 @@ public class ReservedMessageToUser extends MessageToUser {
                 case 0x44: return SFO_FILESTORE_REQUEST;
                 case 0x45: return SFO_REPORT;
                 case 0x46: return SFO_FILESTORE_RESPONSE;
-                default: return null;
+                default: return UNKNOWN_MESSAGE_TYPE;
             }
         }
 
@@ -118,13 +120,43 @@ public class ReservedMessageToUser extends MessageToUser {
         this.content = content;
     }
 
-    public ReservedMessageToUser(ByteBuffer buffer) {
-        super(buffer.array());
+    /**
+     * Decodes ReservedMessageToUser from MessageToUser TLV value. Returns regular MessageToUser if unable.
+     * Will return the child associated with the MessageType instead if the class exists.
+     * @param value TLV value to decode
+     * @return ReservedMessageToUser (or child if possible), or regular MessageToUser if unable
+     */
+    public static MessageToUser fromValue(byte[] value) {
+        if(value.length < MESSAGE_IDENTIFIER.getBytes().length + 1 || !Arrays.equals(Arrays.copyOfRange(value, 0, MESSAGE_IDENTIFIER.getBytes().length), MESSAGE_IDENTIFIER.getBytes())) {
+            // Not a CFDP reserved message to user
+            return new MessageToUser(value);
+        }
 
-        this.messageType = MessageType.fromByte(buffer.get(MESSAGE_IDENTIFIER.getBytes().length));
+        ByteBuffer buffer = ByteBuffer.wrap(value);
+        MessageType messageType = MessageType.fromByte(buffer.get(MESSAGE_IDENTIFIER.getBytes().length));
         buffer.position(MESSAGE_IDENTIFIER.getBytes().length + 1);
-        this.content = new byte[buffer.remaining()];
+        byte[] content = new byte[buffer.remaining()];
         buffer.get(content);
+
+
+        switch (messageType) {
+        case PROXY_PUT_REQUEST:
+            return new ProxyPutRequest(content);
+        case PROXY_TRANSMISSION_MODE:
+            return new ProxyTransmissionMode(content);
+        case PROXY_PUT_RESPONSE:
+            return new ProxyPutResponse(content);
+        case ORIGINATING_TRANSACTION_ID:
+            return new OriginatingTransactionId(content);
+        case PROXY_CLOSURE_REQUEST:
+            return new ProxyClosureRequest(content);
+        case DIRECTORY_LISTING_REQUEST:
+            return new DirectoryListingRequest(content);
+        case DIRECTORY_LISTING_RESPONSE:
+            return new DirectoryListingResponse(content);
+        default:
+            return new ReservedMessageToUser(messageType, content);
+        }
     }
 
     public MessageType getMessageType() {

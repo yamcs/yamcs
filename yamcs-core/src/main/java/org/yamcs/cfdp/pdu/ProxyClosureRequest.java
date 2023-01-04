@@ -24,4 +24,15 @@ public class ProxyClosureRequest extends ReservedMessageToUser {
     public boolean isClosureRequested() {
         return closureRequested;
     }
+
+    @Override
+    public String toJson() {
+        return "{type=" + getType() + ", length=" + getValue().length + ", messageType=" + MessageType.PROXY_TRANSMISSION_MODE
+                + ", closureRequested=" + closureRequested + "}";
+    }
+
+    @Override
+    public String toString() {
+        return "ProxyClosureRequest(" + closureRequested + ")";
+    }
 }

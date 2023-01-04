@@ -110,60 +110,57 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
     protected static String getTransferType(MetadataPacket metadata) {
         if (metadata == null) return PredefinedTransferTypes.UNKNOWN.toString();
 
-        String transferType;
-        if(metadata.getFileLength() == 0) {
-            if(!metadata.getHeader().isLargeFile()) {
-                if(metadata.getOptions() != null && !metadata.getOptions().isEmpty()) {// TODO: maybe put it outside of file checks?
-                    transferType = PredefinedTransferTypes.UNSUPPORTED_METADATA_OPTIONS.toString();
-                    ArrayList<String> options = new ArrayList<>();
-                    for (TLV option : metadata.getOptions()) {
-                        if (option.getType() == TLV.TYPE_MESSAGE_TO_USER) {
-                            transferType = PredefinedTransferTypes.UNSUPPORTED_METADATA_MESSAGE.toString();
+        ArrayList<String> transferTypeInfo = new ArrayList<>();
+        if (metadata.getFileLength() > 0) {
+            transferTypeInfo.add(PredefinedTransferTypes.FILE_TRANSFER.toString());
+        } else if (metadata.getHeader().isLargeFile()) {
+            transferTypeInfo.add(PredefinedTransferTypes.LARGE_FILE_TRANSFER.toString());
+        }
 
-                            byte[] value = option.getValue();
-                            if (value.length >= 5 && new String(Arrays.copyOfRange(value, 0, 4)).equals("cfdp")) { // Reserved CFDP message: 32bits = "cfdp" + 8bits message type
+        List<TLV> options = metadata.getOptions();
+        if (options == null || options.isEmpty()) {
+           if (transferTypeInfo.isEmpty()) {
+               return PredefinedTransferTypes.METADATA_ONLY_TRANSFER.toString();
+           } else {
+               return transferTypeInfo.get(0);
+           }
+        }
 
-                                ReservedMessageToUser reservedMessage = new ReservedMessageToUser(
-                                        ByteBuffer.wrap(value));
-                                switch (reservedMessage.getMessageType()) {
-                                case ORIGINATING_TRANSACTION_ID:
-                                    // Ignoring originating transaction ID if there are other types
-                                    transferType = PredefinedTransferTypes.ORIGINATING_TRANSACTION_ID_ONLY.toString();
-                                    break;
-                                case PROXY_PUT_REQUEST:
-                                    ProxyPutRequest proxyPutRequest = new ProxyPutRequest(reservedMessage.getContent());
-                                    options.add(PredefinedTransferTypes.DOWNLOAD_REQUEST + " (" + proxyPutRequest.getDestinationFileName() + " ⟵ " + proxyPutRequest.getSourceFileName() + ")");
-                                    break;
-                                case PROXY_PUT_RESPONSE:
-                                    ProxyPutResponse proxyPutResponse = new ProxyPutResponse(reservedMessage.getContent());
-                                    options.add(PredefinedTransferTypes.DOWNLOAD_REQUEST_RESPONSE.toString() + " (" + proxyPutResponse.getConditionCode() + ", " + (proxyPutResponse.isDataComplete() ? "Complete" : "Incomplete") + ", " + proxyPutResponse.getFileStatus() + ")");
-                                    break;
-                                case DIRECTORY_LISTING_REQUEST:
-                                    options.add(PredefinedTransferTypes.DIRECTORY_LISTING_REQUEST.toString());
-                                    break;
-                                case DIRECTORY_LISTING_RESPONSE:
-                                    options.add(PredefinedTransferTypes.DIRECTORY_LISTING_RESPONSE.toString());
-                                    break;
-                                default:
-                                    options.add(reservedMessage.getMessageType().toString());
-                                }
-                            }
-                        }
-                    }
-                    if(!options.isEmpty()) {
-                        transferType = String.join(", ", options);
-                    }
-                }
-                else {
-                    transferType = PredefinedTransferTypes.UNKNOWN_EMPTY_FILE.toString();
+        boolean hasOriginatingTransactionId = false;
+        int unknownOptions = 0;
+        for (TLV option : options) {
+            if (option instanceof ReservedMessageToUser) {
+                if(option instanceof OriginatingTransactionId) {
+                    hasOriginatingTransactionId = true;
+                } else if (option instanceof ProxyPutRequest) {
+                    ProxyPutRequest proxyPutRequest = (ProxyPutRequest) option;
+                    transferTypeInfo.add(PredefinedTransferTypes.DOWNLOAD_REQUEST + " (" + proxyPutRequest.getDestinationFileName() + " ⟵ " + proxyPutRequest.getSourceFileName() + ")");
+                } else if (option instanceof ProxyPutResponse) {
+                    ProxyPutResponse proxyPutResponse = (ProxyPutResponse) option;
+                    transferTypeInfo.add(PredefinedTransferTypes.DOWNLOAD_REQUEST_RESPONSE + " (" + proxyPutResponse.getConditionCode() + ", " + (proxyPutResponse.isDataComplete() ? "Complete" : "Incomplete") + ", " + proxyPutResponse.getFileStatus() + ")");
+                } else if (option instanceof ProxyTransmissionMode || option instanceof ProxyClosureRequest) {
+                    transferTypeInfo.add(option.toString());
+                } else if (option instanceof DirectoryListingRequest) {
+                    transferTypeInfo.add(PredefinedTransferTypes.DIRECTORY_LISTING_REQUEST.toString()); // TODO
+                } else if (option instanceof DirectoryListingResponse) {
+                    transferTypeInfo.add(PredefinedTransferTypes.DIRECTORY_LISTING_RESPONSE.toString()); // TODO
+                } else {
+                    transferTypeInfo.add(((ReservedMessageToUser) option).getMessageType().toString());
                 }
             } else {
-                transferType = PredefinedTransferTypes.LARGE_FILE_TRANSFER.toString();
+                unknownOptions += 1;
             }
-        } else {
-            transferType = PredefinedTransferTypes.FILE_TRANSFER.toString();
         }
-        return transferType;
+
+        if(hasOriginatingTransactionId && transferTypeInfo.isEmpty()) {
+            transferTypeInfo.add(PredefinedTransferTypes.ORIGINATING_TRANSACTION_ID_ONLY.toString());
+        }
+
+        if (unknownOptions > 0) {
+            transferTypeInfo.add(unknownOptions + " " + PredefinedTransferTypes.UNKNOWN_METADATA_OPTION + (unknownOptions > 1 ? "s" : ""));
+        }
+
+        return String.join(", ", transferTypeInfo);
     }
 
     public abstract void processPacket(CfdpPacket packet);

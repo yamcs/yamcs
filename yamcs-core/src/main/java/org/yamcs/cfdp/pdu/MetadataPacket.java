@@ -2,13 +2,16 @@ package org.yamcs.cfdp.pdu;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import io.netty.util.internal.StringUtil;
 import org.yamcs.cfdp.CfdpUtils;
 import org.yamcs.cfdp.ChecksumType;
 import org.yamcs.cfdp.FileDirective;
 import org.yamcs.logging.Log;
+import org.yamcs.utils.StringConverter;
 
 public class MetadataPacket extends CfdpPacket implements FileDirective {
     static final Log log = new Log(MetadataPacket.class);
@@ -60,8 +63,7 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
             options = new ArrayList<>();
             while (buffer.hasRemaining()) {
                 try {
-                    // TODO: cast and decode at this point
-                    options.add(TLV.readTLV(buffer));
+                    options.add(MessageToUser.fromTLV(TLV.readTLV(buffer)));
                 } catch (IndexOutOfBoundsException e) {
                     throw new PduDecodingException("TLV options in Metadata packet wrongly formatted", buffer.array(), e);
                 }

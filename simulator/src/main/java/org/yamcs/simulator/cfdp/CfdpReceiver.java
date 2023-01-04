@@ -98,47 +98,21 @@ public class CfdpReceiver {
 
         if(metadata.getOptions() != null) {
             for (TLV option : metadata.getOptions()) {
-                if (option.getType() == TLV.TYPE_MESSAGE_TO_USER) {
-                    byte[] value = option.getValue();
-                    if (value.length >= 5 && new String(Arrays.copyOfRange(value, 0, 4)).equals(
-                            ReservedMessageToUser.MESSAGE_IDENTIFIER)) { // Reserved CFDP message: 32bits = "cfdp" + 8bits message type
-                        ReservedMessageToUser reservedMessage = new ReservedMessageToUser(ByteBuffer.wrap(value));
-                        switch (reservedMessage.getMessageType()) {
-                        case PROXY_PUT_REQUEST:
-                            if(proxyPutRequest == null) {
-                                proxyPutRequest = new ProxyPutRequest(reservedMessage.getContent());
-                            } else throw new PduDecodingException("Multiple Proxy Put Request messages found in metadata packet",
-                                    reservedMessage.getContent());
-                            break;
-                        case PROXY_TRANSMISSION_MODE:
-                            if(proxyTransmissionMode == null) {
-                                proxyTransmissionMode = new ProxyTransmissionMode(reservedMessage.getContent());
-                            } else throw new PduDecodingException("Multiple Proxy Transmission Mode messages found in metadata packet",
-                                    reservedMessage.getContent());
-                            break;
-                        case PROXY_CLOSURE_REQUEST:
-                                if(proxyClosureRequest == null) {
-                                    proxyClosureRequest = new ProxyClosureRequest(reservedMessage.getContent());
-                                } else throw new PduDecodingException("Multiple Proxy Closure Request messages found in metadata packet",
-                                        reservedMessage.getContent());
-                            break;
-                        default:
-                            log.warn(
-                                    "Ignoring reserved message " + reservedMessage.getMessageType() + ": " + StringConverter.arrayToHexString(
-                                            reservedMessage.getContent()));
-                            break;
-                        }
-                    } else {
-                        log.warn(
-                                "Ignoring message to user TLV: " + StringConverter.arrayToHexString(option.getValue()));
-                    }
+                if (option instanceof ProxyPutRequest && proxyPutRequest == null) {
+                    proxyPutRequest = (ProxyPutRequest) option;
+                } else if (option instanceof ProxyTransmissionMode  && proxyTransmissionMode == null) {
+                    proxyTransmissionMode = (ProxyTransmissionMode) option;
+                } else if (option instanceof ProxyClosureRequest &&  proxyClosureRequest == null) {
+                    proxyClosureRequest = (ProxyClosureRequest) option;
+                } else if (option instanceof ReservedMessageToUser) {
+                    log.warn("Ignoring reserved message to user " + ((ReservedMessageToUser) option).getMessageType() + ":" + StringConverter.arrayToHexString(((ReservedMessageToUser) option).getContent()));
                 } else {
                     log.warn("Ignoring metadata option TLV: " + StringConverter.arrayToHexString(option.getValue()));
                 }
             }
         }
 
-        if(proxyPutRequest != null) {
+        if (proxyPutRequest != null) {
             if(proxyTransmissionMode != null && proxyTransmissionMode.getTransmissionMode() == CfdpPacket.TransmissionMode.UNACKNOWLEDGED) {
                 log.warn("Unacknowledged transmission requested but not implemented in simulator, defaulting to acknowledged");
             }
@@ -148,12 +122,14 @@ public class CfdpReceiver {
 
             try {
                 // WARNING: Only sends the file with the proxy put request, does not respond with correct messages
+                log.info("Starting upload following Proxy Put Request: " + proxyPutRequest);
                 CfdpSender sender = new CfdpSender(simulator, (int) proxyPutRequest.getDestinationEntityId(),
                         new File(dataDir, proxyPutRequest.getSourceFileName()), proxyPutRequest.getDestinationFileName(),
                         List.of(new OriginatingTransactionId(packet.getHeader().getSourceId(), packet.getHeader().getSequenceNumber())),
                         new int[0]);
                 ((ColSimulator) simulator).setCfdpSender(sender); // WARNING Unchecked cast
                 sender.start();
+                // TODO: send ProxyPutResponse afterwards
             } catch (FileNotFoundException e) {
                 log.error("File '" + proxyPutRequest.getSourceFileName() + "' does not exist!");
             } catch (ClassCastException e) {

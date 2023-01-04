@@ -1,6 +1,7 @@
 package org.yamcs.cfdp.pdu;
 
 import com.google.common.primitives.Bytes;
+import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.cfdp.CfdpUtils;
 
 import java.nio.ByteBuffer;
@@ -42,6 +43,10 @@ public class OriginatingTransactionId extends ReservedMessageToUser {
 
     public long getTransactionSequenceNumber() {
         return transactionSequenceNumber;
+    }
+
+    public CfdpTransactionId toCfdpTransactionId() {
+        return new CfdpTransactionId(sourceEntityId, transactionSequenceNumber);
     }
 
     @Override
