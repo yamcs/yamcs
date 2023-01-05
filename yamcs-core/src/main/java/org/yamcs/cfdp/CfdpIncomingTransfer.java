@@ -24,6 +24,7 @@ import org.yamcs.yarch.Stream;
 public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     private final FileSaveHandler fileSaveHandler;
     private CfdpTransactionId originatingTransactionId;
+    private DirectoryListingResponse directoryListingResponse;
 
     private enum InTxState {
         /**
@@ -252,7 +253,8 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             for(TLV option : metadataPacket.getOptions()) {
                 if(option instanceof OriginatingTransactionId) {
                     this.originatingTransactionId = ((OriginatingTransactionId) option).toCfdpTransactionId();
-                    break;
+                } else if (option instanceof DirectoryListingResponse) {
+                    this.directoryListingResponse = (DirectoryListingResponse) option;
                 }
             }
         }
@@ -524,6 +526,11 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     }
 
     private void saveFile(boolean checksumError, List<SegmentRequest> missingSegments) {
+        boolean keepDirectoryListingFiles = true; // TODO: param
+        if(directoryListingResponse != null && !keepDirectoryListingFiles) {
+            return;
+        }
+
         Map<String, String> metadata = null;
         if (!missingSegments.isEmpty()) {
             metadata = new HashMap<>();
@@ -618,4 +625,17 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     public long getTransferredSize() {
         return incomingDataFile.getReceivedSize();
     }
+
+    public DirectoryListingResponse getDirectoryListingResponse() {
+        return directoryListingResponse;
+    }
+
+    public byte[] getFileData() {
+        return incomingDataFile.getData();
+    }
+
+    public CfdpTransactionId getOriginatingTransactionId() {
+        return originatingTransactionId;
+    }
+
 }

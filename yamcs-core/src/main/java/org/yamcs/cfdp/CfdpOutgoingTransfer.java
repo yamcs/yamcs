@@ -423,8 +423,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         if (metadata.getFileLength() > 0 || directiveHeader.isLargeFile()) {
             eventMessageSuffix = request.getSourceFileName() + " -> " + request.getDestinationFileName();
         } else {
-            // TODO: loop options with \n
-            eventMessageSuffix = "Fileless transfer (metadata options: \n" + metadata.getOptions() + ")";
+            eventMessageSuffix = "Fileless transfer (metadata options: \n" + metadata.getOptions().stream().map(TLV::toString).collect(Collectors.joining(",\n")) + "\n)";
         }
 
         if (conditionCode == ConditionCode.NO_ERROR) {

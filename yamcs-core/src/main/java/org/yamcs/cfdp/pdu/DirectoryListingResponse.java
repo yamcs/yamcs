@@ -11,7 +11,7 @@ public class DirectoryListingResponse extends ReservedMessageToUser {
     private final String directoryName;
     private final String directoryFileName; // Where the directory listing will be saved locally
 
-    enum ListingResponseCode {
+    public enum ListingResponseCode {
         SUCCESSFUL(0),
         UNSUCCESSFUL(1);
 
@@ -57,16 +57,20 @@ public class DirectoryListingResponse extends ReservedMessageToUser {
         );
     }
 
+    public ListingResponseCode getListingResponseCode() {
+        return listingResponseCode;
+    }
+
     @Override
     public String toJson() {
-        return "{type=" + getType() + ", length=" + getValue().length + ", messageType=" + MessageType.DIRECTORY_LISTING_REQUEST
+        return "{type=" + getType() + ", length=" + getValue().length + ", messageType=" + MessageType.DIRECTORY_LISTING_RESPONSE
                 + ", listingResponseCode=" + listingResponseCode + ", directoryName=" + directoryName + ", directoryFileName=" + directoryFileName + "}";
     }
 
 
     @Override
     public String toString() {
-        return "ProxyPutRequest(listingResponseCode: " + listingResponseCode + ", directoryName: " + directoryName + ", directoryFileName:" + directoryFileName + ")";
+        return "DirectoryListingResponse(listingResponseCode: " + listingResponseCode + ", directoryName: " + directoryName + ", directoryFileName:" + directoryFileName + ")";
     }
 
 }

@@ -31,6 +31,11 @@ public class DirectoryListingRequest extends ReservedMessageToUser {
             );
     }
 
+
+    public String getDirectoryName() {
+        return directoryName;
+    }
+
     @Override
     public String toJson() {
         return "{type=" + getType() + ", length=" + getValue().length + ", messageType=" + MessageType.DIRECTORY_LISTING_REQUEST
@@ -40,7 +45,7 @@ public class DirectoryListingRequest extends ReservedMessageToUser {
 
     @Override
     public String toString() {
-        return "ProxyPutRequest(directoryName: " + directoryName + ", directoryFileName:" + directoryFileName + ")";
+        return "DirectoryListingRequest(directoryName: " + directoryName + ", directoryFileName:" + directoryFileName + ")";
     }
 
 }

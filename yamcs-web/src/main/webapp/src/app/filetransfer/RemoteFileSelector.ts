@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, fo
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { YamcsService } from '../core/services/YamcsService';
 import { ListFilesResponse } from '../client';
 
 @Component({
@@ -89,10 +88,10 @@ export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDe
     this.selectedFileNames.clear();
     this.updateFileNames();
     const items: RemoteFileItem[] = [];
-    const prefix: string = dir.remotePath ? dir.remotePath + '/' : ''
+    const prefix: string = dir.remotePath ? dir.remotePath + '/' : '';
     for (const file of dir.files || []) {
       const fullFileName = prefix + file.name;
-      if (file.size == 0) {
+      if (file.size == 0) { // TODO: may not be the best way to distinguish between directories and files
         items.push({
           folder: true,
           name: fullFileName,

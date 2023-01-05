@@ -141,9 +141,9 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
                 } else if (option instanceof ProxyTransmissionMode || option instanceof ProxyClosureRequest) {
                     transferTypeInfo.add(option.toString());
                 } else if (option instanceof DirectoryListingRequest) {
-                    transferTypeInfo.add(PredefinedTransferTypes.DIRECTORY_LISTING_REQUEST.toString()); // TODO
+                    transferTypeInfo.add(PredefinedTransferTypes.DIRECTORY_LISTING_REQUEST + " (" + ((DirectoryListingRequest) option).getDirectoryName() + ")");
                 } else if (option instanceof DirectoryListingResponse) {
-                    transferTypeInfo.add(PredefinedTransferTypes.DIRECTORY_LISTING_RESPONSE.toString()); // TODO
+                    transferTypeInfo.add(PredefinedTransferTypes.DIRECTORY_LISTING_RESPONSE + " (" + ((DirectoryListingResponse) option).getListingResponseCode() + ")");
                 } else {
                     transferTypeInfo.add(((ReservedMessageToUser) option).getMessageType().toString());
                 }
