@@ -3,6 +3,7 @@ package org.yamcs.cfdp;
 import static org.yamcs.cfdp.CompletedTransfer.TDEF;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -11,6 +12,8 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.google.protobuf.TimestampProto;
+import com.google.protobuf.util.Timestamps;
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
@@ -116,6 +119,7 @@ public class CfdpService extends AbstractYamcsService
     boolean queueConcurrentUploads;
     boolean allowConcurrentFileOverwrites;
     List<String> directoryTerminators;
+    private String directoryListingFileTemplate;
 
     private Stream dbStream;
 
@@ -180,6 +184,7 @@ public class CfdpService extends AbstractYamcsService
         spec.addOption("maxNumPendingUploads", OptionType.INTEGER).withDefault(10);
         spec.addOption("inactivityTimeout", OptionType.INTEGER).withDefault(10000);
         spec.addOption("pendingAfterCompletion", OptionType.INTEGER).withDefault(600000);
+        spec.addOption("directoryListingFileTemplate", OptionType.STRING).withDefault(".dirlist-{TIMESTAMP}.tmp");
 
         return spec;
     }
@@ -202,7 +207,7 @@ public class CfdpService extends AbstractYamcsService
         }
 
         defaultIncomingBucket = getBucket(config.getString("incomingBucket"), true);
-
+        // TODO: duplicate default values as specified in getSpec?
         allowRemoteProvidedBucket = config.getBoolean("allowRemoteProvidedBucket", false);
         allowRemoteProvidedSubdirectory = config.getBoolean("allowRemoteProvidedSubdirectory", false);
         allowDownloadOverwrites = config.getBoolean("allowDownloadOverwrites", false);
@@ -214,6 +219,8 @@ public class CfdpService extends AbstractYamcsService
         queueConcurrentUploads = config.getBoolean("queueConcurrentUploads");
         allowConcurrentFileOverwrites = config.getBoolean("allowConcurrentFileOverwrites");
         directoryTerminators = config.getList("directoryTerminators");
+        directoryListingFileTemplate = config.getString("directoryListingFileTemplate");
+
 
         initSrcDst(config);
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, "CfdpService", 10000);
@@ -865,8 +872,10 @@ public class CfdpService extends AbstractYamcsService
             destinationId = remoteEntities.get(destination).id;
         }
 
-        // TODO filename
-        DirectoryListingRequest directoryListingRequest = new DirectoryListingRequest(ROOT + remotePath, ".dirlist.tmp");
+        long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
+
+        DirectoryListingRequest directoryListingRequest = new DirectoryListingRequest(ROOT + remotePath, directoryListingFileTemplate.replace("{TIMESTAMP}",
+                Instant.ofEpochMilli(creationTime).toString()));
         ArrayList<MessageToUser> messagesToUser = new ArrayList<>(List.of(directoryListingRequest));
 
         // TODO: reliability
@@ -875,8 +884,6 @@ public class CfdpService extends AbstractYamcsService
         EntityConf localEntity = localEntities.values().iterator().next();
         long sourceId = localEntity.id;
         CfdpTransactionId transactionId = request.process(sourceId, idSeq.next(), ChecksumType.MODULAR, config);
-
-        long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
         // TODO: bucket?
         Bucket bucket = localEntity.bucket;
@@ -929,7 +936,6 @@ public class CfdpService extends AbstractYamcsService
 
         List<RemoteFile> files;
 
-        String directoryDelimiter = "/"; // TODO: param
         String ROOT = "/"; // TODO param
         String parser = "DEFAULT"; // TODO: param
 
@@ -937,7 +943,6 @@ public class CfdpService extends AbstractYamcsService
         String remotePath = request.getDirectoryName().startsWith(ROOT) ? request.getDirectoryName().split(ROOT, 2)[1] : request.getDirectoryName();
 
         if(parser.equals("DEFAULT")) {
-            System.out.println(3);
             files = Arrays.stream(new String(incomingTransfer.getFileData()).replace("\r", "").split("\\n")).map(
                     fileName -> {
                         if(fileName.startsWith(remotePath)) {
@@ -945,8 +950,9 @@ public class CfdpService extends AbstractYamcsService
                         } else if (fileName.startsWith(ROOT + remotePath)) {
                             fileName = fileName.substring((ROOT + remotePath).length());
                         }
-                        if(fileName.endsWith(directoryDelimiter)) {
-                            return RemoteFile.newBuilder().setName(fileName.substring(0, fileName.length() - directoryDelimiter.length())).setSize(0).build();
+                        String terminator = directoryTerminators.stream().filter(fileName::endsWith).max(Comparator.comparingInt(String::length)).orElse(null);
+                        if(terminator != null) {
+                            return RemoteFile.newBuilder().setName(fileName.substring(0, fileName.length() - terminator.length())).setSize(0).build();
                         }
                         return RemoteFile.newBuilder().setName(fileName).build();
                     }
@@ -954,6 +960,11 @@ public class CfdpService extends AbstractYamcsService
         } else {
             return;
         }
+
+        files.sort((file1, file2) -> { // Sort by filename placing directories first
+            int typeCmp = - Boolean.compare(file1.hasSize() && file1.getSize() == 0, file2.hasSize() && file2.getSize() == 0);
+            return typeCmp != 0 ? typeCmp : file1.getName().compareToIgnoreCase(file2.getName());
+        });
 
         ListFilesResponse listFilesResponse = ListFilesResponse.newBuilder()
                 .addAllFiles(files)
