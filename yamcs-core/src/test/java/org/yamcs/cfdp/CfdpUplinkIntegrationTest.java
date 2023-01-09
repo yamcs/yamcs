@@ -352,6 +352,7 @@ public class CfdpUplinkIntegrationTest {
         m.put("finAckTimeout", 50);
         m.put("finAckLimit", 2);
         m.put("sleepBetweenPdus", 10);
+        m.put("directoryListingFileTemplate", ".dirlist.tmp");
 
         return YConfiguration.wrap(m);
     }
