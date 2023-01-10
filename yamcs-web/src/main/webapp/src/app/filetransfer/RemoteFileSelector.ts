@@ -91,20 +91,12 @@ export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDe
     const prefix: string = dir.remotePath ? dir.remotePath + '/' : '';
     for (const file of dir.files || []) {
       const fullFileName = prefix + file.name;
-      if (file.size == 0) { // TODO: may not be the best way to distinguish between directories and files
-        items.push({
-          folder: true,
-          name: fullFileName,
-          modified: file.created,
-        });
-      } else {
-        items.push({
-          folder: false,
-          name: fullFileName,
-          modified: file.created,
-          size: file.size,
-        });
-      }
+      items.push({
+        folder: file.isDirectory,
+        name: fullFileName,
+        modified: file.created,
+        size: file.size,
+      });
     }
     this.dataSource.data = items;
     this.changeDetection.detectChanges();

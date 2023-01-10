@@ -294,7 +294,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
     public void requestFileList(Context ctx, ListFilesRequest request, Observer<Empty> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
         FileTransferService ftService = verifyService(request.getInstance(), request.hasServiceName() ? request.getServiceName() : null);
-        ftService.requestFileList(request.getDestination(), request.getRemotePath());
+        ftService.requestFileList(request.getSource(), request.getDestination(), request.getRemotePath(), request.getReliable());
         observer.complete(Empty.getDefaultInstance());
     }
 
@@ -307,7 +307,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
     public void getFileList(Context ctx, ListFilesRequest request, Observer<ListFilesResponse> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
         FileTransferService ftService = verifyService(request.getInstance(), request.hasServiceName() ? request.getServiceName() : null);
-        ListFilesResponse response = ftService.getFileList(request.getDestination(), request.getRemotePath());
+        ListFilesResponse response = ftService.getFileList(request.getSource(), request.getDestination(), request.getRemotePath(), request.getReliable());
         if (response == null) {
             response = ListFilesResponse.newBuilder().build();
         }

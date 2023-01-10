@@ -188,10 +188,10 @@ public interface FileTransferService extends YamcsService {
     /**
      * Start fetching a new file list from remote.
      */
-    void requestFileList(String destination, String remotePath);
+    void requestFileList(String source, String destination, String remotePath, boolean isReliable);
 
     /**
      * Return latest file list of the given destination.
      */
-    ListFilesResponse getFileList(String destination, String remotePath);
+    ListFilesResponse getFileList(String source, String destination, String remotePath, boolean isReliable);
 }

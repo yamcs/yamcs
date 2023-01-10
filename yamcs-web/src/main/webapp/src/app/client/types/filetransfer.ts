@@ -64,14 +64,17 @@ export interface TransfersPage {
 }
 
 export interface ListFilesRequest {
-  remotePath: string;
+  source: string;
   destination: string;
+  remotePath: string;
+  reliable: boolean;
 }
 
 export interface RemoteFile {
   name: string;
   created: string;
   size: number;
+  isDirectory: boolean;
 }
 
 export interface ListFilesResponse {

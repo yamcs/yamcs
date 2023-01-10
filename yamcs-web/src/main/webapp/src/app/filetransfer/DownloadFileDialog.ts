@@ -237,16 +237,20 @@ export class DownloadFileDialog implements OnDestroy {
   requestFileList() {
     const currentFolder: string = this.remoteSelector.currentPrefix$.value || '';
     this.yamcs.yamcsClient.requestFileList(this.yamcs.instance!, this.service.name, {
+      source: this.optionsForm.value['source'],
+      destination: this.optionsForm.value['destination'],
       remotePath: currentFolder,
-      destination: this.optionsForm.value['destination']
+      reliable: this.optionsForm.value['reliable']
     });
   }
 
   getFileList(dest: string, prefix: string) {
     if (this.service.capabilities.fileList) {
       this.yamcs.yamcsClient.getFileList(this.yamcs.instance!, this.service.name, {
+        source: this.optionsForm.value['source'],
+        destination: dest,
         remotePath: prefix,
-        destination: dest
+        reliable: this.optionsForm.value['reliable']
       }).then(fileList => {
         this.remoteSelector.setFolderContent(prefix, fileList);
         this.lastFileListTime$.next(fileList.listTime);

@@ -324,15 +324,21 @@ message ListFilesRequest {
   // service name
   optional string serviceName = 2;
   // Entity from which to get the file list
-  optional string destination = 3;
+  optional string source = 3;
+  // Entity from which to get the file list
+  optional string destination = 4;
   // Path of folder to list files from
-  optional string remotePath = 4;
+  optional string remotePath = 5;
+  // Set to ``True`` if reliable (class 2) CFDP transfer should be used,
+  // otherwise unreliable (class 1). Default: ``False``.
+  optional bool reliable = 6;
 }
 
 message RemoteFile {
   optional string name = 1;
   optional google.protobuf.Timestamp created = 2;
   optional uint64 size = 3;
+  optional bool isDirectory = 4;
 }
 
 message ListFilesResponse {
