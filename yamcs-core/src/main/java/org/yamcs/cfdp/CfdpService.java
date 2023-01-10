@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.yamcs.AbstractYamcsService;
@@ -38,7 +39,7 @@ import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.protobuf.ListFilesResponse;
 import org.yamcs.utils.StringConverter;
-import org.yamcs.utils.TimestampUtil;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Sequence;
@@ -84,7 +85,7 @@ public class CfdpService extends AbstractYamcsService
     Queue<QueuedCfdpOutgoingTransfer> queuedTransfers = new ConcurrentLinkedQueue<>();
 
     FileDownloadRequests fileDownloadRequests = new FileDownloadRequests();
-    Map<CfdpTransactionId, DirectoryListingRequest> directoryListingRequests = new ConcurrentHashMap<>();
+    Map<CfdpTransactionId, List<String>> directoryListingRequests = new ConcurrentHashMap<>();
     Map<List<String>, ListFilesResponse> fileLists = new ConcurrentHashMap<>();
 
     ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
@@ -117,7 +118,9 @@ public class CfdpService extends AbstractYamcsService
     boolean queueConcurrentUploads;
     boolean allowConcurrentFileOverwrites;
     List<String> directoryTerminators;
+    private String terminatorsRegex;
     private String directoryListingFileTemplate;
+    private boolean automaticDirectoryListingReloads;
 
     private Stream dbStream;
 
@@ -183,6 +186,7 @@ public class CfdpService extends AbstractYamcsService
         spec.addOption("inactivityTimeout", OptionType.INTEGER).withDefault(10000);
         spec.addOption("pendingAfterCompletion", OptionType.INTEGER).withDefault(600000);
         spec.addOption("directoryListingFileTemplate", OptionType.STRING).withDefault(".dirlist-{TIMESTAMP}.tmp");
+        spec.addOption("automaticDirectoryListingReloads", OptionType.BOOLEAN).withDefault(false);
 
         return spec;
     }
@@ -217,7 +221,9 @@ public class CfdpService extends AbstractYamcsService
         queueConcurrentUploads = config.getBoolean("queueConcurrentUploads");
         allowConcurrentFileOverwrites = config.getBoolean("allowConcurrentFileOverwrites");
         directoryTerminators = config.getList("directoryTerminators");
+        terminatorsRegex = "(" + directoryTerminators.stream().map(Pattern::quote).collect(Collectors.joining("|")) + ")";
         directoryListingFileTemplate = config.getString("directoryListingFileTemplate");
+        automaticDirectoryListingReloads = config.getBoolean("automaticDirectoryListingReloads");
 
 
         initSrcDst(config);
@@ -646,15 +652,19 @@ public class CfdpService extends AbstractYamcsService
                 // keep it in pending for a while such that PDUs from remote entity can still be answered
                 executor.schedule(() -> pendingTransfers.remove(cfdpTransfer.getTransactionId()),
                         pendingAfterCompletion, TimeUnit.MILLISECONDS);
+
+                if (cfdpTransfer instanceof CfdpIncomingTransfer) {
+                    CfdpIncomingTransfer incomingTransfer = (CfdpIncomingTransfer) cfdpTransfer;
+                    CfdpTransactionId originatingTransactionId = incomingTransfer.getOriginatingTransactionId();
+                    if(originatingTransactionId != null) {
+                        List<String> request = directoryListingRequests.remove(originatingTransactionId);
+                        if (request != null || incomingTransfer.getDirectoryListingResponse() != null) {
+                            notifyFileListListeners(incomingTransfer, request);
+                        }
+                    }
+                }
             }
             executor.submit(this::tryStartQueuedTransfer);
-        }
-
-        if(cfdpTransfer.getTransferState() == TransferState.COMPLETED && cfdpTransfer instanceof CfdpIncomingTransfer) {
-            CfdpIncomingTransfer incomingTransfer = (CfdpIncomingTransfer) cfdpTransfer;
-            if(incomingTransfer.getDirectoryListingResponse() != null) {
-                notifyFileListListeners(incomingTransfer);
-            }
         }
     }
 
@@ -857,8 +867,9 @@ public class CfdpService extends AbstractYamcsService
 
     @Override
     public void requestFileList(String destination, String remotePath) {
-        String ROOT = "/"; // TODO param
         // Start upload of Directory Listing Request
+        String dirPath = remotePath.replaceFirst("/*$", "");
+
         long destinationId;
 
         if(destination == null) {
@@ -872,7 +883,7 @@ public class CfdpService extends AbstractYamcsService
 
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
-        DirectoryListingRequest directoryListingRequest = new DirectoryListingRequest(ROOT + remotePath, directoryListingFileTemplate.replace("{TIMESTAMP}",
+        DirectoryListingRequest directoryListingRequest = new DirectoryListingRequest(dirPath, directoryListingFileTemplate.replace("{TIMESTAMP}",
                 Instant.ofEpochMilli(creationTime).toString()));
         ArrayList<MessageToUser> messagesToUser = new ArrayList<>(List.of(directoryListingRequest));
 
@@ -886,8 +897,10 @@ public class CfdpService extends AbstractYamcsService
         // TODO: bucket?
         Bucket bucket = localEntity.bucket;
 
-        fileDownloadRequests.addTransfer(transactionId, bucket.getName());
-        directoryListingRequests.put(transactionId, directoryListingRequest);
+        if(!directoryListingFileTemplate.equals("")) {
+            fileDownloadRequests.addTransfer(transactionId, bucket.getName());
+        }
+        directoryListingRequests.put(transactionId, Arrays.asList(destination, dirPath));
         if (numPendingUploads() < maxNumPendingUploads) {
             processPutRequest(sourceId, transactionId.getSequenceNumber(), creationTime, request, bucket);
         } else {
@@ -903,18 +916,16 @@ public class CfdpService extends AbstractYamcsService
 
     @Override
     public ListFilesResponse getFileList(String destination, String remotePath) {
-        // TODO: to param
-        boolean autoReload = true;
-        if (autoReload) {
-            requestFileList(destination, remotePath);
+        String dirPath = remotePath.replaceFirst("/*$", "");
+        if (automaticDirectoryListingReloads && directoryListingRequests.values().stream().noneMatch(request -> request.equals(Arrays.asList(destination, dirPath)))) {
+            requestFileList(destination, dirPath);
         }
 
-        return fileLists.get(Arrays.asList(destination, remotePath));
+        return fileLists.get(Arrays.asList(destination, dirPath));
     }
 
-    private void notifyFileListListeners(CfdpIncomingTransfer incomingTransfer) {
+    private void notifyFileListListeners(CfdpIncomingTransfer incomingTransfer, List<String> request) {
         CfdpTransactionId originatingTransactionId = incomingTransfer.getOriginatingTransactionId();
-        DirectoryListingRequest request = directoryListingRequests.remove(originatingTransactionId);
         fileDownloadRequests.removeTransfer(originatingTransactionId);
         if(request == null) {
             eventProducer.sendWarning("Received CFDP Directory Listing Response but with no matching Directory Listing Request");
@@ -934,30 +945,31 @@ public class CfdpService extends AbstractYamcsService
 
         List<RemoteFile> files;
 
-        String ROOT = "/"; // TODO param
-        String parser = "DEFAULT"; // TODO: param
+        String remotePath = request.get(1);
 
-
-        String remotePath = request.getDirectoryName().startsWith(ROOT) ? request.getDirectoryName().split(ROOT, 2)[1] : request.getDirectoryName();
-
-        if(parser.equals("DEFAULT")) {
-            files = Arrays.stream(new String(incomingTransfer.getFileData()).replace("\r", "").split("\\n")).map(
-                    fileName -> {
-                        if(fileName.startsWith(remotePath)) {
-                            fileName = fileName.substring(remotePath.length());
-                        } else if (fileName.startsWith(ROOT + remotePath)) {
-                            fileName = fileName.substring((ROOT + remotePath).length());
+        // TODO: custom (CSV?) parsing?
+        String regex = "^(" + Pattern.quote(remotePath) + ")?(" + terminatorsRegex + "*)(?<name>.*?)(" + terminatorsRegex + "*)$";
+        files = Arrays.stream(new String(incomingTransfer.getFileData()).replace("\r", "").split("\\n")).map(
+                fileName -> {
+                    try {
+                        System.out.println(fileName);
+                        if (fileName.strip().equals("")) {
+                            return null;
                         }
+
                         String terminator = directoryTerminators.stream().filter(fileName::endsWith).max(Comparator.comparingInt(String::length)).orElse(null);
+                        fileName = fileName.replaceAll(regex, "${name}");
+
                         if(terminator != null) {
-                            return RemoteFile.newBuilder().setName(fileName.substring(0, fileName.length() - terminator.length())).setSize(0).build();
+                            return RemoteFile.newBuilder().setName(fileName).setSize(0).build();
                         }
                         return RemoteFile.newBuilder().setName(fileName).build();
+                    } catch (Exception e) {
+                        eventProducer.sendWarning("Error parsing filename '" + fileName + "' in Directory Listing Response");
+                        return null;
                     }
-            ).collect(Collectors.toList());
-        } else {
-            return;
-        }
+                }
+        ).filter(Objects::nonNull).collect(Collectors.toList());
 
         files.sort((file1, file2) -> { // Sort by filename placing directories first
             int typeCmp = - Boolean.compare(file1.hasSize() && file1.getSize() == 0, file2.hasSize() && file2.getSize() == 0);
@@ -966,14 +978,14 @@ public class CfdpService extends AbstractYamcsService
 
         ListFilesResponse listFilesResponse = ListFilesResponse.newBuilder()
                 .addAllFiles(files)
-                .setDestination(remoteEntity.getName())
+                .setDestination(request.get(0))
                 .setRemotePath(remotePath)
-                .setListTime(TimestampUtil.currentTimestamp())
+                .setListTime(TimeEncoding.toProtobufTimestamp(incomingTransfer.getStartTime()))
                 .build();
 
         fileLists.put(Arrays.asList(remoteEntity.getName(), remotePath), listFilesResponse);
 
-        log.debug("Notifying {} file list listeners with {} files for destination={} path={}", fileListListeners.size(), files.size(), remoteEntity.getName(), ROOT + remotePath);
+        log.debug("Notifying {} file list listeners with {} files for destination={} path={}", fileListListeners.size(), files.size(), remoteEntity.getName(), remotePath);
         fileListListeners.forEach(l -> l.receivedFileList(listFilesResponse));
     }
 
