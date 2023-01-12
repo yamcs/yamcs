@@ -10,7 +10,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.yamcs.AbstractYamcsService;
@@ -18,6 +17,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
+import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.cfdp.OngoingCfdpTransfer.FaultHandlingAction;
@@ -25,6 +25,8 @@ import org.yamcs.cfdp.pdu.*;
 import org.yamcs.cfdp.pdu.DirectoryListingResponse.ListingResponseCode;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.filetransfer.BasicListingParser;
+import org.yamcs.filetransfer.FileListingParser;
 import org.yamcs.filetransfer.FileSaveHandler;
 import org.yamcs.filetransfer.FileTransfer;
 import org.yamcs.filetransfer.FileTransferService;
@@ -40,6 +42,7 @@ import org.yamcs.protobuf.TransferState;
 import org.yamcs.protobuf.ListFilesResponse;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.YObjectLoader;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Sequence;
@@ -118,9 +121,9 @@ public class CfdpService extends AbstractYamcsService
     boolean queueConcurrentUploads;
     boolean allowConcurrentFileOverwrites;
     List<String> directoryTerminators;
-    private String terminatorsRegex;
     private String directoryListingFileTemplate;
     private boolean automaticDirectoryListingReloads;
+    private FileListingParser fileListingParser;
 
     private Stream dbStream;
 
@@ -185,8 +188,13 @@ public class CfdpService extends AbstractYamcsService
         spec.addOption("maxNumPendingUploads", OptionType.INTEGER).withDefault(10);
         spec.addOption("inactivityTimeout", OptionType.INTEGER).withDefault(10000);
         spec.addOption("pendingAfterCompletion", OptionType.INTEGER).withDefault(600000);
+
+        // TODO: remove
         spec.addOption("directoryListingFileTemplate", OptionType.STRING).withDefault(".dirlist-{TIMESTAMP}.tmp");
         spec.addOption("automaticDirectoryListingReloads", OptionType.BOOLEAN).withDefault(false);
+
+        spec.addOption("fileListingParserClassName", OptionType.STRING).withDefault("org.yamcs.filetransfer.BasicListingParser");
+        spec.addOption("fileListingParserArgs", OptionType.MAP).withSpec(Spec.ANY).withDefault(new HashMap<String, Object>());
 
         return spec;
     }
@@ -221,7 +229,6 @@ public class CfdpService extends AbstractYamcsService
         queueConcurrentUploads = config.getBoolean("queueConcurrentUploads");
         allowConcurrentFileOverwrites = config.getBoolean("allowConcurrentFileOverwrites");
         directoryTerminators = config.getList("directoryTerminators");
-        terminatorsRegex = "(" + directoryTerminators.stream().map(Pattern::quote).collect(Collectors.joining("|")) + ")";
         directoryListingFileTemplate = config.getString("directoryListingFileTemplate");
         automaticDirectoryListingReloads = config.getBoolean("automaticDirectoryListingReloads");
 
@@ -241,6 +248,19 @@ public class CfdpService extends AbstractYamcsService
             receiverFaultHandlers = Collections.emptyMap();
         }
         setupRecording(ydb);
+
+        fileListingParser = YObjectLoader.loadObject(config.getString("fileListingParserClassName"));
+        if (fileListingParser instanceof BasicListingParser) {
+            // directoryTerminators will be overwritten by the specific fileListingParserArgs if existing
+            ((BasicListingParser) fileListingParser).setDirectoryTerminators(directoryTerminators);
+        }
+        try {
+            Spec spec = fileListingParser.getSpec();
+            YConfiguration fileListingParserConfig = config.getConfig("fileListingParserArgs");
+            fileListingParser.init(yamcsInstance, spec != null ? spec.validate(fileListingParserConfig) : fileListingParserConfig);
+        } catch (ValidationException e) {
+            throw new InitException("Failed to validate FileListingParser config", e);
+        }
     }
 
     private Map<ConditionCode, FaultHandlingAction> readFaultHandlers(Map<String, String> map) {
@@ -936,36 +956,9 @@ public class CfdpService extends AbstractYamcsService
             return;
         }
 
-        List<RemoteFile> files;
-
         String remotePath = request.get(1);
 
-        // TODO: custom (CSV?) parsing?
-        String regex = "^(" + Pattern.quote(remotePath) + ")?(" + terminatorsRegex + "*)(?<name>.*?)(" + terminatorsRegex + "*)$";
-        files = Arrays.stream(new String(incomingTransfer.getFileData())
-                        .replace("\r", "")
-                        .split("\\n"))
-                .map(fileName -> {
-                    try {
-                        if (fileName.strip().equals("")) {
-                            return null;
-                        }
-
-                        return RemoteFile.newBuilder()
-                                .setName(fileName.replaceAll(regex, "${name}"))
-                                .setIsDirectory(directoryTerminators.stream().anyMatch(fileName::endsWith))
-                                .build();
-                    } catch (Exception e) {
-                        eventProducer.sendWarning("Error parsing filename '" + fileName + "' in Directory Listing Response");
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .sorted((file1, file2) -> { // Sort by filename placing directories first
-                    int typeCmp = - Boolean.compare(file1.getIsDirectory(), file2.getIsDirectory());
-                    return typeCmp != 0 ? typeCmp : file1.getName().compareToIgnoreCase(file2.getName());
-                })
-                .collect(Collectors.toList());
+        List<RemoteFile> files = fileListingParser.parse(remotePath, new String(incomingTransfer.getFileData()));
 
         ListFilesResponse listFilesResponse = ListFilesResponse.newBuilder()
                 .addAllFiles(files)
@@ -973,6 +966,7 @@ public class CfdpService extends AbstractYamcsService
                 .setRemotePath(remotePath)
                 .setListTime(TimeEncoding.toProtobufTimestamp(incomingTransfer.getStartTime()))
                 .build();
+
 
         fileLists.put(Arrays.asList(remoteEntity.getName(), remotePath), listFilesResponse);
 

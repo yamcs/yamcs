@@ -72,9 +72,9 @@ export interface ListFilesRequest {
 
 export interface RemoteFile {
   name: string;
-  created: string;
-  size: number;
   isDirectory: boolean;
+  size: number;
+  modified: string;
 }
 
 export interface ListFilesResponse {

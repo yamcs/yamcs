@@ -94,7 +94,7 @@ export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDe
       items.push({
         folder: file.isDirectory,
         name: fullFileName,
-        modified: file.created,
+        modified: file.modified,
         size: file.size,
       });
     }
