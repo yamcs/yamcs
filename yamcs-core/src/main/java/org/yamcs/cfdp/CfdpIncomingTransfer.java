@@ -23,7 +23,6 @@ import org.yamcs.yarch.Stream;
 
 public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     private final FileSaveHandler fileSaveHandler;
-    private final boolean keepDirectoryListingFiles;
     private CfdpTransactionId originatingTransactionId;
     private DirectoryListingResponse directoryListingResponse;
 
@@ -119,8 +118,6 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             int checkAckLimit = config.getInt("checkAckLimit", 5);
             checkTimer = new Timer(executor, checkAckLimit, checkAckTimeout);
         }
-
-        keepDirectoryListingFiles = !config.getString("directoryListingFileTemplate").equals("");
 
         // this header will be used for all the outgoing PDUs; copy all settings from the incoming PDU header
         this.directiveHeader = new CfdpHeader(
@@ -269,7 +266,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         this.acknowledged = packet.getHeader().isAcknowledged();
         originalObjectName = !packet.getDestinationFilename().equals("") ? packet.getDestinationFilename() : packet.getSourceFilename();
         try {
-            fileSaveHandler.setObjectName(directoryListingResponse == null || keepDirectoryListingFiles ? originalObjectName : null);
+            fileSaveHandler.setObjectName(directoryListingResponse == null ? originalObjectName : null);
             sendInfoEvent(ETYPE_TRANSFER_META, "Received metadata: "+toEventMsg(packet));
             checkFileComplete();
         } catch (FileAlreadyExistsException e) {
@@ -529,7 +526,8 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     }
 
     private void saveFile(boolean checksumError, List<SegmentRequest> missingSegments) {
-        if(directoryListingResponse != null && !keepDirectoryListingFiles) {
+        if(directoryListingResponse != null) {
+            log.debug("Ignoring save action for Directory Listing Response");
             return;
         }
 
@@ -601,7 +599,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
     @Override
     public String getObjectName() {
-        return fileSaveHandler.getObjectName() != null || (directoryListingResponse != null && !keepDirectoryListingFiles) ? fileSaveHandler.getObjectName() : originalObjectName;
+        return fileSaveHandler.getObjectName() != null || directoryListingResponse != null ? fileSaveHandler.getObjectName() : originalObjectName;
     }
 
     public String getOriginalObjectName() {

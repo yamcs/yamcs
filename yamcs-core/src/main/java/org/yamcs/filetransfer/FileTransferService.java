@@ -22,7 +22,7 @@ import org.yamcs.yarch.Bucket;
  * @author nm
  *
  */
-public interface FileTransferService extends YamcsService {
+public interface FileTransferService extends YamcsService, FileListingService {
 
     /**
      * Get the list of configured local entities. These contain the {@code source) used in the {@link
@@ -182,16 +182,4 @@ public interface FileTransferService extends YamcsService {
      */
     void unregisterTransferMonitor(TransferMonitor listener);
 
-    void registerRemoteFileListMonitor(RemoteFileListMonitor listener);
-    void unregisterRemoteFileListMonitor(RemoteFileListMonitor listener);
-
-    /**
-     * Start fetching a new file list from remote.
-     */
-    void requestFileList(String source, String destination, String remotePath, boolean isReliable);
-
-    /**
-     * Return latest file list of the given destination.
-     */
-    ListFilesResponse getFileList(String source, String destination, String remotePath, boolean isReliable);
 }

@@ -329,8 +329,7 @@ message ListFilesRequest {
   optional string destination = 4;
   // Path of folder to list files from
   optional string remotePath = 5;
-  // Set to ``True`` if reliable (class 2) CFDP transfer should be used,
-  // otherwise unreliable (class 1). Default: ``False``.
+  // Used for CFDP transmission mode, i.e. (un-)acknowledged
   optional bool reliable = 6;
 }
 
