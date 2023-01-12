@@ -3,8 +3,18 @@ package org.yamcs.cfdp;
 import static org.yamcs.cfdp.CompletedTransfer.TDEF;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -21,12 +31,24 @@ import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.cfdp.OngoingCfdpTransfer.FaultHandlingAction;
-import org.yamcs.cfdp.pdu.*;
+import org.yamcs.cfdp.pdu.CfdpPacket;
+import org.yamcs.cfdp.pdu.ConditionCode;
+import org.yamcs.cfdp.pdu.DirectoryListingRequest;
 import org.yamcs.cfdp.pdu.DirectoryListingResponse.ListingResponseCode;
+import org.yamcs.cfdp.pdu.EofPacket;
+import org.yamcs.cfdp.pdu.FileDataPacket;
+import org.yamcs.cfdp.pdu.MessageToUser;
+import org.yamcs.cfdp.pdu.MetadataPacket;
+import org.yamcs.cfdp.pdu.PduDecodingException;
+import org.yamcs.cfdp.pdu.ProxyClosureRequest;
+import org.yamcs.cfdp.pdu.ProxyPutRequest;
+import org.yamcs.cfdp.pdu.ProxyTransmissionMode;
+import org.yamcs.cfdp.pdu.TLV;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.filetransfer.BasicListingParser;
 import org.yamcs.filetransfer.FileListingParser;
+import org.yamcs.filetransfer.FileListingService;
 import org.yamcs.filetransfer.FileSaveHandler;
 import org.yamcs.filetransfer.FileTransfer;
 import org.yamcs.filetransfer.FileTransferService;
@@ -101,6 +123,7 @@ public class CfdpService extends AbstractYamcsService
     EventProducer eventProducer;
 
     private Set<TransferMonitor> transferListeners = new CopyOnWriteArraySet<>();
+    private Set<RemoteFileListMonitor> remoteFileListMonitors = new CopyOnWriteArraySet<>();
     private Map<String, EntityConf> localEntities = new LinkedHashMap<>();
     private Map<String, EntityConf> remoteEntities = new LinkedHashMap<>();
 
@@ -120,8 +143,10 @@ public class CfdpService extends AbstractYamcsService
     boolean queueConcurrentUploads;
     boolean allowConcurrentFileOverwrites;
     List<String> directoryTerminators;
-    private boolean automaticDirectoryListingReloads;
+
+    private FileListingService fileListingService;
     private FileListingParser fileListingParser;
+    private boolean automaticDirectoryListingReloads;
 
     private Stream dbStream;
 
@@ -187,9 +212,10 @@ public class CfdpService extends AbstractYamcsService
         spec.addOption("inactivityTimeout", OptionType.INTEGER).withDefault(10000);
         spec.addOption("pendingAfterCompletion", OptionType.INTEGER).withDefault(600000);
 
-        spec.addOption("automaticDirectoryListingReloads", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("fileListingServiceClassName", OptionType.STRING).withDefault("org.yamcs.cfdp.CfdpService");
         spec.addOption("fileListingParserClassName", OptionType.STRING).withDefault("org.yamcs.filetransfer.BasicListingParser");
         spec.addOption("fileListingParserArgs", OptionType.MAP).withSpec(Spec.ANY).withDefault(new HashMap<String, Object>());
+        spec.addOption("automaticDirectoryListingReloads", OptionType.BOOLEAN).withDefault(false);
 
         return spec;
     }
@@ -224,6 +250,26 @@ public class CfdpService extends AbstractYamcsService
         queueConcurrentUploads = config.getBoolean("queueConcurrentUploads");
         allowConcurrentFileOverwrites = config.getBoolean("allowConcurrentFileOverwrites");
         directoryTerminators = config.getList("directoryTerminators");
+
+        String fileListingServiceClassName = config.getString("fileListingServiceClassName");
+        if (Objects.equals(fileListingServiceClassName, this.getClass().getName())) {
+            fileListingService = this;
+        } else {
+            fileListingService = YObjectLoader.loadObject(fileListingServiceClassName);
+        }
+
+        fileListingParser = YObjectLoader.loadObject(config.getString("fileListingParserClassName"));
+        if (fileListingParser instanceof BasicListingParser) {
+            // directoryTerminators will be overwritten by the specific fileListingParserArgs if existing
+            ((BasicListingParser) fileListingParser).setDirectoryTerminators(directoryTerminators);
+        }
+        try {
+            Spec spec = fileListingParser.getSpec();
+            YConfiguration fileListingParserConfig = config.getConfig("fileListingParserArgs");
+            fileListingParser.init(yamcsInstance, spec != null ? spec.validate(fileListingParserConfig) : fileListingParserConfig);
+        } catch (ValidationException e) {
+            throw new InitException("Failed to validate FileListingParser config", e);
+        }
         automaticDirectoryListingReloads = config.getBoolean("automaticDirectoryListingReloads");
 
 
@@ -242,19 +288,6 @@ public class CfdpService extends AbstractYamcsService
             receiverFaultHandlers = Collections.emptyMap();
         }
         setupRecording(ydb);
-
-        fileListingParser = YObjectLoader.loadObject(config.getString("fileListingParserClassName"));
-        if (fileListingParser instanceof BasicListingParser) {
-            // directoryTerminators will be overwritten by the specific fileListingParserArgs if existing
-            ((BasicListingParser) fileListingParser).setDirectoryTerminators(directoryTerminators);
-        }
-        try {
-            Spec spec = fileListingParser.getSpec();
-            YConfiguration fileListingParserConfig = config.getConfig("fileListingParserArgs");
-            fileListingParser.init(yamcsInstance, spec != null ? spec.validate(fileListingParserConfig) : fileListingParserConfig);
-        } catch (ValidationException e) {
-            throw new InitException("Failed to validate FileListingParser config", e);
-        }
     }
 
     private Map<ConditionCode, FaultHandlingAction> readFaultHandlers(Map<String, String> map) {
@@ -614,15 +647,40 @@ public class CfdpService extends AbstractYamcsService
     }
 
     @Override
-    public void registerRemoteFileListMonitor(RemoteFileListMonitor listener) {
-        log.debug("Registering file list listener");
-        fileListListeners.add(listener);
+    public void registerRemoteFileListMonitor(RemoteFileListMonitor monitor) {
+        if(fileListingService != this) {
+            fileListingService.registerRemoteFileListMonitor(monitor);
+            return;
+        }
+        log.debug("Registering file list monitor");
+        remoteFileListMonitors.add(monitor);
     }
 
     @Override
-    public void unregisterRemoteFileListMonitor(RemoteFileListMonitor listener) {
-        log.debug("Un-registering file list listener");
-        fileListListeners.remove(listener);
+    public void unregisterRemoteFileListMonitor(RemoteFileListMonitor monitor) {
+        if(fileListingService != this) {
+            fileListingService.unregisterRemoteFileListMonitor(monitor);
+            return;
+        }
+        log.debug("Un-registering file list monitor");
+        remoteFileListMonitors.remove(monitor);
+    }
+
+    @Override
+    public void notifyRemoteFileListMonitors(ListFilesResponse listFilesResponse) {
+        if(fileListingService != this) {
+            fileListingService.notifyRemoteFileListMonitors(listFilesResponse);
+            return;
+        }
+        remoteFileListMonitors.forEach(l -> l.receivedFileList(listFilesResponse));
+    }
+
+    @Override
+    public Set<RemoteFileListMonitor> getRemoteFileListMonitors() {
+        if (fileListingService != this) {
+            return fileListingService.getRemoteFileListMonitors();
+        }
+        return remoteFileListMonitors;
     }
 
     @Override
@@ -835,6 +893,10 @@ public class CfdpService extends AbstractYamcsService
 
     @Override
     public ListFilesResponse getFileList(String source, String destination, String remotePath, boolean reliable) {
+        if (fileListingService != this) {
+            return fileListingService.getFileList(source, destination, remotePath, reliable);
+        }
+
         String dirPath = remotePath.replaceFirst("/*$", "");
         if (automaticDirectoryListingReloads && directoryListingRequests.values().stream().noneMatch(request -> request.equals(Arrays.asList(destination, dirPath)))) {
             requestFileList(source, destination, dirPath, reliable);
@@ -845,6 +907,11 @@ public class CfdpService extends AbstractYamcsService
 
     @Override
     public void requestFileList(String source, String destination, String remotePath, boolean reliable) {
+        if (fileListingService != this) {
+            fileListingService.requestFileList(source, destination, remotePath, reliable);
+            return;
+        }
+
         // Start upload of Directory Listing Request
         String dirPath = remotePath.replaceFirst("/*$", "");
 
@@ -919,12 +986,16 @@ public class CfdpService extends AbstractYamcsService
 
         saveFileList(listFilesResponse);
 
-        log.debug("Notifying {} file list listeners with {} files for destination={} path={}", fileListListeners.size(), files.size(), remoteEntity.getName(), remotePath);
+        log.debug("Notifying {} file list listeners with {} files for destination={} path={}", fileListingService.getRemoteFileListMonitors().size(), files.size(), remoteEntity.getName(), remotePath);
         notifyRemoteFileListMonitors(listFilesResponse);
     }
 
     @Override
     public void saveFileList(ListFilesResponse listFilesResponse) {
+        if (fileListingService != this) {
+            fileListingService.saveFileList(listFilesResponse);
+            return;
+        }
         fileLists.put(Arrays.asList(listFilesResponse.getDestination(), listFilesResponse.getRemotePath()), listFilesResponse);
     }
 

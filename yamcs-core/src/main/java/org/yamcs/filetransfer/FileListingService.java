@@ -3,23 +3,16 @@ package org.yamcs.filetransfer;
 import org.yamcs.protobuf.ListFilesResponse;
 
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 public interface FileListingService {
 
-    Set<RemoteFileListMonitor> fileListListeners = new CopyOnWriteArraySet<>();
+    void registerRemoteFileListMonitor(RemoteFileListMonitor monitor);
 
-    default void registerRemoteFileListMonitor(RemoteFileListMonitor listener) {
-        fileListListeners.add(listener);
-    }
+    void unregisterRemoteFileListMonitor(RemoteFileListMonitor monitor);
 
-    default void unregisterRemoteFileListMonitor(RemoteFileListMonitor listener) {
-        fileListListeners.remove(listener);
-    }
+    void notifyRemoteFileListMonitors(ListFilesResponse listFilesResponse);
 
-    default void notifyRemoteFileListMonitors(ListFilesResponse listFilesResponse) {
-        fileListListeners.forEach(l -> l.receivedFileList(listFilesResponse));
-    }
+    Set<RemoteFileListMonitor> getRemoteFileListMonitors();
 
     /**
      * Return latest file list of the given destination.
@@ -30,6 +23,7 @@ public interface FileListingService {
      * @param reliable reliability of the file listing request (e.g. transmission mode for CFDP, may not be needed)
      * @return file list
      */
+    // TODO: maybe move "reliable" into a map
     ListFilesResponse getFileList(String source, String destination, String remotePath, boolean reliable);
 
     /**
