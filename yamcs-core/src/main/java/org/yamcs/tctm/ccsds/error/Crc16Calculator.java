@@ -1,5 +1,7 @@
 package org.yamcs.tctm.ccsds.error;
 
+import java.nio.ByteBuffer;
+
 public class Crc16Calculator {
     final int polynomial;
     short r[] = new short[256];
@@ -36,5 +38,16 @@ public class Crc16Calculator {
 
         return crc & 0xFFFF;
 
+    }
+
+    public int compute(ByteBuffer bb, int offset, int length, int initialValue) {
+        int crc = initialValue;
+
+        for (int i = offset; i < offset + length; i++) {
+            int idx = (bb.get(i) ^ (crc >> 8)) & 0xff;
+            crc = r[idx] ^ (crc << 8);
+        }
+
+        return crc & 0xFFFF;
     }
 }

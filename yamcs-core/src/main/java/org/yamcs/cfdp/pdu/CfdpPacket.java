@@ -10,6 +10,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.cfdp.OngoingCfdpTransfer;
 import org.yamcs.cfdp.CfdpTransactionId;
+import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
@@ -18,6 +19,7 @@ public abstract class CfdpPacket {
     protected final CfdpHeader header;
 
     private static Logger log = LoggerFactory.getLogger("Packet");
+    private static CrcCciitCalculator crcCalculator = new CrcCciitCalculator();
     public static final TupleDefinition CFDP = new TupleDefinition();
     // outgoing CFDP packets
     static {
@@ -51,7 +53,7 @@ public abstract class CfdpPacket {
      * In case of error (e.g. cannot decode header) a PduDecodingException is thrown and the position is undetermined.
      * <p>
      * The return may be null if the PDU is not supported
-     * 
+     *
      */
     public static CfdpPacket getCFDPPacket(ByteBuffer bb) throws PduDecodingException {
         int position = bb.position();
@@ -80,6 +82,12 @@ public abstract class CfdpPacket {
         }
 
         bb.limit(position + pduSize);
+
+        if (header.withCrc() &&
+            crcCalculator.compute(bb, position, pduSize) != 0) {
+            throw new PduDecodingException("invalid CRC checksum",
+                    getData(bb, position, pduSize));
+        }
 
         CfdpPacket toReturn = null;
         if (header.isFileDirective()) {
@@ -121,11 +129,6 @@ public abstract class CfdpPacket {
                         e);
             }
         }
-        if (toReturn != null && header.withCrc()) {
-            if (!toReturn.crcValid()) {
-                log.error("invalid crc");
-            }
-        }
         bb.limit(limit);
         bb.position(position + pduSize);
         return toReturn;
@@ -140,23 +143,23 @@ public abstract class CfdpPacket {
 
     public byte[] toByteArray() {
         int dataLength = getDataFieldLength();
-        ByteBuffer buffer = ByteBuffer.allocate(header.getLength() + dataLength);
-        getHeader().writeToBuffer(buffer, dataLength);
+        int fcsLength = header.withCrc() ? 2 : 0;
+        ByteBuffer buffer = ByteBuffer.allocate(header.getLength() + dataLength + fcsLength);
+        header.writeToBuffer(buffer, dataLength + fcsLength);
         writeCFDPPacket(buffer);
-        if (getHeader().withCrc()) {
-            calculateAndAddCrc(buffer);
-        }
-
+        if (fcsLength > 0)
+            buffer.putShort((short)crcCalculator.compute(buffer, 0, dataLength));
         return buffer.array();
     }
 
     public void writeToBuffer(ByteBuffer buffer) {
+        int offset = buffer.position();
         int dataLength = getDataFieldLength();
-        header.writeToBuffer(buffer, dataLength);
+        int fcsLength = header.withCrc() ? 2 : 0;
+        header.writeToBuffer(buffer, dataLength + fcsLength);
         writeCFDPPacket(buffer);
-        if (header.withCrc()) {
-            calculateAndAddCrc(buffer);
-        }
+        if (fcsLength > 0)
+            buffer.putShort((short)crcCalculator.compute(buffer, offset, dataLength));
     }
 
     public Tuple toTuple(OngoingCfdpTransfer trans) {
@@ -190,14 +193,6 @@ public abstract class CfdpPacket {
         return getHeader().getTransactionId();
     }
 
-    private boolean crcValid() {
-        throw new java.lang.UnsupportedOperationException("CFDP CRCs not supported");
-    }
-
     // the buffer is assumed to be at the correct position
     protected abstract void writeCFDPPacket(ByteBuffer buffer);
-
-    private void calculateAndAddCrc(ByteBuffer buffer) {
-        throw new java.lang.UnsupportedOperationException("CFDP CRCs not supported");
-    }
 }
