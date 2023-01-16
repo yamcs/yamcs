@@ -1,3 +1,5 @@
+.. _cfdp-service:
+
 CCSDS File Delivery Protocol (CFDP)
 ===================================
 
@@ -181,7 +183,25 @@ maxNumPendingUploads (integer)
     The maximum number of allowed concurrent uploads (including download requests and directory listing requests). If this limit is reached, the new uploads are queued. Default: ``10``
 
 directoryTerminators (list)
-    When starting an upload to a directory (folder), the CFDP service will append the object name to the directory name. To know if the destination is a folder (and not a file), the end character is compared with the terminators in this list. Default: ``["/", ":", "\\"]``
+    When starting an upload to a directory (folder), the CFDP service will append the object name to the directory name. To know if the destination is a folder (and not a file), the end character is compared with the terminators in this list.
+    This is also being used for the directory listing parsing if not specified in its options. Default: ``["/", ":", "\\"]``
+
+fileListingServiceClassName (string)
+    Class of the directory listing service to use (see :ref:`File listing service <file-listing>`) to retrieve file lists.
+    Default: ``org.yamcs.cfdp.CfdpService`` (i.e. ``this`` very instance of the service).
+
+fileListingServiceArgs (map)
+    Arguments to the FileListingService used (depends on implementation).
+
+automaticDirectoryListingReloads (boolean)
+    Whether the CFDP Service should automatically try to send a directory listing request when a client fetches a file listing.
+    Default: ``false``
+
+fileListingParserClassName (string)
+    Class for parsing the CFDP directory listing response files. Default: ``org.yamcs.filetransfer.BasicListingParser``
+
+fileListingParserArgs (map)
+    Arguments for the FileListingParser used (depends on implementation).
 
 allowConcurrentFileOverwrites (boolean)
     If this option is true, when starting an upload, the CFDP service verifies if an upload with the same destination filename is ongoing or queued and will raise an error. This is done in order to avoid overwriting the same destination file in case multiple files are uploaded from the yamcs-web. Default: ``true``

@@ -12,10 +12,15 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * Parses a directory listing from a linebreak separated list of filenames
+ * Directories are detected when the file name ends with a directory terminator
+ */
 public class BasicListingParser extends FileListingParser {
 
-    private List<String> directoryTerminators = Arrays.asList("/");
-    private String directoryTerminatorsRegex = "/";
+    private final List<String> DEFAULT_DIRECTORY_TERMINATORS = List.of("/");
+    private List<String> directoryTerminators;
+    private String directoryTerminatorsRegex;
 
     private EventProducer eventProducer;
 
@@ -23,17 +28,28 @@ public class BasicListingParser extends FileListingParser {
     public Spec getSpec() {
         Spec spec = new Spec();
         spec.addOption("directoryTerminators", Spec.OptionType.LIST).withElementType(Spec.OptionType.STRING)
-                .withDefault(Arrays.asList(":", "/", "\\"));
+                .withDefault(DEFAULT_DIRECTORY_TERMINATORS);
         return spec;
+    }
+
+    public BasicListingParser() {
+        setDirectoryTerminators(DEFAULT_DIRECTORY_TERMINATORS);
     }
 
     @Override
     public void init(String yamcsInstance, YConfiguration config) {
         super.init(yamcsInstance, config);
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, "BasicListingParser", 10000);
-        setDirectoryTerminators(config.getList("directoryTerminators"));
+        List<String> terminators = config.getList("directoryTerminators");
+        if(!terminators.equals(DEFAULT_DIRECTORY_TERMINATORS)) { // Only overwrite the directory terminators if config is not default
+            setDirectoryTerminators(terminators);
+        }
     }
 
+    /**
+     * Sets the directory terminators for parsing
+     * @param directoryTerminators directory terminators
+     */
     public void setDirectoryTerminators(List<String> directoryTerminators) {
         this.directoryTerminators = directoryTerminators;
         this.directoryTerminatorsRegex = "(" + directoryTerminators.stream().map(Pattern::quote).collect(Collectors.joining("|")) + ")";

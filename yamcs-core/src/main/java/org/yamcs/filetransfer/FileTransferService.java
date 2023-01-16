@@ -3,6 +3,8 @@ package org.yamcs.filetransfer;
 import java.io.IOException;
 import java.util.List;
 
+import org.yamcs.InitException;
+import org.yamcs.YConfiguration;
 import org.yamcs.YamcsService;
 import org.yamcs.protobuf.EntityInfo;
 import org.yamcs.protobuf.FileTransferCapabilities;
@@ -182,4 +184,7 @@ public interface FileTransferService extends YamcsService, FileListingService {
      */
     void unregisterTransferMonitor(TransferMonitor listener);
 
+    @Override
+    default void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
+    }
 }

@@ -230,6 +230,7 @@ public class CfdpService extends AbstractYamcsService
         spec.addOption("pendingAfterCompletion", OptionType.INTEGER).withDefault(600000);
 
         spec.addOption("fileListingServiceClassName", OptionType.STRING).withDefault("org.yamcs.cfdp.CfdpService");
+        spec.addOption("fileListingServiceArgs", OptionType.MAP).withSpec(Spec.ANY).withDefault(new HashMap<String, Object>());
         spec.addOption("fileListingParserClassName", OptionType.STRING).withDefault("org.yamcs.filetransfer.BasicListingParser");
         spec.addOption("fileListingParserArgs", OptionType.MAP).withSpec(Spec.ANY).withDefault(new HashMap<String, Object>());
         spec.addOption("automaticDirectoryListingReloads", OptionType.BOOLEAN).withDefault(false);
@@ -269,24 +270,39 @@ public class CfdpService extends AbstractYamcsService
         directoryTerminators = config.getList("directoryTerminators");
 
         String fileListingServiceClassName = config.getString("fileListingServiceClassName");
+        YConfiguration fileListingServiceConfig = config.getConfig("fileListingServiceArgs");
         if (Objects.equals(fileListingServiceClassName, this.getClass().getName())) {
             fileListingService = this;
+
+            String fileListingParserClassName;
+            try {
+                fileListingParserClassName = fileListingServiceConfig.getString("fileListingParserClassName");
+            } catch (ConfigurationException e) {
+                fileListingParserClassName = config.getString("fileListingParserClassName");
+            }
+            fileListingParser = YObjectLoader.loadObject(fileListingParserClassName);
+            if (fileListingParser instanceof BasicListingParser) {
+                // directoryTerminators will be overwritten by the specific fileListingParserArgs if existing
+                ((BasicListingParser) fileListingParser).setDirectoryTerminators(directoryTerminators);
+            }
+
+            try {
+                Spec spec = fileListingParser.getSpec();
+                YConfiguration fileListingParserConfig;
+                try {
+                    fileListingParserConfig = fileListingServiceConfig.getConfig("fileListingParserArgs");
+                } catch (ConfigurationException e) {
+                    fileListingParserConfig = config.getConfig("fileListingParserArgs");
+                }
+                fileListingParser.init(yamcsInstance, spec != null ? spec.validate(fileListingParserConfig) : fileListingParserConfig);
+            } catch (ValidationException e) {
+                throw new InitException("Failed to validate FileListingParser config", e);
+            }
         } else {
             fileListingService = YObjectLoader.loadObject(fileListingServiceClassName);
+            fileListingService.init(yamcsInstance, serviceName + "_" + fileListingServiceClassName, fileListingServiceConfig);
         }
 
-        fileListingParser = YObjectLoader.loadObject(config.getString("fileListingParserClassName"));
-        if (fileListingParser instanceof BasicListingParser) {
-            // directoryTerminators will be overwritten by the specific fileListingParserArgs if existing
-            ((BasicListingParser) fileListingParser).setDirectoryTerminators(directoryTerminators);
-        }
-        try {
-            Spec spec = fileListingParser.getSpec();
-            YConfiguration fileListingParserConfig = config.getConfig("fileListingParserArgs");
-            fileListingParser.init(yamcsInstance, spec != null ? spec.validate(fileListingParserConfig) : fileListingParserConfig);
-        } catch (ValidationException e) {
-            throw new InitException("Failed to validate FileListingParser config", e);
-        }
         automaticDirectoryListingReloads = config.getBoolean("automaticDirectoryListingReloads");
 
 
@@ -942,8 +958,11 @@ public class CfdpService extends AbstractYamcsService
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
             StreamSqlResult res = ydb.execute("select * from " + FILELIST_TABLE_NAME + " where " + COL_DESTINATION + "=? and " + COL_REMOTE_PATH + "=? ORDER DESC LIMIT 1", destination, remotePath);
             if(res.hasNext()) {
-                return res.next().getColumn(COL_LIST_FILES_RESPONSE);
+                ListFilesResponse response = res.next().getColumn(COL_LIST_FILES_RESPONSE);
+                res.close();
+                return response;
             } else {
+                res.close();
                 log.info("No saved file lists found for destination: " + destination + " and remote path: " + remotePath);
             }
         } catch (Exception e) {

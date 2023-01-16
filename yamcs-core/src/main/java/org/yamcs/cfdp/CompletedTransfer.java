@@ -154,7 +154,9 @@ public class CompletedTransfer implements CfdpFileTransfer {
         t.addColumn(COL_ID, transfer.getId());
         t.addColumn(COL_SERVER_ID, SERVER_ID);
         t.addTimestampColumn(COL_CREATION_TIME, transfer.getCreationTime());
-        t.addColumn(COL_BUCKET, transfer.getBucketName());
+        if (transfer.getBucketName() != null) {
+            t.addColumn(COL_BUCKET, transfer.getBucketName());
+        }
 
         if (transfer.getObjectName() != null) {
             t.addColumn(COL_OBJECT_NAME, transfer.getObjectName());
@@ -181,7 +183,9 @@ public class CompletedTransfer implements CfdpFileTransfer {
         Tuple t = new Tuple();
         t.addColumn(COL_ID, transfer.getId());
         t.addColumn(COL_SERVER_ID, SERVER_ID);
-        t.addColumn(COL_BUCKET, transfer.getBucketName());
+        if (transfer.getBucketName() != null) {
+            t.addColumn(COL_BUCKET, transfer.getBucketName());
+        }
         t.addTimestampColumn(COL_START_TIME, transfer.getStartTime());
         t.addEnumColumn(COL_TRANSFER_STATE, transfer.getTransferState().name());
         t.addColumn(COL_TOTAL_SIZE, transfer.getTotalSize());

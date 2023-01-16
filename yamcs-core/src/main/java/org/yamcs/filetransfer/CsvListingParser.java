@@ -19,13 +19,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Parses a directory listing from Comma Separated Values (CSV) formatted data.
+ * Uses configurable mappings to associate columns to the correct file properties.
+ * Timestamps can be formatted as numbers or as strings in the ISO format.
+ */
 public class CsvListingParser extends FileListingParser {
 
+    /**
+     * Maps RemoteFile protobuf field names to the CSV colum number.
+     * Example: [ name -> 0, isDirectory -> 1, size -> 2, modified -> 3 ]
+     */
     Map<String, Integer> protobufColumnNumberMapping; // Protobuf names -> column numbers
 
+    /**
+     * Maps CSV header column names to RemoteFile protobuf field names.
+     * Example: [ filename -> name, is_dir -> isDirectory, size -> size, last_updated -> modified ]
+     */
     Map<String, String> headerProtobufMapping; // CSV column names -> protobuf names
 
+    /**
+     * Whether to parse the CSV header and to use for mapping values to the RemoteFile fields
+     */
     private boolean useCsvHeader;
+
+    /**
+     * Multiplier for number encoded timestamps to get to the value in milliseconds
+     */
     private double timestampMultiplier;
 
     private EventProducer eventProducer;
@@ -35,12 +55,10 @@ public class CsvListingParser extends FileListingParser {
         Spec spec = new Spec();
         spec.addOption("useCsvHeader", OptionType.BOOLEAN).withDefault(false);
         spec.addOption("timestampMultiplier", OptionType.FLOAT).withDefault(1000);
-        spec.addOption("protobufColumnNumberMapping", OptionType.MAP).withElementType(OptionType.INTEGER)
-                .withDefault(new HashMap<>( // Default: protobuf order
+        spec.addOption("protobufColumnNumberMapping", OptionType.MAP).withDefault(new HashMap<>( // Default: protobuf order
                     RemoteFile.getDescriptor().getFields().stream()
                             .collect(Collectors.toMap(Descriptors.FieldDescriptor::getName,fieldDescriptor -> fieldDescriptor.getNumber() - 1))));
-        spec.addOption("headerProtobufMapping", OptionType.MAP).withElementType(OptionType.STRING)
-                .withDefault(new HashMap<>( // Default: assumes same names as protobuf
+        spec.addOption("headerProtobufMapping", OptionType.MAP).withDefault(new HashMap<>( // Default: assumes same names as protobuf
                         RemoteFile.getDescriptor().getFields().stream()
                                 .collect(Collectors.toMap(Descriptors.FieldDescriptor::getName, Descriptors.FieldDescriptor::getName))));
         return spec;
@@ -53,7 +71,8 @@ public class CsvListingParser extends FileListingParser {
 
         useCsvHeader = config.getBoolean("useCsvHeader");
         timestampMultiplier = config.getDouble("timestampMultiplier");
-
+        protobufColumnNumberMapping = config.getMap("protobufColumnNumberMapping");
+        headerProtobufMapping = config.getMap("headerProtobufMapping");
     }
 
     @Override
@@ -110,11 +129,12 @@ public class CsvListingParser extends FileListingParser {
         case MESSAGE:
             if(field.getMessageType().getFullName().equals("google.protobuf.Timestamp")) {
                 try {
-                    return TimestampUtil.java2Timestamp((long) (Long.parseLong(value) * timestampMultiplier));
+                    return TimestampUtil.java2Timestamp((long) (Double.parseDouble(value) * timestampMultiplier));
                 } catch (NumberFormatException e) {
                     return TimestampUtil.java2Timestamp(Instant.parse(value).toEpochMilli());
                 }
             }
+            // Else do default case
         case BYTE_STRING:
         case ENUM:
         default:
@@ -158,19 +178,4 @@ public class CsvListingParser extends FileListingParser {
         }
     }
 
-    public void setProtobufColumnNumberMapping(Map<String, Integer> protobufColumnNumberMapping) {
-        this.protobufColumnNumberMapping = protobufColumnNumberMapping;
-    }
-
-    public void setHeaderProtobufMapping(Map<String, String> headerProtobufMapping) {
-        this.headerProtobufMapping = headerProtobufMapping;
-    }
-
-    public void setUseCsvHeader(boolean useCsvHeader) {
-        this.useCsvHeader = useCsvHeader;
-    }
-
-    public void setTimestampMultiplier(float timestampMultiplier) {
-        this.timestampMultiplier = timestampMultiplier;
-    }
 }

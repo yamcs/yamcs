@@ -26,7 +26,7 @@ public class QueuedCfdpOutgoingTransfer implements CfdpFileTransfer {
 
     @Override
     public String getBucketName() {
-        return bucket.getName();
+        return bucket != null ? bucket.getName() : null;
     }
 
     @Override

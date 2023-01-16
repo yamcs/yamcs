@@ -1,5 +1,7 @@
 package org.yamcs.filetransfer;
 
+import org.yamcs.InitException;
+import org.yamcs.YConfiguration;
 import org.yamcs.protobuf.ListFilesResponse;
 
 import java.util.Set;
@@ -13,6 +15,9 @@ public interface FileListingService {
     void notifyRemoteFileListMonitors(ListFilesResponse listFilesResponse);
 
     Set<RemoteFileListMonitor> getRemoteFileListMonitors();
+
+    default void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
+    }
 
     /**
      * Return latest file list of the given destination.
