@@ -67,10 +67,12 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.Bucket;
+import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Sequence;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.StreamSqlException;
@@ -111,7 +113,6 @@ public class CfdpService extends AbstractYamcsService
 
     FileDownloadRequests fileDownloadRequests = new FileDownloadRequests();
     Map<CfdpTransactionId, List<String>> directoryListingRequests = new ConcurrentHashMap<>();
-    Map<List<String>, ListFilesResponse> fileLists = new ConcurrentHashMap<>();
 
     ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
     Map<ConditionCode, FaultHandlingAction> receiverFaultHandlers;
@@ -150,6 +151,8 @@ public class CfdpService extends AbstractYamcsService
 
     private Stream dbStream;
 
+    private Stream fileListStream;
+
     Sequence idSeq;
     static final Map<String, ConditionCode> VALID_CODES = new HashMap<>();
 
@@ -166,6 +169,20 @@ public class CfdpService extends AbstractYamcsService
         VALID_CODES.put("CheckLimitReached", ConditionCode.CHECK_LIMIT_REACHED);
         VALID_CODES.put("UnsupportedChecksum", ConditionCode.UNSUPPORTED_CHECKSUM_TYPE);
         VALID_CODES.put("CancelRequestReceived", ConditionCode.CANCEL_REQUEST_RECEIVED);
+    }
+
+    String FILELIST_TABLE_NAME = "cfdp_filelist";
+    static TupleDefinition FILELIST_TDEF = new TupleDefinition();
+    static String COL_DESTINATION = "destination";
+    static String COL_REMOTE_PATH = "remotePath";
+    static String COL_LIST_TIME = "listTime";
+    static String COL_LIST_FILES_RESPONSE = "listFilesResponse";
+
+    static {
+        FILELIST_TDEF.addColumn(COL_LIST_TIME, DataType.TIMESTAMP);
+        FILELIST_TDEF.addColumn(COL_DESTINATION, DataType.STRING);
+        FILELIST_TDEF.addColumn(COL_REMOTE_PATH, DataType.STRING);
+        FILELIST_TDEF.addColumn(COL_LIST_FILES_RESPONSE, DataType.protobuf("org.yamcs.protobuf.ListFilesResponse"));
     }
 
     @Override
@@ -288,6 +305,7 @@ public class CfdpService extends AbstractYamcsService
             receiverFaultHandlers = Collections.emptyMap();
         }
         setupRecording(ydb);
+        setupFileListTable(ydb);
     }
 
     private Map<ConditionCode, FaultHandlingAction> readFaultHandlers(Map<String, String> map) {
@@ -383,6 +401,24 @@ public class CfdpService extends AbstractYamcsService
             }
             ydb.execute("upsert_append into " + TABLE_NAME + " select * from " + streamName);
             dbStream = ydb.getStream(streamName);
+        } catch (ParseException | StreamSqlException e) {
+            throw new InitException(e);
+        }
+    }
+
+    private void setupFileListTable(YarchDatabaseInstance ydb) throws InitException {
+        try {
+            if (ydb.getTable(FILELIST_TABLE_NAME) == null) {
+                String query = "create table " + FILELIST_TABLE_NAME + "(" + FILELIST_TDEF.getStringDefinition1()
+                        + ", primary key(" + COL_LIST_TIME + ", " + COL_DESTINATION + ", " + COL_REMOTE_PATH + "))";
+                ydb.execute(query);
+            }
+            String streamName = FILELIST_TABLE_NAME + "_stream";
+            if (ydb.getStream(streamName) == null) {
+                ydb.execute("create stream " + streamName + FILELIST_TDEF.getStringDefinition());
+            }
+            ydb.execute("upsert_append into " + FILELIST_TABLE_NAME + " select * from " + streamName);
+            fileListStream = ydb.getStream(streamName);
         } catch (ParseException | StreamSqlException e) {
             throw new InitException(e);
         }
@@ -902,7 +938,19 @@ public class CfdpService extends AbstractYamcsService
             requestFileList(source, destination, dirPath, reliable);
         }
 
-        return fileLists.get(Arrays.asList(destination, dirPath));
+        try {
+            YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+            StreamSqlResult res = ydb.execute("select * from " + FILELIST_TABLE_NAME + " where " + COL_DESTINATION + "=? and " + COL_REMOTE_PATH + "=? ORDER DESC LIMIT 1", destination, remotePath);
+            if(res.hasNext()) {
+                return res.next().getColumn(COL_LIST_FILES_RESPONSE);
+            } else {
+                log.info("No saved file lists found for destination: " + destination + " and remote path: " + remotePath);
+            }
+        } catch (Exception e) {
+            log.error("Failed to query database for previous file listings", e);
+        }
+
+        return null;
     }
 
     @Override
@@ -996,7 +1044,13 @@ public class CfdpService extends AbstractYamcsService
             fileListingService.saveFileList(listFilesResponse);
             return;
         }
-        fileLists.put(Arrays.asList(listFilesResponse.getDestination(), listFilesResponse.getRemotePath()), listFilesResponse);
+
+        Tuple t = new Tuple();
+        t.addTimestampColumn(COL_LIST_TIME, TimeEncoding.fromProtobufTimestamp(listFilesResponse.getListTime()));
+        t.addColumn(COL_DESTINATION, listFilesResponse.getDestination());
+        t.addColumn(COL_REMOTE_PATH, listFilesResponse.getRemotePath());
+        t.addColumn(COL_LIST_FILES_RESPONSE, DataType.protobuf("org.yamcs.protobuf.ListFilesResponse"), listFilesResponse);
+        fileListStream.emitTuple(t);
     }
 
     @Override
