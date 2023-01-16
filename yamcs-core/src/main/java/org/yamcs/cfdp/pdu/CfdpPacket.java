@@ -66,14 +66,15 @@ public abstract class CfdpPacket {
             throw new PduDecodingException("short PDU, size: " + bb.limit(), getData(bb, position, bb.limit()), e);
         }
 
-        int dataLength = CfdpHeader.getDataLength(bb);
+        int fcsLength = header.withCrc() ? 2 : 0;
+        int dataLength = CfdpHeader.getDataLength(bb) - fcsLength;
 
         if (dataLength < 2) {
             throw new PduDecodingException("data length is " + dataLength + " (expected at least 2)",
                     getData(bb, position, bb.limit()));
         }
 
-        int pduSize = header.getLength() + dataLength;
+        int pduSize = header.getLength() + dataLength + fcsLength;
         if (pduSize > bb.limit()) {
             throw new PduDecodingException(
                     "buffer too short, from header expected PDU of size" + pduSize + " bytes, but only "
@@ -81,13 +82,13 @@ public abstract class CfdpPacket {
                     getData(bb, position, bb.limit()));
         }
 
-        bb.limit(position + pduSize);
-
         if (header.withCrc() &&
             crcCalculator.compute(bb, position, pduSize) != 0) {
             throw new PduDecodingException("invalid CRC checksum",
                     getData(bb, position, pduSize));
         }
+
+        bb.limit(position + pduSize - fcsLength);
 
         CfdpPacket toReturn = null;
         if (header.isFileDirective()) {
