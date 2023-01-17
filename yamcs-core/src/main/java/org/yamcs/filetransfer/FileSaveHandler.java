@@ -121,6 +121,10 @@ public class FileSaveHandler {
     }
 
     public void setObjectName(String objectName) throws FileAlreadyExistsException {
+        if(objectName == null) {
+            return;
+        }
+
         try {
             this.objectName = parseObjectName(objectName);
         } catch (FileAlreadyExistsException e) {

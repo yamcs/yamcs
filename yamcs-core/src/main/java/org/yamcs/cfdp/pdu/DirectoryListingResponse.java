@@ -34,14 +34,14 @@ public class DirectoryListingResponse extends ReservedMessageToUser {
     }
 
     public DirectoryListingResponse(ListingResponseCode listingResponseCode, String directoryName, String directoryFileName) {
-        super(MessageType.DIRECTORY_LISTING_REQUEST, encode(listingResponseCode, directoryName, directoryFileName));
+        super(MessageType.DIRECTORY_LISTING_RESPONSE, encode(listingResponseCode, directoryName, directoryFileName));
         this.listingResponseCode = listingResponseCode;
         this.directoryName = directoryName;
         this.directoryFileName = directoryFileName;
     }
 
     public DirectoryListingResponse(byte[] content) {
-        super(MessageType.DIRECTORY_LISTING_REQUEST, content);
+        super(MessageType.DIRECTORY_LISTING_RESPONSE, content);
 
         ByteBuffer buffer = ByteBuffer.wrap(content);
         this.listingResponseCode = ListingResponseCode.fromValue(buffer.get() >> 7);

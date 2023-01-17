@@ -21,6 +21,7 @@ import org.yamcs.simulator.PowerHandler;
 import org.yamcs.simulator.RCSHandler;
 import org.yamcs.simulator.SimulatorCcsdsPacket;
 import org.yamcs.simulator.TcpTmTcLink;
+import org.yamcs.simulator.cfdp.CfdpSender;
 
 /**
  * PUS (Packet Utilisation Standard) simulator.
@@ -248,5 +249,10 @@ public class PusSimulator extends AbstractSimulator {
     @Override
     protected void setLosLink(TcpTmTcLink losLink) {
         // ignore only send packets on tmlink
+    }
+
+    @Override
+    public void setCfdpSender(CfdpSender UNUSED) {
+        // ignored
     }
 }

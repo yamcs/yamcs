@@ -5,9 +5,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.List;
 
+import com.csvreader.CsvReader;
+import com.csvreader.CsvWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.DataFile;
@@ -104,6 +105,8 @@ public class CfdpReceiver {
                     proxyTransmissionMode = (ProxyTransmissionMode) option;
                 } else if (option instanceof ProxyClosureRequest &&  proxyClosureRequest == null) {
                     proxyClosureRequest = (ProxyClosureRequest) option;
+                } else if (option instanceof DirectoryListingRequest) {
+                    sendDirectoryListingResponse(packet.getHeader(), (DirectoryListingRequest) option);
                 } else if (option instanceof ReservedMessageToUser) {
                     log.warn("Ignoring reserved message to user " + ((ReservedMessageToUser) option).getMessageType() + ":" + StringConverter.arrayToHexString(((ReservedMessageToUser) option).getContent()));
                 } else {
@@ -113,31 +116,69 @@ public class CfdpReceiver {
         }
 
         if (proxyPutRequest != null) {
-            if(proxyTransmissionMode != null && proxyTransmissionMode.getTransmissionMode() == CfdpPacket.TransmissionMode.UNACKNOWLEDGED) {
-                log.warn("Unacknowledged transmission requested but not implemented in simulator, defaulting to acknowledged");
-            }
-            if(proxyClosureRequest != null && proxyClosureRequest.isClosureRequested()) {
-                log.warn("Closure requested but not implemented in simulator, defaulting to acknowledged transmission");
-            }
-
-            try {
-                // WARNING: Only sends the file with the proxy put request, does not respond with correct messages
-                log.info("Starting upload following Proxy Put Request: " + proxyPutRequest);
-                CfdpSender sender = new CfdpSender(simulator, (int) proxyPutRequest.getDestinationEntityId(),
-                        new File(dataDir, proxyPutRequest.getSourceFileName()), proxyPutRequest.getDestinationFileName(),
-                        List.of(new OriginatingTransactionId(packet.getHeader().getSourceId(), packet.getHeader().getSequenceNumber())),
-                        new int[0]);
-                ((ColSimulator) simulator).setCfdpSender(sender); // WARNING Unchecked cast
-                sender.start();
-                // TODO: send ProxyPutResponse afterwards
-            } catch (FileNotFoundException e) {
-                log.error("File '" + proxyPutRequest.getSourceFileName() + "' does not exist!");
-            } catch (ClassCastException e) {
-                log.error("Failed to cast " + simulator + " to ColSimulator");
-            }
+            executeProxyPutRequest(packet.getHeader(), proxyPutRequest, proxyTransmissionMode, proxyClosureRequest);
         } else {
             if(proxyTransmissionMode != null) log.warn("Ignoring Proxy Transmission Mode, no Proxy Put Request specified");
             if(proxyClosureRequest != null) log.warn("Ignoring Proxy Closure Request, no Proxy Put Request specified");
+        }
+    }
+
+    private void sendDirectoryListingResponse(CfdpHeader header, DirectoryListingRequest request) {
+        File directory = new File(dataDir, request.getDirectoryName());
+        File[] files = directory.listFiles();
+        if (files == null) {
+            return;
+        }
+
+        try {
+            File directoryListing = File.createTempFile("YamcsSim-dirlist-", ".tmp");
+            directoryListing.deleteOnExit();
+
+            CsvWriter writer = new CsvWriter(directoryListing.getPath());
+            for (File file : files) {
+                writer.writeRecord(new String[] { file.getName(), String.valueOf(file.isDirectory()),
+                        String.valueOf(file.length()), String.valueOf(file.lastModified()) });
+            }
+            writer.close();
+
+            log.info("Sending DirectoryListingResponse following request: " + request);
+            CfdpSender sender = new CfdpSender(simulator, (int) header.getSourceId(), directoryListing, request.getDirectoryFileName(),
+                    List.of(new DirectoryListingResponse(DirectoryListingResponse.ListingResponseCode.SUCCESSFUL, request.getDirectoryName(), request.getDirectoryFileName()),
+                            new OriginatingTransactionId(header.getSourceId(), header.getSequenceNumber())),
+                    new int[0]);
+            simulator.setCfdpSender(sender);
+            sender.addEndCallback(directoryListing::delete);
+            sender.start();
+            // TODO: according response
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private void executeProxyPutRequest(CfdpHeader header, ProxyPutRequest proxyPutRequest,
+            ProxyTransmissionMode proxyTransmissionMode, ProxyClosureRequest proxyClosureRequest) {
+        if(proxyTransmissionMode != null && proxyTransmissionMode.getTransmissionMode() == CfdpPacket.TransmissionMode.UNACKNOWLEDGED) {
+            log.warn("Unacknowledged transmission requested but not implemented in simulator, defaulting to acknowledged");
+        }
+        if(proxyClosureRequest != null && proxyClosureRequest.isClosureRequested()) {
+            log.warn("Closure requested but not implemented in simulator, defaulting to acknowledged transmission");
+        }
+
+        try {
+            // WARNING: Only sends the file with the proxy put request, does not respond with correct messages
+            log.info("Starting upload following Proxy Put Request: " + proxyPutRequest);
+            CfdpSender sender = new CfdpSender(simulator, (int) proxyPutRequest.getDestinationEntityId(),
+                    new File(dataDir, proxyPutRequest.getSourceFileName()), proxyPutRequest.getDestinationFileName(),
+                    List.of(new OriginatingTransactionId(header.getSourceId(), header.getSequenceNumber())),
+                    new int[0]);
+            simulator.setCfdpSender(sender);
+            // TODO: send ProxyPutResponse afterwards // sender.addEndCallbacks();
+            sender.start();
+        } catch (FileNotFoundException e) {
+            log.error("File '" + proxyPutRequest.getSourceFileName() + "' does not exist!");
+        } catch (ClassCastException e) {
+            log.error("Failed to cast " + simulator + " to ColSimulator");
         }
     }
 

@@ -64,6 +64,9 @@ services:
          id: 7
      senderFaultHandlers:
        AckLimitReached: suspend
+     fileListingParserClassName: org.yamcs.filetransfer.CsvListingParser
+     fileListingParserArgs:
+       timestampMultiplier: 1
 
 dataLinks:
   - name: tm_realtime

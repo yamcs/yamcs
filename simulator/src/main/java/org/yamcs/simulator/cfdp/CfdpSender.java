@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -57,6 +58,8 @@ public class CfdpSender {
     int[] skippedPdus;
     int skipIdx = 0;
     int pduCount = 0;
+
+    private List<Runnable> endCallbacks = new ArrayList<>();
 
     public CfdpSender(AbstractSimulator simulator, int destinationId, File file, String destinationFileName,
             List<TLV> metadataOptions, int[] skippedPdus)
@@ -182,6 +185,7 @@ public class CfdpSender {
         AckPacket ack = new AckPacket(FileDirectiveCode.FINISHED, FileDirectiveSubtypeCode.FINISHED_BY_END_SYSTEM,
                 packet.getConditionCode(), TransactionStatus.TERMINATED, directiveHeader);
         transmitCfdp(ack);
+        notifyEndCallbacks();
     }
 
     private void sendFileData(long start, long end, boolean addToChecksum) {
@@ -241,6 +245,20 @@ public class CfdpSender {
         DataToResend(long start, long end) {
             this.start = start;
             this.end = end;
+        }
+    }
+
+    public void addEndCallback(Runnable runnable) {
+        endCallbacks.add(runnable);
+    }
+
+    public void removeEndCallback(Runnable runnable) {
+        endCallbacks.remove(runnable);
+    }
+
+    private void notifyEndCallbacks() {
+        for (Runnable runnable : endCallbacks) {
+            runnable.run();
         }
     }
 }

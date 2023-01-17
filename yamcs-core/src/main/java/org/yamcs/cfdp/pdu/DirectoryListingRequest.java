@@ -36,6 +36,10 @@ public class DirectoryListingRequest extends ReservedMessageToUser {
         return directoryName;
     }
 
+    public String getDirectoryFileName() {
+        return directoryFileName;
+    }
+
     @Override
     public String toJson() {
         return "{type=" + getType() + ", length=" + getValue().length + ", messageType=" + MessageType.DIRECTORY_LISTING_REQUEST

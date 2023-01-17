@@ -70,6 +70,7 @@ public class ColSimulator extends AbstractSimulator {
 
     private CfdpSender cfdpSender;
 
+    @Override
     public void setCfdpSender(CfdpSender cfdpSender) {
         this.cfdpSender = cfdpSender;
     }
