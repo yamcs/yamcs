@@ -63,6 +63,10 @@ BasicListingParser
 The BasicListingParser parses the file listing from a linebreak separated list of filenames.
 Directories are detected by checking whether the file name ends with a directory terminator.
 
+removePrependingRemotePath (boolean)
+    Whether the filenames in the file listing contain the remote path as a prefix.
+    Default: ``true``
+
 directoryTerminators (list)
     Directory terminators, used to determine whether a file name corresponds to a directory. Parsing will remove all
     prepending and ending directory terminators.

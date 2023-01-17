@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
  */
 public class BasicListingParser extends FileListingParser {
 
+    private boolean removePrependingRemotePath;
     private final List<String> DEFAULT_DIRECTORY_TERMINATORS = List.of("/");
     private List<String> directoryTerminators;
     private String directoryTerminatorsRegex;
@@ -27,6 +28,7 @@ public class BasicListingParser extends FileListingParser {
     @Override
     public Spec getSpec() {
         Spec spec = new Spec();
+        spec.addOption("removePrependingRemotePath", Spec.OptionType.BOOLEAN).withDefault(true);
         spec.addOption("directoryTerminators", Spec.OptionType.LIST).withElementType(Spec.OptionType.STRING)
                 .withDefault(DEFAULT_DIRECTORY_TERMINATORS);
         return spec;
@@ -39,7 +41,10 @@ public class BasicListingParser extends FileListingParser {
     @Override
     public void init(String yamcsInstance, YConfiguration config) {
         super.init(yamcsInstance, config);
-        eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, "BasicListingParser", 10000);
+        if(yamcsInstance != null && !yamcsInstance.equals("")) {
+            eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, "BasicListingParser", 10000);
+        }
+        removePrependingRemotePath = config.getBoolean("removePrependingRemotePath");
         List<String> terminators = config.getList("directoryTerminators");
         if(!terminators.equals(DEFAULT_DIRECTORY_TERMINATORS)) { // Only overwrite the directory terminators if config is not default
             setDirectoryTerminators(terminators);
@@ -57,6 +62,11 @@ public class BasicListingParser extends FileListingParser {
 
     @Override
     public List<RemoteFile> parse(String remotePath, String data) {
+        if(!removePrependingRemotePath) {
+            remotePath = "";
+        }
+
+        // TODO: maybe add (directoryTerminatorsRegex*) at the beginning?
         String regex = "^(" + Pattern.quote(remotePath) + ")?(" + directoryTerminatorsRegex + "*)(?<name>.*?)(" + directoryTerminatorsRegex + "*)$";
         return Arrays.stream(data.replace("\r", "").split("\\n"))
                 .map(fileName -> {
