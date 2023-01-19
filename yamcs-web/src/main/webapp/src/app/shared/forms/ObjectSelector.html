@@ -2,7 +2,8 @@
        *ngIf="dataSource"
        [dataSource]="dataSource"
        class="ya-data-table"
-       style="width: 100%">
+       style="width: 100%"
+       [ngClass]="{'no-select': noSelect}">
 
   <ng-container cdkColumnDef="name">
     <th mat-header-cell *cdkHeaderCellDef style="width: 400px">Name</th>
@@ -46,5 +47,5 @@
       (click)="selectParent()"></tr>
   <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"
       [class.selected]="isSelected(row)"
-      (click)="selectFile(row)"></tr>
+      (click)="selectFile($event, row)"></tr>
 </table>

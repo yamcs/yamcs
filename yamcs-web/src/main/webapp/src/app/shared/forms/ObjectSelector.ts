@@ -35,6 +35,12 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
   @Input()
   path: string;
 
+  @Input()
+  noSelect = false;
+
+  @Input()
+  allowFolderSelection = false;
+
   @Output()
   prefixChange = new EventEmitter<string | null>();
 
@@ -45,6 +51,7 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
 
   private storageClient: StorageClient;
   private selectedFileNames: Set<string> = new Set();
+  private lastSelected: BrowseItem;
 
   private onChange = (_: string | null) => { };
   private onTouched = () => { };
@@ -106,21 +113,54 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
     this.changeDetection.detectChanges();
   }
 
-  selectFile(row: BrowseItem) {
+  // Called from html when a row is selected
+  selectFile(event: MouseEvent, row: BrowseItem) {
     if (row.folder) {
-      this.loadCurrentFolder(row.name);
+      if (this.allowFolderSelection && event.ctrlKey && event.shiftKey) {
+        this.flipRowSelection(row);
+      } else {
+        this.loadCurrentFolder(row.name);
+      }
     } else if (!this.foldersOnly) {
-      if (this.isMultiSelect) {
-        if (this.selectedFileNames.has(row.name)) {
-          this.selectedFileNames.delete(row.name);
+      if (this.isMultiSelect && event.ctrlKey) {
+        this.flipRowSelection(row);
+      } else if (this.isMultiSelect && event.shiftKey) {
+        if (this.selectedFileNames.size == 0 || !this.lastSelected || this.lastSelected.name === row.name) {
+          this.flipRowSelection(row);
         } else {
+          let select = false;
+          for (const candidate of this.dataSource.data) {
+            if (candidate.name === row.name || candidate.name === this.lastSelected.name) {
+              select = !select;
+            }
+            if (select) {
+              this.selectedFileNames.add(candidate.name);
+            }
+          }
           this.selectedFileNames.add(row.name);
         }
       } else {
-        this.selectedFileNames.clear();
-        this.selectedFileNames.add(row.name);
+        if (this.selectedFileNames.size == 1 && this.selectedFileNames.has(row.name)) {
+          this.selectedFileNames.clear();
+        } else {
+          this.selectedFileNames.clear();
+          this.selectedFileNames.add(row.name);
+        }
       }
-      this.updateFileNames();
+
+      if (this.selectedFileNames.has(row.name)) {
+        this.lastSelected = row;
+      }
+    }
+
+    this.updateFileNames();
+  }
+
+  private flipRowSelection(row: BrowseItem) {
+    if (this.selectedFileNames.has(row.name)) {
+      this.selectedFileNames.delete(row.name);
+    } else {
+      this.selectedFileNames.add(row.name);
     }
   }
 

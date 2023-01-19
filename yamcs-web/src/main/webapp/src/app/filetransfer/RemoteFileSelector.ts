@@ -31,6 +31,12 @@ export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDe
   @Input()
   path: string;
 
+  @Input()
+  noSelect = false;
+
+  @Input()
+  allowFolderSelection = false;
+
   @Output()
   prefixChange = new EventEmitter<string | null>();
 
@@ -40,6 +46,7 @@ export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDe
   currentPrefix$ = new BehaviorSubject<string | null>(null);
 
   private selectedFileNames: Set<string> = new Set();
+  private lastSelected: RemoteFileItem;
 
   private onChange = (_: string | null) => { };
   private onTouched = () => { };
@@ -103,21 +110,53 @@ export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDe
   }
 
   // Called from html when a row is selected
-  selectFile(row: RemoteFileItem) {
+  selectFile(event: MouseEvent, row: RemoteFileItem) {
     if (row.folder) {
-      this.loadCurrentFolder(row.name);
+      if (this.allowFolderSelection && event.ctrlKey && event.shiftKey) {
+        this.flipRowSelection(row);
+      } else {
+        this.loadCurrentFolder(row.name);
+      }
     } else if (!this.foldersOnly) {
-      if (this.isMultiSelect) {
-        if (this.selectedFileNames.has(row.name)) {
-          this.selectedFileNames.delete(row.name);
+      if (this.isMultiSelect && event.ctrlKey) {
+        this.flipRowSelection(row);
+      } else if (this.isMultiSelect && event.shiftKey) {
+        if (this.selectedFileNames.size == 0 || !this.lastSelected || this.lastSelected.name === row.name) {
+          this.flipRowSelection(row);
         } else {
+          let select = false;
+          for (const candidate of this.dataSource.data) {
+            if (candidate.name === row.name || candidate.name === this.lastSelected.name) {
+              select = !select;
+            }
+            if (select) {
+              this.selectedFileNames.add(candidate.name);
+            }
+          }
           this.selectedFileNames.add(row.name);
         }
       } else {
-        this.selectedFileNames.clear();
-        this.selectedFileNames.add(row.name);
+        if (this.selectedFileNames.size == 1 && this.selectedFileNames.has(row.name)) {
+          this.selectedFileNames.clear();
+        } else {
+          this.selectedFileNames.clear();
+          this.selectedFileNames.add(row.name);
+        }
       }
-      this.updateFileNames();
+
+      if (this.selectedFileNames.has(row.name)) {
+        this.lastSelected = row;
+      }
+    }
+
+    this.updateFileNames();
+  }
+
+  private flipRowSelection(row: RemoteFileItem) {
+    if (this.selectedFileNames.has(row.name)) {
+      this.selectedFileNames.delete(row.name);
+    } else {
+      this.selectedFileNames.add(row.name);
     }
   }
 

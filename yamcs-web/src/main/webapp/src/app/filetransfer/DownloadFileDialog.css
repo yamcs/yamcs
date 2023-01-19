@@ -4,9 +4,137 @@
 }
 
 .transfer-files {
+  height: 100%;
+}
+
+.close-button {
+  float: right;
+  padding: 0;
+  min-width: 0;
+  line-height: normal;
+  vertical-align: bottom;
+}
+
+.close-button:hover {
+  opacity: 70%;
+  transform: scale(0.95);
+}
+
+.ya-form {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.grid-container {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: [header] min-content [tables] auto [footer] min-content;
+  grid-template-columns: [buckets] 140px [local] auto [remote] auto;
+  column-gap: 8px;
+  flex: 1;
+}
+
+.header {
+  grid-row: header;
   position: relative;
-  /* 64 = room for h2 headline, 60 = transfer options */
-  height: calc(100% - 64px - 60px);
+  overflow: hidden;
+}
+
+.table-wrapper {
+  grid-row: tables;
+  overflow: auto;
+  border: 1px solid #d3d3d3;
+}
+
+.footer {
+  grid-row: footer;
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.buckets-column {
+  grid-column: buckets;
+}
+
+.local-column {
+  grid-column: local;
+}
+
+.remote-column {
+  grid-column: remote;
+}
+
+.buckets-column.header>label {
+  position: absolute;
+  bottom: 0;
+  line-height: 24px;
+}
+
+.local-column.table-wrapper.no-filelist {
+  grid-column: local / span 2;
+}
+
+.local-column.footer {
+  justify-content: stretch;
+  align-items: flex-start;
+  flex-wrap: wrap-reverse;
+}
+
+.remote-column.header.no-filelist>app-breadcrumb-trail {
+  visibility: hidden;
+}
+
+label.table-caption {
+  margin: 0;
+  bottom: 0;
+}
+
+label.table-caption select {
+  display: inline-block;
+  width: auto;
+  margin: 0 4px;
+}
+
+app-breadcrumb-trail {
+  display: inline-block;
+}
+
+.lastFileListTime {
+  min-width: 0;
+  padding: 0;
+  font-size: 12px;
+  line-height: 24px;
+  float: right;
+}
+
+.lastFileListTime .mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  vertical-align: sub;
+}
+
+.lastFileListTime:hover .mat-icon {
+  transform: rotate(360deg);
+  transition: transform 0.3s ease-in-out;
+}
+
+.footer>button,
+.footer>input {
+  align-self: center;
+  margin: 0;
+  flex-shrink: 1;
+}
+
+.footer>button {
+  flex-grow: 1;
+}
+
+.footer>input {
+  flex-grow: 5;
 }
 
 table.ya-data-table {
@@ -17,102 +145,20 @@ table.ya-data-table {
   border: none;
 }
 
-.transfer-options {
-  position: relative;
-  height: 60px;
-  overflow: hidden;
-}
-
-div.option {
-  max-width: 150px;
-  float: left;
-  padding: 8px;
-}
-
-div.wider-option {
-  max-width: 300px;
-  float: left;
-  padding: 8px;
-}
-
-.footer {
-  position: absolute;
-  bottom: 0;
-  height: 64px;
-  left: 0;
-  right: 0;
-  border-top: 1px solid #d3d3d3;
-}
-
-label.table-caption {
+.checkbox-label {
+  font-weight: unset;
+  font-size: unset;
+  letter-spacing: unset;
+  line-height: unset;
+  color: unset;
+  text-transform: unset;
+  cursor: unset;
+  position: unset;
+  display: unset;
   margin: 0;
-  padding-right: 8px;
-  display: inline;
+  user-select: none;
 }
 
-.labeltext {
-  display: block;
-  margin-top: 4px;
-  font-weight: normal;
-  font-size: 12px;
-  color: DimGray;
-}
-
-.header-container {
-  position: absolute;
-  top: 36px;
-  left: 0;
-  right: 0;
-  display: flex;
-}
-
-.tables-container {
-  position: absolute;
-  top: 60px;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  display: flex;
-}
-
-.bucket-caption-wrapper {
-  flex: 0 0 140px;
-}
-
-.object-breadcrumb {
-  overflow: hidden;
-  margin: 0 8px 0 8px;
-  flex-grow: 1;
-  flex-shrink: 1;
-  flex-basis: calc(50% - 140px - 16px);
-}
-
-.remote-breadcrumb {
-  overflow: hidden;
-  flex-grow: 1;
-  flex-shrink: 1;
-  flex-basis: calc(50% - 140px - 16px);
-}
-
-.bucket-table-wrapper {
-  overflow: auto;
-  border: 1px solid #d3d3d3;
-  flex: 0 0 140px;
-}
-
-.object-table-wrapper {
-  overflow: auto;
-  border: 1px solid #d3d3d3;
-  margin: 0 8px 0 8px;
-  flex-grow: 1;
-  flex-shrink: 1;
-  flex-basis: calc(50% - 140px - 16px);
-}
-
-.remote-table-wrapper {
-  overflow: auto;
-  border: 1px solid #d3d3d3;
-  flex-grow: 1;
-  flex-shrink: 1;
-  flex-basis: calc(50% - 140px - 16px);
+.checkbox-label input {
+  margin: 0 3px 0 4px;
 }

@@ -1,39 +1,17 @@
 <div class="transfer-files mat-typography">
-  <form [formGroup]="filesForm" class="ya-form">
-    <h2>New Transfer</h2>
+  <form [formGroup]="form" class="ya-form">
+    <h2>
+      <button class="close-button mat-button" mat-dialog-close><mat-icon>close</mat-icon></button>
+      New Transfer
+    </h2>
 
-    <div class="header-container">
-      <div class="bucket-caption-wrapper">
+    <div class="grid-container">
+      <!-- BUCKETS COLUMN -->
+      <div class="buckets-column header">
         <label class="table-caption">Buckets</label>
       </div>
 
-      <div class="object-breadcrumb" *ngIf="breadcrumb$ | async as breadcrumb">
-        <app-breadcrumb-trail>
-          <label class="table-caption">Local</label>
-          <app-breadcrumb icon="account_tree" [action]="true"
-                          (click)="changeLocalPrefix('')"></app-breadcrumb>
-          <app-breadcrumb *ngFor="let item of breadcrumb"
-                          [label]="item.name"
-                          [action]="true"
-                          (click)="changeLocalPrefix(item.prefix)"></app-breadcrumb>
-        </app-breadcrumb-trail>
-      </div>
-
-      <div class="remote-breadcrumb" *ngIf="remoteBreadcrumb$ | async as breadcrumb">
-        <app-breadcrumb-trail>
-          <label class="table-caption">Remote</label>
-          <app-breadcrumb icon="account_tree" [action]="true"
-                          (click)="changeRemotePrefix('')"></app-breadcrumb>
-          <app-breadcrumb *ngFor="let item of breadcrumb"
-                          [label]="item.name"
-                          [action]="true"
-                          (click)="changeRemotePrefix(item.prefix)"></app-breadcrumb>
-        </app-breadcrumb-trail>
-      </div>
-    </div>
-
-    <div class="tables-container">
-      <div class="bucket-table-wrapper">
+      <div class="buckets-column table-wrapper">
         <table mat-table [dataSource]="dataSource" class="ya-data-table">
           <ng-container cdkColumnDef="name">
             <td mat-cell *cdkCellDef="let bucket">
@@ -48,91 +26,120 @@
         </table>
       </div>
 
-      <div class="object-table-wrapper">
+      <div class="buckets-column footer" *ngIf="selectedBucket$ | async as bucket">
+        <div>
+          <label>Target bucket</label>
+          {{bucket.name}}
+        </div>
+      </div>
+
+      <!-- LOCAL COLUMN -->
+      <div class="local-column header">
+        <label class="table-caption">Local Entity
+          <select formControlName="localEntity">
+            <option *ngFor="let entity of service.localEntities"
+                    [value]="entity.name">{{ entity.name }} [id={{ entity.id }}]</option>
+          </select>
+        </label>
+
+        <app-breadcrumb-trail [showMargin]="false" *ngIf="breadcrumb$ | async as breadcrumb">
+          <app-breadcrumb icon="account_tree" [action]="true"
+                          (click)="changeLocalPrefix('')"></app-breadcrumb>
+          <app-breadcrumb *ngFor="let item of breadcrumb"
+                          [label]="item.name"
+                          [action]="true"
+                          (click)="changeLocalPrefix(item.prefix)"></app-breadcrumb>
+        </app-breadcrumb-trail>
+      </div>
+
+      <div class="local-column table-wrapper" [ngClass]="{'no-filelist': !service.capabilities.fileList}">
         <ng-container *ngIf="selectedBucket$ | async as bucket">
           <app-object-selector #selector
-                               formControlName="object"
+                               formControlName="localFilenames"
                                [bucket]="bucket"
                                [isMultiSelect]="true"
                                [foldersOnly]="false"
+                               [noSelect]="true"
+                               [allowFolderSelection]="true"
                                (prefixChange)="updateLocalBreadcrumb($event)">
           </app-object-selector>
         </ng-container>
       </div>
 
-      <div class="remote-table-wrapper">
+      <div class="local-column footer">
+        <div>
+          <label>Local entity</label>
+          {{ form.get("localEntity")?.value }}
+        </div>
+        <div>
+          <label>Reliability</label>
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="reliable">Reliable
+          </label>
+        </div>
+
+        <input type="text" formControlName="localFilenames" placeholder="Local filename"
+               [value]="form.get('localFilenames')?.value">
+
+        <button class="ya-button primary"
+                *ngIf="service.capabilities.upload"
+                [disabled]="!isUploadEnabled"
+                (click)="startUpload()">UPLOAD <mat-icon>chevron_right</mat-icon></button>
+      </div>
+
+      <!-- REMOTE COLUMN -->
+      <div class="remote-column header" [ngClass]="{'no-filelist': !service.capabilities.fileList}">
+        <label class="table-caption">Remote Entity
+          <select formControlName="remoteEntity">
+            <option *ngFor="let entity of service.remoteEntities"
+                    [value]="entity.name">{{ entity.name }} [id={{ entity.id }}]</option>
+          </select>
+        </label>
+
+        <app-breadcrumb-trail [showMargin]="false" *ngIf="remoteBreadcrumb$ | async as breadcrumb">
+          <app-breadcrumb icon="account_tree" [action]="true"
+                          (click)="changeRemotePrefix('')"></app-breadcrumb>
+          <app-breadcrumb *ngFor="let item of breadcrumb"
+                          [label]="item.name"
+                          [action]="true"
+                          (click)="changeRemotePrefix(item.prefix)"></app-breadcrumb>
+        </app-breadcrumb-trail>
+
+        <a class="lastFileListTime mat-button mat-primary" title="Refresh file list" (click)="requestFileList()"
+           *ngIf="service.capabilities.fileList">
+          <mat-icon>refresh</mat-icon> {{ lastFileListTime$ | async | datetime }}
+        </a>
+      </div>
+
+      <div class="remote-column table-wrapper" *ngIf="service.capabilities.fileList">
         <ng-container *ngIf="service.capabilities.fileList">
           <remote-file-selector #remoteSelector
-                                formControlName="remoteFile"
-                                [isMultiSelect]="false"
+                                formControlName="remoteFilenames"
+                                [isMultiSelect]="true"
                                 [foldersOnly]="false"
+                                [noSelect]="true"
+                                [allowFolderSelection]="true"
                                 (prefixChange)="updateRemoteBreadcrumb($event)">
           </remote-file-selector>
         </ng-container>
       </div>
+
+
+      <div class="remote-column footer">
+        <button class="ya-button primary"
+                *ngIf="service.capabilities.download"
+                [disabled]="!isDownloadEnabled"
+                (click)="startDownload()"><mat-icon>chevron_left</mat-icon> DOWNLOAD</button>
+
+        <input type="text" formControlName="remoteFilenames" placeholder="Remote filename"
+               [value]="form.get('remoteFilenames')?.value">
+
+        <div>
+          <label>Remote entity</label>
+          {{ form.get("remoteEntity")?.value }}
+        </div>
+      </div>
     </div>
 
   </form>
-</div>
-
-<div class="transfer-options mat-typography">
-  <form [formGroup]="optionsForm" class="ya-form">
-
-    <div class="option" *ngIf="service.capabilities.remotePath">
-      <label>
-        Filename
-        <input type="text" formControlName="remotePath" id="filename" placeholder="Filename.dat">
-      </label>
-    </div>
-
-    <div class="option" *ngIf="service.capabilities.reliability">
-      <label>
-        <input type="checkbox" formControlName="reliable"> Reliable
-      </label>
-    </div>
-
-    <div class="option">
-      <label>
-        Local Entity
-        <select formControlName="source">
-          <option *ngFor="let entity of service.localEntities"
-                  [value]="entity.name">{{ entity.name }} [id={{ entity.id }}]</option>
-        </select>
-      </label>
-    </div>
-
-    <div class="option">
-      <label>
-        Remote Entity
-        <select formControlName="destination">
-          <option *ngFor="let entity of service.remoteEntities"
-                  [value]="entity.name">{{ entity.name }} [id={{ entity.id }}]</option>
-        </select>
-      </label>
-    </div>
-
-    <div class="wider-option" *ngIf="service.capabilities.fileList">
-      <label>
-        Last File List
-      </label>
-      <span class="labeltext">{{ lastFileListTime$ | async | datetime }}</span>
-    </div>
-
-  </form>
-</div>
-
-<div class="footer mat-typography">
-  <mat-toolbar>
-    <mat-toolbar-row>
-      <button class="ya-button" mat-dialog-close>CLOSE</button>&nbsp;&nbsp;
-      <button class="ya-button primary"
-              [disabled]="!isUploadEnabled"
-              (click)="startUpload()">UPLOAD</button>&nbsp;&nbsp;
-      <button class="ya-button primary"
-              [disabled]="!isDownloadEnabled"
-              (click)="startDownload()">DOWNLOAD</button>&nbsp;&nbsp;
-      <button class="ya-button primary" *ngIf="service.capabilities.fileList"
-              (click)="requestFileList()">RELOAD FILE LIST</button>
-    </mat-toolbar-row>
-  </mat-toolbar>
 </div>

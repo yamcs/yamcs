@@ -15,11 +15,9 @@ import { RemoteFileSelector } from './RemoteFileSelector';
   styleUrls: ['./DownloadFileDialog.css'],
 })
 export class DownloadFileDialog implements OnDestroy {
-
   isDownloadEnabled = false;
   isUploadEnabled = false;
-  filesForm: UntypedFormGroup;
-  optionsForm: UntypedFormGroup;
+  form: UntypedFormGroup;
   service: FileTransferService;
   private storageClient: StorageClient;
   dataSource = new MatTableDataSource<Bucket>();
@@ -63,7 +61,7 @@ export class DownloadFileDialog implements OnDestroy {
       instance: this.yamcs.instance!,
       serviceName: this.service.name,
     }, fileList => {
-      if (fileList.destination == this.optionsForm.get('destination')!.value) {
+      if (fileList.destination == this.form.get('remoteEntity')!.value) {
         const currentFolder: string = this.remoteSelector.currentPrefix$.value || '';
         if (fileList.remotePath == currentFolder) {
           this.remoteSelector.setFolderContent(currentFolder, fileList);
@@ -73,30 +71,24 @@ export class DownloadFileDialog implements OnDestroy {
     });
 
     // Setup forms
-    this.filesForm = formBuilder.group({
-      object: ['', []],
-      remoteFile: ['', []],
-    });
-    this.optionsForm = formBuilder.group({
-      remotePath: ['', []],
-      source: [firstSource, Validators.required],
-      destination: [firstDestination, Validators.required],
+    this.form = formBuilder.group({
+      localFilenames: ['', []],
+      remoteFilenames: ['', []],
+      localEntity: [firstSource, Validators.required],
+      remoteEntity: [firstDestination, Validators.required],
       reliable: [true, []],
     });
 
     // Subscribe to some form variables to determine enabled state of buttons
-    this.filesForm.get('object')?.valueChanges.subscribe((value: any) => {
-      this.updateButtonStates(value, this.filesForm.get('remoteFile')!.value, this.optionsForm.get('remotePath')!.value);
+    this.form.get('localFilenames')?.valueChanges.subscribe((value: any) => {
+      this.updateButtonStates(value, this.form.get('remoteFilenames')?.value, this.form.get('remoteFilenames')?.value);
     });
-    this.filesForm.get('remoteFile')?.valueChanges.subscribe((value: any) => {
-      this.updateButtonStates(this.filesForm.get('object')!.value, value, this.optionsForm.get('remotePath')!.value);
-    });
-    this.optionsForm.get('remotePath')?.valueChanges.subscribe((value: any) => {
-      this.updateButtonStates(this.filesForm.get('object')!.value, this.filesForm.get('remoteFile')!.value, value);
+    this.form.get('remoteFilenames')?.valueChanges.subscribe((value: any) => {
+      this.updateButtonStates(this.form.get('localFilenames')?.value, value, this.form.get('remoteFilenames')?.value);
     });
 
     // If a new destination is selected -> display cached file list if any
-    this.optionsForm.get('destination')?.valueChanges.subscribe((dest: any) => {
+    this.form.get('remoteEntity')?.valueChanges.subscribe((dest: any) => {
       // New destination selected -> Go to root folder
       this.getFileList(dest, '');
     });
@@ -111,15 +103,8 @@ export class DownloadFileDialog implements OnDestroy {
   }
 
   private updateButtonStates(localFiles: string, remoteFile: string, textfieldPath: string) {
-    var remotePath = '';
-    if (this.service.capabilities.fileList && remoteFile) {
-      remotePath = remoteFile;
-    } else if (this.service.capabilities.remotePath && textfieldPath) {
-      remotePath = textfieldPath;
-    }
-    this.isDownloadEnabled = this.service.capabilities.download && this.selectedBucket$.value! && remotePath != '' && this.optionsForm.valid;
-
-    this.isUploadEnabled = this.service.capabilities.upload && localFiles != '' && this.optionsForm.valid;
+    this.isDownloadEnabled = this.service.capabilities.download && this.selectedBucket$.value! && remoteFile != '' && this.form.valid;
+    this.isUploadEnabled = this.service.capabilities.upload && localFiles != '' && this.form.valid;
   }
 
   // Returns remote folder path, ready to concatenate a file name
@@ -134,77 +119,82 @@ export class DownloadFileDialog implements OnDestroy {
     return items.length != 0 ? items[items.length - 1].prefix + '/' : '';
   }
 
-  startDownload() {
-    // Get the full file name path from the text field, or the selected file (with full path).
-    // Must have either a selected file from the object selector or a file from the text field.
-    // Capabilities are taken into account.
-    var remotePath: string;
-    const formTextInputPath = this.optionsForm.get('remotePath')!.value;
-    const formSelectedFile = this.filesForm.get('remoteFile')!.value;
-    if (this.service.capabilities.remotePath && formTextInputPath) {
-      remotePath = formTextInputPath;
-    } else if (this.service.capabilities.fileList && formSelectedFile) {
-      remotePath = formSelectedFile;
-    } else {
-      return;
-    }
-
-    // Get file name from remote and append it to selected bucket folder.
-    const remoteParts = remotePath.split('/');
-    const localPath = this.getSelectedLocalFolderPath() + remoteParts[remoteParts.length - 1];
-
-    // Start transfer
-    this.yamcs.yamcsClient.createFileTransfer(this.yamcs.instance!, this.service.name, {
-      direction: 'DOWNLOAD',
-      bucket: this.selectedBucket$.value!.name,
-      objectName: localPath,
-      remotePath: remotePath,
-      // TODO: rename source-destination to local and remote
-      source: this.optionsForm.get('destination')!.value,
-      destination: this.optionsForm.get('source')!.value,
-      uploadOptions: {
-        reliable: this.optionsForm.get('reliable')!.value
-      }
-    }).then(() => {
-      this.dialogRef.close();
-    });
-  }
-
-  async startUpload() {
-    const objectNames: string[] = this.filesForm.value['object'].split('|');
+  async startDownload() {
+    const objectNames: string[] = this.form.get('remoteFilenames')?.value.split('|');
     if (!objectNames[0]) {
       return;
     }
 
     const promises = objectNames.map((name) => {
-      // Get the full file name path from the text field, or the selected file (with full path).
-      // Must have either a selected file from the object selector or a file from the text field.
-      // Capabilities are taken into account.
-      var remotePath: string;
-      const formTextInputPath = this.optionsForm.get('remotePath')!.value;
-      if (this.service.capabilities.remotePath && formTextInputPath) {
-        // Use text field as remote path (overrides remote file selector)
-        remotePath = formTextInputPath;
-      } else if (this.service.capabilities.fileList) {
-        // Use selected folder (not selected file) as remote path, and append local object name
-        const parts = name.split('/');
-        remotePath = this.getSelectedRemoteFolderPath() + parts[parts.length - 1];
-      } else {
-        // Use object name as remote file name, with no remote folder
-        const parts = name.split('/');
-        remotePath = parts[parts.length - 1];
+      // Get file names and append it to selected folders.
+      const localFileNameParts = this.form.get('localFilenames')?.value.split('/');
+      const remoteFilenameParts = name.split('/');
+      const localPath = this.getSelectedLocalFolderPath() + (this.form.get('localFilenames')?.value ? localFileNameParts[localFileNameParts.length - 1] : remoteFilenameParts[remoteFilenameParts.length - 1]);
+      const remotePath = this.getSelectedRemoteFolderPath() + remoteFilenameParts[remoteFilenameParts.length - 1];
+
+      // Start transfer
+      this.yamcs.yamcsClient.createFileTransfer(this.yamcs.instance!, this.service.name, {
+        direction: 'DOWNLOAD',
+        bucket: this.selectedBucket$.value!.name,
+        objectName: localPath,
+        remotePath: remotePath,
+        // TODO: rename source-destination to local and remote
+        source: this.form.get('remoteEntity')!.value,
+        destination: this.form.get('localEntity')!.value,
+        uploadOptions: {
+          reliable: this.form.get('reliable')!.value
+        }
+      });
+    });
+
+    // Collect combined success/failure result
+    let anyError: any;
+    let errorCount = 0;
+    for (const promise of promises) {
+      try {
+        await promise;
+      } catch (err) {
+        anyError = err;
+        errorCount++;
       }
+    }
+
+    if (anyError) {
+      if (errorCount === 1) {
+        this.messageService.showError(anyError);
+      } else if (errorCount === promises.length) {
+        this.messageService.showError('Failed to start any of the selected transfers. See server log.');
+      } else {
+        this.messageService.showError('Some of the transfers failed to start. See server log.');
+      }
+    }
+
+    this.dialogRef.close();
+  }
+
+  async startUpload() {
+    const objectNames: string[] = this.form.get('localFilenames')?.value.split('|');
+    if (!objectNames[0]) {
+      return;
+    }
+
+    const promises = objectNames.map((name) => {
+      // Get file names and append it to selected folders.
+      const localFileNameParts = name.split('/');
+      const remoteFilenameParts = this.form.get('remoteFilenames')?.value.split('/');
+      const localPath = this.getSelectedLocalFolderPath() + localFileNameParts[localFileNameParts.length - 1];
+      const remotePath = this.getSelectedRemoteFolderPath() + (this.form.get('remoteFilenames')?.value ? remoteFilenameParts[remoteFilenameParts.length - 1] : localFileNameParts[localFileNameParts.length - 1]);
 
       // Start transfer
       this.yamcs.yamcsClient.createFileTransfer(this.yamcs.instance!, this.service.name, {
         direction: 'UPLOAD',
         bucket: this.selectedBucket$.value!.name,
-        objectName: name,
+        objectName: localPath,
         remotePath: remotePath,
-        source: this.optionsForm.get('source')!.value,
-        destination: this.optionsForm.get('destination')!.value,
+        source: this.form.get('localEntity')!.value,
+        destination: this.form.get('remoteEntity')!.value,
         uploadOptions: {
-          reliable: this.optionsForm.get('reliable')!.value
+          reliable: this.form.get('reliable')!.value
         }
       });
     });
@@ -237,20 +227,20 @@ export class DownloadFileDialog implements OnDestroy {
   requestFileList() {
     const currentFolder: string = this.remoteSelector.currentPrefix$.value || '';
     this.yamcs.yamcsClient.requestFileList(this.yamcs.instance!, this.service.name, {
-      source: this.optionsForm.value['source'],
-      destination: this.optionsForm.value['destination'],
+      source: this.form.value['localEntity'],
+      destination: this.form.value['remoteEntity'],
       remotePath: currentFolder,
-      reliable: this.optionsForm.value['reliable']
+      reliable: this.form.value['reliable']
     });
   }
 
   getFileList(dest: string, prefix: string) {
     if (this.service.capabilities.fileList) {
       this.yamcs.yamcsClient.getFileList(this.yamcs.instance!, this.service.name, {
-        source: this.optionsForm.value['source'],
+        source: this.form.value['localEntity'],
         destination: dest,
         remotePath: prefix,
-        reliable: this.optionsForm.value['reliable']
+        reliable: this.form.value['reliable']
       }).then(fileList => {
         this.remoteSelector.setFolderContent(prefix, fileList);
         this.lastFileListTime$.next(fileList.listTime);
@@ -291,7 +281,7 @@ export class DownloadFileDialog implements OnDestroy {
   updateRemoteBreadcrumb(prefix: string | null) {
     if (!prefix) {
       this.remoteBreadcrumb$.next([]);
-      this.getFileList(this.optionsForm.value['destination'], '');
+      this.getFileList(this.form.value['remoteEntity'], '');
       return;
     }
 
@@ -309,7 +299,7 @@ export class DownloadFileDialog implements OnDestroy {
     this.remoteBreadcrumb$.next(items);
 
     // Get most recent folder content and update object selector.
-    this.getFileList(this.optionsForm.value['destination'], prefix);
+    this.getFileList(this.form.value['remoteEntity'], prefix);
   }
 
   // Called when breadcrumb is selected
