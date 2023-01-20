@@ -106,6 +106,9 @@ public abstract class CfdpPacket {
                 case NAK:
                     toReturn = new NakPacket(bb, header);
                     break;
+                case KEEP_ALIVE:
+                    toReturn = new KeepAlivePacket(bb, header);
+                    break;
                 default:
                     log.warn("Ignoring unknown/not supported " + fdc + " file directive PDU ");
                 }

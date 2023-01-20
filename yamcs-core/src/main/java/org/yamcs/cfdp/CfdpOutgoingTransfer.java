@@ -24,6 +24,7 @@ import org.yamcs.cfdp.pdu.EofPacket;
 import org.yamcs.cfdp.pdu.FileDataPacket;
 import org.yamcs.cfdp.pdu.FileDirectiveCode;
 import org.yamcs.cfdp.pdu.FinishedPacket;
+import org.yamcs.cfdp.pdu.KeepAlivePacket;
 import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.cfdp.pdu.NakPacket;
 import org.yamcs.cfdp.pdu.SegmentRequest;
@@ -304,7 +305,9 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
                             .collect(Collectors.toList()));
                 }
             }
-        } else {
+        } else if (packet instanceof KeepAlivePacket) {
+            log.info("TXID{} Ignoring Keep Alive PDU: {}", cfdpTransactionId, packet); // Handling not implemented
+        } else  {
             log.warn("TXID{} unexpected packet {} ", cfdpTransactionId, packet);
         }
     }

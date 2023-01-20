@@ -528,7 +528,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
     private void saveFile(boolean checksumError, List<SegmentRequest> missingSegments) {
         if(directoryListingResponse != null) {
-            log.debug("Ignoring save action for Directory Listing Response");
+            log.debug("TXID{} Ignoring save action for Directory Listing Response", cfdpTransactionId);
             return;
         }
 

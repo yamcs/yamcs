@@ -53,14 +53,49 @@ public class CfdpUtils {
      * while we want 0 to 2ˆ32-1, the mask and int cast takes care of this
      */
     public static long getUnsignedInt(ByteBuffer buffer) {
-        return buffer.getInt() & 0xffffffffl;
+        return buffer.getInt() & 0xffffffffL;
     }
 
     /**
-     * Write the given long as an unsigned int to the given buffer at its current position
+     * get an unsigned long value from an input buffer, at its current position A short has range -2ˆ63+1 to 2ˆ63-1,
+     * while we want 0 to 2ˆ64-1, the mask and int cast takes care of this
+     */
+    public static long getUnsignedLong(ByteBuffer buffer) {
+        return buffer.getLong() & 0xffffffffL;
+    }
+
+    /**
+     * Gets an unsigned 32-bit integer or 64-bit long from the given buffer depending on the is64bits parameter.
+     * Useful for FSS (File-Size Sensitive) data type
+     */
+    public static long getUnsignedNumber(ByteBuffer buffer, boolean is64bits) {
+        return is64bits ? getUnsignedLong(buffer) : getUnsignedInt(buffer);
+    }
+
+    /**
+     * Write the given long as an unsigned int (32bits) to the given buffer at its current position
      */
     public static void writeUnsignedInt(ByteBuffer buffer, long input) {
-        buffer.putInt((int) (input & 0xffffffff));
+        buffer.putInt((int) (input & 0xffffffff)); // TODO: 'input & 0xffffffff' can be replaced with 'input' ?
+    }
+
+    /**
+     * Write the given long as an unsigned long (64bits) to the given buffer at its current position
+     */
+    public static void writeUnsignedLong(ByteBuffer buffer, long input) {
+        buffer.putLong(input & 0xffffffff); // TODO: 'input & 0xffffffff' can be replaced with 'input' ?
+    }
+
+    /**
+     * Writes the given long as either unsigned 32-bit integer or unsigned 64-bit long depending on the is64bits parameter.
+     * Useful for FSS (File-Size Sensitive) data type
+     */
+    public static void writeUnsignedNumber(ByteBuffer buffer, long input, boolean is64bits) {
+        if (is64bits) {
+            writeUnsignedLong(buffer, input);
+        } else {
+            writeUnsignedInt(buffer, input);
+        }
     }
 
     /*
