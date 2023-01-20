@@ -126,14 +126,23 @@ export class DownloadFileDialog implements OnDestroy {
     }
 
     const promises = objectNames.map((name) => {
-      // Get file names and append it to selected folders.
-      const localFileNameParts = this.form.get('localFilenames')?.value.split('/');
-      const remoteFilenameParts = name.split('/');
-      const localPath = this.getSelectedLocalFolderPath() + (this.form.get('localFilenames')?.value ? localFileNameParts[localFileNameParts.length - 1] : remoteFilenameParts[remoteFilenameParts.length - 1]);
-      const remotePath = this.getSelectedRemoteFolderPath() + remoteFilenameParts[remoteFilenameParts.length - 1];
+      // Get file names and append it to selected folders. // TODO: almost duplicate of Upload
+      name = name.trim();
+      const remoteFolderPath = this.getSelectedRemoteFolderPath();
+      const remoteFileName = name.startsWith(remoteFolderPath) ? name.replace(remoteFolderPath, "") : name;
+      const remotePath = remoteFolderPath + remoteFileName;
+
+      const localFilenames: string = this.form.get("localFilenames")!.value.trim();
+      if (localFilenames.includes("|")) {
+        console.error(`Cannot download file "${remotePath}" to multiple destination filenames: ${localFilenames}`);
+        return Promise.reject(`Cannot download file "${remotePath}" to multiple destination filenames: ${localFilenames}`);
+      }
+      const localFolderPath = this.getSelectedLocalFolderPath();
+      const localFilename = localFilenames.startsWith(localFolderPath) ? localFilenames.replace(localFolderPath, "") : localFilenames;
+      const localPath = localFolderPath + (localFilename ? localFilename : remoteFileName);
 
       // Start transfer
-      this.yamcs.yamcsClient.createFileTransfer(this.yamcs.instance!, this.service.name, {
+      return this.yamcs.yamcsClient.createFileTransfer(this.yamcs.instance!, this.service.name, {
         direction: 'DOWNLOAD',
         bucket: this.selectedBucket$.value!.name,
         objectName: localPath,
@@ -141,7 +150,7 @@ export class DownloadFileDialog implements OnDestroy {
         // TODO: rename source-destination to local and remote
         source: this.form.get('remoteEntity')!.value,
         destination: this.form.get('localEntity')!.value,
-        uploadOptions: {
+        downloadOptions: {
           reliable: this.form.get('reliable')!.value
         }
       });
@@ -173,20 +182,29 @@ export class DownloadFileDialog implements OnDestroy {
   }
 
   async startUpload() {
-    const objectNames: string[] = this.form.get('localFilenames')?.value.split('|');
+    const objectNames: string[] = this.form.get('localFilenames')?.value.trim().split('|');
     if (!objectNames[0]) {
       return;
     }
 
     const promises = objectNames.map((name) => {
       // Get file names and append it to selected folders.
-      const localFileNameParts = name.split('/');
-      const remoteFilenameParts = this.form.get('remoteFilenames')?.value.split('/');
-      const localPath = this.getSelectedLocalFolderPath() + localFileNameParts[localFileNameParts.length - 1];
-      const remotePath = this.getSelectedRemoteFolderPath() + (this.form.get('remoteFilenames')?.value ? remoteFilenameParts[remoteFilenameParts.length - 1] : localFileNameParts[localFileNameParts.length - 1]);
+      name = name.trim();
+      const localFolderPath = this.getSelectedLocalFolderPath();
+      const localFileName = name.startsWith(localFolderPath) ? name.replace(localFolderPath, "") : name;
+      const localPath = localFolderPath + localFileName;
+
+      const remoteFilenames: string = this.form.get("remoteFilenames")!.value.trim();
+      if (remoteFilenames.includes("|")) {
+        console.error(`Cannot upload file "${localPath}" to multiple destination filenames: ${remoteFilenames}`);
+        return Promise.reject(`Cannot upload file "${localPath}" to multiple destination filenames: ${remoteFilenames}`);
+      }
+      const remoteFolderPath = this.getSelectedRemoteFolderPath();
+      const remoteFilename = remoteFilenames.startsWith(remoteFolderPath) ? remoteFilenames.replace(remoteFolderPath, "") : remoteFilenames;
+      const remotePath = remoteFolderPath + (remoteFilename ? remoteFilename : localFileName);
 
       // Start transfer
-      this.yamcs.yamcsClient.createFileTransfer(this.yamcs.instance!, this.service.name, {
+      return this.yamcs.yamcsClient.createFileTransfer(this.yamcs.instance!, this.service.name, {
         direction: 'UPLOAD',
         bucket: this.selectedBucket$.value!.name,
         objectName: localPath,

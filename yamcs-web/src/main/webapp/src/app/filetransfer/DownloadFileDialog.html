@@ -108,11 +108,12 @@
         <a class="lastFileListTime mat-button mat-primary" title="Refresh file list" (click)="requestFileList()"
            *ngIf="service.capabilities.fileList">
           <mat-icon>refresh</mat-icon> {{ lastFileListTime$ | async | datetime }}
+          <!-- TODO: throws a RangeError for some reason -->
         </a>
       </div>
 
       <div class="remote-column table-wrapper" *ngIf="service.capabilities.fileList">
-        <ng-container *ngIf="service.capabilities.fileList">
+        <ng-container>
           <remote-file-selector #remoteSelector
                                 formControlName="remoteFilenames"
                                 [isMultiSelect]="true"
