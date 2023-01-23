@@ -182,6 +182,12 @@ export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDe
     }
   }
 
+  clearSelection() {
+    this.selectedFileNames.clear();
+    this.updateFileNames();
+    this.changeDetection.detectChanges();
+  }
+
   writeValue(value: any) {
     this.path = value;
   }

@@ -190,6 +190,12 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
     this.path = value;
   }
 
+  clearSelection() {
+    this.selectedFileNames.clear();
+    this.updateFileNames();
+    this.changeDetection.detectChanges();
+  }
+
   registerOnChange(fn: any) {
     this.onChange = fn;
   }

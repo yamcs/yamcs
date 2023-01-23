@@ -40,7 +40,7 @@
     </td>
   </ng-container>
 
-  <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+  <tr mat-header-row *cdkHeaderRowDef="displayedColumns" (click)="clearSelection()"></tr>
   <tr mat-row *cdkHeaderRowDef="['parent']"
       class="parent-row"
       [class.hide]="!(currentPrefix$ | async)"

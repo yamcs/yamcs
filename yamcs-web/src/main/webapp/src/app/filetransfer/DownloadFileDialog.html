@@ -52,9 +52,10 @@
         </app-breadcrumb-trail>
       </div>
 
-      <div class="local-column table-wrapper" [ngClass]="{'no-filelist': !service.capabilities.fileList}">
+      <div class="local-column table-wrapper" [ngClass]="{'no-filelist': !service.capabilities.fileList}"
+           (click)="clearSelection($event, objectSelector)">
         <ng-container *ngIf="selectedBucket$ | async as bucket">
-          <app-object-selector #selector
+          <app-object-selector #objectSelector
                                formControlName="localFilenames"
                                [bucket]="bucket"
                                [isMultiSelect]="true"
@@ -112,7 +113,8 @@
         </a>
       </div>
 
-      <div class="remote-column table-wrapper" *ngIf="service.capabilities.fileList">
+      <div class="remote-column table-wrapper" *ngIf="service.capabilities.fileList"
+           (click)="clearSelection($event, remoteSelector)">
         <ng-container>
           <remote-file-selector #remoteSelector
                                 formControlName="remoteFilenames"
@@ -133,6 +135,7 @@
                 (click)="startDownload()"><mat-icon>chevron_left</mat-icon> DOWNLOAD</button>
 
         <input type="text" formControlName="remoteFilenames" placeholder="Remote filename"
+               *ngIf="service.capabilities.download || service.capabilities.remotePath"
                [value]="form.get('remoteFilenames')?.value">
 
         <div>

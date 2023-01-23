@@ -31,7 +31,7 @@ export class DownloadFileDialog implements OnDestroy {
 
   private fileListSubscription: RemoteFileListSubscription;
 
-  @ViewChild('selector')
+  @ViewChild('objectSelector')
   objectSelector: ObjectSelector;
 
   @ViewChild('remoteSelector')
@@ -194,14 +194,17 @@ export class DownloadFileDialog implements OnDestroy {
       const localFileName = name.startsWith(localFolderPath) ? name.replace(localFolderPath, "") : name;
       const localPath = localFolderPath + localFileName;
 
-      const remoteFilenames: string = this.form.get("remoteFilenames")!.value.trim();
-      if (remoteFilenames.includes("|")) {
-        console.error(`Cannot upload file "${localPath}" to multiple destination filenames: ${remoteFilenames}`);
-        return Promise.reject(`Cannot upload file "${localPath}" to multiple destination filenames: ${remoteFilenames}`);
+      let remotePath = localFileName;
+      if (this.service.capabilities.remotePath) {
+        const remoteFilenames: string = this.form.get("remoteFilenames")!.value.trim();
+        if (remoteFilenames.includes("|")) {
+          console.error(`Cannot upload file "${localPath}" to multiple destination filenames: ${remoteFilenames}`);
+          return Promise.reject(`Cannot upload file "${localPath}" to multiple destination filenames: ${remoteFilenames}`);
+        }
+        const remoteFolderPath = this.getSelectedRemoteFolderPath();
+        const remoteFilename = remoteFilenames.startsWith(remoteFolderPath) ? remoteFilenames.replace(remoteFolderPath, "") : remoteFilenames;
+        remotePath = remoteFolderPath + (remoteFilename ? remoteFilename : localFileName);
       }
-      const remoteFolderPath = this.getSelectedRemoteFolderPath();
-      const remoteFilename = remoteFilenames.startsWith(remoteFolderPath) ? remoteFilenames.replace(remoteFolderPath, "") : remoteFilenames;
-      const remotePath = remoteFolderPath + (remoteFilename ? remoteFilename : localFileName);
 
       // Start transfer
       return this.yamcs.yamcsClient.createFileTransfer(this.yamcs.instance!, this.service.name, {
@@ -326,6 +329,12 @@ export class DownloadFileDialog implements OnDestroy {
       prefix = prefix + '/';
     }
     this.remoteSelector.changePrefix(prefix);
+  }
+
+  clearSelection(event: MouseEvent, selector: ObjectSelector | RemoteFileSelector) {
+    if (event.currentTarget === event.target) {
+      selector.clearSelection();
+    }
   }
 
   ngOnDestroy() {
