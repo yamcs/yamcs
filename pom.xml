@@ -50,7 +50,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<nettyVersion>4.1.77.Final</nettyVersion>
 		<protobufVersion>3.19.6</protobufVersion>
-		<rocksdbVersion>5.18.4</rocksdbVersion>
+		<rocksdbVersion>7.9.2</rocksdbVersion>
 		<slf4jVersion>1.7.36</slf4jVersion>
 	</properties>
 

@@ -258,6 +258,9 @@ public class YRDB {
     }
 
     public RocksDB getDb() {
+        if (isClosed) {
+            throw new IllegalStateException();
+        }
         return db;
     }
 
