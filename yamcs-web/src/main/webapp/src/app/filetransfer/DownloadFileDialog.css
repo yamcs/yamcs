@@ -52,7 +52,10 @@
   margin-top: 8px;
   display: flex;
   flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: stretch;
   gap: 8px;
+  height: fit-content;
 }
 
 .buckets-column {
@@ -78,9 +81,8 @@
 }
 
 .local-column.footer {
-  justify-content: stretch;
-  align-items: flex-start;
   flex-wrap: wrap-reverse;
+  align-items: flex-end;
 }
 
 .remote-column.header.no-filelist>app-breadcrumb-trail {
@@ -122,10 +124,13 @@ app-breadcrumb-trail {
   transition: transform 0.3s ease-in-out;
 }
 
+.footer input {
+  margin: 2px 0 0;
+}
+
 .footer>button,
 .footer>input {
-  align-self: center;
-  margin: 0;
+  margin-top: 7px;
   flex-shrink: 1;
 }
 

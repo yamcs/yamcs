@@ -1,14 +1,15 @@
 package org.yamcs.filetransfer;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import org.yamcs.InitException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsService;
+import org.yamcs.protobuf.FileTransferOption;
 import org.yamcs.protobuf.EntityInfo;
 import org.yamcs.protobuf.FileTransferCapabilities;
-import org.yamcs.protobuf.ListFilesResponse;
 import org.yamcs.yarch.Bucket;
 
 /**
@@ -54,6 +55,14 @@ public interface FileTransferService extends YamcsService, FileListingService {
      * @return
      */
     public FileTransferCapabilities getCapabilities();
+
+    /**
+     * Get configured options for the file transfers
+     * @return
+     */
+    default List<FileTransferOption> getFileTransferOptions() {
+        return Collections.emptyList();
+    }
 
     /**
      * Start a file upload.

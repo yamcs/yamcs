@@ -56,9 +56,15 @@ import org.yamcs.filetransfer.InvalidRequestException;
 import org.yamcs.filetransfer.RemoteFileListMonitor;
 import org.yamcs.filetransfer.TransferMonitor;
 import org.yamcs.filetransfer.TransferOptions;
+import org.yamcs.protobuf.BooleanOption;
 import org.yamcs.protobuf.EntityInfo;
 import org.yamcs.protobuf.FileTransferCapabilities;
+import org.yamcs.protobuf.FileTransferOption;
+import org.yamcs.protobuf.NumberOption;
+import org.yamcs.protobuf.NumberValue;
 import org.yamcs.protobuf.RemoteFile;
+import org.yamcs.protobuf.StringOption;
+import org.yamcs.protobuf.StringValue;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.protobuf.ListFilesResponse;
@@ -1070,6 +1076,16 @@ public class CfdpService extends AbstractYamcsService
         t.addColumn(COL_REMOTE_PATH, listFilesResponse.getRemotePath());
         t.addColumn(COL_LIST_FILES_RESPONSE, DataType.protobuf("org.yamcs.protobuf.ListFilesResponse"), listFilesResponse);
         fileListStream.emitTuple(t);
+    }
+
+    @Override
+    public List<FileTransferOption> getFileTransferOptions() {
+        return List.of(
+                FileTransferOption.newBuilder()
+                        .setName("Reliability").setDescription("Acknowledged or unacknowledged transmission mode")
+                        .setBooleanOption(BooleanOption.newBuilder().setValue(true).setLabel("Reliable"))
+                        .build()
+        );
     }
 
     @Override

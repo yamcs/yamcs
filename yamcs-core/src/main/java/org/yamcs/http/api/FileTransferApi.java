@@ -129,6 +129,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
 
         if (request.getDirection() == TransferDirection.UPLOAD) {
             TransferOptions transferOptions = new TransferOptions();
+            transferOptions.addExtraOptions(request.getOptionsList());
 
             transferOptions.setOverwrite(true);
             transferOptions.setCreatePath(true);
@@ -168,6 +169,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
             }
         } else if (request.getDirection() == TransferDirection.DOWNLOAD) {
             TransferOptions transferOptions = new TransferOptions();
+            transferOptions.addExtraOptions(request.getOptionsList());
 
             transferOptions.setOverwrite(true);
             transferOptions.setCreatePath(true);
@@ -184,14 +186,6 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
                 }
                 if (opts.hasClosureRequested()) {
                     transferOptions.setClosureRequested(opts.getClosureRequested());
-                }
-            }
-
-
-            if (request.hasUploadOptions()) {
-                UploadOptions opts = request.getUploadOptions();
-                if (opts.hasReliable()) {
-                    transferOptions.setReliable(opts.getReliable());
                 }
             }
 
@@ -321,6 +315,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         infob.addAllLocalEntities(service.getLocalEntities());
         infob.addAllRemoteEntities(service.getRemoteEntities());
         infob.setCapabilities(service.getCapabilities());
+        infob.addAllTransferOptions(service.getFileTransferOptions());
         return infob.build();
     }
 

@@ -153,7 +153,8 @@ message FileTransferServiceInfo {
  
   repeated EntityInfo localEntities = 3;
   repeated EntityInfo remoteEntities = 4;
-  optional FileTransferCapabilities capabilities = 5; 
+  optional FileTransferCapabilities capabilities = 5;
+  repeated FileTransferOption transferOptions = 6;
 }
 
 message EntityInfo {
@@ -262,6 +263,8 @@ message CreateTransferRequest {
 
   //used to derive the destination entity id
   optional string destination = 10;
+
+  repeated FileTransferOption options = 11;
 }
 
 message PauseTransferRequest {
@@ -345,4 +348,48 @@ message ListFilesResponse {
   optional string destination = 2;
   optional string remotePath = 3;
   optional google.protobuf.Timestamp listTime = 4;
+}
+
+/*
+CUSTOMISABLE FILE TRANSFER OPTIONS
+*/
+message FileTransferOption {
+  optional string name = 1; // Displayed as title for the option
+  optional string description = 2; // Shown on hover
+  oneof optionConfig { // Behaviour types
+    StringOption stringOption = 3;
+    NumberOption numberOption = 4;
+    BooleanOption booleanOption = 5;
+  }
+}
+
+message StringOption { // Shown as text field
+  repeated StringValue values = 1; // Shows drop-down menu if specified
+  optional string default = 2; // Default/pre-selected value
+  optional string placeholder = 3; // Field placeholder
+  optional bool allowCustomOption = 4; // Whether a custom text field is needed when using the drop-down menu
+}
+
+message NumberOption { // Shown as a number field
+  repeated NumberValue values = 1; // Shows drop-down menu if specified
+  optional NumberValue default = 2; // Default/pre-selected value
+  optional string placeholder = 3; // Field placeholder
+  optional bool allowCustomOption = 4; // Whether a custom number field is needed when using the drop-down menu
+}
+
+message BooleanOption { // Shown as checkbox
+  optional bool value = 1; // Default checkbox value
+  optional string label = 2; // Checkbox label
+}
+
+message StringValue {
+  optional string value = 1;
+  optional string text = 2;
+}
+
+message NumberValue {
+  oneof value {
+    sint64 int = 1;
+    double double = 2;
+  }
 }

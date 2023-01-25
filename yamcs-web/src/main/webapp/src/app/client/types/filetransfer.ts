@@ -6,6 +6,44 @@ export interface FileTransferService {
   localEntities: Entity[];
   remoteEntities: Entity[];
   capabilities: FileTransferCapabilities;
+  transferOptions: FileTransferOption[];
+}
+
+export interface FileTransferOption {
+  name: string;
+  description?: string;
+  stringOption?: StringOption;
+  numberOption?: NumberOption;
+  booleanOption?: BooleanOption;
+}
+
+export interface StringOption {
+  values?: StringValue[];
+  default?: string;
+  placeholder?: string;
+  allowCustomOption?: boolean;
+}
+
+export interface NumberOption {
+  values?: NumberValue[];
+  default?: NumberValue;
+  placeholder?: string;
+  allowCustomOption?: boolean;
+}
+
+export interface BooleanOption {
+  value: boolean;
+  label?: string;
+}
+
+export interface StringValue {
+  value: string;
+  text?: string;
+}
+
+export interface NumberValue {
+  int?: number;
+  double?: number;
 }
 
 export interface FileTransferCapabilities {
@@ -57,6 +95,7 @@ export interface CreateTransferRequest {
   destination: string;
   uploadOptions?: UploadOptions;
   downloadOptions?: DownloadOptions;
+  options: FileTransferOption[];
 }
 
 export interface TransfersPage {

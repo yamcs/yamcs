@@ -3,7 +3,7 @@ import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject } from 'rxjs';
-import { Bucket, FileTransferService, RemoteFileListSubscription, StorageClient } from '../client';
+import { Bucket, FileTransferOption, FileTransferService, RemoteFileListSubscription, StorageClient } from '../client';
 import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
 import { ObjectSelector } from '../shared/forms/ObjectSelector';
@@ -30,6 +30,9 @@ export class DownloadFileDialog implements OnDestroy {
   lastFileListTime$ = new BehaviorSubject<string>('-');
 
   private fileListSubscription: RemoteFileListSubscription;
+
+  spacesRegex = /\s/g;
+  optionsMapping = new Map<FileTransferOption, string>();
 
   @ViewChild('objectSelector')
   objectSelector: ObjectSelector;
@@ -70,6 +73,26 @@ export class DownloadFileDialog implements OnDestroy {
       }
     });
 
+    // Prepare form control names for custom options
+    let controlNames: { [key: string]: any; } = {};
+    this.service.transferOptions.forEach(
+      (option, index) => {
+        let name = "option" + index + option.name.toLowerCase().replace(this.spacesRegex, "");
+        this.optionsMapping.set(option, name);
+
+        let defaultValue = // String default
+          option.stringOption ? option.stringOption.default ||
+            (option.stringOption.values && option.stringOption.values.length && option.stringOption.values[0].value) :
+            // Mumber default
+            option.numberOption ? (option.numberOption.default ? (option.numberOption.default.double != null ? option.numberOption.default.double : option.numberOption.default.int) :
+              (option.numberOption.values && option.numberOption.values.length && (option.numberOption.values[0].double != null ? option.numberOption.values[0].double : option.numberOption.values[0].int))) :
+              // Boolean default
+              option.booleanOption ? option.booleanOption.value : false;
+
+        controlNames[name] = [defaultValue, []];
+      }
+    );
+
     // Setup forms
     this.form = formBuilder.group({
       localFilenames: ['', []],
@@ -77,6 +100,7 @@ export class DownloadFileDialog implements OnDestroy {
       localEntity: [firstSource, Validators.required],
       remoteEntity: [firstDestination, Validators.required],
       reliable: [true, []],
+      ...controlNames
     });
 
     // Subscribe to some form variables to determine enabled state of buttons
@@ -120,39 +144,84 @@ export class DownloadFileDialog implements OnDestroy {
   }
 
   async startDownload() {
-    const objectNames: string[] = this.form.get('remoteFilenames')?.value.split('|');
+    return this.startTransfer(
+      this.form.get("remoteEntity")?.value,
+      this.form.get("localEntity")?.value,
+      this.form.get('remoteFilenames')?.value,
+      this.form.get('localFilenames')?.value,
+      this.getSelectedRemoteFolderPath(),
+      this.getSelectedLocalFolderPath(),
+      "DOWNLOAD"
+    );
+  }
+
+  async startUpload() {
+    return this.startTransfer(
+      this.form.get("localEntity")?.value,
+      this.form.get("remoteEntity")?.value,
+      this.form.get('localFilenames')?.value,
+      this.form.get('remoteFilenames')?.value,
+      this.getSelectedLocalFolderPath(),
+      this.getSelectedRemoteFolderPath(),
+      "UPLOAD"
+    );
+  }
+
+  async startTransfer(sourceEntity: string, destinationEntity: string, sourceFilenames: string, destinationFilenames: string, sourceFolderPath: string, destinationFolderPath: string, direction: "UPLOAD" | "DOWNLOAD") {
+    const objectNames: string[] = sourceFilenames.trim().split('|');
     if (!objectNames[0]) {
       return;
     }
 
-    const promises = objectNames.map((name) => {
-      // Get file names and append it to selected folders. // TODO: almost duplicate of Upload
-      name = name.trim();
-      const remoteFolderPath = this.getSelectedRemoteFolderPath();
-      const remoteFileName = name.startsWith(remoteFolderPath) ? name.replace(remoteFolderPath, "") : name;
-      const remotePath = remoteFolderPath + remoteFileName;
-
-      const localFilenames: string = this.form.get("localFilenames")!.value.trim();
-      if (localFilenames.includes("|")) {
-        console.error(`Cannot download file "${remotePath}" to multiple destination filenames: ${localFilenames}`);
-        return Promise.reject(`Cannot download file "${remotePath}" to multiple destination filenames: ${localFilenames}`);
+    // FileTransferOptions
+    const options = this.service.transferOptions.map(option => {
+      let formControlName = this.optionsMapping.get(option);
+      if (!formControlName) {
+        return;
       }
-      const localFolderPath = this.getSelectedLocalFolderPath();
-      const localFilename = localFilenames.startsWith(localFolderPath) ? localFilenames.replace(localFolderPath, "") : localFilenames;
-      const localPath = localFolderPath + (localFilename ? localFilename : remoteFileName);
+      let value = this.form.get(formControlName)?.value;
+      let newOption: FileTransferOption = {
+        name: option.name
+      };
+      if (option.stringOption) {
+        newOption.stringOption = { values: [{ value: value }] };
+      } else if (option.numberOption) {
+        newOption.numberOption = {
+          values: [Number.isInteger(value) ? { int: value } : { double: value }]
+        };
+      } else if (option.booleanOption) {
+        newOption.booleanOption = { value: value };
+      } else {
+        return;
+      }
+      return newOption;
+    }).filter((option): option is FileTransferOption => !!option); // Filter undefined
+
+    const localFolderPath = this.getSelectedLocalFolderPath();
+    const remoteFolderPath = this.getSelectedRemoteFolderPath();
+
+    const promises = objectNames.map((name) => {
+      // Get file names and append it to selected folders.
+      let paths;
+      try {
+        paths = this.getTransferPaths(name, destinationFilenames, sourceFolderPath, destinationFolderPath, direction);
+      } catch (error) {
+        return Promise.reject(error);
+      }
+
+      if (direction == "DOWNLOAD") {
+        paths = paths.reverse();
+      }
 
       // Start transfer
       return this.yamcs.yamcsClient.createFileTransfer(this.yamcs.instance!, this.service.name, {
-        direction: 'DOWNLOAD',
+        direction: direction,
         bucket: this.selectedBucket$.value!.name,
-        objectName: localPath,
-        remotePath: remotePath,
-        // TODO: rename source-destination to local and remote
-        source: this.form.get('remoteEntity')!.value,
-        destination: this.form.get('localEntity')!.value,
-        downloadOptions: {
-          reliable: this.form.get('reliable')!.value
-        }
+        objectName: paths[0],
+        remotePath: paths[1],
+        source: sourceEntity,
+        destination: destinationEntity,
+        options: options
       });
     });
 
@@ -181,68 +250,23 @@ export class DownloadFileDialog implements OnDestroy {
     this.dialogRef.close();
   }
 
-  async startUpload() {
-    const objectNames: string[] = this.form.get('localFilenames')?.value.trim().split('|');
-    if (!objectNames[0]) {
-      return;
+  getTransferPaths(sourceFilename: string, destinationFilenames: string, sourceFolderPath: string, destinationFolderPath: string, direction: "UPLOAD" | "DOWNLOAD"): [string, string] {
+    sourceFilename = sourceFilename.trim();
+    sourceFilename = sourceFilename.startsWith(sourceFolderPath) ? sourceFilename.replace(sourceFolderPath, "") : sourceFilename;
+    const sourcePath = sourceFolderPath + sourceFilename;
+
+    let destinationPath = sourceFilename;
+    if ((direction === "UPLOAD" && this.service.capabilities.remotePath) || direction === "DOWNLOAD") {
+      destinationFilenames = destinationFilenames.trim();
+      if (destinationFilenames.includes("|")) {
+        console.error(`Cannot ${direction.toLowerCase()} file "${sourcePath}" to multiple destination filenames: ${destinationFilenames}`);
+        throw new Error(`Cannot ${direction.toLowerCase()} file "${sourcePath}" to multiple destination filenames: ${destinationFilenames}`);
+      }
+      const destinationFilename = destinationFilenames.startsWith(destinationFolderPath) ? destinationFilenames.replace(destinationFolderPath, "") : destinationFilenames;
+      destinationPath = destinationFolderPath + (destinationFilename ? destinationFilename : sourceFilename);
     }
 
-    const promises = objectNames.map((name) => {
-      // Get file names and append it to selected folders.
-      name = name.trim();
-      const localFolderPath = this.getSelectedLocalFolderPath();
-      const localFileName = name.startsWith(localFolderPath) ? name.replace(localFolderPath, "") : name;
-      const localPath = localFolderPath + localFileName;
-
-      let remotePath = localFileName;
-      if (this.service.capabilities.remotePath) {
-        const remoteFilenames: string = this.form.get("remoteFilenames")!.value.trim();
-        if (remoteFilenames.includes("|")) {
-          console.error(`Cannot upload file "${localPath}" to multiple destination filenames: ${remoteFilenames}`);
-          return Promise.reject(`Cannot upload file "${localPath}" to multiple destination filenames: ${remoteFilenames}`);
-        }
-        const remoteFolderPath = this.getSelectedRemoteFolderPath();
-        const remoteFilename = remoteFilenames.startsWith(remoteFolderPath) ? remoteFilenames.replace(remoteFolderPath, "") : remoteFilenames;
-        remotePath = remoteFolderPath + (remoteFilename ? remoteFilename : localFileName);
-      }
-
-      // Start transfer
-      return this.yamcs.yamcsClient.createFileTransfer(this.yamcs.instance!, this.service.name, {
-        direction: 'UPLOAD',
-        bucket: this.selectedBucket$.value!.name,
-        objectName: localPath,
-        remotePath: remotePath,
-        source: this.form.get('localEntity')!.value,
-        destination: this.form.get('remoteEntity')!.value,
-        uploadOptions: {
-          reliable: this.form.get('reliable')!.value
-        }
-      });
-    });
-
-    // Collect combined success/failure result
-    let anyError: any;
-    let errorCount = 0;
-    for (const promise of promises) {
-      try {
-        await promise;
-      } catch (err) {
-        anyError = err;
-        errorCount++;
-      }
-    }
-
-    if (anyError) {
-      if (errorCount === 1) {
-        this.messageService.showError(anyError);
-      } else if (errorCount === promises.length) {
-        this.messageService.showError('Failed to start any of the selected transfers. See server log.');
-      } else {
-        this.messageService.showError('Some of the transfers failed to start. See server log.');
-      }
-    }
-
-    this.dialogRef.close();
+    return [sourcePath, destinationPath];
   }
 
   requestFileList() {
