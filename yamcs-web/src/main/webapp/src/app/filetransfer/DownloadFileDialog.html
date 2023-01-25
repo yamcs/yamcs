@@ -75,7 +75,7 @@
         </div>
 
         <div *ngFor="let option of service.transferOptions; let i = index" [title]="option.description">
-          <label>{{option.name}}</label>
+          <label>{{option.name | titlecase}}</label>
           <!-- String option type -->
           <select
                   *ngIf="option.stringOption && option.stringOption.values && option.stringOption.values.length"

@@ -845,8 +845,34 @@ public class CfdpService extends AbstractYamcsService
         long sourceId = getEntityIdFromName(source, localEntities);
         long destinationId = getEntityIdFromName(destination, remoteEntities);
 
+        boolean overwrite = options.isOverwrite(); // For backwards compatibility
+        boolean reliable = options.isReliable();
+        boolean closureRequested = options.isClosureRequested();
+        boolean createPath = options.isCreatePath();
+
+        for (FileTransferOption option : options.getExtraOptions()) {
+            switch (option.getName().toLowerCase().replaceAll("\\s+", "")){
+            case "overwrite":
+                overwrite = option.getBooleanOption().getValue();
+                break;
+            case "reliability":
+            case "reliable":
+                reliable = option.getBooleanOption().getValue();
+                break;
+            case "closurerequest":
+            case "closurerequested":
+            case "closure":
+                closureRequested = option.getBooleanOption().getValue();
+                break;
+            case "createpath":
+                createPath = option.getBooleanOption().getValue();
+                break;
+            default:
+            }
+        }
+
         FilePutRequest request = new FilePutRequest(sourceId, destinationId, objectName, absoluteDestinationPath,
-                options.isOverwrite(), options.isReliable(), options.isClosureRequested(), options.isCreatePath(),
+                overwrite, reliable, closureRequested, createPath,
                 bucket, objData);
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
@@ -919,17 +945,46 @@ public class CfdpService extends AbstractYamcsService
         // Prepare request
         ArrayList<MessageToUser> messagesToUser = new ArrayList<>(
                 List.of(new ProxyPutRequest(destinationId, sourcePath, objectName)));
-        if(options.isReliableSet()) {
-            messagesToUser.add(new ProxyTransmissionMode(options.isReliable() ? CfdpPacket.TransmissionMode.ACKNOWLEDGED : CfdpPacket.TransmissionMode.UNACKNOWLEDGED));
+
+        CfdpPacket.TransmissionMode transmissionMode = CfdpPacket.TransmissionMode.UNACKNOWLEDGED;
+        Boolean reliable = null;
+        Boolean closureRequested = null;
+
+
+        if(options.isReliableSet()) { // For backwards compatibility
+            reliable = options.isReliable();
         }
         if(options.isClosureRequestedSet()) {
-            messagesToUser.add(new ProxyClosureRequest(options.isClosureRequested()));
+            closureRequested = options.isClosureRequested();
         }
 
-        PutRequest request = new PutRequest(sourceId,
-                options.isReliable() ? CfdpPacket.TransmissionMode.ACKNOWLEDGED : CfdpPacket.TransmissionMode.UNACKNOWLEDGED,
-                messagesToUser
-        );
+        for (FileTransferOption option : options.getExtraOptions()) {
+            switch (option.getName().toLowerCase().replaceAll("\\s+", "")){
+            case "reliability":
+            case "reliable":
+                reliable = option.getBooleanOption().getValue();
+                break;
+            case "closurerequest":
+            case "closurerequested":
+            case "closure":
+                closureRequested = option.getBooleanOption().getValue();
+                break;
+            default:
+            }
+        }
+
+        if(Boolean.TRUE.equals(reliable)) {
+            transmissionMode = CfdpPacket.TransmissionMode.ACKNOWLEDGED;
+        }
+
+        if(reliable != null) {
+            messagesToUser.add(new ProxyTransmissionMode(transmissionMode));
+        }
+        if(closureRequested != null) {
+            messagesToUser.add(new ProxyClosureRequest(closureRequested));
+        }
+
+        PutRequest request = new PutRequest(sourceId, transmissionMode, messagesToUser);
         CfdpTransactionId transactionId = request.process(destinationId, idSeq.next(), ChecksumType.MODULAR, config);
 
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
@@ -1082,7 +1137,7 @@ public class CfdpService extends AbstractYamcsService
     public List<FileTransferOption> getFileTransferOptions() {
         return List.of(
                 FileTransferOption.newBuilder()
-                        .setName("Reliability").setDescription("Acknowledged or unacknowledged transmission mode")
+                        .setName("reliability").setDescription("Acknowledged or unacknowledged transmission mode")
                         .setBooleanOption(BooleanOption.newBuilder().setValue(true).setLabel("Reliable"))
                         .build()
         );
