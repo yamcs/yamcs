@@ -2,8 +2,8 @@ import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
 import { FileTransferRoutingModule, routingComponents } from './FileTransferRoutingModule';
 import { FileTransferTable } from './FileTransferTable';
-import { DownloadFileDialog } from './DownloadFileDialog';
 import { RemoteFileSelector } from './RemoteFileSelector';
+import { TransferFileDialog } from './TransferFileDialog';
 
 @NgModule({
   imports: [
@@ -14,7 +14,7 @@ import { RemoteFileSelector } from './RemoteFileSelector';
     routingComponents,
     FileTransferTable,
     RemoteFileSelector,
-    DownloadFileDialog,
+    TransferFileDialog,
   ],
 })
 export class FileTransferModule {

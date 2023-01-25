@@ -11,10 +11,10 @@ import { RemoteFileSelector } from './RemoteFileSelector';
 
 @Component({
   selector: 'app-download-file-dialog',
-  templateUrl: './DownloadFileDialog.html',
-  styleUrls: ['./DownloadFileDialog.css'],
+  templateUrl: './TransferFileDialog.html',
+  styleUrls: ['./TransferFileDialog.css'],
 })
-export class DownloadFileDialog implements OnDestroy {
+export class TransferFileDialog implements OnDestroy {
   isDownloadEnabled = false;
   isUploadEnabled = false;
   form: UntypedFormGroup;
@@ -41,7 +41,7 @@ export class DownloadFileDialog implements OnDestroy {
   remoteSelector: RemoteFileSelector;
 
   constructor(
-    private dialogRef: MatDialogRef<DownloadFileDialog>,
+    private dialogRef: MatDialogRef<TransferFileDialog>,
     readonly yamcs: YamcsService,
     formBuilder: UntypedFormBuilder,
     private messageService: MessageService,
@@ -205,8 +205,9 @@ export class DownloadFileDialog implements OnDestroy {
       let paths;
       try {
         paths = this.getTransferPaths(name, destinationFilenames, sourceFolderPath, destinationFolderPath, direction);
-      } catch (error) {
-        return Promise.reject(error);
+      } catch (error: any) {
+        this.messageService.showError(error);
+        throw error;
       }
 
       if (direction == "DOWNLOAD") {

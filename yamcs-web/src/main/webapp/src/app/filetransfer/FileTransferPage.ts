@@ -6,7 +6,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { FileTransferService, Transfer, TransferSubscription } from '../client';
 import { Synchronizer } from '../core/services/Synchronizer';
 import { YamcsService } from '../core/services/YamcsService';
-import { DownloadFileDialog } from './DownloadFileDialog';
+import { TransferFileDialog } from './TransferFileDialog';
 
 @Component({
   templateUrl: './FileTransferPage.html',
@@ -126,7 +126,7 @@ export class FileTransferPage implements OnDestroy {
   }
 
   downloadFile(service: FileTransferService) {
-    const dialogRef = this.dialog.open(DownloadFileDialog, {
+    const dialogRef = this.dialog.open(TransferFileDialog, {
       width: '70%',
       height: '100%',
       autoFocus: false,
