@@ -101,6 +101,10 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
       });
     }
     for (const object of dir.objects || []) {
+      // Ignore fake objects that represent an empty directory
+      if (object.name.endsWith('/')) {
+        continue;
+      }
       items.push({
         folder: false,
         name: object.name,

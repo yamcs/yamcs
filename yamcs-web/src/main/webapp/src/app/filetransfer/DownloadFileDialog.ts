@@ -27,7 +27,7 @@ export class DownloadFileDialog implements OnDestroy {
   selectedBucket$ = new BehaviorSubject<Bucket | null>(null);
   breadcrumb$ = new BehaviorSubject<BreadcrumbItem[]>([]);
   remoteBreadcrumb$ = new BehaviorSubject<BreadcrumbItem[]>([]);
-  lastFileListTime$ = new BehaviorSubject<string>('-');
+  lastFileListTime$ = new BehaviorSubject<string>("");
 
   private fileListSubscription: RemoteFileListSubscription;
 

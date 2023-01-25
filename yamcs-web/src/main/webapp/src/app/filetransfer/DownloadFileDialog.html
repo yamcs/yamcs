@@ -2,7 +2,8 @@
   <form [formGroup]="form" class="ya-form">
     <h2>
       <button class="close-button mat-button" mat-dialog-close><mat-icon>close</mat-icon></button>
-      New Transfer
+      New {{service.capabilities.download && service.capabilities.upload ? "Transfer" :
+      service.capabilities.upload ? "Upload": "Download" }}
     </h2>
 
     <div class="grid-container">

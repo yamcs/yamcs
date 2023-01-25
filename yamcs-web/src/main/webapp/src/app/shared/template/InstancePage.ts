@@ -235,7 +235,7 @@ export class InstancePage implements OnInit, OnDestroy {
 
   handleKeydown(event: KeyboardEvent) {
     const el: HTMLInputElement = this.searchInput.nativeElement;
-    if (event.key === "/" && el !== document.activeElement) {
+    if (event.key === "/" && el !== document.activeElement && document.activeElement?.tagName !== "INPUT") {
       el.focus();
       event.preventDefault();
     } else if (event.key === "Enter") {

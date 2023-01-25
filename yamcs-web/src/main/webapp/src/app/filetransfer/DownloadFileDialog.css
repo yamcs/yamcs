@@ -33,6 +33,7 @@
   grid-template-columns: [buckets] 140px [local] auto [remote] auto;
   column-gap: 8px;
   flex: 1;
+  min-height: 0;
 }
 
 .header {
