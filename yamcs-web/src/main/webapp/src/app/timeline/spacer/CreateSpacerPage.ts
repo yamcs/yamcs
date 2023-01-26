@@ -4,7 +4,7 @@ import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
-import { defaultProperties } from './SpacerStyles';
+import { propertyInfo } from './Spacer';
 
 @Component({
   templateUrl: './CreateSpacerPage.html',
@@ -26,7 +26,7 @@ export class CreateSpacerPage {
       name: '',
       description: '',
       properties: formBuilder.group({
-        height: [defaultProperties.height, [Validators.required]],
+        height: [propertyInfo.height.defaultValue, [Validators.required]],
       })
     });
   }

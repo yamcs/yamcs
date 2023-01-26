@@ -1,7 +1,11 @@
 import { Banner } from '@fqqb/timeline';
 import { TimelineBand } from '../../client/types/timeline';
+import { NumberProperty, PropertyInfoSet, resolveProperties } from '../properties';
 import { TimelineChartPage } from '../TimelineChartPage';
-import { addDefaultSpacerProperties } from './SpacerStyles';
+
+export const propertyInfo: PropertyInfoSet = {
+  height: new NumberProperty(34),
+}
 
 export class Spacer extends Banner {
 
@@ -11,7 +15,7 @@ export class Spacer extends Banner {
     this.label = bandInfo.name;
     this.data = { band: bandInfo };
 
-    const properties = addDefaultSpacerProperties(bandInfo.properties || {});
+    const properties = resolveProperties(propertyInfo, bandInfo.properties || {});
     this.contentHeight = properties.height;
   }
 }

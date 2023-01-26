@@ -3,7 +3,8 @@ import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms
 import { BehaviorSubject } from 'rxjs';
 import { TimelineBand } from '../../client/types/timeline';
 import { YamcsService } from '../../core/services/YamcsService';
-import { addDefaultSpacerProperties } from './SpacerStyles';
+import { resolveProperties } from '../properties';
+import { propertyInfo } from './Spacer';
 
 @Component({
   selector: 'app-edit-spacer',
@@ -26,7 +27,7 @@ export class EditSpacerComponent implements AfterViewInit {
   ) { }
 
   ngAfterViewInit() {
-    const props = addDefaultSpacerProperties(this.band.properties || {});
+    const props = resolveProperties(propertyInfo, this.band.properties || {});
 
     // Angular does not seem to have form.addGroup. So we get creative.
     // The properties sub-group is set in the parent component, and here

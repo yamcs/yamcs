@@ -3,7 +3,8 @@ import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms
 import { BehaviorSubject } from 'rxjs';
 import { TimelineBand } from '../../client/types/timeline';
 import { YamcsService } from '../../core/services/YamcsService';
-import { addDefaultItemBandProperties } from './ItemBandStyles';
+import { resolveProperties } from '../properties';
+import { propertyInfo } from './ItemBand';
 
 @Component({
   selector: 'app-edit-item-band',
@@ -26,7 +27,7 @@ export class EditItemBandComponent implements AfterViewInit {
   ) { }
 
   ngAfterViewInit() {
-    const props = addDefaultItemBandProperties(this.band.properties || {});
+    const props = resolveProperties(propertyInfo, this.band.properties || {});
 
     // Angular does not seem to have form.addGroup. So we get creative.
     // The properties sub-group is set in the parent component, and here

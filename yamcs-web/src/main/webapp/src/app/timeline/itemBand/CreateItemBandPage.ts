@@ -4,7 +4,7 @@ import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
-import { defaultProperties } from './ItemBandStyles';
+import { propertyInfo } from './ItemBand';
 
 @Component({
   templateUrl: './CreateItemBandPage.html',
@@ -26,21 +26,21 @@ export class CreateItemBandPage {
       name: ['', [Validators.required]],
       description: '',
       properties: formBuilder.group({
-        frozen: [defaultProperties.frozen, [Validators.required]],
-        itemBackgroundColor: [defaultProperties.itemBackgroundColor, [Validators.required]],
-        itemBorderColor: [defaultProperties.itemBorderColor, [Validators.required]],
-        itemBorderWidth: [defaultProperties.itemBorderWidth, [Validators.required]],
-        itemCornerRadius: [defaultProperties.itemCornerRadius, [Validators.required]],
-        itemHeight: [defaultProperties.itemHeight, [Validators.required]],
-        itemMarginLeft: [defaultProperties.itemMarginLeft, [Validators.required]],
-        itemTextColor: [defaultProperties.itemTextColor, [Validators.required]],
-        itemTextOverflow: [defaultProperties.itemTextOverflow, [Validators.required]],
-        itemTextSize: [defaultProperties.itemTextSize, [Validators.required]],
-        marginBottom: [defaultProperties.marginBottom, [Validators.required]],
-        marginTop: [defaultProperties.marginTop, [Validators.required]],
-        multiline: [defaultProperties.multiline, [Validators.required]],
-        spaceBetweenItems: [defaultProperties.spaceBetweenItems, [Validators.required]],
-        spaceBetweenLines: [defaultProperties.spaceBetweenLines, [Validators.required]],
+        frozen: [propertyInfo.frozen.defaultValue, [Validators.required]],
+        itemBackgroundColor: [propertyInfo.itemBackgroundColor.defaultValue, [Validators.required]],
+        itemBorderColor: [propertyInfo.itemBorderColor.defaultValue, [Validators.required]],
+        itemBorderWidth: [propertyInfo.itemBorderWidth.defaultValue, [Validators.required]],
+        itemCornerRadius: [propertyInfo.itemCornerRadius.defaultValue, [Validators.required]],
+        itemHeight: [propertyInfo.itemHeight.defaultValue, [Validators.required]],
+        itemMarginLeft: [propertyInfo.itemMarginLeft.defaultValue, [Validators.required]],
+        itemTextColor: [propertyInfo.itemTextColor.defaultValue, [Validators.required]],
+        itemTextOverflow: [propertyInfo.itemTextOverflow.defaultValue, [Validators.required]],
+        itemTextSize: [propertyInfo.itemTextSize.defaultValue, [Validators.required]],
+        marginBottom: [propertyInfo.marginBottom.defaultValue, [Validators.required]],
+        marginTop: [propertyInfo.marginTop.defaultValue, [Validators.required]],
+        multiline: [propertyInfo.multiline.defaultValue, [Validators.required]],
+        spaceBetweenItems: [propertyInfo.spaceBetweenItems.defaultValue, [Validators.required]],
+        spaceBetweenLines: [propertyInfo.spaceBetweenLines.defaultValue, [Validators.required]],
       }),
       tags: [[], []],
     });
