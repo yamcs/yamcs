@@ -75,7 +75,7 @@ export class TransferFileDialog implements OnDestroy {
 
     // Prepare form control names for custom options
     let controlNames: { [key: string]: any; } = {};
-    this.service.transferOptions.forEach(
+    this.service.transferOptions?.forEach(
       (option, index) => {
         let name = "option" + index + option.name.toLowerCase().replace(this.spacesRegex, "");
         this.optionsMapping.set(option, name);
@@ -174,7 +174,7 @@ export class TransferFileDialog implements OnDestroy {
     }
 
     // FileTransferOptions
-    const options = this.service.transferOptions.map(option => {
+    const options = this.service.transferOptions?.map(option => {
       let formControlName = this.optionsMapping.get(option);
       if (!formControlName) {
         return;
