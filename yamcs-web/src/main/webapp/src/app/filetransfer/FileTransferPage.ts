@@ -82,6 +82,7 @@ export class FileTransferPage implements OnDestroy {
         service: service?.name || null,
       },
       queryParamsHandling: 'merge',
+      state: { hasTransferType: service?.capabilities.hasTransferType }
     });
 
     // Clear state

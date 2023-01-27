@@ -14,6 +14,9 @@ import { TransferItem } from './TransferItem';
 })
 export class FileTransferTable implements OnChanges {
 
+  @Input()
+  extraColumns: string[] = [];
+
   private defaultColumns = [
     'startTime',
     'localFile',
@@ -21,7 +24,6 @@ export class FileTransferTable implements OnChanges {
     'remoteFile',
     'size',
     'status',
-    'transferType'
   ];
 
   displayedColumns$ = new BehaviorSubject<string[]>(this.defaultColumns);
@@ -44,9 +46,9 @@ export class FileTransferTable implements OnChanges {
 
   ngOnChanges() {
     if (this.showActions) {
-      this.displayedColumns$.next([...this.defaultColumns, 'actions']);
+      this.displayedColumns$.next([...this.defaultColumns, ...this.extraColumns, 'actions']);
     } else {
-      this.displayedColumns$.next(this.defaultColumns);
+      this.displayedColumns$.next([...this.defaultColumns, ...this.extraColumns]);
     }
   }
 

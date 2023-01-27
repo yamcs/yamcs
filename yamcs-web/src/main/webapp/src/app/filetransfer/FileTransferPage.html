@@ -35,7 +35,8 @@
          routerLink="./ongoing-transfers"
          routerLinkActive #rla="routerLinkActive"
          [queryParams]="{c: yamcs.context, service: service.name}"
-         [active]="rla.isActive">
+         [active]="rla.isActive"
+         [state]="{hasTransferType: service.capabilities.hasTransferType}">
         ONGOING
         <ng-container *ngIf="ongoingCount$ | async as count">({{ count }})</ng-container>
       </a>
@@ -44,7 +45,8 @@
          routerLink="./failed-transfers"
          routerLinkActive #rlb="routerLinkActive"
          [queryParams]="{c: yamcs.context, service: service.name}"
-         [active]="rlb.isActive">
+         [active]="rlb.isActive"
+         [state]="{hasTransferType: service.capabilities.hasTransferType}">
         FAILED
         <ng-container *ngIf="failedCount$ | async as count">({{ count }})</ng-container>
       </a>
@@ -53,7 +55,8 @@
          routerLink="./successful-transfers"
          routerLinkActive #rlc="routerLinkActive"
          [queryParams]="{c: yamcs.context, service: service.name}"
-         [active]="rlc.isActive">
+         [active]="rlc.isActive"
+         [state]="{hasTransferType: service.capabilities.hasTransferType}">
         SUCCESSFUL
         <ng-container *ngIf="successfulCount$ | async as count">({{ count }})</ng-container>
       </a>

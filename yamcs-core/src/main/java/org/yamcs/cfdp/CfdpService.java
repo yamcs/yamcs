@@ -60,11 +60,7 @@ import org.yamcs.protobuf.BooleanOption;
 import org.yamcs.protobuf.EntityInfo;
 import org.yamcs.protobuf.FileTransferCapabilities;
 import org.yamcs.protobuf.FileTransferOption;
-import org.yamcs.protobuf.NumberOption;
-import org.yamcs.protobuf.NumberValue;
 import org.yamcs.protobuf.RemoteFile;
-import org.yamcs.protobuf.StringOption;
-import org.yamcs.protobuf.StringValue;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.protobuf.ListFilesResponse;
@@ -1149,9 +1145,10 @@ public class CfdpService extends AbstractYamcsService
                 .newBuilder()
                 .setDownload(true)
                 .setUpload(true)
-                .setReliability(true)
+                .setReliability(true) // Reliability DEPRECATED: use FileTransferOption
                 .setRemotePath(true)
                 .setFileList(true)
+                .setHasTransferType(true)
                 .build();
     }
 

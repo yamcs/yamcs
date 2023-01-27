@@ -25,11 +25,14 @@ export class FailedTransfersTab implements OnDestroy {
 
   private queryParamSubscription: Subscription;
 
+  hasTransferType = false;
+
   constructor(
     private yamcs: YamcsService,
     route: ActivatedRoute,
     synchronizer: Synchronizer,
   ) {
+    this.hasTransferType = history.state.hasTransferType;
     this.storageClient = yamcs.createStorageClient();
     this.queryParamSubscription = route.queryParamMap.subscribe(params => {
       const service = params.get('service');

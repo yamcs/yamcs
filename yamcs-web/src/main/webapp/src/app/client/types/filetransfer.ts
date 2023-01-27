@@ -52,6 +52,7 @@ export interface FileTransferCapabilities {
   reliability: boolean;
   remotePath: boolean;
   fileList: boolean;
+  hasTransferType: boolean;
 }
 
 export interface Entity {

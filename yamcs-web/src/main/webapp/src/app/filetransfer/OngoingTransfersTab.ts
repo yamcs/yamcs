@@ -25,11 +25,14 @@ export class OngoingTransfersTab implements OnDestroy {
 
   private queryParamSubscription: Subscription;
 
+  hasTransferType = false;
+
   constructor(
     private yamcs: YamcsService,
     route: ActivatedRoute,
     synchronizer: Synchronizer,
   ) {
+    this.hasTransferType = history.state.hasTransferType;
     this.storageClient = yamcs.createStorageClient();
     this.queryParamSubscription = route.queryParamMap.subscribe(params => {
       const service = params.get('service');
@@ -60,7 +63,7 @@ export class OngoingTransfersTab implements OnDestroy {
     const time1 = a.creationTime || a.startTime || "";
     const time2 = b.creationTime || b.startTime || "";
     // most recent transfers on top
-    return time2.localeCompare(time1)
+    return time2.localeCompare(time1);
   }
 
   private switchService(service: string | null) {

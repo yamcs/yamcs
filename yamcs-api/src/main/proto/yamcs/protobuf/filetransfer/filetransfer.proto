@@ -136,7 +136,7 @@ message FileTransferCapabilities {
   //if true, yamcs-web shows a button for initiating a download
   optional bool download = 2;
 
-  //if true, yamcs-web will allow to chose reliable/non-reliable transfer 
+  // DEPRECATED: use a FileTransferOption to get a reliability toggle
   optional bool reliability = 3;
 
   //if true, yamcs-web will show the section with the destination file/folder name (upload only)
@@ -144,6 +144,9 @@ message FileTransferCapabilities {
 
   // true = service supports remote file list
   optional bool fileList = 5;
+
+  // if true, yamcs-web will show the "Transfer Type" string column
+  optional bool hasTransferType = 6;
 }
 
 
