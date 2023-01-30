@@ -50,7 +50,7 @@ public class GenericPacketInputStream implements PacketInputStream {
     ByteOrder byteOrder;
 
     @Override
-    public void init(InputStream inputStream, YConfiguration args) {
+    public void init(InputStream inputStream, YConfiguration args) { // TODO: should have defaults (spec?)
         this.dataInputStream = new DataInputStream(inputStream);
         this.maxPacketLength = args.getInt("maxPacketLength");
         this.lengthFieldOffset = args.getInt("lengthFieldOffset");

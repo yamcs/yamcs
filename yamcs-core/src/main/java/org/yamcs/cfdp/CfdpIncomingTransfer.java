@@ -2,8 +2,7 @@ package org.yamcs.cfdp;
 
 import static org.yamcs.cfdp.CfdpService.*;
 
-import java.nio.ByteBuffer;
-import java.nio.file.FileAlreadyExistsException;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -20,6 +19,7 @@ import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.rocksdb.protobuf.Tablespace;
 
 public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     private final FileSaveHandler fileSaveHandler;
@@ -266,12 +266,22 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         this.acknowledged = packet.getHeader().isAcknowledged();
         originalObjectName = !packet.getDestinationFilename().equals("") ? packet.getDestinationFilename() : packet.getSourceFilename();
 
+        sendInfoEvent(ETYPE_TRANSFER_META, "Received metadata: "+toEventMsg(packet));
+
         try {
+            if(originatingTransactionId != null) {
+                fileSaveHandler.processOriginatingTransactionId(originatingTransactionId);
+            }
             fileSaveHandler.setObjectName(directoryListingResponse == null ? originalObjectName : null);
-            sendInfoEvent(ETYPE_TRANSFER_META, "Received metadata: "+toEventMsg(packet));
+
+            Tablespace.BucketProperties props = fileSaveHandler.getBucket().getProperties();
+            if(props.getMaxSize() - props.getSize() < fileSize) {
+                throw new IOException("File size too large for bucket '" + getBucketName() + "' (cannot fit " + fileSize + " bytes into " + (props.getMaxSize() - props.getSize()) + " bytes)");
+            }
+
             checkFileComplete();
-        } catch (FileAlreadyExistsException e) {
-            cancel(ConditionCode.FILESTORE_REJECTION);
+        } catch (IOException e) {
+            handleFault(ConditionCode.FILESTORE_REJECTION);
             log.warn(e.getMessage());
             pushError(e.getMessage());
         }

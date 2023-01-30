@@ -57,19 +57,6 @@ public class FileSaveHandler {
         }
         if(bucket == null) { bucket = defaultBucket; }
 
-        if(originatingTransactionId != null) {
-            String bucketName = fileDownloadRequests.getBuckets().get(originatingTransactionId);
-            fileDownloadRequests.removeTransfer(originatingTransactionId);
-            if(bucketName != null) {
-                YarchDatabaseInstance ydb = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE); // Instance buckets?
-                try {
-                    bucket = ydb.getBucket(bucketName);
-                } catch (IOException e) {
-                    log.warn("Recognised originating transaction id from incoming transfer but bucket does not exist");
-                }
-            }
-        }
-
         try {
             bucket.putObject(this.objectName, null, metadata, file.getData());
         } catch (IOException e) {
@@ -146,4 +133,20 @@ public class FileSaveHandler {
         this.bucket = bucket;
     }
 
+    public Bucket getBucket() {
+        return bucket;
+    }
+
+    public void processOriginatingTransactionId(CfdpTransactionId originatingTransactionId) throws IOException {
+        String bucketName = fileDownloadRequests.getBuckets().get(originatingTransactionId);
+        fileDownloadRequests.removeTransfer(originatingTransactionId);
+        if(bucketName != null) {
+            YarchDatabaseInstance ydb = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE); // Instance buckets?
+            try {
+                bucket = ydb.getBucket(bucketName);
+            } catch (IOException e) {
+                throw new IOException("Recognised originating transaction id " +  originatingTransactionId + " from incoming transfer but bucket does not exist");
+            }
+        }
+    }
 }
