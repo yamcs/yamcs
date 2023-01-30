@@ -9,15 +9,19 @@
     <div class="grid-container">
       <!-- BUCKETS COLUMN -->
       <div class="buckets-column header">
-        <label class="table-caption">Buckets</label>
+        <label class="table-caption">Buckets
+          <a (click)="showBucketSize = !showBucketSize">{{ !showBucketSize ? "show" : "hide" }} size</a>
+        </label>
       </div>
 
       <div class="buckets-column table-wrapper">
         <table mat-table [dataSource]="dataSource" class="ya-data-table">
           <ng-container cdkColumnDef="name">
-            <td mat-cell *cdkCellDef="let bucket">
-              <mat-icon style="vertical-align: middle">shopping_basket</mat-icon>&nbsp;
-              {{ bucket.name }}
+            <td mat-cell *cdkCellDef="let bucket" [title]="(bucket.maxSize - bucket.size | formatBytes) + ' available'">
+              <span><mat-icon style="vertical-align: middle">shopping_basket</mat-icon>&nbsp;
+                {{ bucket.name }}</span>
+              <span *ngIf="showBucketSize">{{ bucket.size | formatBytes }}/{{ bucket.maxSize | formatBytes }}</span>
+              <app-progress *ngIf="showBucketSize" [value]="bucket.size" [total]="bucket.maxSize"></app-progress>
             </td>
           </ng-container>
 

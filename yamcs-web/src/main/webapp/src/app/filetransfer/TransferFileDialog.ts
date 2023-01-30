@@ -24,6 +24,8 @@ export class TransferFileDialog implements OnDestroy {
 
   displayedColumns = ['name'];
 
+  showBucketSize = false;
+
   selectedBucket$ = new BehaviorSubject<Bucket | null>(null);
   breadcrumb$ = new BehaviorSubject<BreadcrumbItem[]>([]);
   remoteBreadcrumb$ = new BehaviorSubject<BreadcrumbItem[]>([]);

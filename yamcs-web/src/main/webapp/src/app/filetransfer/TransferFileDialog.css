@@ -77,6 +77,27 @@
   line-height: 24px;
 }
 
+.buckets-column.header>label>a {
+  float: right;
+  font-weight: initial;
+  color: #707070;
+  user-select: none;
+  cursor: pointer;
+}
+
+.buckets-column.header>label>a:hover {
+  text-decoration: underline;
+}
+
+.buckets-column td {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  column-gap: 10px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
 .local-column.table-wrapper.no-filelist {
   grid-column: local / span 2;
 }

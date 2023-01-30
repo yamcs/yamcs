@@ -276,7 +276,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
             Tablespace.BucketProperties props = fileSaveHandler.getBucket().getProperties();
             if(props.getMaxSize() - props.getSize() < fileSize) {
-                throw new IOException("File size too large for bucket '" + getBucketName() + "' (cannot fit " + fileSize + " bytes into " + (props.getMaxSize() - props.getSize()) + " bytes)");
+                throw new IOException("File too big for bucket '" + getBucketName() + "' (" + fileSize + " bytes for " + (props.getMaxSize() - props.getSize()) + " available)");
             }
 
             checkFileComplete();
