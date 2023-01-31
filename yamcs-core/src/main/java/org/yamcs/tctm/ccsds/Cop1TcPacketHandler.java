@@ -128,7 +128,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     int txCount;
 
     // FOP_Sliding_Window_Width (also known as ‘K’);
-    int windowWidth = 10;
+    int slidingWindowWidth = 10;
 
     // Timeout_Type (TT);
     // 1-> SUSPEND, 0 -> go to uninitialized state
@@ -180,6 +180,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         this.initialClcwWait = 1000 * vmp.config.getInt("initialClcwWait", -1);
         this.t1Initial = 1000 * vmp.config.getInt("cop1T1", 3);
         this.txLimit = vmp.config.getInt("cop1TxLimit", 3);
+        this.slidingWindowWidth = vmp.config.getInt("slidingWindowWidth", 10);
     }
 
     public void addMonitor(Cop1Monitor monitor) {
@@ -547,7 +548,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         }
         return doInExecutor(cf -> {
             traceEvent("E39");
-            this.windowWidth = K;
+            this.slidingWindowWidth = K;
             cf.complete(null);
         });
     }
@@ -867,7 +868,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
                 }
                 i = incr(i);
             }
-            if (sentQueueSize() < windowWidth) {
+            if (sentQueueSize() < slidingWindowWidth) {
                 TcTransferFrame tf = getNextQueuedDFrame();
                 if (tf != null) {
                     tf.setVcFrameSeq(vS);
@@ -1146,7 +1147,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         CompletableFuture<Cop1Config> cf = new CompletableFuture<>();
         executor.execute(() -> {
             Cop1Config conf = Cop1Config.newBuilder().setBdAbsolutePriority(bdAbsolutePriority)
-                    .setT1(t1Initial).setTxLimit(txLimit).setVcId(vcId).setWindowWidth(windowWidth)
+                    .setT1(t1Initial).setTxLimit(txLimit).setVcId(vcId).setWindowWidth(slidingWindowWidth)
                     .setTimeoutType(TimeoutType.forNumber(timeoutType)).build();
             cf.complete(conf);
         });
