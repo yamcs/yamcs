@@ -545,7 +545,7 @@ public class LinkManager {
             boolean sent = false;
             String reason = "no link available";
             for (TcDataLink tcLink : tcLinks) {
-                if (!tcLink.isEffectivelyDisabled()) {
+                if (tcLink.isCommandingAvailable()) {
                     try {
                         if (tcLink.sendCommand(pc)) {
                             sent = true;
