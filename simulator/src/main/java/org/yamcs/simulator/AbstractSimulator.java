@@ -16,6 +16,8 @@ public abstract class AbstractSimulator extends AbstractService {
 
     public abstract void transmitCfdp(CfdpPacket packet);
 
-    public abstract void setCfdpSender(CfdpSender cfdpSender);
+    public void setCfdpSender(CfdpSender cfdpSender) {
+        throw new UnsupportedOperationException("CfdpSender is not settable for " + this);
+    }
 
 }

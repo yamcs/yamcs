@@ -250,9 +250,4 @@ public class PusSimulator extends AbstractSimulator {
     protected void setLosLink(TcpTmTcLink losLink) {
         // ignore only send packets on tmlink
     }
-
-    @Override
-    public void setCfdpSender(CfdpSender UNUSED) {
-        // ignored
-    }
 }
