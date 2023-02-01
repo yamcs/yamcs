@@ -26,4 +26,4 @@ buckets:
   - name: cfdpUp
     # the path here is relative to the current directory as set by maven
     # and it maps to examples/cfdp/target/yamcs
-    path: ../../cfdpUp
+    path: ../../../cfdp/cfdpUp

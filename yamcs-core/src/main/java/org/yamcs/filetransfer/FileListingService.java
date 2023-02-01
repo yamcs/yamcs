@@ -34,7 +34,7 @@ public interface FileListingService {
     /**
      * Start fetching a new file list from remote.
      *
-     * @param source source requesting the (e.g. local entity for CFDP)
+     * @param source source requesting the file list (e.g. local entity for CFDP)
      * @param destination destination from which the file list is needed (e.g. remote entity for CFDP)
      * @param remotePath path on the destination from which to get the file list
      * @param reliable reliability of the file listing request (e.g. transmission mode for CFDP, may not be needed)

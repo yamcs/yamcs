@@ -838,8 +838,8 @@ public class CfdpService extends AbstractYamcsService
             }
         }
 
-        long sourceId = getEntityIdFromName(source, localEntities);
-        long destinationId = getEntityIdFromName(destination, remoteEntities);
+        long sourceId = getEntityFromName(source, localEntities).id;
+        long destinationId = getEntityFromName(destination, remoteEntities).id;
 
         boolean overwrite = options.isOverwrite(); // For backwards compatibility
         boolean reliable = options.isReliable();
@@ -930,8 +930,8 @@ public class CfdpService extends AbstractYamcsService
     public FileTransfer startDownload(String sourceEntity, String sourcePath, String destinationEntity, Bucket bucket,
             String objectName, TransferOptions options) throws IOException, InvalidRequestException {
 
-        long destinationId = getEntityIdFromName(destinationEntity, localEntities);
-        long sourceId = getEntityIdFromName(sourceEntity, remoteEntities);
+        long destinationId = getEntityFromName(destinationEntity, localEntities).id;
+        long sourceId = getEntityFromName(sourceEntity, remoteEntities).id;
 
         if(objectName.strip().equals("")) {
             String[] splitPath = sourcePath.split("[\\\\/]");
@@ -1002,18 +1002,21 @@ public class CfdpService extends AbstractYamcsService
 
     @Override
     public ListFilesResponse getFileList(String source, String destination, String remotePath, boolean reliable) {
+        EntityConf sourceEntity = getEntityFromName(source, localEntities);
+        EntityConf destinationEntity = getEntityFromName(destination, remoteEntities);
+
         if (fileListingService != this) {
-            return fileListingService.getFileList(source, destination, remotePath, reliable);
+            return fileListingService.getFileList(sourceEntity.getName(), destinationEntity.getName(), remotePath, reliable);
         }
 
         String dirPath = remotePath.replaceFirst("/*$", "");
-        if (automaticDirectoryListingReloads && directoryListingRequests.values().stream().noneMatch(request -> request.equals(Arrays.asList(destination, dirPath)))) {
-            requestFileList(source, destination, dirPath, reliable);
+        if (automaticDirectoryListingReloads && directoryListingRequests.values().stream().noneMatch(request -> request.equals(Arrays.asList(destinationEntity.getName(), dirPath)))) {
+            requestFileList(sourceEntity.getName(), destinationEntity.getName(), dirPath, reliable);
         }
 
         try {
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-            StreamSqlResult res = ydb.execute("select * from " + FILELIST_TABLE_NAME + " where " + COL_DESTINATION + "=? and " + COL_REMOTE_PATH + "=? ORDER DESC LIMIT 1", destination, remotePath);
+            StreamSqlResult res = ydb.execute("select * from " + FILELIST_TABLE_NAME + " where " + COL_DESTINATION + "=? and " + COL_REMOTE_PATH + "=? ORDER DESC LIMIT 1", destinationEntity.getName(), dirPath);
             if(res.hasNext()) {
                 ListFilesResponse response = res.next().getColumn(COL_LIST_FILES_RESPONSE);
                 res.close();
@@ -1031,30 +1034,30 @@ public class CfdpService extends AbstractYamcsService
 
     @Override
     public void requestFileList(String source, String destination, String remotePath, boolean reliable) {
+        EntityConf sourceEntity = getEntityFromName(source, localEntities);
+        EntityConf destinationEntity = getEntityFromName(destination, remoteEntities);
+
         if (fileListingService != this) {
-            fileListingService.requestFileList(source, destination, remotePath, reliable);
+            fileListingService.requestFileList(sourceEntity.getName(), destinationEntity.getName(), remotePath, reliable);
             return;
         }
 
         // Start upload of Directory Listing Request
         String dirPath = remotePath.replaceFirst("/*$", "");
 
-        long sourceId = getEntityIdFromName(source, localEntities);
-        long destinationId = getEntityIdFromName(destination, remoteEntities);
-
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
         DirectoryListingRequest directoryListingRequest = new DirectoryListingRequest(dirPath, ".dirlist.notsaved");
         ArrayList<MessageToUser> messagesToUser = new ArrayList<>(List.of(directoryListingRequest));
 
-        PutRequest request = new PutRequest(destinationId, reliable ? CfdpPacket.TransmissionMode.ACKNOWLEDGED : CfdpPacket.TransmissionMode.UNACKNOWLEDGED, messagesToUser);
-        CfdpTransactionId transactionId = request.process(sourceId, idSeq.next(), ChecksumType.MODULAR, config);
+        PutRequest request = new PutRequest(destinationEntity.id, reliable ? CfdpPacket.TransmissionMode.ACKNOWLEDGED : CfdpPacket.TransmissionMode.UNACKNOWLEDGED, messagesToUser);
+        CfdpTransactionId transactionId = request.process(sourceEntity.id, idSeq.next(), ChecksumType.MODULAR, config);
 
-        directoryListingRequests.put(transactionId, Arrays.asList(destination, dirPath));
+        directoryListingRequests.put(transactionId, Arrays.asList(destinationEntity.getName(), dirPath));
         if (numPendingUploads() < maxNumPendingUploads) {
-            processPutRequest(sourceId, transactionId.getSequenceNumber(), creationTime, request, null);
+            processPutRequest(sourceEntity.id, transactionId.getSequenceNumber(), creationTime, request, null);
         } else {
-            QueuedCfdpOutgoingTransfer transfer = new QueuedCfdpOutgoingTransfer(sourceId, transactionId.getSequenceNumber(),
+            QueuedCfdpOutgoingTransfer transfer = new QueuedCfdpOutgoingTransfer(sourceEntity.id, transactionId.getSequenceNumber(),
                     creationTime, request, null);
             dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
             queuedTransfers.add(transfer);
@@ -1064,17 +1067,15 @@ public class CfdpService extends AbstractYamcsService
         }
     }
 
-    private long getEntityIdFromName(String entityName, Map<String, EntityConf> entities) {
-        long entityId;
-        if (entityName == null) {
-            entityId = entities.values().iterator().next().id;
+    private EntityConf getEntityFromName(String entityName, Map<String, EntityConf> entities) {
+        if (entityName == null || entityName.strip().equals("")) {
+            return entities.values().iterator().next();
         } else {
             if (!entities.containsKey(entityName)) {
                 throw new InvalidRequestException("Invalid entity '" + entityName + "' (should be one of " + entities + "");
             }
-            entityId = entities.get(entityName).id;
+            return entities.get(entityName);
         }
-        return entityId;
     }
 
     private void processDirectoryListingResponse(CfdpIncomingTransfer incomingTransfer, List<String> request) {
