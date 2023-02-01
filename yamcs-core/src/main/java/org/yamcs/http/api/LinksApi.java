@@ -246,10 +246,13 @@ public class LinksApi extends AbstractLinksApi<Context> {
         if (link instanceof LinkActionProvider) {
             var action = ((LinkActionProvider) link).getAction(request.getAction());
             if (action != null) {
+                if (!action.isEnabled()) {
+                    throw new BadRequestException("Action '" + request.getAction() + "' is not enabled");
+                }
+
                 JsonElement response = action.execute(link, actionMessage);
                 if (response == null) {
                     observer.next(Struct.getDefaultInstance());
-                    return;
                 } else {
                     var json = response.toString();
                     var responseb = Struct.newBuilder();
@@ -259,8 +262,8 @@ public class LinksApi extends AbstractLinksApi<Context> {
                         throw new InternalServerErrorException(e);
                     }
                     observer.next(responseb.build());
-                    return;
                 }
+                return;
             }
         }
 
