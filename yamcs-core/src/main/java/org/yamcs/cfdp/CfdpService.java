@@ -56,10 +56,10 @@ import org.yamcs.filetransfer.InvalidRequestException;
 import org.yamcs.filetransfer.RemoteFileListMonitor;
 import org.yamcs.filetransfer.TransferMonitor;
 import org.yamcs.filetransfer.TransferOptions;
-import org.yamcs.protobuf.BooleanOption;
 import org.yamcs.protobuf.EntityInfo;
 import org.yamcs.protobuf.FileTransferCapabilities;
 import org.yamcs.protobuf.FileTransferOption;
+import org.yamcs.protobuf.FileTransferOptionType;
 import org.yamcs.protobuf.RemoteFile;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
@@ -849,19 +849,19 @@ public class CfdpService extends AbstractYamcsService
         for (FileTransferOption option : options.getExtraOptions()) {
             switch (option.getName().toLowerCase().replaceAll("\\s+", "")){
             case "overwrite":
-                overwrite = option.getBooleanOption().getValue();
+                overwrite = option.getBooleanValue();
                 break;
             case "reliability":
             case "reliable":
-                reliable = option.getBooleanOption().getValue();
+                reliable = option.getBooleanValue();
                 break;
             case "closurerequest":
             case "closurerequested":
             case "closure":
-                closureRequested = option.getBooleanOption().getValue();
+                closureRequested = option.getBooleanValue();
                 break;
             case "createpath":
-                createPath = option.getBooleanOption().getValue();
+                createPath = option.getBooleanValue();
                 break;
             default:
             }
@@ -958,12 +958,12 @@ public class CfdpService extends AbstractYamcsService
             switch (option.getName().toLowerCase().replaceAll("\\s+", "")){
             case "reliability":
             case "reliable":
-                reliable = option.getBooleanOption().getValue();
+                reliable = option.getBooleanValue();
                 break;
             case "closurerequest":
             case "closurerequested":
             case "closure":
-                closureRequested = option.getBooleanOption().getValue();
+                closureRequested = option.getBooleanValue();
                 break;
             default:
             }
@@ -1134,8 +1134,10 @@ public class CfdpService extends AbstractYamcsService
     public List<FileTransferOption> getFileTransferOptions() {
         return List.of(
                 FileTransferOption.newBuilder()
-                        .setName("reliability").setDescription("Acknowledged or unacknowledged transmission mode")
-                        .setBooleanOption(BooleanOption.newBuilder().setValue(true).setLabel("Reliable"))
+                        .setName("reliability").setType(FileTransferOptionType.BOOLEAN)
+                        .setDescription("Acknowledged or unacknowledged transmission mode")
+                        .setAssociatedText("Reliable")
+                        .setBooleanValue(true)
                         .build()
         );
     }

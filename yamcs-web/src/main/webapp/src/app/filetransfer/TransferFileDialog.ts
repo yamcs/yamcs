@@ -33,7 +33,6 @@ export class TransferFileDialog implements OnDestroy {
 
   private fileListSubscription: RemoteFileListSubscription;
 
-  spacesRegex = /\s/g;
   optionsMapping = new Map<FileTransferOption, string>();
 
   @ViewChild('objectSelector')
@@ -77,19 +76,24 @@ export class TransferFileDialog implements OnDestroy {
 
     // Prepare form control names for custom options
     let controlNames: { [key: string]: any; } = {};
+
     this.service.transferOptions?.forEach(
       (option, index) => {
-        let name = "option" + index + option.name.toLowerCase().replace(this.spacesRegex, "");
+        let name = this.getControlName(option, index);
         this.optionsMapping.set(option, name);
 
-        let defaultValue = // String default
-          option.stringOption ? option.stringOption.default ||
-            (option.stringOption.values && option.stringOption.values.length && option.stringOption.values[0].value) :
-            // Mumber default
-            option.numberOption ? (option.numberOption.default ? (option.numberOption.default.double != null ? option.numberOption.default.double : option.numberOption.default.int) :
-              (option.numberOption.values && option.numberOption.values.length && (option.numberOption.values[0].double != null ? option.numberOption.values[0].double : option.numberOption.values[0].int))) :
-              // Boolean default
-              option.booleanOption ? option.booleanOption.value : false;
+        let defaultValue;
+        switch (option.type) {
+          case 'BOOLEAN':
+            defaultValue = option.booleanValue;
+            break;
+          case 'DOUBLE':
+            defaultValue = option.doubleDefault != null ? option.doubleDefault : (option.doubleValues && option.doubleValues.length ? option.doubleValues[0] : undefined);
+            break;
+          case 'STRING':
+            defaultValue = option.stringDefault != null ? option.stringDefault : (option.stringValues && option.stringValues.length ? option.stringValues[0].value : undefined);
+            break;
+        }
 
         controlNames[name] = [defaultValue, []];
       }
@@ -121,6 +125,10 @@ export class TransferFileDialog implements OnDestroy {
 
     // Show most recent file list
     this.getFileList(firstDestination, '');
+  }
+
+  getControlName(option: FileTransferOption, index: number) {
+    return "option" + index + option.name.replace(/\s/g, "");
   }
 
   // Called when user selects a bucket
@@ -183,18 +191,19 @@ export class TransferFileDialog implements OnDestroy {
       }
       let value = this.form.get(formControlName)?.value;
       let newOption: FileTransferOption = {
-        name: option.name
+        name: option.name,
+        type: option.type
       };
-      if (option.stringOption) {
-        newOption.stringOption = { values: [{ value: value }] };
-      } else if (option.numberOption) {
-        newOption.numberOption = {
-          values: [Number.isInteger(value) ? { int: value } : { double: value }]
-        };
-      } else if (option.booleanOption) {
-        newOption.booleanOption = { value: value };
-      } else {
-        return;
+      switch (option.type) {
+        case 'BOOLEAN':
+          newOption.booleanValue = value;
+          break;
+        case 'DOUBLE':
+          newOption.doubleValues = [value];
+          break;
+        case 'STRING':
+          newOption.stringValues = [{ value: value }];
+          break;
       }
       return newOption;
     }).filter((option): option is FileTransferOption => !!option); // Filter undefined

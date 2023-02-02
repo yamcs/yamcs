@@ -11,39 +11,20 @@ export interface FileTransferService {
 
 export interface FileTransferOption {
   name: string;
+  type: 'BOOLEAN' | 'DOUBLE' | 'STRING';
   description?: string;
-  stringOption?: StringOption;
-  numberOption?: NumberOption;
-  booleanOption?: BooleanOption;
-}
-
-export interface StringOption {
-  values?: StringValue[];
-  default?: string;
-  placeholder?: string;
+  associatedText?: string;
   allowCustomOption?: boolean;
-}
-
-export interface NumberOption {
-  values?: NumberValue[];
-  default?: NumberValue;
-  placeholder?: string;
-  allowCustomOption?: boolean;
-}
-
-export interface BooleanOption {
-  value: boolean;
-  label?: string;
+  booleanValue?: boolean;
+  doubleValues?: number[];
+  doubleDefault?: number[];
+  stringValues?: StringValue[];
+  stringDefault?: string;
 }
 
 export interface StringValue {
   value: string;
   text?: string;
-}
-
-export interface NumberValue {
-  int?: number;
-  double?: number;
 }
 
 export interface FileTransferCapabilities {

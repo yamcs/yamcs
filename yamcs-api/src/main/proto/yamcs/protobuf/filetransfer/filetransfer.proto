@@ -356,43 +356,29 @@ message ListFilesResponse {
 /*
 CUSTOMISABLE FILE TRANSFER OPTIONS
 */
-message FileTransferOption {
-  optional string name = 1; // Displayed as title for the option
-  optional string description = 2; // Shown on hover
-  oneof optionConfig { // Behaviour types
-    StringOption stringOption = 3;
-    NumberOption numberOption = 4;
-    BooleanOption booleanOption = 5;
-  }
+message FileTransferOption { // Custom file transfer options
+  optional string name = 1; // Identifier and displayed as title for the option
+  optional FileTransferOptionType type = 2; // Option type
+  optional string description = 3; // Help text shown on hover
+  optional string associatedText = 4; // Placeholder for text/number fields and label for checkboxes
+  optional bool allowCustomOption = 5; // Whether a custom text/number field is needed when using the drop-down menu
+  // BOOLEAN type only fields
+  optional bool booleanValue = 6; // Boolean value for the option, used as default in the UI
+  // DOUBLE type only fields
+  repeated double doubleValues = 7; // Double dropdown options if specified, use to store selection when sending
+  optional double doubleDefault = 8; // Double default value (prefilled/preselected)
+  // STRING type only fields
+  repeated StringValue stringValues = 9; // String dropdown options if specified, use to store selection when sending
+  optional string stringDefault = 10; // String default value (prefilled/preselected)
 }
 
-message StringOption { // Shown as text field
-  repeated StringValue values = 1; // Shows drop-down menu if specified
-  optional string default = 2; // Default/pre-selected value
-  optional string placeholder = 3; // Field placeholder
-  optional bool allowCustomOption = 4; // Whether a custom text field is needed when using the drop-down menu
-}
-
-message NumberOption { // Shown as a number field
-  repeated NumberValue values = 1; // Shows drop-down menu if specified
-  optional NumberValue default = 2; // Default/pre-selected value
-  optional string placeholder = 3; // Field placeholder
-  optional bool allowCustomOption = 4; // Whether a custom number field is needed when using the drop-down menu
-}
-
-message BooleanOption { // Shown as checkbox
-  optional bool value = 1; // Default checkbox value
-  optional string label = 2; // Checkbox label
+enum FileTransferOptionType {
+  BOOLEAN = 0; // Shown as checkbox in the UI (related field: booleanValue)
+  DOUBLE = 1; // Shown as a number field or drop-down if doubleValues is specified (related fields: doubleValues, doubleDefault)
+  STRING = 2; // Shown as text field or drop-down if stringValues is specified (related fields: stringValues, stringDefault)
 }
 
 message StringValue {
-  optional string value = 1;
-  optional string text = 2;
-}
-
-message NumberValue {
-  oneof value {
-    sint64 int = 1;
-    double double = 2;
-  }
+  optional string value = 1; // Actual value used by the API
+  optional string verboseName = 2; // Displayed friendly name for the option
 }

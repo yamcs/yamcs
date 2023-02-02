@@ -81,43 +81,42 @@
 
         <div *ngFor="let option of service.transferOptions; let i = index" [title]="option.description">
           <label>{{option.name | titlecase}}</label>
-          <!-- String option type -->
-          <select
-                  *ngIf="option.stringOption && option.stringOption.values && option.stringOption.values.length"
-                  formControlName="option{{i + option.name.toLowerCase().replace(spacesRegex, '')}}">
-            <option *ngIf="option.stringOption.allowCustomOption" value="">Custom</option>
-            <option *ngFor="let item of option.stringOption.values" [value]="item.value">{{item.text || item.value}}
-            </option>
-          </select><br
-              *ngIf="option.stringOption && option.stringOption.values && option.stringOption.values.length && option.stringOption.allowCustomOption">
-          <input type="text"
-                 *ngIf="option.stringOption && (option.stringOption.allowCustomOption || !option.stringOption.values || option.stringOption.values.length == 0)"
-                 formControlName="option{{i + option.name.toLowerCase().replace(spacesRegex, '')}}"
-                 [placeholder]="option.stringOption.placeholder || ''"
-                 [value]="form.get('option' + i + option.name.toLowerCase().replace(spacesRegex, ''))?.value"
-                 style="width: fit-content">
+          <!-- Boolean option type -->
+          <label class="checkbox-label" *ngIf="option.type === 'BOOLEAN'">
+            <input type="checkbox" [formControlName]="getControlName(option, i)">
+            {{option.associatedText}}
+          </label>
           <!-- Number option type -->
           <select
-                  *ngIf="option.numberOption && option.numberOption.values && option.numberOption.values.length"
-                  formControlName="option{{i + option.name.toLowerCase().replace(spacesRegex, '')}}">
-            <option *ngIf="option.numberOption.allowCustomOption" value="">Custom</option>
-            <option *ngFor="let item of option.numberOption.values"
-                    [value]="item.double != null ? item.double : item.int">{{item.double != null ? item.double :
-              item.int}}
+                  *ngIf="option.type === 'DOUBLE' && option.doubleValues && option.doubleValues.length"
+                  [formControlName]="getControlName(option, i)">
+            <option *ngIf="option.allowCustomOption" value="">Custom</option>
+            <option *ngFor="let value of option.doubleValues"
+                    [value]="value">{{ value }}
             </option>
           </select><br
-              *ngIf="option.numberOption && option.numberOption.values && option.numberOption.values.length && option.numberOption.allowCustomOption">
+              *ngIf="option.type === 'DOUBLE' && option.allowCustomOption && option.doubleValues && option.doubleValues.length">
           <input type="number"
-                 *ngIf="option.numberOption && (option.numberOption.allowCustomOption || !option.numberOption.values || option.numberOption.values.length == 0)"
-                 formControlName="option{{i + option.name.toLowerCase().replace(spacesRegex, '')}}"
-                 [placeholder]="option.numberOption.placeholder || ''"
-                 [value]="form.get('option' + i + option.name.toLowerCase().replace(spacesRegex, ''))?.value"
+                 *ngIf="option.type === 'DOUBLE' && (option.allowCustomOption || !option.doubleValues || option.doubleValues.length == 0)"
+                 [formControlName]="getControlName(option, i)"
+                 [placeholder]="option.associatedText || ''"
+                 [value]="form.get(getControlName(option, i))?.value"
                  style="width: 100px">
-          <!-- Boolean option type -->
-          <label class="checkbox-label" *ngIf="option.booleanOption">
-            <input type="checkbox" formControlName="option{{i + option.name.toLowerCase().replace(spacesRegex, '')}}">
-            {{option.booleanOption.label}}
-          </label>
+          <!-- String option type -->
+          <select
+                  *ngIf="option.type === 'STRING' && option.stringValues && option.stringValues.length"
+                  [formControlName]="getControlName(option, i)">
+            <option *ngIf="option.allowCustomOption" value="">Custom</option>
+            <option *ngFor="let item of option.stringValues" [value]="item.value">{{ item.verboseName || item.value }}
+            </option>
+          </select><br
+              *ngIf="option.type === 'STRING' && option.allowCustomOption && option.stringValues && option.stringValues.length">
+          <input type="text"
+                 *ngIf="option.type === 'STRING' && (option.allowCustomOption || !option.stringValues || option.stringValues.length == 0)"
+                 [formControlName]="getControlName(option, i)"
+                 [placeholder]="option.associatedText || ''"
+                 [value]="form.get(getControlName(option, i))?.value"
+                 style="width: fit-content">
         </div>
 
         <input type="text" formControlName="localFilenames" placeholder="Local filename"
