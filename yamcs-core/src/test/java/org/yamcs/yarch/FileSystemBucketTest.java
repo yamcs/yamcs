@@ -1,6 +1,5 @@
 package org.yamcs.yarch;
 
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -8,9 +7,9 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashMap;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FileSystemBucketTest {
 
@@ -23,15 +22,15 @@ public class FileSystemBucketTest {
 
         IOException exception1 = assertThrows(IOException.class,
                 () -> bucket.putObject("../traversed", "", new HashMap<>(), new byte[100]));
-        MatcherAssert.assertThat(exception1.getMessage(), containsString("Directory traversal"));
+        assertTrue(exception1.getMessage().contains("Directory traversal"));
 
         IOException exception2 = assertThrows(IOException.class,
                 () -> bucket.putObject("test/../../traversed", "", new HashMap<>(), new byte[100]));
-        MatcherAssert.assertThat(exception2.getMessage(), containsString("Directory traversal"));
+        assertTrue(exception2.getMessage().contains("Directory traversal"));
 
         IOException exception3 = assertThrows(IOException.class,
                 () -> bucket.putObject("/traversed", "", new HashMap<>(), new byte[100]));
-        MatcherAssert.assertThat(exception3.getMessage(), containsString("Directory traversal"));
+        assertTrue(exception3.getMessage().contains("Directory traversal"));
 
         assertDoesNotThrow(() -> bucket.putObject("not-traversed", "", new HashMap<>(), new byte[100]));
 

@@ -29,7 +29,7 @@ public class CfdpUtils {
      * write the given int as an unsigned byte to the given buffer at its current position
      */
     public static void writeUnsignedByte(ByteBuffer buffer, int input) {
-        buffer.put(intToUnsignedByte(input));
+        buffer.put((byte) input);
     }
 
     /*
@@ -76,14 +76,14 @@ public class CfdpUtils {
      * Write the given long as an unsigned int (32bits) to the given buffer at its current position
      */
     public static void writeUnsignedInt(ByteBuffer buffer, long input) {
-        buffer.putInt((int) (input & 0xffffffff)); // TODO: 'input & 0xffffffff' can be replaced with 'input' ?
+        buffer.putInt((int) input);
     }
 
     /**
      * Write the given long as an unsigned long (64bits) to the given buffer at its current position
      */
     public static void writeUnsignedLong(ByteBuffer buffer, long input) {
-        buffer.putLong(input & 0xffffffff); // TODO: 'input & 0xffffffff' can be replaced with 'input' ?
+        buffer.putLong(input);
     }
 
     /**

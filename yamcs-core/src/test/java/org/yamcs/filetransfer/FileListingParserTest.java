@@ -1,10 +1,8 @@
 package org.yamcs.filetransfer;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.shadow.com.univocity.parsers.csv.Csv;
 import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.protobuf.ListFilesResponse;
 import org.yamcs.protobuf.RemoteFile;
 import org.yamcs.utils.TimestampUtil;
 

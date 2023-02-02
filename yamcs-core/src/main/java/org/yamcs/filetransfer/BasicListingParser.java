@@ -41,7 +41,7 @@ public class BasicListingParser extends FileListingParser {
     @Override
     public void init(String yamcsInstance, YConfiguration config) {
         super.init(yamcsInstance, config);
-        if(yamcsInstance != null && !yamcsInstance.equals("")) {
+        if(!"".equals(yamcsInstance)) {
             eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, "BasicListingParser", 10000);
         }
         removePrependingRemotePath = config.getBoolean("removePrependingRemotePath");
@@ -71,7 +71,7 @@ public class BasicListingParser extends FileListingParser {
         return Arrays.stream(data.replace("\r", "").split("\\n"))
                 .map(fileName -> {
                     try {
-                        if (fileName.strip().equals("")) {
+                        if (fileName.isBlank()) {
                             return null;
                         }
 

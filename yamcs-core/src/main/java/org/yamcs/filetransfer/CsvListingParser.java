@@ -67,7 +67,7 @@ public class CsvListingParser extends FileListingParser {
     @Override
     public void init(String yamcsInstance, YConfiguration config) {
         super.init(yamcsInstance, config);
-        if(yamcsInstance != null && !yamcsInstance.equals("")) {
+        if(!"".equals(yamcsInstance)) {
             eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, "CsvListingParser", 10000);
         }
 

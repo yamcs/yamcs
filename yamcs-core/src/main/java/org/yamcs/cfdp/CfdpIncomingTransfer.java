@@ -264,7 +264,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         incomingDataFile.setSize(fileSize);
 
         this.acknowledged = packet.getHeader().isAcknowledged();
-        originalObjectName = !packet.getDestinationFilename().equals("") ? packet.getDestinationFilename() : packet.getSourceFilename();
+        originalObjectName = !packet.getDestinationFilename().isEmpty() ? packet.getDestinationFilename() : packet.getSourceFilename();
 
         sendInfoEvent(ETYPE_TRANSFER_META, "Received metadata: "+toEventMsg(packet));
 

@@ -933,7 +933,7 @@ public class CfdpService extends AbstractYamcsService
         long destinationId = getEntityFromName(destinationEntity, localEntities).id;
         long sourceId = getEntityFromName(sourceEntity, remoteEntities).id;
 
-        if(objectName.strip().equals("")) {
+        if(objectName.isBlank()) {
             String[] splitPath = sourcePath.split("[\\\\/]");
             objectName = splitPath[splitPath.length - 1];
         }
@@ -1068,7 +1068,7 @@ public class CfdpService extends AbstractYamcsService
     }
 
     private EntityConf getEntityFromName(String entityName, Map<String, EntityConf> entities) {
-        if (entityName == null || entityName.strip().equals("")) {
+        if (entityName == null || entityName.isBlank()) {
             return entities.values().iterator().next();
         } else {
             if (!entities.containsKey(entityName)) {
