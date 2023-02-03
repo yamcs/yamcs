@@ -202,39 +202,49 @@ message TransferInfo {
 }
 
 message CreateTransferRequest {
+  // Deprecated: use options (FileTransferOption) instead
   message UploadOptions {
+    // Deprecated: use options (FileTransferOption) instead (name: overwrite)
     // Set to ``True`` if an already existing destination should be overwritten.
     // Default: ``True``.
-    optional bool overwrite = 1;
-    
+    optional bool overwrite = 1 [deprecated=true];
+
+    // Deprecated: use options (FileTransferOption) instead (name: createPath)
     // Set to ``True`` if the destination path should be created if it does not exist.
     // Default: ``True``.
-    optional bool createPath = 2;
-    
+    optional bool createPath = 2 [deprecated=true];
+
+    // Deprecated: use options (FileTransferOption) instead (name: reliable)
     // Set to ``True`` if reliable (class 2) CFDP transfer should be used,
     // otherwise unreliable (class 1). Default: ``False``.
-    optional bool reliable = 3;
-    
+    optional bool reliable = 3 [deprecated=true];
+
+    // Deprecated: use options (FileTransferOption) instead (name: closureRequested)
     // Introduced in Issue 5 of the CFDP standard for non reliable (class 1) transfers
     // Requests the receiver to send a Finished PDU at the end of the transfer
-    optional bool closureRequested = 4;
+    optional bool closureRequested = 4 [deprecated=true];
   }
+  // Deprecated: use options (FileTransferOption) instead
   message DownloadOptions {
+    // Deprecated: use options (FileTransferOption) instead (name: overwrite)
     // Set to ``True`` if an already existing destination should be overwritten.
     // Default: ``True``.
-    optional bool overwrite = 1;
+    optional bool overwrite = 1 [deprecated=true];
 
+    // Deprecated: use options (FileTransferOption) instead (name: createPath)
     // Set to ``True`` if the destination path should be created if it does not exist.
     // Default: ``True``.
-    optional bool createPath = 2;
+    optional bool createPath = 2 [deprecated=true];
 
+    // Deprecated: options (FileTransferOption) instead (name: reliable)
     // Set to ``True`` if reliable (class 2) CFDP transfer should be used,
     // otherwise unreliable (class 1). Default: ``False``.
-    optional bool reliable = 3;
+    optional bool reliable = 3 [deprecated=true];
 
+    // Deprecated: option (FileTransferOption) instead (name: closureRequested)
     // Introduced in Issue 5 of the CFDP standard for non reliable (class 1) transfers
     // Requests the receiver to send a Finished PDU at the end of the transfer
-    optional bool closureRequested = 4;
+    optional bool closureRequested = 4 [deprecated=true];
   }
 
   optional string instance = 1;
@@ -255,11 +265,14 @@ message CreateTransferRequest {
   
   // **Required** The path at the remote entity. Example: ``a/local/path/some_filename``.
   optional string remotePath = 5;
-  
-  optional DownloadOptions downloadOptions = 6;
 
+  // Deprecated: use options (FileTransferOption) instead
+  // Configuration options specific to ``DOWNLOAD`` transfers.
+  optional DownloadOptions downloadOptions = 6 [deprecated=true];
+
+  // Deprecated: use options (FileTransferOption) instead
   // Configuration options specific to ``UPLOAD`` transfers.
-  optional UploadOptions uploadOptions = 7;
+  optional UploadOptions uploadOptions = 7 [deprecated=true];
   
   //used to derive the source entity id
   optional string source = 9;
@@ -267,6 +280,7 @@ message CreateTransferRequest {
   //used to derive the destination entity id
   optional string destination = 10;
 
+  // List of options for the transfer
   repeated FileTransferOption options = 11;
 }
 
