@@ -33,14 +33,6 @@ public class CfdpUtils {
     }
 
     /*
-     * get the given int as an unsigned byte to the given buffer at its current position
-     */
-    public static byte intToUnsignedByte(int input) {
-        // TODO: would make more sense if char/check > 255
-        return (byte) (input & 0xff);
-    }
-
-    /*
      * get an unsigned short value from an input buffer, at its current position
      * A short has range -2ˆ15+1 to 2ˆ15-1, while we want 0 to 2ˆ16-1, the mask and int cast takes care of this
      */
@@ -57,19 +49,11 @@ public class CfdpUtils {
     }
 
     /**
-     * get an unsigned long value from an input buffer, at its current position A short has range -2ˆ63+1 to 2ˆ63-1,
-     * while we want 0 to 2ˆ64-1, the mask and int cast takes care of this
-     */
-    public static long getUnsignedLong(ByteBuffer buffer) {
-        return buffer.getLong() & 0xffffffffL;
-    }
-
-    /**
      * Gets an unsigned 32-bit integer or 64-bit long from the given buffer depending on the is64bits parameter.
      * Useful for FSS (File-Size Sensitive) data type
      */
     public static long getUnsignedNumber(ByteBuffer buffer, boolean is64bits) {
-        return is64bits ? getUnsignedLong(buffer) : getUnsignedInt(buffer);
+        return is64bits ? buffer.getLong() : getUnsignedInt(buffer);
     }
 
     /**

@@ -140,6 +140,6 @@ class FileListingParserTest {
         config = parser.getSpec().validate(config);
         parser.init("", config);
 
-        return parser.parse(remotePath, data);
+        return parser.parse(remotePath, data.getBytes());
     }
 }

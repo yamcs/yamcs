@@ -1100,7 +1100,7 @@ public class CfdpService extends AbstractYamcsService
 
         String remotePath = request.get(1);
 
-        List<RemoteFile> files = fileListingParser.parse(remotePath, new String(incomingTransfer.getFileData()));
+        List<RemoteFile> files = fileListingParser.parse(remotePath, incomingTransfer.getFileData());
 
         ListFilesResponse listFilesResponse = ListFilesResponse.newBuilder()
                 .addAllFiles(files)

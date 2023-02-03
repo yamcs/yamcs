@@ -78,10 +78,11 @@ public class CsvListingParser extends FileListingParser {
     }
 
     @Override
-    public List<RemoteFile> parse(String remotePath, String data) {
+    public List<RemoteFile> parse(String remotePath, byte[] data) {
+        String textData = new String(data);
         ArrayList<RemoteFile> files = new ArrayList<>();
 
-        CsvReader reader = CsvReader.parse(data);
+        CsvReader reader = CsvReader.parse(textData);
         try {
             Map<String, Integer> mapping = getMapping(reader);
 

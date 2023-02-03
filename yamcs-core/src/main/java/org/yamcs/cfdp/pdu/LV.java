@@ -34,7 +34,7 @@ public class LV {
     }
 
     public byte[] getBytes() {
-        return Bytes.concat(new byte[] {CfdpUtils.intToUnsignedByte(value.length)}, value);
+        return Bytes.concat(new byte[] {(byte) value.length}, value);
     }
 
     @Override

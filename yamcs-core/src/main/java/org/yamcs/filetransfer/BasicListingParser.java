@@ -61,14 +61,15 @@ public class BasicListingParser extends FileListingParser {
     }
 
     @Override
-    public List<RemoteFile> parse(String remotePath, String data) {
+    public List<RemoteFile> parse(String remotePath, byte[] data) {
+        String textData = new String(data);
         if(!removePrependingRemotePath) {
             remotePath = "";
         }
 
         // TODO: maybe add (directoryTerminatorsRegex*) at the beginning?
         String regex = "^(" + Pattern.quote(remotePath) + ")?(" + directoryTerminatorsRegex + "*)(?<name>.*?)(" + directoryTerminatorsRegex + "*)$";
-        return Arrays.stream(data.replace("\r", "").split("\\n"))
+        return Arrays.stream(textData.replace("\r", "").split("\\n"))
                 .map(fileName -> {
                     try {
                         if (fileName.isBlank()) {

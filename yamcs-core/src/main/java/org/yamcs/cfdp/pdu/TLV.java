@@ -50,7 +50,7 @@ public class TLV {
     }
 
     public byte[] getBytes() {
-        return Bytes.concat(new byte[] {type}, new byte[] {CfdpUtils.intToUnsignedByte(value.length)}, value);
+        return Bytes.concat(new byte[] {type, (byte) value.length }, value);
     }
 
     public static TLV getEntityIdTLV(long entityId, int entityIdLength) {

@@ -218,7 +218,7 @@ public abstract class CfdpPacket {
             switch (value) {
                 case 0: return ACKNOWLEDGED;
                 case 1: return UNACKNOWLEDGED;
-                default: return null;
+                default: throw new IllegalArgumentException("Value can only be 0 or 1");
             }
         }
     }

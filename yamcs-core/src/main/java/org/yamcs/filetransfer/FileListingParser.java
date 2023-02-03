@@ -37,6 +37,6 @@ public abstract class FileListingParser {
      * @param data text data (e.g. coming from a file)
      * @return parsed remote files and directories
      */
-    public abstract List<RemoteFile> parse(String remotePath, String data);
+    public abstract List<RemoteFile> parse(String remotePath, byte[] data);
 }
 
