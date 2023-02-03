@@ -54,12 +54,23 @@ export class StackFilePage implements OnDestroy {
   private bucket: string;
   private folderPerInstance: boolean;
 
+  // Configuration of command ack to accept to execute the following
+  // TODO: get from config
+  private acceptingAck = "Acknowledge_Queued";
+  // Default: OK/DISABLED -> continue, NOK/CANCELLED/after timeout -> pause,  everything else -> ignore
+  private acceptingAckValues = ["OK", "DISABLED"];
+  private stoppingAckValues = ["NOK", "CANCELLED"];
+  private stoppingAckTimeout = 5000;
+
+  private runningTimeout: NodeJS.Timeout;
+
   constructor(
     private dialog: MatDialog,
     readonly yamcs: YamcsService,
     private route: ActivatedRoute,
     private title: Title,
     private configService: ConfigService,
+    // private messageService: MessageService // TODO: figure out how to get that
   ) {
     const config = configService.getConfig();
     this.bucket = config.stackBucket;
@@ -92,6 +103,9 @@ export class StackFilePage implements OnDestroy {
           break;
         }
       }
+
+      // Continue running entries
+      this.checkAckContinueRunning(rec);
     });
   }
 
@@ -275,6 +289,13 @@ export class StackFilePage implements OnDestroy {
       args: entry.args,
       extra: entry.extra,
     }).then(response => {
+      this.runningTimeout = setTimeout(() => {
+        if (this.selectedEntry$.value?.id === response.id) {
+          // TODO: display warning that it has stopped
+          this.stopRun();
+        }
+      }, this.stoppingAckTimeout);
+
       entry.executionNumber = executionNumber;
       entry.id = response.id;
 
@@ -283,6 +304,7 @@ export class StackFilePage implements OnDestroy {
       const rec = this.commandHistoryRecords.get(entry.id);
       if (rec) {
         entry.record = rec;
+        this.checkAckContinueRunning(rec);
       }
 
       // Refresh subject, to be sure
@@ -301,19 +323,39 @@ export class StackFilePage implements OnDestroy {
 
     this.running$.next(true);
     try {
-      const entries = this.entries$.value;
-      for (let i = entries.indexOf(entry); i < entries.length; i++) {
-        entry = entries[i];
-        await this.runEntry(entry);
-        this.advanceSelection(entry);
-      }
+      await this.runEntry(entry);
     } finally {
-      this.running$.next(false);
+      if (this.entries$.value.indexOf(entry) === this.entries$.value.length - 1) {
+        this.stopRun();
+      }
+    }
+  }
+
+  private checkAckContinueRunning(record: CommandHistoryRecord) {
+    // Attempts to continue the current run from selected by checking acknowledgement statuses
+    if (this.running$.value) {
+      let selectedEntry = this.selectedEntry$.value;
+      if (selectedEntry?.id === record.id) {
+        let ack = record.acksByName[this.acceptingAck];
+
+        if (ack && ack.status)
+          if (this.acceptingAckValues.includes(ack.status)) {
+            // Continue execution
+            this.advanceSelection(selectedEntry);
+            this.runFromSelection();
+          } else if (this.stoppingAckValues.includes(ack.status)) {
+            // Stop exection
+            this.stopRun();
+          } // Ignore others
+      }
     }
   }
 
   stopRun() {
     this.running$.next(false);
+    if (this.runningTimeout) {
+      clearTimeout(this.runningTimeout);
+    }
   }
 
   private advanceSelection(entry: StackEntry) {
