@@ -47,4 +47,8 @@ public interface TcDataLink extends Link {
     }
 
     void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryPublisher);
+
+    default boolean isCommandingAvailable() {
+        return !isEffectivelyDisabled();
+    }
 }
