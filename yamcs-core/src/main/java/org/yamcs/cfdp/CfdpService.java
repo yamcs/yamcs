@@ -1011,7 +1011,7 @@ public class CfdpService extends AbstractYamcsService
 
         String dirPath = remotePath.replaceFirst("/*$", "");
         if (automaticDirectoryListingReloads && directoryListingRequests.values().stream().noneMatch(request -> request.equals(Arrays.asList(destinationEntity.getName(), dirPath)))) {
-            requestFileList(sourceEntity.getName(), destinationEntity.getName(), dirPath, reliable);
+            fetchFileList(sourceEntity.getName(), destinationEntity.getName(), dirPath, reliable);
         }
 
         try {
@@ -1033,12 +1033,12 @@ public class CfdpService extends AbstractYamcsService
     }
 
     @Override
-    public void requestFileList(String source, String destination, String remotePath, boolean reliable) {
+    public void fetchFileList(String source, String destination, String remotePath, boolean reliable) {
         EntityConf sourceEntity = getEntityFromName(source, localEntities);
         EntityConf destinationEntity = getEntityFromName(destination, remoteEntities);
 
         if (fileListingService != this) {
-            fileListingService.requestFileList(sourceEntity.getName(), destinationEntity.getName(), remotePath, reliable);
+            fileListingService.fetchFileList(sourceEntity.getName(), destinationEntity.getName(), remotePath, reliable);
             return;
         }
 

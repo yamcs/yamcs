@@ -85,7 +85,7 @@ service FileTransferApi {
   }
 
   // Request file list from remote
-  rpc RequestFileList(ListFilesRequest) returns (google.protobuf.Empty) {
+  rpc FetchFileList(ListFilesRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       post: "/api/filetransfer/{instance}/{serviceName}/files:sync"
       body: "*"
@@ -136,8 +136,8 @@ message FileTransferCapabilities {
   //if true, yamcs-web shows a button for initiating a download
   optional bool download = 2;
 
-  // DEPRECATED: use a FileTransferOption to get a reliability toggle
-  optional bool reliability = 3;
+  // DEPRECATED: use a FileTransferOption in FileTransferServiceInfo to get a reliability toggle
+  optional bool reliability = 3 [deprecated=true];
 
   //if true, yamcs-web will show the section with the destination file/folder name (upload only)
   optional bool remotePath = 4;
@@ -370,29 +370,47 @@ message ListFilesResponse {
 /*
 CUSTOMISABLE FILE TRANSFER OPTIONS
 */
-message FileTransferOption { // Custom file transfer options
-  optional string name = 1; // Identifier and displayed as title for the option
-  optional FileTransferOptionType type = 2; // Option type
-  optional string description = 3; // Help text shown on hover
-  optional string associatedText = 4; // Placeholder for text/number fields and label for checkboxes
-  optional bool allowCustomOption = 5; // Whether a custom text/number field is needed when using the drop-down menu
+message FileTransferOption {
+  // Identifier and displayed as title for the option
+  optional string name = 1;
+  // Option type
+  optional FileTransferOptionType type = 2;
+  // Help text shown on hover
+  optional string description = 3;
+  // Placeholder for text/number fields and label for checkboxes
+  optional string associatedText = 4;
+  // Whether a custom text/number field is needed when using the drop-down menu
+  optional bool allowCustomOption = 5;
+
   // BOOLEAN type only fields
-  optional bool booleanValue = 6; // Boolean value for the option, used as default in the UI
+  // Boolean value for the option, used as default in the UI
+  optional bool booleanValue = 6;
+
   // DOUBLE type only fields
-  repeated double doubleValues = 7; // Double dropdown options if specified, use to store selection when sending
-  optional double doubleDefault = 8; // Double default value (prefilled/preselected)
+  // Double dropdown options if specified, use to store selection when sending
+  repeated double doubleValues = 7;
+  // Double default value (prefilled/preselected)
+  optional double doubleDefault = 8;
+
   // STRING type only fields
-  repeated StringValue stringValues = 9; // String dropdown options if specified, use to store selection when sending
-  optional string stringDefault = 10; // String default value (prefilled/preselected)
+  // String dropdown options if specified, use to store selection when sending
+  repeated StringValue stringValues = 9;
+  // String default value (prefilled/preselected)
+  optional string stringDefault = 10;
 }
 
 enum FileTransferOptionType {
-  BOOLEAN = 0; // Shown as checkbox in the UI (related field: booleanValue)
-  DOUBLE = 1; // Shown as a number field or drop-down if doubleValues is specified (related fields: doubleValues, doubleDefault)
-  STRING = 2; // Shown as text field or drop-down if stringValues is specified (related fields: stringValues, stringDefault)
+  // Shown as checkbox in the UI (related field: booleanValue)
+  BOOLEAN = 0;
+  // Shown as a number field or drop-down if doubleValues is specified (related fields: doubleValues, doubleDefault)
+  DOUBLE = 1;
+  // Shown as text field or drop-down if stringValues is specified (related fields: stringValues, stringDefault)
+  STRING = 2;
 }
 
 message StringValue {
-  optional string value = 1; // Actual value used by the API
-  optional string verboseName = 2; // Displayed friendly name for the option
+  // Actual value used by the API
+  optional string value = 1;
+  // Displayed friendly name for the option
+  optional string verboseName = 2;
 }

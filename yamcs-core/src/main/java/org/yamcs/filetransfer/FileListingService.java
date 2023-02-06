@@ -39,7 +39,7 @@ public interface FileListingService {
      * @param remotePath path on the destination from which to get the file list
      * @param reliable reliability of the file listing request (e.g. transmission mode for CFDP, may not be needed)
      */
-    void requestFileList(String source, String destination, String remotePath, boolean reliable);
+    void fetchFileList(String source, String destination, String remotePath, boolean reliable);
 
     void saveFileList(ListFilesResponse listFilesResponse);
 }

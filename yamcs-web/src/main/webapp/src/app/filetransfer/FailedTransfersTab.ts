@@ -89,7 +89,7 @@ export class FailedTransfersTab implements OnDestroy {
     if (item) {
       item.updateTransfer(transfer);
     } else {
-      const objectUrl = transfer.objectName !== undefined ? this.storageClient.getObjectURL('_global', transfer.bucket, transfer.objectName) : '';
+      const objectUrl = transfer.objectName ? this.storageClient.getObjectURL('_global', transfer.bucket, transfer.objectName) : '';
       item = new TransferItem(transfer, objectUrl);
       this.transfersById.set(transfer.id, item);
     }

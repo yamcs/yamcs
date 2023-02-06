@@ -285,10 +285,10 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
      * </pre>
      */
     @Override
-    public void requestFileList(Context ctx, ListFilesRequest request, Observer<Empty> observer) {
+    public void fetchFileList(Context ctx, ListFilesRequest request, Observer<Empty> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
         FileTransferService ftService = verifyService(request.getInstance(), request.hasServiceName() ? request.getServiceName() : null);
-        ftService.requestFileList(request.getSource(), request.getDestination(), request.getRemotePath(), request.getReliable());
+        ftService.fetchFileList(request.getSource(), request.getDestination(), request.getRemotePath(), request.getReliable());
         observer.complete(Empty.getDefaultInstance());
     }
 

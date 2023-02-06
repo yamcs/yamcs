@@ -44,8 +44,6 @@ export class StorageClient {
   }
 
   getObjectURL(instance: string, bucket: string, objectName: string) {
-    if (!objectName) return ""; // TODO: maybe handle differently
-
     const encodedName = this.encodeObjectName(objectName);
     return `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}/objects/${encodedName}`;
   }

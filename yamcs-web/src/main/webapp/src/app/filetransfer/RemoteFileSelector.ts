@@ -18,7 +18,6 @@ import { ListFilesResponse } from '../client';
   ]
 })
 export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDestroy {
-  // TODO: class almost complete duplicate of ObjectSelector
 
   @Input()
   instance = '_global';
