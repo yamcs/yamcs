@@ -59,8 +59,7 @@ export class StorageClient {
   }
 
   async deleteObject(instance: string, bucket: string, objectName: string) {
-    const encodedName = this.encodeObjectName(objectName);
-    const url = `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}/objects/${encodedName}`;
+    const url = `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}/objects/${encodeURIComponent(objectName)}`;
     return await this.yamcs.doFetch(url, {
       method: 'DELETE',
     });
