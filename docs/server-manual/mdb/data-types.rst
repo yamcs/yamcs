@@ -418,7 +418,7 @@ in other languages. The ArrayParameterType is defined as shown in the example be
 
 .. rubric:: Example 1: simple aggregate parameter declaration
 
-``<xtce:Member>`` is used to ceclate members of the aggregate. Each member has a ``name``, a ``typeRef`` for its type and an optional ``initialValue`` for a possible predefined value.
+``<xtce:Member>`` is used to define members of the aggregate. Each member has a ``name``, a ``typeRef`` for its type and an optional ``initialValue`` for a possible predefined value.
 
 .. code-block:: xml
 
