@@ -29,7 +29,7 @@ public class ArrayValue extends Value {
      */
     public ArrayValue(int[] dim, Type elementType) {
         if (dim.length == 0) {
-            throw new IllegalArgumentException("The array has to be at least ");
+            throw new IllegalArgumentException("The array has to be at least 1 dimensional");
         }
         this.elementType = elementType;
         int fs = flatSize(dim);

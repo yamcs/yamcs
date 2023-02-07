@@ -209,6 +209,7 @@ An example of a UDP TC frame link specification is below:
             initialClcwWait: 3600
             cop1T1: 3
             cop1TxLimit: 3
+            slidingWindowWidth: 15
             bdAbsolutePriority: false
 
 
@@ -287,7 +288,10 @@ cop1T1 (integer)
 
 cop1TxLimit (integer)
     If COP-1 is enabled, this specifies the number of retransmissions for each un-acknowledged frame before suspending operations.
-           
+
+slidingWindowWidth (integer)
+    If COP-1 is enabled, this specifies the default value for the FOP_SLIDING_WINDOW_WIDTH (K). Default: ``10``
+
 bdAbsolutePriority (false)
     If COP-1 is enabled, this specifies that the BD frames have absolute priority over normal AD frames. This means that if there are a number of AD frames ready to be uplinked and a TC with ``cop1Bypass`` flag is received (see below for an explanation of this flag), it will pass in front of the queue so ti will be the first frame uplinked (once the multiplexer decides to uplink frames from this Virtual Channel). This flag only applies when the COP-1 state is active, if the COP-1 synchronization has not taken place, the BD frames are uplinked anyway (because all AD frames are waiting). 
     
