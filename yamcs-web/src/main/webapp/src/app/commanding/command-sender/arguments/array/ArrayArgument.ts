@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, Optional, SkipSelf } from '@angular/core';
-import { ControlContainer, FormArrayName, FormControl, FormGroupDirective, FormGroupName, UntypedFormArray, UntypedFormGroup } from '@angular/forms';
+import { AbstractControl, ControlContainer, FormArrayName, FormControl, FormGroup, FormGroupDirective, FormGroupName, UntypedFormArray, UntypedFormGroup } from '@angular/forms';
 import { BehaviorSubject, distinctUntilChanged, Subscription } from 'rxjs';
 import { ArgumentType, NamedObjectId, ParameterSubscription } from '../../../../client';
 import { YamcsService } from '../../../../core/services/YamcsService';
@@ -216,7 +216,7 @@ export class ArrayArgument implements OnInit, OnDestroy {
         if (dimension.fixedValue !== undefined) {
           result.push(Number(dimension.fixedValue));
         } else if (dimension.argument) {
-          const control = this.topLevelForm.control.get(['args', dimension.argument]);
+          const control = this.findClosestControl(dimension.argument);
           if (control?.valid && control.value !== '') {
             const n = Number(control.value);
             if (isNaN(n)) {
@@ -261,6 +261,18 @@ export class ArrayArgument implements OnInit, OnDestroy {
         }
       }
       this.arrayLength$.next(flatLength);
+    }
+  }
+
+  private findClosestControl(name: string) {
+    let parent: AbstractControl<any> | null = this.formGroupName.control;
+    while (parent && parent !== this.topLevelForm.control) {
+      if (parent instanceof FormGroup) { // Ignore FormArray
+        if (name in parent.controls) {
+          return parent.controls[name];
+        }
+      }
+      parent = parent.parent;
     }
   }
 
