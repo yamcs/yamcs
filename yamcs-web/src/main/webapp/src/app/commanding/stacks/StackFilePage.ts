@@ -13,7 +13,7 @@ import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
 import { CommandResult, EditStackEntryDialog } from './EditStackEntryDialog';
-import { StackEntry } from './StackEntry';
+import { AdvanceOnParams, StackEntry } from './StackEntry';
 import { StackFormatter } from './StackFormatter';
 
 @Component({
@@ -56,19 +56,28 @@ export class StackFilePage implements OnDestroy {
   private bucket: string;
   private folderPerInstance: boolean;
 
+
+  private advanceOn: AdvanceOnParams; // Values from JSON, to not save the defaults unnecessarily
+
+  private delayBetweenCommands = -1;
   // Configuration of command ack to accept to execute the following
+  // private acceptingAck = "NONE";
   private acceptingAck = "Acknowledge_Queued";
   // Default: OK/DISABLED -> continue, NOK/CANCELLED/after timeout -> pause,  everything else -> ignore
   private acceptingAckValues = ["OK", "DISABLED"];
   private stoppingAckValues = ["NOK", "CANCELLED"];
-  private stoppingAckTimeout = 5000;
+  private stoppingAckTimeout = -1;
 
   private runningTimeout: NodeJS.Timeout;
+  private nextCommandDelayTimeout: NodeJS.Timeout;
+  private nextCommandScheduled = false;
 
   format: "json" | "xml";
 
   JSONblobURL: SafeResourceUrl;
   XMLblobURL: SafeResourceUrl;
+
+  runs = 0;
 
   constructor(
     private dialog: MatDialog,
@@ -242,6 +251,18 @@ export class StackFilePage implements OnDestroy {
       }
     }
 
+    if (stack.advanceOn) {
+      this.advanceOn = {};
+      if (stack.advanceOn.ack) {
+        this.advanceOn.ack = stack.advanceOn.ack;
+        this.acceptingAck = stack.advanceOn.ack;
+      }
+      if (stack.advanceOn.delay) {
+        this.advanceOn.delay = stack.advanceOn.delay;
+        this.delayBetweenCommands = stack.advanceOn.delay;
+      }
+    }
+
     return entries;
   }
 
@@ -250,7 +271,8 @@ export class StackFilePage implements OnDestroy {
       name: command.name,
       ...(command.comment && { comment: command.comment }),
       ...(command.extraOptions && { extra: this.parseJSONextraOptions(command.extraOptions) }),
-      ...(command.arguments && { args: this.parseJSONcommandArguments(command.arguments) })
+      ...(command.arguments && { args: this.parseJSONcommandArguments(command.arguments) }),
+      ...(command.advanceOn && { advanceOn: command.advanceOn })
     };
     return entry;
   }
@@ -258,7 +280,7 @@ export class StackFilePage implements OnDestroy {
   private parseJSONextraOptions(options: Array<any>) {
     const extra: { [key: string]: Value; } = {};
     for (let option of options) {
-      const value = this.convertOptionStringToValue(option.id, option.value);
+      const value = this.convertOptionStringToValue(option.id, (new String(option.value)).toString()); // TODO: simplify value conversion
       if (value) {
         extra[option.id] = value;
       }
@@ -381,18 +403,22 @@ export class StackFilePage implements OnDestroy {
   }
 
   private async runEntry(entry: StackEntry) {
+    this.runs++;
+    console.log(new Date().toISOString() + " " + this.runs);
     const executionNumber = ++this.executionCounter;
     return this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, entry.name, {
       sequenceNumber: executionNumber,
       args: entry.args,
       extra: entry.extra,
     }).then(response => {
-      this.runningTimeout = setTimeout(() => {
-        if (this.selectedEntry$.value?.id === response.id) {
-          this.messageService.showWarning("Command timeout reached, stopping current run");
-          this.stopRun();
-        }
-      }, this.stoppingAckTimeout);
+      if (this.stoppingAckTimeout > 0) {
+        this.runningTimeout = setTimeout(() => {
+          if (this.selectedEntry$.value?.id === response.id) {
+            this.messageService.showWarning("Command timeout reached, stopping current run");
+            this.stopRun();
+          }
+        }, this.stoppingAckTimeout);
+      }
 
       entry.executionNumber = executionNumber;
       entry.id = response.id;
@@ -420,10 +446,12 @@ export class StackFilePage implements OnDestroy {
     }
 
     this.running$.next(true);
+    this.nextCommandScheduled = false;
     try {
       await this.runEntry(entry);
     } finally {
       if (this.entries$.value.indexOf(entry) === this.entries$.value.length - 1) {
+        this.advanceSelection(entry);
         this.stopRun();
       }
     }
@@ -431,29 +459,52 @@ export class StackFilePage implements OnDestroy {
 
   private checkAckContinueRunning(record: CommandHistoryRecord) {
     // Attempts to continue the current run from selected by checking acknowledgement statuses
-    if (this.running$.value) {
-      let selectedEntry = this.selectedEntry$.value;
-      if (selectedEntry?.id === record.id) {
-        let ack = record.acksByName[this.acceptingAck];
+    if (!this.running$.value || this.nextCommandScheduled) {
+      return;
+    }
 
-        if (ack && ack.status)
-          if (this.acceptingAckValues.includes(ack.status)) {
+    let selectedEntry = this.selectedEntry$.value;
+
+    let acceptingAck = selectedEntry?.advanceOn?.ack || this.acceptingAck;
+    let delay = selectedEntry?.advanceOn?.delay || this.delayBetweenCommands;
+
+    if (acceptingAck === "NONE") {
+      this.nextCommandScheduled = true;
+      this.nextCommandDelayTimeout = setTimeout(() => {
+        // Continue execution
+        if (this.running$.value && selectedEntry) {
+          this.advanceSelection(selectedEntry);
+          this.runFromSelection();
+        }
+      }, Math.max(delay, 0));
+      return;
+    }
+
+    if (selectedEntry?.id === record.id) {
+      let ack = record.acksByName[acceptingAck];
+      if (ack && ack.status) {
+        if (this.acceptingAckValues.includes(ack.status)) {
+          this.nextCommandScheduled = true;
+          this.nextCommandDelayTimeout = setTimeout(() => {
             // Continue execution
-            this.advanceSelection(selectedEntry);
-            this.runFromSelection();
-          } else if (this.stoppingAckValues.includes(ack.status)) {
-            // Stop exection
-            this.stopRun();
-          } // Ignore others
+            if (this.running$.value && selectedEntry) {
+              this.advanceSelection(selectedEntry);
+              this.runFromSelection();
+            }
+          }, Math.max(delay, 0));
+        } else if (this.stoppingAckValues.includes(ack.status)) {
+          // Stop exection
+          this.stopRun();
+        } // Ignore others
       }
     }
   }
 
   stopRun() {
     this.running$.next(false);
-    if (this.runningTimeout) {
-      clearTimeout(this.runningTimeout);
-    }
+    clearTimeout(this.nextCommandDelayTimeout);
+    clearTimeout(this.runningTimeout);
+    this.nextCommandScheduled = false;
   }
 
   private advanceSelection(entry: StackEntry) {
@@ -626,10 +677,10 @@ export class StackFilePage implements OnDestroy {
     let file;
     switch (this.format) {
       case "json":
-        file = new StackFormatter(this.entries$.value).toJSON();
+        file = new StackFormatter(this.entries$.value, { advanceOn: this.advanceOn }).toJSON();
         break;
       case "xml":
-        file = new StackFormatter(this.entries$.value).toXML();
+        file = new StackFormatter(this.entries$.value, { advanceOn: this.advanceOn }).toXML();
         break;
     }
     const blob = new Blob([file], { type: 'application/' + this.format });
@@ -639,11 +690,11 @@ export class StackFilePage implements OnDestroy {
   }
 
   setExportURLs() {
-    const json = new StackFormatter(this.entries$.value).toJSON();
+    const json = new StackFormatter(this.entries$.value, { advanceOn: this.advanceOn }).toJSON();
     const JSONblob = new Blob([json], { type: 'application/json' });
     this.JSONblobURL = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(JSONblob));
 
-    const xml = new StackFormatter(this.entries$.value).toXML();
+    const xml = new StackFormatter(this.entries$.value, { advanceOn: this.advanceOn }).toXML();
     const XMLblob = new Blob([xml], { type: 'application/xml' });
     this.XMLblobURL = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(XMLblob));
   }

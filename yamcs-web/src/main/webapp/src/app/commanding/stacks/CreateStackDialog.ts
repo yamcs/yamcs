@@ -46,7 +46,7 @@ export class CreateStackDialog {
     const fullPath = path ? path + '/' + name : name;
     const objectName = this.data.prefix + fullPath;
 
-    const file = format === 'xml' ? new StackFormatter([]).toXML() : new StackFormatter([]).toJSON();
+    const file = format === 'xml' ? new StackFormatter([], {}).toXML() : new StackFormatter([], {}).toJSON();
     const b = new Blob([file], { type: 'application/' + format });
     this.storageClient.uploadObject('_global', this.bucket, objectName, b).then(() => {
       this.dialogRef.close(fullPath);

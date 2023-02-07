@@ -1,11 +1,13 @@
 import { Value } from 'src/lib';
-import { StackEntry } from './StackEntry';
+import { AdvanceOnParams, StackEntry } from './StackEntry';
 
 export class StackFormatter {
   private entries: StackEntry[];
+  private stackOptions: { advanceOn?: AdvanceOnParams; };
 
-  constructor(entries: StackEntry[] = []) {
+  constructor(entries: StackEntry[] = [], stackOptions: { advanceOn?: AdvanceOnParams; }) {
     this.entries = entries;
+    this.stackOptions = stackOptions;
   }
 
   addEntry(entry: StackEntry) {
@@ -74,12 +76,14 @@ export class StackFormatter {
 
   toJSON() {
     return JSON.stringify({
+      ...(this.stackOptions.advanceOn && { advanceOn: this.stackOptions.advanceOn }),
       commands: this.entries.map(entry => {
         return {
           name: entry.name,
           ...(entry.comment && { comment: entry.comment }),
           ...(entry.extra && { extraOptions: this.getExtraOptionsJSON(entry.extra) }),
-          ...(entry.args && { arguments: this.getCommandArgumentsJSON(entry.args) })
+          ...(entry.args && { arguments: this.getCommandArgumentsJSON(entry.args) }),
+          ...(entry.advanceOn && { advanceOn: entry.advanceOn })
         };
       })
     }, null, 2);
