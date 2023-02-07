@@ -1,5 +1,7 @@
 package org.yamcs.tctm.ccsds.error;
 
+import java.nio.ByteBuffer;
+
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
 
@@ -28,7 +30,10 @@ public class CrcCciitCalculator implements ErrorDetectionWordCalculator {
     @Override
     public int compute(byte[] data, int offset, int length) {
         return cc.compute(data, offset, length, initialValue);
+    }
 
+    public int compute(ByteBuffer data, int offset, int length) {
+        return cc.compute(data, offset, length, initialValue);
     }
 
     @Override

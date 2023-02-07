@@ -6,6 +6,25 @@ export interface FileTransferService {
   localEntities: Entity[];
   remoteEntities: Entity[];
   capabilities: FileTransferCapabilities;
+  transferOptions: FileTransferOption[];
+}
+
+export interface FileTransferOption {
+  name: string;
+  type: 'BOOLEAN' | 'DOUBLE' | 'STRING';
+  description?: string;
+  associatedText?: string;
+  allowCustomOption?: boolean;
+  booleanValue?: boolean;
+  doubleValues?: number[];
+  doubleDefault?: number[];
+  stringValues?: StringValue[];
+  stringDefault?: string;
+}
+
+export interface StringValue {
+  value: string;
+  text?: string;
 }
 
 export interface FileTransferCapabilities {
@@ -13,6 +32,8 @@ export interface FileTransferCapabilities {
   download: boolean;
   reliability: boolean;
   remotePath: boolean;
+  fileList: boolean;
+  hasTransferType: boolean;
 }
 
 export interface Entity {
@@ -32,12 +53,7 @@ export interface Transfer {
   totalSize: number;
   sizeTransferred: number;
   failureReason?: string;
-}
-
-export interface UploadOptions {
-  overwrite?: boolean;
-  createPath?: boolean;
-  reliable?: boolean;
+  transferType?: string;
 }
 
 export interface CreateTransferRequest {
@@ -47,11 +63,32 @@ export interface CreateTransferRequest {
   remotePath: string;
   source: string;
   destination: string;
-  uploadOptions?: UploadOptions;
+  options: FileTransferOption[];
 }
 
 export interface TransfersPage {
   transfers: Transfer[];
+}
+
+export interface ListFilesRequest {
+  source: string;
+  destination: string;
+  remotePath: string;
+  reliable: boolean;
+}
+
+export interface RemoteFile {
+  name: string;
+  isDirectory: boolean;
+  size: number;
+  modified: string;
+}
+
+export interface ListFilesResponse {
+  files: RemoteFile[];
+  destination: string;
+  remotePath: string;
+  listTime: string;
 }
 
 export interface ServicesPage {
@@ -64,3 +101,4 @@ export interface SubscribeTransfersRequest {
 }
 
 export type TransferSubscription = WebSocketCall<SubscribeTransfersRequest, Transfer>;
+export type RemoteFileListSubscription = WebSocketCall<SubscribeTransfersRequest, ListFilesResponse>;

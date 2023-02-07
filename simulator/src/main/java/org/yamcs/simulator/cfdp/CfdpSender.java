@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -16,17 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.cfdp.ChecksumCalculator;
 import org.yamcs.cfdp.ChecksumType;
-import org.yamcs.cfdp.pdu.AckPacket;
-import org.yamcs.cfdp.pdu.CfdpHeader;
-import org.yamcs.cfdp.pdu.CfdpPacket;
-import org.yamcs.cfdp.pdu.ConditionCode;
-import org.yamcs.cfdp.pdu.EofPacket;
-import org.yamcs.cfdp.pdu.FileDataPacket;
-import org.yamcs.cfdp.pdu.FileDirectiveCode;
-import org.yamcs.cfdp.pdu.FinishedPacket;
-import org.yamcs.cfdp.pdu.MetadataPacket;
-import org.yamcs.cfdp.pdu.NakPacket;
-import org.yamcs.cfdp.pdu.SegmentRequest;
+import org.yamcs.cfdp.pdu.*;
 import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
 import org.yamcs.cfdp.pdu.AckPacket.TransactionStatus;
 import org.yamcs.simulator.AbstractSimulator;
@@ -60,15 +52,22 @@ public class CfdpSender {
     private CfdpHeader dataHeader;
     int eofAckCount = 0;
 
+    private String destinationFileName;
+    private List<TLV> metadataOptions;
     // allow to simulate packet loss by skipping some pdus
     int[] skippedPdus;
     int skipIdx = 0;
     int pduCount = 0;
 
-    public CfdpSender(AbstractSimulator simulator, File file, int destinationId, int[] skippedPdus)
+    private List<Runnable> endCallbacks = new ArrayList<>();
+
+    public CfdpSender(AbstractSimulator simulator, int destinationId, File file, String destinationFileName,
+            List<TLV> metadataOptions, int[] skippedPdus)
             throws FileNotFoundException {
         this.simulator = simulator;
         this.file = file;
+        this.destinationFileName = destinationFileName;
+        this.metadataOptions = metadataOptions;
         this.skippedPdus = skippedPdus;
         this.raf = new RandomAccessFile(file, "r");
         if (file.length() > Integer.MAX_VALUE) {
@@ -186,6 +185,7 @@ public class CfdpSender {
         AckPacket ack = new AckPacket(FileDirectiveCode.FINISHED, FileDirectiveSubtypeCode.FINISHED_BY_END_SYSTEM,
                 packet.getConditionCode(), TransactionStatus.TERMINATED, directiveHeader);
         transmitCfdp(ack);
+        notifyEndCallbacks();
     }
 
     private void sendFileData(long start, long end, boolean addToChecksum) {
@@ -216,7 +216,7 @@ public class CfdpSender {
 
     private void sendMetadata() {
         MetadataPacket metadata = new MetadataPacket(false, ChecksumType.MODULAR, fileSize,
-                file.getPath(), file.getPath(), directiveHeader);
+                file.getPath(), destinationFileName, metadataOptions, directiveHeader);
         transmitCfdp(metadata);
     }
 
@@ -245,6 +245,20 @@ public class CfdpSender {
         DataToResend(long start, long end) {
             this.start = start;
             this.end = end;
+        }
+    }
+
+    public void addEndCallback(Runnable runnable) {
+        endCallbacks.add(runnable);
+    }
+
+    public void removeEndCallback(Runnable runnable) {
+        endCallbacks.remove(runnable);
+    }
+
+    private void notifyEndCallbacks() {
+        for (Runnable runnable : endCallbacks) {
+            runnable.run();
         }
     }
 }

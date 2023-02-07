@@ -7,7 +7,7 @@ import { AcknowledgeAlarmOptions, Alarm, AlarmSubscription, ClearAlarmOptions, G
 import { CommandSubscription, SubscribeCommandsRequest } from './types/commandHistory';
 import { Cop1Config, Cop1Status, Cop1Subscription, DisableCop1Request, InitiateCop1Request, SubscribeCop1Request } from './types/cop1';
 import { CreateEventRequest, DownloadEventsOptions, Event, EventSubscription, GetEventsOptions, SubscribeEventsRequest } from './types/events';
-import { CreateTransferRequest, ServicesPage, SubscribeTransfersRequest, Transfer, TransfersPage, TransferSubscription } from './types/filetransfer';
+import { CreateTransferRequest, ListFilesRequest, ListFilesResponse, RemoteFileListSubscription, ServicesPage, SubscribeTransfersRequest, Transfer, TransfersPage, TransferSubscription } from './types/filetransfer';
 import { AlarmsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstancesWrapper, InstanceTemplatesWrapper, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SessionsWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
 import { AlgorithmOverrides, AlgorithmsPage, AlgorithmStatus, AlgorithmTrace, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
@@ -606,6 +606,10 @@ export default class YamcsClient implements HttpHandler {
     return this.webSocketClient!.createSubscription('file-transfers', options, observer);
   }
 
+  createRemoteFileListSubscription(options: SubscribeTransfersRequest, observer: (fileList: ListFilesResponse) => void): RemoteFileListSubscription {
+    return this.webSocketClient!.createSubscription('remote-file-list', options, observer);
+  }
+
   createParameterSubscription(options: SubscribeParametersRequest, observer: (data: SubscribeParametersData) => void): ParameterSubscription {
     // Allow dropped frames in case of high rate
     return this.webSocketClient!.createLowPrioritySubscription('parameters', options, observer);
@@ -1184,9 +1188,9 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as TransfersPage;
   }
 
-  async createFileTransfer(instance: string, service: string, options: CreateTransferRequest) {
+  async createFileTransfer(instance: string, service: string, request: CreateTransferRequest) {
     const url = `${this.apiUrl}/filetransfer/${instance}/${service}/transfers`;
-    const body = JSON.stringify(options);
+    const body = JSON.stringify(request);
     const response = await this.doFetch(url, {
       body,
       method: 'POST',
@@ -1207,6 +1211,19 @@ export default class YamcsClient implements HttpHandler {
   async cancelFileTransfer(instance: string, service: string, id: number) {
     const url = `${this.apiUrl}/filetransfer/${instance}/${service}/transfers/${id}:cancel`;
     return this.doFetch(url, { method: 'POST' });
+  }
+
+  async requestFileList(instance: string, service: string, request: ListFilesRequest) {
+    const url = `${this.apiUrl}/filetransfer/${instance}/${service}/files:sync`;
+    const body = JSON.stringify(request);
+    return this.doFetch(url, { body, method: 'POST' });
+  }
+
+  async getFileList(instance: string, service: string, request: ListFilesRequest) {
+    const url = `${this.apiUrl}/filetransfer/${instance}/${service}/files`;
+    const url2 = url + this.queryString(request);
+    const response = await this.doFetch(url2);
+    return await response.json() as ListFilesResponse;
   }
 
   async getApids(instance: string) {

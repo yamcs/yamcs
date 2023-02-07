@@ -3,39 +3,29 @@ package org.yamcs.cfdp;
 import static org.yamcs.cfdp.CfdpService.*;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.yamcs.YConfiguration;
-import org.yamcs.cfdp.pdu.AckPacket;
+import org.yamcs.cfdp.pdu.*;
 import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
 import org.yamcs.cfdp.pdu.AckPacket.TransactionStatus;
-import org.yamcs.cfdp.pdu.CfdpHeader;
-import org.yamcs.cfdp.pdu.CfdpPacket;
-import org.yamcs.cfdp.pdu.ConditionCode;
-import org.yamcs.cfdp.pdu.EofPacket;
-import org.yamcs.cfdp.pdu.FileDataPacket;
-import org.yamcs.cfdp.pdu.FileDirectiveCode;
-import org.yamcs.cfdp.pdu.FinishedPacket;
 import org.yamcs.cfdp.pdu.FinishedPacket.FileStatus;
-import org.yamcs.cfdp.pdu.MetadataPacket;
-import org.yamcs.cfdp.pdu.NakPacket;
-import org.yamcs.cfdp.pdu.SegmentRequest;
 import org.yamcs.events.EventProducer;
+import org.yamcs.filetransfer.FileSaveHandler;
 import org.yamcs.filetransfer.TransferMonitor;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.utils.StringConverter;
-import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.rocksdb.protobuf.Tablespace;
 
 public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
+    private final FileSaveHandler fileSaveHandler;
+    private CfdpTransactionId originatingTransactionId;
+    private DirectoryListingResponse directoryListingResponse;
+
     private enum InTxState {
         /**
          * Receives metadata, data and EOF.
@@ -59,8 +49,8 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     }
 
     private InTxState inTxState = InTxState.RECEIVING_DATA;
-    private final Bucket incomingBucket;
-    private String objectName;
+
+    private String originalObjectName;
 
     private DataFile incomingDataFile;
     MetadataPacket metadataPacket;
@@ -70,7 +60,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
     FinishedPacket finPacket;
 
-    final CfdpHeader directiveHeader;
+    CfdpHeader directiveHeader;
 
     final long maxFileSize;
     /**
@@ -106,11 +96,12 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     List<CfdpPacket> queuedPackets = new ArrayList<>();
 
     public CfdpIncomingTransfer(String yamcsInstance, long id, long creationTime, ScheduledThreadPoolExecutor executor,
-            YConfiguration config, CfdpHeader hdr, Stream cfdpOut, Bucket target, EventProducer eventProducer,
-            TransferMonitor monitor, Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
+            YConfiguration config, CfdpHeader hdr, Stream cfdpOut, FileSaveHandler fileSaveHandler,
+            EventProducer eventProducer, TransferMonitor monitor,
+            Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
         super(yamcsInstance, id, creationTime, executor, config, hdr.getTransactionId(), hdr.getDestinationId(),
                 cfdpOut, eventProducer, monitor, faultHandlerActions);
-        incomingBucket = target;
+        this.fileSaveHandler = fileSaveHandler;
         rescheduleInactivityTimer();
         long finAckTimeout = config.getLong("finAckTimeout", 10000l);
         int finAckLimit = config.getInt("finAckLimit", 5);
@@ -149,7 +140,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         executor.execute(() -> doProcessPacket(packet));
     }
 
-    private void sendOrSheduledNak() {
+    private void sendOrScheduleNak() {
         if (inTxState != InTxState.RECEIVING_DATA || suspended) {
             return;
         }
@@ -167,7 +158,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             lastNakSentTime = now;
         }
 
-        executor.schedule(this::sendOrSheduledNak, nakTimeout, TimeUnit.MILLISECONDS);
+        executor.schedule(this::sendOrScheduleNak, nakTimeout, TimeUnit.MILLISECONDS);
     }
 
     private boolean sendNak() {
@@ -256,15 +247,44 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         }
         this.metadataPacket = packet;
 
+        transferType = getTransferType(metadataPacket);
+
+        if(metadataPacket.getOptions() != null) {
+            for(TLV option : metadataPacket.getOptions()) {
+                if(option instanceof OriginatingTransactionId) {
+                    this.originatingTransactionId = ((OriginatingTransactionId) option).toCfdpTransactionId();
+                } else if (option instanceof DirectoryListingResponse) {
+                    this.directoryListingResponse = (DirectoryListingResponse) option;
+                }
+            }
+        }
+
         needsFinish = acknowledged || packet.closureRequested();
 
         incomingDataFile.setSize(fileSize);
 
         this.acknowledged = packet.getHeader().isAcknowledged();
-        objectName = packet.getDestinationFilename();
+        originalObjectName = !packet.getDestinationFilename().isEmpty() ? packet.getDestinationFilename() : packet.getSourceFilename();
 
         sendInfoEvent(ETYPE_TRANSFER_META, "Received metadata: "+toEventMsg(packet));
-        checkFileComplete();
+
+        try {
+            if(originatingTransactionId != null) {
+                fileSaveHandler.processOriginatingTransactionId(originatingTransactionId);
+            }
+            fileSaveHandler.setObjectName(directoryListingResponse == null ? originalObjectName : null);
+
+            Tablespace.BucketProperties props = fileSaveHandler.getBucket().getProperties();
+            if(props.getMaxSize() - props.getSize() < fileSize) {
+                throw new IOException("File too big for bucket '" + getBucketName() + "' (" + fileSize + " bytes for " + (props.getMaxSize() - props.getSize()) + " available)");
+            }
+
+            checkFileComplete();
+        } catch (IOException e) {
+            handleFault(ConditionCode.FILESTORE_REJECTION);
+            log.warn(e.getMessage());
+            pushError(e.getMessage());
+        }
     }
 
     private void processAckPacket(AckPacket ack) {
@@ -317,7 +337,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             onFileCompleted();
         } else {
             if (acknowledged) {
-                sendOrSheduledNak();
+                sendOrScheduleNak();
             }
         }
     }
@@ -363,15 +383,15 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             } else {
                 complete(ConditionCode.NO_ERROR);
             }
-            saveFileInBucket(false, Collections.emptyList());
+            saveFile(false, Collections.emptyList());
             sendInfoEvent(ETYPE_TRANSFER_FINISHED,
-                    " downlink finished and saved in " + incomingBucket.getName() + "/" + getObjectName());
+                    " downlink finished and saved in " + getBucketName() + "/" + getObjectName());
         } else {
             log.warn("TXID{} file checksum failure; EOF packet indicates {} while data received has {}",
                     cfdpTransactionId, expectedChecksum, incomingDataFile.getChecksum());
-            saveFileInBucket(true, Collections.emptyList());
+            saveFile(true, Collections.emptyList());
             sendWarnEvent(ETYPE_TRANSFER_FINISHED,
-                    " checksum failure; corrupted file saved in " + incomingBucket.getName() + "/" + getObjectName());
+                    " checksum failure; corrupted file saved in " + getBucketName() + "/" + getObjectName());
             handleFault(ConditionCode.FILE_CHECKSUM_FAILURE);
         }
     }
@@ -420,6 +440,9 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             changeState(TransferState.COMPLETED);
             sendInfoEvent(ETYPE_TRANSFER_COMPLETED, " transfer completed (ack received from remote) successfully");
         } else {
+            if(errors.isEmpty()) {
+                pushError(conditionCode.toString());
+            }
             sendWarnEvent(ETYPE_TRANSFER_COMPLETED, " transfer completed unsuccessfully: " + getFailuredReason());
             changeState(TransferState.FAILED);
         }
@@ -492,7 +515,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         sendInfoEvent(ETYPE_TRANSFER_RESUMED, "transfer resumed");
         if (inTxState == InTxState.RECEIVING_DATA) {
             nakCount = 0;
-            sendOrSheduledNak();
+            sendOrScheduleNak();
         } else if (inTxState == InTxState.FIN) {
             sendFin();
         }
@@ -513,45 +536,27 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         }
     }
 
-    private void saveFileInBucket(boolean checksumError, List<SegmentRequest> missingSegments) {
-        try {
-            Map<String, String> metadata = null;
-            if (!missingSegments.isEmpty()) {
-                metadata = new HashMap<>();
-                metadata.put("missingSegments", missingSegments.toString());
-            }
-            if (checksumError) {
-                if (metadata == null) {
-                    metadata = new HashMap<>();
-                }
-                metadata.put("checksumError", "true");
-            }
-            objectName = getFileName(objectName);
-            incomingBucket.putObject(objectName, null, metadata, incomingDataFile.getData());
-        } catch (IOException e) {
-            throw new UncheckedIOException("cannot save incoming file in bucket " + incomingBucket.getName(), e);
+    private void saveFile(boolean checksumError, List<SegmentRequest> missingSegments) {
+        if(directoryListingResponse != null) {
+            log.debug("TXID{} Ignoring save action for Directory Listing Response", cfdpTransactionId);
+            return;
         }
-    }
 
-    private String getFileName(String name) throws IOException {
-    	/**
-    	 *@todo This assumes that filesystem separator is "/". Shouldn't this be configurable?
-    	 */
-        name = name.replace("/", "_");
-        if (incomingBucket.findObject(name) == null) {
-            return name;
+        Map<String, String> metadata = null;
+        if (!missingSegments.isEmpty()) {
+            metadata = new HashMap<>();
+            metadata.put("missingSegments", missingSegments.toString());
         }
-        /**
-         *@note Any chance we can make this "10000" configurable?
-         */
-        for (int i = 1; i < 10000; i++) {
-            String namei = name + "(" + i + ")";
-            if (incomingBucket.findObject(namei) == null) {
-                return namei;
+        if (checksumError) {
+            if (metadata == null) {
+                metadata = new HashMap<>();
             }
+            metadata.put("checksumError", "true");
         }
-        log.warn("Cannot find a new name for {}, overwirting object", name);
-        return name;
+
+        // TODO: source data in metadata
+
+        fileSaveHandler.saveFile(incomingDataFile, metadata, originatingTransactionId);
     }
 
     private AckPacket getAckEofPacket(ConditionCode code) {
@@ -594,13 +599,22 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     }
 
     @Override
+    public long getInitiatorEntityId() {
+        return directiveHeader.getSourceId();
+    }
+
+    @Override
     public String getBucketName() {
-        return incomingBucket.getName();
+        return fileSaveHandler.getBucketName();
     }
 
     @Override
     public String getObjectName() {
-        return objectName;
+        return fileSaveHandler.getObjectName() != null || directoryListingResponse != null ? fileSaveHandler.getObjectName() : originalObjectName;
+    }
+
+    public String getOriginalObjectName() {
+        return originalObjectName;
     }
 
     @Override
@@ -622,4 +636,17 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     public long getTransferredSize() {
         return incomingDataFile.getReceivedSize();
     }
+
+    public DirectoryListingResponse getDirectoryListingResponse() {
+        return directoryListingResponse;
+    }
+
+    public byte[] getFileData() {
+        return incomingDataFile.getData();
+    }
+
+    public CfdpTransactionId getOriginatingTransactionId() {
+        return originatingTransactionId;
+    }
+
 }

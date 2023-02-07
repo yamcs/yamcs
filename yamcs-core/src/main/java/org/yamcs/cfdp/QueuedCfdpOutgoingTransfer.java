@@ -3,33 +3,40 @@ package org.yamcs.cfdp;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.yarch.Bucket;
 
-public class QueuedCfdpTransfer implements CfdpFileTransfer {
-    final PutRequest putRequest;
-    final long id;
-    TransferState state = TransferState.QUEUED;
-    String failureReason;
-    long creationTime;
+public class QueuedCfdpOutgoingTransfer implements CfdpFileTransfer {
+    private final PutRequest putRequest;
+    private final long initiatorEntityId;
+    private final long id;
+    private TransferState state = TransferState.QUEUED;
+    private String failureReason;
+    private final long creationTime;
+    private final Bucket bucket;
+    private final String transferType;
 
-    public QueuedCfdpTransfer(long id, long creationTime, PutRequest putRequest) {
+    public QueuedCfdpOutgoingTransfer(long initiatorEntityId, long id, long creationTime, PutRequest putRequest, Bucket bucket) {
+        this.initiatorEntityId = initiatorEntityId;
         this.id = id;
         this.putRequest = putRequest;
         this.creationTime = creationTime;
+        this.bucket = bucket;
+        this.transferType = OngoingCfdpTransfer.getTransferType(putRequest.getMetadata());
     }
 
     @Override
     public String getBucketName() {
-        return putRequest.getBucket().getName();
+        return bucket != null ? bucket.getName() : null;
     }
 
     @Override
     public String getObjectName() {
-        return putRequest.getObjectName();
+        return putRequest.getSourceFileName();
     }
 
     @Override
     public String getRemotePath() {
-        return putRequest.getTargetPath();
+        return putRequest.getDestinationFileName();
     }
 
     @Override
@@ -87,13 +94,14 @@ public class QueuedCfdpTransfer implements CfdpFileTransfer {
         return null;
     }
 
-    public long getSourceId() {
-        return putRequest.getSourceId();
+    @Override
+    public long getDestinationId() {
+        return putRequest.getDestinationCfdpEntityId();
     }
 
     @Override
-    public long getDestinationId() {
-        return putRequest.getDestinationId();
+    public String getTransferType() {
+        return transferType;
     }
 
     public void setTransferState(TransferState state) {
@@ -106,5 +114,18 @@ public class QueuedCfdpTransfer implements CfdpFileTransfer {
 
     public long getCreationTime() {
         return creationTime;
+    }
+
+    @Override
+    public long getInitiatorEntityId() {
+        return initiatorEntityId;
+    }
+
+    public PutRequest getPutRequest() {
+        return putRequest;
+    }
+
+    public Bucket getBucket() {
+        return bucket;
     }
 }

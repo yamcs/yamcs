@@ -87,7 +87,7 @@ public class FileTransferClient {
             } else if (option instanceof CreatePathOption) {
                 optionsb.setCreatePath(((CreatePathOption) option).createPath);
             } else {
-                throw new IllegalArgumentException("Usupported option " + option.getClass());
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
         }
         requestb.setUploadOptions(optionsb);

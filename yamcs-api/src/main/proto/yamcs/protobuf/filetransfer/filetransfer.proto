@@ -76,6 +76,29 @@ service FileTransferApi {
       topic: "file-transfers"
     };
   }
+
+  // Receive remote file lists
+  rpc SubscribeRemoteFileList(SubscribeTransfersRequest) returns (stream ListFilesResponse) {
+    option (yamcs.api.websocket) = {
+      topic: "remote-file-list"
+    };
+  }
+
+  // Request file list from remote
+  rpc FetchFileList(ListFilesRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/filetransfer/{instance}/{serviceName}/files:sync"
+      body: "*"
+    };
+  }
+
+  // Get latest file list
+  rpc GetFileList(ListFilesRequest) returns (ListFilesResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/filetransfer/{instance}/{serviceName}/files"
+      field_mask_root: "files"
+    };
+  }
 }
 
 enum TransferDirection {
@@ -107,17 +130,23 @@ message ListFileTransferServicesResponse {
 
 //This message is used to configure the yacms-web
 message FileTransferCapabilities {
-    //if true, yamcs-web shows a button for initiating an upload
-	optional bool upload = 1;
-	 
-	 //if true, yamcs-web shows a button for initiating a download
-	optional bool download = 2;
-	
-	//if true, yamcs-web will allow to chose reliable/non-reliable transfer 
-	optional bool reliability = 3;
-	
-    //if true, yamcs-web will show the section with the destination file/folder name (upload only)
-	optional bool remotePath = 4 ;
+  //if true, yamcs-web shows a button for initiating an upload
+  optional bool upload = 1;
+
+  //if true, yamcs-web shows a button for initiating a download
+  optional bool download = 2;
+
+  // DEPRECATED: use a FileTransferOption in FileTransferServiceInfo to get a reliability toggle
+  optional bool reliability = 3 [deprecated=true];
+
+  //if true, yamcs-web will show the section with the destination file/folder name (upload only)
+  optional bool remotePath = 4;
+
+  // true = service supports remote file list
+  optional bool fileList = 5;
+
+  // if true, yamcs-web will show the "Transfer Type" string column
+  optional bool hasTransferType = 6;
 }
 
 
@@ -127,7 +156,8 @@ message FileTransferServiceInfo {
  
   repeated EntityInfo localEntities = 3;
   repeated EntityInfo remoteEntities = 4;
-  optional FileTransferCapabilities capabilities = 5; 
+  optional FileTransferCapabilities capabilities = 5;
+  repeated FileTransferOption transferOptions = 6;
 }
 
 message EntityInfo {
@@ -166,27 +196,55 @@ message TransferInfo {
   
   // when the transfer has been created. 
   optional google.protobuf.Timestamp creationTime = 13;
+
+  // depending on the implementation, can mean normal file transfer, directory listing request, file download request, etc.
+  optional string transferType = 14;
 }
 
 message CreateTransferRequest {
+  // Deprecated: use options (FileTransferOption) instead
   message UploadOptions {
+    // Deprecated: use options (FileTransferOption) instead (name: overwrite)
     // Set to ``True`` if an already existing destination should be overwritten.
     // Default: ``True``.
-    optional bool overwrite = 1;
-    
+    optional bool overwrite = 1 [deprecated=true];
+
+    // Deprecated: use options (FileTransferOption) instead (name: createPath)
     // Set to ``True`` if the destination path should be created if it does not exist.
     // Default: ``True``.
-    optional bool createPath = 2;
-    
+    optional bool createPath = 2 [deprecated=true];
+
+    // Deprecated: use options (FileTransferOption) instead (name: reliable)
     // Set to ``True`` if reliable (class 2) CFDP transfer should be used,
     // otherwise unreliable (class 1). Default: ``False``.
-    optional bool reliable = 3;
-    
+    optional bool reliable = 3 [deprecated=true];
+
+    // Deprecated: use options (FileTransferOption) instead (name: closureRequested)
     // Introduced in Issue 5 of the CFDP standard for non reliable (class 1) transfers
     // Requests the receiver to send a Finished PDU at the end of the transfer
-    optional bool closureRequested = 4;
+    optional bool closureRequested = 4 [deprecated=true];
   }
+  // Deprecated: use options (FileTransferOption) instead
   message DownloadOptions {
+    // Deprecated: use options (FileTransferOption) instead (name: overwrite)
+    // Set to ``True`` if an already existing destination should be overwritten.
+    // Default: ``True``.
+    optional bool overwrite = 1 [deprecated=true];
+
+    // Deprecated: use options (FileTransferOption) instead (name: createPath)
+    // Set to ``True`` if the destination path should be created if it does not exist.
+    // Default: ``True``.
+    optional bool createPath = 2 [deprecated=true];
+
+    // Deprecated: options (FileTransferOption) instead (name: reliable)
+    // Set to ``True`` if reliable (class 2) CFDP transfer should be used,
+    // otherwise unreliable (class 1). Default: ``False``.
+    optional bool reliable = 3 [deprecated=true];
+
+    // Deprecated: option (FileTransferOption) instead (name: closureRequested)
+    // Introduced in Issue 5 of the CFDP standard for non reliable (class 1) transfers
+    // Requests the receiver to send a Finished PDU at the end of the transfer
+    optional bool closureRequested = 4 [deprecated=true];
   }
 
   optional string instance = 1;
@@ -207,17 +265,23 @@ message CreateTransferRequest {
   
   // **Required** The path at the remote entity. Example: ``a/local/path/some_filename``.
   optional string remotePath = 5;
-  
-  optional DownloadOptions downloadOptions = 6;
-  
-  // Configuration options specific to ``UPLOAD`` transfers.
-  optional UploadOptions uploadOptions = 7;
 
+  // Deprecated: use options (FileTransferOption) instead
+  // Configuration options specific to ``DOWNLOAD`` transfers.
+  optional DownloadOptions downloadOptions = 6 [deprecated=true];
+
+  // Deprecated: use options (FileTransferOption) instead
+  // Configuration options specific to ``UPLOAD`` transfers.
+  optional UploadOptions uploadOptions = 7 [deprecated=true];
+  
   //used to derive the source entity id
   optional string source = 9;
 
   //used to derive the destination entity id
   optional string destination = 10;
+
+  // List of options for the transfer
+  repeated FileTransferOption options = 11;
 }
 
 message PauseTransferRequest {
@@ -272,4 +336,81 @@ message SubscribeTransfersRequest {
   optional string instance = 1;
   // service name
   optional string serviceName = 2;
+}
+
+message ListFilesRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  // service name
+  optional string serviceName = 2;
+  // Entity from which to get the file list
+  optional string source = 3;
+  // Entity from which to get the file list
+  optional string destination = 4;
+  // Path of folder to list files from
+  optional string remotePath = 5;
+  // Used for CFDP transmission mode, i.e. (un-)acknowledged
+  optional bool reliable = 6;
+}
+
+message RemoteFile {
+  optional string name = 1;
+  optional bool isDirectory = 2;
+  optional uint64 size = 3;
+  optional google.protobuf.Timestamp modified = 4;
+}
+
+message ListFilesResponse {
+  repeated RemoteFile files = 1;
+  optional string destination = 2;
+  optional string remotePath = 3;
+  optional google.protobuf.Timestamp listTime = 4;
+}
+
+/*
+CUSTOMISABLE FILE TRANSFER OPTIONS
+*/
+message FileTransferOption {
+  // Identifier and displayed as title for the option
+  optional string name = 1;
+  // Option type
+  optional FileTransferOptionType type = 2;
+  // Help text shown on hover
+  optional string description = 3;
+  // Placeholder for text/number fields and label for checkboxes
+  optional string associatedText = 4;
+  // Whether a custom text/number field is needed when using the drop-down menu
+  optional bool allowCustomOption = 5;
+
+  // BOOLEAN type only fields
+  // Boolean value for the option, used as default in the UI
+  optional bool booleanValue = 6;
+
+  // DOUBLE type only fields
+  // Double dropdown options if specified, use to store selection when sending
+  repeated double doubleValues = 7;
+  // Double default value (prefilled/preselected)
+  optional double doubleDefault = 8;
+
+  // STRING type only fields
+  // String dropdown options if specified, use to store selection when sending
+  repeated StringValue stringValues = 9;
+  // String default value (prefilled/preselected)
+  optional string stringDefault = 10;
+}
+
+enum FileTransferOptionType {
+  // Shown as checkbox in the UI (related field: booleanValue)
+  BOOLEAN = 0;
+  // Shown as a number field or drop-down if doubleValues is specified (related fields: doubleValues, doubleDefault)
+  DOUBLE = 1;
+  // Shown as text field or drop-down if stringValues is specified (related fields: stringValues, stringDefault)
+  STRING = 2;
+}
+
+message StringValue {
+  // Actual value used by the API
+  optional string value = 1;
+  // Displayed friendly name for the option
+  optional string verboseName = 2;
 }

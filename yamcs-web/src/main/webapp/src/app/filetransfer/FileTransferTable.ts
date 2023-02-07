@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject } from 'rxjs';
+import { Transfer } from '../client';
 import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
 import { TransferItem } from './TransferItem';
-import { Transfer } from '../client';
 
 @Component({
   selector: 'app-file-transfer-table',
@@ -13,6 +13,9 @@ import { Transfer } from '../client';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FileTransferTable implements OnChanges {
+
+  @Input()
+  extraColumns: string[] = [];
 
   private defaultColumns = [
     'startTime',
@@ -23,7 +26,7 @@ export class FileTransferTable implements OnChanges {
     'status',
   ];
 
-  displayedColumns$ = new BehaviorSubject<String[]>(this.defaultColumns);
+  displayedColumns$ = new BehaviorSubject<string[]>(this.defaultColumns);
 
   isIncomplete = (index: number, item: TransferItem) => {
     return item.transfer.state !== 'COMPLETED';
@@ -43,9 +46,9 @@ export class FileTransferTable implements OnChanges {
 
   ngOnChanges() {
     if (this.showActions) {
-      this.displayedColumns$.next([...this.defaultColumns, 'actions']);
+      this.displayedColumns$.next([...this.defaultColumns, ...this.extraColumns, 'actions']);
     } else {
-      this.displayedColumns$.next(this.defaultColumns);
+      this.displayedColumns$.next([...this.defaultColumns, ...this.extraColumns]);
     }
   }
 

@@ -19,4 +19,5 @@ Instance Services
     replication-master
     replication-slave
     cfdp
+    file-listing
     cfs-event-decoder

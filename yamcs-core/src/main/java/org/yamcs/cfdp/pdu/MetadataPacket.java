@@ -1,32 +1,40 @@
 package org.yamcs.cfdp.pdu;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
+import io.netty.util.internal.StringUtil;
 import org.yamcs.cfdp.CfdpUtils;
 import org.yamcs.cfdp.ChecksumType;
 import org.yamcs.cfdp.FileDirective;
 import org.yamcs.logging.Log;
+import org.yamcs.utils.StringConverter;
 
 public class MetadataPacket extends CfdpPacket implements FileDirective {
     static final Log log = new Log(MetadataPacket.class);
 
+    private boolean closureRequested;
+    private ChecksumType checksumType;
     private long fileSize;
     private LV sourceFileName;
     private LV destinationFileName;
-    private boolean closureRequested;
-    private ChecksumType checksumType;
+    private List<TLV> options;
 
     public MetadataPacket(boolean closureRequested, ChecksumType checksumType, int fileSize,
-            String source, String destination, CfdpHeader header) {
+            String source, String destination, List<TLV> options, CfdpHeader header) {
         super(header);
-        if (fileSize == 0) {
+        if (fileSize == 0 && header.isLargeFile()) {
             throw new java.lang.UnsupportedOperationException("Unbound data size not yet implemented");
         }
+        this.closureRequested = closureRequested;
+        this.checksumType = checksumType;
         this.fileSize = fileSize;
         this.sourceFileName = new LV(source);
         this.destinationFileName = new LV(destination);
-        this.closureRequested = closureRequested;
-        this.checksumType = checksumType;
+        this.options = options;
     }
 
     /**
@@ -43,15 +51,25 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
         }
 
         this.fileSize = CfdpUtils.getUnsignedInt(buffer);
-        if (this.fileSize == 0) {
+
+        if (this.fileSize == 0 && header.isLargeFile()) {
             throw new java.lang.UnsupportedOperationException("Unbound data size not yet implemented");
         }
+
         this.sourceFileName = LV.readLV(buffer);
         this.destinationFileName = LV.readLV(buffer);
 
         if (buffer.hasRemaining()) {
-            log.warn("Ignoring " + buffer.remaining() + " TLV bytes");
+            options = new ArrayList<>();
+            while (buffer.hasRemaining()) {
+                try {
+                    options.add(MessageToUser.fromTLV(TLV.readTLV(buffer)));
+                } catch (IndexOutOfBoundsException e) {
+                    throw new PduDecodingException("TLV options in Metadata packet wrongly formatted", buffer.array(), e);
+                }
+            }
         }
+
         buffer.position(buffer.limit());
     }
 
@@ -66,6 +84,12 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
                 + this.destinationFileName.getValue().length;
 
         toReturn += 3;
+
+        if(options != null) {
+            for (TLV option : options) {
+                toReturn += option.getBytes().length;
+            }
+        }
 
         return toReturn;
     }
@@ -83,6 +107,9 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
         CfdpUtils.writeUnsignedInt(buffer, fileSize);
         sourceFileName.writeToBuffer(buffer);
         destinationFileName.writeToBuffer(buffer);
+        if(options != null) {
+            options.forEach(option -> buffer.put(option.getBytes()));
+        }
     }
 
     @Override
@@ -102,6 +129,10 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
         return checksumType;
     }
 
+    public List<TLV> getOptions() {
+        return options;
+    }
+
     @Override
     public String toString() {
         return "MetadataPacket [closureRequested=" + closureRequested + ", fileSize=" + fileSize
@@ -117,6 +148,9 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
                 + "    checksumType=" + checksumType + ",\n"
                 + "    sourceFileName=" + sourceFileName + ",\n"
                 + "    destinationFileName=" + destinationFileName + ",\n"
+                + "    options=[" + (options == null ? "" : "\n"
+                + "        " + options.stream().map((option) -> option.toJson()).collect(Collectors.joining(",\n        ")))
+                + "],\n"
                 + "}";
     }
 }

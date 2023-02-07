@@ -1,6 +1,9 @@
 package org.yamcs.cfdp;
 
+import com.google.common.primitives.Longs;
+
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class CfdpUtils {
 
@@ -23,10 +26,10 @@ public class CfdpUtils {
     }
 
     /*
-     * write the given short as an unsigned byte to the given buffer at its current position
+     * write the given int as an unsigned byte to the given buffer at its current position
      */
     public static void writeUnsignedByte(ByteBuffer buffer, int input) {
-        buffer.put((byte) (input & 0xff));
+        buffer.put((byte) input);
     }
 
     /*
@@ -42,14 +45,41 @@ public class CfdpUtils {
      * while we want 0 to 2ˆ32-1, the mask and int cast takes care of this
      */
     public static long getUnsignedInt(ByteBuffer buffer) {
-        return buffer.getInt() & 0xffffffffl;
+        return buffer.getInt() & 0xffffffffL;
     }
 
     /**
-     * Write the given long as an unsigned int to the given buffer at its current position
+     * Gets an unsigned 32-bit integer or 64-bit long from the given buffer depending on the is64bits parameter.
+     * Useful for FSS (File-Size Sensitive) data type
+     */
+    public static long getUnsignedNumber(ByteBuffer buffer, boolean is64bits) {
+        return is64bits ? buffer.getLong() : getUnsignedInt(buffer);
+    }
+
+    /**
+     * Write the given long as an unsigned int (32bits) to the given buffer at its current position
      */
     public static void writeUnsignedInt(ByteBuffer buffer, long input) {
-        buffer.putInt((int) (input & 0xffffffff));
+        buffer.putInt((int) input);
+    }
+
+    /**
+     * Write the given long as an unsigned long (64bits) to the given buffer at its current position
+     */
+    public static void writeUnsignedLong(ByteBuffer buffer, long input) {
+        buffer.putLong(input);
+    }
+
+    /**
+     * Writes the given long as either unsigned 32-bit integer or unsigned 64-bit long depending on the is64bits parameter.
+     * Useful for FSS (File-Size Sensitive) data type
+     */
+    public static void writeUnsignedNumber(ByteBuffer buffer, long input, boolean is64bits) {
+        if (is64bits) {
+            writeUnsignedLong(buffer, input);
+        } else {
+            writeUnsignedInt(buffer, input);
+        }
     }
 
     /*
@@ -82,12 +112,22 @@ public class CfdpUtils {
         return toReturn;
     }
 
-    public static byte[] longToBytes(long input, int length) {
+    public static byte[] longToBytesFixed(long input, int length) {
         byte[] toReturn = new byte[length];
         for (int i = length - 1; i >= 0; i--) {
             toReturn[i] = (byte) (input & 0xFF);
             input >>= 8;
         }
         return toReturn;
+    }
+
+    public static byte[] longToTrimmedBytes(long input) {
+        byte[] array = Longs.toByteArray(input);
+        for (int i = 0; i < array.length; i++) {
+            if (array[i]!= 0) {
+                return Arrays.copyOfRange(array, i, array.length);
+            }
+        }
+        return new byte[] {0};
     }
 }

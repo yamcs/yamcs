@@ -366,16 +366,118 @@ Note also the minLength and maxLength which are used to configure the minimum/ma
     
 Absolute time data type
 -----------------------
-TBW
+Instead of encoding and decoding time using raw integer or binary parameters, Yamcs supports the AbsoluteTimeParameterType to describe time. This parameter can be encoded using on of ``BinaryDataEncoding``, ``FloatDataEncoding``, ``IntegerDataEncoding`` and ``StringDataEncoding`` elements. 
+
+The following example displays the use of a ``IntegerDataEncoding`` element where ``scale`` and ``offset`` attributes are used to apply a linear transformation to the incoming value in order to parse the proper time value. 
+
+.. rubric:: Example 1: integer encoding for a AbsoluteTimeParameterType parameter
+
+The example below is using UNIX as its reference time, whose count starts at January 1 1970 and is used by modern computers, linux systems etc. The offset and the scale are part of a linear transformation which has the form y = ax + b where "b" represents the offset, "a" represents the scale and "x" is the input. 
+This transformation could be used for a system whose internal clock counts in seconds from 1/1/2000, so we need to add ``946677600`` seconds to that time in order to get the appropriate UNIX timestamp. 
+    - ``<ReferenceTime>`` describes origin(epoch or reference) of this time type
+    - ``<Epoch>`` may be specified as an XS date where time is implied to be 00:00:00, xs dateTime, or string enumeration of common epochs. The enumerations are TAI(used by CCSDS and others), J2000, UNIX(also known as POSIX) and GPS
+
+
+.. code-block:: xml
+
+    <xtce:AbsoluteTimeParameterType name="absolute_time_param_type_example">
+        <xtce:Encoding offset="946677600" scale="1">
+            <xtce:IntegerDataEncoding sizeInBits="32" />
+        </xtce:Encoding>
+        <xtce:ReferenceTime>
+            <xtce:Epoch>UNIX</xtce:Epoch>
+        </xtce:ReferenceTime>
+    </xtce:AbsoluteTimeParameterType>
+
 
 Enumerated data type
 --------------------
-TBW
+
+The EnumeratedParameterType supports the description of enumerations, which are a list of values and their associated labels. Below is an example that demonstrates how an enumerated parameter type is declared and its mostly used attributes:
+
+.. rubric:: Example 1: simple enumerated parameter declaration
+
+.. code-block:: xml
+
+    <xtce:EnumeratedParameterType name="enumerated_parameter_type_example">
+        <xtce:IntegerDataEncoding sizeInBits="16"/>
+            <xtce:EnumerationList>
+                <xtce:Enumeration value="0" label="label_1" />
+                <xtce:Enumeration value="2" label="label_2" />
+                <xtce:Enumeration value="4" label="label_3" />
+                <xtce:Enumeration value="6" label="label_4" />
+            </xtce:EnumerationList>
+    </xtce:EnumeratedParameterType>
+
 
 Aggregate data type
 -------------------
-TBW
+
+The AggregateParameterType is used to describe aggregates. It is similar to C-structs or records
+in other languages. The ArrayParameterType is defined as shown in the example below:
+
+.. rubric:: Example 1: simple aggregate parameter declaration
+
+``<xtce:Member>`` is used to define members of the aggregate. Each member has a ``name``, a ``typeRef`` for its type and an optional ``initialValue`` for a possible predefined value.
+
+.. code-block:: xml
+
+    <xtce:AggregateParameterType name="aggregate_parameter_type_example"  shortDescription="Aggregate Parameter Type Example">
+        <xtce:MemberList>
+            <xtce:Member name="member_1" typeRef="bool_t"/>
+            <xtce:Member name="member_1" typeRef="uint16_t" initialValue="5"/>
+            <xtce:Member name="member_1" typeRef="float_t"/>
+        </xtce:MemberList>
+    </xtce:AggregateParameterType>
+
 
 Array data type
 ---------------
-TBW
+
+
+The ArrayParameterType is used to describe arrays of other ParameterTypes. It is used in containers that are formed dynamically. 
+This happens when the number of the container's parameters depends on a specific parameter's value. In that part of the container that will be dynamically repeated an ``ArrayParameterRefEntry`` is injected.
+The ArrayParameterType is defined as shown in the example below:
+
+- ``arrayTypeRef`` is a reference to another ParameterType from which the array cells are formed. Any parameter type can be used.
+- ``DimensionList`` describes the dimensions of the array. Can be static or dynamic (value from another parameter).
+
+
+.. rubric:: Example 1: simple array parameter declaration with predefined size = 6
+
+.. code-block:: xml
+
+    <xtce:ArrayParameterType name="array_parameter_type_example" arrayTypeRef="other_parameter_type">
+        <xtce:DimensionList>
+            <xtce:Dimension>
+                <xtce:StartingIndex>
+                    <xtce:FixedValue>0</xtce:FixedValue>
+                </xtce:StartingIndex>
+                <xtce:EndingIndex>
+                    <xtce:FixedValue>5</xtce:FixedValue>
+                </xtce:EndingIndex>
+            </xtce:Dimension>
+        </xtce:DimensionList>
+    </xtce:ArrayParameterType>
+
+.. rubric:: Example 2: simple array parameter declaration with dynamic size
+
+In this exmaple, the size of the array is equal to the integer parameter ``number_of_parameters``. The ``<LinearAdjustment>`` element is used because the final array size will be equal to ``<EndingIOndex> - <StartindIndex> + 1``   
+
+.. code-block:: xml
+
+    <xtce:ArrayParameterType name="array_parameter_type_example" arrayTypeRef="other_parameter_type">
+        <xtce:DimensionList>
+            <xtce:Dimension>
+                <xtce:StartingIndex>
+                    <xtce:FixedValue>0</xtce:FixedValue>
+                </xtce:StartingIndex>
+                    <EndingIndex>
+                        <DynamicValue>
+                            <ArgumentInstanceRef argumentRef="number_of_parameters" />
+                            <LinearAdjustment intercept="-1" />
+                        </DynamicValue>
+                    </EndingIndex>
+            </xtce:Dimension>
+        </xtce:DimensionList>
+    </xtce:ArrayParameterType>

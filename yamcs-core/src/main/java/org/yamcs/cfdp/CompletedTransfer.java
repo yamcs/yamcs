@@ -38,6 +38,8 @@ public class CompletedTransfer implements CfdpFileTransfer {
     static final String COL_SEQUENCE_NUMBER = "sequenceNumber";
     static final String COL_TRANSFER_STATE = "transferState";
     static final String COL_FAILURE_REASON = "failureReason";
+    static final String COL_TRANSFER_TYPE = "transferType";
+
     static final String SERVER_ID = YamcsServer.getServer().getServerId();
 
     static {
@@ -56,6 +58,7 @@ public class CompletedTransfer implements CfdpFileTransfer {
         TDEF.addColumn(COL_RELIABLE, DataType.BOOLEAN);
         TDEF.addColumn(COL_TRANSFER_STATE, DataType.STRING);
         TDEF.addColumn(COL_CREATION_TIME, DataType.TIMESTAMP);
+        TDEF.addColumn(COL_TRANSFER_TYPE, DataType.STRING);
     }
     final Tuple tuple;
 
@@ -151,7 +154,9 @@ public class CompletedTransfer implements CfdpFileTransfer {
         t.addColumn(COL_ID, transfer.getId());
         t.addColumn(COL_SERVER_ID, SERVER_ID);
         t.addTimestampColumn(COL_CREATION_TIME, transfer.getCreationTime());
-        t.addColumn(COL_BUCKET, transfer.getBucketName());
+        if (transfer.getBucketName() != null) {
+            t.addColumn(COL_BUCKET, transfer.getBucketName());
+        }
 
         if (transfer.getObjectName() != null) {
             t.addColumn(COL_OBJECT_NAME, transfer.getObjectName());
@@ -162,7 +167,7 @@ public class CompletedTransfer implements CfdpFileTransfer {
         t.addEnumColumn(COL_DIRECTION, transfer.getDirection().name());
         t.addColumn(COL_TOTAL_SIZE, transfer.getTotalSize());
         t.addColumn(COL_RELIABLE, transfer.isReliable());
-        t.addColumn(COL_SOURCE_ID, transfer.getSourceId());
+        t.addColumn(COL_SOURCE_ID, transfer.getInitiatorEntityId());
 
         CfdpTransactionId txId = transfer.getTransactionId();
         if (txId != null) {// queued transfers have no transaction id
@@ -170,6 +175,7 @@ public class CompletedTransfer implements CfdpFileTransfer {
         }
         t.addColumn(COL_DESTINATION_ID, transfer.getDestinationId());
         t.addEnumColumn(COL_TRANSFER_STATE, transfer.getTransferState().name());
+        t.addColumn(COL_TRANSFER_TYPE, transfer.getTransferType());
         return t;
     }
 
@@ -177,10 +183,14 @@ public class CompletedTransfer implements CfdpFileTransfer {
         Tuple t = new Tuple();
         t.addColumn(COL_ID, transfer.getId());
         t.addColumn(COL_SERVER_ID, SERVER_ID);
+        if (transfer.getBucketName() != null) {
+            t.addColumn(COL_BUCKET, transfer.getBucketName());
+        }
         t.addTimestampColumn(COL_START_TIME, transfer.getStartTime());
         t.addEnumColumn(COL_TRANSFER_STATE, transfer.getTransferState().name());
         t.addColumn(COL_TOTAL_SIZE, transfer.getTotalSize());
         t.addColumn(COL_TRANSFERED_SIZE, transfer.getTransferredSize());
+        t.addColumn(COL_TRANSFER_TYPE, transfer.getTransferType());
 
         t.addColumn(COL_FAILURE_REASON, transfer.getFailuredReason());
         if (transfer.getDirection() == TransferDirection.DOWNLOAD) {
@@ -207,7 +217,7 @@ public class CompletedTransfer implements CfdpFileTransfer {
     }
 
     @Override
-    public long getSourceId() {
+    public long getInitiatorEntityId() {
         return tuple.getLongColumn(COL_SOURCE_ID);
     }
 
@@ -223,5 +233,10 @@ public class CompletedTransfer implements CfdpFileTransfer {
         } else {
             return TimeEncoding.INVALID_INSTANT;
         }
+    }
+
+    @Override
+    public String getTransferType() {
+        return tuple.getColumn(COL_TRANSFER_TYPE);
     }
 }

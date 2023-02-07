@@ -16,6 +16,7 @@ import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.filetransfer.FileTransfer;
 import org.yamcs.filetransfer.FileTransferService;
 import org.yamcs.filetransfer.InvalidRequestException;
+import org.yamcs.filetransfer.RemoteFileListMonitor;
 import org.yamcs.filetransfer.TransferMonitor;
 import org.yamcs.filetransfer.TransferOptions;
 import org.yamcs.http.BadRequestException;
@@ -26,8 +27,11 @@ import org.yamcs.protobuf.AbstractFileTransferApi;
 import org.yamcs.protobuf.CancelTransferRequest;
 import org.yamcs.protobuf.CreateTransferRequest;
 import org.yamcs.protobuf.CreateTransferRequest.UploadOptions;
+import org.yamcs.protobuf.CreateTransferRequest.DownloadOptions;
 import org.yamcs.protobuf.FileTransferServiceInfo;
 import org.yamcs.protobuf.GetTransferRequest;
+import org.yamcs.protobuf.ListFilesRequest;
+import org.yamcs.protobuf.ListFilesResponse;
 import org.yamcs.protobuf.ListFileTransferServicesRequest;
 import org.yamcs.protobuf.ListFileTransferServicesResponse;
 import org.yamcs.protobuf.ListTransfersRequest;
@@ -107,6 +111,8 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         String bucketName = request.getBucket();
         BucketsApi.checkReadBucketPrivilege(bucketName, ctx.user);
 
+
+
         String objectName = request.getObjectName();
 
         YarchDatabaseInstance yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
@@ -123,6 +129,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
 
         if (request.getDirection() == TransferDirection.UPLOAD) {
             TransferOptions transferOptions = new TransferOptions();
+            transferOptions.addExtraOptions(request.getOptionsList());
 
             transferOptions.setOverwrite(true);
             transferOptions.setCreatePath(true);
@@ -162,8 +169,25 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
             }
         } else if (request.getDirection() == TransferDirection.DOWNLOAD) {
             TransferOptions transferOptions = new TransferOptions();
+            transferOptions.addExtraOptions(request.getOptionsList());
+
             transferOptions.setOverwrite(true);
             transferOptions.setCreatePath(true);
+            if (request.hasDownloadOptions()) {
+                DownloadOptions opts = request.getDownloadOptions();
+                if (opts.hasOverwrite()) {
+                    transferOptions.setOverwrite(opts.getOverwrite());
+                }
+                if (opts.hasCreatePath()) {
+                    transferOptions.setCreatePath(opts.getCreatePath());
+                }
+                if (opts.hasReliable()) {
+                    transferOptions.setReliable(opts.getReliable());
+                }
+                if (opts.hasClosureRequested()) {
+                    transferOptions.setClosureRequested(opts.getClosureRequested());
+                }
+            }
 
             String sourcePath = request.getRemotePath();
             String source = request.hasSource() ? request.getSource() : null;
@@ -245,6 +269,45 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         ftService.registerTransferMonitor(listener);
     }
 
+    @Override
+    public void subscribeRemoteFileList(Context ctx, SubscribeTransfersRequest request, Observer<ListFilesResponse> observer) {
+        FileTransferService ftService = verifyService(request.getInstance(), request.hasServiceName() ? request.getServiceName() : null);
+        RemoteFileListMonitor listener = fileList -> {
+            observer.next(fileList);
+        };
+        observer.setCancelHandler(() -> ftService.unregisterRemoteFileListMonitor(listener));
+        ftService.registerRemoteFileListMonitor(listener);
+    }
+
+    /**
+     * <pre>
+     *  Request file list from remote
+     * </pre>
+     */
+    @Override
+    public void fetchFileList(Context ctx, ListFilesRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
+        FileTransferService ftService = verifyService(request.getInstance(), request.hasServiceName() ? request.getServiceName() : null);
+        ftService.fetchFileList(request.getSource(), request.getDestination(), request.getRemotePath(), request.getReliable());
+        observer.complete(Empty.getDefaultInstance());
+    }
+
+    /**
+     * <pre>
+     *  Get latest file list from service
+     * </pre>
+     */
+    @Override
+    public void getFileList(Context ctx, ListFilesRequest request, Observer<ListFilesResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
+        FileTransferService ftService = verifyService(request.getInstance(), request.hasServiceName() ? request.getServiceName() : null);
+        ListFilesResponse response = ftService.getFileList(request.getSource(), request.getDestination(), request.getRemotePath(), request.getReliable());
+        if (response == null) {
+            response = ListFilesResponse.newBuilder().build();
+        }
+        observer.complete(response);
+    }
+
     private static FileTransferServiceInfo toFileTransferServiceInfo(String name, FileTransferService service) {
         FileTransferServiceInfo.Builder infob = FileTransferServiceInfo.newBuilder()
                 .setInstance(service.getYamcsInstance())
@@ -252,6 +315,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         infob.addAllLocalEntities(service.getLocalEntities());
         infob.addAllRemoteEntities(service.getRemoteEntities());
         infob.setCapabilities(service.getCapabilities());
+        infob.addAllTransferOptions(service.getFileTransferOptions());
         return infob.build();
     }
 
@@ -305,6 +369,10 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         String failureReason = transfer.getFailuredReason();
         if (failureReason != null) {
             tib.setFailureReason(failureReason);
+        }
+
+        if (transfer.getTransferType() != null) {
+            tib.setTransferType(transfer.getTransferType());
         }
 
         return tib.build();

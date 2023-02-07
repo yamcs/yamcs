@@ -31,6 +31,7 @@
     <module>cascading</module>
     <module>ccsds-frames</module>
     <module>cfdp</module>
+    <module>cfdp-udp</module>
     <module>perftest1</module>
     <module>perftest2</module>
     <module>pus</module>
