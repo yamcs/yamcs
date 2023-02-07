@@ -1,4 +1,4 @@
-.ya-form label {
+.ya-form label, .ya-form div.label {
   margin: -3px 0 20px 0;
   font-weight: 500;
   font-size: 11px;
@@ -10,7 +10,7 @@
   position: relative;
 }
 
-.ya-form label.invalid {
+.ya-form label.invalid, .ya-form div.label.invalid {
   color: crimson;
 }
 
@@ -19,13 +19,25 @@
   align-items: center;
 }
 
-.ya-form label, .ya-form label input[type="text"], .ya-form input[type="number"], .ya-form label input[type="password"], .ya-form label textarea, .ya-form label select, .ya-form label .date-time-input {
+.ya-form label,
+.ya-form label input[type="text"],
+.ya-form input[type="number"],
+.ya-form label input[type="password"],
+.ya-form label textarea,
+.ya-form label select,
+.ya-form label .date-time-input,
+.ya-form div.label,
+.ya-form div.label input[type="text"],
+.ya-form div.label input[type="password"],
+.ya-form div.label textarea,
+.ya-form div.label select,
+.ya-form div.label .date-time-input {
   margin: 5px 0 0;
   display: block;
   width: 100%;
 }
 
-.ya-form label .ya-button {
+.ya-form label .ya-button, .ya-form div.label .ya-button {
   margin: 5px 0 0;
   display: block;
 }

@@ -1,4 +1,4 @@
-<label>
+<div class="label">
   <div class="meta" [class.error]="err.invalid$ | async">
     <div class="item">{{ type.engType }}</div>
   </div>
@@ -11,4 +11,4 @@
   <app-errors #err [controlName]="controlName"></app-errors>
 
   <app-date-time-input [formControl]="formControl"></app-date-time-input>
-</label>
+</div>

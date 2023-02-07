@@ -1,4 +1,4 @@
-<label>
+<div class="label">
   <div class="meta" [class.error]="err.invalid$ | async">
     <div class="item"
          *ngIf="type.minChars !== undefined || type.maxChars !== undefined">
@@ -24,4 +24,4 @@
   <input [formControl]="formControl"
          type="text"
          autocomplete="off">
-</label>
+</div>

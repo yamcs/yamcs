@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, Optional, SkipSelf } from '@angular/core';
-import { ControlContainer, FormArrayName, FormControl, FormGroupDirective, FormGroupName, UntypedFormArray } from '@angular/forms';
+import { ControlContainer, FormArrayName, FormControl, FormGroupDirective, FormGroupName, UntypedFormArray, UntypedFormGroup } from '@angular/forms';
 import { BehaviorSubject, distinctUntilChanged, Subscription } from 'rxjs';
 import { ArgumentType, NamedObjectId, ParameterSubscription } from '../../../../client';
 import { YamcsService } from '../../../../core/services/YamcsService';
@@ -167,6 +167,8 @@ export class ArrayArgument implements OnInit, OnDestroy {
           if (!this.type.elementType.engType.endsWith('[]') && this.type.elementType.engType !== 'aggregate') {
             const initialValue = first ? (this.entryInitialValues[i] ?? '') : '';
             this.formArray.setControl(i, new FormControl(initialValue));
+          } else if (this.type.elementType.engType === 'aggregate') {
+            this.formArray.setControl(i, new UntypedFormGroup({}));
           } else {
             this.formArray.setControl(i, new UntypedFormArray([]));
           }

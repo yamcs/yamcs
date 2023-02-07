@@ -1,4 +1,4 @@
-<label>
+<div class="label">
   {{ label }}
   <app-help *ngIf="description">
     {{ description }}
@@ -11,7 +11,7 @@
   </div>
 
   <div class="entries" [formArrayName]="name">
-    <ng-container *ngFor="let name of formArray.controls; index as i">
+    <ng-container *ngFor="let control of formArray.controls; index as i">
       <ng-container [ngSwitch]="type.elementType.engType">
 
         <app-aggregate-argument *ngSwitchCase="'aggregate'"
@@ -90,4 +90,4 @@
       <br>
     </ng-container>
   </div>
-</label>
+</div>

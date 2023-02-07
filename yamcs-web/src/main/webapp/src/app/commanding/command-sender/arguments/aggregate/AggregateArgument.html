@@ -1,4 +1,4 @@
-<label>
+<div class="label">
   <div class="meta">
     <div class="item">aggregate</div>
   </div>
@@ -8,7 +8,7 @@
     {{ description }}
   </app-help>
 
-  <div class="members" [formGroupName]="name">
+  <div class="members" [formGroupName]="controlName">
     <div *ngFor="let member of type.member; index as i; first as isFirst"
          [ngSwitch]="member.type.engType"
          [style.paddingTop.px]="isFirst ? 0 : 5">
@@ -77,4 +77,4 @@
       </app-array-argument>
     </div>
   </div>
-</label>
+</div>

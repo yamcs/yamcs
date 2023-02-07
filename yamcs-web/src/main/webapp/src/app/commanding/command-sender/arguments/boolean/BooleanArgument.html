@@ -1,4 +1,4 @@
-<label>
+<div class="label">
   <div class="meta" [class.error]="err.invalid$ | async">
     <div class="item"
          *ngIf="type.rangeMin !== undefined || type.rangeMax !== undefined">
@@ -28,4 +28,4 @@
           formControlName="enabled"
           value="false"> {{ type.zeroStringValue }}
   </ng-container>
-</label>
+</div>

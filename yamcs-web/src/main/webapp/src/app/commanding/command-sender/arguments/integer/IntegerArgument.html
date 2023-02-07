@@ -1,4 +1,4 @@
-<label>
+<div class="label">
   <div class="meta" [class.error]="err.invalid$ | async">
     <div class="item"
          *ngIf="type.rangeMin !== undefined || type.rangeMax !== undefined">
@@ -42,4 +42,4 @@
   <app-hex-integer-input *ngIf="hexToggle$ | async"
                          [formControl]="formControl">
   </app-hex-integer-input>
-</label>
+</div>
