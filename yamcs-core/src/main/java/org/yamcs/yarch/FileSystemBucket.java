@@ -141,8 +141,15 @@ public class FileSystemBucket implements Bucket {
     @Override
     public void putObject(String objectName, String contentType, Map<String, String> metadata, byte[] objectData)
             throws IOException {
+        // TODO: do something with metadata
+
+        // Prevent directory traversal
+        Path path = root.resolve(objectName);
+        if (!path.toFile().getCanonicalPath().startsWith(root.toFile().getCanonicalPath())) {
+            throw new IOException("Directory traversal attempted: " + path);
+        }
+
         if (objectName.endsWith("/")) {
-            Path path = root.resolve(objectName);
             if (!Files.exists(path)) {
                 Files.createDirectories(path);
             } else if (!Files.isDirectory(path)) {
@@ -151,8 +158,6 @@ public class FileSystemBucket implements Bucket {
         } else {
             // Current implementation ignores specified contentType, instead deriving
             // MIME type from the filename extension.
-
-            Path path = root.resolve(objectName);
             boolean fileExists = Files.isRegularFile(path);
 
             // Verify limits

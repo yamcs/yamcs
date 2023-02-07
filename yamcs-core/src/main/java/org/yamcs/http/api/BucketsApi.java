@@ -246,7 +246,7 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
         String bucketName = request.getBucketName();
         checkManageBucketPrivilege(bucketName, ctx.user);
 
-        String objName = request.getObjectName();
+        String objName = request.getObjectName(); // TODO: will not parse ending / unless URI encoded
         Bucket bucket = verifyAndGetBucket(instance, bucketName, ctx.user);
         try {
             ObjectProperties props = bucket.findObject(objName);

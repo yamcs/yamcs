@@ -24,6 +24,7 @@ import org.yamcs.cfdp.pdu.EofPacket;
 import org.yamcs.cfdp.pdu.FileDataPacket;
 import org.yamcs.cfdp.pdu.FileDirectiveCode;
 import org.yamcs.cfdp.pdu.FinishedPacket;
+import org.yamcs.cfdp.pdu.KeepAlivePacket;
 import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.cfdp.pdu.NakPacket;
 import org.yamcs.cfdp.pdu.SegmentRequest;
@@ -33,6 +34,7 @@ import org.yamcs.filetransfer.TransferMonitor;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.utils.StringConverter;
+import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
 
 public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
@@ -65,6 +67,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
     final Timer eofTimer;
     private final int entityIdLength;
     private final int seqNrSize;
+    private Bucket bucket;
     private final int maxDataSize;
     private final int sleepBetweenPdus;
     private final boolean closureRequested;
@@ -96,39 +99,46 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
      * Create a new CFDP outgoing (uplink) transfer.
      * <p>
      * The transfer has to be started with the {@link #start()} method.
-     * 
+     *
      * @param yamcsInstance
-     *            - yamcsInstance where this transfer is running. It is used for log configuration and to get the time
-     *            service.
+     *         - yamcsInstance where this transfer is running. It is used for log configuration and to get the time
+     *         service.
+     * @param initiatorEntityId
      * @param id
-     *            - unique identifier. The least significant number of bits (according to the CFDP sequence length) of
-     *            this id will be used to make the CFDP transaction id.
+     *         - unique identifier. The least significant number of bits (according to the CFDP sequence length) of this
+     *         id will be used to make the CFDP transaction id.
      * @param creationTime
-     *            - time when the transaction has been created
+     *         - time when the transaction has been created
      * @param executor
-     *            - the CFDP state machine is serialized in this executor. It is also used to schedule timeouts.
+     *         - the CFDP state machine is serialized in this executor. It is also used to schedule timeouts.
      * @param request
-     *            - the request containing the file to be sent.
+     *         - the request containing the file to be sent.
      * @param cfdpOut
-     *            - the stream where the outgoing PDUs are placed.
+     *         - the stream where the outgoing PDUs are placed.
      * @param config
-     *            - the configuration of various settings (see yamcs manual)
+     *         - the configuration of various settings (see yamcs manual)
+     * @param bucket
      * @param eventProducer
-     *            - used to send events when important things happen
+     *         - used to send events when important things happen
      * @param monitor
-     *            - will be notified when transaction status changes
+     *         - will be notified when transaction status changes
      * @param faultHandlerActions
-     *            - can be used to change behaviour in case of timeouts or failures. Can be null, in which case the
-     *            default behaviour to cancel the transaction will be used.
+     *         - can be used to change behaviour in case of timeouts or failures. Can be null, in which case the default
+     *         behaviour to cancel the transaction will be used.
      */
-    public CfdpOutgoingTransfer(String yamcsInstance, long id, long creationTime, ScheduledThreadPoolExecutor executor,
-            PutRequest request,
-            Stream cfdpOut, YConfiguration config, EventProducer eventProducer, TransferMonitor monitor,
-            Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
-        super(yamcsInstance, id, creationTime, executor, config, makeTransactionId(request.getSourceId(), config, id),
-                request.getDestinationId(), cfdpOut,
+    public CfdpOutgoingTransfer(String yamcsInstance, long initiatorEntityId, long id, long creationTime,
+            ScheduledThreadPoolExecutor executor,
+            PutRequest request, Stream cfdpOut, YConfiguration config, Bucket bucket,
+            EventProducer eventProducer,
+            TransferMonitor monitor, Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
+        super(yamcsInstance, id, creationTime,
+                executor, config, makeTransactionId(initiatorEntityId, config, id),
+                request.getDestinationCfdpEntityId(), cfdpOut,
                 eventProducer, monitor, faultHandlerActions);
         this.request = request;
+        this.metadata = request.getMetadata();
+        transferType = getTransferType(metadata);
+        this.bucket = bucket;
         entityIdLength = config.getInt("entityIdLength");
         seqNrSize = config.getInt("sequenceNrLength");
         int maxPduSize = config.getInt("maxPduSize", 512);
@@ -143,29 +153,34 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         this.sleepBetweenPdus = config.getInt("sleepBetweenPdus", 500);
         this.closureRequested = request.isClosureRequested();
 
-        // create header for all file directive PDUs
-        directiveHeader = new CfdpHeader(
-                true, // it's a file directive
-                false, // it's sent towards the receiver
-                acknowledged,
-                withCrc, // no CRC
-                entityIdLength,
-                seqNrSize,
-                cfdpTransactionId.getInitiatorEntity(), // my Entity Id
-                request.getDestinationId(), // the id of the target
-                cfdpTransactionId.getSequenceNumber());
 
-        dataHeader = new CfdpHeader(
-                false, // it's file data
-                false, // it's sent towards the receiver
-                acknowledged,
-                withCrc, // no CRC
-                entityIdLength,
-                seqNrSize,
-                getTransactionId().getInitiatorEntity(), // my Entity Id
-                request.getDestinationId(), // the id of the target
-                this.cfdpTransactionId.getSequenceNumber());
+        if (request.getHeader() != null) {
+            directiveHeader = request.getHeader().copy(true);
+            dataHeader = request.getHeader().copy(false);
+        } else {
+            // create header for all file directive PDUs
+            directiveHeader = new CfdpHeader(
+                    true, // it's a file directive
+                    false, // it's sent towards the receiver
+                    acknowledged,
+                    withCrc, // no CRC
+                    entityIdLength,
+                    seqNrSize,
+                    cfdpTransactionId.getInitiatorEntity(), // my Entity Id
+                    request.getDestinationCfdpEntityId(), // the id of the target
+                    cfdpTransactionId.getSequenceNumber());
 
+            dataHeader = new CfdpHeader(
+                    false, // it's file data
+                    false, // it's sent towards the receiver
+                    acknowledged,
+                    withCrc, // no CRC
+                    entityIdLength,
+                    seqNrSize,
+                    getTransactionId().getInitiatorEntity(), // my Entity Id
+                    request.getDestinationCfdpEntityId(), // the id of the target
+                    this.cfdpTransactionId.getSequenceNumber());
+        }
     }
 
     private static CfdpTransactionId makeTransactionId(long sourceId, YConfiguration config, long id) {
@@ -189,7 +204,10 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
 
         switch (outTxState) {
         case START:
-            metadata = getMetadataPacket();
+            if(metadata == null) {
+                metadata = getMetadataPacket();
+                transferType = getTransferType(metadata);
+            }
             sendInfoEvent(ETYPE_TRANSFER_META, "Sending metadata: " + toEventMsg(metadata));
             sendPacket(metadata);
             this.outTxState = OutTxState.SENDING_DATA;
@@ -287,7 +305,9 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
                             .collect(Collectors.toList()));
                 }
             }
-        } else {
+        } else if (packet instanceof KeepAlivePacket) {
+            log.info("TXID{} Ignoring Keep Alive PDU: {}", cfdpTransactionId, packet); // Handling not implemented
+        } else  {
             log.warn("TXID{} unexpected packet {} ", cfdpTransactionId, packet);
         }
     }
@@ -402,19 +422,23 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
 
         long duration = (System.currentTimeMillis() - wallclockStartTime) / 1000;
 
+        String eventMessageSuffix;
+        if (metadata.getFileLength() > 0 || directiveHeader.isLargeFile()) {
+            eventMessageSuffix = request.getSourceFileName() + " -> " + request.getDestinationFileName();
+        } else {
+            eventMessageSuffix = "Fileless transfer (metadata options: \n" + metadata.getOptions().stream().map(TLV::toString).collect(Collectors.joining(",\n")) + "\n)";
+        }
+
         if (conditionCode == ConditionCode.NO_ERROR) {
             changeState(TransferState.COMPLETED);
             sendInfoEvent(ETYPE_TRANSFER_FINISHED,
                     "transfer finished successfully in " + duration + " seconds: "
-                            + request.getObjectName() + " -> "
-                            + request.getTargetPath());
+                            + eventMessageSuffix);
         } else {
             failTransfer(conditionCode.toString());
             sendWarnEvent(ETYPE_TRANSFER_FINISHED,
                     "transfer finished with error in " + duration + " seconds: "
-                            + request.getObjectName()
-                            + " -> "
-                            + request.getTargetPath() + " error: " + finishedPacket.getConditionCode());
+                            + eventMessageSuffix + ", error: " + finishedPacket.getConditionCode());
         }
     }
 
@@ -461,6 +485,12 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         return TransferDirection.UPLOAD;
     }
 
+
+    @Override
+    public long getInitiatorEntityId() {
+        return getInitiatorId();
+    }
+
     @Override
     public long getTotalSize() {
         return this.request.getFileLength();
@@ -468,17 +498,17 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
 
     @Override
     public String getBucketName() {
-        return request.getBucket().getName();
+        return bucket != null ? bucket.getName() : null;
     }
 
     @Override
     public String getObjectName() {
-        return request.getObjectName();
+        return request.getSourceFileName();
     }
 
     @Override
     public String getRemotePath() {
-        return request.getTargetPath();
+        return request.getDestinationFileName();
     }
 
     @Override
@@ -508,9 +538,9 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         return new MetadataPacket(
                 closureRequested, checksumType,
                 request.getFileLength(),
-                request.getObjectName(),
-                request.getTargetPath(),
-                directiveHeader);
+                request.getSourceFileName(),
+                request.getDestinationFileName(),
+                null, directiveHeader);
     }
 
     private FileDataPacket getNextFileDataPacket() {

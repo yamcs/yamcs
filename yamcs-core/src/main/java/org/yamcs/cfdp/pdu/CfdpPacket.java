@@ -115,6 +115,9 @@ public abstract class CfdpPacket {
                 case NAK:
                     toReturn = new NakPacket(bb, header);
                     break;
+                case KEEP_ALIVE:
+                    toReturn = new KeepAlivePacket(bb, header);
+                    break;
                 default:
                     log.warn("Ignoring unknown/not supported " + fdc + " file directive PDU ");
                 }
@@ -196,4 +199,27 @@ public abstract class CfdpPacket {
 
     // the buffer is assumed to be at the correct position
     protected abstract void writeCFDPPacket(ByteBuffer buffer);
+
+    public enum TransmissionMode {
+        ACKNOWLEDGED(0),
+        UNACKNOWLEDGED(1);
+
+        private final int value;
+
+        TransmissionMode(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public static TransmissionMode fromValue(int value) {
+            switch (value) {
+                case 0: return ACKNOWLEDGED;
+                case 1: return UNACKNOWLEDGED;
+                default: throw new IllegalArgumentException("Value can only be 0 or 1");
+            }
+        }
+    }
 }

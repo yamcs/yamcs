@@ -1,0 +1,134 @@
+services:
+  - class: org.yamcs.archive.XtceTmRecorder
+  - class: org.yamcs.archive.ParameterRecorder
+  - class: org.yamcs.archive.AlarmRecorder
+  - class: org.yamcs.archive.EventRecorder
+  - class: org.yamcs.archive.ReplayServer
+  - class: org.yamcs.parameter.SystemParametersService
+    args:
+      provideJvmVariables: true
+      provideFsVariables: true
+  - class: org.yamcs.ProcessorCreatorService
+    args: 
+      name: "realtime"
+      type: "realtime" 
+  - class: org.yamcs.archive.CommandHistoryRecorder
+  - class: org.yamcs.parameterarchive.ParameterArchive
+    args:
+      realtimeFiller: 
+        enabled: false
+      backFiller:
+        enabled: true
+        warmupTime: 60
+  - class: org.yamcs.simulator.SimulatorCommander
+    args:
+      telnet:
+        port: 10023
+      tctm:
+        tmPort: 10015
+        tcPort: 10025
+        losPort: 10115
+  - class: org.yamcs.cfdp.CfdpService
+    name: cfdp0
+    args:
+     inactivityTimeout: 30000
+     sequenceNrLength: 4
+     maxPduSize: 512
+     incomingBucket: "cfdpDown"
+     allowRemoteProvidedBucket: false
+     allowRemoteProvidedSubdirectory: false
+     allowDownloadOverwrites: false
+     maxExistingFileRenames: 1000
+     eofAckTimeout: 3000
+     eofAckLimit: 5
+     #Note that the simulator does not process commands faster than 1/second.
+     # Decreasign this number will make the packets queue up in the TCP queue
+     # and the CFDP sender will timeout waiting for the EOF ACK
+     sleepBetweenPdus: 1000
+     #The simulator only supports one transfer at a time
+     maxNumPendingUploads: 1
+     #How many milliseconds to keep the incoming transfer in the pending queue after completion
+     #During this time an incoming PDU with that transaction id will not be recognized as a new transaction
+     pendingAfterCompletion: 10000
+     localEntities:
+       - name: id2
+         id: 2
+         bucket: bucket2
+     remoteEntities:
+       - name: id1
+         id: 1
+     senderFaultHandlers:
+       AckLimitReached: suspend
+
+dataLinks:
+  - name: tm_realtime
+    enabledAtStartup: true
+    class: org.yamcs.tctm.TcpTmDataLink
+    stream: tm_realtime
+    host: localhost
+    port: 10015
+    # Give the embedded simulator some time to boot up
+    initialDelay: 2000      
+  - name: tc_realtime
+    class: org.yamcs.tctm.TcpTcDataLink
+    stream: tc_realtime
+    host: localhost
+    port: 10025
+    # Give the embedded simulator smoe time to boot up
+    initialDelay: 2000
+    commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
+    commandPostprocessorArgs:
+        errorDetection:
+          type: 16-SUM
+        enforceEvenNumberOfBytes: true
+  - name: cfdp_tm
+    class: org.yamcs.tctm.UdpTmDataLink
+    stream: cfdp_tm
+    host: localhost
+    port: 40002
+    packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
+    packetPreprocessorArgs:
+      errorDetection: none
+      useLocalGenerationTime: true
+      seqCountOffset: -1
+      timestampOffset: -1
+  - name: cfdp_tc
+    class: org.yamcs.tctm.UdpTcDataLink
+    stream: cfdp_tc
+    host: localhost
+    port: 40001
+    cmdPostProcessor: org.yamcs.tctm.GenericCommandPostprocessor
+    cmdPostProcessorArgs:
+      errorDetection: none
+        
+mdb:
+  # Configuration of the active loaders
+  # Valid loaders are: sheet, xtce or fully qualified name of the class
+  - type: "sheet"
+    spec: "mdb/simulator-ccsds.xls"
+    subLoaders:
+      - type: "sheet"
+        spec: "mdb/landing.xls"
+  - type: "sheet"
+    spec: "cfdp-pdu.xls"
+
+#Configuration for streams created at server startup
+streamConfig:
+  tm:
+    - name: "tm_realtime"
+      processor: "realtime"
+    - name: "tm2_realtime"
+      rootContainer: "/YSS/SIMULATOR/tm2_container"
+      processor: "realtime"
+    - name: "tm_dump"
+    - name: "cfdp_tm"
+      rootContainer: "/cfdp/pdu"
+      processor: "realtime"
+  invalidTm: "invalid_tm_stream"
+  cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
+  event: ["events_realtime", "events_dump"]
+  param: ["pp_realtime", "sys_param", "proc_param"]
+  parameterAlarm: ["alarms_realtime"]
+  eventAlarm: ["event_alarms_realtime"]
+  tc: ["tc_realtime", "cfdp_tc"]
+  sqlFile: "etc/extra_streams.sql"

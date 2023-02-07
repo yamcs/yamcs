@@ -1,9 +1,13 @@
 package org.yamcs.filetransfer;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
+import org.yamcs.InitException;
+import org.yamcs.YConfiguration;
 import org.yamcs.YamcsService;
+import org.yamcs.protobuf.FileTransferOption;
 import org.yamcs.protobuf.EntityInfo;
 import org.yamcs.protobuf.FileTransferCapabilities;
 import org.yamcs.yarch.Bucket;
@@ -21,7 +25,7 @@ import org.yamcs.yarch.Bucket;
  * @author nm
  *
  */
-public interface FileTransferService extends YamcsService {
+public interface FileTransferService extends YamcsService, FileListingService {
 
     /**
      * Get the list of configured local entities. These contain the {@code source) used in the {@link
@@ -51,6 +55,14 @@ public interface FileTransferService extends YamcsService {
      * @return
      */
     public FileTransferCapabilities getCapabilities();
+
+    /**
+     * Get configured options for the file transfers
+     * @return
+     */
+    default List<FileTransferOption> getFileTransferOptions() {
+        return Collections.emptyList();
+    }
 
     /**
      * Start a file upload.
@@ -180,4 +192,8 @@ public interface FileTransferService extends YamcsService {
      * @param listener
      */
     void unregisterTransferMonitor(TransferMonitor listener);
+
+    @Override
+    default void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
+    }
 }

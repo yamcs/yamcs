@@ -49,6 +49,22 @@ public class CfdpHeader {
         readPduHeader(buffer);
     }
 
+    public CfdpHeader copy() {
+        return copy(fileDirective, towardsSender);
+    }
+
+    public CfdpHeader copy(boolean fileDirective) {
+        return copy(fileDirective, towardsSender);
+    }
+
+    public CfdpHeader copy(boolean fileDirective, boolean towardsSender) {
+        return new CfdpHeader(fileDirective, towardsSender, acknowledged, withCrc, entityIdLength, sequenceNumberLength, sourceId, destinationId, sequenceNr);
+    }
+
+    public CfdpHeader copyDirectionInverted() {
+        return copy(fileDirective, !towardsSender);
+    }
+
     public CfdpTransactionId getTransactionId() {
         return new CfdpTransactionId(this.sourceId, this.sequenceNr);
     }
@@ -118,7 +134,8 @@ public class CfdpHeader {
     }
 
     protected void writeToBuffer(ByteBuffer buffer, int dataLength) {
-        byte b = (byte) (CfdpUtils.boolToByte(largeFile, 7) |
+        byte b = (byte) (0x20 | // version 2 (001)
+                CfdpUtils.boolToByte(largeFile, 7) |
                 CfdpUtils.boolToByte(!fileDirective, 3) |
                 CfdpUtils.boolToByte(towardsSender, 4) |
                 CfdpUtils.boolToByte(!acknowledged, 5) |
@@ -128,9 +145,9 @@ public class CfdpHeader {
         buffer.putShort((short) dataLength);
         b = (byte) ((entityIdLength - 1 << 4) | (sequenceNumberLength - 1));
         buffer.put(b);
-        buffer.put(CfdpUtils.longToBytes(sourceId, entityIdLength));
-        buffer.put(CfdpUtils.longToBytes(sequenceNr, sequenceNumberLength));
-        buffer.put(CfdpUtils.longToBytes(destinationId, entityIdLength));
+        buffer.put(CfdpUtils.longToBytesFixed(sourceId, entityIdLength));
+        buffer.put(CfdpUtils.longToBytesFixed(sequenceNr, sequenceNumberLength));
+        buffer.put(CfdpUtils.longToBytesFixed(destinationId, entityIdLength));
     }
 
     /**
@@ -151,7 +168,7 @@ public class CfdpHeader {
 
     public String toJson() {
         return " {\n"
-                + "        fileDirective: " + fileDirective + ",\n"
+                + "        fileDirective=" + fileDirective + ",\n"
                 + "        towardsSender=" + towardsSender + ",\n"
                 + "        acknowledged=" + acknowledged + ",\n"
                 + "        withCrc=" + withCrc + ",\n"

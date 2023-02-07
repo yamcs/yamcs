@@ -70,6 +70,11 @@ public class ColSimulator extends AbstractSimulator {
 
     private CfdpSender cfdpSender;
 
+    @Override
+    public void setCfdpSender(CfdpSender cfdpSender) {
+        this.cfdpSender = cfdpSender;
+    }
+
     public ColSimulator(File losDir, File dataDir) {
         losRecorder = new LosRecorder(losDir);
         powerDataHandler = new PowerHandler();
@@ -386,7 +391,7 @@ public class ColSimulator extends AbstractSimulator {
         } else {
             log.info("CFDP download file {} skippedPdus: {}", fileName, Arrays.toString(skippedPdus));
             try {
-                cfdpSender = new CfdpSender(this, f, destinationId, skippedPdus);
+                cfdpSender = new CfdpSender(this, destinationId, f, f.getName(), null, skippedPdus);
                 cfdpSender.start();
                 transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
             } catch (IOException e) {

@@ -30,6 +30,7 @@ import org.yamcs.client.filetransfer.FileTransferClient.UploadOptions;
 import org.yamcs.client.storage.ObjectId;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.filetransfer.FileSaveHandler;
 import org.yamcs.filetransfer.FileTransfer;
 import org.yamcs.filetransfer.TransferMonitor;
 import org.yamcs.protobuf.EntityInfo;
@@ -351,6 +352,7 @@ public class CfdpUplinkIntegrationTest {
         m.put("finAckTimeout", 50);
         m.put("finAckLimit", 2);
         m.put("sleepBetweenPdus", 10);
+        m.put("directoryListingFileTemplate", ".dirlist.tmp");
 
         return YConfiguration.wrap(m);
     }
@@ -387,8 +389,12 @@ public class CfdpUplinkIntegrationTest {
                     }
 
                     if (trsf == null) {
+                        FileSaveHandler fileSaveHandler = new FileSaveHandler(yamcsInstance, incomingBucket,
+                                null, false,
+                                false, false, 1000);
+
                         trsf = new CfdpIncomingTransfer("test", 1, TimeEncoding.getWallclockTime(), executor, config,
-                                packet.getHeader(), cfdpIn, incomingBucket, eventProducer, MyFileReceiver.this,
+                                packet.getHeader(), cfdpIn, fileSaveHandler, eventProducer, MyFileReceiver.this,
                                 Collections.emptyMap());
                     }
                     // System.out.println("processing packet "+packet);

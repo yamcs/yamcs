@@ -1,31 +1,26 @@
 package org.yamcs.simulator.cfdp;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import com.csvreader.CsvReader;
+import com.csvreader.CsvWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.DataFile;
 import org.yamcs.cfdp.DataFileSegment;
 import org.yamcs.cfdp.FileDirective;
-import org.yamcs.cfdp.pdu.AckPacket;
-import org.yamcs.cfdp.pdu.CfdpHeader;
-import org.yamcs.cfdp.pdu.CfdpPacket;
-import org.yamcs.cfdp.pdu.ConditionCode;
-import org.yamcs.cfdp.pdu.EofPacket;
-import org.yamcs.cfdp.pdu.FileDataPacket;
-import org.yamcs.cfdp.pdu.FileDirectiveCode;
-import org.yamcs.cfdp.pdu.FinishedPacket;
-import org.yamcs.cfdp.pdu.MetadataPacket;
-import org.yamcs.cfdp.pdu.NakPacket;
-import org.yamcs.cfdp.pdu.SegmentRequest;
+import org.yamcs.cfdp.pdu.*;
 import org.yamcs.simulator.AbstractSimulator;
 import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
 import org.yamcs.cfdp.pdu.AckPacket.TransactionStatus;
 import org.yamcs.cfdp.pdu.FinishedPacket.FileStatus;
+import org.yamcs.simulator.ColSimulator;
+import org.yamcs.utils.StringConverter;
 
 /**
  * Receives CFDP files.
@@ -74,11 +69,7 @@ public class CfdpReceiver {
             log.info("ACK CFDP packet received");
             break;
         case METADATA:
-            log.info("Metadata CFDP packet received");
-            metadata = (MetadataPacket) packet;
-            long packetLength = metadata.getFileLength();
-            cfdpDataFile = new DataFile(packetLength);
-            missingSegments = null;
+            processMetadataPacket((MetadataPacket) packet);
             break;
         case NAK:
             log.info("NAK CFDP packet received");
@@ -92,6 +83,102 @@ public class CfdpReceiver {
         default:
             log.error("CFDP packet of unknown type received");
             break;
+        }
+    }
+
+    private void processMetadataPacket(MetadataPacket packet) {
+        metadata = packet;
+        log.info("Metadata CFDP packet received");
+        long packetLength = metadata.getFileLength();
+        cfdpDataFile = new DataFile(packetLength);
+        missingSegments = null;
+
+        ProxyPutRequest proxyPutRequest = null;
+        ProxyTransmissionMode proxyTransmissionMode = null;
+        ProxyClosureRequest proxyClosureRequest = null;
+
+        if(metadata.getOptions() != null) {
+            for (TLV option : metadata.getOptions()) {
+                if (option instanceof ProxyPutRequest && proxyPutRequest == null) {
+                    proxyPutRequest = (ProxyPutRequest) option;
+                } else if (option instanceof ProxyTransmissionMode  && proxyTransmissionMode == null) {
+                    proxyTransmissionMode = (ProxyTransmissionMode) option;
+                } else if (option instanceof ProxyClosureRequest &&  proxyClosureRequest == null) {
+                    proxyClosureRequest = (ProxyClosureRequest) option;
+                } else if (option instanceof DirectoryListingRequest) {
+                    sendDirectoryListingResponse(packet.getHeader(), (DirectoryListingRequest) option);
+                } else if (option instanceof ReservedMessageToUser) {
+                    log.warn("Ignoring reserved message to user " + ((ReservedMessageToUser) option).getMessageType() + ":" + StringConverter.arrayToHexString(((ReservedMessageToUser) option).getContent()));
+                } else {
+                    log.warn("Ignoring metadata option TLV: " + StringConverter.arrayToHexString(option.getValue()));
+                }
+            }
+        }
+
+        if (proxyPutRequest != null) {
+            executeProxyPutRequest(packet.getHeader(), proxyPutRequest, proxyTransmissionMode, proxyClosureRequest);
+        } else {
+            if(proxyTransmissionMode != null) log.warn("Ignoring Proxy Transmission Mode, no Proxy Put Request specified");
+            if(proxyClosureRequest != null) log.warn("Ignoring Proxy Closure Request, no Proxy Put Request specified");
+        }
+    }
+
+    private void sendDirectoryListingResponse(CfdpHeader header, DirectoryListingRequest request) {
+        File directory = new File(dataDir, request.getDirectoryName());
+        File[] files = directory.listFiles();
+        if (files == null) {
+            return;
+        }
+
+        try {
+            File directoryListing = File.createTempFile("YamcsSim-dirlist-", ".tmp");
+            directoryListing.deleteOnExit();
+
+            CsvWriter writer = new CsvWriter(directoryListing.getPath());
+            for (File file : files) {
+                writer.writeRecord(new String[] { file.getName(), String.valueOf(file.isDirectory()),
+                        String.valueOf(file.length()), String.valueOf(file.lastModified()) });
+            }
+            writer.close();
+
+            log.info("Sending DirectoryListingResponse following request: " + request);
+            CfdpSender sender = new CfdpSender(simulator, (int) header.getSourceId(), directoryListing, request.getDirectoryFileName(),
+                    List.of(new DirectoryListingResponse(DirectoryListingResponse.ListingResponseCode.SUCCESSFUL, request.getDirectoryName(), request.getDirectoryFileName()),
+                            new OriginatingTransactionId(header.getSourceId(), header.getSequenceNumber())),
+                    new int[0]);
+            simulator.setCfdpSender(sender);
+            sender.addEndCallback(directoryListing::delete);
+            sender.start();
+            // TODO: according response
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private void executeProxyPutRequest(CfdpHeader header, ProxyPutRequest proxyPutRequest,
+            ProxyTransmissionMode proxyTransmissionMode, ProxyClosureRequest proxyClosureRequest) {
+        if(proxyTransmissionMode != null && proxyTransmissionMode.getTransmissionMode() == CfdpPacket.TransmissionMode.UNACKNOWLEDGED) {
+            log.warn("Unacknowledged transmission requested but not implemented in simulator, defaulting to acknowledged");
+        }
+        if(proxyClosureRequest != null && proxyClosureRequest.isClosureRequested()) {
+            log.warn("Closure requested but not implemented in simulator, defaulting to acknowledged transmission");
+        }
+
+        try {
+            // WARNING: Only sends the file with the proxy put request, does not respond with correct messages
+            log.info("Starting upload following Proxy Put Request: " + proxyPutRequest);
+            CfdpSender sender = new CfdpSender(simulator, (int) proxyPutRequest.getDestinationEntityId(),
+                    new File(dataDir, proxyPutRequest.getSourceFileName()), proxyPutRequest.getDestinationFileName(),
+                    List.of(new OriginatingTransactionId(header.getSourceId(), header.getSequenceNumber())),
+                    new int[0]);
+            simulator.setCfdpSender(sender);
+            // TODO: send ProxyPutResponse afterwards // sender.addEndCallbacks();
+            sender.start();
+        } catch (FileNotFoundException e) {
+            log.error("File '" + proxyPutRequest.getSourceFileName() + "' does not exist!");
+        } catch (ClassCastException e) {
+            log.error("Failed to cast " + simulator + " to ColSimulator");
         }
     }
 
@@ -129,7 +216,9 @@ public class CfdpReceiver {
         // checking the file completeness;
         missingSegments = cfdpDataFile.getMissingChunks();
         if (missingSegments.isEmpty()) {
-            saveFile();
+            if(metadata.getFileLength() > 0 || header.isLargeFile()) {
+                saveFile();
+            }
 
             log.info("Sending back finished PDU");
             header = new CfdpHeader(

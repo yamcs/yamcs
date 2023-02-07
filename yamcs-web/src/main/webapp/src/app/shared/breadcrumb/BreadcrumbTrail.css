@@ -1,6 +1,9 @@
 .trail {
-  margin-bottom: 12px;
   height: 24px;
   line-height: 24px;
   font-size: 12px;
+}
+
+.showMargin {
+  margin-bottom: 12px;
 }

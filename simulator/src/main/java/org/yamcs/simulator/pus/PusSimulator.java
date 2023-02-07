@@ -21,6 +21,7 @@ import org.yamcs.simulator.PowerHandler;
 import org.yamcs.simulator.RCSHandler;
 import org.yamcs.simulator.SimulatorCcsdsPacket;
 import org.yamcs.simulator.TcpTmTcLink;
+import org.yamcs.simulator.cfdp.CfdpSender;
 
 /**
  * PUS (Packet Utilisation Standard) simulator.
