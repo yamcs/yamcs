@@ -60,7 +60,7 @@ dataLinks:
     #randomizeCltu: false 
     #the following option can be used to skip randomization for certain virtual channels
     #skipRandomizationForVcs: [1, 0]
-    errorDetection: NONE
+    errorDetection: CRC16
     virtualChannels:
          - vcId: 0
            service: "PACKET" 
