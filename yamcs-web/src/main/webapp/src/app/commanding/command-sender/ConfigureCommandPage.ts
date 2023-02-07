@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -22,9 +22,6 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
   @ViewChild('commandForm')
   commandForm: CommandForm;
 
-  @ViewChild('another', { static: false })
-  anotherChild: ElementRef;
-
   config: WebsiteConfig;
 
   command$ = new BehaviorSubject<Command | null>(null);
@@ -45,6 +42,7 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
     configService: ConfigService,
     authService: AuthService,
     effectiveSignificancePipe: EffectiveSignificancePipe,
+    private changeDetection: ChangeDetectorRef,
   ) {
     this.config = configService.getConfig();
 
@@ -97,6 +95,10 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
         }
       });
     }
+
+    this.commandForm.hasArguments$.subscribe(hasArguments => {
+      this.changeDetection.detectChanges();
+    });
   }
 
   goBack() {

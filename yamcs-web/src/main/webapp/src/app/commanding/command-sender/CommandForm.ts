@@ -33,6 +33,7 @@ export class CommandForm implements OnChanges {
   arguments: Argument[] = [];
   argumentsWithInitial: Argument[] = [];
   showAll$ = new BehaviorSubject<boolean>(false);
+  hasArguments$ = new BehaviorSubject<boolean>(false);
 
   form: FormGroup;
   config: WebsiteConfig;
@@ -144,6 +145,8 @@ export class CommandForm implements OnChanges {
     for (const arg of this.argumentsWithInitial) {
       this.addControl(arg, this.templateProvider);
     }
+
+    this.hasArguments$.next(this.arguments.length > 0 || this.argumentsWithInitial.length > 0);
   }
 
   getAssignments(): { [key: string]: any; } {

@@ -77,8 +77,10 @@
       </ng-container>
     </ng-container>
 
-    <p *ngIf="commandForm.arguments.length || commandForm.argumentsWithInitial.length">&nbsp;</p>
-    <h3 *ngIf="commandForm.arguments.length || commandForm.argumentsWithInitial.length">Arguments</h3>
+    <ng-container *ngIf="commandForm.hasArguments$ | async">
+      <p>&nbsp;</p>
+      <h3>Arguments</h3>
+    </ng-container>
     <app-command-form #commandForm [command]="command$ | async"
                       [templateProvider]="templateProvider$ | async"></app-command-form>
     <p>&nbsp;</p>
