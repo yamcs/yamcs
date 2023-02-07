@@ -9,57 +9,74 @@
     &nbsp;&nbsp;&nbsp;
     <button mat-button color="primary" matTooltip="Save stack"
             (click)="saveStack()"
-            [disabled]="!(dirty$ | async)">
+            [disabled]="!format || !(dirty$ | async)">
       <mat-icon>save</mat-icon>
       SAVE
     </button>
     <mat-divider vertical style="height: 100%"></mat-divider>
     <button mat-icon-button color="primary" matTooltip="Add a command below"
-            [disabled]="running$ | async"
+            [disabled]="!format || (running$ | async)"
             (click)="addCommand()">
       <mat-icon>add_circle_outline</mat-icon>
     </button>
     <button mat-icon-button color="primary" matTooltip="Edit the selected command"
-            [disabled]="(running$ | async) || !(selectedEntry$ | async)"
+            [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
             (click)="editSelectedCommand()">
       <mat-icon>edit</mat-icon>
     </button>
     <button mat-icon-button color="primary" matTooltip="Cut the selected command"
-            [disabled]="(running$ | async) || !(selectedEntry$ | async)"
+            [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
             (click)="cutSelectedCommand()">
       <mat-icon>content_cut</mat-icon>
     </button>
     <button mat-icon-button color="primary" matTooltip="Copy the selected command"
-            [disabled]="(running$ | async) || !(selectedEntry$ | async)"
+            [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
             (click)="copySelectedCommand()">
       <mat-icon>content_copy</mat-icon>
     </button>
     <button mat-icon-button color="primary" matTooltip="Paste command from the clipboard"
-            [disabled]="(running$ | async) || !(clipboardEntry$ | async)"
+            [disabled]="!format || (running$ | async) || !(clipboardEntry$ | async)"
             (click)="pasteCommand()">
       <mat-icon>content_paste</mat-icon>
     </button>
     <mat-divider vertical style="height: 100%"></mat-divider>
     <button mat-icon-button color="primary" matTooltip="Run the selected command"
-            [disabled]="(running$ | async) || !(selectedEntry$ | async)"
+            [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
             (click)="runSelection()">
       <mat-icon>play_arrow</mat-icon>
     </button>
     <button mat-icon-button color="primary" matTooltip="Stop current execution"
-            [disabled]="!(running$ | async)"
+            [disabled]="!format || !(running$ | async)"
             (click)="stopRun()">
       <mat-icon>stop</mat-icon>
     </button>
     <button mat-icon-button color="primary" matTooltip="Clear all outputs"
-            [disabled]="(running$ | async) || !(hasOutputs$ | async)"
+            [disabled]="!format || (running$ | async) || !(hasOutputs$ | async)"
             (click)="clearOutputs()">
       <mat-icon>refresh</mat-icon>
     </button>
     <button mat-icon-button color="primary" matTooltip="Run all from selected command"
-            [disabled]="(running$ | async) || !(selectedEntry$ | async)"
+            [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
             (click)="runFromSelection()">
       <mat-icon>playlist_play</mat-icon>
     </button>
+    <mat-divider vertical style="height: 100%"></mat-divider>
+    <button mat-button color="primary" matTooltip="Export command stack" [matMenuTriggerFor]="exportMenu"
+            [disabled]="!format"
+            (click)="setExportURLs()">
+      <mat-icon>open_in_new</mat-icon>
+      EXPORT
+    </button>
+    <mat-menu #exportMenu="matMenu">
+      <a mat-menu-item [href]="JSONblobURL" [download]="(filename | basename) + '.json'">
+        <mat-icon style="margin: 0">data_object</mat-icon>
+        JSON
+      </a>
+      <a mat-menu-item [href]="XMLblobURL" [download]="(filename | basename) + '.xml'">
+        <mat-icon style="margin: 0">code</mat-icon>
+        XML
+      </a>
+    </mat-menu>
   </app-instance-toolbar>
 
   <app-detail-pane>
@@ -81,6 +98,15 @@
   </app-detail-pane>
 
   <div class="panel-wrapper">
+    <app-empty-message *ngIf="!format">
+      <mat-icon style="vertical-align: bottom; margin-right: 10px;">link_off</mat-icon>
+      Unsupported command stack format
+    </app-empty-message>
+    <app-empty-message *ngIf="format && !entries$.value.length">
+      Empty command stack<br>
+      Click <mat-icon inline style="vertical-align: bottom;">add_circle_outline</mat-icon> to start adding
+      commands
+    </app-empty-message>
     <div #entryParent class="panel-content" cdkDropList (cdkDropListDropped)="handleDrop($event)">
       <div id="drag-boundary">
         <div cdkDrag cdkDragBoundary="#drag-boundary"

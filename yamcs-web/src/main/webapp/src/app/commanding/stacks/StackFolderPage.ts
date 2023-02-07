@@ -33,7 +33,7 @@ export class StackFolderPage implements OnDestroy {
   breadcrumb$ = new BehaviorSubject<BreadCrumbItem[]>([]);
   dragActive$ = new BehaviorSubject<boolean>(false);
 
-  displayedColumns = ['select', 'name', 'modified', 'actions'];
+  displayedColumns = ['select', 'name', 'modified', 'format', 'actions'];
   dataSource = new MatTableDataSource<BrowseItem>([]);
   selection = new SelectionModel<BrowseItem>(true, []);
 

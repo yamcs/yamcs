@@ -1,10 +1,13 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Title } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { MessageService } from 'src/app/core/services/MessageService';
+import { ExtensionPipe } from 'src/app/shared/pipes/ExtensionPipe';
+import { FilenamePipe } from 'src/app/shared/pipes/FilenamePipe';
 import { Command, CommandSubscription, StorageClient, Value } from '../../client';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -19,7 +22,6 @@ import { StackFormatter } from './StackFormatter';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StackFilePage implements OnDestroy {
-
   private storageClient: StorageClient;
 
   objectName: string;
@@ -55,7 +57,6 @@ export class StackFilePage implements OnDestroy {
   private folderPerInstance: boolean;
 
   // Configuration of command ack to accept to execute the following
-  // TODO: get from config
   private acceptingAck = "Acknowledge_Queued";
   // Default: OK/DISABLED -> continue, NOK/CANCELLED/after timeout -> pause,  everything else -> ignore
   private acceptingAckValues = ["OK", "DISABLED"];
@@ -64,13 +65,19 @@ export class StackFilePage implements OnDestroy {
 
   private runningTimeout: NodeJS.Timeout;
 
+  format: "json" | "xml";
+
+  JSONblobURL: SafeResourceUrl;
+  XMLblobURL: SafeResourceUrl;
+
   constructor(
     private dialog: MatDialog,
     readonly yamcs: YamcsService,
     private route: ActivatedRoute,
     private title: Title,
     private configService: ConfigService,
-    // private messageService: MessageService // TODO: figure out how to get that
+    private messageService: MessageService,
+    private sanitizer: DomSanitizer
   ) {
     const config = configService.getConfig();
     this.bucket = config.stackBucket;
@@ -78,6 +85,13 @@ export class StackFilePage implements OnDestroy {
     this.storageClient = yamcs.createStorageClient();
 
     const initialObject = this.getObjectNameFromUrl();
+    const format = new ExtensionPipe().transform(new FilenamePipe().transform(initialObject))?.toLowerCase();
+    if (format === "json" || format === "xml") {
+      this.format = format;
+    } else {
+      return;
+    }
+
     this.loadFile(initialObject);
 
     this.commandSubscription = yamcs.yamcsClient.createCommandSubscription({
@@ -158,10 +172,17 @@ export class StackFilePage implements OnDestroy {
     const response = await this.storageClient.getObject('_global', this.bucket, objectName);
     if (response.ok) {
       const text = await response.text();
-      const xmlParser = new DOMParser();
-      const doc = xmlParser.parseFromString(text, 'text/xml') as XMLDocument;
-
-      const entries = this.parseXML(doc.documentElement);
+      let entries;
+      switch (this.format) {
+        case "json":
+          entries = this.parseJSON(text);
+          break;
+        case "xml":
+          const xmlParser = new DOMParser();
+          const doc = xmlParser.parseFromString(text, 'text/xml') as XMLDocument;
+          entries = this.parseXML(doc.documentElement);
+          break;
+      }
 
       // Enrich entries with MDB info, it's used in the detail panel
       const promises = [];
@@ -211,19 +232,96 @@ export class StackFilePage implements OnDestroy {
     }
   }
 
+  private parseJSON(json: string) {
+    const entries: StackEntry[] = [];
+
+    const stack = JSON.parse(json);
+    if (stack.commands) {
+      for (let command of stack.commands) {
+        entries.push(this.parseJSONentry(command));
+      }
+    }
+
+    return entries;
+  }
+
+  private parseJSONentry(command: any) {
+    const entry: StackEntry = {
+      name: command.name,
+      ...(command.comment && { comment: command.comment }),
+      ...(command.extraOptions && { extra: this.parseJSONextraOptions(command.extraOptions) }),
+      ...(command.arguments && { args: this.parseJSONcommandArguments(command.arguments) })
+    };
+    return entry;
+  }
+
+  private parseJSONextraOptions(options: Array<any>) {
+    const extra: { [key: string]: Value; } = {};
+    for (let option of options) {
+      const value = this.convertOptionStringToValue(option.id, option.value);
+      if (value) {
+        extra[option.id] = value;
+      }
+    }
+    return extra;
+  }
+
+  private parseJSONcommandArguments(commandArguments: Array<any>) {
+    const args: { [key: string]: any; } = {};
+    for (let argument of commandArguments) {
+      args[argument.name] = argument.value;
+    }
+    return args;
+  }
+
   private parseXML(root: Node) {
     const entries: StackEntry[] = [];
     for (let i = 0; i < root.childNodes.length; i++) {
       const child = root.childNodes[i];
       if (child.nodeType !== 3) { // Ignore text or whitespace
         if (child.nodeName === 'command') {
-          const entry = this.parseEntry(child as Element);
+          const entry = this.parseXMLEntry(child as Element);
           entries.push(entry);
         }
       }
     }
 
     return entries;
+  }
+
+  private parseXMLEntry(node: Element): StackEntry {
+    const args: { [key: string]: any; } = {};
+    const extra: { [key: string]: Value; } = {};
+    for (let i = 0; i < node.childNodes.length; i++) {
+      const child = node.childNodes[i] as Element;
+      if (child.nodeName === 'commandArgument') {
+        const argumentName = this.getStringAttribute(child, 'argumentName');
+        args[argumentName] = this.getStringAttribute(child, 'argumentValue');
+      } else if (child.nodeName === 'extraOptions') {
+        for (let j = 0; j < child.childNodes.length; j++) {
+          const extraChild = child.childNodes[j] as Element;
+          if (extraChild.nodeName === 'extraOption') {
+            const id = this.getStringAttribute(extraChild, 'id');
+            const stringValue = this.getStringAttribute(extraChild, 'value');
+            const value = this.convertOptionStringToValue(id, stringValue);
+            if (value) {
+              extra[id] = value;
+            }
+          }
+        }
+      }
+    }
+    const entry: StackEntry = {
+      name: this.getStringAttribute(node, 'qualifiedName'),
+      args,
+      extra,
+    };
+
+    if (node.hasAttribute('comment')) {
+      entry.comment = this.getStringAttribute(node, 'comment');
+    }
+
+    return entry;
   }
 
   selectEntry(entry: StackEntry) {
@@ -291,7 +389,7 @@ export class StackFilePage implements OnDestroy {
     }).then(response => {
       this.runningTimeout = setTimeout(() => {
         if (this.selectedEntry$.value?.id === response.id) {
-          // TODO: display warning that it has stopped
+          this.messageService.showWarning("Command timeout reached, stopping current run");
           this.stopRun();
         }
       }, this.stoppingAckTimeout);
@@ -379,41 +477,6 @@ export class StackFilePage implements OnDestroy {
     const rect = el.getBoundingClientRect();
     const viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
     return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
-  }
-
-  private parseEntry(node: Element): StackEntry {
-    const args: { [key: string]: any; } = {};
-    const extra: { [key: string]: Value; } = {};
-    for (let i = 0; i < node.childNodes.length; i++) {
-      const child = node.childNodes[i] as Element;
-      if (child.nodeName === 'commandArgument') {
-        const argumentName = this.getStringAttribute(child, 'argumentName');
-        args[argumentName] = this.getStringAttribute(child, 'argumentValue');
-      } else if (child.nodeName === 'extraOptions') {
-        for (let j = 0; j < child.childNodes.length; j++) {
-          const extraChild = child.childNodes[j] as Element;
-          if (extraChild.nodeName === 'extraOption') {
-            const id = this.getStringAttribute(extraChild, 'id');
-            const stringValue = this.getStringAttribute(extraChild, 'value');
-            const value = this.convertOptionStringToValue(id, stringValue);
-            if (value) {
-              extra[id] = value;
-            }
-          }
-        }
-      }
-    }
-    const entry: StackEntry = {
-      name: this.getStringAttribute(node, 'qualifiedName'),
-      args,
-      extra,
-    };
-
-    if (node.hasAttribute('comment')) {
-      entry.comment = this.getStringAttribute(node, 'comment');
-    }
-
-    return entry;
   }
 
   private convertOptionStringToValue(id: string, value: string): Value | null {
@@ -560,11 +623,29 @@ export class StackFilePage implements OnDestroy {
   }
 
   saveStack() {
-    const xml = new StackFormatter(this.entries$.value).toXML();
-    const b = new Blob([xml], { type: 'application/xml' });
-    this.storageClient.uploadObject('_global', this.bucket, this.objectName, b).then(() => {
+    let file;
+    switch (this.format) {
+      case "json":
+        file = new StackFormatter(this.entries$.value).toJSON();
+        break;
+      case "xml":
+        file = new StackFormatter(this.entries$.value).toXML();
+        break;
+    }
+    const blob = new Blob([file], { type: 'application/' + this.format });
+    this.storageClient.uploadObject('_global', this.bucket, this.objectName, blob).then(() => {
       this.dirty$.next(false);
     });
+  }
+
+  setExportURLs() {
+    const json = new StackFormatter(this.entries$.value).toJSON();
+    const JSONblob = new Blob([json], { type: 'application/json' });
+    this.JSONblobURL = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(JSONblob));
+
+    const xml = new StackFormatter(this.entries$.value).toXML();
+    const XMLblob = new Blob([xml], { type: 'application/xml' });
+    this.XMLblobURL = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(XMLblob));
   }
 
   private getStringAttribute(node: Node, name: string) {

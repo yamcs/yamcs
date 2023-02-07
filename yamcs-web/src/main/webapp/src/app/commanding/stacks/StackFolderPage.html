@@ -18,7 +18,7 @@
       <input #uploader
              type="file"
              hidden
-             accept=".xml"
+             accept=".xml,.XML,.json,.JSON"
              multiple
              (change)="importStack()">
     </button>
@@ -115,6 +115,13 @@
           <th mat-header-cell *cdkHeaderCellDef>Date modified</th>
           <td mat-cell *cdkCellDef="let item">
             {{ (item.modified | datetime) || '-' }}
+          </td>
+        </ng-container>
+
+        <ng-container cdkColumnDef="format">
+          <th mat-header-cell *cdkHeaderCellDef>Format</th>
+          <td mat-cell *cdkCellDef="let item">
+            {{ (item.name | filename | extension | uppercase) || '-' }}
           </td>
         </ng-container>
 
