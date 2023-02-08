@@ -269,6 +269,9 @@ public class TableApi extends AbstractTableApi<Context> {
 
         SqlBuilder sqlb = new SqlBuilder(table.getName());
         request.getColsList().forEach(col -> sqlb.select(col));
+        if (request.hasQuery()) {
+            sqlb.where(request.getQuery());
+        }
         String sql = sqlb.toString();
 
         StreamFactory.stream(ydb.getName(), sql, new RowReader(observer));
