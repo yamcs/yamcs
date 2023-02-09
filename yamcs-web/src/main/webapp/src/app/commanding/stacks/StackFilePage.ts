@@ -1,5 +1,6 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import { FormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
@@ -56,8 +57,13 @@ export class StackFilePage implements OnDestroy {
   private bucket: string;
   private folderPerInstance: boolean;
 
+  loaded = false;
+  format: "json" | "xml";
 
-  private advanceOn: AdvanceOnParams; // Values from JSON, to not save the defaults unnecessarily
+  JSONblobURL: SafeResourceUrl;
+  XMLblobURL: SafeResourceUrl;
+
+  private advanceOn: AdvanceOnParams | undefined; // Values from JSON, to not save the defaults unnecessarily
 
   private delayBetweenCommands = -1;
   // Configuration of command ack to accept to execute the following
@@ -72,12 +78,17 @@ export class StackFilePage implements OnDestroy {
   private nextCommandDelayTimeout: NodeJS.Timeout;
   private nextCommandScheduled = false;
 
-  format: "json" | "xml";
+  stackOptionsForm: UntypedFormGroup;
 
-  JSONblobURL: SafeResourceUrl;
-  XMLblobURL: SafeResourceUrl;
-
-  runs = 0;
+  predefinedAcks = {
+    Acknowledge_Queued: "Queued",
+    Acknowledge_Released: "Released",
+    Acknowledge_Sent: "Sent",
+    Verifier_Queued: "Verifier_Queued",
+    Verifier_Started: "Verifier_Started",
+    Verifier_Complete: "Verifier_Complete",
+  };
+  predefinedAcksArray = Object.entries(this.predefinedAcks).map(ack => { return { name: ack[0], verboseName: ack[1] }; });
 
   constructor(
     private dialog: MatDialog,
@@ -86,7 +97,8 @@ export class StackFilePage implements OnDestroy {
     private title: Title,
     private configService: ConfigService,
     private messageService: MessageService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private formBuilder: FormBuilder
   ) {
     const config = configService.getConfig();
     this.bucket = config.stackBucket;
@@ -94,14 +106,39 @@ export class StackFilePage implements OnDestroy {
     this.storageClient = yamcs.createStorageClient();
 
     const initialObject = this.getObjectNameFromUrl();
-    const format = new ExtensionPipe().transform(new FilenamePipe().transform(initialObject))?.toLowerCase();
-    if (format === "json" || format === "xml") {
-      this.format = format;
-    } else {
-      return;
-    }
 
     this.loadFile(initialObject);
+
+    this.stackOptionsForm = formBuilder.group({
+      advanceOnAckDropDown: ['', []],
+      advanceOnAckCustom: ['', []],
+      advanceOnDelay: ['', []],
+    });
+
+    if (this.format !== "json") {
+      this.stackOptionsForm.disable();
+    } else {
+      this.stackOptionsForm.valueChanges.subscribe(result => {
+        if (!this.loaded) {
+          return;
+        }
+
+        if ((result.advanceOnAckDropDown && result.advanceOnAckDropDown !== "custom") ||
+          (result.advanceOnAckDropDown === "custom" && result.advanceOnAckCustom) || result.advanceOnDelay != null) {
+          this.advanceOn = {
+            ...(result.advanceOnAckDropDown && result.advanceOnAckDropDown !== "custom" && { ack: result.advanceOnAckDropDown }),
+            ...(result.advanceOnAckDropDown === "custom" && result.advanceOnAckCustom && { ack: result.advanceOnAckCustom }),
+            ...(result.advanceOnDelay != null && { delay: result.advanceOnDelay })
+          };
+        } else {
+          this.advanceOn = undefined;
+        }
+        this.acceptingAck = this.advanceOn?.ack || "Acknowledge_Queued";
+        this.delayBetweenCommands = this.advanceOn?.delay != null ? this.advanceOn.delay : -1;
+
+        this.dirty$.next(true);
+      });
+    }
 
     this.commandSubscription = yamcs.yamcsClient.createCommandSubscription({
       instance: yamcs.instance!,
@@ -178,6 +215,14 @@ export class StackFilePage implements OnDestroy {
 
     this.title.setTitle(this.filename);
 
+    const format = new ExtensionPipe().transform(new FilenamePipe().transform(objectName))?.toLowerCase();
+    if (format === "json" || format === "xml") {
+      this.format = format;
+    } else {
+      this.loaded = true;
+      return;
+    }
+
     const response = await this.storageClient.getObject('_global', this.bucket, objectName);
     if (response.ok) {
       const text = await response.text();
@@ -185,11 +230,22 @@ export class StackFilePage implements OnDestroy {
       switch (this.format) {
         case "json":
           entries = this.parseJSON(text);
+
+          let advanceOnAckDropDownDefault = this.advanceOn?.ack &&
+            (Object.keys(this.predefinedAcks).includes(this.advanceOn?.ack) || this.advanceOn?.ack === "NONE" ? this.advanceOn?.ack : "custom");
+          let advanceOnAckCustomDefault = !Object.keys(this.predefinedAcks).includes(this.advanceOn?.ack || '') && this.advanceOn?.ack !== "NONE" ? this.advanceOn?.ack : '';
+
+          this.stackOptionsForm.setValue({
+            advanceOnAckDropDown: advanceOnAckDropDownDefault || '',
+            advanceOnAckCustom: advanceOnAckCustomDefault || '',
+            advanceOnDelay: this.advanceOn?.delay != null ? this.advanceOn?.delay : ''
+          });
           break;
         case "xml":
           const xmlParser = new DOMParser();
           const doc = xmlParser.parseFromString(text, 'text/xml') as XMLDocument;
           entries = this.parseXML(doc.documentElement);
+          this.messageService.showWarning("XML formatted command stacks are deprecated, consider exporting and re-importing as JSON");
           break;
       }
 
@@ -224,6 +280,7 @@ export class StackFilePage implements OnDestroy {
       // Only now, update the page
       this.entries$.next(entries);
       this.selectedEntry$.next(entries.length ? entries[0] : null);
+      this.loaded = true;
     }
   }
 
@@ -257,7 +314,7 @@ export class StackFilePage implements OnDestroy {
         this.advanceOn.ack = stack.advanceOn.ack;
         this.acceptingAck = stack.advanceOn.ack;
       }
-      if (stack.advanceOn.delay) {
+      if (stack.advanceOn.delay != null) {
         this.advanceOn.delay = stack.advanceOn.delay;
         this.delayBetweenCommands = stack.advanceOn.delay;
       }
@@ -403,8 +460,6 @@ export class StackFilePage implements OnDestroy {
   }
 
   private async runEntry(entry: StackEntry) {
-    this.runs++;
-    console.log(new Date().toISOString() + " " + this.runs);
     const executionNumber = ++this.executionCounter;
     return this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, entry.name, {
       sequenceNumber: executionNumber,
@@ -556,6 +611,7 @@ export class StackFilePage implements OnDestroy {
       },
       data: {
         okLabel: 'ADD TO STACK',
+        format: this.format
       }
     });
 
@@ -567,6 +623,7 @@ export class StackFilePage implements OnDestroy {
           comment: result.comment,
           extra: result.extra,
           command: result.command,
+          ...(result.stackOptions.advanceOn && { advanceOn: result.stackOptions.advanceOn })
         };
 
         const relto = this.selectedEntry$.value;
@@ -602,6 +659,7 @@ export class StackFilePage implements OnDestroy {
       data: {
         okLabel: 'UPDATE',
         entry,
+        format: this.format
       }
     });
 
@@ -613,6 +671,7 @@ export class StackFilePage implements OnDestroy {
           comment: result.comment,
           extra: result.extra,
           command: result.command,
+          ...(result.stackOptions.advanceOn && { advanceOn: result.stackOptions.advanceOn })
         };
 
         const entries = this.entries$.value;
@@ -710,5 +769,6 @@ export class StackFilePage implements OnDestroy {
 
   ngOnDestroy() {
     this.commandSubscription?.cancel();
+    this.stackOptionsForm.reset();
   }
 }

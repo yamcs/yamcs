@@ -29,6 +29,43 @@
                         [command]="command"
                         [templateProvider]="templateProvider">
       </app-command-form>
+      <form [formGroup]="stackOptionsForm" class="ya-form" [ngClass]="this.stackOptionsForm.disabled && 'disabled'">
+        <p>&nbsp;</p>
+        <h3>Command stack options</h3>
+        <p *ngIf="format !== 'json'" style="color: #CC0000">These options are only available for JSON fomatted
+          command stacks</p>
+        <div class="label">
+          Advance stack on acknowledgement
+          <app-help dialogTitle="Advance On Acknowledgement">
+            Acknowledgement to wait for to advance to the next command in the stack.
+            If a delay is also specified, the next command is exectuded after this time from the recieval of the
+            acknowledgement.<br>
+            (Unset uses the global value for the stack or the default: Queued)
+          </app-help>
+          <br>
+          <select formControlName="advanceOnAckDropDown">
+            <option></option>
+            <option value="NONE">None</option>
+            <option value="custom">Custom</option>
+            <optgroup label="Predefined acknowledgements">
+              <option *ngFor="let ack of predefinedAcksArray" [value]="ack.name">{{ ack.verboseName }}</option>
+            </optgroup>
+          </select>
+          <input type="text" formControlName="advanceOnAckCustom"
+                 *ngIf="stackOptionsForm.get('advanceOnAckDropDown')?.value === 'custom'">
+        </div>
+        <div class="label">
+          Advance stack on delay (ms)
+          <app-help dialogTitle="Advance On Delay">
+            Delay to wait for to advance to the next command in the stack.
+            If an acknowledgements also specified, the next command is exectuded after this time from the recieval of
+            the acknowledgement.<br>
+            (Unset uses the global value for the stack or the default: 0)
+          </app-help>
+          <br>
+          <input type="number" formControlName="advanceOnDelay">
+        </div>
+      </form>
     </div>
   </div>
   <div class="footer mat-typography">
@@ -37,7 +74,9 @@
         <button class="ya-button" mat-dialog-close>CANCEL</button>&nbsp;&nbsp;
         <button class="ya-button primary"
                 (click)="handleOK()"
-                [disabled]="!commandForm.form.valid">{{ okLabel }}</button>
+                [disabled]="!commandForm.form.valid">
+          <!-- TODO: disabled throws a "ExpressionChangedAfterItHasBeenCheckedError", potentially needs fix -->
+          {{ okLabel }}</button>
       </mat-toolbar-row>
     </mat-toolbar>
   </div>

@@ -33,7 +33,7 @@ export class StackFolderPage implements OnDestroy {
   breadcrumb$ = new BehaviorSubject<BreadCrumbItem[]>([]);
   dragActive$ = new BehaviorSubject<boolean>(false);
 
-  displayedColumns = ['select', 'name', 'modified', 'format', 'actions'];
+  displayedColumns = ['select', 'name', 'modified', 'actions', 'formatWarning'];
   dataSource = new MatTableDataSource<BrowseItem>([]);
   selection = new SelectionModel<BrowseItem>(true, []);
 
@@ -42,6 +42,8 @@ export class StackFolderPage implements OnDestroy {
 
   private bucket: string;
   private folderPerInstance: boolean;
+
+  loaded = false;
 
   constructor(
     private dialog: MatDialog,
@@ -88,6 +90,7 @@ export class StackFolderPage implements OnDestroy {
     this.storageClient.listObjects('_global', this.bucket, options).then(dir => {
       this.updateBrowsePath();
       this.changedir(dir);
+      this.loaded = true;
     });
   }
 

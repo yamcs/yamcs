@@ -69,12 +69,14 @@
     </button>
     <mat-menu #exportMenu="matMenu">
       <a mat-menu-item [href]="JSONblobURL" [download]="(filename | basename) + '.json'">
-        <mat-icon style="margin: 0">data_object</mat-icon>
-        JSON
+        <mat-icon style="margin:0; vertical-align: middle;">data_object</mat-icon>
+        <span style="vertical-align: middle;"> JSON</span>
       </a>
-      <a mat-menu-item [href]="XMLblobURL" [download]="(filename | basename) + '.xml'">
-        <mat-icon style="margin: 0">code</mat-icon>
-        XML (deprecated)
+      <a mat-menu-item [href]="XMLblobURL" [download]="(filename | basename) + '.xml'"
+         title="Certain features are not implemented for XML, the format will be phased out gradually">
+        <mat-icon style="margin:0; vertical-align: middle;">code</mat-icon>
+        <span style="vertical-align: middle;"> XML <span
+                style="color: #CC0000; cursor: help;">(deprecated)</span></span>
       </a>
     </mat-menu>
   </app-instance-toolbar>
@@ -98,24 +100,68 @@
   </app-detail-pane>
 
   <div class="panel-wrapper">
-    <app-empty-message *ngIf="!format">
+    <form [formGroup]="stackOptionsForm" class="ya-form panel-content stack-options"
+          [ngClass]="this.stackOptionsForm.disabled && 'disabled'"
+          *ngIf="format">
+      <h2>Global stack options</h2>
+      <p *ngIf="format !== 'json'" style="color: #CC0000">These options are only available for JSON fomatted
+        command stacks</p>
+      <div class="label">
+        Advance stack on acknowledgement
+        <app-help dialogTitle="Advance On Acknowledgement">
+          Acknowledgement to wait for to advance to the next command in the stack.
+          If a delay is also specified, the next command is exectuded after this time from the recieval of the
+          acknowledgement.<br>
+          (Unset uses the default value: Queued)
+        </app-help>
+        <br>
+        <select formControlName="advanceOnAckDropDown">
+          <option disabled>Default: Queued</option>
+          <option></option>
+          <option value="NONE">None</option>
+          <option value="custom">Custom</option>
+          <optgroup label="Predefined acknowledgements">
+            <option *ngFor="let ack of predefinedAcksArray" [value]="ack.name">{{ ack.verboseName }}</option>
+          </optgroup>
+        </select>
+        <input type="text" formControlName="advanceOnAckCustom"
+               *ngIf="stackOptionsForm.get('advanceOnAckDropDown')?.value === 'custom'">
+      </div>
+      <div class="label">
+        Advance stack on delay (ms)
+        <app-help dialogTitle="Advance On Delay">
+          Delay to wait for to advance to the next command in the stack.
+          If an acknowledgements also specified, the next command is exectuded after this time from the recieval of
+          the acknowledgement.<br>
+          (Unset uses the default value: 0)
+        </app-help>
+        <br>
+        <input type="number" formControlName="advanceOnDelay" placeholder="Default: 0">
+      </div>
+    </form>
+    <mat-divider horizontal></mat-divider>
+
+    <app-empty-message *ngIf="loaded && !format">
       <mat-icon style="vertical-align: bottom; margin-right: 10px;">link_off</mat-icon>
       Unsupported command stack format
     </app-empty-message>
-    <app-empty-message *ngIf="format && !entries$.value.length">
+    <app-empty-message *ngIf="loaded && format && !entries$.value.length">
       Empty command stack<br>
       Click <mat-icon inline style="vertical-align: bottom;">add_circle_outline</mat-icon> to start adding
       commands
     </app-empty-message>
+
     <div #entryParent class="panel-content" cdkDropList (cdkDropListDropped)="handleDrop($event)">
       <div id="drag-boundary">
         <div cdkDrag cdkDragBoundary="#drag-boundary"
              class="entry"
              *ngFor="let entry of entries$ | async"
-             [class.selected]="entry === (selectedEntry$ | async)">
+             [class.selected]="entry === (selectedEntry$ | async)"
+             (click)="selectEntry(entry)"
+             (dblclick)="editCommand(entry)">
 
           <div class="in">
-            <div cdkDragHandle class="seq" (click)="selectEntry(entry)">
+            <div cdkDragHandle class="seq">
               <ng-container *ngIf="entry.executionNumber === 0 || entry.executionNumber">
                 [{{ entry.executionNumber }}]:
               </ng-container>
@@ -123,7 +169,7 @@
                 [ ]:
               </ng-container>
             </div>
-            <div class="body" (dblclick)="editCommand(entry)">
+            <div class="body">
               {{ entry.name }}
               <mat-icon *ngIf="entry.comment"
                         [matTooltip]="entry.comment"
@@ -144,6 +190,13 @@
                   </td>
                 </tr>
               </table>
+              <div *ngIf="entry.advanceOn" class="advance-on">
+                <mat-icon>reply</mat-icon>
+                <span>
+                  Advance{{ entry.advanceOn.ack != null ? " on " + entry.advanceOn.ack: null}}
+                  {{ entry.advanceOn.delay != null ? "after " + entry.advanceOn.delay + " ms" : null}}
+                </span>
+              </div>
             </div>
           </div>
           <div class="out" *ngIf="entry.executionNumber === 0 || entry.executionNumber">

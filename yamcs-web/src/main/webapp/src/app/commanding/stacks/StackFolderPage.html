@@ -98,7 +98,8 @@
               <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px">description</mat-icon>
               <a [routerLink]="'/commanding/stacks/files/' + item.nameWithoutInstance"
                  [queryParams]="{c: yamcs.context}"
-                 (click)="$event.stopPropagation()">{{ item.name | filename | basename }}
+                 (click)="$event.stopPropagation()"
+                 [title]="item.name | filename">{{ item.name | filename | basename }}
               </a>
             </ng-container>
           </td>
@@ -115,13 +116,6 @@
           <th mat-header-cell *cdkHeaderCellDef>Date modified</th>
           <td mat-cell *cdkCellDef="let item">
             {{ (item.modified | datetime) || '-' }}
-          </td>
-        </ng-container>
-
-        <ng-container cdkColumnDef="format">
-          <th mat-header-cell *cdkHeaderCellDef>Format</th>
-          <td mat-cell *cdkCellDef="let item">
-            {{ (item.name | filename | extension | uppercase) || '-' }}
           </td>
         </ng-container>
 
@@ -147,6 +141,22 @@
           </td>
         </ng-container>
 
+        <ng-container cdkColumnDef="formatWarning">
+          <th mat-header-cell *cdkHeaderCellDef></th>
+          <td mat-cell *cdkCellDef="let item" style="text-align: right;">
+            <span [ngSwitch]="(item.name | filename | extension | lowercase)" *ngIf="!item.folder">
+              <span *ngSwitchCase="'xml'"
+                    style="color: #CC0000; cursor:help"
+                    title="Certain features are not implemented for XML, the format will be phased out gradually">
+                Warning: XML formatted command stacks are deprecated, consider exporting as JSON
+              </span>
+              <span *ngSwitchCase="'json'"></span>
+              <span *ngSwitchDefault>Unsupported format '{{ item.name | filename | extension }}'</span>
+            </span>
+
+          </td>
+        </ng-container>
+
         <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
         <tr mat-row
             *cdkRowDef="let row; columns: displayedColumns;"
@@ -156,10 +166,10 @@
 
       <ng-template #empty>
         <ng-container *ngIf="breadcrumb$ | async as breadcrumb">
-          <app-empty-message *ngIf="breadcrumb.length">
+          <app-empty-message *ngIf="loaded && breadcrumb.length">
             Empty directory.
           </app-empty-message>
-          <app-empty-message headerTitle="Command Stacks" *ngIf="!breadcrumb.length">
+          <app-empty-message headerTitle="Command Stacks" *ngIf="loaded && !breadcrumb.length">
             <p>
               Command stacks are used to interactively execute a prepared set of commands.
               To start, either:

@@ -81,6 +81,7 @@
 
         <div *ngFor="let option of service.transferOptions; let i = index" [title]="option.description">
           <label>{{option.name | titlecase}}</label>
+          <!-- TODO: consider ngSwitchCase for the option.type? -->
           <!-- Boolean option type -->
           <label class="checkbox-label" *ngIf="option.type === 'BOOLEAN'">
             <input type="checkbox" [formControlName]="getControlName(option, i)">
