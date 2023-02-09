@@ -135,8 +135,11 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
         log.debug("Starting executor for archive writing with {} threads", numThreads);
         executor = Executors.newFixedThreadPool(numThreads,
                 new ThreadFactoryBuilder().setNameFormat("realtime-parameter-archive-writer-%d").build());
-        getYamcsServer().getThreadPoolExecutor().scheduleAtFixedRate(this::flushPeriodically, flushInterval,
-                flushInterval, TimeUnit.SECONDS);
+
+        var timer = getYamcsServer().getThreadPoolExecutor();
+        if (timer != null) {
+            timer.scheduleAtFixedRate(this::flushPeriodically, flushInterval, flushInterval, TimeUnit.SECONDS);
+        }
     }
 
     private void flushPeriodically() {
