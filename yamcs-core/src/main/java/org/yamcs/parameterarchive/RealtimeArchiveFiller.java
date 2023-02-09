@@ -56,7 +56,8 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
     Map<Integer, SegmentQueue> queues = new HashMap<>();
     private YamcsServer yamcsServer;
 
-    // int flushInterval; // seconds
+    // Maximum time to wait for new data before flushing to archive
+    int flushInterval = 10*60; // seconds
 
     // max allowed time for old data
     long sortingThreshold;
@@ -134,6 +135,22 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
         log.debug("Starting executor for archive writing with {} threads", numThreads);
         executor = Executors.newFixedThreadPool(numThreads,
                 new ThreadFactoryBuilder().setNameFormat("realtime-parameter-archive-writer-%d").build());
+        getYamcsServer().getThreadPoolExecutor().scheduleAtFixedRate(this::flushPeriodically, flushInterval,
+                flushInterval, TimeUnit.SECONDS);
+    }
+
+    private void flushPeriodically() {
+        long now = System.currentTimeMillis();
+        for (var queueEntry : queues.entrySet()) {
+            SegmentQueue queue = queueEntry.getValue();
+            synchronized (queue) {
+                if (queue.isEmpty() && now > queue.getLatestUpdateTime() + flushInterval * 1000L) {
+                    queue.flush(this::scheduleWriteToArchive);
+                    log.debug("Flush interval reached without new segment for parameter group {}, flushing queue",
+                            queueEntry.getKey());
+                }
+            }
+        }
     }
 
     public void shutDown() throws InterruptedException {
@@ -287,6 +304,8 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
         final IntArray parameterIds;
         final int maxSegmentSize;
 
+        private long latestUpdateTime;
+
         public SegmentQueue(int parameterGroupId, IntArray parameterIds, int maxSegmentSize) {
             this.parameterGroupId = parameterGroupId;
             this.parameterIds = parameterIds;
@@ -311,6 +330,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
          * Returns true if the record has been added or false if the queue was full.
          */
         public synchronized boolean addRecord(long t, List<BasicParameterValue> values) {
+            latestUpdateTime = System.currentTimeMillis();
 
             boolean added = false;
             int k = head;
@@ -546,6 +566,10 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
          */
         static final int dec(int k) {
             return (k - 1) & MASK;
+        }
+
+        public long getLatestUpdateTime() {
+            return latestUpdateTime;
         }
     }
 
