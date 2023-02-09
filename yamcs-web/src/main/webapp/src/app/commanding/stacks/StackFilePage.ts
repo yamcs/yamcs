@@ -521,7 +521,7 @@ export class StackFilePage implements OnDestroy {
     let selectedEntry = this.selectedEntry$.value;
 
     let acceptingAck = selectedEntry?.advanceOn?.ack || this.acceptingAck;
-    let delay = selectedEntry?.advanceOn?.delay || this.delayBetweenCommands;
+    let delay = selectedEntry?.advanceOn?.delay != null ? selectedEntry?.advanceOn?.delay : this.delayBetweenCommands;
 
     if (acceptingAck === "NONE") {
       this.nextCommandScheduled = true;
