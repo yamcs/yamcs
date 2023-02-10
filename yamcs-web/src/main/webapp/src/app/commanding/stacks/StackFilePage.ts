@@ -84,9 +84,7 @@ export class StackFilePage implements OnDestroy {
     Acknowledge_Queued: "Queued",
     Acknowledge_Released: "Released",
     Acknowledge_Sent: "Sent",
-    Verifier_Queued: "Verifier_Queued",
-    Verifier_Started: "Verifier_Started",
-    Verifier_Complete: "Verifier_Complete",
+    CommandComplete: "Completed"
   };
   predefinedAcksArray = Object.entries(this.predefinedAcks).map(ack => { return { name: ack[0], verboseName: ack[1] }; });
 
@@ -163,6 +161,8 @@ export class StackFilePage implements OnDestroy {
           break;
         }
       }
+
+      console.log(rec);
 
       // Continue running entries
       this.checkAckContinueRunning(rec);

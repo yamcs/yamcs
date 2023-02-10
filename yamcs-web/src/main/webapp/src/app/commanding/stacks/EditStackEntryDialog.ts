@@ -3,7 +3,7 @@ import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs';
 import { utils } from '../../../lib';
-import { Command, CommandOptionType, Value } from '../../client';
+import { Command, CommandOptionType, Value, Verifier } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandSelector } from '../../shared/forms/CommandSelector';
 import { CommandForm, TemplateProvider } from '../command-sender/CommandForm';
@@ -91,15 +91,13 @@ export class EditStackEntryDialog {
   commandForm: CommandForm;
 
   stackOptionsForm: UntypedFormGroup;
-  predefinedAcks = {
+  predefinedAcks: { [key: string]: string; } = {
     Acknowledge_Queued: "Queued",
     Acknowledge_Released: "Released",
     Acknowledge_Sent: "Sent",
-    Verifier_Queued: "Verifier_Queued",
-    Verifier_Started: "Verifier_Started",
-    Verifier_Complete: "Verifier_Complete",
+    CommandComplete: "Completed"
   };
-  predefinedAcksArray = Object.entries(this.predefinedAcks).map(ack => { return { name: ack[0], verboseName: ack[1] }; });
+  predefinedAcksArray: { name: string, verboseName: string; }[];
 
   // Captured in separate subject to avoid referencing
   // the form nested in *ngIf from outside the *ngIf.
@@ -125,6 +123,10 @@ export class EditStackEntryDialog {
     if (data?.entry) {
       this.templateProvider = new StackEntryTemplateProvider(data.entry);
       this.selectedCommand$.next(data.entry.command);
+      data.entry.command.baseCommand?.verifier.forEach((verifier: Verifier) => {
+        this.predefinedAcks["Verifier_" + verifier.stage] = "Verifier: " + verifier.stage;
+      });;
+
       advanceOnAckDropDownDefault = data?.entry.advanceOn?.ack &&
         (Object.keys(this.predefinedAcks).includes(data?.entry.advanceOn?.ack) || data?.entry.advanceOn?.ack === "NONE" ? data?.entry.advanceOn?.ack : "custom");
       advanceOnAckCustomDefault = !Object.keys(this.predefinedAcks).includes(data?.entry.advanceOn?.ack) && data?.entry.advanceOn?.ack !== "NONE" ? data?.entry.advanceOn?.ack : '';
@@ -136,6 +138,8 @@ export class EditStackEntryDialog {
     if (data?.format) {
       this.format = data.format;
     }
+
+    this.predefinedAcksArray = Object.entries(this.predefinedAcks).map(ack => { return { name: ack[0], verboseName: ack[1] }; });
 
     this.stackOptionsForm = formBuilder.group({
       advanceOnAckDropDown: [advanceOnAckDropDownDefault, []],
