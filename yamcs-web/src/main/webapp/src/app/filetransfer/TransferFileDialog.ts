@@ -199,7 +199,7 @@ export class TransferFileDialog implements OnDestroy {
           newOption.booleanValue = value;
           break;
         case 'DOUBLE':
-          newOption.doubleValues = [value];
+          newOption.doubleValues = [value != null ? value : option.doubleDefault || 0];
           break;
         case 'STRING':
           newOption.stringValues = [{ value: value }];
