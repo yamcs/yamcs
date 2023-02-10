@@ -114,6 +114,8 @@ public class CfdpService extends AbstractYamcsService
     private final String RELIABLE_OPTION = "reliable";
     private final String CLOSURE_OPTION = "closureRequested";
     private final String CREATE_PATH_OPTION = "createPath";
+    private final String PDU_DELAY_OPTION = "pduDelay";
+    private final String PDU_SIZE_OPTION = "pduSize";
 
     Map<CfdpTransactionId, OngoingCfdpTransfer> pendingTransfers = new ConcurrentHashMap<>();
     Queue<QueuedCfdpOutgoingTransfer> queuedTransfers = new ConcurrentLinkedQueue<>();
@@ -155,6 +157,10 @@ public class CfdpService extends AbstractYamcsService
     private FileListingService fileListingService;
     private FileListingParser fileListingParser;
     private boolean automaticDirectoryListingReloads;
+
+    private boolean canChangePduSize;
+    private boolean canChangePduDelay;
+
 
     private Stream dbStream;
 
@@ -214,6 +220,8 @@ public class CfdpService extends AbstractYamcsService
         spec.addOption("entityIdLength", OptionType.INTEGER).withDefault(2);
         spec.addOption("sequenceNrLength", OptionType.INTEGER).withDefault(4);
         spec.addOption("maxPduSize", OptionType.INTEGER).withDefault(512);
+        spec.addOption("canChangePduSize", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("canChangePduDelay", OptionType.BOOLEAN).withDefault(false);
         spec.addOption("eofAckTimeout", OptionType.INTEGER).withDefault(5000);
         spec.addOption("eofAckLimit", OptionType.INTEGER).withDefault(5);
         spec.addOption("finAckTimeout", OptionType.INTEGER).withDefault(5000);
@@ -275,6 +283,8 @@ public class CfdpService extends AbstractYamcsService
         queueConcurrentUploads = config.getBoolean("queueConcurrentUploads");
         allowConcurrentFileOverwrites = config.getBoolean("allowConcurrentFileOverwrites");
         directoryTerminators = config.getList("directoryTerminators");
+        canChangePduSize = config.getBoolean("canChangePduSize");
+        canChangePduDelay = config.getBoolean("canChangePduDelay");
 
         String fileListingServiceClassName = config.getString("fileListingServiceClassName");
         YConfiguration fileListingServiceConfig = config.getConfig("fileListingServiceArgs");
@@ -505,9 +515,9 @@ public class CfdpService extends AbstractYamcsService
     }
 
     private CfdpFileTransfer processPutRequest(long initiatorEntityId, long seqNum, long creationTime, PutRequest request,
-            Bucket bucket) {
+            Bucket bucket, Integer customPduSize, Integer customPduDelay) {
         CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(yamcsInstance, initiatorEntityId, seqNum, creationTime,
-                executor, request, cfdpOut, config, bucket, eventProducer, this, senderFaultHandlers);
+                executor, request, cfdpOut, config, bucket, customPduSize, customPduDelay, eventProducer, this, senderFaultHandlers);
 
         dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
 
@@ -535,7 +545,7 @@ public class CfdpService extends AbstractYamcsService
 
         QueuedCfdpOutgoingTransfer trsf = queuedTransfers.poll();
         if (trsf != null) {
-            processPutRequest(trsf.getInitiatorEntityId(), trsf.getId(), trsf.getCreationTime(), trsf.getPutRequest(), trsf.getBucket());
+            processPutRequest(trsf.getInitiatorEntityId(), trsf.getId(), trsf.getCreationTime(), trsf.getPutRequest(), trsf.getBucket(), trsf.getCustomPduSize(), trsf.getCustomPduDelay());
         }
     }
 
@@ -855,6 +865,9 @@ public class CfdpService extends AbstractYamcsService
         ));
 
         booleanOptions.putAll(getOptionValues(options.getExtraOptions()));
+        // TODO: get PDU size & delay options
+        Integer pduSize = null;
+        Integer pduDelay = null;
 
         FilePutRequest request = new FilePutRequest(sourceId, destinationId, objectName, absoluteDestinationPath,
                 booleanOptions.get(OVERWRITE_OPTION), booleanOptions.get(RELIABLE_OPTION),
@@ -862,10 +875,10 @@ public class CfdpService extends AbstractYamcsService
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
         if (numPendingUploads() < maxNumPendingUploads) {
-            return processPutRequest(sourceId, idSeq.next(), creationTime, request, bucket);
+            return processPutRequest(sourceId, idSeq.next(), creationTime, request, bucket, pduSize, pduDelay);
         } else {
             QueuedCfdpOutgoingTransfer transfer = new QueuedCfdpOutgoingTransfer(sourceId, idSeq.next(), creationTime,
-                    request, bucket);
+                    request, bucket, pduSize, pduDelay);
             dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
             queuedTransfers.add(transfer);
             transferListeners.forEach(l -> l.stateChanged(transfer));
@@ -915,6 +928,10 @@ public class CfdpService extends AbstractYamcsService
             messagesToUser.add(new ProxyClosureRequest(booleanOptions.get(CLOSURE_OPTION)));
         }
 
+        // TODO: get PDU size & delay options
+        Integer pduSize = null;
+        Integer pduDelay = null;
+
         PutRequest request = new PutRequest(sourceId, transmissionMode, messagesToUser);
         CfdpTransactionId transactionId = request.process(destinationId, idSeq.next(), ChecksumType.MODULAR, config);
 
@@ -922,10 +939,10 @@ public class CfdpService extends AbstractYamcsService
 
         fileDownloadRequests.addTransfer(transactionId, bucket.getName());
         if (numPendingUploads() < maxNumPendingUploads) {
-            return processPutRequest(destinationId, transactionId.getSequenceNumber(), creationTime, request, bucket);
+            return processPutRequest(destinationId, transactionId.getSequenceNumber(), creationTime, request, bucket, pduSize, pduDelay);
         } else {
             QueuedCfdpOutgoingTransfer transfer = new QueuedCfdpOutgoingTransfer(destinationId, transactionId.getSequenceNumber(),
-                    creationTime, request, bucket);
+                    creationTime, request, bucket, pduSize, pduDelay);
             dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
             queuedTransfers.add(transfer);
             transferListeners.forEach(l -> l.stateChanged(transfer));
@@ -960,12 +977,16 @@ public class CfdpService extends AbstractYamcsService
                 messagesToUser);
         CfdpTransactionId transactionId = request.process(sourceEntity.id, idSeq.next(), ChecksumType.MODULAR, config);
 
+        // TODO: get PDU size & delay options
+        Integer pduSize = null;
+        Integer pduDelay = null;
+
         directoryListingRequests.put(transactionId, Arrays.asList(destinationEntity.getName(), dirPath));
         if (numPendingUploads() < maxNumPendingUploads) {
-            processPutRequest(sourceEntity.id, transactionId.getSequenceNumber(), creationTime, request, null);
+            processPutRequest(sourceEntity.id, transactionId.getSequenceNumber(), creationTime, request, null, pduSize, pduDelay);
         } else {
             QueuedCfdpOutgoingTransfer transfer = new QueuedCfdpOutgoingTransfer(sourceEntity.id, transactionId.getSequenceNumber(),
-                    creationTime, request, null);
+                    creationTime, request, null, pduSize, pduDelay);
             dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
             queuedTransfers.add(transfer);
             transferListeners.forEach(l -> l.stateChanged(transfer));
@@ -1134,16 +1155,35 @@ public class CfdpService extends AbstractYamcsService
 
     @Override
     public List<FileTransferOption> getFileTransferOptions() {
-        return List.of(
-                FileTransferOption.newBuilder()
-                        .setName(RELIABLE_OPTION)
-                        .setType(FileTransferOption.Type.BOOLEAN)
-                        .setTitle("Reliability")
-                        .setDescription("Acknowledged or unacknowledged transmission mode")
-                        .setAssociatedText("Reliable")
-                        .setDefault("true")
-                        .build()
-        );
+        var options = new ArrayList<FileTransferOption>();
+        options.add(FileTransferOption.newBuilder()
+                .setName(RELIABLE_OPTION)
+                .setType(FileTransferOption.Type.BOOLEAN)
+                .setTitle("Reliability")
+                .setDescription("Acknowledged or unacknowledged transmission mode")
+                .setAssociatedText("Reliable")
+                .setDefault("true")
+                .build());
+
+        if (canChangePduDelay) {
+            options.add(FileTransferOption.newBuilder()
+                    .setName(PDU_DELAY_OPTION)
+                    .setType(FileTransferOption.Type.DOUBLE)
+                    .setTitle("PDU delay")
+                    .setDefault(Integer.toString(config.getInt("maxPduSize")))
+                    .build());
+        }
+
+        if (canChangePduSize) {
+            options.add(FileTransferOption.newBuilder()
+                    .setName(PDU_SIZE_OPTION)
+                    .setType(FileTransferOption.Type.DOUBLE)
+                    .setTitle("PDU size")
+                    .setDefault(Integer.toString(config.getInt("sleepBetweenPdus")))
+                    .build());
+        }
+
+        return options;
     }
 
     @Override

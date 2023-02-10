@@ -393,7 +393,7 @@ public class CfdpDownlinkIntegrationTest {
                     incomingBucket, data);
 
             trsf = new CfdpOutgoingTransfer(yamcsInstance, putRequest.getSourceId(), seqNum, TimeEncoding.getWallclockTime(),
-                    myExecutor, putRequest, cfdpIn, config, null, eventProducer, this, null);
+                    myExecutor, putRequest, cfdpIn, config, null, null, null, eventProducer, this, null);
 
             cfdpOut.addSubscriber((stream, tuple) -> {
                 tcount++;
