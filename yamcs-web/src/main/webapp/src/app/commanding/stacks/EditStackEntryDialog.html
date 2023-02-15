@@ -44,12 +44,9 @@
           </app-help>
           <br>
           <select formControlName="advanceOnAckDropDown">
-            <option></option>
-            <option value="NONE">None</option>
+            <option value="">Inherit</option>
+            <option *ngFor="let ack of predefinedAcksArray" [value]="ack.name">{{ ack.verboseName }}</option>
             <option value="custom">Custom</option>
-            <optgroup label="Predefined acknowledgements">
-              <option *ngFor="let ack of predefinedAcksArray" [value]="ack.name">{{ ack.verboseName }}</option>
-            </optgroup>
           </select>
           <input type="text" formControlName="advanceOnAckCustom"
                  *ngIf="stackOptionsForm.get('advanceOnAckDropDown')?.value === 'custom'">
@@ -63,7 +60,7 @@
             (Unset uses the global value for the stack or the default: 0)
           </app-help>
           <br>
-          <input type="number" formControlName="advanceOnDelay">
+          <input type="number" formControlName="advanceOnDelay" placeholder="Inherit">
         </div>
       </form>
     </div>

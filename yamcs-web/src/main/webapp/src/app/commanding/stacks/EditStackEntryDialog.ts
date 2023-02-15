@@ -123,13 +123,15 @@ export class EditStackEntryDialog {
     if (data?.entry) {
       this.templateProvider = new StackEntryTemplateProvider(data.entry);
       this.selectedCommand$.next(data.entry.command);
+
+      delete this.predefinedAcks.CommandComplete;
       data.entry.command.baseCommand?.verifier.forEach((verifier: Verifier) => {
         this.predefinedAcks["Verifier_" + verifier.stage] = "Verifier: " + verifier.stage;
       });;
+      this.predefinedAcks["CommandComplete"] = "Completed";
 
-      advanceOnAckDropDownDefault = data?.entry.advanceOn?.ack &&
-        (Object.keys(this.predefinedAcks).includes(data?.entry.advanceOn?.ack) || data?.entry.advanceOn?.ack === "NONE" ? data?.entry.advanceOn?.ack : "custom");
-      advanceOnAckCustomDefault = !Object.keys(this.predefinedAcks).includes(data?.entry.advanceOn?.ack) && data?.entry.advanceOn?.ack !== "NONE" ? data?.entry.advanceOn?.ack : '';
+      advanceOnAckDropDownDefault = data?.entry.advanceOn?.ack && (Object.keys(this.predefinedAcks).includes(data?.entry.advanceOn?.ack) ? data?.entry.advanceOn?.ack : "custom");
+      advanceOnAckCustomDefault = advanceOnAckDropDownDefault == "custom" ? data?.entry.advanceOn?.ack : '';
       advanceOnDelayDefault = data?.entry.advanceOn?.delay;
     }
     if (data?.okLabel) {
@@ -142,7 +144,7 @@ export class EditStackEntryDialog {
     this.predefinedAcksArray = Object.entries(this.predefinedAcks).map(ack => { return { name: ack[0], verboseName: ack[1] }; });
 
     this.stackOptionsForm = formBuilder.group({
-      advanceOnAckDropDown: [advanceOnAckDropDownDefault, []],
+      advanceOnAckDropDown: [advanceOnAckDropDownDefault || '', []],
       advanceOnAckCustom: [advanceOnAckCustomDefault, []],
       advanceOnDelay: [advanceOnDelayDefault, []],
     });

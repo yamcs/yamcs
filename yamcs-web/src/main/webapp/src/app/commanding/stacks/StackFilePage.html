@@ -61,6 +61,13 @@
       <mat-icon>playlist_play</mat-icon>
     </button>
     <mat-divider vertical style="height: 100%"></mat-divider>
+    <button *ngIf="format === 'xml'" mat-button color="primary" matTooltip="Convert to the newer format"
+            [disabled]="!format || converting"
+            (click)="convertToJSON()">
+      <mat-icon>sync_alt</mat-icon>
+      CONVERT TO JSON
+    </button>
+    <mat-divider *ngIf="format === 'xml'" vertical style="height: 100%"></mat-divider>
     <button mat-button color="primary" matTooltip="Export command stack" [matMenuTriggerFor]="exportMenu"
             [disabled]="!format"
             (click)="setExportURLs()">
@@ -112,17 +119,12 @@
           Acknowledgement to wait for to advance to the next command in the stack.
           If a delay is also specified, the next command is exectuded after this time from the recieval of the
           acknowledgement.<br>
-          (Unset uses the default value: Queued)
+          (Default value: Queued)
         </app-help>
         <br>
         <select formControlName="advanceOnAckDropDown">
-          <option disabled>Default: Queued</option>
-          <option></option>
-          <option value="NONE">None</option>
+          <option *ngFor="let ack of predefinedAcksArray" [value]="ack.name">{{ ack.verboseName }}</option>
           <option value="custom">Custom</option>
-          <optgroup label="Predefined acknowledgements">
-            <option *ngFor="let ack of predefinedAcksArray" [value]="ack.name">{{ ack.verboseName }}</option>
-          </optgroup>
         </select>
         <input type="text" formControlName="advanceOnAckCustom"
                *ngIf="stackOptionsForm.get('advanceOnAckDropDown')?.value === 'custom'">
@@ -133,10 +135,10 @@
           Delay to wait for to advance to the next command in the stack.
           If an acknowledgements also specified, the next command is exectuded after this time from the recieval of
           the acknowledgement.<br>
-          (Unset uses the default value: 0)
+          (Default value: 0)
         </app-help>
         <br>
-        <input type="number" formControlName="advanceOnDelay" placeholder="Default: 0">
+        <input type="number" formControlName="advanceOnDelay" placeholder="0">
       </div>
     </form>
     <mat-divider horizontal></mat-divider>

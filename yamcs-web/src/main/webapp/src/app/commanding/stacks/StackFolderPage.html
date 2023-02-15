@@ -137,6 +137,11 @@
                       (click)="deleteFile(item)">
                 Delete
               </button>
+              <mat-divider *ngIf="(item.name | filename | extension | lowercase) === 'xml'"></mat-divider>
+              <button *ngIf="(item.name | filename | extension | lowercase) === 'xml'" mat-menu-item
+                      (click)="convertToJSON($event, item.nameWithoutInstance)">
+                Convert to JSON
+              </button>
             </app-more>
           </td>
         </ng-container>
@@ -148,7 +153,10 @@
               <span *ngSwitchCase="'xml'"
                     style="color: #CC0000; cursor:help"
                     title="Certain features are not implemented for XML, the format will be phased out gradually">
-                Warning: XML formatted command stacks are deprecated, consider exporting as JSON
+                Warning: XML formatted command stacks are deprecated, consider <a
+                   style="color: inherit; cursor: pointer"
+                   (click)="convertToJSON($event, item.nameWithoutInstance)" title="Convert to JSON">converting to
+                  JSON</a>
               </span>
               <span *ngSwitchCase="'json'"></span>
               <span *ngSwitchDefault>Unsupported format '{{ item.name | filename | extension }}'</span>

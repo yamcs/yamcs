@@ -6,6 +6,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { BasenamePipe } from 'src/app/shared/pipes/BasenamePipe';
 import { ListObjectsOptions, ListObjectsResponse, StorageClient } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService } from '../../core/services/ConfigService';
@@ -15,6 +16,7 @@ import * as dnd from '../../shared/dnd';
 import { CreateFolderDialog } from './CreateFolderDialog';
 import { CreateStackDialog } from './CreateStackDialog';
 import { RenameStackDialog } from './RenameStackDialog';
+import { StackFilePage } from './StackFilePage';
 
 
 @Component({
@@ -23,7 +25,6 @@ import { RenameStackDialog } from './RenameStackDialog';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StackFolderPage implements OnDestroy {
-
   @ViewChild('droparea', { static: true })
   dropArea: ElementRef;
 
@@ -44,6 +45,7 @@ export class StackFolderPage implements OnDestroy {
   private folderPerInstance: boolean;
 
   loaded = false;
+  converting = false;
 
   constructor(
     private dialog: MatDialog,
@@ -53,7 +55,8 @@ export class StackFolderPage implements OnDestroy {
     private route: ActivatedRoute,
     private authService: AuthService,
     private messageService: MessageService,
-    configService: ConfigService,
+    private configService: ConfigService,
+    private basenamePipe: BasenamePipe
   ) {
     title.setTitle('Stacks');
     this.storageClient = yamcs.createStorageClient();
@@ -204,6 +207,31 @@ export class StackFolderPage implements OnDestroy {
     Promise.all(uploadPromises)
       .then(() => this.loadCurrentFolder())
       .catch(err => this.messageService.showError(err));
+  }
+
+  convertToJSON(event: MouseEvent, name: string) {
+    console.log(event);
+
+    if (this.converting) {
+      return;
+    }
+    if (event.shiftKey || confirm(`Are you sure you want to convert '${name}' to JSON?\nConverting to JSON deletes the old XML version.\n(Press shift if you do not want to show this dialog)`)) {
+      this.converting = true;
+      const response = this.storageClient.getObject('_global', this.bucket, name).then(async response => {
+        if (response.ok) {
+          const xmlParser = new DOMParser();
+          const doc = xmlParser.parseFromString(await response.text(), 'text/xml') as XMLDocument;
+          const entries = StackFilePage.parseXML(doc.documentElement, this.configService.getCommandOptions());
+          StackFilePage.convertToJSON(this.messageService, this.basenamePipe, this.storageClient, this.bucket, name, entries, {})
+            .then(() => {
+              this.loadCurrentFolder();
+            });
+        } else {
+          this.messageService.showError("Failed to load '" + name + "' for conversion");
+        }
+      }).finally(() => { this.converting = false; });
+
+    }
   }
 
   private getCurrentPath() {

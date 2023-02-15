@@ -7,6 +7,7 @@ import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { MessageService } from 'src/app/core/services/MessageService';
+import { BasenamePipe } from 'src/app/shared/pipes/BasenamePipe';
 import { ExtensionPipe } from 'src/app/shared/pipes/ExtensionPipe';
 import { FilenamePipe } from 'src/app/shared/pipes/FilenamePipe';
 import { Command, CommandSubscription, StorageClient, Value } from '../../client';
@@ -63,12 +64,11 @@ export class StackFilePage implements OnDestroy {
   JSONblobURL: SafeResourceUrl;
   XMLblobURL: SafeResourceUrl;
 
-  private advanceOn: AdvanceOnParams | undefined; // Values from JSON, to not save the defaults unnecessarily
+  converting = false;
 
-  private delayBetweenCommands = -1;
   // Configuration of command ack to accept to execute the following
-  // private acceptingAck = "NONE";
-  private acceptingAck = "Acknowledge_Queued";
+  private advanceOn: AdvanceOnParams = { ack: "Acknowledge_Queued", delay: 0 };
+
   // Default: OK/DISABLED -> continue, NOK/CANCELLED/after timeout -> pause,  everything else -> ignore
   private acceptingAckValues = ["OK", "DISABLED"];
   private stoppingAckValues = ["NOK", "CANCELLED"];
@@ -96,7 +96,10 @@ export class StackFilePage implements OnDestroy {
     private configService: ConfigService,
     private messageService: MessageService,
     private sanitizer: DomSanitizer,
-    private formBuilder: FormBuilder
+    private basenamePipe: BasenamePipe,
+    private filenamePipe: FilenamePipe,
+    private extensionPipe: ExtensionPipe,
+    formBuilder: FormBuilder
   ) {
     const config = configService.getConfig();
     this.bucket = config.stackBucket;
@@ -116,26 +119,7 @@ export class StackFilePage implements OnDestroy {
     if (this.format !== "json") {
       this.stackOptionsForm.disable();
     } else {
-      this.stackOptionsForm.valueChanges.subscribe(result => {
-        if (!this.loaded) {
-          return;
-        }
-
-        if ((result.advanceOnAckDropDown && result.advanceOnAckDropDown !== "custom") ||
-          (result.advanceOnAckDropDown === "custom" && result.advanceOnAckCustom) || result.advanceOnDelay != null) {
-          this.advanceOn = {
-            ...(result.advanceOnAckDropDown && result.advanceOnAckDropDown !== "custom" && { ack: result.advanceOnAckDropDown }),
-            ...(result.advanceOnAckDropDown === "custom" && result.advanceOnAckCustom && { ack: result.advanceOnAckCustom }),
-            ...(result.advanceOnDelay != null && { delay: result.advanceOnDelay })
-          };
-        } else {
-          this.advanceOn = undefined;
-        }
-        this.acceptingAck = this.advanceOn?.ack || "Acknowledge_Queued";
-        this.delayBetweenCommands = this.advanceOn?.delay != null ? this.advanceOn.delay : -1;
-
-        this.dirty$.next(true);
-      });
+      this.stackOptionsForm.valueChanges.subscribe(this.stackOptionsFormCallback);
     }
 
     this.commandSubscription = yamcs.yamcsClient.createCommandSubscription({
@@ -162,12 +146,26 @@ export class StackFilePage implements OnDestroy {
         }
       }
 
-      console.log(rec);
-
       // Continue running entries
       this.checkAckContinueRunning(rec);
     });
   }
+
+  stackOptionsFormCallback = (result: any) => {
+    if (!this.loaded) {
+      return;
+    }
+
+    this.advanceOn = {
+      ack: result.advanceOnAckDropDown !== "custom" ? result.advanceOnAckDropDown : result.advanceOnAckCustom,
+      delay: result.advanceOnDelay != null ? result.advanceOnDelay : 0
+    };
+
+    console.log(this.advanceOn);
+
+    this.dirty$.next(true);
+
+  };
 
   handleDrop(event: CdkDragDrop<StackEntry[]>) {
     if (event.previousIndex !== event.currentIndex) {
@@ -195,7 +193,7 @@ export class StackFilePage implements OnDestroy {
   private getNameWithoutInstance(name: string) {
     if (this.folderPerInstance) {
       const instance = this.yamcs.instance!;
-      return name.substr(instance.length);
+      return name.substring(instance.length);
     } else {
       return name;
     }
@@ -215,7 +213,7 @@ export class StackFilePage implements OnDestroy {
 
     this.title.setTitle(this.filename);
 
-    const format = new ExtensionPipe().transform(new FilenamePipe().transform(objectName))?.toLowerCase();
+    const format = this.extensionPipe.transform(this.filenamePipe.transform(objectName))?.toLowerCase();
     if (format === "json" || format === "xml") {
       this.format = format;
     } else {
@@ -229,23 +227,21 @@ export class StackFilePage implements OnDestroy {
       let entries;
       switch (this.format) {
         case "json":
-          entries = this.parseJSON(text);
+          [entries, this.advanceOn] = this.parseJSON(text);
 
-          let advanceOnAckDropDownDefault = this.advanceOn?.ack &&
-            (Object.keys(this.predefinedAcks).includes(this.advanceOn?.ack) || this.advanceOn?.ack === "NONE" ? this.advanceOn?.ack : "custom");
-          let advanceOnAckCustomDefault = !Object.keys(this.predefinedAcks).includes(this.advanceOn?.ack || '') && this.advanceOn?.ack !== "NONE" ? this.advanceOn?.ack : '';
+          let advanceOnAckDropDownDefault = Object.keys(this.predefinedAcks).includes(this.advanceOn.ack!) ? this.advanceOn.ack : "custom";
 
           this.stackOptionsForm.setValue({
-            advanceOnAckDropDown: advanceOnAckDropDownDefault || '',
-            advanceOnAckCustom: advanceOnAckCustomDefault || '',
-            advanceOnDelay: this.advanceOn?.delay != null ? this.advanceOn?.delay : ''
+            advanceOnAckDropDown: advanceOnAckDropDownDefault,
+            advanceOnAckCustom: advanceOnAckDropDownDefault === "custom" ? this.advanceOn.ack : '',
+            advanceOnDelay: this.advanceOn.delay
           });
           break;
         case "xml":
           const xmlParser = new DOMParser();
           const doc = xmlParser.parseFromString(text, 'text/xml') as XMLDocument;
-          entries = this.parseXML(doc.documentElement);
-          this.messageService.showWarning("XML formatted command stacks are deprecated, consider exporting and re-importing as JSON");
+          entries = StackFilePage.parseXML(doc.documentElement, this.configService.getCommandOptions());
+          this.messageService.showWarning("XML formatted command stacks are deprecated, consider converting to JSON");
           break;
       }
 
@@ -308,19 +304,12 @@ export class StackFilePage implements OnDestroy {
       }
     }
 
-    if (stack.advanceOn) {
-      this.advanceOn = {};
-      if (stack.advanceOn.ack) {
-        this.advanceOn.ack = stack.advanceOn.ack;
-        this.acceptingAck = stack.advanceOn.ack;
-      }
-      if (stack.advanceOn.delay != null) {
-        this.advanceOn.delay = stack.advanceOn.delay;
-        this.delayBetweenCommands = stack.advanceOn.delay;
-      }
-    }
+    let advanceOn: AdvanceOnParams = {
+      ack: stack.advanceOn?.ack || "Acknowledge_Queued",
+      delay: stack.advanceOn?.delay != null ? stack.advanceOn?.delay : 0
+    };
 
-    return entries;
+    return [entries, advanceOn] as const;
   }
 
   private parseJSONentry(command: any) {
@@ -337,7 +326,7 @@ export class StackFilePage implements OnDestroy {
   private parseJSONextraOptions(options: Array<any>) {
     const extra: { [key: string]: Value; } = {};
     for (let option of options) {
-      const value = this.convertOptionStringToValue(option.id, (new String(option.value)).toString()); // TODO: simplify value conversion
+      const value = StackFilePage.convertOptionStringToValue(option.id, (new String(option.value)).toString(), this.configService.getCommandOptions()); // TODO: simplify value conversion
       if (value) {
         extra[option.id] = value;
       }
@@ -353,13 +342,13 @@ export class StackFilePage implements OnDestroy {
     return args;
   }
 
-  private parseXML(root: Node) {
+  static parseXML(root: Node, commandOptions: any) {
     const entries: StackEntry[] = [];
     for (let i = 0; i < root.childNodes.length; i++) {
       const child = root.childNodes[i];
       if (child.nodeType !== 3) { // Ignore text or whitespace
         if (child.nodeName === 'command') {
-          const entry = this.parseXMLEntry(child as Element);
+          const entry = this.parseXMLEntry(child as Element, commandOptions);
           entries.push(entry);
         }
       }
@@ -368,7 +357,7 @@ export class StackFilePage implements OnDestroy {
     return entries;
   }
 
-  private parseXMLEntry(node: Element): StackEntry {
+  private static parseXMLEntry(node: Element, commandOptions: any): StackEntry {
     const args: { [key: string]: any; } = {};
     const extra: { [key: string]: Value; } = {};
     for (let i = 0; i < node.childNodes.length; i++) {
@@ -382,7 +371,7 @@ export class StackFilePage implements OnDestroy {
           if (extraChild.nodeName === 'extraOption') {
             const id = this.getStringAttribute(extraChild, 'id');
             const stringValue = this.getStringAttribute(extraChild, 'value');
-            const value = this.convertOptionStringToValue(id, stringValue);
+            const value = this.convertOptionStringToValue(id, stringValue, commandOptions);
             if (value) {
               extra[id] = value;
             }
@@ -455,6 +444,7 @@ export class StackFilePage implements OnDestroy {
     }
 
     this.runEntry(entry).finally(() => {
+      // TODO: use advanceOn to advance instead of every tiem
       this.advanceSelection(entry);
     });
   }
@@ -520,20 +510,8 @@ export class StackFilePage implements OnDestroy {
 
     let selectedEntry = this.selectedEntry$.value;
 
-    let acceptingAck = selectedEntry?.advanceOn?.ack || this.acceptingAck;
-    let delay = selectedEntry?.advanceOn?.delay != null ? selectedEntry?.advanceOn?.delay : this.delayBetweenCommands;
-
-    if (acceptingAck === "NONE") {
-      this.nextCommandScheduled = true;
-      this.nextCommandDelayTimeout = setTimeout(() => {
-        // Continue execution
-        if (this.running$.value && selectedEntry) {
-          this.advanceSelection(selectedEntry);
-          this.runFromSelection();
-        }
-      }, Math.max(delay, 0));
-      return;
-    }
+    let acceptingAck = selectedEntry?.advanceOn?.ack || this.advanceOn.ack!;
+    let delay = selectedEntry?.advanceOn?.delay != null ? selectedEntry?.advanceOn?.delay : this.advanceOn.delay!;
 
     if (selectedEntry?.id === record.id) {
       let ack = record.acksByName[acceptingAck];
@@ -585,8 +563,8 @@ export class StackFilePage implements OnDestroy {
     return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
   }
 
-  private convertOptionStringToValue(id: string, value: string): Value | null {
-    for (const option of this.configService.getCommandOptions()) {
+  private static convertOptionStringToValue(id: string, value: string, commandOptions: any): Value | null {
+    for (const option of commandOptions) {
       if (option.id === id) {
         switch (option.type) {
           case 'BOOLEAN':
@@ -749,22 +727,64 @@ export class StackFilePage implements OnDestroy {
   }
 
   setExportURLs() {
-    const json = new StackFormatter(this.entries$.value, { advanceOn: this.advanceOn }).toJSON();
-    const JSONblob = new Blob([json], { type: 'application/json' });
+    const formatter = new StackFormatter(this.entries$.value, { advanceOn: this.advanceOn });
+
+    const JSONblob = new Blob([formatter.toJSON()], { type: 'application/json' });
     this.JSONblobURL = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(JSONblob));
 
-    const xml = new StackFormatter(this.entries$.value, { advanceOn: this.advanceOn }).toXML();
-    const XMLblob = new Blob([xml], { type: 'application/xml' });
+    const XMLblob = new Blob([formatter.toXML()], { type: 'application/xml' });
     this.XMLblobURL = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(XMLblob));
   }
 
-  private getStringAttribute(node: Node, name: string) {
+  private static getStringAttribute(node: Node, name: string) {
     const attr = (node as Element).attributes.getNamedItem(name);
     if (attr === null) {
       throw new Error(`No attribute named ${name}`);
     } else {
       return attr.textContent || '';
     }
+  }
+
+  convertToJSON() {
+    if (this.converting) {
+      return;
+    }
+
+    if (confirm(`Are you sure you want to convert '${this.objectName}' to JSON?\nConverting to JSON deletes the old XML version.`)) {
+      this.converting = true;
+      StackFilePage.convertToJSON(this.messageService, this.basenamePipe, this.storageClient, this.bucket, this.objectName, this.entries$.value, { advanceOn: this.advanceOn })
+        .then((jsonObjectName) => {
+          this.loadFile(jsonObjectName + ".json");
+          this.messageService.dismiss();
+          this.stackOptionsForm.enable();
+          this.stackOptionsForm.valueChanges.subscribe(this.stackOptionsFormCallback);
+          // TODO: maybe update current URL
+          this.dirty$.next(false);
+        }).finally(() => this.converting = false);
+    }
+  }
+
+  static async convertToJSON(
+    messageService: MessageService,
+    basenamePipe: BasenamePipe,
+    storageClient: StorageClient,
+    bucket: string,
+    objectName: string,
+    entries: StackEntry[],
+    stackOptions: { advanceOn?: AdvanceOnParams; }
+  ) {
+    const formatter = new StackFormatter(entries, stackOptions);
+    const blob = new Blob([formatter.toJSON()], { type: 'application/json' });
+    const jsonObjectName = basenamePipe.transform(objectName);
+
+    if (!jsonObjectName) {
+      messageService.showError("Failed to convert command stack stack");
+      console.error("Failed to convert command stack due to objectName");
+      return;
+    }
+    await storageClient.uploadObject('_global', bucket, jsonObjectName + ".json", blob);
+    await storageClient.deleteObject('_global', bucket, objectName);
+    return jsonObjectName;
   }
 
   ngOnDestroy() {
