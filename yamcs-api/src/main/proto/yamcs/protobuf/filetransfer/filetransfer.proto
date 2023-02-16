@@ -242,7 +242,7 @@ message CreateTransferRequest {
     // otherwise unreliable (class 1). Default: ``False``.
     optional bool reliable = 3 [deprecated=true];
 
-    // Deprecated: use 'optionst' instead (name: closureRequested)
+    // Deprecated: use 'options' instead (name: closureRequested)
     // Introduced in Issue 5 of the CFDP standard for non reliable (class 1) transfers
     // Requests the receiver to send a Finished PDU at the end of the transfer
     optional bool closureRequested = 4 [deprecated=true];
@@ -267,11 +267,11 @@ message CreateTransferRequest {
   // **Required** The path at the remote entity. Example: ``a/local/path/some_filename``.
   optional string remotePath = 5;
 
-  // Deprecated: use options (FileTransferOption) instead
+  // Deprecated: use 'options' instead
   // Configuration options specific to ``DOWNLOAD`` transfers.
   optional DownloadOptions downloadOptions = 6 [deprecated=true];
 
-  // Deprecated: use options (FileTransferOption) instead
+  // Deprecated: use 'options' instead
   // Configuration options specific to ``UPLOAD`` transfers.
   optional UploadOptions uploadOptions = 7 [deprecated=true];
   
