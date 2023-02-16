@@ -59,7 +59,6 @@ import org.yamcs.filetransfer.TransferOptions;
 import org.yamcs.protobuf.EntityInfo;
 import org.yamcs.protobuf.FileTransferCapabilities;
 import org.yamcs.protobuf.FileTransferOption;
-import org.yamcs.protobuf.FileTransferOptionType;
 import org.yamcs.protobuf.RemoteFile;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
@@ -109,6 +108,12 @@ public class CfdpService extends AbstractYamcsService
 
     static final String TABLE_NAME = "cfdp";
     static final String SEQUENCE_NAME = "cfdp";
+
+    // FileTransferOption name literals
+    private final String OVERWRITE_OPTION = "overwrite";
+    private final String RELIABLE_OPTION = "reliable";
+    private final String CLOSURE_OPTION = "closureRequested";
+    private final String CREATE_PATH_OPTION = "createPath";
 
     Map<CfdpTransactionId, OngoingCfdpTransfer> pendingTransfers = new ConcurrentHashMap<>();
     Queue<QueuedCfdpOutgoingTransfer> queuedTransfers = new ConcurrentLinkedQueue<>();
@@ -841,35 +846,19 @@ public class CfdpService extends AbstractYamcsService
         long sourceId = getEntityFromName(source, localEntities).id;
         long destinationId = getEntityFromName(destination, remoteEntities).id;
 
-        boolean overwrite = options.isOverwrite(); // For backwards compatibility
-        boolean reliable = options.isReliable();
-        boolean closureRequested = options.isClosureRequested();
-        boolean createPath = options.isCreatePath();
+        // For backwards compatibility
+        var booleanOptions = new HashMap<>(Map.of(
+                OVERWRITE_OPTION, options.isOverwrite(),
+                RELIABLE_OPTION, options.isReliable(),
+                CLOSURE_OPTION, options.isClosureRequested(),
+                CREATE_PATH_OPTION, options.isCreatePath()
+        ));
 
-        for (FileTransferOption option : options.getExtraOptions()) {
-            switch (option.getName().toLowerCase().replaceAll("\\s+", "")){
-            case "overwrite":
-                overwrite = option.getBooleanValue();
-                break;
-            case "reliability":
-            case "reliable":
-                reliable = option.getBooleanValue();
-                break;
-            case "closurerequest":
-            case "closurerequested":
-            case "closure":
-                closureRequested = option.getBooleanValue();
-                break;
-            case "createpath":
-                createPath = option.getBooleanValue();
-                break;
-            default:
-            }
-        }
+        booleanOptions.putAll(getOptionValues(options.getExtraOptions()));
 
         FilePutRequest request = new FilePutRequest(sourceId, destinationId, objectName, absoluteDestinationPath,
-                overwrite, reliable, closureRequested, createPath,
-                bucket, objData);
+                booleanOptions.get(OVERWRITE_OPTION), booleanOptions.get(RELIABLE_OPTION),
+                booleanOptions.get(CLOSURE_OPTION), booleanOptions.get(CREATE_PATH_OPTION), bucket, objData);
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
         if (numPendingUploads() < maxNumPendingUploads) {
@@ -887,48 +876,9 @@ public class CfdpService extends AbstractYamcsService
 
     }
 
-    private String getAbsoluteDestinationPath(String destinationPath, String localObjectName) {
-        if (localObjectName == null) {
-            throw new NullPointerException("local object name cannot be null");
-        }
-        if (destinationPath == null) {
-            return localObjectName;
-        }
-        if (directoryTerminators.stream().anyMatch(destinationPath::endsWith)) {
-            return destinationPath + localObjectName;
-        }
-        return destinationPath;
-    }
-
-    @Override
-    public void pause(FileTransfer transfer) {
-        processPauseRequest(new PauseRequest(transfer));
-    }
-
-    @Override
-    public void resume(FileTransfer transfer) {
-        processResumeRequest(new ResumeRequest(transfer));
-    }
-
-    @Override
-    public void cancel(FileTransfer transfer) {
-        if (transfer instanceof OngoingCfdpTransfer) {
-            processCancelRequest(new CancelRequest(transfer));
-        } else if (transfer instanceof QueuedCfdpOutgoingTransfer) {
-            QueuedCfdpOutgoingTransfer trsf = (QueuedCfdpOutgoingTransfer) transfer;
-            if (queuedTransfers.remove(trsf)) {
-                trsf.setTransferState(TransferState.FAILED);
-                trsf.setFailureReason("Cancelled while queued");
-                stateChanged(trsf);
-            }
-        } else {
-            throw new InvalidRequestException("Unknown transfer type " + transfer);
-        }
-    }
-
     @Override
     public FileTransfer startDownload(String sourceEntity, String sourcePath, String destinationEntity, Bucket bucket,
-            String objectName, TransferOptions options) throws IOException, InvalidRequestException {
+            String objectName, TransferOptions options) throws InvalidRequestException {
 
         long destinationId = getEntityFromName(destinationEntity, localEntities).id;
         long sourceId = getEntityFromName(sourceEntity, remoteEntities).id;
@@ -938,46 +888,31 @@ public class CfdpService extends AbstractYamcsService
             objectName = splitPath[splitPath.length - 1];
         }
 
+        // For backwards compatibility
+        var booleanOptions = new HashMap<>(Map.of(
+                OVERWRITE_OPTION, options.isOverwrite(),
+                RELIABLE_OPTION, options.isReliable(),
+                CLOSURE_OPTION, options.isClosureRequested(),
+                CREATE_PATH_OPTION, options.isCreatePath()
+        ));
+
+        booleanOptions.putAll(getOptionValues(options.getExtraOptions()));
+
+
         // Prepare request
         ArrayList<MessageToUser> messagesToUser = new ArrayList<>(
                 List.of(new ProxyPutRequest(destinationId, sourcePath, objectName)));
 
         CfdpPacket.TransmissionMode transmissionMode = CfdpPacket.TransmissionMode.UNACKNOWLEDGED;
-        Boolean reliable = null;
-        Boolean closureRequested = null;
-
-
-        if(options.isReliableSet()) { // For backwards compatibility
-            reliable = options.isReliable();
-        }
-        if(options.isClosureRequestedSet()) {
-            closureRequested = options.isClosureRequested();
-        }
-
-        for (FileTransferOption option : options.getExtraOptions()) {
-            switch (option.getName().toLowerCase().replaceAll("\\s+", "")){
-            case "reliability":
-            case "reliable":
-                reliable = option.getBooleanValue();
-                break;
-            case "closurerequest":
-            case "closurerequested":
-            case "closure":
-                closureRequested = option.getBooleanValue();
-                break;
-            default:
-            }
-        }
-
-        if(Boolean.TRUE.equals(reliable)) {
+        if(Boolean.TRUE.equals(booleanOptions.get(RELIABLE_OPTION))) {
             transmissionMode = CfdpPacket.TransmissionMode.ACKNOWLEDGED;
         }
 
-        if(reliable != null) {
+        if(options.isReliableSet() || options.getExtraOptions().containsKey(RELIABLE_OPTION)) {
             messagesToUser.add(new ProxyTransmissionMode(transmissionMode));
         }
-        if(closureRequested != null) {
-            messagesToUser.add(new ProxyClosureRequest(closureRequested));
+        if(options.isClosureRequestedSet() || options.getExtraOptions().containsKey(CLOSURE_OPTION)) {
+            messagesToUser.add(new ProxyClosureRequest(booleanOptions.get(CLOSURE_OPTION)));
         }
 
         PutRequest request = new PutRequest(sourceId, transmissionMode, messagesToUser);
@@ -998,38 +933,6 @@ public class CfdpService extends AbstractYamcsService
             executor.submit(this::tryStartQueuedTransfer);
             return transfer;
         }
-    }
-
-    @Override
-    public ListFilesResponse getFileList(String source, String destination, String remotePath, boolean reliable) {
-        EntityConf sourceEntity = getEntityFromName(source, localEntities);
-        EntityConf destinationEntity = getEntityFromName(destination, remoteEntities);
-
-        if (fileListingService != this) {
-            return fileListingService.getFileList(sourceEntity.getName(), destinationEntity.getName(), remotePath, reliable);
-        }
-
-        String dirPath = remotePath.replaceFirst("/*$", "");
-        if (automaticDirectoryListingReloads && directoryListingRequests.values().stream().noneMatch(request -> request.equals(Arrays.asList(destinationEntity.getName(), dirPath)))) {
-            fetchFileList(sourceEntity.getName(), destinationEntity.getName(), dirPath, reliable);
-        }
-
-        try {
-            YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-            StreamSqlResult res = ydb.execute("select * from " + FILELIST_TABLE_NAME + " where " + COL_DESTINATION + "=? and " + COL_REMOTE_PATH + "=? ORDER DESC LIMIT 1", destinationEntity.getName(), dirPath);
-            if(res.hasNext()) {
-                ListFilesResponse response = res.next().getColumn(COL_LIST_FILES_RESPONSE);
-                res.close();
-                return response;
-            } else {
-                res.close();
-                log.info("No saved file lists found for destination: " + destination + " and remote path: " + remotePath);
-            }
-        } catch (Exception e) {
-            log.error("Failed to query database for previous file listings", e);
-        }
-
-        return null;
     }
 
     @Override
@@ -1067,15 +970,36 @@ public class CfdpService extends AbstractYamcsService
         }
     }
 
-    private EntityConf getEntityFromName(String entityName, Map<String, EntityConf> entities) {
-        if (entityName == null || entityName.isBlank()) {
-            return entities.values().iterator().next();
-        } else {
-            if (!entities.containsKey(entityName)) {
-                throw new InvalidRequestException("Invalid entity '" + entityName + "' (should be one of " + entities + "");
-            }
-            return entities.get(entityName);
+    @Override
+    public ListFilesResponse getFileList(String source, String destination, String remotePath, boolean reliable) {
+        EntityConf sourceEntity = getEntityFromName(source, localEntities);
+        EntityConf destinationEntity = getEntityFromName(destination, remoteEntities);
+
+        if (fileListingService != this) {
+            return fileListingService.getFileList(sourceEntity.getName(), destinationEntity.getName(), remotePath, reliable);
         }
+
+        String dirPath = remotePath.replaceFirst("/*$", "");
+        if (automaticDirectoryListingReloads && directoryListingRequests.values().stream().noneMatch(request -> request.equals(Arrays.asList(destinationEntity.getName(), dirPath)))) {
+            fetchFileList(sourceEntity.getName(), destinationEntity.getName(), dirPath, reliable);
+        }
+
+        try {
+            YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+            StreamSqlResult res = ydb.execute("select * from " + FILELIST_TABLE_NAME + " where " + COL_DESTINATION + "=? and " + COL_REMOTE_PATH + "=? ORDER DESC LIMIT 1", destinationEntity.getName(), dirPath);
+            if(res.hasNext()) {
+                ListFilesResponse response = res.next().getColumn(COL_LIST_FILES_RESPONSE);
+                res.close();
+                return response;
+            } else {
+                res.close();
+                log.info("No saved file lists found for destination: " + destination + " and remote path: " + remotePath);
+            }
+        } catch (Exception e) {
+            log.error("Failed to query database for previous file listings", e);
+        }
+
+        return null;
     }
 
     private void processDirectoryListingResponse(CfdpIncomingTransfer incomingTransfer, List<String> request) {
@@ -1130,14 +1054,89 @@ public class CfdpService extends AbstractYamcsService
         fileListStream.emitTuple(t);
     }
 
+    private EntityConf getEntityFromName(String entityName, Map<String, EntityConf> entities) {
+        if (entityName == null || entityName.isBlank()) {
+            return entities.values().iterator().next();
+        } else {
+            if (!entities.containsKey(entityName)) {
+                throw new InvalidRequestException("Invalid entity '" + entityName + "' (should be one of " + entities + "");
+            }
+            return entities.get(entityName);
+        }
+    }
+
+    private String getAbsoluteDestinationPath(String destinationPath, String localObjectName) {
+        if (localObjectName == null) {
+            throw new NullPointerException("local object name cannot be null");
+        }
+        if (destinationPath == null) {
+            return localObjectName;
+        }
+        if (directoryTerminators.stream().anyMatch(destinationPath::endsWith)) {
+            return destinationPath + localObjectName;
+        }
+        return destinationPath;
+    }
+
+    private Map<String, Boolean> getOptionValues(Map<String, Object> extraOptions) {
+        var booleanOptions = new HashMap<String, Boolean>();
+
+        for (Map.Entry<String, Object> option : extraOptions.entrySet()) {
+            try {
+                switch (option.getKey()) {
+                case OVERWRITE_OPTION:
+                case RELIABLE_OPTION:
+                case CLOSURE_OPTION:
+                case CREATE_PATH_OPTION:
+                    booleanOptions.put(option.getKey(), (boolean) option.getValue());
+                    break;
+                default:
+                    log.warn("Unknown file transfer option: {} (value: {})", option.getKey(), option.getValue());
+                }
+            } catch (ClassCastException e){
+                log.warn("Failed to cast option '{}' to its correct type (value: {})", option.getKey(), option.getValue());
+            }
+        }
+
+        return booleanOptions;
+    }
+
+    @Override
+    public void pause(FileTransfer transfer) {
+        processPauseRequest(new PauseRequest(transfer));
+    }
+
+    @Override
+    public void resume(FileTransfer transfer) {
+        processResumeRequest(new ResumeRequest(transfer));
+    }
+
+    @Override
+    public void cancel(FileTransfer transfer) {
+        if (transfer instanceof OngoingCfdpTransfer) {
+            processCancelRequest(new CancelRequest(transfer));
+        } else if (transfer instanceof QueuedCfdpOutgoingTransfer) {
+            QueuedCfdpOutgoingTransfer trsf = (QueuedCfdpOutgoingTransfer) transfer;
+            if (queuedTransfers.remove(trsf)) {
+                trsf.setTransferState(TransferState.FAILED);
+                trsf.setFailureReason("Cancelled while queued");
+                stateChanged(trsf);
+            }
+        } else {
+            throw new InvalidRequestException("Unknown transfer type " + transfer);
+        }
+    }
+
     @Override
     public List<FileTransferOption> getFileTransferOptions() {
         return List.of(
                 FileTransferOption.newBuilder()
-                        .setName("reliability").setType(FileTransferOptionType.BOOLEAN)
+                        .setName(RELIABLE_OPTION)
+                        .setType(FileTransferOption.Type.BOOLEAN)
+                        .setTitle("Reliability")
                         .setDescription("Acknowledged or unacknowledged transmission mode")
                         .setAssociatedText("Reliable")
-                        .setBooleanValue(true)
+                        .setDefault("true")
                         .build()
         );
     }

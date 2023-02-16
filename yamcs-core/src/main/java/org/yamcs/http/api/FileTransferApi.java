@@ -129,7 +129,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
 
         if (request.getDirection() == TransferDirection.UPLOAD) {
             TransferOptions transferOptions = new TransferOptions();
-            transferOptions.addExtraOptions(request.getOptionsList());
+            transferOptions.putExtraOptions(GpbWellKnownHelper.toJava(request.getOptions()));
 
             transferOptions.setOverwrite(true);
             transferOptions.setCreatePath(true);
@@ -169,7 +169,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
             }
         } else if (request.getDirection() == TransferDirection.DOWNLOAD) {
             TransferOptions transferOptions = new TransferOptions();
-            transferOptions.addExtraOptions(request.getOptionsList());
+            transferOptions.putExtraOptions(GpbWellKnownHelper.toJava(request.getOptions()));
 
             transferOptions.setOverwrite(true);
             transferOptions.setCreatePath(true);

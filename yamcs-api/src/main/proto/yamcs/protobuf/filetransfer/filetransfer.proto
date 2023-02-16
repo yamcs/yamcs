@@ -8,6 +8,7 @@ option java_multiple_files = true;
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
 
 import "yamcs/api/annotations.proto";
 
@@ -202,46 +203,46 @@ message TransferInfo {
 }
 
 message CreateTransferRequest {
-  // Deprecated: use options (FileTransferOption) instead
+  // Deprecated: use 'options' instead
   message UploadOptions {
-    // Deprecated: use options (FileTransferOption) instead (name: overwrite)
+    // Deprecated: use 'options' instead (name: overwrite)
     // Set to ``True`` if an already existing destination should be overwritten.
     // Default: ``True``.
     optional bool overwrite = 1 [deprecated=true];
 
-    // Deprecated: use options (FileTransferOption) instead (name: createPath)
+    // Deprecated: use 'options' instead (name: createPath)
     // Set to ``True`` if the destination path should be created if it does not exist.
     // Default: ``True``.
     optional bool createPath = 2 [deprecated=true];
 
-    // Deprecated: use options (FileTransferOption) instead (name: reliable)
+    // Deprecated: use 'options' instead (name: reliable)
     // Set to ``True`` if reliable (class 2) CFDP transfer should be used,
     // otherwise unreliable (class 1). Default: ``False``.
     optional bool reliable = 3 [deprecated=true];
 
-    // Deprecated: use options (FileTransferOption) instead (name: closureRequested)
+    // Deprecated: use 'options' instead (name: closureRequested)
     // Introduced in Issue 5 of the CFDP standard for non reliable (class 1) transfers
     // Requests the receiver to send a Finished PDU at the end of the transfer
     optional bool closureRequested = 4 [deprecated=true];
   }
-  // Deprecated: use options (FileTransferOption) instead
+  // Deprecated: use 'options' instead
   message DownloadOptions {
-    // Deprecated: use options (FileTransferOption) instead (name: overwrite)
+    // Deprecated: use 'options' instead (name: overwrite)
     // Set to ``True`` if an already existing destination should be overwritten.
     // Default: ``True``.
     optional bool overwrite = 1 [deprecated=true];
 
-    // Deprecated: use options (FileTransferOption) instead (name: createPath)
+    // Deprecated: use 'options' instead (name: createPath)
     // Set to ``True`` if the destination path should be created if it does not exist.
     // Default: ``True``.
     optional bool createPath = 2 [deprecated=true];
 
-    // Deprecated: options (FileTransferOption) instead (name: reliable)
+    // Deprecated: use 'options' instead (name: reliable)
     // Set to ``True`` if reliable (class 2) CFDP transfer should be used,
     // otherwise unreliable (class 1). Default: ``False``.
     optional bool reliable = 3 [deprecated=true];
 
-    // Deprecated: option (FileTransferOption) instead (name: closureRequested)
+    // Deprecated: use 'optionst' instead (name: closureRequested)
     // Introduced in Issue 5 of the CFDP standard for non reliable (class 1) transfers
     // Requests the receiver to send a Finished PDU at the end of the transfer
     optional bool closureRequested = 4 [deprecated=true];
@@ -280,8 +281,8 @@ message CreateTransferRequest {
   //used to derive the destination entity id
   optional string destination = 10;
 
-  // List of options for the transfer
-  repeated FileTransferOption options = 11;
+  // Options for the transfer
+  optional google.protobuf.Struct options = 11;
 }
 
 message PauseTransferRequest {
@@ -371,46 +372,36 @@ message ListFilesResponse {
 CUSTOMISABLE FILE TRANSFER OPTIONS
 */
 message FileTransferOption {
-  // Identifier and displayed as title for the option
+  enum Type {
+    // Shown as checkbox in the UI
+    BOOLEAN = 0;
+    // Shown as a number field or drop-down if values is specified
+    DOUBLE = 1;
+    // Shown as text field or drop-down if values is specified
+    STRING = 2;
+  }
+
+  // Identifier
   optional string name = 1;
   // Option type
-  optional FileTransferOptionType type = 2;
+  optional Type type = 2;
+  // Title for the option
+  optional string title = 3;
   // Help text shown on hover
-  optional string description = 3;
-  // Placeholder for text/number fields and label for checkboxes
-  optional string associatedText = 4;
-  // Whether a custom text/number field is needed when using the drop-down menu
-  optional bool allowCustomOption = 5;
+  optional string description = 4;
+  // Placeholder for fields and label for checkboxes
+  optional string associatedText = 5;
+  // Default value for the field
+  optional string default = 6;
+  // Values for potential dropdown menu
+  repeated Value values = 7;
+  // Whether a custom field is needed when using the drop-down menu
+  optional bool allowCustomOption = 8;
 
-  // BOOLEAN type only fields
-  // Boolean value for the option, used as default in the UI
-  optional bool booleanValue = 6;
-
-  // DOUBLE type only fields
-  // Double dropdown options if specified, use to store selection when sending
-  repeated double doubleValues = 7;
-  // Double default value (prefilled/preselected)
-  optional double doubleDefault = 8;
-
-  // STRING type only fields
-  // String dropdown options if specified, use to store selection when sending
-  repeated StringValue stringValues = 9;
-  // String default value (prefilled/preselected)
-  optional string stringDefault = 10;
-}
-
-enum FileTransferOptionType {
-  // Shown as checkbox in the UI (related field: booleanValue)
-  BOOLEAN = 0;
-  // Shown as a number field or drop-down if doubleValues is specified (related fields: doubleValues, doubleDefault)
-  DOUBLE = 1;
-  // Shown as text field or drop-down if stringValues is specified (related fields: stringValues, stringDefault)
-  STRING = 2;
-}
-
-message StringValue {
-  // Actual value used by the API
-  optional string value = 1;
-  // Displayed friendly name for the option
-  optional string verboseName = 2;
+  message Value {
+    // Real value for the option (used to sent to the server)
+    optional string value = 1;
+    // Display name for the value
+    optional string verboseName = 2;
+  }
 }

@@ -12,19 +12,12 @@ export interface FileTransferService {
 export interface FileTransferOption {
   name: string;
   type: 'BOOLEAN' | 'DOUBLE' | 'STRING';
+  title?: string;
   description?: string;
   associatedText?: string;
+  default?: string;
+  values?: { value: string, verboseName?: string; }[];
   allowCustomOption?: boolean;
-  booleanValue?: boolean;
-  doubleValues?: number[];
-  doubleDefault?: number[];
-  stringValues?: StringValue[];
-  stringDefault?: string;
-}
-
-export interface StringValue {
-  value: string;
-  text?: string;
 }
 
 export interface FileTransferCapabilities {
@@ -63,7 +56,7 @@ export interface CreateTransferRequest {
   remotePath: string;
   source: string;
   destination: string;
-  options: FileTransferOption[];
+  options: { [key: string]: boolean | number | string; };
 }
 
 export interface TransfersPage {

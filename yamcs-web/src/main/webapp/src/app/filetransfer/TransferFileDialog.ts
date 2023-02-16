@@ -35,6 +35,9 @@ export class TransferFileDialog implements OnDestroy {
 
   optionsMapping = new Map<FileTransferOption, string>();
 
+  readonly DROPDOWN_SUFFIX = "_Dropdown";
+  readonly CUSTOM_OPTION_VALUE = "_CUSTOM_OPTION_";
+
   @ViewChild('objectSelector')
   objectSelector: ObjectSelector;
 
@@ -82,20 +85,14 @@ export class TransferFileDialog implements OnDestroy {
         let name = this.getControlName(option, index);
         this.optionsMapping.set(option, name);
 
-        let defaultValue;
-        switch (option.type) {
-          case 'BOOLEAN':
-            defaultValue = option.booleanValue;
-            break;
-          case 'DOUBLE':
-            defaultValue = option.doubleDefault != null ? option.doubleDefault : (option.doubleValues && option.doubleValues.length ? option.doubleValues[0] : undefined);
-            break;
-          case 'STRING':
-            defaultValue = option.stringDefault != null ? option.stringDefault : (option.stringValues && option.stringValues.length ? option.stringValues[0].value : undefined);
-            break;
-        }
+        if (option.type === "BOOLEAN") {
+          controlNames[name] = [option.default?.toLowerCase() === "true", []];
+        } else {
+          let inValues = option.values && option.values.find(item => item.value === option.default);
 
-        controlNames[name] = [defaultValue, []];
+          controlNames[name] = [inValues == null ? option.default : "", []];
+          controlNames[name + this.DROPDOWN_SUFFIX] = [inValues != null ? option.default : this.CUSTOM_OPTION_VALUE, []];
+        }
       }
     );
 
@@ -184,32 +181,28 @@ export class TransferFileDialog implements OnDestroy {
     }
 
     // FileTransferOptions
-    const options = this.service.transferOptions?.map(option => {
-      let formControlName = this.optionsMapping.get(option);
-      if (!formControlName) {
-        return;
+    const options = this.service.transferOptions.reduce((options, option) => {
+      const controlName = this.optionsMapping.get(option);
+      if (!controlName) {
+        return options;
       }
-      let value = this.form.get(formControlName)?.value;
-      let newOption: FileTransferOption = {
-        name: option.name,
-        type: option.type
-      };
-      switch (option.type) {
-        case 'BOOLEAN':
-          newOption.booleanValue = value;
-          break;
-        case 'DOUBLE':
-          newOption.doubleValues = [value != null ? value : option.doubleDefault || 0];
-          break;
-        case 'STRING':
-          newOption.stringValues = [{ value: value }];
-          break;
-      }
-      return newOption;
-    }).filter((option): option is FileTransferOption => !!option); // Filter undefined
 
-    const localFolderPath = this.getSelectedLocalFolderPath();
-    const remoteFolderPath = this.getSelectedRemoteFolderPath();
+      const dropDownValue = this.form.get(controlName + this.DROPDOWN_SUFFIX)?.value;
+      let value = dropDownValue == null || dropDownValue === this.CUSTOM_OPTION_VALUE ? this.form.get(controlName)?.value : dropDownValue;
+
+      if (option.type === "BOOLEAN" && typeof value !== "boolean") {
+        value = String(value).toLowerCase() === "true";
+      } else if (option.type === "DOUBLE" && typeof value !== "number") {
+        value = Number(value);
+      } else if (option.type === "STRING" && typeof value !== "string") {
+        value = String(value);
+      }
+
+      return {
+        ...options,
+        [option.name]: value,
+      };
+    }, {});
 
     const promises = objectNames.map((name) => {
       // Get file names and append it to selected folders.
