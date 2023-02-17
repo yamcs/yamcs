@@ -52,8 +52,8 @@ export class TransferFileDialog implements OnDestroy {
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.service = data.service;
-    const firstSource = this.service.localEntities.length ? this.service.localEntities[0].name : '';
-    const firstDestination = this.service.remoteEntities.length ? this.service.remoteEntities[0].name : '';
+    const firstSource = this.service.localEntities && this.service.localEntities.length ? this.service.localEntities[0].name : '';
+    const firstDestination = this.service.remoteEntities && this.service.remoteEntities.length ? this.service.remoteEntities[0].name : '';
 
     this.storageClient = yamcs.createStorageClient();
     this.storageClient.getBuckets('_global').then(buckets => {
@@ -100,8 +100,8 @@ export class TransferFileDialog implements OnDestroy {
     this.form = formBuilder.group({
       localFilenames: ['', []],
       remoteFilenames: ['', []],
-      localEntity: [firstSource, Validators.required],
-      remoteEntity: [firstDestination, Validators.required],
+      localEntity: [firstSource, this.service.localEntities && this.service.localEntities.length && Validators.required],
+      remoteEntity: [firstDestination, this.service.remoteEntities && this.service.remoteEntities.length && Validators.required],
       reliable: [true, []],
       ...controlNames
     });
@@ -180,30 +180,6 @@ export class TransferFileDialog implements OnDestroy {
       return;
     }
 
-    // FileTransferOptions
-    const options = this.service.transferOptions.reduce((options, option) => {
-      const controlName = this.optionsMapping.get(option);
-      if (!controlName) {
-        return options;
-      }
-
-      const dropDownValue = this.form.get(controlName + this.DROPDOWN_SUFFIX)?.value;
-      let value = dropDownValue == null || dropDownValue === this.CUSTOM_OPTION_VALUE ? this.form.get(controlName)?.value : dropDownValue;
-
-      if (option.type === "BOOLEAN" && typeof value !== "boolean") {
-        value = String(value).toLowerCase() === "true";
-      } else if (option.type === "DOUBLE" && typeof value !== "number") {
-        value = Number(value);
-      } else if (option.type === "STRING" && typeof value !== "string") {
-        value = String(value);
-      }
-
-      return {
-        ...options,
-        [option.name]: value,
-      };
-    }, {});
-
     const promises = objectNames.map((name) => {
       // Get file names and append it to selected folders.
       let paths;
@@ -226,7 +202,7 @@ export class TransferFileDialog implements OnDestroy {
         remotePath: paths[1],
         source: sourceEntity,
         destination: destinationEntity,
-        options: options
+        options: this.getTransferOptions()
       });
     });
 
@@ -280,7 +256,7 @@ export class TransferFileDialog implements OnDestroy {
       source: this.form.value['localEntity'],
       destination: this.form.value['remoteEntity'],
       remotePath: currentFolder,
-      reliable: this.form.value['reliable']
+      options: this.getTransferOptions()
     });
   }
 
@@ -290,12 +266,37 @@ export class TransferFileDialog implements OnDestroy {
         source: this.form.value['localEntity'],
         destination: dest,
         remotePath: prefix,
-        reliable: this.form.value['reliable']
+        options: this.getTransferOptions()
       }).then(fileList => {
         this.remoteSelector.setFolderContent(prefix, fileList);
         this.lastFileListTime$.next(fileList.listTime);
       });
     }
+  }
+
+  private getTransferOptions() {
+    return this.service.transferOptions.reduce((options, option) => {
+      const controlName = this.optionsMapping.get(option);
+      if (!controlName) {
+        return options;
+      }
+
+      const dropDownValue = this.form.get(controlName + this.DROPDOWN_SUFFIX)?.value;
+      let value = dropDownValue == null || dropDownValue === this.CUSTOM_OPTION_VALUE ? this.form.get(controlName)?.value : dropDownValue;
+
+      if (option.type === "BOOLEAN" && typeof value !== "boolean") {
+        value = String(value).toLowerCase() === "true";
+      } else if (option.type === "DOUBLE" && typeof value !== "number") {
+        value = Number(value);
+      } else if (option.type === "STRING" && typeof value !== "string") {
+        value = String(value);
+      }
+
+      return {
+        ...options,
+        [option.name]: value,
+      };
+    }, {});
   }
 
   updateLocalBreadcrumb(prefix: string | null) {

@@ -67,7 +67,7 @@ export interface ListFilesRequest {
   source: string;
   destination: string;
   remotePath: string;
-  reliable: boolean;
+  options?: { [key: string]: boolean | number | string; };
 }
 
 export interface RemoteFile {

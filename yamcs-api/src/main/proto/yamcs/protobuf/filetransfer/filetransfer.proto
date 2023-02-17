@@ -350,8 +350,8 @@ message ListFilesRequest {
   optional string destination = 4;
   // Path of folder to list files from
   optional string remotePath = 5;
-  // Used for CFDP transmission mode, i.e. (un-)acknowledged
-  optional bool reliable = 6;
+  // Options for the transfer
+  optional google.protobuf.Struct options = 6;
 }
 
 message RemoteFile {

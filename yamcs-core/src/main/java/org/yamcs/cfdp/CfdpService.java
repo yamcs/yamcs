@@ -936,12 +936,12 @@ public class CfdpService extends AbstractYamcsService
     }
 
     @Override
-    public void fetchFileList(String source, String destination, String remotePath, boolean reliable) {
+    public void fetchFileList(String source, String destination, String remotePath, Map<String, Object> options) {
         EntityConf sourceEntity = getEntityFromName(source, localEntities);
         EntityConf destinationEntity = getEntityFromName(destination, remoteEntities);
 
         if (fileListingService != this) {
-            fileListingService.fetchFileList(sourceEntity.getName(), destinationEntity.getName(), remotePath, reliable);
+            fileListingService.fetchFileList(sourceEntity.getName(), destinationEntity.getName(), remotePath, options);
             return;
         }
 
@@ -953,7 +953,11 @@ public class CfdpService extends AbstractYamcsService
         DirectoryListingRequest directoryListingRequest = new DirectoryListingRequest(dirPath, ".dirlist.notsaved");
         ArrayList<MessageToUser> messagesToUser = new ArrayList<>(List.of(directoryListingRequest));
 
-        PutRequest request = new PutRequest(destinationEntity.id, reliable ? CfdpPacket.TransmissionMode.ACKNOWLEDGED : CfdpPacket.TransmissionMode.UNACKNOWLEDGED, messagesToUser);
+        PutRequest request = new PutRequest(
+                destinationEntity.id,
+                Boolean.TRUE.equals(options.get(RELIABLE_OPTION)) ?
+                        CfdpPacket.TransmissionMode.ACKNOWLEDGED : CfdpPacket.TransmissionMode.UNACKNOWLEDGED,
+                messagesToUser);
         CfdpTransactionId transactionId = request.process(sourceEntity.id, idSeq.next(), ChecksumType.MODULAR, config);
 
         directoryListingRequests.put(transactionId, Arrays.asList(destinationEntity.getName(), dirPath));
@@ -971,17 +975,18 @@ public class CfdpService extends AbstractYamcsService
     }
 
     @Override
-    public ListFilesResponse getFileList(String source, String destination, String remotePath, boolean reliable) {
+    public ListFilesResponse getFileList(String source, String destination, String remotePath, Map<String, Object> options) {
         EntityConf sourceEntity = getEntityFromName(source, localEntities);
         EntityConf destinationEntity = getEntityFromName(destination, remoteEntities);
 
         if (fileListingService != this) {
-            return fileListingService.getFileList(sourceEntity.getName(), destinationEntity.getName(), remotePath, reliable);
+            return fileListingService.getFileList(sourceEntity.getName(), destinationEntity.getName(), remotePath,
+                    options);
         }
 
         String dirPath = remotePath.replaceFirst("/*$", "");
         if (automaticDirectoryListingReloads && directoryListingRequests.values().stream().noneMatch(request -> request.equals(Arrays.asList(destinationEntity.getName(), dirPath)))) {
-            fetchFileList(sourceEntity.getName(), destinationEntity.getName(), dirPath, reliable);
+            fetchFileList(sourceEntity.getName(), destinationEntity.getName(), dirPath, options);
         }
 
         try {

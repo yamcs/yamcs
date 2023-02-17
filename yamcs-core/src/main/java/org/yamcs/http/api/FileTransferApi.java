@@ -288,7 +288,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
     public void fetchFileList(Context ctx, ListFilesRequest request, Observer<Empty> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
         FileTransferService ftService = verifyService(request.getInstance(), request.hasServiceName() ? request.getServiceName() : null);
-        ftService.fetchFileList(request.getSource(), request.getDestination(), request.getRemotePath(), request.getReliable());
+        ftService.fetchFileList(request.getSource(), request.getDestination(), request.getRemotePath(), GpbWellKnownHelper.toJava(request.getOptions()));
         observer.complete(Empty.getDefaultInstance());
     }
 
@@ -301,7 +301,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
     public void getFileList(Context ctx, ListFilesRequest request, Observer<ListFilesResponse> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
         FileTransferService ftService = verifyService(request.getInstance(), request.hasServiceName() ? request.getServiceName() : null);
-        ListFilesResponse response = ftService.getFileList(request.getSource(), request.getDestination(), request.getRemotePath(), request.getReliable());
+        ListFilesResponse response = ftService.getFileList(request.getSource(), request.getDestination(), request.getRemotePath(), GpbWellKnownHelper.toJava(request.getOptions()));
         if (response == null) {
             response = ListFilesResponse.newBuilder().build();
         }

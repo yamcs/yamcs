@@ -7,6 +7,9 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Struct;
+import com.google.protobuf.util.JsonFormat;
 import org.yamcs.api.HttpBody;
 import org.yamcs.logging.Log;
 
@@ -198,6 +201,16 @@ public class HttpTranscoder {
                 } catch (ParseException e) {
                     throw new HttpTranscodeException(e.getMessage());
                 }
+            }
+            if (Struct.getDescriptor().equals(field.getMessageType())) {
+                try {
+                    Struct.Builder builder = Struct.newBuilder();
+                    JsonFormat.parser().merge(parameter, builder);
+                    return builder.build();
+                } catch (InvalidProtocolBufferException e) {
+                    throw new HttpTranscodeException(e.getMessage());
+                }
+
             }
             throw new UnsupportedOperationException(
                     "No query parameter conversion for message type " + field.getMessageType().getFullName());

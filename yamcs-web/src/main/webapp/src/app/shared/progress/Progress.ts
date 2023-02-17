@@ -15,6 +15,9 @@ export class Progress implements OnChanges {
   @Input()
   total: number;
 
+  @Input()
+  width: string;
+
   format = '1.1';
 
   ratio$ = new BehaviorSubject<number | null>(null);
