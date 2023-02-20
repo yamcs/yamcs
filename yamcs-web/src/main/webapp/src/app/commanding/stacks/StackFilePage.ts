@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } 
 import { FormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { MessageService } from 'src/app/core/services/MessageService';
@@ -44,6 +44,7 @@ export class StackFilePage implements OnDestroy {
   );
 
   running$ = new BehaviorSubject<boolean>(false);
+  runningStack = false;
 
   private commandSubscription: CommandSubscription;
   selectedEntry$ = new BehaviorSubject<StackEntry | null>(null);
@@ -92,6 +93,7 @@ export class StackFilePage implements OnDestroy {
     private dialog: MatDialog,
     readonly yamcs: YamcsService,
     private route: ActivatedRoute,
+    private router: Router,
     private title: Title,
     private configService: ConfigService,
     private messageService: MessageService,
@@ -99,16 +101,12 @@ export class StackFilePage implements OnDestroy {
     private basenamePipe: BasenamePipe,
     private filenamePipe: FilenamePipe,
     private extensionPipe: ExtensionPipe,
-    formBuilder: FormBuilder
+    private formBuilder: FormBuilder
   ) {
     const config = configService.getConfig();
     this.bucket = config.stackBucket;
     this.folderPerInstance = config.displayFolderPerInstance;
     this.storageClient = yamcs.createStorageClient();
-
-    const initialObject = this.getObjectNameFromUrl();
-
-    this.loadFile(initialObject);
 
     this.stackOptionsForm = formBuilder.group({
       advanceOnAckDropDown: ['', []],
@@ -116,15 +114,24 @@ export class StackFilePage implements OnDestroy {
       advanceOnDelay: ['', []],
     });
 
+    this.initStackFile();
+  }
+
+  private initStackFile() {
+    const initialObject = this.getObjectNameFromUrl();
+
+    this.loadFile(initialObject);
+
     if (this.format !== "json") {
       this.stackOptionsForm.disable();
     } else {
+      this.stackOptionsForm.enable();
       this.stackOptionsForm.valueChanges.subscribe(this.stackOptionsFormCallback);
     }
 
-    this.commandSubscription = yamcs.yamcsClient.createCommandSubscription({
-      instance: yamcs.instance!,
-      processor: yamcs.processor!,
+    this.commandSubscription = this.yamcs.yamcsClient.createCommandSubscription({
+      instance: this.yamcs.instance!,
+      processor: this.yamcs.processor!,
       ignorePastCommands: true,
     }, entry => {
       const id = entry.id;
@@ -151,7 +158,7 @@ export class StackFilePage implements OnDestroy {
     });
   }
 
-  stackOptionsFormCallback = (result: any) => {
+  private stackOptionsFormCallback = (result: any) => {
     if (!this.loaded) {
       return;
     }
@@ -161,10 +168,7 @@ export class StackFilePage implements OnDestroy {
       delay: result.advanceOnDelay != null ? result.advanceOnDelay : 0
     };
 
-    console.log(this.advanceOn);
-
     this.dirty$.next(true);
-
   };
 
   handleDrop(event: CdkDragDrop<StackEntry[]>) {
@@ -221,8 +225,16 @@ export class StackFilePage implements OnDestroy {
       return;
     }
 
-    const response = await this.storageClient.getObject('_global', this.bucket, objectName);
-    if (response.ok) {
+    const response = await this.storageClient.getObject('_global', this.bucket, objectName).catch(err => {
+      if (err.statusCode === 404 && format === "xml") {
+        this.router.navigate([objectName.replace(/\.xml$/i, ".json")], { queryParamsHandling: 'preserve', relativeTo: this.route.parent })
+          .then(() => this.initStackFile());
+      } else {
+        this.messageService.showError("Failed to load stack file '" + objectName + "'");
+      }
+    });
+
+    if (response?.ok) {
       const text = await response.text();
       let entries;
       switch (this.format) {
@@ -437,16 +449,14 @@ export class StackFilePage implements OnDestroy {
     return this.dirty$.value;
   }
 
-  runSelection() {
+  async runSelection() {
     const entry = this.selectedEntry$.value;
     if (!entry) {
       return;
     }
+    this.running$.next(true);
 
-    this.runEntry(entry).finally(() => {
-      // TODO: use advanceOn to advance instead of every tiem
-      this.advanceSelection(entry);
-    });
+    this.runEntry(entry);
   }
 
   private async runEntry(entry: StackEntry) {
@@ -484,22 +494,18 @@ export class StackFilePage implements OnDestroy {
     });
   }
 
-  async runFromSelection() {
+  runFromSelection() {
     let entry = this.selectedEntry$.value;
     if (!entry) {
+      this.stopRun();
       return;
     }
 
     this.running$.next(true);
+    this.runningStack = true;
     this.nextCommandScheduled = false;
-    try {
-      await this.runEntry(entry);
-    } finally {
-      if (this.entries$.value.indexOf(entry) === this.entries$.value.length - 1) {
-        this.advanceSelection(entry);
-        this.stopRun();
-      }
-    }
+
+    this.runEntry(entry);
   }
 
   private checkAckContinueRunning(record: CommandHistoryRecord) {
@@ -517,12 +523,16 @@ export class StackFilePage implements OnDestroy {
       let ack = record.acksByName[acceptingAck];
       if (ack && ack.status) {
         if (this.acceptingAckValues.includes(ack.status)) {
-          this.nextCommandScheduled = true;
+          this.nextCommandScheduled = this.runningStack;
           this.nextCommandDelayTimeout = setTimeout(() => {
             // Continue execution
             if (this.running$.value && selectedEntry) {
               this.advanceSelection(selectedEntry);
-              this.runFromSelection();
+              if (this.runningStack) {
+                this.runFromSelection();
+              } else {
+                this.stopRun();
+              }
             }
           }, Math.max(delay, 0));
         } else if (this.stoppingAckValues.includes(ack.status)) {
@@ -535,6 +545,7 @@ export class StackFilePage implements OnDestroy {
 
   stopRun() {
     this.running$.next(false);
+    this.runningStack = false;
     clearTimeout(this.nextCommandDelayTimeout);
     clearTimeout(this.runningTimeout);
     this.nextCommandScheduled = false;
@@ -754,12 +765,8 @@ export class StackFilePage implements OnDestroy {
       this.converting = true;
       StackFilePage.convertToJSON(this.messageService, this.basenamePipe, this.storageClient, this.bucket, this.objectName, this.entries$.value, { advanceOn: this.advanceOn })
         .then((jsonObjectName) => {
-          this.loadFile(jsonObjectName + ".json");
-          this.messageService.dismiss();
-          this.stackOptionsForm.enable();
-          this.stackOptionsForm.valueChanges.subscribe(this.stackOptionsFormCallback);
-          // TODO: maybe update current URL
-          this.dirty$.next(false);
+          this.router.navigate([jsonObjectName + ".json"], { queryParamsHandling: 'preserve', relativeTo: this.route.parent })
+            .then(() => this.initStackFile());
         }).finally(() => this.converting = false);
     }
   }
