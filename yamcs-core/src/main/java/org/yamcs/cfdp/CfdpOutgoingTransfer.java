@@ -147,7 +147,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         this.bucket = bucket;
         entityIdLength = config.getInt("entityIdLength");
         seqNrSize = config.getInt("sequenceNrLength");
-        int maxPduSize = customPduSize != null ? customPduSize : config.getInt("maxPduSize", 512);
+        int maxPduSize = customPduSize != null && customPduSize > 0 ? customPduSize : config.getInt("maxPduSize", 512);
         maxDataSize = maxPduSize - 4 - 2 * entityIdLength - seqNrSize - 4;
         long eofAckTimeout = config.getInt("eofAckTimeout", 10000);
         int eofAckLimit = config.getInt("eofAckLimit", 5);
@@ -156,7 +156,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         acknowledged = request.isAcknowledged();
 
         outTxState = OutTxState.START;
-        this.sleepBetweenPdus = customPduDelay != null ? customPduDelay : config.getInt("sleepBetweenPdus", 500);
+        this.sleepBetweenPdus = customPduDelay != null && customPduDelay > 0 ? customPduDelay : config.getInt("sleepBetweenPdus", 500);
         this.closureRequested = request.isClosureRequested();
 
 

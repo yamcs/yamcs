@@ -159,7 +159,9 @@ public class CfdpService extends AbstractYamcsService
     private boolean automaticDirectoryListingReloads;
 
     private boolean canChangePduSize;
+    private List<Integer> pduSizePredefinedValues;
     private boolean canChangePduDelay;
+    private List<Integer> pduDelayPredefinedValues;
 
 
     private Stream dbStream;
@@ -221,7 +223,9 @@ public class CfdpService extends AbstractYamcsService
         spec.addOption("sequenceNrLength", OptionType.INTEGER).withDefault(4);
         spec.addOption("maxPduSize", OptionType.INTEGER).withDefault(512);
         spec.addOption("canChangePduSize", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("pduSizePredefinedValues", OptionType.LIST).withDefault(Collections.emptyList()).withElementType(OptionType.INTEGER);
         spec.addOption("canChangePduDelay", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("pduDelayPredefinedValues", OptionType.LIST).withDefault(Collections.emptyList()).withElementType(OptionType.INTEGER);
         spec.addOption("eofAckTimeout", OptionType.INTEGER).withDefault(5000);
         spec.addOption("eofAckLimit", OptionType.INTEGER).withDefault(5);
         spec.addOption("finAckTimeout", OptionType.INTEGER).withDefault(5000);
@@ -284,7 +288,9 @@ public class CfdpService extends AbstractYamcsService
         allowConcurrentFileOverwrites = config.getBoolean("allowConcurrentFileOverwrites");
         directoryTerminators = config.getList("directoryTerminators");
         canChangePduSize = config.getBoolean("canChangePduSize");
+        pduSizePredefinedValues = config.getList("pduSizePredefinedValues");
         canChangePduDelay = config.getBoolean("canChangePduDelay");
+        pduDelayPredefinedValues = config.getList("pduDelayPredefinedValues");
 
         String fileListingServiceClassName = config.getString("fileListingServiceClassName");
         YConfiguration fileListingServiceConfig = config.getConfig("fileListingServiceArgs");
@@ -864,21 +870,24 @@ public class CfdpService extends AbstractYamcsService
                 CREATE_PATH_OPTION, options.isCreatePath()
         ));
 
-        booleanOptions.putAll(getOptionValues(options.getExtraOptions()));
-        // TODO: get PDU size & delay options
-        Integer pduSize = null;
-        Integer pduDelay = null;
+        OptionValues optionValues = getOptionValues(options.getExtraOptions());
+
+        booleanOptions.putAll(optionValues.booleanOptions);
 
         FilePutRequest request = new FilePutRequest(sourceId, destinationId, objectName, absoluteDestinationPath,
                 booleanOptions.get(OVERWRITE_OPTION), booleanOptions.get(RELIABLE_OPTION),
                 booleanOptions.get(CLOSURE_OPTION), booleanOptions.get(CREATE_PATH_OPTION), bucket, objData);
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
+        Double pduSize = optionValues.doubleOptions.get(PDU_SIZE_OPTION);
+        Double pduDelay = optionValues.doubleOptions.get(PDU_DELAY_OPTION);
+
         if (numPendingUploads() < maxNumPendingUploads) {
-            return processPutRequest(sourceId, idSeq.next(), creationTime, request, bucket, pduSize, pduDelay);
+            return processPutRequest(sourceId, idSeq.next(), creationTime, request, bucket,
+                    pduSize != null ? pduSize.intValue() : null, pduDelay != null ? pduDelay.intValue() : null);
         } else {
             QueuedCfdpOutgoingTransfer transfer = new QueuedCfdpOutgoingTransfer(sourceId, idSeq.next(), creationTime,
-                    request, bucket, pduSize, pduDelay);
+                    request, bucket, pduSize != null ? pduSize.intValue() : null, pduDelay != null ? pduDelay.intValue() : null);
             dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
             queuedTransfers.add(transfer);
             transferListeners.forEach(l -> l.stateChanged(transfer));
@@ -909,8 +918,9 @@ public class CfdpService extends AbstractYamcsService
                 CREATE_PATH_OPTION, options.isCreatePath()
         ));
 
-        booleanOptions.putAll(getOptionValues(options.getExtraOptions()));
+        OptionValues optionValues = getOptionValues(options.getExtraOptions());
 
+        booleanOptions.putAll(optionValues.booleanOptions);
 
         // Prepare request
         ArrayList<MessageToUser> messagesToUser = new ArrayList<>(
@@ -928,9 +938,8 @@ public class CfdpService extends AbstractYamcsService
             messagesToUser.add(new ProxyClosureRequest(booleanOptions.get(CLOSURE_OPTION)));
         }
 
-        // TODO: get PDU size & delay options
-        Integer pduSize = null;
-        Integer pduDelay = null;
+        Double pduSize = optionValues.doubleOptions.get(PDU_SIZE_OPTION);
+        Double pduDelay = optionValues.doubleOptions.get(PDU_DELAY_OPTION);
 
         PutRequest request = new PutRequest(sourceId, transmissionMode, messagesToUser);
         CfdpTransactionId transactionId = request.process(destinationId, idSeq.next(), ChecksumType.MODULAR, config);
@@ -939,10 +948,11 @@ public class CfdpService extends AbstractYamcsService
 
         fileDownloadRequests.addTransfer(transactionId, bucket.getName());
         if (numPendingUploads() < maxNumPendingUploads) {
-            return processPutRequest(destinationId, transactionId.getSequenceNumber(), creationTime, request, bucket, pduSize, pduDelay);
+            return processPutRequest(destinationId, transactionId.getSequenceNumber(), creationTime, request, bucket,
+                    pduSize != null ? pduSize.intValue() : null, pduDelay != null ? pduDelay.intValue() : null);
         } else {
             QueuedCfdpOutgoingTransfer transfer = new QueuedCfdpOutgoingTransfer(destinationId, transactionId.getSequenceNumber(),
-                    creationTime, request, bucket, pduSize, pduDelay);
+                    creationTime, request, bucket, pduSize != null ? pduSize.intValue() : null, pduDelay != null ? pduDelay.intValue() : null);
             dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
             queuedTransfers.add(transfer);
             transferListeners.forEach(l -> l.stateChanged(transfer));
@@ -977,16 +987,18 @@ public class CfdpService extends AbstractYamcsService
                 messagesToUser);
         CfdpTransactionId transactionId = request.process(sourceEntity.id, idSeq.next(), ChecksumType.MODULAR, config);
 
-        // TODO: get PDU size & delay options
-        Integer pduSize = null;
-        Integer pduDelay = null;
+        OptionValues optionValues = getOptionValues(options);
+
+        Double pduSize = optionValues.doubleOptions.get(PDU_SIZE_OPTION);
+        Double pduDelay = optionValues.doubleOptions.get(PDU_DELAY_OPTION);
 
         directoryListingRequests.put(transactionId, Arrays.asList(destinationEntity.getName(), dirPath));
         if (numPendingUploads() < maxNumPendingUploads) {
-            processPutRequest(sourceEntity.id, transactionId.getSequenceNumber(), creationTime, request, null, pduSize, pduDelay);
+            processPutRequest(sourceEntity.id, transactionId.getSequenceNumber(), creationTime, request, null,
+                    pduSize != null ? pduSize.intValue() : null, pduDelay != null ? pduDelay.intValue() : null);
         } else {
             QueuedCfdpOutgoingTransfer transfer = new QueuedCfdpOutgoingTransfer(sourceEntity.id, transactionId.getSequenceNumber(),
-                    creationTime, request, null, pduSize, pduDelay);
+                    creationTime, request, null, pduSize != null ? pduSize.intValue() : null, pduDelay != null ? pduDelay.intValue() : null);
             dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
             queuedTransfers.add(transfer);
             transferListeners.forEach(l -> l.stateChanged(transfer));
@@ -1104,8 +1116,14 @@ public class CfdpService extends AbstractYamcsService
         return destinationPath;
     }
 
-    private Map<String, Boolean> getOptionValues(Map<String, Object> extraOptions) {
-        var booleanOptions = new HashMap<String, Boolean>();
+    private static class OptionValues {
+        HashMap<String, Boolean> booleanOptions = new HashMap<>();
+        HashMap<String, Double> doubleOptions = new HashMap<>();
+        HashMap<String, String> stringOptions = new HashMap<>();
+    }
+
+    private OptionValues getOptionValues(Map<String, Object> extraOptions) {
+        var optionValues = new OptionValues();
 
         for (Map.Entry<String, Object> option : extraOptions.entrySet()) {
             try {
@@ -1114,7 +1132,11 @@ public class CfdpService extends AbstractYamcsService
                 case RELIABLE_OPTION:
                 case CLOSURE_OPTION:
                 case CREATE_PATH_OPTION:
-                    booleanOptions.put(option.getKey(), (boolean) option.getValue());
+                    optionValues.booleanOptions.put(option.getKey(), (boolean) option.getValue());
+                    break;
+                case PDU_DELAY_OPTION:
+                case PDU_SIZE_OPTION:
+                    optionValues.doubleOptions.put(option.getKey(), (double) option.getValue());
                     break;
                 default:
                     log.warn("Unknown file transfer option: {} (value: {})", option.getKey(), option.getValue());
@@ -1124,7 +1146,7 @@ public class CfdpService extends AbstractYamcsService
             }
         }
 
-        return booleanOptions;
+        return optionValues;
     }
 
     @Override
@@ -1170,7 +1192,10 @@ public class CfdpService extends AbstractYamcsService
                     .setName(PDU_DELAY_OPTION)
                     .setType(FileTransferOption.Type.DOUBLE)
                     .setTitle("PDU delay")
-                    .setDefault(Integer.toString(config.getInt("maxPduSize")))
+                    .setDefault(Integer.toString(config.getInt("sleepBetweenPdus")))
+                    .addAllValues(pduDelayPredefinedValues.stream().map(value ->
+                            FileTransferOption.Value.newBuilder().setValue(value.toString()).build()).collect(Collectors.toList()))
+                    .setAllowCustomOption(true)
                     .build());
         }
 
@@ -1179,7 +1204,10 @@ public class CfdpService extends AbstractYamcsService
                     .setName(PDU_SIZE_OPTION)
                     .setType(FileTransferOption.Type.DOUBLE)
                     .setTitle("PDU size")
-                    .setDefault(Integer.toString(config.getInt("sleepBetweenPdus")))
+                    .setDefault(Integer.toString(config.getInt("maxPduSize")))
+                    .addAllValues(pduSizePredefinedValues.stream().map(value ->
+                            FileTransferOption.Value.newBuilder().setValue(value.toString()).build()).collect(Collectors.toList()))
+                    .setAllowCustomOption(true)
                     .build());
         }
 

@@ -34,8 +34,6 @@ services:
      inactivityTimeout: 30000
      sequenceNrLength: 4
      maxPduSize: 512
-     canChangePduSize: true
-     canChangePduDelay: true
      incomingBucket: "cfdpDown"
      allowRemoteProvidedBucket: false
      allowRemoteProvidedSubdirectory: false

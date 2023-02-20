@@ -141,8 +141,14 @@ sleepBetweenPdus (integer)
 canChangePduSize (boolean)
     Whether a ``FileTransferOption`` can be used to set a specific transfer's PDU size. Default: ``false``
 
+pduSizePredefinedValues (list)
+    List of predefined integer values for the PDU size option when ``canChangePduSize`` is ``true``, shown as a dropdown menu in the web UI.
+
 canChangePduDelay (boolean)
     Whether a ``FileTransferOption`` can be used to set a specific transfer's PDU delay (sleep between PDUs). Default: ``false``
+
+pduDelayPredefinedValues (list)
+    List of predefined integer values for the PDU delay option when ``canChangePduDelay`` is ``true``, shown as a dropdown menu in the web UI.
 
 inactivityTimeout (integer)
     The time in milliseconds used by both the sender and receiver to check for inactivity. The timer is active on the receiver until EOF has been received and on class 2 sender after EOF has been sent (while waiting for the Finished PDU). If the timer expires, the InactivityDetected event will be triggered and the transaction may be cancelled or suspended (depending on the configuration of the fault handler for InactivityDetected event).
