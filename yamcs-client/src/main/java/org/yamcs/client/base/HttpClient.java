@@ -146,7 +146,7 @@ public class HttpClient {
             attrs.put("refresh_token", credentials.getRefreshToken());
 
             try {
-                credentials = requestTokens(tokenUrl, attrs).get();
+                this.credentials = requestTokens(tokenUrl, attrs).get();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             } catch (ExecutionException e) {
