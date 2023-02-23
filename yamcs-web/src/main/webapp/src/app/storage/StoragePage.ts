@@ -14,6 +14,6 @@ export class StoragePage {
   constructor(
     preferenceStore: PreferenceStore,
   ) {
-    this.sidebar$ = preferenceStore.sidebar$;
+    this.sidebar$ = preferenceStore.getPreference$('sidebar');
   }
 }

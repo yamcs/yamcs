@@ -62,7 +62,7 @@ export class AppComponent implements OnDestroy {
       }
     });
 
-    this.sidebar$ = preferenceStore.sidebar$;
+    this.sidebar$ = preferenceStore.getPreference$('sidebar');
 
     this.showMenuToggle$ = router.events.pipe(
       filter(evt => evt instanceof NavigationEnd),
@@ -89,11 +89,7 @@ export class AppComponent implements OnDestroy {
   }
 
   toggleSidebar() {
-    if (this.preferenceStore.showSidebar()) {
-      this.preferenceStore.setShowSidebar(false);
-    } else {
-      this.preferenceStore.setShowSidebar(true);
-    }
+    this.preferenceStore.setValue('sidebar', !this.preferenceStore.getValue('sidebar'));
   }
 
   logout() {
