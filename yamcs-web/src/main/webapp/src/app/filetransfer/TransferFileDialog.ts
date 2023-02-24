@@ -104,12 +104,14 @@ export class TransferFileDialog implements OnDestroy {
         this.optionsMapping.set(option, name);
 
         if (option.type === "BOOLEAN") {
-          controlNames[name] = [option.default?.toLowerCase() === "true", []];
+          const optionPref$ = this.addPreference$("options." + option.name, option.default?.toLowerCase() === "true");
+          controlNames[name] = [optionPref$.value, []];
         } else {
-          let inValues = option.values && option.values.find(item => item.value === option.default);
+          const optionPref$ = this.addPreference$("options." + option.name, option.default || '');
+          let inValues = option.values && option.values.find(item => item.value === optionPref$.value);
 
-          controlNames[name] = [inValues == null ? option.default : "", []];
-          controlNames[name + this.DROPDOWN_SUFFIX] = [inValues != null ? option.default : this.CUSTOM_OPTION_VALUE, []];
+          controlNames[name] = [inValues == null ? optionPref$.value : "", []];
+          controlNames[name + this.DROPDOWN_SUFFIX] = [inValues != null ? optionPref$.value : this.CUSTOM_OPTION_VALUE, []];
         }
       }
     );
@@ -120,7 +122,6 @@ export class TransferFileDialog implements OnDestroy {
       remoteFilenames: ['', []],
       localEntity: [localEntity$.value, this.service.localEntities && this.service.localEntities.length && Validators.required],
       remoteEntity: [remoteEntity$.value, this.service.remoteEntities && this.service.remoteEntities.length && Validators.required],
-      reliable: [true, []],
       ...controlNames
     });
 
@@ -142,6 +143,23 @@ export class TransferFileDialog implements OnDestroy {
       this.setPreferenceValue("remoteEntity", entity);
       // New destination selected -> Go to root folder
       this.getFileList(entity, '');
+    });
+
+    // Save option preferences
+    this.form.valueChanges.subscribe(async _ => {
+      this.optionsMapping.forEach((controlName, option) => {
+        const dropDownValue = this.form.get(controlName + this.DROPDOWN_SUFFIX)?.value;
+        let value = dropDownValue == null || dropDownValue === this.CUSTOM_OPTION_VALUE ? this.form.get(controlName)?.value : dropDownValue;
+
+        switch (option.type) {
+          case "BOOLEAN":
+            this.setPreferenceValue("options." + option.name, String(value) === "true");
+            break;
+          case "DOUBLE":
+          case "STRING":
+            this.setPreferenceValue("options." + option.name, value != null ? value : "");
+        }
+      });
     });
 
     // Show most recent file list

@@ -22,7 +22,7 @@ export class PreferenceStore {
     if (typeof defaultValue === 'boolean') {
       this.preferences[key].next(item === (!defaultValue).toString() ? !defaultValue : defaultValue);
     } else {
-      this.preferences[key].next(item || defaultValue);
+      this.preferences[key].next(item != null ? item : defaultValue);
     }
     return this.preferences[key];
   }
