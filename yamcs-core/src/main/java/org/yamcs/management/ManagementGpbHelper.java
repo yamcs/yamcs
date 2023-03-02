@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.yamcs.Processor;
 import org.yamcs.mdb.ProcessingStatistics;
+import org.yamcs.protobuf.AcknowledgmentInfo;
 import org.yamcs.protobuf.ProcessorInfo;
 import org.yamcs.protobuf.Statistics;
 import org.yamcs.protobuf.TmStatistics;
@@ -43,6 +44,15 @@ public final class ManagementGpbHelper {
             ReplayRequest request = processor.getCurrentReplayRequest();
             processorb.setReplayRequest(request);
             processorb.setReplayState(processor.getReplayState());
+        }
+
+        for (var ack : processor.getAcknowledgments()) {
+            var ackInfo = AcknowledgmentInfo.newBuilder()
+                    .setName(ack.getName());
+            if (ack.getDescription() != null) {
+                ackInfo.setDescription(ack.getDescription());
+            }
+            processorb.addAcknowledgments(ackInfo);
         }
         return processorb.build();
     }
