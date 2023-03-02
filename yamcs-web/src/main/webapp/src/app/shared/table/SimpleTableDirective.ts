@@ -21,8 +21,11 @@ import { ChangeDetectionStrategy, Component, HostBinding, ViewEncapsulation } fr
 
     .ya-simple-table th {
       background-color: #f7f7f7;
-      font-weight: 400;
       text-align: left;
+      font-weight: 500;
+      color: black;
+      width: 150px;
+      vertical-align: top;
     }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,

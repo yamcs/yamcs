@@ -67,6 +67,12 @@ export interface Processor {
   replay: boolean;
   replayRequest?: ReplayRequest;
   services: Service[];
+  acknowledgments: AcknowledgmentInfo[];
+}
+
+export interface AcknowledgmentInfo {
+  name: string;
+  description?: string;
 }
 
 export interface ReplayRequest {

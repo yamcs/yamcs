@@ -210,8 +210,6 @@ export class StackFolderPage implements OnDestroy {
   }
 
   convertToJSON(event: MouseEvent, name: string) {
-    console.log(event);
-
     if (this.converting) {
       return;
     }

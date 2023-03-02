@@ -109,17 +109,17 @@ div.entry div.out .body.err {
   width: 12px;
 }
 
-.stack-options {
-  display: grid;
-  padding-top: 12px;
-  padding-bottom: 12px;
-  grid-template-columns: 1fr 1fr;
-  column-gap: 8px;
+form.stack-options {
+  line-height: 0;
+  display: flex;
+  align-items: flex-start;
 }
 
-.stack-options>h2,
-.stack-options>p {
-  grid-column: 1 / span 2;
+.stack-options .label {
+  display: inline-block;
+  width: unset;
+  margin-right: 1em;
+  margin-top: 0;
 }
 
 .disabled .label {

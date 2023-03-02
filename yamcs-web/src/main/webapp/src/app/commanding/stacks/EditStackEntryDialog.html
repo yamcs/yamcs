@@ -31,36 +31,38 @@
       </app-command-form>
       <form [formGroup]="stackOptionsForm" class="ya-form" [ngClass]="this.stackOptionsForm.disabled && 'disabled'">
         <p>&nbsp;</p>
-        <h3>Command stack options</h3>
-        <p *ngIf="format !== 'json'" style="color: #CC0000">These options are only available for JSON fomatted
-          command stacks</p>
+        <h3>Stack advancement</h3>
+        <p *ngIf="format !== 'json'" style="color: #CC0000">These options are only available for JSON formatted command stacks</p>
         <div class="label">
-          Advance stack on acknowledgement
-          <app-help dialogTitle="Advance On Acknowledgement">
-            Acknowledgement to wait for to advance to the next command in the stack.
-            If a delay is also specified, the next command is exectuded after this time from the recieval of the
-            acknowledgement.<br>
-            (Unset uses the global value for the stack or the default: Queued)
-          </app-help>
+          Advance when
+          <app-advance-ack-help [verifiers]="verifierAcknowledgments"
+                                [extra]="extraAcknowledgments">
+          </app-advance-ack-help>
           <br>
-          <select formControlName="advanceOnAckDropDown">
-            <option value="">Inherit</option>
-            <option *ngFor="let ack of predefinedAcksArray" [value]="ack.name">{{ ack.verboseName }}</option>
-            <option value="custom">Custom</option>
-          </select>
-          <input type="text" formControlName="advanceOnAckCustom"
-                 *ngIf="stackOptionsForm.get('advanceOnAckDropDown')?.value === 'custom'">
+          <div style="display: flex; align-items: flex-start;">
+            <app-select #ackSelect
+                        [options]="ackOptions"
+                        formControlName="advancementAckDropDown"
+                        emptyOption="Inherit">
+            </app-select>
+            <input type="text" formControlName="advancementAckCustom"
+                  *ngIf="stackOptionsForm.get('advancementAckDropDown')?.value === 'custom'"
+                  style="width: 200px; margin-left: -1px">
+          </div>
         </div>
+        <br>
         <div class="label">
-          Advance stack on delay (ms)
-          <app-help dialogTitle="Advance On Delay">
-            Delay to wait for to advance to the next command in the stack.
-            If an acknowledgements also specified, the next command is exectuded after this time from the recieval of
-            the acknowledgement.<br>
-            (Unset uses the global value for the stack or the default: 0)
+          Wait (ms)
+          <app-help dialogTitle="Wait time">
+            <p>
+              Wait time before advancing to the next command in the stack.
+            </p>
+            <p>
+              This triggers after successful acknowledgment.
+            </p>
           </app-help>
           <br>
-          <input type="number" formControlName="advanceOnDelay" placeholder="Inherit">
+          <input type="number" formControlName="advancementWait" placeholder="Inherit" step="1000" min="0">
         </div>
       </form>
     </div>

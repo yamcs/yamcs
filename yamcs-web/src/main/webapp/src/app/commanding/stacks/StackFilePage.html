@@ -110,36 +110,42 @@
     <form [formGroup]="stackOptionsForm" class="ya-form panel-content stack-options"
           [ngClass]="this.stackOptionsForm.disabled && 'disabled'"
           *ngIf="format">
-      <h2>Global stack options</h2>
-      <p *ngIf="format !== 'json'" style="color: #CC0000">These options are only available for JSON fomatted
-        command stacks</p>
+      <p *ngIf="format !== 'json'" style="color: #CC0000">
+        These options are only available for JSON formatted command stacks
+      </p>
       <div class="label">
-        Advance stack on acknowledgement
-        <app-help dialogTitle="Advance On Acknowledgement">
-          Acknowledgement to wait for to advance to the next command in the stack.
-          If a delay is also specified, the next command is exectuded after this time from the recieval of the
-          acknowledgement.<br>
-          (Default value: Queued)
-        </app-help>
+        Advance when
+        <app-advance-ack-help [extra]="extraAcknowledgments">
+        </app-advance-ack-help>
         <br>
-        <select formControlName="advanceOnAckDropDown">
-          <option *ngFor="let ack of predefinedAcksArray" [value]="ack.name">{{ ack.verboseName }}</option>
-          <option value="custom">Custom</option>
-        </select>
-        <input type="text" formControlName="advanceOnAckCustom"
-               *ngIf="stackOptionsForm.get('advanceOnAckDropDown')?.value === 'custom'">
+        <div style="display: flex; align-items: flex-start;">
+          <app-select #ackSelect
+                      [options]="ackOptions"
+                      icon="check_circle_outline"
+                      formControlName="advancementAckDropDown">
+          </app-select>
+          <input type="text" formControlName="advancementAckCustom"
+                *ngIf="stackOptionsForm.get('advancementAckDropDown')?.value === 'custom'"
+                style="width: 200px; margin-left: -1px">
+        </div>
       </div>
       <div class="label">
-        Advance stack on delay (ms)
-        <app-help dialogTitle="Advance On Delay">
-          Delay to wait for to advance to the next command in the stack.
-          If an acknowledgements also specified, the next command is exectuded after this time from the recieval of
-          the acknowledgement.<br>
-          (Default value: 0)
+        Wait (ms)
+        <app-help dialogTitle="Wait time">
+          <p>
+            Wait time before advancing to the next command in the stack.
+          </p>
+          <p>
+            This triggers after successful acknowledgment.
+          </p>
         </app-help>
         <br>
-        <input type="number" formControlName="advanceOnDelay" placeholder="0">
+        <input type="number" formControlName="advancementWait" placeholder="0"
+               step="1000" min="0" style="width: 120px">
       </div>
+      <div style="flex: 1 1 auto"></div>
+      <app-dots *ngIf="running$ | async">
+      </app-dots>
     </form>
     <mat-divider horizontal></mat-divider>
 
@@ -164,10 +170,13 @@
 
           <div class="in">
             <div cdkDragHandle class="seq">
-              <ng-container *ngIf="entry.executionNumber === 0 || entry.executionNumber">
+              <ng-container *ngIf="entry.executing">
+                [*]:
+              </ng-container>
+              <ng-container *ngIf="!entry.executing && (entry.executionNumber === 0 || entry.executionNumber)">
                 [{{ entry.executionNumber }}]:
               </ng-container>
-              <ng-container *ngIf="entry.executionNumber !== 0 && !entry.executionNumber">
+              <ng-container *ngIf="!entry.executing && entry.executionNumber !== 0 && !entry.executionNumber">
                 [ ]:
               </ng-container>
             </div>
@@ -192,11 +201,14 @@
                   </td>
                 </tr>
               </table>
-              <div *ngIf="entry.advanceOn" class="advance-on">
+              <div *ngIf="entry.advancement" class="advance-on">
                 <mat-icon>reply</mat-icon>
-                <span>
-                  Advance{{ entry.advanceOn.ack != null ? " on " + entry.advanceOn.ack: null}}
-                  {{ entry.advanceOn.delay != null ? "after " + entry.advanceOn.delay + " ms" : null}}
+                <span *ngIf="entry.advancement.acknowledgment">
+                  Advance when {{ entry.advancement.acknowledgment | acknowledgmentName }}
+                  {{ entry.advancement.wait != null ? "+ " + entry.advancement.wait + " ms" : null }}
+                </span>
+                <span *ngIf="!entry.advancement.acknowledgment && entry.advancement.wait != null">
+                  Advance after {{ entry.advancement.wait }} ms
                 </span>
               </div>
             </div>

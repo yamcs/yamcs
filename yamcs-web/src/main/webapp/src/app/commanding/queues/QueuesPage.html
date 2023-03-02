@@ -12,24 +12,24 @@
       <p>
         A queue can perform these actions:
       </p>
-      <table class="ya-data-table">
+      <table yaSimpleTable style="width: 100%">
         <tr>
-          <td width="1">
+          <th width="1">
             ACCEPT
-          </td>
+          </th>
           <td>The queue accepts and releases commands.</td>
         </tr>
         <tr>
-          <td>
+          <th>
             HOLD
-          </td>
+          </th>
           <td>The queue accepts commands but does not release them. These commands may be
             released manually, or automatically as soon as the queue action changes to ACCEPT.</td>
         </tr>
         <tr>
-          <td>
+          <th>
             REJECT
-          </td>
+          </th>
           <td>The queue does not accept commands. Matching commands will fail immediately.</td>
         </tr>
       </table>

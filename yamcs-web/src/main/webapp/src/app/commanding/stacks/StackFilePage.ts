@@ -10,12 +10,13 @@ import { MessageService } from 'src/app/core/services/MessageService';
 import { BasenamePipe } from 'src/app/shared/pipes/BasenamePipe';
 import { ExtensionPipe } from 'src/app/shared/pipes/ExtensionPipe';
 import { FilenamePipe } from 'src/app/shared/pipes/FilenamePipe';
-import { Command, CommandSubscription, StorageClient, Value } from '../../client';
+import { AcknowledgmentInfo, Command, CommandSubscription, StorageClient, Value } from '../../client';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
+import { Option } from '../../shared/forms/Select';
 import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
 import { CommandResult, EditStackEntryDialog } from './EditStackEntryDialog';
-import { AdvanceOnParams, StackEntry } from './StackEntry';
+import { AdvancementParams, StackEntry } from './StackEntry';
 import { StackFormatter } from './StackFormatter';
 
 @Component({
@@ -68,26 +69,23 @@ export class StackFilePage implements OnDestroy {
   converting = false;
 
   // Configuration of command ack to accept to execute the following
-  private advanceOn: AdvanceOnParams = { ack: "Acknowledge_Queued", delay: 0 };
+  private advancement: AdvancementParams = { acknowledgment: "Acknowledge_Queued", wait: 0 };
 
   // Default: OK/DISABLED -> continue, NOK/CANCELLED/after timeout -> pause,  everything else -> ignore
   private acceptingAckValues = ["OK", "DISABLED"];
   private stoppingAckValues = ["NOK", "CANCELLED"];
-  private stoppingAckTimeout = -1;
 
-  private runningTimeout: NodeJS.Timeout;
-  private nextCommandDelayTimeout: NodeJS.Timeout;
+  private nextCommandDelayTimeout: number;
   private nextCommandScheduled = false;
 
   stackOptionsForm: UntypedFormGroup;
-
-  predefinedAcks = {
-    Acknowledge_Queued: "Queued",
-    Acknowledge_Released: "Released",
-    Acknowledge_Sent: "Sent",
-    CommandComplete: "Completed"
-  };
-  predefinedAcksArray = Object.entries(this.predefinedAcks).map(ack => { return { name: ack[0], verboseName: ack[1] }; });
+  extraAcknowledgments: AcknowledgmentInfo[];
+  ackOptions: Option[] = [
+    { id: 'Acknowledge_Queued', label: 'Queued' },
+    { id: 'Acknowledge_Released', label: 'Released' },
+    { id: 'Acknowledge_Sent', label: 'Sent' },
+    { id: 'CommandComplete', label: 'Completed' },
+  ];
 
   constructor(
     private dialog: MatDialog,
@@ -108,10 +106,27 @@ export class StackFilePage implements OnDestroy {
     this.folderPerInstance = config.displayFolderPerInstance;
     this.storageClient = yamcs.createStorageClient();
 
+    this.extraAcknowledgments = yamcs.getProcessor()?.acknowledgments ?? [];
+    let first = true;
+    for (const ack of this.extraAcknowledgments) {
+      this.ackOptions.push({
+        id: ack.name,
+        label: ack.name.replace('Acknowledge_', ''),
+        group: first,
+      });
+      first = false;
+    }
+
+    this.ackOptions.push({
+      id: 'custom',
+      label: 'Custom',
+      group: true,
+    })
+
     this.stackOptionsForm = formBuilder.group({
-      advanceOnAckDropDown: ['', []],
-      advanceOnAckCustom: ['', []],
-      advanceOnDelay: ['', []],
+      advancementAckDropDown: ['', []],
+      advancementAckCustom: ['', []],
+      advancementWait: ['', []],
     });
 
     this.initStackFile();
@@ -163,10 +178,14 @@ export class StackFilePage implements OnDestroy {
       return;
     }
 
-    this.advanceOn = {
-      ack: result.advanceOnAckDropDown !== "custom" ? result.advanceOnAckDropDown : result.advanceOnAckCustom,
-      delay: result.advanceOnDelay != null ? result.advanceOnDelay : 0
+    this.advancement = {
+      acknowledgment: result.advancementAckDropDown !== "custom" ? result.advancementAckDropDown : result.advancementAckCustom,
+      wait: result.advancementWait ?? 0,
     };
+
+    if (result.advancementAckDropDown !== "custom") {
+      this.stackOptionsForm.patchValue({ 'advancementAckCustom': undefined }, { emitEvent: false });
+    }
 
     this.dirty$.next(true);
   };
@@ -239,14 +258,15 @@ export class StackFilePage implements OnDestroy {
       let entries;
       switch (this.format) {
         case "json":
-          [entries, this.advanceOn] = this.parseJSON(text);
+          [entries, this.advancement] = this.parseJSON(text);
 
-          let advanceOnAckDropDownDefault = Object.keys(this.predefinedAcks).includes(this.advanceOn.ack!) ? this.advanceOn.ack : "custom";
+          const match = this.ackOptions.find(el => el.id === this.advancement.acknowledgment);
+          const ackDefault = match ? match.id : 'custom';
 
           this.stackOptionsForm.setValue({
-            advanceOnAckDropDown: advanceOnAckDropDownDefault,
-            advanceOnAckCustom: advanceOnAckDropDownDefault === "custom" ? this.advanceOn.ack : '',
-            advanceOnDelay: this.advanceOn.delay
+            advancementAckDropDown: ackDefault,
+            advancementAckCustom: ackDefault === "custom" ? this.advancement.acknowledgment : '',
+            advancementWait: this.advancement.wait,
           });
           break;
         case "xml":
@@ -316,12 +336,12 @@ export class StackFilePage implements OnDestroy {
       }
     }
 
-    let advanceOn: AdvanceOnParams = {
-      ack: stack.advanceOn?.ack || "Acknowledge_Queued",
-      delay: stack.advanceOn?.delay != null ? stack.advanceOn?.delay : 0
+    let advancement: AdvancementParams = {
+      acknowledgment: stack.advancement?.acknowledgment || "Acknowledge_Queued",
+      wait: stack.advancement?.wait != null ? stack.advancement?.wait : 0
     };
 
-    return [entries, advanceOn] as const;
+    return [entries, advancement] as const;
   }
 
   private parseJSONentry(command: any) {
@@ -330,7 +350,7 @@ export class StackFilePage implements OnDestroy {
       ...(command.comment && { comment: command.comment }),
       ...(command.extraOptions && { extra: this.parseJSONextraOptions(command.extraOptions) }),
       ...(command.arguments && { args: this.parseJSONcommandArguments(command.arguments) }),
-      ...(command.advanceOn && { advanceOn: command.advanceOn })
+      ...(command.advancement && { advancement: command.advancement })
     };
     return entry;
   }
@@ -395,6 +415,7 @@ export class StackFilePage implements OnDestroy {
       name: this.getStringAttribute(node, 'qualifiedName'),
       args,
       extra,
+      executing: false,
     };
 
     if (node.hasAttribute('comment')) {
@@ -466,16 +487,8 @@ export class StackFilePage implements OnDestroy {
       args: entry.args,
       extra: entry.extra,
     }).then(response => {
-      if (this.stoppingAckTimeout > 0) {
-        this.runningTimeout = setTimeout(() => {
-          if (this.selectedEntry$.value?.id === response.id) {
-            this.messageService.showWarning("Command timeout reached, stopping current run");
-            this.stopRun();
-          }
-        }, this.stoppingAckTimeout);
-      }
-
       entry.executionNumber = executionNumber;
+      entry.executing = true;
       entry.id = response.id;
 
       // It's possible the WebSocket received data before we
@@ -490,6 +503,7 @@ export class StackFilePage implements OnDestroy {
       this.entries$.next([...this.entries$.value]);
     }).catch(err => {
       entry.executionNumber = executionNumber;
+      entry.executing = false;
       entry.err = err.message || err;
     });
   }
@@ -516,15 +530,16 @@ export class StackFilePage implements OnDestroy {
 
     let selectedEntry = this.selectedEntry$.value;
 
-    let acceptingAck = selectedEntry?.advanceOn?.ack || this.advanceOn.ack!;
-    let delay = selectedEntry?.advanceOn?.delay != null ? selectedEntry?.advanceOn?.delay : this.advanceOn.delay!;
+    let acceptingAck = selectedEntry?.advancement?.acknowledgment || this.advancement.acknowledgment!;
+    let delay = selectedEntry?.advancement?.wait ?? this.advancement.wait!;
 
     if (selectedEntry?.id === record.id) {
       let ack = record.acksByName[acceptingAck];
       if (ack && ack.status) {
         if (this.acceptingAckValues.includes(ack.status)) {
           this.nextCommandScheduled = this.runningStack;
-          this.nextCommandDelayTimeout = setTimeout(() => {
+          this.nextCommandDelayTimeout = window.setTimeout(() => {
+            selectedEntry!.executing = false;
             // Continue execution
             if (this.running$.value && selectedEntry) {
               this.advanceSelection(selectedEntry);
@@ -536,6 +551,7 @@ export class StackFilePage implements OnDestroy {
             }
           }, Math.max(delay, 0));
         } else if (this.stoppingAckValues.includes(ack.status)) {
+          selectedEntry.executing = false;
           // Stop exection
           this.stopRun();
         } // Ignore others
@@ -546,8 +562,10 @@ export class StackFilePage implements OnDestroy {
   stopRun() {
     this.running$.next(false);
     this.runningStack = false;
-    clearTimeout(this.nextCommandDelayTimeout);
-    clearTimeout(this.runningTimeout);
+    for (const entry of this.entries$.value) {
+      entry.executing = false;
+    }
+    window.clearTimeout(this.nextCommandDelayTimeout);
     this.nextCommandScheduled = false;
   }
 
@@ -612,7 +630,7 @@ export class StackFilePage implements OnDestroy {
           comment: result.comment,
           extra: result.extra,
           command: result.command,
-          ...(result.stackOptions.advanceOn && { advanceOn: result.stackOptions.advanceOn })
+          ...(result.stackOptions.advancement && { advancement: result.stackOptions.advancement })
         };
 
         const relto = this.selectedEntry$.value;
@@ -660,7 +678,7 @@ export class StackFilePage implements OnDestroy {
           comment: result.comment,
           extra: result.extra,
           command: result.command,
-          ...(result.stackOptions.advanceOn && { advanceOn: result.stackOptions.advanceOn })
+          ...(result.stackOptions.advancement && { advancement: result.stackOptions.advancement })
         };
 
         const entries = this.entries$.value;
@@ -702,6 +720,7 @@ export class StackFilePage implements OnDestroy {
         args: { ...entry.args },
         comment: entry.comment,
         command: entry.command,
+        executing: false,
       };
       if (entry.extra) {
         copiedEntry.extra = { ...entry.extra };
@@ -725,10 +744,10 @@ export class StackFilePage implements OnDestroy {
     let file;
     switch (this.format) {
       case "json":
-        file = new StackFormatter(this.entries$.value, { advanceOn: this.advanceOn }).toJSON();
+        file = new StackFormatter(this.entries$.value, { advancement: this.advancement }).toJSON();
         break;
       case "xml":
-        file = new StackFormatter(this.entries$.value, { advanceOn: this.advanceOn }).toXML();
+        file = new StackFormatter(this.entries$.value, { advancement: this.advancement }).toXML();
         break;
     }
     const blob = new Blob([file], { type: 'application/' + this.format });
@@ -738,7 +757,7 @@ export class StackFilePage implements OnDestroy {
   }
 
   setExportURLs() {
-    const formatter = new StackFormatter(this.entries$.value, { advanceOn: this.advanceOn });
+    const formatter = new StackFormatter(this.entries$.value, { advancement: this.advancement });
 
     const JSONblob = new Blob([formatter.toJSON()], { type: 'application/json' });
     this.JSONblobURL = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(JSONblob));
@@ -763,7 +782,7 @@ export class StackFilePage implements OnDestroy {
 
     if (confirm(`Are you sure you want to convert '${this.objectName}' to JSON?\nConverting to JSON deletes the old XML version.`)) {
       this.converting = true;
-      StackFilePage.convertToJSON(this.messageService, this.basenamePipe, this.storageClient, this.bucket, this.objectName, this.entries$.value, { advanceOn: this.advanceOn })
+      StackFilePage.convertToJSON(this.messageService, this.basenamePipe, this.storageClient, this.bucket, this.objectName, this.entries$.value, { advancement: this.advancement })
         .then((jsonObjectName) => {
           this.router.navigate([jsonObjectName + ".json"], { queryParamsHandling: 'preserve', relativeTo: this.route.parent })
             .then(() => this.initStackFile());
@@ -778,7 +797,7 @@ export class StackFilePage implements OnDestroy {
     bucket: string,
     objectName: string,
     entries: StackEntry[],
-    stackOptions: { advanceOn?: AdvanceOnParams; }
+    stackOptions: { advancement?: AdvancementParams; }
   ) {
     const formatter = new StackFormatter(entries, stackOptions);
     const blob = new Blob([formatter.toJSON()], { type: 'application/json' });

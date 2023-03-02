@@ -1,11 +1,11 @@
-import { Value } from 'src/lib';
-import { AdvanceOnParams, StackEntry } from './StackEntry';
+import { Value } from '../../client';
+import { AdvancementParams, StackEntry } from './StackEntry';
 
 export class StackFormatter {
   private entries: StackEntry[];
-  private stackOptions: { advanceOn?: AdvanceOnParams; };
+  private stackOptions: { advancement?: AdvancementParams; };
 
-  constructor(entries: StackEntry[] = [], stackOptions: { advanceOn?: AdvanceOnParams; }) {
+  constructor(entries: StackEntry[] = [], stackOptions: { advancement?: AdvancementParams; }) {
     this.entries = entries;
     this.stackOptions = stackOptions;
   }
@@ -76,16 +76,16 @@ export class StackFormatter {
 
   toJSON() {
     return JSON.stringify({
-      ...(this.stackOptions.advanceOn && { advanceOn: this.stackOptions.advanceOn }),
       commands: this.entries.map(entry => {
         return {
           name: entry.name,
           ...(entry.comment && { comment: entry.comment }),
-          ...(entry.extra && { extraOptions: this.getExtraOptionsJSON(entry.extra) }),
+          ...(entry.extra?.length && { extraOptions: this.getExtraOptionsJSON(entry.extra) }),
           ...(entry.args && { arguments: this.getCommandArgumentsJSON(entry.args) }),
-          ...(entry.advanceOn && { advanceOn: entry.advanceOn })
+          ...(entry.advancement && { advancement: entry.advancement })
         };
-      })
+      }),
+      ...(this.stackOptions.advancement && { advancement: this.stackOptions.advancement }),
     }, null, 2);
   }
 

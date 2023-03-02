@@ -6,17 +6,18 @@ export interface StackEntry {
   args: { [key: string]: any; };
   comment?: string;
   extra?: { [key: string]: Value; };
-  advanceOn?: AdvanceOnParams;
+  advancement?: AdvancementParams;
 
   command?: Command;
 
   executionNumber?: number;
+  executing: boolean;
   id?: string;
   record?: CommandHistoryRecord;
   err?: string;
 }
 
-export interface AdvanceOnParams {
-  ack?: string;
-  delay?: number;
+export interface AdvancementParams {
+  acknowledgment?: string;
+  wait?: number;
 }

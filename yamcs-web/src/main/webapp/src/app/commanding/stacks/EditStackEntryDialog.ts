@@ -2,12 +2,13 @@ import { ChangeDetectorRef, Component, Inject, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs';
-import { utils } from '../../../lib';
-import { Command, CommandOptionType, Value, Verifier } from '../../client';
+import { AcknowledgmentInfo, Command, CommandOptionType, Value } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandSelector } from '../../shared/forms/CommandSelector';
+import { Option } from '../../shared/forms/Select';
+import * as utils from '../../shared/utils';
 import { CommandForm, TemplateProvider } from '../command-sender/CommandForm';
-import { AdvanceOnParams, StackEntry } from './StackEntry';
+import { AdvancementParams, StackEntry } from './StackEntry';
 
 export interface CommandResult {
   command: Command;
@@ -91,13 +92,15 @@ export class EditStackEntryDialog {
   commandForm: CommandForm;
 
   stackOptionsForm: UntypedFormGroup;
-  predefinedAcks: { [key: string]: string; } = {
-    Acknowledge_Queued: "Queued",
-    Acknowledge_Released: "Released",
-    Acknowledge_Sent: "Sent",
-    CommandComplete: "Completed"
-  };
-  predefinedAcksArray: { name: string, verboseName: string; }[];
+  verifierAcknowledgments: AcknowledgmentInfo[];
+  extraAcknowledgments: AcknowledgmentInfo[];
+  ackOptions: Option[] = [
+    { id: '', label: 'Inherit' },
+    { id: 'Acknowledge_Queued', label: 'Queued', group: true },
+    { id: 'Acknowledge_Released', label: 'Released' },
+    { id: 'Acknowledge_Sent', label: 'Sent' },
+    { id: 'CommandComplete', label: 'Completed' },
+  ];
 
   // Captured in separate subject to avoid referencing
   // the form nested in *ngIf from outside the *ngIf.
@@ -117,22 +120,63 @@ export class EditStackEntryDialog {
     private changeDetection: ChangeDetectorRef,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
-    let advanceOnAckDropDownDefault;
-    let advanceOnAckCustomDefault;
-    let advanceOnDelayDefault;
+    let advancementAckDropDownDefault;
+    let advancementAckCustomDefault;
+    let advancementWaitDefault;
     if (data?.entry) {
-      this.templateProvider = new StackEntryTemplateProvider(data.entry);
-      this.selectedCommand$.next(data.entry.command);
+      const entry = data.entry as StackEntry;
+      this.templateProvider = new StackEntryTemplateProvider(entry);
+      this.selectedCommand$.next(entry.command ?? null);
 
-      delete this.predefinedAcks.CommandComplete;
-      data.entry.command.baseCommand?.verifier.forEach((verifier: Verifier) => {
-        this.predefinedAcks["Verifier_" + verifier.stage] = "Verifier: " + verifier.stage;
-      });;
-      this.predefinedAcks["CommandComplete"] = "Completed";
+      this.verifierAcknowledgments = [];
+      if (entry.command) {
+        // Order command definitions top-down
+        const commandHierarchy: Command[] = [];
+        let c: Command | undefined = entry.command;
+        while (c) {
+          commandHierarchy.unshift(c);
+          c = c.baseCommand;
+        }
+        for (const command of commandHierarchy) {
+          for (const verifier of command.verifier ?? []) {
+            this.verifierAcknowledgments.push({ name: `Verifier_${verifier.stage}` });
+          }
+        }
+        let first = true;
+        for (const verifier of this.verifierAcknowledgments) {
+          this.ackOptions.push({
+            id: verifier.name,
+            label: verifier.name,
+            group: first,
+          });
+          first = false;
+        }
+      }
 
-      advanceOnAckDropDownDefault = data?.entry.advanceOn?.ack && (Object.keys(this.predefinedAcks).includes(data?.entry.advanceOn?.ack) ? data?.entry.advanceOn?.ack : "custom");
-      advanceOnAckCustomDefault = advanceOnAckDropDownDefault == "custom" ? data?.entry.advanceOn?.ack : '';
-      advanceOnDelayDefault = data?.entry.advanceOn?.delay;
+      this.extraAcknowledgments = yamcs.getProcessor()?.acknowledgments ?? [];
+      let first = true;
+      for (const ack of this.extraAcknowledgments) {
+        this.ackOptions.push({
+          id: ack.name,
+          label: ack.name.replace('Acknowledge_', ''),
+          group: first,
+        });
+        first = false;
+      }
+
+      this.ackOptions.push({
+        id: 'custom',
+        label: 'Custom',
+        group: true,
+      });
+
+      if (entry.advancement?.acknowledgment) {
+        const match = this.ackOptions.find(el => el.id === entry.advancement!.acknowledgment)
+        advancementAckDropDownDefault = match ? match.id : 'custom';
+      }
+
+      advancementAckCustomDefault = advancementAckDropDownDefault === "custom" ? entry.advancement?.acknowledgment : '';
+      advancementWaitDefault = entry.advancement?.wait;
     }
     if (data?.okLabel) {
       this.okLabel = data?.okLabel;
@@ -141,12 +185,10 @@ export class EditStackEntryDialog {
       this.format = data.format;
     }
 
-    this.predefinedAcksArray = Object.entries(this.predefinedAcks).map(ack => { return { name: ack[0], verboseName: ack[1] }; });
-
     this.stackOptionsForm = formBuilder.group({
-      advanceOnAckDropDown: [advanceOnAckDropDownDefault || '', []],
-      advanceOnAckCustom: [advanceOnAckCustomDefault, []],
-      advanceOnDelay: [advanceOnDelayDefault, []],
+      advancementAckDropDown: [advancementAckDropDownDefault || '', []],
+      advancementAckCustom: [advancementAckCustomDefault, []],
+      advancementWait: [advancementWaitDefault, []],
     });
 
     if (this.format !== "json") {
@@ -162,20 +204,28 @@ export class EditStackEntryDialog {
       const command = this.selectCommandForm.value['command'];
       this.selectedCommand$.next(command || null);
     });
+
+    this.stackOptionsForm.valueChanges.subscribe((result) => {
+      if (result.advancementAckDropDown !== 'custom') {
+        this.stackOptionsForm.patchValue({ 'advancementAckCustom': undefined }, {
+          emitEvent: false,
+        });
+      }
+    });
   }
 
   handleOK() {
-    const stackOptions: { advanceOn?: AdvanceOnParams; } = {};
-    const advanceOnAckDropDown = this.stackOptionsForm.get("advanceOnAckDropDown")?.value;
-    const advanceOnAckCustom = this.stackOptionsForm.get("advanceOnAckCustom")?.value?.trim();
-    const advanceOnDelay = this.stackOptionsForm.get("advanceOnDelay")?.value;
+    const stackOptions: { advancement?: AdvancementParams; } = {};
+    const advancementAckDropDown = this.stackOptionsForm.get("advancementAckDropDown")?.value;
+    const advancementAckCustom = this.stackOptionsForm.get("advancementAckCustom")?.value?.trim();
+    const advancementWait = this.stackOptionsForm.get("advancementWait")?.value;
 
-    if ((advanceOnAckDropDown && advanceOnAckDropDown !== "custom") ||
-      (advanceOnAckDropDown === "custom" && advanceOnAckCustom) || advanceOnDelay != null) {
-      stackOptions.advanceOn = {
-        ...(advanceOnAckDropDown && advanceOnAckDropDown !== "custom" && { ack: advanceOnAckDropDown }),
-        ...(advanceOnAckDropDown === "custom" && advanceOnAckCustom && { ack: advanceOnAckCustom }),
-        ...(advanceOnDelay != null && { delay: advanceOnDelay })
+    if ((advancementAckDropDown && advancementAckDropDown !== "custom") ||
+      (advancementAckDropDown === "custom" && advancementAckCustom) || advancementWait != null) {
+      stackOptions.advancement = {
+        ...(advancementAckDropDown && advancementAckDropDown !== "custom" && { acknowledgment: advancementAckDropDown }),
+        ...(advancementAckDropDown === "custom" && advancementAckCustom && { acknowledgment: advancementAckCustom }),
+        ...(advancementWait != null && { wait: advancementWait })
       };
     }
 
