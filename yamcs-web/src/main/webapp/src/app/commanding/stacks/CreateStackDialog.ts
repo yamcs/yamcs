@@ -31,12 +31,12 @@ export class CreateStackDialog {
     this.storageClient = yamcs.createStorageClient();
     this.filenameForm = formBuilder.group({
       name: ['', [Validators.required]],
-      format: ['json', [Validators.required]]
+      format: ['ycs', [Validators.required]]
     });
   }
 
   save() {
-    const format: "json" | "xml" = this.filenameForm.get('format')!.value;
+    const format: "ycs" | "xml" = this.filenameForm.get('format')!.value;
     const name: string = this.filenameForm.get('name')!.value.trim() + '.' + format;
 
     let path = this.data.path;
@@ -47,7 +47,8 @@ export class CreateStackDialog {
     const objectName = this.data.prefix + fullPath;
 
     const file = format === 'xml' ? new StackFormatter([], {}).toXML() : new StackFormatter([], {}).toJSON();
-    const b = new Blob([file], { type: 'application/' + format });
+    const type = (format === 'xml' ? 'application/xml' : 'application/json');
+    const b = new Blob([file], { type });
     this.storageClient.uploadObject('_global', this.bucket, objectName, b).then(() => {
       this.dialogRef.close(fullPath);
     });

@@ -29,42 +29,43 @@
                         [command]="command"
                         [templateProvider]="templateProvider">
       </app-command-form>
-      <form [formGroup]="stackOptionsForm" class="ya-form" [ngClass]="this.stackOptionsForm.disabled && 'disabled'">
-        <p>&nbsp;</p>
-        <h3>Stack advancement</h3>
-        <p *ngIf="format !== 'json'" style="color: #CC0000">These options are only available for JSON formatted command stacks</p>
-        <div class="label">
-          Advance when
-          <app-advance-ack-help [verifiers]="verifierAcknowledgments"
-                                [extra]="extraAcknowledgments">
-          </app-advance-ack-help>
-          <br>
-          <div style="display: flex; align-items: flex-start;">
-            <app-select #ackSelect
-                        [options]="ackOptions"
-                        formControlName="advancementAckDropDown"
-                        emptyOption="Inherit">
-            </app-select>
-            <input type="text" formControlName="advancementAckCustom"
-                  *ngIf="stackOptionsForm.get('advancementAckDropDown')?.value === 'custom'"
-                  style="width: 200px; margin-left: -1px">
+      <ng-container *ngIf="format === 'ycs'">
+        <form [formGroup]="stackOptionsForm" class="ya-form" [ngClass]="this.stackOptionsForm.disabled && 'disabled'">
+          <p>&nbsp;</p>
+          <h3>Stack advancement</h3>
+          <div class="label">
+            Advance when
+            <app-advance-ack-help [verifiers]="verifierAcknowledgments"
+                                  [extra]="extraAcknowledgments">
+            </app-advance-ack-help>
+            <br>
+            <div style="display: flex; align-items: flex-start;">
+              <app-select #ackSelect
+                          [options]="ackOptions"
+                          formControlName="advancementAckDropDown"
+                          emptyOption="Inherit">
+              </app-select>
+              <input type="text" formControlName="advancementAckCustom"
+                    *ngIf="stackOptionsForm.get('advancementAckDropDown')?.value === 'custom'"
+                    style="width: 200px; margin-left: -1px">
+            </div>
           </div>
-        </div>
-        <br>
-        <div class="label">
-          Wait (ms)
-          <app-help dialogTitle="Wait time">
-            <p>
-              Wait time before advancing to the next command in the stack.
-            </p>
-            <p>
-              This triggers after successful acknowledgment.
-            </p>
-          </app-help>
           <br>
-          <input type="number" formControlName="advancementWait" placeholder="Inherit" step="1000" min="0">
-        </div>
-      </form>
+          <div class="label">
+            Wait (ms)
+            <app-help dialogTitle="Wait time">
+              <p>
+                Wait time before advancing to the next command in the stack.
+              </p>
+              <p>
+                This triggers after successful acknowledgment.
+              </p>
+            </app-help>
+            <br>
+            <input type="number" formControlName="advancementWait" placeholder="Inherit" step="1000" min="0">
+          </div>
+        </form>
+      </ng-container>
     </div>
   </div>
   <div class="footer mat-typography">

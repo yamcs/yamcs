@@ -61,28 +61,30 @@
       <mat-icon>playlist_play</mat-icon>
     </button>
     <mat-divider vertical style="height: 100%"></mat-divider>
-    <button *ngIf="format === 'xml'" mat-button color="primary" matTooltip="Convert to the newer format"
-            [disabled]="!format || converting"
-            (click)="convertToJSON()">
-      <mat-icon>sync_alt</mat-icon>
-      CONVERT TO JSON
-    </button>
-    <mat-divider *ngIf="format === 'xml'" vertical style="height: 100%"></mat-divider>
     <button mat-button color="primary" matTooltip="Export command stack" [matMenuTriggerFor]="exportMenu"
             [disabled]="!format"
             (click)="setExportURLs()">
       <mat-icon>open_in_new</mat-icon>
       EXPORT
     </button>
+    <ng-container *ngIf="format === 'xml'">
+    <mat-divider vertical style="height: 100%"></mat-divider>
+      <button mat-button color="warn" matTooltip="Convert to the newer format"
+              [disabled]="!format || converting"
+              (click)="convertToJSON()">
+        <mat-icon>auto_awesome</mat-icon>
+        CONVERT TO *.YCS FILE
+      </button>
+    </ng-container>
     <mat-menu #exportMenu="matMenu">
-      <a mat-menu-item [href]="JSONblobURL" [download]="(filename | basename) + '.json'">
+      <a mat-menu-item [href]="JSONblobURL" [download]="(filename | basename) + '.ycs'">
         <mat-icon style="margin:0; vertical-align: middle;">data_object</mat-icon>
-        <span style="vertical-align: middle;"> JSON</span>
+        <span style="vertical-align: middle;"> YCS FILE</span>
       </a>
       <a mat-menu-item [href]="XMLblobURL" [download]="(filename | basename) + '.xml'"
          title="Certain features are not implemented for XML, the format will be phased out gradually">
         <mat-icon style="margin:0; vertical-align: middle;">code</mat-icon>
-        <span style="vertical-align: middle;"> XML <span
+        <span style="vertical-align: middle;"> XML FILE <span
                 style="color: #CC0000; cursor: help;">(deprecated)</span></span>
       </a>
     </mat-menu>
@@ -107,47 +109,45 @@
   </app-detail-pane>
 
   <div class="panel-wrapper">
-    <form [formGroup]="stackOptionsForm" class="ya-form panel-content stack-options"
-          [ngClass]="this.stackOptionsForm.disabled && 'disabled'"
-          *ngIf="format">
-      <p *ngIf="format !== 'json'" style="color: #CC0000">
-        These options are only available for JSON formatted command stacks
-      </p>
-      <div class="label">
-        Advance when
-        <app-advance-ack-help [extra]="extraAcknowledgments">
-        </app-advance-ack-help>
-        <br>
-        <div style="display: flex; align-items: flex-start;">
-          <app-select #ackSelect
-                      [options]="ackOptions"
-                      icon="check_circle_outline"
-                      formControlName="advancementAckDropDown">
-          </app-select>
-          <input type="text" formControlName="advancementAckCustom"
-                *ngIf="stackOptionsForm.get('advancementAckDropDown')?.value === 'custom'"
-                style="width: 200px; margin-left: -1px">
+    <ng-container *ngIf="format === 'ycs'">
+      <form [formGroup]="stackOptionsForm" class="ya-form panel-content stack-options"
+            [ngClass]="this.stackOptionsForm.disabled && 'disabled'">
+        <div class="label">
+          Advance when
+          <app-advance-ack-help [extra]="extraAcknowledgments">
+          </app-advance-ack-help>
+          <br>
+          <div style="display: flex; align-items: flex-start;">
+            <app-select #ackSelect
+                        [options]="ackOptions"
+                        icon="check_circle_outline"
+                        formControlName="advancementAckDropDown">
+            </app-select>
+            <input type="text" formControlName="advancementAckCustom"
+                  *ngIf="stackOptionsForm.get('advancementAckDropDown')?.value === 'custom'"
+                  style="width: 200px; margin-left: -1px">
+          </div>
         </div>
-      </div>
-      <div class="label">
-        Wait (ms)
-        <app-help dialogTitle="Wait time">
-          <p>
-            Wait time before advancing to the next command in the stack.
-          </p>
-          <p>
-            This triggers after successful acknowledgment.
-          </p>
-        </app-help>
-        <br>
-        <input type="number" formControlName="advancementWait" placeholder="0"
-               step="1000" min="0" style="width: 120px">
-      </div>
-      <div style="flex: 1 1 auto"></div>
-      <app-dots *ngIf="running$ | async">
-      </app-dots>
-    </form>
-    <mat-divider horizontal></mat-divider>
+        <div class="label">
+          Wait (ms)
+          <app-help dialogTitle="Wait time">
+            <p>
+              Wait time before advancing to the next command in the stack.
+            </p>
+            <p>
+              This triggers after successful acknowledgment.
+            </p>
+          </app-help>
+          <br>
+          <input type="number" formControlName="advancementWait" placeholder="0"
+                step="1000" min="0" style="width: 120px">
+        </div>
+        <div style="flex: 1 1 auto"></div>
+        <app-dots *ngIf="running$ | async">
+        </app-dots>
+      </form>
+      <mat-divider horizontal></mat-divider>
+    </ng-container>
 
     <app-empty-message *ngIf="loaded && !format">
       <mat-icon style="vertical-align: bottom; margin-right: 10px;">link_off</mat-icon>

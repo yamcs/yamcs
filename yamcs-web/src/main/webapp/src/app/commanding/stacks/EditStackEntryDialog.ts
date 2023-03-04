@@ -92,8 +92,8 @@ export class EditStackEntryDialog {
   commandForm: CommandForm;
 
   stackOptionsForm: UntypedFormGroup;
-  verifierAcknowledgments: AcknowledgmentInfo[];
-  extraAcknowledgments: AcknowledgmentInfo[];
+  verifierAcknowledgments: AcknowledgmentInfo[] = [];
+  extraAcknowledgments: AcknowledgmentInfo[] = [];
   ackOptions: Option[] = [
     { id: '', label: 'Inherit' },
     { id: 'Acknowledge_Queued', label: 'Queued', group: true },
@@ -111,7 +111,7 @@ export class EditStackEntryDialog {
   selectedCommand$ = new BehaviorSubject<Command | null>(null);
   templateProvider: StackEntryTemplateProvider | null;
 
-  format: "json" | "xml";
+  format: "ycs" | "xml";
 
   constructor(
     private dialogRef: MatDialogRef<EditStackEntryDialog>,
@@ -191,7 +191,7 @@ export class EditStackEntryDialog {
       advancementWait: [advancementWaitDefault, []],
     });
 
-    if (this.format !== "json") {
+    if (this.format !== "ycs") {
       this.stackOptionsForm.disable();
     }
 

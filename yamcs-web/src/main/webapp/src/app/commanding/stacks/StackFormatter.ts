@@ -76,11 +76,12 @@ export class StackFormatter {
 
   toJSON() {
     return JSON.stringify({
+      "$schema": "https://yamcs.org/schema/command-stack.schema.json",
       commands: this.entries.map(entry => {
         return {
           name: entry.name,
           ...(entry.comment && { comment: entry.comment }),
-          ...(entry.extra?.length && { extraOptions: this.getExtraOptionsJSON(entry.extra) }),
+          ...(entry.extra && { extraOptions: this.getExtraOptionsJSON(entry.extra) }),
           ...(entry.args && { arguments: this.getCommandArgumentsJSON(entry.args) }),
           ...(entry.advancement && { advancement: entry.advancement })
         };

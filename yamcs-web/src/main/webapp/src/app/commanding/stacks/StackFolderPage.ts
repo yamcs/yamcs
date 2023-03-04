@@ -213,7 +213,7 @@ export class StackFolderPage implements OnDestroy {
     if (this.converting) {
       return;
     }
-    if (event.shiftKey || confirm(`Are you sure you want to convert '${name}' to JSON?\nConverting to JSON deletes the old XML version.\n(Press shift if you do not want to show this dialog)`)) {
+    if (event.shiftKey || confirm(`Are you sure you want to convert '${name}' to the new format?\nThis wil delete the original XML file.\n(Press shift if you do not want to show this dialog)`)) {
       this.converting = true;
       const response = this.storageClient.getObject('_global', this.bucket, name).then(async response => {
         if (response.ok) {

@@ -18,7 +18,7 @@
       <input #uploader
              type="file"
              hidden
-             accept=".xml,.XML,.json,.JSON"
+             accept=".xml,.XML,.ycs,.YCS"
              multiple
              (change)="importStack()">
     </button>
@@ -99,7 +99,7 @@
               <a [routerLink]="'/commanding/stacks/files/' + item.nameWithoutInstance"
                  [queryParams]="{c: yamcs.context}"
                  (click)="$event.stopPropagation()"
-                 [title]="item.name | filename">{{ item.name | filename | basename }}
+                 [title]="item.name | filename">{{ item.name | filename }}
               </a>
             </ng-container>
           </td>
@@ -140,7 +140,7 @@
               <mat-divider *ngIf="(item.name | filename | extension | lowercase) === 'xml'"></mat-divider>
               <button *ngIf="(item.name | filename | extension | lowercase) === 'xml'" mat-menu-item
                       (click)="convertToJSON($event, item.nameWithoutInstance)">
-                Convert to JSON
+                Convert to new format
               </button>
             </app-more>
           </td>
@@ -153,12 +153,12 @@
               <span *ngSwitchCase="'xml'"
                     style="color: #CC0000; cursor:help"
                     title="Certain features are not implemented for XML, the format will be phased out gradually">
-                Warning: XML formatted command stacks are deprecated, consider <a
+                Warning: XML-formatted command stacks are deprecated, <a
                    style="color: inherit; cursor: pointer"
-                   (click)="convertToJSON($event, item.nameWithoutInstance)" title="Convert to JSON">converting to
-                  JSON</a>
+                   (click)="convertToJSON($event, item.nameWithoutInstance)" title="Convert to YCS">convert to
+                  the new format</a>
               </span>
-              <span *ngSwitchCase="'json'"></span>
+              <span *ngSwitchCase="'ycs'"></span>
               <span *ngSwitchDefault>Unsupported format '{{ item.name | filename | extension }}'</span>
             </span>
 

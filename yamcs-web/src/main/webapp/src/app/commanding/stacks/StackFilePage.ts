@@ -61,7 +61,7 @@ export class StackFilePage implements OnDestroy {
   private folderPerInstance: boolean;
 
   loaded = false;
-  format: "json" | "xml";
+  format: "ycs" | "xml";
 
   JSONblobURL: SafeResourceUrl;
   XMLblobURL: SafeResourceUrl;
@@ -137,7 +137,7 @@ export class StackFilePage implements OnDestroy {
 
     this.loadFile(initialObject);
 
-    if (this.format !== "json") {
+    if (this.format !== "ycs") {
       this.stackOptionsForm.disable();
     } else {
       this.stackOptionsForm.enable();
@@ -237,7 +237,7 @@ export class StackFilePage implements OnDestroy {
     this.title.setTitle(this.filename);
 
     const format = this.extensionPipe.transform(this.filenamePipe.transform(objectName))?.toLowerCase();
-    if (format === "json" || format === "xml") {
+    if (format === "ycs" || format === "xml") {
       this.format = format;
     } else {
       this.loaded = true;
@@ -246,8 +246,10 @@ export class StackFilePage implements OnDestroy {
 
     const response = await this.storageClient.getObject('_global', this.bucket, objectName).catch(err => {
       if (err.statusCode === 404 && format === "xml") {
-        this.router.navigate([objectName.replace(/\.xml$/i, ".json")], { queryParamsHandling: 'preserve', relativeTo: this.route.parent })
-          .then(() => this.initStackFile());
+        this.router.navigate([objectName.replace(/\.xml$/i, ".ycs")], {
+          queryParamsHandling: 'preserve',
+          relativeTo: this.route.parent,
+        }).then(() => this.initStackFile());
       } else {
         this.messageService.showError("Failed to load stack file '" + objectName + "'");
       }
@@ -257,7 +259,7 @@ export class StackFilePage implements OnDestroy {
       const text = await response.text();
       let entries;
       switch (this.format) {
-        case "json":
+        case "ycs":
           [entries, this.advancement] = this.parseJSON(text);
 
           const match = this.ackOptions.find(el => el.id === this.advancement.acknowledgment);
@@ -273,7 +275,7 @@ export class StackFilePage implements OnDestroy {
           const xmlParser = new DOMParser();
           const doc = xmlParser.parseFromString(text, 'text/xml') as XMLDocument;
           entries = StackFilePage.parseXML(doc.documentElement, this.configService.getCommandOptions());
-          this.messageService.showWarning("XML formatted command stacks are deprecated, consider converting to JSON");
+          this.messageService.showWarning("XML-formatted command stacks are deprecated, convert to *.YCS");
           break;
       }
 
@@ -295,11 +297,13 @@ export class StackFilePage implements OnDestroy {
       }
 
       // Convert arrays/aggregates from JSON to JavaScript
-      for (const entry of entries) {
-        if (entry.command) {
-          for (const argumentName in entry.args) {
-            if (this.isComplex(argumentName, entry.command)) {
-              entry.args[argumentName] = JSON.parse(entry.args[argumentName]);
+      if (this.format === 'xml') {
+        for (const entry of entries) {
+          if (entry.command) {
+            for (const argumentName in entry.args) {
+              if (this.isComplex(argumentName, entry.command)) {
+                entry.args[argumentName] = JSON.parse(entry.args[argumentName]);
+              }
             }
           }
         }
@@ -743,14 +747,15 @@ export class StackFilePage implements OnDestroy {
   saveStack() {
     let file;
     switch (this.format) {
-      case "json":
+      case "ycs":
         file = new StackFormatter(this.entries$.value, { advancement: this.advancement }).toJSON();
         break;
       case "xml":
         file = new StackFormatter(this.entries$.value, { advancement: this.advancement }).toXML();
         break;
     }
-    const blob = new Blob([file], { type: 'application/' + this.format });
+    const type = (this.format === 'xml' ? 'application/xml' : 'application/json');
+    const blob = new Blob([file], { type });
     this.storageClient.uploadObject('_global', this.bucket, this.objectName, blob).then(() => {
       this.dirty$.next(false);
     });
@@ -780,11 +785,11 @@ export class StackFilePage implements OnDestroy {
       return;
     }
 
-    if (confirm(`Are you sure you want to convert '${this.objectName}' to JSON?\nConverting to JSON deletes the old XML version.`)) {
+    if (confirm(`Are you sure you want to convert '${this.objectName}' to the new format?\nThis will delete the original XML file.`)) {
       this.converting = true;
       StackFilePage.convertToJSON(this.messageService, this.basenamePipe, this.storageClient, this.bucket, this.objectName, this.entries$.value, { advancement: this.advancement })
         .then((jsonObjectName) => {
-          this.router.navigate([jsonObjectName + ".json"], { queryParamsHandling: 'preserve', relativeTo: this.route.parent })
+          this.router.navigate([jsonObjectName + ".ycs"], { queryParamsHandling: 'preserve', relativeTo: this.route.parent })
             .then(() => this.initStackFile());
         }).finally(() => this.converting = false);
     }
@@ -804,11 +809,11 @@ export class StackFilePage implements OnDestroy {
     const jsonObjectName = basenamePipe.transform(objectName);
 
     if (!jsonObjectName) {
-      messageService.showError("Failed to convert command stack stack");
+      messageService.showError("Failed to convert command stack");
       console.error("Failed to convert command stack due to objectName");
       return;
     }
-    await storageClient.uploadObject('_global', bucket, jsonObjectName + ".json", blob);
+    await storageClient.uploadObject('_global', bucket, jsonObjectName + ".ycs", blob);
     await storageClient.deleteObject('_global', bucket, objectName);
     return jsonObjectName;
   }

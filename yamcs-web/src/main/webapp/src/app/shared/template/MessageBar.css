@@ -6,7 +6,7 @@
 }
 
 .message-bar.warning {
-  background-color: #ff6600 !important;
+  background-color: darkorange !important;
 }
 
 .mat-toolbar-row {
@@ -27,5 +27,5 @@
 }
 
 .message-bar.warning .actions {
-  background-color: #ff6600 !important;
+  background-color: darkorange !important;
 }
