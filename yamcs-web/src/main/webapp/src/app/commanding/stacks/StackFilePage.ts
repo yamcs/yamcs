@@ -408,6 +408,11 @@ export class StackFilePage implements OnDestroy {
       if (child.nodeName === 'commandArgument') {
         const argumentName = this.getStringAttribute(child, 'argumentName');
         args[argumentName] = this.getStringAttribute(child, 'argumentValue');
+        if (args[argumentName] === 'true') {
+          args[argumentName] = true;
+        } else if (args[argumentName] === 'false') {
+          args[argumentName] = false;
+        }
       } else if (child.nodeName === 'extraOptions') {
         for (let j = 0; j < child.childNodes.length; j++) {
           const extraChild = child.childNodes[j] as Element;
@@ -763,7 +768,7 @@ export class StackFilePage implements OnDestroy {
     }
     const type = (this.format === 'xml' ? 'application/xml' : 'application/json');
     const blob = new Blob([file], { type });
-    this.storageClient.uploadObject('_global', this.bucket, this.objectName, blob).then(() => {
+    return this.storageClient.uploadObject('_global', this.bucket, this.objectName, blob).then(() => {
       this.dirty$.next(false);
     });
   }
@@ -787,13 +792,18 @@ export class StackFilePage implements OnDestroy {
     }
   }
 
-  convertToJSON() {
+  async convertToJSON() {
     if (this.converting) {
       return;
     }
 
     if (confirm(`Are you sure you want to convert '${this.objectName}' to the new format?\nThis will delete the original XML file.`)) {
       this.converting = true;
+
+      if (this.dirty$.value) {
+        await this.saveStack();
+      }
+
       StackFilePage.convertToJSON(this.messageService, this.basenamePipe, this.storageClient, this.bucket, this.objectName, this.entries$.value, { advancement: this.advancement })
         .then((jsonObjectName) => {
           this.router.navigate([jsonObjectName + ".ycs"], { queryParamsHandling: 'preserve', relativeTo: this.route.parent })
