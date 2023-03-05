@@ -192,7 +192,7 @@
                 [{{ item.key }}: {{ item.value | value }}]
               </span>
               <table class="args">
-                <tr *ngFor="let arg of entry.args | keyvalue">
+                <tr *ngFor="let arg of entry.args | keyvalue: insertionOrder">
                   <td class="key" width="1">
                     {{ arg.key }}
                   </td>
