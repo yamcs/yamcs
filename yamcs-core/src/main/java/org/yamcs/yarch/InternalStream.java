@@ -1,24 +1,51 @@
 package org.yamcs.yarch;
 
 /**
- * The simplest stream implementation, just passes data to the subscribers
+ * Stream created by the "create stream statement"
+ * <p>
+ * It has an execution context associated and is responsible for closing it when the stream closes.
  * 
- * @author nm
- *
  */
-public class InternalStream extends Stream {
+public class InternalStream extends Stream implements StreamSubscriber {
+    final ExecutionContext ctx;
+    Stream inner;
 
-    public InternalStream(YarchDatabaseInstance dict, String name, TupleDefinition definition) {
-        super(dict, name, definition);
+    public InternalStream(ExecutionContext ctx, String name, TupleDefinition definition) {
+        super(ctx.getDb(), name, definition);
+        this.ctx = ctx;
+    }
+
+    public void setInner(Stream inner) {
+        this.inner = inner;
+        inner.addSubscriber(this);
     }
 
     @Override
     protected void doClose() {
-        //nothing to do
+        if (inner != null) {
+            inner.close();
+        }
+        ctx.close();
     }
 
     @Override
     public void doStart() {
-        //nothing to do
+        if (inner != null) {
+            inner.start();
+        }
+    }
+
+    @Override
+    public void onTuple(Stream stream, Tuple tuple) {
+        emitTuple(tuple);
+    }
+
+
+
+    @Override
+    public void streamClosed(Stream stream) {
+        if (stream == inner) {
+            close();
+        }
     }
 }

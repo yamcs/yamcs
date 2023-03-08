@@ -23,10 +23,13 @@ public class SelectTableStatement implements StreamSqlStatement {
     }
 
     @Override
-    public void execute(ExecutionContext context, ResultListener resultListener, long limit) throws StreamSqlException {
+    public void execute(YarchDatabaseInstance ydb, ResultListener resultListener, long limit)
+            throws StreamSqlException {
         if (resultListener == null) {
             throw new GenericStreamSqlException("Cannot select without a result listener");
         }
+        ExecutionContext context = new ExecutionContext(ydb);
+
         Stream stream = createStream(context);
         resultListener.start(stream.getDefinition());
 
@@ -42,18 +45,30 @@ public class SelectTableStatement implements StreamSqlStatement {
             @Override
             public void streamClosed(Stream stream) {
                 resultListener.complete();
+                context.close();
             }
         });
         stream.start();
     }
 
     @Override
-    public StreamSqlResult execute(ExecutionContext context) throws StreamSqlException {
+    public StreamSqlResult execute(YarchDatabaseInstance ydb) throws StreamSqlException {
+        ExecutionContext context = new ExecutionContext(ydb);
         Stream stream = createStream(context);
 
         QueueStreamSqlResult result = new QueueStreamSqlResult(context, stream);
         stream.addSubscriber(result);
         stream.start();
+        stream.addSubscriber(new StreamSubscriber() {
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+            }
+
+            @Override
+            public void streamClosed(Stream stream) {
+                context.close();
+            }
+        });
         return result;
     }
 

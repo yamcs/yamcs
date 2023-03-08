@@ -104,14 +104,14 @@ public class StreamInitializer {
         log.debug("Loading SQL File {}", o);
         String filename = (String) o;
         File f = new File(filename);
+        var ydb = YarchDatabase.getInstance(yamcsInstance);
 
-        try (ExecutionContext context = new ExecutionContext(YarchDatabase.getInstance(yamcsInstance));
-                FileReader reader = new FileReader(f)) {
+        try (FileReader reader = new FileReader(f)) {
             StreamSqlParser parser = new StreamSqlParser(reader);
             StreamSqlStatement stmt;
             while ((stmt = parser.StreamSqlStatement()) != null) {
                 StreamSqlStatement stmt1 = stmt;
-                stmt1.execute(context, new ResultListener() {
+                stmt1.execute(ydb, new ResultListener() {
                     @Override
                     public void next(Tuple tuple) {
                         // swallow result

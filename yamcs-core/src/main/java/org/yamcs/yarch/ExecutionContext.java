@@ -44,6 +44,9 @@ public class ExecutionContext implements AutoCloseable {
     }
 
     public synchronized Snapshot getSnapshot(YRDB rdb) {
+        if (closed) {
+            throw new IllegalStateException("ExecutionContext is closed");
+        }
         if (snapshots == null) {
             snapshots = new HashMap<>();
         }
@@ -58,9 +61,14 @@ public class ExecutionContext implements AutoCloseable {
                 me.getValue().close();
             }
         }
+        snapshots = null;
     }
 
     public synchronized void addSnapshot(YRDB rdb, Snapshot snapshot) {
+        if (closed) {
+            throw new IllegalStateException("ExecutionContext is closed");
+        }
+
         if (snapshots == null) {
             snapshots = new HashMap<>();
         }

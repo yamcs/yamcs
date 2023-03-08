@@ -1,9 +1,9 @@
 package org.yamcs.yarch.streamsql;
 
-import org.yamcs.yarch.ExecutionContext;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 /**
- * Tag interface for all StreamSQL statements. The execute method locks the dictionary for the period of execution.
+ * Tag interface for all StreamSQL statements.
  */
 public interface StreamSqlStatement {
     /**
@@ -18,7 +18,7 @@ public interface StreamSqlStatement {
      * @param limit
      * @throws StreamSqlException
      */
-    void execute(ExecutionContext context, ResultListener resultListener, long limit) throws StreamSqlException;
+    void execute(YarchDatabaseInstance ydb, ResultListener resultListener, long limit) throws StreamSqlException;
 
     /**
      * Execute query and send the results to the result listener.
@@ -27,8 +27,8 @@ public interface StreamSqlStatement {
      * @param resultListener
      * @throws StreamSqlException
      */
-    default void execute(ExecutionContext context, ResultListener resultListener) throws StreamSqlException {
-        execute(context, resultListener, Long.MAX_VALUE);
+    default void execute(YarchDatabaseInstance ydb, ResultListener resultListener) throws StreamSqlException {
+        execute(ydb, resultListener, Long.MAX_VALUE);
     }
 
     /**
@@ -38,5 +38,5 @@ public interface StreamSqlStatement {
      * @return
      * @throws StreamSqlException
      */
-    StreamSqlResult execute(ExecutionContext context) throws StreamSqlException;
+    StreamSqlResult execute(YarchDatabaseInstance ydb) throws StreamSqlException;
 }

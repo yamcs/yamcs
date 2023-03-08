@@ -11,7 +11,6 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
 public class CreateStreamStatement extends SimpleStreamSqlStatement {
-
     String streamName;
     StreamExpression expression;
     TupleDefinition tupleDefinition;
@@ -28,20 +27,22 @@ public class CreateStreamStatement extends SimpleStreamSqlStatement {
 
     @Override
     protected void execute(ExecutionContext context, Consumer<Tuple> consumer) throws StreamSqlException {
-        YarchDatabaseInstance db = context.getDb();
+        ExecutionContext context1 = new ExecutionContext(context.getDb());
+
+        YarchDatabaseInstance db = context1.getDb();
         synchronized (db) {
             if (db.streamOrTableExists(streamName)) {
                 throw new ResourceAlreadyExistsException(streamName);
             }
+            InternalStream stream = new InternalStream(context1, streamName, tupleDefinition);
 
-            Stream stream;
             if (expression != null) {
-                expression.bind(context);
-                stream = expression.execute(context);
-                stream.setName(streamName);
-            } else {
-                stream = new InternalStream(db, streamName, tupleDefinition);
+                expression.bind(context1);
+                Stream stream1 = expression.execute(context1);
+                stream.setInner(stream1);
             }
+
+
             try {
                 db.addStream(stream);
             } catch (YarchException e) {

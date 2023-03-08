@@ -431,28 +431,15 @@ public class YarchDatabaseInstance {
     }
 
     public void execute(StreamSqlStatement stmt, ResultListener resultListener, long limit) throws StreamSqlException {
-        try (ExecutionContext context = new ExecutionContext(this)) {
-            stmt.execute(context, resultListener, limit);
-        }
+        stmt.execute(this, resultListener, limit);
     }
 
     public void execute(StreamSqlStatement stmt, ResultListener resultListener) throws StreamSqlException {
-        try (ExecutionContext context = new ExecutionContext(this)) {
-            stmt.execute(context, resultListener, Long.MAX_VALUE);
-        }
-    }
-
-    public void executeUnchecked(StreamSqlStatement stmt, ResultListener resultListener) {
-        try (ExecutionContext context = new ExecutionContext(this)) {
-            stmt.execute(context, resultListener, Long.MAX_VALUE);
-        } catch (StreamSqlException e) {
-            throw new YarchException(e);
-        }
+        stmt.execute(this, resultListener, Long.MAX_VALUE);
     }
 
     public StreamSqlResult execute(StreamSqlStatement stmt) throws StreamSqlException {
-        ExecutionContext context = new ExecutionContext(this);
-        return stmt.execute(context);
+        return stmt.execute(this);
     }
 
     /**
