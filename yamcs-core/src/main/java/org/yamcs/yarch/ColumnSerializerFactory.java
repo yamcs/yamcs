@@ -86,7 +86,6 @@ public class ColumnSerializerFactory {
         }
     }
 
-
     /**
      * Returns the V2 serializers with the enumerations serialzied as strings (so they don't need a decoding table on
      * the other end)
@@ -95,17 +94,24 @@ public class ColumnSerializerFactory {
      * @return
      */
     public static ColumnSerializer<?> getColumnSerializerForReplication(ColumnDefinition cd) {
-        DataType type = cd.getType();
+        return getColumnSerializerForReplication(cd.getType(), cd.getName());
+    }
+
+    public static ColumnSerializer<?> getColumnSerializerForReplication(DataType type, String colName) {
         if (type.val == _type.ENUM) {
             return STRING_CS_V2;
         } else if (type.val == _type.PROTOBUF) {
-            return getProtobufSerializer(cd);
+            return getProtobufSerializer((ProtobufDataType) type, colName);
         } else if (type.val == _type.ARRAY) {
-            return getBasicColumnSerializerV3(cd.getType());
+            DataType elementType = ((ArrayDataType) type).getElementType();
+            return (ColumnSerializer<?>) new ColumnSerializerV3.ArrayColumnSerializer(
+                    getColumnSerializerForReplication(elementType, colName));
+        } else if (type.val == _type.UUID) {
+            return getBasicColumnSerializerV3(type);
         } else {
             // V2 is fine for replication as the serialized values are not used for sorting
             // should upgrade to V3 at some point but it will break compatibility with old replicated data
-            return getBasicColumnSerializerV2(cd.getType());
+            return getBasicColumnSerializerV2(type);
         }
     }
 
@@ -190,7 +196,13 @@ public class ColumnSerializerFactory {
 
     @SuppressWarnings("unchecked")
     static public <T extends MessageLite> ColumnSerializer<T> getProtobufSerializer(ColumnDefinition cd) {
-        String className = ((ProtobufDataType) cd.getType()).getClassName();
+        return getProtobufSerializer((ProtobufDataType) cd.getType(), cd.getName());
+    }
+
+    @SuppressWarnings("unchecked")
+    static public <T extends MessageLite> ColumnSerializer<T> getProtobufSerializer(ProtobufDataType dtype,
+            String colName) {
+        String className = dtype.getClassName();
 
         synchronized (protoSerialziers) {
             ProtobufColumnSerializer pcs = protoSerialziers.get(className);
@@ -206,11 +218,11 @@ public class ColumnSerializerFactory {
                 return (ColumnSerializer<T>) pcs;
             } catch (ClassNotFoundException e) {
                 throw new IllegalArgumentException(
-                        "Cannot find class '" + className + "' required to deserialize column '" + cd.getName() + "'",
+                        "Cannot find class '" + className + "' required to deserialize column '" + colName + "'",
                         e);
             } catch (NoSuchMethodException e) {
                 throw new IllegalArgumentException("Class '" + className + "' required to deserialize column '"
-                        + cd.getName() + "' does not have a method newBuilder", e);
+                        + colName + "' does not have a method newBuilder", e);
             }
         }
     }

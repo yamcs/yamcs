@@ -404,9 +404,10 @@ public class TableApi extends AbstractTableApi<Context> {
                     public void start(TupleDefinition tdef) {
                         for (int i = 0; i < tdef.size(); i++) {
                             ColumnDefinition cdef = tdef.getColumn(i);
-                            rsBuilder.addColumns(ColumnInfo.newBuilder()
+                            ColumnInfo.Builder cinfo = ColumnInfo.newBuilder()
                                     .setName(cdef.getName())
-                                    .setType(cdef.getType().toString()));
+                                    .setType(cdef.getType().name());
+                            rsBuilder.addColumns(cinfo);
                         }
                         this.tdef = tdef.copy();
                     }
@@ -463,7 +464,7 @@ public class TableApi extends AbstractTableApi<Context> {
                             ColumnDefinition cdef = tdef.getColumn(i);
                             rsBuilder.addColumns(ColumnInfo.newBuilder()
                                     .setName(cdef.getName())
-                                    .setType(cdef.getType().toString()));
+                                    .setType(cdef.getType().name()));
                         }
                         this.tdef = tdef.copy();
                     }
@@ -552,7 +553,7 @@ public class TableApi extends AbstractTableApi<Context> {
                     completeTuple.addColumn(cd);
                     colId = completeTuple.getColumnIndex(cd.getName());
                     rowb.addColumns(Row.ColumnInfo.newBuilder().setId(colId).setName(cd.getName())
-                            .setType(cd.getType().toString()).build());
+                            .setType(cd.getType().name()).build());
                 }
                 ColumnSerializer cs = ColumnSerializerFactory.getColumnSerializerForReplication(cd);
                 rowb.addCells(Cell.newBuilder()
@@ -621,7 +622,7 @@ public class TableApi extends AbstractTableApi<Context> {
         columns.addAll(def.getValueDefinition());
         String columnSpec = columns.stream()
                 .map(colDef -> {
-                    String colDefString = "\"" + colDef.getName() + "\" " + colDef.getType();
+                    String colDefString = "\"" + colDef.getName() + "\" " + colDef.getType().name();
                     if (colDef.isAutoIncrement()) {
                         colDefString += " auto_increment";
                     }
@@ -680,7 +681,7 @@ public class TableApi extends AbstractTableApi<Context> {
     private static ColumnInfo toColumnInfo(ColumnDefinition cdef, TableDefinition tableDefinition) {
         ColumnInfo.Builder infob = ColumnInfo.newBuilder();
         infob.setName(cdef.getName());
-        infob.setType(cdef.getType().toString());
+        infob.setType(cdef.getType().name());
         if (tableDefinition != null && cdef.getType() == DataType.ENUM) {
             BiMap<String, Short> enumValues = tableDefinition.getEnumValues(cdef.getName());
             if (enumValues != null) {
