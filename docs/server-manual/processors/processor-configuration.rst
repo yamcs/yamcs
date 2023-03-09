@@ -101,7 +101,7 @@ The processors can make use optionally of a parameter cache that stores the last
 
 Note that regardless of this cache there is always a last value cache which holds only the last known value for each parameter. The last value cache cannot be disabled. 
 
-The parameter cache can cause hug to be consumed. The current implementation :javadoc:`org.yamcs.parameter.ArrayParameterCache` tries to minimize the memory requirement by using arrays of primitive values instead of java objects but even then, the memory consumed can be significant. Updating the cache is also quite CPU intensive.
+The parameter cache can cause huge amounts of memory (RAM) to be consumed. The current implementation :javadoc:`org.yamcs.parameter.ArrayParameterCache` tries to minimize the memory requirement by using arrays of primitive values instead of java objects but even then, the memory consumed can be significant. Updating the cache is also quite CPU intensive.
 
 enabled (boolean)
     If true, the parameter cache will be enabled.
