@@ -8,7 +8,6 @@ import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,11 +54,8 @@ import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
-import org.yamcs.xtce.Argument;
-import org.yamcs.xtce.EnumeratedArgumentType;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Significance.Levels;
-import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Stream;
@@ -163,34 +159,6 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                     preparedCommand.addVerifierConfig(k, v);
                 });
             }
-
-            // make the source - should perhaps come from the client
-            StringBuilder sb = new StringBuilder();
-            sb.append(cmd.getQualifiedName());
-            sb.append("(");
-            boolean first = true;
-            for (Entry<String, Object> assignment : assignments.entrySet()) {
-                Argument a = preparedCommand.getMetaCommand().getArgument(assignment.getKey());
-                if (!first) {
-                    sb.append(", ");
-                } else {
-                    first = false;
-                }
-                sb.append(assignment.getKey()).append(": ");
-
-                boolean needDelimiter = a != null && (a.getArgumentType() instanceof StringArgumentType
-                        || a.getArgumentType() instanceof EnumeratedArgumentType);
-                if (needDelimiter) {
-                    sb.append("\"");
-                }
-                sb.append(assignment.getValue());
-                if (needDelimiter) {
-                    sb.append("\"");
-                }
-            }
-            sb.append(")");
-            preparedCommand.setSource(sb.toString());
-
         } catch (NoPermissionException e) {
             throw new ForbiddenException(e);
         } catch (ErrorInCommand e) {
@@ -228,7 +196,6 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                 .setOrigin(preparedCommand.getCommandId().getOrigin())
                 .setSequenceNumber(preparedCommand.getCommandId().getSequenceNumber())
                 .setCommandName(preparedCommand.getMetaCommand().getQualifiedName())
-                .setSource(preparedCommand.getSource())
                 .setUsername(preparedCommand.getUsername())
                 .addAllAssignments(preparedCommand.getAssignments());
 

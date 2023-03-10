@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledFuture;
 
@@ -222,16 +221,6 @@ public class CommandQueue {
     public ActiveCommand getcommand(String id) {
         for (ActiveCommand c : commands) {
             if (c.preparedCommand.getId().equals(id)) {
-                return c;
-            }
-        }
-        return null;
-    }
-
-    @Deprecated
-    public ActiveCommand getcommand(UUID uuid) {
-        for (ActiveCommand c : commands) {
-            if (c.preparedCommand.getUUID().equals(uuid)) {
                 return c;
             }
         }

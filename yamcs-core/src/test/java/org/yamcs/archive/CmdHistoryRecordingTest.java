@@ -49,7 +49,6 @@ public class CmdHistoryRecordingTest extends YarchTestCase {
             CommandId id = CommandId.newBuilder().setOrigin("testorigin").setCommandName("test" + i)
                     .setGenerationTime(i).setSequenceNumber(0).build();
             PreparedCommand pc = new PreparedCommand(id);
-            pc.setSource("test1(blabla)");
             pc.setBinary(new byte[20]);
             pc.setUsername("nico");
             Tuple t = pc.toTuple();

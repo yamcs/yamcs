@@ -18,6 +18,7 @@ import org.yamcs.mdb.MetaCommandProcessor.CommandBuildResult;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.security.User;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.MetaCommand;
@@ -105,7 +106,7 @@ public class CommandingManager extends AbstractService {
      * @return the queue that the command was sent to
      */
     public CommandQueue sendCommand(User user, PreparedCommand pc) {
-        log.debug("sendCommand commandSource={}", pc.getSource());
+        log.debug("sendCommand command={}", StringConverter.toString(pc.getCommandId()));
         ActiveCommand activeCommand = new ActiveCommand(processor, pc);
         cmdHistoryManager.addCommand(pc);
         cmdHistoryManager.subscribeCommand(pc.getCommandId(), activeCommand);
