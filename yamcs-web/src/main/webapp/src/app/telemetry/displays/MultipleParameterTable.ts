@@ -19,7 +19,6 @@ export class MultipleParameterTable implements OnInit, OnChanges, OnDestroy {
   @Input()
   model: ParameterTable = {
     scroll: false,
-    columns: [],
     parameters: [],
   };
 

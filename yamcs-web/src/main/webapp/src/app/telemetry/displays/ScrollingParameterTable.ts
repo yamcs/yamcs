@@ -19,7 +19,6 @@ export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {
   @Input()
   model: ParameterTable = {
     scroll: true,
-    columns: [],
     parameters: [],
   };
 
