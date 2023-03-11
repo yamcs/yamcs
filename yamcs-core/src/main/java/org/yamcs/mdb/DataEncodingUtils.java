@@ -22,7 +22,7 @@ public class DataEncodingUtils {
 
         if (sizeInBits > 0) {// sizeInBits = -1 used for integers with string encoding
             // limit the value to the number of defined bits
-            longValue = longValue & (-1 >>> (64 - sizeInBits));
+            longValue = longValue & (-1l >>> (64 - sizeInBits));
         }
 
         if (sizeInBits > 0 && sizeInBits <= 32) {
