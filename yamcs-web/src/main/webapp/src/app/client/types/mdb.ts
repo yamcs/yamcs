@@ -261,12 +261,14 @@ export interface AlarmRange {
 
 export interface Algorithm extends NameDescription {
   scope: 'GLOBAL' | 'COMMAND_VERIFICATION' | 'CONTAINER_PROCESSING';
+  type: 'CUSTOM' | 'MATH';
   language: string;
   text: string;
   inputParameter: InputParameter[];
   outputParameter: OutputParameter[];
   onParameterUpdate: Parameter[];
   onPeriodicRate: number[];
+  mathElements: any[];
 }
 
 export interface AlgorithmStatus {

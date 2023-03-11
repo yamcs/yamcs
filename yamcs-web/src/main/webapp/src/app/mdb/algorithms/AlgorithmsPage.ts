@@ -30,6 +30,7 @@ export class AlgorithmsPage implements AfterViewInit {
 
   columns: ColumnInfo[] = [
     { id: 'name', label: 'Name', alwaysVisible: true },
+    { id: 'type', label: 'Type', visible: true },
     { id: 'language', label: 'Language', visible: true },
     { id: 'scope', label: 'Scope', visible: true },
     { id: 'shortDescription', label: 'Description' },
