@@ -13,7 +13,7 @@ public interface StreamSqlStatement {
      * output however
      * is suppressed when the limit is set to 0.
      *
-     * @param context
+     * @param ydb
      * @param resultListener
      * @param limit
      * @throws StreamSqlException
@@ -23,7 +23,7 @@ public interface StreamSqlStatement {
     /**
      * Execute query and send the results to the result listener.
      *
-     * @param context
+     * @param ydb
      * @param resultListener
      * @throws StreamSqlException
      */
@@ -34,7 +34,7 @@ public interface StreamSqlStatement {
     /**
      * Execute query and return a result. The result can be closed at any time.
      *
-     * @param context
+     * @param ydb
      * @return
      * @throws StreamSqlException
      */
