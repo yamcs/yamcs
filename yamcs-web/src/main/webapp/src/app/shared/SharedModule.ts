@@ -80,6 +80,7 @@ import { DeltaWithPipe } from './pipes/DeltaWith';
 import { DurationPipe } from './pipes/DurationPipe';
 import { EffectiveSignificancePipe } from './pipes/EffectiveSignificancePipe';
 import { EntryForOffsetPipe } from './pipes/EntryForOffsetPipe';
+import { ExtensionPipe } from './pipes/ExtensionPipe';
 import { FilenamePipe } from './pipes/FilenamePipe';
 import { FormatBytesPipe } from './pipes/FormatBytesPipe';
 import { HexDumpPipe } from './pipes/HexDumpPipe';
@@ -259,6 +260,7 @@ const pipes = [
   DeltaWithPipe,
   DurationPipe,
   EffectiveSignificancePipe,
+  ExtensionPipe,
   FilenamePipe,
   FormatBytesPipe,
   EntryForOffsetPipe,

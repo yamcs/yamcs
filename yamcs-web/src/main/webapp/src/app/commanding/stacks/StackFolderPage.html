@@ -18,7 +18,7 @@
       <input #uploader
              type="file"
              hidden
-             accept=".xml"
+             accept=".xml,.XML,.ycs,.YCS"
              multiple
              (change)="importStack()">
     </button>
@@ -98,7 +98,8 @@
               <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px">description</mat-icon>
               <a [routerLink]="'/commanding/stacks/files/' + item.nameWithoutInstance"
                  [queryParams]="{c: yamcs.context}"
-                 (click)="$event.stopPropagation()">{{ item.name | filename | basename }}
+                 (click)="$event.stopPropagation()"
+                 [title]="item.name | filename">{{ item.name | filename }}
               </a>
             </ng-container>
           </td>
@@ -136,7 +137,31 @@
                       (click)="deleteFile(item)">
                 Delete
               </button>
+              <mat-divider *ngIf="(item.name | filename | extension | lowercase) === 'xml'"></mat-divider>
+              <button *ngIf="(item.name | filename | extension | lowercase) === 'xml'" mat-menu-item
+                      (click)="convertToJSON($event, item.nameWithoutInstance)">
+                Convert to new format
+              </button>
             </app-more>
+          </td>
+        </ng-container>
+
+        <ng-container cdkColumnDef="formatWarning">
+          <th mat-header-cell *cdkHeaderCellDef></th>
+          <td mat-cell *cdkCellDef="let item" style="text-align: right;">
+            <span [ngSwitch]="(item.name | filename | extension | lowercase)" *ngIf="!item.folder">
+              <span *ngSwitchCase="'xml'"
+                    style="color: #CC0000; cursor:help"
+                    title="Certain features are not implemented for XML, the format will be phased out gradually">
+                Warning: XML-formatted command stacks are deprecated, <a
+                   style="color: inherit; cursor: pointer"
+                   (click)="convertToJSON($event, item.nameWithoutInstance)" title="Convert to YCS">convert to
+                  the new format</a>
+              </span>
+              <span *ngSwitchCase="'ycs'"></span>
+              <span *ngSwitchDefault>Unsupported format '{{ item.name | filename | extension }}'</span>
+            </span>
+
           </td>
         </ng-container>
 
@@ -149,10 +174,10 @@
 
       <ng-template #empty>
         <ng-container *ngIf="breadcrumb$ | async as breadcrumb">
-          <app-empty-message *ngIf="breadcrumb.length">
+          <app-empty-message *ngIf="loaded && breadcrumb.length">
             Empty directory.
           </app-empty-message>
-          <app-empty-message headerTitle="Command Stacks" *ngIf="!breadcrumb.length">
+          <app-empty-message headerTitle="Command Stacks" *ngIf="loaded && !breadcrumb.length">
             <p>
               Command stacks are used to interactively execute a prepared set of commands.
               To start, either:

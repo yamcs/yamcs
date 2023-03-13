@@ -9,57 +9,85 @@
     &nbsp;&nbsp;&nbsp;
     <button mat-button color="primary" matTooltip="Save stack"
             (click)="saveStack()"
-            [disabled]="!(dirty$ | async)">
+            [disabled]="!format || !(dirty$ | async)">
       <mat-icon>save</mat-icon>
       SAVE
     </button>
     <mat-divider vertical style="height: 100%"></mat-divider>
     <button mat-icon-button color="primary" matTooltip="Add a command below"
-            [disabled]="running$ | async"
+            [disabled]="!format || (running$ | async)"
             (click)="addCommand()">
       <mat-icon>add_circle_outline</mat-icon>
     </button>
     <button mat-icon-button color="primary" matTooltip="Edit the selected command"
-            [disabled]="(running$ | async) || !(selectedEntry$ | async)"
+            [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
             (click)="editSelectedCommand()">
       <mat-icon>edit</mat-icon>
     </button>
     <button mat-icon-button color="primary" matTooltip="Cut the selected command"
-            [disabled]="(running$ | async) || !(selectedEntry$ | async)"
+            [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
             (click)="cutSelectedCommand()">
       <mat-icon>content_cut</mat-icon>
     </button>
     <button mat-icon-button color="primary" matTooltip="Copy the selected command"
-            [disabled]="(running$ | async) || !(selectedEntry$ | async)"
+            [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
             (click)="copySelectedCommand()">
       <mat-icon>content_copy</mat-icon>
     </button>
     <button mat-icon-button color="primary" matTooltip="Paste command from the clipboard"
-            [disabled]="(running$ | async) || !(clipboardEntry$ | async)"
+            [disabled]="!format || (running$ | async) || !(clipboardEntry$ | async)"
             (click)="pasteCommand()">
       <mat-icon>content_paste</mat-icon>
     </button>
     <mat-divider vertical style="height: 100%"></mat-divider>
     <button mat-icon-button color="primary" matTooltip="Run the selected command"
-            [disabled]="(running$ | async) || !(selectedEntry$ | async)"
+            [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
             (click)="runSelection()">
       <mat-icon>play_arrow</mat-icon>
     </button>
     <button mat-icon-button color="primary" matTooltip="Stop current execution"
-            [disabled]="!(running$ | async)"
+            [disabled]="!format || !(running$ | async)"
             (click)="stopRun()">
       <mat-icon>stop</mat-icon>
     </button>
     <button mat-icon-button color="primary" matTooltip="Clear all outputs"
-            [disabled]="(running$ | async) || !(hasOutputs$ | async)"
+            [disabled]="!format || (running$ | async) || !(hasOutputs$ | async)"
             (click)="clearOutputs()">
       <mat-icon>refresh</mat-icon>
     </button>
     <button mat-icon-button color="primary" matTooltip="Run all from selected command"
-            [disabled]="(running$ | async) || !(selectedEntry$ | async)"
+            [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
             (click)="runFromSelection()">
       <mat-icon>playlist_play</mat-icon>
     </button>
+    <mat-divider vertical style="height: 100%"></mat-divider>
+    <button mat-button color="primary" matTooltip="Export command stack" [matMenuTriggerFor]="exportMenu"
+            [disabled]="!format"
+            (click)="setExportURLs()">
+      <mat-icon>open_in_new</mat-icon>
+      EXPORT
+    </button>
+    <ng-container *ngIf="format === 'xml'">
+    <mat-divider vertical style="height: 100%"></mat-divider>
+      <button mat-button color="warn" matTooltip="Convert to the newer format"
+              [disabled]="!format || converting"
+              (click)="convertToJSON()">
+        <mat-icon>auto_awesome</mat-icon>
+        CONVERT TO *.YCS FILE
+      </button>
+    </ng-container>
+    <mat-menu #exportMenu="matMenu">
+      <a mat-menu-item [href]="JSONblobURL" [download]="(filename | basename) + '.ycs'">
+        <mat-icon style="margin:0; vertical-align: middle;">data_object</mat-icon>
+        <span style="vertical-align: middle;"> YCS FILE</span>
+      </a>
+      <a mat-menu-item [href]="XMLblobURL" [download]="(filename | basename) + '.xml'"
+         title="Certain features are not implemented for XML, the format will be phased out gradually">
+        <mat-icon style="margin:0; vertical-align: middle;">code</mat-icon>
+        <span style="vertical-align: middle;"> XML FILE <span
+                style="color: #CC0000; cursor: help;">(deprecated)</span></span>
+      </a>
+    </mat-menu>
   </app-instance-toolbar>
 
   <app-detail-pane>
@@ -81,23 +109,78 @@
   </app-detail-pane>
 
   <div class="panel-wrapper">
+    <ng-container *ngIf="format === 'ycs'">
+      <form [formGroup]="stackOptionsForm" class="ya-form panel-content stack-options"
+            [ngClass]="this.stackOptionsForm.disabled && 'disabled'">
+        <div class="label">
+          Advance when
+          <app-advance-ack-help [extra]="extraAcknowledgments">
+          </app-advance-ack-help>
+          <br>
+          <div style="display: flex; align-items: flex-start;">
+            <app-select #ackSelect
+                        [options]="ackOptions"
+                        icon="check_circle_outline"
+                        formControlName="advancementAckDropDown">
+            </app-select>
+            <input type="text" formControlName="advancementAckCustom"
+                  *ngIf="stackOptionsForm.get('advancementAckDropDown')?.value === 'custom'"
+                  style="width: 200px; margin-left: -1px">
+          </div>
+        </div>
+        <div class="label">
+          Wait (ms)
+          <app-help dialogTitle="Wait time">
+            <p>
+              Wait time before advancing to the next command in the stack.
+            </p>
+            <p>
+              This triggers after successful acknowledgment.
+            </p>
+          </app-help>
+          <br>
+          <input type="number" formControlName="advancementWait" placeholder="0"
+                step="1000" min="0" style="width: 120px">
+        </div>
+        <div style="flex: 1 1 auto"></div>
+        <app-dots *ngIf="running$ | async">
+        </app-dots>
+      </form>
+      <mat-divider horizontal></mat-divider>
+    </ng-container>
+
+    <app-empty-message *ngIf="loaded && !format">
+      <mat-icon style="vertical-align: bottom; margin-right: 10px;">link_off</mat-icon>
+      Unsupported command stack format
+    </app-empty-message>
+    <app-empty-message *ngIf="loaded && format && !entries$.value.length">
+      Empty command stack<br>
+      Click <mat-icon inline style="vertical-align: bottom;">add_circle_outline</mat-icon> to start adding
+      commands
+    </app-empty-message>
+
     <div #entryParent class="panel-content" cdkDropList (cdkDropListDropped)="handleDrop($event)">
       <div id="drag-boundary">
         <div cdkDrag cdkDragBoundary="#drag-boundary"
              class="entry"
              *ngFor="let entry of entries$ | async"
-             [class.selected]="entry === (selectedEntry$ | async)">
+             [class.selected]="entry === (selectedEntry$ | async)"
+             (click)="selectEntry(entry)"
+             (dblclick)="editCommand(entry)">
 
           <div class="in">
-            <div cdkDragHandle class="seq" (click)="selectEntry(entry)">
-              <ng-container *ngIf="entry.executionNumber === 0 || entry.executionNumber">
+            <div cdkDragHandle class="seq">
+              <ng-container *ngIf="entry.executing">
+                [*]:
+              </ng-container>
+              <ng-container *ngIf="!entry.executing && (entry.executionNumber === 0 || entry.executionNumber)">
                 [{{ entry.executionNumber }}]:
               </ng-container>
-              <ng-container *ngIf="entry.executionNumber !== 0 && !entry.executionNumber">
+              <ng-container *ngIf="!entry.executing && entry.executionNumber !== 0 && !entry.executionNumber">
                 [ ]:
               </ng-container>
             </div>
-            <div class="body" (dblclick)="editCommand(entry)">
+            <div class="body">
               {{ entry.name }}
               <mat-icon *ngIf="entry.comment"
                         [matTooltip]="entry.comment"
@@ -109,7 +192,7 @@
                 [{{ item.key }}: {{ item.value | value }}]
               </span>
               <table class="args">
-                <tr *ngFor="let arg of entry.args | keyvalue">
+                <tr *ngFor="let arg of entry.args | keyvalue: insertionOrder">
                   <td class="key" width="1">
                     {{ arg.key }}
                   </td>
@@ -118,6 +201,16 @@
                   </td>
                 </tr>
               </table>
+              <div *ngIf="entry.advancement" class="advance-on">
+                <mat-icon>reply</mat-icon>
+                <span *ngIf="entry.advancement.acknowledgment">
+                  Advance when {{ entry.advancement.acknowledgment | acknowledgmentName }}
+                  {{ entry.advancement.wait != null ? "+ " + entry.advancement.wait + " ms" : null }}
+                </span>
+                <span *ngIf="!entry.advancement.acknowledgment && entry.advancement.wait != null">
+                  Advance after {{ entry.advancement.wait }} ms
+                </span>
+              </div>
             </div>
           </div>
           <div class="out" *ngIf="entry.executionNumber === 0 || entry.executionNumber">

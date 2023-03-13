@@ -13,6 +13,9 @@ export class Help {
   @Input()
   dialogTitle: string;
 
+  @Input()
+  dialogWidth = '500px';
+
   @ViewChild('dialogContent', { static: true })
   dialogContent: ElementRef;
 
@@ -22,7 +25,7 @@ export class Help {
   showHelp() {
     const html = this.dialogContent.nativeElement.innerHTML;
     this.dialog.open(HelpDialog, {
-      width: '500px',
+      width: this.dialogWidth,
       data: {
         title: this.dialogTitle,
         content: this.sanitizer.bypassSecurityTrustHtml(html),

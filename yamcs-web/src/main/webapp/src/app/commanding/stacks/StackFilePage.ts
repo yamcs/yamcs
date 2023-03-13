@@ -1,16 +1,23 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { KeyValue } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import { FormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { Title } from '@angular/platform-browser';
-import { ActivatedRoute } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Command, CommandSubscription, StorageClient, Value } from '../../client';
+import { MessageService } from 'src/app/core/services/MessageService';
+import { BasenamePipe } from 'src/app/shared/pipes/BasenamePipe';
+import { ExtensionPipe } from 'src/app/shared/pipes/ExtensionPipe';
+import { FilenamePipe } from 'src/app/shared/pipes/FilenamePipe';
+import { AcknowledgmentInfo, Command, CommandSubscription, StorageClient, Value } from '../../client';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
+import { Option } from '../../shared/forms/Select';
 import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
 import { CommandResult, EditStackEntryDialog } from './EditStackEntryDialog';
-import { StackEntry } from './StackEntry';
+import { AdvancementParams, StackEntry } from './StackEntry';
 import { StackFormatter } from './StackFormatter';
 
 @Component({
@@ -19,7 +26,6 @@ import { StackFormatter } from './StackFormatter';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StackFilePage implements OnDestroy {
-
   private storageClient: StorageClient;
 
   objectName: string;
@@ -40,6 +46,7 @@ export class StackFilePage implements OnDestroy {
   );
 
   running$ = new BehaviorSubject<boolean>(false);
+  runningStack = false;
 
   private commandSubscription: CommandSubscription;
   selectedEntry$ = new BehaviorSubject<StackEntry | null>(null);
@@ -54,24 +61,99 @@ export class StackFilePage implements OnDestroy {
   private bucket: string;
   private folderPerInstance: boolean;
 
+  loaded = false;
+  format: "ycs" | "xml";
+
+  JSONblobURL: SafeResourceUrl;
+  XMLblobURL: SafeResourceUrl;
+
+  converting = false;
+
+  // Configuration of command ack to accept to execute the following
+  private advancement: AdvancementParams = { acknowledgment: "Acknowledge_Queued", wait: 0 };
+
+  // Default: OK/DISABLED -> continue, NOK/CANCELLED/after timeout -> pause,  everything else -> ignore
+  private acceptingAckValues = ["OK", "DISABLED"];
+  private stoppingAckValues = ["NOK", "CANCELLED"];
+
+  private nextCommandDelayTimeout: number;
+  private nextCommandScheduled = false;
+
+  stackOptionsForm: UntypedFormGroup;
+  extraAcknowledgments: AcknowledgmentInfo[];
+  ackOptions: Option[] = [
+    { id: 'Acknowledge_Queued', label: 'Queued' },
+    { id: 'Acknowledge_Released', label: 'Released' },
+    { id: 'Acknowledge_Sent', label: 'Sent' },
+    { id: 'CommandComplete', label: 'Completed' },
+  ];
+
+  // KeyValuePipe comparator that preserves original order.
+  // (default KeyValuePipe is to sort A-Z, but that's undesired for args).
+  insertionOrder = (a: KeyValue<number,string>, b: KeyValue<number,string>): number => {
+    return 0;
+  }
+
   constructor(
     private dialog: MatDialog,
     readonly yamcs: YamcsService,
     private route: ActivatedRoute,
+    private router: Router,
     private title: Title,
     private configService: ConfigService,
+    private messageService: MessageService,
+    private sanitizer: DomSanitizer,
+    private basenamePipe: BasenamePipe,
+    private filenamePipe: FilenamePipe,
+    private extensionPipe: ExtensionPipe,
+    private formBuilder: FormBuilder
   ) {
     const config = configService.getConfig();
     this.bucket = config.stackBucket;
     this.folderPerInstance = config.displayFolderPerInstance;
     this.storageClient = yamcs.createStorageClient();
 
+    this.extraAcknowledgments = yamcs.getProcessor()?.acknowledgments ?? [];
+    let first = true;
+    for (const ack of this.extraAcknowledgments) {
+      this.ackOptions.push({
+        id: ack.name,
+        label: ack.name.replace('Acknowledge_', ''),
+        group: first,
+      });
+      first = false;
+    }
+
+    this.ackOptions.push({
+      id: 'custom',
+      label: 'Custom',
+      group: true,
+    })
+
+    this.stackOptionsForm = formBuilder.group({
+      advancementAckDropDown: ['', []],
+      advancementAckCustom: ['', []],
+      advancementWait: ['', []],
+    });
+
+    this.initStackFile();
+  }
+
+  private initStackFile() {
     const initialObject = this.getObjectNameFromUrl();
+
     this.loadFile(initialObject);
 
-    this.commandSubscription = yamcs.yamcsClient.createCommandSubscription({
-      instance: yamcs.instance!,
-      processor: yamcs.processor!,
+    if (this.format !== "ycs") {
+      this.stackOptionsForm.disable();
+    } else {
+      this.stackOptionsForm.enable();
+      this.stackOptionsForm.valueChanges.subscribe(this.stackOptionsFormCallback);
+    }
+
+    this.commandSubscription = this.yamcs.yamcsClient.createCommandSubscription({
+      instance: this.yamcs.instance!,
+      processor: this.yamcs.processor!,
       ignorePastCommands: true,
     }, entry => {
       const id = entry.id;
@@ -92,8 +174,28 @@ export class StackFilePage implements OnDestroy {
           break;
         }
       }
+
+      // Continue running entries
+      this.checkAckContinueRunning(rec);
     });
   }
+
+  private stackOptionsFormCallback = (result: any) => {
+    if (!this.loaded) {
+      return;
+    }
+
+    this.advancement = {
+      acknowledgment: result.advancementAckDropDown !== "custom" ? result.advancementAckDropDown : result.advancementAckCustom,
+      wait: result.advancementWait ?? 0,
+    };
+
+    if (result.advancementAckDropDown !== "custom") {
+      this.stackOptionsForm.patchValue({ 'advancementAckCustom': undefined }, { emitEvent: false });
+    }
+
+    this.dirty$.next(true);
+  };
 
   handleDrop(event: CdkDragDrop<StackEntry[]>) {
     if (event.previousIndex !== event.currentIndex) {
@@ -121,7 +223,7 @@ export class StackFilePage implements OnDestroy {
   private getNameWithoutInstance(name: string) {
     if (this.folderPerInstance) {
       const instance = this.yamcs.instance!;
-      return name.substr(instance.length);
+      return name.substring(instance.length);
     } else {
       return name;
     }
@@ -141,13 +243,48 @@ export class StackFilePage implements OnDestroy {
 
     this.title.setTitle(this.filename);
 
-    const response = await this.storageClient.getObject('_global', this.bucket, objectName);
-    if (response.ok) {
-      const text = await response.text();
-      const xmlParser = new DOMParser();
-      const doc = xmlParser.parseFromString(text, 'text/xml') as XMLDocument;
+    const format = this.extensionPipe.transform(this.filenamePipe.transform(objectName))?.toLowerCase();
+    if (format === "ycs" || format === "xml") {
+      this.format = format;
+    } else {
+      this.loaded = true;
+      return;
+    }
 
-      const entries = this.parseXML(doc.documentElement);
+    const response = await this.storageClient.getObject('_global', this.bucket, objectName).catch(err => {
+      if (err.statusCode === 404 && format === "xml") {
+        this.router.navigate([objectName.replace(/\.xml$/i, ".ycs")], {
+          queryParamsHandling: 'preserve',
+          relativeTo: this.route.parent,
+        }).then(() => this.initStackFile());
+      } else {
+        this.messageService.showError("Failed to load stack file '" + objectName + "'");
+      }
+    });
+
+    if (response?.ok) {
+      const text = await response.text();
+      let entries;
+      switch (this.format) {
+        case "ycs":
+          [entries, this.advancement] = this.parseJSON(text);
+
+          const match = this.ackOptions.find(el => el.id === this.advancement.acknowledgment);
+          const ackDefault = match ? match.id : 'custom';
+
+          this.stackOptionsForm.setValue({
+            advancementAckDropDown: ackDefault,
+            advancementAckCustom: ackDefault === "custom" ? this.advancement.acknowledgment : '',
+            advancementWait: this.advancement.wait,
+          });
+          break;
+        case "xml":
+          const xmlParser = new DOMParser();
+          const doc = xmlParser.parseFromString(text, 'text/xml') as XMLDocument;
+          entries = StackFilePage.parseXML(doc.documentElement, this.configService.getCommandOptions());
+          this.messageService.showWarning("XML-formatted command stacks are deprecated, convert to *.YCS");
+          break;
+      }
 
       // Enrich entries with MDB info, it's used in the detail panel
       const promises = [];
@@ -167,11 +304,13 @@ export class StackFilePage implements OnDestroy {
       }
 
       // Convert arrays/aggregates from JSON to JavaScript
-      for (const entry of entries) {
-        if (entry.command) {
-          for (const argumentName in entry.args) {
-            if (this.isComplex(argumentName, entry.command)) {
-              entry.args[argumentName] = JSON.parse(entry.args[argumentName]);
+      if (this.format === 'xml') {
+        for (const entry of entries) {
+          if (entry.command) {
+            for (const argumentName in entry.args) {
+              if (this.isComplex(argumentName, entry.command)) {
+                entry.args[argumentName] = JSON.parse(entry.args[argumentName]);
+              }
             }
           }
         }
@@ -180,6 +319,7 @@ export class StackFilePage implements OnDestroy {
       // Only now, update the page
       this.entries$.next(entries);
       this.selectedEntry$.next(entries.length ? entries[0] : null);
+      this.loaded = true;
     }
   }
 
@@ -197,19 +337,108 @@ export class StackFilePage implements OnDestroy {
     }
   }
 
-  private parseXML(root: Node) {
+  private parseJSON(json: string) {
+    const entries: StackEntry[] = [];
+
+    const stack = JSON.parse(json);
+    if (stack.commands) {
+      for (let command of stack.commands) {
+        entries.push(this.parseJSONentry(command));
+      }
+    }
+
+    let advancement: AdvancementParams = {
+      acknowledgment: stack.advancement?.acknowledgment || "Acknowledge_Queued",
+      wait: stack.advancement?.wait != null ? stack.advancement?.wait : 0
+    };
+
+    return [entries, advancement] as const;
+  }
+
+  private parseJSONentry(command: any) {
+    const entry: StackEntry = {
+      name: command.name,
+      ...(command.comment && { comment: command.comment }),
+      ...(command.extraOptions && { extra: this.parseJSONextraOptions(command.extraOptions) }),
+      ...(command.arguments && { args: this.parseJSONcommandArguments(command.arguments) }),
+      ...(command.advancement && { advancement: command.advancement })
+    };
+    return entry;
+  }
+
+  private parseJSONextraOptions(options: Array<any>) {
+    const extra: { [key: string]: Value; } = {};
+    for (let option of options) {
+      const value = StackFilePage.convertOptionStringToValue(option.id, (new String(option.value)).toString(), this.configService.getCommandOptions()); // TODO: simplify value conversion
+      if (value) {
+        extra[option.id] = value;
+      }
+    }
+    return extra;
+  }
+
+  private parseJSONcommandArguments(commandArguments: Array<any>) {
+    const args: { [key: string]: any; } = {};
+    for (let argument of commandArguments) {
+      args[argument.name] = argument.value;
+    }
+    return args;
+  }
+
+  static parseXML(root: Node, commandOptions: any) {
     const entries: StackEntry[] = [];
     for (let i = 0; i < root.childNodes.length; i++) {
       const child = root.childNodes[i];
       if (child.nodeType !== 3) { // Ignore text or whitespace
         if (child.nodeName === 'command') {
-          const entry = this.parseEntry(child as Element);
+          const entry = this.parseXMLEntry(child as Element, commandOptions);
           entries.push(entry);
         }
       }
     }
 
     return entries;
+  }
+
+  private static parseXMLEntry(node: Element, commandOptions: any): StackEntry {
+    const args: { [key: string]: any; } = {};
+    const extra: { [key: string]: Value; } = {};
+    for (let i = 0; i < node.childNodes.length; i++) {
+      const child = node.childNodes[i] as Element;
+      if (child.nodeName === 'commandArgument') {
+        const argumentName = this.getStringAttribute(child, 'argumentName');
+        args[argumentName] = this.getStringAttribute(child, 'argumentValue');
+        if (args[argumentName] === 'true') {
+          args[argumentName] = true;
+        } else if (args[argumentName] === 'false') {
+          args[argumentName] = false;
+        }
+      } else if (child.nodeName === 'extraOptions') {
+        for (let j = 0; j < child.childNodes.length; j++) {
+          const extraChild = child.childNodes[j] as Element;
+          if (extraChild.nodeName === 'extraOption') {
+            const id = this.getStringAttribute(extraChild, 'id');
+            const stringValue = this.getStringAttribute(extraChild, 'value');
+            const value = this.convertOptionStringToValue(id, stringValue, commandOptions);
+            if (value) {
+              extra[id] = value;
+            }
+          }
+        }
+      }
+    }
+    const entry: StackEntry = {
+      name: this.getStringAttribute(node, 'qualifiedName'),
+      args,
+      extra,
+      executing: false,
+    };
+
+    if (node.hasAttribute('comment')) {
+      entry.comment = this.getStringAttribute(node, 'comment');
+    }
+
+    return entry;
   }
 
   selectEntry(entry: StackEntry) {
@@ -257,15 +486,14 @@ export class StackFilePage implements OnDestroy {
     return this.dirty$.value;
   }
 
-  runSelection() {
+  async runSelection() {
     const entry = this.selectedEntry$.value;
     if (!entry) {
       return;
     }
+    this.running$.next(true);
 
-    this.runEntry(entry).finally(() => {
-      this.advanceSelection(entry);
-    });
+    this.runEntry(entry);
   }
 
   private async runEntry(entry: StackEntry) {
@@ -276,6 +504,7 @@ export class StackFilePage implements OnDestroy {
       extra: entry.extra,
     }).then(response => {
       entry.executionNumber = executionNumber;
+      entry.executing = true;
       entry.id = response.id;
 
       // It's possible the WebSocket received data before we
@@ -283,37 +512,77 @@ export class StackFilePage implements OnDestroy {
       const rec = this.commandHistoryRecords.get(entry.id);
       if (rec) {
         entry.record = rec;
+        this.checkAckContinueRunning(rec);
       }
 
       // Refresh subject, to be sure
       this.entries$.next([...this.entries$.value]);
     }).catch(err => {
       entry.executionNumber = executionNumber;
+      entry.executing = false;
       entry.err = err.message || err;
     });
   }
 
-  async runFromSelection() {
+  runFromSelection() {
     let entry = this.selectedEntry$.value;
     if (!entry) {
+      this.stopRun();
       return;
     }
 
     this.running$.next(true);
-    try {
-      const entries = this.entries$.value;
-      for (let i = entries.indexOf(entry); i < entries.length; i++) {
-        entry = entries[i];
-        await this.runEntry(entry);
-        this.advanceSelection(entry);
+    this.runningStack = true;
+    this.nextCommandScheduled = false;
+
+    this.runEntry(entry);
+  }
+
+  private checkAckContinueRunning(record: CommandHistoryRecord) {
+    // Attempts to continue the current run from selected by checking acknowledgement statuses
+    if (!this.running$.value || this.nextCommandScheduled) {
+      return;
+    }
+
+    let selectedEntry = this.selectedEntry$.value;
+
+    let acceptingAck = selectedEntry?.advancement?.acknowledgment || this.advancement.acknowledgment!;
+    let delay = selectedEntry?.advancement?.wait ?? this.advancement.wait!;
+
+    if (selectedEntry?.id === record.id) {
+      let ack = record.acksByName[acceptingAck];
+      if (ack && ack.status) {
+        if (this.acceptingAckValues.includes(ack.status)) {
+          this.nextCommandScheduled = this.runningStack;
+          this.nextCommandDelayTimeout = window.setTimeout(() => {
+            selectedEntry!.executing = false;
+            // Continue execution
+            if (this.running$.value && selectedEntry) {
+              this.advanceSelection(selectedEntry);
+              if (this.runningStack) {
+                this.runFromSelection();
+              } else {
+                this.stopRun();
+              }
+            }
+          }, Math.max(delay, 0));
+        } else if (this.stoppingAckValues.includes(ack.status)) {
+          selectedEntry.executing = false;
+          // Stop exection
+          this.stopRun();
+        } // Ignore others
       }
-    } finally {
-      this.running$.next(false);
     }
   }
 
   stopRun() {
     this.running$.next(false);
+    this.runningStack = false;
+    for (const entry of this.entries$.value) {
+      entry.executing = false;
+    }
+    window.clearTimeout(this.nextCommandDelayTimeout);
+    this.nextCommandScheduled = false;
   }
 
   private advanceSelection(entry: StackEntry) {
@@ -339,43 +608,8 @@ export class StackFilePage implements OnDestroy {
     return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
   }
 
-  private parseEntry(node: Element): StackEntry {
-    const args: { [key: string]: any; } = {};
-    const extra: { [key: string]: Value; } = {};
-    for (let i = 0; i < node.childNodes.length; i++) {
-      const child = node.childNodes[i] as Element;
-      if (child.nodeName === 'commandArgument') {
-        const argumentName = this.getStringAttribute(child, 'argumentName');
-        args[argumentName] = this.getStringAttribute(child, 'argumentValue');
-      } else if (child.nodeName === 'extraOptions') {
-        for (let j = 0; j < child.childNodes.length; j++) {
-          const extraChild = child.childNodes[j] as Element;
-          if (extraChild.nodeName === 'extraOption') {
-            const id = this.getStringAttribute(extraChild, 'id');
-            const stringValue = this.getStringAttribute(extraChild, 'value');
-            const value = this.convertOptionStringToValue(id, stringValue);
-            if (value) {
-              extra[id] = value;
-            }
-          }
-        }
-      }
-    }
-    const entry: StackEntry = {
-      name: this.getStringAttribute(node, 'qualifiedName'),
-      args,
-      extra,
-    };
-
-    if (node.hasAttribute('comment')) {
-      entry.comment = this.getStringAttribute(node, 'comment');
-    }
-
-    return entry;
-  }
-
-  private convertOptionStringToValue(id: string, value: string): Value | null {
-    for (const option of this.configService.getCommandOptions()) {
+  private static convertOptionStringToValue(id: string, value: string, commandOptions: any): Value | null {
+    for (const option of commandOptions) {
       if (option.id === id) {
         switch (option.type) {
           case 'BOOLEAN':
@@ -400,6 +634,7 @@ export class StackFilePage implements OnDestroy {
       },
       data: {
         okLabel: 'ADD TO STACK',
+        format: this.format
       }
     });
 
@@ -411,6 +646,7 @@ export class StackFilePage implements OnDestroy {
           comment: result.comment,
           extra: result.extra,
           command: result.command,
+          ...(result.stackOptions.advancement && { advancement: result.stackOptions.advancement })
         };
 
         const relto = this.selectedEntry$.value;
@@ -446,6 +682,7 @@ export class StackFilePage implements OnDestroy {
       data: {
         okLabel: 'UPDATE',
         entry,
+        format: this.format
       }
     });
 
@@ -457,6 +694,7 @@ export class StackFilePage implements OnDestroy {
           comment: result.comment,
           extra: result.extra,
           command: result.command,
+          ...(result.stackOptions.advancement && { advancement: result.stackOptions.advancement })
         };
 
         const entries = this.entries$.value;
@@ -498,6 +736,7 @@ export class StackFilePage implements OnDestroy {
         args: { ...entry.args },
         comment: entry.comment,
         command: entry.command,
+        executing: false,
       };
       if (entry.extra) {
         copiedEntry.extra = { ...entry.extra };
@@ -518,14 +757,33 @@ export class StackFilePage implements OnDestroy {
   }
 
   saveStack() {
-    const xml = new StackFormatter(this.entries$.value).toXML();
-    const b = new Blob([xml], { type: 'application/xml' });
-    this.storageClient.uploadObject('_global', this.bucket, this.objectName, b).then(() => {
+    let file;
+    switch (this.format) {
+      case "ycs":
+        file = new StackFormatter(this.entries$.value, { advancement: this.advancement }).toJSON();
+        break;
+      case "xml":
+        file = new StackFormatter(this.entries$.value, { advancement: this.advancement }).toXML();
+        break;
+    }
+    const type = (this.format === 'xml' ? 'application/xml' : 'application/json');
+    const blob = new Blob([file], { type });
+    return this.storageClient.uploadObject('_global', this.bucket, this.objectName, blob).then(() => {
       this.dirty$.next(false);
     });
   }
 
-  private getStringAttribute(node: Node, name: string) {
+  setExportURLs() {
+    const formatter = new StackFormatter(this.entries$.value, { advancement: this.advancement });
+
+    const JSONblob = new Blob([formatter.toJSON()], { type: 'application/json' });
+    this.JSONblobURL = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(JSONblob));
+
+    const XMLblob = new Blob([formatter.toXML()], { type: 'application/xml' });
+    this.XMLblobURL = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(XMLblob));
+  }
+
+  private static getStringAttribute(node: Node, name: string) {
     const attr = (node as Element).attributes.getNamedItem(name);
     if (attr === null) {
       throw new Error(`No attribute named ${name}`);
@@ -534,7 +792,51 @@ export class StackFilePage implements OnDestroy {
     }
   }
 
+  async convertToJSON() {
+    if (this.converting) {
+      return;
+    }
+
+    if (confirm(`Are you sure you want to convert '${this.objectName}' to the new format?\nThis will delete the original XML file.`)) {
+      this.converting = true;
+
+      if (this.dirty$.value) {
+        await this.saveStack();
+      }
+
+      StackFilePage.convertToJSON(this.messageService, this.basenamePipe, this.storageClient, this.bucket, this.objectName, this.entries$.value, { advancement: this.advancement })
+        .then((jsonObjectName) => {
+          this.router.navigate([jsonObjectName + ".ycs"], { queryParamsHandling: 'preserve', relativeTo: this.route.parent })
+            .then(() => this.initStackFile());
+        }).finally(() => this.converting = false);
+    }
+  }
+
+  static async convertToJSON(
+    messageService: MessageService,
+    basenamePipe: BasenamePipe,
+    storageClient: StorageClient,
+    bucket: string,
+    objectName: string,
+    entries: StackEntry[],
+    stackOptions: { advancement?: AdvancementParams; }
+  ) {
+    const formatter = new StackFormatter(entries, stackOptions);
+    const blob = new Blob([formatter.toJSON()], { type: 'application/json' });
+    const jsonObjectName = basenamePipe.transform(objectName);
+
+    if (!jsonObjectName) {
+      messageService.showError("Failed to convert command stack");
+      console.error("Failed to convert command stack due to objectName");
+      return;
+    }
+    await storageClient.uploadObject('_global', bucket, jsonObjectName + ".ycs", blob);
+    await storageClient.deleteObject('_global', bucket, objectName);
+    return jsonObjectName;
+  }
+
   ngOnDestroy() {
     this.commandSubscription?.cancel();
+    this.stackOptionsForm.reset();
   }
 }

@@ -264,6 +264,18 @@ message ProcessorInfo {
 
   // If true, this processor can not be deleted.
   optional bool protected = 21;
+
+  // Globally available acknowledgments (in addition to Acknowledge_Queued,
+  // Acknowledge_Released and Acknowledge_Sent)
+  repeated AcknowledgmentInfo acknowledgments = 22;
+}
+
+message AcknowledgmentInfo {
+  // Acknowledgment name
+  optional string name = 1;
+
+  // Description of the acknowledgment
+  optional string description = 2;
 }
 
 message TmStatistics {

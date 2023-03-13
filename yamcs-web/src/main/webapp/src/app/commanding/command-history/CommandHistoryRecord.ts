@@ -41,7 +41,7 @@ export class CommandHistoryRecord {
 
   extra: { [key: string]: string; }[] = [];
 
-  private acksByName: { [key: string]: Acknowledgment; } = {};
+  acksByName: { [key: string]: Acknowledgment; } = {};
 
   cascadedRecordsByPrefix = new Map<string, CommandHistoryRecord>();
 

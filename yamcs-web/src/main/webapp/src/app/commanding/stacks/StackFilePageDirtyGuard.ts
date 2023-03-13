@@ -30,7 +30,7 @@ export class StackFilePageDirtyGuard implements CanDeactivate<StackFilePage> {
     if (this.dialogOpen$.value) {
       return Observable.create((observer: Observer<boolean>) => {
         this.dialogRef.afterClosed().subscribe(result => {
-          observer.next(result);
+          observer.next(result === true);
           observer.complete();
         }, err => {
           observer.next(false);
@@ -47,7 +47,7 @@ export class StackFilePageDirtyGuard implements CanDeactivate<StackFilePage> {
         });
         this.dialogRef.afterClosed().subscribe(result => {
           this.dialogOpen$.next(false);
-          observer.next(result);
+          observer.next(result === true);
           observer.complete();
         }, err => {
           this.dialogOpen$.next(false);
