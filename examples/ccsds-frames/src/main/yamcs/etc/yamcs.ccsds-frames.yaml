@@ -63,7 +63,7 @@ dataLinks:
     errorDetection: CRC16
     virtualChannels:
          - vcId: 0
-           service: "PACKET" 
+           service: "PACKET"
            commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
            commandPostprocessorArgs:
               errorDetection:
@@ -99,13 +99,13 @@ dataLinks:
     virtualChannels:
           - vcId: 0
             ocfPresent: true
-            service: "PACKET"  #supported services for AOS are M_PDU, B_PDU or VCA_SDU
+            service: "PACKET"  #supported services are PACKET(M_PDU) or VCA (using a custom handler configured with vcaHandlerClassName)
             maxPacketLength: 2048
             packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
             stream: "tm_realtime" #which yamcs stream to put the data on
           - vcId: 1
             ocfPresent: true
-            service: "PACKET"  #supported services for AOS are PACKET(M_PDU), B_PDU or VCA_SDU
+            service: "PACKET"
             maxPacketLength: 2048
             stripEncapsulationHeader: true # drop the header before passing the packet to the preprocessor
             packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
