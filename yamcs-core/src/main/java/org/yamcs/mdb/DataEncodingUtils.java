@@ -63,7 +63,9 @@ public class DataEncodingUtils {
     }
 
     static public Value getRawFloatValue(FloatDataEncoding fde, double value) {
-        if (fde.getSizeInBits() <= 32 && fde.getEncoding() == FloatDataEncoding.Encoding.IEEE754_1985) {
+        if (fde.getSizeInBits() <= 32
+                && (fde.getEncoding() == FloatDataEncoding.Encoding.IEEE754_1985
+                || fde.getEncoding() == FloatDataEncoding.Encoding.STRING)) {
             return ValueUtility.getFloatValue((float) value);
         } else {
             return ValueUtility.getDoubleValue(value);
