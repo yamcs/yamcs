@@ -29,7 +29,7 @@ export class AdminPage implements OnDestroy {
     router: Router,
     @Inject(APP_BASE_HREF) baseHref: string,
   ) {
-    this.sidebar$ = preferenceStore.sidebar$;
+    this.sidebar$ = preferenceStore.getPreference$('sidebar');
     const resourceUrl = `${baseHref}static/rocksdb.svg`;
     const safeResourceUrl = sanitizer.bypassSecurityTrustResourceUrl(resourceUrl);
     iconRegistry.addSvgIcon('rocksdb', safeResourceUrl);

@@ -1344,7 +1344,7 @@ export default class YamcsClient implements HttpHandler {
   private queryString(options: { [key: string]: any; }) {
     const qs = Object.keys(options)
       .filter(k => options[k] !== undefined)
-      .map(k => `${k}=${options[k]}`)
+      .map(k => `${k}=${typeof options[k] === "object" ? JSON.stringify(options[k]) : options[k]}`)
       .join('&');
     return qs === '' ? qs : '?' + qs;
   }

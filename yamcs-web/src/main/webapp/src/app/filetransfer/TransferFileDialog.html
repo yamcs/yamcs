@@ -10,7 +10,7 @@
       <!-- BUCKETS COLUMN -->
       <div class="buckets-column header">
         <label class="table-caption">Buckets
-          <a (click)="showBucketSize = !showBucketSize">{{ !showBucketSize ? "show" : "hide" }} size</a>
+          <a (click)="toggleBucketSize()">{{ !(showBucketSize$.value) ? "show" : "hide" }} size</a>
         </label>
       </div>
 
@@ -20,8 +20,11 @@
             <td mat-cell *cdkCellDef="let bucket" [title]="(bucket.maxSize - bucket.size | formatBytes) + ' available'">
               <span><mat-icon style="vertical-align: middle">shopping_basket</mat-icon>&nbsp;
                 {{ bucket.name }}</span>
-              <span *ngIf="showBucketSize">{{ bucket.size | formatBytes }}/{{ bucket.maxSize | formatBytes }}</span>
-              <app-progress *ngIf="showBucketSize" [value]="bucket.size" [total]="bucket.maxSize"></app-progress>
+              <span *ngIf="showBucketSize$.value">
+                {{ bucket.size | formatBytes }}/{{ bucket.maxSize | formatBytes}}
+              </span>
+              <app-progress *ngIf="showBucketSize$.value" [value]="bucket.size"
+                            [total]="bucket.maxSize"></app-progress>
             </td>
           </ng-container>
 
@@ -76,48 +79,7 @@
       <div class="local-column footer">
         <div *ngIf="service.localEntities && service.localEntities.length">
           <label>Local entity</label>
-          {{ form.get("localEntity")?.value }}
-        </div>
-
-        <div *ngFor="let option of service.transferOptions; let i = index" [title]="option.description">
-          <label>{{option.name | titlecase}}</label>
-          <!-- TODO: consider ngSwitchCase for the option.type? -->
-          <!-- Boolean option type -->
-          <label class="checkbox-label" *ngIf="option.type === 'BOOLEAN'">
-            <input type="checkbox" [formControlName]="getControlName(option, i)">
-            {{option.associatedText}}
-          </label>
-          <!-- Number option type -->
-          <select
-                  *ngIf="option.type === 'DOUBLE' && option.doubleValues && option.doubleValues.length"
-                  [formControlName]="getControlName(option, i)">
-            <option *ngIf="option.allowCustomOption" value="">Custom</option>
-            <option *ngFor="let value of option.doubleValues"
-                    [value]="value">{{ value }}
-            </option>
-          </select><br
-              *ngIf="option.type === 'DOUBLE' && option.allowCustomOption && option.doubleValues && option.doubleValues.length">
-          <input type="number"
-                 *ngIf="option.type === 'DOUBLE' && (option.allowCustomOption || !option.doubleValues || option.doubleValues.length == 0)"
-                 [formControlName]="getControlName(option, i)"
-                 [placeholder]="option.associatedText || ''"
-                 [value]="form.get(getControlName(option, i))?.value"
-                 style="width: 100px">
-          <!-- String option type -->
-          <select
-                  *ngIf="option.type === 'STRING' && option.stringValues && option.stringValues.length"
-                  [formControlName]="getControlName(option, i)">
-            <option *ngIf="option.allowCustomOption" value="">Custom</option>
-            <option *ngFor="let item of option.stringValues" [value]="item.value">{{ item.verboseName || item.value }}
-            </option>
-          </select><br
-              *ngIf="option.type === 'STRING' && option.allowCustomOption && option.stringValues && option.stringValues.length">
-          <input type="text"
-                 *ngIf="option.type === 'STRING' && (option.allowCustomOption || !option.stringValues || option.stringValues.length == 0)"
-                 [formControlName]="getControlName(option, i)"
-                 [placeholder]="option.associatedText || ''"
-                 [value]="form.get(getControlName(option, i))?.value"
-                 style="width: fit-content">
+          {{ form.get("localEntity")?.value || '-' }}
         </div>
 
         <input type="text" formControlName="localFilenames" placeholder="Local filename"
@@ -184,7 +146,33 @@
 
         <div *ngIf="service.remoteEntities && service.remoteEntities.length">
           <label>Remote entity</label>
-          {{ form.get("remoteEntity")?.value }}
+          {{ form.get("remoteEntity")?.value || '-' }}
+        </div>
+      </div>
+
+      <div class="options-footer">
+        <div *ngFor="let option of service.transferOptions; let i = index" [title]="option.description || ''">
+          <label>{{ option.title || option.name }}</label>
+          <!-- Boolean option type -->
+          <label class="checkbox-label" *ngIf="option.type === 'BOOLEAN'">
+            <input type="checkbox" [formControlName]="getControlName(option, i)">
+            {{option.associatedText}}
+          </label>
+          <!-- Double and string option type-->
+          <div style="display:flex; column-gap: 8px; flex-wrap: wrap;">
+            <select *ngIf="(option.type === 'DOUBLE' || option.type === 'STRING') && option.values"
+                    [formControlName]="getControlName(option, i) + DROPDOWN_SUFFIX">
+              <option *ngIf="option.allowCustomOption" [value]="CUSTOM_OPTION_VALUE">Custom</option>
+              <option *ngFor="let value of option.values" [value]="value.value">{{ value.verboseName != null ?
+                value.verboseName : value.value }}</option>
+            </select>
+            <input
+                   *ngIf="(option.type === 'DOUBLE' || option.type === 'STRING') && ((option.allowCustomOption && form.get(getControlName(option, i) + DROPDOWN_SUFFIX)?.value === CUSTOM_OPTION_VALUE) || !option.values)"
+                   [formControlName]="getControlName(option, i)"
+                   [type]="option.type === 'DOUBLE' ? 'number' : 'text'"
+                   [placeholder]="option.associatedText || ''"
+                   style="width: 120px">
+          </div>
         </div>
       </div>
     </div>

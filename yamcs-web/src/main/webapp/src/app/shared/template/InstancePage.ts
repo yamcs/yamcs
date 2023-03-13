@@ -126,7 +126,7 @@ export class InstancePage implements OnInit, OnDestroy {
       }
     }
 
-    this.sidebar$ = preferenceStore.sidebar$;
+    this.sidebar$ = preferenceStore.getPreference$('sidebar');
 
     this.routerSubscription = router.events.pipe(
       filter(evt => evt instanceof NavigationEnd)
