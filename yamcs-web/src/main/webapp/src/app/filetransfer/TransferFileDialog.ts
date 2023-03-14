@@ -66,6 +66,7 @@ export class TransferFileDialog implements OnDestroy {
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.service = data.service;
+    this.prefPrefix += this.service.name + ".";
     const firstLocalEntity = this.service.localEntities && this.service.localEntities.length ? this.service.localEntities[0].name : '';
     const firstRemoteEntity = this.service.remoteEntities && this.service.remoteEntities.length ? this.service.remoteEntities[0].name : '';
     const localEntity$ = this.addPreference$('localEntity', firstLocalEntity);
