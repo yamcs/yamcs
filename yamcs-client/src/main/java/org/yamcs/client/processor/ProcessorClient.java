@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 
 import org.yamcs.api.MethodHandler;
 import org.yamcs.client.Command;
@@ -166,6 +169,19 @@ public class ProcessorClient {
         CompletableFuture<IssueCommandResponse> f = new CompletableFuture<>();
         commandService.issueCommand(null, requestb.build(), new ResponseObserver<>(f));
         return f.thenApply(Command::new);
+    }
+
+    public CompletableFuture<Command> issueCommand(String command, Map<String, ?> arguments, Executor executor) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return issueCommand(command, arguments).get();
+            } catch (ExecutionException e) {
+                throw new CompletionException(e.getCause());
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return null;
+            }
+        }, executor);
     }
 
     public CommandBuilder prepareCommand(String command) {
@@ -468,11 +484,32 @@ public class ProcessorClient {
             return this;
         }
 
+        /**
+         * Issue the command, and returns a future that awaits the initial response.
+         */
         public CompletableFuture<Command> issue() {
-            CompletableFuture<IssueCommandResponse> f = new CompletableFuture<>();
-            IssueCommandRequest request = requestb.setArgs(argsb).build();
+            var f = new CompletableFuture<IssueCommandResponse>();
+            var request = requestb.setArgs(argsb).build();
             commandService.issueCommand(null, request, new ResponseObserver<>(f));
             return f.thenApply(Command::new);
+        }
+
+        /**
+         * Issue the command, and returns a future that awaits the initial response on the specified executor.
+         * <p>
+         * A use case for this is to provide a single-threaded executor, thereby guaranteeing in-order delivery.
+         */
+        public CompletableFuture<Command> issue(Executor executor) {
+            return CompletableFuture.supplyAsync(() -> {
+                try {
+                    return issue().get();
+                } catch (ExecutionException e) {
+                    throw new CompletionException(e.getCause());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return null;
+                }
+            }, executor);
         }
 
         @Override
@@ -512,6 +549,5 @@ public class ProcessorClient {
             }
         }
     }
-
 
 }

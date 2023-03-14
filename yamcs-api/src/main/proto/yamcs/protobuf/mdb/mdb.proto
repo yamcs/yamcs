@@ -578,24 +578,64 @@ message OutputParameterInfo {
   optional string outputName = 2;
 }
 
+message MathElement {
+  enum Type {
+    VALUE_OPERAND = 1;
+    THIS_PARAMETER_OPERAND = 2;
+    OPERATOR = 3;
+    PARAMETER = 4;
+  }
+
+  // Type of element, either an operand kind or an operator.
+  optional Type type = 1;
+
+  // Operator symbol if type ``OPERATOR``.
+  optional string operator = 2;
+
+  // Constant if type ``VALUE_OPERAND``.
+  optional double value = 3;
+
+  // Parameter whose value is used if type ``PARAMETER``.
+  optional ParameterInfo parameter = 4;
+
+  // Parameter instance specifier
+  optional int32 parameterInstance = 5;
+}
+
 message AlgorithmInfo {
+  enum Type {
+    CUSTOM = 1;
+    MATH = 2;
+  }
   enum Scope {
     GLOBAL = 0;
     COMMAND_VERIFICATION = 1;
     CONTAINER_PROCESSING = 2;
   }
+
+  // Algorithm name
   optional string name = 1;
   optional string qualifiedName = 2;
   optional string shortDescription = 3;
   optional string longDescription = 4;
   repeated NamedObjectId alias = 5;
   optional Scope scope = 6;
+
+  // Type of algorithm
+  optional Type type = 13;
+
+  // Language if this is a custom algorithm
   optional string language = 7;
+
+  // Code if this is a custom algorithm
   optional string text = 8;
   repeated InputParameterInfo inputParameter = 9;
   repeated OutputParameterInfo outputParameter = 10;
   repeated ParameterInfo onParameterUpdate = 11;
   repeated int64 onPeriodicRate = 12;
+
+  // Operands and operators in Reverse Polish Notation if type ``MATH``.
+  repeated MathElement mathElements = 14;
 }
 
 message ListSpaceSystemsRequest {

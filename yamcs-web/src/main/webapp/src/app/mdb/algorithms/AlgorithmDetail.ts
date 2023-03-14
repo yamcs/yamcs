@@ -30,20 +30,22 @@ export class AlgorithmDetail implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.editor = ace.edit(this.textContainer.nativeElement);
-    this.editor.setReadOnly(this.readonly);
+    if (this.algorithm.text) {
+      this.editor = ace.edit(this.textContainer.nativeElement);
+      this.editor.setReadOnly(this.readonly);
 
-    switch (this.algorithm.language.toLowerCase()) {
-      case 'javascript':
-        this.editor.getSession().setMode('ace/mode/javascript');
-        break;
-      case 'python':
-        this.editor.getSession().setMode('ace/mode/python');
-        break;
-      default:
-        console.warn(`Unexpected language ${this.algorithm.language}`);
+      switch (this.algorithm.language.toLowerCase()) {
+        case 'javascript':
+          this.editor.getSession().setMode('ace/mode/javascript');
+          break;
+        case 'python':
+          this.editor.getSession().setMode('ace/mode/python');
+          break;
+        default:
+          console.warn(`Unexpected language ${this.algorithm.language}`);
+      }
+
+      this.editor.setTheme('ace/theme/eclipse');
     }
-
-    this.editor.setTheme('ace/theme/eclipse');
   }
 }

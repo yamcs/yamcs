@@ -54,7 +54,7 @@ public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
         } else {
             pv.setEngValue(engValue);
         }
-        return new AlgorithmExecutionResult(Arrays.asList(pv));
+        return new AlgorithmExecutionResult(inputValues, value, Arrays.asList(pv));
     }
 
     @Override

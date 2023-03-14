@@ -68,11 +68,11 @@ export class CreateDisplayDialog {
     }
     const fullPath = path ? path + '/' + name : name;
 
-    const display = {
+    const b = new Blob([JSON.stringify({
+      "$schema": "https://yamcs.org/schema/parameter-table.schema.json",
       scroll: false,
       parameters: [],
-    };
-    const b = new Blob([JSON.stringify(display, undefined, 2)], {
+    }, undefined, 2)], {
       type: 'application/json'
     });
     const bucketName = this.config.displayBucket;

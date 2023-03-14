@@ -38,6 +38,7 @@ export class AlgorithmsPage implements AfterViewInit, OnDestroy {
 
   displayedColumns = [
     'name',
+    'type',
     'language',
     'scope',
     'shortDescription',

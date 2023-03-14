@@ -1,1 +1,15 @@
-{"columns":["rawValue","engValue"],"parameters":["/YSS/SIMULATOR/BatteryCapacity1","/YSS/SIMULATOR/BatteryCapacity2","/YSS/SIMULATOR/BatteryCapacity3","/YSS/SIMULATOR/BatteryVoltage1","/YSS/SIMULATOR/BatteryVoltage2","/YSS/SIMULATOR/BatteryVoltage3","/YSS/SIMULATOR/BatteryTemperature1","/YSS/SIMULATOR/BatteryTemperature2","/YSS/SIMULATOR/BatteryTemperature3"]}
+{
+  "$schema": "https://yamcs.org/schema/parameter-table.schema.json",
+  "bufferSize": 10,
+  "parameters": [
+    "/YSS/SIMULATOR/BatteryCapacity1",
+    "/YSS/SIMULATOR/BatteryCapacity2",
+    "/YSS/SIMULATOR/BatteryCapacity3",
+    "/YSS/SIMULATOR/BatteryVoltage1",
+    "/YSS/SIMULATOR/BatteryVoltage2",
+    "/YSS/SIMULATOR/BatteryVoltage3",
+    "/YSS/SIMULATOR/BatteryTemperature1",
+    "/YSS/SIMULATOR/BatteryTemperature2",
+    "/YSS/SIMULATOR/BatteryTemperature3"
+  ]
+}

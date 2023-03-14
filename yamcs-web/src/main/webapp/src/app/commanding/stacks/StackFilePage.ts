@@ -282,7 +282,8 @@ export class StackFilePage implements OnDestroy {
           const xmlParser = new DOMParser();
           const doc = xmlParser.parseFromString(text, 'text/xml') as XMLDocument;
           entries = StackFilePage.parseXML(doc.documentElement, this.configService.getCommandOptions());
-          this.messageService.showWarning("XML-formatted command stacks are deprecated, convert to *.YCS");
+          // (Uncomment in later release)
+          //this.messageService.showWarning("XML-formatted command stacks are deprecated, convert to *.YCS");
           break;
       }
 
