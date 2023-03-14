@@ -10,3 +10,6 @@ bin/
 
 target/
 server.lock
+
+#Vscode
+.vscode
