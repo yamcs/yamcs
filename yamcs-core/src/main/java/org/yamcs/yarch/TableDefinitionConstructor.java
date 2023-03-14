@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 
 import org.yamcs.yarch.PartitioningSpec._type;
 import org.yamcs.yarch.streamsql.StreamSqlException;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.constructor.AbstractConstruct;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.nodes.MappingNode;
@@ -39,6 +40,7 @@ public class TableDefinitionConstructor extends Constructor {
     public static final String K_FORMAT_VERSION = "formatVersion";
 
     public TableDefinitionConstructor() {
+        super(new LoaderOptions());
         this.yamlConstructors.put(new Tag("TableDefinition"), new ConstructTableDefinition());
         this.yamlConstructors.put(new Tag("TupleDefinition"), new ConstructTupleDefinition());
         this.yamlConstructors.put(new Tag("PartitioningSpec"), new ConstructPartitioningSpec());
