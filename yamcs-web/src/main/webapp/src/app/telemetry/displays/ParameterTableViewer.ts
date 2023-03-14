@@ -113,7 +113,6 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
     this.model$.next({
       scroll: model.scroll,
       bufferSize: model.bufferSize || 10,
-      columns: model.columns,
       parameters: model.parameters,
     });
   }
@@ -202,8 +201,12 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
   }
 
   save() {
-    const model = this.model$.value!;
-    const b = new Blob([JSON.stringify(model, undefined, 2)]);
+    const b = new Blob([JSON.stringify({
+      "$schema": "https://yamcs.org/schema/parameter-table.schema.json",
+      ...this.model$.value!,
+    }, undefined, 2)], {
+      type: 'application/json'
+    });
     return this.storageClient.uploadObject('_global', this.bucket, this.objectName, b).then(() => {
       this.hasUnsavedChanges$.next(false);
     });

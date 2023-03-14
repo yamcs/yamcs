@@ -1,9 +1,7 @@
 package org.yamcs.filetransfer;
 
-import org.yamcs.protobuf.FileTransferOption;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TransferOptions {
     private boolean overwrite;
@@ -16,7 +14,7 @@ public class TransferOptions {
     boolean createpath;
     private boolean closureRequestedSet = false;
 
-    private List<FileTransferOption> extraOptions = new ArrayList<>();
+    private final Map<String, Object> extraOptions = new HashMap<>();
 
     public boolean isOverwrite() {
         return overwrite;
@@ -60,11 +58,11 @@ public class TransferOptions {
         return closureRequestedSet;
     }
 
-    public void addExtraOptions(List<FileTransferOption> options) {
-        this.extraOptions.addAll(options);
+    public void putExtraOptions(Map<String, Object> options) {
+        extraOptions.putAll(options);
     }
 
-    public List<FileTransferOption> getExtraOptions() {
+    public Map<String, Object> getExtraOptions() {
         return extraOptions;
     }
 }

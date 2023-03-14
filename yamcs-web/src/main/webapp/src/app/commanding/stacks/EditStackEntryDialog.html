@@ -29,6 +29,43 @@
                         [command]="command"
                         [templateProvider]="templateProvider">
       </app-command-form>
+      <ng-container *ngIf="format === 'ycs'">
+        <form [formGroup]="stackOptionsForm" class="ya-form" [ngClass]="this.stackOptionsForm.disabled && 'disabled'">
+          <p>&nbsp;</p>
+          <h3>Stack advancement</h3>
+          <div class="label">
+            Advance when
+            <app-advance-ack-help [verifiers]="verifierAcknowledgments"
+                                  [extra]="extraAcknowledgments">
+            </app-advance-ack-help>
+            <br>
+            <div style="display: flex; align-items: flex-start;">
+              <app-select #ackSelect
+                          [options]="ackOptions"
+                          formControlName="advancementAckDropDown"
+                          emptyOption="Inherit">
+              </app-select>
+              <input type="text" formControlName="advancementAckCustom"
+                    *ngIf="stackOptionsForm.get('advancementAckDropDown')?.value === 'custom'"
+                    style="width: 200px; margin-left: -1px">
+            </div>
+          </div>
+          <br>
+          <div class="label">
+            Wait (ms)
+            <app-help dialogTitle="Wait time">
+              <p>
+                Wait time before advancing to the next command in the stack.
+              </p>
+              <p>
+                This triggers after successful acknowledgment.
+              </p>
+            </app-help>
+            <br>
+            <input type="number" formControlName="advancementWait" placeholder="Inherit" step="1000" min="0">
+          </div>
+        </form>
+      </ng-container>
     </div>
   </div>
   <div class="footer mat-typography">
@@ -37,7 +74,9 @@
         <button class="ya-button" mat-dialog-close>CANCEL</button>&nbsp;&nbsp;
         <button class="ya-button primary"
                 (click)="handleOK()"
-                [disabled]="!commandForm.form.valid">{{ okLabel }}</button>
+                [disabled]="!commandForm.form.valid">
+          <!-- TODO: disabled throws a "ExpressionChangedAfterItHasBeenCheckedError", potentially needs fix -->
+          {{ okLabel }}</button>
       </mat-toolbar-row>
     </mat-toolbar>
   </div>

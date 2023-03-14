@@ -13,14 +13,18 @@ public class QueuedCfdpOutgoingTransfer implements CfdpFileTransfer {
     private String failureReason;
     private final long creationTime;
     private final Bucket bucket;
+    private final Integer customPduSize;
+    private final Integer customPduDelay;
     private final String transferType;
 
-    public QueuedCfdpOutgoingTransfer(long initiatorEntityId, long id, long creationTime, PutRequest putRequest, Bucket bucket) {
+    public QueuedCfdpOutgoingTransfer(long initiatorEntityId, long id, long creationTime, PutRequest putRequest, Bucket bucket, Integer customPduSize, Integer customPduDelay) {
         this.initiatorEntityId = initiatorEntityId;
         this.id = id;
         this.putRequest = putRequest;
         this.creationTime = creationTime;
         this.bucket = bucket;
+        this.customPduSize = customPduSize;
+        this.customPduDelay = customPduDelay;
         this.transferType = OngoingCfdpTransfer.getTransferType(putRequest.getMetadata());
     }
 
@@ -127,5 +131,13 @@ public class QueuedCfdpOutgoingTransfer implements CfdpFileTransfer {
 
     public Bucket getBucket() {
         return bucket;
+    }
+
+    public Integer getCustomPduSize() {
+        return customPduSize;
+    }
+
+    public Integer getCustomPduDelay() {
+        return customPduDelay;
     }
 }

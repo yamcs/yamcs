@@ -46,7 +46,8 @@ div.entry div.out {
   margin-bottom: 10px;
 }
 
-div.entry.selected div.in, div.entry.selected div.out {
+div.entry.selected div.in,
+div.entry.selected div.out {
   border-color: #009e87;
 }
 
@@ -88,5 +89,39 @@ div.entry div.out .body.err {
 }
 
 .cdk-drag-placeholder {
+  opacity: 0.6;
+}
+
+
+.advance-on {
+  color: grey;
+  font-size: 12px;
+}
+
+.advance-on>* {
+  vertical-align: middle;
+}
+
+.advance-on>mat-icon {
+  transform: rotate(180deg);
+  font-size: 12px;
+  height: 12px;
+  width: 12px;
+}
+
+form.stack-options {
+  line-height: 0;
+  display: flex;
+  align-items: flex-start;
+}
+
+.stack-options .label {
+  display: inline-block;
+  width: unset;
+  margin-right: 1em;
+  margin-top: 0;
+}
+
+.disabled .label {
   opacity: 0.6;
 }

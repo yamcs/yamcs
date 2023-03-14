@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "JSON schema for Yamcs Command Stack files (*.ycs)",
+  "definitions": {
+    "advancement": {
+      "description": "Advancement options",
+      "type": "object",
+      "properties": {
+        "acknowledgment": {
+          "description": "Acknowledgment which needs to succeed before the stack cursor advances",
+          "type": "string",
+          "default": "Acknowledge_Queued"
+        },
+        "wait": {
+          "description": "Time to await before advancing to the next command in the stack. This triggers after the acknowledgment has succeeded.",
+          "type": "number"
+        }
+      }
+    }
+  },
+  "type": "object",
+  "properties": {
+    "commands": {
+      "description": "Commands",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Qualified name of the command",
+            "type": "string"
+          },
+          "comment": {
+            "description": "Entry comment",
+            "type": "string"
+          },
+          "arguments": {
+            "description": "Command arguments",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "description": "Argument name",
+                  "type": "string"
+                },
+                "value": {
+                  "description": "Argument value",
+                  "type": ["array", "boolean", "number", "object", "string"]
+                }
+              },
+              "required": ["name", "value"]
+            }
+          },
+          "advancement": {
+            "$ref": "#/definitions/advancement"
+          }
+        },
+        "extraOptions": {
+          "description": "Additional command options",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "description": "Option identifier",
+                "type": "string"
+              },
+              "value": {
+                "description": "Option value",
+                "type": ["boolean", "number", "string"]
+              }
+            }
+          }
+        },
+        "required": ["name"]
+      }
+    },
+    "advancement": {
+      "$ref": "#/definitions/advancement"
+    }
+  }
+}

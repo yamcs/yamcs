@@ -59,7 +59,6 @@ import org.yamcs.filetransfer.TransferOptions;
 import org.yamcs.protobuf.EntityInfo;
 import org.yamcs.protobuf.FileTransferCapabilities;
 import org.yamcs.protobuf.FileTransferOption;
-import org.yamcs.protobuf.FileTransferOptionType;
 import org.yamcs.protobuf.RemoteFile;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
@@ -110,6 +109,14 @@ public class CfdpService extends AbstractYamcsService
     static final String TABLE_NAME = "cfdp";
     static final String SEQUENCE_NAME = "cfdp";
 
+    // FileTransferOption name literals
+    private final String OVERWRITE_OPTION = "overwrite";
+    private final String RELIABLE_OPTION = "reliable";
+    private final String CLOSURE_OPTION = "closureRequested";
+    private final String CREATE_PATH_OPTION = "createPath";
+    private final String PDU_DELAY_OPTION = "pduDelay";
+    private final String PDU_SIZE_OPTION = "pduSize";
+
     Map<CfdpTransactionId, OngoingCfdpTransfer> pendingTransfers = new ConcurrentHashMap<>();
     Queue<QueuedCfdpOutgoingTransfer> queuedTransfers = new ConcurrentLinkedQueue<>();
 
@@ -150,6 +157,12 @@ public class CfdpService extends AbstractYamcsService
     private FileListingService fileListingService;
     private FileListingParser fileListingParser;
     private boolean automaticDirectoryListingReloads;
+
+    private boolean canChangePduSize;
+    private List<Integer> pduSizePredefinedValues;
+    private boolean canChangePduDelay;
+    private List<Integer> pduDelayPredefinedValues;
+
 
     private Stream dbStream;
 
@@ -209,6 +222,10 @@ public class CfdpService extends AbstractYamcsService
         spec.addOption("entityIdLength", OptionType.INTEGER).withDefault(2);
         spec.addOption("sequenceNrLength", OptionType.INTEGER).withDefault(4);
         spec.addOption("maxPduSize", OptionType.INTEGER).withDefault(512);
+        spec.addOption("canChangePduSize", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("pduSizePredefinedValues", OptionType.LIST).withDefault(Collections.emptyList()).withElementType(OptionType.INTEGER);
+        spec.addOption("canChangePduDelay", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("pduDelayPredefinedValues", OptionType.LIST).withDefault(Collections.emptyList()).withElementType(OptionType.INTEGER);
         spec.addOption("eofAckTimeout", OptionType.INTEGER).withDefault(5000);
         spec.addOption("eofAckLimit", OptionType.INTEGER).withDefault(5);
         spec.addOption("finAckTimeout", OptionType.INTEGER).withDefault(5000);
@@ -270,6 +287,10 @@ public class CfdpService extends AbstractYamcsService
         queueConcurrentUploads = config.getBoolean("queueConcurrentUploads");
         allowConcurrentFileOverwrites = config.getBoolean("allowConcurrentFileOverwrites");
         directoryTerminators = config.getList("directoryTerminators");
+        canChangePduSize = config.getBoolean("canChangePduSize");
+        pduSizePredefinedValues = config.getList("pduSizePredefinedValues");
+        canChangePduDelay = config.getBoolean("canChangePduDelay");
+        pduDelayPredefinedValues = config.getList("pduDelayPredefinedValues");
 
         String fileListingServiceClassName = config.getString("fileListingServiceClassName");
         YConfiguration fileListingServiceConfig = config.getConfig("fileListingServiceArgs");
@@ -500,9 +521,9 @@ public class CfdpService extends AbstractYamcsService
     }
 
     private CfdpFileTransfer processPutRequest(long initiatorEntityId, long seqNum, long creationTime, PutRequest request,
-            Bucket bucket) {
+            Bucket bucket, Integer customPduSize, Integer customPduDelay) {
         CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(yamcsInstance, initiatorEntityId, seqNum, creationTime,
-                executor, request, cfdpOut, config, bucket, eventProducer, this, senderFaultHandlers);
+                executor, request, cfdpOut, config, bucket, customPduSize, customPduDelay, eventProducer, this, senderFaultHandlers);
 
         dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
 
@@ -530,7 +551,7 @@ public class CfdpService extends AbstractYamcsService
 
         QueuedCfdpOutgoingTransfer trsf = queuedTransfers.poll();
         if (trsf != null) {
-            processPutRequest(trsf.getInitiatorEntityId(), trsf.getId(), trsf.getCreationTime(), trsf.getPutRequest(), trsf.getBucket());
+            processPutRequest(trsf.getInitiatorEntityId(), trsf.getId(), trsf.getCreationTime(), trsf.getPutRequest(), trsf.getBucket(), trsf.getCustomPduSize(), trsf.getCustomPduDelay());
         }
     }
 
@@ -841,42 +862,32 @@ public class CfdpService extends AbstractYamcsService
         long sourceId = getEntityFromName(source, localEntities).id;
         long destinationId = getEntityFromName(destination, remoteEntities).id;
 
-        boolean overwrite = options.isOverwrite(); // For backwards compatibility
-        boolean reliable = options.isReliable();
-        boolean closureRequested = options.isClosureRequested();
-        boolean createPath = options.isCreatePath();
+        // For backwards compatibility
+        var booleanOptions = new HashMap<>(Map.of(
+                OVERWRITE_OPTION, options.isOverwrite(),
+                RELIABLE_OPTION, options.isReliable(),
+                CLOSURE_OPTION, options.isClosureRequested(),
+                CREATE_PATH_OPTION, options.isCreatePath()
+        ));
 
-        for (FileTransferOption option : options.getExtraOptions()) {
-            switch (option.getName().toLowerCase().replaceAll("\\s+", "")){
-            case "overwrite":
-                overwrite = option.getBooleanValue();
-                break;
-            case "reliability":
-            case "reliable":
-                reliable = option.getBooleanValue();
-                break;
-            case "closurerequest":
-            case "closurerequested":
-            case "closure":
-                closureRequested = option.getBooleanValue();
-                break;
-            case "createpath":
-                createPath = option.getBooleanValue();
-                break;
-            default:
-            }
-        }
+        OptionValues optionValues = getOptionValues(options.getExtraOptions());
+
+        booleanOptions.putAll(optionValues.booleanOptions);
 
         FilePutRequest request = new FilePutRequest(sourceId, destinationId, objectName, absoluteDestinationPath,
-                overwrite, reliable, closureRequested, createPath,
-                bucket, objData);
+                booleanOptions.get(OVERWRITE_OPTION), booleanOptions.get(RELIABLE_OPTION),
+                booleanOptions.get(CLOSURE_OPTION), booleanOptions.get(CREATE_PATH_OPTION), bucket, objData);
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
+        Double pduSize = optionValues.doubleOptions.get(PDU_SIZE_OPTION);
+        Double pduDelay = optionValues.doubleOptions.get(PDU_DELAY_OPTION);
+
         if (numPendingUploads() < maxNumPendingUploads) {
-            return processPutRequest(sourceId, idSeq.next(), creationTime, request, bucket);
+            return processPutRequest(sourceId, idSeq.next(), creationTime, request, bucket,
+                    pduSize != null ? pduSize.intValue() : null, pduDelay != null ? pduDelay.intValue() : null);
         } else {
             QueuedCfdpOutgoingTransfer transfer = new QueuedCfdpOutgoingTransfer(sourceId, idSeq.next(), creationTime,
-                    request, bucket);
+                    request, bucket, pduSize != null ? pduSize.intValue() : null, pduDelay != null ? pduDelay.intValue() : null);
             dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
             queuedTransfers.add(transfer);
             transferListeners.forEach(l -> l.stateChanged(transfer));
@@ -887,48 +898,9 @@ public class CfdpService extends AbstractYamcsService
 
     }
 
-    private String getAbsoluteDestinationPath(String destinationPath, String localObjectName) {
-        if (localObjectName == null) {
-            throw new NullPointerException("local object name cannot be null");
-        }
-        if (destinationPath == null) {
-            return localObjectName;
-        }
-        if (directoryTerminators.stream().anyMatch(destinationPath::endsWith)) {
-            return destinationPath + localObjectName;
-        }
-        return destinationPath;
-    }
-
-    @Override
-    public void pause(FileTransfer transfer) {
-        processPauseRequest(new PauseRequest(transfer));
-    }
-
-    @Override
-    public void resume(FileTransfer transfer) {
-        processResumeRequest(new ResumeRequest(transfer));
-    }
-
-    @Override
-    public void cancel(FileTransfer transfer) {
-        if (transfer instanceof OngoingCfdpTransfer) {
-            processCancelRequest(new CancelRequest(transfer));
-        } else if (transfer instanceof QueuedCfdpOutgoingTransfer) {
-            QueuedCfdpOutgoingTransfer trsf = (QueuedCfdpOutgoingTransfer) transfer;
-            if (queuedTransfers.remove(trsf)) {
-                trsf.setTransferState(TransferState.FAILED);
-                trsf.setFailureReason("Cancelled while queued");
-                stateChanged(trsf);
-            }
-        } else {
-            throw new InvalidRequestException("Unknown transfer type " + transfer);
-        }
-    }
-
     @Override
     public FileTransfer startDownload(String sourceEntity, String sourcePath, String destinationEntity, Bucket bucket,
-            String objectName, TransferOptions options) throws IOException, InvalidRequestException {
+            String objectName, TransferOptions options) throws InvalidRequestException {
 
         long destinationId = getEntityFromName(destinationEntity, localEntities).id;
         long sourceId = getEntityFromName(sourceEntity, remoteEntities).id;
@@ -938,47 +910,36 @@ public class CfdpService extends AbstractYamcsService
             objectName = splitPath[splitPath.length - 1];
         }
 
+        // For backwards compatibility
+        var booleanOptions = new HashMap<>(Map.of(
+                OVERWRITE_OPTION, options.isOverwrite(),
+                RELIABLE_OPTION, options.isReliable(),
+                CLOSURE_OPTION, options.isClosureRequested(),
+                CREATE_PATH_OPTION, options.isCreatePath()
+        ));
+
+        OptionValues optionValues = getOptionValues(options.getExtraOptions());
+
+        booleanOptions.putAll(optionValues.booleanOptions);
+
         // Prepare request
         ArrayList<MessageToUser> messagesToUser = new ArrayList<>(
                 List.of(new ProxyPutRequest(destinationId, sourcePath, objectName)));
 
         CfdpPacket.TransmissionMode transmissionMode = CfdpPacket.TransmissionMode.UNACKNOWLEDGED;
-        Boolean reliable = null;
-        Boolean closureRequested = null;
-
-
-        if(options.isReliableSet()) { // For backwards compatibility
-            reliable = options.isReliable();
-        }
-        if(options.isClosureRequestedSet()) {
-            closureRequested = options.isClosureRequested();
-        }
-
-        for (FileTransferOption option : options.getExtraOptions()) {
-            switch (option.getName().toLowerCase().replaceAll("\\s+", "")){
-            case "reliability":
-            case "reliable":
-                reliable = option.getBooleanValue();
-                break;
-            case "closurerequest":
-            case "closurerequested":
-            case "closure":
-                closureRequested = option.getBooleanValue();
-                break;
-            default:
-            }
-        }
-
-        if(Boolean.TRUE.equals(reliable)) {
+        if(Boolean.TRUE.equals(booleanOptions.get(RELIABLE_OPTION))) {
             transmissionMode = CfdpPacket.TransmissionMode.ACKNOWLEDGED;
         }
 
-        if(reliable != null) {
+        if(options.isReliableSet() || options.getExtraOptions().containsKey(RELIABLE_OPTION)) {
             messagesToUser.add(new ProxyTransmissionMode(transmissionMode));
         }
-        if(closureRequested != null) {
-            messagesToUser.add(new ProxyClosureRequest(closureRequested));
+        if(options.isClosureRequestedSet() || options.getExtraOptions().containsKey(CLOSURE_OPTION)) {
+            messagesToUser.add(new ProxyClosureRequest(booleanOptions.get(CLOSURE_OPTION)));
         }
+
+        Double pduSize = optionValues.doubleOptions.get(PDU_SIZE_OPTION);
+        Double pduDelay = optionValues.doubleOptions.get(PDU_DELAY_OPTION);
 
         PutRequest request = new PutRequest(sourceId, transmissionMode, messagesToUser);
         CfdpTransactionId transactionId = request.process(destinationId, idSeq.next(), ChecksumType.MODULAR, config);
@@ -987,10 +948,11 @@ public class CfdpService extends AbstractYamcsService
 
         fileDownloadRequests.addTransfer(transactionId, bucket.getName());
         if (numPendingUploads() < maxNumPendingUploads) {
-            return processPutRequest(destinationId, transactionId.getSequenceNumber(), creationTime, request, bucket);
+            return processPutRequest(destinationId, transactionId.getSequenceNumber(), creationTime, request, bucket,
+                    pduSize != null ? pduSize.intValue() : null, pduDelay != null ? pduDelay.intValue() : null);
         } else {
             QueuedCfdpOutgoingTransfer transfer = new QueuedCfdpOutgoingTransfer(destinationId, transactionId.getSequenceNumber(),
-                    creationTime, request, bucket);
+                    creationTime, request, bucket, pduSize != null ? pduSize.intValue() : null, pduDelay != null ? pduDelay.intValue() : null);
             dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
             queuedTransfers.add(transfer);
             transferListeners.forEach(l -> l.stateChanged(transfer));
@@ -1001,17 +963,63 @@ public class CfdpService extends AbstractYamcsService
     }
 
     @Override
-    public ListFilesResponse getFileList(String source, String destination, String remotePath, boolean reliable) {
+    public void fetchFileList(String source, String destination, String remotePath, Map<String, Object> options) {
         EntityConf sourceEntity = getEntityFromName(source, localEntities);
         EntityConf destinationEntity = getEntityFromName(destination, remoteEntities);
 
         if (fileListingService != this) {
-            return fileListingService.getFileList(sourceEntity.getName(), destinationEntity.getName(), remotePath, reliable);
+            fileListingService.fetchFileList(sourceEntity.getName(), destinationEntity.getName(), remotePath, options);
+            return;
+        }
+
+        // Start upload of Directory Listing Request
+        String dirPath = remotePath.replaceFirst("/*$", "");
+
+        long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
+
+        DirectoryListingRequest directoryListingRequest = new DirectoryListingRequest(dirPath, ".dirlist.notsaved");
+        ArrayList<MessageToUser> messagesToUser = new ArrayList<>(List.of(directoryListingRequest));
+
+        PutRequest request = new PutRequest(
+                destinationEntity.id,
+                Boolean.TRUE.equals(options.get(RELIABLE_OPTION)) ?
+                        CfdpPacket.TransmissionMode.ACKNOWLEDGED : CfdpPacket.TransmissionMode.UNACKNOWLEDGED,
+                messagesToUser);
+        CfdpTransactionId transactionId = request.process(sourceEntity.id, idSeq.next(), ChecksumType.MODULAR, config);
+
+        OptionValues optionValues = getOptionValues(options);
+
+        Double pduSize = optionValues.doubleOptions.get(PDU_SIZE_OPTION);
+        Double pduDelay = optionValues.doubleOptions.get(PDU_DELAY_OPTION);
+
+        directoryListingRequests.put(transactionId, Arrays.asList(destinationEntity.getName(), dirPath));
+        if (numPendingUploads() < maxNumPendingUploads) {
+            processPutRequest(sourceEntity.id, transactionId.getSequenceNumber(), creationTime, request, null,
+                    pduSize != null ? pduSize.intValue() : null, pduDelay != null ? pduDelay.intValue() : null);
+        } else {
+            QueuedCfdpOutgoingTransfer transfer = new QueuedCfdpOutgoingTransfer(sourceEntity.id, transactionId.getSequenceNumber(),
+                    creationTime, request, null, pduSize != null ? pduSize.intValue() : null, pduDelay != null ? pduDelay.intValue() : null);
+            dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
+            queuedTransfers.add(transfer);
+            transferListeners.forEach(l -> l.stateChanged(transfer));
+
+            executor.submit(this::tryStartQueuedTransfer);
+        }
+    }
+
+    @Override
+    public ListFilesResponse getFileList(String source, String destination, String remotePath, Map<String, Object> options) {
+        EntityConf sourceEntity = getEntityFromName(source, localEntities);
+        EntityConf destinationEntity = getEntityFromName(destination, remoteEntities);
+
+        if (fileListingService != this) {
+            return fileListingService.getFileList(sourceEntity.getName(), destinationEntity.getName(), remotePath,
+                    options);
         }
 
         String dirPath = remotePath.replaceFirst("/*$", "");
         if (automaticDirectoryListingReloads && directoryListingRequests.values().stream().noneMatch(request -> request.equals(Arrays.asList(destinationEntity.getName(), dirPath)))) {
-            fetchFileList(sourceEntity.getName(), destinationEntity.getName(), dirPath, reliable);
+            fetchFileList(sourceEntity.getName(), destinationEntity.getName(), dirPath, options);
         }
 
         try {
@@ -1030,52 +1038,6 @@ public class CfdpService extends AbstractYamcsService
         }
 
         return null;
-    }
-
-    @Override
-    public void fetchFileList(String source, String destination, String remotePath, boolean reliable) {
-        EntityConf sourceEntity = getEntityFromName(source, localEntities);
-        EntityConf destinationEntity = getEntityFromName(destination, remoteEntities);
-
-        if (fileListingService != this) {
-            fileListingService.fetchFileList(sourceEntity.getName(), destinationEntity.getName(), remotePath, reliable);
-            return;
-        }
-
-        // Start upload of Directory Listing Request
-        String dirPath = remotePath.replaceFirst("/*$", "");
-
-        long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
-
-        DirectoryListingRequest directoryListingRequest = new DirectoryListingRequest(dirPath, ".dirlist.notsaved");
-        ArrayList<MessageToUser> messagesToUser = new ArrayList<>(List.of(directoryListingRequest));
-
-        PutRequest request = new PutRequest(destinationEntity.id, reliable ? CfdpPacket.TransmissionMode.ACKNOWLEDGED : CfdpPacket.TransmissionMode.UNACKNOWLEDGED, messagesToUser);
-        CfdpTransactionId transactionId = request.process(sourceEntity.id, idSeq.next(), ChecksumType.MODULAR, config);
-
-        directoryListingRequests.put(transactionId, Arrays.asList(destinationEntity.getName(), dirPath));
-        if (numPendingUploads() < maxNumPendingUploads) {
-            processPutRequest(sourceEntity.id, transactionId.getSequenceNumber(), creationTime, request, null);
-        } else {
-            QueuedCfdpOutgoingTransfer transfer = new QueuedCfdpOutgoingTransfer(sourceEntity.id, transactionId.getSequenceNumber(),
-                    creationTime, request, null);
-            dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
-            queuedTransfers.add(transfer);
-            transferListeners.forEach(l -> l.stateChanged(transfer));
-
-            executor.submit(this::tryStartQueuedTransfer);
-        }
-    }
-
-    private EntityConf getEntityFromName(String entityName, Map<String, EntityConf> entities) {
-        if (entityName == null || entityName.isBlank()) {
-            return entities.values().iterator().next();
-        } else {
-            if (!entities.containsKey(entityName)) {
-                throw new InvalidRequestException("Invalid entity '" + entityName + "' (should be one of " + entities + "");
-            }
-            return entities.get(entityName);
-        }
     }
 
     private void processDirectoryListingResponse(CfdpIncomingTransfer incomingTransfer, List<String> request) {
@@ -1130,16 +1092,126 @@ public class CfdpService extends AbstractYamcsService
         fileListStream.emitTuple(t);
     }
 
+    private EntityConf getEntityFromName(String entityName, Map<String, EntityConf> entities) {
+        if (entityName == null || entityName.isBlank()) {
+            return entities.values().iterator().next();
+        } else {
+            if (!entities.containsKey(entityName)) {
+                throw new InvalidRequestException("Invalid entity '" + entityName + "' (should be one of " + entities + "");
+            }
+            return entities.get(entityName);
+        }
+    }
+
+    private String getAbsoluteDestinationPath(String destinationPath, String localObjectName) {
+        if (localObjectName == null) {
+            throw new NullPointerException("local object name cannot be null");
+        }
+        if (destinationPath == null) {
+            return localObjectName;
+        }
+        if (directoryTerminators.stream().anyMatch(destinationPath::endsWith)) {
+            return destinationPath + localObjectName;
+        }
+        return destinationPath;
+    }
+
+    private static class OptionValues {
+        HashMap<String, Boolean> booleanOptions = new HashMap<>();
+        HashMap<String, Double> doubleOptions = new HashMap<>();
+        HashMap<String, String> stringOptions = new HashMap<>();
+    }
+
+    private OptionValues getOptionValues(Map<String, Object> extraOptions) {
+        var optionValues = new OptionValues();
+
+        for (Map.Entry<String, Object> option : extraOptions.entrySet()) {
+            try {
+                switch (option.getKey()) {
+                case OVERWRITE_OPTION:
+                case RELIABLE_OPTION:
+                case CLOSURE_OPTION:
+                case CREATE_PATH_OPTION:
+                    optionValues.booleanOptions.put(option.getKey(), (boolean) option.getValue());
+                    break;
+                case PDU_DELAY_OPTION:
+                case PDU_SIZE_OPTION:
+                    optionValues.doubleOptions.put(option.getKey(), (double) option.getValue());
+                    break;
+                default:
+                    log.warn("Unknown file transfer option: {} (value: {})", option.getKey(), option.getValue());
+                }
+            } catch (ClassCastException e){
+                log.warn("Failed to cast option '{}' to its correct type (value: {})", option.getKey(), option.getValue());
+            }
+        }
+
+        return optionValues;
+    }
+
+    @Override
+    public void pause(FileTransfer transfer) {
+        processPauseRequest(new PauseRequest(transfer));
+    }
+
+    @Override
+    public void resume(FileTransfer transfer) {
+        processResumeRequest(new ResumeRequest(transfer));
+    }
+
+    @Override
+    public void cancel(FileTransfer transfer) {
+        if (transfer instanceof OngoingCfdpTransfer) {
+            processCancelRequest(new CancelRequest(transfer));
+        } else if (transfer instanceof QueuedCfdpOutgoingTransfer) {
+            QueuedCfdpOutgoingTransfer trsf = (QueuedCfdpOutgoingTransfer) transfer;
+            if (queuedTransfers.remove(trsf)) {
+                trsf.setTransferState(TransferState.FAILED);
+                trsf.setFailureReason("Cancelled while queued");
+                stateChanged(trsf);
+            }
+        } else {
+            throw new InvalidRequestException("Unknown transfer type " + transfer);
+        }
+    }
+
     @Override
     public List<FileTransferOption> getFileTransferOptions() {
-        return List.of(
-                FileTransferOption.newBuilder()
-                        .setName("reliability").setType(FileTransferOptionType.BOOLEAN)
-                        .setDescription("Acknowledged or unacknowledged transmission mode")
-                        .setAssociatedText("Reliable")
-                        .setBooleanValue(true)
-                        .build()
-        );
+        var options = new ArrayList<FileTransferOption>();
+        options.add(FileTransferOption.newBuilder()
+                .setName(RELIABLE_OPTION)
+                .setType(FileTransferOption.Type.BOOLEAN)
+                .setTitle("Reliability")
+                .setDescription("Acknowledged or unacknowledged transmission mode")
+                .setAssociatedText("Reliable")
+                .setDefault("true")
+                .build());
+
+        if (canChangePduDelay) {
+            options.add(FileTransferOption.newBuilder()
+                    .setName(PDU_DELAY_OPTION)
+                    .setType(FileTransferOption.Type.DOUBLE)
+                    .setTitle("PDU delay")
+                    .setDefault(Integer.toString(config.getInt("sleepBetweenPdus")))
+                    .addAllValues(pduDelayPredefinedValues.stream().map(value ->
+                            FileTransferOption.Value.newBuilder().setValue(value.toString()).build()).collect(Collectors.toList()))
+                    .setAllowCustomOption(true)
+                    .build());
+        }
+
+        if (canChangePduSize) {
+            options.add(FileTransferOption.newBuilder()
+                    .setName(PDU_SIZE_OPTION)
+                    .setType(FileTransferOption.Type.DOUBLE)
+                    .setTitle("PDU size")
+                    .setDefault(Integer.toString(config.getInt("maxPduSize")))
+                    .addAllValues(pduSizePredefinedValues.stream().map(value ->
+                            FileTransferOption.Value.newBuilder().setValue(value.toString()).build()).collect(Collectors.toList()))
+                    .setAllowCustomOption(true)
+                    .build());
+        }
+
+        return options;
     }
 
     @Override

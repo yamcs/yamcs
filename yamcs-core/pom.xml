@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>5.7.10-SNAPSHOT</version>
+    <version>5.7.11-SNAPSHOT</version>
   </parent>
 
   <artifactId>yamcs-core</artifactId>
@@ -182,12 +182,11 @@
         <configuration>
           <forkCount>1</forkCount>
           <reuseForks>false</reuseForks>
-          <systemProperties>
-            <property>
-              <name>java.util.logging.config.file</name>
-              <value>${project.build.directory}/test-classes/logging.properties</value>
-            </property>
-          </systemProperties>
+          <systemPropertyVariables>
+            <java.util.logging.config.file>
+              ${project.build.directory}/test-classes/logging.properties
+            </java.util.logging.config.file>
+          </systemPropertyVariables>
           <excludes>
             <exclude>**/RdbPerformanceTest.java</exclude>
             <exclude>**/*$*</exclude> <!-- this excludes the inner classes which causes maven to get stuck somehow -->

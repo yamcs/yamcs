@@ -1,11 +1,13 @@
-import { StackEntry } from './StackEntry';
+import { Value } from '../../client';
+import { AdvancementParams, StackEntry } from './StackEntry';
 
 export class StackFormatter {
-
   private entries: StackEntry[];
+  private stackOptions: { advancement?: AdvancementParams; };
 
-  constructor(entries: StackEntry[] = []) {
+  constructor(entries: StackEntry[] = [], stackOptions: { advancement?: AdvancementParams; }) {
     this.entries = entries;
+    this.stackOptions = stackOptions;
   }
 
   addEntry(entry: StackEntry) {
@@ -28,42 +30,10 @@ export class StackFormatter {
         for (const id in entry.extra) {
           const extraOptionEl = doc.createElement('extraOption');
           extraOptionEl.setAttribute('id', id);
-          const value = entry.extra[id];
-          switch (value.type) {
-            case 'BOOLEAN':
-              extraOptionEl.setAttribute('value', '' + value.booleanValue);
-              extraOptionsEl.appendChild(extraOptionEl);
-              break;
-            case 'FLOAT':
-              extraOptionEl.setAttribute('value', '' + value.floatValue);
-              extraOptionsEl.appendChild(extraOptionEl);
-              break;
-            case 'DOUBLE':
-              extraOptionEl.setAttribute('value', '' + value.doubleValue);
-              extraOptionsEl.appendChild(extraOptionEl);
-              break;
-            case 'UINT32':
-              extraOptionEl.setAttribute('value', '' + value.uint32Value);
-              extraOptionsEl.appendChild(extraOptionEl);
-              break;
-            case 'SINT32':
-              extraOptionEl.setAttribute('value', '' + value.sint32Value);
-              extraOptionsEl.appendChild(extraOptionEl);
-              break;
-            case 'ENUMERATED':
-            case 'STRING':
-              extraOptionEl.setAttribute('value', '' + value.stringValue);
-              extraOptionsEl.appendChild(extraOptionEl);
-              break;
-            case 'UINT64':
-              extraOptionEl.setAttribute('value', '' + value.uint64Value);
-              extraOptionsEl.appendChild(extraOptionEl);
-              break;
-            case 'SINT64':
-              extraOptionEl.setAttribute('value', '' + value.sint64Value);
-              extraOptionsEl.appendChild(extraOptionEl);
-              break;
-            default: // Ignore
+          const value = this.getValue(entry.extra[id]);
+          if (value != null) {
+            extraOptionEl.setAttribute('value', '' + value);
+            extraOptionsEl.appendChild(extraOptionEl);
           }
         }
         entryEl.appendChild(extraOptionsEl);
@@ -102,5 +72,67 @@ export class StackFormatter {
       if (node.match(/^<?\w[^>]*[^\/]$/)) indent += spaces;
     });
     return formatted.substring(1, formatted.length - 3);
+  }
+
+  toJSON() {
+    return JSON.stringify({
+      "$schema": "https://yamcs.org/schema/command-stack.schema.json",
+      commands: this.entries.map(entry => {
+        return {
+          name: entry.name,
+          ...(entry.comment && { comment: entry.comment }),
+          ...(entry.extra && { extraOptions: this.getExtraOptionsJSON(entry.extra) }),
+          ...(entry.args && { arguments: this.getCommandArgumentsJSON(entry.args) }),
+          ...(entry.advancement && { advancement: entry.advancement })
+        };
+      }),
+      ...(this.stackOptions.advancement && { advancement: this.stackOptions.advancement }),
+    }, null, 2);
+  }
+
+  private getExtraOptionsJSON(extra: { [key: string]: Value; }): any {
+    let extraOptions = [];
+    for (const id in extra) {
+      const value = this.getValue(extra[id]);
+      extraOptions.push({
+        id: id,
+        ...(value != null && { value: value })
+      });
+    }
+    return extraOptions;
+  }
+
+  private getCommandArgumentsJSON(args: { [key: string]: any; }) {
+    let commandArguments = [];
+    for (const argName in args) {
+      commandArguments.push({
+        name: argName,
+        value: args[argName]
+      });
+    }
+    return commandArguments;
+  }
+
+  private getValue(value: Value) {
+    switch (value.type) {
+      case 'BOOLEAN':
+        return value.booleanValue;
+      case 'FLOAT':
+        return value.floatValue;
+      case 'DOUBLE':
+        return value.doubleValue;
+      case 'UINT32':
+        return value.uint32Value;
+      case 'SINT32':
+        return value.sint32Value;
+      case 'ENUMERATED':
+      case 'STRING':
+        return value.stringValue;
+      case 'UINT64':
+        return value.uint64Value;
+      case 'SINT64':
+        return value.sint64Value;
+      default: // Ignore
+    }
   }
 }

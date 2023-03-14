@@ -29,7 +29,7 @@
 .grid-container {
   display: grid;
   grid-auto-flow: column;
-  grid-template-rows: [header] min-content [tables] auto [footer] min-content;
+  grid-template-rows: [header] min-content [tables] auto [footer] min-content [options-footer] min-content;
   grid-template-columns: [buckets] 140px [local] auto [remote] auto;
   column-gap: 8px;
   flex: 1;
@@ -50,6 +50,18 @@
 
 .footer {
   grid-row: footer;
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: stretch;
+  gap: 8px;
+  height: fit-content;
+}
+
+.options-footer {
+  grid-row: options-footer;
+  grid-column: local / span 2;
   margin-top: 8px;
   display: flex;
   flex-wrap: wrap;
@@ -146,7 +158,10 @@ app-breadcrumb-trail {
   transition: transform 0.3s ease-in-out;
 }
 
-.footer input {
+.footer input,
+.options-footer input,
+.footer select,
+.options-footer select {
   margin: 2px 0 0;
 }
 
@@ -181,8 +196,8 @@ table.ya-data-table {
   text-transform: unset;
   cursor: unset;
   position: unset;
-  display: unset;
-  margin: 0;
+  display: inline-block;
+  margin: 3px 0 0;
   user-select: none;
 }
 

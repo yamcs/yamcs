@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -61,7 +60,8 @@ public class Command implements Comparable<Command> {
     private final int sequenceNumber;
     private final Instant generationTime;
     private final String source;
-    private Map<String, Object> attributes = new LinkedHashMap<>();
+
+    private Map<String, Object> attributes = Collections.synchronizedMap(new LinkedHashMap<>());
 
     // Command info that was relayed from an upstream (cascaded) server.
     private Map<String, Command> cascadedRecordsByPrefix = new LinkedHashMap<>();
@@ -226,7 +226,9 @@ public class Command implements Comparable<Command> {
      * Returns all attributes of this commands.
      */
     public Map<String, Object> getAttributes() {
-        return Collections.unmodifiableMap(attributes);
+        synchronized (attributes) {
+            return new LinkedHashMap<>(attributes);
+        }
     }
 
     public void merge(CommandHistoryEntry entry) {
@@ -248,7 +250,9 @@ public class Command implements Comparable<Command> {
     }
 
     public void merge(Command other) {
-        attributes.putAll(other.attributes);
+        synchronized (other.attributes) {
+            attributes.putAll(other.attributes);
+        }
         for (var entry : other.cascadedRecordsByPrefix.entrySet()) {
             var prefix = entry.getKey();
             var cascadedRecord = entry.getValue();
@@ -256,7 +260,9 @@ public class Command implements Comparable<Command> {
             if (existing == null) {
                 cascadedRecordsByPrefix.put(prefix, cascadedRecord);
             } else {
-                existing.attributes.putAll(cascadedRecord.attributes);
+                synchronized (cascadedRecord.attributes) {
+                    existing.attributes.putAll(cascadedRecord.attributes);
+                }
             }
         }
     }
@@ -265,11 +271,13 @@ public class Command implements Comparable<Command> {
      * Returns non-standard attributes
      */
     public LinkedHashMap<String, Object> getExtraAttributes() {
-        LinkedHashMap<String, Object> extra = new LinkedHashMap<>();
-        for (Entry<String, Object> attr : attributes.entrySet()) {
-            String name = attr.getKey();
-            if (isExtraAttribute(name)) {
-                extra.put(name, attr.getValue());
+        var extra = new LinkedHashMap<String, Object>();
+        synchronized (attributes) {
+            for (var attr : attributes.entrySet()) {
+                String name = attr.getKey();
+                if (isExtraAttribute(name)) {
+                    extra.put(name, attr.getValue());
+                }
             }
         }
         return extra;
@@ -279,13 +287,15 @@ public class Command implements Comparable<Command> {
      * All acknowledgments by name
      */
     public LinkedHashMap<String, Acknowledgment> getAcknowledgments() {
-        LinkedHashMap<String, Acknowledgment> acknowledgments = new LinkedHashMap<>();
-        for (Entry<String, Object> attr : attributes.entrySet()) {
-            String name = attr.getKey();
-            if (isAcknowledgmentStatusAttribute(name)) {
-                Acknowledgment ack = getAcknowledgment(name.substring(0, name.length() - 7));
-                if (ack != null) {
-                    acknowledgments.put(ack.getName(), ack);
+        var acknowledgments = new LinkedHashMap<String, Acknowledgment>();
+        synchronized (attributes) {
+            for (var attr : attributes.entrySet()) {
+                String name = attr.getKey();
+                if (isAcknowledgmentStatusAttribute(name)) {
+                    var ack = getAcknowledgment(name.substring(0, name.length() - 7));
+                    if (ack != null) {
+                        acknowledgments.put(ack.getName(), ack);
+                    }
                 }
             }
         }

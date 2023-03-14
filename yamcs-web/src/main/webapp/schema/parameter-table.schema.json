@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "JSON schema for Yamcs Parameter Table files (*.par)",
+  "type": "object",
+  "properties": {
+    "scroll": {
+      "description": "If true, the table shows multiple values for each of the parameters",
+      "type": "boolean",
+      "default": false
+    },
+    "bufferSize": {
+      "description": "Amount of values to show when scroll is set to true",
+      "type": "number"
+    },
+    "parameters": {
+      "description": "Parameter names",
+      "type": "array",
+      "items": {
+        "description": "Parameter name",
+        "type": "string"
+      }
+    }
+  },
+  "required": ["parameters"]
+}

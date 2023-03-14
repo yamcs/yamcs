@@ -4,13 +4,11 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * Postfix (aka Reverse Polish Notation (RPN)) notation is used to describe mathematical equations.
- * It uses a stack where operands (either fixed values or ParameterInstances) are pushed onto the stack from first to
- * last in the XML.
+ * Postfix (aka Reverse Polish Notation (RPN)) notation is used to describe mathematical equations. It uses a stack
+ * where operands (either fixed values or ParameterInstances) are pushed onto the stack from first to last in the XML.
  * As the operators are specified, each pops off operands as it evaluates them, and pushes the result back onto the
- * stack.
- * In this case postfix is used to avoid having to specify parenthesis. To convert from infix to postfix, use Dijkstra's
- * "shunting yard" algorithm.
+ * stack. In this case postfix is used to avoid having to specify parenthesis. To convert from infix to postfix, use
+ * Dijkstra's "shunting yard" algorithm.
  * 
  * @author nm
  *
@@ -25,7 +23,7 @@ public class MathOperation implements Serializable {
          */
         VALUE_OPERAND("ValueOperand"),
         /**
-         * >Use the value of this parameter in the calculation. It is the calibrator's value only. If the raw value is
+         * Use the value of this parameter in the calculation. It is the calibrator's value only. If the raw value is
          * needed, specify it explicitly using ParameterInstanceRefOperand. Note this element has no content.
          */
         THIS_PARAMETER_OPERAND("ThisParameterOperand"),
@@ -39,6 +37,7 @@ public class MathOperation implements Serializable {
          * on the stack, and unary operators use the top operand on the stack.
          */
         OPERATOR("Operator");
+
         final String xtceName;
 
         ElementType(String xtceName) {
@@ -84,6 +83,10 @@ public class MathOperation implements Serializable {
             return type;
         }
 
+        public double getValue() {
+            return value;
+        }
+
         public MathOperator getOperator() {
             return operator;
         }
@@ -92,6 +95,7 @@ public class MathOperation implements Serializable {
             return pref;
         }
 
+        @Override
         public String toString() {
             switch (type) {
             case OPERATOR:

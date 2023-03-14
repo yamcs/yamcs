@@ -36,12 +36,12 @@ import org.yamcs.protobuf.Mdb.ContainerInfo;
 import org.yamcs.protobuf.Mdb.ContextAlarmInfo;
 import org.yamcs.protobuf.Mdb.ContextCalibratorInfo;
 import org.yamcs.protobuf.Mdb.DataEncodingInfo;
-import org.yamcs.protobuf.Mdb.DataEncodingInfo.Type;
 import org.yamcs.protobuf.Mdb.DataSourceType;
 import org.yamcs.protobuf.Mdb.FixedValueInfo;
 import org.yamcs.protobuf.Mdb.HistoryInfo;
 import org.yamcs.protobuf.Mdb.InputParameterInfo;
 import org.yamcs.protobuf.Mdb.JavaExpressionCalibratorInfo;
+import org.yamcs.protobuf.Mdb.MathElement;
 import org.yamcs.protobuf.Mdb.MemberInfo;
 import org.yamcs.protobuf.Mdb.NumberFormatTypeInfo;
 import org.yamcs.protobuf.Mdb.OutputParameterInfo;
@@ -115,6 +115,7 @@ import org.yamcs.xtce.IntegerRange;
 import org.yamcs.xtce.IntegerValue;
 import org.yamcs.xtce.JavaExpressionCalibrator;
 import org.yamcs.xtce.MatchCriteria;
+import org.yamcs.xtce.MathAlgorithm;
 import org.yamcs.xtce.MathOperationCalibrator;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.MetaCommand;
@@ -1013,16 +1014,16 @@ public class XtceToGpbAssembler {
             infob.setSizeInBits(xtceDataEncoding.getSizeInBits());
         }
         if (xtceDataEncoding instanceof BinaryDataEncoding) {
-            infob.setType(Type.BINARY);
+            infob.setType(DataEncodingInfo.Type.BINARY);
         } else if (xtceDataEncoding instanceof BooleanDataEncoding) {
-            infob.setType(Type.BOOLEAN);
+            infob.setType(DataEncodingInfo.Type.BOOLEAN);
         } else if (xtceDataEncoding instanceof FloatDataEncoding) {
             FloatDataEncoding fde = (FloatDataEncoding) xtceDataEncoding;
             if (fde.getEncoding() == FloatDataEncoding.Encoding.STRING) {
-                infob.setType(Type.STRING);
+                infob.setType(DataEncodingInfo.Type.STRING);
                 infob.setEncoding(toTextualEncoding(fde.getStringDataEncoding()));
             } else {
-                infob.setType(Type.FLOAT);
+                infob.setType(DataEncodingInfo.Type.FLOAT);
                 infob.setEncoding(fde.getEncoding().toString());
             }
             if (fde.getDefaultCalibrator() != null) {
@@ -1041,10 +1042,10 @@ public class XtceToGpbAssembler {
         } else if (xtceDataEncoding instanceof IntegerDataEncoding) {
             IntegerDataEncoding ide = (IntegerDataEncoding) xtceDataEncoding;
             if (ide.getEncoding() == IntegerDataEncoding.Encoding.STRING) {
-                infob.setType(Type.STRING);
+                infob.setType(DataEncodingInfo.Type.STRING);
                 infob.setEncoding(toTextualEncoding(ide.getStringEncoding()));
             } else {
-                infob.setType(Type.INTEGER);
+                infob.setType(DataEncodingInfo.Type.INTEGER);
                 infob.setEncoding(ide.getEncoding().toString());
             }
             if (ide.getDefaultCalibrator() != null) {
@@ -1061,7 +1062,7 @@ public class XtceToGpbAssembler {
                 }
             }
         } else if (xtceDataEncoding instanceof StringDataEncoding) {
-            infob.setType(Type.STRING);
+            infob.setType(DataEncodingInfo.Type.STRING);
             StringDataEncoding sde = (StringDataEncoding) xtceDataEncoding;
             infob.setEncoding(toTextualEncoding(sde));
         }
@@ -1259,6 +1260,7 @@ public class XtceToGpbAssembler {
             }
 
             if (a instanceof CustomAlgorithm) {
+                b.setType(AlgorithmInfo.Type.CUSTOM);
                 CustomAlgorithm ca = (CustomAlgorithm) a;
                 if (ca.getLanguage() != null) {
                     b.setLanguage(ca.getLanguage());
@@ -1266,6 +1268,38 @@ public class XtceToGpbAssembler {
                 if (ca.getAlgorithmText() != null) {
                     b.setText(ca.getAlgorithmText());
                 }
+            } else if (a instanceof MathAlgorithm) {
+                b.setType(AlgorithmInfo.Type.MATH);
+                MathAlgorithm ma = (MathAlgorithm) a;
+                for (var el : ma.getOperation().getElementList()) {
+                    switch (el.getType()) {
+                    case OPERATOR:
+                        b.addMathElements(MathElement.newBuilder()
+                                .setType(MathElement.Type.OPERATOR)
+                                .setOperator(el.getOperator().xtceName()));
+                        break;
+                    case THIS_PARAMETER_OPERAND:
+                        b.addMathElements(MathElement.newBuilder()
+                                .setType(MathElement.Type.THIS_PARAMETER_OPERAND));
+                        break;
+                    case VALUE_OPERAND:
+                        b.addMathElements(MathElement.newBuilder()
+                                .setType(MathElement.Type.VALUE_OPERAND)
+                                .setValue(el.getValue()));
+                        break;
+                    case PARAMETER_INSTANCE_REF_OPERAND:
+                        var pref = el.getParameterInstanceRef();
+                        b.addMathElements(MathElement.newBuilder()
+                                .setType(MathElement.Type.PARAMETER)
+                                .setParameter(toParameterInfo(pref.getParameter(), DetailLevel.SUMMARY))
+                                .setParameterInstance(pref.getInstance()));
+                        break;
+                    default:
+                        throw new IllegalStateException("Unexpected math element " + el.getType());
+                    }
+                }
+            } else {
+                throw new IllegalStateException("Unexpected algorithm type " + a.getClass());
             }
         }
 

@@ -6,6 +6,14 @@
       Name
       <input #filename type="text" formControlName="name">
     </label>
+    <br>
+    <label>
+      Format
+      <select formControlName="format">
+        <option value="xml">XML (deprecated)</option>
+        <option value="ycs">YCS (recommended)</option>
+      </select>
+    </label>
   </form>
 </mat-dialog-content>
 

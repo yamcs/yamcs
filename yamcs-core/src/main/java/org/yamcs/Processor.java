@@ -1,6 +1,7 @@
 package org.yamcs;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -13,6 +14,7 @@ import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
 import org.yamcs.cmdhistory.StreamCommandHistoryProvider;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
+import org.yamcs.commanding.Acknowledgment;
 import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.CommandingManager;
 import org.yamcs.container.ContainerRequestManager;
@@ -104,6 +106,9 @@ public class Processor extends AbstractService {
     StreamParameterSender streamParameterSender;
     EventAlarmServer eventAlarmServer;
     YamcsServerInstance ysi;
+
+    // Globally available acknowledgments (in addition to Q, R, S)
+    private Set<Acknowledgment> acknowledgments = new CopyOnWriteArraySet<>();
 
     public Processor(String yamcsInstance, String name, String type, String creator) throws ProcessorException {
         if ((name == null) || "".equals(name)) {
@@ -207,7 +212,6 @@ public class Processor extends AbstractService {
         parameterProcessorManager.init();
 
         listeners.forEach(l -> l.processorAdded(this));
-
     }
 
     public void setPacketProvider(TmPacketProvider tpp) {
@@ -384,6 +388,22 @@ public class Processor extends AbstractService {
 
     public void setCreator(String creator) {
         this.creator = creator;
+    }
+
+    /**
+     * Returns globally available acknowledgments (in addition to Acknowledge_Queued, Acknowledge_Released and
+     * Acknowledge_Sent).
+     */
+    public Collection<Acknowledgment> getAcknowledgments() {
+        return acknowledgments;
+    }
+
+    /**
+     * Add a globally available acknowledgment (in addition to Acknowledge_Queued, Acknowledge_Released and
+     * Acknowledge_Sent).
+     */
+    public void addAcknowledgment(Acknowledgment acknowledgment) {
+        acknowledgments.add(acknowledgment);
     }
 
     /**

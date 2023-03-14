@@ -216,8 +216,10 @@ public class AlgorithmManager extends AbstractProcessorService
             for (OutputParameter oParam : algo.getOutputSet()) {
                 if (oParam.getParameter() == paramDef) {
                     activateAndInit(algo, globalCtx);
-                    requestedOutParams.add(paramDef);
-                    return; // There shouldn't be more ...
+                    // Account for multiple algorithms writing to same parameter
+                    if (!requestedOutParams.contains(paramDef)) {
+                        requestedOutParams.add(paramDef);
+                    }
                 }
             }
         }

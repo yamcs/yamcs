@@ -118,6 +118,11 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
      * @param config
      *         - the configuration of various settings (see yamcs manual)
      * @param bucket
+     *         - bucket from/to which the file should be
+     * @param customPduSize
+     *         - if not null, size to overwrite the config maxPduSize
+     * @param customPduDelay
+     *         - if not null, delay to overwrite the config sleepBetweenPdus
      * @param eventProducer
      *         - used to send events when important things happen
      * @param monitor
@@ -129,6 +134,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
     public CfdpOutgoingTransfer(String yamcsInstance, long initiatorEntityId, long id, long creationTime,
             ScheduledThreadPoolExecutor executor,
             PutRequest request, Stream cfdpOut, YConfiguration config, Bucket bucket,
+            Integer customPduSize, Integer customPduDelay,
             EventProducer eventProducer,
             TransferMonitor monitor, Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
         super(yamcsInstance, id, creationTime,
@@ -141,7 +147,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         this.bucket = bucket;
         entityIdLength = config.getInt("entityIdLength");
         seqNrSize = config.getInt("sequenceNrLength");
-        int maxPduSize = config.getInt("maxPduSize", 512);
+        int maxPduSize = customPduSize != null && customPduSize > 0 ? customPduSize : config.getInt("maxPduSize", 512);
         maxDataSize = maxPduSize - 4 - 2 * entityIdLength - seqNrSize - 4;
         long eofAckTimeout = config.getInt("eofAckTimeout", 10000);
         int eofAckLimit = config.getInt("eofAckLimit", 5);
@@ -150,7 +156,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         acknowledged = request.isAcknowledged();
 
         outTxState = OutTxState.START;
-        this.sleepBetweenPdus = config.getInt("sleepBetweenPdus", 500);
+        this.sleepBetweenPdus = customPduDelay != null && customPduDelay > 0 ? customPduDelay : config.getInt("sleepBetweenPdus", 500);
         this.closureRequested = request.isClosureRequested();
 
 

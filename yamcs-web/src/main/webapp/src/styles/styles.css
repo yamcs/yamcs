@@ -209,6 +209,7 @@ button.ya-button {
   background-color: #fff;
   outline: none;
   color: rgba(0, 0, 0, .75);
+  padding: 1px 6px;
   margin: 0;
   border-radius: 1px;
   background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.02));

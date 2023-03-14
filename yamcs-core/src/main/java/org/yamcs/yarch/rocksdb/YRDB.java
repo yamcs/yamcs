@@ -40,7 +40,7 @@ public class YRDB {
     Map<ByteArrayWrapper, ColumnFamilyHandle> columnFamilies = new HashMap<>();
 
     private final RocksDB db;
-    private boolean isClosed = false;
+    private volatile boolean closed = false;
     private final String path;
     private final ColumnFamilyOptions cfoptions;
     static final String ROCKS_PROP_NUM_KEYS = "rocksdb.estimate-num-keys";
@@ -119,31 +119,40 @@ public class YRDB {
      * Close the database. Shall only be done from the RDBFactory
      */
     void close() {
+        closed = true;
         for (ColumnFamilyHandle cfh : columnFamilies.values()) {
             cfh.close();
         }
         db.close();
-        isClosed = true;
     }
 
     /**
      * @return true if the database is open
      */
     public boolean isOpen() {
-        return !isClosed;
+        return !closed;
     }
 
     public List<RocksIterator> newIterators(List<ColumnFamilyHandle> cfhList, boolean tailing) throws RocksDBException {
+        if (closed) {
+            throw new IllegalStateException("Database is closed");
+        }
         ReadOptions ro = new ReadOptions();
         ro.setTailing(tailing);
         return db.newIterators(cfhList, ro);
     }
 
     public RocksIterator newIterator() throws RocksDBException {
+        if (closed) {
+            throw new IllegalStateException("Database is closed");
+        }
         return db.newIterator();
     }
 
     public RocksIterator newIterator(ColumnFamilyHandle cfh) throws RocksDBException {
+        if (closed) {
+            throw new IllegalStateException("Database is closed");
+        }
         return db.newIterator(cfh);
     }
 
@@ -156,6 +165,9 @@ public class YRDB {
     }
 
     public byte[] get(ColumnFamilyHandle cfh, byte[] key) throws RocksDBException {
+        if (closed) {
+            throw new IllegalStateException("Database is closed");
+        }
         return db.get(cfh, key);
     }
 
@@ -163,10 +175,16 @@ public class YRDB {
      * {@link RocksDB#get}
      */
     public byte[] get(byte[] k) throws RocksDBException {
+        if (closed) {
+            throw new IllegalStateException("Database is closed");
+        }
         return db.get(k);
     }
 
     public synchronized ColumnFamilyHandle createColumnFamily(byte[] cfname) throws RocksDBException {
+        if (closed) {
+            throw new IllegalStateException("Database is closed");
+        }
         ColumnFamilyDescriptor cfd = new ColumnFamilyDescriptor(cfname, cfoptions);
         ColumnFamilyHandle cfh = db.createColumnFamily(cfd);
         columnFamilies.put(new ByteArrayWrapper(cfname), cfh);
@@ -178,14 +196,23 @@ public class YRDB {
     }
 
     public void put(ColumnFamilyHandle cfh, byte[] k, byte[] v) throws RocksDBException {
+        if (closed) {
+            throw new IllegalStateException("Database is closed");
+        }
         db.put(cfh, k, v);
     }
 
     public void put(byte[] k, byte[] v) throws RocksDBException {
+        if (closed) {
+            throw new IllegalStateException("Database is closed");
+        }
         db.put(k, v);
     }
 
     public void put(WriteOptions writeOpt, byte[] k, byte[] v) throws RocksDBException {
+        if (closed) {
+            throw new IllegalStateException("Database is closed");
+        }
         db.put(writeOpt, k, v);
     }
 
@@ -210,7 +237,7 @@ public class YRDB {
     }
 
     public String getProperties() throws RocksDBException {
-        if (isClosed) {
+        if (closed) {
             throw new IllegalStateException("Database is closed");
         }
 
@@ -258,68 +285,30 @@ public class YRDB {
     }
 
     public RocksDB getDb() {
+        if (closed) {
+            throw new IllegalStateException("Database is closed");
+        }
         return db;
     }
 
-    public synchronized void dropColumnFamily(ColumnFamilyHandle cfh) throws RocksDBException {
-        for (Map.Entry<ByteArrayWrapper, ColumnFamilyHandle> e : columnFamilies.entrySet()) {
-            if (e.getValue() == cfh) {
-                db.dropColumnFamily(cfh);
-                columnFamilies.remove(e.getKey());
-                break;
-            }
-        }
-    }
-
-    /**
-     * scans and returns a list of all prefixes of specified size
-     * 
-     * @param size
-     * @return list of partitions
-     * @throws IOException
-     */
-    public List<byte[]> scanPartitions(int size) throws IOException {
-        try (RocksIterator it = db.newIterator()) {
-            List<byte[]> l = new ArrayList<>();
-            byte[] k = new byte[size];
-            while (true) {
-                it.seek(k);
-                if (!it.isValid()) {
-                    break;
-                }
-
-                byte[] found = it.key();
-                if (found.length < size) {
-                    throw new IOException("Found key smaller than the partition length: " + found.length + " vs " + size
-                            + ". Database corruption?");
-                }
-                l.add(Arrays.copyOf(found, size));
-                System.arraycopy(found, 0, k, 0, size);
-                int i = size - 1;
-                while (i >= 0 && k[i] == -1) {
-                    k[i] = 0;
-                    i--;
-                }
-                if (i < 0) {
-                    break;
-                } else {
-                    k[i] = (byte) (Byte.toUnsignedInt(k[i]) + 1);
-                }
-            }
-            it.close();
-            return l;
-        }
-    }
-
     public long getApproxNumRecords() throws RocksDBException {
+        if (closed) {
+            throw new IllegalStateException("Database is closed");
+        }
         return db.getLongProperty(ROCKS_PROP_NUM_KEYS);
     }
 
     public long getApproxNumRecords(ColumnFamilyHandle cfh) throws RocksDBException {
+        if (closed) {
+            throw new IllegalStateException("Database is closed");
+        }
         return db.getLongProperty(cfh, ROCKS_PROP_NUM_KEYS);
     }
 
     public void delete(byte[] k) throws RocksDBException {
+        if (closed) {
+            throw new IllegalStateException("Database is closed");
+        }
         db.delete(k);
     }
 
@@ -327,6 +316,9 @@ public class YRDB {
      * Returns an iterator that iterates over all elements with key starting with the prefix
      */
     public DbIterator newPrefixIterator(byte[] prefix) {
+        if (closed) {
+            throw new IllegalStateException("Database is closed");
+        }
         return new AscendingRangeIterator(db.newIterator(), prefix, prefix);
     }
 
@@ -334,6 +326,9 @@ public class YRDB {
      * Returns an iterator that iterates in reverse over all elements with key starting with the prefix
      */
     public DbIterator newDescendingPrefixIterator(byte[] prefix) {
+        if (closed) {
+            throw new IllegalStateException("Database is closed");
+        }
         return new DescendingPrefixIterator(db.newIterator(), prefix);
     }
 
@@ -370,14 +365,22 @@ public class YRDB {
     }
 
     public void write(WriteOptions writeOpts, WriteBatch writeBatch) throws RocksDBException {
+        if (closed) {
+            throw new IllegalStateException("Database is closed");
+        }
         db.write(writeOpts, writeBatch);
     }
 
     public Snapshot getSnapshot() {
+        if (closed) {
+            throw new IllegalStateException("Database is closed");
+        }
         return db.getSnapshot();
     }
 
     public void releaseSnapshot(Snapshot snapshot) {
-        db.releaseSnapshot(snapshot);
+        if (!closed) {
+            db.releaseSnapshot(snapshot);
+        }
     }
 }

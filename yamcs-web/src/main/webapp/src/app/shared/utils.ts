@@ -156,8 +156,10 @@ export function toValue(value: any): Value {
       values.push(toValue(value[name]));
     }
     return { type: 'AGGREGATE', aggregateValue: { name: names, value: values } };
+  } else if (value === true || value === false) {
+    return { type: 'BOOLEAN', booleanValue: value };
   } else {
-    return { type: 'STRING', stringValue: value };
+    return { type: 'STRING', stringValue: String(value) };
   }
 }
 

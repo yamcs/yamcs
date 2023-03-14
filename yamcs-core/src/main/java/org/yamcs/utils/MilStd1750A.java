@@ -19,7 +19,7 @@ public class MilStd1750A {
      * If the number is too large or too small, the {@link #MAX_FLOAT_VALUE} respectively {@link #MIN_FLOAT_VALUE} are
      * returned
      * 
-     * This performs some bit operations to transform from IEE 754 binary representation to STD 1750 binary
+     * This performs some bit operations to transform from IEEE 754 binary representation to STD 1750 binary
      * representation.
      * No Math.pow or other expensive operations are used.
      * 
@@ -64,6 +64,7 @@ public class MilStd1750A {
             return 0;
         }
         m = m >> 14;
+
         return ((m << 8) & 0xFFFFFF_00_0000L) | ((e << 16) & 0xFF_0000) | (m & 0xFFFF);
     }
 

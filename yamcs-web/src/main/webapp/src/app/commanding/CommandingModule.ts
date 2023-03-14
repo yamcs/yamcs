@@ -25,6 +25,8 @@ import { SendCommandWizardStep } from './command-sender/SendCommandWizardStep';
 import { CommandingRoutingModule, routingComponents } from './CommandingRoutingModule';
 import { CommandDownloadLinkPipe } from './pipes/CommandDownloadLinkPipe';
 import { QueuedCommandsTable } from './queues/QueuedCommandsTable';
+import { AcknowledgmentNamePipe } from './stacks/AcknowledgmentNamePipe';
+import { AdvanceAckHelp } from './stacks/AdvanceAckHelp';
 import { CreateFolderDialog } from './stacks/CreateFolderDialog';
 import { CreateStackDialog } from './stacks/CreateStackDialog';
 import { EditStackEntryDialog } from './stacks/EditStackEntryDialog';
@@ -33,6 +35,7 @@ import { StackedCommandDetail } from './stacks/StackedCommandDetail';
 import { StackFilePageDirtyDialog } from './stacks/StackFilePageDirtyDialog';
 
 const pipes = [
+  AcknowledgmentNamePipe,
   CascadingPrefixPipe,
   CommandDownloadLinkPipe,
 ];
@@ -46,6 +49,7 @@ const pipes = [
     routingComponents,
     pipes,
     AcknowledgmentIcon,
+    AdvanceAckHelp,
     AggregateArgument,
     ArgumentComponent,
     ArrayArgument,

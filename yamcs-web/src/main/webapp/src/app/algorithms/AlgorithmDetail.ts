@@ -41,8 +41,10 @@ export class AlgorithmDetail implements AfterViewInit {
   ) { }
 
   ngAfterViewInit() {
-    this.initializeEditor();
-    this.refreshOverrides();
+    if (this.algorithm.text) {
+      this.initializeEditor();
+      this.refreshOverrides();
+    }
   }
 
   isChangeMissionDatabaseEnabled() {

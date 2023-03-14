@@ -1,0 +1,45 @@
+{
+  "$schema": "https://yamcs.org/schema/command-stack.schema.json",
+  "commands": [
+    {
+      "name": "/YSS/SIMULATOR/SWITCH_VOLTAGE_ON",
+      "extraOptions": [],
+      "arguments": [
+        {
+          "name": "voltage_num",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "name": "/YSS/SIMULATOR/SWITCH_VOLTAGE_OFF",
+      "extraOptions": [],
+      "arguments": [
+        {
+          "name": "voltage_num",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "name": "/YSS/SIMULATOR/SWITCH_VOLTAGE_ON_ENUM",
+      "extraOptions": [],
+      "arguments": [
+        {
+          "name": "voltage_num",
+          "value": "SECONDARY"
+        }
+      ]
+    },
+    {
+      "name": "/TSE/simulator/get_battery_voltage",
+      "extraOptions": [],
+      "arguments": [
+        {
+          "name": "n",
+          "value": "2"
+        }
+      ]
+    }
+  ]
+}

@@ -122,7 +122,7 @@ public class ColumbusCcsdsPacket extends SimulatorCcsdsPacket {
         this.timeMillis = TimeEncoding.fromGpsCcsdsTime(bb.getInt(6), bb.get(10));
         this.packetType = bb.get(11) & 0x1F;
         this.packetid = bb.getInt(12);
-        this.checksumPresent = (bb.get(11) & 0x20) == 1;
+        this.checksumPresent = this.getChecksumIndicator();
     }
 
     @Override

@@ -13,7 +13,6 @@ import org.yamcs.xtce.OutputParameter;
  * <p>
  * An instance of this class will be created for each algorithm in each context.
  * <p>
- * <p>
  * The instance is reused upon each update of one or more of its InputParameters.
  * 
  */

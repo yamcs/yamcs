@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../../../lib';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
+import { YamcsService } from '../../core/services/YamcsService';
 import { User } from '../../shared/User';
 
 @Component({

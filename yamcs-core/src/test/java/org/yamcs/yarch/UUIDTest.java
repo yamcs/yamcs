@@ -60,6 +60,7 @@ public class UUIDTest extends YarchTestCase {
         Tuple t = res.next();
         assertEquals(1, t.getIntColumn("id"));
         assertEquals(idlist, t.getColumn("uuidarray"));
+        res.close();
     }
 
     @Test
@@ -80,5 +81,6 @@ public class UUIDTest extends YarchTestCase {
         Tuple t1 = res.next();
         assertEquals(uuid, t1.getColumn("id2"));
         assertFalse(res.hasNext());
+        res.close();
     }
 }

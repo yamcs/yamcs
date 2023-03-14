@@ -151,7 +151,7 @@ public class ArgumentTypeProcessor {
             if (calibrator == null) {
                 return DataEncodingUtils.getRawIntegerValue((IntegerDataEncoding) encoding, (long) v.getDoubleValue());
             } else {
-                long calibValue = (long) calibrator.calibrate(v.toDouble());
+                long calibValue = Math.round(calibrator.calibrate(v.toDouble()));
                 return DataEncodingUtils.getRawIntegerValue((IntegerDataEncoding) encoding, (long) calibValue);
             }
         } else if (encoding instanceof FloatDataEncoding) {

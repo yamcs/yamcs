@@ -78,6 +78,7 @@ import org.yamcs.utils.parser.TokenMgrError;
 import org.yamcs.xtce.XtceDb;
 
 import com.google.common.util.concurrent.Service;
+import com.google.common.util.concurrent.Service.State;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.google.protobuf.Empty;
 import com.google.protobuf.Timestamp;
@@ -621,17 +622,44 @@ public class ManagementApi extends AbstractManagementApi<Context> {
     }
 
     public static ServiceInfo toServiceInfo(ServiceWithConfig serviceWithConfig, String instance, String processor) {
-        ServiceInfo.Builder serviceb = ServiceInfo.newBuilder()
+        var service = serviceWithConfig.getService();
+        var serviceb = ServiceInfo.newBuilder()
                 .setName(serviceWithConfig.getName())
                 .setClassName(serviceWithConfig.getServiceClass())
-                .setState(ServiceState.valueOf(serviceWithConfig.getService().state().name()));
+                .setState(ServiceState.valueOf(service.state().name()));
         if (instance != null) {
             serviceb.setInstance(instance);
         }
         if (processor != null) {
             serviceb.setProcessor(processor);
         }
+        if (service.state() == State.FAILED) {
+            var cause = service.failureCause();
+            var failureMessage = cause.getMessage();
+            if (failureMessage == null) {
+                failureMessage = cause.getClass().getName();
+            }
+            serviceb.setFailureMessage(failureMessage);
+            serviceb.setFailureCause(toString(cause));
+        }
         return serviceb.build();
+    }
+
+    private static String toString(Throwable t) {
+        var sb = new StringBuffer();
+        sb.append(t.toString()).append("\n");
+        for (StackTraceElement ste : t.getStackTrace()) {
+            sb.append("\t").append(ste.toString()).append("\n");
+        }
+        Throwable cause = t.getCause();
+        while (cause != null && cause != t) {
+            sb.append("Caused by: ").append(cause.toString()).append("\n");
+            for (StackTraceElement ste : cause.getStackTrace()) {
+                sb.append("\t").append(ste.toString()).append("\n");
+            }
+            cause = cause.getCause();
+        }
+        return sb.toString();
     }
 
     public static ServiceInfo toServiceInfo(ProcessorServiceWithConfig serviceWithConfig, String instance,

@@ -1,3 +1,9 @@
+Version 5.7.10 released 14-Mar-2023
+- CFDP improvements: download via proxy request, file listing
+- Command Stack improvements: allow delay in between commands, allow specifying which acknowledgmetn to wait for
+- various tweaks and fixes
+
+
 Version 5.7.9 released 28-Oct-2022
 - Added cascading feature (one Yamcs downstream Yamcs server connecting to an upstream Yamcs server)
 - Improved the replay capabilities in yamcs-web

@@ -22,7 +22,7 @@ public class DataEncodingUtils {
 
         if (sizeInBits > 0) {// sizeInBits = -1 used for integers with string encoding
             // limit the value to the number of defined bits
-            longValue = longValue & (-1 >>> (64 - sizeInBits));
+            longValue = longValue & (-1l >>> (64 - sizeInBits));
         }
 
         if (sizeInBits > 0 && sizeInBits <= 32) {
@@ -63,7 +63,9 @@ public class DataEncodingUtils {
     }
 
     static public Value getRawFloatValue(FloatDataEncoding fde, double value) {
-        if (fde.getSizeInBits() <= 32) {
+        if (fde.getSizeInBits() <= 32
+                && (fde.getEncoding() == FloatDataEncoding.Encoding.IEEE754_1985
+                || fde.getEncoding() == FloatDataEncoding.Encoding.STRING)) {
             return ValueUtility.getFloatValue((float) value);
         } else {
             return ValueUtility.getDoubleValue(value);
