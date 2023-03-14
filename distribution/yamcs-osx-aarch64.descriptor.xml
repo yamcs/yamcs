@@ -1,0 +1,34 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+  <id>osx-aarch64</id>
+
+  <formats>
+    <format>tar.gz</format>
+  </formats>
+
+  <componentDescriptors>
+    <componentDescriptor>yamcs.component.xml</componentDescriptor>
+  </componentDescriptors>
+
+  <fileSets>
+    <fileSet>
+      <directory>../yamcs-core/wrappers</directory>
+      <outputDirectory>bin</outputDirectory>
+      <includes>
+        <include>yamcsadmin</include>
+        <include>yamcsd</include>
+      </includes>
+    </fileSet>
+  </fileSets>
+
+  <files>
+    <file>
+      <source>target/rocksdbjni-${rocksdbVersion}/librocksdbjni-osx-arm64.jnilib</source>
+      <outputDirectory>lib</outputDirectory>
+      <!--
+        Named so that System.loadLibrary("rocksdbjni") can find it when lib
+        is added to java.library.path.
+      -->
+      <destName>librocksdbjni.dylib</destName>
+    </file>
+  </files>
+</assembly>

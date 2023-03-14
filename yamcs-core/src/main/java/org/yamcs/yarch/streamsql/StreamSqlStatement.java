@@ -12,6 +12,7 @@ public interface StreamSqlStatement {
      * Note that the update/delete/drop table queries that return one row are executed even if the limit is 0. The
      * output however is suppressed when the limit is set to 0.
      *
+
      * @param ydb
      * @param resultListener
      * @param limit
@@ -32,7 +33,7 @@ public interface StreamSqlStatement {
 
     /**
      * Execute query and return a result. The result can be closed at any time.
-     *
+
      * @param ydb
      * @return
      * @throws StreamSqlException

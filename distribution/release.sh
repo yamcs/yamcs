@@ -81,8 +81,7 @@ cat distribution/rpm/packet-viewer.spec | sed -e "s/@@VERSION@@/$version/" | sed
 rpmbuild --define="_topdir $rpmtopdir" -bb "$rpmtopdir/SPECS/packet-viewer.spec"
 
 cd "$yamcshome"
-mv distribution/target/rpmbuild/RPMS/noarch/* distribution/target/
-mv distribution/target/rpmbuild/RPMS/x86_64/* distribution/target/
+mv distribution/target/rpmbuild/RPMS/*/* distribution/target/
 
 if [ $snapshot -eq 0 ]; then
     rpmsign --key-id $GPG_KEY --addsign distribution/target/*.rpm

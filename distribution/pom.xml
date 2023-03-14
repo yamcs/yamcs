@@ -129,7 +129,8 @@
                   <descriptors>
                     <descriptor>yamcs-linux-aarch64.descriptor.xml</descriptor>
                     <descriptor>yamcs-linux-x86_64.descriptor.xml</descriptor>
-                    <descriptor>yamcs-osx.descriptor.xml</descriptor>
+                    <descriptor>yamcs-osx-aarch64.descriptor.xml</descriptor>
+                    <descriptor>yamcs-osx-x86_64.descriptor.xml</descriptor>
                     <descriptor>yamcs-win64.descriptor.xml</descriptor>
                   </descriptors>
                   <finalName>yamcs-${project.version}</finalName>
