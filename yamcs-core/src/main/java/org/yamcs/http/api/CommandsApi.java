@@ -126,11 +126,14 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
             if (request.getExtraCount() > 0) {
                 ctx.checkSystemPrivilege(SystemPrivilege.CommandOptions);
                 request.getExtraMap().forEach((k, v) -> {
-                    if (!YamcsServer.getServer().hasCommandOption(k)) {
+                    var commandOption = YamcsServer.getServer().getCommandOption(k);
+                    if (commandOption == null) {
                         throw new BadRequestException("Unknown command option '" + k + "'");
                     }
                     preparedCommand.addAttribute(CommandHistoryAttribute.newBuilder()
-                            .setName(k).setValue(v).build());
+                            .setName(k)
+                            .setValue(commandOption.coerceValue(v))
+                            .build());
                 });
             }
 
