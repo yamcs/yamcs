@@ -217,10 +217,10 @@
 			<Parameter parameterTypeRef="engfloat32" name="battery_voltage_avg">
 				<ParameterProperties dataSource="derived" />
 			</Parameter>
-			<Parameter parameterTypeRef="engbool" initialValue="true" name="AllowCriticalTC1">
+			<Parameter parameterTypeRef="engbool" initialValue="True" name="AllowCriticalTC1">
 				<ParameterProperties dataSource="local" />
 			</Parameter>
-			<Parameter parameterTypeRef="engbool" initialValue="false" name="AllowCriticalTC2">
+			<Parameter parameterTypeRef="engbool" initialValue="False" name="AllowCriticalTC2">
 				<ParameterProperties dataSource="local" />
 			</Parameter>
 		</ParameterSet>
