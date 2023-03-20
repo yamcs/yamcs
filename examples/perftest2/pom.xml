@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.yamcs.examples</groupId>
     <artifactId>examples</artifactId>
-    <version>5.7.11</version>
+    <version>5.7.12-SNAPSHOT</version>
   </parent>
 
   <artifactId>perftest2</artifactId>
