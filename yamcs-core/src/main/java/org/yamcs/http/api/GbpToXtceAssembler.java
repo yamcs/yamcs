@@ -56,7 +56,7 @@ public class GbpToXtceAssembler {
             }
             return toSplineCalibrator(ci.getSplineCalibrator());
         } else {
-            throw new BadRequestException("Unsuported calibrator type '" + ci.getType() + "'");
+            throw new BadRequestException("Unsupported calibrator type '" + ci.getType() + "'");
         }
     }
 
