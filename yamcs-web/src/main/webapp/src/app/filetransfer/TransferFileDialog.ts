@@ -27,7 +27,7 @@ export class TransferFileDialog implements OnDestroy {
 
   private prefPrefix = 'filetransfer.';
 
-  private showBucketSize$;
+  showBucketSize$;
 
   selectedBucket$ = new BehaviorSubject<Bucket | null>(null);
   breadcrumb$ = new BehaviorSubject<BreadcrumbItem[]>([]);
