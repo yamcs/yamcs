@@ -27,7 +27,7 @@ export class TransferFileDialog implements OnDestroy {
 
   private prefPrefix = 'filetransfer.';
 
-  showBucketSize$ = this.addPreference$('showBucketSize', false);
+  private showBucketSize$;
 
   selectedBucket$ = new BehaviorSubject<Bucket | null>(null);
   breadcrumb$ = new BehaviorSubject<BreadcrumbItem[]>([]);
@@ -52,7 +52,7 @@ export class TransferFileDialog implements OnDestroy {
     this.changeLocalPrefix(this.localDirectory$.value);
   }
   objectSelector: ObjectSelector;
-  private localDirectory$ = this.addPreference$('localDirectory', "");
+  private localDirectory$;
 
   @ViewChild('remoteSelector')
   remoteSelector: RemoteFileSelector;
@@ -67,6 +67,8 @@ export class TransferFileDialog implements OnDestroy {
   ) {
     this.service = data.service;
     this.prefPrefix += this.service.name + ".";
+    this.showBucketSize$ = this.addPreference$('showBucketSize', false);
+    this.localDirectory$ = this.addPreference$('localDirectory', "");
     const firstLocalEntity = this.service.localEntities && this.service.localEntities.length ? this.service.localEntities[0].name : '';
     const firstRemoteEntity = this.service.remoteEntities && this.service.remoteEntities.length ? this.service.remoteEntities[0].name : '';
     const localEntity$ = this.addPreference$('localEntity', firstLocalEntity);
