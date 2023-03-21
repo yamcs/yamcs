@@ -249,7 +249,13 @@ public class ParameterIdDb {
                 memberIds.add(tr.getMemberId(i));
             }
 
-            addEntry(new AggArrayEntry(pid, paraFqn, memberIds));
+            int numericType;
+            if (tr.hasNumericType()) {
+                numericType = tr.getNumericType();
+            } else {// workaround if the parameter was created before this has been implemented
+                numericType = Value.ARRAYVALUE_FIELD_NUMBER;
+            }
+            addEntry(new AggArrayEntry(pid, paraFqn, numericType, memberIds));
 
         }
     }
@@ -399,30 +405,34 @@ public class ParameterIdDb {
      * 
      * @param paramFqn
      *            - qualified name of the parameter
-     * @param componenets
+     * @param type
+     *            - the numeric type of engValue,rawValue
+     * @param components
      *            - the parameter ids of the components of the aggregate or array
      * @return
      */
-    public synchronized int createAndGetAggrray(String paramFqn, IntArray componenets) {
-        componenets.sort();
+    public synchronized int createAndGetAggrray(String paramFqn, Value.Type engType, Value.Type rawType,
+            IntArray components) {
+        components.sort();
         int pid = -1;
+        int numericType = numericType(engType, rawType);
 
         int fhash = paramFqn.hashCode() & (fqnHtable.length - 1);
         int idx = fqnHtable[fhash];
         if (idx == UNSET) {
-            pid = addAggArray(paramFqn, componenets);
-            addEntry(new AggArrayEntry(pid, paramFqn, componenets));
+            pid = addAggArray(paramFqn, components);
+            addEntry(new AggArrayEntry(pid, paramFqn, numericType, components));
         } else {
             Entry e = entries[idx];
             while (e != null) {
                 if (paramFqn.equals(e.fqn)) {
                     AggArrayEntry agge = (AggArrayEntry) e;
-                    int c = IntArray.compare(agge.components, componenets);
+                    int c = IntArray.compare(agge.components, components);
                     if (c != -1) {
                         pid = e.pid;
                         if (c == 1) {
-                            agge.components = componenets;
-                            modifyAggArray(pid, paramFqn, componenets);
+                            agge.components = components;
+                            modifyAggArray(pid, paramFqn, numericType, components);
                         }
                         break;
                     }
@@ -431,8 +441,8 @@ public class ParameterIdDb {
             }
         }
         if (pid == -1) {
-            pid = addAggArray(paramFqn, componenets);
-            addEntry(new AggArrayEntry(pid, paramFqn, componenets));
+            pid = addAggArray(paramFqn, components);
+            addEntry(new AggArrayEntry(pid, paramFqn, numericType, components));
         }
 
         return pid;
@@ -454,11 +464,12 @@ public class ParameterIdDb {
         }
     }
 
-    private void modifyAggArray(int pid, String paramFqn, IntArray aggArray) {
+    private void modifyAggArray(int pid, String paramFqn, int numericType, IntArray aggArray) {
         TablespaceRecord.Builder trb = TablespaceRecord.newBuilder()
                 .setTbsIndex(pid)
                 .setType(TablespaceRecord.Type.PARCHIVE_AGGARR_INFO)
-                .setParameterFqn(paramFqn);
+                .setParameterFqn(paramFqn)
+                .setNumericType(numericType);
         aggArray.stream().forEach(x -> trb.addMemberId(x));
 
         TablespaceRecord tr;
@@ -503,9 +514,9 @@ public class ParameterIdDb {
         Entry nextPid;
         Entry nextFqn;
 
-        public Entry(int pid, int type, String fqn) {
+        public Entry(int pid, int numericType, String fqn) {
             this.pid = pid;
-            this.type = type;
+            this.type = numericType;
             this.fqn = fqn;
         }
 
@@ -559,9 +570,8 @@ public class ParameterIdDb {
 
         IntArray components;
 
-        public AggArrayEntry(int pid, String fqn, IntArray components) {
-            // TBD this uses AGGREGATE_VALUE although it could be ARRAY
-            super(pid, Type.AGGREGATE_VALUE, fqn);
+        public AggArrayEntry(int pid, String fqn, int numericType, IntArray components) {
+            super(pid, numericType, fqn);
             if (components.size() == 0) {
                 throw new IllegalArgumentException(
                         "the aggregate or array parameter has to have at least one component");

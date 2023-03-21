@@ -34,7 +34,11 @@ class BasicParameterList {
         if (pv.getEngValue() instanceof AggregateValue || pv.getEngValue() instanceof ArrayValue) {
             IntArray aggrray = new IntArray();
             add(fqn, pv, aggrray);
-            parameterIdMap.createAndGetAggrray(fqn, aggrray);
+
+            Type engType = pv.getEngValue().getType();
+            Type rawType = (pv.getRawValue() == null) ? null : pv.getRawValue().getType();
+
+            parameterIdMap.createAndGetAggrray(fqn, engType, rawType, aggrray);
         } else {
             add(fqn, pv, null);
         }

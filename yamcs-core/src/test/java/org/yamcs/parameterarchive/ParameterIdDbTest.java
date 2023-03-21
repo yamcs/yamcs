@@ -66,15 +66,16 @@ public class ParameterIdDbTest {
 
     @Test
     public void test2() throws Exception {
+        Value.Type vt = Value.Type.AGGREGATE;
         ParameterIdDb pidDb = new ParameterIdDb("test2", tablespace);
         int p1 = pidDb.createAndGet("/test2/bp1", Value.Type.BOOLEAN);
         int p2 = pidDb.createAndGet("/test2/bp2", Value.Type.BOOLEAN);
 
-        int aggp1 = pidDb.createAndGetAggrray("/test2/aggregate1", IntArray.wrap(p1, p2));
+        int aggp1 = pidDb.createAndGetAggrray("/test2/aggregate1", vt, vt, IntArray.wrap(p1, p2));
 
         int p3 = pidDb.createAndGet("/test2/bp3", Value.Type.BOOLEAN);
 
-        int aggp2 = pidDb.createAndGetAggrray("/test2/aggregate1", IntArray.wrap(p3, p1, p2));
+        int aggp2 = pidDb.createAndGetAggrray("/test2/aggregate1", vt, vt, IntArray.wrap(p3, p1, p2));
         assertEquals(aggp1, aggp2);
 
         tablespace.close();
@@ -82,11 +83,11 @@ public class ParameterIdDbTest {
         pidDb = new ParameterIdDb("test2", tablespace);
 
         int p4 = pidDb.createAndGet("/test2/bp4", Value.Type.BOOLEAN);
-        int aggp3 = pidDb.createAndGetAggrray("/test2/aggregate1", IntArray.wrap(p1, p4));
+        int aggp3 = pidDb.createAndGetAggrray("/test2/aggregate1", vt, vt, IntArray.wrap(p1, p4));
 
         assertTrue(aggp1 != aggp3);
 
-        int aggp4 = pidDb.createAndGetAggrray("/test2/aggregate1", IntArray.wrap(p1, p2));
+        int aggp4 = pidDb.createAndGetAggrray("/test2/aggregate1", vt, vt, IntArray.wrap(p1, p2));
         assertEquals(aggp1, aggp4);
     }
 

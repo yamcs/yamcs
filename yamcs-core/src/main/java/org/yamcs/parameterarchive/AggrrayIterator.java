@@ -33,7 +33,7 @@ public class AggrrayIterator implements ParameterIterator {
         if (req.isRetrieveEngineeringValues()) {
             engBuilder = new AggrrayBuilder(members);
         }
-        if (req.isRetrieveRawValues()) {
+        if (req.isRetrieveRawValues() && parameterId.hasRawValue()) {
             rawBuilder = new AggrrayBuilder(members);
         }
         init();
@@ -95,14 +95,21 @@ public class AggrrayIterator implements ParameterIterator {
             }
             engValue = engBuilder.build();
         }
-        if (req.isRetrieveRawValues()) {
+        if (rawBuilder != null) {
             rawBuilder.clear();
             ValueSegment[] rawv = currentSegment.rawValueSegments;
-            for (int i = 0; i < rawv.length; i++) {
-                rawBuilder.setValue(members[i], rawv[i].getValue(pos));
+            if (rawv[0] == null) {
+                // workaround if the aggregate/array numeric type was not stored in the database
+                // TODO: remove this case in the future
+                rawBuilder = null;
+            } else {
+                for (int i = 0; i < rawv.length; i++) {
+                    rawBuilder.setValue(members[i], rawv[i].getValue(pos));
+                }
+                rawValue = rawBuilder.build();
             }
-            rawValue = rawBuilder.build();
         }
+
         return new TimedValue(t, engValue, rawValue, paramStatus);
     }
 

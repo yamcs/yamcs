@@ -107,6 +107,9 @@ message TablespaceRecord {
 
     //used for PARCHIVE_AGGARR_INFO
     repeated uint32 memberId = 15;
+
+    //used for PARCHIVE_AGGARR_INFO to store the numeric type (engType, rawType) of the parameter
+    optional uint32 numericType = 16;
 }
 
 //associated to each bucket
