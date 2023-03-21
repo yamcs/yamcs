@@ -82,8 +82,8 @@ public class RdbConfig {
 
         BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
         tableFormatConfig.setBlockSize(256l * 1024);// 256KB
-        tableFormatConfig.setBlockCacheSize(10l * 1024 * 1024);// 1MB
-        tableFormatConfig.setFilter(new BloomFilter());
+        tableFormatConfig.setFormatVersion(4);
+        tableFormatConfig.setFilterPolicy(new BloomFilter());
         tableFormatConfig.setIndexType(IndexType.kTwoLevelIndexSearch);
 
         defaultOptions = new Options();
