@@ -1221,7 +1221,12 @@ export default class YamcsClient implements HttpHandler {
 
   async getFileList(instance: string, service: string, request: ListFilesRequest) {
     const url = `${this.apiUrl}/filetransfer/${instance}/${service}/files`;
-    const url2 = url + this.queryString(request);
+    var indexedRequest: { [key: string]: any; } = request;
+    const url2 = url + this.queryString(
+      Object.keys(indexedRequest)
+        .filter(key => key !== "options")
+        .reduce((res: { [key: string]: any; }, key) => (res[key] = indexedRequest[key], res), {}))
+      + (request.options ? "&options=" + JSON.stringify(request.options) : "");
     const response = await this.doFetch(url2);
     return await response.json() as ListFilesResponse;
   }
@@ -1343,8 +1348,7 @@ export default class YamcsClient implements HttpHandler {
 
   private queryString(options: { [key: string]: any; }) {
     const qs = Object.keys(options)
-      .filter(k => options[k] !== undefined)
-      .map(k => `${k}=${typeof options[k] === "object" ? JSON.stringify(options[k]) : options[k]}`)
+      .map(k => `${k}=${options[k]}`)
       .join('&');
     return qs === '' ? qs : '?' + qs;
   }
