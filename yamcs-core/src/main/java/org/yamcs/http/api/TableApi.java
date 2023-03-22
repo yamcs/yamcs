@@ -103,7 +103,8 @@ public class TableApi extends AbstractTableApi<Context> {
         List<Stream> streams = new ArrayList<>(ydb.getStreams());
         streams.sort((s1, s2) -> s1.getName().compareToIgnoreCase(s2.getName()));
         for (Stream stream : streams) {
-            if (!ctx.user.hasObjectPrivilege(ObjectPrivilegeType.Stream, stream.getName())) {
+            if (!ctx.user.hasSystemPrivilege(SystemPrivilege.ControlArchiving) &&
+                    !ctx.user.hasObjectPrivilege(ObjectPrivilegeType.Stream, stream.getName())) {
                 continue;
             }
             responseb.addStreams(toStreamInfo(stream));
@@ -114,6 +115,7 @@ public class TableApi extends AbstractTableApi<Context> {
     @Override
     public void subscribeStreamStatistics(Context ctx, SubscribeStreamStatisticsRequest request,
             Observer<StreamEvent> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
         YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
 
         for (Stream stream : ydb.getStreams()) {
@@ -195,7 +197,7 @@ public class TableApi extends AbstractTableApi<Context> {
 
     @Override
     public void listTables(Context ctx, ListTablesRequest request, Observer<ListTablesResponse> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ReadTables);
+        ctx.checkAnyOfSystemPrivileges(SystemPrivilege.ControlArchiving, SystemPrivilege.ReadTables);
 
         YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
 
@@ -210,7 +212,7 @@ public class TableApi extends AbstractTableApi<Context> {
 
     @Override
     public void getTable(Context ctx, GetTableRequest request, Observer<TableInfo> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ReadTables);
+        ctx.checkAnyOfSystemPrivileges(SystemPrivilege.ControlArchiving, SystemPrivilege.ReadTables);
 
         YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
         TableDefinition table = verifyTable(ydb, request.getName());
@@ -221,7 +223,7 @@ public class TableApi extends AbstractTableApi<Context> {
 
     @Override
     public void getTableData(Context ctx, GetTableDataRequest request, Observer<TableData> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ReadTables);
+        ctx.checkAnyOfSystemPrivileges(SystemPrivilege.ControlArchiving, SystemPrivilege.ReadTables);
 
         YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
         TableDefinition table = verifyTable(ydb, request.getName());
@@ -262,7 +264,7 @@ public class TableApi extends AbstractTableApi<Context> {
 
     @Override
     public void readRows(Context ctx, ReadRowsRequest request, Observer<Row> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ReadTables);
+        ctx.checkAnyOfSystemPrivileges(SystemPrivilege.ControlArchiving, SystemPrivilege.ReadTables);
         YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
 
         TableDefinition table = verifyTable(ydb, request.getTable());
@@ -279,7 +281,8 @@ public class TableApi extends AbstractTableApi<Context> {
 
     @Override
     public Observer<WriteRowsRequest> writeRows(Context ctx, Observer<WriteRowsResponse> observer) {
-        if (!ctx.user.hasSystemPrivilege(SystemPrivilege.WriteTables)) {
+        if (!ctx.user.hasSystemPrivilege(SystemPrivilege.WriteTables)
+                && !ctx.user.hasSystemPrivilege(SystemPrivilege.ControlArchiving)) {
             throw new ForbiddenException("Insufficient privileges");
         }
 
@@ -508,7 +511,9 @@ public class TableApi extends AbstractTableApi<Context> {
     public static Stream verifyStream(Context ctx, YarchDatabaseInstance ydb, String streamName) {
         Stream stream = ydb.getStream(streamName);
 
-        if (stream != null && !ctx.user.hasObjectPrivilege(ObjectPrivilegeType.Stream, streamName)) {
+        if (stream != null
+                && !ctx.user.hasSystemPrivilege(SystemPrivilege.ControlArchiving)
+                && !ctx.user.hasObjectPrivilege(ObjectPrivilegeType.Stream, streamName)) {
             log.warn("Stream {} found, but withheld due to insufficient privileges. Returning 404 instead",
                     streamName);
             stream = null;

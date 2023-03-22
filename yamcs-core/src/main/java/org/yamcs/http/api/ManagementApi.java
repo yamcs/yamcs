@@ -32,7 +32,6 @@ import org.yamcs.archive.CcsdsTmIndex;
 import org.yamcs.filetransfer.FileTransferService;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
-import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
@@ -92,10 +91,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
 
     @Override
     public void subscribeSystemInfo(Context ctx, Empty request, Observer<SystemInfo> observer) {
-        if (!ctx.user.isSuperuser()) {
-            throw new ForbiddenException("Access is limited to superusers");
-        }
-
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadSystemInfo);
         var exec = YamcsServer.getServer().getThreadPoolExecutor();
         var future = exec.scheduleAtFixedRate(() -> {
             var systemInfo = toSystemInfo();
@@ -106,9 +102,7 @@ public class ManagementApi extends AbstractManagementApi<Context> {
 
     @Override
     public void getSystemInfo(Context ctx, Empty request, Observer<SystemInfo> observer) {
-        if (!ctx.user.isSuperuser()) {
-            throw new ForbiddenException("Access is limited to superusers");
-        }
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadSystemInfo);
         var systemInfo = toSystemInfo();
         observer.complete(systemInfo);
     }

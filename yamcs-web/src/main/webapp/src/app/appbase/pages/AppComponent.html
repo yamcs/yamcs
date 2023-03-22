@@ -31,7 +31,7 @@
         <mat-icon>perm_media</mat-icon>
         &nbsp;&nbsp;STORAGE
       </a>
-      <a mat-tab-link routerLink="admin" routerLinkActive="active" *ngIf="user | superuser">
+      <a mat-tab-link routerLink="admin" routerLinkActive="active" *ngIf="user | mayAccessAdminArea">
         <mat-icon>security</mat-icon>
         &nbsp;&nbsp;ADMIN AREA
       </a>

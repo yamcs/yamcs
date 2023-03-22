@@ -33,4 +33,8 @@ public class AuditRecordFilter {
     public void addService(String service) {
         services.add(service);
     }
+
+    public void setServices(List<String> services) {
+        this.services = services;
+    }
 }

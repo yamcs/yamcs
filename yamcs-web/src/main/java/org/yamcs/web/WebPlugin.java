@@ -1,7 +1,6 @@
 package org.yamcs.web;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
@@ -13,29 +12,38 @@ import org.yamcs.Plugin;
 import org.yamcs.PluginException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.http.Binding;
 import org.yamcs.http.HttpServer;
 import org.yamcs.logging.Log;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.io.CharStreams;
 
 public class WebPlugin implements Plugin {
 
+    /**
+     * Allows access to the Admin Area.
+     * <p>
+     * Remark that certain pages in the Admin Area may require further privileges.
+     */
+    public static final SystemPrivilege PRIV_ADMIN = new SystemPrivilege("web.AccessAdminArea");
+
     private Log log = new Log(getClass());
 
     @Override
     public void onLoad(YConfiguration config) throws PluginException {
+        var yamcs = YamcsServer.getServer();
+        yamcs.getSecurityStore().addSystemPrivilege(PRIV_ADMIN);
+
         String displayBucketName = config.getString("displayBucket");
         createBucketIfNotExists(displayBucketName);
 
         String stackBucketName = config.getString("stackBucket");
         createBucketIfNotExists(stackBucketName);
 
-        HttpServer httpServer = YamcsServer.getServer().getGlobalService(HttpServer.class);
+        var httpServer = yamcs.getGlobalService(HttpServer.class);
 
         // Deploy the website, for practical reasons we have three different
         // mechanisms. In order:
@@ -72,22 +80,22 @@ public class WebPlugin implements Plugin {
         // Catch any non-handled URL and make it return the contents of our index.html
         // This will cause initialization of the Angular app on any requested path. The
         // Angular router will interpret this and do client-side routing as needed.
-        IndexHandler indexHandler = new IndexHandler(config, httpServer, staticRoot);
+        var indexHandler = new IndexHandler(config, httpServer, staticRoot);
         httpServer.addHandler("*", () -> indexHandler);
 
         // Print these log statements via a ready listener because it is more helpful
         // if they appear at the end of the boot log.
-        YamcsServer.getServer().addReadyListener(() -> {
-            for (Binding binding : httpServer.getBindings()) {
+        yamcs.addReadyListener(() -> {
+            for (var binding : httpServer.getBindings()) {
                 log.info("Website deployed at {}{}", binding, httpServer.getContextPath());
             }
         });
     }
 
     private Bucket createBucketIfNotExists(String bucketName) throws PluginException {
-        YarchDatabaseInstance yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
+        var yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
         try {
-            Bucket bucket = yarch.getBucket(bucketName);
+            var bucket = yarch.getBucket(bucketName);
             if (bucket == null) {
                 bucket = yarch.createBucket(bucketName);
             }
@@ -105,7 +113,7 @@ public class WebPlugin implements Plugin {
         Path cacheDir = YamcsServer.getServer().getCacheDirectory().resolve("yamcs-web");
         FileUtils.deleteRecursivelyIfExists(cacheDir);
         Files.createDirectory(cacheDir);
-        try (InputStream in = getClass().getResourceAsStream("/static/manifest.txt");
+        try (var in = getClass().getResourceAsStream("/static/manifest.txt");
                 Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
 
             String manifest = CharStreams.toString(reader);
@@ -113,7 +121,7 @@ public class WebPlugin implements Plugin {
 
             log.debug("Unpacking {} webapp files", staticFiles.length);
             for (String staticFile : staticFiles) {
-                try (InputStream resource = getClass().getResourceAsStream("/static/" + staticFile)) {
+                try (var resource = getClass().getResourceAsStream("/static/" + staticFile)) {
                     Files.copy(resource, cacheDir.resolve(staticFile));
                 }
             }

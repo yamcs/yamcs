@@ -1,9 +1,11 @@
 package org.yamcs.http.audit;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 import org.yamcs.InitException;
 import org.yamcs.YamcsServer;
@@ -34,6 +36,13 @@ public class AuditLog extends AbstractHttpService {
     public boolean validateAccess(String service, User user) {
         AuditLogPrivilegeChecker checker = privilegeCheckers.get(service);
         return checker != null ? checker.validate(user) : false;
+    }
+
+    public List<String> getServices(User user) {
+        return privilegeCheckers.entrySet().stream()
+                .filter(entry -> entry.getValue().validate(user))
+                .map(entry -> entry.getKey())
+                .collect(Collectors.toList());
     }
 
     public void addRecord(Context ctx, Message request, String summary) {

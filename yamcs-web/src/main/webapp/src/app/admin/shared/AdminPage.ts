@@ -4,7 +4,9 @@ import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter, Observable, Subscription } from 'rxjs';
+import { AuthService } from '../../core/services/AuthService';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
+import { User } from '../../shared/User';
 
 @Component({
   templateUrl: './AdminPage.html',
@@ -13,6 +15,7 @@ import { PreferenceStore } from '../../core/services/PreferenceStore';
 })
 export class AdminPage implements OnDestroy {
 
+  user: User;
   sidebar$: Observable<boolean>;
 
   userManagementActive = false;
@@ -24,11 +27,13 @@ export class AdminPage implements OnDestroy {
 
   constructor(
     preferenceStore: PreferenceStore,
+    authService: AuthService,
     iconRegistry: MatIconRegistry,
     sanitizer: DomSanitizer,
     router: Router,
     @Inject(APP_BASE_HREF) baseHref: string,
   ) {
+    this.user = authService.getUser()!;
     this.sidebar$ = preferenceStore.getPreference$('sidebar');
     const resourceUrl = `${baseHref}static/rocksdb.svg`;
     const safeResourceUrl = sanitizer.bypassSecurityTrustResourceUrl(resourceUrl);
@@ -68,9 +73,23 @@ export class AdminPage implements OnDestroy {
     this.rocksDbExpanded = !expanded;
   }
 
+  showRocksDbItem() {
+    return this.user.hasSystemPrivilege('ControlArchiving');
+  }
+
+  showAccessControlItem() {
+    return this.user.hasSystemPrivilege('ControlAccess');
+  }
+
+  showServicesItem() {
+    return this.user.hasSystemPrivilege('ControlServices');
+  }
+
+  showSystemInfo() {
+    return this.user.hasSystemPrivilege('ReadSystemInfo');
+  }
+
   ngOnDestroy() {
-    if (this.routerSubscription) {
-      this.routerSubscription.unsubscribe();
-    }
+    this.routerSubscription?.unsubscribe();
   }
 }

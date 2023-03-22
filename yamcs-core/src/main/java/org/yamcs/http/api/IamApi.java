@@ -12,9 +12,9 @@ import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
-import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
+import org.yamcs.http.audit.AuditLog;
 import org.yamcs.http.auth.TokenStore;
 import org.yamcs.protobuf.AbstractIamApi;
 import org.yamcs.protobuf.CreateGroupRequest;
@@ -62,8 +62,11 @@ public class IamApi extends AbstractIamApi<Context> {
 
     private TokenStore tokenStore;
 
-    public IamApi(TokenStore tokenStore) {
+    public IamApi(AuditLog auditLog, TokenStore tokenStore) {
         this.tokenStore = tokenStore;
+        auditLog.addPrivilegeChecker(getClass().getSimpleName(), user -> {
+            return user.hasSystemPrivilege(SystemPrivilege.ControlAccess);
+        });
     }
 
     @Override
@@ -92,10 +95,8 @@ public class IamApi extends AbstractIamApi<Context> {
 
     @Override
     public void deleteRoleAssignment(Context ctx, DeleteRoleAssignmentRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAccess);
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-        if (!ctx.user.isSuperuser()) {
-            throw new ForbiddenException("Insufficient privileges");
-        }
         Directory directory = securityStore.getDirectory();
         String username = request.getName();
         User user = directory.getUser(username);
@@ -131,9 +132,10 @@ public class IamApi extends AbstractIamApi<Context> {
         List<User> users = directory.getUsers();
         Collections.sort(users, (u1, u2) -> u1.getName().compareToIgnoreCase(u2.getName()));
 
+        var sensitiveDetails = ctx.user.hasSystemPrivilege(SystemPrivilege.ControlAccess);
         ListUsersResponse.Builder responseb = ListUsersResponse.newBuilder();
         for (User user : users) {
-            UserInfo userb = toUserInfo(user, ctx.user.isSuperuser(), directory);
+            UserInfo userb = toUserInfo(user, sensitiveDetails, directory);
             responseb.addUsers(userb);
         }
         observer.complete(responseb.build());
@@ -141,10 +143,8 @@ public class IamApi extends AbstractIamApi<Context> {
 
     @Override
     public void createUser(Context ctx, CreateUserRequest request, Observer<UserInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAccess);
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-        if (!ctx.user.isSuperuser()) {
-            throw new ForbiddenException("Insufficient privileges");
-        }
         Directory directory = securityStore.getDirectory();
 
         if (!request.hasName()) {
@@ -177,7 +177,7 @@ public class IamApi extends AbstractIamApi<Context> {
             throw new InternalServerErrorException(e);
         }
 
-        observer.complete(toUserInfo(user, ctx.user.isSuperuser(), directory));
+        observer.complete(toUserInfo(user, true, directory));
     }
 
     @Override
@@ -189,15 +189,15 @@ public class IamApi extends AbstractIamApi<Context> {
         if (user == null) {
             throw new NotFoundException();
         }
-        observer.complete(toUserInfo(user, ctx.user.isSuperuser(), directory));
+        var sensitiveDetails = ctx.user.hasSystemPrivilege(SystemPrivilege.ControlAccess);
+        observer.complete(toUserInfo(user, sensitiveDetails, directory));
     }
 
     @Override
     public void updateUser(Context ctx, UpdateUserRequest request, Observer<UserInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAccess);
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-        if (!ctx.user.isSuperuser()) {
-            throw new ForbiddenException("Insufficient privileges");
-        }
+
         String username = request.getName();
         Directory directory = securityStore.getDirectory();
         User user = directory.getUser(username);
@@ -241,15 +241,15 @@ public class IamApi extends AbstractIamApi<Context> {
         } catch (IOException e) {
             throw new InternalServerErrorException(e);
         }
-        observer.complete(toUserInfo(user, ctx.user.isSuperuser(), directory));
+
+        var sensitiveDetails = ctx.user.hasSystemPrivilege(SystemPrivilege.ControlAccess);
+        observer.complete(toUserInfo(user, sensitiveDetails, directory));
     }
 
     @Override
     public void deleteIdentity(Context ctx, DeleteIdentityRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAccess);
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-        if (!ctx.user.isSuperuser()) {
-            throw new ForbiddenException("Insufficient privileges");
-        }
         Directory directory = securityStore.getDirectory();
         String username = request.getName();
         User user = directory.getUser(username);
@@ -275,10 +275,8 @@ public class IamApi extends AbstractIamApi<Context> {
 
     @Override
     public void listServiceAccounts(Context ctx, Empty request, Observer<ListServiceAccountsResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAccess);
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-        if (!ctx.user.isSuperuser()) {
-            throw new ForbiddenException("Insufficient privileges");
-        }
         Directory directory = securityStore.getDirectory();
         List<ServiceAccount> serviceAccounts = directory.getServiceAccounts();
         Collections.sort(serviceAccounts, (r1, r2) -> r1.getName().compareToIgnoreCase(r2.getName()));
@@ -294,10 +292,8 @@ public class IamApi extends AbstractIamApi<Context> {
     @Override
     public void getServiceAccount(Context ctx, GetServiceAccountRequest request,
             Observer<ServiceAccountInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAccess);
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-        if (!ctx.user.isSuperuser()) {
-            throw new ForbiddenException("Insufficient privileges");
-        }
         Directory directory = securityStore.getDirectory();
         String name = request.getName();
         ServiceAccount serviceAccount = directory.getServiceAccount(name);
@@ -310,10 +306,8 @@ public class IamApi extends AbstractIamApi<Context> {
     @Override
     public void deleteServiceAccount(Context ctx, DeleteServiceAccountRequest request,
             Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAccess);
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-        if (!ctx.user.isSuperuser()) {
-            throw new ForbiddenException("Insufficient privileges");
-        }
         Directory directory = securityStore.getDirectory();
         try {
             directory.deleteServiceAccount(request.getName());
@@ -325,10 +319,8 @@ public class IamApi extends AbstractIamApi<Context> {
 
     @Override
     public void deleteUser(Context ctx, DeleteUserRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAccess);
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-        if (!ctx.user.isSuperuser()) {
-            throw new ForbiddenException("Insufficient privileges");
-        }
         Directory directory = securityStore.getDirectory();
         String username = request.getName();
         User user = directory.getUser(username);
@@ -347,10 +339,8 @@ public class IamApi extends AbstractIamApi<Context> {
     @Override
     public void createServiceAccount(Context ctx, CreateServiceAccountRequest request,
             Observer<CreateServiceAccountResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAccess);
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-        if (!ctx.user.isSuperuser()) {
-            throw new ForbiddenException("Insufficient privileges");
-        }
 
         if (!request.hasName()) {
             throw new BadRequestException("No name was specified");
@@ -404,10 +394,9 @@ public class IamApi extends AbstractIamApi<Context> {
 
     @Override
     public void createGroup(Context ctx, CreateGroupRequest request, Observer<GroupInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAccess);
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-        if (!ctx.user.isSuperuser()) {
-            throw new ForbiddenException("Insufficient privileges");
-        }
+
         if (!request.hasName()) {
             throw new BadRequestException("No group name was specified");
         }
@@ -438,10 +427,9 @@ public class IamApi extends AbstractIamApi<Context> {
 
     @Override
     public void updateGroup(Context ctx, UpdateGroupRequest request, Observer<GroupInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAccess);
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-        if (!ctx.user.isSuperuser()) {
-            throw new ForbiddenException("Insufficient privileges");
-        }
+
         String name = request.getName();
         Directory directory = securityStore.getDirectory();
         Group group = directory.getGroup(name);
@@ -483,10 +471,8 @@ public class IamApi extends AbstractIamApi<Context> {
 
     @Override
     public void deleteGroup(Context ctx, DeleteGroupRequest request, Observer<GroupInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAccess);
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-        if (!ctx.user.isSuperuser()) {
-            throw new ForbiddenException("Insufficient privileges");
-        }
         String name = request.getName();
         Directory directory = securityStore.getDirectory();
         Group group = directory.getGroup(name);

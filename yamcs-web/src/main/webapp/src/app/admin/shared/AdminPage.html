@@ -15,7 +15,9 @@
         <mat-icon class="item-icon">recent_actors</mat-icon>
         Activity
       </app-sidebar-nav-item>
-      <app-sidebar-nav-group label="Access control" icon="supervised_user_circle"
+      <app-sidebar-nav-group *ngIf="showAccessControlItem()"
+                             label="Access control"
+                             icon="supervised_user_circle"
                              [active]="userManagementActive"
                              [expanded]="userManagementExpanded"
                              (toggle)="toggleUserManagementGroup()">
@@ -32,15 +34,18 @@
           Roles
         </app-sidebar-nav-item>
       </app-sidebar-nav-group>
-      <app-sidebar-nav-item routerLink="/admin/sessions">
+      <app-sidebar-nav-item *ngIf="showAccessControlItem()"
+                            routerLink="/admin/sessions">
         <mat-icon class="item-icon">devices</mat-icon>
         Sessions
       </app-sidebar-nav-item>
-      <app-sidebar-nav-item routerLink="/admin/services">
+      <app-sidebar-nav-item *ngIf="showServicesItem()"
+                            routerLink="/admin/services">
         <mat-icon class="item-icon">attractions</mat-icon>
         Services
       </app-sidebar-nav-item>
-      <app-sidebar-nav-item routerLink="/admin/processor-types">
+      <app-sidebar-nav-item *ngIf="showSystemInfo()"
+                            routerLink="/admin/processor-types">
         <mat-icon class="item-icon">flip_camera_android</mat-icon>
         Processor types
       </app-sidebar-nav-item>
@@ -48,11 +53,14 @@
         <mat-icon class="item-icon">storage</mat-icon>
         Databases
       </app-sidebar-nav-item>
-      <app-sidebar-nav-item routerLink="/admin/replication">
+      <app-sidebar-nav-item *ngIf="showSystemInfo()"
+                            routerLink="/admin/replication">
         <mat-icon class="item-icon">share</mat-icon>
         Replication
       </app-sidebar-nav-item>
-      <app-sidebar-nav-group label="RocksDB" svgIcon="rocksdb"
+      <app-sidebar-nav-group *ngIf="showRocksDbItem()"
+                             label="RocksDB"
+                             svgIcon="rocksdb"
                              [active]="rocksDbActive"
                              [expanded]="rocksDbExpanded"
                              (toggle)="toggleRocksDbGroup()">
@@ -60,23 +68,28 @@
           Open databases
         </app-sidebar-nav-item>
       </app-sidebar-nav-group>
-      <app-sidebar-nav-item routerLink="/admin/http-traffic">
+      <app-sidebar-nav-item *ngIf="showSystemInfo()"
+                            routerLink="/admin/http-traffic">
         <mat-icon class="item-icon">traffic</mat-icon>
         HTTP traffic
       </app-sidebar-nav-item>
-      <app-sidebar-nav-item routerLink="/admin/routes">
+      <app-sidebar-nav-item *ngIf="showSystemInfo()"
+                            routerLink="/admin/routes">
         <mat-icon class="item-icon">api</mat-icon>
         API routes
       </app-sidebar-nav-item>
-      <app-sidebar-nav-item routerLink="/admin/leap-seconds">
+      <app-sidebar-nav-item *ngIf="showSystemInfo()"
+                            routerLink="/admin/leap-seconds">
         <mat-icon class="item-icon">access_time</mat-icon>
         Leap seconds
       </app-sidebar-nav-item>
-      <app-sidebar-nav-item routerLink="/admin/threads">
+      <app-sidebar-nav-item *ngIf="showSystemInfo()"
+                            routerLink="/admin/threads">
         <mat-icon class="item-icon">receipt</mat-icon>
         Threads
       </app-sidebar-nav-item>
-      <app-sidebar-nav-item routerLink="/admin/system">
+      <app-sidebar-nav-item *ngIf="showSystemInfo()"
+                            routerLink="/admin/system">
         <mat-icon class="item-icon">memory</mat-icon>
         System
       </app-sidebar-nav-item>

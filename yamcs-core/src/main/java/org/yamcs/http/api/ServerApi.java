@@ -25,7 +25,6 @@ import org.yamcs.YamcsVersion;
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
 import org.yamcs.http.Context;
-import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpServer;
 import org.yamcs.http.MediaType;
@@ -143,6 +142,7 @@ public class ServerApi extends AbstractServerApi<Context> {
 
     @Override
     public void listRoutes(Context ctx, Empty request, Observer<ListRoutesResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadSystemInfo);
         List<RouteInfo> result = new ArrayList<>();
         for (Route route : httpServer.getRoutes()) {
             RouteInfo.Builder routeb = RouteInfo.newBuilder();
@@ -181,6 +181,7 @@ public class ServerApi extends AbstractServerApi<Context> {
 
     @Override
     public void listTopics(Context ctx, Empty request, Observer<ListTopicsResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadSystemInfo);
         List<TopicInfo> result = new ArrayList<>();
         for (Topic topic : httpServer.getTopics()) {
             TopicInfo.Builder topicb = TopicInfo.newBuilder()
@@ -212,9 +213,7 @@ public class ServerApi extends AbstractServerApi<Context> {
 
     @Override
     public void getHttpTraffic(Context ctx, Empty request, Observer<HttpTraffic> observer) {
-        if (!ctx.user.isSuperuser()) {
-            throw new ForbiddenException("Insufficient privileges");
-        }
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadSystemInfo);
 
         HttpTraffic.Builder responseb = HttpTraffic.newBuilder();
 
@@ -288,7 +287,7 @@ public class ServerApi extends AbstractServerApi<Context> {
 
     @Override
     public void listThreads(Context ctx, ListThreadsRequest request, Observer<ListThreadsResponse> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ReadThreads);
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadSystemInfo);
 
         ListThreadsResponse.Builder responseb = ListThreadsResponse.newBuilder();
 
@@ -312,7 +311,7 @@ public class ServerApi extends AbstractServerApi<Context> {
 
     @Override
     public void dumpThreads(Context ctx, Empty request, Observer<HttpBody> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ReadThreads);
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadSystemInfo);
 
         ByteString.Output out = ByteString.newOutput();
         ThreadMXBean mxbean = ManagementFactory.getThreadMXBean();
@@ -384,7 +383,7 @@ public class ServerApi extends AbstractServerApi<Context> {
 
     @Override
     public void getThread(Context ctx, GetThreadRequest request, Observer<ThreadInfo> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ReadThreads);
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadSystemInfo);
 
         ThreadGroupInfo groupInfo = null;
         for (Thread thread : Thread.getAllStackTraces().keySet()) {

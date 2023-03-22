@@ -4,6 +4,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, debounceTime } from 'rxjs';
+import { MessageService } from '../../../lib';
 import { AuditRecord, GetAuditRecordsOptions } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Option, Select } from '../../shared/forms/Select';
@@ -63,6 +64,7 @@ export class AdminActivityPage {
     private yamcs: YamcsService,
     private router: Router,
     private route: ActivatedRoute,
+    private messageService: MessageService,
     title: Title,
   ) {
     title.setTitle('Admin Area');
@@ -189,7 +191,7 @@ export class AdminActivityPage {
         return { grouper, dataSource };
       });
       this.rowGroups$.next(rowGroups);
-    });
+    }).catch(err => this.messageService.showError(err));
   }
 
   loadMoreData() {

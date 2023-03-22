@@ -59,7 +59,15 @@ public class AuditApi extends AbstractAuditApi<Context> {
 
         if (filter.getServices().isEmpty()) {
             if (!ctx.user.isSuperuser()) {
-                throw new ForbiddenException("Insufficient privileges");
+                // If unspecified, try to return results for any otherwise authorised content
+                var allowedServices = auditLog.getServices(ctx.user);
+                if (allowedServices.isEmpty()) {
+                    // Quick response, otherwise auditLog would send unfiltered data.
+                    observer.complete(ListAuditRecordsResponse.getDefaultInstance());
+                    return;
+                } else {
+                    filter.setServices(allowedServices);
+                }
             }
         } else {
             for (String service : filter.getServices()) {

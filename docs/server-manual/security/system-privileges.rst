@@ -13,6 +13,8 @@ ControlCommandClearances
     Allows to clear users for commanding.
 ControlCommandQueue
     Allows to manage command queues.
+CommandOptions
+    Allows specifying command options (extra attributes in the command history, disable/modify verifiers).
 GetMissionDatabase
     Allows to read Mission Database definitions.
 ChangeMissionDatabase
@@ -33,15 +35,23 @@ ManageAnyBucket
     Provides full control over any bucket (including user buckets).
 ReadEvents
     Allows to read any event.
-ReadThreads
-    Allows to read thread information.
 WriteEvents
     Allows to manually create events.
 WriteTables
     Allows to manually add records to tables.
 ReadTables
     Allows to read tables.
+ReadTimeline
+    Allows to view the timeline.
+ControlTimeline
+    Allows to modify the timeline.
+ControlAccess
+    Allows to control access (users, groups, roles, ...)
+ReadSystemInfo
+    Allows to view system information (OS, JVM, threads, replication, ...)
 
 .. note::
 
     Yamcs plugins may support additional system privileges.
+
+    For example, the yamcs-web plugin uses the following privilege to control access to the Admin Area: ``web.AccessAdminArea``

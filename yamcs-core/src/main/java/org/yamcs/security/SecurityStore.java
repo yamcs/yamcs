@@ -170,6 +170,8 @@ public class SecurityStore {
 
     private void generatePredefinedPrivileges() {
         systemPrivileges.add(SystemPrivilege.ChangeMissionDatabase);
+        systemPrivileges.add(SystemPrivilege.CommandOptions);
+        systemPrivileges.add(SystemPrivilege.ControlAccess);
         systemPrivileges.add(SystemPrivilege.ControlAlarms);
         systemPrivileges.add(SystemPrivilege.ControlArchiving);
         systemPrivileges.add(SystemPrivilege.ControlCommandClearances);
@@ -184,10 +186,12 @@ public class SecurityStore {
         systemPrivileges.add(SystemPrivilege.GetMissionDatabase);
         systemPrivileges.add(SystemPrivilege.ManageAnyBucket);
         systemPrivileges.add(SystemPrivilege.ModifyCommandHistory);
+        systemPrivileges.add(SystemPrivilege.ReadAlarms);
         systemPrivileges.add(SystemPrivilege.ReadCommandHistory);
         systemPrivileges.add(SystemPrivilege.ReadEvents);
+        systemPrivileges.add(SystemPrivilege.ReadLinks);
+        systemPrivileges.add(SystemPrivilege.ReadSystemInfo);
         systemPrivileges.add(SystemPrivilege.ReadTables);
-        systemPrivileges.add(SystemPrivilege.ReadThreads);
         systemPrivileges.add(SystemPrivilege.ReadTimeline);
         systemPrivileges.add(SystemPrivilege.WriteEvents);
         systemPrivileges.add(SystemPrivilege.WriteTables);
