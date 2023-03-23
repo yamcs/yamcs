@@ -405,8 +405,10 @@ public class ParameterIdDb {
      * 
      * @param paramFqn
      *            - qualified name of the parameter
-     * @param type
-     *            - the numeric type of engValue,rawValue
+     * @param engType
+     *            - the type of engineering value (ARRAY or AGGREGATE)
+     * @param rawType
+     *            - the type of the raw value - null if the parameter has no raw value
      * @param components
      *            - the parameter ids of the components of the aggregate or array
      * @return
