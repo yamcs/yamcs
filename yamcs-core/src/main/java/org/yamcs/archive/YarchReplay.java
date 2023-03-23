@@ -68,7 +68,6 @@ public class YarchReplay implements StreamSubscriber {
     ReplayListener listener;
     volatile long replayTime;
 
-
     public YarchReplay(ReplayServer replayServer, ReplayOptions rr, ReplayListener listener, XtceDb xtceDb)
             throws YamcsException {
         this.listener = listener;
@@ -95,7 +94,7 @@ public class YarchReplay implements StreamSubscriber {
         }
 
         currentRequest = req;
-     
+
         handlers = new HashMap<>();
 
         if (currentRequest.hasParameterRequest()) {
@@ -205,7 +204,6 @@ public class YarchReplay implements StreamSubscriber {
 
         s.addSubscriber(this);
 
-
         lastDataTime = replayTime = currentRequest.playFrom;
 
         s.start();
@@ -278,7 +276,6 @@ public class YarchReplay implements StreamSubscriber {
         log.debug("Changing end action to {}", endAction);
         currentRequest.setEndAction(endAction);
     }
-
 
     public void pause() {
         state = ReplayState.PAUSED;
@@ -393,6 +390,9 @@ public class YarchReplay implements StreamSubscriber {
         if (ignoreClose) { // this happens when we close the stream to reopen
                            // another one
             ignoreClose = false;
+            return;
+        }
+        if (quitting) {
             return;
         }
 
