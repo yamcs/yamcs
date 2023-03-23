@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { Title } from '@angular/platform-browser';
 import { ValidityRange } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -18,7 +18,7 @@ export class LeapSecondsPage {
     'actions',
   ];
 
-  dataSource = new MatTableDataSource<ValidityRange>();
+  dataSource = new MatLegacyTableDataSource<ValidityRange>();
 
   constructor(yamcs: YamcsService, title: Title) {
     title.setTitle('Leap seconds');

@@ -1,6 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { TimelineView } from '../client/types/timeline';
 import { MessageService } from '../core/services/MessageService';
@@ -25,7 +25,7 @@ export class ViewsPage implements AfterViewInit {
 
   tableTrackerFn = (index: number, view: TimelineView) => view.id;
 
-  dataSource = new MatTableDataSource<TimelineView>();
+  dataSource = new MatLegacyTableDataSource<TimelineView>();
   selection = new TrackBySelectionModel<TimelineView>(this.tableTrackerFn, true, []);
 
   constructor(

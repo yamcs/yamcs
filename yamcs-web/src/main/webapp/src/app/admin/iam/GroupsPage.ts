@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GroupInfo } from '../../client';
@@ -24,7 +24,7 @@ export class GroupsPage implements AfterViewInit {
     'members',
     'actions',
   ];
-  dataSource = new MatTableDataSource<GroupInfo>();
+  dataSource = new MatLegacyTableDataSource<GroupInfo>();
 
   constructor(
     private yamcs: YamcsService,

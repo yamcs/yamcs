@@ -1,7 +1,7 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatLegacyPaginator } from '@angular/material/legacy-paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
@@ -27,8 +27,8 @@ export class SendCommandPage implements AfterViewInit, OnDestroy {
   @ViewChild('top', { static: true })
   top: ElementRef;
 
-  @ViewChild(MatPaginator)
-  paginator: MatPaginator;
+  @ViewChild(MatLegacyPaginator)
+  paginator: MatLegacyPaginator;
 
   @ViewChild(ColumnChooser)
   columnChooser: ColumnChooser;

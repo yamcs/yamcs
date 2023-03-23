@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog } from '@angular/material/legacy-dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
@@ -97,7 +97,7 @@ export class EventsPage {
   constructor(
     readonly yamcs: YamcsService,
     private authService: AuthService,
-    private dialog: MatDialog,
+    private dialog: MatLegacyDialog,
     configService: ConfigService,
     private router: Router,
     private route: ActivatedRoute,

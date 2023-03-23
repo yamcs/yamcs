@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog } from '@angular/material/legacy-dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Band, Banner, Item, ItemBand as DefaultItemBand, MouseTracker, Timeline, TimeLocator } from '@fqqb/timeline';
@@ -50,7 +50,7 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
   constructor(
     title: Title,
     readonly yamcs: YamcsService,
-    private dialog: MatDialog,
+    private dialog: MatLegacyDialog,
     private messageService: MessageService,
     readonly route: ActivatedRoute,
     private router: Router,

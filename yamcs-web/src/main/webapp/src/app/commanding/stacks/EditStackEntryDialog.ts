@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, Inject, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { BehaviorSubject } from 'rxjs';
 import { AcknowledgmentInfo, Command, CommandOptionType, Value } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -114,11 +114,11 @@ export class EditStackEntryDialog {
   format: "ycs" | "xml";
 
   constructor(
-    private dialogRef: MatDialogRef<EditStackEntryDialog>,
+    private dialogRef: MatLegacyDialogRef<EditStackEntryDialog>,
     readonly yamcs: YamcsService,
     formBuilder: UntypedFormBuilder,
     private changeDetection: ChangeDetectorRef,
-    @Inject(MAT_DIALOG_DATA) readonly data: any,
+    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
   ) {
     let advancementAckDropDownDefault;
     let advancementAckCustomDefault;
@@ -171,7 +171,7 @@ export class EditStackEntryDialog {
       });
 
       if (entry.advancement?.acknowledgment) {
-        const match = this.ackOptions.find(el => el.id === entry.advancement!.acknowledgment)
+        const match = this.ackOptions.find(el => el.id === entry.advancement!.acknowledgment);
         advancementAckDropDownDefault = match ? match.id : 'custom';
       }
 

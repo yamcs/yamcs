@@ -1,6 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { TmStatistics } from '../client';
 import { ConfigService, WebsiteConfig } from '../core/services/ConfigService';
@@ -29,7 +29,7 @@ export class TmStatsTable implements AfterViewInit, OnDestroy {
   sort: MatSort;
 
   private statsByName: { [key: string]: PacketStats; } = {};
-  dataSource = new MatTableDataSource<PacketStats>();
+  dataSource = new MatLegacyTableDataSource<PacketStats>();
   totalPacketRate$ = new BehaviorSubject<number>(0);
   totalDataRate$ = new BehaviorSubject<number>(0);
 

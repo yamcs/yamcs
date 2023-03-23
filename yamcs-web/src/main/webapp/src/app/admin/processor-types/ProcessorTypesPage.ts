@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { Title } from '@angular/platform-browser';
 import { YamcsService } from '../../core/services/YamcsService';
 
@@ -11,7 +11,7 @@ export class ProcessorTypesPage {
 
   displayedColumns = ['name'];
 
-  dataSource = new MatTableDataSource<string>();
+  dataSource = new MatLegacyTableDataSource<string>();
 
   constructor(
     yamcs: YamcsService,

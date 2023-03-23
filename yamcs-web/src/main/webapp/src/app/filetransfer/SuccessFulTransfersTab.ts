@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { StorageClient, Transfer, TransferSubscription } from '../client';
@@ -14,7 +14,7 @@ import { TransferItem } from './TransferItem';
 export class SuccessfulTransfersTab implements OnDestroy {
 
   serviceName$ = new BehaviorSubject<string | null>(null);
-  dataSource = new MatTableDataSource<TransferItem>();
+  dataSource = new MatLegacyTableDataSource<TransferItem>();
 
   private storageClient: StorageClient;
   private transfersById = new Map<number, TransferItem>();

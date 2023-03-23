@@ -1,7 +1,7 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatLegacyPaginator } from '@angular/material/legacy-paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
@@ -22,8 +22,8 @@ export class CommandsPage implements AfterViewInit {
   @ViewChild('top', { static: true })
   top: ElementRef;
 
-  @ViewChild(MatPaginator, { static: true })
-  paginator: MatPaginator;
+  @ViewChild(MatLegacyPaginator, { static: true })
+  paginator: MatLegacyPaginator;
 
   @ViewChild(ColumnChooser)
   columnChooser: ColumnChooser;

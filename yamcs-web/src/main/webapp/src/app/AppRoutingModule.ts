@@ -147,10 +147,9 @@ const routes: Routes = [
 @NgModule({
   imports: [
     RouterModule.forRoot(routes, {
-      onSameUrlNavigation: 'reload',
-      preloadingStrategy: CustomPreloadingStrategy,
-      relativeLinkResolution: 'legacy'
-    }),
+    onSameUrlNavigation: 'reload',
+    preloadingStrategy: CustomPreloadingStrategy
+}),
   ],
   exports: [RouterModule],
 })

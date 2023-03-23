@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
 
 @Component({
   selector: 'app-session-expired-dialog',
@@ -8,7 +8,7 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 })
 export class SessionExpiredDialog {
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: any) {
+  constructor(@Inject(MAT_LEGACY_DIALOG_DATA) public data: any) {
   }
 
   reload() {

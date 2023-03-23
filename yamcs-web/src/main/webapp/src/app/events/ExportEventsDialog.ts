@@ -1,6 +1,6 @@
 import { Component, Inject, OnDestroy } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { DownloadEventsOptions } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
@@ -32,9 +32,9 @@ export class ExportEventsDialog implements OnDestroy {
   });
 
   constructor(
-    private dialogRef: MatDialogRef<ExportEventsDialog>,
+    private dialogRef: MatLegacyDialogRef<ExportEventsDialog>,
     private yamcs: YamcsService,
-    @Inject(MAT_DIALOG_DATA) readonly data: any,
+    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
   ) {
     this.form.setValue({
       start: data.start ? utils.toISOString(data.start) : '',

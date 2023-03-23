@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../core/services/YamcsService';
 import * as utils from '../shared/utils';
@@ -17,10 +17,10 @@ export class DownloadDumpDialog {
   form: UntypedFormGroup;
 
   constructor(
-    private dialogRef: MatDialogRef<DownloadDumpDialog>,
+    private dialogRef: MatLegacyDialogRef<DownloadDumpDialog>,
     private yamcs: YamcsService,
     formBuilder: UntypedFormBuilder,
-    @Inject(MAT_DIALOG_DATA) data: any,
+    @Inject(MAT_LEGACY_DIALOG_DATA) data: any,
   ) {
     this.form = formBuilder.group({
       start: [null, Validators.required],

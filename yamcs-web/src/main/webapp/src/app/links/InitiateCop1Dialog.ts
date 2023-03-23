@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { InitiateCop1Request } from '../client';
 
 const CombinedValidator: ValidatorFn = (form: UntypedFormGroup) => {
@@ -26,9 +26,9 @@ export class InitiateCop1Dialog {
   form: UntypedFormGroup;
 
   constructor(
-    private dialogRef: MatDialogRef<InitiateCop1Dialog>,
+    private dialogRef: MatLegacyDialogRef<InitiateCop1Dialog>,
     formBuilder: UntypedFormBuilder,
-    @Inject(MAT_DIALOG_DATA) readonly data: any,
+    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
   ) {
     this.form = formBuilder.group({
       type: ['WITH_CLCW_CHECK', Validators.required],

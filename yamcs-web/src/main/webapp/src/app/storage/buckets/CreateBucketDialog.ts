@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { StorageClient } from '../../client';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -16,10 +16,10 @@ export class CreateBucketDialog {
   private storageClient: StorageClient;
 
   constructor(
-    private dialogRef: MatDialogRef<CreateBucketDialog>,
+    private dialogRef: MatLegacyDialogRef<CreateBucketDialog>,
     formBuilder: UntypedFormBuilder,
     yamcs: YamcsService,
-    @Inject(MAT_DIALOG_DATA) readonly data: any,
+    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
     private messageService: MessageService,
   ) {
     this.storageClient = yamcs.createStorageClient();

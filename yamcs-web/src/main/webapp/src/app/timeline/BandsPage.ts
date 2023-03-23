@@ -1,6 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { TimelineBand } from '../client/types/timeline';
 import { MessageService } from '../core/services/MessageService';
@@ -27,7 +27,7 @@ export class BandsPage implements AfterViewInit {
 
   tableTrackerFn = (index: number, band: TimelineBand) => band.id;
 
-  dataSource = new MatTableDataSource<TimelineBand>();
+  dataSource = new MatLegacyTableDataSource<TimelineBand>();
   selection = new TrackBySelectionModel<TimelineBand>(this.tableTrackerFn, true, []);
 
   constructor(

@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RoleInfo } from '../../client';
@@ -23,7 +23,7 @@ export class RolesPage implements AfterViewInit {
     'default',
     'actions',
   ];
-  dataSource = new MatTableDataSource<RoleInfo>();
+  dataSource = new MatLegacyTableDataSource<RoleInfo>();
 
   constructor(
     private yamcs: YamcsService,

@@ -1,6 +1,6 @@
 import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { StorageClient } from '../../client';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -21,11 +21,11 @@ export class CreateStackDialog {
   private bucket: string;
 
   constructor(
-    private dialogRef: MatDialogRef<CreateStackDialog>,
+    private dialogRef: MatLegacyDialogRef<CreateStackDialog>,
     formBuilder: UntypedFormBuilder,
     yamcs: YamcsService,
     configService: ConfigService,
-    @Inject(MAT_DIALOG_DATA) readonly data: any,
+    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
   ) {
     this.bucket = configService.getConfig().stackBucket;
     this.storageClient = yamcs.createStorageClient();

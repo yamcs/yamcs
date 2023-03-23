@@ -1,38 +1,38 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { Clearance } from '../../client';
 
 @Component({
-    selector: 'app-change-level-dialog',
-    templateUrl: './ChangeLevelDialog.html',
-    styleUrls: ['./ChangeLevelDialog.css'],
+  selector: 'app-change-level-dialog',
+  templateUrl: './ChangeLevelDialog.html',
+  styleUrls: ['./ChangeLevelDialog.css'],
 })
 export class ChangeLevelDialog {
 
-    form: UntypedFormGroup;
+  form: UntypedFormGroup;
 
-    constructor(
-        private dialogRef: MatDialogRef<ChangeLevelDialog>,
-        formBuilder: UntypedFormBuilder,
-        @Inject(MAT_DIALOG_DATA) readonly data: any,
-    ) {
+  constructor(
+    private dialogRef: MatLegacyDialogRef<ChangeLevelDialog>,
+    formBuilder: UntypedFormBuilder,
+    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
+  ) {
 
-        this.form = formBuilder.group({
-            'level': new UntypedFormControl(null, [Validators.required]),
-        });
+    this.form = formBuilder.group({
+      'level': new UntypedFormControl(null, [Validators.required]),
+    });
 
-        if (data.clearance) {
-            const clearance = data.clearance as Clearance;
-            this.form.setValue({
-                level: clearance.level || 'DISABLED',
-            });
-        }
+    if (data.clearance) {
+      const clearance = data.clearance as Clearance;
+      this.form.setValue({
+        level: clearance.level || 'DISABLED',
+      });
     }
+  }
 
-    confirm() {
-        this.dialogRef.close({
-            level: this.form.value['level'] === 'DISABLED' ? undefined : this.form.value['level'],
-        });
-    }
+  confirm() {
+    this.dialogRef.close({
+      level: this.form.value['level'] === 'DISABLED' ? undefined : this.form.value['level'],
+    });
+  }
 }

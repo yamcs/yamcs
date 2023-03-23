@@ -1,8 +1,8 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyDialog } from '@angular/material/legacy-dialog';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
@@ -67,14 +67,14 @@ export class GapsPage {
   // only is updated after the callback...
   private apid: string[] = [];
 
-  dataSource = new MatTableDataSource<Gap>();
+  dataSource = new MatLegacyTableDataSource<Gap>();
   selection = new SelectionModel<Gap>(true, []);
   hasMore$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private yamcs: YamcsService,
     title: Title,
-    private dialog: MatDialog,
+    private dialog: MatLegacyDialog,
     private messageService: MessageService,
     private router: Router,
     private route: ActivatedRoute,

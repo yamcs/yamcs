@@ -1,9 +1,9 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatLegacyDialog } from '@angular/material/legacy-dialog';
+import { MatLegacyPaginator } from '@angular/material/legacy-paginator';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { Clearance } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -18,8 +18,8 @@ export class ClearancesPage implements AfterViewInit {
   @ViewChild(MatSort)
   sort: MatSort;
 
-  @ViewChild(MatPaginator)
-  paginator: MatPaginator;
+  @ViewChild(MatLegacyPaginator)
+  paginator: MatLegacyPaginator;
 
   displayedColumns = [
     'select',
@@ -30,10 +30,10 @@ export class ClearancesPage implements AfterViewInit {
     'actions',
   ];
 
-  dataSource = new MatTableDataSource<Clearance>();
+  dataSource = new MatLegacyTableDataSource<Clearance>();
   selection = new SelectionModel<Clearance>(true, []);
 
-  constructor(private yamcs: YamcsService, title: Title, private dialog: MatDialog) {
+  constructor(private yamcs: YamcsService, title: Title, private dialog: MatLegacyDialog) {
     title.setTitle('Clearances');
     this.refresh();
   }

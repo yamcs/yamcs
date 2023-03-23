@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatLegacyPaginator } from '@angular/material/legacy-paginator';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { Subscription } from 'rxjs';
 import { SessionInfo } from '../../client';
@@ -17,8 +17,8 @@ export class SessionsPage implements AfterViewInit, OnDestroy {
   @ViewChild(MatSort)
   sort: MatSort;
 
-  @ViewChild(MatPaginator)
-  paginator: MatPaginator;
+  @ViewChild(MatLegacyPaginator)
+  paginator: MatLegacyPaginator;
 
   displayedColumns = [
     'id',
@@ -33,7 +33,7 @@ export class SessionsPage implements AfterViewInit, OnDestroy {
 
   tableTrackerFn = (index: number, session: SessionInfo) => session.id;
 
-  dataSource = new MatTableDataSource<SessionInfo>();
+  dataSource = new MatLegacyTableDataSource<SessionInfo>();
 
   private syncSubscription: Subscription;
 

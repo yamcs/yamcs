@@ -2,8 +2,7 @@
   "compileOnSave": false,
   "compilerOptions": {
     "lib": [
-      "es2017",
-      "es2018.promise",
+      "es2018",
       "dom"
     ],
     "module": "esnext",

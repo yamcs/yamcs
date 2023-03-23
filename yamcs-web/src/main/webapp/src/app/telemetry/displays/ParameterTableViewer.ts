@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog } from '@angular/material/legacy-dialog';
 import { BehaviorSubject } from 'rxjs';
 import { NamedObjectId, ParameterSubscription, StorageClient } from '../../client';
 import { ConfigService } from '../../core/services/ConfigService';
@@ -37,7 +37,7 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
 
   constructor(
     private yamcs: YamcsService,
-    private dialog: MatDialog,
+    private dialog: MatLegacyDialog,
     configService: ConfigService,
   ) {
     this.storageClient = yamcs.createStorageClient();

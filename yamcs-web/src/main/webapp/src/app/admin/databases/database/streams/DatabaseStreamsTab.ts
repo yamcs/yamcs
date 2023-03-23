@@ -1,6 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute } from '@angular/router';
 import { StreamEvent, StreamStatisticsSubscription } from '../../../../client';
 import { YamcsService } from '../../../../core/services/YamcsService';
@@ -21,7 +21,7 @@ export class DatabaseStreamsTab implements AfterViewInit, OnDestroy {
 
   displayedColumns = ['name', 'dataCount', 'actions'];
 
-  dataSource = new MatTableDataSource<StreamItem>();
+  dataSource = new MatLegacyTableDataSource<StreamItem>();
 
   private database: string;
   private streamStatisticsSubscription: StreamStatisticsSubscription;

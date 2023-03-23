@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatLegacyDialog, MatLegacyDialogRef } from '@angular/material/legacy-dialog';
 import { CanDeactivate } from '@angular/router';
 import { BehaviorSubject, Observable, Observer, of } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
@@ -15,10 +15,10 @@ export class StackFilePageDirtyGuard implements CanDeactivate<StackFilePage> {
   // TODO this is just a workaround around the fact that our current version
   // of Angular seems to trigger our deactivate guard twice...
   private dialogOpen$ = new BehaviorSubject<boolean>(false);
-  private dialogRef: MatDialogRef<StackFilePageDirtyDialog, any>;
+  private dialogRef: MatLegacyDialogRef<StackFilePageDirtyDialog, any>;
 
   constructor(
-    private dialog: MatDialog,
+    private dialog: MatLegacyDialog,
     private authService: AuthService,
     configService: ConfigService,
   ) {
