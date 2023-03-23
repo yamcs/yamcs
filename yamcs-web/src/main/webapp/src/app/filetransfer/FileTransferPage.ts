@@ -4,6 +4,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { FileTransferService, Transfer, TransferSubscription } from '../client';
+import { AuthService } from '../core/services/AuthService';
 import { Synchronizer } from '../core/services/Synchronizer';
 import { YamcsService } from '../core/services/YamcsService';
 import { TransferFileDialog } from './TransferFileDialog';
@@ -38,6 +39,7 @@ export class FileTransferPage implements OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     synchronizer: Synchronizer,
+    private authService: AuthService,
   ) {
     title.setTitle('File Transfer');
 
@@ -138,12 +140,12 @@ export class FileTransferPage implements OnDestroy {
     });
   }
 
+  mayControlFileTransfers() {
+    return this.authService.getUser()!.hasSystemPrivilege('ControlFileTransfers');
+  }
+
   ngOnDestroy() {
-    if (this.syncSubscription) {
-      this.syncSubscription.unsubscribe();
-    }
-    if (this.transferSubscription) {
-      this.transferSubscription.cancel();
-    }
+    this.syncSubscription?.unsubscribe();
+    this.transferSubscription?.cancel();
   }
 }

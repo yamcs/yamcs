@@ -188,6 +188,7 @@ public class SecurityStore {
         systemPrivileges.add(SystemPrivilege.ModifyCommandHistory);
         systemPrivileges.add(SystemPrivilege.ReadAlarms);
         systemPrivileges.add(SystemPrivilege.ReadCommandHistory);
+        systemPrivileges.add(SystemPrivilege.ReadFileTransfers);
         systemPrivileges.add(SystemPrivilege.ReadEvents);
         systemPrivileges.add(SystemPrivilege.ReadLinks);
         systemPrivileges.add(SystemPrivilege.ReadSystemInfo);

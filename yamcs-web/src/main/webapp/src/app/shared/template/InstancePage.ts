@@ -226,7 +226,10 @@ export class InstancePage implements OnInit, OnDestroy {
   }
 
   showFileTransferItem() {
-    return this.user.hasSystemPrivilege('ControlFileTransfers');
+    // TODO should become ReadFileTransfers only once the
+    // deprecation period is over (see FileTransferApi)
+    return this.user.hasSystemPrivilege('ReadFileTransfers')
+      || this.user.hasSystemPrivilege('ControlFileTransfers');
   }
 
   showArchiveBrowserItem() {

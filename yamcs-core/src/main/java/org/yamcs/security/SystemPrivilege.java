@@ -42,6 +42,11 @@ public class SystemPrivilege {
     public static final SystemPrivilege ControlFileTransfers = new SystemPrivilege("ControlFileTransfers");
 
     /**
+     * Allows to read file transfer information.
+     */
+    public static final SystemPrivilege ReadFileTransfers = new SystemPrivilege("ReadFileTransfers");
+
+    /**
      * Allows specifying command options (extra attributes in the command history, disable/modify verifiers)
      */
     public static final SystemPrivilege CommandOptions = new SystemPrivilege("CommandOptions");

@@ -49,6 +49,10 @@ ControlAccess
     Allows to control access (users, groups, roles, ...)
 ReadSystemInfo
     Allows to view system information (OS, JVM, threads, replication, ...)
+ControlFileTransfers
+    Allows to create file transfers.
+ReadFileTransfers
+    Allows read access to file transfer information.
 
 .. note::
 
