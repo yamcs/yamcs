@@ -31,7 +31,7 @@ jobs:
           java-version: ${{ matrix.java }}
       - name: Run test suite
         run: mvn -B --no-transfer-progress ${{ matrix.mvn_opts }} test
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v3.1.2
         if: failure()
         with:
            name: errdump
