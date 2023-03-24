@@ -37,6 +37,7 @@ import { RouterModule } from '@angular/router';
 import { AttachContextGuard } from '../core/guards/AttachContextGuard';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { ClearContextGuard } from '../core/guards/ClearContextGuard';
+import { MayAccessAdminAreaGuard } from '../core/guards/MayAccessAdminAreaGuard';
 import { MayControlAccessGuard } from '../core/guards/MayControlAccessGuard';
 import { MayControlArchivingGuard } from '../core/guards/MayControlArchivingGuard';
 import { MayControlCommandQueueGuard } from '../core/guards/MayControlCommandQueueGuard';
@@ -288,6 +289,7 @@ const guards = [
   AuthGuard,
   ClearContextGuard,
   AttachContextGuard,
+  MayAccessAdminAreaGuard,
   MayControlAccessGuard,
   MayControlArchivingGuard,
   MayControlCommandQueueGuard,
