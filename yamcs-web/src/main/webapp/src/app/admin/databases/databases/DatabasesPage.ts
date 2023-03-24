@@ -3,6 +3,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { Database } from '../../../client';
+import { MessageService } from '../../../core/services/MessageService';
 import { YamcsService } from '../../../core/services/YamcsService';
 
 @Component({
@@ -18,11 +19,15 @@ export class DatabasesPage implements AfterViewInit {
 
   dataSource = new MatTableDataSource<Database>();
 
-  constructor(readonly yamcs: YamcsService, title: Title) {
+  constructor(
+    readonly yamcs: YamcsService,
+    title: Title,
+    messageService: MessageService,
+  ) {
     title.setTitle('Databases');
     yamcs.yamcsClient.getDatabases().then(databases => {
       this.dataSource.data = databases;
-    });
+    }).catch(err => messageService.showError(err));
   }
 
   ngAfterViewInit() {

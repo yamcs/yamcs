@@ -276,7 +276,7 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new Cop1Api());
         addApi(new DatabaseApi());
         addApi(new EventsApi());
-        addApi(new IamApi(tokenStore));
+        addApi(new IamApi(auditLog, tokenStore));
         addApi(new IndexesApi());
         addApi(new LinksApi(auditLog));
         addApi(new ManagementApi());
@@ -289,7 +289,7 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new ReplicationApi());
         addApi(new ServerApi(this));
         addApi(new StreamArchiveApi());
-        addApi(new RocksDbApi());
+        addApi(new RocksDbApi(auditLog));
         addApi(new SessionsApi());
         addApi(new TableApi());
         addApi(new TimeApi());

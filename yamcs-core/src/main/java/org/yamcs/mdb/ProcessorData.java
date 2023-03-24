@@ -1,7 +1,5 @@
 package org.yamcs.mdb;
 
-import static org.yamcs.xtce.XtceDb.YAMCS_SPACESYSTEM_NAME;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.yamcs.Processor;
 import org.yamcs.ProcessorConfig;
+import org.yamcs.YamcsServer;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.events.QuietEventProducer;
@@ -156,7 +155,9 @@ public class ProcessorData {
     }
 
     private ParameterValue getProcessorPV(XtceDb mdb, long time, String name, String value, String description) {
-        String fqn = NameDescription.qualifiedName(YAMCS_SPACESYSTEM_NAME, "processor", name);
+        var serverId = YamcsServer.getServer().getServerId();
+        var namespace = XtceDb.YAMCS_SPACESYSTEM_NAME + NameDescription.PATH_SEPARATOR + serverId;
+        String fqn = NameDescription.qualifiedName(namespace, "processor", name);
         Parameter p = SystemParametersService.createSystemParameter(mdb, fqn, Yamcs.Value.Type.STRING, description);
 
         ParameterValue pv = new ParameterValue(p);

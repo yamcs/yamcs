@@ -4,7 +4,9 @@ import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { Database } from '../../../client';
+import { AuthService } from '../../../core/services/AuthService';
 import { YamcsService } from '../../../core/services/YamcsService';
+import { User } from '../../../shared/User';
 
 interface DatabaseObject {
   type: 'table' | 'stream';
@@ -21,6 +23,7 @@ export class DatabasePage implements OnDestroy {
   database$: Promise<Database>;
   object$ = new BehaviorSubject<DatabaseObject | null>(null);
 
+  private user: User;
   private routerSubscription: Subscription;
 
   constructor(
@@ -28,7 +31,9 @@ export class DatabasePage implements OnDestroy {
     route: ActivatedRoute,
     readonly yamcs: YamcsService,
     title: Title,
+    authService: AuthService,
   ) {
+    this.user = authService.getUser()!;
     this.routerSubscription = router.events.pipe(
       filter(evt => evt instanceof NavigationEnd)
     ).subscribe((evt: NavigationEnd) => {
@@ -53,8 +58,6 @@ export class DatabasePage implements OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.routerSubscription) {
-      this.routerSubscription.unsubscribe();
-    }
+    this.routerSubscription?.unsubscribe();
   }
 }

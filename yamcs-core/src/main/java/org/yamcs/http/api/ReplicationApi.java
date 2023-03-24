@@ -4,8 +4,6 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.yamcs.YamcsServer;
@@ -22,6 +20,7 @@ import org.yamcs.replication.ReplicationMaster;
 import org.yamcs.replication.ReplicationMaster.SlaveServer;
 import org.yamcs.replication.ReplicationServer;
 import org.yamcs.replication.ReplicationSlave;
+import org.yamcs.security.SystemPrivilege;
 
 import com.google.protobuf.Empty;
 
@@ -29,16 +28,17 @@ import io.netty.channel.Channel;
 
 public class ReplicationApi extends AbstractReplicationApi<Context> {
 
-    private static ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
-
     @Override
     public void getReplicationInfo(Context ctx, Empty request, Observer<ReplicationInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadSystemInfo);
         observer.complete(toReplicationInfo());
     }
 
     @Override
     public void subscribeReplicationInfo(Context ctx, Empty request, Observer<ReplicationInfo> observer) {
-        ScheduledFuture<?> future = timer.scheduleAtFixedRate(() -> {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadSystemInfo);
+        var yamcs = YamcsServer.getServer();
+        var future = yamcs.getThreadPoolExecutor().scheduleAtFixedRate(() -> {
             ReplicationInfo info = toReplicationInfo();
             observer.next(info);
         }, 0, 1, TimeUnit.SECONDS);

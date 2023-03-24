@@ -21,19 +21,20 @@ import org.yamcs.filetransfer.TransferMonitor;
 import org.yamcs.filetransfer.TransferOptions;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
+import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.protobuf.AbstractFileTransferApi;
 import org.yamcs.protobuf.CancelTransferRequest;
 import org.yamcs.protobuf.CreateTransferRequest;
-import org.yamcs.protobuf.CreateTransferRequest.UploadOptions;
 import org.yamcs.protobuf.CreateTransferRequest.DownloadOptions;
+import org.yamcs.protobuf.CreateTransferRequest.UploadOptions;
 import org.yamcs.protobuf.FileTransferServiceInfo;
 import org.yamcs.protobuf.GetTransferRequest;
-import org.yamcs.protobuf.ListFilesRequest;
-import org.yamcs.protobuf.ListFilesResponse;
 import org.yamcs.protobuf.ListFileTransferServicesRequest;
 import org.yamcs.protobuf.ListFileTransferServicesResponse;
+import org.yamcs.protobuf.ListFilesRequest;
+import org.yamcs.protobuf.ListFilesResponse;
 import org.yamcs.protobuf.ListTransfersRequest;
 import org.yamcs.protobuf.ListTransfersResponse;
 import org.yamcs.protobuf.PauseTransferRequest;
@@ -43,6 +44,7 @@ import org.yamcs.protobuf.TransactionId;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferInfo;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.YarchDatabase;
@@ -57,7 +59,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
     @Override
     public void listFileTransferServices(Context ctx, ListFileTransferServicesRequest request,
             Observer<ListFileTransferServicesResponse> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
+        checkReadFileTransfers(ctx.user);
         String instance = ManagementApi.verifyInstance(request.getInstance());
         YamcsServer yamcs = YamcsServer.getServer();
         ListFileTransferServicesResponse.Builder responseb = ListFileTransferServicesResponse.newBuilder();
@@ -74,7 +76,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
     @Override
     public void listTransfers(Context ctx, ListTransfersRequest request,
             Observer<ListTransfersResponse> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
+        checkReadFileTransfers(ctx.user);
 
         FileTransferService ftService = verifyService(request.getInstance(),
                 request.hasServiceName() ? request.getServiceName() : null);
@@ -91,7 +93,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
 
     @Override
     public void getTransfer(Context ctx, GetTransferRequest request, Observer<TransferInfo> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
+        checkReadFileTransfers(ctx.user);
         FileTransferService ftService = verifyService(request.getInstance(),
                 request.hasServiceName() ? request.getServiceName() : null);
         FileTransfer transaction = verifyTransaction(ftService, request.getId());
@@ -110,8 +112,6 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
 
         String bucketName = request.getBucket();
         BucketsApi.checkReadBucketPrivilege(bucketName, ctx.user);
-
-
 
         String objectName = request.getObjectName();
 
@@ -255,7 +255,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
 
     @Override
     public void subscribeTransfers(Context ctx, SubscribeTransfersRequest request, Observer<TransferInfo> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
+        checkReadFileTransfers(ctx.user);
         FileTransferService ftService = verifyService(request.getInstance(),
                 request.hasServiceName() ? request.getServiceName() : null);
         TransferMonitor listener = transfer -> {
@@ -270,8 +270,11 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
     }
 
     @Override
-    public void subscribeRemoteFileList(Context ctx, SubscribeTransfersRequest request, Observer<ListFilesResponse> observer) {
-        FileTransferService ftService = verifyService(request.getInstance(), request.hasServiceName() ? request.getServiceName() : null);
+    public void subscribeRemoteFileList(Context ctx, SubscribeTransfersRequest request,
+            Observer<ListFilesResponse> observer) {
+        checkReadFileTransfers(ctx.user);
+        FileTransferService ftService = verifyService(request.getInstance(),
+                request.hasServiceName() ? request.getServiceName() : null);
         RemoteFileListMonitor listener = fileList -> {
             observer.next(fileList);
         };
@@ -287,8 +290,10 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
     @Override
     public void fetchFileList(Context ctx, ListFilesRequest request, Observer<Empty> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
-        FileTransferService ftService = verifyService(request.getInstance(), request.hasServiceName() ? request.getServiceName() : null);
-        ftService.fetchFileList(request.getSource(), request.getDestination(), request.getRemotePath(), GpbWellKnownHelper.toJava(request.getOptions()));
+        FileTransferService ftService = verifyService(request.getInstance(),
+                request.hasServiceName() ? request.getServiceName() : null);
+        ftService.fetchFileList(request.getSource(), request.getDestination(), request.getRemotePath(),
+                GpbWellKnownHelper.toJava(request.getOptions()));
         observer.complete(Empty.getDefaultInstance());
     }
 
@@ -299,9 +304,11 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
      */
     @Override
     public void getFileList(Context ctx, ListFilesRequest request, Observer<ListFilesResponse> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
-        FileTransferService ftService = verifyService(request.getInstance(), request.hasServiceName() ? request.getServiceName() : null);
-        ListFilesResponse response = ftService.getFileList(request.getSource(), request.getDestination(), request.getRemotePath(), GpbWellKnownHelper.toJava(request.getOptions()));
+        checkReadFileTransfers(ctx.user);
+        FileTransferService ftService = verifyService(request.getInstance(),
+                request.hasServiceName() ? request.getServiceName() : null);
+        ListFilesResponse response = ftService.getFileList(request.getSource(), request.getDestination(),
+                request.getRemotePath(), GpbWellKnownHelper.toJava(request.getOptions()));
         if (response == null) {
             response = ListFilesResponse.newBuilder().build();
         }
@@ -340,7 +347,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         if (transfer.getTotalSize() >= 0) {
             tib.setTotalSize(transfer.getTotalSize());
         }
-        if(transfer.getBucketName()!=null) {
+        if (transfer.getBucketName() != null) {
             tib.setBucket(transfer.getBucketName());
         }
         if (transfer.getObjectName() != null) {
@@ -406,4 +413,18 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         return ftServ;
     }
 
+    private void checkReadFileTransfers(User user) throws ForbiddenException {
+        if (user.hasSystemPrivilege(SystemPrivilege.ReadFileTransfers)) {
+            return;
+        } else if (user.hasSystemPrivilege(SystemPrivilege.ControlFileTransfers)) {
+            log.warn("DEPRECATION WARNING: access to file transfer information should use"
+                    + " the  \"ReadFileTransfers\" system privilege. Currently only"
+                    + " \"ControlFileTransfers\" is assigned to this user. While this is"
+                    + " authorised at the moment, such access will be removed in a future"
+                    + " release.");
+        } else {
+            throw new ForbiddenException(
+                    "Missing system privilege '" + SystemPrivilege.ReadFileTransfers + "'");
+        }
+    }
 }

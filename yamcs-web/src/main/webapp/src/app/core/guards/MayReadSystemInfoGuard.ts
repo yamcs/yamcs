@@ -3,13 +3,13 @@ import { ActivatedRouteSnapshot, CanActivate, CanActivateChild, Router, RouterSt
 import { AuthService } from '../services/AuthService';
 
 @Injectable()
-export class SuperuserGuard implements CanActivate, CanActivateChild {
+export class MayReadSystemInfoGuard implements CanActivate, CanActivateChild {
 
   constructor(private authService: AuthService, private router: Router) {
   }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-    if (this.authService.getUser()!.isSuperuser()) {
+    if (this.authService.getUser()!.hasSystemPrivilege('ReadSystemInfo')) {
       return true;
     }
 

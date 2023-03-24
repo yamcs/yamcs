@@ -4,6 +4,8 @@ import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.yamcs.api.Api;
 import org.yamcs.api.Observer;
@@ -154,7 +156,20 @@ public abstract class Context {
 
     public void checkSystemPrivilege(SystemPrivilege privilege) throws ForbiddenException {
         if (!user.hasSystemPrivilege(privilege)) {
-            throw new ForbiddenException("No system privilege '" + privilege + "'");
+            throw new ForbiddenException("Missing system privilege '" + privilege + "'");
+        }
+    }
+
+    public void checkAnyOfSystemPrivileges(SystemPrivilege... privileges) {
+        var match = false;
+        for (var privilege : privileges) {
+            if (user.hasSystemPrivilege(privilege)) {
+                match = true;
+            }
+        }
+        if (!match) {
+            var candidates = Stream.of(privileges).map(Object::toString).collect(Collectors.joining(", "));
+            throw new ForbiddenException("Missing system privilege (one of " + candidates + ")");
         }
     }
 

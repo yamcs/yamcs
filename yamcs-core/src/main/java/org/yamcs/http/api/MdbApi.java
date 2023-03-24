@@ -24,6 +24,7 @@ import org.yamcs.http.api.MdbPageBuilder.MdbPage;
 import org.yamcs.http.api.MdbSearchHelpers.EntryMatch;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.XtceAssembler;
 import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.protobuf.AbstractMdbApi;
@@ -35,6 +36,7 @@ import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Mdb.ContainerInfo;
 import org.yamcs.protobuf.Mdb.DataSourceType;
 import org.yamcs.protobuf.Mdb.ExportJavaMissionDatabaseRequest;
+import org.yamcs.protobuf.Mdb.ExportXtceRequest;
 import org.yamcs.protobuf.Mdb.GetAlgorithmRequest;
 import org.yamcs.protobuf.Mdb.GetCommandRequest;
 import org.yamcs.protobuf.Mdb.GetContainerRequest;
@@ -80,6 +82,7 @@ import com.google.protobuf.ByteString;
 public class MdbApi extends AbstractMdbApi<Context> {
 
     private static final String JAVA_SERIALIZED_OBJECT = "application/x-java-serialized-object";
+    private static final String TEXT_XML = "text/xml";
     private static final Log log = new Log(MdbApi.class);
 
     @Override
@@ -174,6 +177,22 @@ public class MdbApi extends AbstractMdbApi<Context> {
             responseb.setContinuationToken(continuationToken.encodeAsString());
         }
         observer.complete(responseb.build());
+    }
+
+    @Override
+    public void exportXtce(Context ctx, ExportXtceRequest request, Observer<HttpBody> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
+
+        var instance = ManagementApi.verifyInstance(request.getInstance());
+        var mdb = XtceDbFactory.getInstance(instance);
+        var spaceSystem = verifySpaceSystem(mdb, request.getName());
+        var xtce = new XtceAssembler().toXtce(mdb, spaceSystem.getQualifiedName(), fqn -> true);
+        var httpBody = HttpBody.newBuilder()
+                .setContentType(TEXT_XML)
+                .setFilename(spaceSystem.getName() + ".xtce.xml")
+                .setData(ByteString.copyFromUtf8(xtce))
+                .build();
+        observer.complete(httpBody);
     }
 
     @Override
@@ -681,7 +700,10 @@ public class MdbApi extends AbstractMdbApi<Context> {
         String namespace;
         String name;
         int lastSlash = pathName.lastIndexOf('/');
-        if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
+        if ("/".equals(pathName)) {
+            namespace = "";
+            name = "";
+        } else if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
             namespace = "";
             name = pathName;
         } else {

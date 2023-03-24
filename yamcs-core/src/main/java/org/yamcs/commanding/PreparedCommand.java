@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.UUID;
 
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.cmdhistory.protobuf.Cmdhistory.Assignment;
@@ -41,7 +40,6 @@ public class PreparedCommand {
 
     private CommandId id;
     private MetaCommand metaCommand;
-    private final UUID uuid; // Used in REST API as an easier single-field ID. Not persisted.
 
     List<CommandHistoryAttribute> attributes = new ArrayList<>();
     private Map<Argument, ArgumentValue> argAssignment; // Ordered from top entry to bottom entry
@@ -61,7 +59,6 @@ public class PreparedCommand {
     public final static String CNAME_UNPROCESSED_BINARY = "unprocessedBinary";
     public final static String CNAME_BINARY = "binary";
     public final static String CNAME_CMDNAME = "cmdName";
-    public final static String CNAME_SOURCE = "source";
     public final static String CNAME_ASSIGNMENTS = "assignments";
     public final static String CNAME_COMMENT = "comment";
     public final static String CNAME_NO_POSTPROCESSING = "noPostprocessing";
@@ -78,7 +75,6 @@ public class PreparedCommand {
         reservedColumns.add(CNAME_UNPROCESSED_BINARY);
         reservedColumns.add(CNAME_BINARY);
         reservedColumns.add(CNAME_CMDNAME);
-        reservedColumns.add(CNAME_SOURCE);
         reservedColumns.add(CNAME_ASSIGNMENTS);
         reservedColumns.add(CNAME_COMMENT);
         reservedColumns.add(CNAME_NO_POSTPROCESSING);
@@ -99,7 +95,6 @@ public class PreparedCommand {
 
     public PreparedCommand(CommandId id) {
         this.id = id;
-        uuid = UUID.randomUUID();
     }
 
     /**
@@ -107,19 +102,10 @@ public class PreparedCommand {
      */
     public PreparedCommand(byte[] binary) {
         setBinary(binary);
-        uuid = UUID.randomUUID();
     }
 
     public long getGenerationTime() {
         return id.getGenerationTime();
-    }
-
-    public void setSource(String source) {
-        setAttribute(CNAME_SOURCE, source);
-    }
-
-    public String getSource() {
-        return getStringAttribute(CNAME_SOURCE);
     }
 
     public void setComment(String comment) {
@@ -192,10 +178,6 @@ public class PreparedCommand {
 
     public CommandId getCommandId() {
         return id;
-    }
-
-    public UUID getUUID() {
-        return uuid;
     }
 
     static public CommandId getCommandId(Tuple t) {
@@ -479,7 +461,7 @@ public class PreparedCommand {
 
     @Override
     public String toString() {
-        return "PreparedCommand(" + uuid + ", " + StringConverter.toString(id) + ")";
+        return "PreparedCommand(" + StringConverter.toString(id) + ")";
     }
 
     public static boolean isReservedColumn(String columnName) {

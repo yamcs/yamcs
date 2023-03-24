@@ -37,12 +37,15 @@ import { RouterModule } from '@angular/router';
 import { AttachContextGuard } from '../core/guards/AttachContextGuard';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { ClearContextGuard } from '../core/guards/ClearContextGuard';
+import { MayControlAccessGuard } from '../core/guards/MayControlAccessGuard';
+import { MayControlArchivingGuard } from '../core/guards/MayControlArchivingGuard';
 import { MayControlCommandQueueGuard } from '../core/guards/MayControlCommandQueueGuard';
+import { MayControlServicesGuard } from '../core/guards/MayControlServicesGuard';
 import { MayGetMissionDatabaseGuard } from '../core/guards/MayGetMissionDatabaseGuard';
 import { MayReadEventsGuard } from '../core/guards/MayReadEventsGuard';
+import { MayReadSystemInfoGuard } from '../core/guards/MayReadSystemInfoGuard';
 import { OpenIDCallbackGuard } from '../core/guards/OpenIDCallbackGuard';
 import { ServerSideOpenIDCallbackGuard } from '../core/guards/ServerSideOpenIDCallbackGuard';
-import { SuperuserGuard } from '../core/guards/SuperuserGuard';
 import { Breadcrumb } from './breadcrumb/Breadcrumb';
 import { BreadcrumbTrail } from './breadcrumb/BreadcrumbTrail';
 import { HelpDialog } from './dialogs/HelpDialog';
@@ -85,6 +88,7 @@ import { FilenamePipe } from './pipes/FilenamePipe';
 import { FormatBytesPipe } from './pipes/FormatBytesPipe';
 import { HexDumpPipe } from './pipes/HexDumpPipe';
 import { HexPipe } from './pipes/HexPipe';
+import { MayAccessAdminAreaPipe } from './pipes/MayAccessAdminAreaPipe';
 import { MemberPathPipe } from './pipes/MemberPathPipe';
 import { NanosDurationPipe } from './pipes/NanosDurationPipe';
 import { NvlPipe } from './pipes/NvlPipe';
@@ -94,7 +98,6 @@ import { PrintJsonPipe } from './pipes/PrintJsonPipe';
 import { ReversePipe } from './pipes/ReversePipe';
 import { ShortNamePipe } from './pipes/ShortNamePipe';
 import { SpaceSystemPipe } from './pipes/SpaceSystemPipe';
-import { SuperuserPipe } from './pipes/SuperuserPipe';
 import { ToValuePipe } from './pipes/ToValuePipe';
 import { UnitsPipe } from './pipes/UnitsPipe';
 import { ValuePipe } from './pipes/ValuePipe';
@@ -266,6 +269,7 @@ const pipes = [
   EntryForOffsetPipe,
   HexDumpPipe,
   HexPipe,
+  MayAccessAdminAreaPipe,
   MemberPathPipe,
   NanosDurationPipe,
   NvlPipe,
@@ -275,7 +279,6 @@ const pipes = [
   ReversePipe,
   ShortNamePipe,
   SpaceSystemPipe,
-  SuperuserPipe,
   ToValuePipe,
   UnitsPipe,
   ValuePipe,
@@ -285,12 +288,15 @@ const guards = [
   AuthGuard,
   ClearContextGuard,
   AttachContextGuard,
+  MayControlAccessGuard,
+  MayControlArchivingGuard,
   MayControlCommandQueueGuard,
+  MayControlServicesGuard,
   MayGetMissionDatabaseGuard,
   MayReadEventsGuard,
+  MayReadSystemInfoGuard,
   OpenIDCallbackGuard,
   ServerSideOpenIDCallbackGuard,
-  SuperuserGuard,
 ];
 
 @NgModule({

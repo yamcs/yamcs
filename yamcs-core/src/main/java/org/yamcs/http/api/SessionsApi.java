@@ -5,12 +5,12 @@ import java.time.Instant;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
 import org.yamcs.http.Context;
-import org.yamcs.http.ForbiddenException;
 import org.yamcs.protobuf.AbstractSessionsApi;
 import org.yamcs.protobuf.ListSessionsResponse;
 import org.yamcs.protobuf.SessionInfo;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.security.SessionManager;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.UserSession;
 
 import com.google.protobuf.Empty;
@@ -21,9 +21,7 @@ public class SessionsApi extends AbstractSessionsApi<Context> {
 
     @Override
     public void listSessions(Context ctx, Empty request, Observer<ListSessionsResponse> observer) {
-        if (!ctx.user.isSuperuser()) {
-            throw new ForbiddenException("Insufficient privileges");
-        }
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAccess);
 
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
         SessionManager sessionManager = securityStore.getSessionManager();

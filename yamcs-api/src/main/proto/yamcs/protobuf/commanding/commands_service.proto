@@ -178,12 +178,6 @@ message IssueCommandResponse {
   optional string origin = 7;
   optional int32 sequenceNumber = 8;
   optional string commandName = 9;
-
-  // Deprecated. If you require a string representation of this
-  // command, you can build it based on the fields ``commandName``
-  // and ``assignments``.
-  optional string source = 2 [deprecated=true];
-
   repeated CommandAssignment assignments = 12;
   optional bytes unprocessedBinary = 13;
   optional bytes binary = 4;

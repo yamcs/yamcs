@@ -2,7 +2,6 @@ package org.yamcs.http.api;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.yamcs.Processor;
 import org.yamcs.api.Observer;
@@ -25,8 +24,6 @@ import org.yamcs.protobuf.Commanding.CommandQueueEvent.Type;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Commanding.QueueState;
 import org.yamcs.protobuf.DisableQueueRequest;
-import org.yamcs.protobuf.EditQueueEntryRequest;
-import org.yamcs.protobuf.EditQueueRequest;
 import org.yamcs.protobuf.EnableQueueRequest;
 import org.yamcs.protobuf.GetQueueRequest;
 import org.yamcs.protobuf.ListQueuedCommandsRequest;
@@ -159,35 +156,6 @@ public class QueueApi extends AbstractQueueApi<Context> {
     }
 
     @Override
-    public void updateQueue(Context ctx, EditQueueRequest request, Observer<CommandQueueInfo> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ControlCommandQueue);
-
-        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
-        CommandQueueManager mgr = verifyCommandQueueManager(processor);
-        CommandQueue queue = verifyCommandQueue(mgr, request.getQueue());
-
-        CommandQueue updatedQueue = queue;
-        if (request.hasState()) {
-            switch (request.getState().toLowerCase()) {
-            case "disabled":
-                updatedQueue = mgr.setQueueState(queue.getName(), QueueState.DISABLED);
-                break;
-            case "enabled":
-                updatedQueue = mgr.setQueueState(queue.getName(), QueueState.ENABLED);
-                break;
-            case "blocked":
-                updatedQueue = mgr.setQueueState(queue.getName(), QueueState.BLOCKED);
-                break;
-            default:
-                throw new BadRequestException("Unsupported queue state '" + request.getState() + "'");
-            }
-        }
-        int order = mgr.getQueues().indexOf(queue) + 1;
-        CommandQueueInfo info = toCommandQueueInfo(updatedQueue, order, true);
-        observer.complete(info);
-    }
-
-    @Override
     public void enableQueue(Context ctx, EnableQueueRequest request, Observer<CommandQueueInfo> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlCommandQueue);
 
@@ -268,31 +236,6 @@ public class QueueApi extends AbstractQueueApi<Context> {
     }
 
     @Override
-    public void updateQueueEntry(Context ctx, EditQueueEntryRequest request, Observer<Empty> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ControlCommandQueue);
-
-        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
-        CommandQueueManager mgr = verifyCommandQueueManager(processor);
-        UUID entryId = UUID.fromString(request.getUuid());
-
-        if (request.hasState()) {
-            switch (request.getState().toLowerCase()) {
-            case "released":
-                mgr.sendCommand(entryId);
-                break;
-            case "rejected":
-                String username = ctx.user.getName();
-                mgr.rejectCommand(entryId, username);
-                break;
-            default:
-                throw new BadRequestException("Unsupported state '" + request.getState() + "'");
-            }
-        }
-
-        observer.complete(Empty.getDefaultInstance());
-    }
-
-    @Override
     public void acceptCommand(Context ctx, AcceptCommandRequest request, Observer<Empty> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlCommandQueue);
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
@@ -361,7 +304,6 @@ public class QueueApi extends AbstractQueueApi<Context> {
                 .setSequenceNumber(pc.getSequenceNumber())
                 .setCommandName(pc.getCommandName())
                 .setPendingTransmissionConstraints(activeCommand.isPendingTransmissionConstraints())
-                .setUuid(pc.getUUID().toString())
                 .setGenerationTime(TimeEncoding.toProtobufTimestamp(pc.getGenerationTime()))
                 .setUsername(pc.getUsername())
                 .addAllAssignments(pc.getAssignments());

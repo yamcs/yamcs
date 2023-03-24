@@ -1,5 +1,7 @@
 package org.yamcs;
 
+import org.yamcs.protobuf.Yamcs.Value;
+
 /**
  * A command option. Instances of this class should be registered once, system-wide, against an instance of
  * {@link YamcsServer}. While not enforced, it is preferred to use a {@link Plugin#onLoad(YConfiguration)} hook as this
@@ -57,6 +59,57 @@ public class CommandOption {
 
     public String getHelp() {
         return help;
+    }
+
+    /**
+     * Returns a new value whose type matches more closely the type of this command option.
+     * <p>
+     * The purpose here, is that we want to be forgiving on clients that run commands, while at the same time be more
+     * specific when it is recorded in Command History, or passed to a link.
+     */
+    public Value coerceValue(Value value) {
+        switch (type) {
+        case BOOLEAN:
+            switch (value.getType()) {
+            case STRING:
+                var booleanValue = "true".equals(value.getStringValue());
+                return Value.newBuilder()
+                        .setType(Value.Type.BOOLEAN)
+                        .setBooleanValue(booleanValue)
+                        .build();
+            case BOOLEAN:
+                return value;
+            default:
+                throw new IllegalArgumentException("Command option cannot be converted to boolean");
+            }
+        case NUMBER:
+            switch (value.getType()) {
+            case STRING:
+                var numberValue = Double.parseDouble(value.getStringValue());
+                return Value.newBuilder()
+                        .setType(Value.Type.DOUBLE)
+                        .setDoubleValue(numberValue)
+                        .build();
+            case DOUBLE:
+            case FLOAT:
+            case SINT32:
+            case SINT64:
+            case UINT32:
+            case UINT64:
+                return value;
+            default:
+                throw new IllegalArgumentException("Command option cannot be converted to number");
+            }
+        case STRING:
+            switch (value.getType()) {
+            case STRING:
+                return value;
+            default:
+                throw new IllegalArgumentException("Command option cannot be converted to string");
+            }
+        default:
+            throw new IllegalStateException("Unexpected type " + type);
+        }
     }
 
     @Override

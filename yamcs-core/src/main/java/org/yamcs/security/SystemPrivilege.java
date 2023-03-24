@@ -13,8 +13,17 @@ import java.util.Objects;
  */
 public class SystemPrivilege {
 
+    /**
+     * Allows to control any processor.
+     */
     public static final SystemPrivilege ControlProcessor = new SystemPrivilege("ControlProcessor");
+
+    // Not used. Deprecate?
     public static final SystemPrivilege ReadCommandHistory = new SystemPrivilege("ReadCommandHistory");
+
+    /**
+     * Allows to modify command history.
+     */
     public static final SystemPrivilege ModifyCommandHistory = new SystemPrivilege("ModifyCommandHistory");
 
     /**
@@ -31,6 +40,11 @@ public class SystemPrivilege {
      * Allows to control file transfers.
      */
     public static final SystemPrivilege ControlFileTransfers = new SystemPrivilege("ControlFileTransfers");
+
+    /**
+     * Allows to read file transfer information.
+     */
+    public static final SystemPrivilege ReadFileTransfers = new SystemPrivilege("ReadFileTransfers");
 
     /**
      * Allows specifying command options (extra attributes in the command history, disable/modify verifiers)
@@ -52,6 +66,9 @@ public class SystemPrivilege {
      */
     public static final SystemPrivilege ControlAlarms = new SystemPrivilege("ControlAlarms");
 
+    /**
+     * Allows to manage archiving properties of Yamcs.
+     */
     public static final SystemPrivilege ControlArchiving = new SystemPrivilege("ControlArchiving");
 
     /**
@@ -60,7 +77,7 @@ public class SystemPrivilege {
     public static final SystemPrivilege ReadLinks = new SystemPrivilege("ReadLinks");
 
     /**
-     * Allows to read link state.
+     * Allows to control the lifecycle of any link.
      */
     public static final SystemPrivilege ControlLinks = new SystemPrivilege("ControlLinks");
 
@@ -69,6 +86,9 @@ public class SystemPrivilege {
      */
     public static final SystemPrivilege ControlServices = new SystemPrivilege("ControlServices");
 
+    /**
+     * Allows to create instances.
+     */
     public static final SystemPrivilege CreateInstances = new SystemPrivilege("CreateInstances");
 
     /**
@@ -76,15 +96,30 @@ public class SystemPrivilege {
      */
     public static final SystemPrivilege ManageAnyBucket = new SystemPrivilege("ManageAnyBucket");
 
-    public static final SystemPrivilege ReadEvents = new SystemPrivilege("ReadEvents");
-    public static final SystemPrivilege WriteEvents = new SystemPrivilege("WriteEvents");
-    public static final SystemPrivilege WriteTables = new SystemPrivilege("WriteTables");
-    public static final SystemPrivilege ReadTables = new SystemPrivilege("ReadTables");
+    /**
+     * Allows to control access (users, groups, roles, ...)
+     */
+    public static final SystemPrivilege ControlAccess = new SystemPrivilege("ControlAccess");
 
     /**
-     * Allows to read thread information
+     * Allows to read any event.
      */
-    public static final SystemPrivilege ReadThreads = new SystemPrivilege("ReadThreads");
+    public static final SystemPrivilege ReadEvents = new SystemPrivilege("ReadEvents");
+
+    /**
+     * Allows to manually create events.
+     */
+    public static final SystemPrivilege WriteEvents = new SystemPrivilege("WriteEvents");
+
+    /**
+     * Allows to manually add records to tables.
+     */
+    public static final SystemPrivilege WriteTables = new SystemPrivilege("WriteTables");
+
+    /**
+     * Allows to read tables.
+     */
+    public static final SystemPrivilege ReadTables = new SystemPrivilege("ReadTables");
 
     /**
      * Allows to change online the MDB (calibrators, alarms and algorithms)
@@ -105,6 +140,11 @@ public class SystemPrivilege {
      * Allows to modify the timeline
      */
     public static final SystemPrivilege ControlTimeline = new SystemPrivilege("ControlTimeline");
+
+    /**
+     * Allows to view system information (OS, JVM, threads, replication, ...)
+     */
+    public static final SystemPrivilege ReadSystemInfo = new SystemPrivilege("ReadSystemInfo");
 
     private String name;
 

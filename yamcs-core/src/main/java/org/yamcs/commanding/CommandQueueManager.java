@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -482,19 +481,6 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
         }
     }
 
-    // Used by REST API as a simpler identifier
-    @Deprecated
-    public synchronized PreparedCommand rejectCommand(UUID uuid, String username) {
-        for (CommandQueue q : queues.values()) {
-            ActiveCommand activeCommand = q.getcommand(uuid);
-            if (activeCommand != null) {
-                return rejectCommand(activeCommand.getCommandId(), username);
-            }
-        }
-        log.warn("no active command found for uuid {}", uuid);
-        return null;
-    }
-
     public synchronized PreparedCommand rejectCommand(String commandId, String username) {
         for (CommandQueue q : queues.values()) {
             ActiveCommand activeCommand = q.getcommand(commandId);
@@ -530,19 +516,6 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
             return null;
         }
 
-    }
-
-    // Used by REST API as a simpler identifier
-    @Deprecated
-    public synchronized PreparedCommand sendCommand(UUID uuid) {
-        for (CommandQueue q : queues.values()) {
-            ActiveCommand activeCommand = q.getcommand(uuid);
-            if (activeCommand != null) {
-                return sendCommand(activeCommand.getCommandId());
-            }
-        }
-        log.warn("no prepared command found for uuid {}", uuid);
-        return null;
     }
 
     public synchronized PreparedCommand sendCommand(String commandId) {

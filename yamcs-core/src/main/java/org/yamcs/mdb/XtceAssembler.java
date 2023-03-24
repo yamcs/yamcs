@@ -1,5 +1,16 @@
 package org.yamcs.mdb;
 
+import static org.yamcs.xtce.xml.Constants.ATTR_ENCODING;
+import static org.yamcs.xtce.xml.Constants.ATTR_INITIAL_VALUE;
+import static org.yamcs.xtce.xml.Constants.ATTR_PARAMETER_REF;
+import static org.yamcs.xtce.xml.Constants.ATTR_SIZE_IN_BITS;
+import static org.yamcs.xtce.xml.Constants.ELEM_ENCODING;
+import static org.yamcs.xtce.xml.Constants.ELEM_FLOAT_DATA_ENCODING;
+import static org.yamcs.xtce.xml.Constants.ELEM_PARAMETER_INSTANCE_REF;
+import static org.yamcs.xtce.xml.Constants.ELEM_PARAMETER_REF;
+import static org.yamcs.xtce.xml.Constants.ELEM_PARAMETER_VALUE_CHANGE;
+import static org.yamcs.xtce.xml.Constants.ELEM_SIZE_IN_BITS;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -50,6 +61,7 @@ import org.yamcs.xtce.BooleanExpression;
 import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.CheckWindow;
+import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
 import org.yamcs.xtce.CommandContainer;
 import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.Comparison;
@@ -65,6 +77,7 @@ import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.EnumeratedArgumentType;
 import org.yamcs.xtce.EnumeratedDataType;
 import org.yamcs.xtce.EnumeratedParameterType;
+import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
 import org.yamcs.xtce.EnumerationContextAlarm;
 import org.yamcs.xtce.FixedIntegerValue;
 import org.yamcs.xtce.FixedValueEntry;
@@ -83,6 +96,7 @@ import org.yamcs.xtce.IntegerValue;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.MathAlgorithm;
 import org.yamcs.xtce.MathOperation;
+import org.yamcs.xtce.MathOperation.ElementType;
 import org.yamcs.xtce.MathOperationCalibrator;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.MetaCommand;
@@ -107,12 +121,14 @@ import org.yamcs.xtce.ReferenceTime;
 import org.yamcs.xtce.Repeat;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
+import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 import org.yamcs.xtce.Significance;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.SplinePoint;
 import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.StringDataEncoding;
+import org.yamcs.xtce.StringDataEncoding.SizeType;
 import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtce.TimeEpoch;
 import org.yamcs.xtce.TransmissionConstraint;
@@ -121,13 +137,8 @@ import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumeration;
 import org.yamcs.xtce.ValueEnumerationRange;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
-import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
-import org.yamcs.xtce.MathOperation.ElementType;
-import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
-import org.yamcs.xtce.StringDataEncoding.SizeType;
 import org.yamcs.xtce.util.DoubleRange;
-import static org.yamcs.xtce.xml.Constants.*;
+
 /**
  * 
  * Experimental export of Mission Database to XTCE.
@@ -205,6 +216,10 @@ public class XtceAssembler {
                 Transformer transformer = transformerFactory.newTransformer();
                 transformer.setOutputProperty(OutputKeys.INDENT, "yes");
                 transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+
+                // Without this seemingly unnecessary property, the Java XML implementation
+                // will put the XML declaration and the root tag on the same line (missing newline).
+                transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, "no");
 
                 StreamSource source = new StreamSource(reader);
                 StreamResult result = new StreamResult(writer);
@@ -914,6 +929,7 @@ public class XtceAssembler {
         }
         doc.writeEndElement();
     }
+
     private void writeDataEncoding(XMLStreamWriter doc, DataEncoding encoding) throws XMLStreamException {
         if (encoding instanceof IntegerDataEncoding) {
             writeIntegerDataEncoding(doc, (IntegerDataEncoding) encoding);
@@ -1471,6 +1487,7 @@ public class XtceAssembler {
             writeORedCondition(doc, (ORedConditions) boolExpr);
         }
     }
+
     private void writeCondition(XMLStreamWriter doc, Condition condition) throws XMLStreamException {
         doc.writeStartElement("Condition");
         ParameterOrArgumentRef ref = condition.getLeftRef();

@@ -8,8 +8,8 @@ mat-sidenav-container {
 }
 
 mat-sidenav-container.message-bar-visible {
-  top: 112px;
-  /* 48 + 64*/
+  top: 96px;
+  /* 48 + 48*/
 }
 
 mat-sidenav {

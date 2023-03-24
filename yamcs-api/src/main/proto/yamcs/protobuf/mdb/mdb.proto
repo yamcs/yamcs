@@ -16,7 +16,7 @@ service MdbApi {
       get: "/api/mdb/{instance}"
     };
   }
-  
+
   // Export a java serialized dump of the mission database
   rpc ExportJavaMissionDatabase(ExportJavaMissionDatabaseRequest) returns (yamcs.api.HttpBody) {
     option (yamcs.api.route) = {
@@ -36,6 +36,18 @@ service MdbApi {
   rpc GetSpaceSystem(GetSpaceSystemRequest) returns (SpaceSystemInfo) {
     option (yamcs.api.route) = {
       get: "/api/mdb/{instance}/space-systems/{name*}"
+    };
+  }
+
+  // Export an XTCE representation of a space system.
+  //
+  // If the requested space system is not the root, containers will have
+  // their qualified name stripped by the top name. In addition there may
+  // also be references to objects from space systems that are not part of
+  // the export.
+  rpc ExportXtce(ExportXtceRequest) returns (yamcs.api.HttpBody) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/space-systems/{name*}:exportXTCE"
     };
   }
   
@@ -903,6 +915,14 @@ message GetSpaceSystemRequest {
   // Yamcs instance name.
   optional string instance = 1;
   
+  // Space-system name.
+  optional string name = 2;
+}
+
+message ExportXtceRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
   // Space-system name.
   optional string name = 2;
 }

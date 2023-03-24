@@ -13,6 +13,7 @@ import org.yamcs.http.Context;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.MediaType;
+import org.yamcs.http.audit.AuditLog;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.AbstractRocksDbApi;
 import org.yamcs.protobuf.BackupDatabaseRequest;
@@ -35,6 +36,12 @@ import com.google.protobuf.Empty;
 public class RocksDbApi extends AbstractRocksDbApi<Context> {
 
     private static final Log log = new Log(RocksDbApi.class);
+
+    public RocksDbApi(AuditLog auditLog) {
+        auditLog.addPrivilegeChecker(getClass().getSimpleName(), user -> {
+            return user.hasSystemPrivilege(SystemPrivilege.ControlArchiving);
+        });
+    }
 
     @Override
     public void listTablespaces(Context ctx, Empty request, Observer<ListRocksDbTablespacesResponse> observer) {

@@ -16,7 +16,7 @@
     </ng-container>
 
     <ng-container *ngIf="service$ | async as service">
-      <ng-container *ngIf="service.capabilities.download || service.capabilities.upload">
+      <ng-container *ngIf="mayControlFileTransfers() && (service.capabilities.download || service.capabilities.upload)">
         <button mat-button
                 color="primary"
                 (click)="downloadFile(service)">

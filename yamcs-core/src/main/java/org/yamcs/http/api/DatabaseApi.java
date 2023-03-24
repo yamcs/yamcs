@@ -11,6 +11,7 @@ import org.yamcs.protobuf.AbstractDatabaseApi;
 import org.yamcs.protobuf.DatabaseInfo;
 import org.yamcs.protobuf.GetDatabaseRequest;
 import org.yamcs.protobuf.ListDatabasesResponse;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
@@ -20,6 +21,7 @@ public class DatabaseApi extends AbstractDatabaseApi<Context> {
 
     @Override
     public void listDatabases(Context ctx, Empty request, Observer<ListDatabasesResponse> observer) {
+        ctx.checkAnyOfSystemPrivileges(SystemPrivilege.ControlArchiving, SystemPrivilege.ReadTables);
         List<String> databases = new ArrayList<>(YarchDatabase.getDatabases());
         Collections.sort(databases);
         ListDatabasesResponse.Builder responseb = ListDatabasesResponse.newBuilder();
@@ -32,6 +34,7 @@ public class DatabaseApi extends AbstractDatabaseApi<Context> {
 
     @Override
     public void getDatabase(Context ctx, GetDatabaseRequest request, Observer<DatabaseInfo> observer) {
+        ctx.checkAnyOfSystemPrivileges(SystemPrivilege.ControlArchiving, SystemPrivilege.ReadTables);
         YarchDatabaseInstance ydb = verifyDatabase(request.getName());
         observer.complete(toDatabaseInfo(ydb));
     }

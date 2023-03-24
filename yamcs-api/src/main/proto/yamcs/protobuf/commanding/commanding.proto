@@ -49,11 +49,6 @@ message CommandQueueEntry {
   repeated CommandAssignment assignments = 18;
   optional bytes binary = 6;
   optional string username = 7;
-  
-  // Deprecated. This used to be used for manual accept/reject
-  // of a single queued command, however this can now be done
-  // using the ``id`` field instead.
-  optional string uuid = 9 [deprecated=true];
 
   optional string comment = 11;
   optional google.protobuf.Timestamp generationTime = 12;
