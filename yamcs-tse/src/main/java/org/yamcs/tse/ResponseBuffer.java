@@ -15,9 +15,17 @@ public class ResponseBuffer {
     private ByteBuffer view = buf.asReadOnlyBuffer();
 
     private byte[] responseTermination;
+    private boolean fragmented;
 
-    public ResponseBuffer(String responseTermination) {
-        this.responseTermination = responseTermination.getBytes();
+    /**
+     * @param responseTermination
+     *            characters that indicate the end of a message. May be null if there is no such indication.
+     * @param fragmented
+     *            whether multiple responses may need to be reassembled before obtaining a complete message.
+     */
+    public ResponseBuffer(String responseTermination, boolean fragmented) {
+        this.responseTermination = responseTermination != null ? responseTermination.getBytes() : null;
+        this.fragmented = fragmented;
     }
 
     public void append(byte b) {
@@ -50,7 +58,15 @@ public class ResponseBuffer {
             view.get(remainingBytes);
             view.reset();
 
-            int idx = Bytes.indexOf(remainingBytes, responseTermination);
+            if (!fragmented && responseTermination == null) {
+                view.position(buf.position());
+                return remainingBytes;
+            }
+
+            int idx = -1;
+            if (responseTermination != null) {
+                idx = Bytes.indexOf(remainingBytes, responseTermination);
+            }
             if (idx != -1) {
                 view.position(view.position() + idx + responseTermination.length);
                 return Arrays.copyOfRange(remainingBytes, 0, idx);

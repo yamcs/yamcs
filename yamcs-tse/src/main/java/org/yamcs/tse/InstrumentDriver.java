@@ -90,7 +90,7 @@ public abstract class InstrumentDriver {
             }
             write(bytes);
             if (expectResponse) {
-                ResponseBuffer responseBuffer = new ResponseBuffer(getResponseTermination());
+                ResponseBuffer responseBuffer = new ResponseBuffer(getResponseTermination(), isFragmented());
                 if (commandSeparation == null) {
                     byte[] response = readSingleResponse(responseBuffer);
                     if (response != null) {
@@ -164,6 +164,15 @@ public abstract class InstrumentDriver {
     public abstract void write(byte[] cmd) throws IOException;
 
     public abstract void readAvailable(ResponseBuffer buffer, int timeout) throws IOException;
+
+    /**
+     * Returns whether this driver may require reassembly of multiple received fragments in order to obtain a full
+     * response.
+     * <p>
+     * Setting this to false, will allow to have a quick response, even if there is no response termination characters.
+     * That is, without needing to wait on timeouts.
+     */
+    public abstract boolean isFragmented();
 
     /**
      * Returns the driver-specific default pattern for terminating requests. This is the termination that gets used if

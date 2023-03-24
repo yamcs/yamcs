@@ -108,4 +108,9 @@ public class SerialPortDriver extends InstrumentDriver {
     public String getDefaultRequestTermination() {
         return null;
     }
+
+    @Override
+    public boolean isFragmented() {
+        return true;
+    }
 }
