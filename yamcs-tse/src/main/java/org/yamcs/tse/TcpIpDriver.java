@@ -152,4 +152,9 @@ public class TcpIpDriver extends InstrumentDriver {
             }
         }
     }
+
+    @Override
+    public boolean isFragmented() {
+        return true;
+    }
 }

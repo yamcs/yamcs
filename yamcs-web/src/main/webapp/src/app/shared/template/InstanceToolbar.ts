@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatLegacyDialog } from '@angular/material/legacy-dialog';
+import { MatLegacySnackBar } from '@angular/material/legacy-snack-bar';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { ConnectionInfo, Processor, ProcessorSubscription } from '../../client';
 import { MessageService } from '../../core/services/MessageService';
@@ -32,9 +32,9 @@ export class InstanceToolbar implements OnDestroy {
   private connectedSubscription: Subscription;
 
   constructor(
-    private dialog: MatDialog,
+    private dialog: MatLegacyDialog,
     readonly yamcs: YamcsService,
-    private snackBar: MatSnackBar,
+    private snackBar: MatLegacySnackBar,
     private preferenceStore: PreferenceStore,
     private messageService: MessageService,
   ) {

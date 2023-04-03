@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { ClearContextGuard } from '../core/guards/ClearContextGuard';
+import { MayAccessAdminAreaGuard } from '../core/guards/MayAccessAdminAreaGuard';
 import { MayControlAccessGuard } from '../core/guards/MayControlAccessGuard';
 import { MayControlArchivingGuard } from '../core/guards/MayControlArchivingGuard';
 import { MayControlServicesGuard } from '../core/guards/MayControlServicesGuard';
@@ -48,7 +49,7 @@ import { ThreadsPage } from './threads/ThreadsPage';
 
 const routes: Routes = [{
   path: '',
-  canActivate: [AuthGuard, ClearContextGuard],
+  canActivate: [AuthGuard, ClearContextGuard, MayAccessAdminAreaGuard],
   canActivateChild: [AuthGuard],
   runGuardsAndResolvers: 'always',
   component: AdminPage,

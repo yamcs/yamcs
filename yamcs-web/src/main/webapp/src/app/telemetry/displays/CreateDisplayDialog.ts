@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { StorageClient } from '../../client';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -26,10 +26,10 @@ export class CreateDisplayDialog {
   private storageClient: StorageClient;
 
   constructor(
-    private dialogRef: MatDialogRef<CreateDisplayDialog>,
+    private dialogRef: MatLegacyDialogRef<CreateDisplayDialog>,
     formBuilder: UntypedFormBuilder,
     yamcs: YamcsService,
-    @Inject(MAT_DIALOG_DATA) readonly data: any,
+    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
     private changeDetector: ChangeDetectorRef,
     configService: ConfigService,
   ) {

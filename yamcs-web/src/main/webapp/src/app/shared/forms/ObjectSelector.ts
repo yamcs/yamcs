@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, forwardRef, Input, OnChanges, OnDestroy, Output } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { Bucket, ListObjectsOptions, ListObjectsResponse, StorageClient } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -45,7 +45,7 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
   prefixChange = new EventEmitter<string | null>();
 
   displayedColumns = ['name', 'size', 'modified'];
-  dataSource = new MatTableDataSource<BrowseItem>([]);
+  dataSource = new MatLegacyTableDataSource<BrowseItem>([]);
 
   currentPrefix$ = new BehaviorSubject<string | null>(null);
 

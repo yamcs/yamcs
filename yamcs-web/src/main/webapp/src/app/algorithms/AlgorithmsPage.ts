@@ -1,7 +1,7 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatLegacyPaginator } from '@angular/material/legacy-paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -31,8 +31,8 @@ export class AlgorithmsPage implements AfterViewInit, OnDestroy {
   @ViewChild('top', { static: true })
   top: ElementRef;
 
-  @ViewChild(MatPaginator, { static: true })
-  paginator: MatPaginator;
+  @ViewChild(MatLegacyPaginator, { static: true })
+  paginator: MatLegacyPaginator;
 
   dataSource: AlgorithmsDataSource;
 

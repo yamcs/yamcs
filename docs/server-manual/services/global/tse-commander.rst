@@ -68,6 +68,12 @@ This service reads further configuration options from a file ``etc/tse.yaml``. T
           port: 5555
           responseTermination: "\n"
 
+      - name: udptest
+        class: org.yamcs.tse.UdpDriver
+        args:
+          host: localhost
+          port: 5005
+
 There are two types of drivers. Both drivers support these base arguments:
 
 responseTermination (string)
@@ -116,6 +122,22 @@ host (string)
 
 port (integer)
     **Required.** The TCP port to connect to.
+
+
+UDP
+^^^
+
+host (string)
+   **Required.** The host of the instrument.
+
+port (integer)
+   **Required.** The UDP port to send to.
+
+sourcePort (integer)
+   Local sender port. This is also the port where replies can be sent. Default: any available port.
+
+maxLength (integer)
+   Buffer size for receiving a single reply. Default: 1500
 
 
 Serial Port

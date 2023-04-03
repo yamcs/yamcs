@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { Title } from '@angular/platform-browser';
 import { InstanceTemplate } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -12,7 +12,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class CreateInstancePage1 {
 
-  dataSource = new MatTableDataSource<InstanceTemplate>([]);
+  dataSource = new MatLegacyTableDataSource<InstanceTemplate>([]);
 
   displayedColumns = [
     'name',

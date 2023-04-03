@@ -2,7 +2,7 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { KeyValue } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { FormBuilder, UntypedFormGroup } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog } from '@angular/material/legacy-dialog';
 import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
@@ -90,12 +90,12 @@ export class StackFilePage implements OnDestroy {
 
   // KeyValuePipe comparator that preserves original order.
   // (default KeyValuePipe is to sort A-Z, but that's undesired for args).
-  insertionOrder = (a: KeyValue<number,string>, b: KeyValue<number,string>): number => {
+  insertionOrder = (a: KeyValue<number, string>, b: KeyValue<number, string>): number => {
     return 0;
-  }
+  };
 
   constructor(
-    private dialog: MatDialog,
+    private dialog: MatLegacyDialog,
     readonly yamcs: YamcsService,
     private route: ActivatedRoute,
     private router: Router,
@@ -128,7 +128,7 @@ export class StackFilePage implements OnDestroy {
       id: 'custom',
       label: 'Custom',
       group: true,
-    })
+    });
 
     this.stackOptionsForm = formBuilder.group({
       advancementAckDropDown: ['', []],

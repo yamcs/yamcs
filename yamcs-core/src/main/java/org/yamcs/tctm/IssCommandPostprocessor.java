@@ -1,5 +1,6 @@
 package org.yamcs.tctm;
 
+import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
 import static org.yamcs.tctm.AbstractPacketPreprocessor.CONFIG_KEY_ERROR_DETECTION;
 
 import java.nio.ByteBuffer;
@@ -9,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.utils.GpsCcsdsTime;
 import org.yamcs.utils.TimeEncoding;
@@ -17,6 +19,7 @@ public class IssCommandPostprocessor implements CommandPostprocessor {
     static Logger log = LoggerFactory.getLogger(IssCommandPostprocessor.class);
 
     protected int minimumTcPacketLength = -1; // the minimum size of the CCSDS packets uplinked
+    protected int maximumTcPacketLength = -1; // the maximum size of the CCSDS packets uplinked
     final ErrorDetectionWordCalculator errorDetectionCalculator;
     protected CcsdsSeqCountFiller seqFiller = new CcsdsSeqCountFiller();
 
@@ -29,6 +32,7 @@ public class IssCommandPostprocessor implements CommandPostprocessor {
 
     public IssCommandPostprocessor(String yamcsInstance, YConfiguration config) {
         minimumTcPacketLength = config.getInt("minimumTcPacketLength", -1);
+        maximumTcPacketLength = config.getInt("maximumTcPacketLength", -1);
         enforceEvenNumberOfBytes = config.getBoolean("enforceEvenNumberOfBytes", false);
         if (config.containsKey(CONFIG_KEY_ERROR_DETECTION)) {
             errorDetectionCalculator = AbstractPacketPreprocessor.getErrorDetectionWordCalculator(config);
@@ -46,19 +50,28 @@ public class IssCommandPostprocessor implements CommandPostprocessor {
             checksumIndicator = CcsdsPacket.getChecksumIndicator(binary);
         }
         int newLength = getBinaryLength(pc);
+        if (maximumTcPacketLength != -1 && newLength > maximumTcPacketLength) {
+            String msg = "Command too long, length:" + newLength + ", expected maximum length: "
+                    + maximumTcPacketLength;
+            log.warn(msg);
+            long t = TimeEncoding.getWallclockTime();
+            commandHistory.publishAck(pc.getCommandId(), AcknowledgeSent_KEY, t, AckStatus.NOK, msg);
+            commandHistory.commandFailed(pc.getCommandId(), t, msg);
+            return null;
+        }
         if (newLength > binary.length) {
             binary = Arrays.copyOf(binary, newLength);
         }
         ByteBuffer bb = ByteBuffer.wrap(binary);
         bb.putShort(4, (short) (binary.length - 7)); // fix packet length
         int seqCount = seqFiller.fill(binary);
-        
+
         if (secHeaderFlag) {
             GpsCcsdsTime gpsTime = TimeEncoding.toGpsTime(pc.getCommandId().getGenerationTime());
             bb.putInt(6, gpsTime.coarseTime);
             bb.put(10, gpsTime.fineTime);
         }
-        
+
         commandHistory.publish(pc.getCommandId(), CommandHistoryPublisher.CcsdsSeq_KEY, seqCount);
         if (checksumIndicator) {
             int pos = binary.length - 2;
@@ -110,7 +123,11 @@ public class IssCommandPostprocessor implements CommandPostprocessor {
         this.commandHistory = commandHistoryListener;
     }
 
-    public int getMiniminimumTcPacketLength() {
+    public int getMinimumTcPacketLength() {
         return minimumTcPacketLength;
+    }
+
+    public int getMaximumTcPacketLength() {
+        return maximumTcPacketLength;
     }
 }

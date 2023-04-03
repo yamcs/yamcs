@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { Title } from '@angular/platform-browser';
 import { RocksDbDatabase } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -17,7 +17,7 @@ export class RocksDbDatabasesPage {
     'actions',
   ];
 
-  dataSource = new MatTableDataSource<RocksDbDatabase>();
+  dataSource = new MatLegacyTableDataSource<RocksDbDatabase>();
 
   constructor(yamcs: YamcsService, title: Title) {
     title.setTitle('Open Databases');

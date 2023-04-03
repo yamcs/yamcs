@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, forwardRef, Input, OnChanges, OnDestroy, Output } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { ListFilesResponse } from '../client';
 
@@ -41,7 +41,7 @@ export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDe
   prefixChange = new EventEmitter<string | null>();
 
   displayedColumns = ['name', 'size', 'modified'];
-  dataSource = new MatTableDataSource<RemoteFileItem>([]);
+  dataSource = new MatLegacyTableDataSource<RemoteFileItem>([]);
 
   currentPrefix$ = new BehaviorSubject<string | null>(null);
 

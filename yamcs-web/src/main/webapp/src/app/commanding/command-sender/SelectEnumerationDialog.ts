@@ -1,9 +1,9 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, Inject, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MatLegacyPaginator } from '@angular/material/legacy-paginator';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { ArgumentType, EnumValue } from '../../client';
 
 @Component({
@@ -16,10 +16,10 @@ export class SelectEnumerationDialog implements AfterViewInit {
 
   filterControl = new UntypedFormControl();
 
-  @ViewChild(MatPaginator, { static: true })
-  paginator: MatPaginator;
+  @ViewChild(MatLegacyPaginator, { static: true })
+  paginator: MatLegacyPaginator;
 
-  dataSource = new MatTableDataSource<EnumValue>([]);
+  dataSource = new MatLegacyTableDataSource<EnumValue>([]);
   selection = new SelectionModel<EnumValue>();
 
   displayedColumns = [
@@ -28,8 +28,8 @@ export class SelectEnumerationDialog implements AfterViewInit {
   ];
 
   constructor(
-    private dialogRef: MatDialogRef<SelectEnumerationDialog>,
-    @Inject(MAT_DIALOG_DATA) readonly data: any,
+    private dialogRef: MatLegacyDialogRef<SelectEnumerationDialog>,
+    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
   ) {
     const argumentType = data.type as ArgumentType;
     const isHex = argumentType.dataEncoding?.encoding === 'UNSIGNED';

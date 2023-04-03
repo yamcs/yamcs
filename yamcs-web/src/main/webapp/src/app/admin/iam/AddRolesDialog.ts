@@ -1,9 +1,9 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, Inject, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MatLegacyPaginator } from '@angular/material/legacy-paginator';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { RoleInfo } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
@@ -27,16 +27,16 @@ export class AddRolesDialog implements AfterViewInit {
 
   filterControl = new UntypedFormControl();
 
-  @ViewChild(MatPaginator, { static: true })
-  paginator: MatPaginator;
+  @ViewChild(MatLegacyPaginator, { static: true })
+  paginator: MatLegacyPaginator;
 
-  dataSource = new MatTableDataSource<RoleItem>();
+  dataSource = new MatLegacyTableDataSource<RoleItem>();
   selection = new SelectionModel<RoleItem>(true, []);
 
   constructor(
-    private dialogRef: MatDialogRef<AddRolesDialog>,
+    private dialogRef: MatLegacyDialogRef<AddRolesDialog>,
     yamcs: YamcsService,
-    @Inject(MAT_DIALOG_DATA) readonly data: any
+    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any
   ) {
     const existingItems: RoleItem[] = data.items;
     const existingRoles = existingItems.filter(i => i.role).map(i => i.role!.name);

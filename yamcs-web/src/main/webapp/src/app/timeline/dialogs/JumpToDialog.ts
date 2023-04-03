@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import * as utils from '../../shared/utils';
 
 @Component({
@@ -14,8 +14,8 @@ export class JumpToDialog {
   ]);
 
   constructor(
-    private dialogRef: MatDialogRef<JumpToDialog>,
-    @Inject(MAT_DIALOG_DATA) readonly data: any,
+    private dialogRef: MatLegacyDialogRef<JumpToDialog>,
+    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
   ) {
     if (this.data.date) {
       this.date.setValue(utils.toISOString(this.data.date));

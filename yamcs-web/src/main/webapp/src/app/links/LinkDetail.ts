@@ -51,7 +51,11 @@ export class LinkDetail {
     const entries: string[] = [];
     if (Array.isArray(value)) {
       for (let i = 0; i < value.length; i++) {
-        entries.push('' + value[i]);
+        if (typeof value[i] === 'object') {
+          entries.push('' + JSON.stringify(value[i]));
+        } else {
+          entries.push('' + value[i]);
+        }
       }
     } else {
       entries.push('' + value);

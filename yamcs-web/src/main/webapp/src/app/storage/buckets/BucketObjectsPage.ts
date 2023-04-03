@@ -1,7 +1,7 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyDialog, MatLegacyDialogRef } from '@angular/material/legacy-dialog';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -36,7 +36,7 @@ export class BucketObjectsPage implements OnDestroy {
   previewWidth$ = new BehaviorSubject<number>(600);
 
   displayedColumns = ['select', 'name', 'size', 'modified', 'actions'];
-  dataSource = new MatTableDataSource<BrowseItem>([]);
+  dataSource = new MatLegacyTableDataSource<BrowseItem>([]);
   selection = new SelectionModel<BrowseItem>(true, []);
 
   uploads$ = new BehaviorSubject<Upload[]>([]);
@@ -46,10 +46,10 @@ export class BucketObjectsPage implements OnDestroy {
 
   private progressDialogOpen = false;
 
-  private dialogRef: MatDialogRef<any>;
+  private dialogRef: MatLegacyDialogRef<any>;
 
   constructor(
-    private dialog: MatDialog,
+    private dialog: MatLegacyDialog,
     router: Router,
     private route: ActivatedRoute,
     yamcs: YamcsService,

@@ -2,8 +2,8 @@ import { Overlay } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatLegacyDialog } from '@angular/material/legacy-dialog';
+import { MatLegacySnackBar } from '@angular/material/legacy-snack-bar';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { MouseTracker, Timeline, TimeLocator, TimeRuler, Tool } from '@fqqb/timeline';
@@ -81,8 +81,8 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private overlay: Overlay,
-    private dialog: MatDialog,
-    private snackBar: MatSnackBar,
+    private dialog: MatLegacyDialog,
+    private snackBar: MatLegacySnackBar,
     private dateTimePipe: DateTimePipe,
     private messageService: MessageService,
     private synchronizer: Synchronizer,

@@ -1,6 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
 import { Service } from '../../client';
 
 @Component({
@@ -17,7 +17,7 @@ export class ServicesTable implements AfterViewInit {
   displayedColumns = ['state', 'name', 'className', 'failureMessage', 'actions'];
 
   @Input()
-  dataSource = new MatTableDataSource<Service>();
+  dataSource = new MatLegacyTableDataSource<Service>();
 
   @Input()
   readonly = false;

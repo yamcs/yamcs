@@ -1,6 +1,6 @@
 import { Component, Inject, OnDestroy } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { DownloadParameterValuesOptions } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -31,9 +31,9 @@ export class ExportArchiveDataDialog implements OnDestroy {
   });
 
   constructor(
-    private dialogRef: MatDialogRef<ExportArchiveDataDialog>,
+    private dialogRef: MatLegacyDialogRef<ExportArchiveDataDialog>,
     private yamcs: YamcsService,
-    @Inject(MAT_DIALOG_DATA) private data: any,
+    @Inject(MAT_LEGACY_DIALOG_DATA) private data: any,
   ) {
     let start = data.start;
     let stop = data.stop;

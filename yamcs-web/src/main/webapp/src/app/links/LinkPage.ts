@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog } from '@angular/material/legacy-dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
@@ -28,7 +28,7 @@ export class LinkPage implements OnDestroy {
     readonly yamcs: YamcsService,
     private authService: AuthService,
     private messageService: MessageService,
-    private dialog: MatDialog,
+    private dialog: MatLegacyDialog,
   ) {
     route.paramMap.subscribe(params => {
       const linkName = params.get('link')!;
@@ -130,7 +130,11 @@ export class LinkPage implements OnDestroy {
     const entries: string[] = [];
     if (Array.isArray(value)) {
       for (let i = 0; i < value.length; i++) {
-        entries.push('' + value[i]);
+        if (typeof value[i] === 'object') {
+          entries.push('' + JSON.stringify(value[i]));
+        } else {
+          entries.push('' + value[i]);
+        }
       }
     } else {
       entries.push('' + value);

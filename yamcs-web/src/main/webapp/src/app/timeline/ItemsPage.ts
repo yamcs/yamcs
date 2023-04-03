@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog } from '@angular/material/legacy-dialog';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { TimelineItem } from '../client/types/timeline';
 import { MessageService } from '../core/services/MessageService';
@@ -30,14 +30,14 @@ export class ItemsPage implements AfterViewInit {
 
   tableTrackerFn = (index: number, item: TimelineItem) => item.id;
 
-  dataSource = new MatTableDataSource<TimelineItem>();
+  dataSource = new MatLegacyTableDataSource<TimelineItem>();
   selection = new TrackBySelectionModel<TimelineItem>(this.tableTrackerFn, true, []);
 
   constructor(
     readonly yamcs: YamcsService,
     title: Title,
     private messageService: MessageService,
-    private dialog: MatDialog,
+    private dialog: MatLegacyDialog,
   ) {
     title.setTitle('Timeline Items');
     this.refreshData();

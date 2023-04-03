@@ -1,6 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { Database } from '../../../client';
 import { MessageService } from '../../../core/services/MessageService';
@@ -17,7 +17,7 @@ export class DatabasesPage implements AfterViewInit {
 
   displayedColumns = ['name', 'tablespace', 'path', 'actions'];
 
-  dataSource = new MatTableDataSource<Database>();
+  dataSource = new MatLegacyTableDataSource<Database>();
 
   constructor(
     readonly yamcs: YamcsService,

@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { Subscription } from 'rxjs';
 import { ParameterValue } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
@@ -43,7 +43,7 @@ export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {
   @Output()
   bufferSize = new EventEmitter<number>();
 
-  dataSource = new MatTableDataSource<ScrollRecord>([]);
+  dataSource = new MatLegacyTableDataSource<ScrollRecord>([]);
 
   bufferSizeControl = new UntypedFormControl('10');
   private bufferSizeControlSubscription: Subscription;

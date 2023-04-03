@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, HostBinding, OnDestroy } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog } from '@angular/material/legacy-dialog';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
@@ -44,7 +44,7 @@ export class AppComponent implements OnDestroy {
     route: ActivatedRoute,
     private authService: AuthService,
     private preferenceStore: PreferenceStore,
-    private dialog: MatDialog,
+    private dialog: MatLegacyDialog,
     configService: ConfigService,
   ) {
     this.tag = configService.getTag();

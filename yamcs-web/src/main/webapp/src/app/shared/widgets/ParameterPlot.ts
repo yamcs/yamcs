@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, EventEmitter, Input, OnDestroy, Output, QueryList, ViewChild } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog } from '@angular/material/legacy-dialog';
 import Dygraph from 'dygraphs';
 import { BehaviorSubject } from 'rxjs';
 import { Parameter } from '../../client';
@@ -91,7 +91,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   legendData$ = new BehaviorSubject<DyLegendData | null>(null);
   timestampTrackerData$ = new BehaviorSubject<TimestampTrackerData | null>(null);
 
-  constructor(private dialog: MatDialog) {
+  constructor(private dialog: MatLegacyDialog) {
   }
 
   ngAfterViewInit() {

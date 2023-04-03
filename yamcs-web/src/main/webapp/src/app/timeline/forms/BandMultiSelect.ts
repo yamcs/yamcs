@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { TimelineBand, TimelineBandsPage } from '../../client/types/timeline';
 import { YamcsService } from '../../core/services/YamcsService';
 
@@ -21,8 +21,8 @@ export class BandMultiSelect implements ControlValueAccessor {
 
   displayedColumns = ['name'];
 
-  availableDataSource = new MatTableDataSource<TimelineBand>([]);
-  selectedDataSource = new MatTableDataSource<TimelineBand>([]);
+  availableDataSource = new MatLegacyTableDataSource<TimelineBand>([]);
+  selectedDataSource = new MatLegacyTableDataSource<TimelineBand>([]);
   selectedBand: TimelineBand;
 
   bands$: Promise<TimelineBandsPage>;

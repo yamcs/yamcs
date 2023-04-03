@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { MatLegacyAutocompleteSelectedEvent } from '@angular/material/legacy-autocomplete';
 import { NavigationEnd, Router } from '@angular/router';
 import { Observable, of, Subscription } from 'rxjs';
 import { debounceTime, filter, map, switchMap } from 'rxjs/operators';
@@ -171,7 +171,7 @@ export class InstancePage implements OnInit, OnDestroy {
     );
   }
 
-  onSearchSelect(event: MatAutocompleteSelectedEvent) {
+  onSearchSelect(event: MatLegacyAutocompleteSelectedEvent) {
     this.searchControl.setValue('');
     this.router.navigate(['/telemetry/parameters/', event.option.value], {
       queryParams: { c: this.yamcs.context }
@@ -238,7 +238,11 @@ export class InstancePage implements OnInit, OnDestroy {
 
   handleKeydown(event: KeyboardEvent) {
     const el: HTMLInputElement = this.searchInput.nativeElement;
-    if (event.key === "/" && el !== document.activeElement && document.activeElement?.tagName !== "INPUT") {
+    if (event.key === "/"
+      && document.activeElement?.tagName !== "INPUT"
+      && document.activeElement?.tagName !== "SELECT"
+      && document.activeElement?.tagName !== "TEXTAREA"
+    ) {
       el.focus();
       event.preventDefault();
     } else if (event.key === "Enter") {

@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog } from '@angular/material/legacy-dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { Parameter } from '../../client';
@@ -35,7 +35,7 @@ export class ParameterChartTab implements AfterViewInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     readonly yamcs: YamcsService,
-    private dialog: MatDialog,
+    private dialog: MatLegacyDialog,
     private synchronizer: Synchronizer,
   ) {
     this.missionTime = yamcs.getMissionTime();

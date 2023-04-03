@@ -1,6 +1,15 @@
 @use '@angular/material' as mat;
 
-@include mat.core();
+// TODO(v15): As of v15 mat.legacy-core no longer includes default typography styles.
+//  The following line adds:
+//    1. Default typography styles for all components
+//    2. Styles for typography hierarchy classes (e.g. .mat-headline-1)
+//  If you specify typography styles for the components you use elsewhere, you should delete this line.
+//  If you don't need the default component typographies but still want the hierarchy styles,
+//  you can delete this line and instead use:
+//    `@include mat.legacy-typography-hierarchy(mat.define-legacy-typography-config());`
+@include mat.all-legacy-component-typographies();
+@include mat.legacy-core();
 
 // Define the palettes for your theme using the Material Design palettes available in palette.scss
 // (imported above). For each palette, you can optionally specify a default, lighter, and darker
@@ -77,5 +86,15 @@ $app-primary: mat.define-palette($yamcs-primary);
 $app-accent: mat.define-palette($yamcs-accent);
 $app-warn: mat.define-palette(mat.$red-palette);
 
-$app-theme: mat.define-light-theme($app-primary, $app-accent, $app-warn);
-@include mat.all-component-themes($app-theme);
+$app-theme: mat.define-light-theme(
+  (
+    color: (
+      primary: $app-primary,
+      accent: $app-accent,
+      warn: $app-warn,
+    ),
+    typography: mat.define-typography-config(),
+    density: 0
+  )
+);
+@include mat.all-legacy-component-themes($app-theme);

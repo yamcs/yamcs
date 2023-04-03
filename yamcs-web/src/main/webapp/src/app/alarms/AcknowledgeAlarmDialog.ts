@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { AcknowledgeAlarmOptions, Alarm } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
 
@@ -14,10 +14,10 @@ export class AcknowledgeAlarmDialog {
   formGroup: UntypedFormGroup;
 
   constructor(
-    private dialogRef: MatDialogRef<AcknowledgeAlarmDialog>,
+    private dialogRef: MatLegacyDialogRef<AcknowledgeAlarmDialog>,
     formBuilder: UntypedFormBuilder,
     private yamcs: YamcsService,
-    @Inject(MAT_DIALOG_DATA) readonly data: any,
+    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
   ) {
     this.formGroup = formBuilder.group({
       'comment': undefined,

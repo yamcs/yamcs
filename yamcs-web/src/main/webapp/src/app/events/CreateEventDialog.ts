@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { YamcsService } from '../core/services/YamcsService';
 import { Option } from '../shared/forms/Select';
 import * as utils from '../shared/utils';
@@ -23,10 +23,10 @@ export class CreateEventDialog {
   ];
 
   constructor(
-    private dialogRef: MatDialogRef<CreateEventDialog>,
+    private dialogRef: MatLegacyDialogRef<CreateEventDialog>,
     formBuilder: UntypedFormBuilder,
     private yamcs: YamcsService,
-    @Inject(MAT_DIALOG_DATA) readonly data: any,
+    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
   ) {
     this.form = formBuilder.group({
       message: ['', Validators.required],
