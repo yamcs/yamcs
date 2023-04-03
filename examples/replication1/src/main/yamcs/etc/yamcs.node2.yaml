@@ -82,7 +82,9 @@ streamConfig:
   param: ["pp_realtime", "pp_tse", "sys_param", "proc_param", "node1_proc_param"]
   parameterAlarm: ["alarms_realtime"]
   eventAlarm: ["event_alarms_realtime"]
-  tc: ["tc_realtime"]
+  tc:
+    - name: "tc_realtime"
+      processor: "realtime"
 
 timeService:
      class: org.yamcs.time.SimulationTimeService

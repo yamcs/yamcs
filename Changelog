@@ -1,3 +1,10 @@
+Version 5.8.0 released 3-Apr-2023
+- Upgraded to Rocksdb 7 (required for Apple ARM64 support). The new version should be backwards compatible but please make an extra backup of your data before upgrading.
+- Added support for Apple ARM64 (Apple M1 and M2 chips)
+- TSE (test support equipment): added support for UDP targets
+- Implemented more fine grained permissions for the yamcs-web Admin and File Transfer pages
+
+
 Version 5.7.10 released 14-Mar-2023
 - CFDP improvements: download via proxy request, file listing
 - Command Stack improvements: allow delay in between commands, allow specifying which acknowledgmetn to wait for

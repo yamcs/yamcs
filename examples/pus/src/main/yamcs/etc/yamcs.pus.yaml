@@ -111,5 +111,7 @@ streamConfig:
   param: ["pp_realtime", "sys_param", "proc_param"]
   parameterAlarm: ["alarms_realtime"]
   eventAlarm: ["event_alarms_realtime"]
-  tc: ["tc_realtime"]
+  tc: 
+    - name: "tc_realtime"
+      processor: "realtime"
   sqlFile: "etc/extra_streams.sql"
