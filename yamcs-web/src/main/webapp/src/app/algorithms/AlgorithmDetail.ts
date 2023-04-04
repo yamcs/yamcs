@@ -19,7 +19,7 @@ import { YamcsService } from '../core/services/YamcsService';
 })
 export class AlgorithmDetail implements AfterViewInit {
 
-  @ViewChild('text', { static: true })
+  @ViewChild('text', { static: false })
   textContainer: ElementRef;
 
   @Input()
