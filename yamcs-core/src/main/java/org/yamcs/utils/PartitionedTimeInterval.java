@@ -222,6 +222,10 @@ public class PartitionedTimeInterval<T extends TimeInterval> implements Iterable
         return intervals[i];
     }
 
+    public boolean isEmpty() {
+        return size() == 0;
+    }
+
     static class AscendingIterator<T> implements Iterator<T> {
         TimeInterval[] snapshot;
         int cur = 0;
@@ -268,4 +272,5 @@ public class PartitionedTimeInterval<T extends TimeInterval> implements Iterable
             return (T) snapshot[cur--];
         }
     }
+
 }

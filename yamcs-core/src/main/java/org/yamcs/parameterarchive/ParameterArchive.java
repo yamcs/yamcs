@@ -10,7 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Future;
 
-import org.rocksdb.RocksDB;
+import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 import org.rocksdb.WriteBatch;
@@ -73,6 +73,9 @@ public class ParameterArchive extends AbstractYamcsService {
     public static final int NUMBITS_MASK = 23; // 2^23 millisecons =~ 139 minutes per interval
     public static final int TIMESTAMP_MASK = (0xFFFFFFFF >>> (32 - NUMBITS_MASK));
     public static final long INTERVAL_MASK = ~TIMESTAMP_MASK;
+
+    // from Yamcs 5.8.1, store the parameter archive data into a separate Column Family with this name
+    public static final String CF_NAME = "parchive";
 
     private ParameterIdDb parameterIdDb;
 
@@ -155,10 +158,11 @@ public class ParameterArchive extends AbstractYamcsService {
                     partitioningSchema = TimePartitionSchema.getInstance(tr.getPartitioningSchema());
                 }
                 readPartitions();
+                if (partitions.isEmpty() && partitioningSchema == null) {
+                    partitions.insert(new Partition(tr.hasParchiveCf() ? tr.getParchiveCf() : null));
+                }
             }
-            if (partitioningSchema == null) {
-                partitions.insert(new Partition());
-            }
+
         } catch (RocksDBException | IOException e) {
             throw new InitException(e);
         }
@@ -170,8 +174,10 @@ public class ParameterArchive extends AbstractYamcsService {
         TablespaceRecord.Builder trb = TablespaceRecord.newBuilder().setType(Type.PARCHIVE_PINFO);
         if (partitioningSchema != null) {
             trb.setPartitioningSchema(partitioningSchema.getName());
+        } else {
+            partitions.insert(new Partition(CF_NAME));
         }
-
+        trb.setParchiveCf(CF_NAME);
         TablespaceRecord tr = tablespace.createMetadataRecord(yamcsInstance, trb);
         partitionTbsIndex = tr.getTbsIndex();
     }
@@ -188,21 +194,15 @@ public class ParameterArchive extends AbstractYamcsService {
         try (AscendingRangeIterator it = new AscendingRangeIterator(db.newIterator(), range, range)) {
             while (it.isValid()) {
                 TimeBasedPartition tbp = TimeBasedPartition.parseFrom(it.value());
-                Partition p = new Partition(tbp.getPartitionStart(), tbp.getPartitionEnd(), tbp.getPartitionDir());
-                Partition p1 = partitions.insert(p, 0);
-                if (p1 == null) {
+                String cfName = tbp.hasPartitionCf() ? tbp.getPartitionCf() : null;
+
+                Partition p = new Partition(tbp.getPartitionStart(), tbp.getPartitionEnd(), tbp.getPartitionDir(),
+                        cfName);
+                if (partitions.insert(p, 0) == null) {
                     throw new DatabaseCorruptionException("Partition " + p + " overlaps with existing partitions");
                 }
                 it.next();
             }
-        }
-    }
-
-    static long decodePartitionId(String prefix, String cfname) {
-        try {
-            return Long.parseLong(cfname.substring(prefix.length()), 16);
-        } catch (NumberFormatException e) {
-            throw new ParameterArchiveException("Cannot decode partition id from column family: " + cfname);
         }
     }
 
@@ -217,35 +217,39 @@ public class ParameterArchive extends AbstractYamcsService {
     public void writeToArchive(PGSegment pgs) throws RocksDBException, IOException {
         pgs.consolidate();
         Partition p = createAndGetPartition(getIntervalStart(pgs.getSegmentStart()));
+        YRDB rdb = tablespace.getRdb(p.partitionDir, false);
+        ColumnFamilyHandle cfh = cfh(rdb, p);
         try (WriteBatch writeBatch = new WriteBatch(); WriteOptions wo = new WriteOptions()) {
-            writeToBatch(writeBatch, pgs);
-            RocksDB db = tablespace.getRdb(p.partitionDir, false).getDb();
-            db.write(wo, writeBatch);
+            writeToBatch(cfh, writeBatch, pgs);
+            rdb.write(wo, writeBatch);
         }
     }
 
     public void writeToArchive(long segStart, Collection<PGSegment> pgList) throws RocksDBException, IOException {
-        Partition p = createAndGetPartition(segStart);
-        try (WriteBatch writeBatch = new WriteBatch(); WriteOptions wo = new WriteOptions()) {
+        Partition p = createAndGetPartition(getIntervalStart(segStart));
+        YRDB rdb = tablespace.getRdb(p.partitionDir, false);
 
+        ColumnFamilyHandle cfh = cfh(rdb, p);
+
+        try (WriteBatch writeBatch = new WriteBatch(); WriteOptions wo = new WriteOptions()) {
             for (PGSegment pgs : pgList) {
                 pgs.consolidate();
                 assert (segStart == pgs.getSegmentStart());
-                writeToBatch(writeBatch, pgs);
+                writeToBatch(cfh, writeBatch, pgs);
             }
-            tablespace.getRdb(p.partitionDir, false).getDb().write(wo, writeBatch);
+            rdb.write(wo, writeBatch);
         }
     }
 
-    private void writeToBatch(WriteBatch writeBatch, PGSegment pgs) throws RocksDBException {
-        removeOldOverlappingSegments(writeBatch, pgs);
+    private void writeToBatch(ColumnFamilyHandle cfh, WriteBatch writeBatch, PGSegment pgs) throws RocksDBException {
+        removeOldOverlappingSegments(cfh, writeBatch, pgs);
 
         // write the time segment
         SortedTimeSegment timeSegment = pgs.getTimeSegment();
         byte[] timeKey = new SegmentKey(parameterIdDb.timeParameterId, pgs.getParameterGroupId(),
                 pgs.getSegmentStart(), SegmentKey.TYPE_ENG_VALUE).encode();
         byte[] timeValue = vsEncoder.encode(timeSegment);
-        writeBatch.put(timeKey, timeValue);
+        writeToBatch(cfh, writeBatch, timeKey, timeValue);
 
         // and then the consolidated value segments
         List<BaseSegment> consolidated = pgs.getConsolidatedValueSegments();
@@ -268,7 +272,8 @@ public class ParameterArchive extends AbstractYamcsService {
             byte[] engKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getSegmentStart(),
                     SegmentKey.TYPE_ENG_VALUE).encode();
             byte[] engValue = vsEncoder.encode(vs);
-            writeBatch.put(engKey, engValue);
+            writeToBatch(cfh, writeBatch, engKey, engValue);
+
             if (STORE_RAW_VALUES && consolidatedRawValues != null) {
                 BaseSegment rvs = consolidatedRawValues.get(i);
                 if (rvs != null) {
@@ -284,8 +289,7 @@ public class ParameterArchive extends AbstractYamcsService {
                     byte[] rawKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getSegmentStart(),
                             SegmentKey.TYPE_RAW_VALUE).encode();
                     byte[] rawValue = vsEncoder.encode(rvs);
-                    writeBatch.put(rawKey, rawValue);
-
+                    writeToBatch(cfh, writeBatch, rawKey, rawValue);
                 }
             }
             ParameterStatusSegment pss = satusSegments.get(i);
@@ -300,18 +304,28 @@ public class ParameterArchive extends AbstractYamcsService {
             byte[] pssKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getSegmentStart(),
                     SegmentKey.TYPE_PARAMETER_STATUS).encode();
             byte[] pssValue = vsEncoder.encode(pss);
-            writeBatch.put(pssKey, pssValue);
+            writeToBatch(cfh, writeBatch, pssKey, pssValue);
         }
     }
 
-    private void removeOldOverlappingSegments(WriteBatch writeBatch, PGSegment pgs) throws RocksDBException {
+    private void writeToBatch(ColumnFamilyHandle cfh, WriteBatch writeBatch, byte[] key, byte[] value)
+            throws RocksDBException {
+        if (cfh != null) {
+            writeBatch.put(cfh, key, value);
+        } else {
+            writeBatch.put(key, value);
+        }
+    }
+
+    private void removeOldOverlappingSegments(ColumnFamilyHandle cfh, WriteBatch writeBatch, PGSegment pgs)
+            throws RocksDBException {
         long segStart = pgs.getSegmentStart();
         long segEnd = pgs.getSegmentEnd();
         int pgid = pgs.getParameterGroupId();
 
         byte[] timeKeyStart = new SegmentKey(parameterIdDb.timeParameterId, pgid, segStart, (byte) 0).encode();
         byte[] timeKeyEnd = new SegmentKey(parameterIdDb.timeParameterId, pgid, segEnd, Byte.MAX_VALUE).encode();
-        writeBatch.deleteRange(timeKeyStart, timeKeyEnd);
+        deleteRange(cfh, writeBatch, timeKeyStart, timeKeyEnd);
         IntArray parameterIds = pgs.parameterIds;
 
         for (int i = 0; i < parameterIds.size(); i++) {
@@ -319,27 +333,38 @@ public class ParameterArchive extends AbstractYamcsService {
 
             byte[] paraKeyStart = new SegmentKey(pid, pgid, segStart, (byte) 0).encode();
             byte[] paraKeyEnd = new SegmentKey(pid, pgid, segEnd, Byte.MAX_VALUE).encode();
-            writeBatch.deleteRange(paraKeyStart, paraKeyEnd);
+            deleteRange(cfh, writeBatch, paraKeyStart, paraKeyEnd);
+        }
+    }
+
+    private void deleteRange(ColumnFamilyHandle cfh, WriteBatch writeBatch, byte[] start, byte[] end)
+            throws RocksDBException {
+        if (cfh != null) {
+            writeBatch.deleteRange(cfh, start, end);
+        } else {
+            writeBatch.deleteRange(start, end);
         }
     }
 
     /**
-     * get partition for segment, creating it if it doesn't exist
+     * get partition for interval, creating it if it doesn't exist
      * 
-     * @param segStart
+     * @param intervalStart
      * @throws RocksDBException
      */
-    public Partition createAndGetPartition(long segStart) throws RocksDBException {
+    public Partition createAndGetPartition(long intervalStart) throws RocksDBException {
         synchronized (partitions) {
-            Partition p = partitions.getFit(segStart);
+            Partition p = partitions.getFit(intervalStart);
 
             if (p == null) {
-                TimePartitionInfo pinfo = partitioningSchema.getPartitionInfo(segStart);
-                p = new Partition(pinfo.getStart(), pinfo.getEnd(), pinfo.getDir());
+                TimePartitionInfo pinfo = partitioningSchema.getPartitionInfo(intervalStart);
+                p = new Partition(pinfo.getStart(), pinfo.getEnd(), pinfo.getDir(), CF_NAME);
                 p = partitions.insert(p, 60000L);
                 assert p != null;
                 TimeBasedPartition tbp = TimeBasedPartition.newBuilder().setPartitionDir(p.partitionDir)
-                        .setPartitionStart(p.getStart()).setPartitionEnd(p.getEnd()).build();
+                        .setPartitionStart(p.getStart()).setPartitionEnd(p.getEnd())
+                        .setPartitionCf(p.cfName)
+                        .build();
                 byte[] key = new byte[TBS_INDEX_SIZE + 8];
                 ByteArrayUtils.encodeInt(partitionTbsIndex, key, 0);
                 ByteArrayUtils.encodeLong(pinfo.getStart(), key, TBS_INDEX_SIZE);
@@ -444,14 +469,19 @@ public class ParameterArchive extends AbstractYamcsService {
     }
 
     public RocksIterator getIterator(Partition p) throws RocksDBException, IOException {
-        return tablespace.getRdb(p.partitionDir, false).newIterator();
+        YRDB rdb = tablespace.getRdb(p.partitionDir, false);
+        System.out.println("aici cfh: " + cfh(rdb, p) + " cfName: " + p.cfName + " p.dir: " + p.partitionDir);
+        return rdb.newIterator(cfh(rdb, p));
     }
 
     public SortedTimeSegment getTimeSegment(Partition p, long segmentStart, int parameterGroupId)
             throws RocksDBException, IOException {
         byte[] timeKey = new SegmentKey(parameterIdDb.timeParameterId, parameterGroupId, segmentStart,
                 SegmentKey.TYPE_ENG_VALUE).encode();
-        byte[] tv = tablespace.getRdb(p.partitionDir, false).get(timeKey);
+        YRDB rdb = tablespace.getRdb(p.partitionDir, false);
+        var cfh = cfh(rdb, p);
+
+        byte[] tv = rdb.get(cfh, timeKey);
         if (tv == null) {
             return null;
         }
@@ -514,12 +544,12 @@ public class ParameterArchive extends AbstractYamcsService {
     }
 
     public void compact() {
-
         try {
             log.debug("Compacting all partitions");
             long t0 = System.currentTimeMillis();
             for (Partition p : partitions) {
-                tablespace.getRdb(p.partitionDir, false).getDb().compactRange();
+                YRDB rdb = tablespace.getRdb(p.partitionDir, false);
+                rdb.compactRange(cfh(rdb, p));
             }
             log.debug("Compaction finished in {} millisec", System.currentTimeMillis() - t0);
         } catch (RocksDBException e) {
@@ -528,17 +558,28 @@ public class ParameterArchive extends AbstractYamcsService {
 
     }
 
+    ColumnFamilyHandle cfh(YRDB rdb, Partition p) throws RocksDBException {
+        if (p.cfName == null) {
+            return null;
+        } else {
+            return rdb.createAndGetColumnFamilyHandle(p.cfName);
+        }
+    }
+
     public static class Partition extends TimeInterval {
         final String partitionDir;
+        final private String cfName;
 
-        Partition() {
+        Partition(String cfName) {
             super();
             this.partitionDir = null;
+            this.cfName = cfName;
         }
 
-        Partition(long start, long end, String dir) {
+        Partition(long start, long end, String dir, String cfName) {
             super(start, end);
             this.partitionDir = dir;
+            this.cfName = cfName;
         }
 
         @Override
