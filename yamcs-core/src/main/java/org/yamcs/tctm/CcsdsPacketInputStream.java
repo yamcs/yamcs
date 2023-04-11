@@ -7,9 +7,8 @@ import java.io.InputStream;
 import org.yamcs.YConfiguration;
 
 /**
- * Reads CCSDS packets from an input stream:
- * first it reads 6 bytes primary header, it derives the length from the last two bytes and reads the remaining of the
- * data.
+ * Reads CCSDS packets from an input stream: first it reads 6 bytes primary header, it derives the length from the last
+ * two bytes and reads the remaining of the data.
  * 
  * It also support a maxLength property to limit the size of the packet that is being read.
  * 
@@ -17,8 +16,8 @@ import org.yamcs.YConfiguration;
  *
  */
 public class CcsdsPacketInputStream implements PacketInputStream {
-    DataInputStream dataInputStream;
-    int maxPacketLength = 1500;
+    protected DataInputStream dataInputStream;
+    protected int maxPacketLength = 1500;
 
     @Override
     public void init(InputStream inputStream, YConfiguration args) {
