@@ -145,7 +145,7 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
                 byte[] packet = packetInputStream.readPacket();
                 updateStats(packet.length);
                 TmPacket pkt = new TmPacket(timeService.getMissionTime(), packet);
-                pkt.setEarthRceptionTime(timeService.getHresMissionTime());
+                pkt.setEarthReceptionTime(timeService.getHresMissionTime());
                 pwt = packetPreprocessor.process(pkt);
                 if (pwt != null) {
                     break;

@@ -24,8 +24,8 @@ import org.yamcs.utils.TimeEncoding;
  * </ul>
  * 
  * <p>
- * For the invalid packets there is an option at the link level to redirect them on a different stream. Using
- * StreamSQL any other packet can be redirected as well.
+ * For the invalid packets there is an option at the link level to redirect them on a different stream. Using StreamSQL
+ * any other packet can be redirected as well.
  * 
  * 
  * @author nm
@@ -128,8 +128,8 @@ public class TmPacket {
      * Some links will not set this parameter.
      * <p>
      * The reason this uses a high resolution instant whereas the others are using millisecond resolution times is that
-     * the ground stations usually have high resolution clocks able to provide this accuracy. This is also the time
-     * used to perform space to ground time synchronisation.
+     * the ground stations usually have high resolution clocks able to provide this accuracy. This is also the time used
+     * to perform space to ground time synchronisation.
      * 
      * 
      * @return the time of the reception of the packet on ground.
@@ -138,8 +138,16 @@ public class TmPacket {
         return ertime;
     }
 
-    public void setEarthRceptionTime(Instant ertime) {
+    public void setEarthReceptionTime(Instant ertime) {
         this.ertime = ertime;
+    }
+
+    /**
+     * Use {@link #setEarthReceptionTime(Instant)} instead. (typo fix)
+     */
+    @Deprecated
+    public void setEarthRceptionTime(Instant ertime) {
+        setEarthReceptionTime(ertime);
     }
 
     /**

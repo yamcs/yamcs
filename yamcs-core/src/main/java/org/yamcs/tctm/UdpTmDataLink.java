@@ -16,8 +16,7 @@ import org.yamcs.YConfiguration;
  * <ul>
  * <li>{@code port} - the UDP port to listen to</li>
  * <li>{@code maxLength} - the maximum length of the datagram (and thus the TM packet length + initialBytesToStrip). If
- * a datagram longer than this
- * size will be received, it will be truncated. Default: 1500 (bytes)</li>
+ * a datagram longer than this size will be received, it will be truncated. Default: 1500 (bytes)</li>
  * <li>{@code initialBytesToStrip} - if configured, skip that number of bytes from the beginning of the datagram.
  * Default: 0</li>
  * 
@@ -120,7 +119,7 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
 
         if (packet != null) {
             TmPacket tmPacket = new TmPacket(timeService.getMissionTime(), packet);
-            tmPacket.setEarthRceptionTime(timeService.getHresMissionTime());
+            tmPacket.setEarthReceptionTime(timeService.getHresMissionTime());
             return packetPreprocessor.process(tmPacket);
         } else {
             return null;

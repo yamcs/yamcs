@@ -21,6 +21,7 @@ import org.yamcs.utils.StringConverter;
 public class SampleVcaHandler extends AbstractTmDataLink implements VcDownlinkHandler {
     private Instant ertime;
 
+    @Override
     public void init(String instance, String name, YConfiguration config) {
         super.init(instance, name, config);
     }
@@ -51,7 +52,7 @@ public class SampleVcaHandler extends AbstractTmDataLink implements VcDownlinkHa
     private void handlePacket(byte[] p) {
         log.info("Received packet of length {}: {}", p.length, StringConverter.arrayToHexString(p, true));
         TmPacket pwt = new TmPacket(timeService.getMissionTime(), p);
-        pwt.setEarthRceptionTime(ertime);
+        pwt.setEarthReceptionTime(ertime);
 
         pwt = packetPreprocessor.process(pwt);
         processPacket(pwt);
