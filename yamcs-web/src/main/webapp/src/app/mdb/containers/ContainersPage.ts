@@ -4,9 +4,10 @@ import { UntypedFormControl } from '@angular/forms';
 import { MatLegacyPaginator } from '@angular/material/legacy-paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
 import { Container, GetContainersOptions } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
-import { ColumnInfo } from '../../shared/template/ColumnChooser';
+import { ColumnChooser, ColumnInfo } from '../../shared/template/ColumnChooser';
 import { ContainersDataSource } from './ContainersDataSource';
 
 @Component({
@@ -24,6 +25,9 @@ export class ContainersPage implements AfterViewInit {
   @ViewChild(MatLegacyPaginator, { static: true })
   paginator: MatLegacyPaginator;
 
+  @ViewChild(ColumnChooser)
+  columnChooser: ColumnChooser;
+
   filterControl = new UntypedFormControl();
 
   dataSource: ContainersDataSource;
@@ -37,6 +41,9 @@ export class ContainersPage implements AfterViewInit {
     { id: 'shortDescription', label: 'Description' },
     { id: 'actions', label: '', alwaysVisible: true },
   ];
+
+  // Added dynamically based on actual containers.
+  aliasColumns$ = new BehaviorSubject<ColumnInfo[]>([]);
 
   selection = new SelectionModel<Container>(false);
 
@@ -81,6 +88,22 @@ export class ContainersPage implements AfterViewInit {
     }
     this.dataSource.loadContainers(options).then(() => {
       this.selection.clear();
+
+      // Reset alias columns
+      for (const aliasColumn of this.aliasColumns$.value) {
+        const idx = this.columns.indexOf(aliasColumn);
+        if (idx !== -1) {
+          this.columns.splice(idx, 1);
+        }
+      }
+      const aliasColumns = [];
+      for (const namespace of this.dataSource.getAliasNamespaces()) {
+        const aliasColumn = { id: namespace, label: namespace, alwaysVisible: true };
+        aliasColumns.push(aliasColumn);
+      }
+      this.columns.splice(1, 0, ...aliasColumns); // Insert after name column
+      this.aliasColumns$.next(aliasColumns);
+      this.columnChooser.recalculate(this.columns);
     });
   }
 
