@@ -32,11 +32,11 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
         initialDelay = config.getLong("initialDelay", -1);
 
         if (config.containsKey("packetInputStreamClassName")) {
-            this.packetInputStreamClassName = config.getString("packetInputStreamClassName");
-            this.packetInputStreamArgs = config.getConfig("packetInputStreamArgs");
+            packetInputStreamClassName = config.getString("packetInputStreamClassName");
+            packetInputStreamArgs = config.getConfigOrEmpty("packetInputStreamArgs");
         } else {
-            this.packetInputStreamClassName = CcsdsPacketInputStream.class.getName();
-            this.packetInputStreamArgs = YConfiguration.emptyConfig();
+            packetInputStreamClassName = CcsdsPacketInputStream.class.getName();
+            packetInputStreamArgs = YConfiguration.emptyConfig();
         }
 
     }
