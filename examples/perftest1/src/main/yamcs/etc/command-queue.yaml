@@ -1,5 +1,6 @@
-# Definitions of command queues
-# Each queue has a name, a default state and a list of roles
+# Definition of command queues. Each queue has a name,
+# and optionally a preferred startup state.
+#
 # There are three possible states: 
 #   - enabled means the commands are sent immediately
 #   - blocked means the commands are accepted into the queue but need to be 
@@ -10,5 +11,7 @@ supervised:
   state: blocked
   minLevel: critical
 
+# If no state is configured, the queue will start with the same state that
+# it had on a previous run, defaulting to enabled.
 default:
-  state: enabled
+  #state: enabled

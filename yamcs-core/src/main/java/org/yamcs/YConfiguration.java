@@ -369,7 +369,7 @@ public class YConfiguration {
      * @return
      */
     public YConfiguration getConfigOrEmpty(String key) {
-        if (root.containsKey(key)) {
+        if (root.containsKey(key) && root.get(key) != null) {
             return getConfig(key);
         } else {
             return YConfiguration.emptyConfig();

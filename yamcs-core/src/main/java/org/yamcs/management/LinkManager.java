@@ -394,13 +394,13 @@ public class LinkManager {
     public void enableLink(String linkName) {
         log.debug("received enableLink for {}", linkName);
         checkAndGetLink(linkName).enable();
-        saveLinkState();
+        saveMemento();
     }
 
     public void disableLink(String linkName) {
         log.debug("received disableLink for {}", linkName);
         checkAndGetLink(linkName).disable();
-        saveLinkState();
+        saveMemento();
     }
 
     public void resetCounters(String linkName) {
@@ -408,7 +408,7 @@ public class LinkManager {
         checkAndGetLink(linkName).resetCounters();
     }
 
-    private void saveLinkState() {
+    private void saveMemento() {
         var memento = new LinkMemento();
 
         for (var link : getLinks()) {
