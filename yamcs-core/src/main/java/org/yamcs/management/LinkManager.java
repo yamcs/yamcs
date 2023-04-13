@@ -31,6 +31,7 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.management.LinkManager.InvalidPacketAction.Action;
 import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.memento.MementoDb;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -41,6 +42,8 @@ import org.yamcs.tctm.Link;
 import org.yamcs.tctm.LinkAction;
 import org.yamcs.tctm.LinkAction.ActionStyle;
 import org.yamcs.tctm.LinkActionProvider;
+import org.yamcs.tctm.LinkMemento;
+import org.yamcs.tctm.LinkState;
 import org.yamcs.tctm.ParameterDataLink;
 import org.yamcs.tctm.StreamPbParameterSender;
 import org.yamcs.tctm.TcDataLink;
@@ -74,6 +77,8 @@ import com.google.gson.Gson;
  * @author nm
  */
 public class LinkManager {
+    private static final String MEMENTO_KEY = "yamcs.links";
+
     private Map<String, Link> linksByName = new HashMap<>();
 
     private YarchDatabaseInstance ydb;
@@ -95,10 +100,14 @@ public class LinkManager {
         YConfiguration instanceConfig = instance.getConfig();
 
         if (instanceConfig.containsKey("dataLinks")) {
+            var mementoDb = MementoDb.getInstance(instanceName);
+            var memento = mementoDb.getObject(MEMENTO_KEY, LinkMemento.class)
+                    .orElse(new LinkMemento());
+
             try {
                 List<YConfiguration> linkConfigs = instanceConfig.getConfigList("dataLinks");
                 for (YConfiguration linkConfig : linkConfigs) {
-                    createDataLink(linkConfig);
+                    createDataLink(linkConfig, memento);
                 }
             } catch (IOException e) {
                 throw new InitException(e);
@@ -111,7 +120,7 @@ public class LinkManager {
                 TimeUnit.SECONDS);
     }
 
-    private void createDataLink(YConfiguration linkConfig) throws IOException {
+    private void createDataLink(YConfiguration linkConfig, LinkMemento memento) throws IOException {
         String className = linkConfig.getString("class");
         String linkName = linkConfig.getString("name");
         if (linksByName.containsKey(linkName)) {
@@ -122,7 +131,17 @@ public class LinkManager {
         Link link = loadLink(className, linkName, linkConfig);
         link.init(yamcsInstance, linkName, linkConfig);
 
-        boolean enabledAtStartup = linkConfig.getBoolean("enabledAtStartup", true);
+        // Try to restore previous link state, but if enabledAtStartup
+        // is explicitly configured, give priority to that setting.
+        boolean enabledAtStartup = true;
+        if (linkConfig.containsKey("enabledAtStartup")) {
+            enabledAtStartup = linkConfig.getBoolean("enabledAtStartup");
+        } else {
+            var savedState = memento.getLinkState(linkName);
+            if (savedState != null) {
+                enabledAtStartup = savedState.isEnabled();
+            }
+        }
 
         if (!enabledAtStartup) {
             link.disable();
@@ -375,16 +394,30 @@ public class LinkManager {
     public void enableLink(String linkName) {
         log.debug("received enableLink for {}", linkName);
         checkAndGetLink(linkName).enable();
+        saveLinkState();
     }
 
     public void disableLink(String linkName) {
         log.debug("received disableLink for {}", linkName);
         checkAndGetLink(linkName).disable();
+        saveLinkState();
     }
 
     public void resetCounters(String linkName) {
         log.debug("received resetCounters for {}", linkName);
         checkAndGetLink(linkName).resetCounters();
+    }
+
+    private void saveLinkState() {
+        var memento = new LinkMemento();
+
+        for (var link : getLinks()) {
+            var state = LinkState.forLink(link);
+            memento.addLinkState(link.getName(), state);
+        }
+
+        var mementoDb = MementoDb.getInstance(yamcsInstance);
+        mementoDb.putObject(MEMENTO_KEY, memento);
     }
 
     private Link checkAndGetLink(String linkName) {
