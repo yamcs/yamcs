@@ -48,7 +48,7 @@ export class ScriptViewer implements Viewer {
 
   public init(objectName: string) {
     this.objectName = objectName;
-    this.storageClient.getObject('_global', this.bucket, objectName).then(response => {
+    this.storageClient.getObject(this.bucket, objectName).then(response => {
       response.text().then(text => {
         this.scriptContainer.nativeElement.innerHTML = text;
         this.editor = ace.edit(this.scriptContainer.nativeElement);
@@ -82,7 +82,7 @@ export class ScriptViewer implements Viewer {
   async save() {
     const text = this.editor.getSession().getValue();
     const b = new Blob([text], { type: 'text/javascript' });
-    return this.storageClient.uploadObject('_global', this.bucket, this.objectName, b).then(() => {
+    return this.storageClient.uploadObject(this.bucket, this.objectName, b).then(() => {
       this.hasUnsavedChanges$.next(false);
     });
   }

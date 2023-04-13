@@ -12,7 +12,6 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class BucketPropertiesPage {
 
-  bucketInstance: string;
   name: string;
 
   bucket$ = new BehaviorSubject<Bucket | null>(null);
@@ -23,11 +22,10 @@ export class BucketPropertiesPage {
     yamcs: YamcsService,
     title: Title,
   ) {
-    this.bucketInstance = route.snapshot.parent!.paramMap.get('instance')!;
     this.name = route.snapshot.parent!.paramMap.get('name')!;
     title.setTitle(this.name + ': Properties');
     this.storageClient = yamcs.createStorageClient();
-    this.storageClient.getBucket(this.bucketInstance, this.name).then(bucket => {
+    this.storageClient.getBucket(this.name).then(bucket => {
       this.bucket$.next(bucket);
     });
   }

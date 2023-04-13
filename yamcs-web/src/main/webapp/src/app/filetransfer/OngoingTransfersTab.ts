@@ -106,21 +106,15 @@ export class OngoingTransfersTab implements OnDestroy {
     if (item) {
       item.updateTransfer(transfer);
     } else {
-      const objectUrl = transfer.objectName ? this.storageClient.getObjectURL('_global', transfer.bucket, transfer.objectName) : '';
+      const objectUrl = transfer.objectName ? this.storageClient.getObjectURL(transfer.bucket, transfer.objectName) : '';
       item = new TransferItem(transfer, objectUrl);
       this.transfersById.set(transfer.id, item);
     }
   }
 
   ngOnDestroy() {
-    if (this.syncSubscription) {
-      this.syncSubscription.unsubscribe();
-    }
-    if (this.queryParamSubscription) {
-      this.queryParamSubscription.unsubscribe();
-    }
-    if (this.transferSubscription) {
-      this.transferSubscription.cancel();
-    }
+    this.syncSubscription?.unsubscribe();
+    this.queryParamSubscription?.unsubscribe();
+    this.transferSubscription?.cancel();
   }
 }

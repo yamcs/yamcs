@@ -1,6 +1,6 @@
 import { Component, Inject, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_LEGACY_DIALOG_DATA, MatLegacyDialogRef } from '@angular/material/legacy-dialog';
 import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { BehaviorSubject } from 'rxjs';
 import { Bucket, FileTransferOption, FileTransferService, RemoteFileListSubscription, StorageClient } from '../client';
@@ -75,7 +75,7 @@ export class TransferFileDialog implements OnDestroy {
     const remoteEntity$ = this.addPreference$('remoteEntity', firstRemoteEntity);
 
     this.storageClient = yamcs.createStorageClient();
-    this.storageClient.getBuckets('_global').then(buckets => {
+    this.storageClient.getBuckets().then(buckets => {
       this.dataSource.data = buckets || [];
       if (buckets) {
         const bucketPref$ = this.addPreference$('selectedBucket', buckets[0].name);

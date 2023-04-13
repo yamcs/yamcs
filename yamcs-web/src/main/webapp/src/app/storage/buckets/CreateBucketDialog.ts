@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_LEGACY_DIALOG_DATA, MatLegacyDialogRef } from '@angular/material/legacy-dialog';
 import { StorageClient } from '../../client';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -29,7 +29,7 @@ export class CreateBucketDialog {
   }
 
   save() {
-    this.storageClient.createBucket(this.data.bucketInstance, {
+    this.storageClient.createBucket({
       name: this.form.value['name'],
     }).then(() => this.dialogRef.close(true))
       .catch(err => {

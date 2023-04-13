@@ -215,9 +215,9 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
     });
 
     this.display.addProvider(this);
-    this.display.absPrefix = this.storageClient.getObjectURL('_global', this.bucket, '');
+    this.display.absPrefix = this.storageClient.getObjectURL(this.bucket, '');
 
-    const objectUrl = this.storageClient.getObjectURL('_global', this.bucket, objectName);
+    const objectUrl = this.storageClient.getObjectURL(this.bucket, objectName);
     const promise = this.display.setSource(objectUrl);
     promise.then(() => {
       this.syncSubscription = this.synchronizer.sync(() => this.updateSubscription());

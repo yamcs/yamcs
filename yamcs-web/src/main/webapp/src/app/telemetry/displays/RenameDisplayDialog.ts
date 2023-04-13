@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_LEGACY_DIALOG_DATA, MatLegacyDialogRef } from '@angular/material/legacy-dialog';
 import { StorageClient } from '../../client';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -41,12 +41,12 @@ export class RenameDisplayDialog {
       prefix = this.data.name.substring(0, idx + 1);
     }
 
-    const response = await this.storageClient.getObject('_global', this.bucket, this.data.name);
+    const response = await this.storageClient.getObject(this.bucket, this.data.name);
     const blob = await response.blob();
 
     const newObjectName = (prefix || '') + this.filenameForm.get('name')!.value;
-    await this.storageClient.uploadObject('_global', this.bucket, newObjectName, blob);
-    await this.storageClient.deleteObject('_global', this.bucket, this.data.name);
+    await this.storageClient.uploadObject(this.bucket, newObjectName, blob);
+    await this.storageClient.deleteObject(this.bucket, this.data.name);
     this.dialogRef.close(newObjectName);
   }
 }

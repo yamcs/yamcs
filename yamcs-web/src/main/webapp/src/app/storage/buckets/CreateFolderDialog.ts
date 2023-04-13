@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_LEGACY_DIALOG_DATA, MatLegacyDialogRef } from '@angular/material/legacy-dialog';
 import { StorageClient } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
@@ -27,14 +27,14 @@ export class CreateFolderDialog {
   }
 
   save() {
-    let { path, bucketInstance, bucket } = this.data;
+    let { path, bucket } = this.data;
     // Full path should not have a leading slash
     if (path.startsWith('/')) {
       path = path.substring(1);
     }
     const folderName = this.form.value['name'];
     const objectName = path ? `${path}/${folderName}/` : `${folderName}/`;
-    this.storageClient.uploadObject(bucketInstance, bucket, objectName, new Blob())
+    this.storageClient.uploadObject(bucket, objectName, new Blob())
       .then(() => this.dialogRef.close(true));
   }
 }

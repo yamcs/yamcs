@@ -21,9 +21,6 @@ import { YamcsService } from '../../core/services/YamcsService';
 export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestroy {
 
   @Input()
-  instance = '_global';
-
-  @Input()
   bucket: Bucket;
 
   @Input()
@@ -63,7 +60,7 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
   }
 
   ngOnChanges() {
-    if (this.instance && this.bucket) {
+    if (this.bucket) {
       this.loadCurrentFolder();
     }
   }
@@ -80,7 +77,7 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
       options.prefix = prefix;
     }
 
-    this.storageClient.listObjects(this.instance, this.bucket.name, options).then(dir => {
+    this.storageClient.listObjects(this.bucket.name, options).then(dir => {
       this.changedir(dir);
       const newPrefix = prefix || null;
       if (newPrefix !== this.currentPrefix$.value) {
@@ -110,7 +107,7 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
         name: object.name,
         modified: object.created,
         size: object.size,
-        objectUrl: this.storageClient.getObjectURL(this.instance, this.bucket.name, object.name),
+        objectUrl: this.storageClient.getObjectURL(this.bucket.name, object.name),
       });
     }
     this.dataSource.data = items;

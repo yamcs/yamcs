@@ -41,6 +41,9 @@ service BucketsApi {
   rpc ListBuckets(ListBucketsRequest) returns (ListBucketsResponse) {
     option (yamcs.api.route) = {
       get: "/api/buckets/{instance}"
+      additional_bindings {
+        get: "/api/storage/buckets"
+      }
     };
   }
   
@@ -48,6 +51,9 @@ service BucketsApi {
   rpc GetBucket(GetBucketRequest) returns (BucketInfo) {
     option (yamcs.api.route) = {
       get: "/api/buckets/{instance}/{bucketName}"
+      additional_bindings {
+        get: "/api/storage/buckets/{bucketName}"
+      }
     };
   }
   
@@ -56,6 +62,10 @@ service BucketsApi {
     option (yamcs.api.route) = {
       post: "/api/buckets/{instance}"
       body: "*"
+      additional_bindings {
+        post: "/api/storage/buckets"
+        body: "*"
+      }
     };
   }
   
@@ -65,6 +75,9 @@ service BucketsApi {
   rpc DeleteBucket(DeleteBucketRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       delete: "/api/buckets/{instance}/{bucketName}"
+      additional_bindings {
+        delete: "/api/storage/buckets/{bucketName}"
+      }
     };
   }
   
@@ -78,6 +91,9 @@ service BucketsApi {
   rpc GetObject(GetObjectRequest) returns (yamcs.api.HttpBody) {
     option (yamcs.api.route) = {
       get: "/api/buckets/{instance}/{bucketName}/objects/{objectName*}"
+      additional_bindings {
+        get: "/api/storage/buckets/{bucketName}/objects/{objectName*}"
+      }
     };
   }
   
@@ -143,6 +159,11 @@ service BucketsApi {
       post: "/api/buckets/{instance}/{bucketName}/objects/{objectName**}"
       body: "data"
       max_body_size: 5242880
+      additional_bindings {
+        post: "/api/storage/buckets/{bucketName}/objects/{objectName**}"
+        body: "data"
+        max_body_size: 5242880
+      }
     };
   }
   
@@ -151,6 +172,10 @@ service BucketsApi {
     option (yamcs.api.route) = {
       get: "/api/buckets/{instance}/{bucketName}/objects"
       field_mask_root: "objects"
+      additional_bindings {
+        get: "/api/storage/buckets/{bucketName}/objects"
+        field_mask_root: "objects"
+      }
     };
   }
   
@@ -158,6 +183,9 @@ service BucketsApi {
   rpc DeleteObject(DeleteObjectRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       delete: "/api/buckets/{instance}/{bucketName}/objects/{objectName*}"
+      additional_bindings {
+        delete: "/api/storage/buckets/{bucketName}/objects/{objectName*}"
+      }
     };
   }
 }
@@ -297,6 +325,10 @@ message ListObjectsRequest {
 }
 
 message ListObjectsResponse {
+  // Object name prefixes for objects that matched the request but were
+  // excluded forom ``objects`` because of a delimiter.
   repeated string prefixes = 1;
+  
+  // The list of objects.
   repeated ObjectInfo objects = 2;
 }

@@ -46,7 +46,7 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
 
   public init(objectName: string) {
     this.objectName = objectName;
-    this.storageClient.getObject('_global', this.bucket, objectName).then(response => {
+    this.storageClient.getObject(this.bucket, objectName).then(response => {
       response.text().then(text => {
         const model: ParameterTable = JSON.parse(text);
         this.model$.next(model);
@@ -207,7 +207,7 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
     }, undefined, 2)], {
       type: 'application/json'
     });
-    return this.storageClient.uploadObject('_global', this.bucket, this.objectName, b).then(() => {
+    return this.storageClient.uploadObject(this.bucket, this.objectName, b).then(() => {
       this.hasUnsavedChanges$.next(false);
     });
   }

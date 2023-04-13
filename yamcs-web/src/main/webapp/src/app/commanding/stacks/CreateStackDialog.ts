@@ -1,6 +1,6 @@
 import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_LEGACY_DIALOG_DATA, MatLegacyDialogRef } from '@angular/material/legacy-dialog';
 import { StorageClient } from '../../client';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -49,7 +49,7 @@ export class CreateStackDialog {
     const file = format === 'xml' ? new StackFormatter([], {}).toXML() : new StackFormatter([], {}).toJSON();
     const type = (format === 'xml' ? 'application/xml' : 'application/json');
     const b = new Blob([file], { type });
-    this.storageClient.uploadObject('_global', this.bucket, objectName, b).then(() => {
+    this.storageClient.uploadObject(this.bucket, objectName, b).then(() => {
       this.dialogRef.close(fullPath);
     });
   }

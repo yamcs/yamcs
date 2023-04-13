@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_LEGACY_DIALOG_DATA, MatLegacyDialogRef } from '@angular/material/legacy-dialog';
 import { StorageClient } from '../../client';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -77,7 +77,7 @@ export class CreateDisplayDialog {
     });
     const bucketName = this.config.displayBucket;
     const objectName = this.data.prefix + fullPath;
-    this.storageClient.uploadObject('_global', bucketName, objectName, b).then(() => {
+    this.storageClient.uploadObject(bucketName, objectName, b).then(() => {
       this.dialogRef.close(fullPath);
     });
   }

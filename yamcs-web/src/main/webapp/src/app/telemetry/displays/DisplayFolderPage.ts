@@ -84,7 +84,7 @@ export class DisplayFolderPage implements OnDestroy {
       options.prefix = prefix;
     }
 
-    this.storageClient.listObjects('_global', this.bucket, options).then(dir => {
+    this.storageClient.listObjects(this.bucket, options).then(dir => {
       this.updateBrowsePath();
       this.changedir(dir);
     });
@@ -119,7 +119,7 @@ export class DisplayFolderPage implements OnDestroy {
         name: object.name,
         nameWithoutInstance: this.getNameWithoutInstance(object.name),
         modified: object.created,
-        objectUrl: this.storageClient.getObjectURL('_global', this.bucket, object.name),
+        objectUrl: this.storageClient.getObjectURL(this.bucket, object.name),
       });
     }
     this.dataSource.data = items;
@@ -163,7 +163,6 @@ export class DisplayFolderPage implements OnDestroy {
     this.dialog.open(CreateFolderDialog, {
       width: '400px',
       data: {
-        bucketInstance: '_global',
         bucket: this.bucket,
         path: this.getCurrentPath(),
       }
@@ -188,7 +187,7 @@ export class DisplayFolderPage implements OnDestroy {
         const fullPath = path ? path + '/' + file.name : file.name;
         const prefix = this.folderPerInstance ? (this.yamcs.instance! + '/') : '';
         const objectName = prefix + fullPath;
-        const promise = this.storageClient.uploadObject('_global', this.bucket, objectName, file);
+        const promise = this.storageClient.uploadObject(this.bucket, objectName, file);
         uploadPromises.push(promise);
       }
     }
@@ -211,7 +210,7 @@ export class DisplayFolderPage implements OnDestroy {
     const findObjectPromises = [];
     for (const item of this.selection.selected) {
       if (item.folder) {
-        findObjectPromises.push(this.storageClient.listObjects('_global', this.bucket, {
+        findObjectPromises.push(this.storageClient.listObjects(this.bucket, {
           prefix: item.name,
         }).then(response => {
           const objects = response.objects || [];
@@ -226,7 +225,7 @@ export class DisplayFolderPage implements OnDestroy {
       if (confirm(`You are about to delete ${deletableObjects.length} files. Are you sure you want to continue?`)) {
         const deletePromises = [];
         for (const object of deletableObjects) {
-          deletePromises.push(this.storageClient.deleteObject('_global', this.bucket, object));
+          deletePromises.push(this.storageClient.deleteObject(this.bucket, object));
         }
 
         Promise.all(deletePromises).then(() => {
@@ -252,7 +251,7 @@ export class DisplayFolderPage implements OnDestroy {
 
   deleteFile(item: BrowseItem) {
     if (confirm(`Are you sure you want to delete ${item.nameWithoutInstance}?`)) {
-      this.storageClient.deleteObject('_global', this.bucket, item.name).then(() => {
+      this.storageClient.deleteObject(this.bucket, item.name).then(() => {
         this.loadCurrentFolder();
       });
     }
@@ -293,7 +292,7 @@ export class DisplayFolderPage implements OnDestroy {
           if (this.folderPerInstance) {
             objectPath = this.yamcs.instance! + '/' + objectPath;
           }
-          const promise = this.storageClient.uploadObject('_global', this.bucket, objectPath, droppedFile);
+          const promise = this.storageClient.uploadObject(this.bucket, objectPath, droppedFile);
           uploadPromises.push(promise);
         }
         Promise.all(uploadPromises).finally(() => {
