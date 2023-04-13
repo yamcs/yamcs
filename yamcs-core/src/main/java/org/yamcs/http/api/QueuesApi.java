@@ -15,7 +15,7 @@ import org.yamcs.http.Context;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.audit.AuditLog;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.AbstractQueueApi;
+import org.yamcs.protobuf.AbstractQueuesApi;
 import org.yamcs.protobuf.AcceptCommandRequest;
 import org.yamcs.protobuf.BlockQueueRequest;
 import org.yamcs.protobuf.Commanding.CommandQueueEntry;
@@ -40,13 +40,17 @@ import org.yamcs.xtce.Significance.Levels;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 
-public class QueueApi extends AbstractQueueApi<Context> {
+public class QueuesApi extends AbstractQueuesApi<Context> {
 
     private AuditLog auditLog;
 
-    public QueueApi(AuditLog auditLog) {
+    public QueuesApi(AuditLog auditLog) {
         this.auditLog = auditLog;
         auditLog.addPrivilegeChecker(getClass().getSimpleName(), user -> {
+            return user.hasSystemPrivilege(SystemPrivilege.ControlCommandQueue);
+        });
+        // Legacy name, remove eventually
+        auditLog.addPrivilegeChecker("QueueApi", user -> {
             return user.hasSystemPrivilege(SystemPrivilege.ControlCommandQueue);
         });
     }

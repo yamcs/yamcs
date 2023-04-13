@@ -132,7 +132,7 @@ export class ActionLogTab {
   loadData() {
     this.updateURL();
     const options: GetAuditRecordsOptions = {
-      service: 'QueueApi',
+      service: 'QueuesApi',
     };
     if (this.validStart) {
       options.start = this.validStart.toISOString();
