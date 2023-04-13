@@ -47,7 +47,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
     @Override
     public void listCommandHistoryIndex(Context ctx, ListCommandHistoryIndexRequest request,
             Observer<IndexResponse> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         TmIndexService tmIndex = getIndexService(instance);
 
         int mergeTime = request.hasMergeTime() ? request.getMergeTime() : 2000;
@@ -79,7 +79,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
 
     @Override
     public void listEventIndex(Context ctx, ListEventIndexRequest request, Observer<IndexResponse> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         TmIndexService indexServer = getIndexService(instance);
 
         int mergeTime = request.hasMergeTime() ? request.getMergeTime() : 2000;
@@ -111,7 +111,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
 
     @Override
     public void listPacketIndex(Context ctx, ListPacketIndexRequest request, Observer<IndexResponse> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         TmIndexService indexServer = getIndexService(instance);
 
         int mergeTime = request.hasMergeTime() ? request.getMergeTime() : 2000;
@@ -144,7 +144,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
     @Override
     public void listParameterIndex(Context ctx, ListParameterIndexRequest request,
             Observer<IndexResponse> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         TmIndexService indexServer = getIndexService(instance);
 
         int mergeTime = request.hasMergeTime() ? request.getMergeTime() : 20000;
@@ -177,7 +177,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
     @Override
     public void listCompletenessIndex(Context ctx, ListCompletenessIndexRequest request,
             Observer<IndexResponse> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         TmIndexService indexServer = getIndexService(instance);
         if (indexServer == null) {
             throw new BadRequestException("CCSDS Tm Index not enabled for instance '" + instance + "'");
@@ -203,7 +203,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
 
     @Override
     public void streamPacketIndex(Context ctx, StreamPacketIndexRequest request, Observer<ArchiveRecord> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
 
         IndexRequest indexRequest = new IndexRequest(instance);
 
@@ -227,7 +227,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
     @Override
     public void streamParameterIndex(Context ctx, StreamParameterIndexRequest request,
             Observer<ArchiveRecord> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
 
         IndexRequest indexRequest = new IndexRequest(instance);
         indexRequest.setSendAllPp(true);
@@ -244,7 +244,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
 
     @Override
     public void streamCommandIndex(Context ctx, StreamCommandIndexRequest request, Observer<ArchiveRecord> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
 
         IndexRequest indexRequest = new IndexRequest(instance);
         indexRequest.setSendAllCmd(true);
@@ -261,7 +261,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
 
     @Override
     public void streamEventIndex(Context ctx, StreamEventIndexRequest request, Observer<ArchiveRecord> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
 
         IndexRequest indexRequest = new IndexRequest(instance);
         indexRequest.setSendAllEvent(true);
@@ -279,7 +279,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
     @Override
     public void streamCompletenessIndex(Context ctx, StreamCompletenessIndexRequest request,
             Observer<ArchiveRecord> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         TmIndexService indexServer = getIndexService(instance);
         if (indexServer == null) {
             throw new BadRequestException("Index service not enabled for instance '" + instance + "'");
@@ -302,7 +302,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
     public void rebuildCcsdsIndex(Context ctx, RebuildCcsdsIndexRequest request, Observer<Empty> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         TmIndexService indexer = getIndexService(instance);
 
         if (indexer instanceof CcsdsTmIndex) {
@@ -332,7 +332,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
     }
 
     private TmIndexService getIndexService(String instance) throws HttpException {
-        ManagementApi.verifyInstance(instance);
+        InstancesApi.verifyInstance(instance);
         YamcsServer yamcs = YamcsServer.getServer();
         return yamcs.getService(instance, TmIndexService.class);
     }

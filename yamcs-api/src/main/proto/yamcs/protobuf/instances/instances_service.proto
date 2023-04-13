@@ -1,0 +1,176 @@
+syntax="proto2";
+
+package yamcs.protobuf.instances;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "InstancesServiceProto";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+
+import "yamcs/api/annotations.proto";
+import "yamcs/protobuf/instances/instances.proto";
+
+
+service InstancesApi {
+
+  // List instance templates
+  rpc ListInstanceTemplates(google.protobuf.Empty) returns (ListInstanceTemplatesResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/instance-templates"
+    };
+  }
+
+  // Get an instance template
+  rpc GetInstanceTemplate(GetInstanceTemplateRequest) returns (InstanceTemplate) {
+    option (yamcs.api.route) = {
+      get: "/api/instance-templates/{template}"
+    };
+  }
+  
+  // List instances
+  rpc ListInstances(ListInstancesRequest) returns (ListInstancesResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/instances"
+    };
+  }
+  
+  // Receive instance updates
+  rpc SubscribeInstances(google.protobuf.Empty) returns (stream YamcsInstance) {
+    option (yamcs.api.websocket) = {
+      topic: "instances"
+    };
+  }
+  
+  // Get an instance
+  // 
+  // If an instance does not have web services enabled, it will be listed among the
+  // results, but none of its URLs will be filled in.
+  rpc GetInstance(GetInstanceRequest) returns (YamcsInstance) {
+    option (yamcs.api.route) = {
+      get: "/api/instances/{instance}"
+    };
+  }
+  
+  // Create an instance
+  rpc CreateInstance(CreateInstanceRequest) returns (YamcsInstance) {
+    option (yamcs.api.route) = {
+      post: "/api/instances"
+      body: "*"
+    };
+  }
+
+  // Reconfigure a templated instance
+  //
+  // Regenerates the instance configuration based on the latest
+  // template source, and with optionally modified template variables.
+  rpc ReconfigureInstance(ReconfigureInstanceRequest) returns (YamcsInstance) {
+    option (yamcs.api.route) = {
+      post: "/api/instances/{instance}:reconfigure"
+      body: "*"
+    };
+  }
+  
+  // Start an instance
+  //
+  // If the instance is in the RUNNING state, this call will do nothing.
+  // Otherwise the instance will be started.
+  rpc StartInstance(StartInstanceRequest) returns (YamcsInstance) {
+    option (yamcs.api.route) = {
+      post: "/api/instances/{instance}:start"
+    };
+  }
+  
+  // Stop an instance
+  // 
+  // Stop all services of the instance. The instance state will be OFFLINE.
+  // If the instance state is already OFFLINE, this call will do nothing.
+  rpc StopInstance(StopInstanceRequest) returns (YamcsInstance) {
+    option (yamcs.api.route) = {
+      post: "/api/instances/{instance}:stop"
+    };
+  }
+  
+  // Restart an instance
+  //
+  // If the instance state is RUNNING, the instance will be stopped and then
+  // restarted. Otherwise the instance will be started. Note that the Mission
+  // Database will also be reloaded before restart.
+  rpc RestartInstance(RestartInstanceRequest) returns (YamcsInstance) {
+    option (yamcs.api.route) = {
+      post: "/api/instances/{instance}:restart"
+    };
+  }
+}
+
+message ListInstancesRequest {
+  repeated string filter = 1;
+}
+
+message ListInstancesResponse {
+  repeated YamcsInstance instances = 1;
+}
+
+message CreateInstanceRequest {
+  // **Required.** The name of the instance.
+  optional string name = 1;
+  
+  // **Required.** The name of the template for this instance.
+  optional string template = 2;
+  
+  // Arguments for substitution in the template definition. Each entry is
+  // keyed by the argument name. The value must be a string.
+  map<string, string> templateArgs = 3;
+  
+  // Labels assigned to this instance. Each entry is keyed by the tag name
+  // of the label. The value represent the label value for that tag.
+  map<string, string> labels = 4;
+}
+
+message ReconfigureInstanceRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Arguments for substitution in the template definition. Each entry is
+  // keyed by the argument name. The value must be a string.
+  map<string, string> templateArgs = 2;
+  
+  // Labels assigned to this instance. Each entry is keyed by the tag name
+  // of the label. The value represent the label value for that tag.
+  map<string, string> labels = 3;
+}
+
+message ListInstanceTemplatesResponse {
+  repeated InstanceTemplate templates = 1; 
+}
+
+message EditInstanceRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+  optional string state = 2;
+}
+
+message GetInstanceTemplateRequest {
+  // Template name.
+  optional string template = 1;
+}
+
+message GetInstanceRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+}
+
+message StartInstanceRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+}
+
+message StopInstanceRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+}
+
+message RestartInstanceRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+}

@@ -124,7 +124,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
     @Override
     public void listAlarms(Context ctx, ListAlarmsRequest request, Observer<ListAlarmsResponse> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadAlarms);
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
 
         long pos = request.hasPos() ? request.getPos() : 0;
         int limit = request.hasLimit() ? request.getLimit() : 100;

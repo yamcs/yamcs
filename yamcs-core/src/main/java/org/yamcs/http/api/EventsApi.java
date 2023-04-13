@@ -73,7 +73,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
 
     @Override
     public void listEvents(Context ctx, ListEventsRequest request, Observer<ListEventsResponse> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         verifyEventArchiveSupport(instance);
 
         ctx.checkSystemPrivilege(SystemPrivilege.ReadEvents);
@@ -151,7 +151,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
     public void createEvent(Context ctx, CreateEventRequest request, Observer<Event> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.WriteEvents);
 
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
 
         if (!request.hasMessage()) {
             throw new BadRequestException("Message is required");
@@ -214,7 +214,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
     @Override
     public void listEventSources(Context ctx, ListEventSourcesRequest request,
             Observer<ListEventSourcesResponse> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         verifyEventArchiveSupport(instance);
         ctx.checkSystemPrivilege(SystemPrivilege.ReadEvents);
 
@@ -236,7 +236,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
 
     @Override
     public void subscribeEvents(Context ctx, SubscribeEventsRequest request, Observer<Event> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         ctx.checkSystemPrivilege(SystemPrivilege.ReadEvents);
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         Stream stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
@@ -262,7 +262,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
 
     @Override
     public void streamEvents(Context ctx, StreamEventsRequest request, Observer<Event> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         verifyEventArchiveSupport(instance);
         ctx.checkSystemPrivilege(SystemPrivilege.ReadEvents);
 
@@ -303,7 +303,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
 
     @Override
     public void exportEvents(Context ctx, ExportEventsRequest request, Observer<HttpBody> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         EventsApi.verifyEventArchiveSupport(instance);
         ctx.checkSystemPrivilege(SystemPrivilege.ReadEvents);
 

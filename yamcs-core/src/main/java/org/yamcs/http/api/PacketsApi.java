@@ -64,7 +64,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
     @Override
     public void listPacketNames(Context ctx, ListPacketNamesRequest request,
             Observer<ListPacketNamesResponse> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
         ListPacketNamesResponse.Builder responseb = ListPacketNamesResponse.newBuilder();
@@ -91,7 +91,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
     @Override
     public void listPackets(Context ctx, ListPacketsRequest request, Observer<ListPacketsResponse> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
 
         long pos = request.hasPos() ? request.getPos() : 0;
         int limit = request.hasLimit() ? request.getLimit() : 100;
@@ -173,7 +173,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
     @Override
     public void getPacket(Context ctx, GetPacketRequest request, Observer<TmPacketData> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         long gentime = TimeEncoding.fromProtobufTimestamp(request.getGentime());
         int seqNum = request.getSeqnum();
 
@@ -207,7 +207,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
     @Override
     public void streamPackets(Context ctx, StreamPacketsRequest request, Observer<TmPacketData> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
 
         ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadPacket, request.getNameList());
 
@@ -242,7 +242,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
     @Override
     public void exportPacket(Context ctx, ExportPacketRequest request, Observer<HttpBody> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         long gentime = TimeEncoding.fromProtobufTimestamp(request.getGentime());
         int seqNum = request.getSeqnum();
 
@@ -285,7 +285,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
     @Override
     public void exportPackets(Context ctx, ExportPacketsRequest request, Observer<HttpBody> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
 
         Set<String> nameSet = new HashSet<>(request.getNameList());
         ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadPacket, nameSet);
@@ -335,7 +335,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
     @Override
     public void subscribePackets(Context ctx, SubscribePacketsRequest request, Observer<TmPacketData> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
 
         if (request.hasProcessor()) {
             XtceDb mdb = XtceDbFactory.getInstance(instance);
@@ -386,7 +386,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
     @Override
     public void subscribeContainers(Context ctx, SubscribeContainersRequest request, Observer<ContainerData> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         if (request.getNamesCount() == 0) {
             throw new BadRequestException("At least one container name must be specified");

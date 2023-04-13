@@ -28,7 +28,7 @@ public class AuditApi extends AbstractAuditApi<Context> {
     @Override
     public void listAuditRecords(Context ctx, ListAuditRecordsRequest request,
             Observer<ListAuditRecordsResponse> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance(), true);
+        String instance = InstancesApi.verifyInstance(request.getInstance(), true);
 
         String next = request.hasNext() ? request.getNext() : null;
         int limit = request.hasLimit() ? request.getLimit() : 100;

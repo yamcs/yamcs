@@ -1,0 +1,55 @@
+syntax="proto2";
+
+package yamcs.protobuf.services;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "ServicesProto";
+option java_multiple_files = true;
+
+
+message ServiceInfo {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Service name
+  optional string name = 2;
+
+  // Service state
+  optional ServiceState state = 3;
+
+  // Java class name
+  optional string className = 4;
+
+  // Processor name (in case this is a processor service)
+  optional string processor = 5;
+
+  // Short failure message when `state` is FAILED.
+  optional string failureMessage = 6;
+
+  // Stacktrace when `state` is FAILED.
+  optional string failureCause = 7;
+}
+
+/*service states coming from guava (numbers have to correspond)*/
+enum ServiceState {
+  // A service in this state is inactive. It does minimal work and
+  // consumes minimal resources.
+  NEW = 0;
+
+  // A service in this state is transitioning to ``RUNNING``.
+  STARTING = 1;
+
+  // A service in this state is operational.
+  RUNNING = 2;
+
+  // A service in this state is transitioning to ``TERMINATED``.
+  STOPPING = 3;
+
+  // A service in this state has completed execution normally.
+  // It does minimal work and consumes minimal resources.
+  TERMINATED = 4;
+
+  // A service in this state has encountered a problem and may
+  // not be operational. It cannot be started nor stopped.
+  FAILED = 5;
+}

@@ -317,7 +317,7 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
     }
 
     static YarchDatabaseInstance getYarch(String instance) throws HttpException {
-        String yamcsInstance = ManagementApi.verifyInstance(instance, true);
+        String yamcsInstance = InstancesApi.verifyInstance(instance, true);
         return YarchDatabase.getInstance(yamcsInstance);
     }
 
