@@ -106,7 +106,6 @@ public class EventsApi extends AbstractEventsApi<Context> {
         }
         if (nextToken != null) {
             // TODO this currently ignores the source column (also part of the key)
-            // Requires string comparison in StreamSQL, and an even more complicated query condition...
             if (desc) {
                 sqlb.where("(gentime < ? or (gentime = ? and seqNum < ?))",
                         nextToken.gentime, nextToken.gentime, nextToken.seqNum);

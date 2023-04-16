@@ -9,6 +9,7 @@ import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_TIME;
 import static org.yamcs.alarms.AlarmStreamer.CNAME_TRIGGER_TIME;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +76,7 @@ import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.protobuf.Db;
 
+import com.google.gson.Gson;
 import com.google.protobuf.Empty;
 import com.google.protobuf.Message;
 import com.google.protobuf.Timestamp;
@@ -128,7 +130,12 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
         long pos = request.hasPos() ? request.getPos() : 0;
         int limit = request.hasLimit() ? request.getLimit() : 100;
-        boolean ascending = request.getOrder().equals("asc");
+        boolean desc = !request.getOrder().equals("asc");
+
+        AlarmsPageToken nextToken = null;
+        if (request.hasNext()) {
+            nextToken = AlarmsPageToken.decode(request.getNext());
+        }
 
         SqlBuilder sqlbParam = new SqlBuilder(AlarmRecorder.PARAMETER_ALARM_TABLE_NAME);
         SqlBuilder sqlbEvent = new SqlBuilder(AlarmRecorder.EVENT_ALARM_TABLE_NAME);
@@ -141,6 +148,20 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             sqlbParam.whereColBefore(CNAME_TRIGGER_TIME, request.getStop());
             sqlbEvent.whereColBefore(CNAME_TRIGGER_TIME, request.getStop());
         }
+        if (nextToken != null) {
+            // TODO this currently ignores the parameter/eventSource column (also part of the key)
+            if (desc) {
+                sqlbParam.where("(triggerTime < ? or (triggerTime = ? and seqNum < ?))",
+                        nextToken.triggerTime, nextToken.triggerTime, nextToken.seqNum);
+                sqlbEvent.where("(triggerTime < ? or (triggerTime = ? and seqNum < ?))",
+                        nextToken.triggerTime, nextToken.triggerTime, nextToken.seqNum);
+            } else {
+                sqlbParam.where("(triggerTime > ? or (triggerTime = ? and seqNum > ?))",
+                        nextToken.triggerTime, nextToken.triggerTime, nextToken.seqNum);
+                sqlbEvent.where("(triggerTime > ? or (triggerTime = ? and seqNum > ?))",
+                        nextToken.triggerTime, nextToken.triggerTime, nextToken.seqNum);
+            }
+        }
 
         if (request.hasName()) {
             String alarmName = request.getName();
@@ -151,25 +172,38 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             sqlbEvent.where("eventSource = ?", alarmName);
         }
 
-        sqlbParam.descend(!ascending);
-        sqlbEvent.descend(!ascending);
+        sqlbParam.descend(desc);
+        sqlbEvent.descend(desc);
 
-        ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
+        var responseb = ListAlarmsResponse.newBuilder();
+        // Add 1 to the limit, to detect need for continuation token
         String q = "MERGE (" + sqlbParam.toString() + "), (" + sqlbEvent.toString() + ") USING " + CNAME_TRIGGER_TIME
-                + " ORDER DESC LIMIT " + pos + "," + limit;
+                + " ORDER DESC LIMIT " + pos + "," + (limit + 1L);
 
         List<Object> sqlArgs = new ArrayList<>(sqlbParam.getQueryArguments());
         sqlArgs.addAll(sqlbEvent.getQueryArguments());
         StreamFactory.stream(instance, q, sqlArgs, new StreamSubscriber() {
 
+            Tuple last;
+            int count;
+
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
-                AlarmData alarm = tupleToAlarmData(tuple);
-                responseb.addAlarms(alarm);
+                if (++count <= limit) {
+                    AlarmData alarm = tupleToAlarmData(tuple);
+                    responseb.addAlarms(alarm);
+                    last = tuple;
+                }
             }
 
             @Override
             public void streamClosed(Stream stream) {
+                if (count > limit) {
+                    var triggerTime = last.getTimestampColumn(AlarmStreamer.CNAME_TRIGGER_TIME);
+                    var seqNum = last.getIntColumn(AlarmStreamer.CNAME_SEQ_NUM);
+                    var token = new AlarmsPageToken(triggerTime, seqNum);
+                    responseb.setContinuationToken(token.encodeAsString());
+                }
                 observer.complete(responseb.build());
             }
         });
@@ -755,7 +789,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
     private static AlarmData tupleToAlarmData(Tuple tuple) {
         AlarmData.Builder alarmb = AlarmData.newBuilder();
-        alarmb.setSeqNum((int) tuple.getColumn("seqNum"));
+        alarmb.setSeqNum((int) tuple.getColumn(AlarmStreamer.CNAME_SEQ_NUM));
         setAckInfo(alarmb, tuple);
         setClearInfo(alarmb, tuple);
         setShelveInfo(alarmb, tuple);
@@ -852,5 +886,29 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         }
 
         alarmb.setShelveInfo(clib.build());
+    }
+
+    /**
+     * Stateless continuation token for paged requests on the alarms table
+     */
+    private static class AlarmsPageToken {
+
+        long triggerTime;
+        int seqNum;
+
+        AlarmsPageToken(long triggerTime, int seqNum) {
+            this.triggerTime = triggerTime;
+            this.seqNum = seqNum;
+        }
+
+        static AlarmsPageToken decode(String encoded) {
+            String decoded = new String(Base64.getUrlDecoder().decode(encoded));
+            return new Gson().fromJson(decoded, AlarmsPageToken.class);
+        }
+
+        String encodeAsString() {
+            String json = new Gson().toJson(this);
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(json.getBytes());
+        }
     }
 }
