@@ -1,3 +1,8 @@
+Version 5.7.13 released 18-Apr-2023
+- Fixed replay of packets when the MDB contains multiple roots
+- Fixed algorithm override not working
+- Fixed TcpTcTmDataLink detail
+
 Version 5.7.12 released 21-Mar-2023
 - Fixes web query parameters stringify responsible for breaking the parameter plots (issue #768)
 
