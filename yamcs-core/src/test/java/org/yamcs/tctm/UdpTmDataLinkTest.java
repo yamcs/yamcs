@@ -77,8 +77,9 @@ public class UdpTmDataLinkTest {
         TmPacket pkt2 = pktQueue.poll(1, TimeUnit.SECONDS);
         assertNull(pkt2);
 
-        assertTrue(link.getDetailedStatus().contains("Valid datagrams received: 1"));
-        assertTrue(link.getDetailedStatus().contains("Invalid datagrams received: 1"));
+        var extra = link.getExtraInfo();
+        assertEquals(extra.get("Valid datagrams"), 1L);
+        assertEquals(extra.get("Invalid datagrams"), 1L);
 
         socket.close();
         link.stopAsync();

@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
@@ -23,7 +25,7 @@ import org.yamcs.YConfiguration;
  * </ul>
  */
 public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
-    private volatile int invalidDatagramCount = 0;
+    private volatile long invalidDatagramCount = 0;
 
     private DatagramSocket tmSocket;
     private int port;
@@ -126,17 +128,27 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
         }
     }
 
-    /**
-     * returns statistics with the number of datagram received and the number of invalid datagrams
-     */
     @Override
     public String getDetailedStatus() {
         if (isDisabled()) {
-            return "DISABLED";
+            return "DISABLED (should receive on " + port + ")";
         } else {
-            return String.format("OK (%s) %nValid datagrams received: %d%nInvalid datagrams received: %d",
-                    port, packetCount.get(), invalidDatagramCount);
+            return "OK, receiving on " + port;
         }
+    }
+
+    @Override
+    public Map<String, Object> getExtraInfo() {
+        var extra = new LinkedHashMap<String, Object>();
+        extra.put("Valid datagrams", packetCount.get());
+        extra.put("Invalid datagrams", invalidDatagramCount);
+        return extra;
+    }
+
+    @Override
+    public void resetCounters() {
+        super.resetCounters();
+        invalidDatagramCount = 0;
     }
 
     /**
