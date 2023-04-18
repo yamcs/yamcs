@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,6 +13,7 @@ import java.util.List;
 
 import org.yamcs.YamcsServer;
 import org.yamcs.logging.Log;
+import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AggregateParameterType;
@@ -104,8 +106,16 @@ public class FileStoreParameterProducer implements SystemParametersProducer {
 
                 ParameterValue pv = new ParameterValue(storep.param);
                 pv.setGenerationTime(gentime);
+                pv.setAcquisitionTime(gentime);
+                pv.setAcquisitionStatus(AcquisitionStatus.ACQUIRED);
                 pv.setEngValue(v);
+
+                pv.setExpireMillis((long) (1.9 * getFrequency() * 1000));
                 pvlist.add(pv);
+            } catch (NoSuchFileException e) {
+                // Maybe drive became inaccessible. Don't be verbose about it,
+                // value will eventually expire.
+                log.trace("Failed to collect information about the file store {}", store, e);
             } catch (IOException e) {
                 log.error("Failed to collect information about the file store {}", store, e);
             }
