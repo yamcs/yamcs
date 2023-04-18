@@ -103,7 +103,7 @@ public class ParameterArchive extends AbstractYamcsService {
         Spec spec = new Spec();
         spec.addOption("backFiller", OptionType.MAP).withSpec(BackFiller.getSpec());
         spec.addOption("realtimeFiller", OptionType.MAP).withSpec(RealtimeArchiveFiller.getSpec());
-        spec.addOption("partitioningSchema", OptionType.STRING).withDefault("YYYY")
+        spec.addOption("partitioningSchema", OptionType.STRING).withDefault("none")
                 .withChoices("YYYY/DOY", "YYYY/MM", "YYYY", "none");
         spec.addOption("maxSegmentSize", OptionType.INTEGER).withDefault(5000);
 
