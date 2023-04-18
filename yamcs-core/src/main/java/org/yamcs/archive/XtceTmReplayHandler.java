@@ -39,29 +39,23 @@ public class XtceTmReplayHandler implements ReplayHandler {
             return;
         }
         partitions = new HashSet<>();
-        SequenceContainer rootSc = xtcedb.getRootSequenceContainer();
-        addPartitions(newRequest.getPacketRequest().getNameFilterList(), rootSc);
+        addPartitions(newRequest.getPacketRequest().getNameFilterList());
     }
 
-    private void addPartitions(List<NamedObjectId> pnois, SequenceContainer rootSc) throws YamcsException {
+    private void addPartitions(List<NamedObjectId> pnois) throws YamcsException {
         for (NamedObjectId pnoi : pnois) {
             SequenceContainer sc = xtcedb.getSequenceContainer(pnoi);
             if (sc == null) {
                 throw new YamcsException("Cannot find any sequence container for " + pnoi);
             }
-            if (sc == rootSc) { // retrieve all
-                partitions = null;
-                break;
-            }
-            // go up in the XTCE hierarchy to find a container on the level one
-            // (i.e. is child of the root)
+
+            // go up in the XTCE hierarchy to find a container with the useAsArchivePartition flag set
             while (sc != null) {
-                if (sc.getBaseContainer() == rootSc) {
+                if (sc.useAsArchivePartition() || sc.getBaseContainer() == null) {
                     partitions.add(sc.getQualifiedName());
                     break;
-                } else {
-                    sc = sc.getBaseContainer();
                 }
+                sc = sc.getBaseContainer();
             }
         }
     }
