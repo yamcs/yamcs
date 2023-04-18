@@ -321,9 +321,9 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
             return String.format("DISABLED (should connect to %s:%d)", host, port);
         }
         if (isSocketOpen()) {
-            return String.format("Not connected to %s:%d", host, port);
-        } else {
             return String.format("OK, connected to %s:%d", host, port);
+        } else {
+            return String.format("Not connected to %s:%d", host, port);
         }
     }
 
