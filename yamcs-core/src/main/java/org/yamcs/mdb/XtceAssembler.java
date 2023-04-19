@@ -4,12 +4,15 @@ import static org.yamcs.xtce.xml.Constants.ATTR_ENCODING;
 import static org.yamcs.xtce.xml.Constants.ATTR_INITIAL_VALUE;
 import static org.yamcs.xtce.xml.Constants.ATTR_PARAMETER_REF;
 import static org.yamcs.xtce.xml.Constants.ATTR_SIZE_IN_BITS;
+import static org.yamcs.xtce.xml.Constants.ELEM_COMPARISON_OPERATOR;
+import static org.yamcs.xtce.xml.Constants.ELEM_CONDITION;
 import static org.yamcs.xtce.xml.Constants.ELEM_ENCODING;
 import static org.yamcs.xtce.xml.Constants.ELEM_FLOAT_DATA_ENCODING;
 import static org.yamcs.xtce.xml.Constants.ELEM_PARAMETER_INSTANCE_REF;
 import static org.yamcs.xtce.xml.Constants.ELEM_PARAMETER_REF;
 import static org.yamcs.xtce.xml.Constants.ELEM_PARAMETER_VALUE_CHANGE;
 import static org.yamcs.xtce.xml.Constants.ELEM_SIZE_IN_BITS;
+import static org.yamcs.xtce.xml.Constants.ELEM_VALUE;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -1324,7 +1327,9 @@ public class XtceAssembler {
             for (OutputParameter outp : algorithm.getOutputList()) {
                 doc.writeStartElement("OutputParameterRef");
                 doc.writeAttribute(ATTR_PARAMETER_REF, getNameReference(outp.getParameter()));
-                doc.writeAttribute("outputName", outp.getOutputName());
+                if (outp.getOutputName() != null) {
+                    doc.writeAttribute("outputName", outp.getOutputName());
+                }
                 doc.writeEndElement();
             }
             doc.writeEndElement();// OutputSet
@@ -1489,7 +1494,7 @@ public class XtceAssembler {
     }
 
     private void writeCondition(XMLStreamWriter doc, Condition condition) throws XMLStreamException {
-        doc.writeStartElement("Condition");
+        doc.writeStartElement(ELEM_CONDITION);
         ParameterOrArgumentRef ref = condition.getLeftRef();
         if (ref instanceof ParameterInstanceRef) {
             writeParameterInstanceRef(doc, ELEM_PARAMETER_INSTANCE_REF, (ParameterInstanceRef) ref);
@@ -1497,15 +1502,19 @@ public class XtceAssembler {
             writeParameterInstanceRef(doc, ELEM_PARAMETER_INSTANCE_REF, (ArgumentInstanceRef) ref);
         }
 
-        doc.writeStartElement("ComparisonOperator");
+        doc.writeStartElement(ELEM_COMPARISON_OPERATOR);
         doc.writeCharacters(condition.getComparisonOperator().getSymbol());
         doc.writeEndElement();
 
         ref = condition.getRightRef();
         if (ref instanceof ParameterInstanceRef) {
             writeParameterInstanceRef(doc, ELEM_PARAMETER_INSTANCE_REF, (ParameterInstanceRef) ref);
-        } else {
+        } else if (ref instanceof ArgumentInstanceRef) {
             writeParameterInstanceRef(doc, ELEM_PARAMETER_INSTANCE_REF, (ArgumentInstanceRef) ref);
+        } else {
+            doc.writeStartElement(ELEM_VALUE);
+            doc.writeCharacters(condition.getRightValue());
+            doc.writeEndElement();
         }
         doc.writeEndElement();
     }
