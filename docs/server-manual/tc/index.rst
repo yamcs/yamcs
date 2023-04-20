@@ -60,6 +60,9 @@ The conditions are:
 * | **groups** (list of group names)
   | Match only commands that are issued by one of the specified groups.
 
+* | **tcPatterns** (list of command name patterns)
+  | Match only commands whose qualified name matches any of the specified patterns.
+
 The conditions ``users`` and ``groups`` are evaluated together: it suffices if the issuer matches with one of these two conditions. All other conditions must all apply, before a command can be matched to the queue.
 
 At runtime, a queue can perform different actions on matched commands:

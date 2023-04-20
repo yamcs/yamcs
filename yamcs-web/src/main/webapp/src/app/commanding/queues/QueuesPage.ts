@@ -32,6 +32,7 @@ export class QueuesPage implements AfterViewInit, OnDestroy {
     'name',
     'issuer',
     'level',
+    'patterns',
     'action',
     'pending',
     'actions',

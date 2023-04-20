@@ -34,6 +34,7 @@ message CommandQueueInfo {
   repeated string users = 10;
   repeated string groups = 11;
   optional mdb.SignificanceInfo.SignificanceLevelType minLevel = 12;
+  repeated string tcPatterns = 13;
 }
 
 /*One entry (command) in the command queue*/

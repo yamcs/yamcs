@@ -109,6 +109,16 @@
           </td>
         </ng-container>
 
+        <ng-container matColumnDef="patterns">
+          <th mat-header-cell *matHeaderCellDef>Name&nbsp;patterns</th>
+          <td mat-cell *matCellDef="let queue">
+            <ng-container *ngIf="!queue.tcPatterns">any</ng-container>
+            <ng-container *ngFor="let tcPattern of queue.tcPatterns">
+              {{ tcPattern }}<br>
+            </ng-container>
+          </td>
+        </ng-container>
+
         <ng-container matColumnDef="action">
           <th mat-header-cell *matHeaderCellDef>Action</th>
           <td mat-cell *matCellDef="let queue">

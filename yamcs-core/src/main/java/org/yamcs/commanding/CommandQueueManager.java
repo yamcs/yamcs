@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.yamcs.ConfigurationException;
@@ -133,6 +134,11 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
                     Levels minLevel = Levels.valueOf(queueConfig.getString("minLevel").toUpperCase());
                     q.setMinLevel(minLevel);
                 }
+                if (queueConfig.containsKey("tcPatterns")) {
+                    var regexes = queueConfig.<String> getList("tcPatterns");
+                    var patterns = regexes.stream().map(Pattern::compile).collect(Collectors.toList());
+                    q.addTcPatterns(patterns);
+                }
                 queues.put(queueName, q);
             }
         } else {
@@ -182,10 +188,13 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
     private Spec getQueueSpec() {
         Spec spec = new Spec();
         spec.addOption("state", OptionType.STRING).withChoices("enabled", "blocked", "disabled");
-        spec.addOption("stateExpirationTimeS", OptionType.INTEGER);
+        spec.addOption("stateExpirationTimeS", OptionType.INTEGER)
+                .withDeprecationMessage("Proposed for future removal. Let us know if have a current"
+                        + " use case for this functionality");
         spec.addOption("minLevel", OptionType.STRING);
         spec.addOption("users", OptionType.LIST).withElementType(OptionType.STRING);
         spec.addOption("groups", OptionType.LIST).withElementType(OptionType.STRING);
+        spec.addOption("tcPatterns", OptionType.LIST).withElementType(OptionType.STRING);
         return spec;
     }
 

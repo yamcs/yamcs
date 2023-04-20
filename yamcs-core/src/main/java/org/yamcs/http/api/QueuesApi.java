@@ -2,6 +2,7 @@ package org.yamcs.http.api;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.yamcs.Processor;
 import org.yamcs.api.Observer;
@@ -281,6 +282,12 @@ public class QueuesApi extends AbstractQueuesApi<Context> {
         b.setOrder(order);
         b.addAllUsers(queue.getUsers());
         b.addAllGroups(queue.getGroups());
+        var tcPatterns = new ArrayList<>(queue.getTcPatterns())
+                .stream().map(p -> p.pattern())
+                .sorted()
+                .collect(Collectors.toList());
+        b.addAllTcPatterns(tcPatterns);
+
         if (queue.getMinLevel() != Levels.NONE) {
             b.setMinLevel(XtceToGpbAssembler.toSignificanceLevelType(queue.getMinLevel()));
         }
