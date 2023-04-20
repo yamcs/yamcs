@@ -88,7 +88,7 @@ public class NameDescription implements Serializable {
 
     public void setQualifiedName(String qname) {
         if (!qname.endsWith(name)) {
-            throw new IllegalArgumentException("qualified name '" + qname + "' +must end with '" + name + "'");
+            throw new IllegalArgumentException("qualified name '" + qname + "' must end with '" + name + "'");
         }
         this.qualifiedName = qname;
         // String ssName = getSubsystemName(qname);

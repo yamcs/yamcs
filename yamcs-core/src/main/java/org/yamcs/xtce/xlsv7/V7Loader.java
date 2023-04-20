@@ -2262,7 +2262,7 @@ public class V7Loader extends V7LoaderBase {
             Cell[] cells = jumpToRow(sheet, start);
             String paramName = getContent(cells, CN_ALARM_PARAM_NAME);
             NameReference paraRef = getParameterReference(spaceSystem, paramName);
-            boolean renameType = true;
+
             // now we search for the matching last row of the alarms for this parameter
             int paramEnd = start + 1;
             while (paramEnd < sheet.getRows()) {
@@ -2272,6 +2272,17 @@ public class V7Loader extends V7LoaderBase {
                 }
                 paramEnd++;
             }
+
+            // duplicate the type to be able to add alarms
+            paraRef.addResolvedAction(nd -> {
+                Parameter param = (Parameter) nd;
+                ParameterType oldPtype = param.getParameterType();
+                ParameterType.Builder<?> ptypeb = oldPtype.toBuilder()
+                        .setName(oldPtype.getName() + "_WITH_ALARMS_FOR_" + param.getName());
+                ParameterType newPtype = ptypeb.build();
+                param.setParameterType(newPtype);
+                spaceSystem.addParameterType(newPtype);
+            });
 
             // Iterate over all rows for this parameter
             MatchCriteria previousContext = null;
@@ -2300,17 +2311,6 @@ public class V7Loader extends V7LoaderBase {
                                 "Unrecognized report type '" + getContent(cells, CN_ALARM_REPORT) + "'");
                     }
                 }
-
-                // duplicate the type to be able to add alarms
-                paraRef.addResolvedAction(nd -> {
-                    Parameter param = (Parameter) nd;
-                    ParameterType oldPtype = param.getParameterType();
-                    ParameterType.Builder<?> ptypeb = oldPtype.toBuilder()
-                            .setName(oldPtype.getName() + "_" + param.getName());
-                    ParameterType newPtype = ptypeb.build();
-                    param.setParameterType(newPtype);
-                    spaceSystem.addParameterType(newPtype);
-                });
 
                 checkAndAddAlarm(spaceSystem, cells, AlarmLevels.WATCH, paraRef, context,
                         CN_ALARM_WATCH_TRIGGER, CN_ALARM_WATCH_VALUE);
