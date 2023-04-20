@@ -277,7 +277,9 @@ public class QueuesApi extends AbstractQueuesApi<Context> {
         b.setProcessorName(queue.getProcessor().getName());
         b.setName(queue.getName());
         b.setState(queue.getState());
+        b.setAcceptedCommandsCount(queue.getNbSentCommands());
         b.setNbSentCommands(queue.getNbSentCommands());
+        b.setRejectedCommandsCount(queue.getNbRejectedCommands());
         b.setNbRejectedCommands(queue.getNbRejectedCommands());
         b.setOrder(order);
         b.addAllUsers(queue.getUsers());
@@ -297,6 +299,7 @@ public class QueuesApi extends AbstractQueuesApi<Context> {
         if (detail) {
             for (ActiveCommand activeCommand : queue.getCommands()) {
                 CommandQueueEntry qEntry = toCommandQueueEntry(queue, activeCommand);
+                b.addEntries(qEntry);
                 b.addEntry(qEntry);
             }
         }

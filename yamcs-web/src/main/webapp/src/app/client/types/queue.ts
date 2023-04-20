@@ -35,9 +35,9 @@ export interface CommandQueue {
   groups: string[];
   tcPatterns: string[];
   minLevel: string;
-  nbSentCommands: number;
-  nbRejectCommands: number;
-  entry: CommandQueueEntry[];
+  entries: CommandQueueEntry[];
+  acceptedCommandsCount: number;
+  rejectedCommandsCount: number;
   order: number;
 }
 
