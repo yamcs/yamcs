@@ -149,8 +149,8 @@ public abstract class AbstractLink extends AbstractService
     }
 
     @Override
-    public void setupSystemParameters(SystemParametersService sysParamCollector) {
-        spLinkStatus = sysParamCollector.createEnumeratedSystemParameter(linkName + "/linkStatus", Status.class,
+    public void setupSystemParameters(SystemParametersService sysParamService) {
+        spLinkStatus = sysParamService.createEnumeratedSystemParameter(linkName + "/linkStatus", Status.class,
                 "The current status of this link");
         EnumeratedParameterType spLinkStatusType = (EnumeratedParameterType) spLinkStatus.getParameterType();
         spLinkStatusType.enumValue(Status.OK.name())
@@ -160,9 +160,9 @@ public abstract class AbstractLink extends AbstractService
         spLinkStatusType.enumValue(Status.FAILED.name())
                 .setDescription("An internal error occurred while processing data");
 
-        spDataOutCount = sysParamCollector.createSystemParameter(linkName + "/dataOutCount", Type.UINT64,
+        spDataOutCount = sysParamService.createSystemParameter(linkName + "/dataOutCount", Type.UINT64,
                 "The total number of items (e.g. telecommand packets) that have been sent through this link");
-        spDataInCount = sysParamCollector.createSystemParameter(linkName + "/dataInCount", Type.UINT64,
+        spDataInCount = sysParamService.createSystemParameter(linkName + "/dataInCount", Type.UINT64,
                 "The total number of items (e.g. telemetry packets) that have been received through this link");
     }
 
