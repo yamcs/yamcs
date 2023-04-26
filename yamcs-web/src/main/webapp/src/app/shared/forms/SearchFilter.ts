@@ -78,6 +78,12 @@ export class SearchFilter implements ControlValueAccessor, AfterViewInit, OnDest
     this.setEvent$.next(value);
   }
 
+  clearInput() {
+    this.writeValue('');
+    const el = this.filter.nativeElement as HTMLInputElement;
+    el.focus();
+  }
+
   registerOnChange(fn: any) {
     this.onChange = fn;
   }
@@ -103,8 +109,6 @@ export class SearchFilter implements ControlValueAccessor, AfterViewInit, OnDest
   }
 
   ngOnDestroy() {
-    if (this.eventSubscription) {
-      this.eventSubscription.unsubscribe();
-    }
+    this.eventSubscription?.unsubscribe();
   }
 }
