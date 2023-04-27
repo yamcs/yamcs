@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { AuthInfo, CommandOption } from '../../client';
-import { ColumnInfo } from '../../shared/template/ColumnChooser';
 import { User } from '../../shared/User';
+import { ColumnInfo } from '../../shared/template/ColumnChooser';
 
 export interface WebsiteConfig {
   serverId: string;
   auth: AuthInfo;
   tag: string;
+  logo: string;
   events?: EventsConfig;
   commandClearanceEnabled: boolean;
   commandExports: boolean;

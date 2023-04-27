@@ -6,7 +6,6 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.yamcs.Plugin;
 import org.yamcs.PluginException;
@@ -57,10 +56,10 @@ public class WebPlugin implements Plugin {
         Path staticRoot;
         String staticRootOverride = System.getProperty("yamcs.web.staticRoot");
         if (staticRootOverride != null) {
-            staticRoot = Paths.get(staticRootOverride);
+            staticRoot = Path.of(staticRootOverride);
             staticRoot = staticRoot.toAbsolutePath().normalize();
         } else if (config.containsKey("staticRoot")) {
-            staticRoot = Paths.get(config.getString("staticRoot"));
+            staticRoot = Path.of(config.getString("staticRoot"));
             staticRoot = staticRoot.toAbsolutePath().normalize();
         } else {
             try {
@@ -82,6 +81,12 @@ public class WebPlugin implements Plugin {
         // Angular router will interpret this and do client-side routing as needed.
         var indexHandler = new IndexHandler(config, httpServer, staticRoot);
         httpServer.addHandler("*", () -> indexHandler);
+
+        if (config.containsKey("logo")) {
+            var file = Path.of(config.getString("logo"));
+            var filename = file.getFileName().toString();
+            httpServer.addHandler(filename, () -> new LogoHandler(file));
+        }
 
         // Print these log statements via a ready listener because it is more helpful
         // if they appear at the end of the boot log.

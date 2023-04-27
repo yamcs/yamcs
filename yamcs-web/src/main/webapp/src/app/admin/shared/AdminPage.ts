@@ -3,8 +3,9 @@ import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { NavigationEnd, Router } from '@angular/router';
-import { filter, Observable, Subscription } from 'rxjs';
+import { Observable, Subscription, filter } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
+import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { User } from '../../shared/User';
 
@@ -18,6 +19,8 @@ export class AdminPage implements OnDestroy {
   user: User;
   sidebar$: Observable<boolean>;
 
+  config: WebsiteConfig;
+
   userManagementActive = false;
   userManagementExpanded = false;
   rocksDbActive = false;
@@ -27,12 +30,14 @@ export class AdminPage implements OnDestroy {
 
   constructor(
     preferenceStore: PreferenceStore,
+    configService: ConfigService,
     authService: AuthService,
     iconRegistry: MatIconRegistry,
     sanitizer: DomSanitizer,
     router: Router,
     @Inject(APP_BASE_HREF) baseHref: string,
   ) {
+    this.config = configService.getConfig();
     this.user = authService.getUser()!;
     this.sidebar$ = preferenceStore.getPreference$('sidebar');
     const resourceUrl = `${baseHref}static/rocksdb.svg`;

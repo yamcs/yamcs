@@ -15,6 +15,13 @@ mat-sidenav-container.message-bar-visible {
 mat-sidenav {
   width: 250px;
   background-color: #181818;
+  border-right: 0 !important;
+}
+
+.sidenav-content {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
 }
 
 mat-toolbar {
@@ -24,4 +31,13 @@ mat-toolbar {
   color: #d3d3d3;
   font-weight: 300;
   font-size: 14px;
+}
+
+.navbar-logo {
+  text-align: center;
+  line-height: 0;
+}
+
+.navbar-logo img {
+  max-width: 100%;
 }
