@@ -1,17 +1,15 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatLegacyDialog } from '@angular/material/legacy-dialog';
 import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { MatSort } from '@angular/material/sort';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
 import { Bucket, StorageClient } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
-import { Option } from '../../shared/forms/Select';
 import { CreateBucketDialog } from './CreateBucketDialog';
 
 @Component({
@@ -25,8 +23,6 @@ export class BucketsPage implements AfterViewInit {
   @ViewChild(MatSort, { static: true })
   sort: MatSort;
 
-  instance = '_global';
-
   displayedColumns = [
     'select',
     'name',
@@ -39,14 +35,6 @@ export class BucketsPage implements AfterViewInit {
     'pctObjects',
     'actions',
   ];
-
-  filterForm = new UntypedFormGroup({
-    instance: new UntypedFormControl('_global'),
-  });
-
-  instanceOptions$ = new BehaviorSubject<Option[]>([
-    { id: '_global', label: '_global' },
-  ]);
 
   dataSource = new MatLegacyTableDataSource<Bucket>();
   selection = new SelectionModel<Bucket>(true, []);
@@ -65,27 +53,8 @@ export class BucketsPage implements AfterViewInit {
     title.setTitle('Buckets');
     this.storageClient = this.yamcs.createStorageClient();
 
-    yamcs.yamcsClient.getInstances({
-      filter: 'state=RUNNING',
-    }).then(instances => {
-      for (const instance of instances) {
-        this.instanceOptions$.next([
-          ...this.instanceOptions$.value,
-          {
-            id: instance.name,
-            label: instance.name,
-          }
-        ]);
-      }
-    }).catch(err => this.messageService.showError(err));
-
     this.initializeOptions();
     this.refreshView();
-
-    this.filterForm.get('instance')!.valueChanges.forEach(instance => {
-      this.instance = instance;
-      this.refreshView();
-    });
   }
 
   ngAfterViewInit() {
@@ -97,10 +66,6 @@ export class BucketsPage implements AfterViewInit {
     if (queryParams.has('filter')) {
       this.filterControl.setValue(queryParams.get('filter'));
       this.dataSource.filter = queryParams.get('filter')!.toLowerCase();
-    }
-    if (queryParams.has('instance')) {
-      this.instance = queryParams.get('instance')!;
-      this.filterForm.get('instance')!.setValue(this.instance);
     }
 
     this.filterControl.valueChanges.subscribe(() => {
@@ -138,9 +103,6 @@ export class BucketsPage implements AfterViewInit {
   createBucket() {
     const dialogRef = this.dialog.open(CreateBucketDialog, {
       width: '400px',
-      data: {
-        bucketInstance: this.instance,
-      },
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
@@ -161,7 +123,7 @@ export class BucketsPage implements AfterViewInit {
     if (confirm('Are you sure you want to delete the selected buckets?')) {
       const deletePromises = [];
       for (const bucket of this.selection.selected) {
-        const promise = this.storageClient.deleteBucket(this.instance, bucket.name);
+        const promise = this.storageClient.deleteBucket(bucket.name);
         deletePromises.push(promise);
       }
 
@@ -174,7 +136,7 @@ export class BucketsPage implements AfterViewInit {
 
   deleteBucket(bucket: Bucket) {
     if (confirm(`Are you sure you want to delete the bucket ${bucket.name}?`)) {
-      this.storageClient.deleteBucket(this.instance, bucket.name).then(() => {
+      this.storageClient.deleteBucket(bucket.name).then(() => {
         this.selection.clear();
         this.refreshView();
       }).catch(err => this.messageService.showError(err));
@@ -210,13 +172,13 @@ export class BucketsPage implements AfterViewInit {
   applySelection() {
     if (this.selection.hasValue() && this.selection.selected.length === 1) {
       const item = this.selection.selected[0];
-      this.router.navigate(['/buckets', this.instance, item.name]);
+      this.router.navigate(['/buckets', item.name]);
     }
   }
 
   private refreshView() {
     this.updateURL();
-    this.storageClient.getBuckets(this.instance).then(buckets => {
+    this.storageClient.getBuckets().then(buckets => {
       this.dataSource.data = buckets;
     }).catch(err => this.messageService.showError(err));
   }
@@ -227,7 +189,6 @@ export class BucketsPage implements AfterViewInit {
       replaceUrl: true,
       relativeTo: this.route,
       queryParams: {
-        instance: this.instance || null,
         filter: filterValue || null,
       },
       queryParamsHandling: 'merge',

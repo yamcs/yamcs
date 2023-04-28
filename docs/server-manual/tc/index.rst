@@ -34,20 +34,20 @@ The available queues are defined in the file ``etc/command-queue.yaml``.
 .. code-block:: yaml
 
     supervised:
-      state: enabled
+      state: blocked
       minLevel: critical
 
     default:
-      state: enabled
 
 If this file is absent, a default queue is created, equivalent to this configuration:
 
 .. code-block:: yaml
 
     default:
-      state: enabled
 
-Each queue has a name, a default state and optional conditions. Issued commands are offered to the first queue (in definition order) whose conditions matches the command.
+Queues can be in one of three states: ``enabled``, ``blocked`` or ``disabled``. When the state is not specified in the ``etc/command-queue.yaml`` configuration file, the latest state will be remembered across server restarts, defaulting to ``enabled``. If there is a configured state, that will always be applied as the initial state of that queue.
+
+Each queue has optional conditions. Issued commands are offered to the first queue (in definition order) whose conditions match the command.
 
 The conditions are:
 
@@ -59,6 +59,9 @@ The conditions are:
 
 * | **groups** (list of group names)
   | Match only commands that are issued by one of the specified groups.
+
+* | **tcPatterns** (list of command name patterns)
+  | Match only commands whose qualified name matches any of the specified patterns.
 
 The conditions ``users`` and ``groups`` are evaluated together: it suffices if the issuer matches with one of these two conditions. All other conditions must all apply, before a command can be matched to the queue.
 
@@ -89,4 +92,4 @@ The transmission constraints can be defined in the Excel Spreadsheet in the Comm
     :alt: Constraints
     :align: center
 
-Currently it is only possible to specify the transmission constraints based on parameter verification. This corresponds to  Comparison and ComparisonList in XTCE. In the future it will be possible to specify transmission constraints based on algorithms. That will allow for example to check for specific values of arguments (i.e. allow a command to be sent if cmdArgX > 3).
+Currently it is only possible to specify the transmission constraints based on parameter verification. This corresponds to  Comparison and ComparisonList in XTCE. In the future it will be possible to specify transmission constraints based on algorithms. That will allow for example to check for specific values of arguments (i.e. allow a command to be sent if ``cmdArgX > 3``).

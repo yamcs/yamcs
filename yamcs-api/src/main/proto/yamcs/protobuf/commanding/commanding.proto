@@ -22,18 +22,71 @@ enum QueueState {
 }
 
 message CommandQueueInfo {
+  // Yamcs instance name
   optional string instance = 1;
+
+  // Processor name
   optional string processorName = 2;
+
+  // Command queue name
   optional string name = 3;
+
+  // Current queue state
   optional QueueState state = 4;
-  optional int32 nbSentCommands = 5;
-  optional int32 nbRejectedCommands = 6;
-  optional int32 stateExpirationTimeS = 7;
-  repeated CommandQueueEntry entry = 8;
+
+  // Renamed to ``acceptedCommandsCount``
+  optional int32 nbSentCommands = 5 [deprecated=true];
+
+  // Renamed to ``rejectedCommandsCount``
+  optional int32 nbRejectedCommands = 6 [deprecated=true];
+
+  optional int32 stateExpirationTimeS = 7 [deprecated=true];
+
+  // Renamed to ``entries``
+  repeated CommandQueueEntry entry = 8 [deprecated=true];
+
+  // Submitted commands are matches to the first queue that
+  // whose filter criteria (if any) match the command's
+  // features. Queues are considered in the order specified by
+  // this field, going from lowest to highest.
   optional int32 order = 9;
+
+  // This queue only considers commands that are issued
+  // by one of the users in this list.
+  //
+  // If the list is empty, all commands are considered.
+  //
+  // Note that users/groups are considered at the same time
+  // (a match with any of the two is sufficient).
   repeated string users = 10;
+
+  // This queue only considers commands that are issued
+  // by one of the users who belongs to any of these groups.
+  //
+  // If the list is empty, all commands are considered.
+  //
+  // Note that users/groups are considered at the same time
+  // (a match with any of the two is sufficient).
   repeated string groups = 11;
+
+  // This queue only considers commands that are at least
+  // as significant as this level.
   optional mdb.SignificanceInfo.SignificanceLevelType minLevel = 12;
+
+  // This queue only considers commands whose qualified name
+  // matches any of the regular expressions in this list.
+  //
+  // If the list is empty, all commands are considered.
+  repeated string tcPatterns = 13;
+
+  // Currently pending (queued) commands
+  repeated CommandQueueEntry entries = 14;
+
+  // Number of commands that successfully passed through this queue.
+  optional int32 acceptedCommandsCount = 15;
+
+  // Number of commands that were rejected by this queue.
+  optional int32 rejectedCommandsCount = 16;
 }
 
 /*One entry (command) in the command queue*/

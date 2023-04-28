@@ -77,7 +77,6 @@ dataLinks:
   # distributes them on the the three streams like the TCP links above
   # This works as alternative to the TCP links 
   - name: UDP_FRAME_IN
-    enabledAtStartup: true
     class: org.yamcs.tctm.ccsds.UdpTmFrameLink
     port: 10017 #UDP port to listen to
     #### Raw frame decoder example. It is commented out because the simulator does not support generating encoded frames

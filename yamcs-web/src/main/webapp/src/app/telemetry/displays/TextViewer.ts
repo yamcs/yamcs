@@ -34,7 +34,7 @@ export class TextViewer implements Viewer {
   }
 
   public init(objectName: string) {
-    this.storageClient.getObject('_global', this.bucket, objectName).then(response => {
+    this.storageClient.getObject(this.bucket, objectName).then(response => {
       response.text().then(text => {
         this.text = text;
         this.changeDetector.detectChanges();

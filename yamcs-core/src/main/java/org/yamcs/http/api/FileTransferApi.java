@@ -60,7 +60,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
     public void listFileTransferServices(Context ctx, ListFileTransferServicesRequest request,
             Observer<ListFileTransferServicesResponse> observer) {
         checkReadFileTransfers(ctx.user);
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         YamcsServer yamcs = YamcsServer.getServer();
         ListFileTransferServicesResponse.Builder responseb = ListFileTransferServicesResponse.newBuilder();
         YamcsServerInstance ysi = yamcs.getInstance(instance);
@@ -391,7 +391,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
     }
 
     private FileTransferService verifyService(String yamcsInstance, String serviceName) throws NotFoundException {
-        String instance = ManagementApi.verifyInstance(yamcsInstance);
+        String instance = InstancesApi.verifyInstance(yamcsInstance);
         FileTransferService ftServ = null;
         if (serviceName != null) {
             ftServ = YamcsServer.getServer().getInstance(instance)

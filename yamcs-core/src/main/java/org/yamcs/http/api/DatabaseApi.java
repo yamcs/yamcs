@@ -59,7 +59,7 @@ public class DatabaseApi extends AbstractDatabaseApi<Context> {
     }
 
     public static YarchDatabaseInstance verifyDatabase(String name) {
-        String instance = ManagementApi.verifyInstance(name, true);
+        String instance = InstancesApi.verifyInstance(name, true);
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         if (ydb == null) {
             throw new NotFoundException("No database named '" + instance + "'");

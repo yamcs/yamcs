@@ -2083,9 +2083,12 @@
 					<xtce:StringParameterType name="Payload_Fault_Message_Type" shortDescription="Payload Error Message">
 						<xtce:UnitSet />
 						<xtce:StringDataEncoding bitOrder="mostSignificantBitFirst" encoding="UTF-8">
-							<xtce:SizeInBits>
+							<xtce:Variable maxSizeInBits="16448">
+								<xtce:DynamicValue>
+									<xtce:ParameterInstanceRef parameterRef="_yamcs_ignore" />
+								</xtce:DynamicValue>
 								<xtce:TerminationChar>00</xtce:TerminationChar>
-							</xtce:SizeInBits>
+							</xtce:Variable>
 						</xtce:StringDataEncoding>
 						<xtce:SizeRangeInCharacters minInclusive="1" maxInclusive="256" />
 					</xtce:StringParameterType>

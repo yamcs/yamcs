@@ -10,9 +10,6 @@ import { YamcsService } from '../../core/services/YamcsService';
 export class BucketPageTabs {
 
   @Input()
-  bucketInstance: string;
-
-  @Input()
   bucket: string;
 
   constructor(readonly yamcs: YamcsService) {

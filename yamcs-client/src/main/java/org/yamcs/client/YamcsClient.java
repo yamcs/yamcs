@@ -39,6 +39,7 @@ import org.yamcs.protobuf.FileTransferServiceInfo;
 import org.yamcs.protobuf.GetInstanceRequest;
 import org.yamcs.protobuf.GetServerInfoResponse;
 import org.yamcs.protobuf.IamApiClient;
+import org.yamcs.protobuf.InstancesApiClient;
 import org.yamcs.protobuf.LeapSecondsTable;
 import org.yamcs.protobuf.ListFileTransferServicesRequest;
 import org.yamcs.protobuf.ListFileTransferServicesResponse;
@@ -48,13 +49,13 @@ import org.yamcs.protobuf.ListProcessorsRequest;
 import org.yamcs.protobuf.ListProcessorsResponse;
 import org.yamcs.protobuf.ListServicesRequest;
 import org.yamcs.protobuf.ListServicesResponse;
-import org.yamcs.protobuf.ManagementApiClient;
 import org.yamcs.protobuf.ProcessingApiClient;
 import org.yamcs.protobuf.ProcessorInfo;
 import org.yamcs.protobuf.ReconfigureInstanceRequest;
 import org.yamcs.protobuf.RestartInstanceRequest;
 import org.yamcs.protobuf.ServerApiClient;
 import org.yamcs.protobuf.ServiceInfo;
+import org.yamcs.protobuf.ServicesApiClient;
 import org.yamcs.protobuf.StartInstanceRequest;
 import org.yamcs.protobuf.StartServiceRequest;
 import org.yamcs.protobuf.StopInstanceRequest;
@@ -99,7 +100,8 @@ public class YamcsClient {
 
     private AlarmsApiClient alarmService;
     private TimeApiClient timeService;
-    private ManagementApiClient managementService;
+    private ServicesApiClient serviceService;
+    private InstancesApiClient instanceService;
     private LinksApiClient linkService;
     private EventsApiClient eventService;
     private ProcessingApiClient processingService;
@@ -134,10 +136,11 @@ public class YamcsClient {
         eventService = new EventsApiClient(methodHandler);
         linkService = new LinksApiClient(methodHandler);
         iamService = new IamApiClient(methodHandler);
+        instanceService = new InstancesApiClient(methodHandler);
         timeService = new TimeApiClient(methodHandler);
-        managementService = new ManagementApiClient(methodHandler);
         processingService = new ProcessingApiClient(methodHandler);
         serverService = new ServerApiClient(methodHandler);
+        serviceService = new ServicesApiClient(methodHandler);
     }
 
     public static Builder newBuilder(String serverUrl) {
@@ -315,19 +318,19 @@ public class YamcsClient {
 
     public CompletableFuture<YamcsInstance> createInstance(CreateInstanceRequest request) {
         CompletableFuture<YamcsInstance> f = new CompletableFuture<>();
-        managementService.createInstance(null, request, new ResponseObserver<>(f));
+        instanceService.createInstance(null, request, new ResponseObserver<>(f));
         return f;
     }
 
     public CompletableFuture<YamcsInstance> reconfigureInstance(ReconfigureInstanceRequest request) {
         CompletableFuture<YamcsInstance> f = new CompletableFuture<>();
-        managementService.reconfigureInstance(null, request, new ResponseObserver<>(f));
+        instanceService.reconfigureInstance(null, request, new ResponseObserver<>(f));
         return f;
     }
 
     public CompletableFuture<List<YamcsInstance>> listInstances() {
         CompletableFuture<ListInstancesResponse> f = new CompletableFuture<>();
-        managementService.listInstances(null, ListInstancesRequest.getDefaultInstance(), new ResponseObserver<>(f));
+        instanceService.listInstances(null, ListInstancesRequest.getDefaultInstance(), new ResponseObserver<>(f));
         return f.thenApply(response -> response.getInstancesList());
     }
 
@@ -336,7 +339,7 @@ public class YamcsClient {
                 .setInstance(instance)
                 .build();
         CompletableFuture<YamcsInstance> f = new CompletableFuture<>();
-        managementService.getInstance(null, request, new ResponseObserver<>(f));
+        instanceService.getInstance(null, request, new ResponseObserver<>(f));
         return f;
     }
 
@@ -346,7 +349,7 @@ public class YamcsClient {
             requestb.addFilter(expression);
         }
         CompletableFuture<ListInstancesResponse> f = new CompletableFuture<>();
-        managementService.listInstances(null, requestb.build(), new ResponseObserver<>(f));
+        instanceService.listInstances(null, requestb.build(), new ResponseObserver<>(f));
         return f;
     }
 
@@ -355,7 +358,7 @@ public class YamcsClient {
                 .setInstance(instance)
                 .build();
         CompletableFuture<YamcsInstance> f = new CompletableFuture<>();
-        managementService.startInstance(null, request, new ResponseObserver<>(f));
+        instanceService.startInstance(null, request, new ResponseObserver<>(f));
         return f;
     }
 
@@ -364,7 +367,7 @@ public class YamcsClient {
                 .setInstance(instance)
                 .build();
         CompletableFuture<YamcsInstance> f = new CompletableFuture<>();
-        managementService.stopInstance(null, request, new ResponseObserver<>(f));
+        instanceService.stopInstance(null, request, new ResponseObserver<>(f));
         return f;
     }
 
@@ -373,7 +376,7 @@ public class YamcsClient {
                 .setInstance(instance)
                 .build();
         CompletableFuture<YamcsInstance> f = new CompletableFuture<>();
-        managementService.restartInstance(null, request, new ResponseObserver<>(f));
+        instanceService.restartInstance(null, request, new ResponseObserver<>(f));
         return f;
     }
 
@@ -407,7 +410,7 @@ public class YamcsClient {
                 .setInstance(instance)
                 .build();
         CompletableFuture<ListServicesResponse> f = new CompletableFuture<>();
-        managementService.listServices(null, request, new ResponseObserver<>(f));
+        serviceService.listServices(null, request, new ResponseObserver<>(f));
         return f.thenApply(response -> response.getServicesList());
     }
 
@@ -417,7 +420,7 @@ public class YamcsClient {
                 .setName(service)
                 .build();
         CompletableFuture<Empty> f = new CompletableFuture<>();
-        managementService.startService(null, request, new ResponseObserver<>(f));
+        serviceService.startService(null, request, new ResponseObserver<>(f));
         return f.thenApply(response -> null);
     }
 
@@ -447,7 +450,7 @@ public class YamcsClient {
                 .setName(service)
                 .build();
         CompletableFuture<Empty> f = new CompletableFuture<>();
-        managementService.stopService(null, request, new ResponseObserver<>(f));
+        serviceService.stopService(null, request, new ResponseObserver<>(f));
         return f.thenApply(response -> null);
     }
 

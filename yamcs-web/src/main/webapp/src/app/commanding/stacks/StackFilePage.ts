@@ -251,7 +251,7 @@ export class StackFilePage implements OnDestroy {
       return;
     }
 
-    const response = await this.storageClient.getObject('_global', this.bucket, objectName).catch(err => {
+    const response = await this.storageClient.getObject(this.bucket, objectName).catch(err => {
       if (err.statusCode === 404 && format === "xml") {
         this.router.navigate([objectName.replace(/\.xml$/i, ".ycs")], {
           queryParamsHandling: 'preserve',
@@ -769,7 +769,7 @@ export class StackFilePage implements OnDestroy {
     }
     const type = (this.format === 'xml' ? 'application/xml' : 'application/json');
     const blob = new Blob([file], { type });
-    return this.storageClient.uploadObject('_global', this.bucket, this.objectName, blob).then(() => {
+    return this.storageClient.uploadObject(this.bucket, this.objectName, blob).then(() => {
       this.dirty$.next(false);
     });
   }
@@ -831,8 +831,8 @@ export class StackFilePage implements OnDestroy {
       console.error("Failed to convert command stack due to objectName");
       return;
     }
-    await storageClient.uploadObject('_global', bucket, jsonObjectName + ".ycs", blob);
-    await storageClient.deleteObject('_global', bucket, objectName);
+    await storageClient.uploadObject(bucket, jsonObjectName + ".ycs", blob);
+    await storageClient.deleteObject(bucket, objectName);
     return jsonObjectName;
   }
 

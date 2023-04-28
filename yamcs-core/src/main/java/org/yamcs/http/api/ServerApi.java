@@ -1,10 +1,13 @@
 package org.yamcs.http.api;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -13,6 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.yamcs.CommandOption;
 import org.yamcs.Plugin;
@@ -27,6 +31,7 @@ import org.yamcs.api.Observer;
 import org.yamcs.http.Context;
 import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpServer;
+import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.MediaType;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.Route;
@@ -45,7 +50,10 @@ import org.yamcs.protobuf.ListRoutesResponse;
 import org.yamcs.protobuf.ListThreadsRequest;
 import org.yamcs.protobuf.ListThreadsResponse;
 import org.yamcs.protobuf.ListTopicsResponse;
+import org.yamcs.protobuf.ProcessInfo;
+import org.yamcs.protobuf.RootDirectory;
 import org.yamcs.protobuf.RouteInfo;
+import org.yamcs.protobuf.SystemInfo;
 import org.yamcs.protobuf.ThreadGroupInfo;
 import org.yamcs.protobuf.ThreadInfo;
 import org.yamcs.protobuf.TopicInfo;
@@ -54,6 +62,8 @@ import org.yamcs.security.SystemPrivilege;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
+import com.google.protobuf.Timestamp;
+import com.google.protobuf.util.Durations;
 
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -69,6 +79,24 @@ public class ServerApi extends AbstractServerApi<Context> {
 
     public ServerApi(HttpServer httpServer) {
         this.httpServer = httpServer;
+    }
+
+    @Override
+    public void subscribeSystemInfo(Context ctx, Empty request, Observer<SystemInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadSystemInfo);
+        var exec = YamcsServer.getServer().getThreadPoolExecutor();
+        var future = exec.scheduleAtFixedRate(() -> {
+            var systemInfo = toSystemInfo();
+            observer.next(systemInfo);
+        }, 0, 5, TimeUnit.SECONDS);
+        observer.setCancelHandler(() -> future.cancel(false));
+    }
+
+    @Override
+    public void getSystemInfo(Context ctx, Empty request, Observer<SystemInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadSystemInfo);
+        var systemInfo = toSystemInfo();
+        observer.complete(systemInfo);
     }
 
     @Override
@@ -446,5 +474,103 @@ public class ServerApi extends AbstractServerApi<Context> {
         }
 
         return threadb.build();
+    }
+
+    private static SystemInfo toSystemInfo() {
+        var yamcs = YamcsServer.getServer();
+
+        var b = SystemInfo.newBuilder()
+                .setServerId(yamcs.getServerId());
+        if (YamcsVersion.VERSION != null) {
+            b.setYamcsVersion(YamcsVersion.VERSION);
+        }
+        if (YamcsVersion.REVISION != null) {
+            b.setRevision(YamcsVersion.REVISION);
+        }
+
+        var process = ProcessHandle.current();
+        b.setProcess(toProcessInfo(process));
+
+        var runtime = ManagementFactory.getRuntimeMXBean();
+        b.setUptime(runtime.getUptime());
+        b.setJvm(runtime.getVmName() + " " + runtime.getVmVersion() + " (" + runtime.getVmVendor() + ")");
+        b.setWorkingDirectory(new File("").getAbsolutePath());
+        b.setConfigDirectory(yamcs.getConfigDirectory().toAbsolutePath().toString());
+        b.setDataDirectory(yamcs.getDataDirectory().toAbsolutePath().toString());
+        b.setCacheDirectory(yamcs.getCacheDirectory().toAbsolutePath().toString());
+        b.setJvmThreadCount(Thread.activeCount());
+
+        var memory = ManagementFactory.getMemoryMXBean();
+        var heap = memory.getHeapMemoryUsage();
+        b.setHeapMemory(heap.getCommitted());
+        b.setUsedHeapMemory(heap.getUsed());
+        if (heap.getMax() != -1) {
+            b.setMaxHeapMemory(heap.getMax());
+        }
+        var nonheap = memory.getNonHeapMemoryUsage();
+        b.setNonHeapMemory(nonheap.getCommitted());
+        b.setUsedNonHeapMemory(nonheap.getUsed());
+        if (nonheap.getMax() != -1) {
+            b.setMaxNonHeapMemory(nonheap.getMax());
+        }
+
+        var os = ManagementFactory.getOperatingSystemMXBean();
+        b.setOs(os.getName() + " " + os.getVersion());
+        b.setArch(os.getArch());
+        b.setAvailableProcessors(os.getAvailableProcessors());
+        var systemLoadAverage = os.getSystemLoadAverage();
+        if (systemLoadAverage >= 0) {
+            b.setLoadAverage(os.getSystemLoadAverage());
+        }
+
+        try {
+            for (var root : FileSystems.getDefault().getRootDirectories()) {
+                var store = Files.getFileStore(root);
+                b.addRootDirectories(RootDirectory.newBuilder()
+                        .setDirectory(root.toString())
+                        .setType(store.type())
+                        .setTotalSpace(store.getTotalSpace())
+                        .setUnallocatedSpace(store.getUnallocatedSpace())
+                        .setUsableSpace(store.getUsableSpace()));
+            }
+        } catch (IOException e) {
+            throw new InternalServerErrorException(e);
+        }
+
+        return b.build();
+    }
+
+    private static ProcessInfo toProcessInfo(ProcessHandle process) {
+        var processb = ProcessInfo.newBuilder()
+                .setPid(process.pid());
+        var processInfo = process.info();
+        if (processInfo.user().isPresent()) {
+            processb.setUser(processInfo.user().get());
+        }
+        if (processInfo.startInstant().isPresent()) {
+            var startTime = processInfo.startInstant().get();
+            processb.setStartTime(Timestamp.newBuilder()
+                    .setSeconds(startTime.getEpochSecond())
+                    .setNanos(startTime.getNano()));
+        }
+        if (processInfo.totalCpuDuration().isPresent()) {
+            var duration = processInfo.totalCpuDuration().get();
+            processb.setTotalCpuDuration(Durations.fromSeconds(duration.getSeconds()));
+        }
+        if (processInfo.command().isPresent()) {
+            var command = processInfo.command().get();
+            processb.setCommand(command);
+        }
+        if (processInfo.arguments().isPresent()) {
+            for (var argument : processInfo.arguments().get()) {
+                processb.addArguments(argument);
+            }
+        }
+
+        process.children()
+                .map(ServerApi::toProcessInfo)
+                .forEach(processb::addChildren);
+
+        return processb.build();
     }
 }

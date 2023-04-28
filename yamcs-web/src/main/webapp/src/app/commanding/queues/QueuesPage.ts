@@ -32,6 +32,7 @@ export class QueuesPage implements AfterViewInit, OnDestroy {
     'name',
     'issuer',
     'level',
+    'patterns',
     'action',
     'pending',
     'actions',
@@ -74,7 +75,7 @@ export class QueuesPage implements AfterViewInit, OnDestroy {
       const existingQueue = this.cqueueByName[queue.name];
       if (existingQueue) {
         // Update queue (but keep already known entries)
-        queue.entry = existingQueue.entry;
+        queue.entries = existingQueue.entries;
         this.cqueueByName[queue.name] = queue;
         this.emitChange();
       }
@@ -87,23 +88,23 @@ export class QueuesPage implements AfterViewInit, OnDestroy {
       const queue = this.cqueueByName[queueEvent.data.queueName];
       if (queue) {
         if (queueEvent.type === 'COMMAND_ADDED') {
-          queue.entry = queue.entry || [];
-          queue.entry.push(queueEvent.data);
+          queue.entries = queue.entries || [];
+          queue.entries.push(queueEvent.data);
         } else if (queueEvent.type === 'COMMAND_UPDATED') {
-          const idx = (queue.entry || []).findIndex(entry => {
-            return entry.id === queueEvent.data.id;
+          const idx = (queue.entries || []).findIndex(entries => {
+            return entries.id === queueEvent.data.id;
           });
           if (idx !== -1) {
-            queue.entry[idx] = queueEvent.data;
+            queue.entries[idx] = queueEvent.data;
           }
         } else if (queueEvent.type === 'COMMAND_REJECTED') {
-          queue.entry = queue.entry || [];
-          queue.entry = queue.entry.filter(entry => {
+          queue.entries = queue.entries || [];
+          queue.entries = queue.entries.filter(entry => {
             return entry.id !== queueEvent.data.id;
           });
         } else if (queueEvent.type === 'COMMAND_SENT') {
-          queue.entry = queue.entry || [];
-          queue.entry = queue.entry.filter(entry => {
+          queue.entries = queue.entries || [];
+          queue.entries = queue.entries.filter(entry => {
             return entry.id !== queueEvent.data.id;
           });
         } else {
@@ -152,7 +153,7 @@ export class QueuesPage implements AfterViewInit, OnDestroy {
   }
 
   enableQueue(queue: CommandQueue) {
-    const count = queue.entry?.length || 0;
+    const count = queue.entries?.length || 0;
     let msg = `Are you sure you want to change the '${queue.name}' queue's action to ACCEPT?\n\n`;
     if (count === 1) {
       msg += `There is ${count} queued command that will be accepted immediately.`;
@@ -173,7 +174,7 @@ export class QueuesPage implements AfterViewInit, OnDestroy {
   }
 
   disableQueue(queue: CommandQueue) {
-    const count = queue.entry?.length || 0;
+    const count = queue.entries?.length || 0;
     let msg = `Are you sure you want to change the '${queue.name}' queue\'s action to REJECT?\n\n`;
     if (count === 1) {
       msg += `There is ${count} queued command that will be rejected immediately.`;

@@ -98,7 +98,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     public void listProcessors(Context ctx, ListProcessorsRequest request, Observer<ListProcessorsResponse> observer) {
         ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
         if (request.hasInstance()) {
-            YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
+            YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
             for (Processor processor : ysi.getProcessors()) {
                 response.addProcessors(toProcessorInfo(processor));
             }
@@ -136,7 +136,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
 
     @Override
     public void createProcessor(Context ctx, CreateProcessorRequest request, Observer<Empty> observer) {
-        String yamcsInstance = ManagementApi.verifyInstance(request.getInstance());
+        String yamcsInstance = InstancesApi.verifyInstance(request.getInstance());
 
         if (!request.hasName()) {
             throw new BadRequestException("No processor name was specified");
@@ -316,7 +316,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         String instance = null;
         String processor = null;
         if (request.hasInstance()) {
-            instance = ManagementApi.verifyInstance(request.getInstance());
+            instance = InstancesApi.verifyInstance(request.getInstance());
             if (request.hasProcessor()) {
                 processor = verifyProcessor(request.getInstance(), request.getProcessor()).getName();
             }
@@ -622,7 +622,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         String name = processor.getName();
 
         for (ProcessorServiceWithConfig serviceWithConfig : processor.getServices()) {
-            b.addServices(ManagementApi.toServiceInfo(serviceWithConfig, instance, name));
+            b.addServices(ServicesApi.toServiceInfo(serviceWithConfig, instance, name));
         }
         return b.build();
     }
@@ -639,7 +639,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     }
 
     public static Processor verifyProcessor(String instance, String processorName) {
-        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(instance);
+        YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(instance);
         Processor processor = ysi.getProcessor(processorName);
         if (processor == null) {
             throw new NotFoundException("No processor '" + processorName + "' within instance '" + instance + "'");

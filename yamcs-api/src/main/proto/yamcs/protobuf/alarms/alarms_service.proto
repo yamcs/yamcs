@@ -113,10 +113,18 @@ message ListAlarmsRequest {
   // Filter alarm instances on a specific alarm name (for example:
   // parameter name)
   optional string name = 7;
+
+  // Continuation token returned by a previous page response.
+  optional string next = 8;
 }
 
 message ListAlarmsResponse {
   repeated AlarmData alarms = 1;
+
+  // Token indicating the response is only partial. More results can then
+  // be obtained by performing the same request (including all original
+  // query parameters) and setting the ``next`` parameter to this token.
+  optional string continuationToken = 2;
 }
 
 message ListProcessorAlarmsRequest {

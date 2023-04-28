@@ -32,11 +32,11 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
         initialDelay = config.getLong("initialDelay", -1);
 
         if (config.containsKey("packetInputStreamClassName")) {
-            this.packetInputStreamClassName = config.getString("packetInputStreamClassName");
-            this.packetInputStreamArgs = config.getConfig("packetInputStreamArgs");
+            packetInputStreamClassName = config.getString("packetInputStreamClassName");
+            packetInputStreamArgs = config.getConfigOrEmpty("packetInputStreamArgs");
         } else {
-            this.packetInputStreamClassName = CcsdsPacketInputStream.class.getName();
-            this.packetInputStreamArgs = YConfiguration.emptyConfig();
+            packetInputStreamClassName = CcsdsPacketInputStream.class.getName();
+            packetInputStreamArgs = YConfiguration.emptyConfig();
         }
 
     }
@@ -111,7 +111,7 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
                 byte[] packet = packetInputStream.readPacket();
                 updateStats(packet.length);
                 TmPacket pkt = new TmPacket(timeService.getMissionTime(), packet);
-                pkt.setEarthRceptionTime(timeService.getHresMissionTime());
+                pkt.setEarthReceptionTime(timeService.getHresMissionTime());
                 pwt = packetPreprocessor.process(pkt);
                 if (pwt != null) {
                     break;

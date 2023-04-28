@@ -64,14 +64,17 @@ public class TseLoader implements SpaceSystemLoader {
 
         MetaCommand tc = createTC();
         ss.addMetaCommand(tc);
+        ss.addCommandContainer(tc.getCommandContainer());
 
         MetaCommand command = createCOMMAND();
         command.setBaseMetaCommand(tc);
         ss.addMetaCommand(command);
+        ss.addCommandContainer(command.getCommandContainer());
 
         MetaCommand query = createQUERY();
         query.setBaseMetaCommand(tc);
         ss.addMetaCommand(query);
+        ss.addCommandContainer(query.getCommandContainer());
 
         return ss;
     }

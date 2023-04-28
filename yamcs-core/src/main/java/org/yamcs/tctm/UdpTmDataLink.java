@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
@@ -16,15 +18,14 @@ import org.yamcs.YConfiguration;
  * <ul>
  * <li>{@code port} - the UDP port to listen to</li>
  * <li>{@code maxLength} - the maximum length of the datagram (and thus the TM packet length + initialBytesToStrip). If
- * a datagram longer than this
- * size will be received, it will be truncated. Default: 1500 (bytes)</li>
+ * a datagram longer than this size will be received, it will be truncated. Default: 1500 (bytes)</li>
  * <li>{@code initialBytesToStrip} - if configured, skip that number of bytes from the beginning of the datagram.
  * Default: 0</li>
  * 
  * </ul>
  */
 public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
-    private volatile int invalidDatagramCount = 0;
+    private volatile long invalidDatagramCount = 0;
 
     private DatagramSocket tmSocket;
     private int port;
@@ -120,24 +121,34 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
 
         if (packet != null) {
             TmPacket tmPacket = new TmPacket(timeService.getMissionTime(), packet);
-            tmPacket.setEarthRceptionTime(timeService.getHresMissionTime());
+            tmPacket.setEarthReceptionTime(timeService.getHresMissionTime());
             return packetPreprocessor.process(tmPacket);
         } else {
             return null;
         }
     }
 
-    /**
-     * returns statistics with the number of datagram received and the number of invalid datagrams
-     */
     @Override
     public String getDetailedStatus() {
         if (isDisabled()) {
-            return "DISABLED";
+            return "DISABLED (should receive on " + port + ")";
         } else {
-            return String.format("OK (%s) %nValid datagrams received: %d%nInvalid datagrams received: %d",
-                    port, packetCount.get(), invalidDatagramCount);
+            return "OK, receiving on " + port;
         }
+    }
+
+    @Override
+    public Map<String, Object> getExtraInfo() {
+        var extra = new LinkedHashMap<String, Object>();
+        extra.put("Valid datagrams", packetCount.get());
+        extra.put("Invalid datagrams", invalidDatagramCount);
+        return extra;
+    }
+
+    @Override
+    public void resetCounters() {
+        super.resetCounters();
+        invalidDatagramCount = 0;
     }
 
     /**

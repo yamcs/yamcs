@@ -4,12 +4,16 @@ import static org.yamcs.xtce.xml.Constants.ATTR_ENCODING;
 import static org.yamcs.xtce.xml.Constants.ATTR_INITIAL_VALUE;
 import static org.yamcs.xtce.xml.Constants.ATTR_PARAMETER_REF;
 import static org.yamcs.xtce.xml.Constants.ATTR_SIZE_IN_BITS;
+import static org.yamcs.xtce.xml.Constants.ELEM_COMPARISON_OPERATOR;
+import static org.yamcs.xtce.xml.Constants.ELEM_CONDITION;
 import static org.yamcs.xtce.xml.Constants.ELEM_ENCODING;
 import static org.yamcs.xtce.xml.Constants.ELEM_FLOAT_DATA_ENCODING;
 import static org.yamcs.xtce.xml.Constants.ELEM_PARAMETER_INSTANCE_REF;
 import static org.yamcs.xtce.xml.Constants.ELEM_PARAMETER_REF;
 import static org.yamcs.xtce.xml.Constants.ELEM_PARAMETER_VALUE_CHANGE;
 import static org.yamcs.xtce.xml.Constants.ELEM_SIZE_IN_BITS;
+import static org.yamcs.xtce.xml.Constants.ELEM_VALUE;
+import static org.yamcs.xtce.xml.Constants.ELEM_VARIABLE;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -17,6 +21,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
@@ -138,6 +143,7 @@ import org.yamcs.xtce.ValueEnumeration;
 import org.yamcs.xtce.ValueEnumerationRange;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.util.DoubleRange;
+import org.yamcs.xtce.xml.XtceStaxReader;
 
 /**
  * 
@@ -149,8 +155,11 @@ import org.yamcs.xtce.util.DoubleRange;
  */
 public class XtceAssembler {
 
-    private static final String NS_XTCE_V1_1 = "http://www.omg.org/space/xtce";
+    private static final String NS_XTCE_V1_2 = "http://www.omg.org/spec/XTCE/20180204";
     private static final Log log = new Log(XtceAssembler.class);
+    private static final List<String> XTCE_VERIFIER_STAGES = Arrays.asList(
+            "TransferredToRange", "SentFromRange", "Received", "Accepted", "Queued", "Execution", "Complete", "Failed");
+
     boolean emitYamcsNamespace = false;
     private SpaceSystem currentSpaceSystem;
     final DatatypeFactory dataTypeFactory;
@@ -243,7 +252,7 @@ public class XtceAssembler {
 
         doc.writeStartElement("SpaceSystem");
         if (emitNamespace) {
-            doc.writeDefaultNamespace(NS_XTCE_V1_1);
+            doc.writeDefaultNamespace(NS_XTCE_V1_2);
         }
         writeNameDescription(doc, spaceSystem);
 
@@ -280,7 +289,7 @@ public class XtceAssembler {
                 if (algo instanceof MathAlgorithm) {
                     writeMathAlgorithm(doc, (MathAlgorithm) algo);
                 } else {
-                    writeCustomAlgorithm(doc, (CustomAlgorithm) algo, "CustomAlgorithm");
+                    writeCustomAlgorithm(doc, (CustomAlgorithm) algo, "CustomAlgorithm", false);
                 }
             }
             doc.writeEndElement();
@@ -604,14 +613,13 @@ public class XtceAssembler {
             doc.writeAttribute(ATTR_INITIAL_VALUE, ptype.getInitialValue().toString());
         }
         writeNameDescription(doc, ptype);
-        writeUnitSet(doc, ptype.getUnitSet());
 
         doc.writeStartElement(ELEM_ENCODING);
         if (ptype.getScale() != 1) {
             doc.writeAttribute("scale", Double.toString(ptype.getScale()));
         }
         if (ptype.getOffset() != 0) {
-            doc.writeAttribute("offset", Double.toString(ptype.getScale()));
+            doc.writeAttribute("offset", Double.toString(ptype.getOffset()));
         }
 
         writeDataEncoding(doc, ptype.getEncoding());
@@ -709,6 +717,11 @@ public class XtceAssembler {
             doc.writeAttribute(ATTR_INITIAL_VALUE, type.getInitialValue());
         }
         writeNameDescription(doc, type);
+        writeUnitSet(doc, type.getUnitSet());
+        if (type.getEncoding() != null) {
+            writeDataEncoding(doc, type.getEncoding());
+        }
+
         doc.writeStartElement("EnumerationList");
         for (ValueEnumeration valueEnumeration : type.getValueEnumerationList()) {
             doc.writeStartElement("Enumeration");
@@ -727,12 +740,7 @@ public class XtceAssembler {
             doc.writeAttribute("maxValue", Long.toString((long) ver.getMax()));
             doc.writeEndElement();
         }
-
-        doc.writeEndElement();
-        writeUnitSet(doc, type.getUnitSet());
-        if (type.getEncoding() != null) {
-            writeDataEncoding(doc, type.getEncoding());
-        }
+        doc.writeEndElement(); // EnumerationList
     }
 
     private void writeIntegerArgumentType(XMLStreamWriter doc, IntegerArgumentType atype)
@@ -744,20 +752,26 @@ public class XtceAssembler {
             doc.writeAttribute(ATTR_INITIAL_VALUE, atype.getInitialValue().toString());
         }
         writeNameDescription(doc, atype);
-        if (atype.getValidRange() != null) {
-            IntegerValidRange range = atype.getValidRange();
-            doc.writeStartElement("ValidRange");
-            doc.writeAttribute("minInclusive", String.valueOf(range.getMinInclusive()));
-            doc.writeAttribute("maxInclusive", String.valueOf(range.getMaxInclusive()));
-            if (!range.isValidRangeAppliesToCalibrated()) {
-                doc.writeAttribute("validRangeAppliesToCalibrated", "false");
-            }
-            doc.writeEndElement();
-        }
         writeUnitSet(doc, atype.getUnitSet());
 
         DataEncoding encoding = atype.getEncoding();
         writeDataEncoding(doc, encoding);
+
+        if (atype.getValidRange() != null) {
+            doc.writeStartElement("ValidRangeSet");
+            IntegerValidRange range = atype.getValidRange();
+
+            if (!range.isValidRangeAppliesToCalibrated()) {
+                doc.writeAttribute("validRangeAppliesToCalibrated", "false");
+            }
+
+            doc.writeStartElement("ValidRange");
+            doc.writeAttribute("minInclusive", String.valueOf(range.getMinInclusive()));
+            doc.writeAttribute("maxInclusive", String.valueOf(range.getMaxInclusive()));
+            doc.writeEndElement(); // ValidRange
+
+            doc.writeEndElement(); // ValidRangeSet
+        }
 
         doc.writeEndElement();
     }
@@ -1066,25 +1080,69 @@ public class XtceAssembler {
             doc.writeAttribute(ATTR_ENCODING, encoding.getEncoding());
         }
 
-        doc.writeStartElement(ELEM_SIZE_IN_BITS);
         if (encoding.getSizeInBits() > 0) {
+            doc.writeStartElement(ELEM_SIZE_IN_BITS);
             doc.writeStartElement("Fixed");
             doc.writeStartElement("FixedValue");
             doc.writeCharacters(Integer.toString(encoding.getSizeInBits()));
             doc.writeEndElement();
             doc.writeEndElement();
+
+            if (encoding.getSizeType() == SizeType.LEADING_SIZE) {
+                doc.writeStartElement("LeadingSize");
+                doc.writeAttribute("sizeInBitsOfSizeTag", Integer.toString(encoding.getSizeInBitsOfSizeTag()));
+                doc.writeEndElement();
+            } else if (encoding.getSizeType() == SizeType.TERMINATION_CHAR) {
+                doc.writeStartElement("TerminationChar");
+                doc.writeCharacters(Integer.toHexString(encoding.getTerminationChar()));
+                doc.writeEndElement();
+            }
+            doc.writeEndElement();// SizeInBits
+        } else {
+            doc.writeStartElement(ELEM_VARIABLE);
+
+            // This attribute is required
+            long maxSizeInBits = encoding.getMaxSizeInBytes() * 8L;
+            if (maxSizeInBits > 0) {
+                doc.writeAttribute("maxSizeInBits", Long.toString(maxSizeInBits));
+            } else {
+                doc.writeAttribute("maxSizeInBits", "20000"); // Just set it high.
+            }
+
+            // Required element
+            doc.writeStartElement("DynamicValue");
+            doc.writeStartElement("ParameterInstanceRef");
+            var dynamicIntegerValue = encoding.getDynamicBufferSize();
+            if (dynamicIntegerValue != null) {
+                doc.writeAttribute("parameterRef", dynamicIntegerValue.getParameterInstanceRef().getName());
+            } else {
+                doc.writeAttribute("parameterRef", XtceStaxReader.IGNORED_DYNAMIC_VALUE
+                        .getParameterInstanceRef().getParameter().getName());
+            }
+            doc.writeEndElement(); // ParameterInstanceRef
+            doc.writeEndElement(); // DynamicValue
+
+            if (encoding.getSizeType() == SizeType.LEADING_SIZE) {
+                doc.writeStartElement("LeadingSize");
+                doc.writeAttribute("sizeInBitsOfSizeTag", Integer.toString(encoding.getSizeInBitsOfSizeTag()));
+                doc.writeEndElement();
+            } else if (encoding.getSizeType() == SizeType.TERMINATION_CHAR) {
+                doc.writeStartElement("TerminationChar");
+
+                // hexBinary requires multiples of 2 hex digits
+                var hex = Integer.toHexString(encoding.getTerminationChar());
+                if (hex.length() % 2 == 0) {
+                    doc.writeCharacters(hex);
+                } else {
+                    doc.writeCharacters("0" + hex);
+                }
+
+                doc.writeEndElement();
+            }
+
+            doc.writeEndElement(); // Variable
         }
 
-        if (encoding.getSizeType() == SizeType.LEADING_SIZE) {
-            doc.writeStartElement("LeadingSize");
-            doc.writeAttribute("sizeInBitsOfSizeTag", Integer.toString(encoding.getSizeInBitsOfSizeTag()));
-            doc.writeEndElement();
-        } else if (encoding.getSizeType() == SizeType.TERMINATION_CHAR) {
-            doc.writeStartElement("TerminationChar");
-            doc.writeCharacters(Integer.toHexString(encoding.getTerminationChar()));
-            doc.writeEndElement();
-        }
-        doc.writeEndElement();// SizeInBits
         doc.writeEndElement();// StringDataEncoding
     }
 
@@ -1100,11 +1158,11 @@ public class XtceAssembler {
 
         if (encoding.getFromBinaryTransformAlgorithm() != null) {
             writeCustomAlgorithm(doc, (CustomAlgorithm) encoding.getFromBinaryTransformAlgorithm(),
-                    "FromBinaryTransformAlgorithm");
+                    "FromBinaryTransformAlgorithm", true);
         }
         if (encoding.getToBinaryTransformAlgorithm() != null) {
             writeCustomAlgorithm(doc, (CustomAlgorithm) encoding.getToBinaryTransformAlgorithm(),
-                    "ToBinaryTransformAlgorithm");
+                    "ToBinaryTransformAlgorithm", true);
         }
 
         doc.writeEndElement();// BinaryDataEncoding
@@ -1149,9 +1207,6 @@ public class XtceAssembler {
     }
 
     private static void writeUnitSet(XMLStreamWriter doc, List<UnitType> unitSet) throws XMLStreamException {
-        if (unitSet.isEmpty()) {
-            return;
-        }
         doc.writeStartElement("UnitSet");
         for (UnitType unitType : unitSet) {
             doc.writeStartElement("Unit");
@@ -1189,7 +1244,7 @@ public class XtceAssembler {
             }
             doc.writeEndElement();// BaseMetaCommand
         }
-        if (command.getArgumentList() != null) {
+        if (command.getArgumentList() != null && !command.getArgumentList().isEmpty()) {
             doc.writeStartElement("ArgumentList");
             for (Argument arg : command.getArgumentList()) {
                 writeArgument(doc, arg);
@@ -1199,15 +1254,15 @@ public class XtceAssembler {
         if (command.getCommandContainer() != null) {
             writeCommandContainer(doc, command.getCommandContainer());
         }
-        if (command.getDefaultSignificance() != null) {
-            writeSignificance(doc, command.getDefaultSignificance(), "DefaultSignificance");
-        }
         if (command.hasTransmissionConstraints()) {
             doc.writeStartElement("TransmissionConstraintList");
             for (TransmissionConstraint constraint : command.getTransmissionConstraintList()) {
                 writeTransmissionConstraint(doc, constraint);
             }
             doc.writeEndElement();
+        }
+        if (command.getDefaultSignificance() != null) {
+            writeSignificance(doc, command.getDefaultSignificance(), "DefaultSignificance");
         }
 
         if (command.hasCommandVerifiers()) {
@@ -1281,15 +1336,14 @@ public class XtceAssembler {
         doc.writeAttribute("outputParameterRef", getNameReference(outp.getParameter()));
         writeMathOperation(doc, algorithm.getOperation());
         if (algorithm.getTriggerSet() != null) {
-            doc.writeStartElement("TriggerSet");
             writeTriggerSet(doc, algorithm.getTriggerSet());
-            doc.writeEndElement();// TriggerSet
         }
         doc.writeEndElement();// MathOperation
         doc.writeEndElement();// MathAlgorithm
     }
 
-    private void writeCustomAlgorithm(XMLStreamWriter doc, CustomAlgorithm algorithm, String elementName)
+    private void writeCustomAlgorithm(XMLStreamWriter doc, CustomAlgorithm algorithm, String elementName,
+            boolean inputOnly)
             throws XMLStreamException {
         doc.writeStartElement(elementName);
         writeNameDescription(doc, algorithm);
@@ -1319,20 +1373,24 @@ public class XtceAssembler {
             }
             doc.writeEndElement();// InputSet
         }
-        if (!algorithm.getOutputList().isEmpty()) {
-            doc.writeStartElement("OutputSet");
-            for (OutputParameter outp : algorithm.getOutputList()) {
-                doc.writeStartElement("OutputParameterRef");
-                doc.writeAttribute(ATTR_PARAMETER_REF, getNameReference(outp.getParameter()));
-                doc.writeAttribute("outputName", outp.getOutputName());
-                doc.writeEndElement();
+
+        // Some CustomAlgorithm uses in XTCE only allow an inputset (e.g. verifiers)
+        if (!inputOnly) {
+            if (!algorithm.getOutputList().isEmpty()) {
+                doc.writeStartElement("OutputSet");
+                for (OutputParameter outp : algorithm.getOutputList()) {
+                    doc.writeStartElement("OutputParameterRef");
+                    doc.writeAttribute(ATTR_PARAMETER_REF, getNameReference(outp.getParameter()));
+                    if (outp.getOutputName() != null) {
+                        doc.writeAttribute("outputName", outp.getOutputName());
+                    }
+                    doc.writeEndElement();
+                }
+                doc.writeEndElement();// OutputSet
             }
-            doc.writeEndElement();// OutputSet
-        }
-        if (algorithm.getTriggerSet() != null) {
-            doc.writeStartElement("TriggerSet");
-            writeTriggerSet(doc, algorithm.getTriggerSet());
-            doc.writeEndElement();// TriggerSet
+            if (algorithm.getTriggerSet() != null) {
+                writeTriggerSet(doc, algorithm.getTriggerSet());
+            }
         }
         doc.writeEndElement();// elementName
     }
@@ -1489,7 +1547,7 @@ public class XtceAssembler {
     }
 
     private void writeCondition(XMLStreamWriter doc, Condition condition) throws XMLStreamException {
-        doc.writeStartElement("Condition");
+        doc.writeStartElement(ELEM_CONDITION);
         ParameterOrArgumentRef ref = condition.getLeftRef();
         if (ref instanceof ParameterInstanceRef) {
             writeParameterInstanceRef(doc, ELEM_PARAMETER_INSTANCE_REF, (ParameterInstanceRef) ref);
@@ -1497,15 +1555,19 @@ public class XtceAssembler {
             writeParameterInstanceRef(doc, ELEM_PARAMETER_INSTANCE_REF, (ArgumentInstanceRef) ref);
         }
 
-        doc.writeStartElement("ComparisonOperator");
+        doc.writeStartElement(ELEM_COMPARISON_OPERATOR);
         doc.writeCharacters(condition.getComparisonOperator().getSymbol());
         doc.writeEndElement();
 
         ref = condition.getRightRef();
         if (ref instanceof ParameterInstanceRef) {
             writeParameterInstanceRef(doc, ELEM_PARAMETER_INSTANCE_REF, (ParameterInstanceRef) ref);
-        } else {
+        } else if (ref instanceof ArgumentInstanceRef) {
             writeParameterInstanceRef(doc, ELEM_PARAMETER_INSTANCE_REF, (ArgumentInstanceRef) ref);
+        } else {
+            doc.writeStartElement(ELEM_VALUE);
+            doc.writeCharacters(condition.getRightValue());
+            doc.writeEndElement();
         }
         doc.writeEndElement();
     }
@@ -1557,13 +1619,17 @@ public class XtceAssembler {
         if (constraint.getTimeout() > 0) {
             Duration d = dataTypeFactory.newDuration(constraint.getTimeout());
             doc.writeAttribute("timeOut", d.toString());
-            writeMatchCriteria(doc, constraint.getMatchCriteria());
         }
+        writeMatchCriteria(doc, constraint.getMatchCriteria());
         doc.writeEndElement();// TransmissionConstraint
     }
 
-    private void writeCommandVerifier(XMLStreamWriter doc, CommandVerifier verifier)
-            throws XMLStreamException {
+    private void writeCommandVerifier(XMLStreamWriter doc, CommandVerifier verifier) throws XMLStreamException {
+        if (!XTCE_VERIFIER_STAGES.contains(verifier.getStage())) {
+            log.warn("The verifier stage '{}' cannot be mapped to XTCE. Allowed XTCE stages: {}", verifier.getStage(),
+                    XTCE_VERIFIER_STAGES);
+            return;
+        }
         doc.writeStartElement(verifier.getStage() + "Verifier");
         switch (verifier.getType()) {
         case MATCH_CRITERIA:
@@ -1575,7 +1641,7 @@ public class XtceAssembler {
             doc.writeEndElement();
             break;
         case ALGORITHM:
-            writeCustomAlgorithm(doc, (CustomAlgorithm) verifier.getAlgorithm(), "CustomAlgorithm");
+            writeCustomAlgorithm(doc, (CustomAlgorithm) verifier.getAlgorithm(), "CustomAlgorithm", true);
             break;
         case PARAMETER_VALUE_CHANGE:
             ParameterValueChange pvc = verifier.getParameterValueChange();

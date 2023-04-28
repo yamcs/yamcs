@@ -50,17 +50,17 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
         initialDelay = config.getLong("initialDelay", -1);
         // Input stream defaults to GenericPacketInputStream
         if (config.containsKey("packetInputStreamClassName")) {
-            this.packetInputStreamClassName = config.getString("packetInputStreamClassName");
-            this.packetInputStreamArgs = config.getConfig("packetInputStreamArgs");
+            packetInputStreamClassName = config.getString("packetInputStreamClassName");
+            packetInputStreamArgs = config.getConfigOrEmpty("packetInputStreamArgs");
         } else {
-            this.packetInputStreamClassName = GenericPacketInputStream.class.getName();
+            packetInputStreamClassName = GenericPacketInputStream.class.getName();
             HashMap<String, Object> m = new HashMap<>();
             m.put("maxPacketLength", 1000);
             m.put("lengthFieldOffset", 4);
             m.put("lengthFieldLength", 2);
             m.put("lengthAdjustment", 7);
             m.put("initialBytesToStrip", 0);
-            this.packetInputStreamArgs = YConfiguration.wrap(m);
+            packetInputStreamArgs = YConfiguration.wrap(m);
         }
 
         // Setup tc postprocessor
@@ -145,7 +145,7 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
                 byte[] packet = packetInputStream.readPacket();
                 updateStats(packet.length);
                 TmPacket pkt = new TmPacket(timeService.getMissionTime(), packet);
-                pkt.setEarthRceptionTime(timeService.getHresMissionTime());
+                pkt.setEarthReceptionTime(timeService.getHresMissionTime());
                 pwt = packetPreprocessor.process(pkt);
                 if (pwt != null) {
                     break;
@@ -321,9 +321,9 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
             return String.format("DISABLED (should connect to %s:%d)", host, port);
         }
         if (isSocketOpen()) {
-            return String.format("Not connected to %s:%d", host, port);
-        } else {
             return String.format("OK, connected to %s:%d", host, port);
+        } else {
+            return String.format("Not connected to %s:%d", host, port);
         }
     }
 

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.yamcs.YamcsServer;
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
@@ -52,7 +53,8 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
 
     @Override
     public void listBuckets(Context ctx, ListBucketsRequest request, Observer<ListBucketsResponse> observer) {
-        YarchDatabaseInstance yarch = getYarch(request.getInstance());
+        var instance = request.hasInstance() ? request.getInstance() : YamcsServer.GLOBAL_INSTANCE;
+        YarchDatabaseInstance yarch = getYarch(instance);
         try {
             List<Bucket> buckets = yarch.listBuckets().stream()
                     .filter(bucket -> mayReadBucket(bucket.getName(), ctx.user))
@@ -69,7 +71,7 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
 
     @Override
     public void getBucket(Context ctx, GetBucketRequest request, Observer<BucketInfo> observer) {
-        String instance = request.getInstance();
+        var instance = request.hasInstance() ? request.getInstance() : YamcsServer.GLOBAL_INSTANCE;
         String bucketName = request.getBucketName();
 
         checkReadBucketPrivilege(bucketName, ctx.user);
@@ -102,7 +104,8 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
         ctx.checkSystemPrivilege(SystemPrivilege.ManageAnyBucket);
 
         verifyBucketName(request.getName());
-        YarchDatabaseInstance yarch = getYarch(request.getInstance());
+        var instance = request.hasInstance() ? request.getInstance() : YamcsServer.GLOBAL_INSTANCE;
+        YarchDatabaseInstance yarch = getYarch(instance);
         try {
             if (yarch.getBucket(request.getName()) != null) {
                 throw new BadRequestException("A bucket with the name '" + request.getName() + "' already exist");
@@ -118,10 +121,10 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
     public void deleteBucket(Context ctx, DeleteBucketRequest request, Observer<Empty> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ManageAnyBucket);
 
-        String instance = request.getInstance();
+        var instance = request.hasInstance() ? request.getInstance() : YamcsServer.GLOBAL_INSTANCE;
         String bucketName = request.getBucketName();
 
-        YarchDatabaseInstance yarch = getYarch(request.getInstance());
+        YarchDatabaseInstance yarch = getYarch(instance);
         Bucket b = verifyAndGetBucket(instance, bucketName, ctx.user);
         try {
             yarch.deleteBucket(b.getName());
@@ -133,7 +136,7 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
 
     @Override
     public void getObject(Context ctx, GetObjectRequest request, Observer<HttpBody> observer) {
-        String instance = request.getInstance();
+        var instance = request.hasInstance() ? request.getInstance() : YamcsServer.GLOBAL_INSTANCE;
         String bucketName = request.getBucketName();
         checkReadBucketPrivilege(bucketName, ctx.user);
 
@@ -160,7 +163,7 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
 
     @Override
     public void uploadObject(Context ctx, UploadObjectRequest request, Observer<Empty> observer) {
-        String instance = request.getInstance();
+        var instance = request.hasInstance() ? request.getInstance() : YamcsServer.GLOBAL_INSTANCE;
         String bucketName = request.getBucketName();
 
         checkManageBucketPrivilege(bucketName, ctx.user);
@@ -190,7 +193,7 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
 
     @Override
     public void listObjects(Context ctx, ListObjectsRequest request, Observer<ListObjectsResponse> observer) {
-        String instance = request.getInstance();
+        var instance = request.hasInstance() ? request.getInstance() : YamcsServer.GLOBAL_INSTANCE;
         String bucketName = request.getBucketName();
 
         checkReadBucketPrivilege(bucketName, ctx.user);
@@ -242,7 +245,7 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
 
     @Override
     public void deleteObject(Context ctx, DeleteObjectRequest request, Observer<Empty> observer) {
-        String instance = request.getInstance();
+        var instance = request.hasInstance() ? request.getInstance() : YamcsServer.GLOBAL_INSTANCE;
         String bucketName = request.getBucketName();
         checkManageBucketPrivilege(bucketName, ctx.user);
 
@@ -317,7 +320,7 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
     }
 
     static YarchDatabaseInstance getYarch(String instance) throws HttpException {
-        String yamcsInstance = ManagementApi.verifyInstance(instance, true);
+        String yamcsInstance = InstancesApi.verifyInstance(instance, true);
         return YarchDatabase.getInstance(yamcsInstance);
     }
 

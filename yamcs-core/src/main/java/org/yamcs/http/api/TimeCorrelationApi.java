@@ -33,14 +33,14 @@ public class TimeCorrelationApi extends AbstractTimeCorrelationApi<Context> {
 
     @Override
     public void getConfig(Context ctx, GetTcoConfigRequest request, Observer<TcoConfig> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         TimeCorrelationService tco = verifyService(ctx, instance, request.getServiceName());
         observer.complete(tco.getTcoConfig());
     }
 
     @Override
     public void setConfig(Context ctx, SetTcoConfigRequest request, Observer<Empty> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         TimeCorrelationService tco = verifyService(ctx, instance, request.getServiceName());
 
         TcoConfig conf = request.getConfig();
@@ -73,7 +73,7 @@ public class TimeCorrelationApi extends AbstractTimeCorrelationApi<Context> {
 
     @Override
     public void getStatus(Context ctx, GetTcoStatusRequest request, Observer<TcoStatus> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         TimeCorrelationService tco = verifyService(ctx, instance, request.getServiceName());
 
         observer.complete(tco.getStatus());
@@ -81,7 +81,7 @@ public class TimeCorrelationApi extends AbstractTimeCorrelationApi<Context> {
 
     @Override
     public void setCoefficients(Context ctx, SetCoefficientsRequest request, Observer<Empty> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         TimeCorrelationService tco = verifyService(ctx, instance, request.getServiceName());
         if (!request.hasCoefficients()) {
             throw new BadRequestException("no coefficients provided");
@@ -103,7 +103,7 @@ public class TimeCorrelationApi extends AbstractTimeCorrelationApi<Context> {
 
     @Override
     public void reset(Context ctx, TcoResetRequest request, Observer<Empty> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         TimeCorrelationService tco = verifyService(ctx, instance, request.getServiceName());
         tco.reset();
         observer.complete();
@@ -112,7 +112,7 @@ public class TimeCorrelationApi extends AbstractTimeCorrelationApi<Context> {
     @Override
     public void addTimeOfFlightIntervals(Context ctx, AddTimeOfFlightIntervalsRequest request,
             Observer<Empty> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         TimeCorrelationService tco = verifyService(ctx, instance, request.getServiceName());
         TimeOfFlightEstimator tofEstimator = tco.getTofEstimator();
         if (tofEstimator == null) {
@@ -146,7 +146,7 @@ public class TimeCorrelationApi extends AbstractTimeCorrelationApi<Context> {
     @Override
     public void deleteTimeOfFlightIntervals(Context ctx, DeleteTimeOfFlightIntervalsRequest request,
             Observer<Empty> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         TimeCorrelationService tco = verifyService(ctx, instance, request.getServiceName());
         TimeOfFlightEstimator tofEstimator = tco.getTofEstimator();
         Instant start = verifyInstant("start", request.getStart());

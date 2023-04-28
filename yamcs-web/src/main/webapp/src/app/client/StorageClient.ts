@@ -7,49 +7,49 @@ export class StorageClient {
   constructor(private yamcs: YamcsClient) {
   }
 
-  async createBucket(instance: string, options: CreateBucketRequest) {
+  async createBucket(options: CreateBucketRequest) {
     const body = JSON.stringify(options);
-    return await this.yamcs.doFetch(`${this.yamcs.apiUrl}/buckets/${instance}`, {
+    return await this.yamcs.doFetch(`${this.yamcs.apiUrl}/storage/buckets`, {
       body,
       method: 'POST',
     });
   }
 
-  async getBuckets(instance: string): Promise<Bucket[]> {
-    const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/buckets/${instance}`);
+  async getBuckets(): Promise<Bucket[]> {
+    const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/storage/buckets`);
     const wrapper = await response.json() as BucketsWrapper;
     return wrapper.buckets || [];
   }
 
-  async getBucket(instance: string, bucket: string): Promise<Bucket> {
-    const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/buckets/${instance}/${bucket}`);
+  async getBucket(bucket: string): Promise<Bucket> {
+    const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/storage/buckets/${bucket}`);
     return await response.json() as Bucket;
   }
 
-  async deleteBucket(instance: string, name: string) {
-    const url = `${this.yamcs.apiUrl}/buckets/${instance}/${name}`;
+  async deleteBucket(bucket: string) {
+    const url = `${this.yamcs.apiUrl}/storage/buckets/${bucket}`;
     return await this.yamcs.doFetch(url, {
       method: 'DELETE',
     });
   }
 
-  async listObjects(instance: string, bucket: string, options: ListObjectsOptions = {}): Promise<ListObjectsResponse> {
-    const url = `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}/objects`;
+  async listObjects(bucket: string, options: ListObjectsOptions = {}): Promise<ListObjectsResponse> {
+    const url = `${this.yamcs.apiUrl}/storage/buckets/${bucket}/objects`;
     const response = await this.yamcs.doFetch(url + this.queryString(options));
     return await response.json() as ListObjectsResponse;
   }
 
-  async getObject(instance: string, bucket: string, objectName: string) {
-    return await this.yamcs.doFetch(this.getObjectURL(instance, bucket, objectName));
+  async getObject(bucket: string, objectName: string) {
+    return await this.yamcs.doFetch(this.getObjectURL(bucket, objectName));
   }
 
-  getObjectURL(instance: string, bucket: string, objectName: string) {
+  getObjectURL(bucket: string, objectName: string) {
     const encodedName = this.encodeObjectName(objectName);
-    return `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}/objects/${encodedName}`;
+    return `${this.yamcs.apiUrl}/storage/buckets/${bucket}/objects/${encodedName}`;
   }
 
-  async uploadObject(instance: string, bucket: string, name: string, value: Blob | File) {
-    const url = `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}/objects`;
+  async uploadObject(bucket: string, name: string, value: Blob | File) {
+    const url = `${this.yamcs.apiUrl}/storage/buckets/${bucket}/objects`;
     const formData = new FormData();
     formData.set(name, value, name);
     return await this.yamcs.doFetch(url, {
@@ -58,8 +58,8 @@ export class StorageClient {
     });
   }
 
-  async deleteObject(instance: string, bucket: string, objectName: string) {
-    const url = `${this.yamcs.apiUrl}/buckets/${instance}/${bucket}/objects/${encodeURIComponent(objectName)}`;
+  async deleteObject(bucket: string, objectName: string) {
+    const url = `${this.yamcs.apiUrl}/storage/buckets/${bucket}/objects/${encodeURIComponent(objectName)}`;
     return await this.yamcs.doFetch(url, {
       method: 'DELETE',
     });

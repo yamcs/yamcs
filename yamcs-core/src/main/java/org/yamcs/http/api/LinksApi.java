@@ -58,7 +58,7 @@ public class LinksApi extends AbstractLinksApi<Context> {
         var responseb = ListLinksResponse.newBuilder();
 
         if (request.hasInstance()) {
-            var linkManager = ManagementApi.verifyInstanceObj(request.getInstance()).getLinkManager();
+            var linkManager = InstancesApi.verifyInstanceObj(request.getInstance()).getLinkManager();
             for (var link : linkManager.getLinks()) {
                 responseb.addLinks(toLink(request.getInstance(), link));
             }
@@ -77,8 +77,8 @@ public class LinksApi extends AbstractLinksApi<Context> {
     @Override
     public void subscribeLinks(Context ctx, SubscribeLinksRequest request, Observer<LinkEvent> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadLinks);
-        String instance = ManagementApi.verifyInstance(request.getInstance());
-        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(instance);
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(instance);
 
         LinkManager linkManager = ysi.getLinkManager();
         for (Link link : linkManager.getLinks()) {
@@ -143,7 +143,7 @@ public class LinksApi extends AbstractLinksApi<Context> {
     public void enableLink(Context ctx, EnableLinkRequest request, Observer<LinkInfo> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlLinks);
         Link link = verifyLink(request.getInstance(), request.getLink());
-        LinkManager lmgr = ManagementApi.verifyInstanceObj(request.getInstance()).getLinkManager();
+        LinkManager lmgr = InstancesApi.verifyInstanceObj(request.getInstance()).getLinkManager();
         try {
             lmgr.enableLink(link.getName());
         } catch (IllegalArgumentException e) {
@@ -157,7 +157,7 @@ public class LinksApi extends AbstractLinksApi<Context> {
     public void disableLink(Context ctx, DisableLinkRequest request, Observer<LinkInfo> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlLinks);
         Link link = verifyLink(request.getInstance(), request.getLink());
-        LinkManager lmgr = ManagementApi.verifyInstanceObj(request.getInstance()).getLinkManager();
+        LinkManager lmgr = InstancesApi.verifyInstanceObj(request.getInstance()).getLinkManager();
         try {
             lmgr.disableLink(link.getName());
         } catch (IllegalArgumentException e) {
@@ -171,7 +171,7 @@ public class LinksApi extends AbstractLinksApi<Context> {
     public void resetLinkCounters(Context ctx, ResetLinkCountersRequest request, Observer<LinkInfo> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlLinks);
         Link link = verifyLink(request.getInstance(), request.getLink());
-        LinkManager lmgr = ManagementApi.verifyInstanceObj(request.getInstance()).getLinkManager();
+        LinkManager lmgr = InstancesApi.verifyInstanceObj(request.getInstance()).getLinkManager();
         try {
             lmgr.resetCounters(link.getName());
         } catch (IllegalArgumentException e) {
@@ -192,7 +192,7 @@ public class LinksApi extends AbstractLinksApi<Context> {
             state = request.getState();
         }
 
-        LinkManager lmgr = ManagementApi.verifyInstanceObj(request.getInstance()).getLinkManager();
+        LinkManager lmgr = InstancesApi.verifyInstanceObj(request.getInstance()).getLinkManager();
         if (state != null) {
             switch (state.toLowerCase()) {
             case "enabled":
@@ -240,7 +240,7 @@ public class LinksApi extends AbstractLinksApi<Context> {
             throw new InternalServerErrorException(e);
         }
 
-        var linkManager = ManagementApi.verifyInstanceObj(request.getInstance()).getLinkManager();
+        var linkManager = InstancesApi.verifyInstanceObj(request.getInstance()).getLinkManager();
         var link = linkManager.getLink(request.getLink());
 
         if (link instanceof LinkActionProvider) {
@@ -271,7 +271,7 @@ public class LinksApi extends AbstractLinksApi<Context> {
     }
 
     public static Link verifyLink(String instance, String linkName) {
-        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(instance);
+        YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(instance);
         LinkManager lmgr = ysi.getLinkManager();
         Link link = lmgr.getLink(linkName);
         if (link == null) {

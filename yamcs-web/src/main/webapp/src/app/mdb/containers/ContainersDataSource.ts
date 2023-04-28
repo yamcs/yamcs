@@ -26,6 +26,20 @@ export class ContainersDataSource extends DataSource<Container> {
     });
   }
 
+  getAliasNamespaces() {
+    const namespaces: string[] = [];
+    for (const container of this.containers$.value) {
+      if (container.alias) {
+        for (const alias of container.alias) {
+          if (alias.namespace && namespaces.indexOf(alias.namespace) === -1) {
+            namespaces.push(alias.namespace);
+          }
+        }
+      }
+    }
+    return namespaces.sort();
+  }
+
   disconnect() {
     this.containers$.complete();
     this.totalSize$.complete();

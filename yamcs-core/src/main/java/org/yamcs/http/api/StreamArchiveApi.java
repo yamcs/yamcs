@@ -57,7 +57,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
     @Override
     public void listParameterGroups(Context ctx, ListParameterGroupsRequest request,
             Observer<ParameterGroupInfo> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
         ParameterGroupInfo.Builder responseb = ParameterGroupInfo.newBuilder();
@@ -78,7 +78,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
     @Override
     public void listParameterHistory(Context ctx, ListParameterHistoryRequest request,
             Observer<ListParameterHistoryResponse> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         String pathName = request.getName();
@@ -151,7 +151,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
     @Override
     public void getParameterSamples(Context ctx, GetParameterSamplesRequest request,
             Observer<TimeSeries> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         Parameter p = MdbApi.verifyParameter(ctx, mdb, request.getName());
@@ -208,7 +208,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
     @Override
     public void streamParameterValues(Context ctx, StreamParameterValuesRequest request,
             Observer<ParameterData> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
 
         ReplayOptions repl = ReplayOptions.getAfapReplay();
         List<NamedObjectId> ids = new ArrayList<>();
@@ -272,7 +272,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
     @Override
     public void exportParameterValues(Context ctx, ExportParameterValuesRequest request, Observer<HttpBody> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
 
         ReplayOptions repl = ReplayOptions.getAfapReplay();
 

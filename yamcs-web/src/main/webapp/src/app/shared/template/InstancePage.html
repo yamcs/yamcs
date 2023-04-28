@@ -3,150 +3,157 @@
 <mat-sidenav-container class="mat-typography"
                        [class.message-bar-visible]="messageBar.show$ | async">
   <mat-sidenav mode="side" [opened]="sidebar$ | async" [disableClose]="true">
-    <mat-toolbar class="top module-title" (click)="searchInput.focus()" style="cursor: text">
-      <mat-toolbar-row style="cursor: text">
-        <mat-icon style="cursor: text">search</mat-icon>
-        <input #searchInput
-               type="text"
-               class="search-input"
-               placeholder="Search parameter"
-               autocomplete="off"
-               spellcheck="false"
-               [formControl]="searchControl"
-               [matAutocomplete]="auto"
-               (document:keydown)="handleKeydown($event)">
-        <mat-autocomplete #auto
-                          class="ya-autocomplete"
-                          panelWidth="400px"
-                          (optionSelected)="onSearchSelect($event)">
-          <mat-option *ngFor="let option of filteredOptions | async"
-                      [value]="option | memberPath">
-            {{ option | memberPath}}
-          </mat-option>
-        </mat-autocomplete>
-      </mat-toolbar-row>
-    </mat-toolbar>
+    <div class="sidenav-content">
+      <mat-toolbar class="top module-title" (click)="searchInput.focus()" style="cursor: text">
+        <mat-toolbar-row style="cursor: text">
+          <mat-icon style="cursor: text">search</mat-icon>
+          <input #searchInput
+                 type="text"
+                 class="search-input"
+                 placeholder="Search parameter"
+                 autocomplete="off"
+                 spellcheck="false"
+                 [formControl]="searchControl"
+                 [matAutocomplete]="auto"
+                 (document:keydown)="handleKeydown($event)">
+          <mat-autocomplete #auto
+                            class="ya-autocomplete"
+                            panelWidth="400px"
+                            (optionSelected)="onSearchSelect($event)">
+            <mat-option *ngFor="let option of filteredOptions | async"
+                        [value]="option | memberPath">
+              {{ option | memberPath}}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-toolbar-row>
+      </mat-toolbar>
 
-    <mat-nav-list dense>
-      <app-sidebar-nav-item routerLink="/instance"
-                            [queryParams]="{c: yamcs.context}">
-        <mat-icon class="item-icon">home</mat-icon>
-        Home
-      </app-sidebar-nav-item>
-      <app-sidebar-nav-item routerLink="/links"
-                            [queryParams]="{c: yamcs.context}"
-                            *ngIf="showLinksItem()">
-        <mat-icon class="item-icon">swap_horiz</mat-icon>
-        Links
-      </app-sidebar-nav-item>
-      <app-sidebar-nav-group *ngIf="telemetryItems.length"
-                             label="Telemetry" icon="speed"
-                             [active]="telemetryActive"
-                             [expanded]="telemetryExpanded"
-                             (toggle)="toggleTelemetryGroup()">
-        <app-sidebar-nav-item *ngFor="let item of telemetryItems"
-                              [routerLink]="'/telemetry/'+ item.path"
-                              [queryParams]="{c: yamcs.context}"
-                              [exact]="item.path === ''"
-                              [subitem]="true">
-          {{ item.label }}
-        </app-sidebar-nav-item>
-      </app-sidebar-nav-group>
-
-      <app-sidebar-nav-item *ngIf="showAlgorithmsItem()"
-                            routerLink="/algorithms"
-                            [queryParams]="{c: yamcs.context}">
-        <mat-icon class="item-icon">transform</mat-icon>
-        Algorithms
-      </app-sidebar-nav-item>
-
-      <app-sidebar-nav-item *ngIf="showEventsItem()"
-                            routerLink="/events"
-                            [queryParams]="{c: yamcs.context}">
-        <mat-icon class="item-icon">event_note</mat-icon>
-        Events
-      </app-sidebar-nav-item>
-
-      <ng-container *ngIf="showAlarmsItem()">
-        <app-alarm-label *ngIf="(connectionInfo$ | async)?.processor?.hasAlarms">
-        </app-alarm-label>
-        <app-sidebar-nav-item *ngIf="!(connectionInfo$ | async)?.processor?.hasAlarms"
-                              routerLink="/alarms"
+      <mat-nav-list dense>
+        <app-sidebar-nav-item routerLink="/instance"
                               [queryParams]="{c: yamcs.context}">
-          <mat-icon class="item-icon">notifications_none</mat-icon>
-          Alarms
+          <mat-icon class="item-icon">home</mat-icon>
+          Home
         </app-sidebar-nav-item>
-      </ng-container>
-
-      <app-sidebar-nav-group *ngIf="commandingItems.length"
-                             label="Commanding" icon="rss_feed"
-                             [active]="commandingActive"
-                             [expanded]="commandingExpanded"
-                             (toggle)="toggleCommandingGroup()">
-        <app-sidebar-nav-item *ngFor="let item of commandingItems"
-                              [routerLink]="'/commanding/' + item.path"
+        <app-sidebar-nav-item routerLink="/links"
                               [queryParams]="{c: yamcs.context}"
-                              [exact]="item.path === ''"
-                              [subitem]="true">
-          {{ item.label }}
+                              *ngIf="showLinksItem()">
+          <mat-icon class="item-icon">swap_horiz</mat-icon>
+          Links
         </app-sidebar-nav-item>
-      </app-sidebar-nav-group>
-
-      <ng-container *ngIf="((connectionInfo$ | async)?.instance?.capabilities | arrayContains:'timeline')">
-        <app-sidebar-nav-group *ngIf=" timelineItems.length"
-                               label="Timeline" icon="view_timeline"
-                               [active]="timelineActive"
-                               [expanded]="timelineExpanded"
-                               (toggle)="toggleTimelineGroup()">
-          <app-sidebar-nav-item *ngFor="let item of timelineItems"
-                                [routerLink]="'/timeline/' + item.path"
+        <app-sidebar-nav-group *ngIf="telemetryItems.length"
+                               label="Telemetry" icon="speed"
+                               [active]="telemetryActive"
+                               [expanded]="telemetryExpanded"
+                               (toggle)="toggleTelemetryGroup()">
+          <app-sidebar-nav-item *ngFor="let item of telemetryItems"
+                                [routerLink]="'/telemetry/'+ item.path"
                                 [queryParams]="{c: yamcs.context}"
                                 [exact]="item.path === ''"
                                 [subitem]="true">
             {{ item.label }}
           </app-sidebar-nav-item>
         </app-sidebar-nav-group>
-      </ng-container>
 
-      <app-sidebar-nav-item *ngIf="((connectionInfo$ | async)?.instance?.capabilities | arrayContains:'file-transfer') && showFileTransferItem()"
-                            routerLink="/filetransfer"
-                            [queryParams]="{c: yamcs.context}">
-        <mat-icon class="item-icon">file_copy</mat-icon>
-        File Transfer
-      </app-sidebar-nav-item>
-
-      <app-sidebar-nav-group *ngIf="mdbItems.length"
-                             label="Mission Database" icon="auto_stories"
-                             [active]="mdbActive"
-                             [expanded]="mdbExpanded"
-                             (toggle)="toggleMdbGroup()">
-        <app-sidebar-nav-item *ngFor="let item of mdbItems"
-                              [routerLink]="'/mdb/' + item.path"
-                              [queryParams]="{c: yamcs.context}"
-                              [exact]="item.path === ''"
-                              [subitem]="true">
-          {{ item.label }}
+        <app-sidebar-nav-item *ngIf="showAlgorithmsItem()"
+                              routerLink="/algorithms"
+                              [queryParams]="{c: yamcs.context}">
+          <mat-icon class="item-icon">transform</mat-icon>
+          Algorithms
         </app-sidebar-nav-item>
-      </app-sidebar-nav-group>
 
-      <app-sidebar-nav-item *ngIf="showArchiveBrowserItem()"
-                            routerLink="/archive"
-                            [queryParams]="{c: yamcs.context}">
-        <mat-icon class="item-icon">inventory_2</mat-icon>
-        Archive Browser
-      </app-sidebar-nav-item>
-
-      <ng-container *ngIf="extraItems.length">
-        <mat-divider class="extra"></mat-divider>
-        <app-sidebar-nav-item *ngFor="let item of extraItems"
-                              [routerLink]="'/' + item.path"
-                              [queryParams]="{c: yamcs.context}"
-                              [exact]="item.path === ''">
-          <mat-icon class="item-icon">{{ item.icon || 'loupe' }}</mat-icon>
-          {{ item.label }}
+        <app-sidebar-nav-item *ngIf="showEventsItem()"
+                              routerLink="/events"
+                              [queryParams]="{c: yamcs.context}">
+          <mat-icon class="item-icon">event_note</mat-icon>
+          Events
         </app-sidebar-nav-item>
-      </ng-container>
-    </mat-nav-list>
+
+        <ng-container *ngIf="showAlarmsItem()">
+          <app-alarm-label *ngIf="(connectionInfo$ | async)?.processor?.hasAlarms">
+          </app-alarm-label>
+          <app-sidebar-nav-item *ngIf="!(connectionInfo$ | async)?.processor?.hasAlarms"
+                                routerLink="/alarms"
+                                [queryParams]="{c: yamcs.context}">
+            <mat-icon class="item-icon">notifications_none</mat-icon>
+            Alarms
+          </app-sidebar-nav-item>
+        </ng-container>
+
+        <app-sidebar-nav-group *ngIf="commandingItems.length"
+                               label="Commanding" icon="rss_feed"
+                               [active]="commandingActive"
+                               [expanded]="commandingExpanded"
+                               (toggle)="toggleCommandingGroup()">
+          <app-sidebar-nav-item *ngFor="let item of commandingItems"
+                                [routerLink]="'/commanding/' + item.path"
+                                [queryParams]="{c: yamcs.context}"
+                                [exact]="item.path === ''"
+                                [subitem]="true">
+            {{ item.label }}
+          </app-sidebar-nav-item>
+        </app-sidebar-nav-group>
+
+        <ng-container *ngIf="((connectionInfo$ | async)?.instance?.capabilities | arrayContains:'timeline')">
+          <app-sidebar-nav-group *ngIf=" timelineItems.length"
+                                 label="Timeline" icon="view_timeline"
+                                 [active]="timelineActive"
+                                 [expanded]="timelineExpanded"
+                                 (toggle)="toggleTimelineGroup()">
+            <app-sidebar-nav-item *ngFor="let item of timelineItems"
+                                  [routerLink]="'/timeline/' + item.path"
+                                  [queryParams]="{c: yamcs.context}"
+                                  [exact]="item.path === ''"
+                                  [subitem]="true">
+              {{ item.label }}
+            </app-sidebar-nav-item>
+          </app-sidebar-nav-group>
+        </ng-container>
+
+        <app-sidebar-nav-item *ngIf="((connectionInfo$ | async)?.instance?.capabilities | arrayContains:'file-transfer') && showFileTransferItem()"
+                              routerLink="/filetransfer"
+                              [queryParams]="{c: yamcs.context}">
+          <mat-icon class="item-icon">file_copy</mat-icon>
+          File Transfer
+        </app-sidebar-nav-item>
+
+        <app-sidebar-nav-group *ngIf="mdbItems.length"
+                               label="Mission Database" icon="auto_stories"
+                               [active]="mdbActive"
+                               [expanded]="mdbExpanded"
+                               (toggle)="toggleMdbGroup()">
+          <app-sidebar-nav-item *ngFor="let item of mdbItems"
+                                [routerLink]="'/mdb/' + item.path"
+                                [queryParams]="{c: yamcs.context}"
+                                [exact]="item.path === ''"
+                                [subitem]="true">
+            {{ item.label }}
+          </app-sidebar-nav-item>
+        </app-sidebar-nav-group>
+
+        <app-sidebar-nav-item *ngIf="showArchiveBrowserItem()"
+                              routerLink="/archive"
+                              [queryParams]="{c: yamcs.context}">
+          <mat-icon class="item-icon">inventory_2</mat-icon>
+          Archive Browser
+        </app-sidebar-nav-item>
+
+        <ng-container *ngIf="extraItems.length">
+          <mat-divider class="extra"></mat-divider>
+          <app-sidebar-nav-item *ngFor="let item of extraItems"
+                                [routerLink]="'/' + item.path"
+                                [queryParams]="{c: yamcs.context}"
+                                [exact]="item.path === ''">
+            <mat-icon class="item-icon">{{ item.icon || 'loupe' }}</mat-icon>
+            {{ item.label }}
+          </app-sidebar-nav-item>
+        </ng-container>
+      </mat-nav-list>
+
+      <div style="flex: 1 1 auto"></div>
+      <div class="navbar-logo" *ngIf="config.logo">
+        <img [src]="config.logo">
+      </div>
+    </div>
   </mat-sidenav>
 
   <mat-sidenav-content>

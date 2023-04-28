@@ -168,7 +168,7 @@ public class Processor extends AbstractService {
         }
         if (config.recordInitialValues || config.recordLocalValues) {
             if (pps == null) {
-                throw new ConfigurationException("recordInitialValue is set to true but the stream '"
+                throw new ConfigurationException("recordInitialValues is set to true but the stream '"
                         + PROC_PARAMETERS_STREAM + "' does not exist");
             }
             streamParameterSender.sendParameters(processorData.getLastValueCache().getValues());

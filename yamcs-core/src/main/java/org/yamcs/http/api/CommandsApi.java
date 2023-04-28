@@ -254,7 +254,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
 
     @Override
     public void listCommands(Context ctx, ListCommandsRequest request, Observer<ListCommandsResponse> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         if (ydb.getTable(CommandHistoryRecorder.TABLE_NAME) == null) {
@@ -344,7 +344,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
 
     @Override
     public void getCommand(Context ctx, GetCommandRequest request, Observer<CommandHistoryEntry> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
 
         Matcher matcher = PATTERN_COMMAND_ID.matcher(request.getId());
         if (!matcher.matches()) {
@@ -385,7 +385,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
 
     @Override
     public void exportCommand(Context ctx, ExportCommandRequest request, Observer<HttpBody> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
 
         Matcher matcher = PATTERN_COMMAND_ID.matcher(request.getId());
         if (!matcher.matches()) {
@@ -442,7 +442,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
     @Override
     public void subscribeCommands(Context ctx, SubscribeCommandsRequest request,
             Observer<CommandHistoryEntry> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         Processor processor = ProcessingApi.verifyProcessor(instance, request.getProcessor());
         if (!processor.hasCommanding() || processor.getCommandHistoryManager() == null) {
             return; // No Error, just send no data
@@ -501,7 +501,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
 
     @Override
     public void streamCommands(Context ctx, StreamCommandsRequest request, Observer<CommandHistoryEntry> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
 
         // Quick-check in case the user is specific
         ctx.checkObjectPrivileges(ObjectPrivilegeType.CommandHistory, request.getNameList());

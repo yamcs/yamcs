@@ -27,7 +27,6 @@ export class BucketObjectsPage implements OnDestroy {
   @ViewChild('uploader')
   private uploaderEl: ElementRef<HTMLInputElement>;
 
-  bucketInstance: string;
   name: string;
 
   breadcrumb$ = new BehaviorSubject<BreadCrumbItem[]>([]);
@@ -55,7 +54,6 @@ export class BucketObjectsPage implements OnDestroy {
     yamcs: YamcsService,
     title: Title,
   ) {
-    this.bucketInstance = route.snapshot.parent!.parent!.paramMap.get('instance')!;
     this.name = route.snapshot.parent!.parent!.paramMap.get('name')!;
     title.setTitle(this.name);
     this.storageClient = yamcs.createStorageClient();
@@ -77,7 +75,7 @@ export class BucketObjectsPage implements OnDestroy {
       options.prefix = routeSegments.map(s => s.path).join('/') + '/';
     }
 
-    this.storageClient.listObjects(this.bucketInstance, this.name, options).then(dir => {
+    this.storageClient.listObjects(this.name, options).then(dir => {
       this.updateBrowsePath();
       this.changedir(dir);
     });
@@ -102,7 +100,7 @@ export class BucketObjectsPage implements OnDestroy {
         name: object.name,
         modified: object.created,
         size: object.size,
-        objectUrl: this.storageClient.getObjectURL(this.bucketInstance, this.name, object.name),
+        objectUrl: this.storageClient.getObjectURL(this.name, object.name),
       });
     }
     this.dataSource.data = items;
@@ -131,7 +129,6 @@ export class BucketObjectsPage implements OnDestroy {
     this.dialog.open(CreateFolderDialog, {
       width: '400px',
       data: {
-        bucketInstance: this.bucketInstance,
         bucket: this.name,
         path: this.getCurrentPath(),
       }
@@ -155,9 +152,8 @@ export class BucketObjectsPage implements OnDestroy {
         const file = files[key as any];
         const fullPath = path ? path + '/' + file.name : file.name;
 
-        const bucketInstance = this.bucketInstance;
         const bucket = this.name;
-        const promise = this.storageClient.uploadObject(bucketInstance, bucket, fullPath, file);
+        const promise = this.storageClient.uploadObject(bucket, fullPath, file);
         uploads.push({ 'filename': file.name, promise });
       }
     }
@@ -225,7 +221,7 @@ export class BucketObjectsPage implements OnDestroy {
     const findObjectPromises = [];
     for (const item of this.selection.selected) {
       if (item.folder) {
-        findObjectPromises.push(this.storageClient.listObjects(this.bucketInstance, this.name, {
+        findObjectPromises.push(this.storageClient.listObjects(this.name, {
           prefix: item.name,
         }).then(response => {
           const objects = response.objects || [];
@@ -240,7 +236,7 @@ export class BucketObjectsPage implements OnDestroy {
       if (confirm(`You are about to delete ${deletableObjects.length} files. Are you sure you want to continue?`)) {
         const deletePromises = [];
         for (const object of deletableObjects) {
-          deletePromises.push(this.storageClient.deleteObject(this.bucketInstance, this.name, object));
+          deletePromises.push(this.storageClient.deleteObject(this.name, object));
         }
 
         Promise.all(deletePromises).then(() => {
@@ -253,7 +249,6 @@ export class BucketObjectsPage implements OnDestroy {
   renameFile(item: BrowseItem) {
     const dialogRef = this.dialog.open(RenameObjectDialog, {
       data: {
-        bucketInstance: this.bucketInstance,
         bucket: this.name,
         name: item.name,
       },
@@ -268,7 +263,7 @@ export class BucketObjectsPage implements OnDestroy {
 
   deleteFile(item: BrowseItem) {
     if (confirm(`Are you sure you want to delete ${item.name}?`)) {
-      this.storageClient.deleteObject(this.bucketInstance, this.name, item.name).then(() => {
+      this.storageClient.deleteObject(this.name, item.name).then(() => {
         this.loadCurrentFolder();
       });
     }
@@ -309,8 +304,7 @@ export class BucketObjectsPage implements OnDestroy {
           this.showUploadProgress().then(() => {
             for (const droppedFile of droppedFiles) {
               const objectPath = objectPrefix + droppedFile._fullPath;
-              const promise = this.storageClient.uploadObject(
-                this.bucketInstance, this.name, objectPath, droppedFile);
+              const promise = this.storageClient.uploadObject(this.name, objectPath, droppedFile);
               this.trackUpload({ filename: droppedFile._fullPath, promise });
               uploadPromises.push(promise);
             }
@@ -335,7 +329,7 @@ export class BucketObjectsPage implements OnDestroy {
       path += '/' + segment.path;
       breadcrumb.push({
         name: segment.path,
-        route: `/storage/buckets/${this.bucketInstance}/${this.name}/objects` + path,
+        route: `/storage/buckets/${this.name}/objects` + path,
       });
     }
     this.breadcrumb$.next(breadcrumb);

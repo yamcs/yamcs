@@ -10,6 +10,7 @@ Web options are configured in the file ``etc/yamcs.yaml``.
 
    yamcs-web:
      tag: Example Mission
+     logo: etc/logo.png
      siteLinks:
        - label: Wiki
          url: https://example.com/wiki

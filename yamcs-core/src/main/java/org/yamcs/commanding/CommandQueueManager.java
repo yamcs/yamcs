@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.yamcs.ConfigurationException;
@@ -28,6 +29,7 @@ import org.yamcs.mdb.MatchCriteriaEvaluator;
 import org.yamcs.mdb.MatchCriteriaEvaluator.MatchResult;
 import org.yamcs.mdb.MatchCriteriaEvaluatorFactory;
 import org.yamcs.mdb.ProcessingData;
+import org.yamcs.memento.MementoDb;
 import org.yamcs.parameter.ParameterProcessor;
 import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterValue;
@@ -60,6 +62,8 @@ import com.google.common.util.concurrent.AbstractService;
  */
 @ThreadSafe
 public class CommandQueueManager extends AbstractService implements ParameterProcessor, SystemParametersProducer {
+    private static final String MEMENTO_KEY = "yamcs.queues";
+
     @GuardedBy("this")
     private HashMap<String, CommandQueue> queues = new LinkedHashMap<>();
 
@@ -103,16 +107,20 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
         this.timer = processor.getTimer();
         timeService = YamcsServer.getTimeService(processor.getInstance());
 
+        var mementoDb = MementoDb.getInstance(instance);
+        var memento = mementoDb.getObject(MEMENTO_KEY, CommandQueueMemento.class)
+                .orElse(new CommandQueueMemento());
+
         if (YConfiguration.isDefined("command-queue")) {
             Spec queueSpec = getQueueSpec();
             YConfiguration config = YConfiguration.getConfiguration("command-queue");
             for (String queueName : config.getKeys()) {
-                YConfiguration queueConfig = config.getConfig(queueName);
+                YConfiguration queueConfig = config.getConfigOrEmpty(queueName);
                 queueConfig = queueSpec.validate(queueConfig);
 
-                String stateString = queueConfig.getString("state");
-                QueueState state = stringToQueueState(stateString);
+                var state = computeInitialState(queueName, queueConfig, memento);
                 CommandQueue q = new CommandQueue(processor, queueName, state);
+
                 if (queueConfig.containsKey("users")) {
                     q.addUsers(queueConfig.getList("users"));
                 }
@@ -126,11 +134,18 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
                     Levels minLevel = Levels.valueOf(queueConfig.getString("minLevel").toUpperCase());
                     q.setMinLevel(minLevel);
                 }
+                if (queueConfig.containsKey("tcPatterns")) {
+                    var regexes = queueConfig.<String> getList("tcPatterns");
+                    var patterns = regexes.stream().map(Pattern::compile).collect(Collectors.toList());
+                    q.addTcPatterns(patterns);
+                }
                 queues.put(queueName, q);
             }
         } else {
-            CommandQueue q = new CommandQueue(processor, "default", QueueState.ENABLED);
-            queues.put(q.getName(), q);
+            var defaultQueueName = "default";
+            var state = computeInitialState(defaultQueueName, YConfiguration.emptyConfig(), memento);
+            var queue = new CommandQueue(processor, defaultQueueName, state);
+            queues.put(queue.getName(), queue);
         }
 
         // schedule timer update to client
@@ -148,17 +163,38 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
         }, 1, 1, TimeUnit.SECONDS);
     }
 
+    /**
+     * Determines the initial state for a specific queue.
+     * 
+     * If an explicit state is configured, always use that. Else restore state from a previous run, defaulting to
+     * {@link QueueState#ENABLED}.
+     */
+    private QueueState computeInitialState(String queueName, YConfiguration queueConfig, CommandQueueMemento memento) {
+        // If an explicit state is configured, use that.
+        // Else restore state from a previous run, defaulting to ENABLED.
+        var state = QueueState.ENABLED;
+        if (queueConfig.containsKey("state")) {
+            var stateString = queueConfig.getString("state");
+            state = stringToQueueState(stateString);
+        } else {
+            var queueState = memento.getCommandQueueState(queueName);
+            if (queueState != null) {
+                state = queueState.getState();
+            }
+        }
+        return state;
+    }
+
     private Spec getQueueSpec() {
         Spec spec = new Spec();
-        spec.addOption("state", OptionType.STRING).withChoices("enabled", "blocked", "disabled")
-                .withRequired(true);
-        spec.addOption("stateExpirationTimeS", OptionType.INTEGER);
+        spec.addOption("state", OptionType.STRING).withChoices("enabled", "blocked", "disabled");
+        spec.addOption("stateExpirationTimeS", OptionType.INTEGER)
+                .withDeprecationMessage("Proposed for future removal. Let us know if have a current"
+                        + " use case for this functionality");
         spec.addOption("minLevel", OptionType.STRING);
         spec.addOption("users", OptionType.LIST).withElementType(OptionType.STRING);
         spec.addOption("groups", OptionType.LIST).withElementType(OptionType.STRING);
-
-        spec.addOption("significances", OptionType.LIST).withElementType(OptionType.STRING)
-                .withDeprecationMessage("Use 'minLevel' instead");
+        spec.addOption("tcPatterns", OptionType.LIST).withElementType(OptionType.STRING);
         return spec;
     }
 
@@ -167,7 +203,7 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
      */
     @Override
     public void doStart() {
-        SystemParametersService sysParamCollector = SystemParametersService.getInstance(processor.getInstance());
+        var sysParamCollector = SystemParametersService.getInstance(processor.getInstance());
         if (sysParamCollector != null) {
             for (CommandQueue cq : queues.values()) {
                 cq.setupSysParameters();
@@ -180,7 +216,7 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
 
     @Override
     public void doStop() {
-        SystemParametersService sysParamCollector = SystemParametersService.getInstance(processor.getInstance());
+        var sysParamCollector = SystemParametersService.getInstance(processor.getInstance());
         if (sysParamCollector != null) {
             sysParamCollector.unregisterProducer(this);
         }
@@ -584,6 +620,7 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
 
         // Notify the monitoring clients
         notifyUpdateQueue(queue);
+        saveMemento();
         return queue;
     }
 
@@ -602,6 +639,16 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
 
         queue.stateExpirationRemainingS = queue.stateExpirationTimeS;
         queue.stateExpirationJob = timer.schedule(r, queue.stateExpirationTimeS, TimeUnit.SECONDS);
+    }
+
+    private void saveMemento() {
+        var memento = new CommandQueueMemento();
+        for (var queue : queues.values()) {
+            var state = CommandQueueState.forQueue(queue);
+            memento.addCommandQueueState(queue.getName(), state);
+        }
+        var mementoDb = MementoDb.getInstance(instance);
+        mementoDb.putObject(MEMENTO_KEY, memento);
     }
 
     /**

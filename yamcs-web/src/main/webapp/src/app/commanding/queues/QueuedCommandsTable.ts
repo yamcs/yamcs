@@ -41,8 +41,8 @@ export class QueuedCommandsTable implements AfterViewInit {
     this.cqueues$.subscribe(cqueues => {
       const entries = [];
       for (const cqueue of cqueues) {
-        if (cqueue.entry) {
-          entries.push(...cqueue.entry);
+        if (cqueue.entries) {
+          entries.push(...cqueue.entries);
         }
       }
       this.dataSource.data = entries;

@@ -2,11 +2,11 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { ClearContextGuard } from '../core/guards/ClearContextGuard';
+import { StoragePage } from './StoragePage';
 import { BucketObjectsPage } from './buckets/BucketObjectsPage';
 import { BucketPlaceholderPage } from './buckets/BucketPlaceHolderPage';
 import { BucketPropertiesPage } from './buckets/BucketPropertiesPage';
 import { BucketsPage } from './buckets/BucketsPage';
-import { StoragePage } from './StoragePage';
 
 
 const routes: Routes = [{
@@ -27,7 +27,7 @@ const routes: Routes = [{
       component: BucketsPage,
       data: { 'hasSidebar': false },
     }, {
-      path: ':instance/:name',
+      path: ':name',
       children: [{
         path: '',
         pathMatch: 'full',

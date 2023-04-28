@@ -68,7 +68,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
     @Override
     public void rebuildRange(Context ctx, RebuildRangeRequest request, Observer<Empty> observer) {
-        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
+        YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
         ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
         if (!request.hasStart()) {
@@ -99,7 +99,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             return;
         }
 
-        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
+        YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
 
         XtceDb mdb = XtceDbFactory.getInstance(ysi.getName());
 
@@ -158,7 +158,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
     @Override
     public void getParameterRanges(Context ctx, GetParameterRangesRequest request, Observer<Ranges> observer) {
-        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
+        YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
 
         XtceDb mdb = XtceDbFactory.getInstance(ysi.getName());
 
@@ -213,7 +213,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             streamArchiveApi.listParameterHistory(ctx, request, observer);
             return;
         }
-        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
+        YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
 
         XtceDb mdb = XtceDbFactory.getInstance(ysi.getName());
         ParameterWithId requestedParamWithId = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
@@ -443,7 +443,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
     @Override
     public void getArchivedParametersInfo(Context ctx, GetArchivedParametersInfoRequest request,
             Observer<ArchivedParametersInfoResponse> observer) {
-        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
+        YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
         ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
         ParameterArchive parchive = getParameterArchive(ysi);
@@ -481,7 +481,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
     @Override
     public void getArchivedParameterSegments(Context ctx, GetArchivedParameterSegmentsRequest request,
             Observer<ArchivedParameterSegmentsResponse> observer) {
-        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
+        YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
         ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
         if (!request.hasPid()) {
@@ -531,7 +531,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
     @Override
     public void getArchivedParameterGroup(Context ctx, GetArchivedParameterGroupRequest request,
             Observer<ArchivedParameterGroupResponse> observer) {
-        YamcsServerInstance ysi = ManagementApi.verifyInstanceObj(request.getInstance());
+        YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
         ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
         if (!request.hasGid()) {
             throw new BadRequestException("gid is mandatory");

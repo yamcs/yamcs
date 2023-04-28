@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledFuture;
+import java.util.regex.Pattern;
 
 import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
@@ -29,6 +30,7 @@ public class CommandQueue {
     private String name;
     private Set<String> users = new HashSet<>();
     private Set<String> groups = new HashSet<>();
+    private Set<Pattern> tcPatterns = new HashSet<>();
     private Levels minLevel = Levels.NONE;
 
     private ConcurrentLinkedQueue<ActiveCommand> commands = new ConcurrentLinkedQueue<>();
@@ -84,6 +86,10 @@ public class CommandQueue {
         return groups;
     }
 
+    public Set<Pattern> getTcPatterns() {
+        return tcPatterns;
+    }
+
     public Levels getMinLevel() {
         return minLevel;
     }
@@ -100,6 +106,10 @@ public class CommandQueue {
         this.groups.addAll(groups);
     }
 
+    public void addTcPatterns(Collection<Pattern> tcPatterns) {
+        this.tcPatterns.addAll(tcPatterns);
+    }
+
     public boolean matches(User user, MetaCommand metaCmd) {
         if (!isUserMatched(user)) {
             return false;
@@ -111,6 +121,9 @@ public class CommandQueue {
             level = metaCmd.getEffectiveDefaultSignificance().getConsequenceLevel();
         }
         if (!isLevelMatched(level)) {
+            return false;
+        }
+        if (!isCommandNameMatched(metaCmd.getQualifiedName())) {
             return false;
         }
 
@@ -138,6 +151,18 @@ public class CommandQueue {
 
     private boolean isLevelMatched(Levels level) {
         return minLevel == level || level.isMoreSevere(minLevel);
+    }
+
+    private boolean isCommandNameMatched(String qname) {
+        if (tcPatterns.isEmpty()) {
+            return true; // No filter
+        }
+        for (var tcPattern : tcPatterns) {
+            if (tcPattern.matcher(qname).matches()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public QueueState getState() {

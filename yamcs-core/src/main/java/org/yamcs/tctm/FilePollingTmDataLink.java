@@ -68,13 +68,11 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
         packetInputStreamArgs = YConfiguration.emptyConfig();
 
         if (config.containsKey("packetInputStreamClassName")) {
-            this.packetInputStreamClassName = config.getString("packetInputStreamClassName");
-            if (config.containsKey("packetInputStreamArgs")) {
-                packetInputStreamArgs = config.getConfig("packetInputStreamArgs");
-            }
+            packetInputStreamClassName = config.getString("packetInputStreamClassName");
+            packetInputStreamArgs = config.getConfigOrEmpty("packetInputStreamArgs");
         } else {// compatibility with the previous releases, should eventually be removed
-            this.packetInputStreamClassName = UsocPacketInputStream.class.getName();
-            this.packetPreprocessor = new IssPacketPreprocessor(yamcsInstance);
+            packetInputStreamClassName = UsocPacketInputStream.class.getName();
+            packetPreprocessor = new IssPacketPreprocessor(yamcsInstance);
         }
     }
 
@@ -115,7 +113,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
                 while ((packet = packetInputStream.readPacket()) != null) {
                     updateStats(packet.length);
                     TmPacket tmPacket = new TmPacket(timeService.getMissionTime(), packet);
-                    tmPacket.setEarthRceptionTime(erp);
+                    tmPacket.setEarthReceptionTime(erp);
                     TmPacket tmpkt = packetPreprocessor.process(tmPacket);
                     minTime = Math.min(minTime, tmpkt.getGenerationTime());
                     maxTime = Math.max(maxTime, tmpkt.getGenerationTime());

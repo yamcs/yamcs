@@ -37,7 +37,6 @@ services:
 
 dataLinks:
     - name: tm_realtime
-      enabledAtStartup: true
       class: org.yamcs.tctm.TcpTmDataLink
       stream: tm_realtime
       host: localhost
@@ -45,7 +44,6 @@ dataLinks:
       # Give the embedded simulator some time to boot up
       initialDelay: 2000      
     - name: tm2_realtime
-      enabledAtStartup: true
       class: org.yamcs.tctm.TcpTmDataLink
       stream: tm2_realtime
       host: localhost

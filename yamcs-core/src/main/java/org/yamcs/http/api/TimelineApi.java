@@ -52,11 +52,11 @@ import org.yamcs.timeline.Activity;
 import org.yamcs.timeline.ActivityGroup;
 import org.yamcs.timeline.AutomatedActivity;
 import org.yamcs.timeline.BandListener;
-import org.yamcs.timeline.RetrievalFilter;
 import org.yamcs.timeline.ItemGroup;
 import org.yamcs.timeline.ItemListener;
 import org.yamcs.timeline.ItemProvider;
 import org.yamcs.timeline.ManualActivity;
+import org.yamcs.timeline.RetrievalFilter;
 import org.yamcs.timeline.TimelineBandDb;
 import org.yamcs.timeline.TimelineEvent;
 import org.yamcs.timeline.TimelineItemDb;
@@ -625,7 +625,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     }
 
     private TimelineService verifyService(String yamcsInstance) {
-        String instance = ManagementApi.verifyInstance(yamcsInstance);
+        String instance = InstancesApi.verifyInstance(yamcsInstance);
 
         List<TimelineService> cl = YamcsServer.getServer().getInstance(instance)
                 .getServices(TimelineService.class);

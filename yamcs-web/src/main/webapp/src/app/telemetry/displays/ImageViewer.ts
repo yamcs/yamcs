@@ -35,7 +35,7 @@ export class ImageViewer implements Viewer {
   }
 
   public init(objectName: string) {
-    this.url = this.storageClient.getObjectURL('_global', this.bucket, objectName);
+    this.url = this.storageClient.getObjectURL(this.bucket, objectName);
     return Promise.resolve();
   }
 

@@ -62,7 +62,6 @@ services:
 
 dataLinks:
   - name: tm_realtime
-    enabledAtStartup: true
     class: org.yamcs.tctm.TcpTmDataLink
     stream: tm_realtime
     host: localhost

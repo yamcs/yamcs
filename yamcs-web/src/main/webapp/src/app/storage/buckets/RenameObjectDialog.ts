@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_LEGACY_DIALOG_DATA, MatLegacyDialogRef } from '@angular/material/legacy-dialog';
 import { StorageClient } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { FilenamePipe } from '../../shared/pipes/FilenamePipe';
@@ -13,7 +13,6 @@ export class RenameObjectDialog {
 
   filenameForm: UntypedFormGroup;
 
-  private bucketInstance: string;
   private storageClient: StorageClient;
 
   constructor(
@@ -24,7 +23,6 @@ export class RenameObjectDialog {
     @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
   ) {
     this.storageClient = yamcs.createStorageClient();
-    this.bucketInstance = this.data.bucketInstance;
 
     const filename = filenamePipe.transform(this.data.name);
     this.filenameForm = formBuilder.group({
@@ -39,12 +37,12 @@ export class RenameObjectDialog {
       prefix = this.data.name.substring(0, idx + 1);
     }
 
-    const response = await this.storageClient.getObject(this.bucketInstance, this.data.bucket, this.data.name);
+    const response = await this.storageClient.getObject(this.data.bucket, this.data.name);
     const blob = await response.blob();
 
     const newObjectName = (prefix || '') + this.filenameForm.get('name')!.value;
-    await this.storageClient.uploadObject(this.bucketInstance, this.data.bucket, newObjectName, blob);
-    await this.storageClient.deleteObject(this.bucketInstance, this.data.bucket, this.data.name);
+    await this.storageClient.uploadObject(this.data.bucket, newObjectName, blob);
+    await this.storageClient.deleteObject(this.data.bucket, this.data.name);
     this.dialogRef.close(newObjectName);
   }
 }

@@ -12,7 +12,7 @@ export class OpiDisplayPathResolver extends DefaultPathResolver {
     if (path.startsWith('ys://')) {
       const matchResult = path.match(/ys:\/\/([^\\\/]+)\/(.+)/);
       if (matchResult) {
-        return this.storageClient.getObjectURL('_global', matchResult[1], matchResult[2]);
+        return this.storageClient.getObjectURL(matchResult[1], matchResult[2]);
       }
     }
     return super.resolve(path, widget);

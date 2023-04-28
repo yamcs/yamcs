@@ -20,9 +20,6 @@ import { ListFilesResponse } from '../client';
 export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDestroy {
 
   @Input()
-  instance = '_global';
-
-  @Input()
   isMultiSelect: boolean;
 
   @Input()
@@ -58,9 +55,7 @@ export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDe
 
   // Called when inputs have changed
   ngOnChanges() {
-    if (this.instance) {
-      this.loadCurrentFolder();
-    }
+    this.loadCurrentFolder();
   }
 
   // Called when breadcrumb is selected
@@ -200,9 +195,7 @@ export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDe
   }
 
   ngOnDestroy() {
-    if (this.selectionSubscription) {
-      this.selectionSubscription.unsubscribe();
-    }
+    this.selectionSubscription?.unsubscribe();
   }
 }
 

@@ -44,7 +44,7 @@ import org.yamcs.protobuf.MdbOverrideApiClient;
 import org.yamcs.protobuf.ProcessingApiClient;
 import org.yamcs.protobuf.ProcessorInfo;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
-import org.yamcs.protobuf.QueueApiClient;
+import org.yamcs.protobuf.QueuesApiClient;
 import org.yamcs.protobuf.RejectCommandRequest;
 import org.yamcs.protobuf.SetParameterValueRequest;
 import org.yamcs.protobuf.UpdateAlgorithmRequest;
@@ -65,7 +65,7 @@ public class ProcessorClient {
     private ProcessingApiClient processingService;
     private CommandsApiClient commandService;
     private MdbOverrideApiClient mdbOverrideService;
-    private QueueApiClient queueService;
+    private QueuesApiClient queueService;
 
     public ProcessorClient(MethodHandler methodHandler, String instance, String processor) {
         this.instance = instance;
@@ -73,7 +73,7 @@ public class ProcessorClient {
         processingService = new ProcessingApiClient(methodHandler);
         commandService = new CommandsApiClient(methodHandler);
         mdbOverrideService = new MdbOverrideApiClient(methodHandler);
-        queueService = new QueueApiClient(methodHandler);
+        queueService = new QueuesApiClient(methodHandler);
     }
 
     public String getInstance() {

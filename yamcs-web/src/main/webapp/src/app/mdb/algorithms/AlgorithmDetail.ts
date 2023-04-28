@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild } from '@angular/core';
 import * as ace from 'brace';
 import 'brace/mode/javascript';
 import 'brace/mode/python';
@@ -13,10 +13,7 @@ import { YamcsService } from '../../core/services/YamcsService';
   styleUrls: ['./AlgorithmDetail.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AlgorithmDetail implements AfterViewInit {
-
-  @ViewChild('text', { static: false })
-  textContainer: ElementRef;
+export class AlgorithmDetail {
 
   @Input()
   algorithm: Algorithm;
@@ -29,23 +26,22 @@ export class AlgorithmDetail implements AfterViewInit {
   constructor(readonly yamcs: YamcsService) {
   }
 
-  ngAfterViewInit() {
-    if (this.algorithm.text) {
-      this.editor = ace.edit(this.textContainer.nativeElement);
-      this.editor.setReadOnly(this.readonly);
+  @ViewChild('text')
+  set textContainer(textContainer: ElementRef) {
+    this.editor = ace.edit(textContainer.nativeElement);
+    this.editor.setReadOnly(this.readonly);
 
-      switch (this.algorithm.language.toLowerCase()) {
-        case 'javascript':
-          this.editor.getSession().setMode('ace/mode/javascript');
-          break;
-        case 'python':
-          this.editor.getSession().setMode('ace/mode/python');
-          break;
-        default:
-          console.warn(`Unexpected language ${this.algorithm.language}`);
-      }
-
-      this.editor.setTheme('ace/theme/eclipse');
+    switch (this.algorithm.language.toLowerCase()) {
+      case 'javascript':
+        this.editor.getSession().setMode('ace/mode/javascript');
+        break;
+      case 'python':
+        this.editor.getSession().setMode('ace/mode/python');
+        break;
+      default:
+        console.warn(`Unexpected language ${this.algorithm.language}`);
     }
+
+    this.editor.setTheme('ace/theme/eclipse');
   }
 }

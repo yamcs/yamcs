@@ -33,11 +33,11 @@ export interface CommandQueue {
   state: 'BLOCKED' | 'DISABLED' | 'ENABLED';
   users: string[];
   groups: string[];
+  tcPatterns: string[];
   minLevel: string;
-  nbSentCommands: number;
-  nbRejectCommands: number;
-  stateExpirationTimeS: number;
-  entry: CommandQueueEntry[];
+  entries: CommandQueueEntry[];
+  acceptedCommandsCount: number;
+  rejectedCommandsCount: number;
   order: number;
 }
 

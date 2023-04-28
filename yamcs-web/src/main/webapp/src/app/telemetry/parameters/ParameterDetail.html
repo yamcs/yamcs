@@ -145,10 +145,12 @@
           </td>
           <td>{{ (parameter | entryForOffset:memberOffset)?.shortDescription || '-' }}</td>
           <td>
-            {{ value.aggregateValue!.value[i] | value }}
-            <ng-container *ngIf="(parameter | entryForOffset:memberOffset)?.type?.unitSet as unitSet">
-              {{ unitSet | units }}
-            </ng-container>
+            <app-expirable [pval]="pval">
+              {{ value.aggregateValue!.value[i] | value }}
+              <ng-container *ngIf="(parameter | entryForOffset:memberOffset)?.type?.unitSet as unitSet">
+                {{ unitSet | units }}
+              </ng-container>
+            </app-expirable>
           </td>
         </ng-container>
       </tr>

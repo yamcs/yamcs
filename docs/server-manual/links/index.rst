@@ -29,8 +29,10 @@ class (string)
     **Required.** The name of the class that is implementing the link. The class has to implement the :javadoc:`~org.yamcs.tctm.Link` interface.
 
 enabledAtStartup (boolean)
-    If set to false, the link will be disabled at startup. By default it is true. The link can be enabled/disabled at any time via an API call.
-    
+    If set to false, the link will be disabled at startup. When true, the link will be enabled at startup.
+
+    If unset, the link's enabled/disabled state is restored from a previous run, defaulting to enabled.
+
 stream (string)
     The name of the stream where the data is taken from or injected into.
 

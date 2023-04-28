@@ -45,7 +45,7 @@ export class ParametersPage implements AfterViewInit {
     { id: 'actions', label: '', alwaysVisible: true },
   ];
 
-  // Added dynamically based on actual commands.
+  // Added dynamically based on actual parameters.
   aliasColumns$ = new BehaviorSubject<ColumnInfo[]>([]);
 
   typeOptions: Option[] = [

@@ -45,7 +45,7 @@ public class TimeApi extends AbstractTimeApi<Context> {
 
     @Override
     public void setTime(Context ctx, SetTimeRequest request, Observer<Empty> observer) {
-        String instance = ManagementApi.verifyInstance(request.getInstance());
+        String instance = InstancesApi.verifyInstance(request.getInstance());
         YamcsServer yamcs = YamcsServer.getServer();
         TimeService timeService = yamcs.getInstance(instance).getTimeService();
 
@@ -70,7 +70,7 @@ public class TimeApi extends AbstractTimeApi<Context> {
 
     @Override
     public void subscribeTime(Context ctx, SubscribeTimeRequest request, Observer<Timestamp> observer) {
-        var instance = ManagementApi.verifyInstance(request.getInstance());
+        var instance = InstancesApi.verifyInstance(request.getInstance());
         TimeProvider provider;
         if (request.hasProcessor()) {
             var processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());

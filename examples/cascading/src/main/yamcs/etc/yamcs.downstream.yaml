@@ -29,7 +29,6 @@ services:
 
 dataLinks:
   - name: upstream
-    enabledAtStartup: true
     class: org.yamcs.cascading.YamcsLink
     yamcsUrl: "http://localhost:8090"
     #username: "username"

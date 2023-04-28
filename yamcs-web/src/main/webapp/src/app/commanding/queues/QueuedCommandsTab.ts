@@ -34,23 +34,23 @@ export class QueuedCommandsTab implements OnDestroy {
       const queue = this.cqueueByName[queueEvent.data.queueName];
       if (queue) {
         if (queueEvent.type === 'COMMAND_ADDED') {
-          queue.entry = queue.entry || [];
-          queue.entry.push(queueEvent.data);
+          queue.entries = queue.entries || [];
+          queue.entries.push(queueEvent.data);
         } else if (queueEvent.type === 'COMMAND_UPDATED') {
-          const idx = (queue.entry || []).findIndex(entry => {
+          const idx = (queue.entries || []).findIndex(entry => {
             return entry.id === queueEvent.data.id;
           });
           if (idx !== -1) {
-            queue.entry[idx] = queueEvent.data;
+            queue.entries[idx] = queueEvent.data;
           }
         } else if (queueEvent.type === 'COMMAND_REJECTED') {
-          queue.entry = queue.entry || [];
-          queue.entry = queue.entry.filter(entry => {
+          queue.entries = queue.entries || [];
+          queue.entries = queue.entries.filter(entry => {
             return entry.id !== queueEvent.data.id;
           });
         } else if (queueEvent.type === 'COMMAND_SENT') {
-          queue.entry = queue.entry || [];
-          queue.entry = queue.entry.filter(entry => {
+          queue.entries = queue.entries || [];
+          queue.entries = queue.entries.filter(entry => {
             return entry.id !== queueEvent.data.id;
           });
         } else {
@@ -68,7 +68,7 @@ export class QueuedCommandsTab implements OnDestroy {
 
     let hasEntries = false;
     for (const cqueue of this.cqueues$.getValue()) {
-      if (cqueue.entry && cqueue.entry.length) {
+      if (cqueue.entries && cqueue.entries.length) {
         hasEntries = true;
         break;
       }

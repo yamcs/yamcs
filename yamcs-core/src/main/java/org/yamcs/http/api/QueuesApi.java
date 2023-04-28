@@ -2,6 +2,7 @@ package org.yamcs.http.api;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.yamcs.Processor;
 import org.yamcs.api.Observer;
@@ -15,7 +16,7 @@ import org.yamcs.http.Context;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.audit.AuditLog;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.AbstractQueueApi;
+import org.yamcs.protobuf.AbstractQueuesApi;
 import org.yamcs.protobuf.AcceptCommandRequest;
 import org.yamcs.protobuf.BlockQueueRequest;
 import org.yamcs.protobuf.Commanding.CommandQueueEntry;
@@ -40,13 +41,17 @@ import org.yamcs.xtce.Significance.Levels;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 
-public class QueueApi extends AbstractQueueApi<Context> {
+public class QueuesApi extends AbstractQueuesApi<Context> {
 
     private AuditLog auditLog;
 
-    public QueueApi(AuditLog auditLog) {
+    public QueuesApi(AuditLog auditLog) {
         this.auditLog = auditLog;
         auditLog.addPrivilegeChecker(getClass().getSimpleName(), user -> {
+            return user.hasSystemPrivilege(SystemPrivilege.ControlCommandQueue);
+        });
+        // Legacy name, remove eventually
+        auditLog.addPrivilegeChecker("QueueApi", user -> {
             return user.hasSystemPrivilege(SystemPrivilege.ControlCommandQueue);
         });
     }
@@ -272,11 +277,19 @@ public class QueueApi extends AbstractQueueApi<Context> {
         b.setProcessorName(queue.getProcessor().getName());
         b.setName(queue.getName());
         b.setState(queue.getState());
+        b.setAcceptedCommandsCount(queue.getNbSentCommands());
         b.setNbSentCommands(queue.getNbSentCommands());
+        b.setRejectedCommandsCount(queue.getNbRejectedCommands());
         b.setNbRejectedCommands(queue.getNbRejectedCommands());
         b.setOrder(order);
         b.addAllUsers(queue.getUsers());
         b.addAllGroups(queue.getGroups());
+        var tcPatterns = new ArrayList<>(queue.getTcPatterns())
+                .stream().map(p -> p.pattern())
+                .sorted()
+                .collect(Collectors.toList());
+        b.addAllTcPatterns(tcPatterns);
+
         if (queue.getMinLevel() != Levels.NONE) {
             b.setMinLevel(XtceToGpbAssembler.toSignificanceLevelType(queue.getMinLevel()));
         }
@@ -286,6 +299,7 @@ public class QueueApi extends AbstractQueueApi<Context> {
         if (detail) {
             for (ActiveCommand activeCommand : queue.getCommands()) {
                 CommandQueueEntry qEntry = toCommandQueueEntry(queue, activeCommand);
+                b.addEntries(qEntry);
                 b.addEntry(qEntry);
             }
         }

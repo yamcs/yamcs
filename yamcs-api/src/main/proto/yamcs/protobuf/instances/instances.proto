@@ -1,0 +1,91 @@
+syntax="proto2";
+
+package yamcs.protobuf.instances;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "InstancesProto";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+
+import "yamcs/protobuf/mdb/mdb.proto";
+import "yamcs/protobuf/yamcsManagement/yamcsManagement.proto";
+
+
+message YamcsInstance {
+  enum InstanceState {
+    OFFLINE = 0;
+    INITIALIZING = 1;
+    INITIALIZED = 2;
+    STARTING = 3;
+    RUNNING = 4;
+    STOPPING = 5;
+    FAILED = 6;
+  }
+  // Instance name.
+  optional string name = 1;
+  optional mdb.MissionDatabase missionDatabase = 3;
+  repeated yamcsManagement.ProcessorInfo processors = 4;
+  optional InstanceState state = 11;
+
+  //in case the state=FAILED, this field will indicate the cause of the failure
+  // the missionDatabase and other fields may not be filled when this happens
+  optional string failureCause = 9;
+
+  optional google.protobuf.Timestamp missionTime = 10;
+
+  // Labels assigned to this instance. Each entry is keyed by the tag name
+  // of the label. The value represent the label value for that tag.
+  map<string, string> labels = 12;
+
+  // Feature capability hints for client use
+  repeated string capabilities = 13;
+  
+  // Name of the template, if this instance was generated  
+  optional string template = 14;
+  
+  // Arguments used during template processing, if this instance
+  // was generated
+  map<string, string> templateArgs = 15;
+  
+  // Whether the template is stil available
+  optional bool templateAvailable = 16;
+  
+  // Whether the template has changed since this instance was
+  // generated
+  optional bool templateChanged = 17;
+}
+
+message InstanceTemplate {
+  // Template name.
+  optional string name = 1;
+
+  // Human-friendly description
+  optional string description = 3;
+
+  // List of variables that this template may expect  
+  repeated TemplateVariable variables = 2;
+}
+
+message TemplateVariable {
+  // Variable name. 
+  optional string name = 1;
+  
+  // Verbose name for use in UI forms
+  optional string label = 6;
+  
+  // Type of variable (Java class extending org.yamcs.templating.Variable)
+  optional string type = 4;
+  
+  // Verbose user guidance (HTML)
+  optional string help = 2;
+  
+  // Whether this variable is required input
+  optional bool required = 3;
+  
+  // List of valid choices
+  repeated string choices = 5;
+  
+  // Initial value for use in UI forms
+  optional string initial = 7;
+}
