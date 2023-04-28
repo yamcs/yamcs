@@ -363,7 +363,7 @@ public class DataTypeProcessor {
     }
 
     static public final int signedSizeInBits(long v) {
-        return 63 - Long.numberOfLeadingZeros(v & Long.MAX_VALUE);
+        return v < 0 ? 65 - Long.numberOfLeadingZeros(~v) : 65 - Long.numberOfLeadingZeros(v);
     }
 
     static final String MSG_CANT_CONVERT(Type type1, DataType type2) {
