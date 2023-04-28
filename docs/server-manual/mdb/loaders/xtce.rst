@@ -7,7 +7,7 @@ This loader reads TM/TC definitions from an XML file compliant with the XTCE exc
 Configuration
 -------------
 
-The loader is configured in ``etc/mdb.yaml`` or in the instance configuration by specifying the 'type' as ``xtce``, and providing the location of the XML file in the ``file`` attribute.
+The loader is configured in :file:`etc/mdb.yaml` or in the instance configuration by specifying the type as ``xtce``, and providing the location of the XML file in the ``file`` attribute.
 
 .. code-block:: yaml
 
@@ -23,11 +23,13 @@ file (string)
    The filename to be loaded. Either this or the ``fileset`` attribute are required
 
 fileset (string or list of strings)
-   Available since Yamcs 5.2; can be used to load multiple XML files. A glob pattern can be used to match multiple files and/or the files can be specified in the list. The ``**`` for matching directories recursively is not supported. 
+   Can be used to load multiple XML files. A glob pattern can be used to match multiple files and/or the files can be specified in the list. The ``**`` for matching directories recursively is not supported.
+
    If the ``fileset`` option is used, the ``subLoader`` cannot be used to load child subsystems. This is because it is not possible to specify which subsystem will be the parent of the child.
 
 autoTmPartitions (boolean)
    If true, Yamcs will automatically mark to be used as archive partitions all containers which do not have a parent.
+
    If this option is false, the containers can still be manually marked by using the  ancillary data property ``UseAsArchivingPartition``:
 
    .. code-block:: xml
@@ -127,7 +129,6 @@ The other elements are supported one way or another, exceptions or changes from 
 
 * | Multiple CompleteVerifiers can be declared but the success of any of them will make the command complete successfully; XTCE specifies that all of them  have to succeed for the command to be declared successful. 
   | Note that when a command is completed (with success or failure), all the pending verifies are canceled. This means that if multiple CompleteVerifiers are declared, the first one finishing will decide the outcome of the command.
-
 
 
 .. rubric:: Algorithms

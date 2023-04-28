@@ -11,8 +11,8 @@ Once authorized, the user may be assigned one or more privileges that determine 
     :maxdepth: 1
     :caption: Table of Contents
 
+    configuration
     system-privileges
     object-privileges
     superuser
     authmodules/index
-    configuration

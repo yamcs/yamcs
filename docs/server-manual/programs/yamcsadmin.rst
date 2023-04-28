@@ -45,7 +45,7 @@ Commands
 :doc:`mdb <yamcsadmin_mdb>`
     Provides MDB information. See :manpage:`yamcsadmin-mdb(1)`.
 :doc:`password-hash <yamcsadmin_password-hash>`
-    Generate password hash for use in users.yaml.
+    Generate password hash for use in :file:`etc/users.yaml`.
     See :manpage:`yamcsadmin-password-hash(1)`.
 :doc:`rocksdb <yamcsadmin_rocksdb>`
     Provides low-level RocksDB data operations.
@@ -54,7 +54,7 @@ Commands
     User operations. See :manpage:`yamcsadmin-users(1)`.
 
 
-.. only:: json and html
+.. only:: latex or json or html
 
     .. Purpose of "only" is to hide toctree content from the man builder
 

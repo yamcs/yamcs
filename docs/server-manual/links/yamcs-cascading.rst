@@ -8,7 +8,7 @@ The Yamcs Cascading Link functions as a client to an upstream Yamcs server. It p
 * Event reception in realtime
 * Command sending and Command History provision
 
-The link is configured with one entry in the links section of the yamcs.<instance>.conf configuration file.
+The link is configured with one entry in the links section of the :file:`etc/yamcs.{instance}.yaml` configuration file.
 
 
 Class Name
@@ -22,7 +22,7 @@ Configuration Options
 ---------------------
 
 upstreamName (string)
-  **Required.** The name of the upstream Yamcs server. The name is used on the local Yamcs for the command history entries and for the system (/yamcs) parameters.
+  **Required.** The name of the upstream Yamcs server. The name is used on the local Yamcs for the command history entries and for the system (``/yamcs``) parameters.
 
 yamcsUrl (string)
   **Required.** The URL to connect to the upstream Yamcs server; The URL has to include http or https.
@@ -69,26 +69,32 @@ pp (boolean)
 parameters (list of strings)
   **Required if pp is true.** The list of parameters has to subscribe to. The list should contain fully qualified name of parameters which
   have to be present both in the local MDB and in the remote(upstream) MDB. Wildcards using glob patterns can be used.
+
   The requirement to have the parameters in both MDBs is a a current limitation due to the fact that we do not add parameters dynamically to the MDB.
-  One exception is the Yamcs system parameters (those in the /yamcs namespace) - these do not have to be present in the local MDB, they are created on the fly.
-  The /yamcs system parameters will be renamed such that /yamcs/a/b/c/parameter_name is saved in the local archive as /yamcs/upstreamName_a/b/c/parameter_name.
+  One exception is the Yamcs system parameters (those in the ``/yamcs`` namespace) - these do not have to be present in the local MDB, they are created on the fly.
+
+  The /yamcs system parameters will be renamed such that ``/yamcs/a/b/c/parameter_name`` is saved in the local archive as ``/yamcs/upstreamName_a/b/c/parameter_name``.
 
 ppRealtimeStream (string)
   Stream to which the parameter packets will be sent. Default: "pp_realtime".
 
 tc (boolean)
   Allow to send TC and subscribe to command history.
+
   All the command history entries received from the upstream server will be renamed to the shape yamcs<uspstreamName>_OriginalEntryName.
+
   Exception make those added in the keepUpstreamAcks configuration.
+
   Default: true
 
 keepUpstreamAcks (list of strings)
   List of command acknowledgments names received from the upstream server to keep unmodified. 
-  Default is "ccsds-seqcount" - this key is used by one of the CCSDS links to set the sequence count associated to the command and 
-  required in the simulation configuration to be able to verify the command execution (because the sequence count is reported in returning telemetry containing the command execution status).
+
+  Default is "ccsds-seqcount" - this key is used by one of the CCSDS links to set the sequence count associated to the command and required in the simulation configuration to be able to verify the command execution (because the sequence count is reported in returning telemetry containing the command execution status).
 
 event (boolean)
    Subscribe to realtime events. The events on the upstream server will be mirrored to the local server.
+
    Default: true
 
 eventRealtimeStream (string)
@@ -96,6 +102,7 @@ eventRealtimeStream (string)
 
 connectionAttempts (integer)
   How many times to attempt reconnection if the connection fails. Reconnection will only be attempted once if the authentication fails.
+
   Link disable/enable is required to reattempt the connection once this number has passed.
 
 reconnectionDelay (integer)

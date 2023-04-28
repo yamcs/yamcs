@@ -147,8 +147,6 @@ public class V6Loader extends V6LoaderBase {
 
     protected SpaceSystem rootSpaceSystem;
 
-    boolean enableAliasReferences = false;
-
     public V6Loader(YConfiguration config, Workbook workbook) {
         this(config);
         this.workbook = workbook;
@@ -156,7 +154,6 @@ public class V6Loader extends V6LoaderBase {
 
     public V6Loader(YConfiguration config) {
         this(config.getString("file"));
-        enableAliasReferences = config.getBoolean("enableAliasReferences", false);
         enableXtceNameRestrictions = config.getBoolean("enableXtceNameRestrictions", true);
     }
 

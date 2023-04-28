@@ -1,18 +1,17 @@
 CFS Event Decoder
 =================
 
-Decodes `cFS <https://cfs.gsfc.nasa.gov/>`_ events. This service translates binary cFS telemetry packets into Yamcs events.
+Decodes `cFS <https://cfs.gsfc.nasa.gov/>`_ (Core Flight System) events. This service translates binary cFS telemetry packets into Yamcs events.
 
 The packets are filtered by message id (first 2 bytes of the header).
 
 The structure of the event packets is as defined in the `CFE_EVS_LongEventTlm_Payload struct <https://github.com/nasa/cFE/blob/main/fsw/cfe-core/src/inc/cfe_evs_msg.h#L1235>`_. The structure had different names in older versions of cFS.
 
 The field ``EventType`` is used to derive the event severity:
- * value 3 is considered severity ``ERROR``
- * value 4 is considered severity ``CRITICAL``
- * all the other values are considered severity ``INFO``
 
-.. cfs_event_def
+* value 3 is considered severity ``ERROR``
+* value 4 is considered severity ``CRITICAL``
+* all the other values are considered severity ``INFO``
 
 
 Class Name
@@ -24,19 +23,21 @@ Class Name
 Configuration
 -------------
 
-This service is defined in ``etc/yamcs.(instance).yaml``. Example:
+This service is defined in :file:`etc/yamcs.{instance}.yaml`. Example:
 
-.. code-block: yaml
+.. code-block:: yaml
+
     services:
       - class: org.yamcs.tctm.cfs.CfsEventDecoder
         args:
-            msgIds: [0x0808]
-            byteOrder: BIG_ENDIAN
-            charset: US-ASCII
-            appNameMax: 20
-            eventMsgMax: 122
-            streams:
-              - tm_realtime              
+          msgIds: [0x0808]
+          byteOrder: BIG_ENDIAN
+          charset: US-ASCII
+          appNameMax: 20
+          eventMsgMax: 122
+          streams:
+            - tm_realtime
+
 
 Configuration Options
 ---------------------

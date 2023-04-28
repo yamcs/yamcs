@@ -7,7 +7,7 @@ Data Links can report on their status and can also be controlled by an operator 
 
 Note that any Yamcs Service can connect to external sources and inject data in the streams. Data links however, can report on their status using a predefined interface and can also be controlled to connect or disconnect from their data source.
 
-Data links are defined in ``etc/yamcs.(instance).yaml``. Example:
+Data links are defined in :file:`etc/yamcs.{instance}.yaml`. Example:
 
 .. code-block:: yaml
 
@@ -44,7 +44,6 @@ tcStream (string)
     
 ppStream (string)
      This is an alternative to *stream*; can be used for links serving more than one of TM, TC or PP.
-    
 
 invalidPackets (string)
     One of ``DROP``, ``PROCESS`` or ``DIVERT``. Used for TM links to specify what happens with the packets that the pre-processor decides are invalid:

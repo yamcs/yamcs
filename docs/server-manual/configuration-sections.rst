@@ -5,7 +5,7 @@ Some of the standard configuration files can be extended with custom configurati
 
 A Yamcs plugin is automatically associated with a configuration section named after the plugin identifier.
 
-For example, the ``yamcs-web`` module is packaged as a Yamcs plugin, and accepts configuration options read from the ``yamcs-web`` section of the main ``yamcs.yaml``:
+For example, the ``yamcs-web`` module is packaged as a Yamcs plugin, and accepts configuration options read from the ``yamcs-web`` section of the main :file:`etc/yamcs.yaml`:
 
 .. code-block:: java
 
@@ -36,7 +36,7 @@ If you have custom components that want to access this configuration, one possib
 
 .. rubric:: Instance-specific configuration
 
-Besides global plugin configuration options in ``yamcs.yaml``, you may also want to add instance-specific configuration options. These would be considered when validating any ``yamcs.[instance].yaml`` file:
+Besides global plugin configuration options in :file:`etc/yamcs.yaml`, you may also want to add instance-specific configuration options. These would be considered when validating any :file:`yamcs.{instance}.yaml` file:
 
 .. code-block:: java
 

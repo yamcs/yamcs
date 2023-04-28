@@ -1,20 +1,20 @@
 Processor Configuration
 =======================
 
-The configuration of the different processor types can be found in ``etc/processor.yaml``. The file defines a map whose keys are the processor types. The type is used to define a specific configuration used when creating the processor. In addition to its type, each processor has a unique name specified at the moment of creation.
+The configuration of the different processor types can be found in :file:`etc/processor.yaml`. The file defines a map whose keys are the processor types. The type is used to define a specific configuration used when creating the processor. In addition to its type, each processor has a unique name specified at the moment of creation.
 
 The Yamcs processors are created in various ways:
 
 * at startup by the :doc:`../services/instance/processor-creator-service`. This is how typically the realtime processor is started. Note that here "realtime" is both the type and the name of the processor.
-* by asking for archive data via the API with `dataSource = replay`. This will create a processor of type "ArchiveRetrieval".
+* by asking for archive data via the API with `dataSource = replay`. This will create a processor of type ``ArchiveRetrieval``.
 * the :doc:`../services/instance/parameter-archive-service` creates regularly processors of type "ParameterArchive" to build up the parameter archive.
 * new processors of any type can be created via API. Yamcs Studio and Yamcs Web make use of this functionality to perform replays of data from the archive and they create processors of type "Archive".
 
-Note that the types "Archive", "ParameterArchive" and "ArchiveRetrieval" are often hardcoded in the services that use those processor types so it is advisable not to change them in the processor.yaml. The user can define additional processor types for implementing custom functionality. 
+Note that the types ``Archive``, ``ParameterArchive`` and ``ArchiveRetrieval`` are often hardcoded in the services that use those processor types so it is advisable not to change them in the :file:`etc/processor.yaml`. The user can define additional processor types for implementing custom functionality. 
 
 One current restriction is that all instances share the same processor types. It is not possible for example that the ParameterArchive processor type behaves differently in two different instances of the same Yamcs server.
 
-Example of the realtime processor type configuration:
+Example of the ``realtime`` processor type configuration:
 
 .. code-block:: yaml
 
@@ -77,7 +77,7 @@ subscribeContainerArchivePartitions (boolean)
 Alarm options 
 -------------
 
-These options are defined under the config -> alarm.
+These options are defined under config -> alarm.
 
 parameterCheck (boolean)
     If set to true, the parameters will be checked against the Mission Database defined limits. The users will receive the limit information as part of the parameter status. For example Yamcs Studio displays these parameters with a red or yellow border, depending on the severity of the limit. If set to false the limits will be ignored and all parameters will have the status unmonitored (equivalent with having no limit defined in the Mission Database).
@@ -114,7 +114,7 @@ duration: 600
     How long in seconds the parameters should be kept in the cache. This value should be tuned according to the parameter archive consolidation interval.
     
 maxNumEntries: 4096
-   How many values should be kept in the cache for one parameter.
+   How many values should be kept in cache for one parameter.
 
 
 TM (container) processing options
@@ -125,12 +125,12 @@ These options are defined under the config -> tmProcessor.
 ignoreOutOfContainerEntries (boolean)
     If set to false (default), when processing a TM packet, parameters whose position falls outside of the packet, will generate a warning. This option can be used to turn off that warning. Usually it is a sign of an ill-defined Mission Database and it is better to fix the Mission Database than setting this option.
     
+.. _expirationTolerance:
+
 expirationTolerance (double)
-    The Mission Database can define an expected rate in stream for packets (containers) - that means how often a packet is expected to be sent by the remote system. The rate in stream property will cause Yamcs to set an expiration time for the parameters extracted from that packet. The expiration of parameters is used to warn the operators that they are potentially looking at stale data in the displays. 
+    The Mission Database can define an expected rate in stream for packets (containers). This signifies how often a packet is expected to be sent by the remote system. The rate in stream property will cause Yamcs to set an expiration time for the parameters extracted from that packet. The expiration of parameters is used to warn the operators that they are potentially looking at stale data in the displays.
+    
     Yamcs will compute the expiration time as the rate in stream defined in the Mission Database multiplied by this configuration option. The tolerance is needed in order to avoid generating false expiration warnings.
 
 maxArraySize (integer)
     The maximum size of arrays extracted from TM packets. The arrays can be dynamically sized (meaning the size is given by a parameter in the packet) and this option configures the maximum size allowed. Default: ``10000``.
-    
-    
-    

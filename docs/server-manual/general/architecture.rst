@@ -22,11 +22,12 @@ Data Links
 ----------
 
 Data Links are components that connect to the target system (instruments, ground stations, lab equipment, etc). One Yamcs instance will contain multiple data links. There are three types of data received/sent via Data Links:
- * Telemetry packets. These are usually binary chunks of data which have to be split into parameters according to the definition into a Mission Database.
- * Telecommands. These are usually the reverse of the telemetry packets.
- * Parameters. These are historically (ISS ground segment) called also processed parameters to indicate they are processed (e.g. calibrated, checked against limits) by another center. 
 
-Connecting via a protocol to a target system means implementing a specific data link for that protocol. In Yamcs there are some built-in Data Links for UDP and TCP. SLE (Space Link Extension) data links are also implemented in a plugin.
+* Telemetry packets. These are usually binary chunks of data which have to be split into parameters according to the definition into a Mission Database.
+* Telecommands. These are usually the reverse of the telemetry packets.
+* Parameters. These are historically (:abbr:`ISS (International Space Station)` ground segment) called also processed parameters to indicate they are processed (e.g. calibrated, checked against limits) by another center. 
+
+Connecting via a protocol to a target system means implementing a specific data link for that protocol. In Yamcs there are some built-in Data Links for UDP and TCP. :abbr:`SLE (Space Link Extension)` data links are also implemented in a plugin.
 
 The pre-processors run inside the TM data links and are responsible for doing basic packet processing (e.g. verifying a CRC or checksum) which is not described in the Mission Database.
   
@@ -39,8 +40,7 @@ Yamcs does not define the dump data as a special type of data, it is the configu
 
 The CCSDS standards specify a higher level entity called transport frame. Typically the telemetry transfer frames are fixed size and the variable size packets are encoded in the fixed size frames using a well defined procedure. The packets can be multiplexed on the same transmission channel with other types of data such as a video bitstream. The frames allows also multiplexing realtime data with dump data. In order to maintain a constant bitrate required for RF communication, the standards also define the idle data to be sent when no other data is available. 
 
-In Yamcs, all the CCSDS frame processing is performed at the level of Data Links - when frame processing is used, there is a data link that receives the frame (e.g. via SLE) and then demultiplexes it into multiple sub-links which in turn apply the pre-processor for TM and send the data on the streams to the processors and archive. There is a sub-link (or more) for realtime data and similarly a sub-link (or more) for dump data. Yamcs handles packets and parameters, other type of data (e.g. video) could be sent to external systems for processing and storage.
-
+In Yamcs, all the CCSDS frame processing is performed at the level of Data Links - when frame processing is used, there is a data link that receives the frame (e.g. via :abbr:`SLE (Space Link Extension)`) and then demultiplexes it into multiple sub-links which in turn apply the pre-processor for TM and send the data on the streams to the processors and archive. There is a sub-link (or more) for realtime data and similarly a sub-link (or more) for dump data. Yamcs handles packets and parameters, other type of data (e.g. video) could be sent to external systems for processing and storage.
 
  
 Streams
@@ -67,17 +67,19 @@ Services
 --------
 
 A service in Yamcs is a Java class that implements the :javadoc:`org.yamcs.YamcsService` interface. The services can be:
- * global meaning they run only once at the level of the server; their definition can be found in ``yamcs.yaml``. One such service is the HttpServer.
- * instance specific meaning that they run once for each Yamcs instance where they are included; their definition can be found in ``yamcs.<instance>.yaml``
- * processor specific meaning they run at the level of the processor; their definition can be found in ``processor.yaml``.
+
+* global meaning they run only once at the level of the server; their definition can be found in :file:`etc/yamcs.yaml`. One such service is the :doc:`../services/global/http-server`.
+* instance specific meaning that they run once for each Yamcs instance where they are included; their definition can be found in :file:`yamcs.{instance}.yaml`.
+* processor specific meaning they run at the level of the processor; their definition can be found in :file:`etc/processor.yaml`.
  
-User can define their own services by adding a jar with an implemented java class into the Yamcs lib/ext directory.
+User can define their own services by adding a jar with an implemented java class into the Yamcs :file:`lib/ext` directory.
 
 
 Plugins
 -------
 
-A plugin in Yamcs is a Java class that implements the :javadoc:`org.yamcs.Plugin` interface. The plugin classes are loaded by the Yamcs server at startup before starting any instance. 
+A plugin in Yamcs is a Java class that implements the :javadoc:`org.yamcs.Plugin` interface. The plugin classes are loaded by the Yamcs server at startup before starting any instance.
+
 Although not required, it is advised that the user creates a plugin with each jar containing mission specific functionality. This will allow to see in the Yamcs web the version of the plugin loaded; the plugin is also the place where the user can register new API endpoints.
 
 
@@ -96,7 +98,7 @@ The Parameter Archive contains values of parameters and is optimized for retriev
 Buckets
 -------
 
-Buckets are used for storing general data objects. For example the CFDP service will store there all the files received from the on-board system. As for most Yamcs components, there is an REST API allowing the user to work with buckets (get, upload, delete objects).
+Buckets are used for storing general data objects. For example the CFDP service will store there all the files received from the on-board system. As for most Yamcs components, there is an :apidoc:`HTTP API <buckets>` allowing the user to work with buckets (get, upload, delete objects).
 
 
 Extension points
@@ -104,9 +106,9 @@ Extension points
 
 In the diagram above, there are some components that have a build symbol; these is where we expect mission specific functionality to be added:
 
- * new data links have to be implemented if the connection to the target system uses a protocol that is not implemented in Yamcs.
- * packet pre-processor and command post-processor are components where the user can implement some specific TM/TC headers, time formats etc. 
- * the Mission Database (MDB) contains the description of telecommands and telemetry and is entirely mission specific. 
- * user defined streams can implement command routing or basic operations on packets (e.g. extracting CLCW from a TM packet).
- * user defined services can add complete new functionality; an example of such functionality is to assemble telemetry packets into files (this is what the CFDP service does, but if the user's system does not use CFDP, a new service can be developed).
- * finally plugins can be used to group together all the mission specific functionality.
+* new data links have to be implemented if the connection to the target system uses a protocol that is not implemented in Yamcs.
+* packet pre-processor and command post-processor are components where the user can implement some specific TM/TC headers, time formats etc. 
+* the Mission Database (MDB) contains the description of telecommands and telemetry and is entirely mission specific. 
+* user defined streams can implement command routing or basic operations on packets (e.g. extracting CLCW from a TM packet).
+* user defined services can add complete new functionality; an example of such functionality is to assemble telemetry packets into files (this is what the CFDP service does, but if the user's system does not use CFDP, a new service can be developed).
+* finally plugins can be used to group together all the mission specific functionality.

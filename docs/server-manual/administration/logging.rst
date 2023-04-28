@@ -17,9 +17,9 @@ The ``yamcsd`` program accepts some options to modify these defaults. In particu
     Turn off ANSI color codes
 
 
-If the configuration directory of Yamcs includes a file ``logging.properties``, then logging properties are read from this file instead of applying the default console logging. Logging-related program arguments (e.g. verbosity) are then ignored.
+If the configuration directory of Yamcs includes a file :file:`logging.properties`, then logging properties are read from this file instead of applying the default console logging. Logging-related program arguments (e.g. verbosity) are then ignored.
 
-The ``logging.properties`` uses the standard Java logging format, which allows to tweak the logging in much more detail than what is possible through the command-line flags of the yamcsd executable.
+The :file:`logging.properties` uses the standard Java logging format, which allows to tweak the logging in much more detail than what is possible through the command-line flags of the yamcsd executable.
 
 A full description of the syntax is beyond the scope of this manual, but see this example of how we currently configure our generic RPM packages:
 
@@ -45,7 +45,7 @@ There are two handlers:
 
 #. A ConsoleHandler prints its messages to stdout. The console output can for example be consumed by an init system like systemd. This configuration uses a JournalFormatter that prints short messages without timestamp for direct injection into the systemd journal, it also applies a GlobalFilter that will remove log messages specific to an instance. This makes Yamcs less chatty.
 
-#. A FileHandler defines the properties used for logging to ``/opt/yamcs/log/yamcs-server.log.x``. The FileHandler in this configuration applies a rotation 20MB with a maximum of 50 files. The theoretic maximum of disk space is therefore 1GB. The most recent log file can be found at ``/opt/yamcs/log/yamcs-server.log.0``. Note that when Yamcs Server is restarted the log files will always rotate even if ``yamcs-server.log.0`` had not yet reached 20MB.
+#. A FileHandler defines the properties used for logging to :file:`/opt/yamcs/log/yamcs-server.log.x`. The FileHandler in this configuration applies a rotation 20 MB with a maximum of 50 files. The theoretic maximum of disk space is therefore 1 GB. The most recent log file can be found at :file:`/opt/yamcs/log/yamcs-server.log.0`. Note that when Yamcs Server is restarted the log files will always rotate even if :file:`yamcs-server.log.0` had not yet reached 20 MB.
 
 This configuration logs messages coming from ``org.yamcs`` loggers at maximum FINE level. Each handler may apply a further level restriction. This is applied after the former level restriction. For example the above FileHandler has level ALL, however it will never print messages more verbose than FINE.
 
@@ -72,7 +72,7 @@ The formatting of this handler cannot be modified, and does not include full sta
 
 .. rubric:: ``org.yamcs.logging.WatchedFileHandler``
 
-Handler that watches the file that it is logging to. When that file is deleted, the handler will close and reopen a new file with the same name. This handler is designed to be used with programs like ``logrotate`` that take care of log rotation outside of the JVM. Without the watch functionality, log messages would just continue to be written to the old (rotated) file.
+Handler that watches the file that it is logging to. When that file is deleted, the handler will close and reopen a new file with the same name. This handler is designed to be used with programs like ``logrotate`` that take care of log rotation outside of the :abbr:`JVM (Java Virtual Machine)`. Without the watch functionality, log messages would just continue to be written to the old (rotated) file.
 
 ``org.yamcs.logging.WatchedFileHandler.level``
       Minimum level of loggable messages. Default: ALL.

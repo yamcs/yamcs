@@ -24,6 +24,8 @@ stripRealm (boolean)
     | Whether to strip the realm from the username (e.g. ``user@<realm>`` becomes just ``user``).
     | Default: ``true``.
 
-This module reads Kerberos configuration from the Kerberos system configuration file. This is usually available at ``/etc/krb5.conf``. If you need to override this location, you have to set a system property at JVM level:
+This module reads Kerberos configuration from the Kerberos system configuration file. This is usually available at :file:`/etc/krb5.conf`. If you need to override this location, you have to set a system property at :abbr:`JVM (Java Virtual Machine)` level:
 
-    -Djava.security.krb5.conf=/my/custom/krb5.conf
+.. code-block:: text
+
+   -Djava.security.krb5.conf=/my/custom/krb5.conf

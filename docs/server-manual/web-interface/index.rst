@@ -19,5 +19,4 @@ Most pages (the homepage excluding) show data specific to a particular Yamcs ins
     commanding
     mdb
     archive
-    admin
-
+    admin/index

@@ -3,11 +3,11 @@ Archive Filling
 
 There are two fillers that can be used to populate Parameter Archive:
 
-* | **Realtime Filling**
-  | The RealtimeFillerTask will subscribe to a realtime processor and write the parameter values to the archive.
+Realtime Filling
+    The RealtimeFillerTask will subscribe to a realtime processor and write the parameter values to the archive.
 
-* | **Backfilling**
-  | The ArchiveFillerTask will create from time to time replays from the raw data in the :doc:`../archive/telemetry-packets` and :doc:`../archive/parameters` tables of the Generic Archive.
+Backfilling
+    The ArchiveFillerTask will create from time to time replays from the raw data in the :doc:`../archive/telemetry-packets` and :doc:`../archive/parameters` tables of the Generic Archive.
 
 Due to the fact that data is stored in segments, one segment being a value in the (key, value) RocksDB, it is not efficient to write one row (data corresponding to one timestamp) at a time. It is much more efficient to collect data and write entire or at least partial segments at a time.
 

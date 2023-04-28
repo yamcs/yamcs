@@ -3,13 +3,13 @@ Configuration
 
 Yamcs configuration files are written in YAML format. This format allows to encode in a human friendly way the most common data types: numbers, strings, lists and maps. For detailed syntax rules, please see https://yaml.org.
 
-The root configuration file is ``etc/yamcs.yaml``. It contains a list of Yamcs instances. For each instance, a file called ``etc/yamcs.instance-name.yaml`` defines all the components that are part of the instance. Depending on which components are selected, different configuration files are needed.
+The root configuration file is :file:`etc/yamcs.yaml`. It contains a list of Yamcs instances. For each instance, a file called :file:`etc/yamcs.{instance}.yaml` defines all the components that are part of the instance. Depending on which components are selected, different configuration files are needed.
 
 
 Server Configuration
 --------------------
 
-The number of configuration options in ``etc/yamcs.yaml`` are relatively limited. A sample configuration file is below.
+The number of configuration options in :file:`etc/yamcs.yaml` are relatively limited. A sample configuration file is below.
 
 .. code-block:: yaml
 
@@ -23,7 +23,6 @@ The number of configuration options in ``etc/yamcs.yaml`` are relatively limited
     
     incomingDir: /storage/yamcs-incoming
 
-
     secretKey: "changeme"
 
     yamcs-web:
@@ -35,29 +34,29 @@ services (list)
     A list of global services. Users can create their own global services that are unique for the whole Yamcs instance. The global services description can be found in :doc:`../services/global/index`
   
 instances (list)
-    A list of instances loaded at Yamcs start. It is also possible to load instances from <dataDir>/instance-def directory. The instances created created via the API will be stored there.
+    A list of instances loaded at Yamcs start. It is also possible to load instances from :file:`{dataDir}/instance-def` directory. The instances created created via the API will be stored there.
     
 dataDir (string)
     A directory which will be the root of the Yamcs archive. The directory must exist and it shall be possible for the user who runs Yamcs to write into it. More information about the Yamcs archive can be found in :doc:`../data-management/index`.
-    In addition to the directories used for the archive, there are two directories named ``instance-def`` and ``instance-templates`` which are used for the dynamic creation of instances.
+    In addition to the directories used for the archive, there are two directories named :file:`instance-def` and :file:`instance-templates` which are used for the dynamic creation of instances.
 
 incomingDir (string)
     A directory used by the :javadoc:`~org.yamcs.tctm.FilePollingTmDataLink` to load incoming telemetry files. This is a relic from when Yamcs was used only for that; the option should be specified in the link configuration instead (it is left here because some users are quite accustomed to it).
 
 cacheDir (string)
-    A directory that Yamcs can use to cache files. Defaults to a directory called ``cache`` relative to the directory where Yamcs is running from.
+    A directory that Yamcs can use to cache files. Defaults to a directory called :file:`cache` relative to the directory where Yamcs is running from.
 
 secretKey (string)
     A key that is used to sign the authentication tokens given to the users. It should be changed immediately after installation. As of version 5.0.0, Yamcs does not support persisted authentication tokens but this feature will be available in a future version. 
 
 yamcs-web (map)
-    Configuration of the yamcs web application. The different options are documented in :doc:`../web-interface/index`
+    Configuration of the Yamcs web application. The different options are documented in :doc:`../web-interface/index`
     
         
 Instance Configuration
 ----------------------
 
-The instance configuration file ``yamcs.<instance-name>.yaml`` contains most of the options that need to be set on a Yamcs server.
+The instance configuration file :file:`yamcs.{instance}.yaml` contains most of the options that need to be set on a Yamcs server.
 
 .. code-block:: yaml
     
@@ -67,14 +66,13 @@ The instance configuration file ``yamcs.<instance-name>.yaml`` contains most of 
 
     dataLinks:
         - name: tm_realtime
-          enabledAtStartup: false
           class: org.yamcs.tctm.TcpTmDataLink
           ...
 
     mdb:
         - type: "sheet"
           spec: "mdb/simulator-ccsds.xls"
-          subloaders: 
+          subloaders:
                - type: "sheet"
                  spec: "mdb/simulator-tmtc.xls"
           ...
@@ -109,4 +107,4 @@ streamConfig(map)
     This configures the list of streams created when Yamcs starts. The map contains an entry for each standard stream type (``tm``, ``cmdHist``, ``event``, etc) and additionally a key ``sqlFile`` can be used to load a StreamSQL file where user defined streams can be created. More information can be found in :doc:`../data-management/streams`
     
 timeService(map)
-    This configures the source of the "mission time". By default the RealtimeTimeService uses the local computer clock as the time source. The `javadoc:org.yamcs.time.SimulationTimeService` can be used to simulate a mission time in the past or the future. If configured, the time can be controlled using the REST API. The ``updateSimulationTime: true`` option on a telemetry data link can also be used to manipulate the simulation time - in this case the time will be set to be the generation time of the packet.
+    This configures the source of the "mission time". By default the RealtimeTimeService uses the local computer clock as the time source. The :javadoc:`org.yamcs.time.SimulationTimeService` can be used to simulate a mission time in the past or the future. If configured, the time can be controlled using the :apidoc:`HTTP API <time/set-time>`. The ``updateSimulationTime: true`` option on a telemetry data link can also be used to manipulate the simulation time - in this case the time will be set to be the generation time of the packet.

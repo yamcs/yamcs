@@ -1,38 +1,42 @@
 Data Types
-=====================
+==========
 
 The MDB data types are associated to parameters and command arguments and provide several characteristics of these:
- - the value type (int64, int32, float,...) of the engineering value
- - the value type of the raw value
- - validity conditions
- - units
- - alarms (only for types corresponding to parameters)
- - engineering/raw transformation using calibrators
- - raw/binary transformation using data encodings
+
+- the value type (int64, int32, float,...) of the engineering value
+- the value type of the raw value
+- validity conditions
+- units
+- alarms (only for types corresponding to parameters)
+- engineering/raw transformation using calibrators
+- raw/binary transformation using data encodings
 
 The distinction between a parameter and its type is not so evident and many control systems do not make this distinction (i.e. each parameter with its own type). 
 
-In practice most use of shared types has been to define generic types such as "uint8", "uint16", etc and use those for parameters that do not require any calibration, units or other specific properties.
+In practice most use of shared types has been to define generic types such as ``uint8``, ``uint16``, and use those for parameters that do not require any calibration, units or other specific properties.
+
 Types can also be shared for parameters associated to the same type of sensors which do not need individual calibrators.
 
 
 Yamcs supports the following parameter and argument data types:
- - Integer data type
- - Float data type
- - Boolean data type
- - String data type
- - Binary data type
- - Absolute time data type
- - Enumerated data type - a (integer, string) pair.
- - Aggregate data type - complex data type similar to a C-struct. Each member of the aggregate has a name and a type. 
- - Array data type- multidimensional array where each element is of the same type.
+
+* Integer data type
+* Float data type
+* Boolean data type
+* String data type
+* Binary data type
+* Absolute time data type
+* Enumerated data type - a (integer, string) pair.
+* Aggregate data type - complex data type similar to a C-struct. Each member of the aggregate has a name and a type. 
+* Array data type - multidimensional array where each element is of the same type.
 
 As mentioned above, one important function of a data type is to describe how to represent the raw value on the wire (i.e. in the command or telemetry packet). The following encodings are supported:
- - Integer data encoding 
- - Float data encoding
- - Boolean data encoding
- - String data encoding
- - Binary data encoding
+
+- Integer data encoding 
+- Float data encoding
+- Boolean data encoding
+- String data encoding
+- Binary data encoding
 
 Note that ``xyz`` in the ``xyz data encoding`` refers to the type of the raw value whereas the ``xyz`` in ``xyz data type`` refers to type of the engineering value.
 
@@ -44,6 +48,7 @@ There may be MDB data types without encoding - these are used by local parameter
 
 All the data encodings in Yamcs can be performed by user defined java code by implementing the :javadoc:`org.yamcs.mdb.DataEncoder` or :javadoc:`org.yamcs.mdb.DataDecoder` respectively. Such code has to be written if the encoding format is not part of Yamcs.
 
+
 Parameter types vs Argument types
 ---------------------------------
 
@@ -54,7 +59,6 @@ For convenience, when defining the Mission Database in spreadsheet format, there
 In XTCE they are defined in different sections: ``<ParameterTypeSet>`` and ``<ArgumentTypeSet>``.
 
 Note that the calibrator (if defined) applies in a different direction: for parameter types it converts from raw to engineering value whereas for argument types it converts from engineering value to raw. Thus one cannot apply the same calibrator even if a parameter  corresponds conceptually to an argument. The user would have to invert (in mathematical terms) the calibrator used in the parameter type definition when defining the corresponding argument data type.
-
 
 
 Integer data type
@@ -78,8 +82,9 @@ Note that by default the type has a ``sizeInBits=32`` so the value will be conve
 Yamcs will use a 32 bit integer for any parameter with ``sizeInBits <= 32`` and a 64 bit integer for any type with the ``32 < sizeInBits <= 64``.
 
 The ``<ValidRange>`` construct is optional and used differently for parameters and arguments:
- - for parameters it is used to check the validity. If a parameter value does not satisfy the range, it will be marked as invalid (and can be seen with a specific color in the display)
- - for arguments it is used to verify the value provided by the user. If the value does not match the range, the command is rejected.
+
+* for parameters it is used to check the validity. If a parameter value does not satisfy the range, it will be marked as invalid (and can be seen with a specific color in the display)
+* for arguments it is used to verify the value provided by the user. If the value does not match the range, the command is rejected.
 
 Integer parameters can also have associated alarms and calibrators (see below an example for float parameters, it is identical for integer parameters).
  
@@ -136,10 +141,11 @@ An XTCE example of a float parameter encoded as integer and having a polynomial 
     </FloatParameterType>
 
 Yamcs supports the following type of calibrations:
- - polynomial - the conversion between the raw value and the engineering value is obtained by applying a polynomial function.
- - linear spline (point pairs) - the conversion between the raw and engineering value is obtained by interpolating linearly the raw value.
- - mathematical operations specified in reverse polish notation (only in XTCE format) - the conversion is obtained by applying the mathematical operation.
- - Java expressions (only in spreadsheet format) - the conversion is obtained by running it through the java expression.
+
+- polynomial - the conversion between the raw value and the engineering value is obtained by applying a polynomial function.
+- linear spline (point pairs) - the conversion between the raw and engineering value is obtained by interpolating linearly the raw value.
+- mathematical operations specified in reverse polish notation (only in XTCE format) - the conversion is obtained by applying the mathematical operation.
+- Java expressions (only in spreadsheet format) - the conversion is obtained by running it through the java expression.
  
 The java expression is the most flexible calibration as it can practically call any java code available on the server. However it is not allowed by XTCE (instead an algorithm can be used to generate the output value into a different parameter).
 
@@ -148,11 +154,10 @@ The example above also defines an default alarm - perhaps a bit counter intuitiv
 Both calibrators and alarms can be contextualized: that means a different alarm or calibrator will be used depending on the value of other parameters.
 
 While the most common encoding for float is float encoding, the other encodings can also be used:
- - integer: will convert number to integer by performing a java cast to long and then fitting the long into the number of bits required. This may result in loss of precision and even in completely wrong number when converting a signed float to a unsigned integer. 
- - string: the value will be converted to a string representation.
- - binary: 
- 
 
+- integer: will convert number to integer by performing a java cast to long and then fitting the long into the number of bits required. This may result in loss of precision and even in completely wrong number when converting a signed float to a unsigned integer. 
+- string: the value will be converted to a string representation.
+- binary: 
 
 
 Boolean data type
@@ -161,17 +166,21 @@ Boolean data type
 Boolean values in Yamcs take take a simple ``true`` or ``false`` value. In XTCE one can define different values instead of ``true``/``false`` as in the example below. Yamcs only supports these values when reading the XTCE file (they can be used in conditions for example) but the value computed does not include the string (and thus cannot be shown in the display).
 
 To encode boolean values one can use any data encoding with the following transformations:
- - for integer/float raw values: 
-    - decoding: ``0`` is ``false`` and anything else is true when decoding. 
-    - encoding: ``true`` is converted to ``1``, ``false`` is converted to ``0``.
- - for string values: 
-    - decoding: if the string value is empty, case insensitive equal with the ``zeroStringValue`` defined in the type or with the string ``0`` then the value is ``false``, anything else is ``true``. 
-    - encoding: ``true`` is converted to the ``oneStringValue`` defined in the type, ``false`` is converted to ``zeroStringValue`` defined in the type.
- - for binary values: 
-    - decoding: if the binary value is empty or consists only of nulls then the value of the boolean is ``false`` anything else is ``true``.
-    - encoding: the value is converted to a binary array of one element with the value ``1`` if ``true`` or ``0`` if ``false``.
 
- .. code-block:: xml
+- for integer/float raw values: 
+
+  - decoding: ``0`` is ``false`` and anything else is true when decoding. 
+  - encoding: ``true`` is converted to ``1``, ``false`` is converted to ``0``.
+- for string values: 
+
+  - decoding: if the string value is empty, case insensitive equal with the ``zeroStringValue`` defined in the type or with the string ``0`` then the value is ``false``, anything else is ``true``. 
+  - encoding: ``true`` is converted to the ``oneStringValue`` defined in the type, ``false`` is converted to ``zeroStringValue`` defined in the type.
+- for binary values: 
+
+  - decoding: if the binary value is empty or consists only of nulls then the value of the boolean is ``false`` anything else is ``true``.
+  - encoding: the value is converted to a binary array of one element with the value ``1`` if ``true`` or ``0`` if ``false``.
+
+.. code-block:: xml
 
     <BooleanParameterType name="bool2" oneStringValue="yes!" zeroStringValue="nooo">
         <StringDataEncoding>
@@ -199,9 +208,9 @@ In addition to converting the bytes to unicode characters, a typical problem in 
 - if the buffer is larger than the string, the buffer size can be fixed or its size can be determined from the value of a parameter/argument.
 - inside the buffer:
 
-   - the string can fill completely the buffer (so the size of the string is determined by the size of the buffer).
-   - the size of the string can be encoded at the beginning of the buffer (in front of the string)
-   - or the string can be terminated by a special character (or by the end of the buffer, whichever comes first).
+  - the string can fill completely the buffer (so the size of the string is determined by the size of the buffer).
+  - the size of the string can be encoded at the beginning of the buffer (in front of the string)
+  - or the string can be terminated by a special character (or by the end of the buffer, whichever comes first).
 
 One case which is not supported by Yamcs (nor by XTCE) is a fixed size string inside a fixed size buffer with the string not filling completely the buffer. For this case you can limit the size of the buffer to the size of the string and define another parameter for the remaining of the buffer, or simply define an offset for the next container entry.
 
@@ -372,11 +381,12 @@ The following example displays the use of a ``IntegerDataEncoding`` element wher
 
 .. rubric:: Example 1: integer encoding for a AbsoluteTimeParameterType parameter
 
-The example below is using UNIX as its reference time, whose count starts at January 1 1970 and is used by modern computers, linux systems etc. The offset and the scale are part of a linear transformation which has the form y = ax + b where "b" represents the offset, "a" represents the scale and "x" is the input. 
-This transformation could be used for a system whose internal clock counts in seconds from 1/1/2000, so we need to add ``946677600`` seconds to that time in order to get the appropriate UNIX timestamp. 
-    - ``<ReferenceTime>`` describes origin(epoch or reference) of this time type
-    - ``<Epoch>`` may be specified as an XS date where time is implied to be 00:00:00, xs dateTime, or string enumeration of common epochs. The enumerations are TAI(used by CCSDS and others), J2000, UNIX(also known as POSIX) and GPS
+The example below is using UNIX as its reference time, whose count starts at January 1 1970 and is used by modern computers, linux systems etc. The offset and the scale are part of a linear transformation which has the form ``y = ax + b`` where ``b`` represents the offset, ``a`` represents the scale and ``x`` is the input.
 
+This transformation could be used for a system whose internal clock counts in seconds from 1/1/2000, so we need to add ``946677600`` seconds to that time in order to get the appropriate UNIX timestamp. 
+
+- ``<ReferenceTime>`` describes origin(epoch or reference) of this time type
+- ``<Epoch>`` may be specified as an XS date where time is implied to be 00:00:00, xs dateTime, or string enumeration of common epochs. The enumerations are TAI(used by CCSDS and others), J2000, UNIX(also known as POSIX) and GPS
 
 .. code-block:: xml
 

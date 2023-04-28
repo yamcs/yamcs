@@ -1,7 +1,7 @@
 System Parameters Service
 ===========================
 
-Collects system parameters from any Yamcs component at a frequency of 1Hz. Parameter values are emitted to the ``sys_var`` stream.
+Collects system parameters from any Yamcs component at a frequency of 1 Hz. Parameter values are emitted to the ``sys_var`` stream.
 
 
 Class Name
@@ -13,7 +13,7 @@ Class Name
 Configuration
 -------------
 
-This service is defined in ``etc/yamcs.(instance).yaml``. Example:
+This service is defined in :file:`etc/yamcs.{instance}.yaml`. Example:
 
 .. code-block:: yaml
 

@@ -52,3 +52,13 @@ In addition there is file preview support for the following display resources:
       - Planned
 
 Any other file is displayed in a basic text viewer.
+
+
+Replaying telemetry
+-------------------
+
+Telemetry replays can be triggered from any instance-scoped page by clicking the mission time in the page toolbar and selecting **Replay from date**.
+
+In the dialog that opens, you can choose a replay range. Yamcs will start a *replay* processor which will run in parallel to the *realtime* processor.
+
+The UI will switch to this replay processor, causing pages that normally would show realtime telemetry, to show replayed telemetry instead.

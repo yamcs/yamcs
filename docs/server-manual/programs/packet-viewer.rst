@@ -40,7 +40,7 @@ Options
 
 .. option:: -x <MDB>
 
-    Name of the applicable MDB as specified in the ``mdb.yaml`` configuration file.
+    Name of the applicable MDB as specified in the :file:`etc/mdb.yaml` configuration file.
 
     This option is required in *offline mode*. In *online* mode the MDB defaults to that of the connected Yamcs instance.
 
@@ -83,7 +83,7 @@ Offline mode:
 Configuration Files
 -------------------
 
-:program:`packet-viewer` configuration files are placed in the ``etc/`` directory. MDB files for local packet decoding are placed in ``mdb/`` directory.
+:program:`packet-viewer` configuration files are placed in the :file:`etc/` directory. MDB files for local packet decoding are placed in :file:`mdb/` directory.
 
 .. code-block:: text
 
@@ -102,7 +102,7 @@ mdb.yaml
 
 Specifies one or more MDB configurations, which you can then choose from in order to extract parameters from a packet.
 
-The MDB configuration structure can be copied from a ``yamcs.<instance>.yaml`` configuration file, but with a level on top which specifies the name visible in UI. In the following example, the user can choose between `mymdb1` and `mymdb2`.
+The MDB configuration structure can be copied from a :file:`yamcs.{instance}.yaml` configuration file, but with a level on top which specifies the name visible in UI. In the following example, the user can choose between `mymdb1` and `mymdb2`.
 
 .. code-block:: yaml
 
