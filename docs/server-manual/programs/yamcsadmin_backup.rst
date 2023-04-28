@@ -9,7 +9,7 @@ Synopsis
 .. rst-class:: synopsis
 
     | **yamcsadmin backup** create --backup-dir <*DIR*> [--data-dir <*DIR*>]
-                             [--url <*HOST:PORT*>] <*TABLESPACE*>
+                             [--pid <*PID*>] [--url <*HOST:PORT*>] <*TABLESPACE*>
     | **yamcsadmin backup** delete --backup-dir <*DIR*> <*ID*>...
     | **yamcsadmin backup** list --backup-dir <*DIR*>
     | **yamcsadmin backup** purge --backup-dir <*DIR*> --keep <*N*>
@@ -29,9 +29,11 @@ The backup directory is in binary format and can contain multiple restore points
 Commands
 --------
 
-.. describe:: create --backup-dir <DIR> [--data-dir <DIR>] [--url <HOST:PORT>] <TABLESPACE>
+.. describe:: create --backup-dir <DIR> [--data-dir <DIR>] [--pid <PID>] [--url <HOST:PORT>] <TABLESPACE>
 
-    Create either a hot or a cold backup of a Yamcs tablespace. For cold backups, specify the :option:`--data-dir` property, for hot backups specify the :option:`--host` property.
+    Create a backup of a Yamcs tablespace. The default mode of this command is to find a locally running Yamcs server and attach to its JVM for submitting a backup instruction while Yamcs is running.
+
+    If (and only if) Yamcs is stopped, you can perform a cold backup using the :option:`--data-dir` property.
 
 .. describe:: delete --backup-dir <DIR> <ID>...
 
@@ -75,11 +77,17 @@ Options
 
     Directory where to restore the backup.
 
+.. option:: --pid <PID>
+
+    This option is only valid for the ``create`` command.
+
+    Specify the program identifier of the Yamcs server to attach to. If there is only one server running, use of this option is unnecessary.
+
 .. option:: --host <HOST:PORT>
 
     This option is only valid for the ``create`` command.
 
-    Perform a hot backup. This allows to take a consistent backup while Yamcs is running. Backup are currently triggered using a JMX operation.
+    Perform a hot backup using a remote JMX operation.
 
 .. option:: --keep <N>
 
