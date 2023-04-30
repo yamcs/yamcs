@@ -30,4 +30,4 @@ Where the columns are:
 In addition to these columns that are statically created, the pp table will store columns with the name of the parameter and the type ``PROTOBUF(org.yamcs.protobuf.Pvalue$ParameterValue)``.
 
 .. note::
-    Because ``partitioning by ppgroup`` is specified, this is also implicitly part of the primary key, but not stored as such in the RocksDB key.
+    Because partitioning by ``ppgroup`` is specified, this is also implicitly part of the primary key, but not stored as such in the RocksDB key.

@@ -33,6 +33,6 @@ For example:
     2 rows in set
 
 
-.. note::
+The :doc:`Yamcs SQL Format <../../../sql-format>` is detailed in appendix.
 
-    The Yamcs SQL dialect is currently undocumented, and use of this shell is expected only for debugging or development purposes. Concepts such as packets, parameters and events are intended to be accessed using the high-level HTTP API, instead of SQL.
+This shell may be of interest for debugging or development purposes. Concepts such as packets, parameters and events are better accessed using the high-level HTTP API, instead of SQL.
