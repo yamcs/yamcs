@@ -103,7 +103,8 @@ public class YamcsAdminCli extends Command {
             if (cli.debug) {
                 e.printStackTrace();
             } else {
-                System.err.println(e);
+                // Avoid class prefix if it's a known exception
+                System.err.println((e instanceof YamcsAdminException) ? e.getMessage() : e);
             }
             exit(1);
         }

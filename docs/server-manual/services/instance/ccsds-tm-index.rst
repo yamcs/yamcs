@@ -6,7 +6,7 @@ Creates an index for the CCSDS Space Packets (`CCSDS 133.0-B-1 <https://public.c
 The configuration allows to define a list of tm streams where the packets are read from. The packets on those streams have to be CCSDS space packets. This service does not use the Mission Database for interpreting the packets, it just reads the primary header from  the binary data. If the packet length is less than 7 bytes, it is discarded.
 
 
-The index can be visualized in the Yamcs web interface in the Archive -> Overview. It is denoted as "Completeness" and contains one timeline bar for each APID.
+The index can be visualized in the Yamcs web interface in the :menuselection:`Archive Browser`. It is denoted as :guilabel:`Completeness` and contains one timeline bar for each APID.
 
 Class Name
 ----------
@@ -17,7 +17,7 @@ Class Name
 Configuration
 -------------
 
-This service is defined in ``etc/yamcs.(instance).yaml``. Example:
+This service is defined in :file:`etc/yamcs.{instance}.yaml`. Example:
 
 .. code-block:: yaml
 

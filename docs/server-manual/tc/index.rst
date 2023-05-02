@@ -29,7 +29,7 @@ Command Queues
 
 When a command is issued, it must first pass by a queue. Privileges are checked before the command is put into the queue, so if the user does not have the privilege for the given command, the command is rejected before even reaching the queue.
 
-The available queues are defined in the file ``etc/command-queue.yaml``.
+The available queues are defined in the file :file:`etc/command-queue.yaml`.
 
 .. code-block:: yaml
 
@@ -45,7 +45,7 @@ If this file is absent, a default queue is created, equivalent to this configura
 
     default:
 
-Queues can be in one of three states: ``enabled``, ``blocked`` or ``disabled``. When the state is not specified in the ``etc/command-queue.yaml`` configuration file, the latest state will be remembered across server restarts, defaulting to ``enabled``. If there is a configured state, that will always be applied as the initial state of that queue.
+Queues can be in one of three states: ``enabled``, ``blocked`` or ``disabled``. When the state is not specified in the :file:`etc/command-queue.yaml` configuration file, the latest state will be remembered across server restarts, defaulting to ``enabled``. If there is a configured state, that will always be applied as the initial state of that queue.
 
 Each queue has optional conditions. Issued commands are offered to the first queue (in definition order) whose conditions match the command.
 

@@ -5,5 +5,5 @@ Similar to the TM packet pre-processors, the command post-processors are used to
 
 Typical tasks performed by the post-processors are:
  
- * assigning a sequence count (e.g. the CCSDS sequence counts are assigned per APID)
- * computing and appending a checksum or CRC
+* assigning a sequence count (e.g. the CCSDS sequence counts are assigned per APID)
+* computing and appending a checksum or CRC

@@ -20,7 +20,7 @@ Class Name
 Configuration
 -------------
 
-This service is defined in ``etc/yamcs.(instance).yaml`` but its configuration is implementation specific.
+This service is defined in :file:`etc/yamcs.{instance}.yaml` but its configuration is implementation specific.
 Here is an example of it being parametrised inside a file transfer service with a set file listing parser:
 
 .. code-block:: yaml

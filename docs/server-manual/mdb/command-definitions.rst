@@ -11,8 +11,7 @@ Traditionally, the commands sent to spacecrafts are encoded into binary packets 
 
 
 The MDB contains other optional characteristics for commands:
+
 - Command Significance - can be used to indicate the relative importance or urgency of a command. That allows the user interface applications to alert the user. Yamcs can also use the significance to allow users with elevated privileges to send them. 
 - Transmission Constraints - can be used to specify some conditions that have to be valid in order to send a command.
 - Command Verification - can be used to verify the command execution after the command has been sent.
-
-

@@ -90,11 +90,11 @@ The algorithm text is expected to contain the full function body. The body will 
 
 ``in_x`` and  ``out_x`` are names assigned to the inputs/outputs in the algorithm definition.
 
-The method can make use of the input variables and assign out_x.value (this is the engineering value) or out_x.rawValue (this is the raw value) and out_x.updated for each output variable.
+The method can make use of the input variables and assign ``out_x.value`` (this is the engineering value) or ``out_x.rawValue`` (this is the raw value) and ``out_x.updated`` for each output variable.
 
-The <out>.updated can be set to false to indicate that the output value has not to be further processed even if the algorithm has run. By default it is true - meaning that each time the algorithm is run, it is assumed that it updates all the output variables.
+The ``<out>.updated`` can be set to false to indicate that the output value has not to be further processed even if the algorithm has run. By default it is true, meaning that each time the algorithm is run, it is assumed that it updates all the output variables.
 
-If out_x.rawValue is set and out_x.value is not, then Yamcs will run a calibration to compute the engineering value.
+If ``out_x.rawValue`` is set and ``out_x.value`` is not, then Yamcs will run a calibration to compute the engineering value.
 
 Note that some algorithms (e.g. command verifiers) need to return a value.
 

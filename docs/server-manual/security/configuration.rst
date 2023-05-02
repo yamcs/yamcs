@@ -1,10 +1,11 @@
 Configuration
 =============
 
-The security system is configured in the file ``etc/security.yaml``. Example:
+The security system is configured in the file :file:`etc/security.yaml`. Example:
 
 .. code-block:: yaml
 
+    enabled: true
     authModules:
       - class: org.yamcs.security.LdapAuthModule
         args:
@@ -25,7 +26,32 @@ blockUnknownUsers (boolean)
 enabled (boolean)
     Control whether authentication is enforced.
     
-    Default: ``true`` if ``security.yaml`` is present, ``false`` otherwise.
+    Default: ``true`` if :file:`etc/security.yaml` is present, ``false`` otherwise.
 
 guest (map)
     Overrides the user properties of the guest user. This user is used for all access when authentication is not being enforced.
+
+
+.. rubric:: Roles
+
+Roles are configured in the :file:`etc/roles.yaml`. This file defines which privileges belong to which roles. Example:
+
+.. code-block:: yaml
+
+    Operator:
+      ReadParameter: [".*"]
+      WriteParameter: []
+      ReadPacket: [".*"]
+      Command: [".*"]
+      CommandHistory: [".*"]
+      System:
+        - ControlProcessor
+        - ModifyCommandHistory
+        - ControlCommandQueue
+        - GetMissionDatabase
+        - ControlAlarms
+        - ControlArchiving
+
+This example specifies one role ``Operator``. It also demonstrates the use of regular expressions to grant a set of object privileges.
+
+System privileges must be defined under the key ``System``. System privileges may not use regular expressions.

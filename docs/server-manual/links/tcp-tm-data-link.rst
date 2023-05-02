@@ -31,7 +31,7 @@ packetInputStreamArgs (map)
     Optional args of arbitrary complexity to pass to the PacketInputStream. Each PacketInputStream may support different options.
 
 packetPreprocessorClassName (string)
-    Class name of a :javadoc:`~org.yamcs.tctm.PacketPreprocessor` implementation. Default is :javadoc:`org.yamcs.tctm.IssPacketPreprocessor` which applies ISS conventions.
+    Class name of a :javadoc:`~org.yamcs.tctm.PacketPreprocessor` implementation. Default is :javadoc:`org.yamcs.tctm.IssPacketPreprocessor` which applies :abbr:`ISS (International Space Station)` conventions.
 
 packetPreprocessorArgs (map)
     Optional args of arbitrary complexity to pass to the PacketPreprocessor. Each PacketPreprocessor may support different options.

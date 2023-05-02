@@ -4,7 +4,7 @@ Configuration
 Example
 -------
 
-Web options are configured in the file ``etc/yamcs.yaml``.
+Web options are configured in the file :file:`etc/yamcs.yaml`.
 
 .. code-block:: yaml
 

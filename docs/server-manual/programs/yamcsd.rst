@@ -16,8 +16,7 @@ Synopsis
 Description
 -----------
 
-:program:`yamcsd` is a shell wrapper that launches a JVM running the YamcsServer
-main program.
+:program:`yamcsd` is a shell wrapper that launches a :abbr:`JVM (Java Virtual Machine)` running the Yamcs main program.
 
 
 Options
@@ -41,15 +40,15 @@ Options
 
 .. option:: --etc-dir <DIR>
 
-   Path to config directory. This defaults to the etc directory relative to the working directory.
+   Path to config directory. This defaults to the :file:`etc` directory relative to the working directory.
 
 .. option:: --data-dir <DIR>
 
-   Path to data directory. When unspecified the location is read from the ``yamcs.yaml`` configuration file.
+   Path to data directory. When unspecified the location is read from the :file:`etc/yamcs.yaml` configuration file.
 
 .. option:: --cache-dir <DIR>
 
-   Path to cache directory. When unspecified the location is read from the ``yamcs.yaml`` configuration file.
+   Path to cache directory. When unspecified the location is read from the :file:`etc/yamcs.yaml` configuration file.
 
 .. option:: --check
 

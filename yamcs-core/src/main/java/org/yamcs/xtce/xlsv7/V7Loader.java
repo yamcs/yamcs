@@ -199,11 +199,8 @@ public class V7Loader extends V7LoaderBase {
 
     protected SpaceSystem rootSpaceSystem;
 
-    boolean enableAliasReferences = false;
-
     public V7Loader(YConfiguration config) {
         this(config.getString("file"));
-        enableAliasReferences = config.getBoolean("enableAliasReferences", false);
         enableXtceNameRestrictions = config.getBoolean("enableXtceNameRestrictions", true);
     }
 

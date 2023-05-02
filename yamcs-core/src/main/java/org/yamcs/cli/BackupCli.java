@@ -28,12 +28,15 @@ import org.rocksdb.Options;
 import org.rocksdb.RestoreOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
+import org.yamcs.YamcsServer;
 import org.yamcs.yarch.BackupControlMBean;
 import org.yamcs.yarch.BackupUtils;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.beust.jcommander.converters.PathConverter;
+import com.sun.tools.attach.VirtualMachine;
+import com.sun.tools.attach.VirtualMachineDescriptor;
 
 /**
  * Command line backup utility for yamcs.
@@ -81,6 +84,9 @@ public class BackupCli extends Command {
         @Parameter(names = "--host", description = "Trigger a hot backup over JMX")
         String jmxAddress;
 
+        @Parameter(names = "--pid", description = "Process identifier of a Yamcs server")
+        String pid;
+
         @Parameter(description = "TABLESPACE", required = true)
         List<String> mainParameter;
 
@@ -94,18 +100,7 @@ public class BackupCli extends Command {
                 throw new IllegalArgumentException("Only one tablespace can be backed up at a time");
             }
             String tablespace = mainParameter.get(0);
-            if (jmxAddress != null) {
-                JMXServiceURL jmxServiceUrl = new JMXServiceURL(String.format(
-                        "service:jmx:rmi:///jndi/rmi://%s/jmxrmi", jmxAddress));
-                JMXConnector jmxc = JMXConnectorFactory.connect(jmxServiceUrl);
-                MBeanServerConnection conn = jmxc.getMBeanServerConnection();
-                ObjectName mbeanName = new ObjectName("org.yamcs:name=Backup");
-                BackupControlMBean control = JMX.newMBeanProxy(conn, mbeanName, BackupControlMBean.class);
-                control.createBackup(tablespace, backupDir);
-            } else {
-                if (dataDir == null) {
-                    throw new IllegalArgumentException("--data-dir must be specified when performing a cold backup");
-                }
+            if (dataDir != null) {
                 Path tablespaceDir = dataDir.resolve(tablespace + ".rdb");
                 Path current = tablespaceDir.resolve("CURRENT");
                 if (!Files.exists(current)) {
@@ -139,6 +134,49 @@ public class BackupCli extends Command {
                     throw new IOException(
                             "Error when backing up tablespace '" + tablespace + "' to '" + backupDir + "': "
                                     + e.toString());
+                }
+            } else if (jmxAddress != null) {
+                JMXServiceURL jmxServiceUrl = new JMXServiceURL(String.format(
+                        "service:jmx:rmi:///jndi/rmi://%s/jmxrmi", jmxAddress));
+                JMXConnector jmxc = JMXConnectorFactory.connect(jmxServiceUrl);
+                MBeanServerConnection conn = jmxc.getMBeanServerConnection();
+                ObjectName mbeanName = new ObjectName("org.yamcs:name=Backup");
+                BackupControlMBean control = JMX.newMBeanProxy(conn, mbeanName, BackupControlMBean.class);
+                control.createBackup(tablespace, backupDir);
+            } else {
+                String jvmIdentifier = pid;
+                if (jvmIdentifier == null) {
+                    // Find a single local runnning Yamcs
+                    for (VirtualMachineDescriptor vmDescriptor : VirtualMachine.list()) {
+                        // Something of the form:
+                        // org.yamcs.YamcsServer --data-dir /storage/yamcs-data
+                        var displayName = vmDescriptor.displayName();
+                        if (displayName.startsWith(YamcsServer.class.getName())) {
+                            if (jvmIdentifier != null) {
+                                throw new YamcsAdminException(
+                                        "More than one Yamcs server is running. Specify --pid");
+                            }
+                            jvmIdentifier = vmDescriptor.id();
+                        }
+                    }
+                }
+
+                if (jvmIdentifier == null) {
+                    throw new YamcsAdminException("Cannot connect to Yamcs. "
+                            + "Use --data-dir if you want to perform an offline backup");
+                }
+
+                VirtualMachine vm = VirtualMachine.attach(jvmIdentifier);
+                try {
+                    String jmxAddress = vm.startLocalManagementAgent();
+                    JMXServiceURL url = new JMXServiceURL(jmxAddress);
+                    JMXConnector jmxc = JMXConnectorFactory.connect(url);
+                    MBeanServerConnection conn = jmxc.getMBeanServerConnection();
+                    ObjectName mbeanName = new ObjectName("org.yamcs:name=Backup");
+                    BackupControlMBean control = JMX.newMBeanProxy(conn, mbeanName, BackupControlMBean.class);
+                    control.createBackup(tablespace, backupDir);
+                } finally {
+                    vm.detach();
                 }
             }
         }

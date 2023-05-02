@@ -5,22 +5,34 @@ An object privilege is the right to perform a particular action on an object. Th
 
 Command
     Allows to issue a specific command.
+
 CommandHistory
-    Allows access to the command history of a specific command.
+    Allow access to the command history of a specific command.
+
 ManageBucket
-    Allow control over a specific bucket.
+    Allow control over a specific :doc:`bucket <../data-management/buckets>`.
+
+    A typical installation includes at least the buckets ``displays`` and ``stacks``.
+
 ReadAlgorithm
-    Allows to read a specific algorithm.
+    Allow to read a specific algorithm.
+
 ReadBucket
-    Allow readonly access to a specific bucket.
+    Allow readonly access to a specific :doc:`bucket <../data-management/buckets>`.
+
+    A typical installation includes at least the buckets ``displays`` and ``stacks``.
 ReadPacket
-    Allows to read a particular packet.
+    Allow to read a specific packet.
+
 ReadParameter
-    Allows to read a particular parameter.
+    Allow to read a specific parameter.
+
 Stream
     Allow to read and emit to a specific stream.
+
 WriteParameter
     Allows to set the value of a specific parameter.
+
 
 .. note::
 

@@ -17,7 +17,7 @@ Class Name
 Configuration
 -------------
 
-This is a global service defined in ``etc/yamcs.yaml``. Example:
+This is a global service defined in :file:`etc/yamcs.yaml`. Example:
 
 .. code-block:: yaml
 

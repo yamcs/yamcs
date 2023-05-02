@@ -10,8 +10,8 @@ It receives samples ``(obt, ert)`` where:
  
 It takes into account the parameters:
 
-* ``onboardDelay`` - It covers any delay happening on-board (sampling time, radiation time)
-* ``tof`` - time of flight - the time it takes for the signal to reach the ground. This can be fixed or computed by dynamically interpolating from data provided by a flight dynamics system.
+* ``onboardDelay``: Covers any delay happening on-board (sampling time, radiation time)
+* ``tof``: Time of flight: the time it takes for the signal to reach the ground. This can be fixed or computed by dynamically interpolating from data provided by a flight dynamics system.
 
 Assuming that:
  ob_time = ert - (tof + onboardDelay)
@@ -25,11 +25,9 @@ The determination of the gradient and offset is done using the least squares met
  
 The number of samples used for computing the coefficients is configurable and has to be minimum 2.
 
-
 The ground time ``ert`` being provided by a ground station (and not by Yamcs), is considered to be accurate enough for the required purpose.
 
 *Note about accuracy*: the main usage of this service is to timestamp the telemetry received from the on-board system. Yamcs keeps such timestamps at milliseconds resolution. However the service keeps internally the time at picosecond resolution so theoretically it can be used to achieve better than millisecond accuracy. In practice this is not so easy: it requires an accurate on-board clock, an accurate ground-station clock, a good time of flight estimation taking into account various effects (ionospheric, tropospheric delays, etc). All the dynamic delays have to be incorporated into the time of flight estimation.
-
   
  
 Accuracy and validity
@@ -48,7 +46,8 @@ If the on-board clock is synchronized via a different method, this service can s
  
   
 The method ``verify(TmPacket pkt)`` will check the difference between the packet generation time and the expected generation time (using ``ert - delays``) and in case the difference is greater than the validity, the packet will be changed with the local computed time and the flag {@link TmPacket#setLocalGenTime()} will also be set.
-  
+
+
 Usage
 -----
   
@@ -73,7 +72,7 @@ Class Name
 Configuration
 -------------
 
-This service is defined in ``etc/yamcs.(instance).yaml``. Example:
+This service is defined in :file:`etc/yamcs.{instance}.yaml`. Example:
 
 .. code-block:: yaml
 
@@ -86,13 +85,12 @@ This service is defined in ``etc/yamcs.(instance).yaml``. Example:
             defaultTof: 0.0
             accuracy: 0.1
             validity: 0.2
-            numSamples: 3
-            
+            numSamples: 3            
 
-              
+
 Configuration Options
 ---------------------
-    
+
 onboardDelay  (double)
     the on-board delay in seconds used to compute the on-board transmission time from the earth reception time. The default value is 0 seconds.
 
@@ -103,13 +101,10 @@ defaultTof (double)
     The default time of flight in seconds. This value is used if the tof estimator does not return a value because no interval has been configured.
 
 accuracy (double)
-    The accuracy in seconds. See above for an explanation on how this value is used. The default value is 0.1 (100 milliseconds). 
+    The accuracy in seconds. See above for an explanation on how this value is used. Default: 0.1 (100 milliseconds). 
  
 validity (double)
-    The validity in seconds. See above for an explanation on how this value is used. The default value is 0.2 (200 milliseconds). 
+    The validity in seconds. See above for an explanation on how this value is used. Default: 0.2 (200 milliseconds). 
 
 numSamples (integer)
-    How many samples to collect before computing the correlation coefficients. It has to be minimum 2; the default value is 3.
-    
-    
-    
+    How many samples to collect before computing the correlation coefficients. It has to be minimum 2. Default: 3.

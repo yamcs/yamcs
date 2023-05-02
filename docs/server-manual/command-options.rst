@@ -1,8 +1,6 @@
 Command Options
 ===============
 
-.. versionadded:: 5.0.0
-
 Yamcs supports a programmatic API for activating custom command options. When commands are issued with custom options, these can be interpreted by you own code, typically a TC data link.
 
 Custom command options do not impact the encoding of telecommand packets, rather they are used for passing other instructions, such as at-runtime overriding of link properties.

@@ -15,7 +15,7 @@ Class Name
 Configuration
 -------------
 
-This service is defined in ``etc/yamcs.(instance).yaml``. Example:
+This service is defined in :file:`etc/yamcs.{instance}.yaml`. Example:
 
 .. code-block:: yaml
 

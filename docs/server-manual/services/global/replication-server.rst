@@ -2,7 +2,7 @@ Replication Server
 ==================
 
 
-The replication server facilitates the communication between :doc:`../instance/replication-master` and :doc:`../instance/replication-slave`. The master and slaves defined with the tcpRole `server` will register to this component to be called when an external tcp client connects. Multiple master and slaves from different Yamcs instances in the same Yamcs server will register to the same replication server.
+The replication server facilitates the communication between :doc:`../instance/replication-master` and :doc:`../instance/replication-slave`. The master and slaves defined with the tcpRole ``server`` will register to this component to be called when an external TCP client connects. Multiple master and slaves from different Yamcs instances in the same Yamcs server will register to the same replication server.
 
 A remote slave when connecting will send a request message indicating the instance and the transaction it wants to start the replay with. The replication server will forward the request to the registered local master which will immediately start the replay.
 
@@ -19,7 +19,7 @@ Class Name
 Configuration
 -------------
 
-This service is defined in ``etc/yamcs.yaml``. Example:
+This service is defined in :file:`etc/yamcs.yaml`. Example:
 
 .. code-block:: yaml
 
@@ -49,4 +49,4 @@ tlsKey (string)
     **Required** if ``tlsCert`` is specified. The key to the certificate.
 
 maxTupleSize (integer)
-    Used for the slaves with tcpRole = server - configures the maximum size of the serialized tuples received from the master. If the serialized tuples are larger than this size, this limit has to be increased otherwise the tuples cannot be transferred. Default 131072 (128KB).
+    Used for the slaves with tcpRole = server - configures the maximum size of the serialized tuples received from the master. If the serialized tuples are larger than this size, this limit has to be increased otherwise the tuples cannot be transferred. Default: 131072 (128 KB).

@@ -40,7 +40,7 @@ privileges (map)
 Example
 -------
 
-AuthModules are configured in the file ``etc/security.yaml``.
+AuthModules are configured in the file :file:`etc/security.yaml`.
 
 .. code-block:: yaml
 

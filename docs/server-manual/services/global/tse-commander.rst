@@ -13,7 +13,7 @@ Class Name
 Configuration
 -------------
 
-This is a global service defined in ``etc/yamcs.yaml``. Example:
+This is a global service defined in :file:`etc/yamcs.yaml`. Example:
 
 .. code-block:: yaml
 
@@ -40,7 +40,7 @@ tm (map)
     Example: ``{ host: localhost, port: 31002 }``
 
 
-This service reads further configuration options from a file ``etc/tse.yaml``. This file defines all the instruments that can be commanded. Example:
+This service reads further configuration options from a file :file:`etc/tse.yaml`. This file defines all the instruments that can be commanded. Example:
 
 .. code-block:: yaml
 
@@ -169,7 +169,7 @@ The definition of TSE string commands is done in space systems resorting under `
           - type: sheet
             spec: mdb/tse/simulator.xls
 
-The instrument name in ``etc/tse.yaml`` should match with the name of the a sub space system of /TSE.
+The instrument name in :file:`etc/tse.yaml` should match with the name of the a sub space system of /TSE.
 
 The definition of commands and their arguments follows the same approach as non-TSE commands but with some particularities:
 

@@ -10,13 +10,10 @@ The figure below provides an overview of the steps involved, followed by a more 
     :alt: TM Packet Processing
     :align: center
 
-
-
 **1. Container identification**
 
-
 When Yamcs has to process a TM packet it has first to know which MDB container it corresponds to.
-For realtime packets this is done based on the stream on which the packet is coming. Each stream has an attribute ``rootContainer`` (defined in ``streamConfig -> tm`` in ``yamcs.<instance>.yaml``) which configures the container used for all packets coming on that stream.
+For realtime packets this is done based on the stream on which the packet is coming. Each stream has an attribute ``rootContainer`` (defined in ``streamConfig -> tm`` in :file:`yamcs.{instance}.yaml`) which configures the container used for all packets coming on that stream.
 For historical reasons that attribute is optional; if not configured Yamcs will take the first container (when traversing the MDB tree) having no parent.
 For archive packets, that information is stored in the archive the first time the packet is received.
 
@@ -25,17 +22,19 @@ The processing returns to this step when processing sub-containers or inherited 
 **2. Entry selection**
 
 Once a packet is matched to a container, Yamcs can proceed to extract the container entries. There are cases when, in order to improve the performance, Yamcs performs a partial retrieval - only a subset of the entries are processed. 
+
 This for example is done as part of the XtceTmRecorder service when Yamcs does not want to extract parameters but only to identify the packet to its lowest sub-container; it is also done when performing a reply for the purpose of extracting a parameter or a set of parameters.
-The property that configures this behavior is ``config -> subscribeAll`` in the processor configuration in ``processor.yaml``. If the property is set to false, then only the parameter subscribed (and the dependent parameters) will be extracted.
+The property that configures this behavior is ``config -> subscribeAll`` in the processor configuration in :file:`etc/processor.yaml`. If the property is set to false, then only the parameter subscribed (and the dependent parameters) will be extracted.
 
 **3. Entry processing**
 
 A container has different types of entries: 
-  - parameters - for these the processing continues with the steps 3-6 below. 
-  - sub-containers - a new container processing context (bit offset starting from 0!) is created and the processing continues from step 1.
-  - array parameters (not shown in the figure) - these have their size either preset in the MDB or given by another parameter which has already been extracted from the packet. Yamcs will loop and extract the necessary number of array elements according to their data types in the steps 3-6 below. Note that there cannot be gaps between the elements of the array.
-  - aggregate parameters (not shown in the figure) - are parameters containing multiple members (like a struct in C). For each member of the aggregate Yamcs will extract the aggregate member according to its data type. As for the array elements, there can be no gap between aggregate members.
-  - indirect parameters (not shown in the figure) - are place-holders for other parameters - the exact parameter that will be extracted is determined by the value of another parameter proceeding it in the packet. Typically there is an id followed by some data, the data represents one parameter value and the id tells which parameter exactly the data represents. 
+
+- parameters - for these the processing continues with the steps 3-6 below. 
+- sub-containers - a new container processing context (bit offset starting from 0!) is created and the processing continues from step 1.
+- array parameters (not shown in the figure) - these have their size either preset in the MDB or given by another parameter which has already been extracted from the packet. Yamcs will loop and extract the necessary number of array elements according to their data types in the steps 3-6 below. Note that there cannot be gaps between the elements of the array.
+- aggregate parameters (not shown in the figure) - are parameters containing multiple members (like a struct in C). For each member of the aggregate Yamcs will extract the aggregate member according to its data type. As for the array elements, there can be no gap between aggregate members.
+- indirect parameters (not shown in the figure) - are placeholders for other parameters - the exact parameter that will be extracted is determined by the value of another parameter proceeding it in the packet. Typically there is an id followed by some data, the data represents one parameter value and the id tells which parameter exactly the data represents.
 
 For each entry, the MDB defines the position (in bits) in the packet of the start of the entry. This can be specified either absolute from the beginning of the packet or relative to the previous entry. Note that XTCE allows positions relative to the end of the packet but this is not supported by Yamcs.
 
@@ -50,11 +49,13 @@ Part of the data type processing is also extracting the raw value from the packe
 **6. Raw to engineering value**
 
 Next step in the processing is the conversion of the raw value to the engineering value. This is done using the calibration rule (if any) part of the **Parameter Type** MDB definition. A special case is an enumerated parameter type - the engineering value of such parameter is a special type called EnumeratedValue which has a dual integer/string representation. Other special type is an absolute time - the engineering value is a timestamp (resolution is millisecond). 
+
 After the engineering value has been computed, Yamcs defers further processing until all entries have been extracted.
 
 **7. Container inheritance**
 
 After all entries from one container have been extracted, Yamcs proceeds to check if there is any inherited container which matches the condition. If there is, the container is processed starting with step 1.
+
 Note that the bit offset is not re-initialized to 0 as for sub-containers. It is considered that the inherited container contains the entries of the parent (already extracted) and thus any absolute position is counted from the beginning of the original packet. 
 
 **8. Validity check**
@@ -63,11 +64,11 @@ After all entries from the root container and all inherited containers to the de
 
 **9. Monitoring check**
 
-If a parameter has passed the validity checks, the monitoring checks are performed. This means checking a numeric parameter as being inside certain limits or checking an enumerated parameter having certain values. There is no monitoring check for boolean, string, binary, aggregate or array parameters. The monitoring checks can use contextual information - that means the limits checked depend on other parameters. The monitoring checks can be disabled by setting ``config -> alarm -> parameterCheck`` to false in processor.yaml
+If a parameter has passed the validity checks, the monitoring checks are performed. This means checking a numeric parameter as being inside certain limits or checking an enumerated parameter having certain values. There is no monitoring check for boolean, string, binary, aggregate or array parameters. The monitoring checks can use contextual information - that means the limits checked depend on other parameters. The monitoring checks can be disabled by setting ``config -> alarm -> parameterCheck`` to false in :file:`etc/processor.yaml`.
 
 **10. Alarm raising**
 
-If the alarm server is enabled (``config -> alarm -> parameterServer`` in processor.yaml), alarm will be raised for all parameters which are determined by the previous step to be out of limits.
+If the alarm server is enabled (``config -> alarm -> parameterServer`` in :file:`etc/processor.yaml`), alarm will be raised for all parameters which are determined by the previous step to be out of limits.
 
 **11. Algorithms**
 

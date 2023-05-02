@@ -14,7 +14,7 @@ This table is created by the :doc:`../../services/instance/xtce-tm-recorder` and
             gentime,
             seqNum
         )
-     ) HISTOGRAM(pname) PARTITION BY TIME_AND_VALUE(gentime, pname) TABLE_FORMAT=compressed;
+     ) HISTOGRAM(pname) PARTITION BY VALUE(pname) TABLE_FORMAT=compressed;
 
 Where the columns are:
 
@@ -31,6 +31,4 @@ If a packet arrives with the same time and sequence number as another packet alr
 
 The ``HISTOGRAM(pname)`` clause means that Yamcs will build an overview that can be used to quickly see when data for the given packet name is available in the archive.
 
-The ``PARTITION BY TIME_AND_VALUE`` clause means that data is partitioned in different RocksDB databases and column families based on the time and container name. Currently the time partitioning schema used is ``YYYY/MM`` which implies one RocksDB database per year,month. Inside that database there is one column family for each container that is used for partitioning.
-
-Partitioning the data based on time, ensures that old data is frozen and not disturbed by new data coming in. Partitioning by container has benefits when retrieving data for one specific container for a time interval. If this is not desired, one can set the partitioning flag only on the root container (in fact it is automatically set) so that all packets are stored in the same partition.
+The ``PARTITION BY VALUE`` clause means that data is partitioned in different RocksDB column families based on the container name. This has benefits when retrieving data for one specific container for a time interval. If this is not desired, one can set the partitioning flag only on the root container (in fact it is automatically set) so that all packets are stored in the same partition.
