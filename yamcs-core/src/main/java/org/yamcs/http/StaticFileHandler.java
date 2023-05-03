@@ -53,7 +53,7 @@ import io.netty.handler.stream.ChunkedWriteHandler;
 
 public class StaticFileHandler {
 
-    private static Mimetypes mimetypes;
+    private static final Mimetypes MIME = Mimetypes.getInstance();
     public static final int HTTP_CACHE_SECONDS = 60;
     public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
     public static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
@@ -64,17 +64,8 @@ public class StaticFileHandler {
     private static final Logger log = LoggerFactory.getLogger(StaticFileHandler.class.getName());
 
     public static void init(List<String> staticRoots, boolean zeroCopyEnabled) throws ConfigurationException {
-        if (mimetypes != null) {
-            return;
-        }
         StaticFileHandler.staticRoots = staticRoots;
         StaticFileHandler.zeroCopyEnabled = zeroCopyEnabled;
-
-        try {
-            mimetypes = Mimetypes.getInstance();
-        } catch (IOException e) {
-            throw new ConfigurationException("Failed to load MIME types", e);
-        }
     }
 
     protected File locateFile(String path) {
@@ -205,7 +196,7 @@ public class StaticFileHandler {
      *            file to extract content type
      */
     protected void setContentTypeHeader(HttpResponse response, File file) {
-        response.headers().set(CONTENT_TYPE, mimetypes.getMimetype(file));
+        response.headers().set(CONTENT_TYPE, MIME.getMimetype(file));
     }
 
     /**

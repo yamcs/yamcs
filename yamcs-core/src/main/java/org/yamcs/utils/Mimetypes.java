@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -27,14 +28,18 @@ public class Mimetypes {
     private Mimetypes() {
     }
 
-    public static synchronized Mimetypes getInstance() throws IOException {
+    public static synchronized Mimetypes getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new Mimetypes();
-            InputStream in = Mimetypes.class.getResourceAsStream("/mime.types");
-            if (in == null) {
-                throw new FileNotFoundException("Cannot find the mime.types file in the classpath");
+            try {
+                INSTANCE = new Mimetypes();
+                InputStream in = Mimetypes.class.getResourceAsStream("/mime.types");
+                if (in == null) {
+                    throw new FileNotFoundException("Cannot find the mime.types file in the classpath");
+                }
+                INSTANCE.load(in);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
             }
-            INSTANCE.load(in);
         }
         return INSTANCE;
     }
@@ -43,7 +48,7 @@ public class Mimetypes {
         String filename = file.getFileName().toString();
         int idx = filename.lastIndexOf('.');
         if (idx != -1) {
-            String extension = filename.substring(idx + 1);
+            String extension = filename.substring(idx + 1).toLowerCase();
             String mimetype = mimetypeByExtension.get(extension);
             return (mimetype != null) ? mimetype : OCTET_STREAM;
         }
@@ -59,7 +64,7 @@ public class Mimetypes {
     }
 
     private void load(InputStream in) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+        try (var reader = new BufferedReader(new InputStreamReader(in))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("#")) {
