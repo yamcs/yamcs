@@ -5,10 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.AggregateListExpression;
 import org.yamcs.yarch.streamsql.Expression;
 import org.yamcs.yarch.streamsql.FirstValExpression;
-import org.yamcs.utils.parser.ParseException;
 
 public class FunctionExpressionFactory {
     static Map<String, FunctConfig> functions = new HashMap<>();
@@ -23,7 +23,8 @@ public class FunctionExpressionFactory {
         functions.put("extract_ushort",
                 new FunctConfig(ExtractNumberExpression.class, String.class, "decodeUnsignedShort"));
         functions.put("extract_int", new FunctConfig(ExtractNumberExpression.class, String.class, "decodeInt"));
-        functions.put("extract_3bytes", new FunctConfig(ExtractNumberExpression.class, String.class, "decode3Bytes"));
+        functions.put("extract_u3bytes",
+                new FunctConfig(ExtractNumberExpression.class, String.class, "decodeUnsigned3Bytes"));
 
         addFunction("unhex", UnhexExpression.class);
         addFunction("coalesce", CoalesceExpression.class);

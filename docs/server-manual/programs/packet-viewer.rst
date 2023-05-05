@@ -202,33 +202,35 @@ Or, display only packets that do *not* include a parameter ``param1``:
 Filter grammar
 ~~~~~~~~~~~~~~
 
-.. productionlist:: packet-filter-grammar
-   expr: `or_expr`
-   or_expr: `and_expr` ( `or_op` `and_expr` )*
-   and_expr: `unary_expr` ( `and_op` `unary_expr` )*
-   unary_expr: `not_op` "(" `expr` ")"
-             : | "(" `expr` ")"
-             : | `comparison`
-   comparison: `reference` [ `rel_op` `literal` ]
-   reference: `refchar`+
-   refchar: `letter` | `digit` | "/" | "_" | "-" | "[" | "]" | "."
-   literal: `string` | `quoted_string`
-   string: `stringchar`+
-   quoted_string: '"' [ `string` ] '"'
-   stringchar: `letter` | `digit` | ":" | "_"
-   letter: "a"..."Z"
-   digit: "0"..."9"
-   rel_op: `eq_op` | `ne_op`
-         : | `gt_op` | `lt_op`
-         : | `ge_op` | `le_op`
-         : | `matches_op` | "contains"
-   eq_op: "eq" | "=="
-   ne_op: "ne" | "!="
-   gt_op: "gt" | ">"
-   lt_op: "lt" | "<"
-   ge_op: "ge" | ">="
-   le_op: "le" | "<="
-   matches_op: "matches" | "~"
-   and_op: "and" | "&&"
-   or_op: "or" | "||"
-   not_op: "not" | "!"
+.. container:: productionlist
+
+   .. productionlist:: packet-filter-grammar
+      expr: `or_expr`
+      or_expr: `and_expr` ( `or_op` `and_expr` )*
+      and_expr: `unary_expr` ( `and_op` `unary_expr` )*
+      unary_expr: `not_op` "(" `expr` ")"
+                : | "(" `expr` ")"
+                : | `comparison`
+      comparison: `reference` [ `rel_op` `literal` ]
+      reference: `refchar`+
+      refchar: `letter` | `digit` | "/" | "_" | "-" | "[" | "]" | "."
+      literal: `string` | `quoted_string`
+      string: `stringchar`+
+      quoted_string: '"' [ `string` ] '"'
+      stringchar: `letter` | `digit` | ":" | "_"
+      letter: "a"..."Z"
+      digit: "0"..."9"
+      rel_op: `eq_op` | `ne_op`
+            : | `gt_op` | `lt_op`
+            : | `ge_op` | `le_op`
+            : | `matches_op` | "contains"
+      eq_op: "eq" | "=="
+      ne_op: "ne" | "!="
+      gt_op: "gt" | ">"
+      lt_op: "lt" | "<"
+      ge_op: "ge" | ">="
+      le_op: "le" | "<="
+      matches_op: "matches" | "~"
+      and_op: "and" | "&&"
+      or_op: "or" | "||"
+      not_op: "not" | "!"

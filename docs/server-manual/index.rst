@@ -26,12 +26,12 @@ Yamcs Server Manual
     command-options
     yamcs-plugin-format
 
-.. only:: not latex
+.. raw:: latex
 
-   .. Added in conf.py to latex_appendices
+   \appendix
 
-   .. toctree::
-       :maxdepth: 2
-       :caption: Appendices
+.. toctree::
+    :maxdepth: 2
+    :caption: Appendices
 
-       sql-format
+    sql-language/index
