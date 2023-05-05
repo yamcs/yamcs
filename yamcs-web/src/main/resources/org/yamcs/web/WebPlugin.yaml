@@ -14,6 +14,16 @@ options:
         larger than the width of the sidebar (currently 250px) are resized to fit.
     type: STRING
 
+  preferredNamespace:
+    title: Preferred Namespace
+    description:
+      - Where possible prefer to display the alias of a parameter or command, as defined
+        for the specified namespace.
+      - Use of this property only makes sense if your MDB definition includes alternative names.
+    type: STRING
+    # Beta. Not sure to keep it in its current form.
+    hidden: true
+
   extraHeaderHTML:
     title: Extra Header HTML
     description:
@@ -71,7 +81,7 @@ options:
       - This feature is primarily intended for an operational setting.
     type: BOOLEAN
     default: false
-  
+
   collapseInitializedArguments:
     title: Collapse Initialized Arguments
     description:

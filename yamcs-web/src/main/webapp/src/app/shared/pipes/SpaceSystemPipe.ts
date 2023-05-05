@@ -3,7 +3,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 @Pipe({ name: 'spaceSystemName' })
 export class SpaceSystemPipe implements PipeTransform {
 
-  transform(name: string | null): string | null {
+  transform(name: string | null | undefined): string | null {
     if (!name) {
       return null;
     }

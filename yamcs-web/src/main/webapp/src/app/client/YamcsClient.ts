@@ -3,14 +3,15 @@ import { MessageService } from '../core/services/MessageService';
 import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
+import { WebSocketClient } from './WebSocketClient';
 import { AcknowledgeAlarmOptions, Alarm, AlarmSubscription, ClearAlarmOptions, GetAlarmsOptions, GlobalAlarmStatus, GlobalAlarmStatusSubscription, ShelveAlarmOptions, SubscribeAlarmsRequest, SubscribeGlobalAlarmStatusRequest } from './types/alarms';
 import { CommandSubscription, SubscribeCommandsRequest } from './types/commandHistory';
 import { Cop1Config, Cop1Status, Cop1Subscription, DisableCop1Request, InitiateCop1Request, SubscribeCop1Request } from './types/cop1';
 import { CreateEventRequest, DownloadEventsOptions, Event, EventSubscription, GetEventsOptions, SubscribeEventsRequest } from './types/events';
-import { CreateTransferRequest, ListFilesRequest, ListFilesResponse, RemoteFileListSubscription, ServicesPage, SubscribeTransfersRequest, Transfer, TransfersPage, TransferSubscription } from './types/filetransfer';
-import { AlarmsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstancesWrapper, InstanceTemplatesWrapper, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SessionsWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
+import { CreateTransferRequest, ListFilesRequest, ListFilesResponse, RemoteFileListSubscription, ServicesPage, SubscribeTransfersRequest, Transfer, TransferSubscription, TransfersPage } from './types/filetransfer';
+import { AlarmsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstanceTemplatesWrapper, InstancesWrapper, LinksWrapper, PacketNameWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SessionsWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
-import { AlgorithmOverrides, AlgorithmsPage, AlgorithmStatus, AlgorithmTrace, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
+import { AlgorithmOverrides, AlgorithmStatus, AlgorithmTrace, AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
 import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetGapsOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListApidsResponse, ListGapsResponse, ListPacketsResponse, ParameterData, ParameterValue, PlaybackInfo, Range, RequestPlaybackRequest, Sample, Value } from './types/monitoring';
 import { AlgorithmStatusSubscription, ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeAlgorithmStatusRequest, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
 import { CommandQueue, CommandQueueEvent, QueueEventsSubscription, QueueStatisticsSubscription, SubscribeQueueEventsRequest, SubscribeQueueStatisticsRequest } from './types/queue';
@@ -18,7 +19,6 @@ import { AuditRecordsPage, AuthInfo, Clearance, ClearanceSubscription, CreateGro
 import { Record, Stream, StreamData, StreamEvent, StreamStatisticsSubscription, StreamSubscription, SubscribeStreamRequest, SubscribeStreamStatisticsRequest, Table } from './types/table';
 import { SubscribeTimeRequest, Time, TimeSubscription } from './types/time';
 import { CreateTimelineBandRequest, CreateTimelineItemRequest, CreateTimelineViewRequest, GetTimelineItemsOptions, TimelineBand, TimelineBandsPage, TimelineItem, TimelineItemsPage, TimelineTagsPage, TimelineView, TimelineViewsPage, UpdateTimelineBandRequest, UpdateTimelineItemRequest, UpdateTimelineViewRequest } from './types/timeline';
-import { WebSocketClient } from './WebSocketClient';
 
 
 export default class YamcsClient implements HttpHandler {
@@ -789,8 +789,14 @@ export default class YamcsClient implements HttpHandler {
   }
 
   async issueCommand(instance: string, processorName: string, qualifiedName: string, options?: IssueCommandOptions): Promise<IssueCommandResponse> {
+    return this.issueCommandForNamespace(instance, processorName, null, qualifiedName, options);
+  }
+
+  async issueCommandForNamespace(instance: string, processorName: string, namespace: string | null, name: string, options?: IssueCommandOptions): Promise<IssueCommandResponse> {
+    const fullName = namespace ? namespace + "/" + name : name;
+    const encodedName = encodeURIComponent(fullName);
     const body = JSON.stringify(options);
-    const response = await this.doFetch(`${this.apiUrl}/processors/${instance}/${processorName}/commands${qualifiedName}`, {
+    const response = await this.doFetch(`${this.apiUrl}/processors/${instance}/${processorName}/commands/${encodedName}`, {
       body,
       method: 'POST',
     });
@@ -1027,6 +1033,13 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as SpaceSystem;
   }
 
+  async exportSpaceSystem(instance: string, qualifiedName: string) {
+    const encodedName = encodeURIComponent(qualifiedName);
+    const url = `${this.apiUrl}/mdb/${instance}/space-systems/${encodedName}:exportXTCE`;
+    const response = await this.doFetch(url);
+    return await response.text();
+  }
+
   async getParameters(instance: string, options: GetParametersOptions = {}) {
     const url = `${this.apiUrl}/mdb/${instance}/parameters`;
     const response = await this.doFetch(url + this.queryString(options));
@@ -1147,7 +1160,13 @@ export default class YamcsClient implements HttpHandler {
   }
 
   async getCommand(instance: string, qualifiedName: string) {
-    const url = `${this.apiUrl}/mdb/${instance}/commands${qualifiedName}`;
+    return this.getCommandForNamespace(instance, null, qualifiedName);
+  }
+
+  async getCommandForNamespace(instance: string, namespace: string | null, name: string) {
+    const fullName = namespace ? namespace + "/" + name : name;
+    const encodedName = encodeURIComponent(fullName);
+    const url = `${this.apiUrl}/mdb/${instance}/commands/${encodedName}`;
     const response = await this.doFetch(url);
     return await response.json() as Command;
   }

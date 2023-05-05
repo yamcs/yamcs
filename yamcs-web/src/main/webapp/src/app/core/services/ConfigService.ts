@@ -12,6 +12,7 @@ export interface WebsiteConfig {
   commandClearanceEnabled: boolean;
   commandExports: boolean;
   twoStageCommanding: boolean;
+  preferredNamespace: string;
   collapseInitializedArguments: boolean;
   commandOptions: CommandOption[];
   queueNames: string[];

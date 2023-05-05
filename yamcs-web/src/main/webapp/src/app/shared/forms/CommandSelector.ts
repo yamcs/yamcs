@@ -52,6 +52,7 @@ export class CommandSelector implements ControlValueAccessor, AfterViewInit {
     { id: 'name', label: 'Name', alwaysVisible: true },
     { id: 'significance', label: 'Significance', visible: true },
     { id: 'shortDescription', label: 'Description' },
+    { id: 'actions', label: '', alwaysVisible: true },
   ];
 
   // Added dynamically based on actual commands.

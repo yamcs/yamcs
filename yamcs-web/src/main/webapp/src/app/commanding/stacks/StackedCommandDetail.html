@@ -1,11 +1,11 @@
 <div class="block-title" style="padding-top: 0">Command</div>
 <div class="block">
-  {{ entry.name | shortName }}
+  {{ (entry.command?.qualifiedName | shortName) || '-' }}
 </div>
 
 <div class="block-title">Space system</div>
 <div class="block">
-  {{ (entry.name | spaceSystemName) || '-' }}
+  {{ (entry.command?.qualifiedName| spaceSystemName) || '-' }}
 </div>
 
 <ng-container *ngFor="let alias of entry.command?.alias">

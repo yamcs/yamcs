@@ -37,7 +37,7 @@ export class StackFilePage implements OnDestroy {
   hasOutputs$ = this.entries$.pipe(
     map(entries => {
       for (const entry of entries) {
-        if (entry.record) {
+        if (entry.record || entry.err) {
           return true;
         }
       }
@@ -289,8 +289,11 @@ export class StackFilePage implements OnDestroy {
 
       // Enrich entries with MDB info, it's used in the detail panel
       const promises = [];
+      const instance = this.yamcs.instance!;
       for (const entry of entries) {
-        promises.push(this.yamcs.yamcsClient.getCommand(this.yamcs.instance!, entry.name).then(command => {
+        const namespace = entry.namespace ?? null;
+        const name = entry.name;
+        promises.push(this.yamcs.yamcsClient.getCommandForNamespace(instance, namespace, name).then(command => {
           entry.command = command;
         }));
       }
@@ -359,6 +362,7 @@ export class StackFilePage implements OnDestroy {
   private parseJSONentry(command: any) {
     const entry: StackEntry = {
       name: command.name,
+      namespace: command.namespace,
       ...(command.comment && { comment: command.comment }),
       ...(command.extraOptions && { extra: this.parseJSONextraOptions(command.extraOptions) }),
       ...(command.arguments && { args: this.parseJSONcommandArguments(command.arguments) }),
@@ -499,7 +503,9 @@ export class StackFilePage implements OnDestroy {
 
   private async runEntry(entry: StackEntry) {
     const executionNumber = ++this.executionCounter;
-    return this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, entry.name, {
+    const { instance, processor } = this.yamcs;
+    const namespace = entry.namespace ?? null;
+    return this.yamcs.yamcsClient.issueCommandForNamespace(instance!, processor!, namespace, entry.name, {
       sequenceNumber: executionNumber,
       args: entry.args,
       extra: entry.extra,
@@ -515,13 +521,14 @@ export class StackFilePage implements OnDestroy {
         entry.record = rec;
         this.checkAckContinueRunning(rec);
       }
-
-      // Refresh subject, to be sure
-      this.entries$.next([...this.entries$.value]);
     }).catch(err => {
       entry.executionNumber = executionNumber;
       entry.executing = false;
       entry.err = err.message || err;
+      this.stopRun();
+    }).finally(() => {
+      // Refresh subject, to be sure
+      this.entries$.next([...this.entries$.value]);
     });
   }
 
@@ -650,6 +657,18 @@ export class StackFilePage implements OnDestroy {
           ...(result.stackOptions.advancement && { advancement: result.stackOptions.advancement })
         };
 
+        // Save with an alias, if so configured and the alias is available
+        const config = this.configService.getConfig();
+        if (config.preferredNamespace) {
+          for (const alias of result.command.alias || []) {
+            if (alias.namespace === config.preferredNamespace) {
+              entry.name = alias.name;
+              entry.namespace = alias.namespace;
+              break;
+            }
+          }
+        }
+
         const relto = this.selectedEntry$.value;
         if (relto) {
           const entries = this.entries$.value;
@@ -697,6 +716,18 @@ export class StackFilePage implements OnDestroy {
           command: result.command,
           ...(result.stackOptions.advancement && { advancement: result.stackOptions.advancement })
         };
+
+        // Save with an alias, if so configured and the alias is available
+        const config = this.configService.getConfig();
+        if (config.preferredNamespace) {
+          for (const alias of result.command.alias || []) {
+            if (alias.namespace === config.preferredNamespace) {
+              changedEntry.name = alias.name;
+              changedEntry.namespace = alias.namespace;
+              break;
+            }
+          }
+        }
 
         const entries = this.entries$.value;
         const idx = entries.indexOf(entry);

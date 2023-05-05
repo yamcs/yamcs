@@ -80,6 +80,7 @@ export class StackFormatter {
       commands: this.entries.map(entry => {
         return {
           name: entry.name,
+          ...(entry.namespace && { namespace: entry.namespace }),
           ...(entry.comment && { comment: entry.comment }),
           ...(entry.extra && { extraOptions: this.getExtraOptionsJSON(entry.extra) }),
           ...(entry.args && { arguments: this.getCommandArgumentsJSON(entry.args) }),

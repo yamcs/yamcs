@@ -35,3 +35,24 @@
 .disabled .label {
   opacity: 0.6;
 }
+
+div.names {
+  display: flex;
+}
+
+div.names > div {
+  padding-right: 25px;
+}
+
+div.names > div:not(:first-child) {
+  padding-left: 25px;
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+div.names h2 {
+  margin: 0;
+}
+
+div.names ::ng-deep .text-action {
+  line-height: 0;
+}

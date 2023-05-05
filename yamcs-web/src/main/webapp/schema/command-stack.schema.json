@@ -27,7 +27,11 @@
         "type": "object",
         "properties": {
           "name": {
-            "description": "Qualified name of the command",
+            "description": "Name of the command. If namespace is not specified, this should be the fully-qualified name",
+            "type": "string"
+          },
+          "namespace": {
+            "description": "Namespace applicable to the used command name. Not required if the name is the fully-qualified Yamcs name",
             "type": "string"
           },
           "comment": {
