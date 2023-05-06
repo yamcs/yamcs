@@ -27,6 +27,19 @@ import org.yamcs.yarch.YarchException;
  */
 public class Directory {
 
+    // MIGRATION NOTICE:
+    //
+    // Users and groups used to be stored in "ProtobufDatabase", but we're slowly phasing that
+    // out in favor of tables in the Yamcs DB, now that this has the functionality we need.
+    //
+    // Current phase: mirror ProtobufDB to YamcsDB, and partially read from Yamcs DB.
+    //
+    // Next planned phases:
+    // - fully read from ProtobufDB (currently not used for accounts,
+    // due to the additional privilege information)
+    // - mirror YamcsDB to ProtobufDB instead.
+    // - remove ProtobufDB
+
     private static final Log log = new Log(Directory.class);
     private static final String ACCOUNT_COLLECTION = "accounts";
     private static final String GROUP_COLLECTION = "groups";
@@ -42,10 +55,12 @@ public class Directory {
     private Map<String, Group> groups = new ConcurrentHashMap<>();
     private Map<String, Role> roles = new ConcurrentHashMap<>();
 
+    private DirectoryDb db;
     private ProtobufDatabase protobufDatabase;
 
     public Directory() throws InitException {
         try {
+            db = new DirectoryDb();
             YarchDatabaseInstance yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
             protobufDatabase = yarch.getProtobufDatabase();
             AccountCollection accountCollection = protobufDatabase.get(ACCOUNT_COLLECTION, AccountCollection.class);
@@ -71,6 +86,8 @@ public class Directory {
                     groups.put(rec.getName(), new Group(rec));
                 }
             }
+
+            mirrorToYamcsDB();
         } catch (YarchException | IOException e) {
             throw new InitException(e);
         }
@@ -80,7 +97,7 @@ public class Directory {
 
     public synchronized void addUser(User user) throws IOException {
         String username = user.getName();
-        if (users.containsKey(username) || serviceAccounts.containsKey(username)) {
+        if (db.findAccountByName(username) != null) {
             throw new IllegalArgumentException("Name '" + username + "' is already taken");
         }
         if (username.isEmpty() || username.contains(":")) {
@@ -120,8 +137,11 @@ public class Directory {
     public synchronized void deleteUser(User user) throws IOException {
         String username = user.getName();
         log.info("Removing user {}", user);
-        for (Group group : groups.values()) {
-            group.removeMember(user.getId());
+        var groups = db.listGroups();
+        for (var group : groups) {
+            if (group.removeMember(user.getId())) {
+                db.updateGroup(group);
+            }
         }
         users.remove(username);
         persistChanges();
@@ -129,22 +149,24 @@ public class Directory {
 
     public synchronized void addGroup(Group group) throws IOException {
         String groupName = group.getName();
-        if (groups.containsKey(groupName)) {
+        if (db.findGroupByName(groupName) != null) {
             throw new IllegalArgumentException("Group '" + groupName + "' already exists");
         }
         int id = groupIdSequence.incrementAndGet();
         group.setId(id);
+
         log.info("Saving new group {}", group);
         groups.put(group.getName(), group);
         persistChanges();
     }
 
     public synchronized void renameGroup(String from, String to) throws IOException {
-        if (groups.containsKey(to)) {
+        if (db.findGroupByName(to) != null) {
             throw new IllegalArgumentException("Group '" + to + "' already exists");
         }
-        Group group = groups.get(from);
+        var group = db.findGroupByName(from);
         group.setName(to);
+
         groups.remove(from);
         groups.put(to, group);
         persistChanges();
@@ -167,7 +189,7 @@ public class Directory {
      */
     public synchronized ApplicationCredentials addServiceAccount(ServiceAccount service) throws IOException {
         String serviceName = service.getName();
-        if (users.containsKey(serviceName) || serviceAccounts.containsKey(serviceName)) {
+        if (db.findAccountByName(serviceName) != null) {
             throw new IllegalArgumentException("Name '" + serviceName + "' is already taken");
         }
         int id = accountIdSequence.incrementAndGet();
@@ -241,6 +263,40 @@ public class Directory {
         }
         protobufDatabase.save(ACCOUNT_COLLECTION, accountsb.build());
         protobufDatabase.save(GROUP_COLLECTION, groupsb.build());
+
+        mirrorToYamcsDB();
+    }
+
+    private void mirrorToYamcsDB() throws IOException {
+        db.deleteGroups();
+        var groupCollection = protobufDatabase.get(GROUP_COLLECTION, GroupCollection.class);
+        if (groupCollection != null) {
+            var yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
+            var idSequence = yarch.getTable("group").getColumnDefinition("id").getSequence();
+            idSequence.reset(groupCollection.getSeq() + 1);
+
+            for (var rec : groupCollection.getRecordsList()) {
+                db.addGroup(new Group(rec));
+            }
+        }
+
+        db.deleteAccounts();
+        var accountCollection = protobufDatabase.get(ACCOUNT_COLLECTION, AccountCollection.class);
+        if (accountCollection != null) {
+            var yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
+            var idSequence = yarch.getTable("account").getColumnDefinition("id").getSequence();
+            idSequence.reset(accountCollection.getSeq() + 1);
+
+            for (var rec : accountCollection.getRecordsList()) {
+                if (rec.hasUserDetail()) {
+                    db.addAccount(new User(rec));
+                } else if (rec.hasServiceDetail()) {
+                    db.addAccount(new ServiceAccount(rec));
+                } else {
+                    throw new IllegalStateException("Unexpected account type");
+                }
+            }
+        }
     }
 
     /**
@@ -249,9 +305,9 @@ public class Directory {
      * @return true if the password is correct, false otherwise
      */
     public boolean validateUserPassword(String username, char[] password) {
-        User user = users.get(username);
-        if (user != null && user.getHash() != null) {
-            return hasher.validatePassword(password, user.getHash());
+        var account = db.findAccountByName(username);
+        if (account instanceof User && ((User) account).getHash() != null) {
+            return hasher.validatePassword(password, ((User) account).getHash());
         } else {
             return false;
         }
@@ -264,7 +320,7 @@ public class Directory {
      * we may also want to support user applications.
      */
     public boolean validateApplicationPassword(String applicationId, char[] password) {
-        Account account = getAccountForApplication(applicationId);
+        var account = getAccountForApplication(applicationId);
         if (account == null) {
             throw new IllegalArgumentException("No such application");
         }
@@ -283,6 +339,7 @@ public class Directory {
         if (!validateUserPassword(user.getName(), password)) {
             String hash = hasher.createHash(password);
             user.setHash(hash);
+            users.put(user.name, user);
             persistChanges();
         }
     }
@@ -292,7 +349,7 @@ public class Directory {
         return user != null ? user : getServiceAccount(name);
     }
 
-    public User getUser(int id) {
+    public User getUser(long id) {
         return users.values().stream()
                 .filter(u -> u.getId() == id)
                 .findFirst()
@@ -304,28 +361,26 @@ public class Directory {
     }
 
     public List<User> getUsers() {
-        return new ArrayList<>(users.values());
+        return db.listAccounts().stream()
+                .filter(account -> account instanceof User)
+                .map(account -> (User) account)
+                .collect(Collectors.toList());
     }
 
     public Account getAccountForApplication(String applicationId) {
-        for (ServiceAccount service : serviceAccounts.values()) {
-            if (service.getApplicationId().equals(applicationId)) {
-                return service;
-            }
-        }
-        return null;
+        return db.findServiceAccountForApplicationId(applicationId);
     }
 
     public Group getGroup(String name) {
-        return groups.get(name);
+        return db.findGroupByName(name);
     }
 
     public List<Group> getGroups() {
-        return new ArrayList<>(groups.values());
+        return db.listGroups();
     }
 
     public List<Group> getGroups(User user) {
-        return groups.values().stream()
+        return getGroups().stream()
                 .filter(g -> g.hasMember(user.getId()))
                 .collect(Collectors.toList());
     }
@@ -335,7 +390,10 @@ public class Directory {
     }
 
     public List<ServiceAccount> getServiceAccounts() {
-        return new ArrayList<>(serviceAccounts.values());
+        return db.listAccounts().stream()
+                .filter(account -> account instanceof ServiceAccount)
+                .map(account -> (ServiceAccount) account)
+                .collect(Collectors.toList());
     }
 
     public List<Role> getRoles() {

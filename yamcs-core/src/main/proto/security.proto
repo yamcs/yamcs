@@ -68,19 +68,3 @@ message GroupRecord {
   optional string description = 3;
   repeated int32 members = 4;
 }
-
-message ApplicationCollection {
-  optional int32 seq = 1;
-  repeated ApplicationRecord records = 2;
-}
-
-message ApplicationRecord {
-  optional int32 id = 1;
-  optional string name = 2;
-  optional string clientId = 3;
-  optional string clientHash = 4;
-  repeated string scopes = 5;
-  optional int32 createdBy = 6;
-  optional google.protobuf.Timestamp creationTime = 7;
-  optional google.protobuf.Timestamp lastLoginTime = 8;
-}

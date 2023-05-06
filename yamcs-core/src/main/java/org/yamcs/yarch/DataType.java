@@ -8,13 +8,13 @@ import java.util.List;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
+
 import com.google.protobuf.MessageLite;
 
 /**
- * Types supported by yarch. Currently TUPLE and LIST do now work well.
- * ENUM is just like String, except that when it's stored on disk a two bytes integer value from a map is stored instead
- * of the String.
- * (maximum allowed version is 2^16 (which is anyway too big considering that the map is stored as serialised yaml file)
+ * Types supported by yarch. Currently TUPLE and LIST do now work well. ENUM is just like String, except that when it's
+ * stored on disk a two bytes integer value from a map is stored instead of the String. (maximum allowed version is 2^16
+ * (which is anyway too big considering that the map is stored as serialised yaml file)
  * 
  * PROTOBUF is a Google Protocol Buffer message
  * 
@@ -24,7 +24,22 @@ import com.google.protobuf.MessageLite;
 public class DataType {
 
     public enum _type {
-        BYTE, SHORT, INT, LONG, DOUBLE, TIMESTAMP, STRING, BINARY, BOOLEAN, ENUM, PROTOBUF, PARAMETER_VALUE, TUPLE, ARRAY, HRES_TIMESTAMP, UUID
+        BYTE,
+        SHORT,
+        INT,
+        LONG,
+        DOUBLE,
+        TIMESTAMP,
+        STRING,
+        BINARY,
+        BOOLEAN,
+        ENUM,
+        PROTOBUF,
+        PARAMETER_VALUE,
+        TUPLE,
+        ARRAY,
+        HRES_TIMESTAMP,
+        UUID
     }
 
     public final _type val;
@@ -58,6 +73,7 @@ public class DataType {
         this.id = id;
         this.comparable = comparable;
     }
+
     protected DataType(_type t, byte id) {
         this(t, id, false);
     }
@@ -234,8 +250,7 @@ public class DataType {
      * Returns type as string.
      * 
      * 
-     * @return for basic types returns the enum name
-     *         for PROTOBUF returns PROTOBUF(className)
+     * @return for basic types returns the enum name for PROTOBUF returns PROTOBUF(className)
      */
     public String name() {
         return val.name();
@@ -270,6 +285,8 @@ public class DataType {
                 throw new IllegalArgumentException("Constant empty arrays not supported");
             }
             return DataType.array(typeOf(l.get(0)));
+        } else if (v instanceof MessageLite) {
+            return DataType.protobuf(v.getClass().getName());
         } else {
             throw new IllegalArgumentException("invalid or unsupported object of type of " + v.getClass());
         }
@@ -382,10 +399,7 @@ public class DataType {
     }
 
     /**
-     * Performs casting:
-     * numbers to numbers
-     * numbers to string
-     * string to numbers
+     * Performs casting: numbers to numbers, numbers to string, string to numbers
      * 
      * @param targetType
      * @param v

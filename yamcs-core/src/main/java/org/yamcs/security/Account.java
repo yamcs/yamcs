@@ -4,17 +4,18 @@ import java.util.Objects;
 
 import org.yamcs.security.protobuf.AccountRecord;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.yarch.Tuple;
 
 /**
  * A {@link User} or an {@link ServiceAccount}
  */
 public abstract class Account {
 
-    protected int id;
+    protected long id;
     protected String name;
     protected String displayName;
     protected boolean active; // Inactive users are considered "blocked"
-    protected int createdBy; // Id of the user that created this user
+    protected long createdBy; // Id of the user that created this user
     protected long creationTime = TimeEncoding.INVALID_INSTANT;
     protected long confirmationTime = TimeEncoding.INVALID_INSTANT;
     protected long lastLoginTime = TimeEncoding.INVALID_INSTANT;
@@ -30,7 +31,7 @@ public abstract class Account {
     Account(AccountRecord record) {
         id = record.getId();
         name = record.getName();
-        if (record.hasDisplayName()) {
+        if (record.hasDisplayName() && !record.getDisplayName().isEmpty()) {
             displayName = record.getDisplayName();
         }
         active = record.getActive();
@@ -43,6 +44,22 @@ public abstract class Account {
         }
         if (record.hasLastLoginTime()) {
             lastLoginTime = TimeEncoding.fromProtobufTimestamp(record.getLastLoginTime());
+        }
+    }
+
+    Account(Tuple tuple) {
+        id = tuple.getLongColumn(DirectoryDb.ACCOUNT_CNAME_ID);
+        name = tuple.getColumn(DirectoryDb.ACCOUNT_CNAME_NAME);
+        displayName = tuple.getColumn(DirectoryDb.ACCOUNT_CNAME_DISPLAY_NAME);
+        active = tuple.getBooleanColumn(DirectoryDb.ACCOUNT_CNAME_ACTIVE);
+        if (tuple.hasColumn(DirectoryDb.ACCOUNT_CNAME_CREATION_TIME)) {
+            creationTime = tuple.getTimestampColumn(DirectoryDb.ACCOUNT_CNAME_CREATION_TIME);
+        }
+        if (tuple.hasColumn(DirectoryDb.ACCOUNT_CNAME_CONFIRMATION_TIME)) {
+            confirmationTime = tuple.getTimestampColumn(DirectoryDb.ACCOUNT_CNAME_CONFIRMATION_TIME);
+        }
+        if (tuple.hasColumn(DirectoryDb.ACCOUNT_CNAME_LAST_LOGIN_TIME)) {
+            lastLoginTime = tuple.getTimestampColumn(DirectoryDb.ACCOUNT_CNAME_LAST_LOGIN_TIME);
         }
     }
 
@@ -62,7 +79,11 @@ public abstract class Account {
     }
 
     public void setDisplayName(String displayName) {
-        this.displayName = displayName;
+        if (displayName == null || displayName.isEmpty()) {
+            this.displayName = null;
+        } else {
+            this.displayName = displayName;
+        }
     }
 
     void setId(int id) {
@@ -73,7 +94,7 @@ public abstract class Account {
         lastLoginTime = TimeEncoding.getWallclockTime();
     }
 
-    public int getCreatedBy() {
+    public long getCreatedBy() {
         return createdBy;
     }
 
@@ -102,20 +123,20 @@ public abstract class Account {
         confirmationTime = TimeEncoding.getWallclockTime();
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
     protected AccountRecord.Builder newRecordBuilder() {
         AccountRecord.Builder b = AccountRecord.newBuilder();
-        b.setId(id);
+        b.setId(Long.valueOf(id).intValue());
         b.setName(name);
         if (displayName != null) {
             b.setDisplayName(displayName);
         }
         b.setActive(active);
         if (createdBy > 0) {
-            b.setCreatedBy(createdBy);
+            b.setCreatedBy(Long.valueOf(createdBy).intValue());
         }
         b.setCreationTime(TimeEncoding.toProtobufTimestamp(creationTime));
         if (confirmationTime != TimeEncoding.INVALID_INSTANT) {
@@ -125,6 +146,31 @@ public abstract class Account {
             b.setLastLoginTime(TimeEncoding.toProtobufTimestamp(lastLoginTime));
         }
         return b;
+    }
+
+    protected Tuple toTuple(boolean forUpdate) {
+        var tuple = new Tuple();
+        if (!forUpdate) {
+            if (id > 0) { // Else, rely on autoincrement
+                tuple.addColumn(DirectoryDb.ACCOUNT_CNAME_ID, id);
+            }
+        }
+        tuple.addColumn(DirectoryDb.ACCOUNT_CNAME_NAME, name);
+        tuple.addColumn(DirectoryDb.ACCOUNT_CNAME_DISPLAY_NAME, displayName);
+        tuple.addColumn(DirectoryDb.ACCOUNT_CNAME_ACTIVE, active);
+        if (createdBy > 0) {
+            tuple.addColumn(DirectoryDb.ACCOUNT_CNAME_CREATED_BY, createdBy);
+        } else {
+            tuple.addColumn(DirectoryDb.ACCOUNT_CNAME_CREATED_BY, null);
+        }
+        tuple.addTimestampColumn(DirectoryDb.ACCOUNT_CNAME_CREATION_TIME, creationTime);
+        if (confirmationTime != TimeEncoding.INVALID_INSTANT) {
+            tuple.addTimestampColumn(DirectoryDb.ACCOUNT_CNAME_CONFIRMATION_TIME, confirmationTime);
+        }
+        if (lastLoginTime != TimeEncoding.INVALID_INSTANT) {
+            tuple.addTimestampColumn(DirectoryDb.ACCOUNT_CNAME_LAST_LOGIN_TIME, lastLoginTime);
+        }
+        return tuple;
     }
 
     @Override
@@ -138,7 +184,7 @@ public abstract class Account {
 
     @Override
     public int hashCode() {
-        return Integer.hashCode(id);
+        return Long.hashCode(id);
     }
 
     @Override

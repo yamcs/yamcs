@@ -2,6 +2,8 @@ package org.yamcs.security;
 
 import org.yamcs.security.protobuf.AccountRecord;
 import org.yamcs.security.protobuf.ServiceAccountRecordDetail;
+import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.Tuple;
 
 /**
  * Represents an non-human service or application registered with Yamcs.
@@ -32,6 +34,13 @@ public class ServiceAccount extends Account {
         applicationHash = serviceDetail.getApplicationHash();
     }
 
+    ServiceAccount(Tuple tuple) {
+        super(tuple);
+        ServiceAccountRecordDetail serviceDetail = tuple.getColumn(DirectoryDb.ACCOUNT_CNAME_SERVICE_DETAIL);
+        applicationId = serviceDetail.getApplicationId();
+        applicationHash = serviceDetail.getApplicationHash();
+    }
+
     public String getApplicationId() {
         return applicationId;
     }
@@ -49,9 +58,23 @@ public class ServiceAccount extends Account {
     }
 
     AccountRecord toRecord() {
-        ServiceAccountRecordDetail.Builder serviceDetailb = ServiceAccountRecordDetail.newBuilder();
+        var serviceDetailb = ServiceAccountRecordDetail.newBuilder();
         serviceDetailb.setApplicationId(applicationId);
         serviceDetailb.setApplicationHash(applicationHash);
         return newRecordBuilder().setServiceDetail(serviceDetailb).build();
+    }
+
+    @Override
+    public Tuple toTuple(boolean forUpdate) {
+        var tuple = super.toTuple(forUpdate);
+
+        var serviceDetailb = ServiceAccountRecordDetail.newBuilder();
+        serviceDetailb.setApplicationId(applicationId);
+        serviceDetailb.setApplicationHash(applicationHash);
+
+        tuple.addColumn(DirectoryDb.ACCOUNT_CNAME_SERVICE_DETAIL,
+                DataType.protobuf(ServiceAccountRecordDetail.class), serviceDetailb.build());
+
+        return tuple;
     }
 }
