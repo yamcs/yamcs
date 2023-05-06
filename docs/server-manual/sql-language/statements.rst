@@ -273,7 +273,7 @@ UPDATE Statement
 .. container:: productionlist
 
    .. productionlist:: sql-grammar
-      updateStatement: "UPDATE" "SET" `columnName` "=" `simpleExpression`
+      updateStatement: "UPDATE" "SET" `columnName` "=" `expression`
                      : ( "," `columnName` "=" `expression` )*
                      : [ "WHERE" `expression` ]
                      : [ "LIMIT" `integer` ]
