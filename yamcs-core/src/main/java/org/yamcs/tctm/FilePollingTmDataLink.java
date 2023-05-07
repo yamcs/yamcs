@@ -194,7 +194,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
 
     @Override
     public String getDetailedStatus() {
-        return "reading files from " + incomingDir;
+        return "Reading files from " + incomingDir;
     }
 
     @Override
@@ -207,6 +207,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
     @Override
     public void doEnable() {
         thread = new Thread(this);
+        thread.setName(getClass().getSimpleName() + "-" + linkName);
         thread.start();
     }
 

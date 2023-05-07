@@ -57,10 +57,11 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
             try {
                 tmSocket = new DatagramSocket(port);
                 Thread thread = new Thread(this);
-                thread.setName("UdpTmDataLink-" + linkName);
+                thread.setName(getClass().getSimpleName() + "-" + linkName);
                 thread.start();
             } catch (SocketException e) {
                 notifyFailed(e);
+                return;
             }
         }
         notifyStarted();
@@ -170,7 +171,9 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
     @Override
     public void doEnable() throws SocketException {
         tmSocket = new DatagramSocket(port);
-        new Thread(this).start();
+        Thread thread = new Thread(this);
+        thread.setName(getClass().getSimpleName() + "-" + linkName);
+        thread.start();
     }
 
     @Override

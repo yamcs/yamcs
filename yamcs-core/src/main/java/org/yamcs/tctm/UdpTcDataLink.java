@@ -39,7 +39,11 @@ public class UdpTcDataLink extends AbstractThreadedTcDataLink {
 
     @Override
     public String getDetailedStatus() {
-        return String.format("OK, sending to %s:%d", host, port);
+        if (isDisabled()) {
+            return String.format("DISABLED (should send to %s:%d)", host, port);
+        } else {
+            return String.format("OK, sending to %s:%d", host, port);
+        }
     }
 
     @Override

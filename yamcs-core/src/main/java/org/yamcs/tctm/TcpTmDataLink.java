@@ -171,7 +171,7 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
     @Override
     public void doEnable() {
         thread = new Thread(this);
-        thread.setName(this.getClass().getSimpleName() + "-" + linkName);
+        thread.setName(getClass().getSimpleName() + "-" + linkName);
         thread.start();
     }
 

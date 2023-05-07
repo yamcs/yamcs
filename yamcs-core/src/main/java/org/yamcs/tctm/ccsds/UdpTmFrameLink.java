@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -23,9 +25,6 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
     private int port;
 
     DatagramPacket datagram;
-    String packetPreprocessorClassName;
-    Object packetPreprocessorArgs;
-    Thread thread;
 
     /**
      * Creates a new UDP Frame Data Link
@@ -33,6 +32,7 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
      * @throws ConfigurationException
      *             if port is not defined in the configuration
      */
+    @Override
     public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
         super.init(instance, name, config);
         port = config.getInt("port");
@@ -45,9 +45,12 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
         if (!isDisabled()) {
             try {
                 tmSocket = new DatagramSocket(port);
-                new Thread(this).start();
+                Thread thread = new Thread(this);
+                thread.setName(getClass().getSimpleName() + "-" + linkName);
+                thread.start();
             } catch (SocketException e) {
                 notifyFailed(e);
+                return;
             }
         }
         notifyStarted();
@@ -55,7 +58,10 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
 
     @Override
     public void doStop() {
-        tmSocket.close();
+        if (tmSocket != null) {
+            tmSocket.close();
+            tmSocket = null;
+        }
         notifyStopped();
     }
 
@@ -83,18 +89,27 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
         }
     }
 
-
-    /**
-     * returns statistics with the number of datagram received and the number of invalid datagrams
-     */
     @Override
     public String getDetailedStatus() {
         if (isDisabled()) {
-            return "DISABLED";
+            return "DISABLED (should receive on " + port + ")";
         } else {
-            return String.format("OK (%s) %nValid datagrams received: %d%nInvalid datagrams received: %d",
-                    port, frameCount.get(), invalidDatagramCount);
+            return "OK, receiving on " + port;
         }
+    }
+
+    @Override
+    public Map<String, Object> getExtraInfo() {
+        var extra = new LinkedHashMap<String, Object>();
+        extra.put("Valid datagrams", frameCount.get());
+        extra.put("Invalid datagrams", invalidDatagramCount);
+        return extra;
+    }
+
+    @Override
+    public void resetCounters() {
+        super.resetCounters();
+        invalidDatagramCount = 0;
     }
 
     @Override
@@ -108,7 +123,9 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
     @Override
     protected void doEnable() throws SocketException {
         tmSocket = new DatagramSocket(port);
-        new Thread(this).start();
+        Thread thread = new Thread(this);
+        thread.setName(getClass().getSimpleName() + "-" + linkName);
+        thread.start();
     }
 
     @Override
