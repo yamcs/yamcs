@@ -1,22 +1,20 @@
 package org.yamcs.yarch.streamsql;
 
+import java.util.Set;
+
+import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.CompiledExpression;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.FieldReturnCompiledExpression;
 import org.yamcs.yarch.ProtobufDataType;
 
-import java.util.Set;
-
-import org.yamcs.utils.parser.ParseException;
-
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor.Type;
 
 /**
- * Represents a column in a query, for example x and y below:
- * select x from table where y &gt; 0
+ * Represents a column in a query, for example x and y below: select x from table where y &gt; 0
  * 
  * @author nm
  *
@@ -49,7 +47,7 @@ public class ColumnExpression extends Expression {
             int idx = name.indexOf(".");
             if (idx != -1) { // protobuf column
                 className = name.substring(0, idx);
-                fieldName =  name.substring(idx + 1);
+                fieldName = name.substring(idx + 1);
                 bindProtobuf(className, fieldName);
             } else {
                 throw new GenericStreamSqlException("'" + name + "' is not an input column");
@@ -123,15 +121,21 @@ public class ColumnExpression extends Expression {
         if (fieldName == null) {
             code.append("col" + sname);
         } else {
-            code.append("col" + className + ".get" + capitalizeFirstLetter(fieldName) + "()");
+            String varName = "col" + className;
+            String hasFunction = varName + ".has" + capitalizeFirstLetter(fieldName) + "()";
+            String getFunction = varName + ".get" + capitalizeFirstLetter(fieldName) + "()";
             if (fieldDescriptor.getType() == Type.ENUM) {
-                code.append(".name()");
+                getFunction += ".name()";
             }
+            code.append("((" + varName + " != null && " + hasFunction + ")\n");
+            code.append("\t\t\t? " + getFunction + "\n");
+            code.append("\t\t\t: null)");
         }
     }
-    
+
+    @Override
     public void collectRequiredInputs(Set<ColumnDefinition> inputs) {
-        if(className ==null) {
+        if (className == null) {
             inputs.add(inputDef.getColumn(colName));
         } else {
             inputs.add(inputDef.getColumn(className));
@@ -140,7 +144,11 @@ public class ColumnExpression extends Expression {
 
     @Override
     public CompiledExpression compile() throws StreamSqlException {
-        return new FieldReturnCompiledExpression(name, cdef);
+        if (className == null) {
+            return new FieldReturnCompiledExpression(name, cdef);
+        } else {
+            return super.compile();
+        }
     }
 
     @Override
