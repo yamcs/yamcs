@@ -62,7 +62,7 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
     configService: ConfigService,
   ) {
     this.storageClient = yamcs.createStorageClient();
-    this.bucket = configService.getConfig().displayBucket;
+    this.bucket = configService.getDisplayBucket();
   }
 
   setViewerContainerEl(viewerContainerEl: HTMLDivElement) {

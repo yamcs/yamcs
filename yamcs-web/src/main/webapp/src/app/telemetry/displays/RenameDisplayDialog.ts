@@ -26,7 +26,7 @@ export class RenameDisplayDialog {
     @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
   ) {
     this.storageClient = yamcs.createStorageClient();
-    this.bucket = configService.getConfig().displayBucket;
+    this.bucket = configService.getDisplayBucket();
 
     const filename = filenamePipe.transform(this.data.name);
     this.filenameForm = formBuilder.group({

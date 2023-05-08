@@ -56,7 +56,7 @@ export class DisplayFolderPage implements OnDestroy {
     this.storageClient = yamcs.createStorageClient();
 
     const config = configService.getConfig();
-    this.bucket = config.displayBucket;
+    this.bucket = configService.getDisplayBucket();
     this.folderPerInstance = config.displayFolderPerInstance;
 
     this.loadCurrentFolder();

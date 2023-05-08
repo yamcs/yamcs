@@ -22,7 +22,7 @@ export class StackFilePageDirtyGuard implements CanDeactivate<StackFilePage> {
     private authService: AuthService,
     configService: ConfigService,
   ) {
-    this.bucket = configService.getConfig().stackBucket;
+    this.bucket = configService.getStackBucket();
   }
 
   canDeactivate(component: StackFilePage) {

@@ -1,4 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
+import { InstanceConfig } from '../core/services/ConfigService';
 import { MessageService } from '../core/services/MessageService';
 import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
@@ -231,6 +232,11 @@ export default class YamcsClient implements HttpHandler {
   async getInstance(name: string) {
     const response = await this.doFetch(`${this.apiUrl}/instances/${name}`);
     return await response.json() as Instance;
+  }
+
+  async getInstanceConfig(instance: string) {
+    const response = await this.doFetch(`${this.apiUrl}/web/instance-config/${instance}`);
+    return await response.json() as InstanceConfig;
   }
 
   async startInstance(name: string) {

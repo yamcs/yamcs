@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, ElementRef, Inject, ViewChild } from '@an
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_LEGACY_DIALOG_DATA, MatLegacyDialogRef } from '@angular/material/legacy-dialog';
 import { StorageClient } from '../../client';
-import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
+import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -22,7 +22,6 @@ export class CreateDisplayDialog {
   @ViewChild('filename')
   filenameInput: ElementRef;
 
-  private config: WebsiteConfig;
   private storageClient: StorageClient;
 
   constructor(
@@ -31,9 +30,8 @@ export class CreateDisplayDialog {
     yamcs: YamcsService,
     @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
     private changeDetector: ChangeDetectorRef,
-    configService: ConfigService,
+    private configService: ConfigService,
   ) {
-    this.config = configService.getConfig();
     this.storageClient = yamcs.createStorageClient();
     this.typeForm = formBuilder.group({
       type: ['par', Validators.required],
@@ -75,7 +73,7 @@ export class CreateDisplayDialog {
     }, undefined, 2)], {
       type: 'application/json'
     });
-    const bucketName = this.config.displayBucket;
+    const bucketName = this.configService.getDisplayBucket();
     const objectName = this.data.prefix + fullPath;
     this.storageClient.uploadObject(bucketName, objectName, b).then(() => {
       this.dialogRef.close(fullPath);

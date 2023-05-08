@@ -62,7 +62,7 @@ export class StackFolderPage implements OnDestroy {
     this.storageClient = yamcs.createStorageClient();
 
     const config = configService.getConfig();
-    this.bucket = config.stackBucket;
+    this.bucket = configService.getStackBucket();
     this.folderPerInstance = config.stackFolderPerInstance;
 
     this.loadCurrentFolder();

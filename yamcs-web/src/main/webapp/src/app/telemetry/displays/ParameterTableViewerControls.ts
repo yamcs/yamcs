@@ -26,7 +26,7 @@ export class ParameterTableViewerControls {
     private authService: AuthService,
     configService: ConfigService,
   ) {
-    this.bucket = configService.getConfig().displayBucket;
+    this.bucket = configService.getDisplayBucket();
   }
 
   public init(viewer: ParameterTableViewer) {

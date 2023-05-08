@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, View
 import { UntypedFormControl } from '@angular/forms';
 import { MatLegacyAutocompleteSelectedEvent } from '@angular/material/legacy-autocomplete';
 import { NavigationEnd, Router } from '@angular/router';
-import { Observable, of, Subscription } from 'rxjs';
+import { Observable, Subscription, of } from 'rxjs';
 import { debounceTime, filter, map, switchMap } from 'rxjs/operators';
 import { ConnectionInfo, Parameter } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
@@ -65,7 +65,8 @@ export class InstancePage implements OnInit, OnDestroy {
     if (this.user.hasAnyObjectPrivilegeOfType('ReadParameter')) {
       this.telemetryItems.push({ path: 'parameters', label: 'Parameters' });
     }
-    if (this.user.hasObjectPrivilege('ReadBucket', this.config.displayBucket)) {
+    const displayBucket = configService.getDisplayBucket();
+    if (this.user.hasObjectPrivilege('ReadBucket', displayBucket)) {
       this.telemetryItems.push({ path: 'displays', label: 'Displays' });
     }
     for (const item of configService.getExtraNavItems('telemetry')) {
@@ -77,7 +78,8 @@ export class InstancePage implements OnInit, OnDestroy {
     if (this.config.tc && this.user.hasAnyObjectPrivilegeOfType('Command')) {
       this.commandingItems.push({ path: 'send', label: 'Send a command' });
     }
-    if (this.config.tc && this.user.hasObjectPrivilege('ReadBucket', this.config.stackBucket)) {
+    const stackBucket = configService.getStackBucket();
+    if (this.config.tc && this.user.hasObjectPrivilege('ReadBucket', stackBucket)) {
       this.commandingItems.push({ path: 'stacks', label: 'Command Stacks' });
     }
     if (this.user.hasAnyObjectPrivilegeOfType('CommandHistory')) {

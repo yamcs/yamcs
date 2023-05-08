@@ -34,20 +34,32 @@ public class PluginManager {
             var pluginMetadata = new PluginMetadata(props);
             metadata.put(plugin.getClass(), pluginMetadata);
 
+            var discoveredSpecs = discoverPluginOptions(plugin.getClass());
+
             // Allow plugins to manually define a spec, but default to
             // autodiscovery based on a resource descriptor.
+
             var spec = plugin.getSpec();
-            if (spec == null) {
-                spec = discoverPluginOptions(plugin.getClass());
-            }
             if (spec != null) {
-                yamcs.addConfigurationSection(pluginMetadata.getName(), spec);
+                yamcs.addConfigurationSection(ConfigScope.YAMCS, pluginMetadata.getName(), spec);
+            } else if (discoveredSpecs.globalSpec != null) {
+                yamcs.addConfigurationSection(ConfigScope.YAMCS,
+                        pluginMetadata.getName(), discoveredSpecs.globalSpec);
+            }
+
+            spec = plugin.getInstanceSpec();
+            if (spec != null) {
+                yamcs.addConfigurationSection(ConfigScope.YAMCS_INSTANCE, pluginMetadata.getName(), spec);
+            } else if (discoveredSpecs.instanceSpec != null) {
+                yamcs.addConfigurationSection(ConfigScope.YAMCS_INSTANCE,
+                        pluginMetadata.getName(), discoveredSpecs.instanceSpec);
             }
         }
     }
 
     @SuppressWarnings("unchecked")
-    private Spec discoverPluginOptions(Class<?> pluginClass) throws IOException {
+    private PluginSpecs discoverPluginOptions(Class<?> pluginClass) throws IOException {
+        var specs = new PluginSpecs();
         try (var in = pluginClass.getResourceAsStream(pluginClass.getSimpleName() + ".yaml")) {
             if (in != null) {
                 var yaml = new Yaml();
@@ -56,7 +68,17 @@ public class PluginManager {
                     var optionDescriptors = (Map<String, Map<String, Object>>) pluginDescriptor
                             .get("options");
                     try {
-                        return Spec.fromDescriptor(optionDescriptors);
+                        specs.globalSpec = Spec.fromDescriptor(optionDescriptors);
+                    } catch (ValidationException e) {
+                        // Plugin error. Just throw it up because it must be fixed.
+                        throw new RuntimeException(e);
+                    }
+                }
+                if (pluginDescriptor.containsKey("instanceOptions")) {
+                    var optionDescriptors = (Map<String, Map<String, Object>>) pluginDescriptor
+                            .get("instanceOptions");
+                    try {
+                        specs.instanceSpec = Spec.fromDescriptor(optionDescriptors);
                     } catch (ValidationException e) {
                         // Plugin error. Just throw it up because it must be fixed.
                         throw new RuntimeException(e);
@@ -64,7 +86,7 @@ public class PluginManager {
                 }
             }
         }
-        return null;
+        return specs;
     }
 
     public Collection<Plugin> getPlugins() {
@@ -115,5 +137,10 @@ public class PluginManager {
                 throw e;
             }
         }
+    }
+
+    private static class PluginSpecs {
+        Spec globalSpec;
+        Spec instanceSpec;
     }
 }

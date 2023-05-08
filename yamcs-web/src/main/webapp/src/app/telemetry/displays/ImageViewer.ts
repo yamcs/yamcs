@@ -31,7 +31,7 @@ export class ImageViewer implements Viewer {
 
   constructor(yamcs: YamcsService, configService: ConfigService) {
     this.storageClient = yamcs.createStorageClient();
-    this.bucket = configService.getConfig().displayBucket;
+    this.bucket = configService.getDisplayBucket();
   }
 
   public init(objectName: string) {

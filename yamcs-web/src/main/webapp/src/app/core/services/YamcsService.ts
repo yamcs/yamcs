@@ -5,6 +5,7 @@ import { BehaviorSubject } from 'rxjs';
 import { Clearance, ClearanceSubscription, ConnectionInfo, Processor, StorageClient, TimeSubscription, YamcsClient } from '../../client';
 import { DefaultProcessorPipe } from '../../shared/pipes/DefaultProcessorPipe';
 import { MessageService } from './MessageService';
+import { ConfigService } from './ConfigService';
 
 /**
  * Singleton service for facilitating working with a websocket connection
@@ -28,6 +29,7 @@ export class YamcsService {
     private router: Router,
     private defaultProcessorPipe: DefaultProcessorPipe,
     private messageService: MessageService,
+    private configService: ConfigService,
   ) {
     this.yamcsClient = new YamcsClient(baseHref, messageService);
   }
@@ -103,11 +105,14 @@ export class YamcsService {
       Promise.all([
         this.yamcsClient.getInstance(instanceId),
         this.yamcsClient.getProcessor(instanceId, processorId),
+        this.yamcsClient.getInstanceConfig(instanceId),
       ]).then(result => {
         this.connectionInfo$.next({ instance: result[0], processor: result[1] });
 
         // Don't wait on WebSocket. Lots of pages require mission time
         this.time$.next(result[1].time);
+
+        this.configService.setInstanceConfig(result[2]);
 
         // Listen to time updates, so that we can easily provide actual mission time to components
         this.timeSubscription = this.yamcsClient.createTimeSubscription({

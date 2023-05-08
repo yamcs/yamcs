@@ -1,3 +1,8 @@
+#
+# Global Options
+#
+# Can be used in 'yamcs.yaml' under a section 'yamcs-web'.
+#
 options:
   tag:
     title: Tag
@@ -41,10 +46,9 @@ options:
     title: Display Folder Per Instance
     description:
       - Controls whether displays are specific to an instance.
-      - Avoid using this option, there are plans to deprecate it once instances can choose a
-        specific bucket in their configuration.
     type: BOOLEAN
     default: false
+    deprecationMessage: If you need instance-specific displays, configure ``displayBucket`` inside :file:`etc/yamcs.{instance}.yaml` (section ``yamcs-web``).
 
   stackBucket:
     title: Stack Bucket
@@ -57,10 +61,9 @@ options:
     title: Stack Folder Per Instance
     description:
       - Controls whether stacks are specific to an instance.
-      - Avoid using this option, there are plans to deprecate it once instances can choose a
-        specific bucket in their configuration.
     type: BOOLEAN
     default: false
+    deprecationMessage: If you need instance-specific stacks, configure ``stackBucket`` inside :file:`etc/yamcs.{instance}.yaml` (section ``yamcs-web``).
 
   staticRoot:
     title: Static Root
@@ -209,3 +212,23 @@ options:
               - type
               - rectime
               - seqNumber
+
+#
+# Instance-specific Options
+#
+# Can be used in 'yamcs.{intance}.yaml' under a section 'yamcs-web'.
+#
+instanceOptions:
+  displayBucket:
+    title: Display Bucket
+    description:
+      - Bucket where to find display resources.
+      - If unset, defaults to the display bucket specified globally
+    type: STRING
+
+  stackBucket:
+    title: Stack Bucket
+    description:
+      - Bucket where to find stacks.
+      - If unset, defaults to the stack bucket specified globally
+    type: STRING

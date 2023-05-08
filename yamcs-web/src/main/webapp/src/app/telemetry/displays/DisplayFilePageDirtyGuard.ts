@@ -22,7 +22,7 @@ export class DisplayFilePageDirtyGuard implements CanDeactivate<DisplayFilePage>
     private authService: AuthService,
     configService: ConfigService,
   ) {
-    this.bucket = configService.getConfig().displayBucket;
+    this.bucket = configService.getDisplayBucket();
   }
 
   canDeactivate(component: DisplayFilePage) {

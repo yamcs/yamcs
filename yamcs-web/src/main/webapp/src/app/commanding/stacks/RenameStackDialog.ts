@@ -30,7 +30,7 @@ export class RenameStackDialog {
     @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
   ) {
     this.storageClient = yamcs.createStorageClient();
-    this.bucket = configService.getConfig().stackBucket;
+    this.bucket = configService.getStackBucket();
 
     const basename = basenamePipe.transform(filenamePipe.transform(this.data.name));
     this.filenameForm = formBuilder.group({

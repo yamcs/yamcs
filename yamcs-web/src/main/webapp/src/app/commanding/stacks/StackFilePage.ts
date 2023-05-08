@@ -109,7 +109,7 @@ export class StackFilePage implements OnDestroy {
     private formBuilder: FormBuilder
   ) {
     const config = configService.getConfig();
-    this.bucket = config.stackBucket;
+    this.bucket = configService.getStackBucket();
     this.folderPerInstance = config.displayFolderPerInstance;
     this.storageClient = yamcs.createStorageClient();
 

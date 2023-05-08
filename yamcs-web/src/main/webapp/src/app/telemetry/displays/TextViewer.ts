@@ -29,7 +29,7 @@ export class TextViewer implements Viewer {
     configService: ConfigService,
   ) {
     this.storageClient = yamcs.createStorageClient();
-    this.bucket = configService.getConfig().displayBucket;
+    this.bucket = configService.getDisplayBucket();
 
   }
 

@@ -27,7 +27,7 @@ export class CreateStackDialog {
     configService: ConfigService,
     @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
   ) {
-    this.bucket = configService.getConfig().stackBucket;
+    this.bucket = configService.getStackBucket();
     this.storageClient = yamcs.createStorageClient();
     this.filenameForm = formBuilder.group({
       name: ['', [Validators.required]],

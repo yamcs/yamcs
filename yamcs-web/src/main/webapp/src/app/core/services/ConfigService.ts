@@ -21,11 +21,14 @@ export interface WebsiteConfig {
   dass: boolean;
   tc: boolean;
   tmArchive: boolean;
-  displayBucket: string;
   displayFolderPerInstance: boolean;
-  stackBucket: string;
   stackFolderPerInstance: boolean;
   siteLinks: SiteLink[];
+}
+
+export interface InstanceConfig {
+  displayBucket: string;
+  stackBucket: string;
 }
 
 export interface EventsConfig {
@@ -62,6 +65,7 @@ export interface ExtraColumnInfo extends ColumnInfo {
 export class ConfigService {
 
   private websiteConfig: WebsiteConfig;
+  private instanceConfig: InstanceConfig;
   private extraNavItems = new Map<NavGroup, NavItem[]>();
 
   async loadWebsiteConfig() {
@@ -78,6 +82,14 @@ export class ConfigService {
     return this.websiteConfig.auth;
   }
 
+  getDisplayBucket() {
+    return this.instanceConfig.displayBucket;
+  }
+
+  getStackBucket() {
+    return this.instanceConfig.stackBucket;
+  }
+
   getTag() {
     return this.websiteConfig.tag;
   }
@@ -92,6 +104,10 @@ export class ConfigService {
 
   getConfig() {
     return this.websiteConfig;
+  }
+
+  setInstanceConfig(instanceConfig: InstanceConfig) {
+    this.instanceConfig = instanceConfig;
   }
 
   getSiteLinks() {

@@ -43,7 +43,7 @@ export class ScriptViewer implements Viewer {
     private authService: AuthService,
   ) {
     this.storageClient = yamcs.createStorageClient();
-    this.bucket = configService.getConfig().displayBucket;
+    this.bucket = configService.getDisplayBucket();
   }
 
   public init(objectName: string) {

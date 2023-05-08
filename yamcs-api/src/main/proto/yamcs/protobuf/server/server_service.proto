@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package yamcs.protobuf.web;
+package yamcs.protobuf.server;
 
 option java_package = "org.yamcs.protobuf";
 option java_outer_classname = "ServerServiceProto";
