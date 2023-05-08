@@ -9,6 +9,7 @@ import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.TmPacketData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.yarch.ColumnDefinition;
@@ -27,14 +28,20 @@ public final class GPBHelper {
         long genTime = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
         int seqNum = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
         String pname = (String) tuple.getColumn(XtceTmRecorder.PNAME_COLUMN);
-        TmPacketData tm = TmPacketData.newBuilder()
+        var b = TmPacketData.newBuilder()
                 .setReceptionTime(TimeEncoding.toProtobufTimestamp(recTime))
                 .setPacket(ByteString.copyFrom(pbody))
                 .setGenerationTime(TimeEncoding.toProtobufTimestamp(genTime))
                 .setSequenceNumber(seqNum)
-                .setId(NamedObjectId.newBuilder().setName(pname).build())
-                .build();
-        return tm;
+                .setId(NamedObjectId.newBuilder().setName(pname).build());
+        if (tuple.hasColumn(StandardTupleDefinitions.TM_ERTIME_COLUMN)) {
+            long erTime = ((Instant) tuple.getColumn(StandardTupleDefinitions.TM_ERTIME_COLUMN)).getMillis();
+            b.setEarthReceptionTime(TimeEncoding.toProtobufTimestamp(erTime));
+        }
+        if (tuple.hasColumn(StandardTupleDefinitions.TM_LINK_COLUMN)) {
+            b.setLink(tuple.getColumn(StandardTupleDefinitions.TM_LINK_COLUMN));
+        }
+        return b.build();
     }
 
     public static CommandHistoryEntry tupleToCommandHistoryEntry(Tuple tuple) {

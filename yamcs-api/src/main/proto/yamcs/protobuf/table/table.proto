@@ -275,12 +275,18 @@ message ListStreamsResponse {
 }
 
 message GetStreamRequest {
+  // Yamcs instance name
   optional string instance = 1;
+
+  // Stream name
   optional string name = 2;
 }
 
 message SubscribeStreamRequest {
+  // Yamcs instance name
   optional string instance = 1;
+
+  // Stream name
   optional string stream = 2;
 }
 
@@ -306,7 +312,10 @@ message TableData {
 }
 
 message ColumnInfo {
+  // Colum name
   optional string name = 1;
+
+  // Column type
   optional string type = 2;
   repeated EnumValue enumValue = 3;
 
@@ -321,6 +330,7 @@ message EnumValue {
 }
 
 message TableInfo {
+  // Table name
   optional string name = 1;
   repeated ColumnInfo keyColumn = 2;
   repeated ColumnInfo valueColumn = 3;
@@ -347,12 +357,12 @@ message PartitioningInfo {
 }
 
 message StreamInfo {
+  // Stream name
   optional string name = 1;
   repeated ColumnInfo column = 2;
   optional string script = 3;
   optional int64 dataCount = 4;
 }
-
 
 message RebuildHistogramRequest {
   // Yamcs instance name.
@@ -361,12 +371,16 @@ message RebuildHistogramRequest {
   // Table name.
   optional string table = 2;
   
-  // Specify a date string in ISO 8601 format. The histogram data for all partitions overlapping with the [start, stop] interval will be recreated.
-  //If not specified, it is assumed as the start of the archive.
+  // Specify a date string in ISO 8601 format. The histogram data for all
+  // partitions overlapping with the [start, stop] interval will be
+  // recreated.
+  // If not specified, it is assumed as the start of the archive.
   optional google.protobuf.Timestamp start = 3;
   
-  // Specify a date string in ISO 8601 format. The histogram data for all partitions overlapping with the [start, stop] interval will be recreated.
-  //If not specified, it is assumed as the end of of the archive.
+  // Specify a date string in ISO 8601 format. The histogram data for all
+  // partitions overlapping with the [start, stop] interval will be
+  // recreated.
+  // If not specified, it is assumed as the end of of the archive.
   optional google.protobuf.Timestamp stop = 4;
   
 }

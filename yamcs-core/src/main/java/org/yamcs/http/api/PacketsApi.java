@@ -11,7 +11,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.yamcs.Processor;
@@ -77,7 +76,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         BiMap<String, Short> enumValues = tableDefinition.getEnumValues(XtceTmRecorder.PNAME_COLUMN);
         if (enumValues != null) {
             List<String> unsortedPackets = new ArrayList<>();
-            for (Entry<String, Short> entry : enumValues.entrySet()) {
+            for (var entry : enumValues.entrySet()) {
                 String packetName = entry.getKey();
                 if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, packetName)) {
                     unsortedPackets.add(packetName);
@@ -85,6 +84,18 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
             }
             Collections.sort(unsortedPackets);
             responseb.addAllName(unsortedPackets);
+            responseb.addAllPackets(unsortedPackets);
+        }
+
+        enumValues = tableDefinition.getEnumValues(StandardTupleDefinitions.TM_LINK_COLUMN);
+        if (enumValues != null) {
+            List<String> unsortedLinks = new ArrayList<>();
+            for (var entry : enumValues.entrySet()) {
+                String link = entry.getKey();
+                unsortedLinks.add(link);
+            }
+            Collections.sort(unsortedLinks);
+            responseb.addAllLinks(unsortedLinks);
         }
         observer.complete(responseb.build());
     }
@@ -129,6 +140,9 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
         if (!nameSet.isEmpty()) {
             sqlb.whereColIn("pname", nameSet);
+        }
+        if (request.hasLink()) {
+            sqlb.where("link = ?", request.getLink());
         }
         if (nextToken != null) {
             if (desc) {

@@ -28,14 +28,29 @@
         Packet Detail
       </app-detail-toolbar>
       <div style="padding: 0 16px">
+        <div class="block-title">Packet name</div>
+        <div class="block">
+          {{ detailPacket.id.name }}
+        </div>
         <div class="block-title">Generation time</div>
         <div class="block">
           {{ detailPacket.generationTime | datetime }}
+        </div>
+        <div class="block-title">Earth reception time</div>
+        <div class="block">
+          {{ (detailPacket.earthReceptionTime | datetime) || '-' }}
+          <ng-container *ngIf="detailPacket.earthReceptionTime">
+            ({{ detailPacket.earthReceptionTime | deltaWith:detailPacket.generationTime }})
+          </ng-container>
         </div>
         <div class="block-title">Reception time</div>
         <div class="block">
           {{ detailPacket.receptionTime | datetime }}
           ({{ detailPacket.receptionTime | deltaWith:detailPacket.generationTime }})
+        </div>
+        <div class="block-title">Link</div>
+        <div class="block">
+          {{ detailPacket.link || '-' }}
         </div>
         <div class="block-title">Size</div>
         <div class="block">
@@ -73,6 +88,8 @@
         <div class="filter-bar">
           <app-select [options]="nameOptions$ | async"
                       formControlName="name"></app-select>
+          <app-select [options]="linkOptions$ | async"
+                      formControlName="link"></app-select>
           <app-select #intervalSelect
                       [options]="intervalOptions"
                       icon="access_time"
@@ -89,6 +106,9 @@
               Jump to now
             </button>
           </ng-container>
+          <app-column-chooser #columnChooser
+                              [columns]="columns"
+                              preferenceKey="tmPackets"></app-column-chooser>
 
           <app-dots *ngIf="dataSource.loading$ | async">
           </app-dots>
@@ -112,10 +132,24 @@
           </td>
         </ng-container>
 
+        <ng-container matColumnDef="earthReceptionTime">
+          <th mat-header-cell *matHeaderCellDef>Earth reception time</th>
+          <td mat-cell *matCellDef="let packet">
+            {{ (packet.earthReceptionTime | datetime) || '-' }}
+          </td>
+        </ng-container>
+
         <ng-container matColumnDef="receptionTime">
           <th mat-header-cell *matHeaderCellDef>Reception time</th>
           <td mat-cell *matCellDef="let packet">
             {{ packet.receptionTime | datetime }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="link">
+          <th mat-header-cell *matHeaderCellDef>Link</th>
+          <td mat-cell *matCellDef="let packet">
+            {{ packet.link || '-' }}
           </td>
         </ng-container>
 
@@ -151,9 +185,9 @@
           </td>
         </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
         <tr mat-row
-            *matRowDef="let row; columns: displayedColumns;"
+            *matRowDef="let row; columns: (columnChooser.displayedColumns$ | async);"
             (click)="selectPacket(row)"
             [@rowAnimation]="row.animate"
             [class.selected]="(detailPacket$ | async) === row"></tr>

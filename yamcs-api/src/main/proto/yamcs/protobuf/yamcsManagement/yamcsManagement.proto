@@ -89,25 +89,52 @@ message ProcessorManagementRequest {
 
 message ProcessorRequest {
   enum Operation {
+    // Pause the processor
     PAUSE = 2;
+
+    // Resume the processor
     RESUME = 3;
+
+    // Seek to a specific time
     SEEK = 4;
+
+    // Change speed of a processor
     CHANGE_SPEED = 5;
   }
+  // Which operation to perform with this request
   optional Operation operation = 1;
-  optional string instance = 2; //yamcs instance
-  optional string name = 3; //processor name
-  optional int64 seekTime = 4; //for SEEK
-  optional ReplaySpeed replaySpeed = 5; //for CHANGE_SPEED
+
+  // Yamcs instance name
+  optional string instance = 2;
+
+  // Processor name
+  optional string name = 3;
+
+  // Time to seek to, when ``operation`` is set to ``SEEK``
+  optional int64 seekTime = 4;
+
+  // Speec, shen ``operation`` is set to ``CHANGE_SPEED``
+  optional ReplaySpeed replaySpeed = 5;
 }
 
 message StreamEvent {
   enum Type {
+    // A new stream was created
     CREATED = 1;
+
+    // A stream was deleted
     DELETED = 2;
+
+    // A stream's info was updated
     UPDATED = 3;
   }
+
+  // Event type
   optional Type type = 1;
+
+  // Stream name
   optional string name = 2;
+
+  // Number of tuples
   optional int64 dataCount = 3;
 }

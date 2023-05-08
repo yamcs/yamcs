@@ -170,6 +170,7 @@ export interface GetPacketsOptions {
    */
   stop?: string;
   name?: string | string[];
+  link?: string;
   next?: string;
   limit?: number;
   order?: 'asc' | 'desc';
@@ -265,6 +266,7 @@ export interface DownloadPacketsOptions {
    */
   stop?: string;
   name?: string | string[];
+  link?: string;
   format?: 'raw';
   order?: 'asc' | 'desc';
 }

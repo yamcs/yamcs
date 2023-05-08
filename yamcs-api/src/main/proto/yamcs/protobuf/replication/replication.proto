@@ -33,6 +33,7 @@ message ReplicationInfo {
 }
 
 message ReplicationMasterInfo {
+  // Yamcs instance name
   optional string instance = 1;
   repeated string streams = 2;
   optional string localAddress = 3;
@@ -44,6 +45,7 @@ message ReplicationMasterInfo {
 }
 
 message ReplicationSlaveInfo {
+  // Yamcs instance name
   optional string instance = 1;
   repeated string streams = 2;  
   optional string localAddress = 3;

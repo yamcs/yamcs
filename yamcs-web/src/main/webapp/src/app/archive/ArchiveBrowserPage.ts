@@ -6,7 +6,7 @@ import { MatLegacyDialog } from '@angular/material/legacy-dialog';
 import { MatLegacySnackBar } from '@angular/material/legacy-snack-bar';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Params, Router } from '@angular/router';
-import { MouseTracker, Timeline, TimeLocator, TimeRuler, Tool } from '@fqqb/timeline';
+import { MouseTracker, TimeLocator, TimeRuler, Timeline, Tool } from '@fqqb/timeline';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { EditReplayProcessorRequest, IndexGroup, Processor, ProcessorSubscription } from '../client';
@@ -139,8 +139,8 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     // Fetch archive packets to ensure we can always show bands
     // even if there's no data for the visible range
-    this.yamcs.yamcsClient.getPacketNames(this.yamcs.instance!).then(packetNames => {
-      this.packetNames = packetNames;
+    this.yamcs.yamcsClient.getPacketNames(this.yamcs.instance!).then(response => {
+      this.packetNames = response.packets || [];
       this.initializeTimeline();
     });
   }

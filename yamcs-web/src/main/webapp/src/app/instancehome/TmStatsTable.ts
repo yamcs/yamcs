@@ -51,8 +51,8 @@ export class TmStatsTable implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
     if (this.tmstats$ && !this.tmstatsSubscription) {
-      this.yamcs.yamcsClient.getPacketNames(this.yamcs.instance!).then(packetNames => {
-        for (const packetName of (packetNames || [])) {
+      this.yamcs.yamcsClient.getPacketNames(this.yamcs.instance!).then(response => {
+        for (const packetName of response.packets || []) {
           this.statsByName[packetName] = { packetName, packetRate: 0, dataRate: 0 };
         }
         this.updateData();

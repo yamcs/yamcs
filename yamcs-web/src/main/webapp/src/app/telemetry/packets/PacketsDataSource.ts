@@ -77,9 +77,7 @@ export class PacketsDataSource extends DataSource<AnimatablePacket> {
   }
 
   disconnect() {
-    if (this.syncSubscription) {
-      this.syncSubscription.unsubscribe();
-    }
+    this.syncSubscription?.unsubscribe();
     this.packets$.complete();
     this.loading$.complete();
   }

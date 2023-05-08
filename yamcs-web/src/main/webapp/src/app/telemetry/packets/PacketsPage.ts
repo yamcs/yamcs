@@ -9,6 +9,7 @@ import { DownloadPacketsOptions, GetPacketsOptions, Packet } from '../../client'
 import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Option, Select } from '../../shared/forms/Select';
+import { ColumnInfo } from '../../shared/template/ColumnChooser';
 import * as utils from '../../shared/utils';
 import { subtractDuration } from '../../shared/utils';
 import { PacketsDataSource } from './PacketsDataSource';
@@ -23,13 +24,15 @@ const defaultInterval = 'PT1H';
 })
 export class PacketsPage {
 
-  displayedColumns = [
-    'packetName',
-    'generationTime',
-    'receptionTime',
-    'data',
-    'size',
-    'actions',
+  columns: ColumnInfo[] = [
+    { id: 'packetName', label: 'Packet name', alwaysVisible: true },
+    { id: 'generationTime', label: 'Generation time', alwaysVisible: true },
+    { id: 'earthReceptionTime', label: 'Earth reception time', visible: false },
+    { id: 'receptionTime', label: 'Reception time', visible: true },
+    { id: 'link', label: 'Link', visible: true },
+    { id: 'data', label: 'Data', visible: true },
+    { id: 'size', label: 'Size', visible: true },
+    { id: 'actions', label: '', alwaysVisible: true },
   ];
 
   @ViewChild('intervalSelect')
@@ -45,6 +48,7 @@ export class PacketsPage {
 
   filterForm = new UntypedFormGroup({
     name: new UntypedFormControl('ANY'),
+    link: new UntypedFormControl('ANY'),
     interval: new UntypedFormControl(defaultInterval),
     customStart: new UntypedFormControl(null),
     customStop: new UntypedFormControl(null),
@@ -56,6 +60,10 @@ export class PacketsPage {
 
   nameOptions$ = new BehaviorSubject<Option[]>([
     { id: 'ANY', label: 'Any name' },
+  ]);
+
+  linkOptions$ = new BehaviorSubject<Option[]>([
+    { id: 'ANY', label: 'Any link' },
   ]);
 
   intervalOptions: Option[] = [
@@ -71,6 +79,7 @@ export class PacketsPage {
   // Would prefer to use formGroup, but when using valueChanges this
   // only is updated after the callback...
   private name: string;
+  private link: string;
 
   constructor(
     readonly yamcs: YamcsService,
@@ -84,10 +93,19 @@ export class PacketsPage {
 
     this.dataSource = new PacketsDataSource(this.yamcs, synchronizer);
 
-    yamcs.yamcsClient.getPacketNames(yamcs.instance!).then(names => {
-      for (const name of names) {
+    yamcs.yamcsClient.getPacketNames(yamcs.instance!).then(message => {
+      for (const name of message.packets || []) {
         this.nameOptions$.next([
           ...this.nameOptions$.value,
+          {
+            id: name,
+            label: name,
+          }
+        ]);
+      }
+      for (const name of message.links || []) {
+        this.linkOptions$.next([
+          ...this.linkOptions$.value,
           {
             id: name,
             label: name,
@@ -101,6 +119,11 @@ export class PacketsPage {
 
     this.filterForm.get('name')!.valueChanges.forEach(name => {
       this.name = (name !== 'ANY') ? name : null;
+      this.loadData();
+    });
+
+    this.filterForm.get('link')!.valueChanges.forEach(link => {
+      this.link = (link !== 'ANY') ? link : null;
       this.loadData();
     });
 
@@ -129,6 +152,10 @@ export class PacketsPage {
     if (queryParams.has('name')) {
       this.name = queryParams.get('name') || '';
       this.filterForm.get('name')!.setValue(this.name);
+    }
+    if (queryParams.has('link')) {
+      this.link = queryParams.get('link') || '';
+      this.filterForm.get('link')!.setValue(this.link);
     }
     if (queryParams.has('interval')) {
       this.appliedInterval = queryParams.get('interval')!;
@@ -192,6 +219,9 @@ export class PacketsPage {
     if (this.name) {
       options.name = this.name;
     }
+    if (this.link) {
+      options.link = this.link;
+    }
 
     const dlOptions: DownloadPacketsOptions = {};
     if (this.validStart) {
@@ -202,6 +232,9 @@ export class PacketsPage {
     }
     if (this.name) {
       dlOptions.name = this.name;
+    }
+    if (this.link) {
+      dlOptions.link = this.link;
     }
 
     this.dataSource.loadEntries('realtime', options).then(packets => {
@@ -217,6 +250,9 @@ export class PacketsPage {
     }
     if (this.name) {
       options.name = this.name;
+    }
+    if (this.link) {
+      options.link = this.link;
     }
 
     this.dataSource.loadMoreData(options);
@@ -238,6 +274,7 @@ export class PacketsPage {
       relativeTo: this.route,
       queryParams: {
         name: this.name || null,
+        link: this.link || null,
         interval: this.appliedInterval,
         customStart: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStart'] : null,
         customStop: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStop'] : null,

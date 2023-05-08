@@ -83,8 +83,14 @@ message ListPacketNamesRequest {
 }
 
 message ListPacketNamesResponse {
-  // Packet name.
-  repeated string name = 1;
+  // Known packet names.
+  repeated string name = 1 [deprecated=true];
+
+  // Known packet names.
+  repeated string packets = 2;
+
+  // Known link names.
+  repeated string links = 3;
 }
 
 message ListPacketsRequest {
@@ -104,6 +110,9 @@ message ListPacketsRequest {
   
   // The archived name of the packets. Names must match exactly.
   repeated string name = 5;
+
+  // Filter by the link where the packet was received from.
+  optional string link = 9;
 
   // Continuation token returned by a previous page response.
   optional string next = 6;

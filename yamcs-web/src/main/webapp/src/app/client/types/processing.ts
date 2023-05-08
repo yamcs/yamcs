@@ -31,6 +31,11 @@ export interface TmStatistics {
   subscribedParameterCount: number;
 }
 
+export interface PacketNamesResponse {
+  packets: string[];
+  links: string[];
+}
+
 export interface SubscribeParametersRequest {
   instance: string;
   processor: string;

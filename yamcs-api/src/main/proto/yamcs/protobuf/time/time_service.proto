@@ -48,6 +48,7 @@ message LeapSecondsTable {
 }
 
 message SetTimeRequest {
+  // Yamcs instance name
   optional string instance = 6;
   optional google.protobuf.Timestamp time0 = 5;
   optional int64 elapsedTime = 3;
@@ -55,7 +56,10 @@ message SetTimeRequest {
 }
 
 message SubscribeTimeRequest {
+  // Yamcs instance name
   optional string instance = 1;
+
+  // Processor name
   optional string processor = 2;
 }
 
