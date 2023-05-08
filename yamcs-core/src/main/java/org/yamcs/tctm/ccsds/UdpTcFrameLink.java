@@ -8,6 +8,8 @@ import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.StringConverter;
 
@@ -31,6 +33,15 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
     InetAddress address;
     Thread thread;
     RateLimiter rateLimiter;
+
+    @Override
+    public Spec getSpec() {
+        var spec = getDefaultSpec();
+        spec.addOption("host", OptionType.STRING);
+        spec.addOption("port", OptionType.INTEGER);
+        spec.addOption("frameMaxRate", OptionType.INTEGER);
+        return spec;
+    }
 
     @Override
     public void init(String yamcsInstance, String name, YConfiguration config) {

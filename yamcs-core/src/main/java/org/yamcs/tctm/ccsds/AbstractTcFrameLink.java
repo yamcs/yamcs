@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
@@ -12,7 +14,7 @@ import org.yamcs.tctm.AbstractLink;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.Link;
 import org.yamcs.tctm.TcDataLink;
-
+import org.yamcs.tctm.ccsds.TransferFrameDecoder.CcsdsFrameType;
 import org.yamcs.tctm.ccsds.error.BchCltuGenerator;
 import org.yamcs.tctm.ccsds.error.CltuGenerator;
 import org.yamcs.tctm.ccsds.error.Ldpc256CltuGenerator;
@@ -43,6 +45,38 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
     final static String CLTU_START_SEQ_KEY = "cltuStartSequence";
     final static String CLTU_TAIL_SEQ_KEY = "cltuTailSequence";
 
+    @Override
+    public Spec getDefaultSpec() {
+        var spec = super.getDefaultSpec();
+
+        spec.addOption("frameType", OptionType.STRING).withChoices(CcsdsFrameType.class);
+        spec.addOption("clcwStream", OptionType.STRING);
+        spec.addOption("goodFrameStream", OptionType.STRING);
+        spec.addOption("badFrameStream", OptionType.STRING);
+
+        spec.addOption("spacecraftId", OptionType.INTEGER);
+        spec.addOption("physicalChannelName", OptionType.STRING);
+        spec.addOption("errorDetection", OptionType.STRING);
+
+        spec.addOption("frameLength", OptionType.INTEGER);
+        spec.addOption("insertZoneLength", OptionType.INTEGER);
+        spec.addOption("frameHeaderErrorControlPresent", OptionType.BOOLEAN);
+        spec.addOption("virtualChannels", OptionType.LIST).withElementType(OptionType.ANY);
+        spec.addOption("maxFrameLength", OptionType.INTEGER);
+        spec.addOption("minFrameLength", OptionType.INTEGER);
+
+        spec.addOption("skipRandomizationForVcs", OptionType.LIST).withElementType(OptionType.INTEGER);
+        spec.addOption("cltuEncoding", OptionType.STRING);
+        spec.addOption(CLTU_START_SEQ_KEY, OptionType.STRING);
+        spec.addOption(CLTU_TAIL_SEQ_KEY, OptionType.STRING);
+        spec.addOption("randomizeCltu", OptionType.BOOLEAN);
+        spec.addOption("cltuGeneratorClassName", OptionType.STRING);
+        spec.addOption("cltuGeneratorArgs", OptionType.MAP).withSpec(Spec.ANY);
+
+        return spec;
+    }
+
+    @Override
     public void init(String yamcsInstance, String linkName, YConfiguration config) {
         super.init(yamcsInstance, linkName, config);
         if (config.containsKey("skipRandomizationForVcs")) {
@@ -73,20 +107,21 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
                 cltuGenerator = new Ldpc256CltuGenerator(startSeq, tailSeq);
                 this.randomize = true;
             } else if ("CUSTOM".equals(cltuEncoding)) {
-            	String cltuGeneratorClassName = config.getString("cltuGeneratorClassName", null);
-            	if (cltuGeneratorClassName == null) {
-            		throw new ConfigurationException("CUSTOM cltu generator requires value for cltuGeneratorClassName");
-            	}
-            	if (!config.containsKey("cltuGeneratorArgs")) {
-            		cltuGenerator = YObjectLoader.loadObject(cltuGeneratorClassName);
-            	} else {
-            		YConfiguration args = config.getConfig("cltuGeneratorArgs");
-            		cltuGenerator = YObjectLoader.loadObject(cltuGeneratorClassName, args);
-            	}
+                String cltuGeneratorClassName = config.getString("cltuGeneratorClassName", null);
+                if (cltuGeneratorClassName == null) {
+                    throw new ConfigurationException("CUSTOM cltu generator requires value for cltuGeneratorClassName");
+                }
+                if (!config.containsKey("cltuGeneratorArgs")) {
+                    cltuGenerator = YObjectLoader.loadObject(cltuGeneratorClassName);
+                } else {
+                    YConfiguration args = config.getConfig("cltuGeneratorArgs");
+                    cltuGenerator = YObjectLoader.loadObject(cltuGeneratorClassName, args);
+                }
                 this.randomize = config.getBoolean("randomizeCltu", false);
             } else {
                 throw new ConfigurationException(
-                        "Invalid value '" + cltuEncoding + " for cltu. Valid values are BCH, LDPC64, LDPC256, or CUSTOM");
+                        "Invalid value '" + cltuEncoding
+                                + " for cltu. Valid values are BCH, LDPC64, LDPC256, or CUSTOM");
             }
         }
 
@@ -151,13 +186,12 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
 
     @Override
     public boolean sendCommand(PreparedCommand preparedCommand) {
-      throw new ConfigurationException(
-          "This class cannot send command directly, please remove the stream associated to the main link");
+        throw new ConfigurationException(
+                "This class cannot send command directly, please remove the stream associated to the main link");
     }
 
     /**
-     * Ack the BD frames
-     * Note: the AD frames are acknowledged in the when the COP1 ack is received
+     * Ack the BD frames Note: the AD frames are acknowledged in the when the COP1 ack is received
      * 
      * @param tf
      */

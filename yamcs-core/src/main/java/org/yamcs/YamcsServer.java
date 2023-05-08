@@ -129,6 +129,9 @@ public class YamcsServer {
     Path incomingDir;
     Path instanceDefDir;
 
+    // Set once only on startup, after the startup has completed
+    private boolean ready = false;
+
     // Set when the shutdown hook triggers
     private boolean shuttingDown = false;
 
@@ -406,7 +409,6 @@ public class YamcsServer {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private InstanceMetadata loadInstanceMetadata(String instanceName) throws IOException {
         Path metadataFile = instanceDefDir.resolve("yamcs." + instanceName + ".metadata");
         if (Files.exists(metadataFile)) {
@@ -560,7 +562,9 @@ public class YamcsServer {
         ysi.addStateListener(new InstanceStateListener() {
             @Override
             public void failed(Throwable failure) {
-                LOG.error("Instance {} failed", name, ExceptionUtil.unwind(failure));
+                if (ready) { // Redundant on startup, so hide it then.
+                    LOG.error("Instance {} failed", name, ExceptionUtil.unwind(failure));
+                }
             }
         });
 
@@ -965,10 +969,12 @@ public class YamcsServer {
                 if (YAMCS.options.check) {
                     System.out.println("Configuration Invalid");
                 }
+                RdbStorageEngine.getInstance().shutdown();
                 YamcsLogManager.shutdown();
                 System.exit(-1);
             } else {
                 LOG.error("Failure while attempting to validate configuration", t);
+                RdbStorageEngine.getInstance().shutdown();
                 YamcsLogManager.shutdown();
                 System.exit(-1);
             }
@@ -1411,6 +1417,7 @@ public class YamcsServer {
         }
 
         // Report start success to internal listeners
+        ready = true;
         readyListeners.forEach(ReadyListener::onReady);
     }
 

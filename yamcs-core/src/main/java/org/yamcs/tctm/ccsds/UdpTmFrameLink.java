@@ -8,6 +8,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.StringConverter;
 
@@ -25,6 +27,13 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
     private int port;
 
     DatagramPacket datagram;
+
+    @Override
+    public Spec getSpec() {
+        var spec = getDefaultSpec();
+        spec.addOption("port", OptionType.INTEGER);
+        return spec;
+    }
 
     /**
      * Creates a new UDP Frame Data Link

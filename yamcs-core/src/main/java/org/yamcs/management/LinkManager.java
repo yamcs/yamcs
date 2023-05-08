@@ -2,7 +2,6 @@ package org.yamcs.management;
 
 import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,9 +16,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.yamcs.ConfigurationException;
-import org.yamcs.InitException;
+import org.yamcs.Spec;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.TmPacket;
+import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
@@ -90,7 +90,7 @@ public class LinkManager {
     Map<Stream, TcStreamSubscriber> tcStreamSubscribers = new HashMap<>();
     Set<Link> linksWithChanges = ConcurrentHashMap.newKeySet();
 
-    public LinkManager(String instanceName) throws InitException {
+    public LinkManager(String instanceName) throws ValidationException {
         this.yamcsInstance = instanceName;
         log = new Log(getClass(), instanceName);
         ydb = YarchDatabase.getInstance(instanceName);
@@ -104,13 +104,9 @@ public class LinkManager {
             var memento = mementoDb.getObject(MEMENTO_KEY, LinkMemento.class)
                     .orElse(new LinkMemento());
 
-            try {
-                List<YConfiguration> linkConfigs = instanceConfig.getConfigList("dataLinks");
-                for (YConfiguration linkConfig : linkConfigs) {
-                    createDataLink(linkConfig, memento);
-                }
-            } catch (IOException e) {
-                throw new InitException(e);
+            List<YConfiguration> linkConfigs = instanceConfig.getConfigList("dataLinks");
+            for (YConfiguration linkConfig : linkConfigs) {
+                createDataLink(linkConfig, memento);
             }
         } else {
             log.info("No link created because the section dataLinks was not found");
@@ -120,7 +116,7 @@ public class LinkManager {
                 TimeUnit.SECONDS);
     }
 
-    private void createDataLink(YConfiguration linkConfig, LinkMemento memento) throws IOException {
+    private void createDataLink(YConfiguration linkConfig, LinkMemento memento) throws ValidationException {
         String className = linkConfig.getString("class");
         String linkName = linkConfig.getString("name");
         if (linksByName.containsKey(linkName)) {
@@ -128,7 +124,25 @@ public class LinkManager {
                     "Instance " + yamcsInstance + ": there is already a link named '" + linkName + "'");
         }
 
-        Link link = loadLink(className, linkName, linkConfig);
+        Link link = YObjectLoader.loadObject(className);
+
+        Spec spec = link.getSpec();
+        if (spec != null) {
+            if (log.isDebugEnabled()) {
+                Map<String, Object> unsafeArgs = ((YConfiguration) linkConfig).getRoot();
+                Map<String, Object> safeArgs = spec.maskSecrets(unsafeArgs);
+                log.debug("Raw args for {}: {}", linkName, safeArgs);
+            }
+
+            linkConfig = spec.validate((YConfiguration) linkConfig);
+
+            if (log.isDebugEnabled()) {
+                Map<String, Object> unsafeArgs = ((YConfiguration) linkConfig).getRoot();
+                Map<String, Object> safeArgs = spec.maskSecrets(unsafeArgs);
+                log.debug("Initializing {} with resolved args: {}", linkName, safeArgs);
+            }
+        }
+
         link.init(yamcsInstance, linkName, linkConfig);
 
         // Try to restore previous link state, but if enabledAtStartup
@@ -148,25 +162,6 @@ public class LinkManager {
         }
 
         configureDataLink(link, linkConfig);
-    }
-
-    // once we don't want to be backwards compatible, we should replace this method by
-    // link = YObjectLoader.loadObject(linkClass, yamcsInstance, linkConfig);
-    private Link loadLink(String linkClass, String linkName, YConfiguration linkConfig) throws IOException {
-        Link link = null;
-        try {
-            link = YObjectLoader.loadObject(linkClass);
-        } catch (ConfigurationException e) {
-            log.warn(
-                    "Link {} does not have a no-argument constructor. Please add one and implement the initialisation in the init method",
-                    linkClass);
-            // Ignore for now. Fallback to constructor initialization.
-        }
-
-        if (link == null) { // "Legacy" fallback
-            link = YObjectLoader.loadObject(linkClass, yamcsInstance, linkName, linkConfig);
-        }
-        return link;
     }
 
     void configureDataLink(Link link, YConfiguration linkArgs) {
@@ -278,10 +273,6 @@ public class LinkManager {
                             + "' (required if invalidPackets: DIVERT has been specified)");
                 }
             }
-        } else if (linkArgs.containsKey("dropCorruptedPackets")) {
-            log.warn("Please repace dropCorruptedPackets with 'invalidPackets: DROP' into " + linkName
-                    + " configuration");
-            ipa.action = linkArgs.getBoolean("dropCorruptedPackets") ? Action.DROP : Action.PROCESS;
         } else {
             ipa.action = Action.DROP;
         }

@@ -3,6 +3,7 @@ package org.yamcs.tctm;
 import java.util.Map;
 
 import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.parameter.SystemParametersService;
@@ -145,5 +146,31 @@ public interface Link {
      */
     public default Spec getSpec() {
         return null;
+    }
+
+    /**
+     * Returns a default link {@link Spec}. This can be used in an implementation of {{@link #getSpec()}.
+     * 
+     * Eventually (after a few years), it is expected to migrate this logic directly into {Link{@link #getSpec()},
+     * rather than returning null from there. But we want to give sufficient time for links everywhere to start defining
+     * their arguments.
+     */
+    public default Spec getDefaultSpec() {
+        Spec spec = new Spec();
+        spec.addOption("name", OptionType.STRING).withRequired(true);
+        spec.addOption("class", OptionType.STRING).withRequired(true);
+        spec.addOption("stream", OptionType.STRING);
+        spec.addOption("tcStream", OptionType.STRING);
+        spec.addOption("tmStream", OptionType.STRING);
+        spec.addOption("ppStream", OptionType.STRING);
+        spec.addOption("enabledAtStartup", OptionType.BOOLEAN);
+        spec.addOption("invalidPackets", OptionType.STRING).withChoices("DROP", "PROCESS", "DIVERT")
+                .withDefault("DROP");
+        spec.addOption("invalidPacketsStream", OptionType.STRING).withDefault("invalid_tm");
+
+        spec.mutuallyExclusive("stream", "tcStream");
+        spec.mutuallyExclusive("stream", "tmStream");
+        spec.mutuallyExclusive("stream", "ppStream");
+        return spec;
     }
 }

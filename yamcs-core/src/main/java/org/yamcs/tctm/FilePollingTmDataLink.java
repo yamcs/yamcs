@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.zip.GZIPInputStream;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
@@ -44,13 +46,25 @@ import org.yamcs.utils.YObjectLoader;
 public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnable {
 
     Path incomingDir;
-    boolean deleteAfterImport = true;
+    boolean deleteAfterImport;
     long delayBetweenPackets = -1;
     long headerSize = -1l;
     Thread thread;
 
     String packetInputStreamClassName;
     YConfiguration packetInputStreamArgs;
+
+    @Override
+    public Spec getSpec() {
+        var spec = getDefaultSpec();
+        spec.addOption("incomingDir", OptionType.STRING);
+        spec.addOption("deleteAfterImport", OptionType.BOOLEAN).withDefault(true);
+        spec.addOption("delayBetweenPackets", OptionType.INTEGER);
+        spec.addOption("headerSize", OptionType.INTEGER);
+        spec.addOption("packetInputStreamClassName", OptionType.STRING);
+        spec.addOption("packetInputStreamArgs", OptionType.MAP).withSpec(Spec.ANY);
+        return spec;
+    }
 
     @Override
     public void init(String yamcsInstance, String name, YConfiguration config) {
@@ -62,7 +76,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
             Path parent = YamcsServer.getServer().getIncomingDirectory();
             incomingDir = parent.resolve(yamcsInstance).resolve("tm");
         }
-        deleteAfterImport = config.getBoolean("deleteAfterImport", true);
+        deleteAfterImport = config.getBoolean("deleteAfterImport");
         delayBetweenPackets = config.getLong("delayBetweenPackets", -1);
         headerSize = config.getLong("headerSize", -1);
         packetInputStreamArgs = YConfiguration.emptyConfig();

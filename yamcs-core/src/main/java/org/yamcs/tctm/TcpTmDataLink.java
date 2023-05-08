@@ -8,6 +8,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.YObjectLoader;
@@ -23,6 +25,18 @@ public class TcpTmDataLink extends AbstractTmDataLink implements Runnable {
     YConfiguration packetInputStreamArgs;
     PacketInputStream packetInputStream;
     Thread thread;
+
+    @Override
+    public Spec getSpec() {
+        var spec = getDefaultSpec();
+        spec.addOption("host", OptionType.STRING).withRequired(true);
+        spec.addOption("port", OptionType.INTEGER).withRequired(true);
+        spec.addOption("initialDelay", OptionType.INTEGER);
+        spec.addOption("packetInputStreamClassName", OptionType.STRING)
+                .withDefault(CcsdsPacketInputStream.class.getName());
+        spec.addOption("packetInputStreamArgs", OptionType.MAP).withSpec(Spec.ANY);
+        return spec;
+    }
 
     @Override
     public void init(String instance, String name, YConfiguration config) throws ConfigurationException {

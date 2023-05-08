@@ -8,6 +8,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 
@@ -34,6 +36,15 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
     DatagramPacket datagram;
     int maxLength;
     int initialBytesToStrip;
+
+    @Override
+    public Spec getSpec() {
+        var spec = getDefaultSpec();
+        spec.addOption("port", OptionType.INTEGER).withRequired(true);
+        spec.addOption("maxLength", OptionType.INTEGER).withDefault(MAX_LENGTH);
+        spec.addOption("initialBytesToStrip", OptionType.INTEGER).withDefault(0);
+        return spec;
+    }
 
     /**
      * Creates a new UDP TM Data Link

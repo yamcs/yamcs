@@ -6,6 +6,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
 
@@ -37,6 +39,15 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
     long initialDelay;
 
     @Override
+    public Spec getDefaultSpec() {
+        var spec = super.getDefaultSpec();
+        spec.addOption("tcQueueSize", OptionType.INTEGER);
+        spec.addOption("tcMaxRate", OptionType.INTEGER);
+        spec.addOption("initialDelay", OptionType.INTEGER);
+        return spec;
+    }
+
+    @Override
     public void init(String yamcsInstance, String linkName, YConfiguration config) throws ConfigurationException {
         super.init(yamcsInstance, linkName, config);
         if (config.containsKey("tcQueueSize")) {
@@ -50,7 +61,6 @@ public abstract class AbstractThreadedTcDataLink extends AbstractTcDataLink impl
         if (config.containsKey("tcMaxRate")) {
             rateLimiter = RateLimiter.create(config.getInt("tcMaxRate"));
         }
-
     }
 
     @Override

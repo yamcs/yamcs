@@ -7,7 +7,8 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-import org.yamcs.ConfigurationException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
 
@@ -25,7 +26,15 @@ public class UdpTcDataLink extends AbstractThreadedTcDataLink {
     InetAddress address;
 
     @Override
-    public void init(String yamcsInstance, String name, YConfiguration config) throws ConfigurationException {
+    public Spec getSpec() {
+        var spec = getDefaultSpec();
+        spec.addOption("host", OptionType.STRING).withRequired(true);
+        spec.addOption("port", OptionType.INTEGER).withRequired(true);
+        return spec;
+    }
+
+    @Override
+    public void init(String yamcsInstance, String name, YConfiguration config) {
         super.init(yamcsInstance, name, config);
         host = config.getString("host");
         port = config.getInt("port");

@@ -13,17 +13,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsServer;
-import org.yamcs.logging.Log;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.time.TimeService;
 
-import com.google.common.util.concurrent.AbstractService;
 import com.google.protobuf.util.JsonFormat;
 
 /**
@@ -34,36 +32,34 @@ import com.google.protobuf.util.JsonFormat;
  * @author nm
  *
  */
-public class UdpParameterDataLink extends AbstractService implements ParameterDataLink, Runnable {
+public class UdpParameterDataLink extends AbstractParameterDataLink implements Runnable {
 
     private volatile int validDatagramCount = 0;
     private volatile int invalidDatagramCount = 0;
-    private volatile boolean disabled = false;
 
     private int sequenceCount = 0;
 
-    private TimeService timeService;
     private DatagramSocket udpSocket;
     private int port = 31002;
     private String defaultRecordingGroup;
     private Format format;
 
-    ParameterSink parameterSink;
-
-    private Log log;
     int MAX_LENGTH = 10 * 1024;
 
     DatagramPacket datagram = new DatagramPacket(new byte[MAX_LENGTH], MAX_LENGTH);
-    YConfiguration config;
-    String name;
+
+    @Override
+    public Spec getSpec() {
+        var spec = getDefaultSpec();
+        spec.addOption("port", OptionType.INTEGER).withRequired(true);
+        spec.addOption("recordingGroup", OptionType.STRING).withDefault("DEFAULT");
+        spec.addOption("json", OptionType.BOOLEAN).withDefault(false);
+        return spec;
+    }
 
     @Override
     public void init(String instance, String name, YConfiguration config) {
-        this.config = config;
-        this.name = name;
-        log = new Log(getClass(), instance);
-        log.setContext(name);
-        timeService = YamcsServer.getTimeService(instance);
+        super.init(instance, name, config);
         port = config.getInt("port");
         defaultRecordingGroup = config.getString("recordingGroup", "DEFAULT");
         format = config.getBoolean("json", false) ? Format.JSON : Format.PROTOBUF;
@@ -74,9 +70,12 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
         if (!isDisabled()) {
             try {
                 udpSocket = new DatagramSocket(port);
-                new Thread(this).start();
+                Thread thread = new Thread(this);
+                thread.setName(getClass().getSimpleName() + "-" + linkName);
+                thread.start();
             } catch (SocketException e) {
                 notifyFailed(e);
+                return;
             }
         }
         notifyStarted();
@@ -88,11 +87,6 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
             udpSocket.close();
         }
         notifyStopped();
-    }
-
-    private boolean isRunningAndEnabled() {
-        State state = state();
-        return (state == State.RUNNING || state == State.STARTING) && !disabled;
     }
 
     @Override
@@ -134,7 +128,7 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
             }
 
             for (Entry<Long, List<ParameterValue>> group : valuesByTime.entrySet()) {
-                parameterSink.updateParameters((long) group.getKey(), recgroup, sequenceNumber, group.getValue());
+                updateParameters((long) group.getKey(), recgroup, sequenceNumber, group.getValue());
             }
         }
     }
@@ -195,84 +189,48 @@ public class UdpParameterDataLink extends AbstractService implements ParameterDa
     }
 
     @Override
-    public Status getLinkStatus() {
-        return disabled ? Status.DISABLED : Status.OK;
+    public Status connectionStatus() {
+        return Status.OK;
     }
 
-    /**
-     * Returns statistics with the number of datagrams received and the number of invalid datagrams
-     */
     @Override
     public String getDetailedStatus() {
-        if (disabled) {
-            return "DISABLED";
+        if (isDisabled()) {
+            return "DISABLED (should receive on " + port + ")";
         } else {
-            return String.format("OK (%s)\nValid datagrams received: %d\nInvalid datagrams received: %d",
-                    port, validDatagramCount, invalidDatagramCount);
+            return "OK, receiving on " + port;
         }
     }
 
-    /**
-     * Sets the disabled to true such that getNextPacket ignores the received datagrams
-     */
     @Override
-    public void disable() {
-        disabled = true;
+    public Map<String, Object> getExtraInfo() {
+        var extra = new LinkedHashMap<String, Object>();
+        extra.put("Valid datagrams", validDatagramCount);
+        extra.put("Invalid datagrams", invalidDatagramCount);
+        return extra;
+    }
+
+    @Override
+    protected void doEnable() throws Exception {
+        udpSocket = new DatagramSocket(port);
+        Thread thread = new Thread(this);
+        thread.setName(getClass().getSimpleName() + "-" + linkName);
+        thread.start();
+    }
+
+    @Override
+    protected void doDisable() throws Exception {
         if (udpSocket != null) {
             udpSocket.close();
             udpSocket = null;
         }
     }
 
-    /**
-     * Sets the disabled to false such that getNextPacket does not ignore the received datagrams
-     */
-    @Override
-    public void enable() {
-        disabled = false;
-        try {
-            udpSocket = new DatagramSocket(port);
-            new Thread(this).start();
-        } catch (SocketException e) {
-            disabled = false;
-            log.warn("Failed to enable link", e);
-        }
-    }
-
-    @Override
-    public boolean isDisabled() {
-        return disabled;
-    }
-
-    @Override
-    public long getDataInCount() {
-        return validDatagramCount;
-    }
-
-    @Override
-    public long getDataOutCount() {
-        return 0;
-    }
-
     @Override
     public void resetCounters() {
+        super.resetCounters();
         validDatagramCount = 0;
         invalidDatagramCount = 0;
-    }
-
-    @Override
-    public void setParameterSink(ParameterSink parameterSink) {
-        this.parameterSink = parameterSink;
-    }
-
-    @Override
-    public YConfiguration getConfig() {
-        return config;
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     /**
