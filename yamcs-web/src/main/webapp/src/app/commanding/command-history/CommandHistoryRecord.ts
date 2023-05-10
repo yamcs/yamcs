@@ -1,5 +1,4 @@
-import { CommandAssignment, CommandHistoryAttribute, CommandHistoryEntry } from '../../client';
-import * as utils from '../../shared/utils';
+import { CommandAssignment, CommandHistoryAttribute, CommandHistoryEntry, Value } from '../../client';
 import { Acknowledgment } from './Acknowledgment';
 
 // Entries that come from a cascading server
@@ -39,7 +38,7 @@ export class CommandHistoryRecord {
 
   completed?: Acknowledgment;
 
-  extra: { [key: string]: string; }[] = [];
+  extra: { name: string, value: Value; }[] = [];
 
   acksByName: { [key: string]: Acknowledgment; } = {};
 
@@ -103,7 +102,7 @@ export class CommandHistoryRecord {
           const ackName = attrName.substring(0, attrName.length - '_Status'.length);
           this.saveAckStatus(ackName, attr.value.stringValue!);
         } else {
-          this.extra.push({ name: attrName, value: utils.printValue(attr.value) });
+          this.extra.push({ name: attrName, value: attr.value });
         }
       }
     }

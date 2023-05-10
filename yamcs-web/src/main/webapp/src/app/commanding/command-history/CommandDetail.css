@@ -13,3 +13,7 @@
   color: grey;
   padding-left: 10px;
 }
+
+.block-title.first {
+  padding-top: 0px;
+}

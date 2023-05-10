@@ -86,12 +86,34 @@
 
 <ng-container *ngIf="command.extra.length">
   <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
-  <div class="block-title" style="padding-top: 0">Extra attributes</div>
-  <div class="block">
-    <ul style="margin-top: 0">
-      <li *ngFor="let extra of command.extra">{{ extra.name }}: {{ extra.value }}</li>
-    </ul>
-  </div>
+  <ng-container *ngFor="let extra of command.extra; let first=first">
+    <div class="block-title" [class.first]="first">
+      {{ extra.name }}
+      <app-more *ngIf="extra.value.type === 'BINARY'" icon="more_horiz">
+        <button mat-menu-item (click)="copyHex(extra.value.binaryValue)">
+          Copy Hex
+        </button>
+        <button mat-menu-item (click)="copyBinary(extra.value.binaryValue)">
+          Copy Binary
+        </button>
+      </app-more>
+    </div>
+    <ng-container [ngSwitch]="extra.value.type">
+      <ng-container *ngSwitchCase="'BINARY'">
+        <div class="block no-print" style="margin-top: 4px">
+          <app-hex [base64String]="extra.value.binaryValue"></app-hex>
+        </div>
+        <div class="block print-only">
+          <pre>{{ (extra.value.binaryValue | hexDump) || '-' }}</pre>
+        </div>
+      </ng-container>
+      <ng-container *ngSwitchDefault>
+        <div class="block">
+          {{ extra.value | value }}
+        </div>
+      </ng-container>
+    </ng-container>
+  </ng-container>
 </ng-container>
 
 <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
