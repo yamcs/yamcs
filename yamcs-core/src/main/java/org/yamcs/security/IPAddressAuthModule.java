@@ -56,7 +56,7 @@ public class IPAddressAuthModule extends AbstractHttpRequestAuthModule {
         var username = args.getString(OPTION_USERNAME);
         authenticationInfo = new AuthenticationInfo(this, username);
 
-        var name = args.getString(OPTION_USERNAME, username);
+        var name = args.getString(OPTION_NAME, null);
         authenticationInfo.setDisplayName(name);
 
         var email = args.getString(OPTION_EMAIL, null);
