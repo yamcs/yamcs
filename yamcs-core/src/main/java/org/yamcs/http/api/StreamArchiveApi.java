@@ -135,12 +135,18 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             if (hasRawBinaryValue || hasEngBinaryValue) {
                 var truncated = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder(gpb);
                 if (hasRawBinaryValue) {
-                    truncated.getRawValueBuilder().setBinaryValue(
-                            gpb.getRawValue().getBinaryValue().substring(0, maxBytes));
+                    var binaryValue = gpb.getRawValue().getBinaryValue();
+                    if (binaryValue.size() > maxBytes) {
+                        truncated.getRawValueBuilder().setBinaryValue(
+                                binaryValue.substring(0, maxBytes));
+                    }
                 }
                 if (hasEngBinaryValue) {
-                    truncated.getEngValueBuilder().setBinaryValue(
-                            gpb.getEngValue().getBinaryValue().substring(0, maxBytes));
+                    var binaryValue = gpb.getEngValue().getBinaryValue();
+                    if (binaryValue.size() > maxBytes) {
+                        truncated.getEngValueBuilder().setBinaryValue(
+                                binaryValue.substring(0, maxBytes));
+                    }
                 }
                 return truncated.build();
             }
