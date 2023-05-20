@@ -7,7 +7,6 @@ option java_outer_classname = "WebProto";
 option java_multiple_files = true;
 
 import "yamcs/api/annotations.proto";
-import "yamcs/api/httpbody.proto";
  
 service WebApi {
 

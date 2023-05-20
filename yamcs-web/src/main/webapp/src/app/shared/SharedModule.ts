@@ -102,15 +102,14 @@ import { SpaceSystemPipe } from './pipes/SpaceSystemPipe';
 import { ToValuePipe } from './pipes/ToValuePipe';
 import { UnitsPipe } from './pipes/UnitsPipe';
 import { ValuePipe } from './pipes/ValuePipe';
-import { PrintableDirective } from './print/PrintableDirective';
 import { PrintZone } from './print/PrintZone';
+import { PrintableDirective } from './print/PrintableDirective';
 import { Progress } from './progress/Progress';
 import { SidebarNavGroup } from './sidebar/SidebarNavGroup';
 import { SidebarNavItem } from './sidebar/SidebarNavItem';
 import { YaDataTableComponent } from './table/DataTableDirective';
 import { YaSimpleTableComponent } from './table/SimpleTableDirective';
 import { YaTableComponent } from './table/TableDirective';
-import { ActionLink } from './template/ActionLink';
 import { Ago } from './template/Ago';
 import { AlarmLevel } from './template/AlarmLevel';
 import { ColumnChooser } from './template/ColumnChooser';
@@ -187,7 +186,6 @@ const sharedDirectives = [
 ];
 
 const sharedComponents = [
-  ActionLink,
   Ago,
   AlarmLabel,
   AlarmLevel,

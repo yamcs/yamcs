@@ -1,6 +1,7 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, Inject, Input, OnChanges, OnDestroy, ViewChild } from '@angular/core';
 import { EventHandler, Graphics } from '@fqqb/timeline';
+import { BehaviorSubject } from 'rxjs';
 import { BitRange } from '../BitRange';
 import { HexModel, Line } from './model';
 
@@ -23,14 +24,17 @@ export class Hex implements AfterViewInit, OnChanges, OnDestroy {
   @Input()
   fontSize = 10;
 
+  public highlighted$ = new BehaviorSubject<BitRange | null>(null);
+  public selection$ = new BehaviorSubject<BitRange | null>(null);
+
   private charWidth: number;
 
   private model: HexModel;
   private g: Graphics;
   private dirty = true;
 
-  private highlight?: BitRange;
-  private selection?: BitRange;
+  private _highlight?: BitRange;
+  private _selection?: BitRange;
   private pressStart?: BitRange;
 
   private mediaQueryList?: MediaQueryList;
@@ -47,6 +51,28 @@ export class Hex implements AfterViewInit, OnChanges, OnDestroy {
 
   ngAfterViewInit() {
     this.fontPreloaded$.then(() => this.initCanvas());
+  }
+
+  get highlight() {
+    return this._highlight;
+  }
+
+  set highlight(_highlight: BitRange | undefined) {
+    this._highlight = _highlight;
+    if ((_highlight || null) !== this.highlighted$.value) {
+      this.highlighted$.next(_highlight || null);
+    }
+  }
+
+  get selection() {
+    return this._selection;
+  }
+
+  set selection(_selection: BitRange | undefined) {
+    this._selection = _selection;
+    if ((_selection || null) !== this.selection$.value) {
+      this.selection$.next(_selection || null);
+    }
   }
 
   private initCanvas() {
@@ -75,6 +101,24 @@ export class Hex implements AfterViewInit, OnChanges, OnDestroy {
     this.highlight = undefined;
     this.selection = undefined;
     this.pressStart = undefined;
+    this.dirty = true;
+  }
+
+  public setHighlight(range: BitRange | null) {
+    if (range) {
+      this.highlight = range;
+    } else {
+      this.highlight = undefined;
+    }
+    this.dirty = true;
+  }
+
+  public setSelection(range: BitRange | null) {
+    if (range) {
+      this.selection = range;
+    } else {
+      this.selection = undefined;
+    }
     this.dirty = true;
   }
 

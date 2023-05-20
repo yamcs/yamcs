@@ -74,11 +74,7 @@ export class ParameterSummaryTab implements OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.parameterValueSubscription) {
-      this.parameterValueSubscription.cancel();
-    }
-    if (this.syncSubscription) {
-      this.syncSubscription.unsubscribe();
-    }
+    this.parameterValueSubscription?.cancel();
+    this.syncSubscription?.unsubscribe();
   }
 }

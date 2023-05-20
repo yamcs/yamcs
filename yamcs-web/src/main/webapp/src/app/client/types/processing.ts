@@ -1,6 +1,7 @@
 import { WebSocketCall } from '../WebSocketCall';
-import { AlgorithmStatus, NamedObjectId } from './mdb';
-import { ParameterValue } from './monitoring';
+import { Event } from './events';
+import { AlgorithmStatus, Container, NamedObjectId, Parameter } from './mdb';
+import { ParameterValue, Value } from './monitoring';
 import { Service, ServiceState } from './system';
 
 export interface SubscribeTMStatisticsRequest {
@@ -19,6 +20,20 @@ export interface Statistics {
   processor: string;
   tmstats: TmStatistics[];
   lastUpdated: string;
+}
+
+export interface ExtractPacketResponse {
+  parameterValues: ExtractedParameter[];
+  events: Event[];
+}
+
+export interface ExtractedParameter {
+  parameter: Parameter;
+  entryContainer: Container;
+  location: number;
+  size: number;
+  rawValue: Value;
+  engValue: Value;
 }
 
 export interface TmStatistics {

@@ -8,13 +8,14 @@ import { DisplayFilePageDirtyGuard } from './displays/DisplayFilePageDirtyGuard'
 import { DisplayFolderPage } from './displays/DisplayFolderPage';
 import { DisplayPage } from './displays/DisplayPage';
 import { DisplaysPage } from './displays/DisplaysPage';
+import { PacketPage } from './packets/PacketPage';
 import { PacketsPage } from './packets/PacketsPage';
 import { ParameterAlarmsTab } from './parameters/ParameterAlarmsTab';
 import { ParameterChartTab } from './parameters/ParameterChartTab';
 import { ParameterDataTab } from './parameters/ParameterDataTab';
 import { ParameterPage } from './parameters/ParameterPage';
-import { ParametersPage } from './parameters/ParametersPage';
 import { ParameterSummaryTab } from './parameters/ParameterSummaryTab';
+import { ParametersPage } from './parameters/ParametersPage';
 
 const routes: Routes = [
   {
@@ -53,7 +54,16 @@ const routes: Routes = [
         ]
       }, {
         path: 'packets',
-        component: PacketsPage,
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            component: PacketsPage,
+          }, {
+            path: ':gentime/:seqno',
+            component: PacketPage,
+          }
+        ]
       }, {
         path: 'parameters',
         pathMatch: 'full',
@@ -100,6 +110,7 @@ export const routingComponents = [
   DisplayFolderPage,
   DisplayPage,
   PacketsPage,
+  PacketPage,
   ParametersPage,
   ParameterPage,
   ParameterAlarmsTab,

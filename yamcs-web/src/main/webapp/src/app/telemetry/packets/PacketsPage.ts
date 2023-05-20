@@ -30,7 +30,7 @@ export class PacketsPage {
     { id: 'earthReceptionTime', label: 'Earth reception time', visible: false },
     { id: 'receptionTime', label: 'Reception time', visible: true },
     { id: 'link', label: 'Link', visible: true },
-    { id: 'data', label: 'Data', visible: true },
+    { id: 'data', label: 'Data', visible: false },
     { id: 'size', label: 'Size', visible: true },
     { id: 'actions', label: '', alwaysVisible: true },
   ];
@@ -285,5 +285,14 @@ export class PacketsPage {
 
   selectPacket(packet: Packet) {
     this.detailPacket$.next(packet);
+  }
+
+  extractPacket(packet: Packet) {
+    this.router.navigate([packet.generationTime, packet.sequenceNumber], {
+      relativeTo: this.route,
+      queryParams: {
+        c: this.yamcs.context,
+      }
+    });
   }
 }

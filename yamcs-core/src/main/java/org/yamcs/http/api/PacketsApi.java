@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.yamcs.Processor;
+import org.yamcs.ProcessorConfig;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
@@ -21,16 +22,24 @@ import org.yamcs.archive.GPBHelper;
 import org.yamcs.archive.XtceTmRecorder;
 import org.yamcs.container.ContainerConsumer;
 import org.yamcs.container.ContainerRequestManager;
+import org.yamcs.events.AbstractEventProducer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.MediaType;
 import org.yamcs.http.NotFoundException;
+import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
+import org.yamcs.mdb.ProcessorData;
 import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.XtceTmExtractor;
+import org.yamcs.parameter.ContainerParameterValue;
 import org.yamcs.protobuf.AbstractPacketsApi;
 import org.yamcs.protobuf.ContainerData;
 import org.yamcs.protobuf.ExportPacketRequest;
 import org.yamcs.protobuf.ExportPacketsRequest;
+import org.yamcs.protobuf.ExtractPacketRequest;
+import org.yamcs.protobuf.ExtractPacketResponse;
+import org.yamcs.protobuf.ExtractedParameterValue;
 import org.yamcs.protobuf.GetPacketRequest;
 import org.yamcs.protobuf.ListPacketNamesRequest;
 import org.yamcs.protobuf.ListPacketNamesResponse;
@@ -44,6 +53,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.SqlBuilder;
@@ -53,6 +63,7 @@ import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.protobuf.Db.Event;
 
 import com.google.common.collect.BiMap;
 import com.google.gson.Gson;
@@ -292,6 +303,88 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
                             .setContentType(MediaType.OCTET_STREAM.toString())
                             .setData(packets.get(0).getPacket())
                             .build());
+                }
+            }
+        });
+    }
+
+    @Override
+    public void extractPacket(Context ctx, ExtractPacketRequest request, Observer<ExtractPacketResponse> observer) {
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        long gentime = TimeEncoding.fromProtobufTimestamp(request.getGentime());
+        int seqNum = request.getSeqnum();
+
+        SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME)
+                .where("gentime = ?", gentime)
+                .where("seqNum = ?", seqNum);
+
+        List<TmPacketData> packets = new ArrayList<>();
+        StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
+                if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, pdata.getId().getName())) {
+                    packets.add(pdata);
+                }
+            }
+
+            @Override
+            public void streamClosed(Stream stream) {
+                if (packets.isEmpty()) {
+                    observer.completeExceptionally(
+                            new NotFoundException("No packet for id (" + gentime + ", " + seqNum + ")"));
+                } else if (packets.size() > 1) {
+                    observer.completeExceptionally(new InternalServerErrorException("Too many results"));
+                } else {
+                    var mdb = XtceDbFactory.getInstance(instance);
+                    var responseb = ExtractPacketResponse.newBuilder();
+
+                    var pdata = new ProcessorData(null, "XTCEPROC", mdb, new ProcessorConfig());
+
+                    var eventProducer = new AbstractEventProducer() {
+                        @Override
+                        public void sendEvent(Event event) {
+                            responseb.addMessages(event.getMessage());
+                        }
+
+                        @Override
+                        public void close() {
+                            // NOP
+                        }
+
+                        @Override
+                        public long getMissionTime() {
+                            return TimeEncoding.INVALID_INSTANT;
+                        }
+                    };
+                    eventProducer.setSource("Extraction");
+                    pdata.setEventProducer(eventProducer);
+
+                    var extractor = new XtceTmExtractor(mdb, pdata);
+                    extractor.getOptions().setIgnoreOutOfContainerEntries(true);
+                    extractor.provideAll();
+
+                    var bytes = packets.get(0).getPacket().toByteArray();
+                    var result = extractor.processPacket(bytes, gentime, gentime, seqNum);
+                    var packetName = XtceTmRecorder.deriveArchivePartition(result);
+                    responseb.setPacketName(packetName);
+
+                    for (var pval : result.getParameterResult()) {
+                        if (pval instanceof ContainerParameterValue) {
+                            var containedPval = (ContainerParameterValue) pval;
+                            var container = containedPval.getSequenceEntry().getSequenceContainer();
+                            responseb.addParameterValues(ExtractedParameterValue.newBuilder()
+                                    .setParameter(XtceToGpbAssembler.toParameterInfo(
+                                            containedPval.getParameter(), DetailLevel.SUMMARY))
+                                    .setEntryContainer(XtceToGpbAssembler.toContainerInfo(container, DetailLevel.LINK))
+                                    .setLocation(containedPval.getAbsoluteBitOffset())
+                                    .setSize(containedPval.getBitSize())
+                                    .setRawValue(ValueUtility.toGbp(containedPval.getRawValue()))
+                                    .setEngValue(ValueUtility.toGbp(containedPval.getEngValue())));
+                        }
+                    }
+
+                    observer.complete(responseb.build());
                 }
             }
         });

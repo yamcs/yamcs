@@ -62,8 +62,8 @@ public class ProcessorData {
 
     final XtceDb xtcedb;
     final Log log;
-    final EventProducer eventProducer;
     final String processorName;
+    EventProducer eventProducer;
 
     private Map<String, Object> userData = new HashMap<>();
 
@@ -292,6 +292,10 @@ public class ProcessorData {
 
     public EventProducer getEventProducer() {
         return eventProducer;
+    }
+
+    public void setEventProducer(EventProducer eventProducer) {
+        this.eventProducer = eventProducer;
     }
 
     public LastValueCache getLastValueCache() {

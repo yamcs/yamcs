@@ -11,7 +11,7 @@
   height: auto;
 }
 
-.ya-data-table tr.mat-row:hover {
+.ya-data-table tr.mat-row:hover td {
   background: #fafafa;
 }
 

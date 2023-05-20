@@ -44,8 +44,6 @@ export class CommandPage {
   }
 
   ngOnDestroy() {
-    if (this.commandSubscription) {
-      this.commandSubscription.cancel();
-    }
+    this.commandSubscription?.cancel();
   }
 }
