@@ -6,14 +6,14 @@
        color="primary"
        routerLink="edit">
       <mat-icon>edit</mat-icon>
-      EDIT GROUP
+      Edit group
     </a>
   </app-admin-toolbar>
 
   <div class="panel-content ya-link">
     <ng-container *ngIf="group.description">
       <div class="section-divider">
-        <mat-divider></mat-divider>
+        <mat-divider />
       </div>
       <h4>Description</h4>
       <div style="white-space: pre-wrap">{{ group.description || '-' }}</div>
@@ -21,7 +21,7 @@
 
     <br>
     <div class="section-divider">
-      <mat-divider></mat-divider>
+      <mat-divider />
     </div>
     <h4>{{ group.users?.length || 0 }} members</h4>
     <div *ngFor="let user of group.users">

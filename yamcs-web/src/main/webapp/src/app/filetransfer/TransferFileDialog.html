@@ -24,7 +24,7 @@
                 {{ bucket.size | formatBytes }}/{{ bucket.maxSize | formatBytes}}
               </span>
               <app-progress *ngIf="showBucketSize$.value" [value]="bucket.size"
-                            [total]="bucket.maxSize"></app-progress>
+                            [total]="bucket.maxSize" />
             </td>
           </ng-container>
 
@@ -37,7 +37,7 @@
       <div class="buckets-column footer" *ngIf="selectedBucket$ | async as bucket">
         <div>
           <label>Target bucket</label>
-          {{bucket.name}}
+          {{ bucket.name }}
         </div>
       </div>
 
@@ -53,11 +53,11 @@
 
         <app-breadcrumb-trail [showMargin]="false" *ngIf="breadcrumb$ | async as breadcrumb">
           <app-breadcrumb icon="account_tree" [action]="true"
-                          (click)="changeLocalPrefix('')"></app-breadcrumb>
+                          (click)="changeLocalPrefix('')" />
           <app-breadcrumb *ngFor="let item of breadcrumb"
                           [label]="item.name"
                           [action]="true"
-                          (click)="changeLocalPrefix(item.prefix)"></app-breadcrumb>
+                          (click)="changeLocalPrefix(item.prefix)" />
         </app-breadcrumb-trail>
       </div>
 
@@ -71,8 +71,7 @@
                                [foldersOnly]="false"
                                [noSelect]="true"
                                [allowFolderSelection]="true"
-                               (prefixChange)="updateLocalBreadcrumb($event)">
-          </app-object-selector>
+                               (prefixChange)="updateLocalBreadcrumb($event)" />
         </ng-container>
       </div>
 
@@ -105,11 +104,11 @@
 
         <app-breadcrumb-trail [showMargin]="false" *ngIf="remoteBreadcrumb$ | async as breadcrumb">
           <app-breadcrumb icon="account_tree" [action]="true"
-                          (click)="changeRemotePrefix('')"></app-breadcrumb>
+                          (click)="changeRemotePrefix('')" />
           <app-breadcrumb *ngFor="let item of breadcrumb"
                           [label]="item.name"
                           [action]="true"
-                          (click)="changeRemotePrefix(item.prefix)"></app-breadcrumb>
+                          (click)="changeRemotePrefix(item.prefix)" />
         </app-breadcrumb-trail>
 
         <a class="lastFileListTime mat-button mat-primary" title="Refresh file list" (click)="requestFileList()"

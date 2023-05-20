@@ -1,8 +1,8 @@
 
 import { Injectable, OnDestroy } from '@angular/core';
-import { MatLegacySnackBar } from '@angular/material/legacy-snack-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { NavigationEnd, Router } from '@angular/router';
-import { BehaviorSubject, filter, map, Subscription } from 'rxjs';
+import { BehaviorSubject, Subscription, filter, map } from 'rxjs';
 
 export interface SiteMessage {
   level: 'WARNING' | 'ERROR';
@@ -23,7 +23,7 @@ export class MessageService implements OnDestroy {
   private routerSubscription: Subscription;
 
   constructor(
-    private snackBar: MatLegacySnackBar,
+    private snackBar: MatSnackBar,
     router: Router,
   ) {
     this.routerSubscription = router.events.pipe(

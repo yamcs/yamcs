@@ -1,7 +1,7 @@
 import { Clipboard } from '@angular/cdk/clipboard';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { MatLegacyDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { GetParameterValuesOptions } from '../../client';
@@ -52,7 +52,7 @@ export class ParameterDataTab {
     private route: ActivatedRoute,
     private router: Router,
     readonly yamcs: YamcsService,
-    private dialog: MatLegacyDialog,
+    private dialog: MatDialog,
     private clipboard: Clipboard,
   ) {
     this.qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;

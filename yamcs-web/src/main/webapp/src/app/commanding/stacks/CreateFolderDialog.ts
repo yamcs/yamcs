@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MAT_LEGACY_DIALOG_DATA, MatLegacyDialogRef } from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { StorageClient } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
@@ -15,10 +15,10 @@ export class CreateFolderDialog {
   private storageClient: StorageClient;
 
   constructor(
-    private dialogRef: MatLegacyDialogRef<CreateFolderDialog>,
+    private dialogRef: MatDialogRef<CreateFolderDialog>,
     formBuilder: UntypedFormBuilder,
     yamcs: YamcsService,
-    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any
+    @Inject(MAT_DIALOG_DATA) readonly data: any
   ) {
     this.storageClient = yamcs.createStorageClient();
     this.form = formBuilder.group({

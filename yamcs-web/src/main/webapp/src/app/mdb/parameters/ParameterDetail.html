@@ -39,7 +39,7 @@
     <dt>Long Description</dt>
     <dd>
       <ng-container *ngIf="entry.longDescription; else dash">
-        <app-markdown [text]="entry.longDescription"></app-markdown>
+        <app-markdown [text]="entry.longDescription" />
       </ng-container>
     </dd>
   </dl>
@@ -106,14 +106,14 @@
     <dt>Long Description</dt>
     <dd>
       <ng-container *ngIf="parameter.longDescription; else dash">
-        <app-markdown [text]="parameter.longDescription"></app-markdown>
+        <app-markdown [text]="parameter.longDescription" />
       </ng-container>
     </dd>
   </dl>
 
   <ng-container *ngIf="entry.usedBy?.algorithm || entry.usedBy?.container">
     <div class="section-divider">
-      <mat-divider></mat-divider>
+      <mat-divider />
     </div>
 
     <h4>Used By</h4>
@@ -146,7 +146,7 @@
 
   <ng-container *ngIf="entry.type?.dataEncoding as dataEncoding">
     <div class="section-divider">
-      <mat-divider></mat-divider>
+      <mat-divider />
     </div>
 
     <h4>Data Encoding</h4>
@@ -171,17 +171,17 @@
 
   <ng-container *ngIf="entry.type?.engType === 'integer' || entry.type?.engType === 'float'">
     <div class="section-divider">
-      <mat-divider></mat-divider>
+      <mat-divider />
     </div>
 
     <h4>Calibration</h4>
-    <app-parameter-calibration [ptype]="entry.type"></app-parameter-calibration>
+    <app-parameter-calibration [ptype]="entry.type" />
     <p>&nbsp;</p>
   </ng-container>
 
   <ng-container *ngIf="entry.type?.engType === 'enumeration'">
     <div class="section-divider">
-      <mat-divider></mat-divider>
+      <mat-divider />
     </div>
 
     <h4>Enumeration</h4>
@@ -210,14 +210,14 @@
         <td>{{ enumValue.description || '-' }}</td>
         <td>
           <ng-container *ngIf="getDefaultAlarmLevel(entry.type, enumValue) as level">
-            <app-alarm-level [level]="level" [grayscale]="true"></app-alarm-level>
+            <app-alarm-level [level]="level" [grayscale]="true" />
             {{ level }}
           </ng-container>
           <span *ngIf="!getDefaultAlarmLevel(entry.type, enumValue)">-</span>
         </td>
         <td *ngFor="let context of entry.type.contextAlarm">
           <ng-container *ngIf="getEnumerationAlarmLevel(context, enumValue) as level">
-            <app-alarm-level [level]="level" [grayscale]="true"></app-alarm-level>
+            <app-alarm-level [level]="level" [grayscale]="true" />
             {{ level }}
           </ng-container>
           <span *ngIf="!getEnumerationAlarmLevel(context, enumValue)">-</span>
@@ -229,7 +229,7 @@
 
   <ng-container *ngIf="entry.type?.engType === 'integer' || entry.type?.engType === 'float'">
     <div class="section-divider">
-      <mat-divider></mat-divider>
+      <mat-divider />
     </div>
 
     <h4>Alarm Info</h4>
@@ -246,7 +246,7 @@
           </tr>
           <tr *ngFor="let range of alarm.staticAlarmRange">
             <td>
-              <app-alarm-level [level]="range.level" [grayscale]="true"></app-alarm-level>
+              <app-alarm-level [level]="range.level" [grayscale]="true" />
               {{ range.level }}
             </td>
             <td>
@@ -257,8 +257,7 @@
                             [left]="range.minInclusive | nvl:range.minExclusive"
                             [right]="range.maxInclusive | nvl:range.maxExclusive"
                             [leftInclusive]="range.minInclusive !== undefined"
-                            [rightInclusive]="range.maxInclusive !== undefined">
-              </app-interval>
+                            [rightInclusive]="range.maxInclusive !== undefined" />
               <ng-template #dash>-</ng-template>
             </td>
           </tr>
@@ -278,7 +277,7 @@
           </tr>
           <tr *ngFor="let range of contextAlarm.alarm.staticAlarmRange">
             <td>
-              <app-alarm-level [level]="range.level" [grayscale]="true"></app-alarm-level>
+              <app-alarm-level [level]="range.level" [grayscale]="true" />
               {{ range.level }}
             </td>
             <td>
@@ -289,8 +288,7 @@
                             [left]="range.minInclusive | nvl:range.minExclusive"
                             [right]="range.maxInclusive | nvl:range.maxExclusive"
                             [leftInclusive]="range.minInclusive !== undefined"
-                            [rightInclusive]="range.maxInclusive !== undefined">
-              </app-interval>
+                            [rightInclusive]="range.maxInclusive !== undefined" />
               <ng-template #dash>-</ng-template>
             </td>
           </tr>
@@ -303,7 +301,7 @@
 
   <ng-container *ngIf="entry.type?.engType === 'time'">
     <div class="section-divider">
-      <mat-divider></mat-divider>
+      <mat-divider />
     </div>
     <h4>Time Info</h4>
     <dl class="dl-horizontal">
@@ -338,7 +336,7 @@
 
   <ng-container *ngIf="entry.type?.engType === 'aggregate'">
     <div class="section-divider">
-      <mat-divider></mat-divider>
+      <mat-divider />
     </div>
 
     <h4>Members</h4>

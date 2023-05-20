@@ -8,7 +8,7 @@
      spellcheck="false"
      (paste)="onPaste($event)">
   <div #top class="top"></div>
-  <app-dots *ngIf="!(ready$ | async)" color="#3f0"></app-dots>
+  <app-dots *ngIf="!(ready$ | async)" color="#3f0" />
   <pre *ngIf="ready$ | async">
     <code>
       <span class="preserved"><ng-container *ngFor="let line of lines$ | async">{{ line }}<br></ng-container></span>

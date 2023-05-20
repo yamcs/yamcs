@@ -6,7 +6,7 @@
   <ng-container matColumnDef="severity">
     <th mat-header-cell *matHeaderCellDef>Severity</th>
     <td mat-cell *matCellDef="let pval">
-      <app-alarm-level *ngIf="pval.monitoringResult" [level]="pval.monitoringResult"></app-alarm-level>
+      <app-alarm-level *ngIf="pval.monitoringResult" [level]="pval.monitoringResult" />
       <span *ngIf="!pval.monitoringResult">-</span>
     </td>
   </ng-container>
@@ -24,14 +24,14 @@
   <ng-container matColumnDef="rawValue">
     <th mat-header-cell *matHeaderCellDef>Raw</th>
     <td mat-cell *matCellDef="let pval" class="wrap200">
-      <app-value [value]="pval.rawValue"></app-value>
+      <app-value [value]="pval.rawValue" />
     </td>
   </ng-container>
 
   <ng-container matColumnDef="engValue">
     <th mat-header-cell *matHeaderCellDef>Eng</th>
     <td mat-cell *matCellDef="let pval" class="wrap200">
-      <app-value [value]="pval.engValue"></app-value>
+      <app-value [value]="pval.engValue" />
     </td>
   </ng-container>
 

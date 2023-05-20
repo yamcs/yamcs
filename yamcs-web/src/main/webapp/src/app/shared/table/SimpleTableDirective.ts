@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, HostBinding, ViewEncapsulation } fr
  */
 @Component({
   selector: 'table[yaSimpleTable]',
-  template: '<ng-content></ng-content>',
+  template: '<ng-content />',
   styles: [`
     table.ya-simple-table {
       width: 100%;

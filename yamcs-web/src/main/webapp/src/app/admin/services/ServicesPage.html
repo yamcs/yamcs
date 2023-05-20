@@ -14,11 +14,11 @@
     <form [formGroup]="filterForm">
       <div class="filter-bar">
         <app-select [options]="instanceOptions$ | async"
-                    formControlName="instance"></app-select>
+                    formControlName="instance" />
       </div>
     </form>
     <app-services-table [dataSource]="dataSource"
                         (startService)="startService($event)"
-                        (stopService)="stopService($event)"></app-services-table>
+                        (stopService)="stopService($event)" />
   </div>
 </app-admin-page>

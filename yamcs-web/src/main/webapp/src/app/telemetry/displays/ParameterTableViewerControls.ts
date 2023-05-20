@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { MatLegacyDialog } from '@angular/material/legacy-dialog';
-import { MatLegacySnackBar } from '@angular/material/legacy-snack-bar';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService } from '../../core/services/ConfigService';
@@ -21,8 +21,8 @@ export class ParameterTableViewerControls {
   viewer: ParameterTableViewer;
 
   constructor(
-    private dialog: MatLegacyDialog,
-    private snackbar: MatLegacySnackBar,
+    private dialog: MatDialog,
+    private snackbar: MatSnackBar,
     private authService: AuthService,
     configService: ConfigService,
   ) {

@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-show-enum-dialog',
@@ -8,6 +8,6 @@ import { MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
 export class ShowEnumDialog {
 
   constructor(
-    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any) {
+    @Inject(MAT_DIALOG_DATA) readonly data: any) {
   }
 }

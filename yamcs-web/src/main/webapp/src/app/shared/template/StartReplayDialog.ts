@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { YamcsService } from '../../core/services/YamcsService';
 import * as utils from '../../shared/utils';
 import { generateRandomName } from '../../shared/utils';
@@ -14,10 +14,10 @@ export class StartReplayDialog {
   form: UntypedFormGroup;
 
   constructor(
-    private dialogRef: MatLegacyDialogRef<StartReplayDialog>,
+    private dialogRef: MatDialogRef<StartReplayDialog>,
     formBuilder: UntypedFormBuilder,
     private yamcs: YamcsService,
-    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
+    @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
 
     let initialStart = yamcs.getMissionTime();

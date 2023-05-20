@@ -1,4 +1,4 @@
-<app-message-bar #messageBar></app-message-bar>
+<app-message-bar #messageBar />
 
 <mat-toolbar class="top">
   <mat-toolbar-row>
@@ -9,7 +9,7 @@
        routerLink="create-instance"
        *ngIf="isCreateInstanceEnabled()">
       <mat-icon>add_circle_outline</mat-icon>
-      CREATE INSTANCE
+      Create instance
     </a>
     <a mat-button
        color="primary"
@@ -17,7 +17,7 @@
        [disabled]="!isGroupStartEnabled()"
        (click)="startSelectedInstances()">
       <mat-icon>play_arrow</mat-icon>
-      START
+      Start
     </a>
     <a mat-button
        color="primary"
@@ -25,7 +25,7 @@
        [disabled]="!isGroupStopEnabled()"
        (click)="stopSelectedInstances()">
       <mat-icon>stop</mat-icon>
-      STOP
+      Stop
     </a>
     <a mat-button
        color="primary"
@@ -33,7 +33,7 @@
        [disabled]="!isGroupRestartEnabled()"
        (click)="restartSelectedInstances()">
       <mat-icon>sync_problem</mat-icon>
-      RESTART
+      Restart
     </a>
   </mat-toolbar-row>
 </mat-toolbar>
@@ -44,8 +44,7 @@
                        placeholder="Filter instances"
                        (onArrowDown)="selectNext()"
                        (onArrowUp)="selectPrevious()"
-                       (onEnter)="applySelection()">
-    </app-search-filter>
+                       (onEnter)="applySelection()" />
   </div>
   <table mat-table
          [dataSource]="dataSource"
@@ -106,8 +105,7 @@
            [queryParams]="{c: (row.processors?.length ? (row.name + '__' + (row | defaultProcessor)) : row.name)}"
            (click)="$event.stopPropagation()">
           <app-highlight [text]="row.name"
-                         [term]="filterControl.value">
-          </app-highlight>
+                         [term]="filterControl.value" />
         </a>
         <span *ngIf="row.state === 'OFFLINE'">{{ row.name }}</span>
       </td>
@@ -123,7 +121,7 @@
     <ng-container cdkColumnDef="labels">
       <th mat-header-cell *cdkHeaderCellDef mat-sort-header>Labels</th>
       <td mat-cell *cdkCellDef="let row">
-        <app-labels [dict]="row.labels"></app-labels>
+        <app-labels [dict]="row.labels" />
         <ng-container *ngIf="!row.labels">-</ng-container>
       </td>
     </ng-container>
@@ -176,6 +174,5 @@
 
   <mat-paginator [pageSize]="100"
                  [hidePageSize]="true"
-                 [showFirstLastButtons]="true">
-  </mat-paginator>
+                 [showFirstLastButtons]="true" />
 </div>

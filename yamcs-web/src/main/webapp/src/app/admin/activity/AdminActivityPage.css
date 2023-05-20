@@ -16,7 +16,7 @@ tr.item-detail td {
   padding-left: 40px !important;
 }
 
-.mat-row {
+.mat-mdc-row {
   cursor: pointer;
 }
 
@@ -36,7 +36,7 @@ tr.item-detail:not(.expanded) {
   min-height: 20px;
 }
 
-.ya-data-table tr.mat-row:hover {
+.ya-data-table tr.mat-mdc-row:hover {
   /* doesn't look good when expanded */
   background: inherit;
 }

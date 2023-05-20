@@ -1,8 +1,8 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
   selector: 'app-toolbar-actions',
-  template: '<ng-content></ng-content>',
+  template: '<ng-content />',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToolbarActions {

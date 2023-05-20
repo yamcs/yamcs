@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { TimelineBand, UpdateTimelineViewRequest } from '../../client/types/timeline';
 import { MessageService } from '../../core/services/MessageService';
@@ -20,11 +20,11 @@ export class EditViewDialog implements OnDestroy {
   private formSubscription: Subscription;
 
   constructor(
-    private dialogRef: MatLegacyDialogRef<EditViewDialog>,
+    private dialogRef: MatDialogRef<EditViewDialog>,
     readonly yamcs: YamcsService,
     formBuilder: UntypedFormBuilder,
     private messageService: MessageService,
-    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
+    @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     const view = data.view;
     this.form = formBuilder.group({

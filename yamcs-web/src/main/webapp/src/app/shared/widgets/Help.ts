@@ -1,5 +1,5 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
-import { MatLegacyDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { DomSanitizer } from '@angular/platform-browser';
 import { HelpDialog } from '../dialogs/HelpDialog';
 
@@ -19,7 +19,7 @@ export class Help {
   @ViewChild('dialogContent', { static: true })
   dialogContent: ElementRef;
 
-  constructor(private dialog: MatLegacyDialog, private sanitizer: DomSanitizer) {
+  constructor(private dialog: MatDialog, private sanitizer: DomSanitizer) {
   }
 
   showHelp() {

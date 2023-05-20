@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
-import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { CommandQueue, ConnectionInfo, QueueEventsSubscription, QueueStatisticsSubscription } from '../../client';
@@ -18,7 +18,7 @@ export class QueuesPage implements AfterViewInit, OnDestroy {
 
   cqueues$ = new BehaviorSubject<CommandQueue[]>([]);
 
-  dataSource = new MatLegacyTableDataSource<CommandQueue>();
+  dataSource = new MatTableDataSource<CommandQueue>();
   selection = new TrackBySelectionModel<CommandQueue>((index: number, queue: CommandQueue) => {
     return queue.name;
   }, true, []);

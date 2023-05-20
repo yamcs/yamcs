@@ -3,8 +3,7 @@
     <div class="item"
          *ngIf="type.rangeMin !== undefined || type.rangeMax !== undefined">
       <app-interval [left]="type.rangeMin"
-                    [right]="type.rangeMax">
-      </app-interval>
+                    [right]="type.rangeMax" />
     </div>
     <div class="item" *ngIf="type.unitSet">
       {{ type.unitSet | units }}
@@ -33,13 +32,12 @@
     {{ description }}
   </app-help>
 
-  <app-errors #err [controlName]="controlName"></app-errors>
+  <app-errors #err [controlName]="controlName" />
 
   <input *ngIf="!(hexToggle$ | async)"
          [formControl]="formControl"
          type="text"
          autocomplete="off">
   <app-hex-integer-input *ngIf="hexToggle$ | async"
-                         [formControl]="formControl">
-  </app-hex-integer-input>
+                         [formControl]="formControl" />
 </div>

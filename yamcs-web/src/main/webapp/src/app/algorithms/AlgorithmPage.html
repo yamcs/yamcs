@@ -6,11 +6,11 @@
          class="ya-link ya-header-link">
         {{ spaceSystemName }}
       </a>/{{ algorithm.qualifiedName | shortName }}
-      <app-title-copy [text]="algorithm.qualifiedName"></app-title-copy>
+      <app-title-copy [text]="algorithm.qualifiedName" />
     </ng-container>
   </app-instance-toolbar>
 
-  <nav #tabs mat-tab-nav-bar class="secondary">
+  <nav #tabs mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
     <a mat-tab-link
        routerLink="summary"
        routerLinkActive #rla="routerLinkActive"
@@ -29,6 +29,8 @@
   </nav>
 
   <div class="tab-content-wrapper">
-    <router-outlet></router-outlet>
+    <mat-tab-nav-panel #tabPanel>
+      <router-outlet />
+    </mat-tab-nav-panel>
   </div>
 </app-instance-page>

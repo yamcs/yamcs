@@ -1,9 +1,9 @@
-import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { AuditRecord } from '../../client';
 
 export interface RowGroup {
   grouper: string;
-  dataSource: MatLegacyTableDataSource<Row>;
+  dataSource: MatTableDataSource<Row>;
 }
 
 export interface RequestOption {

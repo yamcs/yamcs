@@ -1,6 +1,6 @@
 <mat-toolbar class="top">
   <mat-toolbar-row>
-    <ng-content></ng-content>
+    <ng-content />
 
     <span style="flex: 1 1 auto"></span>
 
@@ -23,21 +23,19 @@
             PLAY
           </button>
 
-          <button mat-button color="primary" [matMenuTriggerFor]="processorMenu"
-                  (menuOpened)="switchProcessorMenuOpened()"
-                  [style.fontStyle]="processor.replayState === 'PAUSED' ? 'italic' : 'normal'"
-                  matTooltip="Processor Time. Click for more actions">
-            <ng-container *ngIf="time$ | async as time">
-              <mat-icon>{{ processor.replayState === 'PAUSED' ? 'timer' : 'schedule' }}</mat-icon>
-              {{ time | datetime }}
-            </ng-container>
-            <mat-icon>more_vert</mat-icon>
+          <button mat-button
+                  class="processor-time"
+                  [class.paused]="processor.replayState === 'PAUSED'"
+                  matTooltip="Processor time. Click for more actions"
+                  [matMenuTriggerFor]="processorMenu"
+                  (menuOpened)="switchProcessorMenuOpened()">
+            {{ (time$ | async) | datetime }} ▾
           </button>
         </ng-container>
       </ng-container>
     </ng-container>
 
-    <mat-menu #processorMenu="matMenu" overlapTrigger="false" xPosition="before" yPosition="below">
+    <mat-menu #processorMenu="matMenu" class="ya-menu" overlapTrigger="false" xPosition="before" yPosition="below">
       <ng-container *ngIf="processor$ | async as processor">
         <button mat-menu-item (click)="startReplay()" *ngIf="!processor.replay">
           <mat-icon>replay</mat-icon>
@@ -60,17 +58,17 @@
             <mat-icon [class.hide]="processor.replayRequest?.speed.param !== 16">check</mat-icon> 16x
           </button>
           <button mat-menu-item (click)="changeSpeed('afap')">
-            <mat-icon [class.hide]="processor.replayRequest?.speed.type !== 'AFAP'">check</mat-icon> As Fast As Possible
+            <mat-icon [class.hide]="processor.replayRequest?.speed.type !== 'AFAP'">check</mat-icon> As fast as possible
           </button>
         </ng-container>
-        <mat-divider></mat-divider>
+        <mat-divider />
         <button mat-menu-item *ngFor="let otherProcessor of allProcessors$ | async"
                 (click)="switchProcessor(otherProcessor)">
           <mat-icon [class.hide]="processor.name !== otherProcessor.name">check</mat-icon>
           {{ otherProcessor.name }}
         </button>
         <ng-container *ngIf="processor.replay">
-          <mat-divider></mat-divider>
+          <mat-divider />
           <button mat-menu-item (click)="leaveAndCloseReplay()" [disabled]="processor.protected">
             <mat-icon>exit_to_app</mat-icon>
             Leave &amp; close replay

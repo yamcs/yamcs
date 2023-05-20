@@ -15,7 +15,7 @@ export class OverviewPage {
     readonly yamcs: YamcsService,
     title: Title,
   ) {
-    title.setTitle('Mission Database');
+    title.setTitle('Mission database');
     this.mdb$ = yamcs.yamcsClient.getMissionDatabase(yamcs.instance!);
   }
 }

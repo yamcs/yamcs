@@ -1,7 +1,7 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { MatLegacyPaginator } from '@angular/material/legacy-paginator';
+import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Algorithm, GetAlgorithmsOptions } from '../../client';
@@ -21,8 +21,8 @@ export class AlgorithmsPage implements AfterViewInit {
   @ViewChild('top', { static: true })
   top: ElementRef;
 
-  @ViewChild(MatLegacyPaginator, { static: true })
-  paginator: MatLegacyPaginator;
+  @ViewChild(MatPaginator, { static: true })
+  paginator: MatPaginator;
 
   filterControl = new UntypedFormControl();
 

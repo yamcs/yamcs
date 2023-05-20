@@ -8,8 +8,7 @@
                        width="100%"
                        (onArrowDown)="selectNext()"
                        (onArrowUp)="selectPrevious()"
-                       (onEnter)="applySelection()">
-    </app-search-filter>
+                       (onEnter)="applySelection()" />
   </div>
   <div class="scrollpane">
     <table mat-table
@@ -50,8 +49,7 @@
 <mat-dialog-actions align="end">
   <mat-paginator [pageSize]="100"
                  [hidePageSize]="true"
-                 [showFirstLastButtons]="true">
-  </mat-paginator>
+                 [showFirstLastButtons]="true" />
   <div style="flex: 1 1 auto"></div>
 
   <button class="ya-button" mat-dialog-close>CANCEL</button>

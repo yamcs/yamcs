@@ -5,8 +5,7 @@
       bytes:
       <app-interval [left]="type.minBytes"
                     [right]="type.maxBytes"
-                    [singleValueIfEqual]="true">
-      </app-interval>
+                    [singleValueIfEqual]="true" />
     </div>
     <div class="item" [class.error]="err.invalid$ | async">{{ type.engType }}</div>
   </div>
@@ -16,8 +15,7 @@
     {{ description }}
   </app-help>
 
-  <app-errors #err [controlName]="controlName"></app-errors>
+  <app-errors #err [controlName]="controlName" />
 
-  <app-binary-input [formControl]="formControl">
-  </app-binary-input>
+  <app-binary-input [formControl]="formControl" />
 </div>

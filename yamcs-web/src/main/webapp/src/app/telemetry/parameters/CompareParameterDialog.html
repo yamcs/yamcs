@@ -13,11 +13,11 @@
 
   <br>
   <label class="mat-typography">Color</label>
-  <app-color-palette #palette></app-color-palette>
+  <app-color-palette #palette />
 
   <br>
   <label class="mat-typography">Thickness</label>
-  <app-thickness #thickness [color]="palette.selectedColor"></app-thickness>
+  <app-thickness #thickness [color]="palette.selectedColor" />
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

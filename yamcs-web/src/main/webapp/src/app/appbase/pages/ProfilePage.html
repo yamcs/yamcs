@@ -24,13 +24,12 @@
     <ng-container *ngIf="config.commandClearanceEnabled">
       <dt>Command clearance</dt>
       <dd>
-        <app-significance-level [level]="user.getClearance()" [grayscale]="true">
-        </app-significance-level>
+        <app-significance-level [level]="user.getClearance()" [grayscale]="true" />
       </dd>
     </ng-container>
   </dl>
 
-  <mat-divider></mat-divider>
+  <mat-divider />
   <dl class="dl-horizontal">
     <dt>Roles</dt>
     <dd>
@@ -44,12 +43,12 @@
   </dl>
 
   <ng-container *ngIf="user.isSuperuser()">
-    <mat-divider></mat-divider>
+    <mat-divider />
     <dl class="dl-horizontal">
       <dt>System privileges</dt>
       <dd>All privileges implied</dd>
     </dl>
-    <mat-divider></mat-divider>
+    <mat-divider />
     <dl class="dl-horizontal">
       <dt>Object privileges</dt>
       <dd>All privileges implied</dd>
@@ -57,7 +56,7 @@
   </ng-container>
 
   <ng-container *ngIf="!user.isSuperuser()">
-    <mat-divider></mat-divider>
+    <mat-divider />
     <dl class="dl-horizontal">
       <dt>System privileges</dt>
       <dd>
@@ -70,7 +69,7 @@
       </dd>
     </dl>
 
-    <mat-divider></mat-divider>
+    <mat-divider />
     <dl class="dl-horizontal">
       <dt>Object privileges</dt>
       <dd>

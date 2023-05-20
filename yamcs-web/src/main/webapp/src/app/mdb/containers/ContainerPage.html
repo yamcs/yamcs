@@ -6,12 +6,11 @@
          class="ya-link ya-header-link">
         {{ spaceSystemName }}
       </a>/{{ container.qualifiedName | shortName }}
-      <app-title-copy [text]="container.qualifiedName"></app-title-copy>
+      <app-title-copy [text]="container.qualifiedName" />
     </ng-container>
   </app-instance-toolbar>
 
   <div class="panel-content">
-    <app-container-detail [container]="container">
-    </app-container-detail>
+    <app-container-detail [container]="container" />
   </div>
 </app-instance-page>

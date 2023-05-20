@@ -1,8 +1,8 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { MatLegacyDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Band, Banner, Item, ItemBand as DefaultItemBand, MouseTracker, Timeline, TimeLocator } from '@fqqb/timeline';
+import { Band, Banner, ItemBand as DefaultItemBand, Item, MouseTracker, TimeLocator, Timeline } from '@fqqb/timeline';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { TimelineItem, TimelineView } from '../client/types/timeline';
@@ -50,7 +50,7 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
   constructor(
     title: Title,
     readonly yamcs: YamcsService,
-    private dialog: MatLegacyDialog,
+    private dialog: MatDialog,
     private messageService: MessageService,
     readonly route: ActivatedRoute,
     private router: Router,
@@ -192,6 +192,7 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
         position: {
           right: '0',
         },
+        panelClass: 'dialog-full-size',
         data: { band }
       });
       dialogRef.afterClosed().subscribe(updatedBand => {
@@ -266,6 +267,7 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
     this.dialog.open(EditViewDialog, {
       width: '70%',
       height: '100%',
+      panelClass: 'dialog-full-size',
       autoFocus: false,
       position: {
         right: '0',

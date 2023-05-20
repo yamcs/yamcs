@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { BehaviorSubject } from 'rxjs';
 import { ReplicationInfoSubscription, ReplicationMaster, ReplicationSlave } from '../../client';
@@ -34,8 +34,8 @@ export class ReplicationPage implements OnDestroy {
     'nextTx',
   ];
 
-  slavesDataSource = new MatLegacyTableDataSource<ReplicationSlave>();
-  mastersDataSource = new MatLegacyTableDataSource<ReplicationMaster>();
+  slavesDataSource = new MatTableDataSource<ReplicationSlave>();
+  mastersDataSource = new MatTableDataSource<ReplicationMaster>();
   hasSlaves$ = new BehaviorSubject<boolean>(false);
   hasMasters$ = new BehaviorSubject<boolean>(false);
 

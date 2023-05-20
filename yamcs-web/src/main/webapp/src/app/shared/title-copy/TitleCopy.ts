@@ -1,6 +1,6 @@
 import { Clipboard } from '@angular/cdk/clipboard';
 import { ChangeDetectionStrategy, Component, Input, ViewChild } from '@angular/core';
-import { MatLegacyTooltip } from '@angular/material/legacy-tooltip';
+import { MatTooltip } from '@angular/material/tooltip';
 import { BehaviorSubject } from 'rxjs';
 
 const defaultText = "Copy to clipboard";
@@ -17,7 +17,7 @@ export class TitleCopy {
   text: string;
 
   @ViewChild('tooltip')
-  tooltip: MatLegacyTooltip;
+  tooltip: MatTooltip;
 
   tooltip$ = new BehaviorSubject<string>(defaultText);
 

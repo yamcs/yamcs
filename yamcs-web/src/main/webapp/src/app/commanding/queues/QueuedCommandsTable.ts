@@ -1,6 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, Input, ViewChild } from '@angular/core';
-import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { Observable } from 'rxjs';
 import { CommandQueue, CommandQueueEntry } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -19,7 +19,7 @@ export class QueuedCommandsTable implements AfterViewInit {
   @ViewChild(MatSort)
   sort: MatSort;
 
-  dataSource = new MatLegacyTableDataSource<CommandQueueEntry>();
+  dataSource = new MatTableDataSource<CommandQueueEntry>();
 
   displayedColumns = [
     'generationTime',

@@ -4,7 +4,7 @@
     {{ description }}
   </app-help>
 
-  <app-errors #err [controlName]="name"></app-errors>
+  <app-errors #err [controlName]="name" />
 
   <div class="meta" [class.error]="err.invalid$ | async">
     <div class="item">{{ engType$ | async }}</div>
@@ -19,72 +19,63 @@
                                 [type]="type.elementType"
                                 [index]="i"
                                 [dimensions]="ownDimensions"
-                                [initialValue]="entryInitialValues[i]">
-        </app-aggregate-argument>
+                                [initialValue]="entryInitialValues[i]" />
 
         <app-binary-argument *ngSwitchCase="'binary'"
                              [name]="name"
                              [type]="type.elementType"
                              [index]="i"
                              [dimensions]="ownDimensions"
-                             [formControlName]="i">
-        </app-binary-argument>
+                             [formControlName]="i" />
 
         <app-boolean-argument *ngSwitchCase="'boolean'"
                               [name]="name"
                               [type]="type.elementType"
                               [index]="i"
                               [dimensions]="ownDimensions"
-                              [formControlName]="i">
-        </app-boolean-argument>
+                              [formControlName]="i" />
 
         <app-enumeration-argument *ngSwitchCase="'enumeration'"
                                   [name]="name"
                                   [type]="type.elementType"
                                   [index]="i"
                                   [dimensions]="ownDimensions"
-                                  [formControlName]="i">
-        </app-enumeration-argument>
+                                  [formControlName]="i" />
 
         <app-float-argument *ngSwitchCase="'float'"
                             [name]="name"
                             [type]="type.elementType"
                             [index]="i"
                             [dimensions]="ownDimensions"
-                            [formControlName]="i">
-        </app-float-argument>
+                            [formControlName]="i" />
 
         <app-integer-argument *ngSwitchCase="'integer'"
                               [name]="name"
                               [type]="type.elementType"
                               [index]="i"
                               [dimensions]="ownDimensions"
-                              [formControlName]="i">
-        </app-integer-argument>
+                              [formControlName]="i" />
 
         <app-string-argument *ngSwitchCase="'string'"
                              [name]="name"
                              [type]="type.elementType"
                              [index]="i"
                              [dimensions]="ownDimensions"
-                             [formControlName]="i">
-        </app-string-argument>
+                             [formControlName]="i" />
 
         <app-time-argument *ngSwitchCase="'time'"
                            [name]="name"
                            [type]="type.elementType"
                            [index]="i"
                            [dimensions]="ownDimensions"
-                           [formControlName]="i">
-        </app-time-argument>
+                           [formControlName]="i" />
 
         <app-array-argument *ngSwitchCase="type.elementType.engType.endsWith('[]') ? type.elementType.engType : ''"
                             [name]="i"
                             [type]="type.elementType"
                             [index]="i"
                             [dimensions]="ownDimensions"
-                            [initialValue]="entryInitialValues[i]">
-        </app-array-argument>
+                            [initialValue]="entryInitialValues[i]" />
       </ng-container>
 
       <br>

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
@@ -24,7 +24,7 @@ export class ServicesPage {
     { id: '_global', label: '_global' },
   ]);
 
-  dataSource = new MatLegacyTableDataSource<Service>();
+  dataSource = new MatTableDataSource<Service>();
 
   constructor(
     private yamcs: YamcsService,

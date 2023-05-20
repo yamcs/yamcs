@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
 import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator, ValidatorFn, Validators } from '@angular/forms';
-import { MatLegacyDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { ArgumentType, EnumValue } from '../../../../client';
 import { Option } from '../../../../shared/forms/Select';
@@ -49,7 +49,7 @@ export class EnumerationArgument implements ControlValueAccessor, OnInit, Valida
   private onChange = (_: string | null) => { };
   private subscriptions: Subscription[] = [];
 
-  constructor(private dialog: MatLegacyDialog) {
+  constructor(private dialog: MatDialog) {
   }
 
   ngOnInit() {

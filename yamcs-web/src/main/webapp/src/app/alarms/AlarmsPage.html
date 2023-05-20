@@ -53,7 +53,7 @@
             [disabled]="!selection.hasValue()"
             *ngIf="mayControlAlarms()">
       <mat-icon>notifications_off</mat-icon>
-      ACKNOWLEDGE
+      Acknowledge
     </button>
     <button mat-button
             color="primary"
@@ -61,7 +61,7 @@
             [disabled]="!selection.hasValue()"
             *ngIf="mayControlAlarms()">
       <mat-icon>timer</mat-icon>
-      SHELVE
+      Shelve
     </button>
   </app-instance-toolbar>
 
@@ -76,8 +76,7 @@
                           (acknowledgeAlarm)="acknowledgeAlarms([$event])"
                           (shelveAlarm)="shelveAlarms([$event])"
                           (unshelveAlarm)="unshelveAlarms([$event])"
-                          (clearAlarm)="clearAlarms([$event])">
-        </app-alarm-detail>
+                          (clearAlarm)="clearAlarms([$event])" />
       </div>
     </ng-container>
     <ng-template #noDetail>
@@ -89,7 +88,7 @@
 
   <div class="table-wrapper">
     <div class="panel-content" *ngIf="dataSource">
-      <app-alarms-page-tabs></app-alarms-page-tabs>
+      <app-alarms-page-tabs />
       <dl class="dl-horizontal">
         <dt>Unacknowledged alarms:</dt>
         <dd>
@@ -107,9 +106,8 @@
       <form [formGroup]="filterForm">
         <div class="filter-bar">
           <app-search-filter formControlName="filter"
-                             placeholder="Filter by text search">
-          </app-search-filter>
-          <app-select [options]="viewOptions" formControlName="view"></app-select>
+                             placeholder="Filter by text search" />
+          <app-select [options]="viewOptions" formControlName="view" />
         </div>
       </form>
       <app-alarms-table [dataSource]="dataSource"
@@ -118,8 +116,7 @@
                         [mayControl]="mayControlAlarms()"
                         (acknowledgeAlarm)="acknowledgeAlarms([$event])"
                         (shelveAlarm)="shelveAlarms([$event])"
-                        (unshelveAlarm)="unshelveAlarms([$event])">
-      </app-alarms-table>
+                        (unshelveAlarm)="unshelveAlarms([$event])" />
     </div>
   </div>
 </app-instance-page>

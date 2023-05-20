@@ -6,12 +6,11 @@
          class="ya-link ya-header-link">
         {{ spaceSystemName }}
       </a>/{{ command.qualifiedName | shortName }}
-      <app-title-copy [text]="command.qualifiedName"></app-title-copy>
+      <app-title-copy [text]="command.qualifiedName" />
     </ng-container>
   </app-instance-toolbar>
 
   <div class="panel-content">
-    <app-command-detail [command]="command">
-    </app-command-detail>
+    <app-command-detail [command]="command" />
   </div>
 </app-instance-page>

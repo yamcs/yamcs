@@ -30,13 +30,13 @@
     </dl>
 
     <div class="section-divider">
-      <mat-divider></mat-divider>
+      <mat-divider />
     </div>
     <h4>Stack trace</h4>
     <table yaDataTable *ngIf="thread.trace">
       <tr *ngFor="let element of thread.trace">
         <td>
-          <app-trace-element [element]="element"></app-trace-element>
+          <app-trace-element [element]="element" />
         </td>
       </tr>
     </table>

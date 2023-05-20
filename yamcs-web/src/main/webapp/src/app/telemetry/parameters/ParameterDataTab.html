@@ -6,7 +6,7 @@
     <div style="padding: 0 16px">
       <div class="block-title">Severity</div>
       <div class="block">
-        <app-alarm-level *ngIf="pval.monitoringResult" [level]="pval.monitoringResult"></app-alarm-level>
+        <app-alarm-level *ngIf="pval.monitoringResult" [level]="pval.monitoringResult" />
         <span *ngIf="!pval.monitoringResult">-</span>
       </div>
 
@@ -22,18 +22,18 @@
 
       <div class="block-title">
         Raw value
-        <ng-container *ngTemplateOutlet="valueActionsTemplate; context:{value: pval.rawValue}"></ng-container>
+        <ng-container *ngTemplateOutlet="valueActionsTemplate; context:{value: pval.rawValue}" />
       </div>
       <div class="block">
-        <ng-container *ngTemplateOutlet="valueTemplate; context:{value: pval.rawValue}"></ng-container>
+        <ng-container *ngTemplateOutlet="valueTemplate; context:{value: pval.rawValue}" />
       </div>
 
       <div class="block-title">
         Engineering value
-        <ng-container *ngTemplateOutlet="valueActionsTemplate; context:{value: pval.engValue}"></ng-container>
+        <ng-container *ngTemplateOutlet="valueActionsTemplate; context:{value: pval.engValue}" />
       </div>
       <div class="block">
-        <ng-container *ngTemplateOutlet="valueTemplate; context:{value: pval.engValue}"></ng-container>
+        <ng-container *ngTemplateOutlet="valueTemplate; context:{value: pval.engValue}" />
       </div>
 
       <div class="block-title">Range condition</div>
@@ -57,12 +57,11 @@
   <div class="panel-content">
     <form [formGroup]="filterForm">
       <div class="filter-bar">
-        <app-select icon="access_time" formControlName="interval" [options]="intervalOptions">
-        </app-select>
+        <app-select icon="access_time" formControlName="interval" [options]="intervalOptions" />
 
         <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
-          <app-date-time-input formControlName="customStart"></app-date-time-input>
-          <app-date-time-input formControlName="customStop"></app-date-time-input>
+          <app-date-time-input formControlName="customStart" />
+          <app-date-time-input formControlName="customStop" />
           <button class="ya-button" (click)="applyCustomDates()" [disabled]="filterForm.invalid">Apply</button>
         </ng-container>
 
@@ -72,8 +71,7 @@
           </button>
         </ng-container>
 
-        <app-dots *ngIf="dataSource.loading$ | async">
-        </app-dots>
+        <app-dots *ngIf="dataSource.loading$ | async" />
       </div>
     </form>
 
@@ -98,7 +96,7 @@
       </span>
     </div>
 
-    <app-parameter-values-table #table [dataSource]="dataSource"></app-parameter-values-table>
+    <app-parameter-values-table #table [dataSource]="dataSource" />
 
     <app-empty-message *ngIf="dataSource.isEmpty()">
       No records found matching current filter in the selected time range.
@@ -130,10 +128,10 @@
 <ng-template #valueTemplate let-value="value">
   <ng-container [ngSwitch]="value?.type">
     <ng-container *ngSwitchCase="'BINARY'">
-      <app-hex [base64String]="value.binaryValue"></app-hex>
+      <app-hex [base64String]="value.binaryValue" />
     </ng-container>
     <ng-container *ngSwitchDefault>
-      <app-value [value]="value"></app-value>
+      <app-value [value]="value" />
     </ng-container>
   </ng-container>
 </ng-template>

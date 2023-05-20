@@ -7,7 +7,7 @@
             color="primary"
             (click)="createEvent()">
       <mat-icon>add_circle_outline</mat-icon>
-      CREATE EVENT
+      Create event
     </button>
 
     <button *ngIf="!(dataSource.streaming$ | async)"
@@ -15,7 +15,7 @@
             color="primary"
             (click)="startStreaming()">
       <mat-icon>play_arrow</mat-icon>
-      START STREAMING
+      Start streaming
     </button>
 
     <button *ngIf="dataSource.streaming$ | async"
@@ -24,7 +24,7 @@
             color="primary"
             (click)="stopStreaming()">
       <mat-icon>pause</mat-icon>
-      STOP STREAMING
+      Stop streaming
     </button>
 
     <button mat-icon-button
@@ -39,24 +39,23 @@
     <form [formGroup]="filterForm">
       <div class="filter-bar">
         <app-search-filter formControlName="filter"
-                           placeholder="Filter by text search">
-        </app-search-filter>
+                           placeholder="Filter by text search" />
         <app-column-chooser #columnChooser
                             [columns]="columns"
-                            preferenceKey="events"></app-column-chooser>
+                            preferenceKey="events" />
       </div>
       <div class="filter-bar">
-        <app-select [options]="severityOptions" formControlName="severity"></app-select>
+        <app-select [options]="severityOptions" formControlName="severity" />
         <app-multi-select [options]="sourceOptions$ | async"
                           formControlName="source"
-                          emptyOption="Any source"></app-multi-select>
+                          emptyOption="Any source" />
         <app-select #intervalSelect
                     [options]="intervalOptions"
                     icon="access_time"
-                    formControlName="interval"></app-select>
+                    formControlName="interval" />
         <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
-          <app-date-time-input formControlName="customStart"></app-date-time-input>
-          <app-date-time-input formControlName="customStop"></app-date-time-input>
+          <app-date-time-input formControlName="customStart" />
+          <app-date-time-input formControlName="customStop" />
           <button (click)="applyCustomDates()"
                   class="ya-button"
                   [disabled]="filterForm.invalid">Apply</button>
@@ -67,12 +66,11 @@
           </button>
         </ng-container>
 
-        <app-dots *ngIf="dataSource.loading$ | async">
-        </app-dots>
+        <app-dots *ngIf="dataSource.loading$ | async" />
 
         <div style="text-align: right; flex: 1 1 150px" *ngIf="dataSource.streaming$ | async">
           Listening for events
-          <app-dots fontSize="16px" color="#1b61b9"></app-dots>
+          <app-dots fontSize="16px" color="#1b61b9" />
         </div>
       </div>
     </form>
@@ -102,7 +100,7 @@
       <ng-container cdkColumnDef="severity">
         <th mat-header-cell *cdkHeaderCellDef>Severity</th>
         <td mat-cell *cdkCellDef="let row">
-          <app-event-severity [severity]="row.severity"></app-event-severity>
+          <app-event-severity [severity]="row.severity" />
         </td>
       </ng-container>
 
@@ -110,7 +108,7 @@
         <th mat-header-cell *cdkHeaderCellDef>Message</th>
         <td mat-cell *cdkCellDef="let row" class="mono" style="white-space: pre; width: 100%">
           <app-event-message [message]="row.message"
-                             [highlight]="filterForm.value.filter"></app-event-message>
+                             [highlight]="filterForm.value.filter" />
         </td>
       </ng-container>
 

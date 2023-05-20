@@ -19,9 +19,7 @@
                       [matTooltip]="upload.err">error</mat-icon>
             Failed
           </ng-container>
-          <mat-progress-bar *ngIf="!upload.complete"
-                            mode="buffer">
-          </mat-progress-bar>
+          <app-dots *ngIf="!upload.complete" />
         </td>
       </tr>
     </table>

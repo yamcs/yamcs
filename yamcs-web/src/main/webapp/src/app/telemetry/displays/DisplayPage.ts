@@ -6,7 +6,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
  * query parameters.
  */
 @Component({
-  template: '<router-outlet></router-outlet>',
+  template: '<router-outlet />',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DisplayPage {

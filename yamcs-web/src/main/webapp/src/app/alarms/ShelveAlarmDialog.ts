@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
-import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Alarm, ShelveAlarmOptions } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
 import { Option } from '../shared/forms/Select';
@@ -25,10 +25,10 @@ export class ShelveAlarmDialog {
   ];
 
   constructor(
-    private dialogRef: MatLegacyDialogRef<ShelveAlarmDialog>,
+    private dialogRef: MatDialogRef<ShelveAlarmDialog>,
     formBuilder: UntypedFormBuilder,
     private yamcs: YamcsService,
-    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
+    @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.formGroup = formBuilder.group({
       'duration': 'PT2H',

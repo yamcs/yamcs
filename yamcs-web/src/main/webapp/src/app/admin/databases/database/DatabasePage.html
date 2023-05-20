@@ -26,7 +26,7 @@
     </ng-container>
   </app-admin-toolbar>
 
-  <nav mat-tab-nav-bar class="secondary">
+  <nav mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
     <ng-container *ngIf="!(object$ | async)">
       <a mat-tab-link
          [routerLink]="['/admin/databases', database.name, 'tables']"
@@ -94,6 +94,8 @@
   </nav>
 
   <div class="outlet-wrapper">
-    <router-outlet></router-outlet>
+    <mat-tab-nav-panel #tabPanel>
+      <router-outlet />
+    </mat-tab-nav-panel>
   </div>
 </app-admin-page>

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { MatLegacyAutocompleteSelectedEvent } from '@angular/material/legacy-autocomplete';
+import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { NavigationEnd, Router } from '@angular/router';
 import { Observable, Subscription, of } from 'rxjs';
 import { debounceTime, filter, map, switchMap } from 'rxjs/operators';
@@ -27,7 +27,6 @@ export class InstancePage implements OnInit, OnDestroy {
   filteredOptions: Observable<Parameter[]>;
 
   user: User;
-  sidebar$: Observable<boolean>;
 
   config: WebsiteConfig;
 
@@ -128,8 +127,6 @@ export class InstancePage implements OnInit, OnDestroy {
       }
     }
 
-    this.sidebar$ = preferenceStore.getPreference$('sidebar');
-
     this.routerSubscription = router.events.pipe(
       filter(evt => evt instanceof NavigationEnd)
     ).subscribe((evt: any) => {
@@ -173,7 +170,7 @@ export class InstancePage implements OnInit, OnDestroy {
     );
   }
 
-  onSearchSelect(event: MatLegacyAutocompleteSelectedEvent) {
+  onSearchSelect(event: MatAutocompleteSelectedEvent) {
     this.searchControl.setValue('');
     this.router.navigate(['/telemetry/parameters/', event.option.value], {
       queryParams: { c: this.yamcs.context }

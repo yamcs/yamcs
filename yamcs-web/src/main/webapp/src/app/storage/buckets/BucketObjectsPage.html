@@ -9,7 +9,7 @@
             color="primary"
             (click)="uploader.click()">
       <mat-icon>file_upload</mat-icon>
-      UPLOAD FILES
+      Upload files
       <input #uploader
              type="file"
              hidden
@@ -20,21 +20,21 @@
             color="primary"
             (click)="createFolder()">
       <mat-icon>create_new_folder</mat-icon>
-      CREATE FOLDER
+      Create folder
     </button>
     <button mat-button
             color="primary"
             (click)="deleteSelectedObjects()"
             [disabled]="!selection.hasValue()">
       <mat-icon>delete</mat-icon>
-      DELETE
+      Delete
     </button>
     <button mat-button
             color="primary"
             (click)="togglePreview()">
       <mat-icon *ngIf="showPreview$ | async">image_not_supported</mat-icon>
       <mat-icon *ngIf="!(showPreview$ | async)">image</mat-icon>
-      PREVIEW PANEL
+      Preview panel
     </button>
   </app-storage-toolbar>
 
@@ -70,16 +70,16 @@
       </mat-sidenav>
       <mat-sidenav-content>
         <div class="panel-content">
-          <app-bucket-page-tabs [bucket]="name"></app-bucket-page-tabs>
+          <app-bucket-page-tabs [bucket]="name" />
           <div *ngIf="breadcrumb$ | async as breadcrumb" style="margin-top: 16px">
             <app-breadcrumb-trail>
               <app-breadcrumb [link]="['/storage/buckets']"
-                              label="Buckets"></app-breadcrumb>
+                              label="Buckets" />
               <app-breadcrumb [link]="['/storage/buckets', name, 'objects']"
-                              [label]="name"></app-breadcrumb>
+                              [label]="name" />
               <app-breadcrumb *ngFor="let item of breadcrumb"
                               [link]="item.route"
-                              [label]="item.name"></app-breadcrumb>
+                              [label]="item.name" />
             </app-breadcrumb-trail>
           </div>
           <table mat-table
@@ -145,7 +145,7 @@
                      download>
                     Download
                   </a>
-                  <mat-divider></mat-divider>
+                  <mat-divider />
                   <button mat-menu-item
                           (click)="deleteFile(item)">
                     Delete

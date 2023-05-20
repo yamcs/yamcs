@@ -21,7 +21,7 @@
   <ng-container *ngIf="algorithm.longDescription">
     <dt>Description</dt>
     <dd>
-      <app-markdown [text]="algorithm.longDescription"></app-markdown>
+      <app-markdown [text]="algorithm.longDescription" />
     </dd>
   </ng-container>
   <ng-container *ngIf="!algorithm.longDescription">
@@ -32,7 +32,7 @@
   </ng-container>
 </dl>
 
-<mat-divider></mat-divider>
+<mat-divider />
 
 <dl class="dl-horizontal">
   <dt>Scope</dt>
@@ -46,12 +46,12 @@
 </dl>
 
 <ng-container *ngIf="status && algorithm.scope === 'GLOBAL'">
-  <mat-divider></mat-divider>
+  <mat-divider />
 
   <dl class="dl-horizontal">
     <dt>Status</dt>
     <dd style="display: flex; align-items: center">
-      <app-algorithm-status [status]="status"></app-algorithm-status>&nbsp;
+      <app-algorithm-status [status]="status" />&nbsp;
       <ng-container *ngIf="!status.errorMessage">OK</ng-container>
       <ng-container *ngIf="status.errorMessage">{{ status.errorMessage }}</ng-container>
     </dd>
@@ -78,7 +78,7 @@
 </ng-container>
 
 <ng-container *ngIf="algorithm.text">
-  <mat-divider></mat-divider>
+  <mat-divider />
   <dl class="dl-horizontal">
     <dt>
       Text
@@ -112,7 +112,7 @@
 </ng-container>
 
 <ng-container *ngIf="algorithm.mathElements">
-  <mat-divider></mat-divider>
+  <mat-divider />
   <dl class="dl-horizontal">
     <dt>Postfix Expression</dt>
     <dd>
@@ -148,7 +148,7 @@
   </dl>
 </ng-container>
 
-<mat-divider></mat-divider>
+<mat-divider />
 
 <dl class="dl-horizontal">
   <dt>Input parameters</dt>
@@ -181,7 +181,7 @@
   </dd>
 </dl>
 
-<mat-divider></mat-divider>
+<mat-divider />
 
 <dl class="dl-horizontal">
   <dt>Output parameters</dt>
@@ -205,7 +205,7 @@
   </dd>
 </dl>
 
-<mat-divider></mat-divider>
+<mat-divider />
 
 <dl class="dl-horizontal">
   <dt>Triggers</dt>

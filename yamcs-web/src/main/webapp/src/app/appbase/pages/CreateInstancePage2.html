@@ -1,4 +1,4 @@
-<app-message-bar #messageBar></app-message-bar>
+<app-message-bar #messageBar />
 
 <mat-toolbar class="top">
   <mat-toolbar-row>
@@ -8,7 +8,7 @@
   </mat-toolbar-row>
 </mat-toolbar>
 
-<app-create-instance-wizard-step step="2"></app-create-instance-wizard-step>
+<app-create-instance-wizard-step step="2" />
 
 <div *ngIf="template$ | async as template" class="form-content ya-form mat-typography">
   <form [formGroup]="form" novalidate>

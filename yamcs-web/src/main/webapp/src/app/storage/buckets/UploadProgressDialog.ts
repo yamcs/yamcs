@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ElementRef, Inject, ViewChild } from '@angular/core';
-import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { Upload } from './Upload';
@@ -18,8 +18,8 @@ export class UploadProgressDialog {
   tableWrapper: ElementRef;
 
   constructor(
-    dialogRef: MatLegacyDialogRef<UploadProgressDialog>,
-    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
+    dialogRef: MatDialogRef<UploadProgressDialog>,
+    @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.uploads$ = data.uploads$.pipe(
       debounceTime(500), // limit updates in the case of batch uploads

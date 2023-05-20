@@ -6,13 +6,12 @@
          class="ya-link ya-header-link">
         {{ spaceSystemName }}
       </a>/{{ algorithm.qualifiedName | shortName }}
-      <app-title-copy [text]="algorithm.qualifiedName"></app-title-copy>
+      <app-title-copy [text]="algorithm.qualifiedName" />
     </ng-container>
   </app-instance-toolbar>
 
   <div class="panel-content">
     <app-algorithm-detail [algorithm]="algorithm"
-                          [readonly]="true">
-    </app-algorithm-detail>
+                          [readonly]="true" />
   </div>
 </app-instance-page>

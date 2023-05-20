@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { MatLegacyDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -56,7 +56,7 @@ export class AlarmsPage implements OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     title: Title,
-    private dialog: MatLegacyDialog,
+    private dialog: MatDialog,
     private authService: AuthService,
     private messageService: MessageService,
   ) {

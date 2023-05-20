@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { BehaviorSubject } from 'rxjs';
 import { PlaybackRequest } from '../client';
@@ -30,7 +30,7 @@ export class GapRequestsPage {
 
   interval$ = new BehaviorSubject<number | null>(null);
   period$ = new BehaviorSubject<number | null>(null);
-  dataSource = new MatLegacyTableDataSource<PlaybackRequest>();
+  dataSource = new MatTableDataSource<PlaybackRequest>();
 
   constructor(
     readonly yamcs: YamcsService,

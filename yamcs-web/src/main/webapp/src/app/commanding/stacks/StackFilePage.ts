@@ -2,7 +2,7 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { KeyValue } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { FormBuilder, UntypedFormGroup } from '@angular/forms';
-import { MatLegacyDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
@@ -95,7 +95,7 @@ export class StackFilePage implements OnDestroy {
   };
 
   constructor(
-    private dialog: MatLegacyDialog,
+    private dialog: MatDialog,
     readonly yamcs: YamcsService,
     private route: ActivatedRoute,
     private router: Router,
@@ -640,6 +640,7 @@ export class StackFilePage implements OnDestroy {
       position: {
         right: '0',
       },
+      panelClass: 'dialog-full-size',
       data: {
         okLabel: 'ADD TO STACK',
         format: this.format
@@ -699,6 +700,7 @@ export class StackFilePage implements OnDestroy {
       position: {
         right: '0',
       },
+      panelClass: 'dialog-full-size',
       data: {
         okLabel: 'UPDATE',
         entry,

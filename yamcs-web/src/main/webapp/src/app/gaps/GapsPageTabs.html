@@ -1,4 +1,4 @@
-<nav mat-tab-nav-bar>
+<nav mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
   <a mat-tab-link
      routerLink="/gaps"
      routerLinkActive
@@ -17,3 +17,6 @@
     REQUESTS
   </a>
 </nav>
+<mat-tab-nav-panel #tabPanel>
+  <router-outlet />
+</mat-tab-nav-panel>

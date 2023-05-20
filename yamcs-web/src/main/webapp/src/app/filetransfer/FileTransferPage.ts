@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { MatLegacyDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -35,7 +35,7 @@ export class FileTransferPage implements OnDestroy {
   constructor(
     readonly yamcs: YamcsService,
     title: Title,
-    private dialog: MatLegacyDialog,
+    private dialog: MatDialog,
     private route: ActivatedRoute,
     private router: Router,
     synchronizer: Synchronizer,
@@ -136,6 +136,7 @@ export class FileTransferPage implements OnDestroy {
       position: {
         right: '0',
       },
+      panelClass: 'dialog-full-size',
       data: { service, }
     });
   }

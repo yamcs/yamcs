@@ -1,12 +1,11 @@
 <div class="panel-content">
   <form [formGroup]="filter">
     <div class="filter-bar">
-      <app-select formControlName="interval" [options]="intervalOptions" icon="access_time">
-      </app-select>
+      <app-select formControlName="interval" [options]="intervalOptions" icon="access_time" />
 
       <ng-container *ngIf="filter.value['interval'] === 'CUSTOM'">
-        <app-date-time-input formControlName="customStart"></app-date-time-input>
-        <app-date-time-input formControlName="customStop"></app-date-time-input>
+        <app-date-time-input formControlName="customStart" />
+        <app-date-time-input formControlName="customStop" />
         <button class="ya-button" (click)="applyCustomDates()" [disabled]="filter.invalid">Apply</button>
       </ng-container>
 
@@ -16,8 +15,7 @@
         </button>
       </ng-container>
 
-      <app-dots *ngIf="dataSource.loading$ | async">
-      </app-dots>
+      <app-dots *ngIf="dataSource.loading$ | async" />
     </div>
   </form>
 
@@ -36,7 +34,7 @@
     </span>
   </div>
 
-  <app-parameter-alarms-table [dataSource]="dataSource"></app-parameter-alarms-table>
+  <app-parameter-alarms-table [dataSource]="dataSource" />
 
   <app-empty-message *ngIf="dataSource.isEmpty()">
     No records found matching current filter in the selected time range.

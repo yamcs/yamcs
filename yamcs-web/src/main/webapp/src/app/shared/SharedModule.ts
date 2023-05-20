@@ -5,34 +5,24 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatBadgeModule } from '@angular/material/badge';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatButtonModule } from '@angular/material/button';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatGridListModule } from '@angular/material/grid-list';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { MatLegacyAutocompleteModule } from '@angular/material/legacy-autocomplete';
-import { MatLegacyButtonModule } from '@angular/material/legacy-button';
-import { MatLegacyCardModule } from '@angular/material/legacy-card';
-import { MatLegacyCheckboxModule } from '@angular/material/legacy-checkbox';
-import { MatLegacyDialogModule } from '@angular/material/legacy-dialog';
-import { MatLegacyInputModule } from '@angular/material/legacy-input';
-import { MatLegacyListModule } from '@angular/material/legacy-list';
-import { MatLegacyMenuModule } from '@angular/material/legacy-menu';
-import { MatLegacyPaginatorModule } from '@angular/material/legacy-paginator';
-import { MatLegacyProgressBarModule } from '@angular/material/legacy-progress-bar';
-import { MatLegacyRadioModule } from '@angular/material/legacy-radio';
-import { MatLegacySelectModule } from '@angular/material/legacy-select';
-import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
-import { MatLegacySliderModule } from '@angular/material/legacy-slider';
-import { MatLegacySnackBarModule } from '@angular/material/legacy-snack-bar';
-import { MatLegacyTableModule } from '@angular/material/legacy-table';
-import { MatLegacyTabsModule } from '@angular/material/legacy-tabs';
-import { MatLegacyTooltipModule } from '@angular/material/legacy-tooltip';
+import { MatListModule } from '@angular/material/list';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSortModule } from '@angular/material/sort';
+import { MatTableModule } from '@angular/material/table';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 import { Breadcrumb } from './breadcrumb/Breadcrumb';
 import { BreadcrumbTrail } from './breadcrumb/BreadcrumbTrail';
@@ -135,34 +125,24 @@ const materialModules = [
   OverlayModule,
   CdkTableModule,
   DragDropModule,
-  MatLegacyAutocompleteModule,
+  MatAutocompleteModule,
   MatBadgeModule,
-  MatLegacyButtonModule,
-  MatButtonToggleModule,
-  MatLegacyCardModule,
-  MatLegacyCheckboxModule,
+  MatButtonModule,
   MatDatepickerModule,
-  MatLegacyDialogModule,
-  MatExpansionModule,
-  MatGridListModule,
+  MatDialogModule,
   MatIconModule,
-  MatLegacyInputModule,
-  MatLegacyListModule,
-  MatLegacyMenuModule,
+  MatListModule,
+  MatMenuModule,
   MatNativeDateModule,
-  MatLegacyPaginatorModule,
-  MatLegacyProgressBarModule,
-  MatLegacyRadioModule,
-  MatLegacySelectModule,
+  MatPaginatorModule,
   MatSidenavModule,
-  MatLegacySliderModule,
-  MatLegacySlideToggleModule,
+  MatSlideToggleModule,
   MatSortModule,
-  MatLegacySnackBarModule,
-  MatLegacyTableModule,
-  MatLegacyTabsModule,
+  MatSnackBarModule,
+  MatTableModule,
+  MatTabsModule,
   MatToolbarModule,
-  MatLegacyTooltipModule,
+  MatTooltipModule,
 ];
 
 const sharedDirectives = [

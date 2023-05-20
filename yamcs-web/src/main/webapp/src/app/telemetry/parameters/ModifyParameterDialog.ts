@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Inject, ViewChild } from '@angular/core';
-import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ColorPalette } from './ColorPalette';
 import { Thickness } from './Thickness';
 
@@ -17,8 +17,8 @@ export class ModifyParameterDialog {
   thickness: Thickness;
 
   constructor(
-    private dialogRef: MatLegacyDialogRef<ModifyParameterDialog>,
-    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
+    private dialogRef: MatDialogRef<ModifyParameterDialog>,
+    @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) { }
 
   select() {

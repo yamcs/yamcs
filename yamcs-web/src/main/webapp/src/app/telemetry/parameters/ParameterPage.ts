@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { MatLegacyDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
@@ -32,7 +32,7 @@ export class ParameterPage implements OnDestroy {
     readonly yamcs: YamcsService,
     private authService: AuthService,
     private messageService: MessageService,
-    private dialog: MatLegacyDialog,
+    private dialog: MatDialog,
     private title: Title,
     private valuePipe: ValuePipe,
     private unitsPipe: UnitsPipe,

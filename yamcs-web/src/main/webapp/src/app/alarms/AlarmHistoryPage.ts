@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as dayjs from 'dayjs';
 import { Dayjs } from 'dayjs';
@@ -54,7 +54,7 @@ export class AlarmHistoryPage {
     { id: 'CUSTOM', label: 'Custom', group: true },
   ];
 
-  dataSource = new MatLegacyTableDataSource<Alarm>();
+  dataSource = new MatTableDataSource<Alarm>();
 
   constructor(
     readonly yamcs: YamcsService,

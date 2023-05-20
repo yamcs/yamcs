@@ -9,7 +9,7 @@
                     [description]="argument.description"
                     [type]="argument.type"
                     [initialValue]="argument.initialValue"
-                    [templateProvider]="templateProvider"></app-argument>
+                    [templateProvider]="templateProvider" />
     </ng-container>
 
     <ng-container *ngFor="let argument of argumentsWithInitial; let first = first">
@@ -19,7 +19,7 @@
                     [type]="argument.type"
                     [initialValue]="argument.initialValue"
                     [templateProvider]="templateProvider"
-                    class="hasInitial"></app-argument>
+                    class="hasInitial" />
     </ng-container>
 
     <ng-container *ngIf="config.collapseInitializedArguments">

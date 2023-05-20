@@ -7,14 +7,14 @@
        routerLink="create"
        [queryParams]="{c: yamcs.context}">
       <mat-icon>add_circle_outline</mat-icon>
-      CREATE VIEW
+      Create view
     </a>
     <button mat-button
             color="primary"
             [disabled]="!isGroupDeleteEnabled()"
             (click)="deleteSelectedViews()">
       <mat-icon>close</mat-icon>
-      DELETE
+      Delete
     </button>
   </app-instance-toolbar>
 

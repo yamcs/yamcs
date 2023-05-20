@@ -1,8 +1,8 @@
-<app-message-bar #messageBar></app-message-bar>
+<app-message-bar #messageBar />
 
 <mat-sidenav-container class="mat-typography"
                        [class.message-bar-visible]="messageBar.show$ | async">
-  <mat-sidenav mode="side" [opened]="sidebar$ | async" [disableClose]="true">
+  <mat-sidenav mode="side" [opened]="true" [disableClose]="true">
     <div class="sidenav-content">
       <mat-toolbar class="top module-title" (click)="searchInput.focus()" style="cursor: text">
         <mat-toolbar-row style="cursor: text">
@@ -69,8 +69,7 @@
         </app-sidebar-nav-item>
 
         <ng-container *ngIf="showAlarmsItem()">
-          <app-alarm-label *ngIf="(connectionInfo$ | async)?.processor?.hasAlarms">
-          </app-alarm-label>
+          <app-alarm-label *ngIf="(connectionInfo$ | async)?.processor?.hasAlarms" />
           <app-sidebar-nav-item *ngIf="!(connectionInfo$ | async)?.processor?.hasAlarms"
                                 routerLink="/alarms"
                                 [queryParams]="{c: yamcs.context}">
@@ -117,7 +116,7 @@
         </app-sidebar-nav-item>
 
         <app-sidebar-nav-group *ngIf="mdbItems.length"
-                               label="Mission Database" icon="auto_stories"
+                               label="Mission database" icon="auto_stories"
                                [active]="mdbActive"
                                [expanded]="mdbExpanded"
                                (toggle)="toggleMdbGroup()">
@@ -134,11 +133,11 @@
                               routerLink="/archive"
                               [queryParams]="{c: yamcs.context}">
           <mat-icon class="item-icon">inventory_2</mat-icon>
-          Archive Browser
+          Archive browser
         </app-sidebar-nav-item>
 
         <ng-container *ngIf="extraItems.length">
-          <mat-divider class="extra"></mat-divider>
+          <mat-divider class="extra" />
           <app-sidebar-nav-item *ngFor="let item of extraItems"
                                 [routerLink]="'/' + item.path"
                                 [queryParams]="{c: yamcs.context}"
@@ -157,6 +156,6 @@
   </mat-sidenav>
 
   <mat-sidenav-content>
-    <router-outlet></router-outlet>
+    <router-outlet />
   </mat-sidenav-content>
 </mat-sidenav-container>

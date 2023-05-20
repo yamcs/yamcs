@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { UpdateTimelineBandRequest } from '../../client/types/timeline';
 import { MessageService } from '../../core/services/MessageService';
@@ -19,11 +19,11 @@ export class EditBandDialog implements OnDestroy {
   private formSubscription: Subscription;
 
   constructor(
-    private dialogRef: MatLegacyDialogRef<EditBandDialog>,
+    private dialogRef: MatDialogRef<EditBandDialog>,
     readonly yamcs: YamcsService,
     private messageService: MessageService,
     formBuilder: UntypedFormBuilder,
-    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
+    @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     const band = data.band;
     this.form = formBuilder.group({

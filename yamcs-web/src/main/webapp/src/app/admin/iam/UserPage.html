@@ -8,14 +8,14 @@
        color="primary"
        routerLink="edit">
       <mat-icon>edit</mat-icon>
-      EDIT USER
+      Edit user
     </a>
     <a mat-button
        color="primary"
        [disabled]="user.identities?.length"
        (click)="showChangeUserPasswordDialog()">
       <mat-icon>account_box</mat-icon>
-      CHANGE PASSWORD
+      Change password
     </a>
   </app-admin-toolbar>
 
@@ -54,7 +54,7 @@
     </dl>
 
     <div class="section-divider">
-      <mat-divider></mat-divider>
+      <mat-divider />
     </div>
     <h4>{{ user.roles?.length || '0' }} assigned roles</h4>
     <ng-container *ngFor="let role of user.roles">
@@ -63,7 +63,7 @@
 
     <ng-container *ngIf="user.identities">
       <div class="section-divider">
-        <mat-divider></mat-divider>
+        <mat-divider />
       </div>
       <h4>External Identities</h4>
       <table yaDataTable>

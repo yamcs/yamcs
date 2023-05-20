@@ -57,7 +57,7 @@
   <ng-container matColumnDef="trace">
     <th mat-header-cell *matHeaderCellDef>Frame</th>
     <td mat-cell *matCellDef="let row">
-      <app-trace-element *ngIf="row.trace" [element]="row.trace[0]"></app-trace-element>
+      <app-trace-element *ngIf="row.trace" [element]="row.trace[0]" />
       <ng-container *ngIf="!row.trace">-</ng-container>
     </td>
   </ng-container>

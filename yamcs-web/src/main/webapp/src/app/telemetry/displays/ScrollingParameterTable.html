@@ -18,7 +18,7 @@
       <app-more *ngIf="showActions">
         <button mat-menu-item (click)="moveLeft.emit(i)">Move left</button>
         <button mat-menu-item (click)="moveRight.emit(i)">Move right</button>
-        <mat-divider></mat-divider>
+        <mat-divider />
         <button mat-menu-item (click)="removeColumn.emit(parameter)">Remove column</button>
       </app-more>
     </th>

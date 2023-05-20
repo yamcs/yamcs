@@ -6,7 +6,7 @@
             color="primary"
             (click)="openPlaybackDialog()">
       <mat-icon>redo</mat-icon>
-      REQUEST PLAYBACK
+      Request playback
     </button>
 
     <button mat-icon-button
@@ -18,19 +18,19 @@
   </app-instance-toolbar>
 
   <div class="panel-content">
-    <app-gaps-page-tabs></app-gaps-page-tabs>
+    <app-gaps-page-tabs />
     <form [formGroup]="filterForm">
       <div class="filter-bar" style="margin-top: 16px">
         <app-multi-select [options]="apidOptions$ | async"
                           formControlName="apid"
-                          emptyOption="Any APID"></app-multi-select>
+                          emptyOption="Any APID" />
         <app-select #intervalSelect
                     [options]="intervalOptions"
                     icon="access_time"
-                    formControlName="interval"></app-select>
+                    formControlName="interval" />
         <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
-          <app-date-time-input formControlName="customStart"></app-date-time-input>
-          <app-date-time-input formControlName="customStop"></app-date-time-input>
+          <app-date-time-input formControlName="customStart" />
+          <app-date-time-input formControlName="customStop" />
           <button (click)="applyCustomDates()"
                   class="ya-button"
                   [disabled]="filterForm.invalid">Apply</button>

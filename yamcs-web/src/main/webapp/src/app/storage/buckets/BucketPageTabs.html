@@ -1,16 +1,19 @@
-<nav mat-tab-nav-bar>
+<nav mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
   <a mat-tab-link
      [routerLink]="['/storage/buckets', bucket, 'objects']"
      routerLinkActive
      #rla="routerLinkActive"
      [active]="rla.isActive">
-    OBJECTS
+    Objects
   </a>
   <a mat-tab-link
      [routerLink]="['/storage/buckets', bucket, 'properties']"
      routerLinkActive
      #rlb="routerLinkActive"
      [active]="rlb.isActive">
-    PROPERTIES
+    Properties
   </a>
 </nav>
+<mat-tab-nav-panel #tabPanel>
+  <router-outlet />
+</mat-tab-nav-panel>

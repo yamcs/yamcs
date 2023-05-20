@@ -6,8 +6,8 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
  * query parameters.
  */
 @Component({
-    template: '<router-outlet></router-outlet>',
-    changeDetection: ChangeDetectionStrategy.OnPush,
+  template: '<router-outlet />',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StackPage {
 

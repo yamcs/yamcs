@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Member, Parameter, ParameterType, Value } from '../../client';
 import { requireFloat, requireInteger } from '../../shared/forms/validators';
 import * as utils from '../../shared/utils';
@@ -16,8 +16,8 @@ export class SetParameterDialog {
   parameter: Parameter;
 
   constructor(
-    private dialogRef: MatLegacyDialogRef<SetParameterDialog>,
-    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
+    private dialogRef: MatDialogRef<SetParameterDialog>,
+    @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.parameter = data.parameter;
     const validators = this.getValidatorsForType(this.parameter.type!);

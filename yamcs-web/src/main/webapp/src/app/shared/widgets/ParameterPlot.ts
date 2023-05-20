@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, EventEmitter, Input, OnDestroy, Output, QueryList, ViewChild } from '@angular/core';
-import { MatLegacyDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import Dygraph from 'dygraphs';
 import { BehaviorSubject } from 'rxjs';
 import { Parameter } from '../../client';
@@ -7,10 +7,10 @@ import { ModifyParameterDialog } from '../../telemetry/parameters/ModifyParamete
 import { subtractDuration } from '../utils';
 import CrosshairPlugin from './CrosshairPlugin';
 import { DyDataSource } from './DyDataSource';
-import { analyzeStaticValueRanges, DyLegendData, TimestampTrackerData } from './dygraphs';
 import GridPlugin from './GridPlugin';
 import { NamedParameterType } from './NamedParameterType';
 import { ParameterSeries } from './ParameterSeries';
+import { DyLegendData, TimestampTrackerData, analyzeStaticValueRanges } from './dygraphs';
 
 @Component({
   selector: 'app-parameter-plot',
@@ -91,7 +91,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   legendData$ = new BehaviorSubject<DyLegendData | null>(null);
   timestampTrackerData$ = new BehaviorSubject<TimestampTrackerData | null>(null);
 
-  constructor(private dialog: MatLegacyDialog) {
+  constructor(private dialog: MatDialog) {
   }
 
   ngAfterViewInit() {

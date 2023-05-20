@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
-import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject } from 'rxjs';
 import { Transfer } from '../client';
 import { MessageService } from '../core/services/MessageService';
@@ -36,7 +36,7 @@ export class FileTransferTable implements OnChanges {
   serviceName: string;
 
   @Input()
-  dataSource = new MatLegacyTableDataSource<TransferItem>();
+  dataSource = new MatTableDataSource<TransferItem>();
 
   @Input()
   showActions = false;

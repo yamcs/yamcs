@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import { MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-application-credentials-dialog',
@@ -8,6 +8,6 @@ import { MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
 })
 export class ApplicationCredentialsDialog {
 
-  constructor(@Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any) {
+  constructor(@Inject(MAT_DIALOG_DATA) readonly data: any) {
   }
 }

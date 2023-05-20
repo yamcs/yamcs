@@ -2,7 +2,7 @@ tr.failed td {
   color: red;
 }
 
-h3.mat-dialog-title {
+h3.mat-mdc-dialog-title {
   background-color: #24292e;
   color: #fff;
   margin: 0;

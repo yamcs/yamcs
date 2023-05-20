@@ -21,3 +21,11 @@ mat-toolbar-row {
 .toolbar-text {
   font-size: 12px;
 }
+
+.processor-time {
+  font-size: 12px;
+}
+
+.processor-time.paused {
+  font-style: italic;
+}

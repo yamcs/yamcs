@@ -1,13 +1,13 @@
 <app-instance-page noscroll="true">
   <app-instance-toolbar>
-    Archive Browser
+    Archive browser
     &nbsp;&nbsp;&nbsp;
     <button mat-button
             color="primary"
             (click)="replayRange()"
             [disabled]="!(rangeSelection$ | async)">
       <mat-icon>video_settings</mat-icon>
-      REPLAY RANGE
+      Replay range
     </button>
 
     <ng-container *ngIf="processor$ | async as processor">
@@ -17,7 +17,7 @@
               (click)="enableLoop(processor, replayRequest.endAction !== 'LOOP')"
               [disabled]="!replayRequest.start || !replayRequest.stop">
         <mat-icon>{{ replayRequest.endAction === 'LOOP' ? 'repeat_on' : 'repeat' }}</mat-icon>
-        REPEAT: {{ replayRequest.endAction === 'LOOP' ? 'ON' : 'OFF' }}
+        Repeat: {{ replayRequest.endAction === 'LOOP' ? 'on' : 'off' }}
       </button>
     </ng-container>
 
@@ -26,7 +26,7 @@
             (click)="downloadDump()"
             [disabled]="!(rangeSelection$ | async)">
       <mat-icon>file_download</mat-icon>
-      DOWNLOAD DUMP
+      Download dump
     </button>
 
     <button mat-icon-button

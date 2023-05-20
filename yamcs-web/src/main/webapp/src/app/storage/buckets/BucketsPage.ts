@@ -1,9 +1,9 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { MatLegacyDialog } from '@angular/material/legacy-dialog';
-import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Bucket, StorageClient } from '../../client';
@@ -36,14 +36,14 @@ export class BucketsPage implements AfterViewInit {
     'actions',
   ];
 
-  dataSource = new MatLegacyTableDataSource<Bucket>();
+  dataSource = new MatTableDataSource<Bucket>();
   selection = new SelectionModel<Bucket>(true, []);
 
   private storageClient: StorageClient;
 
   constructor(
     private yamcs: YamcsService,
-    private dialog: MatLegacyDialog,
+    private dialog: MatDialog,
     private router: Router,
     private route: ActivatedRoute,
     private messageService: MessageService,

@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { NavigationEnd, Router } from '@angular/router';
-import { Observable, Subscription, filter } from 'rxjs';
+import { Subscription, filter } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
@@ -17,7 +17,6 @@ import { User } from '../../shared/User';
 export class AdminPage implements OnDestroy {
 
   user: User;
-  sidebar$: Observable<boolean>;
 
   config: WebsiteConfig;
 
@@ -39,7 +38,6 @@ export class AdminPage implements OnDestroy {
   ) {
     this.config = configService.getConfig();
     this.user = authService.getUser()!;
-    this.sidebar$ = preferenceStore.getPreference$('sidebar');
     const resourceUrl = `${baseHref}static/rocksdb.svg`;
     const safeResourceUrl = sanitizer.bypassSecurityTrustResourceUrl(resourceUrl);
     iconRegistry.addSvgIcon('rocksdb', safeResourceUrl);

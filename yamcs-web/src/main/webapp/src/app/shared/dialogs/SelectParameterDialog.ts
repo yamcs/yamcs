@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Inject, OnInit } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
-import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
 import { debounceTime, map, switchMap } from 'rxjs/operators';
 import { Parameter } from '../../client';
@@ -34,9 +34,9 @@ export class SelectParameterDialog implements OnInit {
   limit: number;
 
   constructor(
-    private dialogRef: MatLegacyDialogRef<SelectParameterDialog>,
+    private dialogRef: MatDialogRef<SelectParameterDialog>,
     private yamcs: YamcsService,
-    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: SelectParameterOptions,
+    @Inject(MAT_DIALOG_DATA) readonly data: SelectParameterOptions,
     private memberPathPipe: MemberPathPipe,
   ) {
     this.label = data.label || 'Search parameter';

@@ -1,6 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute } from '@angular/router';
 import { Table } from '../../../../client';
 import { YamcsService } from '../../../../core/services/YamcsService';
@@ -16,7 +16,7 @@ export class DatabaseTablesTab implements AfterViewInit {
 
   displayedColumns = ['name', 'actions'];
 
-  dataSource = new MatLegacyTableDataSource<Table>();
+  dataSource = new MatTableDataSource<Table>();
 
   constructor(route: ActivatedRoute, readonly yamcs: YamcsService) {
     const parent = route.snapshot.parent!;

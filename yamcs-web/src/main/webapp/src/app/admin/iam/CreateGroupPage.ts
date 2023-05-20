@@ -1,7 +1,7 @@
 import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatLegacyDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
@@ -26,7 +26,7 @@ export class CreateGroupPage {
     private router: Router,
     private route: ActivatedRoute,
     private yamcs: YamcsService,
-    private dialog: MatLegacyDialog,
+    private dialog: MatDialog,
     private messageService: MessageService,
     readonly location: Location,
   ) {

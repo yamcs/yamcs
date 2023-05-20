@@ -8,11 +8,10 @@
                          placeholder="Filter containers"
                          (onArrowDown)="selectNext()"
                          (onArrowUp)="selectPrevious()"
-                         (onEnter)="applySelection()">
-      </app-search-filter>
+                         (onEnter)="applySelection()" />
       <app-column-chooser #columnChooser
                           [columns]="columns"
-                          preferenceKey="containers"></app-column-chooser>
+                          preferenceKey="containers" />
     </div>
 
     <table mat-table
@@ -26,8 +25,7 @@
           <a [routerLink]="['/mdb/containers', container.qualifiedName]"
              [queryParams]="{c: yamcs.context}">
             <app-highlight [text]="shortName ? container.name : container.qualifiedName"
-                           [term]="filterControl.value">
-            </app-highlight>
+                           [term]="filterControl.value" />
           </a>
         </td>
       </ng-container>
@@ -102,8 +100,7 @@
     <mat-paginator [pageSize]="pageSize"
                    [hidePageSize]="true"
                    [showFirstLastButtons]="true"
-                   [length]="dataSource.totalSize$ | async">
-    </mat-paginator>
+                   [length]="dataSource.totalSize$ | async" />
   </div>
   <ng-template #empty>
     <div class="panel-content">

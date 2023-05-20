@@ -5,8 +5,7 @@
       chars:
       <app-interval [left]="type.minChars"
                     [right]="type.maxChars"
-                    [singleValueIfEqual]="true">
-      </app-interval>
+                    [singleValueIfEqual]="true" />
     </div>
     <div class="item" *ngIf="type?.unitSet">
       {{ type.unitSet | units }}
@@ -19,7 +18,7 @@
     {{ description }}
   </app-help>
 
-  <app-errors #err [controlName]="controlName"></app-errors>
+  <app-errors #err [controlName]="controlName" />
 
   <input [formControl]="formControl"
          type="text"

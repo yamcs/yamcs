@@ -12,7 +12,7 @@
             color="primary"
             [disabled]="!((dataSource.packets$ | async)?.length)">
       <mat-icon>save_alt</mat-icon>
-      EXPORT
+      Export
     </button>
     <button mat-icon-button
             matTooltip="Jump to now"
@@ -65,14 +65,14 @@
             <button mat-menu-item (click)="copyBinary(detailPacket)">
               Copy Binary
             </button>
-            <mat-divider></mat-divider>
+            <mat-divider />
             <app-download-menu-item [link]="detailPacket | packetDownloadLink">
               Download
             </app-download-menu-item>
           </app-more>
         </div>
         <div class="block" style="margin-top: 4px">
-          <app-hex #hexdump [base64String]="detailPacket.packet"></app-hex>
+          <app-hex #hexdump [base64String]="detailPacket.packet" />
         </div>
       </div>
     </ng-container>
@@ -87,16 +87,16 @@
       <form [formGroup]="filterForm">
         <div class="filter-bar">
           <app-select [options]="nameOptions$ | async"
-                      formControlName="name"></app-select>
+                      formControlName="name" />
           <app-select [options]="linkOptions$ | async"
-                      formControlName="link"></app-select>
+                      formControlName="link" />
           <app-select #intervalSelect
                       [options]="intervalOptions"
                       icon="access_time"
-                      formControlName="interval"></app-select>
+                      formControlName="interval" />
           <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
-            <app-date-time-input formControlName="customStart"></app-date-time-input>
-            <app-date-time-input formControlName="customStop"></app-date-time-input>
+            <app-date-time-input formControlName="customStart" />
+            <app-date-time-input formControlName="customStop" />
             <button (click)="applyCustomDates()"
                     class="ya-button"
                     [disabled]="filterForm.invalid">Apply</button>
@@ -108,10 +108,9 @@
           </ng-container>
           <app-column-chooser #columnChooser
                               [columns]="columns"
-                              preferenceKey="tmPackets"></app-column-chooser>
+                              preferenceKey="tmPackets" />
 
-          <app-dots *ngIf="dataSource.loading$ | async">
-          </app-dots>
+          <app-dots *ngIf="dataSource.loading$ | async" />
         </div>
       </form>
       <table mat-table
@@ -180,7 +179,7 @@
               <button mat-menu-item (click)="copyBinary(packet)">
                 Copy Binary
               </button>
-              <mat-divider></mat-divider>
+              <mat-divider />
               <app-download-menu-item [link]="packet | packetDownloadLink">
                 Download
               </app-download-menu-item>

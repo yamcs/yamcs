@@ -1,0 +1,2 @@
+Template tags in the index.html are interpreted server-side.
+It looks a bit like Angular syntax, but it's not.

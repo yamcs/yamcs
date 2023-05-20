@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { AbstractControl, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
-import { MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { UserInfo } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
@@ -21,7 +21,7 @@ export class ChangeUserPasswordDialog {
   user: UserInfo;
 
   constructor(
-    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
+    @Inject(MAT_DIALOG_DATA) readonly data: any,
     private yamcs: YamcsService,
     formBuilder: UntypedFormBuilder,
   ) {

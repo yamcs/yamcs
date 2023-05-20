@@ -10,13 +10,13 @@
   </app-instance-toolbar>
 
   <div class="panel-content">
-    <app-gaps-page-tabs></app-gaps-page-tabs>
+    <app-gaps-page-tabs />
 
     <dl class="dl-horizontal">
       <dt>Automated playback:</dt>
       <dd>
         <ng-container *ngIf="interval$ | async as interval">Each {{ interval | duration }}</ng-container>
-        <ng-container *ngIf="!(interval$ | async)"></ng-container>
+        <ng-container *ngIf="!(interval$ | async)">-</ng-container>
       </dd>
       <dt>Lookback period:</dt>
       <dd>

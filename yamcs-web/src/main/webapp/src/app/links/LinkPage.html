@@ -10,7 +10,7 @@
             [disabled]="!link.disabled"
             (click)="enableLink(link.name)">
       <mat-icon>link</mat-icon>
-      ENABLE
+      Enable
     </button>
     <button mat-button
             color="primary"
@@ -18,14 +18,13 @@
             [disabled]="link.disabled"
             (click)="disableLink(link.name)">
       <mat-icon>link_off</mat-icon>
-      DISABLE
+      Disable
     </button>
     <button mat-button
             color="primary"
             *ngIf="mayControlLinks()"
             [matMenuTriggerFor]="moreActions">
-      MORE
-      <mat-icon>arrow_drop_down</mat-icon>
+      More ▾
     </button>
     <mat-menu #moreActions class="ya-menu" yPosition="below" [overlapTrigger]="false">
       <ng-template matMenuContent>
@@ -34,7 +33,7 @@
           Reset counters
         </button>
         <ng-container *ngIf="link.actions">
-          <mat-divider></mat-divider>
+          <mat-divider />
           <ng-container *ngFor="let action of link.actions">
             <button mat-menu-item
                     [disabled]="!action.enabled"
@@ -56,7 +55,7 @@
       <dd>{{ link.type }}</dd>
       <dt>Status</dt>
       <dd style="display: flex; align-items: center">
-        <app-link-status [link]="link"></app-link-status>&nbsp;
+        <app-link-status [link]="link" />&nbsp;
         {{ link.status }}
       </dd>
       <dt>In count</dt>
@@ -69,7 +68,7 @@
 
     <ng-container *ngIf="link.extra">
       <div class="section-divider">
-        <mat-divider></mat-divider>
+        <mat-divider />
       </div>
       <dl class="dl-horizontal">
         <ng-container *ngFor="let entry of link.extra | keyvalue">
@@ -90,7 +89,7 @@
 
     <ng-container *ngIf="link.parameters">
       <div class="section-divider">
-        <mat-divider></mat-divider>
+        <mat-divider />
       </div>
       <h4>System parameters</h4>
       <ng-container *ngFor="let parameter of link.parameters">
@@ -105,7 +104,7 @@
     <ng-container *ngIf="cop1Config$ | async as config">
       <ng-container *ngIf="cop1Status$ | async as status">
         <div class="section-divider">
-          <mat-divider></mat-divider>
+          <mat-divider />
         </div>
         <h4>
           COP-1

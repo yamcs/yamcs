@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Option } from '../../shared/forms/Select';
@@ -19,11 +19,11 @@ export class CreateItemDialog {
   form: UntypedFormGroup;
 
   constructor(
-    private dialogRef: MatLegacyDialogRef<CreateItemDialog>,
+    private dialogRef: MatDialogRef<CreateItemDialog>,
     formBuilder: UntypedFormBuilder,
     private yamcs: YamcsService,
     private messageService: MessageService,
-    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
+    @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.form = formBuilder.group({
       name: ['', Validators.required],

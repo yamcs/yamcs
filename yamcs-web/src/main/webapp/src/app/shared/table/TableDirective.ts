@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, HostBinding, ViewEncapsulation } fr
  */
 @Component({
   selector: 'table[yaTable]',
-  template: '<ng-content></ng-content>',
+  template: '<ng-content />',
   styles: [`
     table.ya-table {
       border-spacing: 0;

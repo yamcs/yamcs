@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output } from '@angular/core';
-import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { Subscription } from 'rxjs';
 import { ParameterValue } from '../../client';
 import { Synchronizer } from '../../core/services/Synchronizer';
@@ -40,7 +40,7 @@ export class MultipleParameterTable implements OnInit, OnChanges, OnDestroy {
   @Output()
   moveDown = new EventEmitter<number>();
 
-  dataSource = new MatLegacyTableDataSource<ParameterTableRecord>([]);
+  dataSource = new MatTableDataSource<ParameterTableRecord>([]);
 
   private syncSubscription: Subscription;
 

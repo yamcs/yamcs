@@ -3,7 +3,7 @@
     Send a command
   </app-instance-toolbar>
 
-  <app-send-command-wizard-step step="2"></app-send-command-wizard-step>
+  <app-send-command-wizard-step step="2" />
 
   <div class="form-content">
 
@@ -23,7 +23,7 @@
         <ng-container *ngIf="command.longDescription">
           <dt>Description</dt>
           <dd>
-            <app-markdown [text]="command.longDescription"></app-markdown>
+            <app-markdown [text]="command.longDescription" />
           </dd>
         </ng-container>
         <ng-container *ngIf="!command.longDescription">
@@ -37,7 +37,7 @@
       <dt>Significance</dt>
       <dd>
         <ng-container *ngIf="(command | effectiveSignificance) as significance; else dash">
-          <app-significance-level [level]="significance.consequenceLevel"></app-significance-level>
+          <app-significance-level [level]="significance.consequenceLevel" />
           &nbsp;&nbsp;{{ significance.reasonForWarning }}
         </ng-container>
       </dd>
@@ -69,8 +69,7 @@
               </span>
               <app-live-expression #expr
                                    [expression]="constraint.expression"
-                                   [style.display]="'none'">
-              </app-live-expression>
+                                   [style.display]="'none'" />
             </td>
           </tr>
         </table>
@@ -82,7 +81,7 @@
       <h3>Arguments</h3>
     </ng-container>
     <app-command-form #commandForm [command]="command$ | async"
-                      [templateProvider]="templateProvider$ | async"></app-command-form>
+                      [templateProvider]="templateProvider$ | async" />
     <p>&nbsp;</p>
     <mat-toolbar>
       <button class="ya-button"

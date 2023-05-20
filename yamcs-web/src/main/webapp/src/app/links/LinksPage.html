@@ -8,7 +8,7 @@
             (click)="enableSelectedLinks()"
             [disabled]="!allowGroupEnable()">
       <mat-icon>link</mat-icon>
-      ENABLE
+      Enable
     </button>
     <button mat-button
             color="primary"
@@ -16,7 +16,7 @@
             (click)="disableSelectedLinks()"
             [disabled]="!allowGroupDisable()">
       <mat-icon>link_off</mat-icon>
-      DISABLE
+      Disable
     </button>
 
     <button mat-button
@@ -24,8 +24,7 @@
             *ngIf="mayControlLinks()"
             [disabled]="selection.isEmpty()"
             [matMenuTriggerFor]="moreActions">
-      MORE
-      <mat-icon>arrow_drop_down</mat-icon>
+      More ▾
     </button>
     <mat-menu #moreActions class="ya-menu" yPosition="below" [overlapTrigger]="false">
       <ng-template matMenuContent>
@@ -35,7 +34,7 @@
         </button>
         <ng-container *ngIf="detailLink$ | async as selectedItem">
           <ng-container *ngIf="selectedItem.link.actions">
-            <mat-divider></mat-divider>
+            <mat-divider />
             <ng-container *ngFor="let action of selectedItem.link.actions">
               <button mat-menu-item
                       [disabled]="!action.enabled"
@@ -58,7 +57,7 @@
         Link Detail
       </app-detail-toolbar>
       <div style="padding: 0 16px">
-        <app-link-detail [link]="selectedItem.link"></app-link-detail>
+        <app-link-detail [link]="selectedItem.link" />
       </div>
     </ng-container>
     <ng-template #noSelection>
@@ -73,17 +72,16 @@
 
   <div class="table-wrapper">
     <div class="panel-content">
-      <app-links-page-tabs></app-links-page-tabs>
+      <app-links-page-tabs />
       <div class="filter-bar" style="margin-top: 16px">
         <app-search-filter [formControl]="filterControl"
                            placeholder="Filter links"
                            (onArrowDown)="selectNext()"
                            (onArrowUp)="selectPrevious()"
-                           (onEnter)="applySelection()">
-        </app-search-filter>
+                           (onEnter)="applySelection()" />
         <app-column-chooser #columnChooser
                             [columns]="columns"
-                            preferenceKey="links"></app-column-chooser>
+                            preferenceKey="links" />
       </div>
       <table mat-table
              [dataSource]="dataSource"
@@ -108,13 +106,12 @@
             <div style="display: inline-block; margin-right: 10px;"
                  *ngIf="row.link.parentName">
               <app-link-status [link]="row.link"
-                               [parentLink]="row.parentLink"></app-link-status>
+                               [parentLink]="row.parentLink" />
             </div>
             <a [routerLink]="['/links', row.link.name]"
                [queryParams]="{c: yamcs.context}">
               <app-highlight [text]="row.link.name"
-                             [term]="filterControl.value">
-              </app-highlight>
+                             [term]="filterControl.value" />
             </a>
             <button mat-stroked-button class="expandable"
                     *ngIf="row.hasChildren"
@@ -129,15 +126,14 @@
           <th mat-header-cell *matHeaderCellDef>Class</th>
           <td mat-cell *matCellDef="let row">
             <app-highlight [text]="row.link.type"
-                           [term]="filterControl.value">
-            </app-highlight>
+                           [term]="filterControl.value" />
           </td>
         </ng-container>
 
         <ng-container matColumnDef="status">
           <th mat-header-cell *matHeaderCellDef class="status"></th>
           <td mat-cell *matCellDef="let row" class="status" style="line-height: 0">
-            <app-link-status *ngIf="!row.link.parentName" [link]="row.link"></app-link-status>
+            <app-link-status *ngIf="!row.link.parentName" [link]="row.link" />
           </td>
         </ng-container>
 
@@ -176,13 +172,13 @@
                       [disabled]="row.link.status === 'DISABLED'">
                 Disable link
               </button>
-              <mat-divider></mat-divider>
+              <mat-divider />
               <button mat-menu-item
                       (click)="resetCounters(row.link.name)">
                 Reset counters
               </button>
               <ng-container *ngIf="row.link.actions">
-                <mat-divider></mat-divider>
+                <mat-divider />
                 <button *ngFor="let action of (row.link.actions || [])"
                         mat-menu-item
                         (click)="runAction(row.link.name, action.id)"
@@ -206,16 +202,16 @@
 
       <div class="legend">
         <div class="legend-item">
-          <app-led color="rgba(0, 100, 0)" [fade]="false"></app-led> OK
+          <app-led color="rgba(0, 100, 0)" [fade]="false" /> OK
         </div>
         <div class="legend-item">
-          <app-led color="rgba(0, 255, 0)" [fade]="false"></app-led> OK, activity
+          <app-led color="rgba(0, 255, 0)" [fade]="false" /> OK, activity
         </div>
         <div class="legend-item">
-          <app-led color="red" [fade]="false"></app-led> Error
+          <app-led color="red" [fade]="false" /> Error
         </div>
         <div class="legend-item">
-          <app-led color="#aaa" [fade]="false"></app-led> Disabled
+          <app-led color="#aaa" [fade]="false" /> Disabled
         </div>
       </div>
     </div>

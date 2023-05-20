@@ -1,4 +1,4 @@
-<nav mat-tab-nav-bar>
+<nav mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
   <a mat-tab-link
      routerLink="/links"
      routerLinkActive
@@ -6,7 +6,7 @@
      #rla="routerLinkActive"
      [active]="rla.isActive"
      [queryParams]="{c: yamcs.context}">
-    LINKS
+    Links
   </a>
   <a mat-tab-link
      routerLink="/links/log"
@@ -14,6 +14,9 @@
      #rlb="routerLinkActive"
      [active]="rlb.isActive"
      [queryParams]="{c: yamcs.context}">
-    ACTION LOG
+    Action log
   </a>
 </nav>
+<mat-tab-nav-panel #tabPanel>
+  <router-outlet />
+</mat-tab-nav-panel>

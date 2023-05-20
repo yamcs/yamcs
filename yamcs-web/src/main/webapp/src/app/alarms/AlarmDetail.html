@@ -23,7 +23,7 @@
 
 <div class="block-title">Severity</div>
 <div class="block">
-  <app-alarm-level [level]="alarm.severity"></app-alarm-level>
+  <app-alarm-level [level]="alarm.severity" />
   {{ alarm.severity }}
 </div>
 
@@ -34,23 +34,23 @@
 
 <ng-container *ngIf="alarm.parameterDetail as parameterDetail">
   <br>
-  <mat-divider></mat-divider>
+  <mat-divider />
 
   <div class="block-title">Trigger value</div>
   <div class="block">
-    <app-alarm-level [level]="alarm.severity" [grayscale]="true"></app-alarm-level>
+    <app-alarm-level [level]="alarm.severity" [grayscale]="true" />
     &nbsp;{{ parameterDetail.triggerValue.engValue | value }}
     <span *ngIf="parameterDetail.triggerValue.rangeCondition === 'LOW'">&#8595;</span>
     <span *ngIf="parameterDetail.triggerValue.rangeCondition === 'HIGH'">&#8593;</span>
   </div>
 
   <br>
-  <mat-divider></mat-divider>
+  <mat-divider />
 
   <div class="block-title">Live value</div>
   <div class="block">
     <app-expirable [pval]="parameterDetail.currentValue">
-      <app-alarm-level [level]="parameterDetail.currentValue.monitoringResult" [grayscale]="true"></app-alarm-level>
+      <app-alarm-level [level]="parameterDetail.currentValue.monitoringResult" [grayscale]="true" />
       &nbsp;{{ parameterDetail.currentValue.engValue | value }}
       <span *ngIf="parameterDetail.currentValue.rangeCondition === 'LOW'">&#8595;</span>
       <span *ngIf="parameterDetail.currentValue.rangeCondition === 'HIGH'">&#8593;</span>
@@ -60,7 +60,7 @@
 
 <ng-container *ngIf="alarm.eventDetail as eventDetail">
   <br>
-  <mat-divider></mat-divider>
+  <mat-divider />
 
   <div class="block-title">Trigger event</div>
   <div class="block">
@@ -70,7 +70,7 @@
 
 <ng-container *ngIf="alarm.acknowledgeInfo">
   <br>
-  <mat-divider></mat-divider>
+  <mat-divider />
 
   <div class="block-title">Acknowledged by {{ alarm.acknowledgeInfo.acknowledgedBy }}</div>
   <div class="block">
@@ -85,7 +85,7 @@
 
 <ng-container *ngIf="alarm.shelveInfo">
   <br>
-  <mat-divider></mat-divider>
+  <mat-divider />
 
   <div class="block-title">Shelved by {{ alarm.shelveInfo.shelvedBy }}</div>
   <div class="block">

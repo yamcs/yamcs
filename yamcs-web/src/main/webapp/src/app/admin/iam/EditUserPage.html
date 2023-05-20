@@ -5,44 +5,44 @@
 
   <div class="form-content ya-form">
     <form [formGroup]="form" novalidate autocomplete="off">
-      <label>
+      <div class="label">
         Username<br>
         <input disabled type="text" [value]="user.name">
-      </label>
+      </div>
       <br>
-      <label>
+      <div class="label">
         Display name<br>
         <input formControlName="displayName" type="text">
         <span *ngIf="user.identities && user.identities.length > 0" class="hint">
           This user has an external identity. Changes to this field may get overwritten on next login.
         </span>
-      </label>
+      </div>
       <br>
-      <label>
+      <div class="label">
         Email<br>
         <input formControlName="email" type="text">
         <span *ngIf="user.identities && user.identities.length > 0" class="hint">
           This user has an external identity. Changes to this field may get overwritten on next login.
         </span>
-      </label>
+      </div>
       <br>
-      <label>
+      <div class="label">
         Active<br>
-        <mat-slide-toggle formControlName="active"></mat-slide-toggle><br>
+        <mat-slide-toggle formControlName="active" /><br>
         <span class="hint">Inactive users are considered "blocked". They are not or no longer able to login.</span>
-      </label>
+      </div>
       <br>
-      <label>
+      <div class="label">
         Superuser<br>
-        <mat-slide-toggle formControlName="superuser"></mat-slide-toggle><br>
+        <mat-slide-toggle formControlName="superuser" /><br>
         <span class="hint">Superusers bypass any permission checks. This attribute is intended for system administrators
           only.</span>
-      </label>
+      </div>
 
       <p>&nbsp;</p>
       <button mat-stroked-button (click)="showAddRolesDialog()">
         <mat-icon>add_circle_outline</mat-icon>
-        ADD ROLES
+        Add roles
       </button>
 
       <p>&nbsp;</p>

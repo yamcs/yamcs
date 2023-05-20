@@ -1,6 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, ViewChild } from '@angular/core';
-import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { UserInfo } from '../../client';
 
 @Component({
@@ -31,7 +31,7 @@ export class UsersTable implements AfterViewInit, OnChanges {
   @ViewChild(MatSort)
   sort: MatSort;
 
-  dataSource = new MatLegacyTableDataSource<UserInfo>();
+  dataSource = new MatTableDataSource<UserInfo>();
 
   ngAfterViewInit() {
     this.dataSource.filterPredicate = (user, filter) => {

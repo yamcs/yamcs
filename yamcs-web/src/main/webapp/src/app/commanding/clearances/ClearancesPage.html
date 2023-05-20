@@ -14,12 +14,12 @@
             [disabled]="!isGroupChangeLevelEnabled()"
             (click)="openChangeLevelDialog()">
       <mat-icon>how_to_reg</mat-icon>
-      CHANGE LEVEL
+      Change level
     </button>
   </app-instance-toolbar>
 
   <div class="panel-content">
-    <app-clearances-page-tabs></app-clearances-page-tabs>
+    <app-clearances-page-tabs />
     <table mat-table
            *ngIf="dataSource"
            [dataSource]="dataSource"
@@ -62,8 +62,7 @@
         <td mat-cell *matCellDef="let clearance">
           <ng-container *ngIf="!clearance.level">No clearance</ng-container>
           <ng-container *ngIf="clearance.level">
-            <app-significance-level [level]="clearance.level" [grayscale]="true">
-            </app-significance-level>
+            <app-significance-level [level]="clearance.level" [grayscale]="true" />
           </ng-container>
         </td>
       </ng-container>
@@ -90,7 +89,6 @@
     </table>
     <mat-paginator [pageSize]="100"
                    [hidePageSize]="true"
-                   [showFirstLastButtons]="true">
-    </mat-paginator>
+                   [showFirstLastButtons]="true" />
   </div>
 </app-instance-page>

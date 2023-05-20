@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, HostBinding, OnDestroy } from '@angular/core';
-import { MatLegacyDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
@@ -8,8 +8,8 @@ import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, SiteLink } from '../../core/services/ConfigService';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
-import { SelectInstanceDialog } from '../../shared/dialogs/SelectInstanceDialog';
 import { User } from '../../shared/User';
+import { SelectInstanceDialog } from '../../shared/dialogs/SelectInstanceDialog';
 
 
 @Component({
@@ -32,9 +32,8 @@ export class AppComponent implements OnDestroy {
   connected$: Observable<boolean>;
   user$: Observable<User | null>;
 
-  sidebar$: Observable<boolean>;
   showMdbItem$ = new BehaviorSubject<boolean>(false);
-  showMenuToggle$: Observable<boolean>;
+  sidebar$: Observable<boolean>;
 
   userSubscription: Subscription;
 
@@ -44,7 +43,7 @@ export class AppComponent implements OnDestroy {
     route: ActivatedRoute,
     private authService: AuthService,
     private preferenceStore: PreferenceStore,
-    private dialog: MatLegacyDialog,
+    private dialog: MatDialog,
     configService: ConfigService,
   ) {
     this.tag = configService.getTag();
@@ -62,9 +61,7 @@ export class AppComponent implements OnDestroy {
       }
     });
 
-    this.sidebar$ = preferenceStore.getPreference$('sidebar');
-
-    this.showMenuToggle$ = router.events.pipe(
+    this.sidebar$ = router.events.pipe(
       filter(evt => evt instanceof NavigationEnd),
       map(evt => {
         let child = route;

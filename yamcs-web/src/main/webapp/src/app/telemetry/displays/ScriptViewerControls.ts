@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { MatLegacySnackBar } from '@angular/material/legacy-snack-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService } from '../../core/services/ConfigService';
@@ -17,7 +17,7 @@ export class ScriptViewerControls {
   viewer: ScriptViewer;
 
   constructor(
-    private snackbar: MatLegacySnackBar,
+    private snackbar: MatSnackBar,
     private authService: AuthService,
     configService: ConfigService,
   ) {

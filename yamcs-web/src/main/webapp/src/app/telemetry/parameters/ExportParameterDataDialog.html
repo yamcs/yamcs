@@ -4,18 +4,17 @@
   <form [formGroup]="form">
     <label>
       Start
-      <app-date-time-input formControlName="start"></app-date-time-input>
+      <app-date-time-input formControlName="start" />
     </label>
     <br>
     <label>
       Stop
-      <app-date-time-input formControlName="stop"></app-date-time-input>
+      <app-date-time-input formControlName="stop" />
     </label>
     <br>
     <label>
       CSV column delimiter<br>
-      <app-select formControlName="delimiter" [options]="delimiterOptions">
-      </app-select>
+      <app-select formControlName="delimiter" [options]="delimiterOptions" />
     </label>
   </form>
 </mat-dialog-content>

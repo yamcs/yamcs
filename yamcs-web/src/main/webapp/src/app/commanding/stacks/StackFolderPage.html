@@ -7,14 +7,14 @@
             color="primary"
             (click)="createStack()">
       <mat-icon>add_circle_outline</mat-icon>
-      CREATE STACK
+      Create stack
     </button>
     <button mat-button
             *ngIf="mayManageStacks()"
             color="primary"
             (click)="openUploadDialog()">
       <mat-icon>file_upload</mat-icon>
-      UPLOAD STACK
+      Upload stack
       <input #uploader
              type="file"
              hidden
@@ -27,7 +27,7 @@
             color="primary"
             (click)="createFolder()">
       <mat-icon>create_new_folder</mat-icon>
-      CREATE FOLDER
+      Create folder
     </button>
     <button mat-button
             *ngIf="mayManageStacks()"
@@ -35,7 +35,7 @@
             (click)="deleteSelectedStacks()"
             [disabled]="!selection.hasValue()">
       <mat-icon>delete</mat-icon>
-      DELETE
+      Delete
     </button>
   </app-instance-toolbar>
 
@@ -56,11 +56,11 @@
         <app-breadcrumb-trail *ngIf="breadcrumb.length">
           <app-breadcrumb link="/commanding/stacks/browse"
                           [queryParams]="{c: yamcs.context}"
-                          icon="account_tree"></app-breadcrumb>
+                          icon="account_tree" />
           <app-breadcrumb *ngFor="let item of breadcrumb"
                           [link]="item.route"
                           [queryParams]="{c: yamcs.context}"
-                          [label]="item.name"></app-breadcrumb>
+                          [label]="item.name" />
         </app-breadcrumb-trail>
       </ng-container>
       <table mat-table
@@ -132,13 +132,14 @@
                  download>
                 Download
               </a>
-              <mat-divider></mat-divider>
+              <mat-divider />
               <button mat-menu-item
                       (click)="deleteFile(item)">
                 Delete
               </button>
-              <mat-divider *ngIf="(item.name | filename | extension | lowercase) === 'xml'"></mat-divider>
-              <button *ngIf="(item.name | filename | extension | lowercase) === 'xml'" mat-menu-item
+              <mat-divider *ngIf="(item.name | filename | extension | lowercase) === 'xml'" />
+              <button *ngIf="(item.name | filename | extension | lowercase) === 'xml'"
+                      mat-menu-item
                       (click)="convertToJSON($event, item.nameWithoutInstance)">
                 Convert to new format
               </button>

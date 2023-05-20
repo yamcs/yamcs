@@ -1,9 +1,9 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, Inject, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
-import { MatLegacyPaginator } from '@angular/material/legacy-paginator';
-import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
 import { UserInfo } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
@@ -28,16 +28,16 @@ export class AddMembersDialog implements AfterViewInit {
 
   filterControl = new UntypedFormControl();
 
-  @ViewChild(MatLegacyPaginator, { static: true })
-  paginator: MatLegacyPaginator;
+  @ViewChild(MatPaginator, { static: true })
+  paginator: MatPaginator;
 
-  dataSource = new MatLegacyTableDataSource<MemberItem>();
+  dataSource = new MatTableDataSource<MemberItem>();
   selection = new SelectionModel<MemberItem>(true, []);
 
   constructor(
-    private dialogRef: MatLegacyDialogRef<AddMembersDialog>,
+    private dialogRef: MatDialogRef<AddMembersDialog>,
     yamcs: YamcsService,
-    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any
+    @Inject(MAT_DIALOG_DATA) readonly data: any
   ) {
     const existingItems: MemberItem[] = data.items;
     const existingUsernames = existingItems.filter(i => i.user).map(i => i.user!.name);

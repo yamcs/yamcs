@@ -3,8 +3,7 @@
 <mat-dialog-content class="mat-typography">
   <div class="filter-bar" style="margin-top: 5px">
     <app-search-filter [formControl]="filterControl"
-                       placeholder="Filter roles">
-    </app-search-filter>
+                       placeholder="Filter roles" />
   </div>
   <table mat-table
          *ngIf="dataSource"
@@ -39,8 +38,7 @@
 
   <mat-paginator [pageSize]="10"
                  [hidePageSize]="true"
-                 [showFirstLastButtons]="false">
-  </mat-paginator>
+                 [showFirstLastButtons]="false" />
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

@@ -3,62 +3,53 @@
                           [name]="name"
                           [description]="description"
                           [type]="type"
-                          [initialValue]="parsedInitialValue">
-  </app-aggregate-argument>
+                          [initialValue]="parsedInitialValue" />
 
   <app-binary-argument *ngSwitchCase="'binary'"
                        [name]="name"
                        [description]="description"
                        [type]="type"
-                       [formControlName]="name">
-  </app-binary-argument>
+                       [formControlName]="name" />
 
   <app-boolean-argument *ngSwitchCase="'boolean'"
                         [name]="name"
                         [description]="description"
                         [type]="type"
-                        [formControlName]="name">
-  </app-boolean-argument>
+                        [formControlName]="name" />
 
   <app-enumeration-argument *ngSwitchCase="'enumeration'"
                             [name]="name"
                             [description]="description"
                             [type]="type"
-                            [formControlName]="name">
-  </app-enumeration-argument>
+                            [formControlName]="name" />
 
   <app-float-argument *ngSwitchCase="'float'"
                       [name]="name"
                       [description]="description"
                       [type]="type"
-                      [formControlName]="name">
-  </app-float-argument>
+                      [formControlName]="name" />
 
   <app-integer-argument *ngSwitchCase="'integer'"
                         [name]="name"
                         [description]="description"
                         [type]="type"
-                        [formControlName]="name">
-  </app-integer-argument>
+                        [formControlName]="name" />
 
   <app-string-argument *ngSwitchCase="'string'"
                        [name]="name"
                        [description]="description"
                        [type]="type"
-                       [formControlName]="name">
-  </app-string-argument>
+                       [formControlName]="name" />
 
   <app-time-argument *ngSwitchCase="'time'"
                      [name]="name"
                      [description]="description"
                      [type]="type"
-                     [formControlName]="name">
-  </app-time-argument>
+                     [formControlName]="name" />
 
   <app-array-argument *ngSwitchCase="type.engType.endsWith('[]') ? type.engType : ''"
                       [name]="name"
                       [description]="description"
                       [type]="type"
-                      [initialValue]="parsedInitialValue">
-  </app-array-argument>
+                      [initialValue]="parsedInitialValue" />
 </ng-container>

@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { YamcsService } from '../../core/services/YamcsService';
 import * as utils from '../../shared/utils';
 import { subtractDuration } from '../../shared/utils';
@@ -17,8 +17,8 @@ export class SelectRangeDialog {
   });
 
   constructor(
-    private dialogRef: MatLegacyDialogRef<SelectRangeDialog>,
-    @Inject(MAT_LEGACY_DIALOG_DATA) data: any,
+    private dialogRef: MatDialogRef<SelectRangeDialog>,
+    @Inject(MAT_DIALOG_DATA) data: any,
     private yamcs: YamcsService,
   ) {
     let start = data.start;

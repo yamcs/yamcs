@@ -41,7 +41,7 @@
     <ng-container *ngIf="entry.longDescription">
       <dt>Description</dt>
       <dd>
-        <app-markdown [text]="entry.longDescription"></app-markdown>
+        <app-markdown [text]="entry.longDescription" />
       </dd>
     </ng-container>
     <ng-container *ngIf="!entry.longDescription">
@@ -108,7 +108,7 @@
   <ng-container *ngIf="parameter.longDescription">
     <dt>Description</dt>
     <dd>
-      <app-markdown [text]="parameter.longDescription"></app-markdown>
+      <app-markdown [text]="parameter.longDescription" />
     </dd>
   </ng-container>
   <ng-container *ngIf="!parameter.longDescription">
@@ -120,7 +120,7 @@
 </dl>
 
 <div class="section-divider">
-  <mat-divider></mat-divider>
+  <mat-divider />
 </div>
 <h4>Current value</h4>
 <ng-container *ngIf="pval?.engValue as value">
@@ -171,7 +171,7 @@
     <span class="pval" *ngSwitchDefault>
       <app-expirable [pval]="pval" style="white-space: nowrap">
         <ng-container *ngIf="pval.monitoringResult">
-          <app-alarm-level [level]="pval.monitoringResult"></app-alarm-level>&nbsp;
+          <app-alarm-level [level]="pval.monitoringResult" />&nbsp;
         </ng-container>
         {{ value | value }}
         <ng-container *ngIf="(parameter | parameterTypeForPath)?.unitSet as unitSet">
@@ -182,7 +182,7 @@
     <br>
     <div class="meter-size-constrainer">
       <ng-container *ngIf="pval.alarmRange">
-        <app-severity-meter [pval]="pval"></app-severity-meter>
+        <app-severity-meter [pval]="pval" />
       </ng-container>
       <br>
       <span class="subtext">
@@ -197,7 +197,7 @@
 <ng-container *ngIf="entry$ | async as entry">
   <ng-container *ngIf="entry.type?.engType === 'enumeration'">
     <div class="section-divider">
-      <mat-divider></mat-divider>
+      <mat-divider />
     </div>
 
     <h4>Enumeration</h4>
@@ -226,14 +226,14 @@
         <td>{{ enumValue.description || '-' }}</td>
         <td>
           <ng-container *ngIf="getDefaultAlarmLevel(entry.type, enumValue) as level">
-            <app-alarm-level [level]="level" [grayscale]="true"></app-alarm-level>
+            <app-alarm-level [level]="level" [grayscale]="true" />
             {{ level }}
           </ng-container>
           <span *ngIf="!getDefaultAlarmLevel(entry.type, enumValue)">-</span>
         </td>
         <td *ngFor="let context of entry.type.contextAlarm">
           <ng-container *ngIf="getEnumerationAlarmLevel(context, enumValue) as level">
-            <app-alarm-level [level]="level" [grayscale]="true"></app-alarm-level>
+            <app-alarm-level [level]="level" [grayscale]="true" />
             {{ level }}
           </ng-container>
           <span *ngIf="!getEnumerationAlarmLevel(context, enumValue)">-</span>

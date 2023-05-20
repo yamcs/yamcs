@@ -10,7 +10,7 @@
     <tr *ngFor="let arg of command.userAssignments">
       <td class="key" width="1">{{ arg.name }}</td>
       <td class="value">
-        <app-value [value]="arg.value"></app-value>
+        <app-value [value]="arg.value" />
       </td>
     </tr>
   </table>
@@ -29,7 +29,7 @@
     </app-more>
   </div>
   <div class="block no-print" style="margin-top: 4px">
-    <app-hex [base64String]="command.unprocessedBinary"></app-hex>
+    <app-hex [base64String]="command.unprocessedBinary" />
   </div>
   <div class="block print-only">
     <pre>{{ (command.unprocessedBinary | hexDump) || '-' }}</pre>
@@ -49,14 +49,14 @@
     </app-more>
   </div>
   <div class="block no-print" style="margin-top: 4px">
-    <app-hex [base64String]="command.binary"></app-hex>
+    <app-hex [base64String]="command.binary" />
   </div>
   <div class="block print-only">
     <pre>{{ (command.binary | hexDump) || '-' }}</pre>
   </div>
 </ng-container>
 
-<mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+<mat-divider style="margin-top: 1em; margin-bottom: 1em" />
 
 <div class="block-title" style="padding-top: 0">Time</div>
 <div class="block">
@@ -77,7 +77,7 @@
 </ng-container>
 
 <ng-container *ngIf="command.comment">
-  <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+  <mat-divider style="margin-top: 1em; margin-bottom: 1em" />
   <div class="block-title" style="padding-top: 0">Comment</div>
   <div class="block">
     {{ command.comment }}
@@ -85,7 +85,7 @@
 </ng-container>
 
 <ng-container *ngIf="command.extra.length">
-  <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+  <mat-divider style="margin-top: 1em; margin-bottom: 1em" />
   <ng-container *ngFor="let extra of command.extra; let first=first">
     <div class="block-title" [class.first]="first">
       {{ extra.name }}
@@ -101,7 +101,7 @@
     <ng-container [ngSwitch]="extra.value.type">
       <ng-container *ngSwitchCase="'BINARY'">
         <div class="block no-print" style="margin-top: 4px">
-          <app-hex [base64String]="extra.value.binaryValue"></app-hex>
+          <app-hex [base64String]="extra.value.binaryValue" />
         </div>
         <div class="block print-only">
           <pre>{{ (extra.value.binaryValue | hexDump) || '-' }}</pre>
@@ -116,18 +116,18 @@
   </ng-container>
 </ng-container>
 
-<mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+<mat-divider style="margin-top: 1em; margin-bottom: 1em" />
 <div class="block-title" style="padding-top: 0">Yamcs acknowledgments</div>
 <div class="block">
   <app-yamcs-acknowledgments-table [command]="command"
-                                   [showIcons]="showIcons"></app-yamcs-acknowledgments-table>
+                                   [showIcons]="showIcons" />
 </div>
 
 <ng-container *ngIf="command.extraAcks.length">
   <div class="block-title">Extra acknowledgments</div>
   <div class="block">
     <app-extra-acknowledgments-table [command]="command"
-                                     [showIcons]="showIcons"></app-extra-acknowledgments-table>
+                                     [showIcons]="showIcons" />
   </div>
 </ng-container>
 
@@ -141,18 +141,18 @@
 </div>
 
 <ng-container *ngFor="let upstream of command.cascadedRecordsByPrefix | keyvalue">
-  <mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+  <mat-divider style="margin-top: 1em; margin-bottom: 1em" />
   <div class="block-title" style="padding-top: 0">{{ upstream.key | cascadingPrefix }} acknowledgments</div>
   <div class="block">
     <app-yamcs-acknowledgments-table [command]="upstream.value"
-                                     [showIcons]="showIcons"></app-yamcs-acknowledgments-table>
+                                     [showIcons]="showIcons" />
   </div>
 
   <ng-container *ngIf="upstream.value.extraAcks.length">
     <div class="block-title">{{ upstream.key | cascadingPrefix }} extra acknowledgments</div>
     <div class="block">
       <app-extra-acknowledgments-table [command]="upstream.value"
-                                       [showIcons]="showIcons"></app-extra-acknowledgments-table>
+                                       [showIcons]="showIcons" />
     </div>
   </ng-container>
 

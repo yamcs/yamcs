@@ -24,12 +24,12 @@
   <dt>Long Description</dt>
   <dd>
     <ng-container *ngIf="command.longDescription; else dash">
-      <app-markdown [text]="command.longDescription"></app-markdown>
+      <app-markdown [text]="command.longDescription" />
     </ng-container>
   </dd>
 </dl>
 
-<mat-divider></mat-divider>
+<mat-divider />
 
 <dl class="dl-horizontal">
   <dt>Base command</dt>
@@ -47,7 +47,7 @@
 
   <dt>Significance</dt>
   <dd *ngIf="command.significance">
-    <app-significance-level [level]="command.significance.consequenceLevel"></app-significance-level>
+    <app-significance-level [level]="command.significance.consequenceLevel" />
     {{ command.significance.reasonForWarning }}
   </dd>
   <dd *ngIf="!command.significance">-</dd>
@@ -104,7 +104,7 @@
   <dd *ngIf="!command.argument">-</dd>
 </dl>
 
-<mat-divider></mat-divider>
+<mat-divider />
 
 <dl class="dl-horizontal">
   <dt>Constraints</dt>
@@ -123,7 +123,7 @@
   <dd *ngIf="!command.constraint">-</dd>
 </dl>
 
-<mat-divider></mat-divider>
+<mat-divider />
 
 <dl class="dl-horizontal">
   <dt>Verifiers</dt>
@@ -168,7 +168,7 @@
   </dd>
 </dl>
 
-<mat-divider></mat-divider>
+<mat-divider />
 
 <dl class="dl-horizontal">
   <dt>Sequence entries</dt>

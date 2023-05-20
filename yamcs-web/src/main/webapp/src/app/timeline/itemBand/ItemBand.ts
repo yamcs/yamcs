@@ -1,4 +1,4 @@
-import { MatLegacyDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { ItemBand as DefaultItemBand } from '@fqqb/timeline';
 import { TimelineBand } from '../../client/types/timeline';
 import { EditItemDialog } from '../dialogs/EditItemDialog';
@@ -25,7 +25,7 @@ export const propertyInfo: PropertyInfoSet = {
 
 export class ItemBand extends DefaultItemBand {
 
-  constructor(chart: TimelineChartPage, bandInfo: TimelineBand, dialog: MatLegacyDialog) {
+  constructor(chart: TimelineChartPage, bandInfo: TimelineBand, dialog: MatDialog) {
     super(chart.timeline);
     this.label = bandInfo.name;
     this.data = { band: bandInfo };

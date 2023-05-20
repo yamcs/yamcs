@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuditRecord, GetAuditRecordsOptions } from '../../client';
 import { MessageService } from '../../core/services/MessageService';
@@ -53,7 +53,7 @@ export class ActionLogTab {
   // only is updated after the callback...
   private filter: string;
 
-  dataSource = new MatLegacyTableDataSource<AuditRecord>();
+  dataSource = new MatTableDataSource<AuditRecord>();
 
   constructor(
     readonly yamcs: YamcsService,

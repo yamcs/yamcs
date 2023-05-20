@@ -4,18 +4,17 @@
   <form [formGroup]="form">
     <label>
       Start
-      <app-date-time-input formControlName="start"></app-date-time-input>
+      <app-date-time-input formControlName="start" />
     </label>
     <br>
     <label>
       Stop
-      <app-date-time-input formControlName="stop"></app-date-time-input>
+      <app-date-time-input formControlName="stop" />
     </label>
     <br>
     <label>
       Severity<br>
-      <app-select formControlName="severity" [options]="data.severityOptions">
-      </app-select>
+      <app-select formControlName="severity" [options]="data.severityOptions" />
     </label>
     <br>
     <label>
@@ -27,13 +26,12 @@
       Source<br>
       <app-multi-select formControlName="source"
                         [options]="data.sourceOptions"
-                        emptyOption="Any source"></app-multi-select>
+                        emptyOption="Any source" />
     </label>
     <br>
     <label>
       CSV column delimiter<br>
-      <app-select formControlName="delimiter" [options]="delimiterOptions">
-      </app-select>
+      <app-select formControlName="delimiter" [options]="delimiterOptions" />
     </label>
   </form>
 </mat-dialog-content>

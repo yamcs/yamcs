@@ -19,7 +19,7 @@ const slopeWidth = 10;
         <text #text y="${16 + 1}" dominant-baseline="middle" text-anchor="middle"
               fill="white"
               style="font-size: 14px; font-weight: ${fontWeight}">
-          <ng-content></ng-content>
+          <ng-content />
         </text>
         <polygon #iconHolder></polygon>
       </svg>

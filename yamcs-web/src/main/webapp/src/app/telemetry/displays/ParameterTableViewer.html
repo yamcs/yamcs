@@ -7,8 +7,7 @@
                                   [showActions]="showActions$ | async"
                                   [selection]="selection"
                                   (moveUp)="moveUp($event)"
-                                  (moveDown)="moveDown($event)">
-    </app-multiple-parameter-table>
+                                  (moveDown)="moveDown($event)" />
 
     <app-scrolling-parameter-table *ngIf="model.scroll"
                                    [model]="model"
@@ -18,8 +17,7 @@
                                    (moveLeft)="moveUp($event)"
                                    (moveRight)="moveDown($event)"
                                    (removeColumn)="removeParameter($event)"
-                                   (bufferSize)="setBufferSize($event)">
-    </app-scrolling-parameter-table>
+                                   (bufferSize)="setBufferSize($event)" />
   </ng-container>
 
   <ng-template #empty>

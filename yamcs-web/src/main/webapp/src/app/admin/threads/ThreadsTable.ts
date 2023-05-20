@@ -1,6 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnChanges, ViewChild } from '@angular/core';
-import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
 import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { ThreadInfo } from '../../client';
 
 @Component({
@@ -30,7 +30,7 @@ export class ThreadsTable implements AfterViewInit, OnChanges {
   @ViewChild(MatSort)
   sort: MatSort;
 
-  dataSource = new MatLegacyTableDataSource<ThreadInfo>();
+  dataSource = new MatTableDataSource<ThreadInfo>();
 
   ngAfterViewInit() {
     this.dataSource.filterPredicate = (thread, filter) => {

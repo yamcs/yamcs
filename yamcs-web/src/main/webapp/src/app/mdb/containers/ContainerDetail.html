@@ -24,12 +24,12 @@
   <dt>Long Description</dt>
   <dd>
     <ng-container *ngIf="container.longDescription; else dash">
-      <app-markdown [text]="container.longDescription"></app-markdown>
+      <app-markdown [text]="container.longDescription" />
     </ng-container>
   </dd>
 </dl>
 
-<mat-divider></mat-divider>
+<mat-divider />
 
 <dl class="dl-horizontal">
   <dt>Max Interval</dt>
@@ -64,7 +64,7 @@
   <dd *ngIf="!container.restrictionCriteria">-</dd>
 </dl>
 
-<mat-divider></mat-divider>
+<mat-divider />
 
 <dl class="dl-horizontal">
   <dt>Sequence Entries</dt>

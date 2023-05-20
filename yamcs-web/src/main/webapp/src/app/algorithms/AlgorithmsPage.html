@@ -11,11 +11,11 @@
           <app-breadcrumb-trail>
             <app-breadcrumb link="/algorithms"
                             [queryParams]="{c: yamcs.context}"
-                            icon="account_tree"></app-breadcrumb>
+                            icon="account_tree" />
             <app-breadcrumb *ngFor="let item of breadcrumb"
                             [link]="item.route"
                             [queryParams]="item.queryParams"
-                            [label]="item.name"></app-breadcrumb>
+                            [label]="item.name" />
           </app-breadcrumb-trail>
         </div>
       </ng-container>
@@ -25,9 +25,8 @@
                            icon="search"
                            (onArrowDown)="selectNext()"
                            (onArrowUp)="selectPrevious()"
-                           (onEnter)="applySelection()">
-        </app-search-filter>
-        <app-select [options]="scopeOptions" formControlName="scope"></app-select>
+                           (onEnter)="applySelection()" />
+        <app-select [options]="scopeOptions" formControlName="scope" />
       </div>
     </form>
 
@@ -51,12 +50,10 @@
                [queryParams]="{c: yamcs.context}">
               <app-highlight *ngIf="!system"
                              [text]="item.algorithm.qualifiedName"
-                             [term]="filterForm.value.filter">
-              </app-highlight>
+                             [term]="filterForm.value.filter" />
               <app-highlight *ngIf="system"
                              [text]="item.algorithm.qualifiedName | slice:(system!.length + 1)"
-                             [term]="filterForm.value.filter">
-              </app-highlight>
+                             [term]="filterForm.value.filter" />
             </a>
           </ng-container>
         </td>
@@ -95,8 +92,7 @@
     <mat-paginator [pageSize]="pageSize"
                    [hidePageSize]="true"
                    [showFirstLastButtons]="true"
-                   [length]="dataSource.totalSize$ | async">
-    </mat-paginator>
+                   [length]="dataSource.totalSize$ | async" />
   </div>
   <ng-template #empty>
     <div class="panel-content">

@@ -6,8 +6,7 @@
     <ng-container *ngIf="services$ | async as services">
       <button mat-button
               [matMenuTriggerFor]="serviceMenu">
-        {{ (service$ | async)?.name || 'select service' }}
-        <mat-icon>arrow_drop_down</mat-icon>
+        {{ (service$ | async)?.name || 'select service' }} ▾
       </button>
       <mat-menu #serviceMenu="matMenu" class="ya-menu">
         <button mat-menu-item *ngFor="let service of services" (click)="switchService(service)">{{ service.name
@@ -22,15 +21,15 @@
                 (click)="downloadFile(service)">
           <mat-icon>{{service.capabilities.download && service.capabilities.upload ? "cloud" :
             service.capabilities.upload ? "cloud_upload": "cloud_download" }}</mat-icon>
-          NEW {{service.capabilities.download && service.capabilities.upload ? "TRANSFER" :
-          service.capabilities.upload ? "UPLOAD": "DOWNLOAD" }}
+          New {{service.capabilities.download && service.capabilities.upload ? "transfer" :
+          service.capabilities.upload ? "upload": "download" }}
         </button>
       </ng-container>
     </ng-container>
   </app-instance-toolbar>
 
   <ng-container *ngIf="service$ | async as service">
-    <nav mat-tab-nav-bar>
+    <nav mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
       <a mat-tab-link
          routerLink="./ongoing-transfers"
          routerLinkActive #rla="routerLinkActive"
@@ -63,7 +62,9 @@
     </nav>
 
     <div class="outlet-wrapper">
-      <router-outlet></router-outlet>
+      <mat-tab-nav-panel #tabPanel>
+        <router-outlet />
+      </mat-tab-nav-panel>
     </div>
   </ng-container>
   <app-empty-message *ngIf="!(services$ | async)!.length" headerTitle="File Transfer">

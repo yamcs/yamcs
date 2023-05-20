@@ -2,7 +2,7 @@
   <tr *ngFor="let ack of command.extraAcks">
     <td *ngIf="showIcons" style="width: 16px">
       <div style="display: flex; align-items: center">
-        <app-acknowledgment-icon [ack]="ack"></app-acknowledgment-icon>
+        <app-acknowledgment-icon [ack]="ack" />
       </div>
     </td>
     <td style="width: 150px">{{ ack.name }}</td>

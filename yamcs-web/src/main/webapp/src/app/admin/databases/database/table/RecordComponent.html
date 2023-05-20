@@ -20,7 +20,7 @@
                   *ngIf="column.type === 'BINARY' ||
                          (column.type !== 'PROTOBUF(com.google.protobuf.Struct)' && column.type.startsWith('PROTOBUF'))">
       <ng-container *ngIf="(record.column | columnValue:column.name) as value; else dash">
-        <app-hex [base64String]="value.binaryValue"></app-hex>
+        <app-hex [base64String]="value.binaryValue" />
       </ng-container>
     </ng-container>
   </div>

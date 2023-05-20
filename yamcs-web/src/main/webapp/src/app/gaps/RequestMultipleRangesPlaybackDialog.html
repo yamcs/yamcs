@@ -11,8 +11,7 @@
 
     <label>
       DaSS link
-      <app-select formControlName="link" [options]="linkOptions$ | async">
-      </app-select>
+      <app-select formControlName="link" [options]="linkOptions$ | async" />
       <span class="hint">This link will send out the request, and handle data reception.</span>
     </label>
   </form>

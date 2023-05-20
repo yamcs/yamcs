@@ -4,17 +4,15 @@
                         [borderColor]="gridLineColor"
                         [closable]="removableSeries"
                         (close)="removeParameter($event)"
-                        (select)="modifyParameter($event)">
-  </app-parameter-legend>
+                        (select)="modifyParameter($event)" />
 </div>
 
 <div class="timestamp-wrapper">
   <app-timestamp-tracker [legendData]="legendData$ | async"
-                         [timestampData]="timestampTrackerData$ | async">
-  </app-timestamp-tracker>
+                         [timestampData]="timestampTrackerData$ | async" />
 </div>
 
 <div #graphContainer
-      class="graph-container"
-      [style.height]="height"
-      [style.width]="width"></div>
+     class="graph-container"
+     [style.height]="height"
+     [style.width]="width"></div>

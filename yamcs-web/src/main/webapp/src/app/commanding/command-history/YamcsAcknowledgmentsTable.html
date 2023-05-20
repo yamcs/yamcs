@@ -2,7 +2,7 @@
   <tr>
     <td *ngIf="showIcons" style="width: 16px">
       <div style="display: flex; align-items: center">
-        <app-acknowledgment-icon [ack]="command.queued"></app-acknowledgment-icon>
+        <app-acknowledgment-icon [ack]="command.queued" />
       </div>
     </td>
     <td style="width: 150px">Queued</td>
@@ -16,9 +16,8 @@
   <tr>
     <td *ngIf="showIcons">
       <div style="display: flex; align-items: center">
-        <app-transmission-constraints-icon *ngIf="!command.released" [command]="command">
-        </app-transmission-constraints-icon>
-        <app-acknowledgment-icon *ngIf="command.released" [ack]="command.released"></app-acknowledgment-icon>
+        <app-transmission-constraints-icon *ngIf="!command.released" [command]="command" />
+        <app-acknowledgment-icon *ngIf="command.released" [ack]="command.released" />
       </div>
     </td>
     <td>Released</td>
@@ -34,7 +33,7 @@
   <tr>
     <td *ngIf="showIcons">
       <div style="display: flex; align-items: center">
-        <app-acknowledgment-icon [ack]="command.sent"></app-acknowledgment-icon>
+        <app-acknowledgment-icon [ack]="command.sent" />
       </div>
     </td>
     <td>Sent</td>

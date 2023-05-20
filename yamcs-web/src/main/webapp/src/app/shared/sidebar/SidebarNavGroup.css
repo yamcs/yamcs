@@ -38,6 +38,6 @@
   overflow: hidden;
 }
 
-.mat-list-item:hover, .mat-list-item:focus {
+.mat-mdc-list-item:hover, .mat-mdc-list-item:focus {
   background-color: rgba(255, 255, 255, 0.1) !important;
 }

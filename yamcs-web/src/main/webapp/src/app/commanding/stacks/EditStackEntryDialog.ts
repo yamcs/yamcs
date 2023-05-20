@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, Inject, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs';
 import { AcknowledgmentInfo, Command, CommandOptionType, Value } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -114,11 +114,11 @@ export class EditStackEntryDialog {
   format: "ycs" | "xml";
 
   constructor(
-    private dialogRef: MatLegacyDialogRef<EditStackEntryDialog>,
+    private dialogRef: MatDialogRef<EditStackEntryDialog>,
     readonly yamcs: YamcsService,
     formBuilder: UntypedFormBuilder,
     private changeDetection: ChangeDetectorRef,
-    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
+    @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     let advancementAckDropDownDefault;
     let advancementAckCustomDefault;

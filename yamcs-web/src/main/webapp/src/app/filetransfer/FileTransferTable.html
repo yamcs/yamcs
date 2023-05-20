@@ -81,11 +81,10 @@
     <td mat-cell *matCellDef="let item"
         [attr.colspan]="(displayedColumns$ | async)!.length">
       <div *ngIf="item.transfer$ | async as transfer" class="detail-layout">
-        {{ transferPercent(transfer) | percent:'1.1' }}
-        <mat-progress-bar *ngIf="transfer.state === 'RUNNING' || transfer.state === 'PAUSED' || transfer.state === 'CANCELLING'"
-                          style="width: 200px"
-                          [value]="transferPercent(transfer)*100">
-        </mat-progress-bar>
+        <app-progress *ngIf="transfer.state === 'RUNNING' || transfer.state === 'PAUSED' || transfer.state === 'CANCELLING'"
+                      width="200px"
+                      [value]="transferPercent(transfer)"
+                      [total]="1" />
         <span>{{ transfer.sizeTransferred | formatBytes }}</span>
         <span class="error" *ngIf="transfer.failureReason">
           {{ transfer.failureReason }}

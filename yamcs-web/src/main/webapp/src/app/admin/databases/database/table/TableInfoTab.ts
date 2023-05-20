@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MatLegacyDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
 import { Table } from '../../../../client';
 import { YamcsService } from '../../../../core/services/YamcsService';
@@ -14,7 +14,7 @@ export class TableInfoTab {
 
   table$: Promise<Table>;
 
-  constructor(route: ActivatedRoute, yamcs: YamcsService, private dialog: MatLegacyDialog) {
+  constructor(route: ActivatedRoute, yamcs: YamcsService, private dialog: MatDialog) {
     const parent = route.snapshot.parent!;
     const database = parent.parent!.paramMap.get('database')!;
     const name = parent.paramMap.get('table')!;

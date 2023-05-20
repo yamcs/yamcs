@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
-import { MatLegacyPaginator } from '@angular/material/legacy-paginator';
-import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
+import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { ClientConnectionInfo, HttpTraffic } from '../../client';
@@ -17,8 +17,8 @@ export class HttpTrafficPage implements AfterViewInit, OnDestroy {
   @ViewChild(MatSort)
   sort: MatSort;
 
-  @ViewChild(MatLegacyPaginator)
-  paginator: MatLegacyPaginator;
+  @ViewChild(MatPaginator)
+  paginator: MatPaginator;
 
   displayedColumns = [
     'id',
@@ -36,7 +36,7 @@ export class HttpTrafficPage implements AfterViewInit, OnDestroy {
   tableTrackerFn = (index: number, conn: ClientConnectionInfo) => conn.id;
 
   traffic$ = new BehaviorSubject<HttpTraffic | null>(null);
-  dataSource = new MatLegacyTableDataSource<ClientConnectionInfo>();
+  dataSource = new MatTableDataSource<ClientConnectionInfo>();
 
   private syncSubscription: Subscription;
 

@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Clearance } from '../../client';
 
 @Component({
@@ -13,9 +13,9 @@ export class ChangeLevelDialog {
   form: UntypedFormGroup;
 
   constructor(
-    private dialogRef: MatLegacyDialogRef<ChangeLevelDialog>,
+    private dialogRef: MatDialogRef<ChangeLevelDialog>,
     formBuilder: UntypedFormBuilder,
-    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
+    @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
 
     this.form = formBuilder.group({

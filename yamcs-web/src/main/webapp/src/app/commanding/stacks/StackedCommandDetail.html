@@ -18,24 +18,24 @@
 <div class="block-title">Description</div>
 <div class="block">
   <ng-container *ngIf="entry.command?.longDescription">
-    <app-markdown [text]="entry.command?.longDescription"></app-markdown>
+    <app-markdown [text]="entry.command?.longDescription" />
   </ng-container>
   <ng-container *ngIf="!entry.command?.longDescription">
     {{ entry.command?.shortDescription || '-' }}
   </ng-container>
 </div>
 
-<mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+<mat-divider style="margin-top: 1em; margin-bottom: 1em" />
 
 <div class="block-title">Significance</div>
 <div class="block">
   <ng-container *ngIf="(entry.command | effectiveSignificance) as significance; else dash">
-    <app-significance-level [level]="significance.consequenceLevel"></app-significance-level>
+    <app-significance-level [level]="significance.consequenceLevel" />
     {{ significance.reasonForWarning }}
   </ng-container>
 </div>
 
-<mat-divider style="margin-top: 1em; margin-bottom: 1em"></mat-divider>
+<mat-divider style="margin-top: 1em; margin-bottom: 1em" />
 
 <div class="block-title" style="padding-top: 0">Constraints</div>
 <div class="block">
@@ -58,8 +58,7 @@
           </span>
           <app-live-expression #expr
                                [expression]="constraint.expression"
-                               [style.display]="'none'">
-          </app-live-expression>
+                               [style.display]="'none'" />
         </td>
       </tr>
     </table>

@@ -7,13 +7,12 @@
       <button *ngIf="(view$ | async) && mayControlTimeline()"
               mat-button
               [matMenuTriggerFor]="viewMenu">
-        {{ (view$ | async)?.name || 'select view' }}
-        <mat-icon>arrow_drop_down</mat-icon>
+        {{ (view$ | async)?.name || 'select view' }} ▾
       </button>
       <mat-menu #viewMenu="matMenu" class="ya-menu">
         <button mat-menu-item *ngFor="let view of views"
                 (click)="switchView(view)">{{ view.name }}</button>
-        <mat-divider></mat-divider>
+        <mat-divider />
         <a mat-menu-item routerLink="/timeline/views/create"
            [queryParams]="{c: yamcs.context}">
           <mat-icon>add_circle_outline</mat-icon>
@@ -29,28 +28,28 @@
          [queryParams]="{c: yamcs.context}"
          *ngIf="!(view$ | async)">
         <mat-icon>add_circle_outline</mat-icon>
-        CREATE VIEW
+        Create view
       </a>
       <button *ngIf="view$ | async as view"
               mat-button
               color="primary"
               (click)="openEditViewDialog(view)">
         <mat-icon>settings</mat-icon>
-        EDIT VIEW
+        Edit view
       </button>
       <button mat-button
               color="primary"
               (click)="openCreateItemDialog()"
               *ngIf="view$ | async">
         <mat-icon>add_circle_outline</mat-icon>
-        ADD ITEM
+        Add item
       </button>
       <button mat-button
               color="primary"
               (click)="saveSnapshot()"
               *ngIf="view$ | async">
         <mat-icon>photo_camera</mat-icon>
-        SAVE SNAPSHOT
+        Save snapshot
       </button>
     </ng-container>
   </app-instance-toolbar>

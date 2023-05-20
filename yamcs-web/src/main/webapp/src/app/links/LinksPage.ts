@@ -1,7 +1,7 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -35,7 +35,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
     { id: 'actions', label: '', alwaysVisible: true },
   ];
 
-  dataSource = new MatLegacyTableDataSource<LinkItem>();
+  dataSource = new MatTableDataSource<LinkItem>();
   selection = new SelectionModel<LinkItem>(true, []);
 
   private selectionSubscription: Subscription;

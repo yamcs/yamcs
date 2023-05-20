@@ -1,7 +1,7 @@
 import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { MatLegacyDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -32,7 +32,7 @@ export class EditGroupPage implements OnDestroy {
     route: ActivatedRoute,
     private yamcs: YamcsService,
     private messageService: MessageService,
-    private dialog: MatLegacyDialog,
+    private dialog: MatDialog,
     readonly location: Location,
   ) {
     title.setTitle('Edit Group');

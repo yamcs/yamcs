@@ -30,7 +30,7 @@
   <ng-container cdkColumnDef="severity">
     <th mat-header-cell *cdkHeaderCellDef>Severity</th>
     <td mat-cell *cdkCellDef="let row">
-      <app-alarm-level *ngIf="row.pval?.monitoringResult" [level]="row.pval?.monitoringResult"></app-alarm-level>
+      <app-alarm-level *ngIf="row.pval?.monitoringResult" [level]="row.pval?.monitoringResult" />
       <span *ngIf="!row.pval?.monitoringResult">-</span>
     </td>
   </ng-container>
@@ -73,11 +73,9 @@
     <th mat-header-cell *cdkHeaderCellDef class="expand"></th>
     <td mat-cell *cdkCellDef="let row; let i = index">
       <app-icon-action (click)="moveDown.emit(i); $event.stopPropagation()"
-                       icon="keyboard_arrow_down">
-      </app-icon-action>
+                       icon="keyboard_arrow_down" />
       <app-icon-action (click)="moveUp.emit(i); $event.stopPropagation()"
-                       icon="keyboard_arrow_up">
-      </app-icon-action>
+                       icon="keyboard_arrow_up" />
     </td>
   </ng-container>
 

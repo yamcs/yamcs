@@ -9,11 +9,11 @@
 </div>
 
 <br>
-<mat-divider></mat-divider>
+<mat-divider />
 
 <div class="block-title">Status</div>
 <div class="block">
-  <app-link-status [link]="link"></app-link-status>
+  <app-link-status [link]="link" />
   {{ link.status }}
 </div>
 
@@ -34,7 +34,7 @@
 
 <ng-container *ngIf="link.extra">
   <br>
-  <mat-divider></mat-divider>
+  <mat-divider />
   <ng-container *ngFor="let entry of link.extra | keyvalue">
     <div class="block-title">{{ entry.key }}</div>
     <div class="block">
@@ -73,7 +73,7 @@
         Reset counters
       </button>
       <ng-container *ngIf="link.actions">
-        <mat-divider></mat-divider>
+        <mat-divider />
         <ng-container *ngFor="let action of link.actions">
           <button mat-menu-item
                   [disabled]="!action.enabled"

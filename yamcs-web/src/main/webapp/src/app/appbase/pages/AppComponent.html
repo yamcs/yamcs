@@ -1,29 +1,24 @@
 <mat-toolbar color="primary" *ngIf="user$ | async as user">
   <mat-toolbar-row class="app-bar"
-                   [class.replay]="(connectionInfo$ | async)?.processor?.replay">
+                   [class.replay]="(connectionInfo$ | async)?.processor?.replay"
+                   [class.nosidebar]="!(sidebar$ | async)">
     <div *ngIf="tag" class="tag">
       {{ tag }}
     </div>
-    <button mat-icon-button
-            *ngIf="showMenuToggle$ | async"
-            (click)="toggleSidebar()">
-      <mat-icon>{{ (sidebar$ | async) ? 'menu_open' : 'menu' }}</mat-icon>
-    </button>
-    <div class="logo-wrapper" [class.nosidebar]="!(showMenuToggle$ | async)">
+    <div class="logo-wrapper">
       <a routerLink="/">
         <img src="yamcs.png" style="margin-top: 12px">
       </a>
     </div>
     <ng-container *ngIf="connectionInfo$ | async as connectionInfo">
       <button mat-button (click)="openInstanceDialog()">
-        {{ connectionInfo.instance?.name }}
-        <mat-icon>arrow_drop_down</mat-icon>
+        {{ connectionInfo.instance?.name }} ▾
       </button>
     </ng-container>
 
     <div style="flex: 1 1 auto"></div>
 
-    <nav mat-tab-nav-bar class="top-tabs">
+    <nav mat-tab-nav-bar class="top-tabs" [tabPanel]="tabPanel">
       <!--a mat-tab-link matTooltip="Search (/)">
         <mat-icon>search</mat-icon>
       </a-->
@@ -65,5 +60,7 @@
     </mat-menu>
   </mat-toolbar-row>
 </mat-toolbar>
-<router-outlet></router-outlet>
-<app-print-zone></app-print-zone>
+<mat-tab-nav-panel #tabPanel>
+  <router-outlet />
+</mat-tab-nav-panel>
+<app-print-zone />

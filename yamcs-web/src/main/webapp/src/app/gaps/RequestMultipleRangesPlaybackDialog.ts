@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { BehaviorSubject } from 'rxjs';
 import { Gap, PlaybackRange } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
@@ -21,9 +21,9 @@ export class RequestMultipleRangesPlaybackDialog {
   });
 
   constructor(
-    private dialogRef: MatLegacyDialogRef<RequestMultipleRangesPlaybackDialog>,
+    private dialogRef: MatDialogRef<RequestMultipleRangesPlaybackDialog>,
     private yamcs: YamcsService,
-    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
+    @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.gaps = this.data.gaps;
 

@@ -4,16 +4,16 @@
   </app-instance-toolbar>
 
   <div class="panel-content">
-    <app-links-page-tabs></app-links-page-tabs>
+    <app-links-page-tabs />
     <form [formGroup]="filterForm" style="margin-top: 16px">
       <div class="filter-bar">
         <app-select #intervalSelect
                     [options]="intervalOptions"
                     icon="access_time"
-                    formControlName="interval"></app-select>
+                    formControlName="interval" />
         <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
-          <app-date-time-input formControlName="customStart"></app-date-time-input>
-          <app-date-time-input formControlName="customStop"></app-date-time-input>
+          <app-date-time-input formControlName="customStart" />
+          <app-date-time-input formControlName="customStop" />
           <button (click)="applyCustomDates()"
                   class="ya-button"
                   [disabled]="filterForm.invalid">Apply</button>

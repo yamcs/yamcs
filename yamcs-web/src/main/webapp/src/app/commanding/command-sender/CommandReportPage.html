@@ -3,14 +3,14 @@
     Send a command
   </app-instance-toolbar>
 
-  <app-send-command-wizard-step step="3"></app-send-command-wizard-step>
+  <app-send-command-wizard-step step="3" />
 
   <div class="panel-content" *ngIf="command$ | async as command">
-    <app-command-detail2 [command]="command"></app-command-detail2>
+    <app-command-detail2 [command]="command" />
 
     <ng-container>
       <br>
-      <mat-divider></mat-divider>
+      <mat-divider />
       <br>
       <button class="ya-button"
               routerLink="/commanding/send"

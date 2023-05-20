@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MAT_LEGACY_DIALOG_DATA, MatLegacyDialogRef } from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ExtensionPipe } from 'src/app/shared/pipes/ExtensionPipe';
 import { FilenamePipe } from 'src/app/shared/pipes/FilenamePipe';
 import { StorageClient } from '../../client';
@@ -20,14 +20,14 @@ export class RenameStackDialog {
   private bucket: string;
 
   constructor(
-    private dialogRef: MatLegacyDialogRef<RenameStackDialog>,
+    private dialogRef: MatDialogRef<RenameStackDialog>,
     formBuilder: UntypedFormBuilder,
     yamcs: YamcsService,
     basenamePipe: BasenamePipe,
     private filenamePipe: FilenamePipe,
     private extensionPipe: ExtensionPipe,
     configService: ConfigService,
-    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
+    @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.storageClient = yamcs.createStorageClient();
     this.bucket = configService.getStackBucket();

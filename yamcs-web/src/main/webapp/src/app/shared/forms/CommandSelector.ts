@@ -1,7 +1,7 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, Input, ViewChild } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, UntypedFormControl } from '@angular/forms';
-import { MatLegacyPaginator } from '@angular/material/legacy-paginator';
+import { MatPaginator } from '@angular/material/paginator';
 import { BehaviorSubject } from 'rxjs';
 import { Command, GetCommandsOptions } from '../../client';
 import { CommandsDataSource } from '../../commanding/command-sender/CommandsDataSource';
@@ -35,8 +35,8 @@ export class CommandSelector implements ControlValueAccessor, AfterViewInit {
   @ViewChild('top', { static: true })
   top: ElementRef;
 
-  @ViewChild(MatLegacyPaginator)
-  paginator: MatLegacyPaginator;
+  @ViewChild(MatPaginator)
+  paginator: MatPaginator;
 
   @ViewChild(ColumnChooser)
   columnChooser: ColumnChooser;

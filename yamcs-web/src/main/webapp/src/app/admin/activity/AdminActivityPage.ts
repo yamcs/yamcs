@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, debounceTime } from 'rxjs';
@@ -174,7 +174,7 @@ export class AdminActivityPage {
     const yesterday = utils.subtractDuration(new Date(), 'P1D').toISOString().substr(0, 10);
     this.yamcs.yamcsClient.getAuditRecords('_global', options).then(page => {
       const rowGroups = this.groupByDay(page.records || []).map(group => {
-        const dataSource = new MatLegacyTableDataSource<Row>();
+        const dataSource = new MatTableDataSource<Row>();
         dataSource.data = group.map(item => {
           const requestOptions: any[] = [{ key: 'Request', value: '' }];
           if (item.request) {

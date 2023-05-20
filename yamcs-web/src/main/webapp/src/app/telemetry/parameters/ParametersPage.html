@@ -11,11 +11,11 @@
           <app-breadcrumb-trail>
             <app-breadcrumb link="/telemetry/parameters"
                             [queryParams]="{c: yamcs.context}"
-                            icon="account_tree"></app-breadcrumb>
+                            icon="account_tree" />
             <app-breadcrumb *ngFor="let item of breadcrumb"
                             [link]="item.route"
                             [queryParams]="item.queryParams"
-                            [label]="item.name"></app-breadcrumb>
+                            [label]="item.name" />
           </app-breadcrumb-trail>
         </div>
       </ng-container>
@@ -25,16 +25,14 @@
                            icon="search"
                            (onArrowDown)="selectNext()"
                            (onArrowUp)="selectPrevious()"
-                           (onEnter)="applySelection()">
-        </app-search-filter>
-        <app-select [options]="typeOptions" formControlName="type"></app-select>
-        <app-select [options]="sourceOptions" formControlName="source"></app-select>
+                           (onEnter)="applySelection()" />
+        <app-select [options]="typeOptions" formControlName="type" />
+        <app-select [options]="sourceOptions" formControlName="source" />
         <app-column-chooser #columnChooser
                             [columns]="columns"
-                            preferenceKey="tmParameters"></app-column-chooser>
+                            preferenceKey="tmParameters" />
 
-        <app-dots *ngIf="dataSource.loading$ | async">
-        </app-dots>
+        <app-dots *ngIf="dataSource.loading$ | async" />
       </div>
     </form>
     <table mat-table
@@ -57,12 +55,10 @@
                [queryParams]="{c: yamcs.context}">
               <app-highlight *ngIf="!(system$ | async)"
                              [text]="item.name"
-                             [term]="filterForm.value.filter">
-              </app-highlight>
+                             [term]="filterForm.value.filter" />
               <app-highlight *ngIf="(system$ | async) as system"
                              [text]="item.name | slice:(system.length + 1)"
-                             [term]="filterForm.value.filter">
-              </app-highlight>
+                             [term]="filterForm.value.filter" />
             </a>
           </ng-container>
         </td>
@@ -117,8 +113,7 @@
         </th>
         <td mat-cell *matCellDef="let item">
           <ng-container *ngIf="(item.parameter | alias:aliasColumn.id) as name; else dash">
-            <app-highlight [text]="name" [term]="filterForm.value.filter">
-            </app-highlight>
+            <app-highlight [text]="name" [term]="filterForm.value.filter" />
           </ng-container>
         </td>
       </ng-container>
@@ -136,8 +131,7 @@
     <mat-paginator [pageSize]="pageSize"
                    [hidePageSize]="true"
                    [showFirstLastButtons]="true"
-                   [length]="dataSource.totalSize$ | async">
-    </mat-paginator>
+                   [length]="dataSource.totalSize$ | async" />
   </div>
   <ng-template #empty>
     <div class="panel-content">

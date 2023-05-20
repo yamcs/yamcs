@@ -6,13 +6,12 @@
          class="ya-link ya-header-link">
         {{ spaceSystemName }}
       </a>/{{ parameter.qualifiedName | shortName }}{{ offset$ | async}}
-      <app-title-copy [text]="parameter.qualifiedName + ((offset$ | async) || '')"></app-title-copy>
+      <app-title-copy [text]="parameter.qualifiedName + ((offset$ | async) || '')" />
     </ng-container>
   </app-instance-toolbar>
 
   <div class="panel-content">
     <app-parameter-detail [parameter]="parameter"
-                          [offset]="offset$ | async">
-    </app-parameter-detail>
+                          [offset]="offset$ | async" />
   </div>
 </app-instance-page>

@@ -1,7 +1,7 @@
 import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatLegacyDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CreateServiceAccountRequest, CreateServiceAccountResponse } from '../../client';
@@ -25,7 +25,7 @@ export class CreateServiceAccountPage {
     private yamcs: YamcsService,
     private messageService: MessageService,
     readonly location: Location,
-    private dialog: MatLegacyDialog,
+    private dialog: MatDialog,
   ) {
     title.setTitle('Create service account');
     this.form = formBuilder.group({

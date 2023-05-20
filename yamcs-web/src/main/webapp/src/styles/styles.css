@@ -65,8 +65,13 @@ body {
   width: 48px !important;
 }
 
-.mat-slide-toggle-bar {
-  display: block;
+.mat-mdc-slide-toggle {
+  line-height: 24px !important;
+}
+
+.dialog-full-size .mat-mdc-dialog-surface {
+  padding: 24px;
+  border-radius: 0 !important;
 }
 
 .no-select {
@@ -108,14 +113,19 @@ a.ya-link.ya-header-link {
   color: inherit;
 }
 
-.ya-menu .mat-menu-item {
+.ya-menu .mat-mdc-menu-item {
   line-height: 24px;
   height: 24px;
   font-size: 12px;
   padding: 0 8px;
+  min-height: 24px;
 }
 
-.ya-menu .mat-menu-item .material-icons {
+.ya-menu .mat-mdc-menu-item .mdc-list-item__primary-text {
+  font-size: 12px;
+}
+
+.ya-menu .mat-mdc-menu-item .material-icons {
   font-size: 14px !important;
   height: 14px !important;
   width: 14px !important;
@@ -123,7 +133,7 @@ a.ya-link.ya-header-link {
   font-weight: 600;
 }
 
-.ya-menu.mat-menu-panel {
+.ya-menu.mat-mdc-menu-panel {
   min-height: 24px;
 }
 
@@ -131,10 +141,11 @@ a.ya-link.ya-header-link {
   border-color: crimson !important;
 }
 
-.ya-autocomplete .mat-option {
+.ya-autocomplete .mat-mdc-option {
   height: auto;
   line-height: 16px;
   font-size: 12px;
+  min-height: 24px;
 }
 
 .block-title {
@@ -199,7 +210,12 @@ button.expandable {
   font-weight: 400;
 }
 
-.mat-tab-link:hover {
+.mat-toolbar.top .mat-mdc-button {
+  text-transform: uppercase;
+  padding: 0 16px;
+}
+
+.mat-mdc-tab-link:hover {
   background-color: rgba(0, 0, 0, 0.04);
 }
 
@@ -246,7 +262,12 @@ button.ya-button.primary {
   border-color: rgba(0, 0, 0, 0.1);
 }
 
-.mat-tab-nav-bar.secondary .mat-tab-link, .mat-tab-group.secondary .mat-tab-label {
+.mat-mdc-tab-nav-bar, .mat-mdc-tab-group .mat-mdc-tab-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.mat-mdc-tab-nav-bar.secondary .mat-mdc-tab-link,
+.mat-mdc-tab-group.secondary .mat-mdc-tab {
   height: 36px;
   min-width: 0;
   font-size: 13px;
@@ -267,11 +288,15 @@ input[type="checkbox"], input[type="radio"] {
   padding-top: 16px;
 }
 
-.action-bar .ya-button, .mat-dialog-actions .ya-button, .filter-bar .date-time-input, .filter-bar .ya-button, .filter-bar .search-input {
+.mat-mdc-dialog-actions {
+  padding: 24px !important;
+}
+
+.action-bar .ya-button, .mat-mdc-dialog-actions .ya-button:not(:last-child), .filter-bar .date-time-input, .filter-bar .ya-button, .filter-bar .search-input {
   margin-right: 7px;
 }
 
-.mat-paginator {
+.mat-mdc-paginator {
   background-color: inherit;
 }
 

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MatLegacyDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
@@ -20,7 +20,7 @@ export class UserPage {
     route: ActivatedRoute,
     private yamcs: YamcsService,
     private title: Title,
-    private dialog: MatLegacyDialog,
+    private dialog: MatDialog,
     private messageService: MessageService,
   ) {
 

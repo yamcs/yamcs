@@ -1,7 +1,7 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { MatLegacyDialog } from '@angular/material/legacy-dialog';
-import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
+import { MatDialog } from '@angular/material/dialog';
+import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -33,7 +33,7 @@ export class DisplayFolderPage implements OnDestroy {
   dragActive$ = new BehaviorSubject<boolean>(false);
 
   displayedColumns = ['select', 'name', 'type', 'modified', 'actions'];
-  dataSource = new MatLegacyTableDataSource<BrowseItem>([]);
+  dataSource = new MatTableDataSource<BrowseItem>([]);
   selection = new SelectionModel<BrowseItem>(true, []);
 
   private routerSubscription: Subscription;
@@ -43,7 +43,7 @@ export class DisplayFolderPage implements OnDestroy {
   private folderPerInstance: boolean;
 
   constructor(
-    private dialog: MatLegacyDialog,
+    private dialog: MatDialog,
     readonly yamcs: YamcsService,
     title: Title,
     private router: Router,

@@ -1,7 +1,7 @@
 import { Component, Inject, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MAT_LEGACY_DIALOG_DATA, MatLegacyDialogRef } from '@angular/material/legacy-dialog';
-import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject } from 'rxjs';
 import { Bucket, FileTransferOption, FileTransferService, RemoteFileListSubscription, StorageClient } from '../client';
 import { MessageService } from '../core/services/MessageService';
@@ -21,7 +21,7 @@ export class TransferFileDialog implements OnDestroy {
   form: UntypedFormGroup;
   service: FileTransferService;
   private storageClient: StorageClient;
-  dataSource = new MatLegacyTableDataSource<Bucket>();
+  dataSource = new MatTableDataSource<Bucket>();
 
   displayedColumns = ['name'];
 
@@ -58,12 +58,12 @@ export class TransferFileDialog implements OnDestroy {
   remoteSelector: RemoteFileSelector;
 
   constructor(
-    private dialogRef: MatLegacyDialogRef<TransferFileDialog>,
+    private dialogRef: MatDialogRef<TransferFileDialog>,
     readonly yamcs: YamcsService,
     formBuilder: UntypedFormBuilder,
     private messageService: MessageService,
     private preferenceStore: PreferenceStore,
-    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
+    @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.service = data.service;
     this.prefPrefix += this.service.name + ".";

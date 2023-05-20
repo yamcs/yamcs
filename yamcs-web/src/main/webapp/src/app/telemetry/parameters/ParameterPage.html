@@ -6,7 +6,7 @@
          class="ya-link ya-header-link">
         {{ spaceSystemName }}
       </a>/{{ parameter.qualifiedName | shortName }}{{ offset$ | async}}
-      <app-title-copy [text]="parameter.qualifiedName + ((offset$ | async) || '')"></app-title-copy>
+      <app-title-copy [text]="parameter.qualifiedName + ((offset$ | async) || '')" />
     </ng-container>
     &nbsp;&nbsp;&nbsp;
     <button *ngIf="isWritable() && maySetParameter() && !(offset$ | async)"
@@ -14,7 +14,7 @@
             color="primary"
             (click)="setParameter()">
       <mat-icon>edit</mat-icon>
-      SET VALUE
+      Set value
     </button>
     <a mat-button
        color="primary"
@@ -22,11 +22,11 @@
        [queryParams]="{c: yamcs.context}"
        *ngIf="mayReadMissionDatabase()">
       <mat-icon>auto_stories</mat-icon>
-      VIEW IN MDB
+      View in MDB
     </a>
   </app-instance-toolbar>
 
-  <nav #tabs mat-tab-nav-bar class="secondary">
+  <nav #tabs mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
     <a mat-tab-link
        routerLink="summary"
        routerLinkActive #rla="routerLinkActive"
@@ -61,6 +61,8 @@
   </nav>
 
   <div class="tab-content-wrapper" [class.noscroll]="tabs.selectedIndex === 1">
-    <router-outlet></router-outlet>
+    <mat-tab-nav-panel #tabPanel>
+      <router-outlet />
+    </mat-tab-nav-panel>
   </div>
 </app-instance-page>

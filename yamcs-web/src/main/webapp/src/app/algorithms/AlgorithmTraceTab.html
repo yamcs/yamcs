@@ -47,7 +47,7 @@
                        [queryParams]="{c: yamcs.context}"
                        class="secundary">
                       {{ input.id.name }}</a>:
-                    <app-value [value]="input.engValue"></app-value>
+                    <app-value [value]="input.engValue" />
                     <br *ngIf="!last">
                   </ng-container>
                   <ng-container *ngIf="!run.inputs?.length">-</ng-container>
@@ -59,7 +59,7 @@
                        [queryParams]="{c: yamcs.context}"
                        class="secundary">
                       {{ output.id.name }}</a>:
-                    <app-value [value]="output.engValue"></app-value>
+                    <app-value [value]="output.engValue" />
                     <br *ngIf="!last">
                   </ng-container>
                   <ng-container *ngIf="!run.outputs?.length">-</ng-container>

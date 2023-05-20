@@ -1,9 +1,9 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { MatLegacyPaginator } from '@angular/material/legacy-paginator';
-import { MatLegacyTableDataSource } from '@angular/material/legacy-table';
+import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Instance, InstancesSubscription } from '../../client';
@@ -26,12 +26,12 @@ export class HomePage implements AfterViewInit, OnDestroy {
   @ViewChild(MatSort, { static: true })
   sort: MatSort;
 
-  @ViewChild(MatLegacyPaginator, { static: true })
-  paginator: MatLegacyPaginator;
+  @ViewChild(MatPaginator, { static: true })
+  paginator: MatPaginator;
 
   private instancesByName: { [key: string]: Instance; } = {};
 
-  dataSource = new MatLegacyTableDataSource<Instance>([]);
+  dataSource = new MatTableDataSource<Instance>([]);
   selection = new SelectionModel<Instance>(true, []);
 
   instancesSubscription: InstancesSubscription;

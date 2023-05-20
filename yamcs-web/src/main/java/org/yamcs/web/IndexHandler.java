@@ -101,6 +101,9 @@ public class IndexHandler extends Handler {
     private String processTemplate() throws IOException, ParseException {
         var template = new String(Files.readAllBytes(indexFile), StandardCharsets.UTF_8);
 
+        // Don't use template for this, because Angular compiler messes up the HTML
+        template.replace("<!--[[ EXTRA_HEADER_HTML ]]-->", config.getString("extraHeaderHTML", ""));
+
         var webConfig = new HashMap<>(config.toMap());
 
         // Remove filesystem path from custom logo

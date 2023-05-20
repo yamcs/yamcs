@@ -7,15 +7,14 @@
     <form [formGroup]="filterForm">
       <div class="filter-bar">
         <app-search-filter formControlName="filter"
-                           placeholder="Filter by text search">
-        </app-search-filter>
+                           placeholder="Filter by text search" />
         <app-select #intervalSelect
                     [options]="intervalOptions"
                     icon="access_time"
-                    formControlName="interval"></app-select>
+                    formControlName="interval" />
         <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
-          <app-date-time-input formControlName="customStart"></app-date-time-input>
-          <app-date-time-input formControlName="customStop"></app-date-time-input>
+          <app-date-time-input formControlName="customStart" />
+          <app-date-time-input formControlName="customStop" />
           <button (click)="applyCustomDates()"
                   class="ya-button"
                   [disabled]="filterForm.invalid">Apply</button>

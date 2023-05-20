@@ -17,64 +17,55 @@
                               [name]="member.name"
                               [type]="member.type"
                               [description]="member.shortDescription"
-                              [initialValue]="memberInitialValues[i]">
-      </app-aggregate-argument>
+                              [initialValue]="memberInitialValues[i]" />
 
       <app-binary-argument *ngSwitchCase="'binary'"
                            [name]="member.name"
                            [type]="member.type"
                            [description]="member.shortDescription"
-                           [formControlName]="member.name">
-      </app-binary-argument>
+                           [formControlName]="member.name" />
 
       <app-boolean-argument *ngSwitchCase="'boolean'"
                             [name]="member.name"
                             [type]="member.type"
                             [description]="member.shortDescription"
-                            [formControlName]="member.name">
-      </app-boolean-argument>
+                            [formControlName]="member.name" />
 
       <app-enumeration-argument *ngSwitchCase="'enumeration'"
                                 [name]="member.name"
                                 [type]="member.type"
                                 [description]="member.shortDescription"
-                                [formControlName]="member.name">
-      </app-enumeration-argument>
+                                [formControlName]="member.name" />
 
       <app-float-argument *ngSwitchCase="'float'"
                           [name]="member.name"
                           [type]="member.type"
                           [description]="member.shortDescription"
-                          [formControlName]="member.name">
-      </app-float-argument>
+                          [formControlName]="member.name" />
 
       <app-integer-argument *ngSwitchCase="'integer'"
                             [name]="member.name"
                             [type]="member.type"
                             [description]="member.shortDescription"
-                            [formControlName]="member.name">
-      </app-integer-argument>
+                            [formControlName]="member.name" />
 
       <app-string-argument *ngSwitchCase="'string'"
                            [name]="member.name"
                            [type]="member.type"
                            [description]="member.shortDescription"
-                           [formControlName]="member.name">
-      </app-string-argument>
+                           [formControlName]="member.name" />
 
       <app-time-argument *ngSwitchCase="'time'"
                          [name]="member.name"
                          [type]="member.type"
                          [description]="member.shortDescription"
-                         [formControlName]="member.name">
-      </app-time-argument>
+                         [formControlName]="member.name" />
 
       <app-array-argument *ngSwitchCase="member.type.engType.endsWith('[]') ? member.type.engType : ''"
                           [name]="member.name"
                           [type]="member.type"
                           [description]="member.shortDescription"
-                          [initialValue]="memberInitialValues[i]">
-      </app-array-argument>
+                          [initialValue]="memberInitialValues[i]" />
     </div>
   </div>
 </div>

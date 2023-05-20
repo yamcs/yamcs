@@ -2,6 +2,8 @@ mat-toolbar-row {
   height: 48px;
   box-shadow: 0 .125rem .3125rem rgba(0, 0, 0, .26);
   z-index: 2;
+  padding-left: 6px;
+  padding-right: calc(24px - 16px);
 }
 
 .mat-toolbar-multiple-rows {
@@ -22,7 +24,7 @@ mat-toolbar-row {
 }
 
 .logo-wrapper.nosidebar {
-  padding-left: 6px;
+  padding-left: 24px;
 }
 
 .logo-wrapper:hover img {
@@ -39,29 +41,34 @@ mat-toolbar-row {
   pointer-events: none;
 }
 
-.selected-instance.mat-button {
+.selected-instance.mat-mdc-button {
   border: 1px solid grey;
   border-radius: 40px;
   line-height: 24px;
 }
 
-::ng-deep .no-padding-dialog .mat-dialog-container {
+::ng-deep .no-padding-dialog .mat-mdc-dialog-container {
   padding: 0;
   overflow: hidden;
 }
 
-::ng-deep .top-tabs.mat-tab-nav-bar {
+::ng-deep .top-tabs.mat-mdc-tab-nav-bar {
   border-bottom: none;
 }
 
-.mat-button:hover,
-::ng-deep .top-tabs.mat-tab-nav-bar .mat-tab-link:hover,
-::ng-deep .top-tabs.mat-tab-nav-bar .mat-tab-link.active {
+.mat-mdc-button:hover,
+::ng-deep .top-tabs.mat-mdc-tab-nav-bar .mat-mdc-tab-link:hover,
+::ng-deep .top-tabs.mat-mdc-tab-nav-bar .mat-mdc-tab-link.active {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-::ng-deep .top-tabs.mat-tab-nav-bar .mat-tab-link {
-  color: #fff;
+::ng-deep .top-tabs.mat-mdc-tab-nav-bar .mat-mdc-tab-link {
   opacity: 1;
   min-width: 0;
+  padding: 0 16px;
+}
+
+::ng-deep .top-tabs.mat-mdc-tab-nav-bar .mat-mdc-tab-link .mdc-tab__text-label {
+  color: #fff;
+  letter-spacing: 1.25px;
 }

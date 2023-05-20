@@ -3,7 +3,7 @@
     Create band
   </app-instance-toolbar>
 
-  <app-create-band-wizard-step step="2"></app-create-band-wizard-step>
+  <app-create-band-wizard-step step="2" />
 
   <div class="form-content ya-form">
     <form [formGroup]="form"
@@ -21,16 +21,16 @@
       <br>
       <label>
         Tags<br>
-        <app-tag-select formControlName="tags"></app-tag-select>
+        <app-tag-select formControlName="tags" />
       </label>
 
       <br>
       <div class="section-divider">
-        <mat-divider></mat-divider>
+        <mat-divider />
       </div>
 
       <h4>Styles</h4>
-      <app-item-band-styles [form]="form"></app-item-band-styles>
+      <app-item-band-styles [form]="form" />
     </form>
     <p>&nbsp;</p>
     <div class="action-bar">

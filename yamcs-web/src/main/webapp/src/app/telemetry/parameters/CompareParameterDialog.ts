@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
-import { MatLegacyDialogRef, MAT_LEGACY_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
 import { debounceTime, map, switchMap } from 'rxjs/operators';
 import { Parameter } from '../../client';
@@ -27,9 +27,9 @@ export class CompareParameterDialog implements OnInit {
   thickness: Thickness;
 
   constructor(
-    private dialogRef: MatLegacyDialogRef<CompareParameterDialog>,
+    private dialogRef: MatDialogRef<CompareParameterDialog>,
     private yamcs: YamcsService,
-    @Inject(MAT_LEGACY_DIALOG_DATA) readonly data: any,
+    @Inject(MAT_DIALOG_DATA) readonly data: any,
     private memberPathPipe: MemberPathPipe,
   ) { }
 

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { MatLegacyDialogRef } from '@angular/material/legacy-dialog';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-stack-file-page-dirty-dialog',
@@ -8,7 +8,7 @@ import { MatLegacyDialogRef } from '@angular/material/legacy-dialog';
 export class StackFilePageDirtyDialog {
 
   constructor(
-    private dialogRef: MatLegacyDialogRef<StackFilePageDirtyDialog>,
+    private dialogRef: MatDialogRef<StackFilePageDirtyDialog>,
   ) { }
 
   confirmDiscard() {

@@ -3,11 +3,11 @@
   <div class="filter-bar" *ngIf="breadcrumb.length">
     <app-breadcrumb-trail>
       <app-breadcrumb icon="account_tree" [action]="true"
-                      (click)="changeSystem('')"></app-breadcrumb>
+                      (click)="changeSystem('')" />
       <app-breadcrumb *ngFor="let item of breadcrumb"
                       [action]="true"
                       (click)="changeSystem(item.system)"
-                      [label]="item.name"></app-breadcrumb>
+                      [label]="item.name" />
     </app-breadcrumb-trail>
   </div>
 </ng-container>
@@ -18,11 +18,10 @@
                      icon="search"
                      (onArrowDown)="selectNext()"
                      (onArrowUp)="selectPrevious()"
-                     (onEnter)="applySelection()">
-  </app-search-filter>
+                     (onEnter)="applySelection()" />
   <app-column-chooser #columnChooser
                       [columns]="columns"
-                      preferenceKey="sendCommand"></app-column-chooser>
+                      preferenceKey="sendCommand" />
 </div>
 <table mat-table
        *ngIf="dataSource"
@@ -39,12 +38,12 @@
       <ng-container *ngIf="!item.spaceSystem">
         <mat-icon class="icon12" style="vertical-align: middle">rss_feed</mat-icon>
         <a href="" (click)="selectRow(item)">
-          <app-highlight *ngIf="!system" [text]="item.command.qualifiedName"
-                         [term]="filterControl.value">
-          </app-highlight>
-          <app-highlight *ngIf="system" [text]="item.command.qualifiedName | slice:(system!.length + 1)"
-                         [term]="filterControl.value">
-          </app-highlight>
+          <app-highlight *ngIf="!system"
+                         [text]="item.command.qualifiedName"
+                         [term]="filterControl.value" />
+          <app-highlight *ngIf="system"
+                         [text]="item.command.qualifiedName | slice:(system!.length + 1)"
+                         [term]="filterControl.value" />
         </a>
       </ng-container>
     </td>
@@ -54,8 +53,7 @@
     <th mat-header-cell *cdkHeaderCellDef>Description</th>
     <td mat-cell *cdkCellDef="let item" class="wrap200">
       <ng-container *ngIf="(item.command?.shortDescription) as desc; else dash">
-        <app-highlight [text]="desc" [term]="filterControl.value">
-        </app-highlight>
+        <app-highlight [text]="desc" [term]="filterControl.value" />
       </ng-container>
     </td>
   </ng-container>
@@ -64,7 +62,7 @@
     <th mat-header-cell *cdkHeaderCellDef>Significance</th>
     <td mat-cell *cdkCellDef="let item">
       <ng-container *ngIf="(item.command | effectiveSignificance) as significance; else dash">
-        <app-significance-level [level]="significance.consequenceLevel"></app-significance-level>
+        <app-significance-level [level]="significance.consequenceLevel" />
       </ng-container>
     </td>
   </ng-container>
@@ -76,8 +74,7 @@
     </th>
     <td mat-cell *matCellDef="let item">
       <ng-container *ngIf="(item.command | alias:aliasColumn.id) as name; else dash">
-        <app-highlight [text]="name" [term]="filterControl.value">
-        </app-highlight>
+        <app-highlight [text]="name" [term]="filterControl.value" />
       </ng-container>
     </td>
   </ng-container>
@@ -95,8 +92,7 @@
 <mat-paginator [pageSize]="pageSize"
                [hidePageSize]="true"
                [showFirstLastButtons]="true"
-               [length]="dataSource.totalSize$ | async">
-</mat-paginator>
+               [length]="dataSource.totalSize$ | async" />
 
 <ng-template #dash>
   -
