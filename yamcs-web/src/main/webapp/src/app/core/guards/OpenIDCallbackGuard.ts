@@ -1,10 +1,14 @@
-import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, Router } from '@angular/router';
+import { Injectable, inject } from '@angular/core';
+import { ActivatedRouteSnapshot, CanActivateFn, Router } from '@angular/router';
 import * as utils from '../../shared/utils';
 import { AuthService } from '../services/AuthService';
 
-@Injectable()
-export class OpenIDCallbackGuard implements CanActivate {
+export const openIDCallbackGuardFn: CanActivateFn = (route: ActivatedRouteSnapshot) => {
+  return inject(OpenIDCallbackGuard).canActivate(route);
+};
+
+@Injectable({ providedIn: 'root' })
+class OpenIDCallbackGuard {
 
   constructor(private authService: AuthService, private router: Router) {
   }

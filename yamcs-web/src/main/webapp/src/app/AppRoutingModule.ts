@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { CustomPreloadingStrategy } from './CustomPreloadingStrategy';
 import { ContextSwitchPage } from './appbase/pages/ContextSwitchPage';
 import { CreateInstancePage1 } from './appbase/pages/CreateInstancePage1';
 import { CreateInstancePage2 } from './appbase/pages/CreateInstancePage2';
@@ -8,16 +9,10 @@ import { HomePage } from './appbase/pages/HomePage';
 import { NotFoundPage } from './appbase/pages/NotFoundPage';
 import { ProfilePage } from './appbase/pages/ProfilePage';
 import { ServerUnavailablePage } from './appbase/pages/ServerUnavailablePage';
-import { AuthGuard } from './core/guards/AuthGuard';
-import { ClearContextGuard } from './core/guards/ClearContextGuard';
-import { OpenIDCallbackGuard } from './core/guards/OpenIDCallbackGuard';
-import { ServerSideOpenIDCallbackGuard } from './core/guards/ServerSideOpenIDCallbackGuard';
-import { CustomPreloadingStrategy } from './CustomPreloadingStrategy';
-
-/*
- * Notice that nested modules also have AuthGuards.
- * These will fully execute before other guards in those modules.
- */
+import { authGuardFn } from './core/guards/AuthGuard';
+import { clearContextGuardFn } from './core/guards/ClearContextGuard';
+import { openIDCallbackGuardFn } from './core/guards/OpenIDCallbackGuard';
+import { serverSideOpenIDCallbackGuardFn } from './core/guards/ServerSideOpenIDCallbackGuard';
 
 const routes: Routes = [
   {
@@ -27,117 +22,117 @@ const routes: Routes = [
         path: '',
         pathMatch: 'full',
         component: HomePage,
-        canActivate: [AuthGuard, ClearContextGuard],
+        canActivate: [authGuardFn, clearContextGuardFn],
         data: { 'hasSidebar': false }
       }, {
         path: 'create-instance',
         pathMatch: 'full',
         component: CreateInstancePage1,
-        canActivate: [AuthGuard, ClearContextGuard],
+        canActivate: [authGuardFn, clearContextGuardFn],
         data: { 'hasSidebar': false }
       }, {
         path: 'create-instance/:template',
         component: CreateInstancePage2,
-        canActivate: [AuthGuard, ClearContextGuard],
+        canActivate: [authGuardFn, clearContextGuardFn],
         data: { 'hasSidebar': false }
       }, {
         path: 'context-switch/:context/:current',
         component: ContextSwitchPage,
-        canActivate: [AuthGuard, ClearContextGuard],
+        canActivate: [authGuardFn, clearContextGuardFn],
         data: { 'hasSidebar': false }
       }, {
         path: 'profile',
         component: ProfilePage,
-        canActivate: [AuthGuard, ClearContextGuard],
+        canActivate: [authGuardFn, clearContextGuardFn],
         data: { 'hasSidebar': false }
       }, {
         path: 'storage',
         loadChildren: () => import('src/app/storage/StorageModule').then(m => m.StorageModule),
-        canActivate: [AuthGuard],
+        canActivate: [authGuardFn],
         data: { 'hasSidebar': false }
       }, {
         path: 'alarms',
         loadChildren: () => import('src/app/alarms/AlarmsModule').then(m => m.AlarmsModule),
-        canActivate: [AuthGuard],
+        canActivate: [authGuardFn],
       }, {
         path: 'algorithms',
         loadChildren: () => import('src/app/algorithms/AlgorithmsModule').then(m => m.AlgorithmsModule),
-        canActivate: [AuthGuard],
+        canActivate: [authGuardFn],
       }, {
         path: 'archive',
         loadChildren: () => import('src/app/archive/ArchiveModule').then(m => m.ArchiveModule),
-        canActivate: [AuthGuard],
+        canActivate: [authGuardFn],
       }, {
         path: 'admin',
         loadChildren: () => import('src/app/admin/AdminModule').then(m => m.AdminModule),
-        canActivate: [AuthGuard],
+        canActivate: [authGuardFn],
       }, {
         path: 'filetransfer',
         loadChildren: () => import('src/app/filetransfer/FileTransferModule').then(m => m.FileTransferModule),
-        canActivate: [AuthGuard],
+        canActivate: [authGuardFn],
       }, {
         path: 'commanding',
         loadChildren: () => import('src/app/commanding/CommandingModule').then(m => m.CommandingModule),
-        canActivate: [AuthGuard],
+        canActivate: [authGuardFn],
       }, {
         path: 'events',
         loadChildren: () => import('src/app/events/EventsModule').then(m => m.EventsModule),
-        canActivate: [AuthGuard],
+        canActivate: [authGuardFn],
       }, {
         path: 'gaps',
         loadChildren: () => import('src/app/gaps/GapsModule').then(m => m.GapsModule),
-        canActivate: [AuthGuard],
+        canActivate: [authGuardFn],
       }, {
         path: 'instance',
         loadChildren: () => import('src/app/instancehome/InstanceHomeModule').then(m => m.InstanceHomeModule),
-        canActivate: [AuthGuard],
+        canActivate: [authGuardFn],
         data: { preload: true },
       }, {
         path: 'links',
         loadChildren: () => import('src/app/links/LinksModule').then(m => m.LinksModule),
-        canActivate: [AuthGuard],
+        canActivate: [authGuardFn],
       }, {
         path: 'search',
         loadChildren: () => import('src/app/search/SearchModule').then(m => m.SearchModule),
-        canActivate: [AuthGuard],
+        canActivate: [authGuardFn],
         data: { preload: true },
       }, {
         path: 'timeline',
         loadChildren: () => import('src/app/timeline/TimelineModule').then(m => m.TimelineModule),
-        canActivate: [AuthGuard],
+        canActivate: [authGuardFn],
       }, {
         path: 'telemetry',
         loadChildren: () => import('src/app/telemetry/TelemetryModule').then(m => m.TelemetryModule),
-        canActivate: [AuthGuard],
+        canActivate: [authGuardFn],
         data: { preload: true },
       }, {
         path: 'mdb',
         loadChildren: () => import('src/app/mdb/MdbModule').then(m => m.MdbModule),
-        canActivate: [AuthGuard],
+        canActivate: [authGuardFn],
       }, {
         path: 'cb',
-        canActivate: [ClearContextGuard, OpenIDCallbackGuard],
+        canActivate: [clearContextGuardFn, openIDCallbackGuardFn],
         children: [],
         data: { 'hasSidebar': false }
       }, {
         path: 'oidc-browser-callback',
-        canActivate: [ClearContextGuard, ServerSideOpenIDCallbackGuard],
+        canActivate: [clearContextGuardFn, serverSideOpenIDCallbackGuardFn],
         children: [],
         data: { 'hasSidebar': false }
       }, {
         path: 'down',
         component: ServerUnavailablePage,
-        canActivate: [ClearContextGuard],
+        canActivate: [clearContextGuardFn],
         data: { 'hasSidebar': false }
       }, {
         path: '403',
         component: ForbiddenPage,
-        canActivate: [ClearContextGuard],
+        canActivate: [clearContextGuardFn],
         data: { 'hasSidebar': false }
       }, {
         path: '**',
         component: NotFoundPage,
-        canActivate: [ClearContextGuard],
+        canActivate: [clearContextGuardFn],
         data: { 'hasSidebar': false }
       },
     ]
@@ -147,9 +142,9 @@ const routes: Routes = [
 @NgModule({
   imports: [
     RouterModule.forRoot(routes, {
-    onSameUrlNavigation: 'reload',
-    preloadingStrategy: CustomPreloadingStrategy
-}),
+      onSameUrlNavigation: 'reload',
+      preloadingStrategy: CustomPreloadingStrategy
+    }),
   ],
   exports: [RouterModule],
 })

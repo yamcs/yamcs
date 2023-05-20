@@ -1,9 +1,17 @@
-import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, CanActivateChild, Router, RouterStateSnapshot } from '@angular/router';
+import { Injectable, inject } from '@angular/core';
+import { ActivatedRouteSnapshot, CanActivateChildFn, CanActivateFn, Router, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from '../services/AuthService';
 
-@Injectable()
-export class MayAccessAdminAreaGuard implements CanActivate, CanActivateChild {
+export const mayAccessAdminAreaGuardFn: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+  return inject(MayAccessAdminAreaGuard).canActivate(route, state);
+};
+
+export const mayAccessAdminAreaGuardChildFn: CanActivateChildFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+  return inject(MayAccessAdminAreaGuard).canActivateChild(route, state);
+};
+
+@Injectable({ providedIn: 'root' })
+class MayAccessAdminAreaGuard {
 
   constructor(private authService: AuthService, private router: Router) {
   }

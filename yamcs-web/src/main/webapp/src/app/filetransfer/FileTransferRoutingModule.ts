@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AttachContextGuard } from '../core/guards/AttachContextGuard';
-import { AuthGuard } from '../core/guards/AuthGuard';
+import { attachContextGuardFn } from '../core/guards/AttachContextGuard';
+import { authGuardChildFn, authGuardFn } from '../core/guards/AuthGuard';
 import { InstancePage } from '../shared/template/InstancePage';
 import { FailedTransfersTab } from './FailedTransfersTab';
 import { FileTransferPage } from './FileTransferPage';
@@ -11,8 +11,8 @@ import { SuccessfulTransfersTab } from './SuccessFulTransfersTab';
 const routes: Routes = [
   {
     path: '',
-    canActivate: [AuthGuard, AttachContextGuard],
-    canActivateChild: [AuthGuard],
+    canActivate: [authGuardFn, attachContextGuardFn],
+    canActivateChild: [authGuardChildFn],
     runGuardsAndResolvers: 'always',
     component: InstancePage,
     children: [

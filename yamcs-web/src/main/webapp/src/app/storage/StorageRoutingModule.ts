@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AuthGuard } from '../core/guards/AuthGuard';
-import { ClearContextGuard } from '../core/guards/ClearContextGuard';
+import { authGuardChildFn, authGuardFn } from '../core/guards/AuthGuard';
+import { clearContextGuardFn } from '../core/guards/ClearContextGuard';
 import { StoragePage } from './StoragePage';
 import { BucketObjectsPage } from './buckets/BucketObjectsPage';
 import { BucketPlaceholderPage } from './buckets/BucketPlaceHolderPage';
@@ -11,8 +11,8 @@ import { BucketsPage } from './buckets/BucketsPage';
 
 const routes: Routes = [{
   path: '',
-  canActivate: [AuthGuard, ClearContextGuard],
-  canActivateChild: [AuthGuard],
+  canActivate: [authGuardFn, clearContextGuardFn],
+  canActivateChild: [authGuardChildFn],
   runGuardsAndResolvers: 'always',
   component: StoragePage,
   children: [{

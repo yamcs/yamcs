@@ -1,14 +1,16 @@
-import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, RouterStateSnapshot } from '@angular/router';
+import { Injectable, inject } from '@angular/core';
+import { CanActivateFn } from '@angular/router';
 import { YamcsService } from '../services/YamcsService';
 
-@Injectable()
-export class ClearContextGuard implements CanActivate {
+export const clearContextGuardFn: CanActivateFn = () => inject(ClearContextGuard).canActivate();
+
+@Injectable({ providedIn: 'root' })
+class ClearContextGuard {
 
   constructor(private yamcsService: YamcsService) {
   }
 
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
+  canActivate() {
     this.yamcsService.clearContext();
     return true;
   }

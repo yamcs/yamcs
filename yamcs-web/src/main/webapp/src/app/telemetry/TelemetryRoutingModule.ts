@@ -1,10 +1,10 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AttachContextGuard } from '../core/guards/AttachContextGuard';
-import { AuthGuard } from '../core/guards/AuthGuard';
+import { attachContextGuardFn } from '../core/guards/AttachContextGuard';
+import { authGuardChildFn, authGuardFn } from '../core/guards/AuthGuard';
 import { InstancePage } from '../shared/template/InstancePage';
 import { DisplayFilePage } from './displays/DisplayFilePage';
-import { DisplayFilePageDirtyGuard } from './displays/DisplayFilePageDirtyGuard';
+import { DisplayFilePageDirtyGuard, displayFilePageDirtyGuardFn } from './displays/DisplayFilePageDirtyGuard';
 import { DisplayFolderPage } from './displays/DisplayFolderPage';
 import { DisplayPage } from './displays/DisplayPage';
 import { DisplaysPage } from './displays/DisplaysPage';
@@ -20,8 +20,8 @@ import { ParametersPage } from './parameters/ParametersPage';
 const routes: Routes = [
   {
     path: '',
-    canActivate: [AuthGuard, AttachContextGuard],
-    canActivateChild: [AuthGuard],
+    canActivate: [authGuardFn, attachContextGuardFn],
+    canActivateChild: [authGuardChildFn],
     runGuardsAndResolvers: 'always',
     component: InstancePage,
     children: [
@@ -49,7 +49,7 @@ const routes: Routes = [
           {
             path: '**',
             component: DisplayFilePage,
-            canDeactivate: [DisplayFilePageDirtyGuard],
+            canDeactivate: [displayFilePageDirtyGuardFn],
           }
         ]
       }, {

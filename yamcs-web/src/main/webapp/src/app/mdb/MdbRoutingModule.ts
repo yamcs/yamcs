@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AttachContextGuard } from '../core/guards/AttachContextGuard';
-import { AuthGuard } from '../core/guards/AuthGuard';
-import { MayGetMissionDatabaseGuard } from '../core/guards/MayGetMissionDatabaseGuard';
+import { attachContextGuardFn } from '../core/guards/AttachContextGuard';
+import { authGuardChildFn, authGuardFn } from '../core/guards/AuthGuard';
+import { mayGetMissionDatabaseGuardFn } from '../core/guards/MayGetMissionDatabaseGuard';
 import { InstancePage } from '../shared/template/InstancePage';
 import { AlgorithmPage } from './algorithms/AlgorithmPage';
 import { AlgorithmsPage } from './algorithms/AlgorithmsPage';
@@ -17,8 +17,8 @@ import { ParametersPage } from './parameters/ParametersPage';
 
 const routes: Routes = [{
   path: '',
-  canActivate: [AuthGuard, AttachContextGuard, MayGetMissionDatabaseGuard],
-  canActivateChild: [AuthGuard, MayGetMissionDatabaseGuard],
+  canActivate: [authGuardFn, attachContextGuardFn, mayGetMissionDatabaseGuardFn],
+  canActivateChild: [authGuardChildFn, mayGetMissionDatabaseGuardFn],
   component: InstancePage,
   children: [{
     path: '',

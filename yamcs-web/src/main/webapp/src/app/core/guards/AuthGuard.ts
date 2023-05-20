@@ -1,14 +1,22 @@
 import { APP_BASE_HREF } from '@angular/common';
-import { Inject, Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, CanActivateChild, Router, RouterStateSnapshot } from '@angular/router';
+import { Inject, Injectable, inject } from '@angular/core';
+import { ActivatedRouteSnapshot, CanActivateChildFn, CanActivateFn, Router, RouterStateSnapshot } from '@angular/router';
 import { AuthInfo, OpenIDConnectInfo } from '../../client';
 import * as utils from '../../shared/utils';
 import { AuthService } from '../services/AuthService';
 import { ConfigService } from '../services/ConfigService';
 import { YamcsService } from '../services/YamcsService';
 
-@Injectable()
-export class AuthGuard implements CanActivate, CanActivateChild {
+export const authGuardFn: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+  return inject(AuthGuard).canActivate(route, state);
+};
+
+export const authGuardChildFn: CanActivateChildFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+  return inject(AuthGuard).canActivateChild(route, state);
+};
+
+@Injectable({ providedIn: 'root' })
+class AuthGuard {
 
   private authInfo: AuthInfo;
 

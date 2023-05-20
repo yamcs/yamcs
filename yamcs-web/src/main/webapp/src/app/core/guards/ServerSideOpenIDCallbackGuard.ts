@@ -1,15 +1,19 @@
-import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
+import { Injectable, inject } from '@angular/core';
+import { ActivatedRouteSnapshot, CanActivateFn, Router } from '@angular/router';
 import * as utils from '../../shared/utils';
 import { AuthService } from '../services/AuthService';
 
-@Injectable()
-export class ServerSideOpenIDCallbackGuard implements CanActivate {
+export const serverSideOpenIDCallbackGuardFn: CanActivateFn = (route: ActivatedRouteSnapshot) => {
+  return inject(ServerSideOpenIDCallbackGuard).canActivate(route);
+};
+
+@Injectable({ providedIn: 'root' })
+class ServerSideOpenIDCallbackGuard {
 
   constructor(private authService: AuthService, private router: Router) {
   }
 
-  async canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
+  async canActivate(route: ActivatedRouteSnapshot) {
     const oidcState = route.queryParamMap.get('state');
     const oidcCode = route.queryParamMap.get('code');
     // Note: this callback usually gives us a "session_state" as well. We're ignoring

@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AttachContextGuard } from '../core/guards/AttachContextGuard';
-import { AuthGuard } from '../core/guards/AuthGuard';
-import { MayControlCommandQueueGuard } from '../core/guards/MayControlCommandQueueGuard';
+import { attachContextGuardFn } from '../core/guards/AttachContextGuard';
+import { authGuardChildFn, authGuardFn } from '../core/guards/AuthGuard';
+import { mayControlCommandQueueGuardFn } from '../core/guards/MayControlCommandQueueGuard';
 import { InstancePage } from '../shared/template/InstancePage';
 import { ActionLogTab as ClearanceActionLogTab } from './clearances/ActionLogTab';
-import { ClearancesEnabledGuard } from './clearances/ClearancesEnabledGuard';
+import { clearancesEnabledGuardFn } from './clearances/ClearancesEnabledGuard';
 import { ClearancesPage } from './clearances/ClearancesPage';
 import { CommandHistoryPage } from './command-history/CommandHistoryPage';
 import { CommandPage } from './command-history/CommandPage';
@@ -16,7 +16,7 @@ import { ActionLogTab as QueueActionLogTab } from './queues/ActionLogTab';
 import { QueuedCommandsTab } from './queues/QueuedCommandsTab';
 import { QueuesPage } from './queues/QueuesPage';
 import { StackFilePage } from './stacks/StackFilePage';
-import { StackFilePageDirtyGuard } from './stacks/StackFilePageDirtyGuard';
+import { StackFilePageDirtyGuard, stackFilePageDirtyGuardFn } from './stacks/StackFilePageDirtyGuard';
 import { StackFolderPage } from './stacks/StackFolderPage';
 import { StackPage } from './stacks/StackPage';
 import { StacksPage } from './stacks/StacksPage';
@@ -24,14 +24,14 @@ import { StacksPage } from './stacks/StacksPage';
 const routes: Routes = [
   {
     path: '',
-    canActivate: [AuthGuard, AttachContextGuard],
-    canActivateChild: [AuthGuard],
+    canActivate: [authGuardFn, attachContextGuardFn],
+    canActivateChild: [authGuardChildFn],
     runGuardsAndResolvers: 'always',
     component: InstancePage,
     children: [
       {
         path: 'clearances',
-        canActivate: [ClearancesEnabledGuard],
+        canActivate: [clearancesEnabledGuardFn],
         children: [
           {
             path: '',
@@ -65,7 +65,7 @@ const routes: Routes = [
       }, {
         path: 'queues',
         component: QueuesPage,
-        canActivate: [MayControlCommandQueueGuard],
+        canActivate: [mayControlCommandQueueGuardFn],
         children: [
           {
             path: '',
@@ -99,7 +99,7 @@ const routes: Routes = [
           {
             path: '**',
             component: StackFilePage,
-            canDeactivate: [StackFilePageDirtyGuard],
+            canDeactivate: [stackFilePageDirtyGuardFn],
           }
         ]
       }

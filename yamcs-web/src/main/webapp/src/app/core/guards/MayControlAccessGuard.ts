@@ -1,9 +1,17 @@
-import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, CanActivateChild, Router, RouterStateSnapshot } from '@angular/router';
+import { Injectable, inject } from '@angular/core';
+import { ActivatedRouteSnapshot, CanActivateChildFn, CanActivateFn, Router, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from '../services/AuthService';
 
-@Injectable()
-export class MayControlAccessGuard implements CanActivate, CanActivateChild {
+export const mayControlAccessGuardFn: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+  return inject(MayControlAccessGuard).canActivate(route, state);
+};
+
+export const mayControlAccessGuardChildFn: CanActivateChildFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+  return inject(MayControlAccessGuard).canActivateChild(route, state);
+};
+
+@Injectable({ providedIn: 'root' })
+class MayControlAccessGuard {
 
   constructor(private authService: AuthService, private router: Router) {
   }

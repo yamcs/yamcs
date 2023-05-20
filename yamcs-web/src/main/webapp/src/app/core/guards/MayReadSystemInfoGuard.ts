@@ -1,9 +1,17 @@
-import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, CanActivateChild, Router, RouterStateSnapshot } from '@angular/router';
+import { Injectable, inject } from '@angular/core';
+import { ActivatedRouteSnapshot, CanActivateChildFn, CanActivateFn, Router, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from '../services/AuthService';
 
-@Injectable()
-export class MayReadSystemInfoGuard implements CanActivate, CanActivateChild {
+export const mayReadSystemInfoGuardFn: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+  return inject(MayReadSystemInfoGuard).canActivate(route, state);
+};
+
+export const mayReadSystemInfoGuardChildFn: CanActivateChildFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+  return inject(MayReadSystemInfoGuard).canActivateChild(route, state);
+};
+
+@Injectable({ providedIn: 'root' })
+class MayReadSystemInfoGuard {
 
   constructor(private authService: AuthService, private router: Router) {
   }

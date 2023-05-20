@@ -1,11 +1,19 @@
-import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, CanActivateChild, Router, RouterStateSnapshot } from '@angular/router';
+import { Injectable, inject } from '@angular/core';
+import { ActivatedRouteSnapshot, CanActivateChildFn, CanActivateFn, Router, RouterStateSnapshot } from '@angular/router';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
+
+export const clearancesEnabledGuardFn: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+  return inject(ClearancesEnabledGuard).canActivate(route, state);
+};
+
+export const clearancesEnabledGuardChildFn: CanActivateChildFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+  return inject(ClearancesEnabledGuard).canActivateChild(route, state);
+};
 
 @Injectable({
   providedIn: 'root',
 })
-export class ClearancesEnabledGuard implements CanActivate, CanActivateChild {
+class ClearancesEnabledGuard {
 
   private config: WebsiteConfig;
 

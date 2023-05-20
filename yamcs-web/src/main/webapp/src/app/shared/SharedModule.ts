@@ -34,19 +34,6 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatSortModule } from '@angular/material/sort';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterModule } from '@angular/router';
-import { AttachContextGuard } from '../core/guards/AttachContextGuard';
-import { AuthGuard } from '../core/guards/AuthGuard';
-import { ClearContextGuard } from '../core/guards/ClearContextGuard';
-import { MayAccessAdminAreaGuard } from '../core/guards/MayAccessAdminAreaGuard';
-import { MayControlAccessGuard } from '../core/guards/MayControlAccessGuard';
-import { MayControlArchivingGuard } from '../core/guards/MayControlArchivingGuard';
-import { MayControlCommandQueueGuard } from '../core/guards/MayControlCommandQueueGuard';
-import { MayControlServicesGuard } from '../core/guards/MayControlServicesGuard';
-import { MayGetMissionDatabaseGuard } from '../core/guards/MayGetMissionDatabaseGuard';
-import { MayReadEventsGuard } from '../core/guards/MayReadEventsGuard';
-import { MayReadSystemInfoGuard } from '../core/guards/MayReadSystemInfoGuard';
-import { OpenIDCallbackGuard } from '../core/guards/OpenIDCallbackGuard';
-import { ServerSideOpenIDCallbackGuard } from '../core/guards/ServerSideOpenIDCallbackGuard';
 import { Breadcrumb } from './breadcrumb/Breadcrumb';
 import { BreadcrumbTrail } from './breadcrumb/BreadcrumbTrail';
 import { HelpDialog } from './dialogs/HelpDialog';
@@ -283,22 +270,6 @@ const pipes = [
   ValuePipe,
 ];
 
-const guards = [
-  AuthGuard,
-  ClearContextGuard,
-  AttachContextGuard,
-  MayAccessAdminAreaGuard,
-  MayControlAccessGuard,
-  MayControlArchivingGuard,
-  MayControlCommandQueueGuard,
-  MayControlServicesGuard,
-  MayGetMissionDatabaseGuard,
-  MayReadEventsGuard,
-  MayReadSystemInfoGuard,
-  OpenIDCallbackGuard,
-  ServerSideOpenIDCallbackGuard,
-];
-
 @NgModule({
   imports: [
     CommonModule,
@@ -323,7 +294,6 @@ const guards = [
     pipes,
   ],
   providers: [
-    guards,
     pipes, // Make pipes available in components too
   ]
 })

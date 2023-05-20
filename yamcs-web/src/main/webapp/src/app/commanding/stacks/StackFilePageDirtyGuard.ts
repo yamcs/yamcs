@@ -1,14 +1,19 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { MatLegacyDialog, MatLegacyDialogRef } from '@angular/material/legacy-dialog';
-import { CanDeactivate } from '@angular/router';
+
+import { CanDeactivateFn } from '@angular/router';
 import { BehaviorSubject, Observable, Observer, of } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService } from '../../core/services/ConfigService';
 import { StackFilePage } from './StackFilePage';
 import { StackFilePageDirtyDialog } from './StackFilePageDirtyDialog';
 
+export const stackFilePageDirtyGuardFn: CanDeactivateFn<StackFilePage> = (component: StackFilePage) => {
+  return inject(StackFilePageDirtyGuard).canDeactivate(component);
+};
+
 @Injectable()
-export class StackFilePageDirtyGuard implements CanDeactivate<StackFilePage> {
+export class StackFilePageDirtyGuard {
 
   private bucket: string;
 

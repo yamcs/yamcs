@@ -1,12 +1,12 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AuthGuard } from '../core/guards/AuthGuard';
-import { ClearContextGuard } from '../core/guards/ClearContextGuard';
-import { MayAccessAdminAreaGuard } from '../core/guards/MayAccessAdminAreaGuard';
-import { MayControlAccessGuard } from '../core/guards/MayControlAccessGuard';
-import { MayControlArchivingGuard } from '../core/guards/MayControlArchivingGuard';
-import { MayControlServicesGuard } from '../core/guards/MayControlServicesGuard';
-import { MayReadSystemInfoGuard } from '../core/guards/MayReadSystemInfoGuard';
+import { authGuardChildFn, authGuardFn } from '../core/guards/AuthGuard';
+import { clearContextGuardFn } from '../core/guards/ClearContextGuard';
+import { mayAccessAdminAreaGuardFn } from '../core/guards/MayAccessAdminAreaGuard';
+import { mayControlAccessGuardFn } from '../core/guards/MayControlAccessGuard';
+import { mayControlArchivingGuardFn } from '../core/guards/MayControlArchivingGuard';
+import { mayControlServicesGuardFn } from '../core/guards/MayControlServicesGuard';
+import { mayReadSystemInfoGuardFn } from '../core/guards/MayReadSystemInfoGuard';
 import { AdminActivityPage } from './activity/AdminActivityPage';
 import { DatabasePage } from './databases/database/DatabasePage';
 import { DatabaseShellTab } from './databases/database/shell/DatabaseShellTab';
@@ -49,8 +49,8 @@ import { ThreadsPage } from './threads/ThreadsPage';
 
 const routes: Routes = [{
   path: '',
-  canActivate: [AuthGuard, ClearContextGuard, MayAccessAdminAreaGuard],
-  canActivateChild: [AuthGuard],
+  canActivate: [authGuardFn, clearContextGuardFn, mayAccessAdminAreaGuardFn],
+  canActivateChild: [authGuardChildFn],
   runGuardsAndResolvers: 'always',
   component: AdminPage,
   children: [{
@@ -59,35 +59,35 @@ const routes: Routes = [{
     component: AdminActivityPage,
   }, {
     path: 'http-traffic',
-    canActivate: [MayReadSystemInfoGuard],
+    canActivate: [mayReadSystemInfoGuardFn],
     component: HttpTrafficPage,
   }, {
     path: 'sessions',
-    canActivate: [MayControlAccessGuard],
+    canActivate: [mayControlAccessGuardFn],
     component: SessionsPage,
   }, {
     path: 'routes',
-    canActivate: [MayReadSystemInfoGuard],
+    canActivate: [mayReadSystemInfoGuardFn],
     component: RoutesPage,
   }, {
     path: 'leap-seconds',
-    canActivate: [MayReadSystemInfoGuard],
+    canActivate: [mayReadSystemInfoGuardFn],
     component: LeapSecondsPage,
   }, {
     path: 'processor-types',
-    canActivate: [MayReadSystemInfoGuard],
+    canActivate: [mayReadSystemInfoGuardFn],
     component: ProcessorTypesPage,
   }, {
     path: 'replication',
-    canActivate: [MayReadSystemInfoGuard],
+    canActivate: [mayReadSystemInfoGuardFn],
     component: ReplicationPage,
   }, {
     path: 'services',
-    canActivate: [MayControlServicesGuard],
+    canActivate: [mayControlServicesGuardFn],
     component: ServicesPage,
   }, {
     path: 'databases',
-    canActivate: [MayControlArchivingGuard],
+    canActivate: [mayControlArchivingGuardFn],
     children: [{
       path: '',
       pathMatch: 'full',
@@ -150,7 +150,7 @@ const routes: Routes = [{
   }, {
     path: 'rocksdb',
     runGuardsAndResolvers: 'always',
-    canActivate: [MayControlArchivingGuard],
+    canActivate: [mayControlArchivingGuardFn],
     children: [{
       path: '',
       pathMatch: 'full',
@@ -170,76 +170,76 @@ const routes: Routes = [{
     path: 'iam/service-accounts',
     pathMatch: 'full',
     component: ServiceAccountsPage,
-    canActivate: [MayControlAccessGuard],
+    canActivate: [mayControlAccessGuardFn],
   }, {
     path: 'iam/service-accounts/create',
     pathMatch: 'full',
     component: CreateServiceAccountPage,
-    canActivate: [MayControlAccessGuard],
+    canActivate: [mayControlAccessGuardFn],
   }, {
     path: 'iam/users',
     pathMatch: 'full',
     component: UsersPage,
-    canActivate: [MayControlAccessGuard],
+    canActivate: [mayControlAccessGuardFn],
   }, {
     path: 'iam/users/create',
     pathMatch: 'full',
     component: CreateUserPage,
-    canActivate: [MayControlAccessGuard],
+    canActivate: [mayControlAccessGuardFn],
   }, {
     path: 'iam/users/:username',
     pathMatch: 'full',
     component: UserPage,
-    canActivate: [MayControlAccessGuard],
+    canActivate: [mayControlAccessGuardFn],
   }, {
     path: 'iam/users/:username/edit',
     pathMatch: 'full',
     component: EditUserPage,
-    canActivate: [MayControlAccessGuard],
+    canActivate: [mayControlAccessGuardFn],
   }, {
     path: 'iam/groups',
     pathMatch: 'full',
     component: GroupsPage,
-    canActivate: [MayControlAccessGuard],
+    canActivate: [mayControlAccessGuardFn],
   }, {
     path: 'iam/groups/create',
     pathMatch: 'full',
     component: CreateGroupPage,
-    canActivate: [MayControlAccessGuard],
+    canActivate: [mayControlAccessGuardFn],
   }, {
     path: 'iam/groups/:name',
     pathMatch: 'full',
     component: GroupPage,
-    canActivate: [MayControlAccessGuard],
+    canActivate: [mayControlAccessGuardFn],
   }, {
     path: 'iam/groups/:name/edit',
     pathMatch: 'full',
     component: EditGroupPage,
-    canActivate: [MayControlAccessGuard],
+    canActivate: [mayControlAccessGuardFn],
   }, {
     path: 'iam/roles',
     pathMatch: 'full',
     component: RolesPage,
-    canActivate: [MayControlAccessGuard],
+    canActivate: [mayControlAccessGuardFn],
   }, {
     path: 'iam/roles/:name',
     pathMatch: 'full',
     component: RolePage,
-    canActivate: [MayControlAccessGuard],
+    canActivate: [mayControlAccessGuardFn],
   }, {
     path: 'threads',
     pathMatch: 'full',
     component: ThreadsPage,
-    canActivate: [MayReadSystemInfoGuard],
+    canActivate: [mayReadSystemInfoGuardFn],
   }, {
     path: 'threads/:id',
     component: ThreadPage,
-    canActivate: [MayReadSystemInfoGuard],
+    canActivate: [mayReadSystemInfoGuardFn],
   }, {
     path: 'system',
     pathMatch: 'full',
     component: SystemPage,
-    canActivate: [MayReadSystemInfoGuard],
+    canActivate: [mayReadSystemInfoGuardFn],
   }]
 }];
 

@@ -1,16 +1,16 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AttachContextGuard } from '../core/guards/AttachContextGuard';
-import { AuthGuard } from '../core/guards/AuthGuard';
-import { MayReadEventsGuard } from '../core/guards/MayReadEventsGuard';
+import { attachContextGuardFn } from '../core/guards/AttachContextGuard';
+import { authGuardChildFn, authGuardFn } from '../core/guards/AuthGuard';
+import { mayReadEventsGuardFn } from '../core/guards/MayReadEventsGuard';
 import { InstancePage } from '../shared/template/InstancePage';
 import { EventsPage } from './EventsPage';
 
 const routes: Routes = [
   {
     path: '',
-    canActivate: [AuthGuard, AttachContextGuard],
-    canActivateChild: [AuthGuard],
+    canActivate: [authGuardFn, attachContextGuardFn],
+    canActivateChild: [authGuardChildFn],
     runGuardsAndResolvers: 'always',
     component: InstancePage,
     children: [
@@ -18,7 +18,7 @@ const routes: Routes = [
         path: '',
         pathMatch: 'full',
         component: EventsPage,
-        canActivate: [MayReadEventsGuard],
+        canActivate: [mayReadEventsGuardFn],
       },
     ]
   }
