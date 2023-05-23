@@ -84,7 +84,7 @@ import com.google.common.collect.Streams;
 /**
  * Implements CCSDS File Delivery Protocol (CFDP) in Yamcs.
  * <p>
- * The standard is specified in <a href="https://public.ccsds.org/Pubs/727x0b4.pdf"> CCSDS 727.0-B-4 </a>
+ * The standard is specified in <a href="https://public.ccsds.org/Pubs/727x0b5.pdf"> CCSDS 727.0-B-5 </a>
  * 
  * @author nm
  *
