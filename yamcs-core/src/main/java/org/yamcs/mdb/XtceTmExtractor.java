@@ -25,7 +25,7 @@ public class XtceTmExtractor {
 
     public final XtceDb xtcedb;
     final SequenceContainer rootContainer;
-    ContainerProcessingOptions options = new ContainerProcessingOptions(null);
+    ContainerProcessingOptions options;
     final ProcessorData pdata;
 
     /**
@@ -48,6 +48,7 @@ public class XtceTmExtractor {
         this.subscription = new Subscription(xtcedb);
         rootContainer = xtcedb.getRootSequenceContainer();
         this.pdata = pdata;
+        this.options = pdata.getProcessorConfig().getContainerProcessingOptions();
         if (pdata.getProcessorConfig().subscribeContainerArchivePartitions()) {
             for (SequenceContainer sc : xtcedb.getSequenceContainers()) {
                 if (sc.useAsArchivePartition()) {
