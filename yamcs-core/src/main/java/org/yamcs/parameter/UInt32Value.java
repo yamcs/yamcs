@@ -21,7 +21,7 @@ public class UInt32Value extends Value {
 
     @Override
     public long toLong() {
-        return v & 0xFFFFFFFF;
+        return v & 0xFFFFFFFFL;
     }
 
     @Override
@@ -34,6 +34,7 @@ public class UInt32Value extends Value {
         return Integer.hashCode(v);
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof UInt32Value) {
             return v == ((UInt32Value) obj).v;
