@@ -49,6 +49,7 @@ import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.CryptoUtils;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.tctm.Link;
+import org.yamcs.templating.ParseException;
 import org.yamcs.templating.Template;
 import org.yamcs.templating.Variable;
 import org.yamcs.time.RealtimeTimeService;
@@ -1277,6 +1278,8 @@ public class YamcsServer {
                         addInstanceTemplate(template);
                     } catch (IOException e) {
                         throw new UncheckedIOException(e);
+                    } catch (ParseException e) {
+                        throw new ConfigurationException(e);
                     }
                 }
             });

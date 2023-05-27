@@ -29,6 +29,7 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.ServerApi;
 import org.yamcs.http.auth.AuthHandler;
 import org.yamcs.management.ManagementService;
+import org.yamcs.templating.ParseException;
 import org.yamcs.templating.TemplateProcessor;
 
 import com.google.gson.Gson;
@@ -68,7 +69,7 @@ public class IndexHandler extends Handler {
         String html = null;
         try {
             html = getHtml();
-        } catch (IOException e) {
+        } catch (IOException | ParseException e) {
             throw new InternalServerErrorException(e);
         }
 
@@ -87,7 +88,7 @@ public class IndexHandler extends Handler {
         ctx.sendResponse(response);
     }
 
-    private synchronized String getHtml() throws IOException {
+    private synchronized String getHtml() throws IOException, ParseException {
         var lastModified = Files.getLastModifiedTime(indexFile);
         if (!lastModified.equals(cacheTime)) {
             cachedHtml = processTemplate();
@@ -97,7 +98,7 @@ public class IndexHandler extends Handler {
     }
 
     @SuppressWarnings("unchecked")
-    private String processTemplate() throws IOException {
+    private String processTemplate() throws IOException, ParseException {
         var template = new String(Files.readAllBytes(indexFile), StandardCharsets.UTF_8);
 
         var webConfig = new HashMap<>(config.toMap());

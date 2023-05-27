@@ -465,6 +465,7 @@
 					**/me/lemire/integercompression/**,
 					**/org/yamcs/protobuf/**,
 					**/org/yamcs/yarch/streamsql/StreamSqlParser*,
+					**/org/yamcs/templating/TemplateParser*,
 					**/org/yamcs/ui/packetviewer/**,
 					**/org/yamcs/examples/**,
 					**/org/yamcs/xtce/xlsv6/*,

@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.yamcs.templating.ParseException;
 import org.yamcs.templating.TemplateProcessor;
 
 import com.google.common.io.CharStreams;
@@ -276,7 +277,7 @@ public class HandlerContext {
                 InputStreamReader reader = new InputStreamReader(resource, StandardCharsets.UTF_8)) {
             String template = CharStreams.toString(reader);
             return TemplateProcessor.process(template, vars);
-        } catch (IOException e) {
+        } catch (IOException | ParseException e) {
             throw new InternalServerErrorException(e);
         }
     }
