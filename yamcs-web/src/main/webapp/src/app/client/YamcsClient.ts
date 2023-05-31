@@ -26,7 +26,6 @@ export default class YamcsClient implements HttpHandler {
 
   readonly apiUrl: string;
   readonly authUrl: string;
-  readonly staticUrl: string;
 
   private accessToken?: string;
 
@@ -38,7 +37,6 @@ export default class YamcsClient implements HttpHandler {
   constructor(readonly baseHref = '/', private messageService: MessageService) {
     this.apiUrl = `${this.baseHref}api`;
     this.authUrl = `${this.baseHref}auth`;
-    this.staticUrl = `${this.baseHref}static`;
   }
 
   createInstancesSubscription(observer: (instance: Instance) => void): InstancesSubscription {

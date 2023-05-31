@@ -38,7 +38,7 @@ export class AdminPage implements OnDestroy {
   ) {
     this.config = configService.getConfig();
     this.user = authService.getUser()!;
-    const resourceUrl = `${baseHref}static/rocksdb.svg`;
+    const resourceUrl = `${baseHref}rocksdb.svg`;
     const safeResourceUrl = sanitizer.bypassSecurityTrustResourceUrl(resourceUrl);
     iconRegistry.addSvgIcon('rocksdb', safeResourceUrl);
 

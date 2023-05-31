@@ -170,11 +170,10 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
   public init(objectName: string) {
     const container: HTMLDivElement = this.displayContainer.nativeElement;
     this.display = new Display(container);
-    const staticPrefix = `${this.baseHref}static/`;
-    this.display.imagesPrefix = staticPrefix;
+    this.display.imagesPrefix = this.baseHref;
     this.display.setPathResolver(new OpiDisplayPathResolver(this.storageClient, this.display));
     this.display.setConsoleHandler(new OpiDisplayConsoleHandler(this.messageService));
-    this.display.setFontResolver(new OpiDisplayFontResolver(staticPrefix));
+    this.display.setFontResolver(new OpiDisplayFontResolver(this.baseHref));
 
     let currentFolder = '';
     if (objectName.lastIndexOf('/') !== -1) {

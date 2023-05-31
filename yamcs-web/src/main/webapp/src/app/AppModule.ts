@@ -5,9 +5,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import * as dayjs from 'dayjs';
 import 'dayjs/locale/en';
 import * as utc from 'dayjs/plugin/utc';
+import { AppRoutingModule } from './AppRoutingModule';
 import { AppBaseModule } from './appbase/AppBaseModule';
 import { AppComponent } from './appbase/pages/AppComponent';
-import { AppRoutingModule } from './AppRoutingModule';
 import { ConfigService } from './core/services/ConfigService';
 import { SharedModule } from './shared/SharedModule';
 
@@ -28,13 +28,11 @@ dayjs.locale('en');
     {
       provide: APP_BASE_HREF,
       useFactory: () => {
-        // base href is set in index.html so that it can be applied
-        // for loading static resources. Here we derive APP_BASE_HREF
-        // from it (keep context path, but remove static path).
-        // This is the value used by Angular Router where we don't
-        // want to see the static prefix.
+        // base href can be a context path, and is set in index.html
+        // so that it can be applied for loading static resources.
+        // Here we derive APP_BASE_HREF from it.
         const baseEl = document.getElementsByTagName('base')[0];
-        return baseEl.getAttribute('href')?.replace('static/', '');
+        return baseEl.getAttribute('href');
       },
     },
     {

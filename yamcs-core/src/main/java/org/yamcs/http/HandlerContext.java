@@ -1,10 +1,13 @@
 package org.yamcs.http;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.AUTHORIZATION;
+import static io.netty.handler.codec.http.HttpHeaderNames.CACHE_CONTROL;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpHeaderNames.HOST;
 import static io.netty.handler.codec.http.HttpHeaderNames.LOCATION;
+import static io.netty.handler.codec.http.HttpHeaderValues.TEXT_HTML;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
@@ -20,20 +23,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.yamcs.security.User;
 import org.yamcs.templating.ParseException;
 import org.yamcs.templating.TemplateProcessor;
+import org.yamcs.utils.Mimetypes;
 
+import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.protobuf.Message;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
@@ -45,18 +53,26 @@ import io.netty.handler.ssl.SslHandler;
 
 public class HandlerContext {
 
+    private static final Mimetypes MIME = Mimetypes.getInstance();
+
     private final String contextPath;
     private final ChannelHandlerContext nettyContext;
-    private final FullHttpRequest nettyRequest;
+    private final HttpRequest nettyRequest;
     private final QueryStringDecoder qsDecoder;
+    private final User user;
 
     private Map<String, String> formParameters;
 
-    public HandlerContext(String contextPath, ChannelHandlerContext ctx, FullHttpRequest req) {
+    public HandlerContext(String contextPath, ChannelHandlerContext ctx, HttpRequest req, User user) {
         this.contextPath = contextPath;
         nettyContext = ctx;
         nettyRequest = req;
+        this.user = user;
         qsDecoder = new QueryStringDecoder(req.uri());
+    }
+
+    public User getUser() {
+        return user;
     }
 
     /**
@@ -104,8 +120,16 @@ public class HandlerContext {
         return nettyContext;
     }
 
-    public FullHttpRequest getNettyFullHttpRequest() {
+    public HttpRequest getNettyHttpRequest() {
         return nettyRequest;
+    }
+
+    /**
+     * @throws ClassCastException
+     *             if this context does not contain a "full" HTTP request.
+     */
+    public FullHttpRequest getNettyFullHttpRequest() {
+        return (FullHttpRequest) nettyRequest;
     }
 
     public String getContextPath() {
@@ -267,7 +291,7 @@ public class HandlerContext {
         ByteBuf body = nettyContext.alloc().buffer();
         body.writeCharSequence(processed, StandardCharsets.UTF_8);
         HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, body);
-        response.headers().set(CONTENT_TYPE, "text/html");
+        response.headers().set(CONTENT_TYPE, TEXT_HTML);
         response.headers().set(CONTENT_LENGTH, body.readableBytes());
         sendResponse(response);
     }
@@ -284,6 +308,7 @@ public class HandlerContext {
 
     public void sendOK() {
         HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
+        response.headers().set(CONTENT_LENGTH, 0);
         sendResponse(response);
     }
 
@@ -298,6 +323,29 @@ public class HandlerContext {
         HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, body);
         response.headers().set(CONTENT_TYPE, "application/json");
         response.headers().set(CONTENT_LENGTH, body.readableBytes());
+        HttpRequestHandler.sendResponse(nettyContext, nettyRequest, response);
+    }
+
+    /**
+     * Send a classpath resource.
+     */
+    public void sendResource(String resource) {
+        var body = createByteBuf();
+        try (var in = getClass().getResourceAsStream(resource)) {
+            if (in == null) {
+                throw new NotFoundException();
+            }
+            try (var out = new ByteBufOutputStream(body)) {
+                ByteStreams.copy(in, out);
+            }
+        } catch (IOException e) {
+            throw new InternalServerErrorException(e);
+        }
+
+        var response = new DefaultFullHttpResponse(HTTP_1_1, OK, body);
+        response.headers().set(CONTENT_TYPE, MIME.getMimetype(resource));
+        response.headers().set(CONTENT_LENGTH, body.readableBytes());
+        response.headers().set(CACHE_CONTROL, "private, max-age=86400");
         HttpRequestHandler.sendResponse(nettyContext, nettyRequest, response);
     }
 

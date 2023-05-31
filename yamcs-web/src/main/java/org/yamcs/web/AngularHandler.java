@@ -11,6 +11,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
@@ -21,45 +22,92 @@ import java.util.TreeSet;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.http.Handler;
 import org.yamcs.http.HandlerContext;
 import org.yamcs.http.HttpServer;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
+import org.yamcs.http.StaticFileHandler;
 import org.yamcs.http.api.ServerApi;
 import org.yamcs.http.auth.AuthHandler;
 import org.yamcs.management.ManagementService;
 import org.yamcs.templating.ParseException;
 import org.yamcs.templating.TemplateProcessor;
 
+import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
 import com.google.protobuf.util.JsonFormat;
 
-import io.netty.channel.ChannelHandler.Sharable;
+import io.netty.buffer.ByteBufOutputStream;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 
-/**
- * Handler that always responds with the contents of the index.html file of the webapp. The file is generated
- * dynamically because we do some templating on it.
- */
-@Sharable
-public class IndexHandler extends Handler {
+public class AngularHandler extends StaticFileHandler {
 
     private YConfiguration config;
     private HttpServer httpServer;
-    private Path indexFile;
 
+    private Path indexFile;
     private String cachedHtml;
     private FileTime cacheTime;
 
-    public IndexHandler(YConfiguration config, HttpServer httpServer, Path webRoot) {
+    private String logo;
+    private Path logoFile;
+
+    public AngularHandler(YConfiguration config, HttpServer httpServer, Path staticRoot) {
+        super("", staticRoot);
         this.config = config;
         this.httpServer = httpServer;
-        indexFile = webRoot.resolve("index.html");
+        indexFile = staticRoot.resolve("index.html");
+
+        if (config.containsKey("logo")) {
+            logoFile = Path.of(config.getString("logo"));
+            logo = logoFile.getFileName().toString();
+        }
     }
 
     @Override
     public void handle(HandlerContext ctx) {
+        var filePath = getFilePath(ctx);
+
+        // Serve a logo image, if so configured
+        if (logo != null && logo.equals(filePath)) {
+            serveLogo(ctx);
+            return;
+        }
+
+        // Try to serve a static file
+        var file = locateFile(filePath);
+        if (file != null && !filePath.isEmpty()) {
+            super.handle(ctx);
+            return;
+        }
+
+        // Set-up HTML5 deep-linking:
+        // Catch any non-handled URL and make it return the contents of our index.html
+        // This will cause initialization of the Angular app on any requested path. The
+        // Angular router will interpret this and do client-side routing as needed.
+        serveIndex(ctx);
+    }
+
+    private void serveLogo(HandlerContext ctx) {
+        ctx.requireGET();
+
+        var body = ctx.createByteBuf();
+        try (var in = Files.newInputStream(logoFile); var out = new ByteBufOutputStream(body)) {
+            ByteStreams.copy(in, out);
+        } catch (NoSuchFileException e) {
+            throw new NotFoundException();
+        } catch (IOException e) {
+            throw new InternalServerErrorException(e);
+        }
+
+        var response = new DefaultFullHttpResponse(HTTP_1_1, OK, body);
+        response.headers().set(CONTENT_TYPE, MIME.getMimetype(logoFile));
+        response.headers().set(CONTENT_LENGTH, body.readableBytes());
+        response.headers().set(CACHE_CONTROL, "private, max-age=86400");
+        ctx.sendResponse(response);
+    }
+
+    private void serveIndex(HandlerContext ctx) {
         ctx.requireGET();
 
         if (!Files.exists(indexFile)) {
@@ -68,7 +116,7 @@ public class IndexHandler extends Handler {
 
         String html = null;
         try {
-            html = getHtml();
+            html = renderHtml();
         } catch (IOException | ParseException e) {
             throw new InternalServerErrorException(e);
         }
@@ -88,21 +136,21 @@ public class IndexHandler extends Handler {
         ctx.sendResponse(response);
     }
 
-    private synchronized String getHtml() throws IOException, ParseException {
+    private synchronized String renderHtml() throws IOException, ParseException {
         var lastModified = Files.getLastModifiedTime(indexFile);
         if (!lastModified.equals(cacheTime)) {
-            cachedHtml = processTemplate();
+            cachedHtml = renderHtmlTemplate();
             cacheTime = lastModified;
         }
         return cachedHtml;
     }
 
     @SuppressWarnings("unchecked")
-    private String processTemplate() throws IOException, ParseException {
+    private String renderHtmlTemplate() throws IOException, ParseException {
         var template = new String(Files.readAllBytes(indexFile), StandardCharsets.UTF_8);
 
         // Don't use template for this, because Angular compiler messes up the HTML
-        template.replace("<!--[[ EXTRA_HEADER_HTML ]]-->", config.getString("extraHeaderHTML", ""));
+        template = template.replace("<!--[[ EXTRA_HEADER_HTML ]]-->", config.getString("extraHeaderHTML", ""));
 
         var webConfig = new HashMap<>(config.toMap());
 

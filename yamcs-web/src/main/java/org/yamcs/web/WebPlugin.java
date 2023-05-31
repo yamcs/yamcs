@@ -172,21 +172,9 @@ public class WebPlugin implements Plugin {
      */
     private void setupRoutes(YConfiguration config, Path staticRoot) throws PluginException {
         var httpServer = YamcsServer.getServer().getGlobalService(HttpServer.class);
-        httpServer.addStaticRoot(staticRoot);
 
-        // Set-up HTML5 deep-linking:
-        // Catch any non-handled URL and make it return the contents of our index.html
-        // This will cause initialization of the Angular app on any requested path. The
-        // Angular router will interpret this and do client-side routing as needed.
-        var indexHandler = new IndexHandler(config, httpServer, staticRoot);
-        httpServer.addHandler("*", () -> indexHandler);
-
-        // Serve a logo image, if so configured
-        if (config.containsKey("logo")) {
-            var file = Path.of(config.getString("logo"));
-            var filename = file.getFileName().toString();
-            httpServer.addHandler(filename, () -> new LogoHandler(file));
-        }
+        var angularHandler = new AngularHandler(config, httpServer, staticRoot);
+        httpServer.addRoute("*", () -> angularHandler);
 
         // Additional API Routes
         try (var in = getClass().getResourceAsStream("/yamcs-web.protobin")) {

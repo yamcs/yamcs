@@ -82,7 +82,8 @@
           <td>Parameter</td>
           <td>
             <a [routerLink]="['/mdb/parameters/', entry.parameter!.qualifiedName]"
-               [queryParams]="{c: yamcs.context}">
+               [queryParams]="{c: yamcs.context}"
+               class="ya-link">
               {{ entry.parameter.qualifiedName }}
             </a>
           </td>

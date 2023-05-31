@@ -17,19 +17,17 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.TimeZone;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
-import org.yamcs.utils.Mimetypes;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -51,26 +49,52 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedFile;
 import io.netty.handler.stream.ChunkedWriteHandler;
 
-public class StaticFileHandler {
+public class StaticFileHandler extends HttpHandler {
 
-    private static final Mimetypes MIME = Mimetypes.getInstance();
     public static final int HTTP_CACHE_SECONDS = 60;
     public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
     public static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
 
-    private static List<String> staticRoots;
-    private static boolean zeroCopyEnabled;
+    protected String route;
+    protected List<Path> staticRoots;
+    private boolean zeroCopyEnabled = true;
 
-    private static final Logger log = LoggerFactory.getLogger(StaticFileHandler.class.getName());
+    public StaticFileHandler(String route, Path staticRoot) {
+        this(route, Arrays.asList(staticRoot));
+    }
 
-    public static void init(List<String> staticRoots, boolean zeroCopyEnabled) throws ConfigurationException {
-        StaticFileHandler.staticRoots = staticRoots;
-        StaticFileHandler.zeroCopyEnabled = zeroCopyEnabled;
+    public StaticFileHandler(String route, List<Path> staticRoots) {
+        this.route = Objects.requireNonNull(route);
+        this.staticRoots = staticRoots;
+    }
+
+    @Override
+    public boolean requireAuth() {
+        return false;
+    }
+
+    public void setZeroCopyEnabled(boolean zeroCopyEnabled) {
+        this.zeroCopyEnabled = zeroCopyEnabled;
+    }
+
+    @Override
+    public void handle(HandlerContext ctx) {
+        ctx.requireGET();
+        var filePath = getFilePath(ctx);
+        handleStaticFileRequest(ctx.getNettyChannelHandlerContext(),
+                ctx.getNettyHttpRequest(), filePath);
+    }
+
+    protected String getFilePath(HandlerContext ctx) {
+        var uri = ctx.getPathWithoutContext();
+
+        // Chop off a prefix such as /static/
+        return uri.substring(route.length() + 1);
     }
 
     protected File locateFile(String path) {
-        for (String staticRoot : staticRoots) { // Stop on first match
-            File file = new File(staticRoot, path);
+        for (var staticRoot : staticRoots) { // Stop on first match
+            var file = staticRoot.resolve(path).toFile();
             if (!file.isHidden() && file.exists()) {
                 return file;
             }
@@ -78,7 +102,7 @@ public class StaticFileHandler {
         return null;
     }
 
-    public void handleStaticFileRequest(ChannelHandlerContext ctx, HttpRequest req, String rawPath) throws IOException {
+    private void handleStaticFileRequest(ChannelHandlerContext ctx, HttpRequest req, String rawPath) {
         log.debug("Handling static file request for {}", rawPath);
         String path = sanitizePath(rawPath);
         if (path == null) {
@@ -138,7 +162,7 @@ public class StaticFileHandler {
             // chunked HTTP is required for compression to work because we don't know the size of the compressed file.
             HttpUtil.setTransferEncodingChunked(response, true);
             ctx.pipeline().addLast(new HttpContentCompressor());
-            // Note that the CunkedWriteHandler here will just read the file chunk by chunk.
+            // Note that the ChunkedWriteHandler here will just read the file chunk by chunk.
             // The real HTTP chunk encoding is performed by the HttpServerCodec/HttpContentEncoder which sits first in
             // the pipeline
             ctx.pipeline().addLast(new ChunkedWriteHandler());
@@ -157,9 +181,14 @@ public class StaticFileHandler {
             // Write the end marker.
             lastContentFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
         } else {
-            sendFileFuture = ctx.channel().writeAndFlush(new HttpChunkedInput(new ChunkedFile(file, 8192)),
-                    ctx.newProgressivePromise());
-            lastContentFuture = sendFileFuture;
+            try {
+                var chunkedFile = new ChunkedFile(file, 8192);
+                sendFileFuture = ctx.channel().writeAndFlush(new HttpChunkedInput(chunkedFile),
+                        ctx.newProgressivePromise());
+                lastContentFuture = sendFileFuture;
+            } catch (IOException e) {
+                throw new InternalServerErrorException(e);
+            }
         }
 
         final File finalFile = file;
@@ -205,7 +234,7 @@ public class StaticFileHandler {
      * @param fileToCache
      *            file to extract content type
      */
-    private static void setDateAndCacheHeaders(HttpResponse response, File fileToCache) {
+    private void setDateAndCacheHeaders(HttpResponse response, File fileToCache) {
         SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT, Locale.US);
         dateFormatter.setTimeZone(TimeZone.getTimeZone(HTTP_DATE_GMT_TIMEZONE));
 
@@ -224,7 +253,7 @@ public class StaticFileHandler {
     /**
      * When file timestamp is the same as what the browser is sending up, send a "304 Not Modified"
      */
-    private static void sendNotModified(ChannelHandlerContext ctx, HttpRequest req) {
+    private void sendNotModified(ChannelHandlerContext ctx, HttpRequest req) {
         log.debug("{} {} 304", req.method(), req.uri());
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.NOT_MODIFIED);
         response.headers().set(CONTENT_LENGTH, 0);

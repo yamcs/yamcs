@@ -22,7 +22,8 @@ public class HttpUtils {
             return path;
         } else {
             if (path.startsWith(contextPath)) {
-                return path.substring(contextPath.length());
+                var stripped = path.substring(contextPath.length());
+                return stripped.length() == 0 ? "/" : stripped;
             } else {
                 throw new IllegalArgumentException("URI does not start with context path");
             }
