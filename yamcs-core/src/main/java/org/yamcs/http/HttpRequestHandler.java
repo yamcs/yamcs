@@ -10,6 +10,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 
 import javax.net.ssl.SSLHandshakeException;
@@ -177,12 +178,15 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         if (cause instanceof NotSslRecordException) {
             log.info("{} Closing channel: expected a TLS/SSL packet", channelId);
         } else if (cause instanceof IOException && cause.getMessage().contains("reset by peer")) {
-            // Unclean client close. Don't care about stack trace
-            log.info("{} Closing channel: {}", channelId, cause.getMessage());
+            // Java 11: Unclean client close. Don't care about stack trace
+            log.trace("{} Closing channel: {}", channelId, cause.getMessage());
+        } else if (cause instanceof SocketException && cause.getMessage().equals("Connection reset")) {
+            // Java 17: Unclean client close. Don't care about stack trace
+            log.trace("{} Closing channel: {}", channelId, cause.getMessage());
         } else if (cause instanceof DecoderException
                 && ((DecoderException) cause).getCause() instanceof SSLHandshakeException) {
             // Very common when using Chrome and unknown certificates. Don't care about stack trace
-            log.info("{} Closing channel: {}", channelId, cause.getMessage());
+            log.debug("{} Closing channel: {}", channelId, cause.getMessage());
         } else {
             log.error("{} Closing channel: {}", channelId, cause.getMessage(), cause);
         }
