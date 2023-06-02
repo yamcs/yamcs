@@ -1,7 +1,8 @@
 import { APP_BASE_HREF } from '@angular/common';
-import { APP_INITIALIZER, NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule, isDevMode } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ServiceWorkerModule } from '@angular/service-worker';
 import * as dayjs from 'dayjs';
 import 'dayjs/locale/en';
 import * as utc from 'dayjs/plugin/utc';
@@ -22,6 +23,10 @@ dayjs.locale('en');
     AppBaseModule,
     AppRoutingModule, // Keep in front of modules that contribute child routing
     SharedModule,
+    ServiceWorkerModule.register('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWithDelay:5000',
+    }),
   ],
   providers: [
     ConfigService,

@@ -36,7 +36,8 @@
                 "glob": "**/*",
                 "input": "node_modules/@yamcs/opi/dist/fonts/",
                 "output": "/"
-              }
+              },
+              "src/manifest.webmanifest"
             ],
             "styles": [
               "src/styles/vars.css",
@@ -56,7 +57,9 @@
               "dayjs/locale/en",
               "dayjs/plugin/utc",
               "showdown"
-            ]
+            ],
+            "serviceWorker": true,
+            "ngswConfigPath": "ngsw-config.json"
           },
           "configurations": {
             "production": {

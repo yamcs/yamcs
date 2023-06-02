@@ -1,9 +1,6 @@
 package org.yamcs.web;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.yamcs.Plugin;
@@ -17,11 +14,9 @@ import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.SystemPrivilege;
-import org.yamcs.utils.FileUtils;
+import org.yamcs.templating.ParseException;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.YarchDatabase;
-
-import com.google.common.io.CharStreams;
 
 public class WebPlugin implements Plugin {
 
@@ -43,16 +38,23 @@ public class WebPlugin implements Plugin {
         var yamcs = YamcsServer.getServer();
         yamcs.getSecurityStore().addSystemPrivilege(PRIV_ADMIN);
 
+        var httpServer = yamcs.getGlobalService(HttpServer.class);
+        var contextPath = httpServer.getContextPath();
+
         createBuckets(config);
-        var staticRoot = setupWebFiles(config);
-        setupRoutes(config, staticRoot);
+
+        try {
+            var deployer = new WebFileDeployer(config, contextPath);
+            setupRoutes(config, deployer.getDirectory());
+        } catch (IOException | ParseException e) {
+            throw new PluginException("Could not deploy website", e);
+        }
 
         // Print these log statements via a ready listener because it is more helpful
         // if they appear at the end of the boot log.
         yamcs.addReadyListener(() -> {
-            var httpServer = yamcs.getGlobalService(HttpServer.class);
             for (var binding : httpServer.getBindings()) {
-                log.info("Website deployed at {}{}", binding, httpServer.getContextPath());
+                log.info("Website deployed at {}{}", binding, contextPath);
             }
         });
     }
@@ -106,74 +108,12 @@ public class WebPlugin implements Plugin {
     }
 
     /**
-     * Deploy the website, for practical reasons we have three different mechanisms. In order:
-     * 
-     * <ul>
-     * <li>(1) Check a system property yamcs.web.staticRoot
-     * <li>(2) Check a property in yamcs.yaml
-     * <li>(3) Load from classpath (packaged inside yamcs-web)
-     * </ul>
-     * 
-     * End-users should use (3). (1) and (2) make it possible to develop on the web sources. (1) Allows doing so without
-     * needing to modify the yamcs.yaml
-     */
-    private Path setupWebFiles(YConfiguration config) throws PluginException {
-        Path staticRoot;
-        var staticRootOverride = System.getProperty("yamcs.web.staticRoot");
-        if (staticRootOverride != null) {
-            staticRoot = Path.of(staticRootOverride);
-            staticRoot = staticRoot.toAbsolutePath().normalize();
-        } else if (config.containsKey("staticRoot")) {
-            staticRoot = Path.of(config.getString("staticRoot"));
-            staticRoot = staticRoot.toAbsolutePath().normalize();
-        } else {
-            try {
-                staticRoot = deployWebsiteFromClasspath();
-            } catch (IOException e) {
-                throw new PluginException("Could not deploy website", e);
-            }
-        }
-        if (Files.exists(staticRoot)) {
-            log.debug("Serving yamcs-web from {}", staticRoot);
-        } else {
-            log.warn("Static root for yamcs-web not found at '{}'", staticRoot);
-        }
-
-        return staticRoot;
-    }
-
-    /**
-     * Deploys all web files located in the classpath, as listed in a manifest.txt file. This file is generated during
-     * the Maven build and enables us to skip having to do classpath listings.
-     */
-    private Path deployWebsiteFromClasspath() throws IOException {
-        var cacheDir = YamcsServer.getServer().getCacheDirectory().resolve(CONFIG_SECTION);
-        FileUtils.deleteRecursivelyIfExists(cacheDir);
-        Files.createDirectory(cacheDir);
-        try (var in = getClass().getResourceAsStream("/static/manifest.txt");
-                var reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
-
-            var manifest = CharStreams.toString(reader);
-            var staticFiles = manifest.split(";");
-
-            log.debug("Unpacking {} webapp files", staticFiles.length);
-            for (var staticFile : staticFiles) {
-                try (var resource = getClass().getResourceAsStream("/static/" + staticFile)) {
-                    Files.copy(resource, cacheDir.resolve(staticFile));
-                }
-            }
-
-            return cacheDir;
-        }
-    }
-
-    /**
      * Add routes used by Web UI.
      */
-    private void setupRoutes(YConfiguration config, Path staticRoot) throws PluginException {
+    private void setupRoutes(YConfiguration config, Path directory) throws PluginException {
         var httpServer = YamcsServer.getServer().getGlobalService(HttpServer.class);
 
-        var angularHandler = new AngularHandler(config, httpServer, staticRoot);
+        var angularHandler = new AngularHandler(config, httpServer, directory);
         httpServer.addRoute("*", () -> angularHandler);
 
         // Additional API Routes
