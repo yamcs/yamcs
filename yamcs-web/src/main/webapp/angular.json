@@ -3,9 +3,9 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "app": {
-      "root": "",
-      "sourceRoot": "src",
+    "webapp": {
+      "root": "projects/webapp",
+      "sourceRoot": "projects/webapp/src",
       "projectType": "application",
       "schematics": {},
       "prefix": "app",
@@ -13,18 +13,19 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "aot": true,
             "outputPath": "dist",
-            "index": "src/index.html",
-            "main": "src/main.ts",
-            "tsConfig": "tsconfig.app.json",
-            "polyfills": "src/polyfills.ts",
+            "index": "projects/webapp/src/index.html",
+            "main": "projects/webapp/src/main.ts",
+            "tsConfig": "projects/webapp/tsconfig.app.json",
+            "polyfills": [
+              "zone.js"
+            ],
             "preserveSymlinks": true,
             "outputHashing": "bundles",
             "assets": [
               {
                 "glob": "**/*",
-                "input": "src/assets/",
+                "input": "projects/webapp/src/assets/",
                 "output": "/"
               },
               {
@@ -37,18 +38,18 @@
                 "input": "node_modules/@yamcs/opi/dist/fonts/",
                 "output": "/"
               },
-              "src/manifest.webmanifest"
+              "projects/webapp/src/manifest.webmanifest"
             ],
             "styles": [
-              "src/styles/vars.css",
-              "src/styles/material-theme.scss",
-              "src/styles/material-icons.css",
-              "src/styles/roboto.css",
-              "src/styles/scrollbar.css",
-              "src/styles/styles.css",
-              "src/styles/data-table.css",
-              "src/styles/dl-horizontal.css",
-              "src/styles/form.css"
+              "projects/webapp/src/styles/vars.css",
+              "projects/webapp/src/styles/material-theme.scss",
+              "projects/webapp/src/styles/material-icons.css",
+              "projects/webapp/src/styles/roboto.css",
+              "projects/webapp/src/styles/scrollbar.css",
+              "projects/webapp/src/styles/styles.css",
+              "projects/webapp/src/styles/data-table.css",
+              "projects/webapp/src/styles/dl-horizontal.css",
+              "projects/webapp/src/styles/form.css"
             ],
             "allowedCommonJsDependencies": [
               "brace",
@@ -59,35 +60,24 @@
               "showdown"
             ],
             "serviceWorker": true,
-            "ngswConfigPath": "ngsw-config.json"
+            "ngswConfigPath": "projects/webapp/ngsw-config.json"
           },
           "configurations": {
             "production": {
-              "budgets": [
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "6kb"
-                }
-              ],
-              "optimization": true,
-              "sourceMap": false,
-              "namedChunks": false,
-              "aot": true,
-              "extractLicenses": true,
-              "vendorChunk": false,
               "buildOptimizer": true,
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
-                }
-              ]
+              "optimization": true,
+              "vendorChunk": false,
+              "extractLicenses": true,
+              "sourceMap": false,
+              "namedChunks": false
             },
             "development": {
+              "buildOptimizer": false,
               "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
               "sourceMap": true,
-              "aot": false,
-              "buildOptimizer": false
+              "namedChunks": false
             }
           },
           "defaultConfiguration": "production"
