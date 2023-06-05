@@ -1,8 +1,8 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, Inject, Input, OnChanges, OnDestroy, ViewChild } from '@angular/core';
 import { EventHandler, Graphics } from '@fqqb/timeline';
+import { BitRange } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { BitRange } from '../BitRange';
 import { HexModel, Line } from './model';
 
 @Component({

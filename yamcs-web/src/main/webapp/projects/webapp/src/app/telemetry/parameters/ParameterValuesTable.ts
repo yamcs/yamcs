@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ParameterValue } from '@yamcs/webapp-sdk';
 import { ParameterDataDataSource } from './ParameterDataDataSource';
-import { ParameterValue } from '../../client';
 
 @Component({
   selector: 'app-parameter-values-table',

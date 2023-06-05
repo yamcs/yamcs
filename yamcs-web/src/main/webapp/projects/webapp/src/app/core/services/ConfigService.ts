@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AuthInfo, CommandOption } from '../../client';
-import { User } from '../../shared/User';
-import { ColumnInfo } from '../../shared/template/ColumnChooser';
+import { AuthInfo, ColumnInfo, CommandOption, InstanceConfig, User } from '@yamcs/webapp-sdk';
 
 export interface WebsiteConfig {
   serverId: string;
@@ -24,11 +22,6 @@ export interface WebsiteConfig {
   displayFolderPerInstance: boolean;
   stackFolderPerInstance: boolean;
   siteLinks: SiteLink[];
-}
-
-export interface InstanceConfig {
-  displayBucket: string;
-  stackBucket: string;
 }
 
 export interface EventsConfig {

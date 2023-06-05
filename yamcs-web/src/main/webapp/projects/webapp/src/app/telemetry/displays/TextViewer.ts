@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
-import { StorageClient } from '../../client';
+import { StorageClient } from '@yamcs/webapp-sdk';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Viewer } from './Viewer';

@@ -1,4 +1,4 @@
-<app-message-bar #messageBar />
+<ya-message-bar #messageBar />
 
 <mat-toolbar class="top">
   <mat-toolbar-row>
@@ -40,11 +40,11 @@
 
 <div class="panel-content">
   <div class="filter-bar">
-    <app-search-filter [formControl]="filterControl"
-                       placeholder="Filter instances"
-                       (onArrowDown)="selectNext()"
-                       (onArrowUp)="selectPrevious()"
-                       (onEnter)="applySelection()" />
+    <ya-search-filter [formControl]="filterControl"
+                      placeholder="Filter instances"
+                      (onArrowDown)="selectNext()"
+                      (onArrowUp)="selectPrevious()"
+                      (onEnter)="applySelection()" />
   </div>
   <table mat-table
          [dataSource]="dataSource"
@@ -104,8 +104,8 @@
            routerLink="/instance"
            [queryParams]="{c: (row.processors?.length ? (row.name + '__' + (row | defaultProcessor)) : row.name)}"
            (click)="$event.stopPropagation()">
-          <app-highlight [text]="row.name"
-                         [term]="filterControl.value" />
+          <ya-highlight [text]="row.name"
+                        [term]="filterControl.value" />
         </a>
         <span *ngIf="row.state === 'OFFLINE'">{{ row.name }}</span>
       </td>
@@ -121,7 +121,7 @@
     <ng-container cdkColumnDef="labels">
       <th mat-header-cell *cdkHeaderCellDef mat-sort-header>Labels</th>
       <td mat-cell *cdkCellDef="let row">
-        <app-labels [dict]="row.labels" />
+        <ya-labels [dict]="row.labels" />
         <ng-container *ngIf="!row.labels">-</ng-container>
       </td>
     </ng-container>
@@ -145,7 +145,7 @@
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef class="expand"></th>
       <td mat-cell *matCellDef="let instance">
-        <app-more *ngIf="mayControlServices()">
+        <ya-more *ngIf="mayControlServices()">
           <button mat-menu-item
                   (click)="startInstance(instance)"
                   [disabled]="instance.state !== 'OFFLINE'">
@@ -161,7 +161,7 @@
                   [disabled]="instance.state === 'OFFLINE'">
             Restart
           </button>
-        </app-more>
+        </ya-more>
       </td>
     </ng-container>
 

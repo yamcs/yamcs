@@ -43,9 +43,9 @@
       </dd>
     </dl>
 
-    <app-warning-message *ngIf="!(cleared$ | async)">
+    <ya-warning-message *ngIf="!(cleared$ | async)">
       You're not cleared to send this command
-    </app-warning-message>
+    </ya-warning-message>
 
     <ng-container *ngIf="command$ | async as command">
       <ng-container *ngIf="command.constraint">

@@ -3,12 +3,9 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MessageService, SelectOption, TimelineItem, UpdateTimelineItemRequest, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { TimelineItem, UpdateTimelineItemRequest } from '../client/types/timeline';
-import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
-import { Option } from '../shared/forms/Select';
-import * as utils from '../shared/utils';
 
 @Component({
   templateUrl: './EditItemPage.html',
@@ -16,12 +13,12 @@ import * as utils from '../shared/utils';
 })
 export class EditItemPage implements OnDestroy {
 
-  resolutionOptions: Option[] = [
+  resolutionOptions: SelectOption[] = [
     { id: 'seconds', label: 'seconds' },
     { id: 'minutes', label: 'minutes' },
     { id: 'hours', label: 'hours' }
   ];
-  startConstraintOptions: Option[] = [
+  startConstraintOptions: SelectOption[] = [
     { id: 'START_ON', label: 'Start on' },
   ];
 

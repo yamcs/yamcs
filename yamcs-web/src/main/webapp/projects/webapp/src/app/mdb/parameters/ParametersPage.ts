@@ -4,11 +4,9 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ColumnChooserComponent, ColumnInfo, GetParametersOptions, Parameter, SelectOption } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { GetParametersOptions, Parameter } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
-import { Option } from '../../shared/forms/Select';
-import { ColumnChooser, ColumnInfo } from '../../shared/template/ColumnChooser';
 import { ParametersDataSource } from './ParametersDataSource';
 
 @Component({
@@ -31,8 +29,8 @@ export class ParametersPage implements AfterViewInit {
   @ViewChild(MatPaginator, { static: true })
   paginator: MatPaginator;
 
-  @ViewChild(ColumnChooser)
-  columnChooser: ColumnChooser;
+  @ViewChild(ColumnChooserComponent)
+  columnChooser: ColumnChooserComponent;
 
   dataSource: ParametersDataSource;
 
@@ -48,7 +46,7 @@ export class ParametersPage implements AfterViewInit {
   // Added dynamically based on actual parameters.
   aliasColumns$ = new BehaviorSubject<ColumnInfo[]>([]);
 
-  typeOptions: Option[] = [
+  typeOptions: SelectOption[] = [
     { id: 'ANY', label: 'Any type' },
     { id: 'aggregate', label: 'aggregate' },
     { id: 'array', label: 'array' },
@@ -61,7 +59,7 @@ export class ParametersPage implements AfterViewInit {
     { id: 'time', label: 'time' },
   ];
 
-  sourceOptions: Option[] = [
+  sourceOptions: SelectOption[] = [
     { id: 'ANY', label: 'Any source' },
     { id: 'COMMAND', label: 'Command' },
     { id: 'COMMAND_HISTORY', label: 'Command History' },

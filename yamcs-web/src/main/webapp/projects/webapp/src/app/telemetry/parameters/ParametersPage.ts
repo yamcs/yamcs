@@ -4,13 +4,9 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { ColumnChooserComponent, ColumnInfo, GetParametersOptions, MemberPathPipe, SelectOption, Synchronizer } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { GetParametersOptions } from '../../client';
-import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
-import { Option } from '../../shared/forms/Select';
-import { MemberPathPipe } from '../../shared/pipes/MemberPathPipe';
-import { ColumnChooser, ColumnInfo } from '../../shared/template/ColumnChooser';
 import { ListItem, ParametersDataSource } from './ParametersDataSource';
 
 @Component({
@@ -43,8 +39,8 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
   @ViewChild(MatPaginator, { static: true })
   paginator: MatPaginator;
 
-  @ViewChild(ColumnChooser)
-  columnChooser: ColumnChooser;
+  @ViewChild(ColumnChooserComponent)
+  columnChooser: ColumnChooserComponent;
 
   dataSource: ParametersDataSource;
 
@@ -60,7 +56,7 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
   // Added dynamically based on actual commands.
   aliasColumns$ = new BehaviorSubject<ColumnInfo[]>([]);
 
-  typeOptions: Option[] = [
+  typeOptions: SelectOption[] = [
     { id: 'ANY', label: 'Any type' },
     { id: 'aggregate', label: 'aggregate' },
     { id: 'array', label: 'array' },
@@ -73,7 +69,7 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
     { id: 'time', label: 'time' },
   ];
 
-  sourceOptions: Option[] = [
+  sourceOptions: SelectOption[] = [
     { id: 'ANY', label: 'Any source' },
     { id: 'COMMAND', label: 'Command' },
     { id: 'COMMAND_HISTORY', label: 'Command History' },

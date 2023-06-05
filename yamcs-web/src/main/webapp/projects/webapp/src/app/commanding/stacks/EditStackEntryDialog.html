@@ -22,9 +22,9 @@
       <div class="names">
         <div>
           <ng-container *ngIf="command.qualifiedName | spaceSystemName as spaceSystem">
-            <app-text-action [padding]="false" (click)="returnToList(spaceSystem)">
+            <ya-text-action [padding]="false" (click)="returnToList(spaceSystem)">
               {{ spaceSystem }}
-            </app-text-action>
+            </ya-text-action>
           </ng-container>
           <h2>{{ command.name }}</h2>
         </div>
@@ -47,10 +47,10 @@
                                   [extra]="extraAcknowledgments" />
             <br>
             <div style="display: flex; align-items: flex-start;">
-              <app-select #ackSelect
-                          [options]="ackOptions"
-                          formControlName="advancementAckDropDown"
-                          emptyOption="Inherit" />
+              <ya-select #ackSelect
+                         [options]="ackOptions"
+                         formControlName="advancementAckDropDown"
+                         emptyOption="Inherit" />
               <input type="text" formControlName="advancementAckCustom"
                      *ngIf="stackOptionsForm.get('advancementAckDropDown')?.value === 'custom'"
                      style="width: 200px; margin-left: -1px">
@@ -59,14 +59,14 @@
           <br>
           <div class="label">
             Wait (ms)
-            <app-help dialogTitle="Wait time">
+            <ya-help dialogTitle="Wait time">
               <p>
                 Wait time before advancing to the next command in the stack.
               </p>
               <p>
                 This triggers after successful acknowledgment.
               </p>
-            </app-help>
+            </ya-help>
             <br>
             <input type="number" formControlName="advancementWait" placeholder="Inherit" step="1000" min="0">
           </div>

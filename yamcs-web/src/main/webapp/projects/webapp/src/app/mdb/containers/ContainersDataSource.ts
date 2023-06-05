@@ -1,6 +1,6 @@
 import { DataSource } from '@angular/cdk/table';
+import { Container, GetContainersOptions } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { Container, GetContainersOptions } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 export class ContainersDataSource extends DataSource<Container> {

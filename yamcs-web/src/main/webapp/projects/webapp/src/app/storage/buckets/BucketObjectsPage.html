@@ -72,15 +72,15 @@
         <div class="panel-content">
           <app-bucket-page-tabs [bucket]="name" />
           <div *ngIf="breadcrumb$ | async as breadcrumb" style="margin-top: 16px">
-            <app-breadcrumb-trail>
-              <app-breadcrumb [link]="['/storage/buckets']"
-                              label="Buckets" />
-              <app-breadcrumb [link]="['/storage/buckets', name, 'objects']"
-                              [label]="name" />
-              <app-breadcrumb *ngFor="let item of breadcrumb"
-                              [link]="item.route"
-                              [label]="item.name" />
-            </app-breadcrumb-trail>
+            <ya-breadcrumb-trail>
+              <ya-breadcrumb [link]="['/storage/buckets']"
+                             label="Buckets" />
+              <ya-breadcrumb [link]="['/storage/buckets', name, 'objects']"
+                             [label]="name" />
+              <ya-breadcrumb *ngFor="let item of breadcrumb"
+                             [link]="item.route"
+                             [label]="item.name" />
+            </ya-breadcrumb-trail>
           </div>
           <table mat-table
                  *ngIf="dataSource && dataSource.data.length; else empty"
@@ -135,7 +135,7 @@
             <ng-container matColumnDef="actions">
               <th mat-header-cell *matHeaderCellDef class="expand"></th>
               <td mat-cell *matCellDef="let item">
-                <app-more *ngIf="!item.folder">
+                <ya-more *ngIf="!item.folder">
                   <button mat-menu-item
                           (click)="renameFile(item)">
                     Rename
@@ -150,7 +150,7 @@
                           (click)="deleteFile(item)">
                     Delete
                   </button>
-                </app-more>
+                </ya-more>
               </td>
             </ng-container>
 
@@ -162,7 +162,7 @@
           </table>
 
           <ng-template #empty>
-            <app-empty-message>Empty directory.</app-empty-message>
+            <ya-empty-message>Empty directory.</ya-empty-message>
           </ng-template>
         </div>
       </mat-sidenav-content>

@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, ViewChild } from '@angular/core';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { UserInfo } from '../../client';
+import { UserInfo } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-users-table',

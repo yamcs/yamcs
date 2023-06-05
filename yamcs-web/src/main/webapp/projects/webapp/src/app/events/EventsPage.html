@@ -38,24 +38,24 @@
   <div class="panel-content" *ngIf="dataSource">
     <form [formGroup]="filterForm">
       <div class="filter-bar">
-        <app-search-filter formControlName="filter"
-                           placeholder="Filter by text search" />
-        <app-column-chooser #columnChooser
-                            [columns]="columns"
-                            preferenceKey="events" />
+        <ya-search-filter formControlName="filter"
+                          placeholder="Filter by text search" />
+        <ya-column-chooser #columnChooser
+                           [columns]="columns"
+                           preferenceKey="events" />
       </div>
       <div class="filter-bar">
-        <app-select [options]="severityOptions" formControlName="severity" />
-        <app-multi-select [options]="sourceOptions$ | async"
-                          formControlName="source"
-                          emptyOption="Any source" />
-        <app-select #intervalSelect
-                    [options]="intervalOptions"
-                    icon="access_time"
-                    formControlName="interval" />
+        <ya-select [options]="severityOptions" formControlName="severity" />
+        <ya-multi-select [options]="sourceOptions$ | async"
+                         formControlName="source"
+                         emptyOption="Any source" />
+        <ya-select #intervalSelect
+                   [options]="intervalOptions"
+                   icon="access_time"
+                   formControlName="interval" />
         <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
-          <app-date-time-input formControlName="customStart" />
-          <app-date-time-input formControlName="customStop" />
+          <ya-date-time-input formControlName="customStart" />
+          <ya-date-time-input formControlName="customStop" />
           <button (click)="applyCustomDates()"
                   class="ya-button"
                   [disabled]="filterForm.invalid">Apply</button>
@@ -66,18 +66,18 @@
           </button>
         </ng-container>
 
-        <app-dots *ngIf="dataSource.loading$ | async" />
+        <ya-dots *ngIf="dataSource.loading$ | async" />
 
         <div style="text-align: right; flex: 1 1 150px" *ngIf="dataSource.streaming$ | async">
           Listening for events
-          <app-dots fontSize="16px" color="#1b61b9" />
+          <ya-dots fontSize="16px" color="#1b61b9" />
         </div>
       </div>
     </form>
 
     <div class="table-status" [ngSwitch]="appliedInterval">
       <div class="message-zone">
-        <app-text-action (click)="exportEvents()">Download events</app-text-action>
+        <ya-text-action (click)="exportEvents()">Download events</ya-text-action>
       </div>
       <span *ngSwitchCase="'PT1H'">
         Showing events from <b>the last hour</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)

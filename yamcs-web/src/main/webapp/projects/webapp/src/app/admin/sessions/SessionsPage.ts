@@ -3,9 +3,8 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
+import { SessionInfo, Synchronizer } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
-import { SessionInfo } from '../../client';
-import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({

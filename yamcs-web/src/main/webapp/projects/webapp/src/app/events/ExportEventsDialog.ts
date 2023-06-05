@@ -1,18 +1,16 @@
 import { Component, Inject, OnDestroy } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { DownloadEventsOptions, SelectOption, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { DownloadEventsOptions } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
-import { Option } from '../shared/forms/Select';
-import * as utils from '../shared/utils';
 
 @Component({
   templateUrl: './ExportEventsDialog.html',
 })
 export class ExportEventsDialog implements OnDestroy {
 
-  delimiterOptions: Option[] = [
+  delimiterOptions: SelectOption[] = [
     { id: 'COMMA', label: 'Comma' },
     { id: 'SEMICOLON', label: 'Semicolon' },
     { id: 'TAB', label: 'Tab' },

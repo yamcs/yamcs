@@ -1,7 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { InitiateCop1Request } from '../client';
+import { InitiateCop1Request } from '@yamcs/webapp-sdk';
 
 const CombinedValidator: ValidatorFn = (form: UntypedFormGroup) => {
   const type = form.get('type')!.value;

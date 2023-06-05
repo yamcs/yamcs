@@ -3,12 +3,9 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
+import { BitRange, ExtractPacketResponse, ExtractedParameter, MessageService, Packet, SelectOption } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { ExtractPacketResponse, ExtractedParameter, Packet } from '../../client';
-import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
-import { BitRange } from '../../shared/BitRange';
-import { Option } from '../../shared/forms/Select';
 import { Hex } from '../../shared/hex/Hex';
 
 @Component({
@@ -40,7 +37,7 @@ export class PacketPage implements AfterViewInit {
     'actions',
   ];
 
-  typeOptions: Option[] = [
+  typeOptions: SelectOption[] = [
     { id: 'ANY', label: 'Any type' },
     { id: 'aggregate', label: 'aggregate' },
     { id: 'array', label: 'array' },

@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, forwardRef, Input, OnChanges, OnDestroy, Output } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
+import { Bucket, ListObjectsOptions, ListObjectsResponse, StorageClient } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Bucket, ListObjectsOptions, ListObjectsResponse, StorageClient } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({

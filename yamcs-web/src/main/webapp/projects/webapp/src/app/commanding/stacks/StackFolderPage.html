@@ -53,15 +53,15 @@
 
     <div class="panel-content">
       <ng-container *ngIf="breadcrumb$ | async as breadcrumb">
-        <app-breadcrumb-trail *ngIf="breadcrumb.length">
-          <app-breadcrumb link="/commanding/stacks/browse"
-                          [queryParams]="{c: yamcs.context}"
-                          icon="account_tree" />
-          <app-breadcrumb *ngFor="let item of breadcrumb"
-                          [link]="item.route"
-                          [queryParams]="{c: yamcs.context}"
-                          [label]="item.name" />
-        </app-breadcrumb-trail>
+        <ya-breadcrumb-trail *ngIf="breadcrumb.length">
+          <ya-breadcrumb link="/commanding/stacks/browse"
+                         [queryParams]="{c: yamcs.context}"
+                         icon="account_tree" />
+          <ya-breadcrumb *ngFor="let item of breadcrumb"
+                         [link]="item.route"
+                         [queryParams]="{c: yamcs.context}"
+                         [label]="item.name" />
+        </ya-breadcrumb-trail>
       </ng-container>
       <table mat-table
              *ngIf="dataSource && dataSource.data.length; else empty"
@@ -122,7 +122,7 @@
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef class="expand"></th>
           <td mat-cell *matCellDef="let item">
-            <app-more *ngIf="!item.folder && mayManageStacks()">
+            <ya-more *ngIf="!item.folder && mayManageStacks()">
               <button mat-menu-item
                       (click)="renameFile(item)">
                 Rename
@@ -143,7 +143,7 @@
                       (click)="convertToJSON($event, item.nameWithoutInstance)">
                 Convert to new format
               </button>
-            </app-more>
+            </ya-more>
           </td>
         </ng-container>
 
@@ -175,10 +175,10 @@
 
       <ng-template #empty>
         <ng-container *ngIf="breadcrumb$ | async as breadcrumb">
-          <app-empty-message *ngIf="loaded && breadcrumb.length">
+          <ya-empty-message *ngIf="loaded && breadcrumb.length">
             Empty directory.
-          </app-empty-message>
-          <app-empty-message headerTitle="Command Stacks" *ngIf="loaded && !breadcrumb.length">
+          </ya-empty-message>
+          <ya-empty-message headerTitle="Command Stacks" *ngIf="loaded && !breadcrumb.length">
             <p>
               Command stacks are used to interactively execute a prepared set of commands.
               To start, either:
@@ -188,7 +188,7 @@
               or
               <button class="ya-button" (click)="openUploadDialog()">Import a stack</button>
             </p>
-          </app-empty-message>
+          </ya-empty-message>
         </ng-container>
       </ng-template>
     </div>

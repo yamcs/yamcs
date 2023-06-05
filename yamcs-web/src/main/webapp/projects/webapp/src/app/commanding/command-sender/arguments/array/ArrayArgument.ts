@@ -1,10 +1,8 @@
 import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, Optional, SkipSelf } from '@angular/core';
 import { AbstractControl, ControlContainer, FormArrayName, FormControl, FormGroup, FormGroupDirective, FormGroupName, UntypedFormArray, UntypedFormGroup } from '@angular/forms';
-import { BehaviorSubject, distinctUntilChanged, Subscription } from 'rxjs';
-import { ArgumentType, NamedObjectId, ParameterSubscription } from '../../../../client';
+import { ArgumentType, NamedObjectId, ParameterSubscription, utils } from '@yamcs/webapp-sdk';
+import { BehaviorSubject, Subscription, distinctUntilChanged } from 'rxjs';
 import { YamcsService } from '../../../../core/services/YamcsService';
-import * as utils from '../../../../shared/utils';
-import { unflattenIndex } from '../../../../shared/utils';
 
 @Component({
   selector: 'app-array-argument',
@@ -181,7 +179,7 @@ export class ArrayArgument implements OnInit, OnDestroy {
 
   get label() {
     if (this.index !== undefined) {
-      const index = unflattenIndex(this.index, this.dimensions!);
+      const index = utils.unflattenIndex(this.index, this.dimensions!);
       return index.map(i => '[' + i + ']').join('');
     } else {
       return this.name;

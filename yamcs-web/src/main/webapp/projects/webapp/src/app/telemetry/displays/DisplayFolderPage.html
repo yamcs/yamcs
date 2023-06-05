@@ -52,15 +52,15 @@
 
     <div class="panel-content">
       <ng-container *ngIf="breadcrumb$ | async as breadcrumb">
-        <app-breadcrumb-trail *ngIf="breadcrumb.length">
-          <app-breadcrumb link="/telemetry/displays/browse"
-                          [queryParams]="{c: yamcs.context}"
-                          icon="account_tree" />
-          <app-breadcrumb *ngFor="let item of breadcrumb"
-                          [link]="item.route"
-                          [queryParams]="{c: yamcs.context}"
-                          [label]="item.name" />
-        </app-breadcrumb-trail>
+        <ya-breadcrumb-trail *ngIf="breadcrumb.length">
+          <ya-breadcrumb link="/telemetry/displays/browse"
+                         [queryParams]="{c: yamcs.context}"
+                         icon="account_tree" />
+          <ya-breadcrumb *ngFor="let item of breadcrumb"
+                         [link]="item.route"
+                         [queryParams]="{c: yamcs.context}"
+                         [label]="item.name" />
+        </ya-breadcrumb-trail>
       </ng-container>
       <table mat-table
              *ngIf="dataSource && dataSource.data.length; else empty"
@@ -131,7 +131,7 @@
           <th mat-header-cell *matHeaderCellDef class="expand"></th>
           <td mat-cell *matCellDef="let item">
             <ng-container *ngIf="!item.folder">
-              <app-more *ngIf="mayManageDisplays()">
+              <ya-more *ngIf="mayManageDisplays()">
                 <button mat-menu-item
                         (click)="renameFile(item)">
                   Rename
@@ -146,7 +146,7 @@
                         (click)="deleteFile(item)">
                   Delete
                 </button>
-              </app-more>
+              </ya-more>
             </ng-container>
           </td>
         </ng-container>
@@ -159,7 +159,7 @@
       </table>
 
       <ng-template #empty>
-        <app-empty-message>Empty directory.</app-empty-message>
+        <ya-empty-message>Empty directory.</ya-empty-message>
       </ng-template>
     </div>
   </div>

@@ -1,6 +1,6 @@
 import { DataSource } from '@angular/cdk/table';
+import { Algorithm, GetAlgorithmsOptions } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { Algorithm, GetAlgorithmsOptions } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
 
 export class ListItem {

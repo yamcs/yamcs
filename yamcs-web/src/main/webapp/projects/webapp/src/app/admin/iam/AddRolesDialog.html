@@ -2,8 +2,8 @@
 
 <mat-dialog-content class="mat-typography">
   <div class="filter-bar" style="margin-top: 5px">
-    <app-search-filter [formControl]="filterControl"
-                       placeholder="Filter roles" />
+    <ya-search-filter [formControl]="filterControl"
+                      placeholder="Filter roles" />
   </div>
   <table mat-table
          *ngIf="dataSource"
@@ -32,9 +32,9 @@
         [class.selected]="selection.isSelected(row)"
         (click)="toggleOne(row)"></tr>
   </table>
-  <app-empty-message *ngIf="!dataSource.data.length">
+  <ya-empty-message *ngIf="!dataSource.data.length">
     No rows to display
-  </app-empty-message>
+  </ya-empty-message>
 
   <mat-paginator [pageSize]="10"
                  [hidePageSize]="true"

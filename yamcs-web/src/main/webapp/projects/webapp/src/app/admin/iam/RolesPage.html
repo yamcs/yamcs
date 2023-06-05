@@ -5,8 +5,8 @@
 
   <div class="panel-content">
     <div class="filter-bar">
-      <app-search-filter [formControl]="filterControl"
-                         placeholder="Filter roles" />
+      <ya-search-filter [formControl]="filterControl"
+                        placeholder="Filter roles" />
     </div>
     <table mat-table
            [dataSource]="dataSource"
@@ -39,8 +39,8 @@
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
-    <app-empty-message *ngIf="!dataSource.data.length">
+    <ya-empty-message *ngIf="!dataSource.data.length">
       No rows to display
-    </app-empty-message>
+    </ya-empty-message>
   </div>
 </app-admin-page>

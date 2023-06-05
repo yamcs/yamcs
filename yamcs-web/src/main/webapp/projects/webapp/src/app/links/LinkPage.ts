@@ -2,10 +2,9 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
+import { Cop1Config, Cop1Status, Cop1Subscription, InitiateCop1Request, Link, LinkSubscription, MessageService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { Cop1Config, Cop1Status, Cop1Subscription, InitiateCop1Request, Link, LinkSubscription } from '../client';
 import { AuthService } from '../core/services/AuthService';
-import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
 import { InitiateCop1Dialog } from './InitiateCop1Dialog';
 

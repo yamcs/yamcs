@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
 import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator, ValidatorFn, Validators } from '@angular/forms';
+import { ArgumentType, utils } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
-import { ArgumentType } from '../../../../client';
-import { unflattenIndex } from '../../../../shared/utils';
 
 @Component({
   selector: 'app-time-argument',
@@ -63,7 +62,7 @@ export class TimeArgument implements ControlValueAccessor, OnInit, Validator, On
 
   get label() {
     if (this.index !== undefined) {
-      const index = unflattenIndex(this.index, this.dimensions!);
+      const index = utils.unflattenIndex(this.index, this.dimensions!);
       return index.map(i => '[' + i + ']').join('');
     } else {
       return this.name;

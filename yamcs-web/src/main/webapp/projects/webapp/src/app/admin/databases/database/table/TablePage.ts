@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { Table } from '../../../../client';
+import { Table } from '@yamcs/webapp-sdk';
 import { YamcsService } from '../../../../core/services/YamcsService';
 
 @Component({

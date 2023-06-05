@@ -1,4 +1,4 @@
-import { CommandHistoryEntry } from '../../client';
+import { CommandHistoryEntry } from '@yamcs/webapp-sdk';
 import { CommandHistoryRecord } from './CommandHistoryRecord';
 
 export type WatermarkObserver = () => void;
@@ -52,26 +52,26 @@ export class CommandHistoryBuffer {
   }
 
   snapshot(): CommandHistoryRecord[] {
-    const splicedRecords = this.archiveRecords
+    const splicedRecords = this.archiveRecords;
 
     this.realtimeBuffer.map(entry => {
-      if(!entry) return
+      if (!entry) return;
 
-      const existingIndex = splicedRecords.findIndex(r => r.id == entry.id)
-      if(existingIndex == -1) {
+      const existingIndex = splicedRecords.findIndex(r => r.id == entry.id);
+      if (existingIndex == -1) {
         splicedRecords.push(new CommandHistoryRecord(entry));
       } else {
         splicedRecords[existingIndex] = splicedRecords[existingIndex].mergeEntry(entry);
       }
-    })
+    });
 
     splicedRecords.sort((r1, r2) => {
-        let res = -r1.generationTime.localeCompare(r2.generationTime);
-        if (res === 0) {
-          res = -r1.origin.localeCompare(r2.origin);
-        }
-        return res !== 0 ? res : (r2.sequenceNumber - r1.sequenceNumber);
-      });
+      let res = -r1.generationTime.localeCompare(r2.generationTime);
+      if (res === 0) {
+        res = -r1.origin.localeCompare(r2.origin);
+      }
+      return res !== 0 ? res : (r2.sequenceNumber - r1.sequenceNumber);
+    });
     return splicedRecords;
   }
 
@@ -80,7 +80,7 @@ export class CommandHistoryBuffer {
    * reduces its size to a set limit. The oldest events (based
    * on generation time) are removed first.
    */
-   compact(limit: number) {
+  compact(limit: number) {
     const snapshot = this.snapshot();
     snapshot.length = Math.min(limit, snapshot.length);
     this.reset();

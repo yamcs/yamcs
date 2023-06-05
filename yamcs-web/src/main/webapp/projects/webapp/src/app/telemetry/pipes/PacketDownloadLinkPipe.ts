@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { Packet } from '../../client';
+import { Packet } from '@yamcs/webapp-sdk';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Pipe({ name: 'packetDownloadLink' })

@@ -120,7 +120,7 @@
   <ng-container matColumnDef="actions">
     <th mat-header-cell *matHeaderCellDef style="width: 100%"></th>
     <td mat-cell *matCellDef="let alarm">
-      <app-more *ngIf="mayControl">
+      <ya-more *ngIf="mayControl">
         <button mat-menu-item (click)="acknowledgeAlarm.emit(alarm)"
                 [disabled]="alarm.shelveInfo || alarm.acknowledged">
           Acknowledge...
@@ -133,7 +133,7 @@
                 [disabled]="!alarm.shelveInfo">
           Unshelve
         </button>
-      </app-more>
+      </ya-more>
     </td>
   </ng-container>
 

@@ -1,10 +1,9 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { Gap, PlaybackRange, SelectOption } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { Gap, PlaybackRange } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
-import { Option } from '../shared/forms/Select';
 
 @Component({
   templateUrl: './RequestSingleRangePlaybackDialog.html',
@@ -12,7 +11,7 @@ import { Option } from '../shared/forms/Select';
 export class RequestSingleRangePlaybackDialog {
 
   gaps: Gap[];
-  linkOptions$ = new BehaviorSubject<Option[]>([]);
+  linkOptions$ = new BehaviorSubject<SelectOption[]>([]);
 
   form = new UntypedFormGroup({
     apid: new UntypedFormControl('', Validators.required),

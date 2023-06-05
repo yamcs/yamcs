@@ -1,12 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
+import { MessageService, PlaybackRequest, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { PlaybackRequest } from '../client';
-import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
-import * as utils from '../shared/utils';
-
 
 @Component({
   templateUrl: './GapRequestsPage.html',

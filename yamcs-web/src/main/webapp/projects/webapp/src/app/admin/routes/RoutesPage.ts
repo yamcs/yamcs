@@ -4,8 +4,8 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Route } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { Route } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({

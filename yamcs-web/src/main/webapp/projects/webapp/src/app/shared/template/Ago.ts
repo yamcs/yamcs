@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges, OnDestroy } from '@angular/core';
+import { Synchronizer } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Synchronizer } from '../../core/services/Synchronizer';
 import { AgoPipe } from '../pipes/AgoPipe';
 
 @Component({

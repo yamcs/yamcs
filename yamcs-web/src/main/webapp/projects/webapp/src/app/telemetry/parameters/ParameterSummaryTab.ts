@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { Parameter, ParameterSubscription, ParameterValue, Synchronizer } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Parameter, ParameterSubscription, ParameterValue } from '../../client';
-import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({

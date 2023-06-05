@@ -1,7 +1,6 @@
 import { DataSource } from '@angular/cdk/table';
+import { GetPacketsOptions, Packet, Synchronizer } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { GetPacketsOptions, Packet } from '../../client';
-import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { PacketBuffer } from './PacketBuffer';
 

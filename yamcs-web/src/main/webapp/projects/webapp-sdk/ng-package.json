@@ -1,0 +1,14 @@
+{
+  "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../../dist/webapp-sdk",
+  "assets": [
+    {
+      "input": "src/styles",
+      "glob": "**/*",
+      "output": "styles"
+    }
+  ],
+  "lib": {
+    "entryFile": "src/public-api.ts"
+  }
+}

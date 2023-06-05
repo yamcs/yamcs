@@ -3,19 +3,19 @@
     <div class="item"
          *ngIf="type.minBytes !== undefined || type.maxBytes !== undefined">
       bytes:
-      <app-interval [left]="type.minBytes"
-                    [right]="type.maxBytes"
-                    [singleValueIfEqual]="true" />
+      <ya-interval [left]="type.minBytes"
+                   [right]="type.maxBytes"
+                   [singleValueIfEqual]="true" />
     </div>
     <div class="item" [class.error]="err.invalid$ | async">{{ type.engType }}</div>
   </div>
 
   {{ label }}
-  <app-help *ngIf="description">
+  <ya-help *ngIf="description">
     {{ description }}
-  </app-help>
+  </ya-help>
 
-  <app-errors #err [controlName]="controlName" />
+  <ya-errors #err [controlName]="controlName" />
 
-  <app-binary-input [formControl]="formControl" />
+  <ya-binary-input [formControl]="formControl" />
 </div>

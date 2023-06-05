@@ -1,4 +1,4 @@
-import { StreamData } from '../../../../client';
+import { StreamData } from '@yamcs/webapp-sdk';
 
 export class StreamBuffer {
 

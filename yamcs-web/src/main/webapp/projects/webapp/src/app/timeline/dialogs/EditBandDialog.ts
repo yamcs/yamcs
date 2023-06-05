@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MessageService, UpdateTimelineBandRequest } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { UpdateTimelineBandRequest } from '../../client/types/timeline';
-import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({

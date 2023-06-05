@@ -1,12 +1,12 @@
 <form [formGroup]="filterForm">
   <div class="filter-bar">
-    <app-select #intervalSelect
-                [options]="intervalOptions"
-                icon="access_time"
-                formControlName="interval" />
+    <ya-select #intervalSelect
+               [options]="intervalOptions"
+               icon="access_time"
+               formControlName="interval" />
     <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
-      <app-date-time-input formControlName="customStart" />
-      <app-date-time-input formControlName="customStop" />
+      <ya-date-time-input formControlName="customStart" />
+      <ya-date-time-input formControlName="customStop" />
       <button (click)="applyCustomDates()"
               class="ya-button"
               [disabled]="filterForm.invalid">Apply</button>

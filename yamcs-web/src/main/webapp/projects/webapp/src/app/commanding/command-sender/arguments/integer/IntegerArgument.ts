@@ -1,9 +1,7 @@
 import { ChangeDetectionStrategy, Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
 import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator, ValidatorFn, Validators } from '@angular/forms';
+import { ArgumentType, utils, validators } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { ArgumentType } from '../../../../client';
-import { requireInteger, requireUnsigned } from '../../../../shared/forms/validators';
-import { unflattenIndex } from '../../../../shared/utils';
 
 @Component({
   selector: 'app-integer-argument',
@@ -65,9 +63,9 @@ export class IntegerArgument implements ControlValueAccessor, OnInit, Validator,
     }
 
     this.validators.push(Validators.required);
-    this.validators.push(requireInteger);
+    this.validators.push(validators.requireInteger);
     if (this.type.signed === false) {
-      this.validators.push(requireUnsigned);
+      this.validators.push(validators.requireUnsigned);
     }
     if (this.type.rangeMax !== undefined) {
       this.validators.push(Validators.max(this.type.rangeMax));
@@ -79,7 +77,7 @@ export class IntegerArgument implements ControlValueAccessor, OnInit, Validator,
 
   get label() {
     if (this.index !== undefined) {
-      const index = unflattenIndex(this.index, this.dimensions!);
+      const index = utils.unflattenIndex(this.index, this.dimensions!);
       return index.map(i => '[' + i + ']').join('');
     } else {
       return this.name;

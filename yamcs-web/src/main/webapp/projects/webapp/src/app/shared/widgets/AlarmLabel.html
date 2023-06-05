@@ -1,6 +1,6 @@
 <ng-container *ngIf="context$ | async as context">
-  <app-sidebar-nav-item routerLink="/alarms"
-                        [queryParams]="{c: yamcs.context}">
+  <ya-sidebar-nav-item routerLink="/alarms"
+                       [queryParams]="{c: yamcs.context}">
     <mat-icon class="item-icon">notifications_none</mat-icon>
     Alarms
     <ng-container *ngIf="status$ | async as status">
@@ -11,5 +11,5 @@
         {{ status.acknowledgedCount }} acked
       </div>
     </ng-container>
-  </app-sidebar-nav-item>
+  </ya-sidebar-nav-item>
 </ng-container>

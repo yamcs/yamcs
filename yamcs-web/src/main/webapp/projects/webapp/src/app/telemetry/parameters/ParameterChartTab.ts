@@ -1,11 +1,9 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Parameter, Synchronizer, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Parameter } from '../../client';
-import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
-import { subtractDuration } from '../../shared/utils';
 import { DyDataSource } from '../../shared/widgets/DyDataSource';
 import { ParameterPlot } from '../../shared/widgets/ParameterPlot';
 import { ParameterSeries } from '../../shared/widgets/ParameterSeries';
@@ -56,7 +54,7 @@ export class ParameterChartTab implements AfterViewInit, OnDestroy {
         this.dataSource.updateWindow(start, stop, [null, null]);
       } else {
         const stop = this.yamcs.getMissionTime();
-        const start = subtractDuration(stop, this.range$.value);
+        const start = utils.subtractDuration(stop, this.range$.value);
         this.dataSource.updateWindow(start, stop, [null, null]);
       }
 
@@ -64,7 +62,7 @@ export class ParameterChartTab implements AfterViewInit, OnDestroy {
       this.timeSubscription = this.yamcs.time$.subscribe(() => {
         if (this.range$.value !== 'CUSTOM') {
           const stop = this.yamcs.getMissionTime();
-          const start = subtractDuration(stop, this.range$.value);
+          const start = utils.subtractDuration(stop, this.range$.value);
           this.plot?.updateWindowOnly(start, stop);
         }
       });
@@ -98,7 +96,7 @@ export class ParameterChartTab implements AfterViewInit, OnDestroy {
   loadLatest(range: string) {
     this.range$.next(range);
     const stop = this.yamcs.getMissionTime();
-    const start = subtractDuration(stop, range);
+    const start = utils.subtractDuration(stop, range);
     this.updateURL();
     this.dataSource.updateWindow(start, stop, [null, null]);
   }

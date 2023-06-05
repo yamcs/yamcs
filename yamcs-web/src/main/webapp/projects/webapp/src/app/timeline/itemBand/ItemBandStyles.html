@@ -3,10 +3,10 @@
     <tr>
       <td class="property">
         Frozen
-        <app-help dialogTitle="Frozen">
+        <ya-help dialogTitle="Frozen">
           Fix this line to the top of the view. Frozen bands are
           always rendered above other bands.
-        </app-help>
+        </ya-help>
       </td>
       <td class="widget">
         <mat-slide-toggle formControlName="frozen" />
@@ -15,9 +15,9 @@
     <tr>
       <td class="property">
         Multiline
-        <app-help dialogTitle="Multiline">
+        <ya-help dialogTitle="Multiline">
           Draw items on multiple lines if otherwise there would be collisions.
-        </app-help>
+        </ya-help>
       </td>
       <td class="widget">
         <mat-slide-toggle formControlName="multiline" />
@@ -26,9 +26,9 @@
     <tr>
       <td class="property">
         Space Between Lines
-        <app-help dialogTitle="Space Between Lines">
+        <ya-help dialogTitle="Space Between Lines">
           In case of multilining, this indicates the vertical space between lines.
-        </app-help>
+        </ya-help>
       </td>
       <td class="widget">
         <input type="number" formControlName="spaceBetweenLines" style="width: 100px" min="0">
@@ -37,10 +37,10 @@
     <tr>
       <td class="property">
         Space Between Items
-        <app-help dialogTitle="Space Between Items">
+        <ya-help dialogTitle="Space Between Items">
           In case of multilining, this indicates the minimum horizontal space between items.
           If an item does not meet this treshold, it gets rendered on a different line.
-        </app-help>
+        </ya-help>
       </td>
       <td class="widget">
         <input type="number" formControlName="spaceBetweenItems" style="width: 100px" min="0">
@@ -91,8 +91,8 @@
         Item Text Overflow
       </td>
       <td class="widget">
-        <app-select [options]="itemTextOverflowOptions"
-                    formControlName="itemTextOverflow" />
+        <ya-select [options]="itemTextOverflowOptions"
+                   formControlName="itemTextOverflow" />
       </td>
     </tr>
     <tr>

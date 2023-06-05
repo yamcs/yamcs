@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute } from '@angular/router';
+import { StorageClient, Synchronizer, Transfer, TransferSubscription } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { StorageClient, Transfer, TransferSubscription } from '../client';
-import { Synchronizer } from '../core/services/Synchronizer';
 import { YamcsService } from '../core/services/YamcsService';
 import { TransferItem } from './TransferItem';
 

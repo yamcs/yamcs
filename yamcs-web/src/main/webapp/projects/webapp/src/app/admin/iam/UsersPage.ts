@@ -2,10 +2,9 @@ import { AfterViewInit, ChangeDetectionStrategy, Component } from '@angular/core
 import { UntypedFormControl } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MessageService, UserInfo } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { UserInfo } from '../../client';
-import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({

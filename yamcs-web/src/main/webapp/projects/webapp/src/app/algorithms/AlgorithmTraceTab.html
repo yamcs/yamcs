@@ -7,17 +7,17 @@
           <button class="ya-button" (click)="refreshData()">Refresh</button>&nbsp;
           <ng-container *ngIf="section$ | async as section">
             <span class="separator" style="margin-left: 10px; margin-right: 10px"></span>
-            <app-text-action icon="directions_run"
-                             [active]="section === 'runs'"
-                             (click)="switchToSection('runs')">
+            <ya-text-action icon="directions_run"
+                            [active]="section === 'runs'"
+                            (click)="switchToSection('runs')">
               Runs
-            </app-text-action>
+            </ya-text-action>
             &nbsp;&nbsp;
-            <app-text-action icon="menu_book"
-                             [active]="section === 'logs'"
-                             (click)="switchToSection('logs')">
+            <ya-text-action icon="menu_book"
+                            [active]="section === 'logs'"
+                            (click)="switchToSection('logs')">
               Logs
-            </app-text-action>
+            </ya-text-action>
           </ng-container>
         </div>
       </div>
@@ -47,7 +47,7 @@
                        [queryParams]="{c: yamcs.context}"
                        class="secundary">
                       {{ input.id.name }}</a>:
-                    <app-value [value]="input.engValue" />
+                    <ya-value [value]="input.engValue" />
                     <br *ngIf="!last">
                   </ng-container>
                   <ng-container *ngIf="!run.inputs?.length">-</ng-container>
@@ -59,7 +59,7 @@
                        [queryParams]="{c: yamcs.context}"
                        class="secundary">
                       {{ output.id.name }}</a>:
-                    <app-value [value]="output.engValue" />
+                    <ya-value [value]="output.engValue" />
                     <br *ngIf="!last">
                   </ng-container>
                   <ng-container *ngIf="!run.outputs?.length">-</ng-container>
@@ -88,18 +88,18 @@
 </ng-container>
 
 <ng-template #notrace>
-  <app-empty-message headerTitle="Trace">
+  <ya-empty-message headerTitle="Trace">
     <p>
       The trace tool captures runs, inputs, outputs and log messages of this algorithm.
     </p>
     <p>
       <button class="ya-button primary" (click)="startTrace()">Start trace</button>
     </p>
-  </app-empty-message>
+  </ya-empty-message>
 </ng-template>
 
 <ng-template #empty>
-  <app-empty-message>
+  <ya-empty-message>
     <p>
       Tracing has started.
     </p>
@@ -112,5 +112,5 @@
     <p>
       <button class="ya-button primary" (click)="refreshData()">Refresh</button>
     </p>
-  </app-empty-message>
+  </ya-empty-message>
 </ng-template>

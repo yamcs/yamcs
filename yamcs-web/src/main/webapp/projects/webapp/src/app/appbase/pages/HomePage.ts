@@ -6,12 +6,10 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Instance, InstancesSubscription } from '../../client';
+import { DefaultProcessorPipe, Instance, InstancesSubscription, MessageService } from '@yamcs/webapp-sdk';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService } from '../../core/services/ConfigService';
-import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
-import { DefaultProcessorPipe } from '../../shared/pipes/DefaultProcessorPipe';
 
 
 @Component({

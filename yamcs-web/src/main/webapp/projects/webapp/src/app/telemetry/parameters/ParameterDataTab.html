@@ -1,8 +1,8 @@
-<app-detail-pane>
+<ya-detail-pane>
   <ng-container *ngIf="(table.selectedValue | async) as pval; else noSelection">
-    <app-detail-toolbar>
+    <ya-detail-toolbar>
       Value Detail
-    </app-detail-toolbar>
+    </ya-detail-toolbar>
     <div style="padding: 0 16px">
       <div class="block-title">Severity</div>
       <div class="block">
@@ -48,20 +48,20 @@
     </div>
   </ng-container>
   <ng-template #noSelection>
-    <app-detail-toolbar>
+    <ya-detail-toolbar>
       Select a value
-    </app-detail-toolbar>
+    </ya-detail-toolbar>
   </ng-template>
-</app-detail-pane>
+</ya-detail-pane>
 <div class="table-wrapper">
   <div class="panel-content">
     <form [formGroup]="filterForm">
       <div class="filter-bar">
-        <app-select icon="access_time" formControlName="interval" [options]="intervalOptions" />
+        <ya-select icon="access_time" formControlName="interval" [options]="intervalOptions" />
 
         <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
-          <app-date-time-input formControlName="customStart" />
-          <app-date-time-input formControlName="customStop" />
+          <ya-date-time-input formControlName="customStart" />
+          <ya-date-time-input formControlName="customStop" />
           <button class="ya-button" (click)="applyCustomDates()" [disabled]="filterForm.invalid">Apply</button>
         </ng-container>
 
@@ -71,13 +71,13 @@
           </button>
         </ng-container>
 
-        <app-dots *ngIf="dataSource.loading$ | async" />
+        <ya-dots *ngIf="dataSource.loading$ | async" />
       </div>
     </form>
 
     <div class="table-status" [ngSwitch]="appliedInterval">
       <div class="message-zone">
-        <app-text-action (click)="exportParameterData()">Download Data</app-text-action>
+        <ya-text-action (click)="exportParameterData()">Download Data</ya-text-action>
       </div>
       <span *ngSwitchCase="'PT1H'">
         Showing data from <b>the last hour</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
@@ -98,9 +98,9 @@
 
     <app-parameter-values-table #table [dataSource]="dataSource" />
 
-    <app-empty-message *ngIf="dataSource.isEmpty()">
+    <ya-empty-message *ngIf="dataSource.isEmpty()">
       No records found matching current filter in the selected time range.
-    </app-empty-message>
+    </ya-empty-message>
 
     <mat-toolbar *ngIf="!(dataSource.loading$ | async) && !dataSource.isEmpty()">
       <span style="flex: 1 1 auto"></span>
@@ -113,14 +113,14 @@
 <ng-template #valueActionsTemplate let-value="value">
   <ng-container [ngSwitch]="value?.type">
     <ng-container *ngSwitchCase="'BINARY'">
-      <app-more icon="more_horiz">
+      <ya-more icon="more_horiz">
         <button mat-menu-item (click)="copyHex(value.binaryValue)">
           Copy Hex
         </button>
         <button mat-menu-item (click)="copyBinary(value.binaryValue)">
           Copy Binary
         </button>
-      </app-more>
+      </ya-more>
     </ng-container>
   </ng-container>
 </ng-template>
@@ -131,7 +131,7 @@
       <app-hex [base64String]="value.binaryValue" />
     </ng-container>
     <ng-container *ngSwitchDefault>
-      <app-value [value]="value" />
+      <ya-value [value]="value" />
     </ng-container>
   </ng-container>
 </ng-template>

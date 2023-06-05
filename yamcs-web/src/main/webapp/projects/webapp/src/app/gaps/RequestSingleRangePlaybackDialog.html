@@ -9,17 +9,17 @@
     <br>
     <label>
       Start time
-      <app-date-time-input formControlName="start" />
+      <ya-date-time-input formControlName="start" />
     </label>
     <br>
     <label>
       Stop time
-      <app-date-time-input formControlName="stop" />
+      <ya-date-time-input formControlName="stop" />
     </label>
     <br>
     <label>
       DaSS link
-      <app-select formControlName="link" [options]="linkOptions$ | async" />
+      <ya-select formControlName="link" [options]="linkOptions$ | async" />
       <span class="hint">This link will send out the request, and handle data reception.</span>
     </label>
   </form>

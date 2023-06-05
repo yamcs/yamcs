@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { Service } from '../../client';
+import { Service } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-services-table',

@@ -1,4 +1,4 @@
-import { Packet } from '../../client';
+import { Packet } from '@yamcs/webapp-sdk';
 
 export class PacketBuffer {
 

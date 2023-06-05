@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit, Optional, SkipSelf } from '@angular/core';
 import { ControlContainer, FormArray, FormArrayName, FormGroup, FormGroupName, UntypedFormControl } from '@angular/forms';
-import { ArgumentType } from '../../../../client';
-import { unflattenIndex } from '../../../../shared/utils';
+import { ArgumentType, utils } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-aggregate-argument',
@@ -45,7 +44,7 @@ export class AggregateArgument implements OnInit {
   constructor(
     private formGroupName: FormGroupName,
     @Optional() private formArrayName: FormArrayName,
-  ) {}
+  ) { }
 
   ngOnInit() {
     const parent = this.formGroupName.control;
@@ -92,7 +91,7 @@ export class AggregateArgument implements OnInit {
     if (this.index === undefined) {
       return this.name;
     } else {
-      const index = unflattenIndex(this.index, this.dimensions!);
+      const index = utils.unflattenIndex(this.index, this.dimensions!);
       return index.map(i => '[' + i + ']').join('');
     }
   }

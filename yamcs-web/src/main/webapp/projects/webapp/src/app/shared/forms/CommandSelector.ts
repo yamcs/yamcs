@@ -2,12 +2,10 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, Input, ViewChild } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
+import { ColumnChooserComponent, ColumnInfo, Command, GetCommandsOptions, SearchFilterComponent } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { Command, GetCommandsOptions } from '../../client';
 import { CommandsDataSource } from '../../commanding/command-sender/CommandsDataSource';
 import { YamcsService } from '../../core/services/YamcsService';
-import { ColumnChooser, ColumnInfo } from '../template/ColumnChooser';
-import { SearchFilter } from './SearchFilter';
 
 @Component({
   selector: 'app-command-selector',
@@ -38,11 +36,11 @@ export class CommandSelector implements ControlValueAccessor, AfterViewInit {
   @ViewChild(MatPaginator)
   paginator: MatPaginator;
 
-  @ViewChild(ColumnChooser)
-  columnChooser: ColumnChooser;
+  @ViewChild(ColumnChooserComponent)
+  columnChooser: ColumnChooserComponent;
 
   @ViewChild('searchFilter')
-  searchFilter: SearchFilter;
+  searchFilter: SearchFilterComponent;
 
   filterControl = new UntypedFormControl();
 

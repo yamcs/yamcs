@@ -1,10 +1,8 @@
 import { ChangeDetectionStrategy, Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
 import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator, ValidatorFn, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
+import { ArgumentType, EnumValue, SelectOption, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { ArgumentType, EnumValue } from '../../../../client';
-import { Option } from '../../../../shared/forms/Select';
-import { unflattenIndex } from '../../../../shared/utils';
 import { SelectEnumerationDialog } from '../../SelectEnumerationDialog';
 
 @Component({
@@ -43,7 +41,7 @@ export class EnumerationArgument implements ControlValueAccessor, OnInit, Valida
 
   controlName: string;
 
-  selectOptions$ = new BehaviorSubject<Option[]>([]);
+  selectOptions$ = new BehaviorSubject<SelectOption[]>([]);
 
   private validators: ValidatorFn[] = [];
   private onChange = (_: string | null) => { };
@@ -80,7 +78,7 @@ export class EnumerationArgument implements ControlValueAccessor, OnInit, Valida
 
   get label() {
     if (this.index !== undefined) {
-      const index = unflattenIndex(this.index, this.dimensions!);
+      const index = utils.unflattenIndex(this.index, this.dimensions!);
       return index.map(i => '[' + i + ']').join('');
     } else {
       return this.name;

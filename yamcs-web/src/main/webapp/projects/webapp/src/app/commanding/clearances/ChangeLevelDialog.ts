@@ -1,7 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Clearance } from '../../client';
+import { Clearance } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-change-level-dialog',

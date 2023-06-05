@@ -21,11 +21,11 @@
 
   <div class="panel-content">
     <div class="filter-bar">
-      <app-search-filter [formControl]="filterControl"
-                         placeholder="Filter buckets"
-                         (onArrowDown)="selectNext()"
-                         (onArrowUp)="selectPrevious()"
-                         (onEnter)="applySelection()" />
+      <ya-search-filter [formControl]="filterControl"
+                        placeholder="Filter buckets"
+                        (onArrowDown)="selectNext()"
+                        (onArrowUp)="selectPrevious()"
+                        (onEnter)="applySelection()" />
     </div>
     <table mat-table
            [dataSource]="dataSource"
@@ -79,7 +79,7 @@
       <ng-container matColumnDef="capacity">
         <th mat-header-cell *matHeaderCellDef>Capacity</th>
         <td mat-cell *matCellDef="let bucket">
-          <app-progress [value]="bucket.size" [total]="bucket.maxSize" />
+          <ya-progress [value]="bucket.size" [total]="bucket.maxSize" />
         </td>
       </ng-container>
 
@@ -100,18 +100,18 @@
       <ng-container matColumnDef="pctObjects">
         <th mat-header-cell *matHeaderCellDef>%objects</th>
         <td mat-cell *matCellDef="let bucket">
-          <app-progress [value]="bucket.numObjects" [total]="bucket.maxObjects" />
+          <ya-progress [value]="bucket.numObjects" [total]="bucket.maxObjects" />
         </td>
       </ng-container>
 
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef class="expand"></th>
         <td mat-cell *matCellDef="let row">
-          <app-more *ngIf="mayManageBuckets()">
+          <ya-more *ngIf="mayManageBuckets()">
             <button mat-menu-item (click)="deleteBucket(row)">
               Delete bucket
             </button>
-          </app-more>
+          </ya-more>
         </td>
       </ng-container>
 

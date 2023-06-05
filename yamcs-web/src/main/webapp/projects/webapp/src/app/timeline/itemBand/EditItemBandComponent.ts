@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { TimelineBand } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { TimelineBand } from '../../client/types/timeline';
 import { YamcsService } from '../../core/services/YamcsService';
 import { resolveProperties } from '../properties';
 import { propertyInfo } from './ItemBand';

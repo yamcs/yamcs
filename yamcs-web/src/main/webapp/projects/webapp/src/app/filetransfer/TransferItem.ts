@@ -1,6 +1,6 @@
+import { Transfer } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { distinctUntilChanged, map, sampleTime, startWith } from 'rxjs/operators';
-import { Transfer } from '../client';
 
 export class TransferItem {
 

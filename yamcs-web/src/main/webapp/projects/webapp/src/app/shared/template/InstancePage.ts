@@ -2,14 +2,12 @@ import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, View
 import { UntypedFormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { NavigationEnd, Router } from '@angular/router';
+import { ConnectionInfo, Parameter, User } from '@yamcs/webapp-sdk';
 import { Observable, Subscription, of } from 'rxjs';
 import { debounceTime, filter, map, switchMap } from 'rxjs/operators';
-import { ConnectionInfo, Parameter } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, NavItem, WebsiteConfig } from '../../core/services/ConfigService';
-import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
-import { User } from '../User';
 
 @Component({
   templateUrl: './InstancePage.html',
@@ -51,7 +49,6 @@ export class InstancePage implements OnInit, OnDestroy {
     readonly yamcs: YamcsService,
     configService: ConfigService,
     authService: AuthService,
-    preferenceStore: PreferenceStore,
     private router: Router,
   ) {
     this.connectionInfo$ = this.yamcs.connectionInfo$;

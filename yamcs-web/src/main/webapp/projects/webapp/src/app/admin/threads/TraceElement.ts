@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { TraceElementInfo } from '../../client';
+import { TraceElementInfo } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-trace-element',

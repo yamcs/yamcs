@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Service } from '../../client';
+import { Service } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-service-state',

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Container } from '../../client';
+import { Container } from '@yamcs/webapp-sdk';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({

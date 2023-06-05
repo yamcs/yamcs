@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Stream } from '../../../../client';
+import { Stream } from '@yamcs/webapp-sdk';
 import { YamcsService } from '../../../../core/services/YamcsService';
 import * as utils from '../../utils';
 

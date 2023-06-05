@@ -1,4 +1,4 @@
-import * as utils from '../../../../shared/utils';
+import { utils } from '@yamcs/webapp-sdk';
 
 export class ResultSetPrinter {
 

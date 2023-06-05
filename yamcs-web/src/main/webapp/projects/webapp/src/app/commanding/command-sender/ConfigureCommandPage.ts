@@ -3,13 +3,11 @@ import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, O
 import { UntypedFormControl } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Clearance, Command, CommandHistoryEntry, CommandOptionType, EffectiveSignificancePipe, MessageService, Value } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Clearance, Command, CommandHistoryEntry, CommandOptionType, Value } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
-import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
-import { EffectiveSignificancePipe } from '../../shared/pipes/EffectiveSignificancePipe';
 import { CommandForm, TemplateProvider } from './CommandForm';
 
 @Component({

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { UntypedFormGroup } from '@angular/forms';
+import { Parameter } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { Parameter } from '../../client';
 
 @Component({
   selector: 'app-parameter-form',

@@ -39,7 +39,7 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
         var spec = getDefaultSpec();
         spec.addOption("host", OptionType.STRING);
         spec.addOption("port", OptionType.INTEGER);
-        spec.addOption("frameMaxRate", OptionType.INTEGER);
+        spec.addOption("frameMaxRate", OptionType.FLOAT);
         return spec;
     }
 

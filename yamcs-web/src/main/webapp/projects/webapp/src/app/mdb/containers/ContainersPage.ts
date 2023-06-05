@@ -4,10 +4,9 @@ import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ColumnChooserComponent, ColumnInfo, Container, GetContainersOptions } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { Container, GetContainersOptions } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
-import { ColumnChooser, ColumnInfo } from '../../shared/template/ColumnChooser';
 import { ContainersDataSource } from './ContainersDataSource';
 
 @Component({
@@ -25,8 +24,8 @@ export class ContainersPage implements AfterViewInit {
   @ViewChild(MatPaginator, { static: true })
   paginator: MatPaginator;
 
-  @ViewChild(ColumnChooser)
-  columnChooser: ColumnChooser;
+  @ViewChild(ColumnChooserComponent)
+  columnChooser: ColumnChooserComponent;
 
   filterControl = new UntypedFormControl();
 

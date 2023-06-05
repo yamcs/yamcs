@@ -1,8 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { StorageClient } from '../../client';
-import { MessageService } from '../../core/services/MessageService';
+import { MessageService, StorageClient } from '@yamcs/webapp-sdk';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({

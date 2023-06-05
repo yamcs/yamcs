@@ -2,8 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { TimelineBand } from '../client/types/timeline';
-import { MessageService } from '../core/services/MessageService';
+import { MessageService, TimelineBand } from '@yamcs/webapp-sdk';
 import { YamcsService } from '../core/services/YamcsService';
 
 @Component({

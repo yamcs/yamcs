@@ -4,10 +4,9 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { GetAlgorithmsOptions, SelectOption } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { GetAlgorithmsOptions } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
-import { Option } from '../shared/forms/Select';
 import { AlgorithmsDataSource, ListItem } from './AlgorithmsDataSource';
 
 @Component({
@@ -45,7 +44,7 @@ export class AlgorithmsPage implements AfterViewInit, OnDestroy {
     'actions',
   ];
 
-  scopeOptions: Option[] = [
+  scopeOptions: SelectOption[] = [
     { id: 'ANY', label: 'Any scope' },
     { id: 'GLOBAL', label: 'Global' },
     { id: 'COMMAND_VERIFICATION', label: 'Command Verification' },

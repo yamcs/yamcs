@@ -92,22 +92,22 @@
     </mat-menu>
   </app-instance-toolbar>
 
-  <app-detail-pane>
+  <ya-detail-pane>
     <ng-container *ngIf="selectedEntry$ | async as selectedEntry; else noSelection">
-      <app-detail-toolbar>
+      <ya-detail-toolbar>
         Command Info
-      </app-detail-toolbar>
+      </ya-detail-toolbar>
       <div style="padding: 0 16px">
         <app-stacked-command-detail [entry]="selectedEntry" />
         <p>&nbsp;</p>
       </div>
     </ng-container>
     <ng-template #noSelection>
-      <app-detail-toolbar>
+      <ya-detail-toolbar>
         Select an entry
-      </app-detail-toolbar>
+      </ya-detail-toolbar>
     </ng-template>
-  </app-detail-pane>
+  </ya-detail-pane>
 
   <div class="panel-wrapper">
     <ng-container *ngIf="format === 'ycs'">
@@ -118,10 +118,10 @@
           <app-advance-ack-help [extra]="extraAcknowledgments" />
           <br>
           <div style="display: flex; align-items: flex-start;">
-            <app-select #ackSelect
-                        [options]="ackOptions"
-                        icon="check_circle_outline"
-                        formControlName="advancementAckDropDown" />
+            <ya-select #ackSelect
+                       [options]="ackOptions"
+                       icon="check_circle_outline"
+                       formControlName="advancementAckDropDown" />
             <input type="text" formControlName="advancementAckCustom"
                    *ngIf="stackOptionsForm.get('advancementAckDropDown')?.value === 'custom'"
                    style="width: 200px; margin-left: -1px">
@@ -129,33 +129,33 @@
         </div>
         <div class="label">
           Wait (ms)
-          <app-help dialogTitle="Wait time">
+          <ya-help dialogTitle="Wait time">
             <p>
               Wait time before advancing to the next command in the stack.
             </p>
             <p>
               This triggers after successful acknowledgment.
             </p>
-          </app-help>
+          </ya-help>
           <br>
           <input type="number" formControlName="advancementWait" placeholder="0"
                  step="1000" min="0" style="width: 120px">
         </div>
         <div style="flex: 1 1 auto"></div>
-        <app-dots *ngIf="running$ | async" />
+        <ya-dots *ngIf="running$ | async" />
       </form>
       <mat-divider horizontal />
     </ng-container>
 
-    <app-empty-message *ngIf="loaded && !format">
+    <ya-empty-message *ngIf="loaded && !format">
       <mat-icon style="vertical-align: bottom; margin-right: 10px;">link_off</mat-icon>
       Unsupported command stack format
-    </app-empty-message>
-    <app-empty-message *ngIf="loaded && format && !entries$.value.length">
+    </ya-empty-message>
+    <ya-empty-message *ngIf="loaded && format && !entries$.value.length">
       Empty command stack<br>
       Click <mat-icon inline style="vertical-align: bottom;">add_circle_outline</mat-icon> to start adding
       commands
-    </app-empty-message>
+    </ya-empty-message>
 
     <div #entryParent class="panel-content" cdkDropList (cdkDropListDropped)="handleDrop($event)">
       <div id="drag-boundary">
@@ -195,7 +195,7 @@
                     {{ arg.key }}
                   </td>
                   <td class="value">
-                    <app-value [value]="arg.value | tovalue" />
+                    <ya-value [value]="arg.value | tovalue" />
                   </td>
                 </tr>
               </table>

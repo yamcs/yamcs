@@ -1,12 +1,10 @@
 import { ChangeDetectorRef, Component, Inject, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { AcknowledgmentInfo, Command, CommandOptionType, SelectOption, Value, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { AcknowledgmentInfo, Command, CommandOptionType, Value } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandSelector } from '../../shared/forms/CommandSelector';
-import { Option } from '../../shared/forms/Select';
-import * as utils from '../../shared/utils';
 import { CommandForm, TemplateProvider } from '../command-sender/CommandForm';
 import { AdvancementParams, StackEntry } from './StackEntry';
 
@@ -94,7 +92,7 @@ export class EditStackEntryDialog {
   stackOptionsForm: UntypedFormGroup;
   verifierAcknowledgments: AcknowledgmentInfo[] = [];
   extraAcknowledgments: AcknowledgmentInfo[] = [];
-  ackOptions: Option[] = [
+  ackOptions: SelectOption[] = [
     { id: '', label: 'Inherit' },
     { id: 'Acknowledge_Queued', label: 'Queued', group: true },
     { id: 'Acknowledge_Released', label: 'Released' },

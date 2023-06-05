@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { CommandHistoryEntry, CommandSubscription } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { CommandHistoryEntry, CommandSubscription } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
 

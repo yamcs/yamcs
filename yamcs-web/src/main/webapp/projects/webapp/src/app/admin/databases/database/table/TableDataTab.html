@@ -1,20 +1,20 @@
 <ng-container *ngIf="table$ | async as table">
-  <app-detail-pane>
+  <ya-detail-pane>
     <ng-container *ngIf="selectedRecord$ | async as selectedRecord; else noSelection">
-      <app-detail-toolbar>
+      <ya-detail-toolbar>
         Record
-      </app-detail-toolbar>
+      </ya-detail-toolbar>
       <div style="padding: 0 16px">
         <app-record [table]="table"
                     [record]="selectedRecord" />
       </div>
     </ng-container>
     <ng-template #noSelection>
-      <app-detail-toolbar>
+      <ya-detail-toolbar>
         Select a record
-      </app-detail-toolbar>
+      </ya-detail-toolbar>
     </ng-template>
-  </app-detail-pane>
+  </ya-detail-pane>
   <div class="data-table-wrapper">
     <div class="panel-content">
       <ng-container *ngIf="records$ | async as records; else nodata">
@@ -41,7 +41,7 @@
 </ng-container>
 
 <ng-template #nodata>
-  <app-empty-message>
+  <ya-empty-message>
     Empty table.
-  </app-empty-message>
+  </ya-empty-message>
 </ng-template>

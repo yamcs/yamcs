@@ -7,7 +7,7 @@
       <div class="item">{{ parameter.type?.engType }}</div>
     </div>
     {{ parameter.name }}
-    <app-errors [controlName]="controlName" />
+    <ya-errors [controlName]="controlName" />
     <select [formControlName]="controlName">
       <option hidden disabled selected value> -- select an option -- </option>
       <option *ngFor="let enumValue of parameter.type?.enumValue" [value]="enumValue.label">
@@ -17,7 +17,7 @@
 
   <label *ngSwitchCase="'boolean'">
     {{ parameter.name }}
-    <app-errors [controlName]="controlName" />
+    <ya-errors [controlName]="controlName" />
     <br>
     <input type="radio" [formControlName]="controlName" value="true"> true<br>
     <input type="radio" [formControlName]="controlName" value="false"> false
@@ -25,8 +25,8 @@
 
   <label *ngSwitchCase="'time'">
     {{ parameter.name }}
-    <app-errors [controlName]="controlName" />
-    <app-date-time-input [formControlName]="controlName" />
+    <ya-errors [controlName]="controlName" />
+    <ya-date-time-input [formControlName]="controlName" />
   </label>
 
   <label *ngSwitchCase="'binary'">
@@ -34,8 +34,8 @@
       <div class="item" [class.error]="err.invalid$ | async">{{ parameter.type?.engType }}</div>
     </div>
     {{ parameter.name }}
-    <app-errors #err [controlName]="controlName" />
-    <app-binary-input [formControlName]="controlName" />
+    <ya-errors #err [controlName]="controlName" />
+    <ya-binary-input [formControlName]="controlName" />
   </label>
 
   <label *ngSwitchCase="'aggregate'">
@@ -88,7 +88,7 @@
       <div class="item">{{ parameter.type?.engType }}</div>
     </div>
     {{ parameter.name }}
-    <app-errors #err [controlName]="controlName" />
+    <ya-errors #err [controlName]="controlName" />
     <input type="text" [formControlName]="controlName">
   </label>
 </ng-container>

@@ -1,10 +1,11 @@
 import { NgModule } from '@angular/core';
+import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import { SharedModule } from '../shared/SharedModule';
+import { MdbRoutingModule, routingComponents } from './MdbRoutingModule';
 import { AlgorithmDetail } from './algorithms/AlgorithmDetail';
 import { ArgumentEnumDialog } from './commands/ArgumentEnumDialog';
 import { CommandDetail } from './commands/CommandDetail';
 import { ContainerDetail } from './containers/ContainerDetail';
-import { MdbRoutingModule, routingComponents } from './MdbRoutingModule';
 import { ParameterCalibration } from './parameters/ParameterCalibration';
 import { ParameterDetail } from './parameters/ParameterDetail';
 import { PolynomialPipe } from './pipes/PolynomialPipe';
@@ -17,6 +18,7 @@ const pipes = [
   imports: [
     SharedModule,
     MdbRoutingModule,
+    WebappSdkModule,
   ],
   declarations: [
     routingComponents,

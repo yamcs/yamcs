@@ -4,14 +4,14 @@
 
   <div class="panel-content">
     <div class="filter-bar">
-      <app-search-filter [formControl]="filterControl"
-                         placeholder="Filter commands"
-                         (onArrowDown)="selectNext()"
-                         (onArrowUp)="selectPrevious()"
-                         (onEnter)="applySelection()" />
-      <app-column-chooser #columnChooser
-                          [columns]="columns"
-                          preferenceKey="mdb-commands" />
+      <ya-search-filter [formControl]="filterControl"
+                        placeholder="Filter commands"
+                        (onArrowDown)="selectNext()"
+                        (onArrowUp)="selectPrevious()"
+                        (onEnter)="applySelection()" />
+      <ya-column-chooser #columnChooser
+                         [columns]="columns"
+                         preferenceKey="mdb-commands" />
     </div>
 
     <table mat-table
@@ -33,8 +33,8 @@
         <td mat-cell *matCellDef="let command">
           <a [routerLink]="['/mdb/commands', command.qualifiedName]"
              [queryParams]="{c: yamcs.context}">
-            <app-highlight [text]="shortName ? command.name : command.qualifiedName"
-                           [term]="filterControl.value" />
+            <ya-highlight [text]="shortName ? command.name : command.qualifiedName"
+                          [term]="filterControl.value" />
           </a>
         </td>
       </ng-container>
@@ -59,7 +59,7 @@
         </th>
         <td mat-cell *matCellDef="let command">
           <ng-container *ngIf="(command | alias:aliasColumn.id) as name; else dash">
-            <app-highlight [text]="name" [term]="filterControl.value" />
+            <ya-highlight [text]="name" [term]="filterControl.value" />
           </ng-container>
         </td>
       </ng-container>

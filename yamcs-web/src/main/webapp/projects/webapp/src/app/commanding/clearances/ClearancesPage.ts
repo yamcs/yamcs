@@ -5,7 +5,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
-import { Clearance } from '../../client';
+import { Clearance } from '@yamcs/webapp-sdk';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ChangeLevelDialog } from './ChangeLevelDialog';
 

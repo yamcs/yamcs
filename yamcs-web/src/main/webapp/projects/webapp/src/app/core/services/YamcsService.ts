@@ -1,10 +1,8 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { Inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
+import { Clearance, ClearanceSubscription, ConnectionInfo, DefaultProcessorPipe, FrameLossListener, MessageService, Processor, StorageClient, TimeSubscription, YamcsClient } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { Clearance, ClearanceSubscription, ConnectionInfo, Processor, StorageClient, TimeSubscription, YamcsClient } from '../../client';
-import { DefaultProcessorPipe } from '../../shared/pipes/DefaultProcessorPipe';
-import { MessageService } from './MessageService';
 import { ConfigService } from './ConfigService';
 
 /**
@@ -13,7 +11,7 @@ import { ConfigService } from './ConfigService';
 @Injectable({
   providedIn: 'root',
 })
-export class YamcsService {
+export class YamcsService implements FrameLossListener {
 
   readonly yamcsClient: YamcsClient;
 
@@ -31,7 +29,11 @@ export class YamcsService {
     private messageService: MessageService,
     private configService: ConfigService,
   ) {
-    this.yamcsClient = new YamcsClient(baseHref, messageService);
+    this.yamcsClient = new YamcsClient(baseHref, this);
+  }
+
+  onFrameLoss() {
+    this.messageService.showWarning('A gap was detected in one of the data feeds. Typically this occurs when data is fastly updating.');
   }
 
   setContext(instanceId: string, processorId?: string) {

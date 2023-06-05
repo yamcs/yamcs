@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import * as utils from '../../shared/utils';
+import { utils } from '@yamcs/webapp-sdk';
 
 @Component({
   templateUrl: './JumpToDialog.html',

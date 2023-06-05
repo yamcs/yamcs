@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist",
+            "outputPath": "dist/webapp",
             "index": "projects/webapp/src/index.html",
             "main": "projects/webapp/src/main.ts",
             "tsConfig": "projects/webapp/tsconfig.app.json",
@@ -41,15 +41,7 @@
               "projects/webapp/src/manifest.webmanifest"
             ],
             "styles": [
-              "projects/webapp/src/styles/vars.css",
-              "projects/webapp/src/styles/material-theme.scss",
-              "projects/webapp/src/styles/material-icons.css",
-              "projects/webapp/src/styles/roboto.css",
-              "projects/webapp/src/styles/scrollbar.css",
-              "projects/webapp/src/styles/styles.css",
-              "projects/webapp/src/styles/data-table.css",
-              "projects/webapp/src/styles/dl-horizontal.css",
-              "projects/webapp/src/styles/form.css"
+              "projects/webapp-sdk/src/styles/index.scss"
             ],
             "allowedCommonJsDependencies": [
               "brace",
@@ -78,6 +70,29 @@
               "extractLicenses": false,
               "sourceMap": true,
               "namedChunks": false
+            }
+          },
+          "defaultConfiguration": "production"
+        }
+      }
+    },
+    "webapp-sdk": {
+      "projectType": "library",
+      "root": "projects/webapp-sdk",
+      "sourceRoot": "projects/webapp-sdk/src",
+      "prefix": "ya",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/webapp-sdk/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/webapp-sdk/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/webapp-sdk/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { MissionDatabase } from '../../client';
+import { MissionDatabase } from '@yamcs/webapp-sdk';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({

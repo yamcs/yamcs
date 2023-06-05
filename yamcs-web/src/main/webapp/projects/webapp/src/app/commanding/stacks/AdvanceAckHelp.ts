@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { AcknowledgeInfo } from '../../client';
+import { AcknowledgeInfo } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-advance-ack-help',

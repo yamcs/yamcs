@@ -4,11 +4,11 @@
   </div>
 
   {{ label }}
-  <app-help *ngIf="description">
+  <ya-help *ngIf="description">
     {{ description }}
-  </app-help>
+  </ya-help>
 
-  <app-errors #err [controlName]="controlName" />
+  <ya-errors #err [controlName]="controlName" />
 
-  <app-date-time-input [formControl]="formControl" />
+  <ya-date-time-input [formControl]="formControl" />
 </div>

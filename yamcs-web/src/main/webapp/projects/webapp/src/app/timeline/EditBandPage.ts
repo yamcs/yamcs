@@ -3,9 +3,8 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MessageService, TimelineBand, UpdateTimelineBandRequest } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { TimelineBand, UpdateTimelineBandRequest } from '../client/types/timeline';
-import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
 
 @Component({

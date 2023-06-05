@@ -3,11 +3,10 @@ import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { NavigationEnd, Router } from '@angular/router';
+import { PreferenceStore, User } from '@yamcs/webapp-sdk';
 import { Subscription, filter } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
-import { PreferenceStore } from '../../core/services/PreferenceStore';
-import { User } from '../../shared/User';
 
 @Component({
   templateUrl: './AdminPage.html',

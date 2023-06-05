@@ -68,11 +68,11 @@
     <th mat-header-cell *matHeaderCellDef></th>
     <td mat-cell *matCellDef="let item">
       <ng-container *ngIf="item.state$ | async as state">
-        <app-text-action *ngIf="state === 'RUNNING'" icon="pause_circle_outline"
-                         (click)="pauseTransfer(item)">PAUSE</app-text-action>
-        <app-text-action *ngIf="state === 'PAUSED'" icon="play_circle_outline"
-                         (click)="resumeTransfer(item)">RESUME</app-text-action>
-        <app-text-action icon="not_interested" (click)="cancelTransfer(item)">CANCEL</app-text-action>
+        <ya-text-action *ngIf="state === 'RUNNING'" icon="pause_circle_outline"
+                        (click)="pauseTransfer(item)">PAUSE</ya-text-action>
+        <ya-text-action *ngIf="state === 'PAUSED'" icon="play_circle_outline"
+                        (click)="resumeTransfer(item)">RESUME</ya-text-action>
+        <ya-text-action icon="not_interested" (click)="cancelTransfer(item)">CANCEL</ya-text-action>
       </ng-container>
     </td>
   </ng-container>
@@ -81,10 +81,10 @@
     <td mat-cell *matCellDef="let item"
         [attr.colspan]="(displayedColumns$ | async)!.length">
       <div *ngIf="item.transfer$ | async as transfer" class="detail-layout">
-        <app-progress *ngIf="transfer.state === 'RUNNING' || transfer.state === 'PAUSED' || transfer.state === 'CANCELLING'"
-                      width="200px"
-                      [value]="transferPercent(transfer)"
-                      [total]="1" />
+        <ya-progress *ngIf="transfer.state === 'RUNNING' || transfer.state === 'PAUSED' || transfer.state === 'CANCELLING'"
+                     width="200px"
+                     [value]="transferPercent(transfer)"
+                     [total]="1" />
         <span>{{ transfer.sizeTransferred | formatBytes }}</span>
         <span class="error" *ngIf="transfer.failureReason">
           {{ transfer.failureReason }}

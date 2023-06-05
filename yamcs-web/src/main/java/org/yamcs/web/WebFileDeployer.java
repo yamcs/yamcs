@@ -135,7 +135,7 @@ public class WebFileDeployer {
             log.debug("Unpacking {} webapp files", staticFiles.length);
             for (var staticFile : staticFiles) {
                 try (var resource = getClass().getResourceAsStream("/static/" + staticFile)) {
-                    Files.createDirectories(target.resolve(staticFile));
+                    Files.createDirectories(target.resolve(staticFile).getParent());
                     Files.copy(resource, target.resolve(staticFile));
                 }
             }

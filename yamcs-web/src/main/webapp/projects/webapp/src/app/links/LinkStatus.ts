@@ -1,9 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges, OnDestroy } from '@angular/core';
+import { Link, OFF_COLOR, ON_COLOR, Synchronizer } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Link } from '../client';
-import { Synchronizer } from '../core/services/Synchronizer';
-import { OFF_COLOR, ON_COLOR } from '../shared/template/Led';
 
 const EXPIRY = 2000;
 

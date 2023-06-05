@@ -1,6 +1,6 @@
 import { MatDialog } from '@angular/material/dialog';
 import { ItemBand as DefaultItemBand } from '@fqqb/timeline';
-import { TimelineBand } from '../../client/types/timeline';
+import { TimelineBand } from '@yamcs/webapp-sdk';
 import { EditItemDialog } from '../dialogs/EditItemDialog';
 import { BooleanProperty, ColorProperty, NumberProperty, PropertyInfoSet, resolveProperties, SelectProperty } from '../properties';
 import { TimelineChartPage } from '../TimelineChartPage';

@@ -1,9 +1,8 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { utils } from '@yamcs/webapp-sdk';
 import { YamcsService } from '../../core/services/YamcsService';
-import * as utils from '../utils';
-import { generateRandomName } from '../utils';
 
 @Component({
   selector: 'app-start-replay-dialog',
@@ -33,7 +32,7 @@ export class StartReplayDialog {
     }
 
     this.form = formBuilder.group({
-      name: [generateRandomName(), Validators.required],
+      name: [utils.generateRandomName(), Validators.required],
       start: [utils.toISOString(initialStart), [
         Validators.required,
       ]],

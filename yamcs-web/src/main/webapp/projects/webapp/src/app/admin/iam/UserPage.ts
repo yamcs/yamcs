@@ -2,9 +2,8 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
+import { ExternalIdentity, MessageService, UserInfo } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { ExternalIdentity, UserInfo } from '../../client';
-import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ChangeUserPasswordDialog } from './ChangeUserPasswordDialog';
 

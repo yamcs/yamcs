@@ -2,9 +2,8 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { InstanceTemplate, MessageService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { InstanceTemplate } from '../../client';
-import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 

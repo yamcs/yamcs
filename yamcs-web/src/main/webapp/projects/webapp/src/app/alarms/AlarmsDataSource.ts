@@ -1,7 +1,7 @@
 import { DataSource } from '@angular/cdk/table';
+import { Alarm, AlarmSeverity, AlarmSubscription } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Alarm, AlarmSeverity, AlarmSubscription } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
 
 export class AlarmsDataSource extends DataSource<Alarm> {

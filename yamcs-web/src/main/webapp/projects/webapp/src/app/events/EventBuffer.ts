@@ -1,4 +1,4 @@
-import { Event } from '../client';
+import { Event } from '@yamcs/webapp-sdk';
 
 export type WatermarkObserver = () => void;
 

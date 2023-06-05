@@ -3,15 +3,9 @@ import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ColumnInfo, DownloadPacketsOptions, GetPacketsOptions, Packet, SelectComponent, SelectOption, Synchronizer, rowAnimation, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { rowAnimation } from '../../animations';
-import { DownloadPacketsOptions, GetPacketsOptions, Packet } from '../../client';
-import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
-import { Option, Select } from '../../shared/forms/Select';
-import { ColumnInfo } from '../../shared/template/ColumnChooser';
-import * as utils from '../../shared/utils';
-import { subtractDuration } from '../../shared/utils';
 import { PacketsDataSource } from './PacketsDataSource';
 
 const defaultInterval = 'PT1H';
@@ -36,7 +30,7 @@ export class PacketsPage {
   ];
 
   @ViewChild('intervalSelect')
-  intervalSelect: Select;
+  intervalSelect: SelectComponent;
 
   validStart: Date | null;
   validStop: Date | null;
@@ -58,15 +52,15 @@ export class PacketsPage {
 
   detailPacket$ = new BehaviorSubject<Packet | null>(null);
 
-  nameOptions$ = new BehaviorSubject<Option[]>([
+  nameOptions$ = new BehaviorSubject<SelectOption[]>([
     { id: 'ANY', label: 'Any name' },
   ]);
 
-  linkOptions$ = new BehaviorSubject<Option[]>([
+  linkOptions$ = new BehaviorSubject<SelectOption[]>([
     { id: 'ANY', label: 'Any link' },
   ]);
 
-  intervalOptions: Option[] = [
+  intervalOptions: SelectOption[] = [
     { id: 'PT1H', label: 'Last hour' },
     { id: 'PT6H', label: 'Last 6 hours' },
     { id: 'P1D', label: 'Last 24 hours' },
@@ -140,7 +134,7 @@ export class PacketsPage {
         this.loadData();
       } else {
         this.validStop = yamcs.getMissionTime();
-        this.validStart = subtractDuration(this.validStop, nextInterval);
+        this.validStart = utils.subtractDuration(this.validStop, nextInterval);
         this.appliedInterval = nextInterval;
         this.loadData();
       }
@@ -172,12 +166,12 @@ export class PacketsPage {
         this.validStop = null;
       } else {
         this.validStop = this.yamcs.getMissionTime();
-        this.validStart = subtractDuration(this.validStop, this.appliedInterval);
+        this.validStart = utils.subtractDuration(this.validStop, this.appliedInterval);
       }
     } else {
       this.appliedInterval = defaultInterval;
       this.validStop = this.yamcs.getMissionTime();
-      this.validStart = subtractDuration(this.validStop, defaultInterval);
+      this.validStart = utils.subtractDuration(this.validStop, defaultInterval);
     }
   }
 
@@ -192,7 +186,7 @@ export class PacketsPage {
       this.filterForm.get('interval')!.setValue(defaultInterval);
     } else {
       this.validStop = this.yamcs.getMissionTime();
-      this.validStart = subtractDuration(this.validStop, interval);
+      this.validStart = utils.subtractDuration(this.validStop, interval);
       this.loadData();
     }
   }

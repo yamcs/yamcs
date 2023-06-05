@@ -1,6 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Database } from '../../../../client';
+import { Database } from '@yamcs/webapp-sdk';
 import { YamcsService } from '../../../../core/services/YamcsService';
 import { Shell } from '../../shell/Shell';
 import { ResultSetPrinter } from './ResultSetPrinter';

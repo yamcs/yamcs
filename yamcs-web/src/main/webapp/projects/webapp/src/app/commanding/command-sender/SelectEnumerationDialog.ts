@@ -4,7 +4,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
-import { ArgumentType, EnumValue } from '../../client';
+import { ArgumentType, EnumValue } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-select-enumeration-dialog',

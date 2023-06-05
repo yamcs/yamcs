@@ -1,4 +1,4 @@
-import { Command, Value } from '../../client';
+import { Command, Value } from '@yamcs/webapp-sdk';
 import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
 
 export interface StackEntry {

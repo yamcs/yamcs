@@ -2,14 +2,11 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
+import { MessageService, Parameter, ParameterSubscription, ParameterValue, UnitsPipe, Value, ValuePipe } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { Parameter, ParameterSubscription, ParameterValue, Value } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
-import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
-import { UnitsPipe } from '../../shared/pipes/UnitsPipe';
-import { ValuePipe } from '../../shared/pipes/ValuePipe';
 import { SetParameterDialog } from './SetParameterDialog';
 
 

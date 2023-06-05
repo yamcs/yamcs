@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Route } from '../../client';
+import { Route } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-route-detail',

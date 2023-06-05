@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { FaviconService, GlobalAlarmStatus, GlobalAlarmStatusSubscription } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { GlobalAlarmStatus, GlobalAlarmStatusSubscription } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
-import { FaviconService } from '../../core/services/FaviconService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({

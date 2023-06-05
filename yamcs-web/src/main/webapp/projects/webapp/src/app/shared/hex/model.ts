@@ -1,5 +1,4 @@
-import { BitRange } from '../BitRange';
-
+import { BitRange } from '@yamcs/webapp-sdk';
 
 let seq = 0;
 

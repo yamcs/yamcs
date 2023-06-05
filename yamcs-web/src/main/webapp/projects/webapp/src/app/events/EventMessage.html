@@ -1,10 +1,10 @@
 <ng-container *ngIf="summary === null || summary === undefined">-</ng-container>
-<app-highlight *ngIf="summary !== null && summary !== undefined"
-               [text]="summary" [term]="highlight" />
+<ya-highlight *ngIf="summary !== null && summary !== undefined"
+              [text]="summary" [term]="highlight" />
 <ng-container *ngIf="detail">
-  <app-icon-action icon="more_horiz" (click)="toggleExpanded()" />
+  <ya-icon-action icon="more_horiz" (click)="toggleExpanded()" />
   <ng-container *ngIf="expanded$ | async">
     <br>
-    <app-highlight [text]="detail" [term]="highlight" />
+    <ya-highlight [text]="detail" [term]="highlight" />
   </ng-container>
 </ng-container>

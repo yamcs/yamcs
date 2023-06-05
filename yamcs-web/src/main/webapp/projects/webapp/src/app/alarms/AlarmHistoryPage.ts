@@ -2,14 +2,10 @@ import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Alarm, GetAlarmsOptions, MessageService, SelectComponent, SelectOption, utils } from '@yamcs/webapp-sdk';
 import * as dayjs from 'dayjs';
 import { Dayjs } from 'dayjs';
-import { Alarm, GetAlarmsOptions } from '../client';
-import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
-import { Option, Select } from '../shared/forms/Select';
-import * as utils from '../shared/utils';
-import { subtractDuration } from '../shared/utils';
 
 @Component({
   templateUrl: './AlarmHistoryPage.html',
@@ -18,7 +14,7 @@ import { subtractDuration } from '../shared/utils';
 export class AlarmHistoryPage {
 
   @ViewChild('intervalSelect')
-  intervalSelect: Select;
+  intervalSelect: SelectComponent;
 
   validStart: Date | null;
   validStop: Date | null;
@@ -46,7 +42,7 @@ export class AlarmHistoryPage {
     'actions',
   ];
 
-  intervalOptions: Option[] = [
+  intervalOptions: SelectOption[] = [
     { id: 'PT1H', label: 'Last hour' },
     { id: 'PT6H', label: 'Last 6 hours' },
     { id: 'P1D', label: 'Last 24 hours' },
@@ -79,7 +75,7 @@ export class AlarmHistoryPage {
         this.loadData();
       } else {
         this.validStop = new Date();
-        this.validStart = subtractDuration(this.validStop, nextInterval);
+        this.validStart = utils.subtractDuration(this.validStop, nextInterval);
         this.appliedInterval = nextInterval;
         this.loadData();
       }
@@ -103,7 +99,7 @@ export class AlarmHistoryPage {
         this.validStop = null;
       } else {
         this.validStop = new Date();
-        this.validStart = subtractDuration(this.validStop, this.appliedInterval);
+        this.validStart = utils.subtractDuration(this.validStop, this.appliedInterval);
       }
     } else {
       this.appliedInterval = 'NO_LIMIT';

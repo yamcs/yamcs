@@ -1,9 +1,8 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { EditReplayProcessorRequest } from '../client';
+import { EditReplayProcessorRequest, utils } from '@yamcs/webapp-sdk';
 import { YamcsService } from '../core/services/YamcsService';
-import * as utils from '../shared/utils';
 
 @Component({
   selector: 'app-modify-replay-dialog',

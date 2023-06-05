@@ -1,10 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ConnectionInfo, MessageService, Processor, ProcessorSubscription } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { ConnectionInfo, Processor, ProcessorSubscription } from '../../client';
-import { MessageService } from '../../core/services/MessageService';
-import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { SessionExpiredDialog } from '../dialogs/SessionExpiredDialog';
 import { StartReplayDialog } from './StartReplayDialog';
@@ -35,7 +33,6 @@ export class InstanceToolbar implements OnDestroy {
     private dialog: MatDialog,
     readonly yamcs: YamcsService,
     private snackBar: MatSnackBar,
-    private preferenceStore: PreferenceStore,
     private messageService: MessageService,
   ) {
     this.processor$.next(yamcs.getProcessor());

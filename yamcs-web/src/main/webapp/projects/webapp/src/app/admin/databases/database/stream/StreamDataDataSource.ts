@@ -1,7 +1,6 @@
 import { DataSource } from '@angular/cdk/table';
+import { StreamData, StreamSubscription, Synchronizer } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { StreamData, StreamSubscription } from '../../../../client';
-import { Synchronizer } from '../../../../core/services/Synchronizer';
 import { YamcsService } from '../../../../core/services/YamcsService';
 import { StreamBuffer } from './StreamBuffer';
 

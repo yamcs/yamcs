@@ -119,7 +119,7 @@
   align-items: flex-end;
 }
 
-.remote-column.header.no-filelist>app-breadcrumb-trail {
+.remote-column.header.no-filelist>ya-breadcrumb-trail {
   visibility: hidden;
 }
 
@@ -134,7 +134,7 @@ label.table-caption select {
   margin: 0 4px;
 }
 
-app-breadcrumb-trail {
+ya-breadcrumb-trail {
   display: inline-block;
 }
 

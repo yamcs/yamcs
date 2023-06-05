@@ -1,9 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Member, Parameter, ParameterType, Value } from '../../client';
-import { requireFloat, requireInteger } from '../../shared/forms/validators';
-import * as utils from '../../shared/utils';
+import { Member, Parameter, ParameterType, Value, utils, validators } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-set-parameter-dialog',
@@ -43,13 +41,13 @@ export class SetParameterDialog {
   }
 
   private getValidatorsForType(type: ParameterType) {
-    const validators = [Validators.required];
+    const result = [Validators.required];
     if (type.engType === 'integer') {
-      validators.push(requireInteger);
+      result.push(validators.requireInteger);
     } else if (type.engType === 'float') {
-      validators.push(requireFloat);
+      result.push(validators.requireFloat);
     }
-    return validators;
+    return result;
   }
 
   save() {

@@ -4,9 +4,8 @@ import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup } from '@angul
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { EditUserRequest, MessageService, UserInfo } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { EditUserRequest, UserInfo } from '../../client';
-import { MessageService } from '../../core/services/MessageService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { AddRolesDialog, RoleItem } from './AddRolesDialog';
 

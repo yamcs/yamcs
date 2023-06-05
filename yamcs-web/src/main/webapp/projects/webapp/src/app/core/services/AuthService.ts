@@ -1,11 +1,9 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { Inject, Injectable, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthInfo, HttpHandler, OpenIDConnectInfo, Synchronizer, TokenResponse, User, UserInfo } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { AuthInfo, HttpHandler, OpenIDConnectInfo, TokenResponse, UserInfo } from '../../client';
-import { User } from '../../shared/User';
 import { ConfigService } from './ConfigService';
-import { Synchronizer } from './Synchronizer';
 import { YamcsService } from './YamcsService';
 
 export interface Claims {

@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { AlgorithmStatus } from '../client';
-import { OFF_COLOR, ON_COLOR } from '../shared/template/Led';
+import { AlgorithmStatus, OFF_COLOR, ON_COLOR } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-algorithm-status',

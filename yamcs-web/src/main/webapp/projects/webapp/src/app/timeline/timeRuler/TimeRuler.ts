@@ -1,5 +1,5 @@
 import { TimeRuler as DefaultTimeRuler } from '@fqqb/timeline';
-import { TimelineBand } from '../../client/types/timeline';
+import { TimelineBand } from '@yamcs/webapp-sdk';
 import { TimelineChartPage } from '../TimelineChartPage';
 
 export class TimeRuler extends DefaultTimeRuler {

@@ -67,9 +67,9 @@
       </mat-tab-nav-panel>
     </div>
   </ng-container>
-  <app-empty-message *ngIf="!(services$ | async)!.length" headerTitle="File Transfer">
+  <ya-empty-message *ngIf="!(services$ | async)!.length" headerTitle="File Transfer">
     <p>
       This instance has no file transfer services configured.
     </p>
-  </app-empty-message>
+  </ya-empty-message>
 </app-instance-page>

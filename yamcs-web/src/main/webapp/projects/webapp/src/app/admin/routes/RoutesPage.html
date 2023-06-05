@@ -10,27 +10,27 @@
     </button>
   </app-admin-toolbar>
 
-  <app-detail-pane>
+  <ya-detail-pane>
     <ng-container *ngIf="selectedRoute$ | async as selectedItem; else noSelection">
-      <app-detail-toolbar>
+      <ya-detail-toolbar>
         Route Detail
-      </app-detail-toolbar>
+      </ya-detail-toolbar>
       <div style="padding: 0 16px">
         <app-route-detail [route]="selectedItem" />
       </div>
     </ng-container>
     <ng-template #noSelection>
-      <app-detail-toolbar>
+      <ya-detail-toolbar>
         Select a route
-      </app-detail-toolbar>
+      </ya-detail-toolbar>
     </ng-template>
-  </app-detail-pane>
+  </ya-detail-pane>
 
   <div class="table-wrapper">
     <div class="panel-content">
       <div class="filter-bar">
-        <app-search-filter [formControl]="filterControl"
-                           placeholder="Filter routes" />
+        <ya-search-filter [formControl]="filterControl"
+                          placeholder="Filter routes" />
       </div>
       <table mat-table
              [dataSource]="dataSource"

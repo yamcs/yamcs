@@ -1,4 +1,4 @@
-<app-message-bar #messageBar />
+<ya-message-bar #messageBar />
 
 <mat-toolbar class="top">
   <mat-toolbar-row>
@@ -20,9 +20,9 @@
       <br>
       <label *ngIf="v.choices">
         {{ v.label || v.name }}
-        <app-help [dialogTitle]="v.label || v.name" *ngIf="v.help">
+        <ya-help [dialogTitle]="v.label || v.name" *ngIf="v.help">
           <div [innerHTML]="v.help"></div>
-        </app-help>
+        </ya-help>
         <select [formControlName]="v.name">
           <option *ngFor="let choice of v.choices" [value]="choice">{{ choice }}</option>
         </select>
@@ -30,9 +30,9 @@
 
       <label *ngIf="!v.choices">
         {{ v.label || v.name }}
-        <app-help [dialogTitle]="v.label || v.name" *ngIf="v.help">
+        <ya-help [dialogTitle]="v.label || v.name" *ngIf="v.help">
           <div [innerHTML]="v.help"></div>
-        </app-help>
+        </ya-help>
         <br>
         <input [formControlName]="v.name" type="text">
       </label>

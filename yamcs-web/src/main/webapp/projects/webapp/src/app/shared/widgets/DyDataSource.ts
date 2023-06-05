@@ -1,11 +1,9 @@
+import { NamedObjectId, ParameterSubscription, ParameterValue, Sample, Synchronizer, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { NamedObjectId, ParameterSubscription, ParameterValue, Sample } from '../../client';
-import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
-import { convertValueToNumber } from '../utils';
-import { CustomBarsValue, DySample, DySeries } from './dygraphs';
 import { NamedParameterType } from './NamedParameterType';
 import { DyValueRange, PlotBuffer, PlotData } from './PlotBuffer';
+import { CustomBarsValue, DySample, DySeries } from './dygraphs';
 
 /**
  * Stores sample data for use in a ParameterPlot directly
@@ -179,7 +177,7 @@ export class DyDataSource {
   private processRealtimeDelivery(pvals: ParameterValue[]) {
     for (const pval of pvals) {
       let dyValue: CustomBarsValue = null;
-      const value = convertValueToNumber(pval.engValue);
+      const value = utils.convertValueToNumber(pval.engValue);
       if (value !== null) {
         if (pval.acquisitionStatus === 'EXPIRED') {
           // We get the last received timestamp.

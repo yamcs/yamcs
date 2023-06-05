@@ -82,10 +82,10 @@
   <dl class="dl-horizontal">
     <dt>
       Text
-      <app-help *ngIf="isChangeMissionDatabaseEnabled()">
+      <ya-help *ngIf="isChangeMissionDatabaseEnabled()">
         You may override the MDB algorithm text. Such a change is scoped to the
         current processor only and will not persist across server restarts.
-      </app-help><br>
+      </ya-help><br>
       <span class="override-annotation" *ngIf="(overrides$ | async)?.textOverride">
         MDB Override
       </span>

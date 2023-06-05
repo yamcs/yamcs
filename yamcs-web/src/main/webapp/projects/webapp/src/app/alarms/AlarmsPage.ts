@@ -3,13 +3,11 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Alarm, MessageService, SelectOption } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { Alarm } from '../client';
 import { AuthService } from '../core/services/AuthService';
-import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
-import { Option } from '../shared/forms/Select';
 import { TrackBySelectionModel } from '../shared/table/TrackBySelectionModel';
 import { AcknowledgeAlarmDialog } from './AcknowledgeAlarmDialog';
 import { AlarmsDataSource } from './AlarmsDataSource';
@@ -35,7 +33,7 @@ export class AlarmsPage implements OnDestroy {
     return `${alarm.triggerTime}__${alarm.id.namespace}__${alarm.id.name}__${alarm.seqNum}`;
   }, false, []);
 
-  viewOptions: Option[] = [
+  viewOptions: SelectOption[] = [
     { id: 'standard', label: 'Standard view (ack & unack)' },
     { id: 'unacknowledged', label: 'Unacknowledged alarms' },
     { id: 'acknowledged', label: 'Acknowledged alarms' },

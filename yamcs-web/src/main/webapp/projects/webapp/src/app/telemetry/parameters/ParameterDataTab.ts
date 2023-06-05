@@ -3,12 +3,9 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
+import { GetParameterValuesOptions, SelectOption, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { GetParameterValuesOptions } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
-import { Option } from '../../shared/forms/Select';
-import * as utils from '../../shared/utils';
-import { subtractDuration } from '../../shared/utils';
 import { ExportParameterDataDialog } from './ExportParameterDataDialog';
 import { ParameterDataDataSource } from './ParameterDataDataSource';
 
@@ -23,7 +20,7 @@ export class ParameterDataTab {
 
   qualifiedName: string;
 
-  intervalOptions: Option[] = [
+  intervalOptions: SelectOption[] = [
     { id: 'PT1H', label: 'Last Hour' },
     { id: 'PT6H', label: 'Last 6 Hours' },
     { id: 'P1D', label: 'Last 24 Hours' },
@@ -102,12 +99,12 @@ export class ParameterDataTab {
         this.validStop = null;
       } else {
         this.validStop = this.yamcs.getMissionTime();
-        this.validStart = subtractDuration(this.validStop, this.appliedInterval);
+        this.validStart = utils.subtractDuration(this.validStop, this.appliedInterval);
       }
     } else {
       this.appliedInterval = defaultInterval;
       this.validStop = this.yamcs.getMissionTime();
-      this.validStart = subtractDuration(this.validStop, defaultInterval);
+      this.validStart = utils.subtractDuration(this.validStop, defaultInterval);
     }
   }
 

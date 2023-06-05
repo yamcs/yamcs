@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnChanges, ViewChild } from '@angular/core';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { ThreadInfo } from '../../client';
+import { ThreadInfo } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-threads-table',

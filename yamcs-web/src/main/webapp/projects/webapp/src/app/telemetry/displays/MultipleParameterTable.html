@@ -43,11 +43,11 @@
   <ng-container cdkColumnDef="engValue">
     <th mat-header-cell *cdkHeaderCellDef>Eng</th>
     <td mat-cell *cdkCellDef="let row" class="wrap200">
-      <app-expirable *ngIf="row.pval" [pval]="row.pval">
+      <ya-expirable *ngIf="row.pval" [pval]="row.pval">
         {{ (row.pval?.engValue | value) || '-' }}
         <span *ngIf="row.pval?.rangeCondition === 'LOW'">&#8595;</span>
         <span *ngIf="row.pval?.rangeCondition === 'HIGH'">&#8593;</span>
-      </app-expirable>
+      </ya-expirable>
       <span *ngIf="!row.pval">-</span>
     </td>
   </ng-container>
@@ -72,10 +72,10 @@
   <ng-container cdkColumnDef="actions">
     <th mat-header-cell *cdkHeaderCellDef class="expand"></th>
     <td mat-cell *cdkCellDef="let row; let i = index">
-      <app-icon-action (click)="moveDown.emit(i); $event.stopPropagation()"
-                       icon="keyboard_arrow_down" />
-      <app-icon-action (click)="moveUp.emit(i); $event.stopPropagation()"
-                       icon="keyboard_arrow_up" />
+      <ya-icon-action (click)="moveDown.emit(i); $event.stopPropagation()"
+                      icon="keyboard_arrow_down" />
+      <ya-icon-action (click)="moveUp.emit(i); $event.stopPropagation()"
+                      icon="keyboard_arrow_up" />
     </td>
   </ng-container>
 

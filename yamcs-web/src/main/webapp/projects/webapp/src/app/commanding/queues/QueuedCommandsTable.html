@@ -77,12 +77,12 @@
         Checking transmission constraints
       </span>
       <ng-container *ngIf="!entry.pendingTransmissionConstraints">
-        <app-text-action icon="check"
-                         (click)="acceptEntry(entry)"
-                         [disabled]="entry.pendingTransmissionConstraints">ACCEPT</app-text-action>
-        <app-text-action icon="close"
-                         (click)="rejectEntry(entry)"
-                         [disabled]="entry.pendingTransmissionConstraints">REJECT</app-text-action>
+        <ya-text-action icon="check"
+                        (click)="acceptEntry(entry)"
+                        [disabled]="entry.pendingTransmissionConstraints">ACCEPT</ya-text-action>
+        <ya-text-action icon="close"
+                        (click)="rejectEntry(entry)"
+                        [disabled]="entry.pendingTransmissionConstraints">REJECT</ya-text-action>
       </ng-container>
     </td>
   </ng-container>

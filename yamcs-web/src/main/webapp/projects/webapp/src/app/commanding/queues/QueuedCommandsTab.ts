@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { CommandQueue, QueueEventsSubscription } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { CommandQueue, QueueEventsSubscription } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({

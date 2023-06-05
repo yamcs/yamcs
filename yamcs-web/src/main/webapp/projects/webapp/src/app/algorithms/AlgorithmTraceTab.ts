@@ -1,9 +1,8 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AlgorithmStatus, AlgorithmTrace, MessageService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { AlgorithmStatus, AlgorithmTrace } from '../client';
-import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
 
 @Component({

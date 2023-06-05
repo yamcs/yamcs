@@ -1,4 +1,4 @@
-import { Link } from '../client';
+import { Link } from '@yamcs/webapp-sdk';
 
 export interface LinkItem {
   link: Link;

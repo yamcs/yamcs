@@ -5,16 +5,11 @@ import { FormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MessageService } from 'projects/webapp/src/app/core/services/MessageService';
-import { BasenamePipe } from 'projects/webapp/src/app/shared/pipes/BasenamePipe';
-import { ExtensionPipe } from 'projects/webapp/src/app/shared/pipes/ExtensionPipe';
-import { FilenamePipe } from 'projects/webapp/src/app/shared/pipes/FilenamePipe';
+import { AcknowledgmentInfo, BasenamePipe, Command, CommandSubscription, ExtensionPipe, FilenamePipe, MessageService, SelectOption, StorageClient, Value } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { AcknowledgmentInfo, Command, CommandSubscription, StorageClient, Value } from '../../client';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
-import { Option } from '../../shared/forms/Select';
 import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
 import { CommandResult, EditStackEntryDialog } from './EditStackEntryDialog';
 import { AdvancementParams, StackEntry } from './StackEntry';
@@ -81,7 +76,7 @@ export class StackFilePage implements OnDestroy {
 
   stackOptionsForm: UntypedFormGroup;
   extraAcknowledgments: AcknowledgmentInfo[];
-  ackOptions: Option[] = [
+  ackOptions: SelectOption[] = [
     { id: 'Acknowledge_Queued', label: 'Queued' },
     { id: 'Acknowledge_Released', label: 'Released' },
     { id: 'Acknowledge_Sent', label: 'Sent' },

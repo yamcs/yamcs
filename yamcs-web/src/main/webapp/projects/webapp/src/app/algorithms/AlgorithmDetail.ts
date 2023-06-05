@@ -1,14 +1,13 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { Algorithm, AlgorithmOverrides, AlgorithmStatus, MessageService } from '@yamcs/webapp-sdk';
 import * as ace from 'brace';
 import 'brace/mode/javascript';
 import 'brace/mode/python';
 import 'brace/theme/eclipse';
 import 'brace/theme/twilight';
 import { BehaviorSubject } from 'rxjs';
-import { Algorithm, AlgorithmOverrides, AlgorithmStatus } from '../client';
 import { AuthService } from '../core/services/AuthService';
-import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
 
 @Component({

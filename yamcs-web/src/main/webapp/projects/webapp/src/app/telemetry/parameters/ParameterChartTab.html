@@ -1,12 +1,12 @@
 <ng-container *ngIf="parameter$ | async as parameter">
   <div style="padding-left: 12px; padding-right: 12px; padding-top: 12px">
     <div class="plot-top-actions" *ngIf="range$ | async as range">
-      <app-text-action icon="add_circle_outline" (click)="compareParameter()">
+      <ya-text-action icon="add_circle_outline" (click)="compareParameter()">
         Comparison
-      </app-text-action>
+      </ya-text-action>
       <span class="separator"></span>
-      <app-text-action (click)="chooseRange()" icon="date_range"
-                       [active]="range === 'CUSTOM'">
+      <ya-text-action (click)="chooseRange()" icon="date_range"
+                      [active]="range === 'CUSTOM'">
         <span *ngIf="range !== 'CUSTOM'">Date Range</span>
         <ng-container *ngIf="customStart$ | async as customStart">
           <ng-container *ngIf="customStop$ | async as customStop">
@@ -15,55 +15,55 @@
             </span>
           </ng-container>
         </ng-container>
-      </app-text-action>
-      <app-text-action (click)="loadLatest('PT1M')"
-                       [active]="range === 'PT1M'">
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('PT1M')"
+                      [active]="range === 'PT1M'">
         1 minute
-      </app-text-action>
-      <app-text-action (click)="loadLatest('PT5M')"
-                       [active]="range === 'PT5M'">
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('PT5M')"
+                      [active]="range === 'PT5M'">
         5 minutes
-      </app-text-action>
-      <app-text-action (click)="loadLatest('PT15M')"
-                       [active]="range === 'PT15M'">
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('PT15M')"
+                      [active]="range === 'PT15M'">
         15 minutes
-      </app-text-action>
-      <app-text-action (click)="loadLatest('PT30M')"
-                       [active]="range === 'PT30M'">
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('PT30M')"
+                      [active]="range === 'PT30M'">
         30 minutes
-      </app-text-action>
-      <app-text-action (click)="loadLatest('PT1H')"
-                       [active]="range === 'PT1H'">
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('PT1H')"
+                      [active]="range === 'PT1H'">
         1 hour
-      </app-text-action>
-      <app-text-action (click)="loadLatest('PT6H')"
-                       [active]="range === 'PT6H'">
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('PT6H')"
+                      [active]="range === 'PT6H'">
         6 hours
-      </app-text-action>
-      <app-text-action (click)="loadLatest('PT12H')"
-                       [active]="range === 'PT12H'">
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('PT12H')"
+                      [active]="range === 'PT12H'">
         12 hours
-      </app-text-action>
-      <app-text-action (click)="loadLatest('P1D')"
-                       [active]="range === 'P1D'">
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('P1D')"
+                      [active]="range === 'P1D'">
         1 day
-      </app-text-action>
-      <app-text-action (click)="loadLatest('P2D')"
-                       [active]="range === 'P2D'">
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('P2D')"
+                      [active]="range === 'P2D'">
         2 days
-      </app-text-action>
-      <app-text-action (click)="loadLatest('P1W')"
-                       [active]="range === 'P1W'">
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('P1W')"
+                      [active]="range === 'P1W'">
         7 days
-      </app-text-action>
-      <app-text-action (click)="loadLatest('P2W')"
-                       [active]="range === 'P2W'">
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('P2W')"
+                      [active]="range === 'P2W'">
         14 days
-      </app-text-action>
-      <app-text-action (click)="loadLatest('P1M')"
-                       [active]="range === 'P1M'">
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('P1M')"
+                      [active]="range === 'P1M'">
         30 days
-      </app-text-action>
+      </ya-text-action>
     </div>
   </div>
   <div class="plot-container">

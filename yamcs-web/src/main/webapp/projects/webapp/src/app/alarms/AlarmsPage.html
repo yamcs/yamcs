@@ -1,7 +1,7 @@
 <app-instance-page>
   <app-instance-toolbar>
     Alarms
-    <app-help>
+    <ya-help>
       An alarm can be in these states:
       <table class="ya-data-table">
         <tr>
@@ -45,7 +45,7 @@
           </td>
         </tr>
       </table>
-    </app-help>
+    </ya-help>
     &nbsp;&nbsp;&nbsp;
     <button mat-button
             color="primary"
@@ -65,11 +65,11 @@
     </button>
   </app-instance-toolbar>
 
-  <app-detail-pane>
+  <ya-detail-pane>
     <ng-container *ngIf="detailAlarm$ | async as detailAlarm; else noDetail">
-      <app-detail-toolbar>
+      <ya-detail-toolbar>
         Alarm Detail
-      </app-detail-toolbar>
+      </ya-detail-toolbar>
       <div style="padding: 0 16px">
         <app-alarm-detail [alarm]="detailAlarm"
                           [mayControl]="mayControlAlarms()"
@@ -80,11 +80,11 @@
       </div>
     </ng-container>
     <ng-template #noDetail>
-      <app-detail-toolbar>
+      <ya-detail-toolbar>
         Select an alarm
-      </app-detail-toolbar>
+      </ya-detail-toolbar>
     </ng-template>
-  </app-detail-pane>
+  </ya-detail-pane>
 
   <div class="table-wrapper">
     <div class="panel-content" *ngIf="dataSource">
@@ -105,9 +105,9 @@
       </dl>
       <form [formGroup]="filterForm">
         <div class="filter-bar">
-          <app-search-filter formControlName="filter"
-                             placeholder="Filter by text search" />
-          <app-select [options]="viewOptions" formControlName="view" />
+          <ya-search-filter formControlName="filter"
+                            placeholder="Filter by text search" />
+          <ya-select [options]="viewOptions" formControlName="view" />
         </div>
       </form>
       <app-alarms-table [dataSource]="dataSource"

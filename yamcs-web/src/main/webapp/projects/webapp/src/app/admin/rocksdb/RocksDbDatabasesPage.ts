@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
-import { RocksDbDatabase } from '../../client';
+import { RocksDbDatabase } from '@yamcs/webapp-sdk';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({

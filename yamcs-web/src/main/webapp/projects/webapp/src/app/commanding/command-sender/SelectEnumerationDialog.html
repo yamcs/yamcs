@@ -4,11 +4,11 @@
 
 <mat-dialog-content>
   <div class="filter-bar">
-    <app-search-filter [formControl]="filterControl"
-                       width="100%"
-                       (onArrowDown)="selectNext()"
-                       (onArrowUp)="selectPrevious()"
-                       (onEnter)="applySelection()" />
+    <ya-search-filter [formControl]="filterControl"
+                      width="100%"
+                      (onArrowDown)="selectNext()"
+                      (onArrowUp)="selectPrevious()"
+                      (onEnter)="applySelection()" />
   </div>
   <div class="scrollpane">
     <table mat-table

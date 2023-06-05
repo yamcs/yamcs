@@ -4,10 +4,9 @@ import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { ColumnChooserComponent, ColumnInfo, ConnectionInfo, GetCommandsOptions } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { ConnectionInfo, GetCommandsOptions } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
-import { ColumnChooser, ColumnInfo } from '../../shared/template/ColumnChooser';
 import { CommandsDataSource, ListItem } from './CommandsDataSource';
 
 @Component({
@@ -30,8 +29,8 @@ export class SendCommandPage implements AfterViewInit, OnDestroy {
   @ViewChild(MatPaginator)
   paginator: MatPaginator;
 
-  @ViewChild(ColumnChooser)
-  columnChooser: ColumnChooser;
+  @ViewChild(ColumnChooserComponent)
+  columnChooser: ColumnChooserComponent;
 
   filterControl = new UntypedFormControl();
 

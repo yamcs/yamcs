@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
+import { User } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
-import { User } from '../../shared/User';
 
 @Component({
   templateUrl: './ProfilePage.html',

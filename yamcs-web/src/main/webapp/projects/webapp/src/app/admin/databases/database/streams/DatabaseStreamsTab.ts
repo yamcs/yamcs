@@ -2,7 +2,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute } from '@angular/router';
-import { StreamEvent, StreamStatisticsSubscription } from '../../../../client';
+import { StreamEvent, StreamStatisticsSubscription } from '@yamcs/webapp-sdk';
 import { YamcsService } from '../../../../core/services/YamcsService';
 
 export interface StreamItem {

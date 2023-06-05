@@ -1,4 +1,4 @@
-import { MessageService } from '../../core/services/MessageService';
+import { MessageService } from '@yamcs/webapp-sdk';
 import { YamcsService } from '../../core/services/YamcsService';
 
 /**

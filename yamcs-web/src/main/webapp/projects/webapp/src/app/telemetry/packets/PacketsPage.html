@@ -3,9 +3,9 @@
     Packets
     &nbsp;&nbsp;&nbsp;
     <mat-menu #exportMenu="matMenu" class="ya-menu">
-      <app-download-menu-item [link]="downloadURL$ | async">
+      <ya-download-menu-item [link]="downloadURL$ | async">
         Raw dump
-      </app-download-menu-item>
+      </ya-download-menu-item>
     </mat-menu>
     <button mat-button
             [matMenuTriggerFor]="exportMenu"
@@ -22,11 +22,11 @@
     </button>
   </app-instance-toolbar>
 
-  <app-detail-pane>
+  <ya-detail-pane>
     <ng-container *ngIf="detailPacket$ | async as detailPacket; else noSelection">
-      <app-detail-toolbar>
+      <ya-detail-toolbar>
         Packet Detail
-      </app-detail-toolbar>
+      </ya-detail-toolbar>
       <div style="padding: 0 16px">
         <div class="block-title">Packet name</div>
         <div class="block">
@@ -58,7 +58,7 @@
         </div>
         <div class="block-title">
           Data
-          <app-more icon="more_horiz">
+          <ya-more icon="more_horiz">
             <button mat-menu-item (click)="copyHex(detailPacket)">
               Copy Hex
             </button>
@@ -66,10 +66,10 @@
               Copy Binary
             </button>
             <mat-divider />
-            <app-download-menu-item [link]="detailPacket | packetDownloadLink">
+            <ya-download-menu-item [link]="detailPacket | packetDownloadLink">
               Download
-            </app-download-menu-item>
-          </app-more>
+            </ya-download-menu-item>
+          </ya-more>
         </div>
         <div class="block" style="margin-top: 4px">
           <app-hex #hexdump [base64String]="detailPacket.packet" />
@@ -77,26 +77,26 @@
       </div>
     </ng-container>
     <ng-template #noSelection>
-      <app-detail-toolbar>
+      <ya-detail-toolbar>
         Select a packet
-      </app-detail-toolbar>
+      </ya-detail-toolbar>
     </ng-template>
-  </app-detail-pane>
+  </ya-detail-pane>
   <div class="table-wrapper">
     <div class="panel-content">
       <form [formGroup]="filterForm">
         <div class="filter-bar">
-          <app-select [options]="nameOptions$ | async"
-                      formControlName="name" />
-          <app-select [options]="linkOptions$ | async"
-                      formControlName="link" />
-          <app-select #intervalSelect
-                      [options]="intervalOptions"
-                      icon="access_time"
-                      formControlName="interval" />
+          <ya-select [options]="nameOptions$ | async"
+                     formControlName="name" />
+          <ya-select [options]="linkOptions$ | async"
+                     formControlName="link" />
+          <ya-select #intervalSelect
+                     [options]="intervalOptions"
+                     icon="access_time"
+                     formControlName="interval" />
           <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
-            <app-date-time-input formControlName="customStart" />
-            <app-date-time-input formControlName="customStop" />
+            <ya-date-time-input formControlName="customStart" />
+            <ya-date-time-input formControlName="customStop" />
             <button (click)="applyCustomDates()"
                     class="ya-button"
                     [disabled]="filterForm.invalid">Apply</button>
@@ -106,11 +106,11 @@
               Jump to now
             </button>
           </ng-container>
-          <app-column-chooser #columnChooser
-                              [columns]="columns"
-                              preferenceKey="tmPackets" />
+          <ya-column-chooser #columnChooser
+                             [columns]="columns"
+                             preferenceKey="tmPackets" />
 
-          <app-dots *ngIf="dataSource.loading$ | async" />
+          <ya-dots *ngIf="dataSource.loading$ | async" />
         </div>
       </form>
       <table mat-table
@@ -169,10 +169,10 @@
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef class="expand"></th>
           <td mat-cell *matCellDef="let packet">
-            <app-text-action icon="output" (click)="extractPacket(packet)">
+            <ya-text-action icon="output" (click)="extractPacket(packet)">
               Extract
-            </app-text-action>
-            <app-more>
+            </ya-text-action>
+            <ya-more>
               <button mat-menu-item (click)="copyHex(packet)">
                 Copy Hex
               </button>
@@ -180,10 +180,10 @@
                 Copy Binary
               </button>
               <mat-divider />
-              <app-download-menu-item [link]="packet | packetDownloadLink">
+              <ya-download-menu-item [link]="packet | packetDownloadLink">
                 Download
-              </app-download-menu-item>
-            </app-more>
+              </ya-download-menu-item>
+            </ya-more>
           </td>
         </ng-container>
 

@@ -3,9 +3,9 @@
     <div class="item"
          *ngIf="type.minChars !== undefined || type.maxChars !== undefined">
       chars:
-      <app-interval [left]="type.minChars"
-                    [right]="type.maxChars"
-                    [singleValueIfEqual]="true" />
+      <ya-interval [left]="type.minChars"
+                   [right]="type.maxChars"
+                   [singleValueIfEqual]="true" />
     </div>
     <div class="item" *ngIf="type?.unitSet">
       {{ type.unitSet | units }}
@@ -14,11 +14,11 @@
   </div>
 
   {{ label }}
-  <app-help *ngIf="description">
+  <ya-help *ngIf="description">
     {{ description }}
-  </app-help>
+  </ya-help>
 
-  <app-errors #err [controlName]="controlName" />
+  <ya-errors #err [controlName]="controlName" />
 
   <input [formControl]="formControl"
          type="text"

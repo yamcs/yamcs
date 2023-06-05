@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { StorageClient } from '../../client';
+import { StorageClient } from '@yamcs/webapp-sdk';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({

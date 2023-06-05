@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Record, Table } from '../../../../client';
+import { Record, Table } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-record',

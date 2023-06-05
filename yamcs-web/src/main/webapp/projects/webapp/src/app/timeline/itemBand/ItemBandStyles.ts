@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { UntypedFormGroup } from '@angular/forms';
-import { Option } from '../../shared/forms/Select';
+import { SelectOption } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-item-band-styles',
@@ -10,7 +10,7 @@ import { Option } from '../../shared/forms/Select';
 })
 export class ItemBandStyles {
 
-  itemTextOverflowOptions: Option[] = [
+  itemTextOverflowOptions: SelectOption[] = [
     { id: 'show', label: 'Show' },
     { id: 'clip', label: 'Clip' },
     { id: 'hide', label: 'Hide' },

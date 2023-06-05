@@ -1,5 +1,5 @@
 import { Drawable, Graphics, Path, Timeline } from '@fqqb/timeline';
-import { ReplayRequest } from '../client';
+import { ReplayRequest } from '@yamcs/webapp-sdk';
 
 export class ReplayOverlay extends Drawable {
 

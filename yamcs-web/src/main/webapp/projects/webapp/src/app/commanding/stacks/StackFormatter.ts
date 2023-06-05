@@ -1,4 +1,4 @@
-import { Value } from '../../client';
+import { Value } from '@yamcs/webapp-sdk';
 import { AdvancementParams, StackEntry } from './StackEntry';
 
 export class StackFormatter {

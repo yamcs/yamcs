@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "license": "AGPL-3.0",
   "scripts": {
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
-    "lib:build": "ng-packagr -c tsconfig.lib.json",
-    "lib:watch": "ng-packagr -c tsconfig.lib.json --watch"
+    "build": "ng build webapp-sdk && ng build webapp",
+    "watch": "ng build webapp-sdk && ng build webapp --watch --configuration development",
+    "build-app": "ng build webapp",
+    "watch-app": "ng build webapp --watch --configuration development",
+    "build-lib": "ng build webapp-sdk",
+    "watch-lib": "ng build webapp-sdk --watch --configuration development"
   },
   "private": true,
   "dependencies": {
@@ -38,6 +40,7 @@
     "@angular-devkit/build-angular": "^16.0.2",
     "@angular/cli": "^16.0.2",
     "@angular/compiler-cli": "^16.0.2",
+    "ng-packagr": "^16.0.0",
     "typescript": "~5.0.4"
   }
 }

@@ -6,7 +6,7 @@
          class="ya-link ya-header-link">
         {{ spaceSystemName }}
       </a>/{{ parameter.qualifiedName | shortName }}{{ offset$ | async}}
-      <app-title-copy [text]="parameter.qualifiedName + ((offset$ | async) || '')" />
+      <ya-title-copy [text]="parameter.qualifiedName + ((offset$ | async) || '')" />
     </ng-container>
   </app-instance-toolbar>
 

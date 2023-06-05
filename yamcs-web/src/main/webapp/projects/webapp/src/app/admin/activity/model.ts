@@ -1,5 +1,5 @@
 import { MatTableDataSource } from '@angular/material/table';
-import { AuditRecord } from '../../client';
+import { AuditRecord } from '@yamcs/webapp-sdk';
 
 export interface RowGroup {
   grouper: string;

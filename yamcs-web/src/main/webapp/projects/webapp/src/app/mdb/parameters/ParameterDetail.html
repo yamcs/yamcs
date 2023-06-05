@@ -250,14 +250,14 @@
               {{ range.level }}
             </td>
             <td>
-              <app-interval *ngIf="(range.minInclusive !== undefined
+              <ya-interval *ngIf="(range.minInclusive !== undefined
                             || range.minExclusive !== undefined
                             || range.maxInclusive !== undefined
                             || range.maxExclusive !== undefined); else dash"
-                            [left]="range.minInclusive | nvl:range.minExclusive"
-                            [right]="range.maxInclusive | nvl:range.maxExclusive"
-                            [leftInclusive]="range.minInclusive !== undefined"
-                            [rightInclusive]="range.maxInclusive !== undefined" />
+                           [left]="range.minInclusive | nvl:range.minExclusive"
+                           [right]="range.maxInclusive | nvl:range.maxExclusive"
+                           [leftInclusive]="range.minInclusive !== undefined"
+                           [rightInclusive]="range.maxInclusive !== undefined" />
               <ng-template #dash>-</ng-template>
             </td>
           </tr>
@@ -281,14 +281,14 @@
               {{ range.level }}
             </td>
             <td>
-              <app-interval *ngIf="(range.minInclusive !== undefined
+              <ya-interval *ngIf="(range.minInclusive !== undefined
                               || range.minExclusive !== undefined
                               || range.maxInclusive !== undefined
                               || range.maxExclusive !== undefined); else dash"
-                            [left]="range.minInclusive | nvl:range.minExclusive"
-                            [right]="range.maxInclusive | nvl:range.maxExclusive"
-                            [leftInclusive]="range.minInclusive !== undefined"
-                            [rightInclusive]="range.maxInclusive !== undefined" />
+                           [left]="range.minInclusive | nvl:range.minExclusive"
+                           [right]="range.maxInclusive | nvl:range.maxExclusive"
+                           [leftInclusive]="range.minInclusive !== undefined"
+                           [rightInclusive]="range.maxInclusive !== undefined" />
               <ng-template #dash>-</ng-template>
             </td>
           </tr>

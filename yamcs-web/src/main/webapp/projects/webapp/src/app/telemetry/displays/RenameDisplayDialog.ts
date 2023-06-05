@@ -1,10 +1,9 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { StorageClient } from '../../client';
+import { FilenamePipe, StorageClient } from '@yamcs/webapp-sdk';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
-import { FilenamePipe } from '../../shared/pipes/FilenamePipe';
 
 @Component({
   selector: 'app-rename-display-dialog',

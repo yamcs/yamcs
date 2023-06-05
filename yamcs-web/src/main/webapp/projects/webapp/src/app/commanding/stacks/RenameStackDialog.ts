@@ -1,12 +1,9 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { ExtensionPipe } from 'projects/webapp/src/app/shared/pipes/ExtensionPipe';
-import { FilenamePipe } from 'projects/webapp/src/app/shared/pipes/FilenamePipe';
-import { StorageClient } from '../../client';
+import { BasenamePipe, ExtensionPipe, FilenamePipe, StorageClient } from '@yamcs/webapp-sdk';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
-import { BasenamePipe } from '../../shared/pipes/BasenamePipe';
 
 @Component({
   selector: 'app-rename-stack-dialog',

@@ -1,10 +1,9 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../core/services/YamcsService';
-import * as utils from '../shared/utils';
-import { subtractDuration } from '../shared/utils';
 
 @Component({
   selector: 'app-download-dump-dialog',
@@ -44,7 +43,7 @@ export class DownloadDumpDialog {
     let stop = data.stop;
     if (!start || !stop) {
       stop = this.yamcs.getMissionTime();
-      start = subtractDuration(stop, 'PT1H');
+      start = utils.subtractDuration(stop, 'PT1H');
     }
     this.form.setValue({
       start: utils.toISOString(start),

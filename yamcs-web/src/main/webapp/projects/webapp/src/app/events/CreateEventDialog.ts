@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { SelectOption, utils } from '@yamcs/webapp-sdk';
 import { YamcsService } from '../core/services/YamcsService';
-import { Option } from '../shared/forms/Select';
-import * as utils from '../shared/utils';
 
 @Component({
   templateUrl: './CreateEventDialog.html',
@@ -13,7 +12,7 @@ export class CreateEventDialog {
 
   form: UntypedFormGroup;
 
-  severityOptions: Option[] = [
+  severityOptions: SelectOption[] = [
     { id: 'INFO', label: 'INFO' },
     { id: 'WATCH', label: 'WATCH' },
     { id: 'WARNING', label: 'WARNING' },

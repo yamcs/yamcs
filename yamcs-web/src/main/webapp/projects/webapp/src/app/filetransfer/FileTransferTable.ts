@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
+import { MessageService, Transfer } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { Transfer } from '../client';
-import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
 import { TransferItem } from './TransferItem';
 

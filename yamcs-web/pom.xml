@@ -14,7 +14,7 @@
   </description>
 
   <properties>
-    <webdir>${basedir}/src/main/webapp/dist</webdir>
+    <webdir>${basedir}/src/main/webapp/dist/webapp</webdir>
     <javaModuleName>org.yamcs.web</javaModuleName>
   </properties>
 

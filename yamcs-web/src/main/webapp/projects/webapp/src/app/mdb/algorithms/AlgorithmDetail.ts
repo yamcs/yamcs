@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { Algorithm } from '@yamcs/webapp-sdk';
 import * as ace from 'brace';
 import 'brace/mode/javascript';
 import 'brace/mode/python';
 import 'brace/theme/eclipse';
 import 'brace/theme/twilight';
-import { Algorithm } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({

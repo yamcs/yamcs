@@ -3,10 +3,9 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { SelectOption, Service } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { Service } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
-import { Option } from '../../shared/forms/Select';
 
 @Component({
   templateUrl: './ServicesPage.html',
@@ -20,7 +19,7 @@ export class ServicesPage {
     instance: new UntypedFormControl('_global'),
   });
 
-  instanceOptions$ = new BehaviorSubject<Option[]>([
+  instanceOptions$ = new BehaviorSubject<SelectOption[]>([
     { id: '_global', label: '_global' },
   ]);
 

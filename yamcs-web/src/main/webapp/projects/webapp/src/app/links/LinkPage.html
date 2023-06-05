@@ -109,21 +109,21 @@
         <h4>
           COP-1
           <div style="float: right" *ngIf="mayControlLinks()">
-            <app-text-action icon="adjust" (click)="openInitiateCop1Dialog(link.name)" *ngIf="!status.cop1Active">
+            <ya-text-action icon="adjust" (click)="openInitiateCop1Dialog(link.name)" *ngIf="!status.cop1Active">
               INITIATE AD
-            </app-text-action>
-            <app-text-action icon="redo" (click)="resumeCop1(link.name)" *ngIf="status.state === 'SUSPENDED'">
+            </ya-text-action>
+            <ya-text-action icon="redo" (click)="resumeCop1(link.name)" *ngIf="status.state === 'SUSPENDED'">
               RESUME AD
-            </app-text-action>
-            <app-text-action icon="not_interested" (click)="disableCop1(link.name)" *ngIf="status.cop1Active">
+            </ya-text-action>
+            <ya-text-action icon="not_interested" (click)="disableCop1(link.name)" *ngIf="status.cop1Active">
               TERMINATE AD
-            </app-text-action>
+            </ya-text-action>
           </div>
         </h4>
         <dl class="dl-horizontal">
           <dt>
             Service
-            <app-help>
+            <ya-help>
               <p>
                 COP-1 provides two service modes that determine how reliably frames are transmitted:
               </p>
@@ -141,7 +141,7 @@
                   <td>Sends Type-BD Transfer Frames. There are no retransmissions.</td>
                 </tr>
               </table>
-            </app-help>
+            </ya-help>
           </dt>
           <dd>
             <ng-container *ngIf="status.cop1Active">AD (Sequence-controlled service)</ng-container>

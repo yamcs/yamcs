@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { TimelineBand, TimelineBandsPage } from '../../client/types/timeline';
+import { TimelineBand, TimelineBandsPage } from '@yamcs/webapp-sdk';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({

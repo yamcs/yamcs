@@ -1,6 +1,6 @@
 import { DataSource } from '@angular/cdk/table';
+import { Command, GetCommandsOptions } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { Command, GetCommandsOptions } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 export class ListItem {

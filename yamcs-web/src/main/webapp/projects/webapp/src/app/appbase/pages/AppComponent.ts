@@ -1,14 +1,12 @@
 import { ChangeDetectionStrategy, Component, HostBinding, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { AuthInfo, ConnectionInfo, PreferenceStore, User } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
-import { AuthInfo, ConnectionInfo } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, SiteLink } from '../../core/services/ConfigService';
-import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
-import { User } from '../../shared/User';
 import { SelectInstanceDialog } from '../../shared/dialogs/SelectInstanceDialog';
 
 

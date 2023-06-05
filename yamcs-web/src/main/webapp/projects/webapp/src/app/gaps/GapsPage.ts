@@ -5,13 +5,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Gap, GetGapsOptions, MessageService, SelectComponent, SelectOption, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { Gap, GetGapsOptions } from '../client';
-import { MessageService } from '../core/services/MessageService';
 import { YamcsService } from '../core/services/YamcsService';
-import { Option, Select } from '../shared/forms/Select';
-import * as utils from '../shared/utils';
-import { subtractDuration } from '../shared/utils';
 import { RequestMultipleRangesPlaybackDialog } from './RequestMultipleRangesPlaybackDialog';
 import { RequestSingleRangePlaybackDialog } from './RequestSingleRangePlaybackDialog';
 
@@ -22,7 +18,7 @@ import { RequestSingleRangePlaybackDialog } from './RequestSingleRangePlaybackDi
 export class GapsPage {
 
   @ViewChild('intervalSelect')
-  intervalSelect: Select;
+  intervalSelect: SelectComponent;
 
   validStart: Date | null;
   validStop: Date | null;
@@ -51,9 +47,9 @@ export class GapsPage {
     'actions',
   ];
 
-  apidOptions$ = new BehaviorSubject<Option[]>([]);
+  apidOptions$ = new BehaviorSubject<SelectOption[]>([]);
 
-  intervalOptions: Option[] = [
+  intervalOptions: SelectOption[] = [
     { id: 'PT1H', label: 'Last hour' },
     { id: 'PT3H', label: 'Last 3 hours' },
     { id: 'PT6H', label: 'Last 6 hours' },
@@ -110,7 +106,7 @@ export class GapsPage {
         this.filterForm.get('customStop')!.setValue(utils.toISOString(customStop));
       } else {
         this.validStop = null;
-        this.validStart = subtractDuration(now, nextInterval);
+        this.validStart = utils.subtractDuration(now, nextInterval);
         this.appliedInterval = nextInterval;
         this.loadData();
       }
@@ -135,12 +131,12 @@ export class GapsPage {
         this.validStop = utils.toDate(customStop);
       } else {
         this.validStop = this.yamcs.getMissionTime();
-        this.validStart = subtractDuration(this.validStop, this.appliedInterval);
+        this.validStart = utils.subtractDuration(this.validStop, this.appliedInterval);
       }
     } else {
       this.appliedInterval = 'PT1H';
       this.validStop = this.yamcs.getMissionTime();
-      this.validStart = subtractDuration(this.validStop, this.appliedInterval);
+      this.validStart = utils.subtractDuration(this.validStop, this.appliedInterval);
     }
   }
 

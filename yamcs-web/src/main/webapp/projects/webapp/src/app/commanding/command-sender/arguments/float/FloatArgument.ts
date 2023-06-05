@@ -1,9 +1,7 @@
 import { ChangeDetectionStrategy, Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
 import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator, ValidatorFn, Validators } from '@angular/forms';
+import { ArgumentType, utils, validators } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
-import { ArgumentType } from '../../../../client';
-import { requireFloat, requireUnsigned } from '../../../../shared/forms/validators';
-import { unflattenIndex } from '../../../../shared/utils';
 
 @Component({
   selector: 'app-float-argument',
@@ -60,9 +58,9 @@ export class FloatArgument implements ControlValueAccessor, OnInit, Validator, O
     }
 
     this.validators.push(Validators.required);
-    this.validators.push(requireFloat);
+    this.validators.push(validators.requireFloat);
     if (this.type.signed === false) {
-      this.validators.push(requireUnsigned);
+      this.validators.push(validators.requireUnsigned);
     }
     if (this.type.rangeMax !== undefined) {
       this.validators.push(Validators.max(this.type.rangeMax));
@@ -74,7 +72,7 @@ export class FloatArgument implements ControlValueAccessor, OnInit, Validator, O
 
   get label() {
     if (this.index !== undefined) {
-      const index = unflattenIndex(this.index, this.dimensions!);
+      const index = utils.unflattenIndex(this.index, this.dimensions!);
       return index.map(i => '[' + i + ']').join('');
     } else {
       return this.name;

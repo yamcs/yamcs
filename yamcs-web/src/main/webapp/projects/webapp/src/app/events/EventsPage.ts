@@ -3,18 +3,12 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ColumnInfo, GetEventsOptions, SelectComponent, SelectOption, Synchronizer, rowAnimation, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { rowAnimation } from '../animations';
-import { GetEventsOptions } from '../client';
 import { AuthService } from '../core/services/AuthService';
 import { ConfigService, ExtraColumnInfo } from '../core/services/ConfigService';
-import { Synchronizer } from '../core/services/Synchronizer';
 import { YamcsService } from '../core/services/YamcsService';
-import { Option, Select } from '../shared/forms/Select';
-import { ColumnInfo } from '../shared/template/ColumnChooser';
-import * as utils from '../shared/utils';
-import { subtractDuration } from '../shared/utils';
 import { CreateEventDialog } from './CreateEventDialog';
 import { EventsDataSource } from './EventsDataSource';
 import { ExportEventsDialog } from './ExportEventsDialog';
@@ -31,7 +25,7 @@ const defaultInterval = 'PT1H';
 export class EventsPage {
 
   @ViewChild('intervalSelect')
-  intervalSelect: Select;
+  intervalSelect: SelectComponent;
 
   validStart: Date | null;
   validStop: Date | null;
@@ -67,7 +61,7 @@ export class EventsPage {
    */
   extraColumns: ExtraColumnInfo[] = [];
 
-  severityOptions: Option[] = [
+  severityOptions: SelectOption[] = [
     { id: 'INFO', label: 'Info level' },
     { id: 'WATCH', label: 'Watch level' },
     { id: 'WARNING', label: 'Warning level' },
@@ -76,9 +70,9 @@ export class EventsPage {
     { id: 'SEVERE', label: 'Severe level' },
   ];
 
-  sourceOptions$ = new BehaviorSubject<Option[]>([]);
+  sourceOptions$ = new BehaviorSubject<SelectOption[]>([]);
 
-  intervalOptions: Option[] = [
+  intervalOptions: SelectOption[] = [
     { id: 'PT1H', label: 'Last hour' },
     { id: 'PT6H', label: 'Last 6 hours' },
     { id: 'P1D', label: 'Last 24 hours' },
@@ -174,7 +168,7 @@ export class EventsPage {
         this.loadData();
       } else {
         this.validStop = yamcs.getMissionTime();
-        this.validStart = subtractDuration(this.validStop, nextInterval);
+        this.validStart = utils.subtractDuration(this.validStop, nextInterval);
         this.appliedInterval = nextInterval;
         this.loadData();
       }
@@ -210,12 +204,12 @@ export class EventsPage {
         this.validStop = null;
       } else {
         this.validStop = this.yamcs.getMissionTime();
-        this.validStart = subtractDuration(this.validStop, this.appliedInterval);
+        this.validStart = utils.subtractDuration(this.validStop, this.appliedInterval);
       }
     } else {
       this.appliedInterval = defaultInterval;
       this.validStop = this.yamcs.getMissionTime();
-      this.validStart = subtractDuration(this.validStop, defaultInterval);
+      this.validStart = utils.subtractDuration(this.validStop, defaultInterval);
     }
   }
 
@@ -230,7 +224,7 @@ export class EventsPage {
       this.filterForm.get('interval')!.setValue(defaultInterval);
     } else {
       this.validStop = this.yamcs.getMissionTime();
-      this.validStart = subtractDuration(this.validStop, interval);
+      this.validStart = utils.subtractDuration(this.validStop, interval);
       this.loadData();
     }
   }

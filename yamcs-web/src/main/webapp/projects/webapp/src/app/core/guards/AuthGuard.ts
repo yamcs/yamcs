@@ -1,8 +1,7 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { Inject, Injectable, inject } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivateChildFn, CanActivateFn, Router, RouterStateSnapshot } from '@angular/router';
-import { AuthInfo, OpenIDConnectInfo } from '../../client';
-import * as utils from '../../shared/utils';
+import { AuthInfo, OpenIDConnectInfo, utils } from '@yamcs/webapp-sdk';
 import { AuthService } from '../services/AuthService';
 import { ConfigService } from '../services/ConfigService';
 import { YamcsService } from '../services/YamcsService';

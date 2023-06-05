@@ -13,8 +13,8 @@
   <div class="panel-content">
     <form [formGroup]="filterForm">
       <div class="filter-bar">
-        <app-select [options]="instanceOptions$ | async"
-                    formControlName="instance" />
+        <ya-select [options]="instanceOptions$ | async"
+                   formControlName="instance" />
       </div>
     </form>
     <app-services-table [dataSource]="dataSource"

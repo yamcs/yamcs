@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { Record, Table } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { Record, Table } from '../../../../client';
 import { YamcsService } from '../../../../core/services/YamcsService';
 
 @Component({

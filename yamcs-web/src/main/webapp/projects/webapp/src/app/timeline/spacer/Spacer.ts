@@ -1,11 +1,11 @@
 import { Banner } from '@fqqb/timeline';
-import { TimelineBand } from '../../client/types/timeline';
-import { NumberProperty, PropertyInfoSet, resolveProperties } from '../properties';
+import { TimelineBand } from '@yamcs/webapp-sdk';
 import { TimelineChartPage } from '../TimelineChartPage';
+import { NumberProperty, PropertyInfoSet, resolveProperties } from '../properties';
 
 export const propertyInfo: PropertyInfoSet = {
   height: new NumberProperty(34),
-}
+};
 
 export class Spacer extends Banner {
 

@@ -49,12 +49,12 @@
 
   <div class="block-title">Live value</div>
   <div class="block">
-    <app-expirable [pval]="parameterDetail.currentValue">
+    <ya-expirable [pval]="parameterDetail.currentValue">
       <app-alarm-level [level]="parameterDetail.currentValue.monitoringResult" [grayscale]="true" />
       &nbsp;{{ parameterDetail.currentValue.engValue | value }}
       <span *ngIf="parameterDetail.currentValue.rangeCondition === 'LOW'">&#8595;</span>
       <span *ngIf="parameterDetail.currentValue.rangeCondition === 'HIGH'">&#8593;</span>
-    </app-expirable>
+    </ya-expirable>
   </div>
 </ng-container>
 

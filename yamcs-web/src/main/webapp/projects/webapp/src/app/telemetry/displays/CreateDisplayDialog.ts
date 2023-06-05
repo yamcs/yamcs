@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { StorageClient } from '../../client';
+import { StorageClient } from '@yamcs/webapp-sdk';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 

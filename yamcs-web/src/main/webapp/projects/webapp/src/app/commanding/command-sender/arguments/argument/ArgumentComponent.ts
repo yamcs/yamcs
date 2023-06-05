@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { ControlContainer, FormGroupName } from '@angular/forms';
-import { ArgumentType, Value } from '../../../../client';
-import * as utils from '../../../../shared/utils';
+import { ArgumentType, Value, utils } from '@yamcs/webapp-sdk';
 import { TemplateProvider } from '../../CommandForm';
 
 /**

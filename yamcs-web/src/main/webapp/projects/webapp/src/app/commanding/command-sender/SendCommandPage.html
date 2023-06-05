@@ -10,27 +10,27 @@
     <div [class.noDisplay]="!connectionInfo.processor?.hasCommanding">
       <ng-container *ngIf="breadcrumb$ | async as breadcrumb">
         <div class="filter-bar" *ngIf="breadcrumb.length">
-          <app-breadcrumb-trail>
-            <app-breadcrumb link="/commanding/send"
-                            [queryParams]="{c: yamcs.context}"
-                            icon="account_tree" />
-            <app-breadcrumb *ngFor="let item of breadcrumb"
-                            [link]="item.route"
-                            [queryParams]="item.queryParams"
-                            [label]="item.name" />
-          </app-breadcrumb-trail>
+          <ya-breadcrumb-trail>
+            <ya-breadcrumb link="/commanding/send"
+                           [queryParams]="{c: yamcs.context}"
+                           icon="account_tree" />
+            <ya-breadcrumb *ngFor="let item of breadcrumb"
+                           [link]="item.route"
+                           [queryParams]="item.queryParams"
+                           [label]="item.name" />
+          </ya-breadcrumb-trail>
         </div>
       </ng-container>
       <div class="filter-bar">
-        <app-search-filter [formControl]="filterControl"
-                           placeholder="Search by name"
-                           icon="search"
-                           (onArrowDown)="selectNext()"
-                           (onArrowUp)="selectPrevious()"
-                           (onEnter)="applySelection()" />
-        <app-column-chooser #columnChooser
-                            [columns]="columns"
-                            preferenceKey="sendCommand" />
+        <ya-search-filter [formControl]="filterControl"
+                          placeholder="Search by name"
+                          icon="search"
+                          (onArrowDown)="selectNext()"
+                          (onArrowUp)="selectPrevious()"
+                          (onEnter)="applySelection()" />
+        <ya-column-chooser #columnChooser
+                           [columns]="columns"
+                           preferenceKey="sendCommand" />
       </div>
       <table mat-table
              *ngIf="dataSource"
@@ -59,12 +59,12 @@
               <mat-icon class="icon12" style="vertical-align: middle">rss_feed</mat-icon>
               <a [routerLink]="['/commanding/send', item.command.qualifiedName]"
                  [queryParams]="{c: yamcs.context}">
-                <app-highlight *ngIf="!system"
-                               [text]="item.command.qualifiedName"
-                               [term]="filterControl.value" />
-                <app-highlight *ngIf="system"
-                               [text]="item.command.qualifiedName | slice:(system!.length + 1)"
-                               [term]="filterControl.value" />
+                <ya-highlight *ngIf="!system"
+                              [text]="item.command.qualifiedName"
+                              [term]="filterControl.value" />
+                <ya-highlight *ngIf="system"
+                              [text]="item.command.qualifiedName | slice:(system!.length + 1)"
+                              [term]="filterControl.value" />
               </a>
             </ng-container>
           </td>
@@ -74,7 +74,7 @@
           <th mat-header-cell *matHeaderCellDef>Description</th>
           <td mat-cell *matCellDef="let item" class="wrap200">
             <ng-container *ngIf="(item.command?.shortDescription) as desc; else dash">
-              <app-highlight [text]="desc" [term]="filterControl.value" />
+              <ya-highlight [text]="desc" [term]="filterControl.value" />
             </ng-container>
           </td>
         </ng-container>
@@ -86,7 +86,7 @@
           </th>
           <td mat-cell *matCellDef="let item">
             <ng-container *ngIf="(item.command | alias:aliasColumn.id) as name; else dash">
-              <app-highlight [text]="name" [term]="filterControl.value" />
+              <ya-highlight [text]="name" [term]="filterControl.value" />
             </ng-container>
           </td>
         </ng-container>
@@ -106,8 +106,8 @@
                      [showFirstLastButtons]="true"
                      [length]="dataSource.totalSize$ | async" />
     </div>
-    <app-empty-message *ngIf="!connectionInfo.processor?.hasCommanding"
-                       headerTitle="Send a command">
+    <ya-empty-message *ngIf="!connectionInfo.processor?.hasCommanding"
+                      headerTitle="Send a command">
       <p>
         You are connected to the
         <ng-container *ngIf="connectionInfo.processor?.replay">replay</ng-container>
@@ -116,7 +116,7 @@
       <p>
         This processor does not support commanding.
       </p>
-    </app-empty-message>
+    </ya-empty-message>
   </div>
 </app-instance-page>
 

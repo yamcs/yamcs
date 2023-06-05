@@ -1,8 +1,8 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { NamedObjectId, ParameterSubscription, StorageClient } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { NamedObjectId, ParameterSubscription, StorageClient } from '../../client';
 import { ConfigService } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { SelectParameterDialog } from '../../shared/dialogs/SelectParameterDialog';

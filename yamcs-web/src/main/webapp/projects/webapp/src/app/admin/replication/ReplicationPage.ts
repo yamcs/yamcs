@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
+import { ReplicationInfoSubscription, ReplicationMaster, ReplicationSlave } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { ReplicationInfoSubscription, ReplicationMaster, ReplicationSlave } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({

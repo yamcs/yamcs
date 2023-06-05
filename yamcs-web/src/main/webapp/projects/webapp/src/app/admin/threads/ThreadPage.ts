@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
+import { ThreadInfo } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { ThreadInfo } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({

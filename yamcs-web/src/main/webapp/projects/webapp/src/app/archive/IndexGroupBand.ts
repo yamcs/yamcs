@@ -1,7 +1,5 @@
 import { Item, ItemBand, Timeline } from '@fqqb/timeline';
-import { IndexGroup } from '../client';
-import { DateTimePipe } from '../shared/pipes/DateTimePipe';
-import * as utils from '../shared/utils';
+import { DateTimePipe, IndexGroup, utils } from '@yamcs/webapp-sdk';
 import { TimelineTooltip } from './TimelineTooltip';
 
 export class IndexGroupBand extends ItemBand {

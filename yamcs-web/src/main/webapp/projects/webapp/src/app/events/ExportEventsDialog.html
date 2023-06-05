@@ -4,17 +4,17 @@
   <form [formGroup]="form">
     <label>
       Start
-      <app-date-time-input formControlName="start" />
+      <ya-date-time-input formControlName="start" />
     </label>
     <br>
     <label>
       Stop
-      <app-date-time-input formControlName="stop" />
+      <ya-date-time-input formControlName="stop" />
     </label>
     <br>
     <label>
       Severity<br>
-      <app-select formControlName="severity" [options]="data.severityOptions" />
+      <ya-select formControlName="severity" [options]="data.severityOptions" />
     </label>
     <br>
     <label>
@@ -24,24 +24,24 @@
     <br>
     <label>
       Source<br>
-      <app-multi-select formControlName="source"
-                        [options]="data.sourceOptions"
-                        emptyOption="Any source" />
+      <ya-multi-select formControlName="source"
+                       [options]="data.sourceOptions"
+                       emptyOption="Any source" />
     </label>
     <br>
     <label>
       CSV column delimiter<br>
-      <app-select formControlName="delimiter" [options]="delimiterOptions" />
+      <ya-select formControlName="delimiter" [options]="delimiterOptions" />
     </label>
   </form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
   <button class="ya-button" mat-dialog-close>CANCEL</button>
-  <app-download-button [link]="downloadURL$ | async"
-                       [primary]="true"
-                       (click)="closeDialog()"
-                       [disabled]="!form.valid">
+  <ya-download-button [link]="downloadURL$ | async"
+                      [primary]="true"
+                      (click)="closeDialog()"
+                      [disabled]="!form.valid">
     DOWNLOAD
-  </app-download-button>
+  </ya-download-button>
 </mat-dialog-actions>

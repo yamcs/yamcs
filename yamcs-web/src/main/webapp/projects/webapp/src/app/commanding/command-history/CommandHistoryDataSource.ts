@@ -1,7 +1,6 @@
 import { DataSource } from '@angular/cdk/table';
+import { CommandSubscription, GetCommandHistoryOptions, Synchronizer } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { CommandSubscription, GetCommandHistoryOptions } from '../../client';
-import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandHistoryBuffer } from './CommandHistoryBuffer';
 import { CommandHistoryRecord } from './CommandHistoryRecord';

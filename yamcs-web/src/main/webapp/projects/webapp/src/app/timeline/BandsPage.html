@@ -61,8 +61,8 @@
       <ng-container cdkColumnDef="tags">
         <th mat-header-cell *cdkHeaderCellDef>Tags</th>
         <td mat-cell *cdkCellDef="let row">
-          <app-label *ngFor="let tag of (row.tags || [])"
-                     backgroundColor="#cdeefd">{{ tag }}</app-label>
+          <ya-label *ngFor="let tag of (row.tags || [])"
+                    backgroundColor="#cdeefd">{{ tag }}</ya-label>
           <ng-container *ngIf="!row.tags">-</ng-container>
         </td>
       </ng-container>

@@ -1,10 +1,8 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { MessageService } from '../../core/services/MessageService';
+import { MessageService, SelectOption, utils } from '@yamcs/webapp-sdk';
 import { YamcsService } from '../../core/services/YamcsService';
-import { Option } from '../../shared/forms/Select';
-import * as utils from '../../shared/utils';
 
 @Component({
   templateUrl: './CreateItemDialog.html',
@@ -12,7 +10,7 @@ import * as utils from '../../shared/utils';
 })
 export class CreateItemDialog {
 
-  startConstraintOptions: Option[] = [
+  startConstraintOptions: SelectOption[] = [
     { id: 'START_ON', label: 'Start on' },
   ];
 

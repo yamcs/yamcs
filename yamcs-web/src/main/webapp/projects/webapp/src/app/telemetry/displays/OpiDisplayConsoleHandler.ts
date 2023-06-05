@@ -1,5 +1,5 @@
 import { ConsoleHandler } from '@yamcs/opi';
-import { MessageService } from '../../core/services/MessageService';
+import { MessageService } from '@yamcs/webapp-sdk';
 
 export class OpiDisplayConsoleHandler implements ConsoleHandler {
 

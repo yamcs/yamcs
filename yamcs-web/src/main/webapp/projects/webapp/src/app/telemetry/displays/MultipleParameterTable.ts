@@ -1,9 +1,8 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
+import { ParameterValue, Synchronizer } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
-import { ParameterValue } from '../../client';
-import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ParameterTableBuffer } from './ParameterTableBuffer';
 import { ParameterTable } from './ParameterTableModel';

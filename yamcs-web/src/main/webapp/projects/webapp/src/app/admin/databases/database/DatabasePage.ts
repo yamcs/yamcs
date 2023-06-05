@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { Database } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { Database } from '../../../client';
 import { AuthService } from '../../../core/services/AuthService';
 import { YamcsService } from '../../../core/services/YamcsService';
-import { User } from '../../../shared/User';
+import { User } from '@yamcs/webapp-sdk';
 
 interface DatabaseObject {
   type: 'table' | 'stream';

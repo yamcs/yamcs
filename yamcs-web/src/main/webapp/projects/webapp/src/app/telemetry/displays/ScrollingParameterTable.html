@@ -15,20 +15,20 @@
          [queryParams]="{c: yamcs.context}">
         {{ parameter }}
       </a>
-      <app-more *ngIf="showActions">
+      <ya-more *ngIf="showActions">
         <button mat-menu-item (click)="moveLeft.emit(i)">Move left</button>
         <button mat-menu-item (click)="moveRight.emit(i)">Move right</button>
         <mat-divider />
         <button mat-menu-item (click)="removeColumn.emit(parameter)">Remove column</button>
-      </app-more>
+      </ya-more>
     </th>
     <td mat-cell *cdkCellDef="let row">
       <ng-container *ngIf="row.pvals[parameter] as pval">
-        <app-expirable *ngIf="pval" [pval]="pval">
+        <ya-expirable *ngIf="pval" [pval]="pval">
           {{ (pval.engValue | value) || '-' }}
           <span *ngIf="pval.rangeCondition === 'LOW'">&#8595;</span>
           <span *ngIf="pval.rangeCondition === 'HIGH'">&#8593;</span>
-        </app-expirable>
+        </ya-expirable>
       </ng-container>
       <span *ngIf="!row.pvals[parameter]">-</span>
     </td>

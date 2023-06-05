@@ -1,12 +1,9 @@
 import { Component, Inject, OnDestroy } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { DownloadParameterValuesOptions, SelectOption, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { DownloadParameterValuesOptions } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
-import { Option } from '../../shared/forms/Select';
-import * as utils from '../../shared/utils';
-import { subtractDuration } from '../../shared/utils';
 
 @Component({
   selector: 'app-export-archive-data-dialog',
@@ -14,7 +11,7 @@ import { subtractDuration } from '../../shared/utils';
 })
 export class ExportArchiveDataDialog implements OnDestroy {
 
-  delimiterOptions: Option[] = [
+  delimiterOptions: SelectOption[] = [
     { id: 'COMMA', label: 'Comma' },
     { id: 'SEMICOLON', label: 'Semicolon' },
     { id: 'TAB', label: 'Tab' },
@@ -39,7 +36,7 @@ export class ExportArchiveDataDialog implements OnDestroy {
     let stop = data.stop;
     if (!start || !stop) {
       stop = yamcs.getMissionTime();
-      start = subtractDuration(stop, 'PT1H');
+      start = utils.subtractDuration(stop, 'PT1H');
     }
 
     this.form.setValue({

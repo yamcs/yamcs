@@ -1,11 +1,10 @@
 import { ChangeDetectionStrategy, Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MemberPathPipe, Parameter } from '@yamcs/webapp-sdk';
 import { Observable } from 'rxjs';
 import { debounceTime, map, switchMap } from 'rxjs/operators';
-import { Parameter } from '../../client';
 import { YamcsService } from '../../core/services/YamcsService';
-import { MemberPathPipe } from '../../shared/pipes/MemberPathPipe';
 import { ColorPalette } from './ColorPalette';
 import { Thickness } from './Thickness';
 

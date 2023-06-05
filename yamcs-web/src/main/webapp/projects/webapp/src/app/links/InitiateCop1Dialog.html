@@ -24,7 +24,7 @@
 
       <label *ngIf="form.controls.type.value == 'WITH_CLCW_CHECK'">
         CLCW check timeout (milliseconds)
-        <app-help dialogTitle="CLCW Check Timeout">
+        <ya-help dialogTitle="CLCW Check Timeout">
           <p>
             Timeout associated to acknowledgment CLCWs. If a command frame is not acknowledged
             within this time, it will be retransmitted.
@@ -32,20 +32,20 @@
           <p>
             Other names: <code>T1_Initial</code> &nbsp;&bull;&nbsp; <code>Timer_Initial_Value</code>.
           </p>
-        </app-help>
+        </ya-help>
         <input type="text" formControlName="clcwCheckTimeout">
       </label>
 
       <label *ngIf="form.controls.type.value == 'SET_VR'">
         V(R)
-        <app-help dialogTitle="V(R)">
+        <ya-help dialogTitle="V(R)">
           <p>
             The N(S) frame sequence number expected to be seen by FARM-1 in the next Type-AD transfer frame.
           </p>
           <p>
             Other name: <code>Receiver_Frame_Sequence_Number</code>.
           </p>
-        </app-help>
+        </ya-help>
         <input type="text" formControlName="vr">
       </label>
     </ng-container>

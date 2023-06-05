@@ -1,11 +1,9 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { Gap, PlaybackRange, SelectOption, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { Gap, PlaybackRange } from '../client';
 import { YamcsService } from '../core/services/YamcsService';
-import { Option } from '../shared/forms/Select';
-import * as utils from '../shared/utils';
 
 @Component({
   templateUrl: './RequestMultipleRangesPlaybackDialog.html',
@@ -13,7 +11,7 @@ import * as utils from '../shared/utils';
 export class RequestMultipleRangesPlaybackDialog {
 
   gaps: Gap[];
-  linkOptions$ = new BehaviorSubject<Option[]>([]);
+  linkOptions$ = new BehaviorSubject<SelectOption[]>([]);
 
   form = new UntypedFormGroup({
     mergeTolerance: new UntypedFormControl(30),

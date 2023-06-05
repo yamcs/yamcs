@@ -1,6 +1,6 @@
 import { DefaultPathResolver, Display } from '@yamcs/opi';
 import { Widget } from '@yamcs/opi/dist/types/Widget';
-import { StorageClient } from '../../client';
+import { StorageClient } from '@yamcs/webapp-sdk';
 
 export class OpiDisplayPathResolver extends DefaultPathResolver {
 

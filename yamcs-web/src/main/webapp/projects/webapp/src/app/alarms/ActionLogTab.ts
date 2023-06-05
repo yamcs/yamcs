@@ -2,12 +2,8 @@ import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuditRecord, GetAuditRecordsOptions } from '../client';
-import { MessageService } from '../core/services/MessageService';
+import { AuditRecord, GetAuditRecordsOptions, MessageService, SelectComponent, SelectOption, utils } from '@yamcs/webapp-sdk';
 import { YamcsService } from '../core/services/YamcsService';
-import { Option, Select } from '../shared/forms/Select';
-import * as utils from '../shared/utils';
-import { subtractDuration } from '../shared/utils';
 
 
 @Component({
@@ -17,7 +13,7 @@ import { subtractDuration } from '../shared/utils';
 export class ActionLogTab {
 
   @ViewChild('intervalSelect')
-  intervalSelect: Select;
+  intervalSelect: SelectComponent;
 
   validStart: Date | null;
   validStop: Date | null;
@@ -41,7 +37,7 @@ export class ActionLogTab {
     'actions',
   ];
 
-  intervalOptions: Option[] = [
+  intervalOptions: SelectOption[] = [
     { id: 'PT1H', label: 'Last hour' },
     { id: 'PT6H', label: 'Last 6 hours' },
     { id: 'P1D', label: 'Last 24 hours' },
@@ -78,7 +74,7 @@ export class ActionLogTab {
         this.loadData();
       } else {
         this.validStop = new Date();
-        this.validStart = subtractDuration(this.validStop, nextInterval);
+        this.validStart = utils.subtractDuration(this.validStop, nextInterval);
         this.appliedInterval = nextInterval;
         this.loadData();
       }
@@ -106,7 +102,7 @@ export class ActionLogTab {
         this.validStop = null;
       } else {
         this.validStop = new Date();
-        this.validStart = subtractDuration(this.validStop, this.appliedInterval);
+        this.validStart = utils.subtractDuration(this.validStop, this.appliedInterval);
       }
     } else {
       this.appliedInterval = 'NO_LIMIT';

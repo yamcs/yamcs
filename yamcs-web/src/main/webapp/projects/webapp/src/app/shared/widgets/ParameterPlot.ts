@@ -1,10 +1,9 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, EventEmitter, Input, OnDestroy, Output, QueryList, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { Parameter, utils } from '@yamcs/webapp-sdk';
 import Dygraph from 'dygraphs';
 import { BehaviorSubject } from 'rxjs';
-import { Parameter } from '../../client';
 import { ModifyParameterDialog } from '../../telemetry/parameters/ModifyParameterDialog';
-import { subtractDuration } from '../utils';
 import CrosshairPlugin from './CrosshairPlugin';
 import { DyDataSource } from './DyDataSource';
 import GridPlugin from './GridPlugin';
@@ -160,7 +159,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
      */
     if (this.duration) {
       const stop = this.stop;
-      const start = subtractDuration(stop, this.duration);
+      const start = utils.subtractDuration(stop, this.duration);
       this.dataSource.updateWindow(start, stop, [null, null]);
     }
     this.applyTheme();

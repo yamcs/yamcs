@@ -8,25 +8,25 @@
     <form [formGroup]="filterForm">
       <ng-container *ngIf="breadcrumb$ | async as breadcrumb">
         <div class="filter-bar" *ngIf="breadcrumb.length">
-          <app-breadcrumb-trail>
-            <app-breadcrumb link="/algorithms"
-                            [queryParams]="{c: yamcs.context}"
-                            icon="account_tree" />
-            <app-breadcrumb *ngFor="let item of breadcrumb"
-                            [link]="item.route"
-                            [queryParams]="item.queryParams"
-                            [label]="item.name" />
-          </app-breadcrumb-trail>
+          <ya-breadcrumb-trail>
+            <ya-breadcrumb link="/algorithms"
+                           [queryParams]="{c: yamcs.context}"
+                           icon="account_tree" />
+            <ya-breadcrumb *ngFor="let item of breadcrumb"
+                           [link]="item.route"
+                           [queryParams]="item.queryParams"
+                           [label]="item.name" />
+          </ya-breadcrumb-trail>
         </div>
       </ng-container>
       <div class="filter-bar">
-        <app-search-filter [formControl]="filterForm.controls['filter']"
-                           placeholder="Search by name"
-                           icon="search"
-                           (onArrowDown)="selectNext()"
-                           (onArrowUp)="selectPrevious()"
-                           (onEnter)="applySelection()" />
-        <app-select [options]="scopeOptions" formControlName="scope" />
+        <ya-search-filter [formControl]="filterForm.controls['filter']"
+                          placeholder="Search by name"
+                          icon="search"
+                          (onArrowDown)="selectNext()"
+                          (onArrowUp)="selectPrevious()"
+                          (onEnter)="applySelection()" />
+        <ya-select [options]="scopeOptions" formControlName="scope" />
       </div>
     </form>
 
@@ -48,12 +48,12 @@
             <mat-icon class="icon12" style="vertical-align: middle">transform</mat-icon>
             <a [routerLink]="['/algorithms', item.algorithm.qualifiedName]"
                [queryParams]="{c: yamcs.context}">
-              <app-highlight *ngIf="!system"
-                             [text]="item.algorithm.qualifiedName"
-                             [term]="filterForm.value.filter" />
-              <app-highlight *ngIf="system"
-                             [text]="item.algorithm.qualifiedName | slice:(system!.length + 1)"
-                             [term]="filterForm.value.filter" />
+              <ya-highlight *ngIf="!system"
+                            [text]="item.algorithm.qualifiedName"
+                            [term]="filterForm.value.filter" />
+              <ya-highlight *ngIf="system"
+                            [text]="item.algorithm.qualifiedName | slice:(system!.length + 1)"
+                            [term]="filterForm.value.filter" />
             </a>
           </ng-container>
         </td>

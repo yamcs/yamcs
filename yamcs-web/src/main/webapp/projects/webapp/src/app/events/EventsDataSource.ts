@@ -1,7 +1,6 @@
 import { DataSource } from '@angular/cdk/table';
+import { Event, EventSubscription, GetEventsOptions, Synchronizer } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Event, EventSubscription, GetEventsOptions } from '../client';
-import { Synchronizer } from '../core/services/Synchronizer';
 import { YamcsService } from '../core/services/YamcsService';
 import { EventBuffer } from './EventBuffer';
 

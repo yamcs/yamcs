@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, ViewChild } from '@angular/core';
-import { AlarmRange, ParameterValue } from '../../client';
+import { AlarmRange, ParameterValue } from '@yamcs/webapp-sdk';
 
 const XMLNS = 'http://www.w3.org/2000/svg';
 

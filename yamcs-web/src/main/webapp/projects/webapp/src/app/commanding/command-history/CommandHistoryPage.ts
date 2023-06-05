@@ -3,21 +3,12 @@ import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ColumnInfo, GetCommandHistoryOptions, MessageService, PrintService, SelectComponent, SelectOption, Synchronizer, User, rowAnimation, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { rowAnimation } from '../../animations';
-import { GetCommandHistoryOptions } from '../../client';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
-import { MessageService } from '../../core/services/MessageService';
-import { PrintService } from '../../core/services/PrintService';
-import { Synchronizer } from '../../core/services/Synchronizer';
 import { YamcsService } from '../../core/services/YamcsService';
-import { Option, Select } from '../../shared/forms/Select';
-import { ColumnInfo } from '../../shared/template/ColumnChooser';
-import { User } from '../../shared/User';
-import * as utils from '../../shared/utils';
-import { subtractDuration } from '../../shared/utils';
 import { CommandHistoryDataSource } from './CommandHistoryDataSource';
 import { CommandHistoryPrintable } from './CommandHistoryPrintable';
 import { CommandHistoryRecord } from './CommandHistoryRecord';
@@ -36,7 +27,7 @@ export class CommandHistoryPage {
   selectedRecord$ = new BehaviorSubject<CommandHistoryRecord | null>(null);
 
   @ViewChild('intervalSelect')
-  intervalSelect: Select;
+  intervalSelect: SelectComponent;
 
   validStart: Date | null;
   validStop: Date | null;
@@ -71,7 +62,7 @@ export class CommandHistoryPage {
     { id: 'actions', label: '', alwaysVisible: true },
   ];
 
-  intervalOptions: Option[] = [
+  intervalOptions: SelectOption[] = [
     { id: 'PT1H', label: 'Last hour' },
     { id: 'PT6H', label: 'Last 6 hours' },
     { id: 'P1D', label: 'Last 24 hours' },
@@ -79,7 +70,7 @@ export class CommandHistoryPage {
     { id: 'CUSTOM', label: 'Custom', group: true },
   ];
 
-  queueOptions: Option[];
+  queueOptions: SelectOption[];
 
   // Would prefer to use formGroup, but when using valueChanges this
   // only is updated after the callback...
@@ -142,7 +133,7 @@ export class CommandHistoryPage {
         this.loadData();
       } else {
         this.validStop = yamcs.getMissionTime();
-        this.validStart = subtractDuration(this.validStop, nextInterval);
+        this.validStart = utils.subtractDuration(this.validStop, nextInterval);
         this.appliedInterval = nextInterval;
         this.loadData();
       }
@@ -174,12 +165,12 @@ export class CommandHistoryPage {
         this.validStop = null;
       } else {
         this.validStop = this.yamcs.getMissionTime();
-        this.validStart = subtractDuration(this.validStop, this.appliedInterval);
+        this.validStart = utils.subtractDuration(this.validStop, this.appliedInterval);
       }
     } else {
       this.appliedInterval = defaultInterval;
       this.validStop = this.yamcs.getMissionTime();
-      this.validStart = subtractDuration(this.validStop, defaultInterval);
+      this.validStart = utils.subtractDuration(this.validStop, defaultInterval);
     }
   }
 
@@ -194,7 +185,7 @@ export class CommandHistoryPage {
       this.filterForm.get('interval')!.setValue(defaultInterval);
     } else {
       this.validStop = this.yamcs.getMissionTime();
-      this.validStart = subtractDuration(this.validStop, interval);
+      this.validStart = utils.subtractDuration(this.validStop, interval);
       this.loadData();
     }
   }

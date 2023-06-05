@@ -1,18 +1,18 @@
-<app-detail-pane>
+<ya-detail-pane>
   <ng-container *ngIf="selectedStreamData$ | async as selectedStreamData; else noSelection">
-    <app-detail-toolbar>
+    <ya-detail-toolbar>
       Tuple
-    </app-detail-toolbar>
+    </ya-detail-toolbar>
     <div style="padding: 0 16px">
       <app-stream-data [streamData]="selectedStreamData" />
     </div>
   </ng-container>
   <ng-template #noSelection>
-    <app-detail-toolbar>
+    <ya-detail-toolbar>
       Select a tuple
-    </app-detail-toolbar>
+    </ya-detail-toolbar>
   </ng-template>
-</app-detail-pane>
+</ya-detail-pane>
 <div class="data-table-wrapper">
   <div class="panel-content">
     <table mat-table #table [dataSource]="dataSource" class="ya-data-table expand">

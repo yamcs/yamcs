@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { MessageService } from '../../core/services/MessageService';
+import { MessageService } from '@yamcs/webapp-sdk';
 import { YamcsService } from '../../core/services/YamcsService';
 import { propertyInfo } from './ItemBand';
 

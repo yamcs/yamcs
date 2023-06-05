@@ -1,9 +1,7 @@
 import { ChangeDetectionStrategy, Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
 import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator, ValidatorFn, Validators } from '@angular/forms';
+import { ArgumentType, utils, validators } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
-import { ArgumentType } from '../../../../client';
-import { maxHexLengthValidator, minHexLengthValidator, requireHex } from '../../../../shared/forms/validators';
-import { unflattenIndex } from '../../../../shared/utils';
 
 @Component({
   selector: 'app-binary-argument',
@@ -62,18 +60,18 @@ export class BinaryArgument implements ControlValueAccessor, OnInit, Validator, 
     if (this.type.minBytes !== 0) {
       this.validators.push(Validators.required);
     }
-    this.validators.push(requireHex);
+    this.validators.push(validators.requireHex);
     if (this.type.minBytes !== undefined) {
-      this.validators.push(minHexLengthValidator(this.type.minBytes));
+      this.validators.push(validators.minHexLengthValidator(this.type.minBytes));
     }
     if (this.type.maxBytes !== undefined) {
-      this.validators.push(maxHexLengthValidator(this.type.maxBytes));
+      this.validators.push(validators.maxHexLengthValidator(this.type.maxBytes));
     }
   }
 
   get label() {
     if (this.index !== undefined) {
-      const index = unflattenIndex(this.index, this.dimensions!);
+      const index = utils.unflattenIndex(this.index, this.dimensions!);
       return index.map(i => '[' + i + ']').join('');
     } else {
       return this.name;

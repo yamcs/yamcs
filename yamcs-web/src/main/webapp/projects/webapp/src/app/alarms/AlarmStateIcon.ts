@@ -1,7 +1,6 @@
 import { Component, Input, OnDestroy } from '@angular/core';
+import { Alarm, Synchronizer } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { Alarm } from '../client';
-import { Synchronizer } from '../core/services/Synchronizer';
 
 @Component({
   selector: 'app-alarm-state-icon',
