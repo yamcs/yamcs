@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -93,6 +94,7 @@ public class AlgorithmManager extends AbstractProcessorService
     final Map<String, AlgorithmExecutorFactory> factories = new HashMap<>();
 
     final Map<CustomAlgorithm, CustomAlgorithm> algoOverrides = new HashMap<>();
+    private Set<AlgorithmTextListener> algorithmTextListeners = new CopyOnWriteArraySet<>();
 
     final CopyOnWriteArrayList<AlgorithmExecutionContext> contexts = new CopyOnWriteArrayList<>();
 
@@ -269,8 +271,6 @@ public class AlgorithmManager extends AbstractProcessorService
         }
 
         algorithmsInError.remove(algorithm.getQualifiedName());
-
-
 
         log.trace("Activating algorithm....{}", algorithm.getQualifiedName());
         activeAlgo = new ActiveAlgorithm(algorithm, execCtx, executor);
@@ -497,6 +497,14 @@ public class AlgorithmManager extends AbstractProcessorService
         return processor;
     }
 
+    public void addAlgorithmTextListener(AlgorithmTextListener listener) {
+        algorithmTextListeners.add(listener);
+    }
+
+    public void removeAlgorithmTextListener(AlgorithmTextListener listener) {
+        algorithmTextListeners.remove(listener);
+    }
+
     public void clearAlgorithmOverride(CustomAlgorithm calg) {
         CustomAlgorithm algOverr = algoOverrides.remove(calg);
         if (algOverr == null) {
@@ -504,6 +512,7 @@ public class AlgorithmManager extends AbstractProcessorService
         }
         globalCtx.removeAlgorithm(algOverr.getQualifiedName());
         activateAndInit(calg, globalCtx);
+        notifyAlgorithmTextListeners(calg);
     }
 
     /**
@@ -541,6 +550,7 @@ public class AlgorithmManager extends AbstractProcessorService
         }
 
         algoOverrides.put(calg, algOverr);
+        notifyAlgorithmTextListeners(calg);
     }
 
     public Collection<CustomAlgorithm> getAlgorithmOverrides() {
@@ -587,4 +597,9 @@ public class AlgorithmManager extends AbstractProcessorService
         }
     }
 
+    private void notifyAlgorithmTextListeners(CustomAlgorithm algorithm) {
+        var override = getAlgorithmOverride(algorithm);
+        var text = override != null ? override.getAlgorithmText() : algorithm.getAlgorithmText();
+        algorithmTextListeners.forEach(l -> l.algorithmTextUpdated(algorithm, text));
+    }
 }
