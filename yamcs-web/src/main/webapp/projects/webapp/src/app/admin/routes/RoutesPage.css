@@ -1,0 +1,23 @@
+.deprecated {
+  text-decoration: line-through;
+}
+
+.detail {
+  background-color: #fafafa;
+  float: right;
+  height: 100%;
+  width: 450px;
+  overflow: auto;
+  border-left: 1px solid #d3d3d3;
+  box-sizing: border-box;
+}
+
+.table-wrapper {
+  position: relative;
+  overflow: auto;
+  height: 100%;
+}
+
+.mat-mdc-row {
+  cursor: pointer;
+}

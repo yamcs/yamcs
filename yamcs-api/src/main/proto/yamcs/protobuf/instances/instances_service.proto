@@ -144,12 +144,6 @@ message ListInstanceTemplatesResponse {
   repeated InstanceTemplate templates = 1; 
 }
 
-message EditInstanceRequest {
-  // Yamcs instance name.
-  optional string instance = 1;
-  optional string state = 2;
-}
-
 message GetInstanceTemplateRequest {
   // Template name.
   optional string template = 1;

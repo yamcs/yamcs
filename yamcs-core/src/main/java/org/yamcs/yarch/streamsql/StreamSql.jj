@@ -635,11 +635,11 @@ UpdateTableStatement UpdateTableStatement() throws StreamSqlException: {
 } {
     "UPDATE" tableName=ObjectName()
     "SET" 
-     colName = ObjectName() "=" colValue = SimpleExpression()
+     colName = ObjectName() "=" colValue = Expression()
        { 
           updateList.add(new UpdateTableStatement.UpdateItem(colName, colValue));
        }
-     ("," colName = ObjectName() "=" colValue = SimpleExpression()
+     ("," colName = ObjectName() "=" colValue = Expression()
        {
      	  updateList.add(new UpdateTableStatement.UpdateItem(colName, colValue));
        } 
@@ -882,6 +882,7 @@ Expression PrimaryExpression() throws StreamSqlException: {
       }
   | <S_FLOAT> {return new ValueExpression(Double.valueOf(token.image));}
   | <S_STRING> {return new ValueExpression(getNonEscapedString(token.image));}
+  | <K_NULL> {return new NullExpression();}
   | <S_QMARK> {return nextArg();}
   | LOOKAHEAD(3) "(" expr = SimpleExpression() ")" {return expr;}
   | "ARRAY" "[" exprList = ExpressionList() "]" {return new ArrayExpression(exprList); }

@@ -31,9 +31,9 @@ import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.http.BadRequestException;
-import org.yamcs.http.Handler;
 import org.yamcs.http.HandlerContext;
 import org.yamcs.http.InternalServerErrorException;
+import org.yamcs.http.HttpHandler;
 import org.yamcs.http.UnauthorizedException;
 
 import io.netty.buffer.ByteBuf;
@@ -55,7 +55,7 @@ import io.netty.util.CharsetUtil;
  * 
  * @author nm
  */
-public class SpnegoAuthModule extends Handler implements AuthModule {
+public class SpnegoAuthModule extends HttpHandler implements AuthModule {
 
     private static final Logger log = LoggerFactory.getLogger(SpnegoAuthModule.class);
     private static final String JAAS_ENTRY_NAME = "YamcsHTTP";
@@ -177,6 +177,11 @@ public class SpnegoAuthModule extends Handler implements AuthModule {
             });
         }
         return yamcsCred;
+    }
+
+    @Override
+    public boolean requireAuth() {
+        return false;
     }
 
     @Override

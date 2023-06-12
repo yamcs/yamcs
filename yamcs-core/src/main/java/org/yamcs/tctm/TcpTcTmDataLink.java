@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
@@ -29,8 +31,6 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
     protected CommandPostprocessor cmdPostProcessor;
     private AggregatedDataLink parent = null;
 
-    // MARK: - Copied and modified from AbstractTmDataLink
-
     protected Socket tmSocket;
     protected String host;
     protected int port;
@@ -40,6 +40,19 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
     YConfiguration packetInputStreamArgs;
     PacketInputStream packetInputStream;
     OutputStream outputStream;
+
+    @Override
+    public Spec getSpec() {
+        var spec = getDefaultSpec();
+        spec.addOption("host", OptionType.STRING).withRequired(true);
+        spec.addOption("port", OptionType.INTEGER).withRequired(true);
+        spec.addOption("initialDelay", OptionType.INTEGER);
+        spec.addOption("packetInputStreamClassName", OptionType.STRING);
+        spec.addOption("packetInputStreamArgs", OptionType.MAP).withSpec(Spec.ANY);
+        spec.addOption("commandPostprocessorClassName", OptionType.STRING);
+        spec.addOption("commandPostprocessorArgs", OptionType.MAP).withSpec(Spec.ANY);
+        return super.getSpec();
+    }
 
     @Override
     public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
@@ -178,8 +191,6 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
         return pwt;
     }
 
-    // MARK: - Stuff copied from AbstractTcDataLink
-
     protected void initPostprocessor(String instance, YConfiguration config) throws ConfigurationException {
         String commandPostprocessorClassName = GenericCommandPostprocessor.class.getName();
         YConfiguration commandPostprocessorArgs = null;
@@ -206,8 +217,6 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
             throw e;
         }
     }
-
-    // MARK: - TcDataLink
 
     @Override
     public boolean sendCommand(PreparedCommand pc) {
@@ -256,12 +265,12 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
         commandHistoryPublisher.publishAck(commandId, AcknowledgeSent_KEY, getCurrentTime(), AckStatus.OK);
     }
 
-    // MARK: - AbstractService (com.google.common.util.concurrent.AbstractService)
-
     @Override
     public void doStart() {
         if (!isDisabled()) {
-            new Thread(this).start();
+            Thread thread = new Thread(this);
+            thread.setName(getClass().getSimpleName() + "-" + linkName);
+            thread.start();
         }
         notifyStarted();
     }
@@ -271,8 +280,6 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
         closeSocket();
         notifyStopped();
     }
-
-    // MARK: - AbstractLink
 
     @Override
     protected long getCurrentTime() {
@@ -310,10 +317,10 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
 
     @Override
     public void doEnable() {
-        new Thread(this).start();
+        Thread thread = new Thread(this);
+        thread.setName(getClass().getSimpleName() + "-" + linkName);
+        thread.start();
     }
-
-    // MARK: - Link
 
     @Override
     public String getDetailedStatus() {

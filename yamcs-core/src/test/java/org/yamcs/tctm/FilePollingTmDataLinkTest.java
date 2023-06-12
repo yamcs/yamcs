@@ -55,6 +55,7 @@ public class FilePollingTmDataLinkTest {
         Map<String, Object> conf = new HashMap<>();
         conf.put("incomingDir", incomingDir.getAbsolutePath());
         conf.put("headerSize", headerSize);
+        conf.put("deleteAfterImport", true);
         conf.put("packetInputStreamClassName", CcsdsPacketInputStream.class.getName());
         FilePollingTmDataLink fileLink = new FilePollingTmDataLink();
 

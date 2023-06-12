@@ -52,6 +52,10 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
 
     @Override
     public void next(SubscribeParametersRequest request) {
+        if (request.hasMaxBytes()) {
+            maxBytes = request.getMaxBytes();
+        }
+
         if (pidrm == null) {
             Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
             ParameterRequestManager requestManager = processor.getParameterRequestManager();
@@ -74,10 +78,6 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
         Action action = Action.REPLACE;
         if (request.hasAction()) {
             action = request.getAction();
-        }
-
-        if (request.hasMaxBytes()) {
-            maxBytes = request.getMaxBytes();
         }
 
         try {
@@ -176,12 +176,18 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
             if (hasRawBinaryValue || hasEngBinaryValue) {
                 var truncated = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder(gpb);
                 if (hasRawBinaryValue) {
-                    truncated.getRawValueBuilder().setBinaryValue(
-                            gpb.getRawValue().getBinaryValue().substring(0, maxBytes));
+                    var binaryValue = gpb.getRawValue().getBinaryValue();
+                    if (binaryValue.size() > maxBytes) {
+                        truncated.getRawValueBuilder().setBinaryValue(
+                                binaryValue.substring(0, maxBytes));
+                    }
                 }
                 if (hasEngBinaryValue) {
-                    truncated.getEngValueBuilder().setBinaryValue(
-                            gpb.getEngValue().getBinaryValue().substring(0, maxBytes));
+                    var binaryValue = gpb.getEngValue().getBinaryValue();
+                    if (binaryValue.size() > maxBytes) {
+                        truncated.getEngValueBuilder().setBinaryValue(
+                                binaryValue.substring(0, maxBytes));
+                    }
                 }
                 return truncated.build();
             }

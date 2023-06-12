@@ -1,0 +1,155 @@
+options {
+    STATIC = false;
+    IGNORE_CASE = false;
+}
+
+PARSER_BEGIN(TemplateParser)
+package org.yamcs.templating;
+
+import java.util.LinkedHashMap;
+
+public class TemplateParser {
+}
+
+PARSER_END(TemplateParser)
+
+< DEFAULT > SKIP: {
+    "{% comment %}": IN_COMMENT
+}
+
+< DEFAULT > TOKEN: {
+    < OPEN_TAG: "{%" (" ")? >
+ |  < CLOSE_TAG: (" ")? "%}" >
+ |  < ELIF: "elif" >
+ |  < ENDIF: "endif" >
+ |  < ELSE: "else" >
+}
+
+< DEFAULT > TOKEN: {
+    < OPEN_VAR: "{{" (" ")? > : IN_VAR
+}
+
+< DEFAULT > TOKEN: {
+    < OPEN_IF_TAG: "{% if " > : IN_CONDITION
+ |  < OPEN_ELIF_TAG: "{% elif " > : IN_CONDITION
+}
+
+< DEFAULT > TOKEN: {
+    < TEXT: ~[] >
+}
+
+<IN_COMMENT> SKIP: {
+    "{% endcomment %}" : DEFAULT
+}
+
+<IN_COMMENT> MORE: {
+    < ~[] >
+}
+
+<IN_VAR, IN_CONDITION> TOKEN: {
+    < VAR: (["a"-"z","A"-"Z","0"-"9","_","."])+ > 
+}
+
+<IN_VAR> TOKEN: {
+    < CLOSE_VAR: (" ")? "}}" > : DEFAULT
+}
+
+<IN_CONDITION> TOKEN: {
+    < CLOSE_IF_ELIF_TAG: (" ")? "%}" > : DEFAULT
+}
+
+public TemplateBody parse():
+{
+TemplateBody r;
+}
+{
+    r = body() <EOF>
+    {
+        return r;
+    }
+}
+
+TemplateBody body():
+{
+TemplateBody result = new TemplateBody();
+Statement stmt;
+}
+{
+    (
+        stmt = statement() { result.addStatement(stmt); }
+    )*
+    {
+        return result;
+    }
+}
+
+Statement statement():
+{
+Statement stmt;
+}
+{
+    (
+        stmt = varStatement()
+      | stmt = textStatement()
+      | stmt = ifStatement()
+    )
+    {
+        return stmt;
+    }
+}
+
+VarStatement varStatement():
+{
+String id;
+}
+{
+    <OPEN_VAR> id=identifier() <CLOSE_VAR> {
+        return new VarStatement(id);
+    }
+}
+
+String identifier():
+{}
+{
+    <VAR> {
+        return token.image;
+    }
+}
+
+TextStatement textStatement():
+{}
+{
+    <TEXT> {
+        return new TextStatement(token.image);
+    }
+}
+
+IfStatement ifStatement():
+{
+String condition;
+TemplateBody ifBody;
+String elifCondition = null;
+TemplateBody elifBody = null;
+LinkedHashMap<String, TemplateBody> elifConditions = new LinkedHashMap<String, TemplateBody>();
+TemplateBody elseBody = null;
+}
+{
+    <OPEN_IF_TAG> condition=identifier() <CLOSE_IF_ELIF_TAG>
+    ifBody = body()
+    (
+        <OPEN_ELIF_TAG> elifCondition=identifier() <CLOSE_IF_ELIF_TAG>
+        elifBody=body()
+        {
+            elifConditions.put(elifCondition, elifBody);
+        }
+    )*
+    (
+        LOOKAHEAD(2)
+        <OPEN_TAG> <ELSE> <CLOSE_TAG>
+        elseBody = body()    
+    )?
+    <OPEN_TAG> <ENDIF> <CLOSE_TAG>
+    {
+        return new IfStatement(condition, ifBody, elifConditions, elseBody);
+    }
+}

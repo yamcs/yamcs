@@ -1,0 +1,14 @@
+<div class="label">
+  <div class="meta" [class.error]="err.invalid$ | async">
+    <div class="item">{{ type.engType }}</div>
+  </div>
+
+  {{ label }}
+  <ya-help *ngIf="description">
+    {{ description }}
+  </ya-help>
+
+  <ya-errors #err [controlName]="controlName" />
+
+  <ya-date-time-input [formControl]="formControl" />
+</div>

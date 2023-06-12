@@ -5,12 +5,15 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.AbstractLink;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.Link;
 import org.yamcs.tctm.RawFrameDecoder;
 import org.yamcs.tctm.TcTmException;
+import org.yamcs.tctm.ccsds.TransferFrameDecoder.CcsdsFrameType;
 import org.yamcs.time.Instant;
 
 public abstract class AbstractTmFrameLink extends AbstractLink implements AggregatedDataLink {
@@ -21,6 +24,32 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
     protected long errFrameCount;
     protected RawFrameDecoder rawFrameDecoder;
 
+    @Override
+    public Spec getDefaultSpec() {
+        var spec = super.getDefaultSpec();
+
+        spec.addOption("frameType", OptionType.STRING).withChoices(CcsdsFrameType.class);
+        spec.addOption("clcwStream", OptionType.STRING);
+        spec.addOption("goodFrameStream", OptionType.STRING);
+        spec.addOption("badFrameStream", OptionType.STRING);
+
+        spec.addOption("spacecraftId", OptionType.INTEGER);
+        spec.addOption("physicalChannelName", OptionType.STRING);
+        spec.addOption("errorDetection", OptionType.STRING);
+
+        spec.addOption("frameLength", OptionType.INTEGER);
+        spec.addOption("insertZoneLength", OptionType.INTEGER);
+        spec.addOption("frameHeaderErrorControlPresent", OptionType.BOOLEAN);
+        spec.addOption("virtualChannels", OptionType.LIST).withElementType(OptionType.ANY);
+        spec.addOption("maxFrameLength", OptionType.INTEGER);
+        spec.addOption("minFrameLength", OptionType.INTEGER);
+
+        spec.addOption("rawFrameDecoder", OptionType.MAP).withSpec(Spec.ANY);
+
+        return spec;
+    }
+
+    @Override
     public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
         super.init(instance, name, config);
         int dfl = -1;

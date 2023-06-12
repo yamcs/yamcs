@@ -1,0 +1,6 @@
+<ng-content select="app-instance-toolbar" />
+
+<div class="page-content" [style.overflow]="noscroll ? 'hidden' : 'auto'">
+  <ng-content select="ya-detail-pane" />
+  <ng-content />
+</div>

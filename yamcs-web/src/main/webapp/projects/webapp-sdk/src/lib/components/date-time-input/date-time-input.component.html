@@ -1,0 +1,32 @@
+<div class="date-time-input">
+  <input #dayInput class="day ya-input"
+         type="text"
+         autocomplete="off"
+         placeholder="YYYY-MM-DD"
+         [matDatepicker]="picker"
+         (dateInput)="fireChange()"
+         (keyup)="fireChange()"
+         (paste)="processPaste($event)">
+  <div class="cal">
+    <mat-icon class="icon14" (click)="picker.open()">calendar_today</mat-icon>
+  </div>
+  <mat-datepicker #picker />
+  <input #hourInput class="hh ya-input"
+         type="text"
+         placeholder="hh"
+         (keyup)="fireChange()"
+         (change)="fireChange()"
+         (paste)="processPaste($event)">
+  <input #minuteInput class="mm ya-input"
+         type="text"
+         placeholder="mm"
+         (keyup)="fireChange()"
+         (change)="fireChange()"
+         (paste)="processPaste($event)">
+  <input #secondInput class="ss ya-input"
+         type="text"
+         placeholder="ss"
+         (keyup)="fireChange()"
+         (change)="fireChange()"
+         (paste)="processPaste($event)">
+</div>

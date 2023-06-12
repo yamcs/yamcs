@@ -11,6 +11,7 @@ import org.yamcs.yarch.Tuple;
  */
 public class ArgumentExpression extends Expression implements CompiledExpression {
     final int n;
+
     public ArgumentExpression(int n, Object value) {
         super(null);
         this.n = n;
@@ -19,12 +20,18 @@ public class ArgumentExpression extends Expression implements CompiledExpression
 
     @Override
     protected void doBind() throws StreamSqlException {
-        type = DataType.typeOf(constantValue);
+        if (constantValue != null) {
+            type = DataType.typeOf(constantValue);
+        }
     }
 
     @Override
     public void fillCode_getValueReturn(StringBuilder code) throws StreamSqlException {
-        code.append("(" + type.javaType() + ")__sql_args[" + n + "]");
+        if (constantValue != null) {
+            code.append("(" + type.javaType() + ")__sql_args[" + n + "]");
+        } else {
+            code.append("__sql_args[" + n + "]");
+        }
     }
 
     @Override

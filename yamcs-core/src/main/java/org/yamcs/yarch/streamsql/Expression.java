@@ -185,7 +185,7 @@ public abstract class Expression {
 
         source.append("\tpublic Object getValue(Tuple tuple) {\n");
         if (!isConstant()) {
-            Set<ColumnDefinition> inputs = new HashSet<ColumnDefinition>();
+            Set<ColumnDefinition> inputs = new HashSet<>();
             collectRequiredInputs(inputs);
 
             fillCode_InputDefVars(inputs, source);

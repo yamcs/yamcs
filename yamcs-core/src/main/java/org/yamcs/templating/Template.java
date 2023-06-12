@@ -11,9 +11,12 @@ public class Template {
     private String description;
     private Map<String, Variable> variables = new LinkedHashMap<>(); // Ordered
 
-    public Template(String name, String source) {
+    private TemplateProcessor templateProcessor;
+
+    public Template(String name, String source) throws ParseException {
         this.name = name;
         this.source = source;
+        templateProcessor = new TemplateProcessor(source);
     }
 
     public String getName() {
@@ -41,7 +44,7 @@ public class Template {
     }
 
     public String process(Map<String, Object> args) {
-        return TemplateProcessor.process(source, args);
+        return templateProcessor.process(args);
     }
 
     @Override

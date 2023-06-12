@@ -1,0 +1,47 @@
+<ya-message-bar #messageBar />
+
+<mat-toolbar class="top">
+  <mat-toolbar-row>
+    <a mat-icon-button routerLink=".." color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </a> Create an instance
+  </mat-toolbar-row>
+</mat-toolbar>
+
+<app-create-instance-wizard-step step="2" />
+
+<div *ngIf="template$ | async as template" class="form-content ya-form mat-typography">
+  <form [formGroup]="form" novalidate>
+    <label>
+      Instance name<br>
+      <input formControlName="name" type="text">
+    </label>
+    <ng-container *ngFor="let v of template?.variables">
+      <br>
+      <label *ngIf="v.choices">
+        {{ v.label || v.name }}
+        <ya-help [dialogTitle]="v.label || v.name" *ngIf="v.help">
+          <div [innerHTML]="v.help"></div>
+        </ya-help>
+        <select [formControlName]="v.name">
+          <option *ngFor="let choice of v.choices" [value]="choice">{{ choice }}</option>
+        </select>
+      </label>
+
+      <label *ngIf="!v.choices">
+        {{ v.label || v.name }}
+        <ya-help [dialogTitle]="v.label || v.name" *ngIf="v.help">
+          <div [innerHTML]="v.help"></div>
+        </ya-help>
+        <br>
+        <input [formControlName]="v.name" type="text">
+      </label>
+    </ng-container>
+  </form>
+  <p>&nbsp;</p>
+  <div class="action-bar">
+    <button class="ya-button" routerLink="/">CANCEL</button>
+    <button class="ya-button primary" type="submit" (click)="onConfirm()"
+            [disabled]="!form.valid">CREATE</button>
+  </div>
+</div>

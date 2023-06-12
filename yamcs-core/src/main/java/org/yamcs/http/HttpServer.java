@@ -66,8 +66,6 @@ import org.yamcs.utils.ExceptionUtil;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ServiceManager;
 import com.google.protobuf.Descriptors.MethodDescriptor;
@@ -128,7 +126,7 @@ public class HttpServer extends AbstractYamcsService {
     private boolean zeroCopyEnabled;
     private boolean reverseLookup;
     private int nThreads;
-    private List<String> staticRoots = new ArrayList<>(2);
+    private List<Path> staticRoots = new ArrayList<>(2);
 
     // Cross-origin Resource Sharing (CORS) enables use of the HTTP API in non-official client web applications
     private CorsConfig corsConfig;
@@ -143,6 +141,10 @@ public class HttpServer extends AbstractYamcsService {
 
     // Guava manager for sub-services
     private ServiceManager serviceManager;
+
+    // Handlers at root level. Wrapped in a Supplier because
+    // we want to give the possiblity to make request-scoped instances
+    private Map<String, Supplier<HttpHandler>> httpHandlers = new HashMap<>();
 
     // Extra handlers at root level. Wrapped in a Supplier because
     // we want to give the possiblity to make request-scoped instances
@@ -259,11 +261,17 @@ public class HttpServer extends AbstractYamcsService {
             if (ycors.getBoolean("allowCredentials")) {
                 corsb.allowCredentials();
             }
-
-            corsb.allowedRequestMethods(HttpMethod.GET, HttpMethod.POST, HttpMethod.PATCH, HttpMethod.PUT,
+            corsb.allowedRequestMethods(
+                    HttpMethod.GET,
+                    HttpMethod.POST,
+                    HttpMethod.PATCH,
+                    HttpMethod.PUT,
                     HttpMethod.DELETE);
-            corsb.allowedRequestHeaders(HttpHeaderNames.CONTENT_TYPE, HttpHeaderNames.ACCEPT,
-                    HttpHeaderNames.AUTHORIZATION, HttpHeaderNames.ORIGIN);
+            corsb.allowedRequestHeaders(
+                    HttpHeaderNames.CONTENT_TYPE,
+                    HttpHeaderNames.ACCEPT,
+                    HttpHeaderNames.AUTHORIZATION,
+                    HttpHeaderNames.ORIGIN);
             corsConfig = corsb.build();
         }
         nThreads = config.getInt("nThreads");
@@ -298,22 +306,42 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new TimeCorrelationApi());
         addApi(new TimelineApi());
 
-        WellKnownHandler wellKnownHandler = new WellKnownHandler();
-        addHandler(".well-known", () -> wellKnownHandler);
+        var wellKnownHandler = new WellKnownHandler();
+        addRoute(".well-known", () -> wellKnownHandler);
 
-        AuthHandler authHandler = new AuthHandler(this);
-        addHandler("auth", () -> authHandler);
+        var authHandler = new AuthHandler(this);
+        addRoute("auth", () -> authHandler);
 
-        FaviconHandler faviconHandler = new FaviconHandler();
-        for (String path : FaviconHandler.HANDLED_PATHS) {
-            addHandler(path, () -> faviconHandler);
+        var faviconHandler = new FaviconHandler();
+        for (var path : FaviconHandler.HANDLED_PATHS) {
+            addRoute(path, () -> faviconHandler);
         }
+
+        var staticFileHandler = new StaticFileHandler("/static", staticRoots);
+        staticFileHandler.setZeroCopyEnabled(zeroCopyEnabled);
+        addRoute("static", () -> staticFileHandler);
+
+        var apiHandler = new ApiHandler(this);
+        addRoute("api", () -> apiHandler);
+
     }
 
+    /**
+     * Deprecated. Use {@link #addRoute(String, Supplier) instead, passing a {@link StaticFileHandler}.
+     */
+    @Deprecated
     public void addStaticRoot(Path staticRoot) {
-        staticRoots.add(staticRoot.toString());
+        staticRoots.add(staticRoot);
     }
 
+    public void addRoute(String pathSegment, Supplier<HttpHandler> handler) {
+        httpHandlers.put(pathSegment, handler);
+    }
+
+    /**
+     * Deprecated. Use {@link #addRoute(String, Supplier)} instead.
+     */
+    @Deprecated
     public void addHandler(String pathSegment, Supplier<Handler> handlerSupplier) {
         extraHandlers.put(pathSegment, handlerSupplier);
     }
@@ -371,7 +399,6 @@ public class HttpServer extends AbstractYamcsService {
                 tokenStore, auditLog));
         serviceManager.startAsync().awaitHealthy(10, TimeUnit.SECONDS);
 
-        StaticFileHandler.init(staticRoots, zeroCopyEnabled);
         bossGroup = new NioEventLoopGroup(1);
 
         // Note that by default (i.e. with nThreads = 0), Netty will limit the number
@@ -382,7 +409,7 @@ public class HttpServer extends AbstractYamcsService {
         // Measure global traffic, we also add a channel-specific measurer in channel-init.
         globalTrafficHandler = new GlobalTrafficShapingHandler(workerGroup, 5000);
 
-        for (Binding binding : bindings) {
+        for (var binding : bindings) {
             createAndBindBootstrap(workerGroup, binding, globalTrafficHandler);
             log.debug("Serving from {}{}", binding, contextPath);
         }
@@ -411,6 +438,11 @@ public class HttpServer extends AbstractYamcsService {
         } else {
             bootstrap.bind(new InetSocketAddress(address, port)).sync();
         }
+    }
+
+    HttpHandler createHttpHandler(String pathSegment) {
+        Supplier<HttpHandler> supplier = httpHandlers.get(pathSegment);
+        return supplier != null ? supplier.get() : null;
     }
 
     Handler createHandler(String pathSegment) {
@@ -485,14 +517,14 @@ public class HttpServer extends AbstractYamcsService {
     @Override
     protected void doStop() {
         globalTrafficHandler.release();
-        ListeningExecutorService closers = listeningDecorator(Executors.newCachedThreadPool());
-        ListenableFuture<?> future1 = closers.submit(() -> {
+        var closers = listeningDecorator(Executors.newCachedThreadPool());
+        var future1 = closers.submit(() -> {
             return workerGroup.shutdownGracefully(0, 5, TimeUnit.SECONDS).get();
         });
-        ListenableFuture<?> future2 = closers.submit(() -> {
+        var future2 = closers.submit(() -> {
             return bossGroup.shutdownGracefully(0, 5, TimeUnit.SECONDS).get();
         });
-        ListenableFuture<?> future3 = closers.submit(() -> {
+        var future3 = closers.submit(() -> {
             serviceManager.stopAsync();
             serviceManager.awaitStopped(5, TimeUnit.SECONDS);
             return true; // Force use of Callable interface, instead of Runnable

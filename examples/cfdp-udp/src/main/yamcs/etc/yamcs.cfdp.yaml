@@ -83,7 +83,6 @@ dataLinks:
   - name: cfdp_tm
     class: org.yamcs.tctm.UdpTmDataLink
     stream: cfdp_tm
-    host: localhost
     port: 40002
     packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
     packetPreprocessorArgs:
@@ -96,10 +95,7 @@ dataLinks:
     stream: cfdp_tc
     host: localhost
     port: 40001
-    cmdPostProcessor: org.yamcs.tctm.GenericCommandPostprocessor
-    cmdPostProcessorArgs:
-      errorDetection: none
-        
+
 mdb:
   # Configuration of the active loaders
   # Valid loaders are: sheet, xtce or fully qualified name of the class

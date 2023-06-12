@@ -3,13 +3,15 @@ package org.yamcs.http;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import io.netty.channel.ChannelHandler.Sharable;
-
 /**
  * RFC 8615 endpoint used by various protocols.
  */
-@Sharable
-public class WellKnownHandler extends Handler {
+public class WellKnownHandler extends HttpHandler {
+
+    @Override
+    public boolean requireAuth() {
+        return false;
+    }
 
     @Override
     public void handle(HandlerContext ctx) {

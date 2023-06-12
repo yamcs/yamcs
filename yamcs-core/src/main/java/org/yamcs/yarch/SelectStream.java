@@ -70,7 +70,7 @@ public class SelectStream extends Stream implements StreamSubscriber {
     public void onTuple(Stream stream, Tuple t) {
         if (whereExp != null) {
             Boolean v = (Boolean) whereExp.getValue(t);
-            if (!v) {
+            if (v == null || !v) {
                 return;
             }
         }

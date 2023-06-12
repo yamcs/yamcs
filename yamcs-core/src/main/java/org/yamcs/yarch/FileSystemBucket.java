@@ -27,10 +27,10 @@ public class FileSystemBucket implements Bucket {
 
     private static final long DEFAULT_MAX_SIZE = 100L * 1024 * 1024; // 100MB
     private static final int DEFAULT_MAX_OBJECTS = 1000;
+    private static final Mimetypes MIME = Mimetypes.getInstance();
 
     private String bucketName;
     private Path root;
-    private Mimetypes mimetypes;
     private boolean includeHidden = false;
     private long maxSize = DEFAULT_MAX_SIZE;
     private int maxObjects = DEFAULT_MAX_OBJECTS;
@@ -38,7 +38,6 @@ public class FileSystemBucket implements Bucket {
     public FileSystemBucket(String bucketName, Path root) throws IOException {
         this.bucketName = bucketName;
         this.root = root;
-        mimetypes = Mimetypes.getInstance();
     }
 
     @Override
@@ -225,7 +224,7 @@ public class FileSystemBucket implements Bucket {
     private ObjectProperties toObjectProperties(String objectName, Path file, BasicFileAttributes attrs) {
         ObjectProperties.Builder props = ObjectProperties.newBuilder();
         props.setName(objectName);
-        props.setContentType(mimetypes.getMimetype(file));
+        props.setContentType(MIME.getMimetype(file));
         // Not creation time. Objects are always replaced.
         props.setCreated(attrs.lastModifiedTime().toMillis());
         props.setSize(attrs.size());

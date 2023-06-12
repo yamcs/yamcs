@@ -1,0 +1,42 @@
+h4 {
+  margin-top: 2em;
+  margin-bottom: 0.5em;
+  font-size: 12px;
+}
+
+h4.first {
+  margin-top: 0;
+}
+
+tr.item-row.expanded td {
+  border-bottom: none;
+}
+
+tr.item-detail td {
+  padding-left: 40px !important;
+}
+
+.mat-mdc-row {
+  cursor: pointer;
+}
+
+tr.item-detail:not(.expanded) {
+  display: none;
+}
+
+.dl-horizontal dt {
+  border-right: 1px solid #e5e5e5;
+}
+
+.dl-horizontal dt, .dl-horizontal dd {
+  line-height: 20px;
+}
+
+.dl-horizontal dd {
+  min-height: 20px;
+}
+
+.ya-data-table tr.mat-mdc-row:hover {
+  /* doesn't look good when expanded */
+  background: inherit;
+}

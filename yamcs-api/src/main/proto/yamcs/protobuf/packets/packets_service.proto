@@ -10,8 +10,9 @@ import "google/protobuf/timestamp.proto";
 
 import "yamcs/api/annotations.proto";
 import "yamcs/api/httpbody.proto";
+import "yamcs/protobuf/yamcs.proto";
+import "yamcs/protobuf/mdb/mdb.proto";
 import "yamcs/protobuf/packets/packets.proto";
-
 
 service PacketsApi {
 
@@ -33,6 +34,17 @@ service PacketsApi {
   rpc GetPacket(GetPacketRequest) returns (TmPacketData) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}/packets/{gentime}/{seqnum}"
+    };
+  }
+
+  // Extract data from a stored packet
+  //
+  // This call uses the current Mission Database to perform a standalone
+  // extraction of a single stored packet, returning contained parameter
+  // values, and corresponding bit positions.
+  rpc ExtractPacket(ExtractPacketRequest) returns (ExtractPacketResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/packets/{gentime}/{seqnum}:extract"
     };
   }
   
@@ -83,8 +95,14 @@ message ListPacketNamesRequest {
 }
 
 message ListPacketNamesResponse {
-  // Packet name.
-  repeated string name = 1;
+  // Known packet names.
+  repeated string name = 1 [deprecated=true];
+
+  // Known packet names.
+  repeated string packets = 2;
+
+  // Known link names.
+  repeated string links = 3;
 }
 
 message ListPacketsRequest {
@@ -104,6 +122,9 @@ message ListPacketsRequest {
   
   // The archived name of the packets. Names must match exactly.
   repeated string name = 5;
+
+  // Filter by the link where the packet was received from.
+  optional string link = 9;
 
   // Continuation token returned by a previous page response.
   optional string next = 6;
@@ -144,6 +165,53 @@ message StreamPacketsRequest {
   optional google.protobuf.Timestamp start = 2;
   optional google.protobuf.Timestamp stop = 3;
   repeated string name = 4;
+}
+
+message ExtractPacketRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // An exact match of the packet's generation time in
+  // ISO 8601 format.
+  optional google.protobuf.Timestamp gentime = 2;
+
+  // Yamcs-specific archive distinguisher
+  optional int32 seqnum = 3;
+}
+
+message ExtractPacketResponse {
+  // Packet name
+  optional string packetName = 1;
+
+  // Contained entries
+  repeated ExtractedParameterValue parameterValues = 2;
+
+  // Messages generated during packet extraction
+  repeated string messages = 3;
+}
+
+// Contents of a container, can be either a parameter entry, or
+// a nested container entry.
+message ExtractedParameterValue {
+
+  // Qualified name of the parameter
+  optional mdb.ParameterInfo parameter = 1;
+
+  // Qualified name of the container that defines this
+  // specific entry.
+  optional mdb.ContainerInfo entryContainer = 2;
+
+  // Absolute location in bits, within the full packet
+  optional int32 location = 3;
+
+  // Bit length
+  optional int32 size = 4;
+
+  // Raw value
+  optional Value rawValue = 5;
+
+  // Engineering value
+  optional Value engValue = 6;
 }
 
 message ExportPacketRequest {

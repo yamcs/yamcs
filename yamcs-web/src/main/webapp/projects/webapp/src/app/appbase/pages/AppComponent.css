@@ -1,0 +1,74 @@
+mat-toolbar-row {
+  height: 48px;
+  box-shadow: 0 .125rem .3125rem rgba(0, 0, 0, .26);
+  z-index: 2;
+  padding-left: 6px;
+  padding-right: calc(24px - 16px);
+}
+
+.mat-toolbar-multiple-rows {
+  min-height: 48px;
+}
+
+.app-bar {
+  background-color: #212121;
+}
+
+.app-bar.replay {
+  background-color: darkviolet;
+}
+
+.logo-wrapper {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.logo-wrapper.nosidebar {
+  padding-left: 24px;
+}
+
+.logo-wrapper:hover img {
+  opacity: 0.8;
+}
+
+.tag {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  pointer-events: none;
+}
+
+.selected-instance.mat-mdc-button {
+  border: 1px solid grey;
+  border-radius: 40px;
+  line-height: 24px;
+}
+
+::ng-deep .no-padding-dialog .mat-mdc-dialog-container {
+  padding: 0;
+  overflow: hidden;
+}
+
+::ng-deep .top-tabs.mat-mdc-tab-nav-bar {
+  border-bottom: none;
+}
+
+.mat-mdc-button:hover,
+::ng-deep .top-tabs.mat-mdc-tab-nav-bar .mat-mdc-tab-link:hover,
+::ng-deep .top-tabs.mat-mdc-tab-nav-bar .mat-mdc-tab-link.active {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+::ng-deep .top-tabs.mat-mdc-tab-nav-bar .mat-mdc-tab-link {
+  opacity: 1;
+  min-width: 0;
+  padding: 0 16px;
+}
+
+::ng-deep .top-tabs.mat-mdc-tab-nav-bar .mat-mdc-tab-link .mdc-tab__text-label {
+  color: #fff;
+  letter-spacing: 1.25px;
+}

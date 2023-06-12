@@ -8,6 +8,8 @@ import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.StringConverter;
 
@@ -16,8 +18,7 @@ import com.google.common.util.concurrent.RateLimiter;
 /**
  * Sends TC as TC frames (CCSDS 232.0-B-3) or TC frames embedded in CLTU (CCSDS 231.0-B-3).
  * <p>
- * This class implements rate limiting.
- * args:
+ * This class implements rate limiting. args:
  * <ul>
  * <li>frameMaxRate: maximum number of command frames to send per second.</li>
  * </ul>
@@ -33,6 +34,16 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
     Thread thread;
     RateLimiter rateLimiter;
 
+    @Override
+    public Spec getSpec() {
+        var spec = getDefaultSpec();
+        spec.addOption("host", OptionType.STRING);
+        spec.addOption("port", OptionType.INTEGER);
+        spec.addOption("frameMaxRate", OptionType.FLOAT);
+        return spec;
+    }
+
+    @Override
     public void init(String yamcsInstance, String name, YConfiguration config) {
         super.init(yamcsInstance, name, config);
         host = config.getString("host");
@@ -101,6 +112,7 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
     protected void doEnable() throws Exception {
         socket = new DatagramSocket();
         thread = new Thread(this);
+        thread.setName(getClass().getSimpleName() + "-" + linkName);
         thread.start();
     }
 
@@ -128,7 +140,16 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
     }
 
     @Override
+    public String getDetailedStatus() {
+        if (isDisabled()) {
+            return String.format("DISABLED (should send to %s:%d)", host, port);
+        } else {
+            return String.format("OK, sending to %s:%d", host, port);
+        }
+    }
+
+    @Override
     protected Status connectionStatus() {
-        return (socket == null) ? Status.DISABLED : Status.OK;
+        return Status.OK;
     }
 }

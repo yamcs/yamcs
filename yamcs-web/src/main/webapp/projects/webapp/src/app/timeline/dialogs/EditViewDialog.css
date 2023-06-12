@@ -1,0 +1,13 @@
+::ng-deep .mat-mdc-dialog-container {
+  border-radius: 0;
+  position: relative;
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  height: 64px;
+  left: 0;
+  right: 0;
+  border-top: 1px solid #d3d3d3;
+}

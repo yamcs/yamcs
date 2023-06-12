@@ -185,10 +185,11 @@ public abstract class AbstractIntegrationTest {
         YConfiguration config;
         String name;
 
-        public PacketProvider(String yinstance, String name, YConfiguration args) {
-            instance[args.getInt("num", 0)] = this;
-            this.config = args;
-            this.name = name;
+        @Override
+        public void init(String yamcsInstance, String linkName, YConfiguration config) {
+            instance[config.getInt("num", 0)] = this;
+            this.config = config;
+            this.name = linkName;
         }
 
         @Override
@@ -256,11 +257,12 @@ public abstract class AbstractIntegrationTest {
 
         String name;
 
-        public ParameterProvider(String yamcsInstance, String name, YConfiguration config) {
+        @Override
+        public void init(String yamcsInstance, String linkName, YConfiguration config) {
             instance[config.getInt("num", 0)] = this;
             xtcedb = XtceDbFactory.getInstance(yamcsInstance);
             this.config = config;
-            this.name = name;
+            this.name = linkName;
         }
 
         @Override

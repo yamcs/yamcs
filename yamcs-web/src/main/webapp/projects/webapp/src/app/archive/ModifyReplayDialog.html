@@ -1,0 +1,21 @@
+<h2 mat-dialog-title>Configure replay</h2>
+
+<mat-dialog-content class="mat-typography">
+  <form [formGroup]="form" class="ya-form">
+    <label>
+      Start time<br>
+      <ya-date-time-input formControlName="start" />
+    </label>
+    <br>
+    <label>
+      Stop time <span class="hint">(optional)</span>
+      <ya-date-time-input formControlName="stop" />
+    </label>
+    <br>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <button class="ya-button primary" (click)="submit()" [disabled]="!form.valid">SUBMIT</button>
+</mat-dialog-actions>

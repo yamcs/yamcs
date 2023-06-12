@@ -1,0 +1,7 @@
+.selected {
+  background-color: #f0f4fd !important;
+}
+
+.mat-mdc-row {
+  cursor: pointer;
+}

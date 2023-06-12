@@ -1,3 +1,8 @@
+#
+# Global Options
+#
+# Can be used in 'yamcs.yaml' under a section 'yamcs-web'.
+#
 options:
   tag:
     title: Tag
@@ -13,6 +18,16 @@ options:
       - Filesystem path to an image to be shown in the bottom of the left sidebar. Images
         larger than the width of the sidebar (currently 250px) are resized to fit.
     type: STRING
+
+  preferredNamespace:
+    title: Preferred Namespace
+    description:
+      - Where possible prefer to display the alias of a parameter or command, as defined
+        for the specified namespace.
+      - Use of this property only makes sense if your MDB definition includes alternative names.
+    type: STRING
+    # Beta. Not sure to keep it in its current form.
+    hidden: true
 
   extraHeaderHTML:
     title: Extra Header HTML
@@ -31,10 +46,9 @@ options:
     title: Display Folder Per Instance
     description:
       - Controls whether displays are specific to an instance.
-      - Avoid using this option, there are plans to deprecate it once instances can choose a
-        specific bucket in their configuration.
     type: BOOLEAN
     default: false
+    deprecationMessage: If you need instance-specific displays, configure ``displayBucket`` inside :file:`etc/yamcs.{instance}.yaml` (section ``yamcs-web``).
 
   stackBucket:
     title: Stack Bucket
@@ -47,10 +61,9 @@ options:
     title: Stack Folder Per Instance
     description:
       - Controls whether stacks are specific to an instance.
-      - Avoid using this option, there are plans to deprecate it once instances can choose a
-        specific bucket in their configuration.
     type: BOOLEAN
     default: false
+    deprecationMessage: If you need instance-specific stacks, configure ``stackBucket`` inside :file:`etc/yamcs.{instance}.yaml` (section ``yamcs-web``).
 
   staticRoot:
     title: Static Root
@@ -71,7 +84,7 @@ options:
       - This feature is primarily intended for an operational setting.
     type: BOOLEAN
     default: false
-  
+
   collapseInitializedArguments:
     title: Collapse Initialized Arguments
     description:
@@ -199,3 +212,23 @@ options:
               - type
               - rectime
               - seqNumber
+
+#
+# Instance-specific Options
+#
+# Can be used in 'yamcs.{intance}.yaml' under a section 'yamcs-web'.
+#
+instanceOptions:
+  displayBucket:
+    title: Display Bucket
+    description:
+      - Bucket where to find display resources.
+      - If unset, defaults to the display bucket specified globally
+    type: STRING
+
+  stackBucket:
+    title: Stack Bucket
+    description:
+      - Bucket where to find stacks.
+      - If unset, defaults to the stack bucket specified globally
+    type: STRING

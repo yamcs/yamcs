@@ -1,0 +1,118 @@
+<ng-container *ngIf="parameter$ | async as parameter">
+  <div style="padding-left: 12px; padding-right: 12px; padding-top: 12px">
+    <div class="plot-top-actions" *ngIf="range$ | async as range">
+      <ya-text-action icon="add_circle_outline" (click)="compareParameter()">
+        Comparison
+      </ya-text-action>
+      <span class="separator"></span>
+      <ya-text-action (click)="chooseRange()" icon="date_range"
+                      [active]="range === 'CUSTOM'">
+        <span *ngIf="range !== 'CUSTOM'">Date Range</span>
+        <ng-container *ngIf="customStart$ | async as customStart">
+          <ng-container *ngIf="customStop$ | async as customStop">
+            <span *ngIf="range === 'CUSTOM'">
+              {{ customStart | datetime }} - {{ customStop | datetime }}
+            </span>
+          </ng-container>
+        </ng-container>
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('PT1M')"
+                      [active]="range === 'PT1M'">
+        1 minute
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('PT5M')"
+                      [active]="range === 'PT5M'">
+        5 minutes
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('PT15M')"
+                      [active]="range === 'PT15M'">
+        15 minutes
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('PT30M')"
+                      [active]="range === 'PT30M'">
+        30 minutes
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('PT1H')"
+                      [active]="range === 'PT1H'">
+        1 hour
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('PT6H')"
+                      [active]="range === 'PT6H'">
+        6 hours
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('PT12H')"
+                      [active]="range === 'PT12H'">
+        12 hours
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('P1D')"
+                      [active]="range === 'P1D'">
+        1 day
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('P2D')"
+                      [active]="range === 'P2D'">
+        2 days
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('P1W')"
+                      [active]="range === 'P1W'">
+        7 days
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('P2W')"
+                      [active]="range === 'P2W'">
+        14 days
+      </ya-text-action>
+      <ya-text-action (click)="loadLatest('P1M')"
+                      [active]="range === 'P1M'">
+        30 days
+      </ya-text-action>
+    </div>
+  </div>
+  <div class="plot-container">
+    <app-parameter-plot #plot
+                        [xGrid]="true"
+                        [xAxisHeight]="24"
+                        duration=""
+                        [dataSource]="dataSource"
+                        [stop]="missionTime"
+                        [removableSeries]="true"
+                        (onVisibleRange)="onVisibleRange($event)"
+                        (onManualRangeChange)="onManualRangeChange()">
+      <app-parameter-series [parameter]="parameter.qualifiedName"
+                            [grid]="true" />
+    </app-parameter-plot>
+    <div class="zoom-actions">
+      <div class="zoom-actions-inner mat-elevation-z1">
+        <button mat-button (click)="plot.zoomIn()">
+          <mat-icon>add</mat-icon>
+        </button>
+        <span class="separator"></span>
+        <button mat-button (click)="plot.zoomOut()">
+          <mat-icon>remove</mat-icon>
+        </button>
+      </div>
+    </div>
+    <ng-container *ngIf="dataSource.data$ | async as data">
+      <ng-container *ngIf="!(dataSource.loading$ | async)">
+        <div class="no-data-message" *ngIf="data.samples.length === 0">
+          <span class="mat-caption" *ngIf="range$ | async as range" style="color: #777;">
+            There is no data for this chart in
+            <ng-container [ngSwitch]="range">
+              <span *ngSwitchCase="'PT1M'">the last minute</span>
+              <span *ngSwitchCase="'PT5M'">the last 5 minutes</span>
+              <span *ngSwitchCase="'PT15M'">the last 15 minutes</span>
+              <span *ngSwitchCase="'PT30M'">the last 30 minutes</span>
+              <span *ngSwitchCase="'PT1H'">the last hour</span>
+              <span *ngSwitchCase="'PT6H'">the last 6 hours</span>
+              <span *ngSwitchCase="'PT12H'">the last 12 hours</span>
+              <span *ngSwitchCase="'P1D'">the last 24 hours</span>
+              <span *ngSwitchCase="'P2D'">the last 2 days</span>
+              <span *ngSwitchCase="'P1W'">the last week</span>
+              <span *ngSwitchCase="'P2W'">the last 2 weeks</span>
+              <span *ngSwitchCase="'P1M'">the last month</span>
+              <span *ngSwitchDefault>the selected range</span>
+            </ng-container>
+          </span>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+</ng-container>

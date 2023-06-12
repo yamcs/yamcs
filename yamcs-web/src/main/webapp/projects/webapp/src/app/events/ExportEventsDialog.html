@@ -1,0 +1,47 @@
+<h2 mat-dialog-title>Export events</h2>
+
+<mat-dialog-content class="mat-typography ya-form">
+  <form [formGroup]="form">
+    <label>
+      Start
+      <ya-date-time-input formControlName="start" />
+    </label>
+    <br>
+    <label>
+      Stop
+      <ya-date-time-input formControlName="stop" />
+    </label>
+    <br>
+    <label>
+      Severity<br>
+      <ya-select formControlName="severity" [options]="data.severityOptions" />
+    </label>
+    <br>
+    <label>
+      Text filter
+      <input type="text" formControlName="q">
+    </label>
+    <br>
+    <label>
+      Source<br>
+      <ya-multi-select formControlName="source"
+                       [options]="data.sourceOptions"
+                       emptyOption="Any source" />
+    </label>
+    <br>
+    <label>
+      CSV column delimiter<br>
+      <ya-select formControlName="delimiter" [options]="delimiterOptions" />
+    </label>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <ya-download-button [link]="downloadURL$ | async"
+                      [primary]="true"
+                      (click)="closeDialog()"
+                      [disabled]="!form.valid">
+    DOWNLOAD
+  </ya-download-button>
+</mat-dialog-actions>

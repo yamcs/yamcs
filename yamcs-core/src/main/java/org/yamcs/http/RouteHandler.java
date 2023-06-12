@@ -21,9 +21,11 @@ import com.google.protobuf.Message;
 
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.FullHttpRequest;
 
 @Sharable
-public class RouteHandler extends Handler {
+public class RouteHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     private static final Log log = new Log(RouteHandler.class);
     private static final Pattern LOG_PARAM_PATTERN = Pattern.compile("\\{(\\w+)\\}");
@@ -41,7 +43,26 @@ public class RouteHandler extends Handler {
     }
 
     @Override
-    public void handle(HandlerContext handlerContext) {
+    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest msg) throws Exception {
+        try {
+            String contextPath = ctx.channel().attr(HttpRequestHandler.CTX_CONTEXT_PATH).get();
+            handle(new HandlerContext(contextPath, ctx, msg, null));
+        } catch (Throwable t) {
+            if (!(t instanceof HttpException)) {
+                t = new InternalServerErrorException(t);
+            }
+
+            HttpException e = (HttpException) t;
+            if (e.isServerError()) {
+                log.error("Responding '{}': {}", e.getStatus(), e.getMessage(), e);
+            } else {
+                log.warn("Responding '{}': {}", e.getStatus(), e.getMessage());
+            }
+            HttpRequestHandler.sendPlainTextError(ctx, msg, e.getStatus());
+        }
+    }
+
+    private void handle(HandlerContext handlerContext) {
         ChannelHandlerContext nettyContext = handlerContext.getNettyChannelHandlerContext();
         RouteContext ctx = nettyContext.channel().attr(HttpRequestHandler.CTX_CONTEXT).get();
         ctx.setFullNettyRequest(handlerContext.getNettyFullHttpRequest());

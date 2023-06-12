@@ -1,0 +1,24 @@
+<app-admin-page>
+  <app-admin-toolbar>
+    Services
+    &nbsp;&nbsp;&nbsp;
+    <button mat-icon-button
+            color="primary"
+            (click)="refresh()"
+            matTooltip="Refresh view">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </app-admin-toolbar>
+
+  <div class="panel-content">
+    <form [formGroup]="filterForm">
+      <div class="filter-bar">
+        <ya-select [options]="instanceOptions$ | async"
+                   formControlName="instance" />
+      </div>
+    </form>
+    <app-services-table [dataSource]="dataSource"
+                        (startService)="startService($event)"
+                        (stopService)="stopService($event)" />
+  </div>
+</app-admin-page>

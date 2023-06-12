@@ -3,6 +3,8 @@ package org.yamcs.mdb;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -62,16 +64,19 @@ public class ProcessorData {
 
     final XtceDb xtcedb;
     final Log log;
-    final EventProducer eventProducer;
     final String processorName;
+    EventProducer eventProducer;
 
     private Map<String, Object> userData = new HashMap<>();
 
     final private LastValueCache lastValueCache;
+
     /**
      * used to store parameter types which are changed dynamically (so they don't correspond anymore to MDB)
      */
     Map<Parameter, ParameterType> typeOverrides = new HashMap<>();
+    private Set<ParameterTypeListener> typeListeners = new CopyOnWriteArraySet<>();
+
     String yamcsInstance;
 
     private ProcessorConfig processorConfig;
@@ -290,8 +295,20 @@ public class ProcessorData {
         return parameterTypeProcessor;
     }
 
+    public void addParameterTypeListener(ParameterTypeListener listener) {
+        typeListeners.add(listener);
+    }
+
+    public void removeParameterTypeListener(ParameterTypeListener listener) {
+        typeListeners.remove(listener);
+    }
+
     public EventProducer getEventProducer() {
         return eventProducer;
+    }
+
+    public void setEventProducer(EventProducer eventProducer) {
+        this.eventProducer = eventProducer;
     }
 
     public LastValueCache getLastValueCache() {
@@ -306,8 +323,19 @@ public class ProcessorData {
         return pt;
     }
 
+    public Map<Parameter, ParameterType> getParameterTypeOverrides() {
+        return typeOverrides;
+    }
+
+    public ParameterType getParameterTypeOverride(Parameter parameter) {
+        return typeOverrides.get(parameter);
+    }
+
     public void clearParameterOverrides(Parameter p) {
-        typeOverrides.remove(p);
+        var prev = typeOverrides.remove(p);
+        if (prev != null) {
+            notifyTypeUpdate(p);
+        }
     }
 
     public void clearParameterCalibratorOverrides(Parameter p) {
@@ -342,6 +370,7 @@ public class ProcessorData {
         NumericParameterType.Builder<?> builder = ptype.toBuilder();
         c.accept(builder);
         typeOverrides.put(p, builder.build());
+        notifyTypeUpdate(p);
     }
 
     private void modifyEnumeratedTypeOverride(Parameter p, Consumer<EnumeratedParameterType.Builder> c) {
@@ -356,6 +385,7 @@ public class ProcessorData {
         EnumeratedParameterType.Builder builder = ptype.toBuilder();
         c.accept(builder);
         typeOverrides.put(p, builder.build());
+        notifyTypeUpdate(p);
     }
 
     public void clearParameterAlarmOverrides(Parameter p) {
@@ -370,12 +400,13 @@ public class ProcessorData {
 
             builder.setDefaultAlarm(mdbType.getDefaultAlarm());
             typeOverrides.put(p, builder.build());
-
+            notifyTypeUpdate(p);
         } else if (ptype instanceof EnumeratedParameterType) {
             EnumeratedParameterType mdbType = (EnumeratedParameterType) p.getParameterType();
             EnumeratedParameterType.Builder builder = ((EnumeratedParameterType) ptype).toBuilder();
             builder.setDefaultAlarm(mdbType.getDefaultAlarm());
             typeOverrides.put(p, builder.build());
+            notifyTypeUpdate(p);
         } else {
             throw new IllegalArgumentException("Can only have alarms on numeric and enumerated parameters");
         }
@@ -417,4 +448,7 @@ public class ProcessorData {
         return processorName;
     }
 
+    private void notifyTypeUpdate(Parameter parameter) {
+        typeListeners.forEach(l -> l.parameterTypeUpdated(parameter, getParameterType(parameter)));
+    }
 }

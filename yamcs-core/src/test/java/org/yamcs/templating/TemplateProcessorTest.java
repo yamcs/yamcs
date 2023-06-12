@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableMap;
 public class TemplateProcessorTest {
 
     @Test
-    public void testProcess() {
+    public void testProcess() throws ParseException {
         String template = "Hello {{ a }} and {{b}}!";
         Map<String, Object> args = ImmutableMap.of("a", "XX", "b", "YY");
         assertEquals("Hello XX and YY!", TemplateProcessor.process(template, args));
@@ -28,7 +28,7 @@ public class TemplateProcessorTest {
     }
 
     @Test
-    public void testIfCondition() {
+    public void testIfCondition() throws ParseException {
         String template = "Hello {{ a }}{% if b %} and {{ b }}{% endif %}";
         Map<String, Object> args = ImmutableMap.of("a", "XX");
         assertEquals("Hello XX", TemplateProcessor.process(template, args));
@@ -38,7 +38,7 @@ public class TemplateProcessorTest {
     }
 
     @Test
-    public void testIfElseCondition() {
+    public void testIfElseCondition() throws ParseException {
         String template = "Hello {% if a %}{{ a }}{% else %}{{ b }}{% endif %}";
         Map<String, Object> args = ImmutableMap.of("a", "XX");
         assertEquals("Hello XX", TemplateProcessor.process(template, args));
@@ -51,7 +51,7 @@ public class TemplateProcessorTest {
     }
 
     @Test
-    public void testIfElifElseCondition() {
+    public void testIfElifElseCondition() throws ParseException {
         String template = "Hello {% if a %}{{ a }}{% elif b %}{{ b }}{% else %}{{ c }}{% endif %}";
         Map<String, Object> args = ImmutableMap.of("a", "XX");
         assertEquals("Hello XX", TemplateProcessor.process(template, args));
@@ -70,7 +70,7 @@ public class TemplateProcessorTest {
     }
 
     @Test
-    public void testNestedIfCondition() {
+    public void testNestedIfCondition() throws ParseException {
         String template = "Hello{% if a %} {{ a }}{% if b %} and {{ b }}{% endif %}{% endif %}";
 
         Map<String, Object> args = ImmutableMap.of();
@@ -87,17 +87,24 @@ public class TemplateProcessorTest {
     }
 
     @Test
-    public void testComment() {
+    public void testComment() throws ParseException {
         String template = "Hello {{ a }}{% comment %} and {{ b }}{% endcomment %}!";
         Map<String, Object> args = ImmutableMap.of("a", "XX");
         assertEquals("Hello XX!", TemplateProcessor.process(template, args));
     }
 
     @Test
-    public void testMapVariable() {
+    public void testMapVariable() throws ParseException {
         String template = "Hello {{ m.a }} and {{ m.b }}!";
         Map<String, Object> nested = ImmutableMap.of("a", "XX", "b", "YY");
         Map<String, Object> args = ImmutableMap.of("m", nested);
         assertEquals("Hello XX and YY!", TemplateProcessor.process(template, args));
+    }
+
+    @Test
+    public void testSingleCurlyBracket() throws ParseException {
+        String template = "{ \"abc\": 1234 }";
+        Map<String, Object> args = ImmutableMap.of();
+        assertEquals(template, TemplateProcessor.process(template, args));
     }
 }

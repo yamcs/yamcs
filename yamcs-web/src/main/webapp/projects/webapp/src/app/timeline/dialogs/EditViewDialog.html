@@ -1,0 +1,28 @@
+<div class="mat-typography ya-form" style="max-width: 600px;">
+  <form [formGroup]="form" novalidate autocomplete="off">
+    <h2>Edit View</h2>
+    <label>
+      Name <span class="hint">(required)</span><br>
+      <input type="text" formControlName="name">
+    </label>
+
+    <br>
+    <div class="section-divider">
+      <mat-divider />
+    </div>
+
+    <h4>Bands</h4>
+    <app-band-multi-select formControlName="bands" />
+  </form>
+</div>
+
+<div class="footer mat-typography">
+  <mat-toolbar>
+    <mat-toolbar-row>
+      <button class="ya-button" mat-dialog-close>CANCEL</button>&nbsp;&nbsp;
+      <button class="ya-button primary"
+              [disabled]="!(dirty$ | async) || !form.valid"
+              (click)="onConfirm()">SAVE CHANGES</button>
+    </mat-toolbar-row>
+  </mat-toolbar>
+</div>

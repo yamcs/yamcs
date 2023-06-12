@@ -1,0 +1,17 @@
+td {
+  cursor: pointer;
+}
+
+.scrollpane {
+  overflow: auto;
+  height: 200px;
+}
+
+.mat-mdc-dialog-actions {
+  padding: 24px;
+}
+
+.filter-bar {
+  display: block;
+  padding: 24px;
+}

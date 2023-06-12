@@ -64,7 +64,7 @@ public class ClearanceApi extends AbstractClearanceApi<Context> {
 
         user.setClearance(Clearance.newBuilder()
                 .setLevel(request.getLevel().toString())
-                .setIssuedBy(ctx.user.getId())
+                .setIssuedBy((int) ctx.user.getId())
                 .setIssueTime(TimeEncoding.toProtobufTimestamp(TimeEncoding.getWallclockTime()))
                 .build());
 

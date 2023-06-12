@@ -1,0 +1,58 @@
+::ng-deep .mat-mdc-dialog-container {
+  border-radius: 0;
+  position: relative;
+}
+
+.wrapper {
+  position: relative;
+  height: calc(100% - 48px);
+  overflow: auto;
+}
+
+.command-table-wrapper {
+  position: absolute;
+  overflow: auto;
+  /* 24 + 32 */
+  top: 56px;
+  bottom: 1em;
+  left: 0;
+  right: 0;
+}
+
+.command-detail {
+  max-width: 600px;
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  height: 64px;
+  left: 0;
+  right: 0;
+  border-top: 1px solid #d3d3d3;
+}
+
+.disabled .label {
+  opacity: 0.6;
+}
+
+div.names {
+  display: flex;
+}
+
+div.names > div {
+  padding-right: 25px;
+}
+
+div.names > div:not(:first-child) {
+  padding-left: 25px;
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+div.names h2 {
+  margin: 0;
+}
+
+div.names ::ng-deep .text-action {
+  line-height: 0;
+}

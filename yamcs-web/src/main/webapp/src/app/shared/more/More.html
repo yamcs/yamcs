@@ -1,9 +1,0 @@
-<mat-menu #moreMenu="matMenu" overlapTrigger="false" class="ya-menu">
-  <ng-content></ng-content>
-</mat-menu>
-<app-icon-action [matMenuTriggerFor]="moreMenu"
-                 class="no-print"
-                 (click)="$event.stopPropagation()"
-                 matTooltip="More actions"
-                 [icon]="icon">
-</app-icon-action>

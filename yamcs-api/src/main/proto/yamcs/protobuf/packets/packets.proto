@@ -12,9 +12,20 @@ import "yamcs/protobuf/yamcs.proto";
 
 
 message TmPacketData {
+  // Raw packet binary
   required bytes packet = 2;
   optional int32 sequenceNumber = 4;
   optional NamedObjectId id = 5;
-  optional google.protobuf.Timestamp receptionTime = 8;
+
+  // When the packet was generated
   optional google.protobuf.Timestamp generationTime = 9;
+
+  // When the signal has been received on the groun
+  optional google.protobuf.Timestamp earthReceptionTime = 10;
+
+  // When the packet was received by Yamcs
+  optional google.protobuf.Timestamp receptionTime = 8;
+
+  // Name of the Yamcs link where this packet was received from
+  optional string link = 11;
 }

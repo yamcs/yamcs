@@ -1,0 +1,29 @@
+<app-instance-page *ngIf="band$ | async as band">
+  <app-instance-toolbar>Edit band</app-instance-toolbar>
+
+  <div class="form-content ya-form">
+    <form [formGroup]="form"
+          novalidate
+          autocomplete="off">
+      <app-edit-item-band *ngIf="band.type === 'ITEM_BAND'"
+                          [form]="form"
+                          [band]="band" />
+      <app-edit-spacer *ngIf="band.type === 'SPACER'"
+                       [form]="form"
+                       [band]="band" />
+      <app-edit-time-ruler *ngIf="band.type === 'TIME_RULER'"
+                           [form]="form"
+                           [band]="band" />
+      <app-edit-command-band *ngIf="band.type === 'COMMAND_BAND'"
+                             [form]="form"
+                             [band]="band" />
+    </form>
+    <p>&nbsp;</p>
+    <div class="action-bar">
+      <button class="ya-button" (click)="location.back()">Cancel</button>
+      <button class="ya-button primary" type="submit"
+              (click)="doOnConfirm()"
+              [disabled]="!(dirty$ | async) || !form.valid">SAVE CHANGES</button>
+    </div>
+  </div>
+</app-instance-page>

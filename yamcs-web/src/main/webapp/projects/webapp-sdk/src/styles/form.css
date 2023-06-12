@@ -1,0 +1,97 @@
+.ya-form label,
+.ya-form div.label {
+  margin: -3px 0 20px 0;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: .02em;
+  line-height: 12px;
+  color: black;
+  text-transform: inherit;
+  cursor: default;
+  position: relative;
+}
+
+.ya-form label.invalid,
+.ya-form div.label.invalid {
+  color: crimson;
+}
+
+.ya-form .control-group {
+  display: flex;
+  align-items: center;
+}
+
+.ya-form label,
+.ya-form label input[type="text"],
+.ya-form input[type="number"],
+.ya-form label input[type="password"],
+.ya-form label textarea,
+.ya-form label select,
+.ya-form label .date-time-input,
+.ya-form div.label,
+.ya-form div.label input[type="text"],
+.ya-form div.label input[type="password"],
+.ya-form div.label textarea,
+.ya-form div.label select,
+.ya-form div.label .date-time-input {
+  margin: 5px 0 0;
+  display: block;
+  width: 100%;
+}
+
+.ya-form label .ya-button,
+.ya-form div.label .ya-button {
+  margin: 5px 0 0;
+  display: block;
+}
+
+.ya-form input[type="text"], .ya-form input[type="number"], .ya-form input[type="color"], .ya-form input[type="password"], .ya-form select, .ya-input {
+  background: white;
+  border: 1px solid #d3d3d3;
+  border-radius: 1px;
+  font-size: 12px;
+  font-weight: 400;
+  height: 24px;
+  padding: 0 7px 1px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.ya-form input[type="text"]:focus,
+.ya-form input[type="number"]:focus,
+.ya-form input[type="password"]:focus,
+.ya-input:focus,
+.ya-form textarea:focus {
+  border-color: #009e87;
+}
+
+.ya-form input[type="radio"] {
+  margin-right: 10px;
+  /*vertical-align: baseline;*/
+}
+
+.ya-form textarea {
+  border: 1px solid #d3d3d3;
+  border-radius: 1px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  padding: 0 7px 1px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.ya-form .error-message {
+  color: crimson;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: normal;
+}
+
+.ya-form .hint {
+  color: grey;
+  line-height: 16px;
+  font-weight: 400;
+  letter-spacing: normal;
+}

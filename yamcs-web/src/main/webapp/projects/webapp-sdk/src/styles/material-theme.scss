@@ -1,0 +1,94 @@
+@use '@angular/material' as mat;
+
+$my-typography: mat.define-typography-config();
+@include mat.typography-hierarchy($my-typography);
+
+@include mat.core();
+
+// Define the palettes for your theme using the Material Design palettes available in palette.scss
+// (imported above). For each palette, you can optionally specify a default, lighter, and darker
+// hue. Available color palettes: https://www.google.com/design/spec/style/color.html
+
+$yamcs-primary: (
+  50: #1effde,
+  100: #05ffdb,
+  200: #00eac8,
+  300: #00d1b3,
+  400: #00b79d,
+  500: #009e87,
+  600: #008471,
+  700: #006b5b,
+  800: #005146,
+  900: #003830,
+  A100: #38ffe2,
+  A200: #51ffe6,
+  A400: #6bffe9,
+  A700: #001e1a,
+  contrast: (
+    50: #000000,
+    100: #000000,
+    200: #000000,
+    300: #ffffff,
+    400: #ffffff,
+    500: #ffffff,
+    600: #ffffff,
+    700: #ffffff,
+    800: #ffffff,
+    900: #ffffff,
+    A100: #000000,
+    A200: #ffffff,
+    A400: #ffffff,
+    A700: #ffffff,
+  )
+);
+
+$yamcs-accent: (
+  50: #f0bc9b,
+  100: #edad85,
+  200: #ea9e6f,
+  300: #e78f58,
+  400: #e38042,
+  500: #e0712c,
+  600: #d3641f,
+  700: #bd5a1c,
+  800: #a74f19,
+  900: #914515,
+  A100: #f4cbb1,
+  A200: #f7dac8,
+  A400: #fae9de,
+  A700: #7a3a12,
+  contrast: (
+    50: #000000,
+    100: #000000,
+    200: #000000,
+    300: #ffffff,
+    400: #ffffff,
+    500: #ffffff,
+    600: #ffffff,
+    700: #ffffff,
+    800: #ffffff,
+    900: #ffffff,
+    A100: #000000,
+    A200: #ffffff,
+    A400: #ffffff,
+    A700: #ffffff,
+  )
+);
+
+
+$app-primary: mat.define-palette($yamcs-primary);
+$app-accent: mat.define-palette($yamcs-accent);
+$app-warn: mat.define-palette(mat.$red-palette);
+
+$app-theme: mat.define-light-theme(
+  (
+    color: (
+      primary: $app-primary,
+      accent: $app-accent,
+      warn: $app-warn,
+    ),
+    typography: $my-typography,
+    density: 0
+  )
+);
+@include mat.all-component-themes($app-theme);

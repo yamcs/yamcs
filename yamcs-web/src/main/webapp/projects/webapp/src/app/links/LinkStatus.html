@@ -1,0 +1,18 @@
+<ng-container [ngSwitch]="link.status">
+  <ya-led *ngSwitchCase="'OK'"
+          [matTooltip]="link.status"
+          [color]="okColor$ | async"
+          [fade]="parentLink && parentLink.status !== 'OK'" />
+  <ya-led *ngSwitchCase="'UNAVAIL'"
+          [matTooltip]="link.status"
+          color="red"
+          [fade]="parentLink && parentLink.status !== 'OK'" />
+  <ya-led *ngSwitchCase="'FAILED'"
+          [matTooltip]="link.status"
+          color="red"
+          [fade]="parentLink && parentLink.status !== 'OK'" />
+  <ya-led *ngSwitchCase="'DISABLED'"
+          [matTooltip]="link.status"
+          color="#aaa"
+          [fade]="parentLink && parentLink.status !== 'OK'" />
+</ng-container>

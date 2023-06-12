@@ -3,18 +3,21 @@ package org.yamcs.security;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.yamcs.security.protobuf.GroupRecord;
+import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.Tuple;
 
 /**
  * A group is way to manage a set of users.
  */
 public class Group {
 
-    private int id;
+    private long id;
     private String name;
     private String description;
-    private List<Integer> members = new ArrayList<>();
+    private List<Long> members = new ArrayList<>();
 
     public Group(String name) {
         this.name = name;
@@ -23,17 +26,30 @@ public class Group {
     public Group(GroupRecord record) {
         id = record.getId();
         name = record.getName();
-        if (record.hasDescription()) {
+        if (record.hasDescription() && !record.getDescription().isEmpty()) {
             description = record.getDescription();
         }
-        members.addAll(record.getMembersList());
+        var memberIds = record.getMembersList().stream()
+                .map(Long::valueOf)
+                .collect(Collectors.toList());
+        members.addAll(memberIds);
     }
 
-    public int getId() {
+    public Group(Tuple tuple) {
+        id = tuple.getLongColumn(DirectoryDb.GROUP_CNAME_ID);
+        name = tuple.getColumn(DirectoryDb.GROUP_CNAME_NAME);
+        description = tuple.getColumn(DirectoryDb.GROUP_CNAME_DESCRIPTION);
+        List<Long> memberIds = tuple.getColumn(DirectoryDb.GROUP_CNAME_MEMBERS);
+        if (memberIds != null) {
+            members.addAll(memberIds);
+        }
+    }
+
+    public long getId() {
         return id;
     }
 
-    void setId(int id) {
+    void setId(long id) {
         this.id = id;
     }
 
@@ -41,49 +57,68 @@ public class Group {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getDescription() {
         return description;
     }
 
     public void setDescription(String description) {
-        this.description = description;
+        if (description == null || description.isEmpty()) {
+            this.description = null;
+        } else {
+            this.description = description;
+        }
     }
 
-    public List<Integer> getMembers() {
+    public List<Long> getMembers() {
         return new ArrayList<>(members);
     }
 
-    public void addMember(int memberId) {
+    public void addMember(long memberId) {
         this.members.add(memberId);
     }
 
-    public boolean removeMember(int memberId) {
-        // Boxing to not remove by index
-        return members.remove((Integer) memberId);
+    public boolean removeMember(long memberId) {
+        return members.remove(memberId);
     }
 
-    public boolean hasMember(int memberId) {
+    public boolean hasMember(long memberId) {
         return members.contains(memberId);
     }
 
-    public void setMembers(Set<Integer> memberIds) {
+    public void setMembers(Set<Long> memberIds) {
         members.clear();
         members.addAll(memberIds);
     }
 
-    void setName(String name) {
-        this.name = name;
-    }
-
     public GroupRecord toRecord() {
         GroupRecord.Builder b = GroupRecord.newBuilder();
-        b.setId(id);
+        b.setId(Long.valueOf(id).intValue());
         b.setName(name);
-        b.addAllMembers(members);
+        b.addAllMembers(members.stream()
+                .map(Long::intValue)
+                .collect(Collectors.toList()));
         if (description != null) {
             b.setDescription(description);
         }
         return b.build();
+    }
+
+    public Tuple toTuple(boolean forUpdate) {
+        var tuple = new Tuple();
+        if (!forUpdate) {
+            if (id > 0) { // Else, rely on autoincrement
+                tuple.addColumn(DirectoryDb.GROUP_CNAME_ID, id);
+            }
+        }
+        tuple.addColumn(DirectoryDb.GROUP_CNAME_NAME, name);
+        tuple.addColumn(DirectoryDb.GROUP_CNAME_DESCRIPTION, description);
+        tuple.addColumn(DirectoryDb.GROUP_CNAME_MEMBERS, DataType.array(DataType.LONG), members);
+
+        return tuple;
     }
 
     @Override
@@ -97,7 +132,7 @@ public class Group {
 
     @Override
     public int hashCode() {
-        return Integer.hashCode(id);
+        return Long.hashCode(id);
     }
 
     @Override

@@ -1,11 +1,6 @@
 package org.yamcs.http.auth;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -17,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.yamcs.YamcsServer;
 import org.yamcs.http.BadRequestException;
-import org.yamcs.http.Handler;
+import org.yamcs.http.BodyHandler;
 import org.yamcs.http.HandlerContext;
 import org.yamcs.http.HttpServer;
 import org.yamcs.http.InternalServerErrorException;
@@ -25,7 +20,6 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.http.UnauthorizedException;
 import org.yamcs.http.api.IamApi;
 import org.yamcs.http.auth.TokenStore.RefreshResult;
-import org.yamcs.logging.Log;
 import org.yamcs.protobuf.AuthInfo;
 import org.yamcs.protobuf.OpenIDConnectInfo;
 import org.yamcs.protobuf.TokenResponse;
@@ -44,13 +38,11 @@ import org.yamcs.security.ThirdPartyAuthorizationCode;
 import org.yamcs.security.User;
 import org.yamcs.security.UserSession;
 import org.yamcs.security.UsernamePasswordToken;
-import org.yamcs.utils.FileUtils;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -66,10 +58,8 @@ import io.netty.handler.codec.http.QueryStringEncoder;
  * <dd>User credentials are directly exchanged for access tokens.</dd>
  * </dl>
  */
-@Sharable
-public class AuthHandler extends Handler {
+public class AuthHandler extends BodyHandler {
 
-    private static final Log log = new Log(AuthHandler.class);
     private static final SecureRandom RNG = new SecureRandom();
 
     // Cache for temporary authorization codes. This is an indermediate format provided
@@ -81,22 +71,12 @@ public class AuthHandler extends Handler {
     private TokenStore tokenStore;
 
     public AuthHandler(HttpServer httpServer) {
-        try {
-            YamcsServer yamcs = YamcsServer.getServer();
-            Path staticRoot = yamcs.getCacheDirectory().resolve("auth");
-            FileUtils.deleteRecursivelyIfExists(staticRoot);
-            Files.createDirectory(staticRoot);
-            String[] staticFiles = new String[] { "auth.css", "yamcs300.png" };
-            for (String staticFile : staticFiles) {
-                try (InputStream resource = getClass().getResourceAsStream("/auth/static/" + staticFile)) {
-                    Files.copy(resource, staticRoot.resolve(staticFile));
-                }
-            }
-            httpServer.addStaticRoot(staticRoot);
-            tokenStore = httpServer.getTokenStore();
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        tokenStore = httpServer.getTokenStore();
+    }
+
+    @Override
+    public boolean requireAuth() {
+        return false;
     }
 
     @Override
@@ -105,6 +85,12 @@ public class AuthHandler extends Handler {
         if (path.equals("/auth")) {
             handleAuthInfoRequest(ctx);
             return;
+        } else if (path.equals("/auth/assets/auth.css")) {
+            ctx.sendResource("/auth/static/auth.css");
+            return;
+        } else if (path.equals("/auth/assets/yamcs300.png")) {
+            ctx.sendResource("/auth/static/yamcs300.png");
+            return;
         } else if (path.equals("/auth/authorize")) {
             handleAuthorize(ctx);
             return;
@@ -112,7 +98,7 @@ public class AuthHandler extends Handler {
             handleToken(ctx);
             return;
         } else if (path.equals("/auth/spnego")) {
-            SpnegoAuthModule spnegoAuthModule = getSecurityStore().getAuthModule(SpnegoAuthModule.class);
+            var spnegoAuthModule = getSecurityStore().getAuthModule(SpnegoAuthModule.class);
             if (spnegoAuthModule != null) {
                 spnegoAuthModule.handle(ctx);
                 return;

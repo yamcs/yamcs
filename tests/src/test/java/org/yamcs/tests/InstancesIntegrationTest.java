@@ -18,6 +18,7 @@ import org.yamcs.protobuf.CreateInstanceRequest;
 import org.yamcs.protobuf.ListInstancesResponse;
 import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
+import org.yamcs.templating.ParseException;
 import org.yamcs.templating.Template;
 
 import com.google.common.io.CharStreams;
@@ -25,7 +26,7 @@ import com.google.common.io.CharStreams;
 public class InstancesIntegrationTest extends AbstractIntegrationTest {
 
     @BeforeAll
-    public static void setup() throws IOException {
+    public static void setup() throws IOException, ParseException {
         try (Reader in = new InputStreamReader(InstancesIntegrationTest.class.getResourceAsStream(
                 "/IntegrationTest/instance-templates/templ1/template.yaml"))) {
             String source = CharStreams.toString(in);

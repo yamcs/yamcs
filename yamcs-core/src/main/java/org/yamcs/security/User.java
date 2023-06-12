@@ -13,6 +13,8 @@ import org.yamcs.security.protobuf.AccountRecord;
 import org.yamcs.security.protobuf.Clearance;
 import org.yamcs.security.protobuf.ExternalIdentity;
 import org.yamcs.security.protobuf.UserAccountRecordDetail;
+import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.Tuple;
 
 /**
  * A user contains identifying information and a convenient set of methods to perform access control.
@@ -24,8 +26,8 @@ import org.yamcs.security.protobuf.UserAccountRecordDetail;
  * <li>Object privileges that grant the user the right to perform an action on a specific object.
  * </ul>
  * 
- * Additionally a special attribute {@code superuser} may have been granted to a user. Users with this attribute are
- * not subjected to privilege checking (i.e. they are allowed everything, even without being assigned privileges).
+ * Additionally a special attribute {@code superuser} may have been granted to a user. Users with this attribute are not
+ * subjected to privilege checking (i.e. they are allowed everything, even without being assigned privileges).
  */
 public class User extends Account {
 
@@ -56,6 +58,25 @@ public class User extends Account {
     User(AccountRecord record) {
         super(record);
         UserAccountRecordDetail userDetail = record.getUserDetail();
+        if (userDetail.hasHash()) {
+            hash = userDetail.getHash();
+        }
+        if (userDetail.hasEmail()) {
+            email = userDetail.getEmail();
+        }
+        superuser = userDetail.getSuperuser();
+        for (ExternalIdentity identity : userDetail.getIdentitiesList()) {
+            identitiesByProvider.put(identity.getProvider(), identity.getIdentity());
+        }
+        roles.addAll(userDetail.getRolesList());
+        if (userDetail.hasClearance()) {
+            clearance = userDetail.getClearance();
+        }
+    }
+
+    User(Tuple tuple) {
+        super(tuple);
+        UserAccountRecordDetail userDetail = tuple.getColumn(DirectoryDb.ACCOUNT_CNAME_USER_DETAIL);
         if (userDetail.hasHash()) {
             hash = userDetail.getHash();
         }
@@ -131,7 +152,11 @@ public class User extends Account {
     }
 
     public void setEmail(String email) {
-        this.email = email;
+        if (email == null || email.isEmpty()) {
+            this.email = null;
+        } else {
+            this.email = email;
+        }
     }
 
     public void setHash(String hash) {
@@ -237,5 +262,33 @@ public class User extends Account {
         }
 
         return newRecordBuilder().setUserDetail(userDetailb).build();
+    }
+
+    @Override
+    public Tuple toTuple(boolean forUpdate) {
+        var tuple = super.toTuple(forUpdate);
+
+        var userDetailb = UserAccountRecordDetail.newBuilder();
+        if (hash != null) {
+            userDetailb.setHash(hash);
+        }
+        if (email != null) {
+            userDetailb.setEmail(email);
+        }
+        userDetailb.addAllRoles(roles);
+        userDetailb.setSuperuser(superuser);
+        identitiesByProvider.forEach((provider, identity) -> {
+            userDetailb.addIdentities(ExternalIdentity.newBuilder()
+                    .setProvider(provider)
+                    .setIdentity(identity));
+        });
+        if (clearance != null) {
+            userDetailb.setClearance(clearance);
+
+        }
+        tuple.addColumn(DirectoryDb.ACCOUNT_CNAME_USER_DETAIL,
+                DataType.protobuf(UserAccountRecordDetail.class), userDetailb.build());
+
+        return tuple;
     }
 }

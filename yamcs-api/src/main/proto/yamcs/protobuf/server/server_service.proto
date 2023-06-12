@@ -1,0 +1,326 @@
+syntax = "proto2";
+
+package yamcs.protobuf.server;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "ServerServiceProto";
+option java_multiple_files = true;
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+import "yamcs/api/annotations.proto";
+import "yamcs/api/httpbody.proto";
+
+// Handles incoming requests related to api routes
+service ServerApi {
+
+  // Get general server info
+  rpc GetServerInfo(google.protobuf.Empty) returns (GetServerInfoResponse) {
+    option (yamcs.api.route) = {
+      get: "/api"
+    };
+  }
+
+  // Get system info
+  rpc GetSystemInfo(google.protobuf.Empty) returns (SystemInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/sysinfo"
+    };
+  }
+
+  // Receive system info updates
+  rpc SubscribeSystemInfo(google.protobuf.Empty) returns (stream SystemInfo) {
+    option (yamcs.api.websocket) = {
+      topic: "sysinfo"
+    };
+  }
+
+  // List routes
+  rpc ListRoutes(google.protobuf.Empty) returns (ListRoutesResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/routes"
+    };
+  }
+  
+  // List topics
+  rpc ListTopics(google.protobuf.Empty) returns (ListTopicsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/topics"
+    };
+  }
+  
+  // List threads
+  rpc ListThreads(ListThreadsRequest) returns (ListThreadsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/threads"
+    };
+  }
+
+  // Get info on a single thread
+  rpc GetThread(GetThreadRequest) returns (ThreadInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/threads/{id}"
+    };
+  }
+
+  // Get a text-dump with thread information
+  rpc DumpThreads(google.protobuf.Empty) returns (yamcs.api.HttpBody) {
+    option (yamcs.api.route) = {
+      get: "/api/threads:dump"
+    };
+  }
+
+  // Get HTTP traffic
+  rpc GetHttpTraffic(google.protobuf.Empty) returns (HttpTraffic) {
+    option (yamcs.api.route) = {
+      get: "/api/http-traffic"
+    };
+  }
+}
+
+message GetThreadRequest {
+  // Thread ID
+  optional int64 id = 1;
+}
+
+message ListThreadsResponse {
+  repeated ThreadInfo threads = 1;
+}
+
+message ListRoutesResponse {
+  repeated RouteInfo routes = 1;
+}
+
+message ListTopicsResponse {
+  repeated TopicInfo topics = 1;
+}
+
+message HttpTraffic {
+  optional uint64 readBytes = 1;
+  optional uint64 writtenBytes = 2;
+  optional uint64 readThroughput = 3;
+  optional uint64 writeThroughput = 4;
+  repeated ClientConnectionInfo connections = 5;
+}
+
+message RouteInfo {
+  optional string service = 1;
+  optional string method = 2;
+  optional string description = 3;
+  optional string httpMethod = 4;
+  optional string url = 5;
+  optional string inputType = 6;
+  optional string outputType = 7;
+  optional bool deprecated = 8;
+  optional int64 requestCount = 9;
+  optional int64 errorCount = 10;
+  optional string logFormat = 11;
+}
+
+message TopicInfo {
+  optional string topic = 1;
+  optional string service = 2;
+  optional string method = 3;
+  optional string description = 4;
+  optional string inputType = 5;
+  optional string outputType = 6;
+  optional bool deprecated = 7;
+}
+
+message TraceElementInfo {
+  optional string className = 1;
+  optional string fileName = 2;
+  optional string methodName = 3;
+  optional int32 lineNumber = 4;
+}
+
+message ListThreadsRequest {
+  // Maximum depth of each thread's stacktrace. Default: no limit.
+  optional int32 depth = 1;
+}
+
+message ThreadGroupInfo {
+  optional string name = 1;
+  optional bool daemon = 2;
+  optional ThreadGroupInfo parent = 3;
+}
+
+message ThreadInfo {
+  optional int64 id = 1;
+  optional string name = 2;
+  optional string state = 3;
+  optional bool native = 4;
+  optional bool suspended = 5;
+  optional ThreadGroupInfo group = 6;
+  repeated TraceElementInfo trace = 7;
+}
+
+message GetServerInfoResponse {
+  message PluginInfo {
+    optional string name = 1;
+    optional string description = 2;
+    optional string version = 3;
+    optional string vendor = 4;
+  }
+  message CommandOptionInfo {
+    optional string id = 1;
+    optional string verboseName = 2;
+    optional string type = 3;
+    optional string help = 4;
+  }
+  
+  // Yamcs version derived on build time.
+  optional string yamcsVersion = 1;
+  
+  // Yamcs SHA-1 revision identifier. Set on
+  // build time, but only if the git command
+  // was available.
+  optional string revision = 6;
+  
+  // An identifier for this server. Used in
+  // system parameters.
+  optional string serverId = 2;
+  
+  // A default instance for this Yamcs installation.
+  // This is a calculated suggestion. UI clients may ignore.
+  optional string defaultYamcsInstance = 3;
+  
+  // Plugins loaded within this server instance
+  repeated PluginInfo plugins = 5;
+  
+  // Additional options available to commands
+  repeated CommandOptionInfo commandOptions = 7;
+}
+
+message ClientConnectionInfo {
+  message HttpRequestInfo {
+    optional string protocol = 1;
+    optional string method = 2;
+    optional string uri = 3;
+    optional bool keepAlive = 4;
+    optional string userAgent = 5;
+  }
+  optional string id = 1;
+  optional bool open = 2;
+  optional bool active = 3;
+  optional bool writable = 4;
+  optional string remoteAddress = 5;
+  optional uint64 readBytes = 6;
+  optional uint64 writtenBytes = 7;
+  optional uint64 readThroughput = 8;
+  optional uint64 writeThroughput = 9;
+  optional HttpRequestInfo httpRequest = 10;
+  optional string username = 11;
+}
+
+message SystemInfo {
+  // Yamcs version number.
+  optional string yamcsVersion = 1;
+  
+  // Git revision number at build time.
+  optional string revision = 2;
+  
+  // Server identifier, as used in system parameters and distributed setups.
+  optional string serverId = 3;
+
+  // Uptime of Yamcs in milliseconds 
+  optional int64 uptime = 5;
+  
+  // Java virtual machine implementation name, version and vendor
+  optional string jvm = 6;
+  
+  // Working directory of Yamcs (base path for relative references)
+  optional string workingDirectory = 7;
+  
+  // Directory where configuration files are located.
+  optional string configDirectory = 8;
+  
+  // Directory where Yamcs data is stored.
+  optional string dataDirectory = 9;
+  
+  // Directory where Yamcs may cache files.
+  optional string cacheDirectory = 10;
+
+  // Operating system name and version.
+  optional string os = 11;
+
+  // Operating system architecture.
+  optional string arch = 12;
+
+  // Number of processors available to Yamcs.
+  optional int32 availableProcessors = 13;
+
+  // System load average for the last minute.
+  optional double loadAverage = 14;
+
+  // Amount of memory in bytes of the heap that is used for object allocation and that is committed for the JVM to use.
+  optional int64 heapMemory = 15;
+
+  // Amount of used heap memory in bytes.
+  optional int64 usedHeapMemory = 16;
+
+  // Maximum amount of heap memory in bytes that can be used for memory management.
+  optional int64 maxHeapMemory = 17;
+
+  // Amount of non-heap memory in bytes that is committed for the JVM to use.
+  optional int64 nonHeapMemory = 18;
+
+  // Amount of non-heap used memory in bytes.
+  optional int64 usedNonHeapMemory = 19;
+
+  // Maximum amount of non-heap memory in bytes that can be used for memory management.
+  optional int64 maxNonHeapMemory = 20;
+  
+  // Number of active threads.
+  optional int64 jvmThreadCount = 21;
+  
+  // Root directories, each corresponding to a distinct file hierarchy.
+  repeated RootDirectory rootDirectories = 22;
+  
+  // Information about the Yamcs process and any descendants.
+  optional ProcessInfo process = 23;
+}
+
+message RootDirectory {
+  // Root directory location.
+  optional string directory = 1;
+
+  // The type of the file store where this root directory is located.
+  optional string type = 2;
+
+  // Size in bytes of the file store where this root directory is located.
+  optional int64 totalSpace = 3;
+
+  // Number of unallocated bytes in the file store where this root directory
+  // is located.
+  optional int64 unallocatedSpace = 4;
+
+  // Number of bytes available to Yamcs on the file store where this root
+  // directory is located.
+  optional int64 usableSpace = 5;
+}
+
+message ProcessInfo {
+  // Native process ID.
+  optional int64 pid = 1;
+
+  // User of the process.
+  optional string user = 2;
+
+  // Executable pathname of the process.
+  optional string command = 3;
+
+  // Arguments of the process.
+  repeated string arguments = 4;
+
+  // Start time of the process.
+  optional google.protobuf.Timestamp startTime = 5;
+
+  // Accumulated total cputime.
+  optional google.protobuf.Duration totalCpuDuration = 6;
+
+  // Direct children of the process.
+  repeated ProcessInfo children = 7;
+}

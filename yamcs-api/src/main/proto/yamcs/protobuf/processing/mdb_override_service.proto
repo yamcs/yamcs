@@ -24,14 +24,25 @@ service MdbOverrideApi {
       get: "/api/mdb-overrides/{instance}/{processor}"
     };
   }
-  
+
   // Get overrides for an algorithm
   rpc GetAlgorithmOverrides(GetAlgorithmOverridesRequest) returns (GetAlgorithmOverridesResponse) {
     option (yamcs.api.route) = {
       get: "/api/mdb-overrides/{instance}/{processor}/algorithms/{name*}"
     };
   }
-  
+
+  // Get elements of a parameter's definition, as changed for a
+  // specific processor.
+  //
+  // This may return empty, if there is no change, or a previous change
+  // was explicitly deleted.
+  rpc GetParameterOverride(GetParameterOverrideRequest) returns (ParameterOverride) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb-overrides/{instance}/{processor}/parameters/{name*}"
+    };
+  }
+
   // Update a parameter's definition
   rpc UpdateParameter(UpdateParameterRequest) returns (mdb.ParameterTypeInfo) {
     option (yamcs.api.route) = {
@@ -55,6 +66,24 @@ service MdbOverrideApi {
       }
     };
   }
+
+  // Receive notifications on processor-level MDB changes.
+  //
+  // Updates include the current state of the algorithm or
+  // parameter, also when an override is essentially removed.
+  rpc SubscribeMdbChanges(SubscribeMdbChangesRequest) returns (stream MdbOverrideInfo) {
+    option (yamcs.api.websocket) = {
+      topic: "mdb-changes"
+    };
+  }
+}
+
+message SubscribeMdbChangesRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Processor name.
+  optional string processor = 2;
 }
 
 message ListMdbOverridesRequest {
@@ -81,26 +110,67 @@ message GetAlgorithmOverridesRequest {
 }
 
 message GetAlgorithmOverridesResponse {
+  // Updated algorithm text
   optional AlgorithmTextOverride textOverride = 1;
+}
+
+message GetParameterOverrideRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Processor name.
+  optional string processor = 2;
+
+  // Parameter name.
+  optional string name = 3;
+}
+
+// A change to a parameter's type.
+//
+// This can be either due to an alarm or a calibrator change.
+message ParameterOverride {
+  // Parameter name
+  optional string parameter = 1;
+
+  // Default calibrator (when no specific context)
+  optional mdb.CalibratorInfo defaultCalibrator = 5;
+
+  // Calibrators under specific context
+  repeated mdb.ContextCalibratorInfo contextCalibrators = 6;
+
+  // Default alarm properties (when no specific context)
+  optional mdb.AlarmInfo defaultAlarm = 7;
+
+  // Alarm properties under specific context
+  repeated mdb.ContextAlarmInfo contextAlarms = 8;
 }
 
 message MdbOverrideInfo {
   enum OverrideType {
+    // Override of an algorithm's text
     ALGORITHM_TEXT = 0;
+
+    // Override of a parameter's type
+    // (alarms, calibrators, or both)
+    PARAMETER = 1;
   }
   optional OverrideType type = 1;
   optional AlgorithmTextOverride algorithmTextOverride = 2;
+  optional ParameterOverride parameterOverride = 3;
 }
 
 message AlgorithmTextOverride {
+  // Algorithm name
   optional string algorithm = 1;
+
+  // Algorithm text
   optional string text = 2;
 }
 
 // Used to change calibrators or alarms for one parameter
 message UpdateParameterRequest {
   enum ActionType {
-  
+
     // Reset all parameter properties (calibrators+alarms) to their default
     // Mission Database value
     RESET = 0;
@@ -132,11 +202,10 @@ message UpdateParameterRequest {
   // Processor name.
   optional string processor = 2;
   
-  // Alarm name.
+  // Parameter name.
   optional string name = 3;
 
-
-  // The action by which to modify this alarm.
+  // The action by which to modify this parameter.
   optional ActionType action = 4;
   
   // Used when action = SET_DEFAULT_CALIBRATOR or SET_CALIBRATORS

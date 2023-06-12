@@ -1,0 +1,26 @@
+<div class="label">
+  <div class="meta" [class.error]="err.invalid$ | async">
+    <div class="item"
+         *ngIf="type.minChars !== undefined || type.maxChars !== undefined">
+      chars:
+      <ya-interval [left]="type.minChars"
+                   [right]="type.maxChars"
+                   [singleValueIfEqual]="true" />
+    </div>
+    <div class="item" *ngIf="type?.unitSet">
+      {{ type.unitSet | units }}
+    </div>
+    <div class="item">{{ type.engType }}</div>
+  </div>
+
+  {{ label }}
+  <ya-help *ngIf="description">
+    {{ description }}
+  </ya-help>
+
+  <ya-errors #err [controlName]="controlName" />
+
+  <input [formControl]="formControl"
+         type="text"
+         autocomplete="off">
+</div>

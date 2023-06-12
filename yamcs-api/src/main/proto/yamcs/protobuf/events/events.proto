@@ -24,12 +24,12 @@ message Event {
     CRITICAL = 6;
     SEVERE = 7;
   }
-  required string source = 1;
-  required google.protobuf.Timestamp generationTime = 2;
+  optional string source = 1;
+  optional google.protobuf.Timestamp generationTime = 2;
   optional google.protobuf.Timestamp receptionTime = 3;
   optional int32 seqNumber = 4;
   optional string type = 5;
-  required string message = 6;
+  optional string message = 6;
   optional EventSeverity severity = 7[default=INFO];
   
   // Set by API when event was posted by a user

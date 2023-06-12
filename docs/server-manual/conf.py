@@ -93,8 +93,6 @@ latex_documents = [
     ),
 ]
 
-latex_appendices = ["sql-format"]
-
 latex_show_pagerefs = True
 
 latex_show_urls = "footnote"

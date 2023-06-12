@@ -5,6 +5,8 @@ import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
@@ -32,6 +34,14 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
 
     protected long housekeepingInterval = 10000;
     private AggregatedDataLink parent = null;
+
+    @Override
+    public Spec getDefaultSpec() {
+        var spec = super.getDefaultSpec();
+        spec.addOption("commandPostprocessorClassName", OptionType.STRING);
+        spec.addOption("commandPostprocessorArgs", OptionType.MAP).withSpec(Spec.ANY);
+        return spec;
+    }
 
     @Override
     public void init(String yamcsInstance, String linkName, YConfiguration config) throws ConfigurationException {

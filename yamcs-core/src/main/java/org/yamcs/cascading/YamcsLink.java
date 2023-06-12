@@ -7,8 +7,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
-import org.yamcs.YConfiguration;
 import org.yamcs.Spec.OptionType;
+import org.yamcs.YConfiguration;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ConnectionListener;
 import org.yamcs.client.YamcsClient;
@@ -53,14 +53,14 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
                 .build();
         yclient.addConnectionListener(this);
 
-        if(config.containsKey("username")) {
-            if(config.containsKey("password")) {
+        if (config.containsKey("username")) {
+            if (config.containsKey("password")) {
                 username = config.getString("username");
                 password = config.getString("password").toCharArray();
             } else {
                 throw new ConfigurationException("Username provided with no password");
             }
-        } else if(config.containsKey("password")) {
+        } else if (config.containsKey("password")) {
             throw new ConfigurationException("Password provided with no username");
         }
 
@@ -96,7 +96,7 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
 
         this.upstreamName = config.getString("upstreamName");
 
-        if(upstreamName.contains("<") || upstreamName.contains(">")) {
+        if (upstreamName.contains("<") || upstreamName.contains(">")) {
             throw new ConfigurationException("Invalid upstream name '" + upstreamName + "'. It cannot contain < or >");
         }
         this.upstreamProcessor = config.getString("upstreamProcessor", "realtime");
@@ -105,14 +105,14 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
 
     @Override
     public Spec getSpec() {
-        Spec spec = new Spec();
+        Spec spec = getDefaultSpec();
         spec.addOption("yamcsUrl", OptionType.STRING).withRequired(true)
                 .withDescription("The URL to connect to the server.");
 
         spec.addOption("username", OptionType.STRING)
                 .withDescription("Username to connect to the server");
 
-        spec.addOption("password", OptionType.STRING)
+        spec.addOption("password", OptionType.STRING).withSecret(true)
                 .withDescription("Password to connect to the server");
 
         spec.addOption("upstreamInstance", OptionType.STRING).withRequired(true)
@@ -122,18 +122,8 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
                 .withDescription("The processor to connect to. Default is realtime");
 
         spec.addOption("upstreamName", OptionType.STRING).withRequired(true)
-            .withDescription("The name of the upstream Yamcs server. The name will be used in the command history entries");
-        
-        spec.addOption("tm", OptionType.BOOLEAN).withDefault(true)
-                .withDescription("Subscribe telemetry containers (packets). "
-                        + "The list of containers (packets) has to be specified using the containers option.");
-
-        spec.addOption("pp", OptionType.BOOLEAN).withDefault(true)
-                .withDescription("Subscribe parameters. "
-                        + "The list of parameters has to be specified using the parameters option.");
-
-        spec.addOption("tc", OptionType.BOOLEAN).withDefault(true)
-                .withDescription("Allow to send TC and subscribe to command history.");
+                .withDescription(
+                        "The name of the upstream Yamcs server. The name will be used in the command history entries");
 
         spec.addOption("verifyTls", OptionType.BOOLEAN).withDefault(true)
                 .withDescription("If the connection is over SSL, "
@@ -145,20 +135,57 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
 
         spec.addOption("connectionAttempts", OptionType.INTEGER).withDefault(20)
                 .withDescription(
-                        "How many times to attempt reconnection if the connection fails."
-                                + "Reconnection will not be reatempted if the authentication fails."
+                        "How many times to attempt reconnection if the connection fails. "
+                                + "Reconnection will not be reatempted if the authentication fails. "
                                 + "Link disable/enable is required to reattempt the connection");
 
+        /*
+         * TM
+         */
+        spec.addOption("tm", OptionType.BOOLEAN).withDefault(true)
+                .withDescription("Subscribe telemetry containers (packets). "
+                        + "The list of containers (packets) has to be specified using the containers option.");
+        spec.addOption("tmRealtimeStream", OptionType.STRING);
+
+        spec.addOption("tmArchive", OptionType.BOOLEAN).withDefault(true);
+        spec.addOption("tmArchiveStream", OptionType.STRING);
+
         spec.addOption("containers", OptionType.LIST).withAliases("packets").withRequired(true)
+                .withElementType(OptionType.STRING)
                 .withDescription("The list of packets to subscribe to.");
-        
+
+        spec.addOption("retrievalDays", OptionType.INTEGER);
+        spec.addOption("mergeTime", OptionType.INTEGER);
+        spec.addOption("gapFillingInterval", OptionType.INTEGER);
+
+        /*
+         * PP
+         */
+        spec.addOption("pp", OptionType.BOOLEAN).withDefault(true)
+                .withDescription("Subscribe parameters. "
+                        + "The list of parameters has to be specified using the parameters option.");
+        spec.addOption("ppRealtimeStream", OptionType.STRING);
+        spec.addOption("parameters", OptionType.LIST).withElementType(OptionType.STRING)
+                .withDescription("The list of parameters to subscribe to.");
+
+        /*
+         * TC
+         */
+        spec.addOption("tc", OptionType.BOOLEAN).withDefault(true)
+                .withDescription("Allow to send TC and subscribe to command history.");
+
         spec.addOption("keepUpstreamAcks", OptionType.LIST)
-                .withDescription(
-                        "List of command acknowledgements names received from the upstream server to keep unmodified")
+                .withElementType(OptionType.STRING)
+                .withDescription("List of command acknowledgements names received "
+                        + "from the upstream server to keep unmodified")
                 .withDefault(List.of(CommandHistoryPublisher.CcsdsSeq_KEY));
-        
+
+        /*
+         * EV
+         */
         spec.addOption("event", OptionType.BOOLEAN).withDefault(true)
                 .withDescription("Allow to subscribe to realtime events.");
+        spec.addOption("eventRealtimeStream", OptionType.STRING);
 
         return spec;
     }
@@ -171,7 +198,6 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
         }
         return wsclient.isConnected() ? Status.OK : Status.UNAVAIL;
     }
-
 
     @Override
     public List<Link> getSubLinks() {
@@ -221,7 +247,7 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
         }
 
         try {
-            if(username != null) {
+            if (username != null) {
                 yclient.login(username, password);
             }
             yclient.connectWebSocket();
@@ -309,6 +335,7 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
             log.debug("Disconnected from upstream Yamcs server");
         }
     }
+
     YamcsClient getClient() {
         return yclient;
     }

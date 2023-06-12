@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.commanding.PreparedCommand;
@@ -29,6 +31,14 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
     protected int port;
     protected Selector selector;
     SelectionKey selectionKey;
+
+    @Override
+    public Spec getSpec() {
+        var spec = getDefaultSpec();
+        spec.addOption("host", OptionType.STRING).withRequired(true);
+        spec.addOption("port", OptionType.INTEGER).withRequired(true);
+        return spec;
+    }
 
     @Override
     public void init(String yamcsInstance, String name, YConfiguration config) throws ConfigurationException {

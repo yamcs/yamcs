@@ -1,0 +1,206 @@
+::ng-deep .mat-mdc-dialog-container {
+  border-radius: 0;
+  position: relative;
+}
+
+.transfer-files {
+  height: 100%;
+}
+
+.close-button {
+  float: right;
+  padding: 0;
+  min-width: 0;
+  line-height: normal;
+  vertical-align: bottom;
+}
+
+.close-button:hover {
+  opacity: 70%;
+  transform: scale(0.95);
+}
+
+.ya-form {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.grid-container {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: [header] min-content [tables] auto [footer] min-content [options-footer] min-content;
+  grid-template-columns: [buckets] 140px [local] auto [remote] auto;
+  column-gap: 8px;
+  flex: 1;
+  min-height: 0;
+}
+
+.header {
+  grid-row: header;
+  position: relative;
+  overflow: hidden;
+}
+
+.table-wrapper {
+  grid-row: tables;
+  overflow: auto;
+  border: 1px solid #d3d3d3;
+}
+
+.footer {
+  grid-row: footer;
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: stretch;
+  gap: 8px;
+  height: fit-content;
+}
+
+.options-footer {
+  grid-row: options-footer;
+  grid-column: local / span 2;
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: stretch;
+  gap: 8px;
+  height: fit-content;
+}
+
+.buckets-column {
+  grid-column: buckets;
+}
+
+.local-column {
+  grid-column: local;
+}
+
+.remote-column {
+  grid-column: remote;
+}
+
+.buckets-column.header>label {
+  position: absolute;
+  bottom: 0;
+  line-height: 24px;
+}
+
+.buckets-column.header>label>a {
+  float: right;
+  font-weight: initial;
+  color: #707070;
+  user-select: none;
+  cursor: pointer;
+}
+
+.buckets-column.header>label>a:hover {
+  text-decoration: underline;
+}
+
+.buckets-column td {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  column-gap: 10px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.local-column.table-wrapper.no-filelist {
+  grid-column: local / span 2;
+}
+
+.local-column.footer {
+  flex-wrap: wrap-reverse;
+  align-items: flex-end;
+}
+
+.remote-column.header.no-filelist>ya-breadcrumb-trail {
+  visibility: hidden;
+}
+
+label.table-caption {
+  margin: 0;
+  bottom: 0;
+}
+
+label.table-caption select {
+  display: inline-block;
+  width: auto;
+  margin: 0 4px;
+}
+
+ya-breadcrumb-trail {
+  display: inline-block;
+}
+
+.lastFileListTime {
+  min-width: 0;
+  padding: 0;
+  font-size: 12px;
+  line-height: 24px;
+  float: right;
+}
+
+.lastFileListTime .mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  vertical-align: sub;
+}
+
+.lastFileListTime:hover .mat-icon {
+  transform: rotate(360deg);
+  transition: transform 0.3s ease-in-out;
+}
+
+.footer input,
+.options-footer input,
+.footer select,
+.options-footer select {
+  margin: 2px 0 0;
+}
+
+.footer>button,
+.footer>input {
+  margin-top: 7px;
+  flex-shrink: 1;
+}
+
+.footer>button {
+  flex-grow: 1;
+}
+
+.footer>input {
+  flex-grow: 5;
+}
+
+table.ya-data-table {
+  width: 100%;
+}
+
+.ya-data-table td {
+  border: none;
+}
+
+.checkbox-label {
+  font-weight: unset;
+  font-size: unset;
+  letter-spacing: unset;
+  line-height: unset;
+  color: unset;
+  text-transform: unset;
+  cursor: unset;
+  position: unset;
+  display: inline-block;
+  margin: 3px 0 0;
+  user-select: none;
+}
+
+.checkbox-label input {
+  margin: 0 3px 0 4px;
+}

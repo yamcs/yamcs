@@ -1,0 +1,23 @@
+tr.failed td {
+  color: red;
+}
+
+h3.mat-mdc-dialog-title {
+  background-color: #24292e;
+  color: #fff;
+  margin: 0;
+  padding-left: 5px;
+  font-size: 16px;
+  line-height: 40px;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+.table-wrapper {
+  height: 150px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  padding: 5px;
+}

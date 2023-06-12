@@ -1,0 +1,72 @@
+<mat-toolbar style="background-color: #fff">
+  Select instance
+  <div style="flex: 1 1 auto"></div>
+  <a mat-button
+     routerLink="/create-instance"
+     mat-dialog-close
+     color="primary"
+     *ngIf="isCreateInstanceEnabled()">
+    NEW INSTANCE
+  </a>
+</mat-toolbar>
+
+<mat-dialog-content>
+  <div class="filter-bar">
+    <ya-search-filter [formControl]="filterControl"
+                      placeholder="Filter instances"
+                      width="100%"
+                      (onArrowDown)="selectNext()"
+                      (onArrowUp)="selectPrevious()"
+                      (onEnter)="applySelection()" />
+  </div>
+  <div class="scrollpane">
+    <table mat-table
+           [dataSource]="dataSource"
+           class="ya-data-table"
+           style="width: 100%">
+
+      <ng-container cdkColumnDef="selected">
+        <th mat-header-cell *cdkHeaderCellDef class="iconcol"></th>
+        <td mat-cell *cdkCellDef="let row" class="iconcol">
+          <mat-icon *ngIf="yamcs.instance === row.name"
+                    matTooltip="Current">check</mat-icon>
+        </td>
+      </ng-container>
+
+      <ng-container cdkColumnDef="name">
+        <th mat-header-cell *cdkHeaderCellDef>Instance</th>
+        <td mat-cell *cdkCellDef="let row">
+          <strong>{{ row.name }}</strong>
+        </td>
+      </ng-container>
+
+      <ng-container cdkColumnDef="processor">
+        <th mat-header-cell *cdkHeaderCellDef>Default Processor</th>
+        <td mat-cell *cdkCellDef="let row">
+          {{ row | defaultProcessor | nvl:'-' }}
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row
+          *cdkRowDef="let row; columns: displayedColumns;"
+          [class.selected]="selection.isSelected(row)"
+          (click)="selection.toggle(row)"></tr>
+    </table>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <mat-paginator [pageSize]="100"
+                 [hidePageSize]="true"
+                 [showFirstLastButtons]="true" />
+  <div style="flex: 1 1 auto"></div>
+
+  <button class="ya-button" mat-dialog-close>CANCEL</button>
+
+  <button class="ya-button primary"
+          [disabled]="selection.isEmpty()"
+          (click)="applySelection()">
+    SELECT
+  </button>
+</mat-dialog-actions>

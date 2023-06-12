@@ -272,6 +272,9 @@ public class XtceAssembler {
         if (!spaceSystem.getParameters().isEmpty()) {
             doc.writeStartElement("ParameterSet");
             for (Parameter parameter : spaceSystem.getParameters()) {
+                if (parameter.getParameterType() == null) {
+                    continue;
+                }
                 writeParameter(doc, parameter);
             }
             doc.writeEndElement();

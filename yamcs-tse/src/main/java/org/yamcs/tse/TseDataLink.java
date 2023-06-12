@@ -7,6 +7,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
@@ -66,6 +68,15 @@ public class TseDataLink extends AbstractLink {
 
     private CommandHistoryPublisher cmdhistPublisher;
     private TsePostprocessor postprocessor;
+
+    @Override
+    public Spec getSpec() {
+        var spec = getDefaultSpec();
+        spec.addOption("host", OptionType.STRING).withRequired(true);
+        spec.addOption("port", OptionType.INTEGER).withRequired(true);
+        spec.addOption("initialDelay", OptionType.INTEGER);
+        return spec;
+    }
 
     @Override
     public void init(String yamcsInstance, String name, YConfiguration config) {

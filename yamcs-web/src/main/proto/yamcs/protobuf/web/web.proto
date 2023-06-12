@@ -1,0 +1,32 @@
+syntax = "proto2";
+
+package yamcs.protobuf.web;
+
+option java_package = "org.yamcs.web.api";
+option java_outer_classname = "WebProto";
+option java_multiple_files = true;
+
+import "yamcs/api/annotations.proto";
+ 
+service WebApi {
+
+  // Get web configuration for an instance
+  rpc GetInstanceConfiguration(GetInstanceConfigurationRequest) returns (InstanceConfiguration) {
+    option (yamcs.api.route) = {
+      get: "/api/web/instance-config/{instance}"
+    };
+  }
+}
+
+message GetInstanceConfigurationRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+}
+
+message InstanceConfiguration {
+  // Bucket where to find display resources
+  optional string displayBucket = 1;
+
+  // Bucket where to find stacks
+  optional string stackBucket = 2;
+}

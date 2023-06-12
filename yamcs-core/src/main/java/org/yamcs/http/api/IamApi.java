@@ -409,11 +409,11 @@ public class IamApi extends AbstractIamApi<Context> {
             group.setDescription(request.getDescription());
         }
         for (String username : request.getUsersList()) {
-            int memberId = directory.getUser(username).getId();
+            long memberId = directory.getUser(username).getId();
             group.addMember(memberId);
         }
         for (String serviceAccountName : request.getServiceAccountsList()) {
-            int memberId = directory.getServiceAccount(serviceAccountName).getId();
+            long memberId = directory.getServiceAccount(serviceAccountName).getId();
             group.addMember(memberId);
         }
 
@@ -445,13 +445,14 @@ public class IamApi extends AbstractIamApi<Context> {
                 } else if (directory.getGroup(newName) != null) {
                     throw new BadRequestException("Group '" + newName + "' already exists");
                 }
-                directory.renameGroup(group.getName(), request.getNewName());
+                directory.renameGroup(group.getName(), newName);
+                group.setName(newName);
             }
             if (request.hasDescription()) {
                 group.setDescription(request.getDescription());
             }
             if (request.hasMemberInfo()) {
-                Set<Integer> memberIds = new HashSet<>();
+                Set<Long> memberIds = new HashSet<>();
                 for (String username : request.getMemberInfo().getUsersList()) {
                     User user = directory.getUser(username);
                     memberIds.add(user.getId());
@@ -466,6 +467,7 @@ public class IamApi extends AbstractIamApi<Context> {
         } catch (IOException e) {
             throw new InternalServerErrorException(e);
         }
+
         observer.complete(toGroupInfo(group, true, directory));
     }
 
@@ -479,13 +481,11 @@ public class IamApi extends AbstractIamApi<Context> {
         if (group == null) {
             throw new NotFoundException();
         }
-
         try {
             directory.deleteGroup(group);
         } catch (IOException e) {
             throw new InternalServerErrorException(e);
         }
-
         observer.complete(toGroupInfo(group, true, directory));
     }
 
@@ -578,7 +578,7 @@ public class IamApi extends AbstractIamApi<Context> {
             groupInfob.setDescription(group.getDescription());
         }
         if (addMembers) {
-            for (int memberId : group.getMembers()) {
+            for (long memberId : group.getMembers()) {
                 User user = directory.getUser(memberId);
                 UserInfo userInfo = toUserInfo(user, false, directory);
                 groupInfob.addUsers(userInfo);

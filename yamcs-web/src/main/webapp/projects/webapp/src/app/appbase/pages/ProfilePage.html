@@ -1,0 +1,94 @@
+<mat-toolbar class="top">
+  <mat-toolbar-row>
+    Profile
+  </mat-toolbar-row>
+</mat-toolbar>
+<div class="form-content mat-typography" *ngIf="user$ | async as user">
+  <dl class="dl-horizontal no-lead">
+    <dt>Username</dt>
+    <dd>{{ user.getName() }}</dd>
+
+    <dt>Display name</dt>
+    <dd>{{ user.getDisplayName() || '-' }}</dd>
+
+    <dt>Email</dt>
+    <dd>{{ user.getEmail() || '-' }}</dd>
+
+    <ng-container *ngIf="user.isSuperuser()">
+      <dt>Attributes</dt>
+      <dd>
+        ⚡️ superuser
+      </dd>
+    </ng-container>
+
+    <ng-container *ngIf="config.commandClearanceEnabled">
+      <dt>Command clearance</dt>
+      <dd>
+        <app-significance-level [level]="user.getClearance()" [grayscale]="true" />
+      </dd>
+    </ng-container>
+  </dl>
+
+  <mat-divider />
+  <dl class="dl-horizontal">
+    <dt>Roles</dt>
+    <dd>
+      <ng-container *ngIf="user.getRoles().length">
+        <ng-container *ngFor="let role of user.getRoles(); let last=last">
+          {{ role.name }}<span *ngIf="!last">,</span>
+        </ng-container>
+      </ng-container>
+      <ng-container *ngIf="!user.getRoles().length">-</ng-container>
+    </dd>
+  </dl>
+
+  <ng-container *ngIf="user.isSuperuser()">
+    <mat-divider />
+    <dl class="dl-horizontal">
+      <dt>System privileges</dt>
+      <dd>All privileges implied</dd>
+    </dl>
+    <mat-divider />
+    <dl class="dl-horizontal">
+      <dt>Object privileges</dt>
+      <dd>All privileges implied</dd>
+    </dl>
+  </ng-container>
+
+  <ng-container *ngIf="!user.isSuperuser()">
+    <mat-divider />
+    <dl class="dl-horizontal">
+      <dt>System privileges</dt>
+      <dd>
+        <table yaDataTable *ngIf="user.getSystemPrivileges().length">
+          <tr *ngFor="let privilege of user.getSystemPrivileges()">
+            <td>{{ privilege }}</td>
+          </tr>
+        </table>
+        <ng-container *ngIf="!user.getSystemPrivileges().length">-</ng-container>
+      </dd>
+    </dl>
+
+    <mat-divider />
+    <dl class="dl-horizontal">
+      <dt>Object privileges</dt>
+      <dd>
+        <table *ngIf="user.getObjectPrivileges().length" yaDataTable>
+          <tr *ngFor="let p of user.getObjectPrivileges()">
+            <th class="lcolumn">{{ p.type }}</th>
+            <td>
+              <ng-container *ngIf="p.object; else dash">
+                <ng-container *ngFor="let object of p.object">
+                  {{ object }}<br>
+                </ng-container>
+              </ng-container>
+            </td>
+          </tr>
+        </table>
+        <ng-container *ngIf="!user.getObjectPrivileges().length">-</ng-container>
+      </dd>
+    </dl>
+  </ng-container>
+</div>
+
+<ng-template #dash>-</ng-template>

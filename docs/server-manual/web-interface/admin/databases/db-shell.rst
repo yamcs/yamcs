@@ -33,6 +33,6 @@ For example:
     2 rows in set
 
 
-The :doc:`Yamcs SQL Format <../../../sql-format>` is detailed in appendix.
+The :doc:`Yamcs SQL Language <../../../sql-language/index>` is detailed in appendix.
 
 This shell may be of interest for debugging or development purposes. Concepts such as packets, parameters and events are better accessed using the high-level HTTP API, instead of SQL.

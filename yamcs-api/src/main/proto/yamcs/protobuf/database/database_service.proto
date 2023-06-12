@@ -32,13 +32,21 @@ message ListDatabasesResponse {
 }
 
 message GetDatabaseRequest {
+  // Database name
   optional string name = 1;
 }
 
 message DatabaseInfo {
+  // Database name
   optional string name = 1;
+
+  // Path on server
   optional string path = 2;
   optional string tablespace = 3;
+
+  // Names of the tables in this database
   repeated string tables = 4;
+
+  // Names of the streams in this database
   repeated string streams = 5;
 }

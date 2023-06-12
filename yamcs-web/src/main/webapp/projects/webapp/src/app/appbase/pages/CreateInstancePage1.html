@@ -1,0 +1,36 @@
+<mat-toolbar class="top">
+  <mat-toolbar-row>
+    <a mat-icon-button routerLink="/" color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </a> Create an instance
+  </mat-toolbar-row>
+</mat-toolbar>
+
+<app-create-instance-wizard-step step="1" />
+
+<div class="form-content mat-typography">
+  <table mat-table
+         [dataSource]="dataSource"
+         class="ya-data-table"
+         style="width: 100%">
+
+    <ng-container cdkColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Template</th>
+      <td mat-cell *cdkCellDef="let row">
+        <a [routerLink]="row.name">
+          {{ row.name }}
+        </a>
+      </td>
+    </ng-container>
+
+    <ng-container cdkColumnDef="description">
+      <th mat-header-cell *matHeaderCellDef>Description</th>
+      <td mat-cell *cdkCellDef="let row">
+        {{ row.description || '-' }}
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+</div>

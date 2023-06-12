@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.parameter.ParameterValue;
@@ -30,6 +32,15 @@ public abstract class AbstractTmDataLink extends AbstractLink implements TmPacke
     final static String CFG_PREPRO_CLASS = "packetPreprocessorClassName";
     private TmSink tmSink;
     protected boolean updateSimulationTime;
+
+    @Override
+    public Spec getDefaultSpec() {
+        var spec = super.getDefaultSpec();
+        spec.addOption("packetPreprocessorClassName", OptionType.STRING);
+        spec.addOption("packetPreprocessorArgs", OptionType.MAP).withSpec(Spec.ANY);
+        spec.addOption("updateSimulationTime", OptionType.BOOLEAN).withDefault(false);
+        return spec;
+    }
 
     @Override
     public void init(String instance, String name, YConfiguration config) {

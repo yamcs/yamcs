@@ -46,7 +46,6 @@ public class UpdateTableStatement extends SimpleStreamSqlStatement {
     protected void execute(ExecutionContext context, Consumer<Tuple> consumer) throws StreamSqlException {
         checkAndCompile(context);
 
-        YarchDatabaseInstance ydb = context.getDb();
         AtomicLong updated = new AtomicLong();
         AtomicLong inspected = new AtomicLong();
         try {
@@ -56,53 +55,50 @@ public class UpdateTableStatement extends SimpleStreamSqlStatement {
             }
             TableWalker tblWalker = twb.build();
             tblWalker.setBatchUpdates(true);
-            
+
             if (whereClause != null) {
                 cwhere = whereClause.compile();
             }
 
-            tblWalker.walk(new TableVisitor() {
-                @Override
-                public Action visit(byte[] key, byte[] value) {
-                    inspected.getAndIncrement();
-                    Tuple tuple = tableDefinition.deserialize(key, value);
-                    if (cwhere != null && !((Boolean) cwhere.getValue(tuple))) {
-                        return ACTION_CONTINUE;
-                    }
+            tblWalker.walk((key, value) -> {
+                inspected.getAndIncrement();
+                Tuple tuple = tableDefinition.deserialize(key, value);
+                if (cwhere != null && !((Boolean) cwhere.getValue(tuple))) {
+                    return TableVisitor.ACTION_CONTINUE;
+                }
 
-                    for (UpdateItem item : updateList) {
-                        Object colv;
-                        if (item.constantValue != null) {
-                            colv = item.constantValue;
-                        } else {
-                            colv = DataType.castAs(item.type, item.compiledExpr.getValue(tuple));
-                        }
-                        if(tuple.hasColumn(item.colName)) {
-                            tuple.setColumn(item.colName, colv);
-                        } else {
-                            tuple.addColumn(item.colName, item.type, colv);
-                        }
-                    }
-                    long c = updated.incrementAndGet();
-                    boolean stop = (limit > 0 && c >= limit);
-                    byte[] updatedValue;
-                    Row row = null;
-                    try {
-                        if (updateKey) {
-                            row = tableDefinition.generateRow(tuple);
-                            updatedValue = tableDefinition.serializeValue(tuple, row);
-                        } else {
-                            updatedValue = tableDefinition.serializeValue(tuple, null);
-                        }
-                    } catch (YarchException e) {
-                        log.error("Error serializing value", e);
-                        return ACTION_STOP;
-                    }
-                    if (row != null) {
-                        return Action.updateAction(row.getKey(), updatedValue, stop);
+                for (UpdateItem item : updateList) {
+                    Object colv;
+                    if (item.compiledExpr != null) {
+                        colv = DataType.castAs(item.type, item.compiledExpr.getValue(tuple));
                     } else {
-                        return Action.updateAction(updatedValue, stop);
+                        colv = item.constantValue;
                     }
+                    if (tuple.hasColumn(item.colName)) {
+                        tuple.setColumn(item.colName, colv);
+                    } else {
+                        tuple.addColumn(item.colName, item.type, colv);
+                    }
+                }
+                long c = updated.incrementAndGet();
+                boolean stop = (limit > 0 && c >= limit);
+                byte[] updatedValue;
+                Row row = null;
+                try {
+                    if (updateKey) {
+                        row = tableDefinition.generateRow(tuple);
+                        updatedValue = tableDefinition.serializeValue(tuple, row);
+                    } else {
+                        updatedValue = tableDefinition.serializeValue(tuple, null);
+                    }
+                } catch (YarchException e) {
+                    log.error("Error serializing value", e);
+                    return TableVisitor.ACTION_STOP;
+                }
+                if (row != null) {
+                    return TableVisitor.Action.updateAction(row.getKey(), updatedValue, stop);
+                } else {
+                    return TableVisitor.Action.updateAction(updatedValue, stop);
                 }
             });
 
@@ -140,14 +136,21 @@ public class UpdateTableStatement extends SimpleStreamSqlStatement {
                     updateKey = true;
                 }
 
-                if (!DataType.compatible(ui.value.getType(), cd.getType())) {
+
+                boolean isNull = ui.value instanceof NullExpression
+                        || (ui.value instanceof ArgumentExpression
+                                && ((ArgumentExpression) ui.value).getConstantValue() == null);
+
+                if (!isNull && !DataType.compatible(ui.value.getType(), cd.getType())) {
                     throw new IncompatibilityException(
                             "Cannot assign values of type " + ui.value.getType() + " to column '"
                                     + cd.getName() + "' of type " + cd.getType());
                 }
 
                 ui.type = cd.getType();
-                if (ui.value.isConstant()) {
+                if (isNull) {
+                    ui.constantValue = null;
+                } else if (ui.value.isConstant()) {
                     ui.constantValue = DataType.castAs(cd.getType(), ui.value.getConstantValue());
                 } else {
                     ui.compiledExpr = ui.value.compile();

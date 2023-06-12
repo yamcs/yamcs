@@ -11,23 +11,28 @@ import java.util.List;
 
 import org.yamcs.Processor;
 import org.yamcs.algorithms.AlgorithmManager;
+import org.yamcs.algorithms.AlgorithmTextListener;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.ParameterTypeListener;
 import org.yamcs.mdb.ProcessorData;
 import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.protobuf.AbstractMdbOverrideApi;
 import org.yamcs.protobuf.AlgorithmTextOverride;
 import org.yamcs.protobuf.GetAlgorithmOverridesRequest;
 import org.yamcs.protobuf.GetAlgorithmOverridesResponse;
+import org.yamcs.protobuf.GetParameterOverrideRequest;
 import org.yamcs.protobuf.ListMdbOverridesRequest;
 import org.yamcs.protobuf.ListMdbOverridesResponse;
 import org.yamcs.protobuf.Mdb.AlgorithmInfo;
 import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
 import org.yamcs.protobuf.MdbOverrideInfo;
 import org.yamcs.protobuf.MdbOverrideInfo.OverrideType;
+import org.yamcs.protobuf.ParameterOverride;
+import org.yamcs.protobuf.SubscribeMdbChangesRequest;
 import org.yamcs.protobuf.UpdateAlgorithmRequest;
 import org.yamcs.protobuf.UpdateParameterRequest;
 import org.yamcs.security.SystemPrivilege;
@@ -56,15 +61,56 @@ public class MdbOverrideApi extends AbstractMdbOverrideApi<Context> {
         if (l.size() == 1) {
             AlgorithmManager algorithmManager = l.get(0);
             for (CustomAlgorithm algorithm : algorithmManager.getAlgorithmOverrides()) {
-                MdbOverrideInfo.Builder overrideb = MdbOverrideInfo.newBuilder()
+                var overrideb = MdbOverrideInfo.newBuilder()
                         .setType(OverrideType.ALGORITHM_TEXT)
-                        .setAlgorithmTextOverride(toAlgorithmTextOverride(algorithm));
-
+                        .setAlgorithmTextOverride(toAlgorithmTextOverride(algorithm, algorithm.getAlgorithmText()));
                 responseb.addOverrides(overrideb);
             }
         }
 
+        ProcessorData pdata = processor.getProcessorData();
+        for (var entry : pdata.getParameterTypeOverrides().entrySet()) {
+            var overrideb = MdbOverrideInfo.newBuilder()
+                    .setType(OverrideType.PARAMETER)
+                    .setParameterOverride(toParameterOverride(entry.getKey(), entry.getValue()));
+            responseb.addOverrides(overrideb);
+        }
+
         observer.complete(responseb.build());
+    }
+
+    @Override
+    public void getParameterOverride(Context ctx, GetParameterOverrideRequest request,
+            Observer<ParameterOverride> observer) {
+        Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+        XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
+        Parameter parameter = MdbApi.verifyParameter(ctx, xtcedb, request.getName());
+
+        ProcessorData pdata = processor.getProcessorData();
+
+        var ptype = pdata.getParameterTypeOverride(parameter);
+        if (ptype != null) {
+            observer.complete(toParameterOverride(parameter, ptype));
+        } else {
+            observer.complete(ParameterOverride.getDefaultInstance());
+        }
+    }
+
+    private static ParameterOverride toParameterOverride(Parameter parameter, ParameterType ptype) {
+        var b = ParameterOverride.newBuilder()
+                .setParameter(parameter.getQualifiedName());
+        var info = XtceToGpbAssembler.toParameterTypeInfo(ptype, DetailLevel.FULL);
+
+        if (info.getDataEncoding().hasDefaultCalibrator()) {
+            b.setDefaultCalibrator(info.getDataEncoding().getDefaultCalibrator());
+        }
+        b.addAllContextCalibrators(info.getDataEncoding().getContextCalibratorList());
+
+        if (info.hasDefaultAlarm()) {
+            b.setDefaultAlarm(info.getDefaultAlarm());
+        }
+        b.addAllContextAlarms(info.getContextAlarmList());
+        return b.build();
     }
 
     @Override
@@ -81,17 +127,17 @@ public class MdbOverrideApi extends AbstractMdbOverrideApi<Context> {
             AlgorithmManager algorithmManager = l.get(0);
             CustomAlgorithm override = algorithmManager.getAlgorithmOverride(algorithm);
             if (override != null) {
-                responseb.setTextOverride(toAlgorithmTextOverride(override));
+                responseb.setTextOverride(toAlgorithmTextOverride(override, override.getAlgorithmText()));
             }
         }
 
         observer.complete(responseb.build());
     }
 
-    private AlgorithmTextOverride toAlgorithmTextOverride(CustomAlgorithm algorithm) {
+    private AlgorithmTextOverride toAlgorithmTextOverride(CustomAlgorithm algorithm, String algorithmText) {
         AlgorithmTextOverride.Builder b = AlgorithmTextOverride.newBuilder()
                 .setAlgorithm(algorithm.getQualifiedName())
-                .setText(algorithm.getAlgorithmText());
+                .setText(algorithmText);
         return b.build();
     }
 
@@ -216,6 +262,41 @@ public class MdbOverrideApi extends AbstractMdbOverrideApi<Context> {
         ParameterType ptype = pdata.getParameterType(p);
         ParameterTypeInfo pinfo = XtceToGpbAssembler.toParameterTypeInfo(ptype, DetailLevel.FULL);
         observer.complete(pinfo);
+    }
+
+    @Override
+    public void subscribeMdbChanges(Context ctx, SubscribeMdbChangesRequest request,
+            Observer<MdbOverrideInfo> observer) {
+        var processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+        var pdata = processor.getProcessorData();
+
+        List<AlgorithmManager> l = processor.getServices(AlgorithmManager.class);
+        AlgorithmManager algorithmManager = l.size() == 1 ? l.get(0) : null;
+
+        var parameterTypeListener = (ParameterTypeListener) (parameter, ptype) -> {
+            observer.next(MdbOverrideInfo.newBuilder()
+                    .setType(OverrideType.PARAMETER)
+                    .setParameterOverride(toParameterOverride(parameter, ptype))
+                    .build());
+        };
+
+        var algorithmTextListener = (AlgorithmTextListener) (algorithm, text) -> {
+            observer.next(MdbOverrideInfo.newBuilder()
+                    .setType(OverrideType.ALGORITHM_TEXT)
+                    .setAlgorithmTextOverride(toAlgorithmTextOverride(algorithm, text))
+                    .build());
+        };
+
+        observer.setCancelHandler(() -> {
+            pdata.removeParameterTypeListener(parameterTypeListener);
+            if (algorithmManager != null) {
+                algorithmManager.removeAlgorithmTextListener(algorithmTextListener);
+            }
+        });
+        pdata.addParameterTypeListener(parameterTypeListener);
+        if (algorithmManager != null) {
+            algorithmManager.addAlgorithmTextListener(algorithmTextListener);
+        }
     }
 
     private static void verifyNumericParameter(Parameter p) throws BadRequestException {
