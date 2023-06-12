@@ -1,3 +1,10 @@
+Version 5.8.2 released 12-May-2023
+- Add packet detail page, showing on-demand extraction result
+- Allow validation of link arguments, activated for all default links.
+- Serve static web UI files from root instead of /static
+- CFDP: allow to disable file listing and triggering file download from the yamcs-web. It requires setting two parameters in the CFDP configuration, please check the docs.
+- Various tweaks and fixes
+
 Version 5.8.1 released 2-May-2023
 - Contains fixes from 5.7.13 (developed separately from 5.8.x)
 - Restore link enabled state and queue state across restarts
