@@ -213,6 +213,12 @@ directoryTerminators (list)
 
     This is also being used for the directory listing parsing if not specified in its options. Default: ``["/", ":", "\\"]``
 
+hasDownloadCapability (boolean)
+    Whether this CFDP service is able to download remote files. Default: ``true``
+
+hasFileListingCapability (boolean)
+    Whether this CFDP service is able to request a file list of a remote directory. Default: ``true``
+
 fileListingServiceClassName (string)
     Class of the directory listing service to use (see :ref:`File listing service <file-listing>`) to retrieve file lists.
     Default: ``org.yamcs.cfdp.CfdpService`` (i.e. ``this`` very instance of the service).

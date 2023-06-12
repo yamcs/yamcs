@@ -84,7 +84,7 @@ import com.google.common.collect.Streams;
 /**
  * Implements CCSDS File Delivery Protocol (CFDP) in Yamcs.
  * <p>
- * The standard is specified in <a href="https://public.ccsds.org/Pubs/727x0b4.pdf"> CCSDS 727.0-B-4 </a>
+ * The standard is specified in <a href="https://public.ccsds.org/Pubs/727x0b5.pdf"> CCSDS 727.0-B-5 </a>
  * 
  * @author nm
  *
@@ -153,7 +153,9 @@ public class CfdpService extends AbstractYamcsService
     boolean queueConcurrentUploads;
     boolean allowConcurrentFileOverwrites;
     List<String> directoryTerminators;
+    private boolean hasDownloadCapability;
 
+    private boolean hasFileListingCapability;
     private FileListingService fileListingService;
     private FileListingParser fileListingParser;
     private boolean automaticDirectoryListingReloads;
@@ -247,7 +249,9 @@ public class CfdpService extends AbstractYamcsService
         spec.addOption("maxNumPendingUploads", OptionType.INTEGER).withDefault(10);
         spec.addOption("inactivityTimeout", OptionType.INTEGER).withDefault(10000);
         spec.addOption("pendingAfterCompletion", OptionType.INTEGER).withDefault(600000);
+        spec.addOption("hasDownloadCapability", OptionType.BOOLEAN).withDefault(true);
 
+        spec.addOption("hasFileListingCapability", OptionType.BOOLEAN).withDefault(true);
         spec.addOption("fileListingServiceClassName", OptionType.STRING).withDefault("org.yamcs.cfdp.CfdpService");
         spec.addOption("fileListingServiceArgs", OptionType.MAP).withSpec(Spec.ANY).withDefault(new HashMap<String, Object>());
         spec.addOption("fileListingParserClassName", OptionType.STRING).withDefault("org.yamcs.filetransfer.BasicListingParser");
@@ -291,6 +295,8 @@ public class CfdpService extends AbstractYamcsService
         pduSizePredefinedValues = config.getList("pduSizePredefinedValues");
         canChangePduDelay = config.getBoolean("canChangePduDelay");
         pduDelayPredefinedValues = config.getList("pduDelayPredefinedValues");
+        hasDownloadCapability = config.getBoolean("hasDownloadCapability");
+        hasFileListingCapability = config.getBoolean("hasFileListingCapability");
 
         String fileListingServiceClassName = config.getString("fileListingServiceClassName");
         YConfiguration fileListingServiceConfig = config.getConfig("fileListingServiceArgs");
@@ -901,6 +907,9 @@ public class CfdpService extends AbstractYamcsService
     @Override
     public FileTransfer startDownload(String sourceEntity, String sourcePath, String destinationEntity, Bucket bucket,
             String objectName, TransferOptions options) throws InvalidRequestException {
+        if(!hasDownloadCapability) {
+            throw new InvalidRequestException("Downloading is not enabled on this CFDP service");
+        }
 
         long destinationId = getEntityFromName(destinationEntity, localEntities).id;
         long sourceId = getEntityFromName(sourceEntity, remoteEntities).id;
@@ -964,6 +973,10 @@ public class CfdpService extends AbstractYamcsService
 
     @Override
     public void fetchFileList(String source, String destination, String remotePath, Map<String, Object> options) {
+        if(!hasFileListingCapability) {
+            throw new InvalidRequestException("File listing is not enabled on this CFDP service");
+        }
+
         EntityConf sourceEntity = getEntityFromName(source, localEntities);
         EntityConf destinationEntity = getEntityFromName(destination, remoteEntities);
 
@@ -1218,11 +1231,11 @@ public class CfdpService extends AbstractYamcsService
     public FileTransferCapabilities getCapabilities() {
         return FileTransferCapabilities
                 .newBuilder()
-                .setDownload(true)
+                .setDownload(hasDownloadCapability)
                 .setUpload(true)
                 .setReliability(true) // Reliability DEPRECATED: use FileTransferOption
                 .setRemotePath(true)
-                .setFileList(true)
+                .setFileList(hasFileListingCapability)
                 .setHasTransferType(true)
                 .build();
     }
