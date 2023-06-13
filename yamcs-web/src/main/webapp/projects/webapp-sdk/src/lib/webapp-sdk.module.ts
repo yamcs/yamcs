@@ -2,6 +2,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { CdkTableModule } from '@angular/cdk/table';
 import { CommonModule } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -204,6 +205,7 @@ const materialModules = [
 @NgModule({
   imports: [
     CommonModule,
+    HttpClientModule, // Used when adding custom SVGs to icon registry
     ReactiveFormsModule,
     RouterModule,
     materialModules,
@@ -215,6 +217,7 @@ const materialModules = [
   ],
   exports: [
     CommonModule,
+    HttpClientModule,
     ReactiveFormsModule,
     RouterModule,
     directives,
