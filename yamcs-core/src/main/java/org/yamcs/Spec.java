@@ -665,6 +665,12 @@ public class Spec {
                         "%s should be one of %s", name, choices));
             }
 
+            if (type == OptionType.MAP || ((type == OptionType.LIST || type == OptionType.LIST_OR_ELEMENT) && elementType == OptionType.MAP)) {
+                if (spec == null) {
+                    throw new ValidationException(ctx, String.format("%s cannot be validated since it does not have a specification. This is a bug in the class that the configuration applies to.", path));
+                }
+            }
+
             if (type == OptionType.LIST || type == OptionType.LIST_OR_ELEMENT) {
                 var resultList = new ArrayList<>();
                 var it = ((List<Object>) arg).listIterator();
