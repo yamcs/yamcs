@@ -251,12 +251,12 @@ public class Spec {
             }
 
             if (!specified) {
+                var path = "".equals(parent) ? option.name : parent + "->" + option.name;
                 if (option.required) {
-                    var path = "".equals(parent) ? option.name : parent + "->" + option.name;
                     throw new ValidationException(ctx, "Missing required argument " + path);
                 }
 
-                var defaultValue = option.computeDefaultValue();
+                var defaultValue = option.validate(ctx, option.computeDefaultValue(), path);
                 if (defaultValue != null) {
                     result.put(option.name, defaultValue);
                 }
@@ -663,6 +663,12 @@ public class Spec {
             if (choices != null && !choices.contains(arg)) {
                 throw new ValidationException(ctx, String.format(
                         "%s should be one of %s", name, choices));
+            }
+
+            if (type == OptionType.MAP || ((type == OptionType.LIST || type == OptionType.LIST_OR_ELEMENT) && elementType == OptionType.MAP)) {
+                if (spec == null) {
+                    throw new ValidationException(ctx, String.format("%s cannot be validated since it does not have a specification. This is a bug in the class that the configuration applies to.", path));
+                }
             }
 
             if (type == OptionType.LIST || type == OptionType.LIST_OR_ELEMENT) {

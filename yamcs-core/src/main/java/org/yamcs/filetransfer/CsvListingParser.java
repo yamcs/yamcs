@@ -55,10 +55,10 @@ public class CsvListingParser extends FileListingParser {
         Spec spec = new Spec();
         spec.addOption("useCsvHeader", OptionType.BOOLEAN).withDefault(false);
         spec.addOption("timestampMultiplier", OptionType.FLOAT).withDefault(1000);
-        spec.addOption("protobufColumnNumberMapping", OptionType.MAP).withDefault(new HashMap<>( // Default: protobuf order
+        spec.addOption("protobufColumnNumberMapping", OptionType.MAP).withSpec(Spec.ANY).withDefault(new HashMap<>( // Default: protobuf order
                     RemoteFile.getDescriptor().getFields().stream()
                             .collect(Collectors.toMap(Descriptors.FieldDescriptor::getName,fieldDescriptor -> fieldDescriptor.getNumber() - 1))));
-        spec.addOption("headerProtobufMapping", OptionType.MAP).withDefault(new HashMap<>( // Default: assumes same names as protobuf
+        spec.addOption("headerProtobufMapping", OptionType.MAP).withSpec(Spec.ANY).withDefault(new HashMap<>( // Default: assumes same names as protobuf
                         RemoteFile.getDescriptor().getFields().stream()
                                 .collect(Collectors.toMap(Descriptors.FieldDescriptor::getName, Descriptors.FieldDescriptor::getName))));
         return spec;
