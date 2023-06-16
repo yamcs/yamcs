@@ -251,12 +251,12 @@ public class Spec {
             }
 
             if (!specified) {
+                var path = "".equals(parent) ? option.name : parent + "->" + option.name;
                 if (option.required) {
-                    var path = "".equals(parent) ? option.name : parent + "->" + option.name;
                     throw new ValidationException(ctx, "Missing required argument " + path);
                 }
 
-                var defaultValue = option.computeDefaultValue();
+                var defaultValue = option.validate(ctx, option.computeDefaultValue(), path);
                 if (defaultValue != null) {
                     result.put(option.name, defaultValue);
                 }
