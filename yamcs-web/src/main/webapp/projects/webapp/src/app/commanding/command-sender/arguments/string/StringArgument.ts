@@ -57,7 +57,7 @@ export class StringArgument implements ControlValueAccessor, OnInit, Validator, 
       this.controlName = String(this.index);
     }
 
-    if (this.type.minChars !== 0) {
+    if (this.type.minChars !== undefined && this.type.minChars !== 0) {
       this.validators.push(Validators.required);
     }
     if (this.type.minChars !== undefined) {

@@ -167,4 +167,5 @@ public final class Constants {
     public static final String ELEM_PARAMETER_VALUE_CHANGE = "ParameterValueChange";
     public static final String ELEM_CHANGE = "Change";
     public static final String ELEM_RETURN_PARAM_REF = "ReturnParmRef";
+    public static final String ELEM_SIZE_RANGE_IN_CHARACTERS = "SizeRangeInCharacters";
 }
