@@ -415,7 +415,7 @@ public class Spec {
                 return STRING;
             } else if (arg instanceof Boolean) {
                 return BOOLEAN;
-            } else if (arg instanceof Integer) {
+            } else if (arg instanceof Integer || arg instanceof Long) {
                 return INTEGER;
             } else if (arg instanceof Float || arg instanceof Double) {
                 return FLOAT;

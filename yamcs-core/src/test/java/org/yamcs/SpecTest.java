@@ -155,6 +155,26 @@ public class SpecTest {
     }
 
     @Test
+    public void testLong() throws ValidationException {
+        var spec = new Spec();
+        spec.addOption("large1", OptionType.INTEGER);
+        spec.addOption("large2", OptionType.INTEGER).withDefault(123L);
+        spec.addOption("large3", OptionType.INTEGER).withDefault(123);
+
+        var result = spec.validate(of());
+        assertEquals(null, result.get("large1"));
+        assertEquals(123L, result.get("large2"));
+        assertEquals(123, result.get("large3"));
+
+        result = spec.validate(of("large1", 5368709120L));
+        assertEquals(5368709120L, result.get("large1"));
+        result = spec.validate(of("large2", 5368709120L));
+        assertEquals(5368709120L, result.get("large2"));
+        result = spec.validate(of("large3", 5368709120L));
+        assertEquals(5368709120L, result.get("large3"));
+    }
+
+    @Test
     public void testDefaultValue() throws ValidationException {
         Spec spec = new Spec();
         spec.addOption("bla1", OptionType.INTEGER);
