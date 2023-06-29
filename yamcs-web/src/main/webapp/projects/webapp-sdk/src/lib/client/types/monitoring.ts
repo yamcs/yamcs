@@ -107,6 +107,14 @@ export interface IssueCommandResponse {
   queue?: string;
 }
 
+export interface StartProcedureOptions {
+  arguments?: { [key: string]: string; };
+}
+
+export interface ExecutorInfo {
+  id: string;
+}
+
 export interface CommandHistoryAttribute {
   name: string;
   value: Value;
