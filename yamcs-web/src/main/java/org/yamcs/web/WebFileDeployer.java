@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
@@ -244,6 +245,16 @@ public class WebFileDeployer {
                     modifiedUrls.add(contextPath + urlEl.getAsString());
                 }
                 assetGroup.add("urls", modifiedUrls);
+            }
+
+            for (var dataGroupEl : jsonObject.get("dataGroups").getAsJsonArray()) {
+                var dataGroup = dataGroupEl.getAsJsonObject();
+
+                var modifiedPatterns = new JsonArray();
+                for (var patternEl : dataGroup.get("patterns").getAsJsonArray()) {
+                    modifiedPatterns.add(Pattern.quote(contextPath) + patternEl.getAsString());
+                }
+                dataGroup.add("patterns", modifiedPatterns);
             }
 
             var modifiedHashTable = new JsonObject();
