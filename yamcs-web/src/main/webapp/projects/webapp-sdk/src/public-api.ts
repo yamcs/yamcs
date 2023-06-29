@@ -2,6 +2,7 @@ export * from './lib/BitRange';
 export * from './lib/User';
 export { rowAnimation, slideDownAnimation } from './lib/animations';
 export * from './lib/client';
+export * from './lib/components/binary-input/binary-input.component';
 export * from './lib/components/breadcrumb/breadcrumb-trail.component';
 export * from './lib/components/breadcrumb/breadcrumb.component';
 export * from './lib/components/column-chooser/column-chooser.component';
