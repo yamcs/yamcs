@@ -190,6 +190,15 @@ public class SpecTest {
     }
 
     @Test
+    public void testDefaultValidation() throws ValidationException {
+        var spec = new Spec();
+        spec.addOption("bla1", OptionType.INTEGER);
+        assertThrows(ValidationException.class, () -> {
+            spec.validate(of("bla1", "text"));
+        });
+    }
+
+    @Test
     @SuppressWarnings("unchecked")
     public void testApplyDefaults() throws ValidationException {
         Spec subSpec = new Spec();
