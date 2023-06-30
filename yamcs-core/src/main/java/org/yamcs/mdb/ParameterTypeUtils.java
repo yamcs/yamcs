@@ -29,6 +29,7 @@ import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.StringDataType;
 import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtce.ValueEnumeration;
+import org.yamcs.xtce.util.AggregateMemberNames;
 
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
@@ -228,7 +229,18 @@ public class ParameterTypeUtils {
             } else {
                 return null;
             }
-        } else {
+        }
+        else if (ptype instanceof AggregateParameterType) {
+        	AggregateMemberNames aggrMbr = ((AggregateParameterType)ptype).getMemberNames();
+        	AggregateValue ev = new AggregateValue(aggrMbr);
+
+        	for(int i = 0; i < aggrMbr.size(); i++) {
+        		ev.setMemberValue(aggrMbr.get(i), ValueUtility.getUint32Value(0));
+        	}
+
+        	return ev;
+        }
+        else {
             throw new IllegalStateException("Unknown parameter type '" + ptype + "'");
         }
     }
