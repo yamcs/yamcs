@@ -100,6 +100,31 @@ public class RefXtceAlgorithmTest {
         assertEquals(1, params.size());
         assertEquals(3.14, params.get(0).getEngValue().getFloatValue(), 1e-5);
     }
+    
+    @Test
+    public void tesAggregate5() {
+        List<ParameterValue> params = subscribe(db.getParameter("/RefXtce/Position"));
+        
+        ByteBuffer packetAlt = ByteBuffer.allocate(4);
+        packetAlt.putFloat(150.6f);
+        mpp.injectPacket(packetAlt.array(), "/RefXtce/packet_alt");
+        
+        ByteBuffer packetLon = ByteBuffer.allocate(4);
+        packetLon.putFloat(95.2323115478f);
+        mpp.injectPacket(packetLon.array(), "/RefXtce/packet_lon");
+        
+        ByteBuffer packetLat = ByteBuffer.allocate(4);
+        packetLat.putFloat(96.2323115478f);
+        mpp.injectPacket(packetLat.array(), "/RefXtce/packet_lat");
+        
+        AggregateValue Position = (AggregateValue) params.get(0).getEngValue();
+        
+        assertEquals(1, params.size());
+        assertEquals(3, Position.getMemberNames().size());
+        assertEquals(150.6f, Position.getMemberValue("Altitude").getFloatValue());
+        assertEquals(95.2323115478f, Position.getMemberValue("Lon").getFloatValue());
+        assertEquals(96.2323115478f, Position.getMemberValue("Lat").getFloatValue());
+    }
 
     List<ParameterValue> subscribe(Parameter... plist) {
         final ArrayList<ParameterValue> params = new ArrayList<>();
