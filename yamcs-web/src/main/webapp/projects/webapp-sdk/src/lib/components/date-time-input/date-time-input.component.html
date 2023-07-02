@@ -29,4 +29,10 @@
          (keyup)="fireChange()"
          (change)="fireChange()"
          (paste)="processPaste($event)">
+  <input #millisInput class="sss ya-input"
+         [type]="showMillis ? 'text' : 'hidden'"
+         placeholder="ms"
+         (keyup)="fireChange()"
+         (change)="fireChange()"
+         (paste)="processPaste($event)">
 </div>

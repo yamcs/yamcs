@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, forwardRef, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, forwardRef, Input, ViewChild } from '@angular/core';
 import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator } from '@angular/forms';
 import { DateAdapter } from '@angular/material/core';
 import { MatDatepicker } from '@angular/material/datepicker';
@@ -31,6 +31,9 @@ const DAY_OF_YEAR_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 })
 export class DateTimeInputComponent implements ControlValueAccessor, Validator {
 
+  @Input()
+  showMillis = false;
+
   @ViewChild('dayInput', { static: true })
   private dayInputComponent: ElementRef;
 
@@ -42,6 +45,9 @@ export class DateTimeInputComponent implements ControlValueAccessor, Validator {
 
   @ViewChild('secondInput', { static: true })
   private secondInputComponent: ElementRef;
+
+  @ViewChild('millisInput', { static: true })
+  private millisInputComponent: ElementRef;
 
   @ViewChild('picker', { static: true })
   private picker: MatDatepicker<Date>;
@@ -56,10 +62,14 @@ export class DateTimeInputComponent implements ControlValueAccessor, Validator {
       this.picker.select(utils.toDate(value));
       const hours = iso.substring(11, 13);
       const minutes = iso.substring(14, 16);
-      const seconds = iso.length >= 18 ? iso.substring(17, 19) : 0;
+      const seconds = iso.length >= 18 ? iso.substring(17, 19) : '00';
       this.hourInputComponent.nativeElement.value = hours;
       this.minuteInputComponent.nativeElement.value = minutes;
       this.secondInputComponent.nativeElement.value = seconds;
+      if (this.showMillis) {
+        const millis = iso.length >= 22 ? iso.substring(20, 23) : '000';
+        this.millisInputComponent.nativeElement.value = millis;
+      }
       this.fireChange();
     }
   }
@@ -110,7 +120,8 @@ export class DateTimeInputComponent implements ControlValueAccessor, Validator {
     const hourInput = this.hourInputComponent.nativeElement.value;
     const minuteInput = this.minuteInputComponent.nativeElement.value;
     const secondInput = this.secondInputComponent.nativeElement.value;
-    if (!dayInput && !hourInput && !minuteInput && !secondInput) {
+    const millisInput = this.millisInputComponent?.nativeElement.value;
+    if (!dayInput && !hourInput && !minuteInput && !secondInput && !millisInput) {
       return null;
     }
 
@@ -124,9 +135,25 @@ export class DateTimeInputComponent implements ControlValueAccessor, Validator {
     const day = Number(match[3]);
 
     const hours = hourInput ? Number(hourInput) : 0;
-    const minutes = minuteInput ? Number(minuteInput) : 0;
-    const seconds = secondInput ? Number(secondInput) : 0;
+    if (!Number.isInteger(hours)) {
+      throw new Error('Hours must be an integer');
+    }
 
-    return new Date(Date.UTC(year, month, day, hours, minutes, seconds));
+    const minutes = minuteInput ? Number(minuteInput) : 0;
+    if (!Number.isInteger(minutes)) {
+      throw new Error('Minutes must be an integer');
+    }
+
+    const seconds = secondInput ? Number(secondInput) : 0;
+    if (!Number.isInteger(seconds)) {
+      throw new Error('Seconds must be an integer');
+    }
+
+    const millis = millisInput ? Number(millisInput) : 0;
+    if (!Number.isInteger(millis)) {
+      throw new Error('Milliseconds must be an integer');
+    }
+
+    return new Date(Date.UTC(year, month, day, hours, minutes, seconds, millis));
   }
 }
