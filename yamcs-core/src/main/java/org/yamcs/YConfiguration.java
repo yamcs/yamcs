@@ -46,6 +46,7 @@ public class YConfiguration {
 
     public static File configDirectory; // This is used in client tools to overwrite
     static YConfigurationResolver resolver = new DefaultConfigurationResolver();
+    static YConfigurationPropertyProvider propertyProvider = new DefaultPropertyProvider();
 
     private static Map<String, YConfiguration> configurations = new HashMap<>();
     static Logger log = LoggerFactory.getLogger(YConfiguration.class.getName());
@@ -62,11 +63,12 @@ public class YConfiguration {
 
     public static final Pattern PROPERTY_PATTERN = Pattern
             .compile("\\$\\{\\s*((?<name>[\\w\\.]+)(:(?<fallback>\\S+)?)?)\\s*\\}");
+
     /**
      * The parent configuration
      */
     YConfiguration parent;
-    // the key with which this object can be found in its parent
+    // the key whereby this object can be found in its parent
     String parentKey;
     // the root map
     Map<String, Object> root;
@@ -464,7 +466,7 @@ public class YConfiguration {
                 if (name.startsWith("env.")) {
                     replacement = System.getenv(name.substring(4));
                 } else {
-                    replacement = System.getProperty(name);
+                    replacement = propertyProvider.get(name);
                 }
 
                 if (replacement == null) {
@@ -798,6 +800,14 @@ public class YConfiguration {
         return YConfiguration.resolver;
     }
 
+    public static void setPropertyProvider(YConfigurationPropertyProvider propertyProvider) {
+        YConfiguration.propertyProvider = propertyProvider;
+    }
+
+    public static YConfigurationPropertyProvider getPropertyProvider() {
+        return YConfiguration.propertyProvider;
+    }
+
     /**
      * Default config file resolver. Looks for configuration files in the classpath and in the user config directory
      * (~/.yamcs/).
@@ -834,6 +844,16 @@ public class YConfiguration {
             }
             log.debug("Reading {}", new File(YConfiguration.class.getResource(name).getFile()).getAbsolutePath());
             return is;
+        }
+    }
+
+    /**
+     * Default property provider. Looks up values with {@link System#getProperty(String)}.
+     */
+    public static class DefaultPropertyProvider implements YConfigurationPropertyProvider {
+        @Override
+        public String get(String name) {
+            return System.getProperty(name);
         }
     }
 
