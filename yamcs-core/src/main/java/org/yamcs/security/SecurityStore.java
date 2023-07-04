@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.yamcs.InitException;
 import org.yamcs.Spec;
@@ -62,6 +64,8 @@ public class SecurityStore {
      */
     private int accessTokenLifespan;
 
+    private UserCache userCache = new UserCache();
+
     /**
      * Establish the identity of a user (authentication) and can attribute additional user roles (authorization). These
      * are only used during the login process.
@@ -70,6 +74,9 @@ public class SecurityStore {
 
     private Set<SystemPrivilege> systemPrivileges = new CopyOnWriteArraySet<>();
     private Set<ObjectPrivilegeType> objectPrivilegeTypes = new CopyOnWriteArraySet<>();
+
+    // Perform login procedures from a single thread
+    private ExecutorService loginExecutor = Executors.newSingleThreadExecutor();
 
     public SecurityStore() throws InitException {
         YConfiguration config;
@@ -341,101 +348,108 @@ public class SecurityStore {
      * @return a future that resolves to the {@link AuthenticationInfo} when the login was successful. This contains the
      *         username as well as any other principals or credentials specific to a custom identity provider.
      */
-    public synchronized CompletableFuture<AuthenticationInfo> login(AuthenticationToken token) {
+    public CompletableFuture<AuthenticationInfo> login(AuthenticationToken token) {
         CompletableFuture<AuthenticationInfo> f = new CompletableFuture<>();
+        CompletableFuture.runAsync(() -> {
 
-        // 1. Authenticate. Stops on first match.
-        AuthenticationInfo authenticationInfo = null;
-        for (AuthModule authModule : authModules) {
-            try {
-                authenticationInfo = authModule.getAuthenticationInfo(token);
-                if (authenticationInfo != null) {
-                    log.debug("User successfully authenticated by {}", authModule.getClass().getName());
-                    break;
-                } else {
-                    log.trace("User does not exist according to {}", authModule.getClass().getName());
+            // 1. Authenticate. Stops on first match.
+            AuthenticationInfo authenticationInfo = null;
+            for (AuthModule authModule : authModules) {
+                try {
+                    authenticationInfo = authModule.getAuthenticationInfo(token);
+                    if (authenticationInfo != null) {
+                        log.debug("User successfully authenticated by {}", authModule.getClass().getName());
+                        break;
+                    } else {
+                        log.trace("User does not exist according to {}", authModule.getClass().getName());
+                    }
+                } catch (AuthenticationException e) {
+                    log.info("{} aborted the login process", authModule.getClass().getName());
+                    f.completeExceptionally(e);
+                    return;
                 }
-            } catch (AuthenticationException e) {
-                log.info("{} aborted the login process", authModule.getClass().getName());
-                f.completeExceptionally(e);
-                return f;
             }
-        }
 
-        if (authenticationInfo == null) {
-            log.info("Cannot identify account for token");
-            f.completeExceptionally(new AuthenticationException("Cannot identify account for token"));
-            return f;
-        }
-
-        // 1.b. Notify all modules of successful login.
-        // They may choose to bring some additions to the AuthenticationInfo
-        for (AuthModule authModule : authModules) {
-            authModule.authenticationSucceeded(authenticationInfo);
-        }
-
-        User user = directory.getUser(authenticationInfo.getUsername());
-        if (user == null) {
-            User createdBy = systemUser;
-            user = new User(authenticationInfo.getUsername(), createdBy);
-
-            if (!blockUnknownUsers) {
-                user.confirm();
+            if (authenticationInfo == null) {
+                log.info("Cannot identify account for token");
+                f.completeExceptionally(new AuthenticationException("Cannot identify account for token"));
+                return;
             }
+
+            // 1.b. Notify all modules of successful login.
+            // They may choose to bring some additions to the AuthenticationInfo
+            for (AuthModule authModule : authModules) {
+                authModule.authenticationSucceeded(authenticationInfo);
+            }
+
+            User user = directory.getUser(authenticationInfo.getUsername());
+            if (user == null) {
+                User createdBy = systemUser;
+                user = new User(authenticationInfo.getUsername(), createdBy);
+
+                if (!blockUnknownUsers) {
+                    user.confirm();
+                }
+                try {
+                    directory.addUser(user);
+                } catch (IOException e) {
+                    f.completeExceptionally(e);
+                    return;
+                }
+            }
+
+            if (!user.isActive()) {
+                log.warn("Denying access to {}. Account is not active.", user);
+                f.completeExceptionally(new AuthenticationException("Access denied"));
+                return;
+            }
+
+            // 2. Authorize. All modules get the opportunity.
+            for (AuthModule authModule : authModules) {
+                try {
+                    AuthorizationInfo authzInfo = authModule.getAuthorizationInfo(authenticationInfo);
+                    if (authzInfo != null) {
+                        if (authzInfo.isSuperuser()) { // Only override directory if 'true'
+                            user.setSuperuser(true);
+                        }
+                        for (SystemPrivilege privilege : authzInfo.getSystemPrivileges()) {
+                            user.addSystemPrivilege(privilege, true);
+                        }
+                        for (ObjectPrivilege privilege : authzInfo.getObjectPrivileges()) {
+                            user.addObjectPrivilege(privilege, true);
+                        }
+                    }
+                } catch (AuthorizationException e) {
+                    log.info("{} aborted the login process", authModule.getClass().getName());
+                    f.completeExceptionally(e);
+                    return;
+                }
+            }
+
+            log.info("Successfully logged in {}", user);
             try {
-                directory.addUser(user);
+                user.updateLoginData();
+                if (!authenticationInfo.getExternalIdentities().isEmpty()) {
+                    authenticationInfo.getExternalIdentities().forEach(user::addIdentity);
+                    if (authenticationInfo.getDisplayName() != null) {
+                        user.setDisplayName(authenticationInfo.getDisplayName());
+                    }
+                    if (authenticationInfo.getEmail() != null) {
+                        user.setEmail(authenticationInfo.getEmail());
+                    }
+                }
+                directory.updateUserProperties(user);
+                userCache.putUserInCache(user);
+                f.complete(authenticationInfo);
             } catch (IOException e) {
                 f.completeExceptionally(e);
-                return f;
             }
-        }
-
-        if (!user.isActive()) {
-            log.warn("Denying access to {}. Account is not active.", user);
-            f.completeExceptionally(new AuthenticationException("Access denied"));
-            return f;
-        }
-
-        // 2. Authorize. All modules get the opportunity.
-        for (AuthModule authModule : authModules) {
-            try {
-                AuthorizationInfo authzInfo = authModule.getAuthorizationInfo(authenticationInfo);
-                if (authzInfo != null) {
-                    if (authzInfo.isSuperuser()) { // Only override directory if 'true'
-                        user.setSuperuser(true);
-                    }
-                    for (SystemPrivilege privilege : authzInfo.getSystemPrivileges()) {
-                        user.addSystemPrivilege(privilege, true);
-                    }
-                    for (ObjectPrivilege privilege : authzInfo.getObjectPrivileges()) {
-                        user.addObjectPrivilege(privilege, true);
-                    }
-                }
-            } catch (AuthorizationException e) {
-                log.info("{} aborted the login process", authModule.getClass().getName());
-                f.completeExceptionally(e);
-                return f;
-            }
-        }
-
-        log.info("Successfully logged in {}", user);
-        try {
-            user.updateLoginData();
-            if (!authenticationInfo.getExternalIdentities().isEmpty()) {
-                authenticationInfo.getExternalIdentities().forEach(user::addIdentity);
-                if (authenticationInfo.getDisplayName() != null) {
-                    user.setDisplayName(authenticationInfo.getDisplayName());
-                }
-                if (authenticationInfo.getEmail() != null) {
-                    user.setEmail(authenticationInfo.getEmail());
-                }
-            }
-            directory.updateUserProperties(user);
-            f.complete(authenticationInfo);
-        } catch (IOException e) {
-            f.completeExceptionally(e);
-        }
+        }, loginExecutor);
         return f;
+    }
+
+    public User getUserFromCache(String username) {
+        return userCache.getUserFromCache(username);
     }
 
     public boolean verifyValidity(AuthenticationInfo authenticationInfo) {

@@ -90,7 +90,7 @@ public abstract class HttpHandler {
                 try {
                     var token = new HttpRequestToken(ctx, req);
                     var authenticationInfo = securityStore.login(token).get();
-                    return securityStore.getDirectory().getUser(authenticationInfo.getUsername());
+                    return securityStore.getUserFromCache(authenticationInfo.getUsername());
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     return null;
@@ -154,7 +154,7 @@ public abstract class HttpHandler {
             var securityStore = YamcsServer.getServer().getSecurityStore();
             AuthenticationToken token = new UsernamePasswordToken(parts[0], parts[1].toCharArray());
             AuthenticationInfo authenticationInfo = securityStore.login(token).get();
-            return securityStore.getDirectory().getUser(authenticationInfo.getUsername());
+            return securityStore.getUserFromCache(authenticationInfo.getUsername());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return null;
@@ -184,6 +184,6 @@ public abstract class HttpHandler {
             throw new UnauthorizedException("Could not verify token");
         }
 
-        return securityStore.getDirectory().getUser(authenticationInfo.getUsername());
+        return securityStore.getUserFromCache(authenticationInfo.getUsername());
     }
 }
