@@ -15,6 +15,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.yamcs.Spec.OptionType;
+import org.yamcs.tctm.ccsds.TcManagedParameters.PriorityScheme;
 
 public class SpecTest {
 
@@ -213,6 +214,20 @@ public class SpecTest {
         assertTrue(result.containsKey("bla"));
         Map<String, Object> blaArg = (Map<String, Object>) result.get("bla");
         assertEquals(123, blaArg.get("subkey"));
+    }
+
+    @Test
+    public void testEnum() throws ValidationException {
+        var spec = new Spec();
+        spec.addOption("bla1", OptionType.STRING)
+                .withChoices(PriorityScheme.class)
+                .withDefault("FIFO");
+        spec.addOption("bla2", OptionType.STRING)
+                .withChoices(PriorityScheme.class)
+                .withDefault(PriorityScheme.FIFO);
+        Map<String, Object> result = spec.validate(of());
+        assertEquals("FIFO", result.get("bla1"));
+        assertEquals("FIFO", result.get("bla2"));
     }
 
     @Test

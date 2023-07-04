@@ -413,7 +413,7 @@ public class Spec {
         }
 
         static OptionType forArgument(Object arg) {
-            if (arg instanceof String) {
+            if (arg instanceof String || arg instanceof Enum) {
                 return STRING;
             } else if (arg instanceof Boolean) {
                 return BOOLEAN;
@@ -568,7 +568,11 @@ public class Spec {
          * Sets the default value. This is used only if the option is not required.
          */
         public Option withDefault(Object defaultValue) {
-            this.defaultValue = defaultValue;
+            if (defaultValue instanceof Enum) {
+                this.defaultValue = ((Enum<?>) defaultValue).name();
+            } else {
+                this.defaultValue = defaultValue;
+            }
             return this;
         }
 
