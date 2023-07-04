@@ -100,6 +100,14 @@ options:
     type: BOOLEAN
     default: true
 
+  disableLoginForm:
+    title: Disable Login Form
+    description:
+      - Set to true if the login form should never been shown.
+      - For example because access should exclusively occur through an external identity provider.
+    type: BOOLEAN
+    default: false
+
   logoutRedirectUrl:
     title: Logout Redirect URL
     description:
