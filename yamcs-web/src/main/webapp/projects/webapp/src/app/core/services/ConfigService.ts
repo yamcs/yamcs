@@ -15,6 +15,7 @@ export interface WebsiteConfig {
   commandOptions: CommandOption[];
   queueNames: string[];
   hasTemplates: boolean;
+  disableLoginForm: boolean;
   logoutRedirectUrl: string;
   dass: boolean;
   tc: boolean;
@@ -93,6 +94,10 @@ export class ConfigService {
 
   hasTemplates() {
     return this.websiteConfig.hasTemplates;
+  }
+
+  getDisableLoginForm() {
+    return this.websiteConfig.disableLoginForm;
   }
 
   getConfig() {

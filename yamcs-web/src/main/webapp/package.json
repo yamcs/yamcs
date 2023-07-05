@@ -27,7 +27,7 @@
     "@fqqb/timeline": "^1.2.9",
     "@types/dygraphs": "^2.1.4",
     "@types/showdown": "^2.0.0",
-    "@yamcs/opi": "^1.2.5",
+    "@yamcs/opi": "^1.2.9",
     "brace": "^0.11.1",
     "dayjs": "^1.11.4",
     "dygraphs": "^2.1.0",
@@ -41,6 +41,6 @@
     "@angular/cli": "^16.0.2",
     "@angular/compiler-cli": "^16.0.2",
     "ng-packagr": "^16.0.0",
-    "typescript": "~5.0.4"
+    "typescript": "~5.1.6"
   }
 }

@@ -3404,6 +3404,8 @@ public class XtceStaxReader {
                 typeBuilder.setEncoding(readStringDataEncoding(spaceSystem));
             } else if (isStartElementWithName(ELEM_BINARY_DATA_ENCODING)) {
                 typeBuilder.setEncoding(readBinaryDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(ELEM_SIZE_RANGE_IN_CHARACTERS)) {
+                typeBuilder.setSizeRangeInCharacters(readIntegerRange(false));
             } else if (isStartElementWithName(ELEM_CONTEXT_ALARM_LIST)) {
                 skipXtceSection(ELEM_CONTEXT_ALARM_LIST);
             } else if (isStartElementWithName(ELEM_INTEGER_DATA_ENCODING)

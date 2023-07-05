@@ -15,6 +15,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.yamcs.Spec.OptionType;
+import org.yamcs.tctm.ccsds.TcManagedParameters.PriorityScheme;
 
 public class SpecTest {
 
@@ -155,6 +156,26 @@ public class SpecTest {
     }
 
     @Test
+    public void testLong() throws ValidationException {
+        var spec = new Spec();
+        spec.addOption("large1", OptionType.INTEGER);
+        spec.addOption("large2", OptionType.INTEGER).withDefault(123L);
+        spec.addOption("large3", OptionType.INTEGER).withDefault(123);
+
+        var result = spec.validate(of());
+        assertEquals(null, result.get("large1"));
+        assertEquals(123L, result.get("large2"));
+        assertEquals(123, result.get("large3"));
+
+        result = spec.validate(of("large1", 5368709120L));
+        assertEquals(5368709120L, result.get("large1"));
+        result = spec.validate(of("large2", 5368709120L));
+        assertEquals(5368709120L, result.get("large2"));
+        result = spec.validate(of("large3", 5368709120L));
+        assertEquals(5368709120L, result.get("large3"));
+    }
+
+    @Test
     public void testDefaultValue() throws ValidationException {
         Spec spec = new Spec();
         spec.addOption("bla1", OptionType.INTEGER);
@@ -167,6 +188,15 @@ public class SpecTest {
         result = spec.validate(of("bla1", 456, "bla2", 456));
         assertEquals(456, result.get("bla1"));
         assertEquals(456, result.get("bla2"));
+    }
+
+    @Test
+    public void testDefaultValidation() throws ValidationException {
+        var spec = new Spec();
+        spec.addOption("bla1", OptionType.INTEGER);
+        assertThrows(ValidationException.class, () -> {
+            spec.validate(of("bla1", "text"));
+        });
     }
 
     @Test
@@ -184,6 +214,20 @@ public class SpecTest {
         assertTrue(result.containsKey("bla"));
         Map<String, Object> blaArg = (Map<String, Object>) result.get("bla");
         assertEquals(123, blaArg.get("subkey"));
+    }
+
+    @Test
+    public void testEnum() throws ValidationException {
+        var spec = new Spec();
+        spec.addOption("bla1", OptionType.STRING)
+                .withChoices(PriorityScheme.class)
+                .withDefault("FIFO");
+        spec.addOption("bla2", OptionType.STRING)
+                .withChoices(PriorityScheme.class)
+                .withDefault(PriorityScheme.FIFO);
+        Map<String, Object> result = spec.validate(of());
+        assertEquals("FIFO", result.get("bla1"));
+        assertEquals("FIFO", result.get("bla2"));
     }
 
     @Test

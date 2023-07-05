@@ -7,7 +7,7 @@ Sends telecommands to a configured `../services/global/tse-commander` and reads 
 Class Name
 ----------
 
-:javadoc:`org.yamcs.tctm.TseDataLink`
+:javadoc:`org.yamcs.tse.TseDataLink`
 
 
 Configuration Options

@@ -146,7 +146,7 @@ public class Spec {
      */
     public YConfiguration validate(YConfiguration args) throws ValidationException {
         var ctx = new ValidationContext(args.getPath());
-        var result = doValidate(ctx, args.getRoot(), "");
+        var result = doValidate(ctx, args.getRoot(), "", false);
         var wrapped = YConfiguration.wrap(result);
         wrapped.parent = args.parent;
         wrapped.parentKey = args.parentKey;
@@ -164,10 +164,11 @@ public class Spec {
      *             when the specified arguments did not match this specification
      */
     public Map<String, Object> validate(Map<String, Object> args) throws ValidationException {
-        return doValidate(new ValidationContext(""), args, "");
+        return doValidate(new ValidationContext(""), args, "", false);
     }
 
-    private Map<String, Object> doValidate(ValidationContext ctx, Map<String, Object> args, String parent)
+    private Map<String, Object> doValidate(ValidationContext ctx, Map<String, Object> args, String parent,
+            boolean suppressWarnings)
             throws ValidationException {
 
         for (var group : requiredOneOfGroups) {
@@ -237,7 +238,7 @@ public class Spec {
                         String.format("Argument '%s' already specified. Check for aliases.", option.name));
             } else {
                 var arg = entry.getValue();
-                var resultArg = option.validate(ctx, arg, path);
+                var resultArg = option.validate(ctx, arg, path, suppressWarnings);
                 result.put(option.name, resultArg);
             }
         }
@@ -256,7 +257,8 @@ public class Spec {
                     throw new ValidationException(ctx, "Missing required argument " + path);
                 }
 
-                var defaultValue = option.validate(ctx, option.computeDefaultValue(), path);
+                var defaultValue = option.validate(ctx, option.computeDefaultValue(), path,
+                        true /* suppressWarnings */);
                 if (defaultValue != null) {
                     result.put(option.name, defaultValue);
                 }
@@ -411,11 +413,11 @@ public class Spec {
         }
 
         static OptionType forArgument(Object arg) {
-            if (arg instanceof String) {
+            if (arg instanceof String || arg instanceof Enum) {
                 return STRING;
             } else if (arg instanceof Boolean) {
                 return BOOLEAN;
-            } else if (arg instanceof Integer) {
+            } else if (arg instanceof Integer || arg instanceof Long) {
                 return INTEGER;
             } else if (arg instanceof Float || arg instanceof Double) {
                 return FLOAT;
@@ -566,7 +568,11 @@ public class Spec {
          * Sets the default value. This is used only if the option is not required.
          */
         public Option withDefault(Object defaultValue) {
-            this.defaultValue = defaultValue;
+            if (defaultValue instanceof Enum) {
+                this.defaultValue = ((Enum<?>) defaultValue).name();
+            } else {
+                this.defaultValue = defaultValue;
+            }
             return this;
         }
 
@@ -650,8 +656,9 @@ public class Spec {
         }
 
         @SuppressWarnings("unchecked")
-        private Object validate(ValidationContext ctx, Object arg, String path) throws ValidationException {
-            if (deprecationMessage != null) {
+        private Object validate(ValidationContext ctx, Object arg, String path, boolean suppressWarnings)
+                throws ValidationException {
+            if (deprecationMessage != null && !suppressWarnings) {
                 log.warn("Argument {} has been deprecated: {}", path, deprecationMessage);
             }
             if (arg == null) {
@@ -683,7 +690,7 @@ public class Spec {
                         throw new UnsupportedOperationException("List of lists cannot be validated");
                     } else if (elementType == OptionType.MAP) {
                         var m = (Map<String, Object>) argElement;
-                        var resultArg = spec.doValidate(ctx, m, elPath);
+                        var resultArg = spec.doValidate(ctx, m, elPath, suppressWarnings);
                         resultList.add(resultArg);
                     } else {
                         resultList.add(argElement);
@@ -691,7 +698,7 @@ public class Spec {
                 }
                 return resultList;
             } else if (type == OptionType.MAP) {
-                return spec.doValidate(ctx, (Map<String, Object>) arg, path);
+                return spec.doValidate(ctx, (Map<String, Object>) arg, path, suppressWarnings);
             } else {
                 return arg;
             }

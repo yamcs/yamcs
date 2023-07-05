@@ -30,7 +30,7 @@ export class AuthService implements OnDestroy {
 
   constructor(
     private yamcsService: YamcsService,
-    configService: ConfigService,
+    private configService: ConfigService,
     private router: Router,
     @Inject(APP_BASE_HREF) private baseHref: string,
     synchronizer: Synchronizer,
@@ -125,7 +125,7 @@ export class AuthService implements OnDestroy {
    * The promise will be rejected when the automatic login failed.
    */
   public async loginAutomatically(refresh = false): Promise<any> {
-    if (!this.authInfo.requireAuthentication) {
+    if (!this.authInfo.requireAuthentication || this.configService.getDisableLoginForm()) {
       if (!this.user$.value) {
         // Written such that it bypasses our interceptor
         const response = await fetch(`${this.baseHref}api/user`);
@@ -274,7 +274,7 @@ export class AuthService implements OnDestroy {
     if (navigateToLoginPage) {
       if (this.logoutRedirectUrl) {
         window.location.href = this.logoutRedirectUrl;
-      } else {
+      } else if (!this.configService.getConfig().disableLoginForm) {
         const redirectURI = this.buildOpenIDRedirectURI();
         window.location.href = this.buildRedirector({
           clientId: 'yamcs-web',

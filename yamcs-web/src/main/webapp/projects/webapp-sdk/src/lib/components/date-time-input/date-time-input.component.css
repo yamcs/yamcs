@@ -34,7 +34,12 @@ input.hh, input.mm, input.ss {
   display: inline-block !important;
 }
 
-input.hh:not(:focus), input.mm:not(:focus), input.ss:not(:focus) {
+input.sss {
+  width: 50px !important;
+  display: inline-block !important;
+}
+
+input.hh:not(:focus), input.mm:not(:focus), input.ss:not(:focus), input.sss:not(:focus) {
   border-left-color: transparent;
 }
 

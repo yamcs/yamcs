@@ -24,7 +24,7 @@ class AuthGuard {
     private authService: AuthService,
     private yamcs: YamcsService,
     private router: Router,
-    configService: ConfigService,
+    private configService: ConfigService,
   ) {
     this.authInfo = configService.getAuthInfo();
   }
@@ -43,7 +43,7 @@ class AuthGuard {
         if (this.authInfo.openid) {
           const redirectURI = this.authService.buildServerSideOpenIDRedirectURI();
           window.location.href = this.buildRedirector(this.authInfo.openid, redirectURI);
-        } else {
+        } else if (!this.configService.getConfig().disableLoginForm) {
           const redirectURI = this.authService.buildOpenIDRedirectURI();
           window.location.href = this.buildRedirector({
             clientId: 'yamcs-web',

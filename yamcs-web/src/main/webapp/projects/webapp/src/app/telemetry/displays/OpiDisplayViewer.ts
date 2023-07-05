@@ -210,6 +210,18 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
       }
     });
 
+    this.display.addEventListener('runcommand', evt => {
+      this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, evt.command, {
+        args: evt.args,
+      }).catch(err => this.messageService.showError(err));
+    });
+
+    this.display.addEventListener('runprocedure', evt => {
+      this.yamcs.yamcsClient.startProcedure(this.yamcs.instance!, evt.procedure, {
+        arguments: evt.args,
+      }).catch(err => this.messageService.showError(err));
+    });
+
     this.display.addProvider(this);
     this.display.absPrefix = this.storageClient.getObjectURL(this.bucket, '');
 

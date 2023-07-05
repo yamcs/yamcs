@@ -297,7 +297,7 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .mat-mdc-paginator {
-  background-color: inherit;
+  background-color: inherit !important;
 }
 
 .blink {

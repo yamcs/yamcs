@@ -159,12 +159,12 @@ parity (string)
 Mission Database
 ----------------
 
-The definition of TSE string commands is done in space systems resorting under ``/TSE``. The ``/TSE`` node is added by defining :javadoc:`org.yamcs.xtce.TseLoader` in the MDB loader tree. Example:
+The definition of TSE string commands is done in space systems resorting under ``/TSE``. The ``/TSE`` node is added by defining :javadoc:`org.yamcs.tse.TseLoader` in the MDB loader tree. Example:
 
 .. code-block:: yaml
 
     mdb:
-      - type: org.yamcs.xtce.TseLoader
+      - type: org.yamcs.tse.TseLoader
         subLoaders:
           - type: sheet
             spec: mdb/tse/simulator.xls
@@ -173,7 +173,7 @@ The instrument name in :file:`etc/tse.yaml` should match with the name of the a 
 
 The definition of commands and their arguments follows the same approach as non-TSE commands but with some particularities:
 
-* Each command should have either ``QUERY`` or ``COMMAND`` as its parent. These abstract commands are defined by the :javadoc:`org.yamcs.xtce.TseLoader`.
+* Each command should have either ``QUERY`` or ``COMMAND`` as its parent. These abstract commands are defined by the :javadoc:`org.yamcs.tse.TseLoader`.
 
   * ``QUERY`` commands send a text command to the remote instrument and expect a text response. The argument assignments ``command`` and ``response`` must both be set to a string template that matches what the instrument expects and returns.
 

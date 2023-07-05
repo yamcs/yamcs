@@ -40,6 +40,9 @@ import io.netty.handler.codec.http.DefaultFullHttpResponse;
  */
 public class AngularHandler extends StaticFileHandler {
 
+    // Dev only for now
+    private static boolean PWA = false;
+
     private Path indexFile;
     private Path webManifestFile;
     private Path ngswFile;
@@ -71,9 +74,15 @@ public class AngularHandler extends StaticFileHandler {
 
         switch (filePath) {
         case PATH_WEBMANIFEST:
+            if (!PWA) {
+                throw new NotFoundException();
+            }
             serveUncached(ctx, webManifestFile, "application/manifest+json");
             return;
         case PATH_NGSW:
+            if (!PWA) {
+                throw new NotFoundException();
+            }
             serveUncached(ctx, ngswFile, "application/json");
             return;
         }

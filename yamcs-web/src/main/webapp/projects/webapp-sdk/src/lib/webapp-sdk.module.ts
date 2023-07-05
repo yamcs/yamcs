@@ -2,6 +2,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { CdkTableModule } from '@angular/cdk/table';
 import { CommonModule } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -23,6 +24,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
+import { BinaryInputComponent } from '../public-api';
 import { BreadcrumbTrailComponent } from './components/breadcrumb/breadcrumb-trail.component';
 import { BreadcrumbComponent } from './components/breadcrumb/breadcrumb.component';
 import { ColumnChooserComponent } from './components/column-chooser/column-chooser.component';
@@ -139,6 +141,7 @@ const directives = [
 ];
 
 const sharedComponents = [
+  BinaryInputComponent,
   BreadcrumbComponent,
   BreadcrumbTrailComponent,
   ColumnChooserComponent,
@@ -204,6 +207,7 @@ const materialModules = [
 @NgModule({
   imports: [
     CommonModule,
+    HttpClientModule, // Used when adding custom SVGs to icon registry
     ReactiveFormsModule,
     RouterModule,
     materialModules,
@@ -215,6 +219,7 @@ const materialModules = [
   ],
   exports: [
     CommonModule,
+    HttpClientModule,
     ReactiveFormsModule,
     RouterModule,
     directives,

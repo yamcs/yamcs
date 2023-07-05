@@ -24,7 +24,7 @@ dayjs.locale('en');
     AppRoutingModule, // Keep in front of modules that contribute child routing
     SharedModule,
     ServiceWorkerModule.register('ngsw-worker.js', {
-      enabled: !isDevMode(),
+      enabled: false && !isDevMode(),
       registrationStrategy: 'registerWithDelay:5000',
     }),
   ],

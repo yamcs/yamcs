@@ -1015,6 +1015,7 @@ public class XtceToGpbAssembler {
         }
         if (xtceDataEncoding instanceof BinaryDataEncoding) {
             infob.setType(DataEncodingInfo.Type.BINARY);
+            infob.setEncoding(toTextualEncoding((BinaryDataEncoding) xtceDataEncoding));
         } else if (xtceDataEncoding instanceof BooleanDataEncoding) {
             infob.setType(DataEncodingInfo.Type.BOOLEAN);
         } else if (xtceDataEncoding instanceof FloatDataEncoding) {
@@ -1087,6 +1088,25 @@ public class XtceToGpbAssembler {
             break;
         default:
             throw new IllegalStateException("Unexpected size type " + sde.getSizeType());
+        }
+        return result + ")";
+    }
+
+    public static String toTextualEncoding(BinaryDataEncoding bde) {
+        String result = bde.getType() + "(";
+        switch (bde.getType()) {
+        case FIXED_SIZE:
+            result += bde.getSizeInBits();
+            break;
+        case LEADING_SIZE:
+            result += bde.getSizeInBitsOfSizeTag();
+            break;
+        case CUSTOM:
+            break;
+        case DYNAMIC:
+            break;
+        default:
+            throw new IllegalStateException("Unexpected type " + bde.getType());
         }
         return result + ")";
     }

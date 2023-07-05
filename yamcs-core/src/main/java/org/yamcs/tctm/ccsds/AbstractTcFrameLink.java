@@ -14,6 +14,7 @@ import org.yamcs.tctm.AbstractLink;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.Link;
 import org.yamcs.tctm.TcDataLink;
+import org.yamcs.tctm.ccsds.TcManagedParameters.PriorityScheme;
 import org.yamcs.tctm.ccsds.TransferFrameDecoder.CcsdsFrameType;
 import org.yamcs.tctm.ccsds.error.BchCltuGenerator;
 import org.yamcs.tctm.ccsds.error.CltuGenerator;
@@ -64,6 +65,9 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
         spec.addOption("virtualChannels", OptionType.LIST).withElementType(OptionType.ANY);
         spec.addOption("maxFrameLength", OptionType.INTEGER);
         spec.addOption("minFrameLength", OptionType.INTEGER);
+        spec.addOption("priorityScheme", OptionType.STRING)
+                .withChoices(PriorityScheme.class)
+                .withDefault(PriorityScheme.FIFO);
 
         spec.addOption("skipRandomizationForVcs", OptionType.LIST).withElementType(OptionType.INTEGER);
         spec.addOption("cltuEncoding", OptionType.STRING);

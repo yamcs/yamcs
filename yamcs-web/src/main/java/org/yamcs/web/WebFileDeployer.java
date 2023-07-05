@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
@@ -246,6 +247,16 @@ public class WebFileDeployer {
                 assetGroup.add("urls", modifiedUrls);
             }
 
+            for (var dataGroupEl : jsonObject.get("dataGroups").getAsJsonArray()) {
+                var dataGroup = dataGroupEl.getAsJsonObject();
+
+                var modifiedPatterns = new JsonArray();
+                for (var patternEl : dataGroup.get("patterns").getAsJsonArray()) {
+                    modifiedPatterns.add(Pattern.quote(contextPath) + patternEl.getAsString());
+                }
+                dataGroup.add("patterns", modifiedPatterns);
+            }
+
             var modifiedHashTable = new JsonObject();
             for (var hashEntry : jsonObject.get("hashTable").getAsJsonObject().entrySet()) {
                 var sha1 = hashTableOverrides.getOrDefault(hashEntry.getKey(), hashEntry.getValue().getAsString());
@@ -271,19 +282,32 @@ public class WebFileDeployer {
         @Override
         public void run() {
             try {
-                var watchService = source.getFileSystem().newWatchService();
-                source.register(watchService, ENTRY_CREATE, ENTRY_MODIFY);
+                while (true) {
+                    if (Files.exists(source)) {
+                        var watchService = source.getFileSystem().newWatchService();
+                        source.register(watchService, ENTRY_CREATE, ENTRY_MODIFY);
 
-                var loop = true;
-                while (loop) {
-                    var key = watchService.take();
-                    if (!key.pollEvents().isEmpty()) {
-                        log.debug("Redeploying yamcs-web from {}", source);
-                        FileUtils.deleteContents(target);
-                        FileUtils.copyRecursively(source, target);
-                        prepareWebApplication(target);
+                        var forceDeploy = false;
+                        var loop = true;
+                        while (loop) {
+                            var key = watchService.take();
+                            if (forceDeploy || !key.pollEvents().isEmpty()) {
+                                forceDeploy = false;
+
+                                log.debug("Redeploying yamcs-web from {}", source);
+                                FileUtils.deleteContents(target);
+                                FileUtils.copyRecursively(source, target);
+                                prepareWebApplication(target);
+                            }
+                            loop = key.reset();
+                        }
+
+                        // If the source directory goes away (webapp rebuild),
+                        // force a redeploy whenever the directory comes back.
+                        forceDeploy = true;
+                    } else {
+                        Thread.sleep(500);
                     }
-                    loop = key.reset();
                 }
             } catch (IOException e) {
                 throw new UncheckedIOException(e);

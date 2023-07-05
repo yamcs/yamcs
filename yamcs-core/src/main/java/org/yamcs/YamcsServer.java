@@ -109,6 +109,7 @@ public class YamcsServer {
     private CrashHandler globalCrashHandler;
 
     private YamcsServerOptions options = new YamcsServerOptions();
+    private Properties properties = new Properties();
     private YConfiguration config;
     private Spec spec;
     private Map<ConfigScope, Map<String, Spec>> sectionSpecs = new HashMap<>();
@@ -960,6 +961,19 @@ public class YamcsServer {
             // Bootstrap YConfiguration such that it only considers physical files.
             // Not classpath resources.
             YConfiguration.setResolver(new FileBasedConfigurationResolver(YAMCS.options.configDirectory));
+
+            // Properties of the form ${foo} will be expanded based on the presence of application.properties,
+            // or just default to java system properties.
+            var propertiesFile = YAMCS.options.configDirectory.resolve("application.properties");
+            if (Files.exists(propertiesFile)) {
+                try (var fileIn = Files.newBufferedReader(propertiesFile, StandardCharsets.UTF_8)) {
+                    YAMCS.properties.load(fileIn);
+                }
+            }
+            YConfiguration.setPropertyProvider(propertyName -> {
+                var value = YAMCS.properties.getProperty(propertyName);
+                return value != null ? value : System.getProperty(propertyName);
+            });
 
             YAMCS.prepareStart();
         } catch (Exception e) {
