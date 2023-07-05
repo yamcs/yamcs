@@ -56,7 +56,7 @@ yamcs-web (map)
 Instance Configuration
 ----------------------
 
-The instance configuration file :file:`yamcs.{instance}.yaml` contains most of the options that need to be set on a Yamcs server.
+The instance configuration file :file:`etc/yamcs.{instance}.yaml` contains most of the options that need to be set on a Yamcs server.
 
 .. code-block:: yaml
     
@@ -108,3 +108,44 @@ streamConfig(map)
     
 timeService(map)
     This configures the source of the "mission time". By default the RealtimeTimeService uses the local computer clock as the time source. The :javadoc:`org.yamcs.time.SimulationTimeService` can be used to simulate a mission time in the past or the future. If configured, the time can be controlled using the :apidoc:`HTTP API <time/set-time>`. The ``updateSimulationTime: true`` option on a telemetry data link can also be used to manipulate the simulation time - in this case the time will be set to be the generation time of the packet.
+
+
+Configuration Properties
+------------------------
+
+A file :file:`etc/application.properties` may be used to define *properties*. These properties can then be referenced in any YAML configuration file. This approach can be useful to separate dynamic aspects from the main configuration file.
+
+For example:
+
+.. code-block:: properties
+    :caption: :file:`etc/application.properties`
+
+    # IP address of some simulator
+    simulator.host = 192.168.77.7
+    simulator.port = 10015
+
+.. code-block:: yaml
+    :caption: :file:`etc/yamcs.{instance}.yaml`
+
+    dataLinks:
+      - name: tm-in
+        class: org.yamcs.tctm.TcpTmDataLink
+        stream: tm_realtime
+        host: ${simulator.host:localhost}
+        port: ${simulator.port}
+
+YAML configuration values may use properties names in the following notations:
+
+``${foo}``
+    Expands to a property value. If the file :file:`etc/application.properties` exists, a lookup is attempted for the property ``foo``. If that fails, a lookup is attempted in the standard Java system properties.
+
+    An error is generated if the property cannot be found.
+
+``${foo:bar}``
+    Same as ``${foo}``, but defaults to the value ``bar`` when the property could not be found.
+
+``${env.foo}``
+    Expands to the value of an environment variable, available to the Yamcs daemon. An error is generated if the environment variable is not set.
+
+``${env.foo:bar}``
+    Same as ``${env.foo}``, but defaults to the value ``bar`` when the environment variable is not set.

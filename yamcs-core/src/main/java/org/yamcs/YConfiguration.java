@@ -68,9 +68,13 @@ public class YConfiguration {
      * The parent configuration
      */
     YConfiguration parent;
-    // the key whereby this object can be found in its parent
+    /**
+     * The key by which this object can be located within its parent
+     */
     String parentKey;
-    // the root map
+    /**
+     * The root map
+     */
     Map<String, Object> root;
 
     // this is set only for the root Yconfiguration (i.e. without a parent) and indicates where (which file) it has been

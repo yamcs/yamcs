@@ -103,7 +103,7 @@ options:
   disableLoginForm:
     title: Disable Login Form
     description:
-      - Set to true if the login form should never been shown.
+      - Set to true if the login form should never be shown.
       - For example because access should exclusively occur through an external identity provider.
     type: BOOLEAN
     default: false
