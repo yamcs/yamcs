@@ -192,6 +192,16 @@ export function convertValue(value: Value) {
         arrayValue.push(convertValue(item));
       }
       return arrayValue;
+    case 'AGGREGATE':
+      const aggregate: Map<string, any> = new Map<string, any>();
+      let membersLength = value.aggregateValue?.value.length || 0;
+      for(let i = 0; i< membersLength; i++)
+      {
+        let memberName = value.aggregateValue?.name[i] || "";
+        let memberValue = convertValue(value.aggregateValue?.value[i] as Value);
+        aggregate.set(memberName, memberValue);
+      }
+      return aggregate;
     default:
       throw new Error(`Unexpected value type ${value.type}`);
   }
