@@ -1,0 +1,1 @@
+This contains an example with a Yamcs server with two instances downstream and upstream with the downstream connected to upstream as a yamcs client
