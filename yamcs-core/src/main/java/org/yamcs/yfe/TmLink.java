@@ -4,6 +4,7 @@ package org.yamcs.yfe;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.AbstractTmDataLink;
+import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.utils.TimeEncoding;
 
 import io.netty.buffer.ByteBuf;
@@ -26,10 +27,12 @@ public class TmLink extends AbstractTmDataLink {
 
     @Override
     protected void doStart() {
+        notifyStarted();
     }
 
     @Override
     protected void doStop() {
+        notifyStopped();
     }
 
     public void processMessage(ByteBuf buf) {
@@ -39,10 +42,10 @@ public class TmLink extends AbstractTmDataLink {
         }
         long rectime = timeService.getMissionTime();
 
-        long secs = buf.readLong();
+        long millis = buf.readLong();
         int picos = buf.readInt();
 
-        org.yamcs.time.Instant ert = TimeEncoding.fromUnixPicos(secs, picos);
+        org.yamcs.time.Instant ert = TimeEncoding.fromUnixPicos(millis, picos);
 
         byte[] pktData = new byte[buf.readableBytes()];
         buf.readBytes(pktData);
@@ -54,5 +57,10 @@ public class TmLink extends AbstractTmDataLink {
         packetCount.incrementAndGet();
         processPacket(pkt);
 
+    }
+
+    @Override
+    public AggregatedDataLink getParent() {
+        return parentLink;
     }
 }

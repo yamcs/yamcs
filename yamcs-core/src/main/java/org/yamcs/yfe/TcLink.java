@@ -1,12 +1,14 @@
 package org.yamcs.yfe;
 
 import org.yamcs.tctm.AbstractTcDataLink;
-
-import io.netty.buffer.ByteBuf;
+import org.yamcs.tctm.AggregatedDataLink;
 
 public class TcLink extends AbstractTcDataLink {
     YfeLink parentLink;
 
+    public TcLink(YfeLink yfeLink) {
+        this.parentLink = yfeLink;
+    }
     @Override
     protected Status connectionStatus() {
         return parentLink.connectionStatus();
@@ -14,10 +16,17 @@ public class TcLink extends AbstractTcDataLink {
 
     @Override
     protected void doStart() {
+        notifyStarted();
     }
 
     @Override
     protected void doStop() {
+        notifyStopped();
+    }
+
+    @Override
+    public AggregatedDataLink getParent() {
+        return parentLink;
     }
 
 }

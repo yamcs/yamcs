@@ -30,15 +30,15 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 
 public class YfeLink extends AbstractLink implements AggregatedDataLink {
+    final static int MAX_PACKET_LENGTH = 0xFFFF;
+
     String instance;
     YConfiguration config;
-    final static int MAX_PACKET_LENGTH = 0xFFFF;
+
     String host;
     int port;
     long reconnectionDelay;
-    EventProducer eventProducer;
-    Log log;
-    TimeService timeService;
+
     String linkName;
     TcLink tcLink;
 
@@ -69,7 +69,8 @@ public class YfeLink extends AbstractLink implements AggregatedDataLink {
         TmLink tmLink = new TmLink(this);
         tmLink.init(instance, name + ".tm", config);
         tmLinks.put(100, tmLink);
-        subLinks.add(TM, tmLink);
+
+        subLinks.add(tmLink);
     }
 
     @Override
@@ -175,7 +176,7 @@ public class YfeLink extends AbstractLink implements AggregatedDataLink {
     @Override
     protected void doStart() {
         getEventLoop().execute(() -> connect());
-
+        notifyStarted();
     }
 
     @Override
@@ -185,6 +186,7 @@ public class YfeLink extends AbstractLink implements AggregatedDataLink {
                 handler.stop();
             }
         });
+        notifyStopped();
     }
 
     class YfeChannelHandler extends ChannelInboundHandlerAdapter {
