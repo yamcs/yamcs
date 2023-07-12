@@ -1,25 +1,30 @@
 package org.yamcs.yfe;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.yamcs.Spec;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.Spec.OptionType;
-import org.yamcs.events.EventProducer;
+
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.AbstractLink;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.Link;
-import org.yamcs.time.TimeService;
+import org.yamcs.yfe.protobuf.Yfe.MessageType;
+
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
@@ -45,12 +50,8 @@ public class YfeLink extends AbstractLink implements AggregatedDataLink {
     List<Link> subLinks = new ArrayList<>();
     Map<Integer, TmLink> tmLinks = new HashMap<>();
 
-
     YfeChannelHandler handler;
     public static final byte VERSION = 0;
-
-    // TODO: this should come from the proto definitions
-    final static byte TM = 1;
 
     @Override
     public void init(String instance, String name, YConfiguration config) {
@@ -70,6 +71,10 @@ public class YfeLink extends AbstractLink implements AggregatedDataLink {
         tmLink.init(instance, name + ".tm", config);
         tmLinks.put(100, tmLink);
 
+        TcLink tcLink = new TcLink(this, 100);
+        tcLink.init(instance, name + ".tc", config);
+
+        subLinks.add(tcLink);
         subLinks.add(tmLink);
     }
 
@@ -189,12 +194,50 @@ public class YfeLink extends AbstractLink implements AggregatedDataLink {
         notifyStopped();
     }
 
+    boolean isConnected() {
+        var _handler = handler;
+        if (_handler == null) {
+            return false;
+        }
+        return _handler.isConnected();
+    }
+
+    public CompletableFuture<Void> sendMessage(byte msgType, int targetId, byte[] data) {
+        CompletableFuture<Void> cf = new CompletableFuture<Void>();
+        var _handler = handler;
+        if (_handler == null || _handler.ctx == null) {
+            cf.completeExceptionally(new IOException("Connection to the frontend not open"));
+        } else {
+            _handler.sendMessage(msgType, targetId, data).addListener((ChannelFuture future) -> {
+                if (future.isSuccess()) {
+                    cf.complete(null);
+                } else {
+                    cf.completeExceptionally(future.cause());
+                }
+            });
+        }
+        return cf;
+    }
+
     class YfeChannelHandler extends ChannelInboundHandlerAdapter {
         ChannelHandlerContext ctx;
 
         @Override
         public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
             this.ctx = ctx;
+        }
+
+        public ChannelFuture sendMessage(byte msgType, int targetId, byte[] data) {
+            ByteBuf buf = Unpooled.buffer(10 + data.length);
+            buf.writeInt(6 + data.length);
+            buf.writeByte(VERSION);
+            buf.writeByte(msgType);
+
+            buf.writeInt(targetId);
+            buf.writeBytes(data);
+
+            return ctx.writeAndFlush(buf);
+            
         }
 
         @Override
@@ -208,7 +251,7 @@ public class YfeLink extends AbstractLink implements AggregatedDataLink {
                 return;
             }
             byte type = buf.readByte();
-            if (type == TM) {
+            if (type == MessageType.TM_VALUE) {
                 processTm(buf);
             } else {
                 // TODO
@@ -240,4 +283,6 @@ public class YfeLink extends AbstractLink implements AggregatedDataLink {
             ctx.close();
         }
     }
+
+
 }
