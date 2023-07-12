@@ -1,0 +1,121 @@
+//! This file defines messages exchanged between Yamcs and Yamcs frontend
+//! At this moment it duplicates and cleans up the parameter value definitions from the yamcs-api proto files
+//! Sometime in the future when we will afford a breaking change in the yamcs-api, we can unify the two
+//!
+syntax="proto2";
+
+package yamcs.protobuf.yfe;
+
+option java_package = "org.yamcs.yfe.protobuf";
+
+import "yamcs/protobuf/yamcs.proto";
+import "yamcs/protobuf/pvalue/pvalue.proto";
+import "yamcs/protobuf/commanding/commanding.proto";
+
+import "google/protobuf/timestamp.proto";
+
+enum MessageType {
+  TM = 1;
+  TC = 2;
+}
+
+
+// An aggregate value is an ordered list of (member name, member value).
+// Two arrays are used in order to be able to send just the values (since
+// the names will not change)
+message AggregateValue {
+   repeated string name = 1;
+   repeated Value value = 2;
+}
+
+message EnumeratedValue {
+    required sint64 sint64Value = 1;
+    required string stringValue = 4;
+}
+
+message ArrayValue {
+    repeated Value value = 1;
+}
+
+// Union type for storing a value
+// this message should hopefully one day replace the one in the yamcs-api as it is cleaner
+message Value {
+    oneof v {
+        float floatValue = 2;
+        double doubleValue = 3;
+        sint32 sint32Value = 4;
+        uint32 uint32Value = 5;
+        bytes binaryValue = 6;
+        string stringValue = 7;
+        google.protobuf.Timestamp timestampValue = 8;
+        uint64 uint64Value = 9;
+        sint64 sint64Value = 10;
+        bool booleanValue = 11;
+        AggregateValue aggregateValue = 12;
+        EnumeratedValue enumeratedValue = 13;
+        ArrayValue arrayValue = 14;    
+    };
+}
+
+message ParameterValue {
+    // Parameter identifier
+    optional yamcs.protobuf.NamedObjectId id = 1;
+
+    // can be used instead of the id above in certain contexts
+    optional uint32 numericId = 2;
+
+    // Raw value (uncalibrated)
+    optional Value rawValue = 3;
+
+    // Engineering value (calibrated)
+    optional Value engValue = 4;
+
+    optional google.protobuf.Timestamp acquisitionTime = 5;
+
+    optional google.protobuf.Timestamp generationTime = 6;
+
+    optional yamcs.protobuf.pvalue.AcquisitionStatus acquisitionStatus = 7;
+    
+    optional yamcs.protobuf.pvalue.MonitoringResult monitoringResult = 8;
+    optional yamcs.protobuf.pvalue.RangeCondition rangeCondition = 9;
+
+    // How long (in milliseconds) this parameter value is valid
+    optional int64 expireMillis = 10;
+}
+
+
+message ParameterData {
+    repeated ParameterValue parameter = 1;
+
+    // The next three fields are used by the recorder as unique key to store
+    // parameters in "rows" and also by components that provide parameters
+    // from external sources. The time should roughly correspond to the parameter 
+    // time but can be rounded for better efficiency.
+    optional string group = 2;
+    optional google.protobuf.Timestamp  generationTime = 3;
+    optional uint32 seqNum = 4;
+}
+
+message CommandAssignment {
+  optional string name = 1;
+  optional Value value = 2;
+  optional bool userInput = 3;
+}
+
+message PreparedCommand {
+   required yamcs.protobuf.commanding.CommandId commandId = 1;
+   repeated CommandAssignment assignments = 2;
+   map<string, Value> extra = 3;
+   optional bytes binary = 4;
+}
+
+
+//YFE targets
+message TargetList {
+    repeated Target target = 1;
+}
+message Target {
+    required uint32 id = 1;
+    required string name = 2;
+    optional string description = 3;
+}

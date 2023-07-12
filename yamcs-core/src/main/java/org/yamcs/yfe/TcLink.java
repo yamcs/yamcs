@@ -32,6 +32,9 @@ public class TcLink extends AbstractTcDataLink {
 
     @Override
     public boolean sendCommand(PreparedCommand pc) {
+        if (!parentLink.isConnected()) {
+            return false;
+        }
 
         byte[] binary = postprocess(pc);
 
@@ -40,9 +43,7 @@ public class TcLink extends AbstractTcDataLink {
                 .setCommandId(pc.getCommandId())
                 .setBinary(ByteString.copyFrom(binary));
 
-        if (!parentLink.isConnected()) {
-            return false;
-        }
+
         long time = getCurrentTime();
 
         parentLink.sendMessage((byte) MessageType.TC_VALUE, targetId, ypcb.build().toByteArray())
