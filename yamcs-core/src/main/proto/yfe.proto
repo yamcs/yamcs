@@ -19,6 +19,10 @@ enum MessageType {
   TC = 2;
 }
 
+message Timestamp {
+	required sint64 millis = 1;
+	required uint64 nanos = 2;
+}
 
 // An aggregate value is an ordered list of (member name, member value).
 // Two arrays are used in order to be able to send just the values (since
@@ -47,7 +51,7 @@ message Value {
         uint32 uint32Value = 5;
         bytes binaryValue = 6;
         string stringValue = 7;
-        google.protobuf.Timestamp timestampValue = 8;
+        Timestamp timestampValue = 8;
         uint64 uint64Value = 9;
         sint64 sint64Value = 10;
         bool booleanValue = 11;
@@ -97,9 +101,9 @@ message ParameterData {
 }
 
 message CommandAssignment {
-  optional string name = 1;
-  optional Value value = 2;
-  optional bool userInput = 3;
+  required string name = 1;
+  optional Value rawValue = 2;
+  optional Value engValue = 3;
 }
 
 message PreparedCommand {

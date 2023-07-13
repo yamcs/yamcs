@@ -4,12 +4,17 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.TimeEncoding;
 
 public class TimestampValue extends Value {
-   final long v;
+    final long millis;
+    final int nanos;
     
-    public TimestampValue(long v) {
-        this.v = v;
+    public TimestampValue(long millis) {
+        this(millis, 0);
     }
 
+    public TimestampValue(long millis, int nanos) {
+        this.millis = millis;
+        this.nanos = nanos;
+    }
     @Override
     public Type getType() {
         return Type.TIMESTAMP;
@@ -17,23 +22,31 @@ public class TimestampValue extends Value {
     
     @Override
     public long getTimestampValue() {
-        return v;
+        return millis;
+    }
+
+    public long millis() {
+        return millis;
     }
     
+    public long nanos() {
+        return nanos;
+    }
+
     @Override
     public int hashCode() {
-        return Long.hashCode(v);
+        return Long.hashCode(millis);
     }
  
     public boolean equals(Object obj) {
         if (obj instanceof TimestampValue) {
-            return v == ((TimestampValue)obj).v;
+            return millis == ((TimestampValue) obj).millis;
         }
         return false;
     }
     
     @Override
     public String toString() {
-        return TimeEncoding.toString(v);
+        return TimeEncoding.toString(millis);
     }
 }

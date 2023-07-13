@@ -1,21 +1,25 @@
 package org.yamcs.yfe;
 
-
 import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
 
-import java.util.HashSet;
-import java.util.List;
+import java.util.Map.Entry;
 
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsServer;
-import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
+import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.tctm.AbstractTcDataLink;
 import org.yamcs.tctm.AggregatedDataLink;
+import org.yamcs.xtce.Argument;
+import org.yamcs.yfe.protobuf.Yfe.AggregateValue;
+import org.yamcs.yfe.protobuf.Yfe.ArrayValue;
+import org.yamcs.yfe.protobuf.Yfe.CommandAssignment;
+import org.yamcs.yfe.protobuf.Yfe.EnumeratedValue;
 import org.yamcs.yfe.protobuf.Yfe.MessageType;
+import org.yamcs.yfe.protobuf.Yfe.Value;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Timestamp;
 
 public class TcLink extends AbstractTcDataLink {
     final YfeLink parentLink;
@@ -38,15 +42,13 @@ public class TcLink extends AbstractTcDataLink {
 
         byte[] binary = postprocess(pc);
 
-        org.yamcs.yfe.protobuf.Yfe.PreparedCommand.Builder ypcb = org.yamcs.yfe.protobuf.Yfe.PreparedCommand
-                .newBuilder()
-                .setCommandId(pc.getCommandId())
-                .setBinary(ByteString.copyFrom(binary));
+        pc.setBinary(binary);
 
+        var protoPc = ProtoConverter.toProto(pc);
 
         long time = getCurrentTime();
 
-        parentLink.sendMessage((byte) MessageType.TC_VALUE, targetId, ypcb.build().toByteArray())
+        parentLink.sendMessage((byte) MessageType.TC_VALUE, targetId, protoPc.toByteArray())
                 .whenComplete((c, t) -> {
                     if (t != null) {
                         log.warn("Error sending command ", t);
@@ -55,7 +57,7 @@ public class TcLink extends AbstractTcDataLink {
                         commandHistoryPublisher.publishAck(pc.getCommandId(), AcknowledgeSent_KEY, time, AckStatus.OK);
                     }
                 });
-        
+
         return true;
     }
 
@@ -78,6 +80,5 @@ public class TcLink extends AbstractTcDataLink {
     public AggregatedDataLink getParent() {
         return parentLink;
     }
-
 
 }
