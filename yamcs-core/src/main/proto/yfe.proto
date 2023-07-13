@@ -74,9 +74,9 @@ message ParameterValue {
     // Engineering value (calibrated)
     optional Value engValue = 4;
 
-    optional google.protobuf.Timestamp acquisitionTime = 5;
+    optional Timestamp acquisitionTime = 5;
 
-    optional google.protobuf.Timestamp generationTime = 6;
+    optional Timestamp generationTime = 6;
 
     optional yamcs.protobuf.pvalue.AcquisitionStatus acquisitionStatus = 7;
     
