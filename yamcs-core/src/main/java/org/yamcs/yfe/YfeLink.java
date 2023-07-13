@@ -227,6 +227,12 @@ public class YfeLink extends AbstractLink implements AggregatedDataLink {
             this.ctx = ctx;
         }
 
+        @Override
+        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+            log.warn("Connection to the Yamcs frontend closed");
+            ctx.executor().schedule(() -> connect(), reconnectionDelay, TimeUnit.MILLISECONDS);
+        }
+
         public ChannelFuture sendMessage(byte msgType, int targetId, byte[] data) {
             ByteBuf buf = Unpooled.buffer(10 + data.length);
             buf.writeInt(6 + data.length);
