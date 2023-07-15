@@ -39,6 +39,13 @@ password (string)
 attributes (map)
     Configure which LDAP attributes are to be considered. If unset, Yamcs uses defaults that work out of the box with many LDAP installations.
 
+userFilter (string)
+    User search filter. If unspecified, the default is to search by the account name attribute. See `RFC 4515 <https://datatracker.ietf.org/doc/html/rfc4515>`_ for filter syntax.
+
+    The filter should include at least one occurrence of the ``{0}`` character sequence, which upon login is replaced with the attempted username.
+
+    Example: ``(&(sAMAccountName={0})(memberOf=cn=developers,ou=groups,dc=example,dc=com))``
+
 
 Attributes sub-configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

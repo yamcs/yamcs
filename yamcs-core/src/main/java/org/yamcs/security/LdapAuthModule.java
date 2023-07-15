@@ -34,6 +34,7 @@ public class LdapAuthModule implements AuthModule {
 
     private String userBase;
     private String nameAttribute;
+    private String userFilter;
     private String[] displayNameAttributes;
     private String[] emailAttributes;
     private String[] searchAttributes;
@@ -63,6 +64,7 @@ public class LdapAuthModule implements AuthModule {
         spec.addOption("userBase", OptionType.STRING).withRequired(true);
         spec.addOption("attributes", OptionType.MAP).withSpec(attributesSpec)
                 .withApplySpecDefaults(true);
+        spec.addOption("userFilter", OptionType.STRING);
         spec.requireTogether("user", "password");
         return spec;
     }
@@ -84,6 +86,12 @@ public class LdapAuthModule implements AuthModule {
 
         YConfiguration attributesArgs = args.getConfig("attributes");
         nameAttribute = attributesArgs.getString("name");
+
+        userFilter = args.getString("userFilter", "(" + nameAttribute + "={0})");
+        if (!userFilter.contains("{0}")) {
+            throw new InitException("LDAP user filter should contain the {0} character sequence, "
+                    + "which will be replaced with the attempted username");
+        }
 
         displayNameAttributes = attributesArgs.getList("displayName").toArray(new String[0]);
         emailAttributes = attributesArgs.getList("email").toArray(new String[0]);
@@ -149,7 +157,7 @@ public class LdapAuthModule implements AuthModule {
             String username = authenticationInfo.getUsername();
             try {
                 LdapUserInfo info = searchUserInfo(username);
-                if(info == null) {
+                if (info == null) {
                     log.warn("User {} not found in LDAP", username);
                 } else {
                     authenticationInfo.addExternalIdentity(getClass().getName(), info.dn);
@@ -174,7 +182,7 @@ public class LdapAuthModule implements AuthModule {
             SearchControls controls = new SearchControls();
             controls.setReturningAttributes(searchAttributes);
             controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            String filter = nameAttribute + "=" + username;
+            String filter = userFilter.replace("{0}", username);
             SearchResult result = getSingleResult(ctx, userBase, filter, controls);
             if (result == null) {
                 return null;
