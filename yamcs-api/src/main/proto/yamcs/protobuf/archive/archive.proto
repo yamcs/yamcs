@@ -214,4 +214,8 @@ message ExportParameterValuesRequest {
   // Column delimiter. One of ``TAB``, ``COMMA`` or ``SEMICOLON``.
   // Default: ``TAB``.
   optional string delimiter = 7;
+
+  // When specified, only one value each for each interval is returned.
+  // The value is in milliseconds.
+  optional int32 interval = 8;
 }

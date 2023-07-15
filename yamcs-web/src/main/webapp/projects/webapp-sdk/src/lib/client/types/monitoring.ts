@@ -213,6 +213,7 @@ export interface DownloadParameterValuesOptions {
   stop?: string;
   norepeat?: boolean;
   delimiter?: 'TAB' | 'COMMA' | 'SEMICOLON';
+  interval?: number;
 }
 
 export interface GetParameterSamplesOptions {

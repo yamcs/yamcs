@@ -1,9 +1,7 @@
 package org.yamcs.http.api;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -285,6 +283,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         List<NamedObjectId> ids = new ArrayList<>();
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         String namespace = null;
+        int interval = -1;
 
         if (request.hasStart()) {
             repl.setRangeStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
@@ -298,6 +297,9 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         }
         if (request.hasNamespace()) {
             namespace = request.getNamespace();
+        }
+        if (request.hasInterval() && request.getInterval() >= 0) {
+            interval = request.getInterval();
         }
 
         if (ids.isEmpty()) {
@@ -338,25 +340,25 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                 throw new BadRequestException("Unexpected option for parameter 'extra': " + extra);
             }
         }
-        CsvParameterStreamer l = new CsvParameterStreamer(
-                observer, filename, ids, addRaw, addMonitoring);
+
+        var listener = new CsvParameterStreamer(observer, filename, ids, addRaw, addMonitoring, interval);
         if (request.hasDelimiter()) {
             switch (request.getDelimiter()) {
             case "TAB":
-                l.columnDelimiter = '\t';
+                listener.columnDelimiter = '\t';
                 break;
             case "SEMICOLON":
-                l.columnDelimiter = ';';
+                listener.columnDelimiter = ';';
                 break;
             case "COMMA":
-                l.columnDelimiter = ',';
+                listener.columnDelimiter = ',';
                 break;
             default:
                 throw new BadRequestException("Unexpected column delimiter");
             }
         }
-        observer.setCancelHandler(l::requestReplayAbortion);
-        ReplayFactory.replay(instance, ctx.user, repl, l);
+        observer.setCancelHandler(listener::requestReplayAbortion);
+        ReplayFactory.replay(instance, ctx.user, repl, listener);
     }
 
     private static ReplayOptions toParameterReplayRequest(NamedObjectId parameterId, long start, long stop,
@@ -387,37 +389,34 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
     private static class CsvParameterStreamer extends ParameterReplayListener {
 
         Observer<HttpBody> observer;
-        List<NamedObjectId> ids;
-        boolean addRaw;
-        boolean addMonitoring;
-        int recordCount = 0;
         char columnDelimiter = '\t';
+        ParameterFormatter formatter;
 
         CsvParameterStreamer(Observer<HttpBody> observer, String filename, List<NamedObjectId> ids,
-                boolean addRaw, boolean addMonitoring) {
+                boolean addRaw, boolean addMonitoring, int interval) {
             this.observer = observer;
-            this.ids = ids;
-            this.addRaw = addRaw;
-            this.addMonitoring = addMonitoring;
+
+            formatter = new ParameterFormatter(null, ids, columnDelimiter);
+            formatter.setWriteHeader(true);
+            formatter.setPrintRaw(addRaw);
+            formatter.setPrintMonitoring(addMonitoring);
+            formatter.setTimeWindow(interval);
 
             HttpBody metadata = HttpBody.newBuilder()
                     .setContentType(MediaType.CSV.toString())
                     .setFilename(filename)
                     .build();
-
             observer.next(metadata);
         }
 
         @Override
         protected void onParameterData(List<ParameterValueWithId> params) {
-
             ByteString.Output data = ByteString.newOutput();
-            try (Writer writer = new OutputStreamWriter(data, StandardCharsets.UTF_8);
-                    ParameterFormatter formatter = new ParameterFormatter(writer, ids, columnDelimiter)) {
-                formatter.setWriteHeader(recordCount == 0);
-                formatter.setPrintRaw(addRaw);
-                formatter.setPrintMonitoring(addMonitoring);
+            formatter.updateWriter(data, StandardCharsets.UTF_8);
+
+            try {
                 formatter.writeParameters(params);
+                formatter.flush();
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
@@ -426,7 +425,6 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                     .setData(data.toByteString())
                     .build();
             observer.next(body);
-            recordCount++;
         }
 
         @Override
@@ -436,7 +434,20 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
         @Override
         public void replayFinished() {
-            observer.complete();
+            ByteString.Output data = ByteString.newOutput();
+            formatter.updateWriter(data, StandardCharsets.UTF_8);
+            try {
+                formatter.close();
+                if (data.size() > 0) {
+                    HttpBody body = HttpBody.newBuilder()
+                            .setData(data.toByteString())
+                            .build();
+                    observer.next(body);
+                }
+                observer.complete();
+            } catch (IOException e) {
+                observer.completeExceptionally(e);
+            }
         }
     }
 }
