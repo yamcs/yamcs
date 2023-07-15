@@ -680,8 +680,12 @@ public class TableApi extends AbstractTableApi<Context> {
         infob.setName(stream.getName());
         infob.setDataCount(stream.getDataCount());
         infob.setScript("create stream " + stream.getName() + stream.getDefinition().getStringDefinition());
-        for (ColumnDefinition cdef : stream.getDefinition().getColumnDefinitions()) {
+        for (var cdef : stream.getDefinition().getColumnDefinitions()) {
             infob.addColumn(toColumnInfo(cdef, null));
+            infob.addColumns(toColumnInfo(cdef, null));
+        }
+        for (var subscriber : stream.getSubscribers()) {
+            infob.addSubscribers(subscriber.getClass().getName() + "@" + Integer.toHexString(subscriber.hashCode()));
         }
         return infob.build();
     }
