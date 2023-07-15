@@ -23,6 +23,7 @@ import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
+import io.netty.handler.timeout.IdleStateHandler;
 
 public class ApiHandler extends HttpHandler {
 
@@ -120,6 +121,13 @@ public class ApiHandler extends HttpHandler {
         String webSocketPath = req.uri();
         String subprotocols = "json, protobuf";
         pipeline.addLast(new WebSocketServerProtocolHandler(webSocketPath, subprotocols, true, maxFrameLength));
+
+        // Emit idle events (interpreted by WebSocketFrameHandler).
+        // Useful for avoiding unexpected closes when there's no activity.
+        var pingWhenIdleFor = wsConfig.getInt("pingWhenIdleFor");
+        if (pingWhenIdleFor > 0) {
+            pipeline.addLast(new IdleStateHandler(0, 0, pingWhenIdleFor));
+        }
 
         pipeline.addLast(new WebSocketFrameHandler(httpServer, req, user, waterMark));
 
