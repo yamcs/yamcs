@@ -17,9 +17,9 @@ The ``yamcsd`` program accepts some options to modify these defaults. In particu
     Turn off ANSI color codes
 
 
-If the configuration directory of Yamcs includes a file :file:`logging.properties`, then logging properties are read from this file instead of applying the default console logging. Logging-related program arguments (e.g. verbosity) are then ignored.
+If the configuration directory of Yamcs includes a file :file:`etc/logging.properties`, then logging properties are read from this file instead of applying the default console logging. Logging-related program arguments (e.g. verbosity) are then ignored.
 
-The :file:`logging.properties` uses the standard Java logging format, which allows to tweak the logging in much more detail than what is possible through the command-line flags of the yamcsd executable.
+The :file:`etc/logging.properties` uses the standard Java logging format, which allows to tweak the logging in much more detail than what is possible through the command-line flags of the yamcsd executable.
 
 A full description of the syntax is beyond the scope of this manual, but see this example of how we currently configure our generic RPM packages:
 

@@ -102,7 +102,7 @@ mdb.yaml
 
 Specifies one or more MDB configurations, which you can then choose from in order to extract parameters from a packet.
 
-The MDB configuration structure can be copied from a :file:`yamcs.{instance}.yaml` configuration file, but with a level on top which specifies the name visible in UI. In the following example, the user can choose between `mymdb1` and `mymdb2`.
+The MDB configuration structure can be copied from a :file:`etc/yamcs.{instance}.yaml` configuration file, but with a level on top which specifies the name visible in UI. In the following example, the user can choose between `mymdb1` and `mymdb2`.
 
 .. code-block:: yaml
 

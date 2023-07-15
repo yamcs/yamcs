@@ -120,8 +120,8 @@ a.ya-link.ya-header-link {
   padding: 0 8px;
   min-height: 24px;
 }
-
-.ya-menu .mat-mdc-menu-item .mdc-list-item__primary-text {
+ 
+.ya-menu .mat-mdc-menu-content .mat-mdc-menu-item .mdc-list-item__primary-text {
   font-size: 12px;
 }
 

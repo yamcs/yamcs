@@ -13,7 +13,7 @@ The figure below provides an overview of the steps involved, followed by a more 
 **1. Container identification**
 
 When Yamcs has to process a TM packet it has first to know which MDB container it corresponds to.
-For realtime packets this is done based on the stream on which the packet is coming. Each stream has an attribute ``rootContainer`` (defined in ``streamConfig -> tm`` in :file:`yamcs.{instance}.yaml`) which configures the container used for all packets coming on that stream.
+For realtime packets this is done based on the stream on which the packet is coming. Each stream has an attribute ``rootContainer`` (defined in ``streamConfig -> tm`` in :file:`etc/yamcs.{instance}.yaml`) which configures the container used for all packets coming on that stream.
 For historical reasons that attribute is optional; if not configured Yamcs will take the first container (when traversing the MDB tree) having no parent.
 For archive packets, that information is stored in the archive the first time the packet is received.
 

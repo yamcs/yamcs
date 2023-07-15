@@ -69,7 +69,7 @@ Services
 A service in Yamcs is a Java class that implements the :javadoc:`org.yamcs.YamcsService` interface. The services can be:
 
 * global meaning they run only once at the level of the server; their definition can be found in :file:`etc/yamcs.yaml`. One such service is the :doc:`../services/global/http-server`.
-* instance specific meaning that they run once for each Yamcs instance where they are included; their definition can be found in :file:`yamcs.{instance}.yaml`.
+* instance specific meaning that they run once for each Yamcs instance where they are included; their definition can be found in :file:`etc/yamcs.{instance}.yaml`.
 * processor specific meaning they run at the level of the processor; their definition can be found in :file:`etc/processor.yaml`.
  
 User can define their own services by adding a jar with an implemented java class into the Yamcs :file:`lib/ext` directory.
