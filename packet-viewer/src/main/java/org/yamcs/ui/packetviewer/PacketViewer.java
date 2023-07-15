@@ -1254,13 +1254,18 @@ public class PacketViewer extends JFrame implements ActionListener,
             }
         }
 
-        // Okay, launch the GUI now
         if (options.containsKey("--etc-dir")) {
-            Path etcDir = Paths.get(options.get("--etc-dir"));
+            Path etcDir = Path.of(options.get("--etc-dir"));
             YConfiguration.setupTool(etcDir.toFile());
         } else {
             YConfiguration.setupTool();
         }
+
+        // Use XDG convention
+        var cacheDir = Path.of(System.getProperty("user.home"), ".cache", "packet-viewer");
+        XtceDbFactory.setupTool(cacheDir);
+
+        // Okay, launch the GUI now
         theApp = new PacketViewer(maxLines);
         if (fileOrURL != null) {
             if (isURL) {

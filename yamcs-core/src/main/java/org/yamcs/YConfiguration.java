@@ -146,7 +146,7 @@ public class YConfiguration {
     /**
      * Sets up the Yamcs configuration system and loads the UTC-TAI offsets.
      * <p>
-     * This method is intended for client tools and make store or use files from {@code ~/.yamcs}.
+     * This method is intended for client tools and may store or use files from {@code ~/.yamcs}.
      */
     public synchronized static void setupTool() {
         File userConfigDirectory = new File(System.getProperty("user.home"), ".yamcs");
@@ -175,7 +175,7 @@ public class YConfiguration {
         File logDir = new File(configDirectory, "log");
         if (!logDir.exists()) {
             if (logDir.mkdirs()) {
-                System.err.println("Created directory: " + logDir);
+                System.out.println("Created directory: " + logDir);
             } else {
                 System.err.println("Cannot create directory: " + logDir);
             }
