@@ -412,6 +412,9 @@ public class SecurityStore {
                         if (authzInfo.isSuperuser()) { // Only override directory if 'true'
                             user.setSuperuser(true);
                         }
+                        for (var role : authzInfo.getRoles()) {
+                            user.addRole(role, true);
+                        }
                         for (SystemPrivilege privilege : authzInfo.getSystemPrivileges()) {
                             user.addSystemPrivilege(privilege, true);
                         }

@@ -2,6 +2,7 @@ package org.yamcs.security;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -38,6 +39,7 @@ public class LdapAuthModule implements AuthModule {
     private String[] displayNameAttributes;
     private String[] emailAttributes;
     private String[] searchAttributes;
+    private List<GroupMapping> groupMappings = new ArrayList<>();
 
     private Cache<String, LdapUserInfo> infoCache = CacheBuilder.newBuilder()
             .expireAfterWrite(24, TimeUnit.HOURS)
@@ -55,6 +57,12 @@ public class LdapAuthModule implements AuthModule {
                 .withElementType(OptionType.STRING)
                 .withDefault("cn");
 
+        Spec groupMappingSpec = new Spec();
+        groupMappingSpec.addOption("dn", OptionType.STRING).withRequired(true);
+        groupMappingSpec.addOption("role", OptionType.STRING);
+        groupMappingSpec.addOption("superuser", OptionType.BOOLEAN);
+        groupMappingSpec.requireOneOf("role", "superuser");
+
         Spec spec = new Spec();
         spec.addOption("host", OptionType.STRING).withRequired(true);
         spec.addOption("port", OptionType.INTEGER);
@@ -62,9 +70,13 @@ public class LdapAuthModule implements AuthModule {
         spec.addOption("password", OptionType.STRING).withSecret(true);
         spec.addOption("tls", OptionType.BOOLEAN);
         spec.addOption("userBase", OptionType.STRING).withRequired(true);
-        spec.addOption("attributes", OptionType.MAP).withSpec(attributesSpec)
+        spec.addOption("attributes", OptionType.MAP)
+                .withSpec(attributesSpec)
                 .withApplySpecDefaults(true);
         spec.addOption("userFilter", OptionType.STRING);
+        spec.addOption("groupMappings", OptionType.LIST)
+                .withElementType(OptionType.MAP)
+                .withSpec(groupMappingSpec);
         spec.requireTogether("user", "password");
         return spec;
     }
@@ -96,10 +108,19 @@ public class LdapAuthModule implements AuthModule {
         displayNameAttributes = attributesArgs.getList("displayName").toArray(new String[0]);
         emailAttributes = attributesArgs.getList("email").toArray(new String[0]);
 
+        for (var mappingConfig : args.getConfigList("groupMappings")) {
+            var groupMapping = new GroupMapping();
+            groupMapping.dn = mappingConfig.getString("dn");
+            groupMapping.role = mappingConfig.getString("role", null);
+            groupMapping.superuser = mappingConfig.getBoolean("superuser", false);
+            groupMappings.add(groupMapping);
+        }
+
         List<String> concat = new ArrayList<>();
         concat.add(nameAttribute);
         concat.addAll(attributesArgs.getList("displayName"));
         concat.addAll(attributesArgs.getList("email"));
+        concat.add("memberOf");
         searchAttributes = concat.toArray(new String[0]);
 
         yamcsEnv = new Hashtable<>();
@@ -193,6 +214,7 @@ public class LdapAuthModule implements AuthModule {
             info.dn = result.getNameInNamespace();
             info.cn = findAttribute(result, displayNameAttributes);
             info.email = findAttribute(result, emailAttributes);
+            info.memberOf = findListAttribute(result, new String[] { "memberOf" });
 
             infoCache.put(username, info);
             return info;
@@ -227,7 +249,26 @@ public class LdapAuthModule implements AuthModule {
 
     @Override
     public AuthorizationInfo getAuthorizationInfo(AuthenticationInfo authenticationInfo) {
-        return new AuthorizationInfo();
+        AuthorizationInfo authz = new AuthorizationInfo();
+
+        var principal = authenticationInfo.getUsername();
+        var info = infoCache.getIfPresent(principal);
+        if (info != null) {
+            for (var groupMapping : groupMappings) {
+                for (var dn : info.memberOf) {
+                    if (groupMapping.dn.equalsIgnoreCase(dn)) {
+                        if (groupMapping.role != null) {
+                            authz.addRole(groupMapping.role);
+                        }
+                        if (groupMapping.superuser) {
+                            authz.grantSuperuser();
+                        }
+                    }
+                }
+            }
+        }
+
+        return authz;
     }
 
     @Override
@@ -255,10 +296,32 @@ public class LdapAuthModule implements AuthModule {
         return null;
     }
 
+    private List<String> findListAttribute(SearchResult result, String[] possibleNames) throws NamingException {
+        for (String attrId : possibleNames) {
+            var values = new ArrayList<String>();
+            var attr = result.getAttributes().get(attrId);
+            if (attr != null) {
+                var valueEnumeration = attr.getAll();
+                while (valueEnumeration.hasMoreElements()) {
+                    values.add((String) valueEnumeration.next());
+                }
+                return values;
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    private static final class GroupMapping {
+        String dn;
+        String role;
+        boolean superuser;
+    }
+
     private static final class LdapUserInfo {
         String uid;
         String dn;
         String cn;
         String email;
+        List<String> memberOf;
     }
 }

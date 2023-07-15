@@ -5,7 +5,7 @@ The LDAP AuthModule supports authentication of users via the LDAP protocol.
 
 It first searches for the distinguished name that matches a submitted username, and then attempts a bind using the submitted password.
 
-This module can also be chained to the :doc:`kerberos` or :doc:`spnego` modules in order to add user attributes to a user that logged in via Kerberos or Kerberos SPNEGO.
+This module can also be chained to the :doc:`kerberos` or :doc:`spnego` modules in order to add user attributes and roles to a user that logged in via Kerberos or Kerberos SPNEGO.
 
 Class Name
 ----------
@@ -46,6 +46,8 @@ userFilter (string)
 
     Example: ``(&(sAMAccountName={0})(memberOf=cn=developers,ou=groups,dc=example,dc=com))``
 
+groupMappings (list of maps)
+    Manage mappings from LDAP groups to Yamcs roles. LDAP groups are established by looking at the ``memberOf`` attribute of the user entry.
 
 Attributes sub-configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -58,3 +60,16 @@ email (string or string[])
 
 displayName (string or string[])
     The name of the display name attribute. If multiples are defined, they are tried in order. Default: ``cn``.
+
+
+Group Mapping sub-configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+dn (string)
+    **Required.** DN of an LDAP group.
+
+role (string)
+    Name of a Yamcs role to assign to this user.
+
+superuser (boolean)
+    If true, grant this user the superuser attribute, implying all privileges.

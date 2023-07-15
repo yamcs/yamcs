@@ -105,7 +105,7 @@ public class Directory {
         user.setId(id);
         for (Role role : roles.values()) {
             if (role.isDefaultRole()) {
-                user.addRole(role.getName());
+                user.addRole(role.getName(), false);
             }
         }
         log.info("Saving new user {}", user);

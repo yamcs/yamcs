@@ -64,7 +64,7 @@ public class UsersCli extends Command {
                 exit(-1);
             }
 
-            user.addRole(role);
+            user.addRole(role, false);
             directory.updateUserProperties(user);
         }
     }
