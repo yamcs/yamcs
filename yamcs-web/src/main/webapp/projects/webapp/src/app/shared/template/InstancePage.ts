@@ -5,6 +5,7 @@ import { NavigationEnd, Router } from '@angular/router';
 import { ConnectionInfo, Parameter, User } from '@yamcs/webapp-sdk';
 import { Observable, Subscription, of } from 'rxjs';
 import { debounceTime, filter, map, switchMap } from 'rxjs/operators';
+import { AppearanceService } from '../../core/services/AppearanceService';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, NavItem, WebsiteConfig } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -43,15 +44,19 @@ export class InstancePage implements OnInit, OnDestroy {
   mdbItems: NavItem[] = [];
   extraItems: NavItem[] = [];
 
+  zenMode$: Observable<boolean>;
+
   private routerSubscription: Subscription;
 
   constructor(
     readonly yamcs: YamcsService,
     configService: ConfigService,
     authService: AuthService,
+    appearanceService: AppearanceService,
     private router: Router,
   ) {
     this.connectionInfo$ = this.yamcs.connectionInfo$;
+    this.zenMode$ = appearanceService.zenMode$;
     this.config = configService.getConfig();
     this.user = authService.getUser()!;
 

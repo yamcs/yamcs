@@ -4,6 +4,7 @@ import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { AuthInfo, ConnectionInfo, PreferenceStore, User } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
+import { AppearanceService } from '../../core/services/AppearanceService';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, SiteLink } from '../../core/services/ConfigService';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -32,6 +33,7 @@ export class AppComponent implements OnDestroy {
 
   showMdbItem$ = new BehaviorSubject<boolean>(false);
   sidebar$: Observable<boolean>;
+  zenMode$: Observable<boolean>;
 
   userSubscription: Subscription;
 
@@ -42,8 +44,10 @@ export class AppComponent implements OnDestroy {
     private authService: AuthService,
     private preferenceStore: PreferenceStore,
     private dialog: MatDialog,
+    appearanceService: AppearanceService,
     configService: ConfigService,
   ) {
+    this.zenMode$ = appearanceService.zenMode$;
     this.tag = configService.getTag();
     this.authInfo = configService.getAuthInfo();
     this.siteLinks = configService.getSiteLinks();

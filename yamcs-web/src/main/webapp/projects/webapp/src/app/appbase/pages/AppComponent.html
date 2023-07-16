@@ -1,4 +1,5 @@
-<mat-toolbar color="primary" *ngIf="user$ | async as user">
+<mat-toolbar color="primary" *ngIf="user$ | async as user"
+             [class.zen]="zenMode$ | async">
   <mat-toolbar-row class="app-bar"
                    [class.replay]="(connectionInfo$ | async)?.processor?.replay"
                    [class.nosidebar]="!(sidebar$ | async)">
