@@ -41,6 +41,8 @@ public class LdapAuthModule implements AuthModule {
     private String[] searchAttributes;
     private List<GroupMapping> groupMappings = new ArrayList<>();
 
+    private boolean requiredIfKerberos;
+
     private Cache<String, LdapUserInfo> infoCache = CacheBuilder.newBuilder()
             .expireAfterWrite(24, TimeUnit.HOURS)
             .build();
@@ -77,6 +79,7 @@ public class LdapAuthModule implements AuthModule {
         spec.addOption("groupMappings", OptionType.LIST)
                 .withElementType(OptionType.MAP)
                 .withSpec(groupMappingSpec);
+        spec.addOption("requiredIfKerberos", OptionType.BOOLEAN).withDefault(false);
         spec.requireTogether("user", "password");
         return spec;
     }
@@ -122,6 +125,8 @@ public class LdapAuthModule implements AuthModule {
         concat.addAll(attributesArgs.getList("email"));
         concat.add("memberOf");
         searchAttributes = concat.toArray(new String[0]);
+
+        requiredIfKerberos = args.getBoolean("requiredIfKerberos");
 
         yamcsEnv = new Hashtable<>();
         yamcsEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
@@ -170,8 +175,7 @@ public class LdapAuthModule implements AuthModule {
 
     @Override
     public void authenticationSucceeded(AuthenticationInfo authenticationInfo) {
-        AuthModule authenticator = authenticationInfo.getAuthenticator();
-        if (authenticator instanceof KerberosAuthModule || authenticator instanceof SpnegoAuthModule) {
+        if (authenticationInfo.isKerberos()) {
             // Note to future self: If we ever want to support multiple LDAP and
             // kerberos modules, then it may become useful to compare the user dn
             // with the kerberos realm before querying LDAP.
@@ -248,11 +252,16 @@ public class LdapAuthModule implements AuthModule {
     }
 
     @Override
-    public AuthorizationInfo getAuthorizationInfo(AuthenticationInfo authenticationInfo) {
+    public AuthorizationInfo getAuthorizationInfo(AuthenticationInfo authenticationInfo) throws AuthorizationException {
         AuthorizationInfo authz = new AuthorizationInfo();
 
         var principal = authenticationInfo.getUsername();
         var info = infoCache.getIfPresent(principal);
+
+        if (authenticationInfo.isKerberos() && requiredIfKerberos && info == null) {
+            throw new AuthorizationException("Cannot link Kerberos user with LDAP directory");
+        }
+
         if (info != null) {
             for (var groupMapping : groupMappings) {
                 for (var dn : info.memberOf) {

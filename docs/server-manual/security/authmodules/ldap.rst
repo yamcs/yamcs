@@ -49,11 +49,17 @@ userFilter (string)
 groupMappings (list of maps)
     Manage mappings from LDAP groups to Yamcs roles. LDAP groups are established by looking at the ``memberOf`` attribute of the user entry.
 
+requiredIfKerberos (boolean)
+    If ``true`` this module performs an LDAP lookup on users that were identified by :doc:`kerberos` or :doc:`spnego`. If the lookup fails, the login process is aborted.
+
+
 Attributes sub-configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 name (string)
-    The name of the account name attribute. This is used to search a DN within the ``userBase`` as well as to map to the Yamcs account name. Default: ``uid``.
+    The name of the account name attribute. This is used to search a DN within the ``userBase`` as well as to map to the Yamcs account name. For Active Directory this should usually be set to ``sAMAccountName``.
+
+    Default: ``uid``.
 
 email (string or string[])
     The name of the email attribute. If multiples are defined, they are tried in order. Default: ``[mail, email, userPrincipalName]``.

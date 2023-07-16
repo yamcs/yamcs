@@ -32,8 +32,8 @@ import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.HandlerContext;
-import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.HttpHandler;
+import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.UnauthorizedException;
 
 import io.netty.buffer.ByteBuf;
