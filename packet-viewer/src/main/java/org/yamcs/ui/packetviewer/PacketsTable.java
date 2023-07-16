@@ -550,7 +550,7 @@ public class PacketsTable extends JTable implements ListSelectionListener {
         } else {
             String alias = packetViewer.getDefaultNamespace() == null ? null
                     : sc.getAlias(packetViewer.getDefaultNamespace());
-            name = alias == null ? sc.getName() : alias;
+            name = alias == null ? sc.getQualifiedName() : alias;
         }
 
         packet.setName(name);

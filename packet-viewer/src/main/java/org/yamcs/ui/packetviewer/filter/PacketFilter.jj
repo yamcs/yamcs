@@ -51,7 +51,7 @@ TOKEN : {
 }
 
 <IN_EXPRESSION> TOKEN : {
-  <STRING:       (["A"-"Z", "a"-"z", "0"-"9", ":", "_"])+ > : DEFAULT
+  <STRING:       (["A"-"Z", "a"-"z", "0"-"9", ":", "_", "/", "-"])+ > : DEFAULT
 | <QUOTED:       "\"" (<_QUOTED_CHAR>)* "\""> : DEFAULT
 }
 

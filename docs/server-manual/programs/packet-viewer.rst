@@ -217,7 +217,7 @@ Filter grammar
       literal: `string` | `quoted_string`
       string: `stringchar`+
       quoted_string: '"' [ `string` ] '"'
-      stringchar: `letter` | `digit` | ":" | "_"
+      stringchar: `letter` | `digit` | ":" | "_" | "/" | "-"
       letter: "a"..."Z"
       digit: "0"..."9"
       rel_op: `eq_op` | `ne_op`
