@@ -203,13 +203,13 @@
 			<xtce:AggregateArgumentType name="aggr_arg_type1">
 				<xtce:MemberList>
 					<xtce:Member name="m1" typeRef="u32" />
-					<xtce:Member name="m2" typeRef="f64limit100"/>
+					<xtce:Member name="m2" typeRef="f64limit100" />
 				</xtce:MemberList>
 			</xtce:AggregateArgumentType>
 			<xtce:AggregateArgumentType name="aggr_arg_with_initial_values">
 				<xtce:MemberList>
-					<xtce:Member name="m1" typeRef="u32" initialValue="7"/>
-					<xtce:Member name="m2" typeRef="f64limit100" initialValue="3.14"/>
+					<xtce:Member name="m1" typeRef="u32" initialValue="7" />
+					<xtce:Member name="m2" typeRef="f64limit100" initialValue="3.14" />
 				</xtce:MemberList>
 			</xtce:AggregateArgumentType>
 			<xtce:IntegerArgumentType name="u32" signed="false">
@@ -229,7 +229,7 @@
 					<xtce:AncillaryData name="Yamcs">maxLength=10</xtce:AncillaryData>
 				</xtce:AncillaryDataSet>
 				<xtce:BinaryDataEncoding>
-					<!--  this SizInBits section is superfluous and can be removed -->
+					<!-- this SizInBits section is superfluous and can be removed -->
 					<xtce:SizeInBits>
 						<xtce:DynamicValue>
 							<xtce:ParameterInstanceRef parameterRef="_yamcs_ignore" />
@@ -243,6 +243,34 @@
 					</xtce:ToBinaryTransformAlgorithm>
 				</xtce:BinaryDataEncoding>
 			</xtce:BinaryArgumentType>
+			<xtce:FloatArgumentType name="arg1_with_algo">
+				<xtce:UnitSet />
+				<xtce:IntegerDataEncoding sizeInBits="16" encoding="unsigned">
+					<xtce:DefaultCalibrator>
+						<xtce:MathOperationCalibrator>
+							<xtce:ThisParameterOperand />
+							<xtce:ValueOperand>10</xtce:ValueOperand>
+							<xtce:Operator>*</xtce:Operator>
+						</xtce:MathOperationCalibrator>
+					</xtce:DefaultCalibrator>
+				</xtce:IntegerDataEncoding>
+			</xtce:FloatArgumentType>
+			<xtce:FloatArgumentType name="arg2_with_algo">						
+				<xtce:UnitSet>
+					<xtce:Unit description="pressure">kPa</xtce:Unit>
+				</xtce:UnitSet>
+				<xtce:IntegerDataEncoding sizeInBits="16" encoding="unsigned">
+					<xtce:DefaultCalibrator>
+						<xtce:PolynomialCalibrator>
+							<xtce:Term coefficient="55.24296675" exponent="1" />
+							<xtce:Term coefficient="6138.107417" exponent="0" />
+						</xtce:PolynomialCalibrator>
+					</xtce:DefaultCalibrator>
+				</xtce:IntegerDataEncoding>
+				<xtce:ValidRangeSet>
+					<xtce:ValidRange minInclusive="100" maxInclusive="1100"/>
+				</xtce:ValidRangeSet>
+			</xtce:FloatArgumentType>
 		</xtce:ArgumentTypeSet>
 		<xtce:MetaCommandSet>
 			<xtce:MetaCommand name="command1">
@@ -423,6 +451,18 @@
 						<xtce:CheckWindow timeToStartChecking="PT0S" timeToStopChecking="PT1S" />
 					</xtce:CompleteVerifier>
 				</xtce:VerifierSet>
+			</xtce:MetaCommand>
+			<xtce:MetaCommand name="command_with_algo">
+				<xtce:ArgumentList>
+					<xtce:Argument name="arg1" argumentTypeRef="arg1_with_algo" />
+					<xtce:Argument name="arg2" argumentTypeRef="arg2_with_algo" />
+				</xtce:ArgumentList>
+				<xtce:CommandContainer name="command_with_algo_Container">
+					<xtce:EntryList>
+						<xtce:ArgumentRefEntry argumentRef="arg1" />
+						<xtce:ArgumentRefEntry argumentRef="arg2" />
+					</xtce:EntryList>
+				</xtce:CommandContainer>
 			</xtce:MetaCommand>
 		</xtce:MetaCommandSet>
 	</xtce:CommandMetaData>

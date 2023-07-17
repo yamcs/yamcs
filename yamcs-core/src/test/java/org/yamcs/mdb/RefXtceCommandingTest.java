@@ -205,6 +205,20 @@ public class RefXtceCommandingTest {
     }
 
     @Test
+    public void testCmdWithArg() throws Exception {
+        MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command_with_algo");
+        Map<String, Object> args = new HashMap<>();
+
+        args.put("arg1", "3.14");
+        args.put("arg2", "150");
+        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        assertEquals(4, b.length);
+        ByteBuffer bb = ByteBuffer.wrap(b);
+        assertEquals(31, bb.getShort());
+        assertEquals(0x3859, bb.getShort());
+    }
+
+    @Test
     public void testTransmissionConstraint1Fail() throws Exception {
         MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_constraint1");
         Map<String, Object> args = new HashMap<>();
