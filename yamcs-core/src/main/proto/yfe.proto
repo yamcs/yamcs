@@ -11,12 +11,16 @@ option java_package = "org.yamcs.yfe.protobuf";
 import "yamcs/protobuf/yamcs.proto";
 import "yamcs/protobuf/pvalue/pvalue.proto";
 import "yamcs/protobuf/commanding/commanding.proto";
+import "yamcs/protobuf/events/events.proto";
 
 import "google/protobuf/timestamp.proto";
 
 enum MessageType {
-  TM = 1;
-  TC = 2;
+  TARGET_INFO = 1;
+  TM = 2;
+  TC = 3;
+  EVENT = 4;
+  PARAMETER_DATA = 5;
 }
 
 message Timestamp {
@@ -106,11 +110,34 @@ message CommandAssignment {
   optional Value engValue = 3;
 }
 
+message CommandId {
+  required int64 generationTime = 1;
+  required string origin = 2;
+  required int32 sequenceNumber = 3; //unique in relation to generationTime and origin
+  optional string commandName = 4;
+}
+
 message PreparedCommand {
    required yamcs.protobuf.commanding.CommandId commandId = 1;
    repeated CommandAssignment assignments = 2;
    map<string, Value> extra = 3;
    optional bytes binary = 4;
+}
+
+message Event {
+    optional string source = 1;
+    optional int64 generationTime = 2;
+    optional int64 receptionTime = 3;
+    optional int32 seqNumber = 4;
+    optional string type = 5;
+    required string message = 6;
+    optional yamcs.protobuf.events.Event.EventSeverity severity = 7[default=INFO];
+  
+    // Set by API when event was posted by a user
+    optional string createdBy = 10;
+
+    // Additional properties
+    map<string, string> extra = 11;
 }
 
 
