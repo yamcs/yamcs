@@ -1,0 +1,150 @@
+//! This file defines messages exchanged between Yamcs and Yamcs frontend
+//! At this moment it duplicates and cleans up the parameter value definitions from the yamcs-api proto files
+//! Sometime in the future when we will afford a breaking change in the yamcs-api, we can unify the two
+//!
+syntax="proto2";
+
+package yamcs.protobuf.yfe;
+
+option java_package = "org.yamcs.yfe.protobuf";
+
+import "yamcs/protobuf/yamcs.proto";
+import "yamcs/protobuf/pvalue/pvalue.proto";
+import "yamcs/protobuf/commanding/commanding.proto";
+import "yamcs/protobuf/events/events.proto";
+
+enum MessageType {
+  TARGET_INFO = 1;
+  TM = 2;
+  TC = 3;
+  EVENT = 4;
+  PARAMETER_DATA = 5;
+}
+
+message Timestamp {
+	required sint64 millis = 1;
+	required int64 nanos = 2;
+}
+
+// An aggregate value is an ordered list of (member name, member value).
+// Two arrays are used in order to be able to send just the values (since
+// the names will not change)
+message AggregateValue {
+   repeated string name = 1;
+   repeated Value value = 2;
+}
+
+message EnumeratedValue {
+    required sint64 sint64Value = 1;
+    required string stringValue = 4;
+}
+
+message ArrayValue {
+    repeated Value value = 1;
+}
+
+// Union type for storing a value
+// this message should hopefully one day replace the one in the yamcs-api as it is cleaner
+message Value {
+    oneof v {
+        float floatValue = 2;
+        double doubleValue = 3;
+        sint32 sint32Value = 4;
+        uint32 uint32Value = 5;
+        bytes binaryValue = 6;
+        string stringValue = 7;
+        Timestamp timestampValue = 8;
+        uint64 uint64Value = 9;
+        sint64 sint64Value = 10;
+        bool booleanValue = 11;
+        AggregateValue aggregateValue = 12;
+        EnumeratedValue enumeratedValue = 13;
+        ArrayValue arrayValue = 14;    
+    };
+}
+
+message ParameterValue {
+    // Parameter identifier
+    optional string fqn = 1;
+
+    // can be used instead of the id above in certain contexts
+    optional uint32 numericId = 2;
+
+    // Raw value (uncalibrated)
+    optional Value rawValue = 3;
+
+    // Engineering value (calibrated)
+    optional Value engValue = 4;
+
+    optional Timestamp acquisitionTime = 5;
+
+    optional Timestamp generationTime = 6;
+
+    optional yamcs.protobuf.pvalue.AcquisitionStatus acquisitionStatus = 7;
+    
+    optional yamcs.protobuf.pvalue.MonitoringResult monitoringResult = 8;
+    optional yamcs.protobuf.pvalue.RangeCondition rangeCondition = 9;
+
+    // How long (in milliseconds) this parameter value is valid
+    optional int64 expireMillis = 10;
+}
+
+
+message ParameterData {
+    repeated ParameterValue parameter = 1;
+
+    // The next three fields are used by the recorder as unique key to store
+    // parameters in "rows" and also by components that provide parameters
+    // from external sources. The time should roughly correspond to the parameter 
+    // time but can be rounded for better efficiency.
+    optional string group = 2;
+    optional Timestamp  generationTime = 3;
+    optional uint32 seqNum = 4;
+}
+
+message CommandAssignment {
+  required string name = 1;
+  optional Value rawValue = 2;
+  optional Value engValue = 3;
+}
+
+message CommandId {
+  required int64 generationTime = 1;
+  required string origin = 2;
+  required int32 sequenceNumber = 3; //unique in relation to generationTime and origin
+  optional string commandName = 4;
+}
+
+message PreparedCommand {
+   required yamcs.protobuf.commanding.CommandId commandId = 1;
+   repeated CommandAssignment assignments = 2;
+   map<string, Value> extra = 3;
+   optional bytes binary = 4;
+}
+
+message Event {
+    optional string source = 1;
+    optional int64 generationTime = 2;
+    optional int64 receptionTime = 3;
+    optional int32 seqNumber = 4;
+    optional string type = 5;
+    required string message = 6;
+    optional yamcs.protobuf.events.Event.EventSeverity severity = 7[default=INFO];
+  
+    // Set by API when event was posted by a user
+    optional string createdBy = 10;
+
+    // Additional properties
+    map<string, string> extra = 11;
+}
+
+
+//YFE targets
+message TargetList {
+    repeated Target target = 1;
+}
+message Target {
+    required uint32 id = 1;
+    required string name = 2;
+    optional string description = 3;
+}

@@ -4,6 +4,9 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.xtce.AggregateDataType;
 import org.yamcs.xtce.util.AggregateMemberNames;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 public class AggregateValue extends Value {
     AggregateMemberNames names;
     Value[] values;
@@ -98,4 +101,18 @@ public class AggregateValue extends Value {
         return sb.toString();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AggregateValue that = (AggregateValue) o;
+        return Objects.equals(names, that.names) && Arrays.equals(values, that.values);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(names);
+        result = 31 * result + Arrays.hashCode(values);
+        return result;
+    }
 }
