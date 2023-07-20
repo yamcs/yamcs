@@ -1,13 +1,11 @@
 package org.yamcs.yfe;
 
-
+import io.netty.buffer.ByteBuf;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.AbstractTmDataLink;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.utils.TimeEncoding;
-
-import io.netty.buffer.ByteBuf;
 
 public class TmLink extends AbstractTmDataLink {
     YfeLink parentLink;
@@ -52,7 +50,6 @@ public class TmLink extends AbstractTmDataLink {
 
         TmPacket pkt = new TmPacket(rectime, pktData);
         pkt.setEarthReceptionTime(ert);
-
 
         packetCount.incrementAndGet();
         processPacket(pkt);

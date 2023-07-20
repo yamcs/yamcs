@@ -1,5 +1,27 @@
 package org.yamcs.yfe;
 
+import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
+import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
+import org.yamcs.events.EventProducerFactory;
+import org.yamcs.logging.Log;
+import org.yamcs.tctm.AbstractLink;
+import org.yamcs.tctm.AggregatedDataLink;
+import org.yamcs.tctm.Link;
+import org.yamcs.yfe.protobuf.Yfe.Event;
+import org.yamcs.yfe.protobuf.Yfe.MessageType;
+import org.yamcs.yfe.protobuf.Yfe.ParameterData;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,32 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-
-import org.yamcs.Spec;
-import org.yamcs.YConfiguration;
-import org.yamcs.YamcsServer;
-import org.yamcs.Spec.OptionType;
-
-import org.yamcs.events.EventProducerFactory;
-import org.yamcs.logging.Log;
-import org.yamcs.tctm.AbstractLink;
-import org.yamcs.tctm.AggregatedDataLink;
-import org.yamcs.tctm.Link;
-import org.yamcs.yfe.protobuf.Yfe.MessageType;
-
-
-import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 
 public class YfeLink extends AbstractLink implements AggregatedDataLink {
     final static int MAX_PACKET_LENGTH = 0xFFFF;
@@ -49,6 +45,8 @@ public class YfeLink extends AbstractLink implements AggregatedDataLink {
 
     List<Link> subLinks = new ArrayList<>();
     Map<Integer, TmLink> tmLinks = new HashMap<>();
+    Map<Integer, ParameterLink> paramLinks = new HashMap<>();
+    Map<Integer, EventLink> eventLinks = new HashMap<>();
 
     YfeChannelHandler handler;
     public static final byte VERSION = 0;
@@ -74,8 +72,18 @@ public class YfeLink extends AbstractLink implements AggregatedDataLink {
         TcLink tcLink = new TcLink(this, 100);
         tcLink.init(instance, name + ".tc", config);
 
+        EventLink eventLink = new EventLink(this, 100);
+        eventLink.init(instance, name + ".ev", config);
+        eventLinks.put(3, eventLink);
+
+        ParameterLink parameterLink = new ParameterLink(this, 100);
+        parameterLink.init(instance, name + ".pm", config);
+        paramLinks.put(3, parameterLink);
+
         subLinks.add(tcLink);
         subLinks.add(tmLink);
+        subLinks.add(eventLink);
+        subLinks.add(parameterLink);
     }
 
     @Override
@@ -243,7 +251,6 @@ public class YfeLink extends AbstractLink implements AggregatedDataLink {
             buf.writeBytes(data);
 
             return ctx.writeAndFlush(buf);
-            
         }
 
         @Override
@@ -256,12 +263,26 @@ public class YfeLink extends AbstractLink implements AggregatedDataLink {
                 ctx.close();
                 return;
             }
-            byte type = buf.readByte();
-            if (type == MessageType.TM_VALUE) {
-                processTm(buf);
-            } else {
-                // TODO
-                log.warn("message of type {} not implemented", type);
+            try {
+                byte type = buf.readByte();
+                //System.out.println(type);
+                switch (type) {
+                case MessageType.TM_VALUE:
+                    processTm(buf);
+                    break;
+                case MessageType.PARAMETER_DATA_VALUE:
+                    processParameter(buf);
+                    break;
+                case MessageType.EVENT_VALUE:
+                    processEvent(buf);
+                    break;
+                default:
+                    log.warn("message of type {} not implemented", type);
+                    break;
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
         }
@@ -274,6 +295,34 @@ public class YfeLink extends AbstractLink implements AggregatedDataLink {
                 return;
             }
             tmLink.processMessage(buf);
+        }
+
+        private void processParameter(ByteBuf buf) throws Exception {
+            int targetId = buf.readInt();
+            System.out.println("target id: " + targetId + " ");
+            ParameterLink paramLink = paramLinks.get(targetId);
+
+            ParameterData protoDat = ParameterData.parseFrom(new ByteBufInputStream(buf));
+
+            // if (paramLink == null) {
+            //     log.warn("Got message for unknown target {}", targetId);
+            //     return;
+            // }
+            paramLink.processParameters(protoDat);
+        }
+
+        private void processEvent(ByteBuf buf) throws Exception {
+            int targetId = buf.readInt();
+            System.out.println("target id: " + targetId + " ");
+            EventLink eventLink = eventLinks.get(targetId);
+
+            Event protoDat = Event.parseFrom(new ByteBufInputStream(buf));
+
+            // if (paramLink == null) {
+            //     log.warn("Got message for unknown target {}", targetId);
+            //     return;
+            // }
+            eventLink.processEvent(protoDat);
         }
 
         public boolean isConnected() {
@@ -289,6 +338,5 @@ public class YfeLink extends AbstractLink implements AggregatedDataLink {
             ctx.close();
         }
     }
-
 
 }

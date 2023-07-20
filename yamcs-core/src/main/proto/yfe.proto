@@ -13,8 +13,6 @@ import "yamcs/protobuf/pvalue/pvalue.proto";
 import "yamcs/protobuf/commanding/commanding.proto";
 import "yamcs/protobuf/events/events.proto";
 
-import "google/protobuf/timestamp.proto";
-
 enum MessageType {
   TARGET_INFO = 1;
   TM = 2;
@@ -25,7 +23,7 @@ enum MessageType {
 
 message Timestamp {
 	required sint64 millis = 1;
-	required uint64 nanos = 2;
+	required uint32 picos = 2;
 }
 
 // An aggregate value is an ordered list of (member name, member value).
@@ -67,7 +65,7 @@ message Value {
 
 message ParameterValue {
     // Parameter identifier
-    optional yamcs.protobuf.NamedObjectId id = 1;
+    optional string fqn = 1;
 
     // can be used instead of the id above in certain contexts
     optional uint32 numericId = 2;
@@ -100,7 +98,7 @@ message ParameterData {
     // from external sources. The time should roughly correspond to the parameter 
     // time but can be rounded for better efficiency.
     optional string group = 2;
-    optional google.protobuf.Timestamp  generationTime = 3;
+    optional Timestamp  generationTime = 3;
     optional uint32 seqNum = 4;
 }
 

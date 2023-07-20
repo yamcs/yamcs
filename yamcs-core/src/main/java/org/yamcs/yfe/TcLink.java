@@ -1,25 +1,13 @@
 package org.yamcs.yfe;
 
-import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
-
-import java.util.Map.Entry;
-
 import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
-import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.tctm.AbstractTcDataLink;
 import org.yamcs.tctm.AggregatedDataLink;
-import org.yamcs.xtce.Argument;
-import org.yamcs.yfe.protobuf.Yfe.AggregateValue;
-import org.yamcs.yfe.protobuf.Yfe.ArrayValue;
-import org.yamcs.yfe.protobuf.Yfe.CommandAssignment;
-import org.yamcs.yfe.protobuf.Yfe.EnumeratedValue;
 import org.yamcs.yfe.protobuf.Yfe.MessageType;
-import org.yamcs.yfe.protobuf.Yfe.Value;
 
-import com.google.protobuf.ByteString;
-import com.google.protobuf.Timestamp;
+import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
 
 public class TcLink extends AbstractTcDataLink {
     final YfeLink parentLink;
