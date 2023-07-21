@@ -6,12 +6,16 @@ import java.util.stream.Collectors;
 
 import org.rocksdb.RocksDB;
 import org.yamcs.http.api.IamApi;
+import org.yamcs.protobuf.Mdb.SignificanceInfo.SignificanceLevelType;
 import org.yamcs.protobuf.UserInfo;
 import org.yamcs.security.Directory;
 import org.yamcs.security.User;
+import org.yamcs.security.protobuf.Clearance;
 import org.yamcs.utils.TimeEncoding;
 
+import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Parameters;
 import com.google.protobuf.util.JsonFormat;
 
@@ -29,6 +33,7 @@ public class UsersCli extends Command {
         addSubCommand(new DeleteUser());
         addSubCommand(new DescribeUser());
         addSubCommand(new ListUsers());
+        addSubCommand(new RemoveIdentity());
         addSubCommand(new RemoveRole());
         addSubCommand(new ResetPassword());
         addSubCommand(new UpdateUser());
@@ -65,6 +70,40 @@ public class UsersCli extends Command {
             }
 
             user.addRole(role, false);
+            directory.updateUserProperties(user);
+        }
+    }
+
+    @Parameters(commandDescription = "Remove an identity from a user")
+    private class RemoveIdentity extends Command {
+
+        @Parameter(description = "The name of the user.")
+        private List<String> username;
+
+        @Parameter(names = "--identity", required = true, description = "Identity to be removed.")
+        private String identity;
+
+        RemoveIdentity() {
+            super("remove-identity", UsersCli.this);
+        }
+
+        @Override
+        void execute() throws Exception {
+            RocksDB.loadLibrary();
+            Directory directory = new Directory();
+
+            if (username == null) {
+                console.println("username not specified");
+                exit(-1);
+            }
+
+            User user = directory.getUser(username.get(0));
+            if (user == null) {
+                console.println("invalid user '" + username.get(0) + "'");
+                exit(-1);
+            }
+
+            user.deleteIdentity(identity);
             directory.updateUserProperties(user);
         }
     }
@@ -121,6 +160,9 @@ public class UsersCli extends Command {
         @Parameter(names = "--superuser", arity = 1, description = "Grant superuser privileges")
         private Boolean superuser;
 
+        @Parameter(names = "--clearance", description = "Clearance level of the user", converter = SignificanceLevelConverter.class)
+        private SignificanceLevelType clearance;
+
         UpdateUser() {
             super("update", UsersCli.this);
         }
@@ -153,6 +195,12 @@ public class UsersCli extends Command {
             if (superuser != null) {
                 user.setSuperuser(superuser);
             }
+            if (clearance != null) {
+                user.setClearance(Clearance.newBuilder()
+                        .setLevel(clearance.name())
+                        .setIssueTime(TimeEncoding.toProtobufTimestamp(TimeEncoding.getWallclockTime()))
+                        .build());
+            }
 
             directory.updateUserProperties(user);
         }
@@ -179,6 +227,9 @@ public class UsersCli extends Command {
         @Parameter(names = "--no-password", description = "Add this flag to indicate that this user should not have a password. This will also bypass the password prompt.")
         private boolean noPassword;
 
+        @Parameter(names = "--clearance", description = "Clearance level of the user", converter = SignificanceLevelConverter.class)
+        private SignificanceLevelType clearance;
+
         CreateUser() {
             super("create", UsersCli.this);
         }
@@ -203,6 +254,13 @@ public class UsersCli extends Command {
             user.setDisplayName(displayName);
             user.setEmail(email);
             user.setSuperuser(superuser);
+
+            if (clearance != null) {
+                user.setClearance(Clearance.newBuilder()
+                        .setLevel(clearance.name())
+                        .setIssueTime(TimeEncoding.toProtobufTimestamp(TimeEncoding.getWallclockTime()))
+                        .build());
+            }
 
             char[] password = null;
             if (!noPassword) {
@@ -304,6 +362,9 @@ public class UsersCli extends Command {
                 b.addLine("active:", user.isActive());
                 b.addLine("superuser:", user.isSuperuser());
                 b.addLine("roles:", String.join(", ", user.getRoles()));
+                if (user.getClearance() != null) {
+                    b.addLine("clearance:", user.getClearance().getLevel());
+                }
                 b.addLine("external:", user.isExternallyManaged());
                 b.addLine("created:", printInstant(user.getCreationTime()));
                 b.addLine("confirmed:", printInstant(user.getConfirmationTime()));
@@ -447,6 +508,21 @@ public class UsersCli extends Command {
             } else {
                 console.println("Password incorrect");
                 exit(-1);
+            }
+        }
+    }
+
+    // Keep public, required by JCommander
+    public static class SignificanceLevelConverter implements IStringConverter<SignificanceLevelType> {
+
+        @Override
+        public SignificanceLevelType convert(String value) {
+            try {
+                return SignificanceLevelType.valueOf(value.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new ParameterException(
+                        "Unknown value for --clearance. Possible values: "
+                                + Arrays.asList(SignificanceLevelType.values()));
             }
         }
     }
