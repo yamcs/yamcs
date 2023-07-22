@@ -39,14 +39,18 @@ public class User extends Account {
 
     private Map<String, String> identitiesByProvider = new HashMap<>();
 
+    // Roles coming from Yamcs DB
+    private Set<String> roles = new HashSet<>();
+
+    // Roles that come from external authorization systems
+    private Set<String> externalRoles = new HashSet<>();
+
     // Keep track of external privileges separately. It allows us to rebuild the effective
     // privileges when the roles change.
-    private Set<String> externalRoles = new HashSet<>();
     private Set<SystemPrivilege> externalSystemPrivileges = new HashSet<>();
     private Map<ObjectPrivilegeType, Set<ObjectPrivilege>> externalObjectPrivileges = new HashMap<>();
 
     // Effective privileges (= external privileges + privileges from directory roles
-    private Set<String> roles = new HashSet<>();
     private Set<SystemPrivilege> systemPrivileges = new HashSet<>();
     private Map<ObjectPrivilegeType, Set<ObjectPrivilege>> objectPrivileges = new HashMap<>();
 
@@ -128,7 +132,9 @@ public class User extends Account {
     }
 
     public Set<String> getRoles() {
-        return Collections.unmodifiableSet(roles);
+        var merged = new HashSet<>(roles);
+        merged.addAll(externalRoles);
+        return Collections.unmodifiableSet(merged);
     }
 
     public void setRoles(Collection<String> roles) {
@@ -136,11 +142,15 @@ public class User extends Account {
         this.roles.addAll(roles);
     }
 
+    /**
+     * Add a role to this user. If marked as external, this role assignment is not persisted to Yamcs DB.
+     */
     public void addRole(String role, boolean external) {
         if (external) {
             externalRoles.add(role);
+        } else {
+            roles.add(role);
         }
-        roles.add(role);
     }
 
     public void deleteRole(String role) {
@@ -209,9 +219,6 @@ public class User extends Account {
      * Resets user privileges to only those that are externally defined.
      */
     public void clearDirectoryPrivileges() {
-        roles.clear();
-        roles.addAll(externalRoles);
-
         systemPrivileges.clear();
         systemPrivileges.addAll(externalSystemPrivileges);
 
