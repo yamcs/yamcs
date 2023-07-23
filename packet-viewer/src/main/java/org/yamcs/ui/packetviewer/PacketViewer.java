@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -80,6 +79,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
+import org.yamcs.client.BasicAuthCredentials;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.ConnectionListener;
 import org.yamcs.client.MessageListener;
@@ -824,21 +824,24 @@ public class PacketViewer extends JFrame implements ActionListener,
     void connectYamcs(ConnectData connectData) {
         disconnect();
         this.connectData = connectData;
-        String context = connectData.contextPath;
-        if (context != null && context.isEmpty()) {
-            context = null;
-        }
-        client = YamcsClient.newBuilder(connectData.host, connectData.port)
+        var clientBuilder = YamcsClient.newBuilder(connectData.serverUrl)
                 .withConnectionAttempts(10)
                 .withUserAgent("PacketViewer")
-                .withContext(context)
-                .withTls(connectData.tls)
-                .withVerifyTls(false)
-                .build();
+                .withVerifyTls(false);
+
+        if (connectData.authType == AuthType.BASIC_AUTH && connectData.username != null) {
+            clientBuilder.withCredentials(new BasicAuthCredentials(connectData.username, connectData.password));
+        }
+
+        client = clientBuilder.build();
         client.addConnectionListener(this);
         try {
             if (connectData.username != null) {
-                client.login(connectData.username, connectData.password);
+                if (connectData.authType == AuthType.STANDARD) {
+                    client.login(connectData.username, connectData.password);
+                } else if (connectData.authType == AuthType.KERBEROS) {
+                    client.loginWithKerberos(connectData.username);
+                }
             }
             client.connectWebSocket();
         } catch (ClientException e) {
@@ -1271,10 +1274,8 @@ public class PacketViewer extends JFrame implements ActionListener,
             if (isURL) {
                 var serverURL = ServerURL.parse(fileOrURL);
                 var connectData = new ConnectData();
-                connectData.host = serverURL.getHost();
-                connectData.port = serverURL.getPort();
-                connectData.contextPath = serverURL.getContext();
-                connectData.tls = serverURL.isTLS();
+                connectData.authType = AuthType.STANDARD;
+                connectData.serverUrl = serverURL.toString();
                 connectData.instance = options.get("-i");
                 connectData.streamName = options.getOrDefault("-s", "tm_realtime");
                 if (options.containsKey("-x")) {

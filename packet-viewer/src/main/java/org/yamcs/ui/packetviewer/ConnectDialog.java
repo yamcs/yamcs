@@ -25,7 +25,6 @@ import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -41,8 +40,10 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 
 import org.yamcs.YConfiguration;
+import org.yamcs.client.BasicAuthCredentials;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.YamcsClient;
+import org.yamcs.client.base.ServerURL;
 import org.yamcs.protobuf.YamcsInstance;
 
 /**
@@ -56,6 +57,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
     private static final long serialVersionUID = 1L;
     private static final String PREF_FILENAME = "YamcsConnectionProperties"; // relative to the <home>/.yamcs directory
 
+    private String PREF_AUTH_TYPE = "authType";
     private String PREF_HOST = "host";
     private String PREF_PORT = "port";
     private String PREF_TLS = "tls";
@@ -63,19 +65,18 @@ public class ConnectDialog extends JDialog implements ActionListener {
     private String PREF_USERNAME = "username";
     private String PREF_INSTANCE = "instance";
 
-    private String host;
-    private Integer port;
-    private Boolean tls;
-    private String contextPath;
+    private String serverUrl;
+    private AuthType authType = AuthType.STANDARD;
     private String username;
     private String password;
     private String instance;
 
-    JTextField hostTextField;
-    JTextField portTextField;
-    JCheckBox tlsCheckBox;
-    JTextField contextPathTextField;
-    JTextField usernameTextField;
+    private JTextField serverUrlTextField;
+
+    private JComboBox<AuthType> authTypeCombo;
+    private JLabel usernameLabel;
+    private JTextField usernameTextField;
+    private JLabel passwordLabel;
     private JPasswordField passwordTextField;
 
     private JComboBox<String> instanceCombo;
@@ -107,10 +108,37 @@ public class ConnectDialog extends JDialog implements ActionListener {
             prefs.load(in);
         }
 
-        host = prefs.getProperty(PREF_HOST);
+        String authTypeName = prefs.getProperty(PREF_AUTH_TYPE);
+        if (authTypeName != null) {
+            authType = AuthType.valueOf(authTypeName);
+        } else {
+            authType = AuthType.STANDARD;
+        }
+
+        String host = prefs.getProperty(PREF_HOST);
+        Integer port = null;
         try {
             port = Integer.parseInt(prefs.getProperty(PREF_PORT));
         } catch (NumberFormatException e) {
+        }
+
+        String contextPath = prefs.getProperty(PREF_CONTEXT_PATH, null);
+        boolean tls = Boolean.parseBoolean(prefs.getProperty("tls", "false"));
+
+        if (host != null) {
+            String serverUrl = tls ? "https://" : "http://";
+            serverUrl += host;
+            // 8090 was the default if the port text field was empty
+            // (before the transition of url components to url)
+            serverUrl += ":" + (port == null ? 8090 : port);
+            if (contextPath != null && !contextPath.isBlank()) {
+                serverUrl += "/" + contextPath;
+            }
+            try {
+                this.serverUrl = ServerURL.parse(serverUrl).toString();
+            } catch (IllegalArgumentException e) {
+                // Ignore, just ignore prefs
+            }
         }
 
         instance = prefs.getProperty(PREF_INSTANCE);
@@ -118,26 +146,24 @@ public class ConnectDialog extends JDialog implements ActionListener {
             username = prefs.getProperty(PREF_USERNAME);
             password = null;
         }
-        contextPath = prefs.getProperty(PREF_CONTEXT_PATH, null);
-        tls = Boolean.parseBoolean(prefs.getProperty("tls", "false"));
     }
 
     private void saveConnectionPreferences() {
         String home = System.getProperty("user.home") + "/.yamcs";
         new File(home).mkdirs();
         Properties prefs = new Properties();
-        if (host != null) {
-            prefs.setProperty(PREF_HOST, host);
+        if (this.serverUrl != null) {
+            ServerURL serverUrl = ServerURL.parse(this.serverUrl);
+            prefs.setProperty(PREF_HOST, serverUrl.getHost());
+            prefs.setProperty(PREF_PORT, Integer.toString(serverUrl.getPort()));
+            prefs.setProperty(PREF_TLS, Boolean.toString(serverUrl.isTLS()));
+            if (serverUrl.getContext() == null) {
+                prefs.remove(PREF_CONTEXT_PATH);
+            } else {
+                prefs.setProperty(PREF_CONTEXT_PATH, serverUrl.getContext());
+            }
         }
-        if (port != null) {
-            prefs.setProperty(PREF_PORT, Integer.toString(port));
-        }
-        if (tls != null) {
-            prefs.setProperty(PREF_TLS, Boolean.toString(tls));
-        }
-        if (contextPath != null) {
-            prefs.setProperty(PREF_CONTEXT_PATH, contextPath);
-        }
+        prefs.setProperty(PREF_AUTH_TYPE, authType.name());
         if (instance != null) {
             prefs.setProperty(PREF_INSTANCE, instance);
         }
@@ -181,58 +207,52 @@ public class ConnectDialog extends JDialog implements ActionListener {
         inputPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 5, 10));
         getContentPane().add(inputPanel, BorderLayout.CENTER);
 
-        lab = new JLabel("Host: ");
+        lab = new JLabel("Server URL: ");
         lab.setHorizontalAlignment(SwingConstants.RIGHT);
         ceast.gridy = 1;
         inputPanel.add(lab, ceast);
-        hostTextField = new JTextField(host);
-        hostTextField.setPreferredSize(new Dimension(160, hostTextField.getPreferredSize().height));
+        serverUrlTextField = new JTextField(serverUrl);
+        serverUrlTextField.setPreferredSize(new Dimension(300, serverUrlTextField.getPreferredSize().height));
         cwest.gridy = 1;
-        inputPanel.add(hostTextField, cwest);
-
-        lab = new JLabel("Port: ");
-        lab.setHorizontalAlignment(SwingConstants.RIGHT);
-        ceast.gridy = 2;
-        inputPanel.add(lab, ceast);
-        portTextField = new JTextField(String.valueOf(port != null ? port : 8090));
-        cwest.gridy = 2;
-        inputPanel.add(portTextField, cwest);
-
-        lab = new JLabel("TLS: ");
-        lab.setHorizontalAlignment(SwingConstants.RIGHT);
-        ceast.gridy++;
-        cwest.gridy++;
-        inputPanel.add(lab, ceast);
-        tlsCheckBox = new JCheckBox();
-        tlsCheckBox.setSelected(tls != null ? tls : false);
-        inputPanel.add(tlsCheckBox, cwest);
-
-        lab = new JLabel("Context Path: ");
-        lab.setHorizontalAlignment(SwingConstants.RIGHT);
-        ceast.gridy++;
-        cwest.gridy++;
-        inputPanel.add(lab, ceast);
-        contextPathTextField = new JTextField(contextPath);
-        contextPathTextField.setPreferredSize(new Dimension(160, contextPathTextField.getPreferredSize().height));
-        inputPanel.add(contextPathTextField, cwest);
+        inputPanel.add(serverUrlTextField, cwest);
 
         ceast.gridy++;
         cwest.gridy++;
-        lab = new JLabel("Username: ");
+        lab = new JLabel("Auth Type: ");
         lab.setHorizontalAlignment(SwingConstants.RIGHT);
         inputPanel.add(lab, ceast);
+        authTypeCombo = new JComboBox<>(AuthType.values());
+        authTypeCombo.setSelectedItem(authType);
+        authTypeCombo.setPreferredSize(new Dimension(300, authTypeCombo.getPreferredSize().height));
+        authTypeCombo.setEditable(false);
+        authTypeCombo.setActionCommand("authType");
+        authTypeCombo.addActionListener(this);
+        inputPanel.add(authTypeCombo, cwest);
+
+        ceast.gridy++;
+        cwest.gridy++;
+        usernameLabel = new JLabel("Username: ");
+        usernameLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        inputPanel.add(usernameLabel, ceast);
         usernameTextField = new JTextField(username);
-        usernameTextField.setPreferredSize(new Dimension(160, usernameTextField.getPreferredSize().height));
+        usernameTextField.setPreferredSize(new Dimension(300, usernameTextField.getPreferredSize().height));
         inputPanel.add(usernameTextField, cwest);
 
         ceast.gridy++;
         cwest.gridy++;
-        lab = new JLabel("Password: ");
-        lab.setHorizontalAlignment(SwingConstants.RIGHT);
-        inputPanel.add(lab, ceast);
+        passwordLabel = new JLabel("Password: ");
+        passwordLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        inputPanel.add(passwordLabel, ceast);
         passwordTextField = new JPasswordField();
-        passwordTextField.setPreferredSize(new Dimension(160, passwordTextField.getPreferredSize().height));
+        passwordTextField.setPreferredSize(new Dimension(300, passwordTextField.getPreferredSize().height));
         inputPanel.add(passwordTextField, cwest);
+        if (authType == AuthType.KERBEROS) {
+            passwordLabel.setEnabled(false);
+            passwordTextField.setEnabled(false);
+            usernameLabel.setEnabled(false);
+            usernameTextField.setEnabled(false);
+            usernameTextField.setText(System.getProperty("user.name"));
+        }
 
         if (getInstance) {
             lab = new JLabel("Instance: ");
@@ -243,7 +263,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
 
             inputPanel.add(lab, ceast);
             instanceCombo = new JComboBox<>(new String[] { instance });
-            instanceCombo.setPreferredSize(hostTextField.getPreferredSize());
+            instanceCombo.setPreferredSize(new Dimension(300, instanceCombo.getPreferredSize().height));
             instanceCombo.setEditable(true);
 
             inputPanel.add(instanceCombo, cwest);
@@ -317,7 +337,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
 
             if (dbconfigs.length > 0) {
                 localMdbConfigCombo = new JComboBox<>(dbconfigs);
-                localMdbConfigCombo.setPreferredSize(hostTextField.getPreferredSize());
+                localMdbConfigCombo.setPreferredSize(serverUrlTextField.getPreferredSize());
                 localMdbConfigCombo.setEditable(false);
 
                 String selectedLocalMdbConfig = prefs.get("selectedLocalMdbConfig",
@@ -329,7 +349,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
                 }
             } else {
                 localMdbConfigCombo = new JComboBox<>(new String[] { "unavailable" });
-                localMdbConfigCombo.setPreferredSize(hostTextField.getPreferredSize());
+                localMdbConfigCombo.setPreferredSize(serverUrlTextField.getPreferredSize());
                 localMdbConfigCombo.setEnabled(false);
                 localMdbConfigCombo.setSelectedItem("unavailable");
                 inputPanel.add(localMdbConfigCombo, cwest);
@@ -355,9 +375,9 @@ public class ConnectDialog extends JDialog implements ActionListener {
         buttonPanel.add(button);
 
         setMinimumSize(new Dimension(350, 100));
-        setLocationRelativeTo(parent);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         pack();
+        setLocationRelativeTo(parent);
     }
 
     private void installActions() {
@@ -387,17 +407,16 @@ public class ConnectDialog extends JDialog implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         String cmd = e.getActionCommand();
         if ("connect".equals(cmd)) {
-            host = hostTextField.getText();
+            authType = (AuthType) authTypeCombo.getSelectedItem();
+            serverUrl = serverUrlTextField.getText();
             try {
-                port = Integer.parseInt(portTextField.getText());
-            } catch (NumberFormatException x) {
-                JOptionPane.showMessageDialog(this, "Cannot parse port number; please enter a number", "Invalid port",
+                ServerURL.parse(serverUrl);
+            } catch (IllegalArgumentException x) {
+                JOptionPane.showMessageDialog(this, x.getMessage(), "Invalid Server URL",
                         JOptionPane.ERROR_MESSAGE);
                 return; // do not close the dialog
             }
 
-            contextPath = contextPathTextField.getText();
-            tls = tlsCheckBox.isSelected();
             if (!usernameTextField.getText().isEmpty()) {
                 username = usernameTextField.getText();
                 password = new String(passwordTextField.getPassword());
@@ -445,6 +464,16 @@ public class ConnectDialog extends JDialog implements ActionListener {
         } else if ("cancel".equals(cmd)) {
             returnValue = CANCEL_OPTION;
             setVisible(false);
+        } else if ("authType".equals(cmd)) {
+            var isKerberos = authTypeCombo.getSelectedItem() == AuthType.KERBEROS;
+            usernameLabel.setEnabled(!isKerberos);
+            if (isKerberos) {
+                usernameTextField.setText(System.getProperty("user.name"));
+            }
+            usernameTextField.setEnabled(!isKerberos);
+            passwordLabel.setEnabled(!isKerberos);
+            passwordTextField.setText(null);
+            passwordTextField.setEnabled(!isKerberos);
         } else if ("getInstances".equals(cmd)) {
             try {
                 YamcsClient client = null;
@@ -479,22 +508,26 @@ public class ConnectDialog extends JDialog implements ActionListener {
     }
 
     private YamcsClient createClientForUseInDialogOnly() throws ClientException {
-        String host = hostTextField.getText();
-        int port = Integer.parseInt(portTextField.getText());
-        String context = contextPathTextField.getText().trim();
-        if (context.isEmpty()) {
-            context = null;
+        var clientBuilder = YamcsClient.newBuilder(serverUrlTextField.getText())
+                .withUserAgent("PacketViewer")
+                .withVerifyTls(false);
+
+        var authType = (AuthType) authTypeCombo.getSelectedItem();
+        if (authType == AuthType.BASIC_AUTH && !usernameTextField.getText().isEmpty()) {
+            clientBuilder.withCredentials(
+                    new BasicAuthCredentials(usernameTextField.getText(), passwordTextField.getPassword()));
         }
-        YamcsClient client = YamcsClient.newBuilder(host, port)
-                .withContext(context)
-                .withTls(tlsCheckBox.isSelected())
-                .withVerifyTls(false)
-                .build();
+
+        var client = clientBuilder.build();
 
         if (usernameTextField.getText().isEmpty()) {
             client.pollServer();
         } else {
-            client.login(usernameTextField.getText(), passwordTextField.getPassword());
+            if (authType == AuthType.STANDARD) {
+                client.login(usernameTextField.getText(), passwordTextField.getPassword());
+            } else if (authType == AuthType.KERBEROS) {
+                client.loginWithKerberos(usernameTextField.getText());
+            }
         }
 
         return client;
@@ -502,10 +535,8 @@ public class ConnectDialog extends JDialog implements ActionListener {
 
     public ConnectData getConnectData() {
         ConnectData data = new ConnectData();
-        data.host = host;
-        data.port = port;
-        data.contextPath = contextPath;
-        data.tls = tls;
+        data.authType = authType;
+        data.serverUrl = serverUrl;
         if (username != null) {
             data.username = username;
             data.password = password.toCharArray();
