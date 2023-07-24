@@ -2,13 +2,12 @@ package org.yamcs.security;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.naming.Context;
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.DirContext;
@@ -41,6 +40,10 @@ public class LdapAuthModule implements AuthModule {
     private String[] searchAttributes;
     private List<GroupMapping> groupMappings = new ArrayList<>();
 
+    private List<String> groupBase;
+    private String groupFilter;
+    private String groupFilterUserAttribute;
+
     private boolean requiredIfKerberos;
 
     private Cache<String, LdapUserInfo> infoCache = CacheBuilder.newBuilder()
@@ -70,6 +73,7 @@ public class LdapAuthModule implements AuthModule {
         spec.addOption("port", OptionType.INTEGER);
         spec.addOption("user", OptionType.STRING);
         spec.addOption("password", OptionType.STRING).withSecret(true);
+        spec.requireTogether("user", "password");
         spec.addOption("tls", OptionType.BOOLEAN);
         spec.addOption("userBase", OptionType.STRING).withRequired(true);
         spec.addOption("attributes", OptionType.MAP)
@@ -79,8 +83,14 @@ public class LdapAuthModule implements AuthModule {
         spec.addOption("groupMappings", OptionType.LIST)
                 .withElementType(OptionType.MAP)
                 .withSpec(groupMappingSpec);
+
+        spec.addOption("groupBase", OptionType.LIST_OR_ELEMENT).withElementType(OptionType.STRING);
+        spec.addOption("groupFilter", OptionType.STRING);
+        spec.addOption("groupFilterUserAttribute", OptionType.STRING);
+        spec.requireTogether("groupBase", "groupFilter", "groupFilterUserAttribute");
+
         spec.addOption("requiredIfKerberos", OptionType.BOOLEAN).withDefault(false);
-        spec.requireTogether("user", "password");
+
         return spec;
     }
 
@@ -111,19 +121,28 @@ public class LdapAuthModule implements AuthModule {
         displayNameAttributes = attributesArgs.getList("displayName").toArray(new String[0]);
         emailAttributes = attributesArgs.getList("email").toArray(new String[0]);
 
-        for (var mappingConfig : args.getConfigList("groupMappings")) {
-            var groupMapping = new GroupMapping();
-            groupMapping.dn = mappingConfig.getString("dn");
-            groupMapping.role = mappingConfig.getString("role", null);
-            groupMapping.superuser = mappingConfig.getBoolean("superuser", false);
-            groupMappings.add(groupMapping);
+        groupBase = args.containsKey("groupBase") ? args.getList("groupBase") : null;
+        groupFilter = args.getString("groupFilter", null);
+        groupFilterUserAttribute = args.getString("groupFilterUserAttribute", null);
+
+        if (args.containsKey("groupMappings")) {
+            for (var mappingConfig : args.getConfigList("groupMappings")) {
+                var groupMapping = new GroupMapping();
+                groupMapping.dn = mappingConfig.getString("dn");
+                groupMapping.role = mappingConfig.getString("role", null);
+                groupMapping.superuser = mappingConfig.getBoolean("superuser", false);
+                groupMappings.add(groupMapping);
+            }
         }
 
-        List<String> concat = new ArrayList<>();
+        var concat = new HashSet<String>();
         concat.add(nameAttribute);
         concat.addAll(attributesArgs.getList("displayName"));
         concat.addAll(attributesArgs.getList("email"));
         concat.add("memberOf");
+        if (groupFilterUserAttribute != null) {
+            concat.add(groupFilterUserAttribute);
+        }
         searchAttributes = concat.toArray(new String[0]);
 
         requiredIfKerberos = args.getBoolean("requiredIfKerberos");
@@ -131,7 +150,11 @@ public class LdapAuthModule implements AuthModule {
         yamcsEnv = new Hashtable<>();
         yamcsEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
         yamcsEnv.put(Context.PROVIDER_URL, providerUrl);
-        yamcsEnv.put("com.sun.jndi.ldap.connect.pool", "true");
+
+        // Referral is needed to support querying of memberOf attribute that is
+        // generated through use of dynlist overlay.
+        yamcsEnv.put(Context.REFERRAL, "follow");
+
         yamcsEnv.put(Context.SECURITY_AUTHENTICATION, "simple");
         if (args.containsKey("user")) {
             yamcsEnv.put(Context.SECURITY_PRINCIPAL, args.getString("user"));
@@ -204,21 +227,41 @@ public class LdapAuthModule implements AuthModule {
         DirContext ctx = null;
         try {
             ctx = new InitialDirContext(yamcsEnv);
-            SearchControls controls = new SearchControls();
+            var controls = new SearchControls();
             controls.setReturningAttributes(searchAttributes);
             controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            String filter = userFilter.replace("{0}", username);
-            SearchResult result = getSingleResult(ctx, userBase, filter, controls);
-            if (result == null) {
+            var filter = userFilter.replace("{0}", username);
+            var searchResult = getSingleResult(ctx, userBase, filter, controls);
+            if (searchResult == null) {
                 return null;
             }
             info = new LdapUserInfo();
             // Use the uid from LDAP, just to prevent case sensitivity issues.
-            info.uid = (String) result.getAttributes().get(nameAttribute).get();
-            info.dn = result.getNameInNamespace();
-            info.cn = findAttribute(result, displayNameAttributes);
-            info.email = findAttribute(result, emailAttributes);
-            info.memberOf = findListAttribute(result, new String[] { "memberOf" });
+            info.uid = (String) searchResult.getAttributes().get(nameAttribute).get();
+            info.dn = searchResult.getNameInNamespace();
+            info.cn = findAttribute(searchResult, displayNameAttributes);
+            info.email = findAttribute(searchResult, emailAttributes);
+            info.memberOf = findListAttribute(searchResult, new String[] { "memberOf" });
+
+            if (groupBase != null) {
+                controls = new SearchControls();
+                controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+                var lookup = findAttribute(searchResult, new String[] { groupFilterUserAttribute });
+                if (lookup == null && "dn".equalsIgnoreCase(groupFilterUserAttribute)) {
+                    lookup = searchResult.getNameInNamespace();
+                }
+                if (lookup != null) {
+                    filter = groupFilter.replace("{0}", lookup);
+                    for (var groupBaseElement : groupBase) {
+                        var answer = ctx.search(groupBaseElement, filter, controls);
+                        while (answer.hasMore()) {
+                            searchResult = answer.next();
+                            info.memberOf.add(searchResult.getNameInNamespace());
+                        }
+                        answer.close();
+                    }
+                }
+            }
 
             infoCache.put(username, info);
             return info;
@@ -285,12 +328,13 @@ public class LdapAuthModule implements AuthModule {
         return true;
     }
 
-    private SearchResult getSingleResult(DirContext ctx, String searchBase, String filter,
-            SearchControls controls)
+    private SearchResult getSingleResult(DirContext ctx, String searchBase, String filter, SearchControls controls)
             throws NamingException {
-        NamingEnumeration<SearchResult> answer = ctx.search(searchBase, filter, controls);
+        var answer = ctx.search(searchBase, filter, controls);
         if (answer.hasMore()) {
-            return answer.next();
+            var result = answer.next();
+            answer.close();
+            return result;
         }
         return null;
     }
@@ -317,7 +361,7 @@ public class LdapAuthModule implements AuthModule {
                 return values;
             }
         }
-        return Collections.emptyList();
+        return new ArrayList<>();
     }
 
     private static final class GroupMapping {

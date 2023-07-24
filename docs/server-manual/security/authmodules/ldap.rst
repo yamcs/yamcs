@@ -47,11 +47,29 @@ userFilter (string)
     Example: ``(&(sAMAccountName={0})(memberOf=cn=developers,ou=groups,dc=example,dc=com))``
 
 groupMappings (list of maps)
-    Manage mappings from LDAP groups to Yamcs roles. LDAP groups are established by looking at the ``memberOf`` attribute of the user entry.
+    Manage mappings from LDAP groups to Yamcs roles.
+
+    This makes use of the ``memberOf`` attribute in the user entry. If the LDAP directory does not support the ``memberOf`` attribute, you can instead configure the options ``groupBase``, ``groupFilter`` and ``groupFilterUserAttribute``.
 
 requiredIfKerberos (boolean)
     If ``true`` this module performs an LDAP lookup on users that were identified by :doc:`kerberos` or :doc:`spnego`. If the lookup fails, the login process is aborted.
 
+If the LDAP directory does not support ``memberOf``, you can configure group lookup with the following configuration options:
+
+groupBase (string or list of strings)
+    DNs to search through for finding memberships.
+
+    Example: ``ou=groups,dc=example,dc=com``
+
+groupFilter (string)
+    Search filter to find group entries for the user. The filter should include at least one occurrence of the ``{0}`` character sequence, which gets replaced with the value of the ``groupFilterUserAttribute`` configuration option.
+
+    Example: ``(member={0})``
+
+groupFilterUserAttribute (string)
+    Attribute from the user entry to use in the ``groupFilter`` lookup.
+
+    Example: ``dn``
 
 Attributes sub-configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
