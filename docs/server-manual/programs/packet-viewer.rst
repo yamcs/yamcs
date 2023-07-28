@@ -66,14 +66,14 @@ Options
 Examples
 --------
 
-Online mode:
+Offline mode:
 
 .. code-block:: console
 
     packet-viewer -l 50 -x my-db packet-file
 
 
-Offline mode:
+Online mode:
 
 .. code-block:: console
 
