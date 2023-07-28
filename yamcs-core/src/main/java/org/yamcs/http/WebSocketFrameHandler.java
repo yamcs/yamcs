@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.yamcs.api.Observer;
+import org.yamcs.http.WebSocketServerMessageHandler.InternalServerMessage;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.CancelOptions;
 import org.yamcs.protobuf.ClientMessage;
@@ -28,10 +29,10 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.WriteBufferWaterMark;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler.HandshakeComplete;
-
-import org.yamcs.http.WebSocketServerMessageHandler.InternalServerMessage;
+import io.netty.handler.timeout.IdleStateEvent;
 
 public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
 
@@ -82,6 +83,8 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
             nettyContext.pipeline()
                     .addLast(new WebSocketServerMessageHandler(httpServer, protobuf, writeBufferWaterMark.high()));
+        } else if (evt instanceof IdleStateEvent) {
+            nettyContext.writeAndFlush(new PingWebSocketFrame());
         } else {
             super.userEventTriggered(nettyContext, evt);
         }

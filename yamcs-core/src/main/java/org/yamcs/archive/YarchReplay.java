@@ -112,7 +112,7 @@ public class YarchReplay implements StreamSubscriber {
             handlers.put(ProtoDataType.PP, new ParameterReplayHandler(xtceDb));
         }
         if (currentRequest.hasCommandHistoryRequest()) {
-            handlers.put(ProtoDataType.CMD_HISTORY, new CommandHistoryReplayHandler(instance));
+            handlers.put(ProtoDataType.CMD_HISTORY, new CommandHistoryReplayHandler(instance, xtceDb));
         }
 
         for (ReplayHandler rh : handlers.values()) {

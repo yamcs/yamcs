@@ -16,6 +16,7 @@ export class CommandHistoryRecord {
   sequenceNumber: number;
 
   commandName: string;
+  aliases: { [key: string]: string; } = {};
 
   assignments: CommandAssignment[] = [];
   userAssignments: CommandAssignment[] = [];
@@ -51,6 +52,7 @@ export class CommandHistoryRecord {
     this.origin = entry.origin;
     this.sequenceNumber = entry.sequenceNumber;
     this.commandName = entry.commandName;
+    this.aliases = entry.aliases || {};
 
     for (const assignment of (entry.assignments || [])) {
       this.assignments.push(assignment);

@@ -36,7 +36,7 @@ If you have custom components that want to access this configuration, one possib
 
 .. rubric:: Instance-specific configuration
 
-Besides global plugin configuration options in :file:`etc/yamcs.yaml`, you may also want to add instance-specific configuration options. These would be considered when validating any :file:`yamcs.{instance}.yaml` file:
+Besides global plugin configuration options in :file:`etc/yamcs.yaml`, you may also want to add instance-specific configuration options. These would be considered when validating any :file:`etc/yamcs.{instance}.yaml` file:
 
 .. code-block:: java
 

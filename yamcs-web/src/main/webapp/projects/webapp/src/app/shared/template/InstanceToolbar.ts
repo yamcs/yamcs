@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConnectionInfo, MessageService, Processor, ProcessorSubscription } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { AppearanceService } from '../../core/services/AppearanceService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { SessionExpiredDialog } from '../dialogs/SessionExpiredDialog';
 import { StartReplayDialog } from './StartReplayDialog';
@@ -23,6 +24,7 @@ export class InstanceToolbar implements OnDestroy {
 
   connected$: Observable<boolean>;
   connectionInfo$: Observable<ConnectionInfo | null>;
+  zenMode$: Observable<boolean>;
 
   // For use in lazy dynamic population of Switch Processor menu.
   allProcessors$ = new BehaviorSubject<Processor[]>([]);
@@ -34,6 +36,7 @@ export class InstanceToolbar implements OnDestroy {
     readonly yamcs: YamcsService,
     private snackBar: MatSnackBar,
     private messageService: MessageService,
+    private appearanceService: AppearanceService,
   ) {
     this.processor$.next(yamcs.getProcessor());
     if (yamcs.processor) {
@@ -47,6 +50,7 @@ export class InstanceToolbar implements OnDestroy {
 
     this.connected$ = this.yamcs.yamcsClient.connected$;
     this.time$ = this.yamcs.time$;
+    this.zenMode$ = appearanceService.zenMode$;
 
     this.connectedSubscription = this.connected$.subscribe(connected => {
       if (!connected) {
@@ -112,6 +116,14 @@ export class InstanceToolbar implements OnDestroy {
     this.yamcs.yamcsClient.getInstance(this.yamcs.instance!).then(instance => {
       this.allProcessors$.next(instance.processors || []);
     });
+  }
+
+  toggleZenMode() {
+    this.appearanceService.zenMode$.next(true);
+  }
+
+  untoggleZenMode() {
+    this.appearanceService.zenMode$.next(false);
   }
 
   switchProcessor(processor: Processor) {

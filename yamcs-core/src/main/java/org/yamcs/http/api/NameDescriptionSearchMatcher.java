@@ -8,9 +8,23 @@ import org.yamcs.xtce.NameDescription;
 public class NameDescriptionSearchMatcher {
 
     private String[] terms;
+    private boolean searchDescription = true;
 
     public NameDescriptionSearchMatcher(String searchTerm) {
         terms = searchTerm.toLowerCase().split("\\s+");
+    }
+
+    public void setSearchDescription(boolean searchDescription) {
+        this.searchDescription = searchDescription;
+    }
+
+    public boolean matches(String name) {
+        for (String term : terms) {
+            if (!name.toLowerCase().contains(term)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public boolean matches(NameDescription nameDescription) {
@@ -18,7 +32,7 @@ public class NameDescriptionSearchMatcher {
             boolean match = false;
             if (nameDescription.getQualifiedName().toLowerCase().contains(term)) {
                 match = true;
-            } else if (nameDescription.getShortDescription() != null
+            } else if (searchDescription && nameDescription.getShortDescription() != null
                     && nameDescription.getShortDescription().toLowerCase().contains(term)) {
                 match = true;
             } else if (nameDescription.getAliasSet() != null) {

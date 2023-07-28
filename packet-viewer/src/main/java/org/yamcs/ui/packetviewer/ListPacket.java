@@ -48,8 +48,8 @@ public class ListPacket {
         return id;
     }
 
-    public void setName(String opsname) {
-        this.name = opsname;
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override

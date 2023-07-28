@@ -1,12 +1,10 @@
 package org.yamcs.ui.packetviewer;
 
 public class ConnectData {
-    String host;
-    int port;
-    boolean tls;
+    AuthType authType;
+    String serverUrl;
     String username;
     char[] password;
-    String contextPath;
 
     boolean useServerMdb;
     String localMdbConfig;

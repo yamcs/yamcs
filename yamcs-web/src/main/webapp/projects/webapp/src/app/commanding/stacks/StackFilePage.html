@@ -153,8 +153,7 @@
     </ya-empty-message>
     <ya-empty-message *ngIf="loaded && format && !entries$.value.length">
       Empty command stack<br>
-      Click <mat-icon inline style="vertical-align: bottom;">add_circle_outline</mat-icon> to start adding
-      commands
+      Click <mat-icon inline style="vertical-align: bottom;">add_circle_outline</mat-icon> to start adding commands
     </ya-empty-message>
 
     <div #entryParent class="panel-content" cdkDropList (cdkDropListDropped)="handleDrop($event)">

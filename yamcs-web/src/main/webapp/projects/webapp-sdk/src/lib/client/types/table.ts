@@ -18,9 +18,10 @@ export interface StreamEvent {
 
 export interface Stream {
   name: string;
-  column: Column[];
+  columns: Column[];
   script: string;
   dataCount: number;
+  subscribers: string[];
 }
 
 export interface StreamData {

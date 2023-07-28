@@ -38,7 +38,12 @@ public class User extends Account {
     private Clearance clearance;
 
     private Map<String, String> identitiesByProvider = new HashMap<>();
+
+    // Roles coming from Yamcs DB
     private Set<String> roles = new HashSet<>();
+
+    // Roles that come from external authorization systems
+    private Set<String> externalRoles = new HashSet<>();
 
     // Keep track of external privileges separately. It allows us to rebuild the effective
     // privileges when the roles change.
@@ -127,7 +132,9 @@ public class User extends Account {
     }
 
     public Set<String> getRoles() {
-        return Collections.unmodifiableSet(roles);
+        var merged = new HashSet<>(roles);
+        merged.addAll(externalRoles);
+        return Collections.unmodifiableSet(merged);
     }
 
     public void setRoles(Collection<String> roles) {
@@ -135,8 +142,15 @@ public class User extends Account {
         this.roles.addAll(roles);
     }
 
-    public void addRole(String role) {
-        roles.add(role);
+    /**
+     * Add a role to this user. If marked as external, this role assignment is not persisted to Yamcs DB.
+     */
+    public void addRole(String role, boolean external) {
+        if (external) {
+            externalRoles.add(role);
+        } else {
+            roles.add(role);
+        }
     }
 
     public void deleteRole(String role) {

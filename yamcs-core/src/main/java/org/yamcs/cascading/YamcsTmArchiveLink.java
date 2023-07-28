@@ -1,11 +1,14 @@
 package org.yamcs.cascading;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Collections;
+import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.yamcs.YConfiguration;
 import org.yamcs.TmPacket;
+import org.yamcs.YConfiguration;
 import org.yamcs.client.archive.ArchiveClient;
 import org.yamcs.client.archive.ArchiveClient.StreamOptions;
 import org.yamcs.client.archive.ArchiveClient.StreamOptions.StreamOption;
@@ -16,10 +19,10 @@ import org.yamcs.utils.TimeEncoding;
 
 /**
  * 
- * Yamcs Archive TM link - fetches archive data
+ * Yamcs TM Archive link - fetches archive data
  *
  */
-public class YamcsArchiveTmLink extends AbstractTmDataLink {
+public class YamcsTmArchiveLink extends AbstractTmDataLink {
     YamcsLink parentLink;
 
     private List<String> containers;
@@ -34,10 +37,11 @@ public class YamcsArchiveTmLink extends AbstractTmDataLink {
     private long start;
     private long stop;
 
-    public YamcsArchiveTmLink(YamcsLink parentLink) {
+    public YamcsTmArchiveLink(YamcsLink parentLink) {
         this.parentLink = parentLink;
     }
 
+    @Override
     public void init(String instance, String name, YConfiguration config) {
         config = YamcsTmLink.swapConfig(config, "tmArchiveStream", "tmStream", "tm_dump");
         super.init(instance, name, config);
@@ -93,7 +97,7 @@ public class YamcsArchiveTmLink extends AbstractTmDataLink {
     }
 
     void retrieveGaps() {
-        if(connectionStatus() != Status.OK || isEffectivelyDisabled()) {
+        if (connectionStatus() != Status.OK || isEffectivelyDisabled()) {
             return;
         }
 
@@ -204,7 +208,6 @@ public class YamcsArchiveTmLink extends AbstractTmDataLink {
     public void setContainers(List<String> containers) {
         this.containers = containers;
     }
-
 
     static class Gap implements Comparable<Gap> {
         long start;

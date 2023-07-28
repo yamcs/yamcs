@@ -1,8 +1,10 @@
 <ya-message-bar #messageBar />
 
 <mat-sidenav-container class="mat-typography"
-                       [class.message-bar-visible]="messageBar.show$ | async">
-  <mat-sidenav mode="side" [opened]="true" [disableClose]="true">
+                       [class.zen]="zenMode$ | async"
+                       [class.message-bar-visible]="messageBar.show$ | async"
+                       [@.disabled]="true">
+  <mat-sidenav mode="side" [opened]="!(zenMode$ | async)" [disableClose]="true">
     <div class="sidenav-content">
       <mat-toolbar class="top module-title" (click)="searchInput.focus()" style="cursor: text">
         <mat-toolbar-row style="cursor: text">

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { FormControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { DownloadParameterValuesOptions, SelectOption, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -25,6 +25,7 @@ export class ExportParameterDataDialog implements OnDestroy {
     start: new UntypedFormControl(null),
     stop: new UntypedFormControl(null),
     delimiter: new UntypedFormControl(null, Validators.required),
+    interval: new FormControl<number | null>(null),
   });
 
   constructor(
@@ -43,6 +44,7 @@ export class ExportParameterDataDialog implements OnDestroy {
       start: data.start ? utils.toISOString(data.start) : '',
       stop: data.stop ? utils.toISOString(data.stop) : '',
       delimiter: 'TAB',
+      interval: '',
     });
 
     this.formChangeSubscription = this.form.valueChanges.subscribe(() => {
@@ -68,6 +70,9 @@ export class ExportParameterDataDialog implements OnDestroy {
       if (this.form.value['stop']) {
         dlOptions.stop = utils.toISOString(this.form.value['stop']);
       }
+      if (this.form.value['interval']) {
+        dlOptions.interval = this.form.value['interval'];
+      }
       const url = this.yamcs.yamcsClient.getParameterValuesDownloadURL(this.yamcs.instance!, dlOptions);
       this.downloadURL$.next(url);
     } else {
@@ -76,8 +81,6 @@ export class ExportParameterDataDialog implements OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.formChangeSubscription) {
-      this.formChangeSubscription.unsubscribe();
-    }
+    this.formChangeSubscription?.unsubscribe();
   }
 }

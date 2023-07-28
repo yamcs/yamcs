@@ -6,6 +6,10 @@ mat-toolbar-row {
   padding-right: calc(24px - 16px);
 }
 
+.mat-toolbar.zen {
+  display: none;
+}
+
 .mat-toolbar-multiple-rows {
   min-height: 48px;
 }

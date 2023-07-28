@@ -30,6 +30,11 @@ public class AuthenticationInfo {
         return authenticator;
     }
 
+    public boolean isKerberos() {
+        return (authenticator instanceof KerberosAuthModule)
+                || (authenticator instanceof SpnegoAuthModule);
+    }
+
     /**
      * The username of the user that was verified.
      */

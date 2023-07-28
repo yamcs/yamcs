@@ -93,7 +93,8 @@ message ListCommandsRequest {
   // Default: ``desc``
   optional string order = 4;
   
-  // Text to search in the name of the command.
+  // Text to search in the name of the command. This searches both the
+  // qualified name, and any aliases.
   optional string q = 5;
 
   // Continuation token returned by a previous page response.
@@ -151,19 +152,23 @@ message IssueCommandRequest {
   optional string comment = 5;
   
   // Override the stream on which the command should be sent out.
+  //
   // Requires elevated privilege.
   optional string stream = 11;
   
   // Disable verification of all transmission constrains (if any
   // specified in the MDB).
+  //
   // Requires elevated privilege.
   optional bool disableTransmissionConstraints = 12;
   
   // Disable all post transmission verifiers (if any specified in the MDB)
+  //
   // Requires elevated privilege.
   optional bool disableVerifiers = 13;
   
   // Override verifier configuration. Keyed by verifier name
+  //
   // Requires elevated privilege.
   map<string, commanding.VerifierConfig> verifierConfig = 14;
   
@@ -177,7 +182,14 @@ message IssueCommandResponse {
   optional google.protobuf.Timestamp generationTime = 6;
   optional string origin = 7;
   optional int32 sequenceNumber = 8;
+
+  // Qualified name
   optional string commandName = 9;
+
+  // Name aliases keyed by namespace.
+  // (as currently present in Mission Database)
+  map<string, string> aliases = 14;
+
   repeated CommandAssignment assignments = 12;
   optional bytes unprocessedBinary = 13;
   optional bytes binary = 4;

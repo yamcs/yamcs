@@ -15,6 +15,7 @@ Synopsis
     | **yamcsadmin users** delete <*USERNAME*>
     | **yamcsadmin users** describe <*USERNAME*>
     | **yamcsadmin users** list
+    | **yamcsadmin users** remove-identity <*USERNAME*> --identity <*IDENTITY*>
     | **yamcsadmin users** remove-role <*USERNAME*> --role <*ROLE*>
     | **yamcsadmin users** reset-password <*USERNAME*>
     | **yamcsadmin users** update [--active true | false]
@@ -58,6 +59,10 @@ Commands
 .. describe:: list
 
     List users.
+
+.. describe:: remove-identity <USERNAME> --identity <IDENTITY>
+
+    Remove an identity from a user.
 
 .. describe:: remove-role <USERNAME> --role <ROLE>
 

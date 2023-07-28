@@ -359,9 +359,13 @@ message PartitioningInfo {
 message StreamInfo {
   // Stream name
   optional string name = 1;
-  repeated ColumnInfo column = 2;
+  repeated ColumnInfo column = 2 [deprecated=true];
+  repeated ColumnInfo columns = 5;
   optional string script = 3;
   optional int64 dataCount = 4;
+
+  // Subscribers represented in the format ``className@hashCode``.
+  repeated string subscribers = 6;
 }
 
 message RebuildHistogramRequest {
