@@ -12,6 +12,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
+import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.Tuple;
 
@@ -44,19 +45,27 @@ public final class GPBHelper {
         return b.build();
     }
 
-    public static CommandHistoryEntry tupleToCommandHistoryEntry(Tuple tuple) {
+    public static CommandHistoryEntry tupleToCommandHistoryEntry(Tuple tuple, XtceDb mdb) {
         long gentime = (Long) tuple.getColumn(PreparedCommand.CNAME_GENTIME);
         String origin = (String) tuple.getColumn(PreparedCommand.CNAME_ORIGIN);
         int sequenceNumber = (Integer) tuple.getColumn(PreparedCommand.CNAME_SEQNUM);
         String id = gentime + "-" + origin + "-" + sequenceNumber;
+        var commandName = (String) tuple.getColumn(PreparedCommand.CNAME_CMDNAME);
 
         CommandHistoryEntry.Builder che = CommandHistoryEntry.newBuilder()
                 .setId(id)
                 .setOrigin(origin)
                 .setSequenceNumber(sequenceNumber)
-                .setCommandName((String) tuple.getColumn(PreparedCommand.CNAME_CMDNAME))
+                .setCommandName(commandName)
                 .setGenerationTime(TimeEncoding.toProtobufTimestamp(gentime))
                 .setCommandId(PreparedCommand.getCommandId(tuple));
+
+        // Best effort, not a problem if the command no longer exists
+        var command = mdb.getMetaCommand(commandName);
+        if (command != null && command.getAliasSet() != null) {
+            var aliasSet = command.getAliasSet();
+            che.putAllAliases(aliasSet.getAliases());
+        }
 
         for (int i = 1; i < tuple.size(); i++) { // first column is constant ProtoDataType.CMD_HISTORY.getNumber()
             ColumnDefinition cd = tuple.getColumnDefinition(i);

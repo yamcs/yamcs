@@ -173,6 +173,10 @@ public class HttpServer extends AbstractYamcsService {
                 .withDefault(5);
         websocketSpec.addOption("maxFrameLength", OptionType.INTEGER).withDefault(65536);
 
+        // Value in seconds. Both nginx and apache have a default timeout of 60 seconds before
+        // they will close an idle WebSocket connection, therefore we choose a value well below that.
+        websocketSpec.addOption("pingWhenIdleFor", OptionType.INTEGER).withDefault(40);
+
         Spec bindingSpec = new Spec();
         bindingSpec.addOption("address", OptionType.STRING);
         bindingSpec.addOption("port", OptionType.INTEGER).withRequired(true);

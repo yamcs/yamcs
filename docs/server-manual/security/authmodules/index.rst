@@ -18,7 +18,7 @@ The security subsystem is modular by design and allows combining different AuthM
 The default set of AuthModules include:
 
 :doc:`ldap`
-    Attempts to bind to LDAP with the provided credentials. Also capable of reading privileges for the user.
+    Authenticates against an LDAP directory. Also capable of mapping LDAP groups to Yamcs roles.
 :doc:`yaml`
     Reads Yaml files to verify the credentials of the user, or assign privileges.
 :doc:`kerberos`

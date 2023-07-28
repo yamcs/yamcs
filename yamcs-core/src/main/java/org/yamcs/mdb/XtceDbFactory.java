@@ -11,8 +11,8 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -51,6 +51,8 @@ import org.yamcs.xtce.util.ReferenceFinder;
 import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
 
 public class XtceDbFactory {
+
+    private static Path cacheDirectory; // This is used in client tools to overwrite
 
     static Log log = new Log(XtceDbFactory.class);
 
@@ -463,17 +465,17 @@ public class XtceDbFactory {
     }
 
     private static File resolveSerializedFile(String filename) {
-        Path cacheDir = YamcsServer.getServer().getCacheDirectory();
+        Path cacheDir = cacheDirectory != null ? cacheDirectory : YamcsServer.getServer().getCacheDirectory();
         if (cacheDir == null) { // During unit tests
-            cacheDir = Paths.get("cache").toAbsolutePath();
+            cacheDir = Path.of("cache").toAbsolutePath();
         }
         return cacheDir.resolve(filename + ".serialized").toFile();
     }
 
     private static File resolveConsistencyFile(String filename) {
-        Path cacheDir = YamcsServer.getServer().getCacheDirectory();
+        Path cacheDir = cacheDirectory != null ? cacheDirectory : YamcsServer.getServer().getCacheDirectory();
         if (cacheDir == null) { // During unit tests
-            cacheDir = Paths.get("cache").toAbsolutePath();
+            cacheDir = Path.of("cache").toAbsolutePath();
         }
         return cacheDir.resolve(filename + ".consistency_date").toFile();
     }
@@ -535,6 +537,20 @@ public class XtceDbFactory {
     public synchronized static void reset() {
         instance2Db.clear();
         instance2DbConfigs.clear();
+    }
+
+    /**
+     * Sets up this class (creation of cache directory).
+     * <p>
+     * This method is intended for client tools.
+     */
+    public static void setupTool(Path cacheDirectory) {
+        XtceDbFactory.cacheDirectory = cacheDirectory;
+        try {
+            Files.createDirectories(cacheDirectory);
+        } catch (IOException e) {
+            log.error("Cannot create directory", e);
+        }
     }
 
     private static String sha1(String input) throws ConfigurationException {

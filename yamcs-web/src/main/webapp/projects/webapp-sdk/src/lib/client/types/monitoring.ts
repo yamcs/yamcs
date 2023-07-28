@@ -102,6 +102,7 @@ export interface IssueCommandResponse {
   origin: string;
   sequenceNumber: number;
   commandName: string;
+  aliases?: { [key: string]: string; };
   binary: string;
   username: string;
   queue?: string;
@@ -129,6 +130,7 @@ export interface CommandAssignment {
 export interface CommandHistoryEntry {
   id: string;
   commandName: string;
+  aliases?: { [key: string]: string; };
   origin: string;
   sequenceNumber: number;
   generationTime: string;
@@ -213,6 +215,7 @@ export interface DownloadParameterValuesOptions {
   stop?: string;
   norepeat?: boolean;
   delimiter?: 'TAB' | 'COMMA' | 'SEMICOLON';
+  interval?: number;
 }
 
 export interface GetParameterSamplesOptions {

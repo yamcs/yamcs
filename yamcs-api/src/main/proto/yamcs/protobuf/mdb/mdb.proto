@@ -654,7 +654,7 @@ message ListSpaceSystemsRequest {
   // Yamcs instance name.
   optional string instance = 1;
   
-  // The search keywords. This supports searching on the namespace or name.
+  // The search keywords. This supports searching on qualified name or alias.
   optional string q = 2;
   
   // Continuation token returned by a previous page response.
@@ -673,7 +673,7 @@ message ListContainersRequest {
   // Yamcs instance name.
   optional string instance = 1;
   
-  // The search keywords. This supports searching on the namespace or name.
+  // The search keywords. This supports searching on qualified name or alias.
   optional string q = 2;
   
   // List only direct child sub-systems or containers of the specified system.
@@ -701,7 +701,7 @@ message ListAlgorithmsRequest {
   // Yamcs instance name.
   optional string instance = 1;
   
-  // The search keywords. This supports searching on namespace or name.
+  // The search keywords. This supports searching on qualified name or alias.
   optional string q = 2;
   
   // List only direct child sub-systems or algorithms of the specified system.
@@ -732,7 +732,7 @@ message ListCommandsRequest {
   // Yamcs instance name.
   optional string instance = 1;
   
-  // The search keywords. This supports searching on namespace or name.
+  // The search keywords. This supports searching on qualified name or alias.
   optional string q = 2;
   
   // List only direct child sub-systems or commands of the specified system.
@@ -773,7 +773,7 @@ message ListParametersRequest {
   // Yamcs instance name.
   optional string instance = 1;
   
-  // The search keywords. This supports searching on namespace or name.
+  // The search keywords. This supports searching on qualified name or alias.
   optional string q = 2;
   
   // When used together with ``q``, include also aggregate members (at any depth)

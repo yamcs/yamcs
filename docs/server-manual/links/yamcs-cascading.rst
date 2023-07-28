@@ -16,7 +16,7 @@ Class Name
 
 :javadoc:`org.yamcs.cascading.YamcsLink`
 
-In the examples/cascading directory of the main yamcs repository there is a configuration with two Yamcs instances ``upstream`` and ``downstream`` demonstrating the cascading functionality.
+In the :file:`examples/cascading` directory of the main yamcs repository there is a configuration with two Yamcs instances ``upstream`` and ``downstream`` demonstrating the cascading functionality.
 
 Configuration Options
 ---------------------
@@ -54,7 +54,7 @@ containers (list of strings)
 tmRealtimeStream (string)
   Stream to which the TM packets will be sent. Default: "tm_realtime".
 
-archiveTm (boolean)
+tmArchive (boolean)
   Enables TM archival. Default: true.
 
 tmArchiveStream (string)

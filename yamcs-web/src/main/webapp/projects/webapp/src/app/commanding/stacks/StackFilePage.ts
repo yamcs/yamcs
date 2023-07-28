@@ -762,6 +762,7 @@ export class StackFilePage implements OnDestroy {
     if (entry) {
       const copiedEntry: StackEntry = {
         name: entry.name,
+        namespace: entry.namespace,
         args: { ...entry.args },
         comment: entry.comment,
         command: entry.command,
@@ -769,6 +770,9 @@ export class StackFilePage implements OnDestroy {
       };
       if (entry.extra) {
         copiedEntry.extra = { ...entry.extra };
+      }
+      if (entry.advancement) {
+        copiedEntry.advancement = { ...entry.advancement };
       }
 
       const relto = this.selectedEntry$.value;

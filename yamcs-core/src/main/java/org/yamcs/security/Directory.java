@@ -32,12 +32,10 @@ public class Directory {
     // Users and groups used to be stored in "ProtobufDatabase", but we're slowly phasing that
     // out in favor of tables in the Yamcs DB, now that this has the functionality we need.
     //
-    // Current phase: mirror ProtobufDB to YamcsDB, and partially read from Yamcs DB.
+    // Current phase: mirror ProtobufDB to Yamcs DB, and read from Yamcs DB.
     //
     // Next planned phases:
-    // - fully read from ProtobufDB (currently not used for accounts,
-    // due to the additional privilege information)
-    // - mirror YamcsDB to ProtobufDB instead.
+    // - mirror Yamcs DB to ProtobufDB instead.
     // - remove ProtobufDB
 
     private static final Log log = new Log(Directory.class);
@@ -107,7 +105,7 @@ public class Directory {
         user.setId(id);
         for (Role role : roles.values()) {
             if (role.isDefaultRole()) {
-                user.addRole(role.getName());
+                user.addRole(role.getName(), false);
             }
         }
         log.info("Saving new user {}", user);
@@ -115,8 +113,12 @@ public class Directory {
     }
 
     public synchronized void updateUserProperties(User user) throws IOException {
+        setUserPrivileges(user);
+        users.put(user.getName(), user);
+        persistChanges();
+    }
 
-        // Recalculate effective privileges
+    private void setUserPrivileges(User user) {
         user.clearDirectoryPrivileges();
         for (String roleName : user.getRoles()) {
             Role role = getRole(roleName);
@@ -129,9 +131,6 @@ public class Directory {
                 }
             }
         }
-
-        users.put(user.getName(), user);
-        persistChanges();
     }
 
     public synchronized void deleteUser(User user) throws IOException {
@@ -350,14 +349,21 @@ public class Directory {
     }
 
     public User getUser(long id) {
-        return users.values().stream()
-                .filter(u -> u.getId() == id)
-                .findFirst()
-                .orElse(null);
+        var account = db.findAccount(id);
+        var userAccount = (account instanceof User) ? (User) account : null;
+        if (userAccount != null) {
+            setUserPrivileges(userAccount);
+        }
+        return userAccount;
     }
 
     public User getUser(String username) {
-        return users.get(username);
+        var account = db.findAccountByName(username);
+        var userAccount = (account instanceof User) ? (User) account : null;
+        if (userAccount != null) {
+            setUserPrivileges(userAccount);
+        }
+        return userAccount;
     }
 
     public List<User> getUsers() {

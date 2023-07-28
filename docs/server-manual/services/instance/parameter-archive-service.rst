@@ -80,7 +80,7 @@ warmupTime (integer)
     
 
 monitorStreams (string[])
-     The list of tm streams that will be monitored to check for new data. If the list is empty, no stream will be monitored and the archive will be rebuilt according to the schedule defined below. Default: all the tm streams defined in the :file:`yamcs.{instance}.yaml` streamConfig section. The backfiller will check the generation time of the packet received on the monitoring streams and will mark that interval as ``dirty``. As soon as the ``streamUpdateFillFrequency`` timer (see below) expires, a new filling task is started for that interval.
+     The list of tm streams that will be monitored to check for new data. If the list is empty, no stream will be monitored and the archive will be rebuilt according to the schedule defined below. Default: all the tm streams defined in the :file:`etc/yamcs.{instance}.yaml` streamConfig section. The backfiller will check the generation time of the packet received on the monitoring streams and will mark that interval as ``dirty``. As soon as the ``streamUpdateFillFrequency`` timer (see below) expires, a new filling task is started for that interval.
 
 streamUpdateFillFrequency (integer)
      Valid if the ``monitorStreams`` is not empty, configures how often in seconds the fillup based on the stream monitoring is started. The fillup only starts if new data has been received on the streams. Default ``600``.
@@ -89,10 +89,10 @@ schedule (list of maps)
     This option contains a list of schedules configuring when the parameter archive runs. This is used when the back filler does not monitor any input stream and instead rebuilds the archive according to a schedule (even if there was maybe no new data received). Each map in the list has the following keys:
     
     startInterval (integer)
-        ** Required.** when a backfiller starts, it starts processing with this number of intervals in the past.
+        **Required.** when a backfiller starts, it starts processing with this number of intervals in the past.
     
     numIntervals (integer)
-        ** Required.**  how many intervals to process at one time
+        **Required.**  how many intervals to process at one time
     
     frequency (integer)
     

@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.InitException;
 import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 
 /**
@@ -34,7 +35,9 @@ public class KerberosAuthModule implements AuthModule {
 
     @Override
     public Spec getSpec() {
-        return new Spec();
+        var spec = new Spec();
+        spec.addOption("debug", OptionType.BOOLEAN).withDefault(false);
+        return spec;
     }
 
     @Override
@@ -42,7 +45,7 @@ public class KerberosAuthModule implements AuthModule {
         Map<String, String> jaasOpts = new HashMap<>();
         jaasOpts.put("useKeyTab", "false");
         jaasOpts.put("useTicketCache", "false");
-        jaasOpts.put("debug", "false");
+        jaasOpts.put("debug", Boolean.toString(args.getBoolean("debug")));
 
         AppConfigurationEntry jaasEntry = new AppConfigurationEntry(JAAS_KRB5, REQUIRED, jaasOpts);
         JaasConfiguration.addEntry(JAAS_ENTRY_NAME, jaasEntry);

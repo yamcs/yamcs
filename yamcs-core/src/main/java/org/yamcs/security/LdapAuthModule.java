@@ -2,12 +2,12 @@ package org.yamcs.security;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.naming.Context;
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.DirContext;
@@ -34,9 +34,17 @@ public class LdapAuthModule implements AuthModule {
 
     private String userBase;
     private String nameAttribute;
+    private String userFilter;
     private String[] displayNameAttributes;
     private String[] emailAttributes;
     private String[] searchAttributes;
+    private List<GroupMapping> groupMappings = new ArrayList<>();
+
+    private List<String> groupBase;
+    private String groupFilter;
+    private String groupFilterUserAttribute;
+
+    private boolean requiredIfKerberos;
 
     private Cache<String, LdapUserInfo> infoCache = CacheBuilder.newBuilder()
             .expireAfterWrite(24, TimeUnit.HOURS)
@@ -54,16 +62,35 @@ public class LdapAuthModule implements AuthModule {
                 .withElementType(OptionType.STRING)
                 .withDefault("cn");
 
+        Spec groupMappingSpec = new Spec();
+        groupMappingSpec.addOption("dn", OptionType.STRING).withRequired(true);
+        groupMappingSpec.addOption("role", OptionType.STRING);
+        groupMappingSpec.addOption("superuser", OptionType.BOOLEAN);
+        groupMappingSpec.requireOneOf("role", "superuser");
+
         Spec spec = new Spec();
         spec.addOption("host", OptionType.STRING).withRequired(true);
         spec.addOption("port", OptionType.INTEGER);
         spec.addOption("user", OptionType.STRING);
         spec.addOption("password", OptionType.STRING).withSecret(true);
+        spec.requireTogether("user", "password");
         spec.addOption("tls", OptionType.BOOLEAN);
         spec.addOption("userBase", OptionType.STRING).withRequired(true);
-        spec.addOption("attributes", OptionType.MAP).withSpec(attributesSpec)
+        spec.addOption("attributes", OptionType.MAP)
+                .withSpec(attributesSpec)
                 .withApplySpecDefaults(true);
-        spec.requireTogether("user", "password");
+        spec.addOption("userFilter", OptionType.STRING);
+        spec.addOption("groupMappings", OptionType.LIST)
+                .withElementType(OptionType.MAP)
+                .withSpec(groupMappingSpec);
+
+        spec.addOption("groupBase", OptionType.LIST_OR_ELEMENT).withElementType(OptionType.STRING);
+        spec.addOption("groupFilter", OptionType.STRING);
+        spec.addOption("groupFilterUserAttribute", OptionType.STRING);
+        spec.requireTogether("groupBase", "groupFilter", "groupFilterUserAttribute");
+
+        spec.addOption("requiredIfKerberos", OptionType.BOOLEAN).withDefault(false);
+
         return spec;
     }
 
@@ -85,19 +112,49 @@ public class LdapAuthModule implements AuthModule {
         YConfiguration attributesArgs = args.getConfig("attributes");
         nameAttribute = attributesArgs.getString("name");
 
+        userFilter = args.getString("userFilter", "(" + nameAttribute + "={0})");
+        if (!userFilter.contains("{0}")) {
+            throw new InitException("LDAP user filter should contain the {0} character sequence, "
+                    + "which will be replaced with the attempted username");
+        }
+
         displayNameAttributes = attributesArgs.getList("displayName").toArray(new String[0]);
         emailAttributes = attributesArgs.getList("email").toArray(new String[0]);
 
-        List<String> concat = new ArrayList<>();
+        groupBase = args.containsKey("groupBase") ? args.getList("groupBase") : null;
+        groupFilter = args.getString("groupFilter", null);
+        groupFilterUserAttribute = args.getString("groupFilterUserAttribute", null);
+
+        if (args.containsKey("groupMappings")) {
+            for (var mappingConfig : args.getConfigList("groupMappings")) {
+                var groupMapping = new GroupMapping();
+                groupMapping.dn = mappingConfig.getString("dn");
+                groupMapping.role = mappingConfig.getString("role", null);
+                groupMapping.superuser = mappingConfig.getBoolean("superuser", false);
+                groupMappings.add(groupMapping);
+            }
+        }
+
+        var concat = new HashSet<String>();
         concat.add(nameAttribute);
         concat.addAll(attributesArgs.getList("displayName"));
         concat.addAll(attributesArgs.getList("email"));
+        concat.add("memberOf");
+        if (groupFilterUserAttribute != null) {
+            concat.add(groupFilterUserAttribute);
+        }
         searchAttributes = concat.toArray(new String[0]);
+
+        requiredIfKerberos = args.getBoolean("requiredIfKerberos");
 
         yamcsEnv = new Hashtable<>();
         yamcsEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
         yamcsEnv.put(Context.PROVIDER_URL, providerUrl);
-        yamcsEnv.put("com.sun.jndi.ldap.connect.pool", "true");
+
+        // Referral is needed to support querying of memberOf attribute that is
+        // generated through use of dynlist overlay.
+        yamcsEnv.put(Context.REFERRAL, "follow");
+
         yamcsEnv.put(Context.SECURITY_AUTHENTICATION, "simple");
         if (args.containsKey("user")) {
             yamcsEnv.put(Context.SECURITY_PRINCIPAL, args.getString("user"));
@@ -141,15 +198,14 @@ public class LdapAuthModule implements AuthModule {
 
     @Override
     public void authenticationSucceeded(AuthenticationInfo authenticationInfo) {
-        AuthModule authenticator = authenticationInfo.getAuthenticator();
-        if (authenticator instanceof KerberosAuthModule || authenticator instanceof SpnegoAuthModule) {
+        if (authenticationInfo.isKerberos()) {
             // Note to future self: If we ever want to support multiple LDAP and
             // kerberos modules, then it may become useful to compare the user dn
             // with the kerberos realm before querying LDAP.
             String username = authenticationInfo.getUsername();
             try {
                 LdapUserInfo info = searchUserInfo(username);
-                if(info == null) {
+                if (info == null) {
                     log.warn("User {} not found in LDAP", username);
                 } else {
                     authenticationInfo.addExternalIdentity(getClass().getName(), info.dn);
@@ -171,20 +227,41 @@ public class LdapAuthModule implements AuthModule {
         DirContext ctx = null;
         try {
             ctx = new InitialDirContext(yamcsEnv);
-            SearchControls controls = new SearchControls();
+            var controls = new SearchControls();
             controls.setReturningAttributes(searchAttributes);
             controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            String filter = nameAttribute + "=" + username;
-            SearchResult result = getSingleResult(ctx, userBase, filter, controls);
-            if (result == null) {
+            var filter = userFilter.replace("{0}", username);
+            var searchResult = getSingleResult(ctx, userBase, filter, controls);
+            if (searchResult == null) {
                 return null;
             }
             info = new LdapUserInfo();
             // Use the uid from LDAP, just to prevent case sensitivity issues.
-            info.uid = (String) result.getAttributes().get(nameAttribute).get();
-            info.dn = result.getNameInNamespace();
-            info.cn = findAttribute(result, displayNameAttributes);
-            info.email = findAttribute(result, emailAttributes);
+            info.uid = (String) searchResult.getAttributes().get(nameAttribute).get();
+            info.dn = searchResult.getNameInNamespace();
+            info.cn = findAttribute(searchResult, displayNameAttributes);
+            info.email = findAttribute(searchResult, emailAttributes);
+            info.memberOf = findListAttribute(searchResult, new String[] { "memberOf" });
+
+            if (groupBase != null) {
+                controls = new SearchControls();
+                controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+                var lookup = findAttribute(searchResult, new String[] { groupFilterUserAttribute });
+                if (lookup == null && "dn".equalsIgnoreCase(groupFilterUserAttribute)) {
+                    lookup = searchResult.getNameInNamespace();
+                }
+                if (lookup != null) {
+                    filter = groupFilter.replace("{0}", lookup);
+                    for (var groupBaseElement : groupBase) {
+                        var answer = ctx.search(groupBaseElement, filter, controls);
+                        while (answer.hasMore()) {
+                            searchResult = answer.next();
+                            info.memberOf.add(searchResult.getNameInNamespace());
+                        }
+                        answer.close();
+                    }
+                }
+            }
 
             infoCache.put(username, info);
             return info;
@@ -218,8 +295,32 @@ public class LdapAuthModule implements AuthModule {
     }
 
     @Override
-    public AuthorizationInfo getAuthorizationInfo(AuthenticationInfo authenticationInfo) {
-        return new AuthorizationInfo();
+    public AuthorizationInfo getAuthorizationInfo(AuthenticationInfo authenticationInfo) throws AuthorizationException {
+        AuthorizationInfo authz = new AuthorizationInfo();
+
+        var principal = authenticationInfo.getUsername();
+        var info = infoCache.getIfPresent(principal);
+
+        if (authenticationInfo.isKerberos() && requiredIfKerberos && info == null) {
+            throw new AuthorizationException("Cannot link Kerberos user with LDAP directory");
+        }
+
+        if (info != null) {
+            for (var groupMapping : groupMappings) {
+                for (var dn : info.memberOf) {
+                    if (groupMapping.dn.equalsIgnoreCase(dn)) {
+                        if (groupMapping.role != null) {
+                            authz.addRole(groupMapping.role);
+                        }
+                        if (groupMapping.superuser) {
+                            authz.grantSuperuser();
+                        }
+                    }
+                }
+            }
+        }
+
+        return authz;
     }
 
     @Override
@@ -227,12 +328,13 @@ public class LdapAuthModule implements AuthModule {
         return true;
     }
 
-    private SearchResult getSingleResult(DirContext ctx, String searchBase, String filter,
-            SearchControls controls)
+    private SearchResult getSingleResult(DirContext ctx, String searchBase, String filter, SearchControls controls)
             throws NamingException {
-        NamingEnumeration<SearchResult> answer = ctx.search(searchBase, filter, controls);
+        var answer = ctx.search(searchBase, filter, controls);
         if (answer.hasMore()) {
-            return answer.next();
+            var result = answer.next();
+            answer.close();
+            return result;
         }
         return null;
     }
@@ -247,10 +349,32 @@ public class LdapAuthModule implements AuthModule {
         return null;
     }
 
+    private List<String> findListAttribute(SearchResult result, String[] possibleNames) throws NamingException {
+        for (String attrId : possibleNames) {
+            var values = new ArrayList<String>();
+            var attr = result.getAttributes().get(attrId);
+            if (attr != null) {
+                var valueEnumeration = attr.getAll();
+                while (valueEnumeration.hasMoreElements()) {
+                    values.add((String) valueEnumeration.next());
+                }
+                return values;
+            }
+        }
+        return new ArrayList<>();
+    }
+
+    private static final class GroupMapping {
+        String dn;
+        String role;
+        boolean superuser;
+    }
+
     private static final class LdapUserInfo {
         String uid;
         String dn;
         String cn;
         String email;
+        List<String> memberOf;
     }
 }

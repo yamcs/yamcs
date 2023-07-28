@@ -88,6 +88,13 @@ writeBufferWaterMark (map)
 
     Default: ``{ low: 32768, high: 131072 }``
 
+pingWhenIdleFor (integer)
+    Idle timeout in seconds (either read or write). When this timeout is met, a WebSocket ping frame is sent to the connected client. This helps prevent unexpected closes by intermediate firewalls or proxies.
+
+    To disable ping frames, set this value to 0.
+
+    Default: ``40``.
+
 
 CORS sub-configuration
 ^^^^^^^^^^^^^^^^^^^^^^

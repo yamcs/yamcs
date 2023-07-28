@@ -1,8 +1,5 @@
 package org.yamcs.cascading;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,7 +14,7 @@ import java.util.function.Predicate;
 import org.yamcs.archive.IndexRequest;
 import org.yamcs.archive.IndexRequestListener;
 import org.yamcs.archive.IndexRequestProcessor;
-import org.yamcs.cascading.YamcsArchiveTmLink.Gap;
+import org.yamcs.cascading.YamcsTmArchiveLink.Gap;
 import org.yamcs.client.archive.ArchiveClient;
 import org.yamcs.client.archive.ArchiveClient.StreamOptions;
 import org.yamcs.events.EventProducer;
@@ -89,7 +86,6 @@ public class TmGapFinder {
 
         return diff(group(upstreamRecords, true), group(downstreamRecords, false));
 
-
     }
 
     List<Gap> diff(Map<String, List<ArchiveRecord>> upstreamRecords,
@@ -133,7 +129,8 @@ public class TmGapFinder {
                     if (down.getNum() < up.getNum()) {
                         gapCollector.addGap(up.getFirst(), up.getLast());
                     } else if (down.getNum() > up.getNum()) {
-                        log.warn("Downstream record has more data that the related upstream record - DOWN: " + toString(down) + ", UP: " + toString(up));
+                        log.warn("Downstream record has more data than the related upstream record. DOWN: "
+                                + toString(down) + ", UP: " + toString(up));
                     }
                     prevUp = up;
                     keep = false; // Get next record
@@ -148,7 +145,8 @@ public class TmGapFinder {
                 } else if (Timestamps.compare(up.getFirst(), down.getLast()) > 0) {
                     // Upstream times completely after downstream (3)
                     // Warning only if downstream has parts after the previous upstream and does not include it
-                    if (prevUp == null || (Timestamps.compare(prevUp.getFirst(), down.getFirst()) < 0 && Timestamps.compare(prevUp.getLast(),down.getLast()) < 0)) {
+                    if (prevUp == null || (Timestamps.compare(prevUp.getFirst(), down.getFirst()) < 0
+                            && Timestamps.compare(prevUp.getLast(), down.getLast()) < 0)) {
                         log.warn("Downstream record does not appear in the upstream archive: " + toString(down));
                     }
                     // Ignoring current downstream record and continue checking the rest
@@ -162,7 +160,8 @@ public class TmGapFinder {
                     keep = true;
                     logLastDown = false;
                     continue upstreamLoop;
-                } else { // Unusual overlaps, where part of downstream record lays outside the upstream one (5.1 and 5.2)
+                } else { // Unusual overlaps, where part of downstream record lays outside the upstream one (5.1 and
+                         // 5.2)
                     // Skipping downstream record and adding upstream
                     log.warn("Downstream contains more data than upstream: " + toString(down));
                     gapCollector.addGap(up.getFirst(), up.getLast());
@@ -212,6 +211,7 @@ public class TmGapFinder {
         }
         return r;
     }
+
     private static String toString(ArchiveRecord ar) {
         return ar.getId().getName() + "[" + toString(ar.getFirst()) + " - " + toString(ar.getLast()) + "]";
     }
@@ -257,5 +257,4 @@ public class TmGapFinder {
             }
         }
     }
-
 }

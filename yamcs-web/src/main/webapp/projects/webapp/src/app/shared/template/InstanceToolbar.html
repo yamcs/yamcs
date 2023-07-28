@@ -23,17 +23,32 @@
             PLAY
           </button>
 
-          <button mat-button
-                  class="processor-time"
-                  [class.paused]="processor.replayState === 'PAUSED'"
-                  matTooltip="Processor time. Click for more actions"
-                  [matMenuTriggerFor]="processorMenu"
-                  (menuOpened)="switchProcessorMenuOpened()">
+          <ya-text-action class="processor-time"
+                          [class.paused]="processor.replayState === 'PAUSED'"
+                          matTooltip="Processor time. Click for more actions"
+                          [matMenuTriggerFor]="processorMenu"
+                          (menuOpened)="switchProcessorMenuOpened()">
             {{ (time$ | async) | datetime }} ▾
+          </ya-text-action>
+
+          <ya-icon-action class="more-menu" icon="menu"
+                          [matMenuTriggerFor]="moreMenu" />
+
+          <button mat-icon-button *ngIf="false">
+            <mat-icon>more_vert</mat-icon>
           </button>
         </ng-container>
       </ng-container>
     </ng-container>
+
+    <mat-menu #moreMenu="matMenu" class="ya-menu" overlapTrigger="false" xPosition="before" yPosition="below">
+      <button *ngIf="!(zenMode$ | async)" mat-menu-item (click)="toggleZenMode()">
+        Toggle zen mode
+      </button>
+      <button *ngIf="zenMode$ | async" mat-menu-item (click)="untoggleZenMode()">
+        Untoggle zen mode
+      </button>
+    </mat-menu>
 
     <mat-menu #processorMenu="matMenu" class="ya-menu" overlapTrigger="false" xPosition="before" yPosition="below">
       <ng-container *ngIf="processor$ | async as processor">

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest;
+import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.protobuf.Db.ProtoDataType;
@@ -18,8 +19,10 @@ import com.google.protobuf.MessageLite;
  */
 public class CommandHistoryReplayHandler implements ReplayHandler {
     private ReplayOptions repl;
+    private XtceDb mdb;
 
-    public CommandHistoryReplayHandler(String instance) {
+    public CommandHistoryReplayHandler(String instance, XtceDb mdb) {
+        this.mdb = mdb;
     }
 
     @Override
@@ -44,7 +47,6 @@ public class CommandHistoryReplayHandler implements ReplayHandler {
 
     @Override
     public MessageLite transform(Tuple t) {
-        return GPBHelper.tupleToCommandHistoryEntry(t);
+        return GPBHelper.tupleToCommandHistoryEntry(t, mdb);
     }
-
 }

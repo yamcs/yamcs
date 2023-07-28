@@ -28,7 +28,7 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
     YamcsTmLink tmLink;
     YamcsTcLink tcLink;
     YamcsParameterLink ppLink;
-    YamcsArchiveTmLink archiveTmLink;
+    YamcsTmArchiveLink tmArchiveLink;
     YamcsEventLink eventLink;
 
     String upstreamName;
@@ -82,10 +82,10 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
             subLinks.add(ppLink);
         }
 
-        if (config.getBoolean("archiveTm", true)) {
-            archiveTmLink = new YamcsArchiveTmLink(this);
-            archiveTmLink.init(instance, name + ".archiveTm", config);
-            subLinks.add(archiveTmLink);
+        if (config.getBoolean("tmArchive", true)) {
+            tmArchiveLink = new YamcsTmArchiveLink(this);
+            tmArchiveLink.init(instance, name + ".tmArchive", config);
+            subLinks.add(tmArchiveLink);
         }
 
         if (config.getBoolean("event", true)) {
@@ -147,7 +147,9 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
                         + "The list of containers (packets) has to be specified using the containers option.");
         spec.addOption("tmRealtimeStream", OptionType.STRING);
 
-        spec.addOption("tmArchive", OptionType.BOOLEAN).withDefault(true);
+        spec.addOption("tmArchive", OptionType.BOOLEAN)
+                .withAliases("archiveTm") // Legacy typo
+                .withDefault(true);
         spec.addOption("tmArchiveStream", OptionType.STRING);
 
         spec.addOption("containers", OptionType.LIST).withAliases("packets").withRequired(true)
@@ -257,7 +259,7 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
             return;
         }
 
-        if (tmLink != null || archiveTmLink != null) {
+        if (tmLink != null || tmArchiveLink != null) {
             retrieveContainers();
         }
 
@@ -288,10 +290,10 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
                             tmLink.subscribeContainers();
                         }
                     }
-                    if (archiveTmLink != null) {
-                        archiveTmLink.setContainers(list);
-                        if (!archiveTmLink.isDisabled()) {
-                            archiveTmLink.scheduleDataRetrieval();
+                    if (tmArchiveLink != null) {
+                        tmArchiveLink.setContainers(list);
+                        if (!tmArchiveLink.isDisabled()) {
+                            tmArchiveLink.scheduleDataRetrieval();
                         }
                     }
                 });

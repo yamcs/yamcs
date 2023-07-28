@@ -490,8 +490,7 @@ export default class YamcsClient implements HttpHandler {
 
   async deleteIdentity(username: string, provider: string) {
     const url = `${this.apiUrl}/users/${username}/identities/${provider}`;
-    const response = await this.doFetch(url, { method: 'DELETE' });
-    return await response.json() as UserInfo;
+    return await this.doFetch(url, { method: 'DELETE' });
   }
 
   async createGroup(options: CreateGroupRequest) {

@@ -1,15 +1,21 @@
 mat-sidenav-container {
+  --top-height: 48px;
+  --message-bar-height: 48px;
+
   position: absolute;
-  top: 48px;
+  top: var(--top-height);
   bottom: 0;
   left: 0;
   right: 0;
   background-color: #f7f7f7;
 }
 
+mat-sidenav-container.zen {
+  --top-height: 0;
+}
+
 mat-sidenav-container.message-bar-visible {
-  top: 96px;
-  /* 48 + 48 */
+  top: calc(var(--top-height) + var(--message-bar-height));
 }
 
 mat-sidenav {

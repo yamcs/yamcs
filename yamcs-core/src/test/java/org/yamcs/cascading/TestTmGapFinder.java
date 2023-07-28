@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.yamcs.cascading.YamcsArchiveTmLink.Gap;
+import org.yamcs.cascading.YamcsTmArchiveLink.Gap;
 import org.yamcs.cascading.TmGapFinder.GapCollector;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
