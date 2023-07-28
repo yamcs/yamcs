@@ -193,14 +193,23 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
             queue = processor.getCommandingManager().sendCommand(ctx.user, preparedCommand);
         }
 
-        IssueCommandResponse.Builder responseb = IssueCommandResponse.newBuilder()
+        var commandName = preparedCommand.getMetaCommand().getQualifiedName();
+
+        var responseb = IssueCommandResponse.newBuilder()
                 .setId(toStringIdentifier(preparedCommand.getCommandId()))
                 .setGenerationTime(TimeEncoding.toProtobufTimestamp(preparedCommand.getGenerationTime()))
                 .setOrigin(preparedCommand.getCommandId().getOrigin())
                 .setSequenceNumber(preparedCommand.getCommandId().getSequenceNumber())
-                .setCommandName(preparedCommand.getMetaCommand().getQualifiedName())
+                .setCommandName(commandName)
                 .setUsername(preparedCommand.getUsername())
                 .addAllAssignments(preparedCommand.getAssignments());
+
+        // Best effort, not a problem if the command no longer exists
+        var command = mdb.getMetaCommand(commandName);
+        if (command != null && command.getAliasSet() != null) {
+            var aliasSet = command.getAliasSet();
+            responseb.putAllAliases(aliasSet.getAliases());
+        }
 
         byte[] unprocessedBinary = preparedCommand.getUnprocessedBinary();
         if (unprocessedBinary != null) {
@@ -255,6 +264,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
     @Override
     public void listCommands(Context ctx, ListCommandsRequest request, Observer<ListCommandsResponse> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         if (ydb.getTable(CommandHistoryRecorder.TABLE_NAME) == null) {
@@ -287,8 +297,10 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
         if (request.hasQueue()) {
             sqlb.where("queue = ?", request.getQueue());
         }
+        NameDescriptionSearchMatcher matcher = null;
         if (request.hasQ()) {
-            sqlb.where("cmdName like ?", "%" + request.getQ() + "%");
+            matcher = new NameDescriptionSearchMatcher(request.getQ());
+            matcher.setSearchDescription(false);
         }
         if (nextToken != null) {
             // TODO this currently ignores the origin column (also part of the key)
@@ -307,6 +319,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
         // TODO: remove, not correct with permission filter below
         sqlb.limit(pos, limit + 1l); // one more to detect hasMore
 
+        var finalMatcher = matcher;
         ListCommandsResponse.Builder responseb = ListCommandsResponse.newBuilder();
         StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
 
@@ -315,7 +328,16 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
-                CommandHistoryEntry entry = GPBHelper.tupleToCommandHistoryEntry(tuple);
+                CommandHistoryEntry entry = GPBHelper.tupleToCommandHistoryEntry(tuple, mdb);
+                if (finalMatcher != null) {
+                    var command = mdb.getMetaCommand(entry.getCommandName());
+                    if (command != null && !finalMatcher.matches(command)) {
+                        return;
+                    } else if (command == null && !finalMatcher.matches(entry.getCommandName())) {
+                        // Command could have been renamed, match only on the stored name.
+                        return;
+                    }
+                }
                 if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.CommandHistory,
                         entry.getCommandName())) {
                     count++;
@@ -345,6 +367,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
     @Override
     public void getCommand(Context ctx, GetCommandRequest request, Observer<CommandHistoryEntry> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         Matcher matcher = PATTERN_COMMAND_ID.matcher(request.getId());
         if (!matcher.matches()) {
@@ -364,7 +387,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
-                CommandHistoryEntry command = GPBHelper.tupleToCommandHistoryEntry(tuple);
+                CommandHistoryEntry command = GPBHelper.tupleToCommandHistoryEntry(tuple, mdb);
                 commands.add(command);
             }
 
@@ -386,6 +409,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
     @Override
     public void exportCommand(Context ctx, ExportCommandRequest request, Observer<HttpBody> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         Matcher matcher = PATTERN_COMMAND_ID.matcher(request.getId());
         if (!matcher.matches()) {
@@ -406,7 +430,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
-                CommandHistoryEntry command = GPBHelper.tupleToCommandHistoryEntry(tuple);
+                CommandHistoryEntry command = GPBHelper.tupleToCommandHistoryEntry(tuple, mdb);
                 commands.add(command);
             }
 
@@ -502,6 +526,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
     @Override
     public void streamCommands(Context ctx, StreamCommandsRequest request, Observer<CommandHistoryEntry> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         // Quick-check in case the user is specific
         ctx.checkObjectPrivileges(ObjectPrivilegeType.CommandHistory, request.getNameList());
@@ -522,7 +547,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
         StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
-                CommandHistoryEntry entry = GPBHelper.tupleToCommandHistoryEntry(tuple);
+                CommandHistoryEntry entry = GPBHelper.tupleToCommandHistoryEntry(tuple, mdb);
                 if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.CommandHistory, entry.getCommandName())) {
                     observer.next(entry);
                 }

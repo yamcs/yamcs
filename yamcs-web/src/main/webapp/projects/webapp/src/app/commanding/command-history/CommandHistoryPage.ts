@@ -1,10 +1,10 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ColumnInfo, GetCommandHistoryOptions, MessageService, PrintService, SelectComponent, SelectOption, Synchronizer, User, rowAnimation, utils } from '@yamcs/webapp-sdk';
-import { BehaviorSubject } from 'rxjs';
+import { ColumnChooserComponent, ColumnInfo, GetCommandHistoryOptions, MessageService, PrintService, SelectComponent, SelectOption, Synchronizer, User, rowAnimation, utils } from '@yamcs/webapp-sdk';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AuthService } from '../../core/services/AuthService';
 import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
@@ -22,7 +22,7 @@ const defaultInterval = 'PT1H';
   animations: [rowAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CommandHistoryPage {
+export class CommandHistoryPage implements AfterViewInit, OnDestroy {
 
   selectedRecord$ = new BehaviorSubject<CommandHistoryRecord | null>(null);
 
@@ -62,6 +62,9 @@ export class CommandHistoryPage {
     { id: 'actions', label: '', alwaysVisible: true },
   ];
 
+  // Added dynamically based on actual commands.
+  aliasColumns$ = new BehaviorSubject<ColumnInfo[]>([]);
+
   intervalOptions: SelectOption[] = [
     { id: 'PT1H', label: 'Last hour' },
     { id: 'PT6H', label: 'Last 6 hours' },
@@ -72,6 +75,9 @@ export class CommandHistoryPage {
 
   queueOptions: SelectOption[];
 
+  @ViewChild(ColumnChooserComponent)
+  columnChooser: ColumnChooserComponent;
+
   // Would prefer to use formGroup, but when using valueChanges this
   // only is updated after the callback...
   private filter: string;
@@ -79,6 +85,8 @@ export class CommandHistoryPage {
 
   user: User;
   config: WebsiteConfig;
+
+  private subscriptions: Subscription[] = [];
 
   constructor(
     readonly yamcs: YamcsService,
@@ -138,6 +146,27 @@ export class CommandHistoryPage {
         this.loadData();
       }
     });
+  }
+
+  ngAfterViewInit() {
+    this.subscriptions.push(this.dataSource.namespaces$.subscribe(namespaces => {
+      // Reset alias columns
+      for (const aliasColumn of this.aliasColumns$.value) {
+        const idx = this.columns.indexOf(aliasColumn);
+        if (idx !== -1) {
+          this.columns.splice(idx, 1);
+        }
+      }
+      const aliasColumns = [];
+      for (const namespace of namespaces) {
+        const aliasColumn = { id: namespace, label: namespace, alwaysVisible: true };
+        aliasColumns.push(aliasColumn);
+      }
+      const insertIdx = this.columns.findIndex(column => column.id === 'command');
+      this.columns.splice(insertIdx + 1, 0, ...aliasColumns); // Insert after name column
+      this.aliasColumns$.next(aliasColumns);
+      this.columnChooser.recalculate(this.columns);
+    }));
   }
 
   private initializeOptions() {
@@ -284,5 +313,9 @@ export class CommandHistoryPage {
   printReport() {
     const data = this.dataSource.records$.value.slice().reverse();
     this.printService.printComponent(CommandHistoryPrintable, 'Command Report', data);
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 }

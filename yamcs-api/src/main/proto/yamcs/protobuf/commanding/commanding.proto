@@ -159,7 +159,14 @@ message CommandAssignment {
 
 message CommandHistoryEntry {
   optional string id = 7;
+
+  // Qualified name
   optional string commandName = 8;
+
+  // Name aliases keyed by namespace.
+  // (as currently present in Mission Database)
+  map<string, string> aliases = 12;
+
   optional string origin = 9;
   optional int32 sequenceNumber = 10;
   optional CommandId commandId = 1;

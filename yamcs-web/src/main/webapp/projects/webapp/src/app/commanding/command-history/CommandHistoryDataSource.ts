@@ -1,5 +1,5 @@
 import { DataSource } from '@angular/cdk/table';
-import { CommandSubscription, GetCommandHistoryOptions, Synchronizer } from '@yamcs/webapp-sdk';
+import { CommandHistoryEntry, CommandSubscription, GetCommandHistoryOptions, Synchronizer } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandHistoryBuffer } from './CommandHistoryBuffer';
@@ -21,6 +21,8 @@ export class CommandHistoryDataSource extends DataSource<AnimatableCommandHistor
 
   loading$ = new BehaviorSubject<boolean>(false);
   public streaming$ = new BehaviorSubject<boolean>(false);
+
+  namespaces$ = new BehaviorSubject<string[]>([]);
 
   private realtimeSubscription: CommandSubscription;
   private syncSubscription: Subscription;
@@ -69,7 +71,11 @@ export class CommandHistoryDataSource extends DataSource<AnimatableCommandHistor
   private async loadPage(options: GetCommandHistoryOptions) {
     return this.yamcs.yamcsClient.getCommandHistoryEntries(this.yamcs.instance!, options).then(page => {
       this.continuationToken = page.continuationToken;
-      return page.entry || [];
+      var entries = page.entry || [];
+      for (const entry of entries) {
+        this.updateNamespaces(entry);
+      }
+      return entries;
     });
   }
 
@@ -93,25 +99,36 @@ export class CommandHistoryDataSource extends DataSource<AnimatableCommandHistor
       processor: this.yamcs.processor!,
     }, entry => {
       if (!this.loading$.getValue()) {
+        this.updateNamespaces(entry);
         this.buffer.addRealtimeCommand(entry);
       }
     });
   }
 
-  stopStreaming() {
-    if (this.realtimeSubscription) {
-      this.realtimeSubscription.cancel();
+  private updateNamespaces(entry: CommandHistoryEntry) {
+    const knownNamespaces = this.namespaces$.value;
+    if (entry.aliases) {
+      for (const namespace in entry.aliases) {
+        if (knownNamespaces.indexOf(namespace) === -1) {
+          knownNamespaces.push(namespace);
+          knownNamespaces.sort();
+          this.namespaces$.next([...knownNamespaces]);
+        }
+      }
     }
+  }
+
+  stopStreaming() {
+    this.realtimeSubscription?.cancel();
     this.streaming$.next(false);
   }
 
   disconnect() {
-    if (this.syncSubscription) {
-      this.syncSubscription.unsubscribe();
-    }
+    this.syncSubscription?.unsubscribe();
     this.records$.complete();
     this.loading$.complete();
     this.streaming$.complete();
+    this.namespaces$.complete();
   }
 
   isEmpty() {
