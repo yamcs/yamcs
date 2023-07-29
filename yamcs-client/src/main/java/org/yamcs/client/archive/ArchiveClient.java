@@ -430,8 +430,8 @@ public class ArchiveClient {
 
             @Override
             public void next(CommandHistoryEntry message) {
-                Command command = new Command(message.getId(), message.getCommandName(), message.getAssignmentsList(),
-                        message.getOrigin(), message.getSequenceNumber(),
+                Command command = new Command(message.getId(), message.getCommandName(), message.getAliasesMap(),
+                        message.getAssignmentsList(), message.getOrigin(), message.getSequenceNumber(),
                         Helpers.toInstant(message.getGenerationTime()));
                 command.merge(message);
                 consumer.accept(command);
@@ -771,8 +771,9 @@ public class ArchiveClient {
         @SuppressWarnings("unchecked")
         protected List<Command> mapRepeatableField(Object field) {
             return ((List<CommandHistoryEntry>) field).stream().map(entry -> {
-                Command command = new Command(entry.getId(), entry.getCommandName(), entry.getAssignmentsList(),
-                        entry.getOrigin(), entry.getSequenceNumber(), Helpers.toInstant(entry.getGenerationTime()));
+                Command command = new Command(entry.getId(), entry.getCommandName(), entry.getAliasesMap(),
+                        entry.getAssignmentsList(), entry.getOrigin(), entry.getSequenceNumber(),
+                        Helpers.toInstant(entry.getGenerationTime()));
                 command.merge(entry);
                 return command;
             }).collect(Collectors.toList());

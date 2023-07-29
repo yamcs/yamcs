@@ -29,7 +29,7 @@ public class CommandSubscription extends AbstractSubscription<SubscribeCommandsR
             public void onMessage(CommandHistoryEntry entry) {
                 Instant generationTime = Helpers.toInstant(entry.getGenerationTime());
                 Command command = commands.computeIfAbsent(entry.getId(), id -> new Command(entry.getId(),
-                        entry.getCommandName(), entry.getAssignmentsList(), entry.getOrigin(),
+                        entry.getCommandName(), entry.getAliasesMap(), entry.getAssignmentsList(), entry.getOrigin(),
                         entry.getSequenceNumber(), generationTime));
                 command.merge(entry);
                 commandListeners.forEach(l -> {

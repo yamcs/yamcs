@@ -3,6 +3,7 @@ package org.yamcs.client;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,7 @@ public class Command implements Comparable<Command> {
 
     private final String id;
     private final String name;
+    private final Map<String, String> aliases = new HashMap<>();
     private final List<CommandAssignment> assignments;
     private final String origin;
     private final int sequenceNumber;
@@ -66,10 +68,12 @@ public class Command implements Comparable<Command> {
     // Command info that was relayed from an upstream (cascaded) server.
     private Map<String, Command> cascadedRecordsByPrefix = new LinkedHashMap<>();
 
-    public Command(String id, String name, List<CommandAssignment> assignments, String origin, int sequenceNumber,
+    public Command(String id, String name, Map<String, String> aliases, List<CommandAssignment> assignments,
+            String origin, int sequenceNumber,
             Instant generationTime) {
         this.id = id;
         this.name = name;
+        this.aliases.putAll(aliases);
         this.assignments = assignments;
         this.origin = origin;
         this.sequenceNumber = sequenceNumber;
@@ -80,6 +84,7 @@ public class Command implements Comparable<Command> {
     public Command(IssueCommandResponse response) {
         this.id = response.getId();
         this.name = response.getCommandName();
+        this.aliases.putAll(response.getAliasesMap());
         this.assignments = response.getAssignmentsList();
         this.origin = response.getOrigin();
         this.sequenceNumber = response.getSequenceNumber();
@@ -101,8 +106,8 @@ public class Command implements Comparable<Command> {
     }
 
     public Command(CommandHistoryEntry entry) {
-        this(entry.getId(), entry.getCommandName(), entry.getAssignmentsList(), entry.getOrigin(),
-                entry.getSequenceNumber(), Helpers.toInstant(entry.getGenerationTime()));
+        this(entry.getId(), entry.getCommandName(), entry.getAliasesMap(), entry.getAssignmentsList(),
+                entry.getOrigin(), entry.getSequenceNumber(), Helpers.toInstant(entry.getGenerationTime()));
         merge(entry);
     }
 
@@ -131,8 +136,22 @@ public class Command implements Comparable<Command> {
         return generationTime;
     }
 
+    /**
+     * Fully qualified command name
+     */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Alias under the specified namespace. Returns {@code null} if this command has no such alias.
+     */
+    public String getName(String namespace) {
+        return aliases.get(namespace);
+    }
+
+    public List<CommandAssignment> getAssignments() {
+        return Collections.unmodifiableList(assignments);
     }
 
     public String getOrigin() {
@@ -238,7 +257,8 @@ public class Command implements Comparable<Command> {
                 var prefix = matcher.group(1);
                 var cascadedCommand = cascadedRecordsByPrefix.get(prefix);
                 if (cascadedCommand == null) {
-                    cascadedCommand = new Command(id, name, assignments, origin, sequenceNumber, generationTime);
+                    cascadedCommand = new Command(id, name, entry.getAliasesMap(), assignments, origin, sequenceNumber,
+                            generationTime);
                     cascadedRecordsByPrefix.put(prefix, cascadedCommand);
                 }
                 var truncatedName = matcher.group(2);
