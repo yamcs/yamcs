@@ -36,6 +36,7 @@ import org.yamcs.tctm.ccsds.TcManagedParameters.TcVcManagedParameters;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AggregateParameterType;
+import org.yamcs.xtce.EnumeratedDataType;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.Parameter;
 
@@ -1198,9 +1199,11 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     public void setupSystemParameters(SystemParametersService sysParamsService) {
         super.setupSystemParameters(sysParamsService);
 
+        EnumeratedDataType stateType =
+                sysParamsService.createEnumeratedParameterType(Cop1State.class);
         AggregateParameterType aggrType = new AggregateParameterType.Builder().setName("Cop1Status")
                 .addMember(new Member("cop1Active", sysParamsService.getBasicType(Type.BOOLEAN)))
-                .addMember(new Member("state", sysParamsService.getBasicType(Type.ENUMERATED)))
+                .addMember(new Member("state", stateType))
                 .addMember(new Member("waitQueueNumTC", sysParamsService.getBasicType(Type.UINT32)))
                 .addMember(new Member("sentQueueNumFrames", sysParamsService.getBasicType(Type.UINT32)))
                 .addMember(new Member("vS", sysParamsService.getBasicType(Type.UINT32)))
