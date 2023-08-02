@@ -70,6 +70,14 @@
 					</xtce:Dimension>
 				</xtce:DimensionList>
 			</xtce:ArrayParameterType>
+			
+            <xtce:AggregateParameterType name="aggregate_param_position_type">
+                <xtce:MemberList>
+                    <xtce:Member name="Lat" typeRef="float32"/>
+                    <xtce:Member name="Lon" typeRef="float32"/>
+                    <xtce:Member name="Altitude" typeRef="float32"/>
+                </xtce:MemberList>
+            </xtce:AggregateParameterType>
 		</xtce:ParameterTypeSet>
 		<xtce:ParameterSet>
 			<xtce:Parameter name="param1" parameterTypeRef="binary_param_type" />
@@ -91,6 +99,10 @@
 			<xtce:Parameter name="local_para2" parameterTypeRef="uint16">
 				<xtce:ParameterProperties dataSource="local" />
 			</xtce:Parameter>
+			<xtce:Parameter name="Position" parameterTypeRef="aggregate_param_position_type" />
+			<xtce:Parameter name="Lat" parameterTypeRef="float32" />
+			<xtce:Parameter name="Lon" parameterTypeRef="float32" />
+			<xtce:Parameter name="Altitude" parameterTypeRef="float32" />
 		</xtce:ParameterSet>
 		<xtce:ContainerSet>
 			<xtce:SequenceContainer name="packet1">
@@ -116,6 +128,21 @@
 					<xtce:ParameterRefEntry parameterRef="param9" />
 					<xtce:ParameterRefEntry parameterRef="param10" />
 				</xtce:EntryList>
+			</xtce:SequenceContainer>
+			<xtce:SequenceContainer name="packet_lat">
+					<xtce:EntryList>
+						<xtce:ParameterRefEntry parameterRef="Lat" />
+					</xtce:EntryList>
+			</xtce:SequenceContainer>
+			<xtce:SequenceContainer name="packet_lon">
+					<xtce:EntryList>
+						<xtce:ParameterRefEntry parameterRef="Lon" />
+					</xtce:EntryList>
+			</xtce:SequenceContainer>
+			<xtce:SequenceContainer name="packet_alt">
+					<xtce:EntryList>
+						<xtce:ParameterRefEntry parameterRef="Altitude" ></xtce:ParameterRefEntry>
+					</xtce:EntryList>
 			</xtce:SequenceContainer>
 		</xtce:ContainerSet>
 
@@ -179,6 +206,24 @@
 					</xtce:TriggerSet>
 				</xtce:MathOperation>
 			</xtce:MathAlgorithm>
+			
+            <xtce:CustomAlgorithm name="Position_result">
+                        <xtce:AlgorithmText language="JavaScript">
+                        Position.values["Lat"] = Lat.value;
+                        Position.values["Lon"] = Lon.value;
+						Position.values["Altitude"] = Altitude.value;
+						</xtce:AlgorithmText>
+                        <xtce:InputSet><xtce:InputParameterInstanceRef
+                            	parameterRef="Altitude" inputName="Altitude"></xtce:InputParameterInstanceRef>
+                        	<xtce:InputParameterInstanceRef
+                        		parameterRef="Lon" inputName="Lon" /><xtce:InputParameterInstanceRef
+                        		parameterRef="Lat" inputName="Lat" />
+                        </xtce:InputSet>
+                        <xtce:OutputSet>
+                            <xtce:OutputParameterRef parameterRef="Position" outputName="Position"/>
+                        </xtce:OutputSet>
+            </xtce:CustomAlgorithm>
+			
 		</xtce:AlgorithmSet>
 	</xtce:TelemetryMetaData>
 	<xtce:CommandMetaData>

@@ -27,6 +27,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.RawEngValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataEncoding;
@@ -34,6 +35,9 @@ import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
+import org.yamcs.xtce.util.AggregateMemberNames;
+import org.yamcs.parameter.AggregateValue;
+
 
 /**
  * Represents the execution context of one algorithm. An AlgorithmExecutor is reused upon each update of one or more of
@@ -132,7 +136,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             for (int k = 0; k < numOutputs; k++) {
                 OutputParameter outputParameter = outputList.get(k);
                 OutputValueBinding res = (OutputValueBinding) functionArgs[numInputs + k];
-                if (res.updated && (res.value != null || res.rawValue != null)) {
+                if (res.updated && (res.value != null || res.rawValue != null || !res.values.isEmpty())) {
                     ParameterValue pv = convertScriptOutputToParameterValue(outputParameter.getParameter(), res);
                     pv.setAcquisitionTime(acqTime);
                     pv.setGenerationTime(genTime);
@@ -252,8 +256,29 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             }
         }
 
-        if (binding.value != null) {
+        if (binding.value != null || !binding.values.isEmpty()) {
             Value v = ParameterTypeUtils.getEngValue(ptype, binding.value);
+
+        	if(!binding.values.isEmpty()) {
+                if (ptype instanceof AggregateParameterType) {
+                	AggregateParameterType aggrType =  ((AggregateParameterType)ptype);
+                	AggregateMemberNames aggrMbr = aggrType.getMemberNames();
+                	AggregateValue ev = new AggregateValue(aggrMbr);
+                	for(var k: binding.values.entrySet()) {
+                		Value memberValue = ParameterTypeUtils.getEngValue((ParameterType) aggrType.getMember(k.getKey()).getType(), 
+                															k.getValue());
+                		ev.setMemberValue(k.getKey(), memberValue);
+                	}
+
+                	v = ev;
+                }
+                else {
+                    throw new InvalidAlgorithmOutputException(parameter, binding,
+                            "When using the values map, OutputParameter(s) MUST be of type  " +
+                            		AggregateParameterType.class.toString());
+                }
+
+        	}
             if (v == null) {
                 throw new InvalidAlgorithmOutputException(parameter, binding,
                         "Cannot convert algorithm output value "
@@ -262,6 +287,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
                                 + ptype.getQualifiedName() + "(" + ptype.getClass().getSimpleName() + ")");
             } else {
                 pval.setEngValue(v);
+                pval.setRawValue(v);
             }
         }
         return pval;
