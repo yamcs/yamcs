@@ -370,7 +370,7 @@ public class AuthHandler extends BodyHandler {
 
     private void sendNewAccessToken(HandlerContext ctx, AuthenticationInfo authenticationInfo, String refreshToken) {
         try {
-            User user = getSecurityStore().getDirectory().getUser(authenticationInfo.getUsername());
+            User user = getSecurityStore().getUserFromCache(authenticationInfo.getUsername());
             TokenResponse response = generateTokenResponse(user, refreshToken);
             tokenStore.registerAccessToken(response.getAccessToken(), authenticationInfo);
             ctx.sendOK(response);
