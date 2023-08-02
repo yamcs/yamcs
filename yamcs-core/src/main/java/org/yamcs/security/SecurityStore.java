@@ -351,7 +351,6 @@ public class SecurityStore {
     public CompletableFuture<AuthenticationInfo> login(AuthenticationToken token) {
         CompletableFuture<AuthenticationInfo> f = new CompletableFuture<>();
         CompletableFuture.runAsync(() -> {
-
             // 1. Authenticate. Stops on first match.
             AuthenticationInfo authenticationInfo = null;
             for (AuthModule authModule : authModules) {
@@ -367,6 +366,10 @@ public class SecurityStore {
                     log.info("{} aborted the login process", authModule.getClass().getName());
                     f.completeExceptionally(e);
                     return;
+                } catch (Exception e) {
+                    log.info("{} threw an unexpected exception", authModule.getClass().getName());
+                    f.completeExceptionally(e);
+                    return;
                 }
             }
 
@@ -379,7 +382,13 @@ public class SecurityStore {
             // 1.b. Notify all modules of successful login.
             // They may choose to bring some additions to the AuthenticationInfo
             for (AuthModule authModule : authModules) {
-                authModule.authenticationSucceeded(authenticationInfo);
+                try {
+                    authModule.authenticationSucceeded(authenticationInfo);
+                } catch (Exception e) {
+                    log.info("{} threw an unexpected exception", authModule.getClass().getName());
+                    f.completeExceptionally(e);
+                    return;
+                }
             }
 
             User user = directory.getUser(authenticationInfo.getUsername());
@@ -424,6 +433,10 @@ public class SecurityStore {
                     }
                 } catch (AuthorizationException e) {
                     log.info("{} aborted the login process", authModule.getClass().getName());
+                    f.completeExceptionally(e);
+                    return;
+                } catch (Exception e) {
+                    log.info("{} threw an unexpected exception", authModule.getClass().getName());
                     f.completeExceptionally(e);
                     return;
                 }
