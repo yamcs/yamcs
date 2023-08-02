@@ -484,7 +484,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
             @Override
             public void addedCommand(PreparedCommand pc) {
                 if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.CommandHistory, pc.getCommandName())) {
-                    CommandHistoryEntry entry = CommandHistoryEntry.newBuilder()
+                    var entryb = CommandHistoryEntry.newBuilder()
                             .setId(pc.getId())
                             .setOrigin(pc.getOrigin())
                             .setCommandName(pc.getCommandName())
@@ -492,9 +492,14 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                             .setCommandId(pc.getCommandId())
                             .setGenerationTime(TimeEncoding.toProtobufTimestamp(pc.getCommandId().getGenerationTime()))
                             .addAllAssignments(pc.getAssignments())
-                            .addAllAttr(pc.getAttributes())
-                            .build();
-                    observer.next(entry);
+                            .addAllAttr(pc.getAttributes());
+                    var aliasSet = pc.getMetaCommand().getAliasSet();
+                    if (aliasSet != null) {
+                        for (var alias : aliasSet.getAliases().entrySet()) {
+                            entryb.putAliases(alias.getKey(), alias.getValue());
+                        }
+                    }
+                    observer.next(entryb.build());
                 }
             }
 

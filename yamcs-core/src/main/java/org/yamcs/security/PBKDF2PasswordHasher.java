@@ -34,8 +34,11 @@ import java.security.spec.InvalidKeySpecException;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
+import org.yamcs.logging.Log;
+
 public class PBKDF2PasswordHasher implements PasswordHasher {
 
+    public static final Log log = new Log(PBKDF2PasswordHasher.class);
     public static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA1";
 
     // The following constants may be changed without breaking existing hashes.
@@ -80,7 +83,13 @@ public class PBKDF2PasswordHasher implements PasswordHasher {
     public boolean validatePassword(char[] password, String correctHash) {
         // Decode the hash into its parameters
         String[] params = correctHash.split(":");
-        int iterations = Integer.parseInt(params[ITERATION_INDEX]);
+        int iterations;
+        try {
+            iterations = Integer.parseInt(params[ITERATION_INDEX]);
+        } catch (NumberFormatException e) {
+            log.warn("Password cannot be validated as it does not appear to be hashed");
+            return false;
+        }
         byte[] salt = fromHex(params[SALT_INDEX]);
         byte[] hash = fromHex(params[PBKDF2_INDEX]);
         // Compute the hash of the provided password, using the same salt,
