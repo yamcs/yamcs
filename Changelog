@@ -1,3 +1,7 @@
+Version 5.8.5 released 02-Aug-2023
+- Fixes auth issue introduced in 5.8.4
+- Various smaller tweaks and fixes
+
 Version 5.8.4 released 28-July-2023
 - Group support on LDAP AuthModule
 - Various smaller tweaks and fixes
