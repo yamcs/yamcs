@@ -42,7 +42,7 @@ dataLinks:
       host: localhost
       port: 10015
       # Give the embedded simulator some time to boot up
-      initialDelay: 2000      
+      initialDelay: 2000
     - name: tm2_realtime
       class: org.yamcs.tctm.TcpTmDataLink
       stream: tm2_realtime
@@ -86,7 +86,7 @@ dataLinks:
       stream: tc_realtime
       host: localhost
       port: 10025
-      # Give the embedded simulator smoe time to boot up
+      # Give the embedded simulator some time to boot up
       initialDelay: 2000
       commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
       commandPostprocessorArgs:

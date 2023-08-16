@@ -5,11 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.google.protobuf.ListValue;
-import com.google.protobuf.NullValue;
-import com.google.protobuf.Struct;
-import com.google.protobuf.Timestamp;
-import com.google.protobuf.Value;
+import com.google.protobuf.*;
 
 public class WellKnownTypes {
 
@@ -43,6 +39,7 @@ public class WellKnownTypes {
         return listb.build();
     }
 
+
     public static ListValue toListValue(Object[] array) {
         ListValue.Builder listb = ListValue.newBuilder();
         for (Object el : array) {
@@ -51,10 +48,23 @@ public class WellKnownTypes {
         return listb.build();
     }
 
+    public static String toStringValue(byte[] array) {
+        char[] HEXCHARS = "0123456789abcdef".toCharArray();
+        char[] hexChars = new char[array.length * 2];
+        for (int j = 0; j < array.length; j++) {
+            int v = array[j] & 0xFF;
+            hexChars[j * 2] = HEXCHARS[v >>> 4];
+            hexChars[j * 2 + 1] = HEXCHARS[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
+
     @SuppressWarnings("unchecked")
     public static Value toValue(Object value) {
         if (value == null) {
             return Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build();
+        } else if (value instanceof byte[]) {
+            return Value.newBuilder().setStringValue(toStringValue((byte[]) value)).build();
         } else if (value instanceof Boolean) {
             return Value.newBuilder().setBoolValue((Boolean) value).build();
         } else if (value instanceof Float) {

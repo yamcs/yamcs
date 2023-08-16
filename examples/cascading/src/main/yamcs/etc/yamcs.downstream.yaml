@@ -35,6 +35,21 @@ dataLinks:
     #password: "password"
     upstreamName: "YUP"
     upstreamInstance: "upstream"
+    commandMapping:
+      - type: "DIRECT"
+        local: "/YSS/SIMULATOR/SWITCH_VOLTAGE_OFF"
+        upstream: "/YSS/SIMULATOR/SWITCH_VOLTAGE_OFF"
+      - type: "DIRECT"
+        local: "/YSS/SIMULATOR/"
+        upstream: "/YSS/SIMULATOR/"
+      - type: "EMBEDDED_BINARY"
+        local: "/YSS/DOWNSTREAM/SWITCH_VOLTAGE_ON"
+        upstream: "/YSS/SIMULATOR/ROVER_CMD"
+        argument: "Rover-cmd"
+      - type: "EMBEDDED_BINARY"
+        local: "/YSS/DOWNSTREAM/"
+        upstream: "/YSS/SIMULATOR/ROVER_CMD"
+        argument: "Rover-cmd"
     #tm: true
     #event: true
     #pp: true
@@ -56,15 +71,20 @@ mdb:
     subLoaders:
       - type: "sheet"
         spec: "mdb/landing.xls"
+      - type: "xtce"
+        spec: "mdb/downstream.xml"
+
+
+
 
 #Configuration for streams created at server startup
 streamConfig:
   tm:
     - name: "tm_realtime"
       processor: "realtime"
-    - name: "tm2_realtime"
-      rootContainer: "/YSS/SIMULATOR/tm2_container"
-      processor: "realtime"
+#    - name: "tm2_realtime"
+#      rootContainer: "/YSS/SIMULATOR/tm2_container"
+#      processor: "realtime"
     - name: "tm_dump"
   invalidTm: "invalid_tm_stream"
   cmdHist: ["cmdhist_realtime", "cmdhist_dump"]

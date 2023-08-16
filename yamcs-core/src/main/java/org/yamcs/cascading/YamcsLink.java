@@ -15,6 +15,7 @@ import org.yamcs.client.YamcsClient;
 import org.yamcs.client.base.WebSocketClient;
 import org.yamcs.client.mdb.MissionDatabaseClient;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.parameterarchive.BackFiller;
 import org.yamcs.tctm.AbstractLink;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.Link;
@@ -181,6 +182,9 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
                 .withDescription("List of command acknowledgements names received "
                         + "from the upstream server to keep unmodified")
                 .withDefault(List.of(CommandHistoryPublisher.CcsdsSeq_KEY));
+
+        spec.addOption("commandMapping", OptionType.LIST).withRequired(true).withElementType(OptionType.MAP).withSpec(CommandMapData.getSpec())
+                .withDescription("The mapping of commands and arguments between downstream and upstream.");
 
         /*
          * EV

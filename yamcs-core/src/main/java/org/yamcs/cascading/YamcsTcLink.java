@@ -2,15 +2,12 @@ package org.yamcs.cascading;
 
 import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
+import org.checkerframework.checker.units.qual.C;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.client.Command;
@@ -25,6 +22,7 @@ import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.mdb.MetaCommandContainerProcessor;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -36,6 +34,7 @@ import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.tctm.AbstractTcDataLink;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.utils.ValueUtility;
+import org.yamcs.cascading.CommandMapData;
 import org.yamcs.xtce.Argument;
 
 public class YamcsTcLink extends AbstractTcDataLink {
@@ -47,6 +46,10 @@ public class YamcsTcLink extends AbstractTcDataLink {
 
     private Set<String> keepUpstreamAcks = new HashSet<>();
 
+/*    private String upstreamCmdName = new String("none");
+    private String upstreamBinaryArgument = new String("none");*/
+
+    private LinkedList<CommandMapData> commandMapDataList = new LinkedList<>();
     Map<String, PreparedCommand> sentCommands = new ConcurrentHashMap<>();
     Map<String, CommandInfo> upstreamCmdCache = new ConcurrentHashMap<>();
 
@@ -63,15 +66,86 @@ public class YamcsTcLink extends AbstractTcDataLink {
         } else {
             l = List.of(CommandHistoryPublisher.CcsdsSeq_KEY);
         }
+        if (config.containsKey("commandMapping")) {
+           List<YConfiguration> commandMapConfigList = config.getConfigList("commandMapping");
+           commandMapConfigList.forEach(conf -> commandMapDataList.add(new CommandMapData(conf)));
+        }
+
         keepUpstreamAcks = new HashSet<>(l);
     }
 
     public boolean sendCommand(PreparedCommand pc) {
-
         // TODO: map the command name based on some XTCE ancillary data
+        String pcCommand = pc.getMetaCommand().getQualifiedName();
+        String pcCommandPath = pcCommand.substring(0, pcCommand.lastIndexOf("/")+1);
+
+        for (CommandMapData data: commandMapDataList) {
+            String commandDataPath = data.GetLocalPath().substring(0, data.GetLocalPath().lastIndexOf("/")+1);
+
+            if (commandDataPath.equals(pcCommandPath) || data.GetLocalPath().equals(pcCommand)) {
+                switch (data.GetCommandType()) {
+                    case DIRECT:
+                        return sendDirectCommand(pc);
+                    case EMBEDDED_BINARY:
+                        return sendEmbeddedBinaryCommand(pc, data);
+                    default:
+                        log.warn("Wrong downstream command type.");
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean sendEmbeddedBinaryCommand(PreparedCommand pc, CommandMapData data) {
+        CommandInfo upstreamCmd = getUpstreamCmd(data.GetUpstreamPath());
+        if (upstreamCmd == null) {
+            String msg = "Cannot send the command because upstream command definition is not available";
+            failedCommand(pc.getCommandId(), msg);
+            log.warn(msg);
+            return true;
+        }
+        CommandBuilder cb = procClient.prepareCommand(data.GetUpstreamPath());
+        cb.withOrigin(cmdOrigin);
+        long count = dataCount.getAndIncrement();
+        cb.withSequenceNumber((int) count);
+
+        sentCommands.put(cmdOrigin + "-" + count, pc);
+
+        if (pc.getComment() != null) {
+            cb.withComment(pc.getComment());
+        }
+        List<ArgumentInfo> Args = getRequiredArguments(upstreamCmd);
+
+        for (ArgumentInfo entry : Args) {
+            String argName = entry.getName();
+            if (entry.getName().equals(data.GetUpstreamArgumentName())) {
+                // TODO aggregates/arrays*/
+                cb.withArgument(data.GetUpstreamArgumentName(), pc.getBinary());
+            }
+            else {
+                log.debug("More required arguments then the binary argument: {}", entry.getName());
+            }
+        }
+
+        // we take the time now because after the command is issued, the current time will be after the upstream
+        // Queued/Released timestamps
+        long time = getCurrentTime();
+        cb.issue().whenComplete((c, t) -> {
+            if (t != null) {
+                log.warn("Error sending command ", t);
+                failedCommand(pc.getCommandId(), t.getMessage());
+            } else {
+                commandHistoryPublisher.publishAck(pc.getCommandId(), AcknowledgeSent_KEY, time, AckStatus.OK);
+            }
+        });
+        return true;
+    }
+
+    private boolean sendDirectCommand(PreparedCommand pc) {
         String upstreamCmdName = pc.getMetaCommand().getQualifiedName();
 
         CommandInfo upstreamCmd = getUpstreamCmd(upstreamCmdName);
+
         if (upstreamCmd == null) {
             String msg = "Cannot send the command because upstream command definition is not available";
             failedCommand(pc.getCommandId(), msg);
@@ -90,7 +164,6 @@ public class YamcsTcLink extends AbstractTcDataLink {
             cb.withComment(pc.getComment());
         }
         List<ArgumentInfo> reqArgs = getRequiredArguments(upstreamCmd);
-        log.debug("Required arguments {}", reqArgs);
 
         for (Entry<Argument, ArgumentValue> entry : pc.getArgAssignment().entrySet()) {
             String argName = entry.getKey().getName();
@@ -150,6 +223,24 @@ public class YamcsTcLink extends AbstractTcDataLink {
             }
         }
         return reqArgs;
+    }
+
+    // extract from the list of passed on arguments the ones required by the upstream
+    private List<ArgumentAssignmentInfo> getArguments(CommandInfo upstreamCmd) {
+        List<ArgumentAssignmentInfo> assignedArgs = new ArrayList<>();
+        CommandInfo ci = upstreamCmd;
+        while (true) {
+            for (ArgumentAssignmentInfo aai : ci.getArgumentAssignmentList()) {
+                assignedArgs.add(aai);
+            }
+            if (ci.hasBaseCommand()) {
+                ci = ci.getBaseCommand();
+            } else {
+                break;
+            }
+        }
+
+        return assignedArgs;
     }
 
     private CommandInfo getUpstreamCmd(String upstreamCmdName) {

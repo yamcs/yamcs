@@ -1,0 +1,166 @@
+<SpaceSystem name="DOWNSTREAM">
+    <Header validationStatus="Unknown" version="1.3" date="2023-07-10T11:16:59Z"/>
+    <TelemetryMetaData>
+        <ParameterTypeSet>
+            <AbsoluteTimeParameterType name="fine-time">
+                <Encoding scale="0.00390625">
+                    <IntegerDataEncoding encoding="unsigned" sizeInBits="8"/>
+                </Encoding>
+                <ReferenceTime>
+                    <OffsetFrom parameterRef="coarse-time"/>
+                </ReferenceTime>
+            </AbsoluteTimeParameterType>
+            <IntegerParameterType signed="false" name="uint11">
+                <UnitSet/>
+                <IntegerDataEncoding encoding="unsigned" sizeInBits="11"/>
+            </IntegerParameterType>
+            <IntegerParameterType signed="false" name="uint4">
+                <UnitSet/>
+                <IntegerDataEncoding encoding="unsigned" sizeInBits="4"/>
+            </IntegerParameterType>
+            <AbsoluteTimeParameterType name="coarse-time">
+                <Encoding>
+                    <IntegerDataEncoding encoding="unsigned" sizeInBits="32"/>
+                </Encoding>
+                <ReferenceTime>
+                    <Epoch>GPS</Epoch>
+                </ReferenceTime>
+            </AbsoluteTimeParameterType>
+            <IntegerParameterType signed="false" name="uint32">
+                <UnitSet/>
+                <IntegerDataEncoding encoding="unsigned" sizeInBits="32"/>
+            </IntegerParameterType>
+            <IntegerParameterType signed="false" name="uint14">
+                <UnitSet/>
+                <IntegerDataEncoding encoding="unsigned" sizeInBits="14"/>
+            </IntegerParameterType>
+        </ParameterTypeSet>
+        <ParameterSet>
+            <Parameter parameterTypeRef="uint11" name="ccsds-apid"/>
+            <Parameter parameterTypeRef="uint4" name="packet-type"/>
+            <Parameter parameterTypeRef="uint32" name="packet-id"/>
+            <Parameter parameterTypeRef="uint14" name="ccsds-seqcount"/>
+            <Parameter parameterTypeRef="coarse-time" name="coarse-time"/>
+            <Parameter parameterTypeRef="fine-time" name="mission-time"/>
+            <Parameter parameterTypeRef="uint32" name="size"/>
+        </ParameterSet>
+        <ContainerSet>
+            <SequenceContainer name="ccsds-default">
+                <EntryList>
+                    <ParameterRefEntry parameterRef="ccsds-apid">
+                        <LocationInContainerInBits referenceLocation="containerStart">
+                            <FixedValue>5</FixedValue>
+                        </LocationInContainerInBits>
+                    </ParameterRefEntry>
+                    <ParameterRefEntry parameterRef="ccsds-seqcount">
+                        <LocationInContainerInBits referenceLocation="containerStart">
+                            <FixedValue>18</FixedValue>
+                        </LocationInContainerInBits>
+                    </ParameterRefEntry>
+                    <ParameterRefEntry parameterRef="coarse-time">
+                        <LocationInContainerInBits referenceLocation="containerStart">
+                            <FixedValue>48</FixedValue>
+                        </LocationInContainerInBits>
+                    </ParameterRefEntry>
+                    <ParameterRefEntry parameterRef="mission-time">
+                        <LocationInContainerInBits referenceLocation="containerStart">
+                            <FixedValue>80</FixedValue>
+                        </LocationInContainerInBits>
+                    </ParameterRefEntry>
+                    <ParameterRefEntry parameterRef="packet-type">
+                        <LocationInContainerInBits referenceLocation="containerStart">
+                            <FixedValue>92</FixedValue>
+                        </LocationInContainerInBits>
+                    </ParameterRefEntry>
+                    <ParameterRefEntry parameterRef="packet-id">
+                        <LocationInContainerInBits referenceLocation="containerStart">
+                            <FixedValue>96</FixedValue>
+                        </LocationInContainerInBits>
+                    </ParameterRefEntry>
+                </EntryList>
+            </SequenceContainer>
+        </ContainerSet>
+    </TelemetryMetaData>
+    <CommandMetaData>
+        <ArgumentTypeSet>
+            <IntegerArgumentType sizeInBits="32" signed="false" name="uint1">
+                <UnitSet/>
+                <IntegerDataEncoding encoding="unsigned" sizeInBits="1"/>
+            </IntegerArgumentType>
+            <IntegerArgumentType sizeInBits="32" signed="false" name="uint1_ccsds-tc_checksumIndicator">
+                <UnitSet/>
+                <IntegerDataEncoding encoding="unsigned" sizeInBits="1"/>
+                <ValidRangeSet validRangeAppliesToCalibrated="false">
+                    <ValidRange minInclusive="0" maxInclusive="1"/>
+                </ValidRangeSet>
+            </IntegerArgumentType>
+            <IntegerArgumentType sizeInBits="32" signed="false" name="uint11">
+                <UnitSet/>
+                <IntegerDataEncoding encoding="unsigned" sizeInBits="11"/>
+            </IntegerArgumentType>
+            <IntegerArgumentType sizeInBits="32" signed="false" name="uint4">
+                <UnitSet/>
+                <IntegerDataEncoding encoding="unsigned" sizeInBits="4"/>
+            </IntegerArgumentType>
+            <IntegerArgumentType sizeInBits="32" signed="false" name="uint2">
+                <UnitSet/>
+                <IntegerDataEncoding encoding="unsigned" sizeInBits="2"/>
+            </IntegerArgumentType>
+            <IntegerArgumentType sizeInBits="32" signed="false" name="uint32">
+                <UnitSet/>
+                <IntegerDataEncoding encoding="unsigned" sizeInBits="32"/>
+            </IntegerArgumentType>
+            <BinaryArgumentType name="BinaryType">
+                <BinaryDataEncoding>
+                    <SizeInBits>
+                        <FixedValue>128</FixedValue>
+                    </SizeInBits>
+                </BinaryDataEncoding>
+            </BinaryArgumentType>
+        </ArgumentTypeSet>
+        <MetaCommandSet>
+            <MetaCommand abstract="true" name="DOWNSTREAM_CMD">
+                <ArgumentList>
+                    <Argument argumentTypeRef="uint32" name="packet-id"/>
+                </ArgumentList>
+                <CommandContainer name="DOWNSTREAM_CMD">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="packet-id"/>
+                    </EntryList>
+                </CommandContainer>
+            </MetaCommand>
+            <MetaCommand name="SWITCH_VOLTAGE_ON">
+                <BaseMetaCommand metaCommandRef="DOWNSTREAM_CMD">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="packet-id" argumentValue="1"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument argumentTypeRef="uint32" name="voltage_num"/>
+                </ArgumentList>
+                <CommandContainer name="voltage-on-packet">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="voltage_num"/>
+                    </EntryList>
+                    <BaseContainer containerRef="DOWNSTREAM_CMD"/>
+                </CommandContainer>
+            </MetaCommand>
+            <MetaCommand name="SWITCH_VOLTAGE_OFF">
+                <BaseMetaCommand metaCommandRef="DOWNSTREAM_CMD">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="packet-id" argumentValue="2"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument argumentTypeRef="uint32" name="voltage_num"/>
+                </ArgumentList>
+                <CommandContainer name="voltage-off-packet">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="voltage_num"/>
+                    </EntryList>
+                    <BaseContainer containerRef="DOWNSTREAM_CMD"/>
+                </CommandContainer>
+            </MetaCommand>
+        </MetaCommandSet>
+    </CommandMetaData>
+</SpaceSystem>
