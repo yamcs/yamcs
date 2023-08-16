@@ -108,9 +108,10 @@ connectionAttempts (integer)
 reconnectionDelay (integer)
    If the connection fails or breaks, the time (in milliseconds) to wait before reconnection.
 
-CommandMapping (list of CommandMapData)
+commandMapping (list of CommandMapData)
 
     The mapping between upstream and downstream commands is configured by a list of commandmapdata objects, which are implemented in :javadoc:`~org.yamcs.cascading.CommandMapData`.
+    If the commandMapping argument is not specified, the default of direct mapping between all upstream and downstream commands will be used.
     The sub-options in commandMapData are:
 
     type (string)
@@ -126,4 +127,4 @@ CommandMapping (list of CommandMapData)
         **Required.** Upstream path to be mapped. Can be either a path to a upstream subsystem or a specific upstream command.
 
     argument (string)
-        Argument in the upstream command that will be used for the embedded binary downstream command.
+        **Required if type is EMBEDDED_BINARY.** Argument in the upstream command that will be used for the embedded binary downstream command.

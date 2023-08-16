@@ -2,12 +2,16 @@ package org.yamcs.cascading;
 
 import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
 
-import java.util.*;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
-import org.checkerframework.checker.units.qual.C;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.client.Command;
@@ -45,11 +49,7 @@ public class YamcsTcLink extends AbstractTcDataLink {
     private String cmdOrigin;
 
     private Set<String> keepUpstreamAcks = new HashSet<>();
-
-/*    private String upstreamCmdName = new String("none");
-    private String upstreamBinaryArgument = new String("none");*/
-
-    private LinkedList<CommandMapData> commandMapDataList = new LinkedList<>();
+    private ArrayList<CommandMapData> commandMapDataList = new ArrayList<>();
     Map<String, PreparedCommand> sentCommands = new ConcurrentHashMap<>();
     Map<String, CommandInfo> upstreamCmdCache = new ConcurrentHashMap<>();
 
@@ -69,27 +69,33 @@ public class YamcsTcLink extends AbstractTcDataLink {
         if (config.containsKey("commandMapping")) {
            List<YConfiguration> commandMapConfigList = config.getConfigList("commandMapping");
            commandMapConfigList.forEach(conf -> commandMapDataList.add(new CommandMapData(conf)));
+        } else {
+            // add default direct command mapping.
+            log.warn("default config");
+            commandMapDataList.add(new CommandMapData());
         }
 
         keepUpstreamAcks = new HashSet<>(l);
     }
 
     public boolean sendCommand(PreparedCommand pc) {
-        // TODO: map the command name based on some XTCE ancillary data
-        String pcCommand = pc.getMetaCommand().getQualifiedName();
-        String pcCommandPath = pcCommand.substring(0, pcCommand.lastIndexOf("/")+1);
-
         for (CommandMapData data: commandMapDataList) {
-            String commandDataPath = data.GetLocalPath().substring(0, data.GetLocalPath().lastIndexOf("/")+1);
+            if (data.getCommandType().equals(CommandMapData.CommandType.DEFAULT)) {
+                return sendDirectCommand(pc, data);
+            }
+            String pcCommandPath;
+            if (data.getLocalPath().endsWith("/")) {
+                pcCommandPath = pc.getMetaCommand().getQualifiedName().substring(0, pc.getMetaCommand().getQualifiedName().lastIndexOf("/")+1);
+            } else {
+                pcCommandPath = pc.getMetaCommand().getQualifiedName();
+            }
 
-            if (commandDataPath.equals(pcCommandPath) || data.GetLocalPath().equals(pcCommand)) {
-                switch (data.GetCommandType()) {
+            if (pcCommandPath.startsWith(data.getLocalPath())) {
+                switch (data.getCommandType()) {
                     case DIRECT:
-                        return sendDirectCommand(pc);
+                        return sendDirectCommand(pc, data);
                     case EMBEDDED_BINARY:
                         return sendEmbeddedBinaryCommand(pc, data);
-                    default:
-                        log.warn("Wrong downstream command type.");
                 }
             }
         }
@@ -97,14 +103,14 @@ public class YamcsTcLink extends AbstractTcDataLink {
     }
 
     private boolean sendEmbeddedBinaryCommand(PreparedCommand pc, CommandMapData data) {
-        CommandInfo upstreamCmd = getUpstreamCmd(data.GetUpstreamPath());
+        CommandInfo upstreamCmd = getUpstreamCmd(data.getUpstreamPath());
         if (upstreamCmd == null) {
             String msg = "Cannot send the command because upstream command definition is not available";
             failedCommand(pc.getCommandId(), msg);
             log.warn(msg);
             return true;
         }
-        CommandBuilder cb = procClient.prepareCommand(data.GetUpstreamPath());
+        CommandBuilder cb = procClient.prepareCommand(data.getUpstreamPath());
         cb.withOrigin(cmdOrigin);
         long count = dataCount.getAndIncrement();
         cb.withSequenceNumber((int) count);
@@ -115,16 +121,23 @@ public class YamcsTcLink extends AbstractTcDataLink {
             cb.withComment(pc.getComment());
         }
         List<ArgumentInfo> Args = getRequiredArguments(upstreamCmd);
-
+        boolean foundArgument = false;
         for (ArgumentInfo entry : Args) {
             String argName = entry.getName();
-            if (entry.getName().equals(data.GetUpstreamArgumentName())) {
+            if (entry.getName().equals(data.getUpstreamArgumentName())) {
                 // TODO aggregates/arrays*/
-                cb.withArgument(data.GetUpstreamArgumentName(), pc.getBinary());
+                foundArgument = true;
+                cb.withArgument(data.getUpstreamArgumentName(), pc.getBinary());
             }
             else {
-                log.debug("More required arguments then the binary argument: {}", entry.getName());
+                log.warn("More required arguments than the binary argument: {}", entry.getName());
             }
+        }
+        if (!foundArgument) {
+            String msg = "Cannot send the command because upstream argument is not found";
+            failedCommand(pc.getCommandId(), msg);
+            log.warn(msg);
+            return true;
         }
 
         // we take the time now because after the command is issued, the current time will be after the upstream
@@ -141,8 +154,22 @@ public class YamcsTcLink extends AbstractTcDataLink {
         return true;
     }
 
-    private boolean sendDirectCommand(PreparedCommand pc) {
-        String upstreamCmdName = pc.getMetaCommand().getQualifiedName();
+    private boolean sendDirectCommand(PreparedCommand pc, CommandMapData data) {
+        String upstreamCmdName;
+        // keep supporting the default case where all downstream commands are mapped onto upstream commands with the same name.
+        if (data.getCommandType() == CommandMapData.CommandType.DEFAULT) {
+            upstreamCmdName = pc.getMetaCommand().getQualifiedName();
+        } else {
+            String upstreamCmdPath = data.getUpstreamPath();
+            log.warn(upstreamCmdPath);
+            if (upstreamCmdPath.endsWith("/")) {
+                String pcCommandName = pc.getCmdName();
+                upstreamCmdName = upstreamCmdPath + pcCommandName.substring(data.getLocalPath().length());
+                log.warn(upstreamCmdName);
+            } else {
+                upstreamCmdName = upstreamCmdPath;
+            }
+        }
 
         CommandInfo upstreamCmd = getUpstreamCmd(upstreamCmdName);
 

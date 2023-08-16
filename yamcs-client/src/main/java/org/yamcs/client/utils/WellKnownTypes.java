@@ -48,7 +48,7 @@ public class WellKnownTypes {
         return listb.build();
     }
 
-    public static String toStringValue(byte[] array) {
+    public static String toHex(byte[] array) {
         char[] HEXCHARS = "0123456789abcdef".toCharArray();
         char[] hexChars = new char[array.length * 2];
         for (int j = 0; j < array.length; j++) {
@@ -64,7 +64,7 @@ public class WellKnownTypes {
         if (value == null) {
             return Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build();
         } else if (value instanceof byte[]) {
-            return Value.newBuilder().setStringValue(toStringValue((byte[]) value)).build();
+            return Value.newBuilder().setStringValue(toHex((byte[]) value)).build();
         } else if (value instanceof Boolean) {
             return Value.newBuilder().setBoolValue((Boolean) value).build();
         } else if (value instanceof Float) {

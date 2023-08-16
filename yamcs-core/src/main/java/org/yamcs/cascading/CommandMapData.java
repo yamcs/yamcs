@@ -1,10 +1,14 @@
 package org.yamcs.cascading;
 
+import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
 import org.yamcs.YConfiguration;
 
+import java.lang.module.Configuration;
+
 public class CommandMapData {
     enum CommandType {
+        DEFAULT,
         DIRECT,
         EMBEDDED_BINARY
     }
@@ -26,30 +30,36 @@ public class CommandMapData {
         this.upstreamArgumentName = argumentName;
     }
 
+    public CommandMapData() {
+        setDefaultConfig();
+    }
+
     public CommandMapData(YConfiguration config) {
         parseConfig(config);
     }
 
+    private void setDefaultConfig() {
+        this.type = CommandType.DEFAULT;
+    }
+
     private void parseConfig(YConfiguration config) {
-        if (config.containsKey("type")) {
-            String t = config.getString("type");
-            if (t.equals("DIRECT")) {
-                this.type = CommandType.DIRECT;
-            } else if (t.equals("EMBEDDED_BINARY")) {
-                this.type = CommandType.EMBEDDED_BINARY;
-            }
+        String t = config.getString("type");
+        if (t.equals("DIRECT")) {
+            this.type = CommandType.DIRECT;
+        } else if (t.equals("EMBEDDED_BINARY")) {
+            this.type = CommandType.EMBEDDED_BINARY;
         }
 
-        if (config.containsKey("local")) {
-           this.localPath = config.getString("local");
-        }
+        this.localPath = config.getString("local");
 
-        if (config.containsKey("upstream")) {
-            this.upstreamPath = config.getString("upstream");
-        }
+        this.upstreamPath = config.getString("upstream");
 
         if (config.containsKey("argument")) {
-            this.upstreamArgumentName = config.getString("argument");
+            if (this.type == CommandType.EMBEDDED_BINARY) {
+                this.upstreamArgumentName = config.getString("argument");
+            } else {
+                throw new ConfigurationException("Command mapping configuration specified an argument while not being of the embedded binary type.");
+            }
         }
     }
 
@@ -62,8 +72,8 @@ public class CommandMapData {
         return spec;
     }
 
-    public CommandType GetCommandType(){return this.type;}
-    public String GetLocalPath(){return this.localPath;}
-    public String GetUpstreamPath(){return this.upstreamPath;}
-    public String GetUpstreamArgumentName(){return this.upstreamArgumentName;}
+    public CommandType getCommandType(){return this.type;}
+    public String getLocalPath(){return this.localPath;}
+    public String getUpstreamPath(){return this.upstreamPath;}
+    public String getUpstreamArgumentName(){return this.upstreamArgumentName;}
 }
