@@ -107,3 +107,29 @@ connectionAttempts (integer)
 
 reconnectionDelay (integer)
    If the connection fails or breaks, the time (in milliseconds) to wait before reconnection.
+
+commandMapping (list of CommandMapData)
+    This option is used to configure the mapping between the downstream command names and the upstream command names.
+    Each entry in the list can have the following structure:
+
+    type (string)
+        **Required.** Can take one of the values:
+
+        * ``DIRECT``: maps all the arguments in the downstream command directly onto the arguments in the upstream commands. The command names can be changed using the ``local`` and ``upstream`` configuration options below.
+        * ``EMBEDDED_BINARY``: encodes the downstream command to binary and sets the binary as an argument in the upstream command. The ``argument`` configuration option below is the name of the argument of the downstream command.
+        * ``DEFAULT``: this is the default behavior before Yamcs 5.8.7; it assumes that upstream and downstream MDBs have the same commands.
+
+    local (string)
+        **Required if type is DIRECT or EMBEDDED_BINARY** Downstream path to be mapped. 
+        Can be either a path (ending with /) to a downstream subsystem or a specific downstream command.
+
+    upstream (string)
+        **Required  if type is DIRECT or EMBEDDED_BINARY** Upstream path to be mapped.
+        If the type is DIRECT and local is a path, then this can also be a path to an upstream subsystem.
+        If ``local`` and ``upstream`` are paths, then the upstream command is found by replacing the path specified in ``local`` with the path specified in ``upstream``
+
+    argument (string)
+        **Required if type is EMBEDDED_BINARY.** Argument in the upstream command that will be used for the embedded binary downstream command.
+    
+    The list of commandMapping is checked in order - the first entry which matches the ``local`` entry will be used.
+    If no entry matches the sent command, the command will fail.

@@ -1,1 +1,5 @@
-This contains an example with a Yamcs server with two instances downstream and upstream with the downstream connected to upstream as a yamcs client
+This contains an example with a Yamcs server with two instances downstream and upstream with the downstream connected to upstream as a yamcs client.
+
+The TM packet definitions are identical between the upstream and the downstream.
+
+The TC definitions are mapped using several supported configurations, as per yamcs.upstream.yaml, commandMapping section.

@@ -307,7 +307,10 @@ public class ColSimulator extends AbstractSimulator {
                 case 8:
                     downloadFile(commandPacket);
                     break;
-
+                case 9:
+                    // this is used to demonstrate cascasding with BINARY_EMBEEDED command mapping
+                    switchBatteryOnOff(commandPacket);
+                    break;
                 default:
                     log.error("Invalid command packet id: {}", commandPacket.getPacketId());
                 }
@@ -315,6 +318,20 @@ public class ColSimulator extends AbstractSimulator {
                 log.warn("Unknown command type " + commandPacket.getPacketType());
             }
         }
+    }
+
+    private void switchBatteryOnOff(ColumbusCcsdsPacket commandPacket) {
+        transmitRealtimeTM(ackPacket(commandPacket, 1, 0));
+        commandPacket.setPacketId(9);
+        int onOff = commandPacket.getUserDataBuffer().get(0);
+        int batNum = commandPacket.getUserDataBuffer().get(1);
+        if (onOff == 1) {
+            executor.schedule(() -> powerDataHandler.setBatteryOn(batNum), 500, TimeUnit.MILLISECONDS);
+        } else {
+            executor.schedule(() -> powerDataHandler.setBatteryOff(batNum), 500, TimeUnit.MILLISECONDS);
+        }
+
+        transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
     }
 
     private void switchBatteryOn(ColumbusCcsdsPacket commandPacket) {

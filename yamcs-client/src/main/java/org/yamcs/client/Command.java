@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.yamcs.client.utils.WellKnownTypes;
 import org.yamcs.protobuf.Commanding.CommandAssignment;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
@@ -120,7 +121,7 @@ public class Command implements Comparable<Command> {
                     if (value instanceof String) {
                         return assignment.getName() + ": \"" + value + "\"";
                     } else if (value instanceof byte[]) {
-                        return assignment.getName() + ": 0x" + toHex((byte[]) value);
+                        return assignment.getName() + ": 0x" + WellKnownTypes.toHex((byte[]) value);
                     } else {
                         return assignment.getName() + ": " + value;
                     }
@@ -381,15 +382,6 @@ public class Command implements Comparable<Command> {
         return Collections.unmodifiableMap(cascadedRecordsByPrefix);
     }
 
-    private static String toHex(byte[] bytes) {
-        char[] hexChars = new char[bytes.length * 2];
-        for (int j = 0; j < bytes.length; j++) {
-            int v = bytes[j] & 0xFF;
-            hexChars[j * 2] = HEXCHARS[v >>> 4];
-            hexChars[j * 2 + 1] = HEXCHARS[v & 0x0F];
-        }
-        return new String(hexChars);
-    }
 
     @Override
     public int compareTo(Command other) {
