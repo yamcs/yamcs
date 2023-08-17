@@ -1,11 +1,11 @@
 package org.yamcs.client.utils;
 
+import com.google.protobuf.*;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import com.google.protobuf.*;
 
 public class WellKnownTypes {
 
@@ -38,7 +38,6 @@ public class WellKnownTypes {
         }
         return listb.build();
     }
-
 
     public static ListValue toListValue(Object[] array) {
         ListValue.Builder listb = ListValue.newBuilder();

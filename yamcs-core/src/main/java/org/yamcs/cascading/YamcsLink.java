@@ -1,10 +1,6 @@
 package org.yamcs.cascading;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
@@ -19,7 +15,10 @@ import org.yamcs.tctm.AbstractLink;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.Link;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class YamcsLink extends AbstractLink implements AggregatedDataLink, ConnectionListener {
     YamcsClient yclient;
@@ -182,7 +181,8 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
                         + "from the upstream server to keep unmodified")
                 .withDefault(List.of(CommandHistoryPublisher.CcsdsSeq_KEY));
 
-        spec.addOption("commandMapping", OptionType.LIST).withElementType(OptionType.MAP).withSpec(CommandMapData.getSpec())
+        spec.addOption("commandMapping", OptionType.LIST).withElementType(OptionType.MAP)
+                .withSpec(CommandMapData.getSpec())
                 .withDescription("The mapping of commands and arguments between downstream and upstream.");
 
         /*

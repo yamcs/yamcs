@@ -1,17 +1,5 @@
 package org.yamcs.cascading;
 
-import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
-
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.client.Command;
@@ -26,7 +14,6 @@ import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.mdb.MetaCommandContainerProcessor;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -38,20 +25,29 @@ import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.tctm.AbstractTcDataLink;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.utils.ValueUtility;
-import org.yamcs.cascading.CommandMapData;
 import org.yamcs.xtce.Argument;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+
+import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
+
 public class YamcsTcLink extends AbstractTcDataLink {
+    private final ArrayList<CommandMapData> commandMapDataList = new ArrayList<>();
     YamcsLink parentLink;
+    Map<String, PreparedCommand> sentCommands = new ConcurrentHashMap<>();
+    Map<String, CommandInfo> upstreamCmdCache = new ConcurrentHashMap<>();
     private CommandSubscription cmdSubscription;
     private ProcessorClient procClient;
     private MissionDatabaseClient mdbClient;
     private String cmdOrigin;
-
     private Set<String> keepUpstreamAcks = new HashSet<>();
-    private ArrayList<CommandMapData> commandMapDataList = new ArrayList<>();
-    Map<String, PreparedCommand> sentCommands = new ConcurrentHashMap<>();
-    Map<String, CommandInfo> upstreamCmdCache = new ConcurrentHashMap<>();
 
     public YamcsTcLink(YamcsLink parentLink) {
         this.parentLink = parentLink;
@@ -67,8 +63,8 @@ public class YamcsTcLink extends AbstractTcDataLink {
             l = List.of(CommandHistoryPublisher.CcsdsSeq_KEY);
         }
         if (config.containsKey("commandMapping")) {
-           List<YConfiguration> commandMapConfigList = config.getConfigList("commandMapping");
-           commandMapConfigList.forEach(conf -> commandMapDataList.add(new CommandMapData(conf)));
+            List<YConfiguration> commandMapConfigList = config.getConfigList("commandMapping");
+            commandMapConfigList.forEach(conf -> commandMapDataList.add(new CommandMapData(conf)));
         } else {
             // add default direct command mapping.
             log.warn("default config");
@@ -79,23 +75,24 @@ public class YamcsTcLink extends AbstractTcDataLink {
     }
 
     public boolean sendCommand(PreparedCommand pc) {
-        for (CommandMapData data: commandMapDataList) {
+        for (CommandMapData data : commandMapDataList) {
             if (data.getCommandType().equals(CommandMapData.CommandType.DEFAULT)) {
                 return sendDirectCommand(pc, data);
             }
             String pcCommandPath;
             if (data.getLocalPath().endsWith("/")) {
-                pcCommandPath = pc.getMetaCommand().getQualifiedName().substring(0, pc.getMetaCommand().getQualifiedName().lastIndexOf("/")+1);
+                pcCommandPath = pc.getMetaCommand().getQualifiedName()
+                        .substring(0, pc.getMetaCommand().getQualifiedName().lastIndexOf("/") + 1);
             } else {
                 pcCommandPath = pc.getMetaCommand().getQualifiedName();
             }
 
             if (pcCommandPath.startsWith(data.getLocalPath())) {
                 switch (data.getCommandType()) {
-                    case DIRECT:
-                        return sendDirectCommand(pc, data);
-                    case EMBEDDED_BINARY:
-                        return sendEmbeddedBinaryCommand(pc, data);
+                case DIRECT:
+                    return sendDirectCommand(pc, data);
+                case EMBEDDED_BINARY:
+                    return sendEmbeddedBinaryCommand(pc, data);
                 }
             }
         }
@@ -128,8 +125,7 @@ public class YamcsTcLink extends AbstractTcDataLink {
                 // TODO aggregates/arrays*/
                 foundArgument = true;
                 cb.withArgument(data.getUpstreamArgumentName(), pc.getBinary());
-            }
-            else {
+            } else {
                 log.warn("More required arguments than the binary argument: {}", entry.getName());
             }
         }
@@ -303,7 +299,7 @@ public class YamcsTcLink extends AbstractTcDataLink {
 
     /**
      * Called when a command history update is received from the upstream server
-     * 
+     *
      * @param command
      * @param cmdHistEntry
      */
@@ -387,10 +383,8 @@ public class YamcsTcLink extends AbstractTcDataLink {
             }
 
         });
-        cmdSubscription.sendMessage(SubscribeCommandsRequest
-                .newBuilder().setInstance(parentLink.getUpstreamInstance())
-                .setProcessor(parentLink.getUpstreamProcessor())
-                .build());
+        cmdSubscription.sendMessage(SubscribeCommandsRequest.newBuilder().setInstance(parentLink.getUpstreamInstance())
+                .setProcessor(parentLink.getUpstreamProcessor()).build());
     }
 
     @Override
