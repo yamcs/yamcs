@@ -918,9 +918,9 @@ public class XtceAssembler {
 
     }
 
-    private static void writeNameReferenceAttribute(XMLStreamWriter doc, String attrName, NameDescription name)
+    private void writeNameReferenceAttribute(XMLStreamWriter doc, String attrName, NameDescription name)
             throws XMLStreamException {
-        doc.writeAttribute(attrName, name.getName());
+        doc.writeAttribute(attrName, getNameReference(name));
     }
 
     private void writeParameterInstanceRef(XMLStreamWriter doc, String elementName, ParameterInstanceRef pinstRef)
@@ -1293,7 +1293,7 @@ public class XtceAssembler {
         doc.writeEndElement();
     }
 
-    private static void writeArgument(XMLStreamWriter doc, Argument argument) throws XMLStreamException {
+    private void writeArgument(XMLStreamWriter doc, Argument argument) throws XMLStreamException {
         doc.writeStartElement("Argument");
         writeNameReferenceAttribute(doc, "argumentTypeRef", (NameDescription) argument.getArgumentType());
         writeNameDescription(doc, argument);
@@ -1695,9 +1695,14 @@ public class XtceAssembler {
     }
 
     private String getNameReference(NameDescription nd) {
+        String ndqn = nd.getQualifiedName();
+        if (ndqn == null) { // happens for arguments
+            return nd.getName();
+        }
+
         String ssname = currentSpaceSystem.getQualifiedName();
-        if (nd.getQualifiedName().startsWith(ssname)) {
-            return nd.getQualifiedName().substring(ssname.length() + 1);
+        if (ndqn.startsWith(ssname)) {
+            return ndqn.substring(ssname.length() + 1);
         } else {
             String[] pe1 = currentSpaceSystem.getQualifiedName().split("/");
             String[] pe2 = nd.getSubsystemName().split("/");

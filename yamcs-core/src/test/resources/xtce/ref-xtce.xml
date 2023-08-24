@@ -91,6 +91,7 @@
 			<xtce:Parameter name="local_para2" parameterTypeRef="uint16">
 				<xtce:ParameterProperties dataSource="local" />
 			</xtce:Parameter>
+			<xtce:Parameter name="para_with_subsys_type" parameterTypeRef="subsys1/subsys_ptype1" />
 		</xtce:ParameterSet>
 		<xtce:ContainerSet>
 			<xtce:SequenceContainer name="packet1">
@@ -255,7 +256,7 @@
 					</xtce:DefaultCalibrator>
 				</xtce:IntegerDataEncoding>
 			</xtce:FloatArgumentType>
-			<xtce:FloatArgumentType name="arg2_with_algo">						
+			<xtce:FloatArgumentType name="arg2_with_algo">
 				<xtce:UnitSet>
 					<xtce:Unit description="pressure">kPa</xtce:Unit>
 				</xtce:UnitSet>
@@ -268,7 +269,7 @@
 					</xtce:DefaultCalibrator>
 				</xtce:IntegerDataEncoding>
 				<xtce:ValidRangeSet>
-					<xtce:ValidRange minInclusive="100" maxInclusive="1100"/>
+					<xtce:ValidRange minInclusive="100" maxInclusive="1100" />
 				</xtce:ValidRangeSet>
 			</xtce:FloatArgumentType>
 		</xtce:ArgumentTypeSet>
@@ -466,4 +467,11 @@
 			</xtce:MetaCommand>
 		</xtce:MetaCommandSet>
 	</xtce:CommandMetaData>
+	<xtce:SpaceSystem name="subsys1">
+		<xtce:TelemetryMetaData>
+			<xtce:ParameterTypeSet>
+				<xtce:IntegerParameterType name="subsys_ptype1" />
+			</xtce:ParameterTypeSet>
+		</xtce:TelemetryMetaData>
+	</xtce:SpaceSystem>
 </xtce:SpaceSystem>
