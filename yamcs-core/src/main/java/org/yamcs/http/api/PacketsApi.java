@@ -336,7 +336,23 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
                 } else if (packets.size() > 1) {
                     observer.completeExceptionally(new InternalServerErrorException("Too many results"));
                 } else {
+                    var packet = packets.get(0);
+
                     var mdb = XtceDbFactory.getInstance(instance);
+
+                    // Best effort to find a suitable root container
+                    // It could be that the MDB has changed so much that this
+                    // logic doesn't work, so then we fallback to using the default.
+                    var candidate = mdb.getSequenceContainer(packet.getId());
+                    SequenceContainer rootContainer = candidate;
+                    while (candidate != null) {
+                        rootContainer = candidate;
+                        candidate = candidate.getBaseContainer();
+                    }
+                    if (rootContainer != null) {
+                        mdb.setRootSequenceContainer(rootContainer);
+                    }
+
                     var responseb = ExtractPacketResponse.newBuilder();
 
                     var pdata = new ProcessorData(null, "XTCEPROC", mdb, new ProcessorConfig());
@@ -364,7 +380,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
                     extractor.getOptions().setIgnoreOutOfContainerEntries(true);
                     extractor.provideAll();
 
-                    var bytes = packets.get(0).getPacket().toByteArray();
+                    var bytes = packet.getPacket().toByteArray();
                     var result = extractor.processPacket(bytes, gentime, gentime, seqNum);
                     var packetName = XtceTmRecorder.deriveArchivePartition(result);
                     responseb.setPacketName(packetName);
