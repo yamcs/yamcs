@@ -11,6 +11,7 @@ import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.tctm.CcsdsPacket;
 import org.yamcs.tctm.CcsdsPacketPreprocessor;
 import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
+import org.yamcs.tctm.pus.services.tm.TmPusManager;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
@@ -85,8 +86,11 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
     // the offset of the time inside the PUS time packets
     int timePktTimeOffset;
 
+    public TmPusManager pusManager;
+
     public PusPacketPreprocessor(String yamcsInstance) {
         this(yamcsInstance, YConfiguration.emptyConfig());
+        pusManager = new TmPusManager(yamcsInstance);
     }
 
     public PusPacketPreprocessor(String yamcsInstance, YConfiguration config) {
@@ -147,7 +151,9 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
                     Integer.toHexString(tmPacket.getStatus()));
         }
 
-        return tmPacket;
+        pusManager.acceptTmPacket(tmPacket);
+
+        return null;
     }
 
     private void processTimePacket(TmPacket tmPacket) {
