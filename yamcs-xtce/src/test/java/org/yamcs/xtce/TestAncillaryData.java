@@ -12,8 +12,8 @@ import org.yamcs.xtce.xml.XtceStaxReader;
 public class TestAncillaryData {
     @Test
     public void test1() throws IllegalArgumentException, IllegalAccessException, XMLStreamException, IOException {
-        XtceStaxReader reader = new XtceStaxReader();
-        SequenceContainer seq = reader.readXmlDocument("src/test/resources/BogusSAT-1.xml")
+        XtceStaxReader reader = new XtceStaxReader("src/test/resources/BogusSAT-1.xml");
+        SequenceContainer seq = reader.readXmlDocument()
                 .getSubsystem("SC001")
                 .getSubsystem("BusElectronics")
                 .getSequenceContainer("SensorHistoryRecord");

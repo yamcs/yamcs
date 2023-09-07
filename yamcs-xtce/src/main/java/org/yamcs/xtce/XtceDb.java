@@ -593,7 +593,6 @@ public class XtceDb implements Serializable {
      * <p>
      * If the SpaceSystem where this parameter belongs does not exist, and createSpaceSystem is true, the whole
      * SpaceSystem hierarchy is created.
-     * <p>
      * 
      *
      * @param ptype

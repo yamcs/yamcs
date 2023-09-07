@@ -164,11 +164,11 @@ public class XtceLoader implements SpaceSystemLoader {
     }
 
     private SpaceSystem doLoad(String xtceFileName) throws Exception {
-        xtceReader = new XtceStaxReader();
+        xtceReader = new XtceStaxReader(xtceFileName);
         if (excludedContainers != null) {
             xtceReader.setExcludedContainers(excludedContainers);
         }
-        SpaceSystem spaceSystem = xtceReader.readXmlDocument(xtceFileName);
+        SpaceSystem spaceSystem = xtceReader.readXmlDocument();
 
         if (autoTmPartitions) {
             markAutoPartition(spaceSystem);
