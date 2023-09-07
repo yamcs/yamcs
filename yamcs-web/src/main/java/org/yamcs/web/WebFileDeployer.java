@@ -98,17 +98,20 @@ public class WebFileDeployer {
             source = source.toAbsolutePath().normalize();
         }
 
-        if (source != null && Files.exists(source)) {
+        var deployed = false;
+        if (source != null) {
             if (Files.exists(source)) {
                 log.debug("Deploying yamcs-web from {}", source);
                 FileUtils.copyRecursively(source, target);
+                deployed = true;
 
                 // Watch for changes
                 new Redeployer().start();
             } else {
                 log.warn("Static root for yamcs-web not found at '{}'", source);
             }
-        } else {
+        }
+        if (!deployed) {
             deployWebsiteFromClasspath(target);
         }
 

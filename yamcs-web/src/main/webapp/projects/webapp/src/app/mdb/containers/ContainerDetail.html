@@ -87,7 +87,7 @@
               {{ entry.parameter.qualifiedName }}
             </a>
           </td>
-          <td>{{ entry.parameter.type.dataEncoding.sizeInBits }}</td>
+          <td>{{ entry.parameter.type.dataEncoding?.sizeInBits ?? '-' }}</td>
         </ng-container>
         <ng-container *ngIf="entry.container">
           <td>Container</td>
