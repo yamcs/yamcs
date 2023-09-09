@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { StackEntry } from './StackEntry';
+import { StackEntry } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-stacked-command-detail',

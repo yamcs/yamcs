@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { CommandHistoryRecord } from './CommandHistoryRecord';
+import { CommandHistoryRecord } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-transmission-constraints-icon',

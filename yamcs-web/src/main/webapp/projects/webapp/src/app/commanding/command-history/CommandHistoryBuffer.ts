@@ -1,5 +1,4 @@
-import { CommandHistoryEntry } from '@yamcs/webapp-sdk';
-import { CommandHistoryRecord } from './CommandHistoryRecord';
+import { CommandHistoryEntry, CommandHistoryRecord } from '@yamcs/webapp-sdk';
 
 export type WatermarkObserver = () => void;
 

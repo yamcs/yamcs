@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { AlgorithmStatus, AlgorithmStatusSubscription } from '@yamcs/webapp-sdk';
+import { AlgorithmStatus, AlgorithmStatusSubscription, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../core/services/YamcsService';
 
 @Component({
   templateUrl: './AlgorithmSummaryTab.html',

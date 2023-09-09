@@ -2,10 +2,9 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, Input, ViewChild } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
-import { ColumnChooserComponent, ColumnInfo, Command, GetCommandsOptions, SearchFilterComponent } from '@yamcs/webapp-sdk';
+import { ColumnChooserComponent, ColumnInfo, Command, GetCommandsOptions, SearchFilterComponent, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { CommandsDataSource } from '../../commanding/command-sender/CommandsDataSource';
-import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   selector: 'app-command-selector',

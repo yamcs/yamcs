@@ -4,9 +4,8 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ColumnChooserComponent, ColumnInfo, GetParametersOptions, Parameter, SelectOption } from '@yamcs/webapp-sdk';
+import { ColumnChooserComponent, ColumnInfo, GetParametersOptions, Parameter, SelectOption, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 import { ParametersDataSource } from './ParametersDataSource';
 
 @Component({

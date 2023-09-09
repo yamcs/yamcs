@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, Optional, SkipSelf } from '@angular/core';
 import { AbstractControl, ControlContainer, FormArrayName, FormControl, FormGroup, FormGroupDirective, FormGroupName, UntypedFormArray, UntypedFormGroup } from '@angular/forms';
-import { ArgumentType, NamedObjectId, ParameterSubscription, utils } from '@yamcs/webapp-sdk';
+import { ArgumentType, NamedObjectId, ParameterSubscription, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription, distinctUntilChanged } from 'rxjs';
-import { YamcsService } from '../../../../core/services/YamcsService';
 
 @Component({
   selector: 'app-array-argument',

@@ -6,9 +6,8 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Bucket, MessageService, StorageClient } from '@yamcs/webapp-sdk';
+import { Bucket, MessageService, StorageClient, YamcsService } from '@yamcs/webapp-sdk';
 import { AuthService } from '../../core/services/AuthService';
-import { YamcsService } from '../../core/services/YamcsService';
 import { CreateBucketDialog } from './CreateBucketDialog';
 
 @Component({

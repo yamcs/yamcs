@@ -1,9 +1,8 @@
 import { Component, Inject, OnDestroy } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { DownloadEventsOptions, SelectOption, utils } from '@yamcs/webapp-sdk';
+import { DownloadEventsOptions, SelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { YamcsService } from '../core/services/YamcsService';
 
 @Component({
   templateUrl: './ExportEventsDialog.html',

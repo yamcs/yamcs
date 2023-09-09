@@ -1,9 +1,12 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { Inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { Clearance, ClearanceSubscription, ConnectionInfo, DefaultProcessorPipe, FrameLossListener, MessageService, Processor, StorageClient, TimeSubscription, YamcsClient } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { ConfigService } from './ConfigService';
+import { Clearance, ClearanceSubscription, ConnectionInfo, Processor, StorageClient, TimeSubscription, YamcsClient } from '../client';
+import { FrameLossListener } from '../client/FrameLossListener';
+import { DefaultProcessorPipe } from '../pipes/default-processor.pipe';
+import { ConfigService } from './config.service';
+import { MessageService } from './message.service';
 
 /**
  * Singleton service for facilitating working with a websocket connection

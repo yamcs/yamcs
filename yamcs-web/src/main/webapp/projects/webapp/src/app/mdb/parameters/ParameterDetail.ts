@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
-import { ContextAlarmInfo, EntryForOffsetPipe, EnumValue, Member, Parameter, ParameterType } from '@yamcs/webapp-sdk';
+import { ContextAlarmInfo, EntryForOffsetPipe, EnumValue, Member, Parameter, ParameterType, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   selector: 'app-parameter-detail',

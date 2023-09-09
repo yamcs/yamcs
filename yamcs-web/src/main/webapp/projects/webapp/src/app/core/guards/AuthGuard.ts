@@ -1,10 +1,8 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { Inject, Injectable, inject } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivateChildFn, CanActivateFn, Router, RouterStateSnapshot } from '@angular/router';
-import { AuthInfo, OpenIDConnectInfo, utils } from '@yamcs/webapp-sdk';
+import { AuthInfo, ConfigService, OpenIDConnectInfo, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { AuthService } from '../services/AuthService';
-import { ConfigService } from '../services/ConfigService';
-import { YamcsService } from '../services/YamcsService';
 
 export const authGuardFn: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
   return inject(AuthGuard).canActivate(route, state);

@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { MessageService, Parameter } from '@yamcs/webapp-sdk';
+import { MessageService, Parameter, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../core/services/YamcsService';
 
 interface Result {
   resources: Resource[];

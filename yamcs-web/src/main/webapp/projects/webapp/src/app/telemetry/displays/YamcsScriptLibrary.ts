@@ -1,5 +1,4 @@
-import { MessageService } from '@yamcs/webapp-sdk';
-import { YamcsService } from '../../core/services/YamcsService';
+import { MessageService, YamcsService } from '@yamcs/webapp-sdk';
 
 /**
  * Library added to the scope of OPI scripts under the name 'Yamcs'.

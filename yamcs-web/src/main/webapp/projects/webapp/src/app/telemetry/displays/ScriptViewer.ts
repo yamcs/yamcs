@@ -1,13 +1,11 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
-import { StorageClient } from '@yamcs/webapp-sdk';
+import { ConfigService, StorageClient, YamcsService } from '@yamcs/webapp-sdk';
 import * as ace from 'brace';
 import 'brace/mode/javascript';
 import 'brace/theme/eclipse';
 import 'brace/theme/twilight';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
-import { ConfigService } from '../../core/services/ConfigService';
-import { YamcsService } from '../../core/services/YamcsService';
 import { Viewer } from './Viewer';
 
 @Component({

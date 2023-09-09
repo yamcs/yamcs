@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { AcknowledgeAlarmOptions, Alarm } from '@yamcs/webapp-sdk';
-import { YamcsService } from '../core/services/YamcsService';
+import { AcknowledgeAlarmOptions, Alarm, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-acknowledge-alarm-dialog',

@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { MessageService, TimelineBand, UpdateTimelineViewRequest } from '@yamcs/webapp-sdk';
+import { MessageService, TimelineBand, UpdateTimelineViewRequest, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   selector: 'app-edit-view-dialog',

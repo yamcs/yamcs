@@ -1,9 +1,7 @@
 import { DataSource } from '@angular/cdk/table';
-import { CommandHistoryEntry, CommandSubscription, GetCommandHistoryOptions, Synchronizer } from '@yamcs/webapp-sdk';
+import { CommandHistoryEntry, CommandHistoryRecord, CommandSubscription, GetCommandHistoryOptions, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 import { CommandHistoryBuffer } from './CommandHistoryBuffer';
-import { CommandHistoryRecord } from './CommandHistoryRecord';
 
 export interface AnimatableCommandHistoryRecord extends CommandHistoryRecord {
   animate?: boolean;

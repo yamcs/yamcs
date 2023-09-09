@@ -2,9 +2,8 @@ import { Component, Inject, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
-import { Bucket, FileTransferOption, FileTransferService, MessageService, PreferenceStore, RemoteFileListSubscription, StorageClient } from '@yamcs/webapp-sdk';
+import { Bucket, FileTransferOption, FileTransferService, MessageService, PreferenceStore, RemoteFileListSubscription, StorageClient, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../core/services/YamcsService';
 import { ObjectSelector } from '../shared/forms/ObjectSelector';
 import { RemoteFileSelector } from './RemoteFileSelector';
 

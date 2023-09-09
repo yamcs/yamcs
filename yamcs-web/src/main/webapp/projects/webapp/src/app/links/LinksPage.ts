@@ -4,10 +4,9 @@ import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ColumnInfo, LinkEvent, LinkSubscription, MessageService } from '@yamcs/webapp-sdk';
+import { ColumnInfo, LinkEvent, LinkSubscription, MessageService, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../core/services/AuthService';
-import { YamcsService } from '../core/services/YamcsService';
 import { LinkItem } from './LinkItem';
 
 @Component({

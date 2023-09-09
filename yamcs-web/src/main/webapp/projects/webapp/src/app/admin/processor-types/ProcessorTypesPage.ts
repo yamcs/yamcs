@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
-import { YamcsService } from '../../core/services/YamcsService';
+import { YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   templateUrl: './ProcessorTypesPage.html',

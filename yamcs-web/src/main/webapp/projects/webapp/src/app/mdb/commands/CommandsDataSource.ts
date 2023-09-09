@@ -1,7 +1,6 @@
 import { DataSource } from '@angular/cdk/table';
-import { Command, GetCommandsOptions } from '@yamcs/webapp-sdk';
+import { Command, GetCommandsOptions, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 
 export class CommandsDataSource extends DataSource<Command> {
 

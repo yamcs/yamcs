@@ -1386,7 +1386,7 @@ export default class YamcsClient implements HttpHandler {
     }
   }
 
-  private queryString(options: { [key: string]: any; }) {
+  queryString(options: { [key: string]: any; }) {
     const qs = Object.keys(options)
       .map(k => `${k}=${options[k]}`)
       .join('&');

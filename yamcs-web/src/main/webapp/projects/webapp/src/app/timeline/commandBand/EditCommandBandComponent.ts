@@ -1,8 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
 import { UntypedFormGroup } from '@angular/forms';
-import { TimelineBand } from '@yamcs/webapp-sdk';
+import { TimelineBand, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   selector: 'app-edit-command-band',

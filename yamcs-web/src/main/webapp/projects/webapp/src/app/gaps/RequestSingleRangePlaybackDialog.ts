@@ -1,9 +1,8 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Gap, PlaybackRange, SelectOption } from '@yamcs/webapp-sdk';
+import { Gap, PlaybackRange, SelectOption, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../core/services/YamcsService';
 
 @Component({
   templateUrl: './RequestSingleRangePlaybackDialog.html',

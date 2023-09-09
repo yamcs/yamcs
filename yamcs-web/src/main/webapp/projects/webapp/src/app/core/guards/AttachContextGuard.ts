@@ -1,7 +1,7 @@
 import { Location } from '@angular/common';
 import { Injectable, inject } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivateFn, Router, RouterStateSnapshot } from '@angular/router';
-import { YamcsService } from '../services/YamcsService';
+import { YamcsService } from '@yamcs/webapp-sdk';
 
 export const attachContextGuardFn: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
   return inject(AttachContextGuard).canActivate(route, state);

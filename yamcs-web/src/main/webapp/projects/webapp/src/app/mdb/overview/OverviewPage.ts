@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { MissionDatabase } from '@yamcs/webapp-sdk';
-import { YamcsService } from '../../core/services/YamcsService';
+import { MissionDatabase, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   templateUrl: './OverviewPage.html',

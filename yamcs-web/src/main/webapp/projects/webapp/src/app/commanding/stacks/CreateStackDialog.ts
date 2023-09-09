@@ -1,10 +1,7 @@
 import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { StorageClient } from '@yamcs/webapp-sdk';
-import { ConfigService } from '../../core/services/ConfigService';
-import { YamcsService } from '../../core/services/YamcsService';
-import { StackFormatter } from './StackFormatter';
+import { ConfigService, StackFormatter, StorageClient, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-create-stack-dialog',

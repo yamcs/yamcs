@@ -1,6 +1,5 @@
-import { NamedObjectId, ParameterSubscription, ParameterValue, Sample, Synchronizer, utils } from '@yamcs/webapp-sdk';
+import { NamedObjectId, ParameterSubscription, ParameterValue, Sample, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 import { NamedParameterType } from './NamedParameterType';
 import { DyValueRange, PlotBuffer, PlotData } from './PlotBuffer';
 import { CustomBarsValue, DySample, DySeries } from './dygraphs';
