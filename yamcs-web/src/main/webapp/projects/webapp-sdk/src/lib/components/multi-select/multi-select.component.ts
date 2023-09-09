@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, forwardRef, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, forwardRef, Input, OnChanges } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 import { SelectOption } from '../select/select.component';
@@ -15,7 +15,7 @@ import { SelectOption } from '../select/select.component';
     }
   ]
 })
-export class MultiSelectComponent implements ControlValueAccessor {
+export class MultiSelectComponent implements OnChanges, ControlValueAccessor {
 
   @Input()
   emptyOption: string = '-- select an option --';
@@ -26,9 +26,14 @@ export class MultiSelectComponent implements ControlValueAccessor {
   @Input()
   icon: string;
 
+  options$ = new BehaviorSubject<SelectOption[]>([]);
   selected$ = new BehaviorSubject<string[]>([]);
 
   private onChange = (_: string[]) => { };
+
+  ngOnChanges() {
+    this.options$.next(this.options);
+  }
 
   public isSelected(id: string) {
     return this.selected$.value.indexOf(id) !== -1;
