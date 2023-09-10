@@ -43,7 +43,7 @@ mat-toolbar-row {
   margin-right: auto;
   text-align: center;
   pointer-events: none;
-  font-size: 10px;
+  font-size: 14px;
   white-space: nowrap;
   overflow: hidden;
 }
