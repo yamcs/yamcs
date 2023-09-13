@@ -11,23 +11,23 @@ import org.yamcs.tctm.pus.services.tm.PusTmPacket;
 public class ServiceOne implements PusService {
     Log log;
     Map<Integer, PusSubService> pusSubServices = new HashMap<>();
-    private String instanceName;
+    private String yamcsInstance;
 
-    public ServiceOne(String instanceName) {
-        this.instanceName = instanceName;
+    public ServiceOne(String yamcsInstance) {
+        this.yamcsInstance = yamcsInstance;
         initializeSubServices();
     }
 
     public void initializeSubServices() {
-        pusSubServices.put(1, new SubServiceOne(this.instanceName));
-        pusSubServices.put(2, new SubServiceTwo(this.instanceName));
-        pusSubServices.put(3, new SubServiceThree(this.instanceName));
-        pusSubServices.put(4, new SubServiceFour(this.instanceName));
-        pusSubServices.put(5, new SubServiceFive(this.instanceName));
-        pusSubServices.put(6, new SubServiceSix(this.instanceName));
-        pusSubServices.put(7, new SubServiceSeven(this.instanceName));
-        pusSubServices.put(8, new SubServiceEight(this.instanceName));
-        pusSubServices.put(10, new SubServiceTen(this.instanceName));
+        pusSubServices.put(1, new SubServiceOne(yamcsInstance));
+        pusSubServices.put(2, new SubServiceTwo(yamcsInstance));
+        pusSubServices.put(3, new SubServiceThree(yamcsInstance));
+        pusSubServices.put(4, new SubServiceFour(yamcsInstance));
+        pusSubServices.put(5, new SubServiceFive(yamcsInstance));
+        pusSubServices.put(6, new SubServiceSix(yamcsInstance));
+        pusSubServices.put(7, new SubServiceSeven(yamcsInstance));
+        pusSubServices.put(8, new SubServiceEight(yamcsInstance));
+        pusSubServices.put(10, new SubServiceTen(yamcsInstance));
     }
 
     public void acceptPusPacket(PusTmPacket pusTmPacket) {

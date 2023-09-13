@@ -86,11 +86,12 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
     // the offset of the time inside the PUS time packets
     int timePktTimeOffset;
 
+    YConfiguration pusServicesConfig;
+
     public TmPusManager pusManager;
 
     public PusPacketPreprocessor(String yamcsInstance) {
         this(yamcsInstance, YConfiguration.emptyConfig());
-        pusManager = new TmPusManager(yamcsInstance);
     }
 
     public PusPacketPreprocessor(String yamcsInstance, YConfiguration config) {
@@ -101,6 +102,9 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
             this.timeDecoder = new CucTimeDecoder(-1);
             this.timeEpoch = TimeEpochs.GPS;
         }
+
+        pusServicesConfig = config.getConfigOrEmpty("services");
+        pusManager = new TmPusManager(yamcsInstance, pusServicesConfig);
     }
 
     @Override
