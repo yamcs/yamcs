@@ -37,7 +37,11 @@ class AuthGuard {
         this.router.navigate(['/down'], { queryParams: { next: state.url } });
         return false;
       } else {
-        this.authService.logout(false);
+        if (this.configService.getConfig().logoutRedirectUrl) {
+          this.authService.logout(true /* redirect to external login */);
+        } else {
+          this.authService.logout(false);
+        }
         if (this.authInfo.openid) {
           const redirectURI = this.authService.buildServerSideOpenIDRedirectURI();
           window.location.href = this.buildRedirector(this.authInfo.openid, redirectURI, state.url);
