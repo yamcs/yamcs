@@ -1,9 +1,8 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { utils } from '@yamcs/webapp-sdk';
+import { YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../core/services/YamcsService';
 
 @Component({
   selector: 'app-download-dump-dialog',

@@ -1,9 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { CommandHistoryEntry, CommandSubscription } from '@yamcs/webapp-sdk';
+import { CommandHistoryEntry, CommandHistoryRecord, CommandSubscription, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
-import { CommandHistoryRecord } from './CommandHistoryRecord';
 
 @Component({
   templateUrl: './CommandPage.html',

@@ -4,15 +4,18 @@ import { CustomPreloadingStrategy } from './CustomPreloadingStrategy';
 import { ContextSwitchPage } from './appbase/pages/ContextSwitchPage';
 import { CreateInstancePage1 } from './appbase/pages/CreateInstancePage1';
 import { CreateInstancePage2 } from './appbase/pages/CreateInstancePage2';
+import { ExtensionPage } from './appbase/pages/ExtensionPage';
 import { ForbiddenPage } from './appbase/pages/ForbiddenPage';
 import { HomePage } from './appbase/pages/HomePage';
 import { NotFoundPage } from './appbase/pages/NotFoundPage';
 import { ProfilePage } from './appbase/pages/ProfilePage';
 import { ServerUnavailablePage } from './appbase/pages/ServerUnavailablePage';
-import { authGuardFn } from './core/guards/AuthGuard';
+import { attachContextGuardFn } from './core/guards/AttachContextGuard';
+import { authGuardChildFn, authGuardFn } from './core/guards/AuthGuard';
 import { clearContextGuardFn } from './core/guards/ClearContextGuard';
 import { openIDCallbackGuardFn } from './core/guards/OpenIDCallbackGuard';
 import { serverSideOpenIDCallbackGuardFn } from './core/guards/ServerSideOpenIDCallbackGuard';
+import { InstancePage } from './shared/template/InstancePage';
 
 const routes: Routes = [
   {
@@ -110,6 +113,16 @@ const routes: Routes = [
         loadChildren: () => import('projects/webapp/src/app/mdb/MdbModule').then(m => m.MdbModule),
         canActivate: [authGuardFn],
       }, {
+        path: 'ext',
+        canActivate: [authGuardFn, attachContextGuardFn],
+        canActivateChild: [authGuardChildFn],
+        runGuardsAndResolvers: 'always',
+        component: InstancePage,
+        children: [{
+          path: ':extension',
+          component: ExtensionPage,
+        }]
+      }, {
         path: 'cb',
         canActivate: [clearContextGuardFn, openIDCallbackGuardFn],
         children: [],
@@ -143,7 +156,9 @@ const routes: Routes = [
   imports: [
     RouterModule.forRoot(routes, {
       onSameUrlNavigation: 'reload',
-      preloadingStrategy: CustomPreloadingStrategy
+      preloadingStrategy: CustomPreloadingStrategy,
+      bindToComponentInputs: true,
+      paramsInheritanceStrategy: 'always',
     }),
   ],
   exports: [RouterModule],

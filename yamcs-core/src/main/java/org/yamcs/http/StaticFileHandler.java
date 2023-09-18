@@ -77,6 +77,10 @@ public class StaticFileHandler extends HttpHandler {
         this.zeroCopyEnabled = zeroCopyEnabled;
     }
 
+    public void setStaticRoots(List<Path> staticRoots) {
+        this.staticRoots = staticRoots;
+    }
+
     @Override
     public void handle(HandlerContext ctx) {
         ctx.requireGET();

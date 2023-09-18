@@ -4,8 +4,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GroupInfo, MessageService } from '@yamcs/webapp-sdk';
-import { YamcsService } from '../../core/services/YamcsService';
+import { GroupInfo, MessageService, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   templateUrl: './GroupsPage.html',

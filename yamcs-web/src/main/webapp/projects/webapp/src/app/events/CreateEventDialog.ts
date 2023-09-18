@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { SelectOption, utils } from '@yamcs/webapp-sdk';
-import { YamcsService } from '../core/services/YamcsService';
+import { SelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 
 @Component({
   templateUrl: './CreateEventDialog.html',

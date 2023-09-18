@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { Router } from '@angular/router';
-import { Alarm, utils } from '@yamcs/webapp-sdk';
+import { Alarm, YamcsService, utils } from '@yamcs/webapp-sdk';
 import * as dayjs from 'dayjs';
 import { Dayjs } from 'dayjs';
-import { YamcsService } from '../../core/services/YamcsService';
 import { ParameterAlarmsDataSource } from './ParameterAlarmsDataSource';
 
 @Component({

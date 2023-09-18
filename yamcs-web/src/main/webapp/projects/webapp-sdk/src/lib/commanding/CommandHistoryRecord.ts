@@ -1,4 +1,4 @@
-import { CommandAssignment, CommandHistoryAttribute, CommandHistoryEntry, Value } from '@yamcs/webapp-sdk';
+import { CommandAssignment, CommandHistoryAttribute, CommandHistoryEntry, Value } from '../client';
 import { Acknowledgment } from './Acknowledgment';
 
 // Entries that come from a cascading server

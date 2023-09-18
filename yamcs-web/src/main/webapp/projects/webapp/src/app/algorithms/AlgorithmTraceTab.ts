@@ -1,9 +1,8 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlgorithmStatus, AlgorithmTrace, MessageService } from '@yamcs/webapp-sdk';
+import { AlgorithmStatus, AlgorithmTrace, MessageService, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../core/services/YamcsService';
 
 @Component({
   templateUrl: './AlgorithmTraceTab.html',

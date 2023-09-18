@@ -1,7 +1,6 @@
 import { DataSource } from '@angular/cdk/table';
-import { GetParametersOptions, Parameter } from '@yamcs/webapp-sdk';
+import { GetParametersOptions, Parameter, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 
 export class ParametersDataSource extends DataSource<Parameter> {
 

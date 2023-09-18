@@ -1,7 +1,6 @@
 import { DataSource } from '@angular/cdk/table';
-import { GetPacketsOptions, Packet, Synchronizer } from '@yamcs/webapp-sdk';
+import { GetPacketsOptions, Packet, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 import { PacketBuffer } from './PacketBuffer';
 
 export interface AnimatablePacket extends Packet {

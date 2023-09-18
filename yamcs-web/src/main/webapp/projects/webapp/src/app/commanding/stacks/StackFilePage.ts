@@ -5,15 +5,10 @@ import { FormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AcknowledgmentInfo, BasenamePipe, Command, CommandSubscription, ExtensionPipe, FilenamePipe, MessageService, SelectOption, StorageClient, Value } from '@yamcs/webapp-sdk';
+import { AcknowledgmentInfo, AdvancementParams, BasenamePipe, Command, CommandHistoryRecord, CommandSubscription, ConfigService, ExtensionPipe, FilenamePipe, MessageService, SelectOption, StackEntry, StackFormatter, StorageClient, Value, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ConfigService } from '../../core/services/ConfigService';
-import { YamcsService } from '../../core/services/YamcsService';
-import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
 import { CommandResult, EditStackEntryDialog } from './EditStackEntryDialog';
-import { AdvancementParams, StackEntry } from './StackEntry';
-import { StackFormatter } from './StackFormatter';
 
 @Component({
   templateUrl: './StackFilePage.html',

@@ -3,9 +3,8 @@ import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ColumnInfo, DownloadPacketsOptions, GetPacketsOptions, Packet, SelectComponent, SelectOption, Synchronizer, rowAnimation, utils } from '@yamcs/webapp-sdk';
+import { ColumnInfo, DownloadPacketsOptions, GetPacketsOptions, Packet, SelectComponent, SelectOption, Synchronizer, YamcsService, rowAnimation, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 import { PacketsDataSource } from './PacketsDataSource';
 
 const defaultInterval = 'PT1H';

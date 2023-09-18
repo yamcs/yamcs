@@ -2,13 +2,11 @@ import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, View
 import { UntypedFormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { NavigationEnd, Router } from '@angular/router';
-import { ConnectionInfo, Parameter, User } from '@yamcs/webapp-sdk';
+import { ConfigService, ConnectionInfo, ExtensionService, NavItem, Parameter, User, WebsiteConfig, YamcsService } from '@yamcs/webapp-sdk';
 import { Observable, Subscription, of } from 'rxjs';
 import { debounceTime, filter, map, switchMap } from 'rxjs/operators';
 import { AppearanceService } from '../../core/services/AppearanceService';
 import { AuthService } from '../../core/services/AuthService';
-import { ConfigService, NavItem, WebsiteConfig } from '../../core/services/ConfigService';
-import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   templateUrl: './InstancePage.html',
@@ -53,6 +51,7 @@ export class InstancePage implements OnInit, OnDestroy {
     configService: ConfigService,
     authService: AuthService,
     appearanceService: AppearanceService,
+    extensionService: ExtensionService,
     private router: Router,
   ) {
     this.connectionInfo$ = this.yamcs.connectionInfo$;
@@ -70,7 +69,7 @@ export class InstancePage implements OnInit, OnDestroy {
     if (this.user.hasObjectPrivilege('ReadBucket', displayBucket)) {
       this.telemetryItems.push({ path: 'displays', label: 'Displays' });
     }
-    for (const item of configService.getExtraNavItems('telemetry')) {
+    for (const item of extensionService.getExtraNavItems('telemetry')) {
       if (item.condition && item.condition(this.user)) {
         this.telemetryItems.push(item);
       }
@@ -92,7 +91,7 @@ export class InstancePage implements OnInit, OnDestroy {
     if (this.config.commandClearanceEnabled && this.user.hasSystemPrivilege('ControlCommandClearances')) {
       this.commandingItems.push({ path: 'clearances', label: 'Clearances' });
     }
-    for (const item of configService.getExtraNavItems('commanding')) {
+    for (const item of extensionService.getExtraNavItems('commanding')) {
       if (item.condition && item.condition(this.user)) {
         this.commandingItems.push(item);
       }
@@ -113,19 +112,21 @@ export class InstancePage implements OnInit, OnDestroy {
       this.mdbItems.push({ path: 'containers', label: 'Containers' });
       this.mdbItems.push({ path: 'commands', label: 'Commands' });
       this.mdbItems.push({ path: 'algorithms', label: 'Algorithms' });
-      for (const item of configService.getExtraNavItems('mdb')) {
+      for (const item of extensionService.getExtraNavItems('mdb')) {
         if (item.condition && item.condition(this.user)) {
           this.mdbItems.push(item);
         }
       }
     }
 
-    if (this.config.dass && this.user.hasSystemPrivilege('RequestPlayback')) {
-      this.extraItems.push({ path: 'gaps', label: 'Gaps' });
-    }
-    for (const item of configService.getExtraNavItems('archive')) {
-      if (item.condition && item.condition(this.user)) {
+    for (const item of extensionService.getExtraNavItems('archive')) {
+      if (!item.condition || item.condition(this.user)) {
         this.extraItems.push(item);
+      }
+    }
+    if (!this.extraItems.length) { // Legacy, shall be removed soon
+      if (this.config.dass && this.user.hasSystemPrivilege('RequestPlayback')) {
+        this.extraItems.push({ path: 'gaps', label: 'Gaps' });
       }
     }
 
