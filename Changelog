@@ -1,3 +1,8 @@
+Version 5.8.6 released 18-Sep-2023
+- Cascading: implemented command mapping such that the commands from downstream can be embeeded as binary arguments to upstream commands
+- First prototype for web extensions to allow plugins to add extensions to yamcs-web
+- Various smaller tweaks and fixes
+
 Version 5.8.5 released 02-Aug-2023
 - Fixes auth issue introduced in 5.8.4
 - Various smaller tweaks and fixes
