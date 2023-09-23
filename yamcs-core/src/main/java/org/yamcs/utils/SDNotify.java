@@ -65,7 +65,10 @@ public class SDNotify {
                 bootstrap.group(group).channel(EpollDomainDatagramChannel.class)
                         .handler(new ChannelOutboundHandlerAdapter());
 
-                var channel = bootstrap.bind(newSocketAddress()).sync().channel();
+                var file = File.createTempFile("netty", "dsocket");
+                file.delete();
+                var domainSocketAddress = new DomainSocketAddress(file);
+                var channel = bootstrap.bind(domainSocketAddress).sync().channel();
                 if (log.isDebugEnabled()) {
                     for (var notification : notifications) {
                         log.debug("Writing: " + notification);
@@ -75,6 +78,7 @@ public class SDNotify {
                 var buf = Unpooled.copiedBuffer(message, StandardCharsets.UTF_8);
                 var packet = new DomainDatagramPacket(buf, recipient);
                 channel.writeAndFlush(packet).sync();
+                file.delete();
             } finally {
                 group.shutdownGracefully().sync();
             }
@@ -85,11 +89,5 @@ public class SDNotify {
 
     public static boolean isSupported() {
         return NOTIFY_SOCKET != null;
-    }
-
-    private static DomainSocketAddress newSocketAddress() throws IOException {
-        var file = File.createTempFile("netty", "dsocket");
-        file.delete();
-        return new DomainSocketAddress(file);
     }
 }
