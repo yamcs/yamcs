@@ -3,6 +3,7 @@ package org.yamcs.tctm.pus.services.tm.three;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.yamcs.TmPacket;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSubService;
@@ -25,7 +26,7 @@ public class ServiceThree implements PusService {
     }
 
     @Override
-    public void acceptPusPacket(PusTmPacket pusTmPacket) {
+    public TmPacket acceptPusPacket(PusTmPacket pusTmPacket) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'acceptPusPacket'");
     }

@@ -3,6 +3,7 @@ package org.yamcs.tctm.pus.services.tm.one;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.yamcs.TmPacket;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSubService;
@@ -30,7 +31,7 @@ public class ServiceOne implements PusService {
         pusSubServices.put(10, new SubServiceTen(yamcsInstance));
     }
 
-    public void acceptPusPacket(PusTmPacket pusTmPacket) {
-        pusSubServices.get(pusTmPacket.getMessageSubType()).process(pusTmPacket);
+    public TmPacket acceptPusPacket(PusTmPacket pusTmPacket) {
+        return pusSubServices.get(pusTmPacket.getMessageSubType()).process(pusTmPacket);
     }
 }

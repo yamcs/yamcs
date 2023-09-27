@@ -47,6 +47,7 @@ import org.yamcs.tctm.LinkState;
 import org.yamcs.tctm.ParameterDataLink;
 import org.yamcs.tctm.StreamPbParameterSender;
 import org.yamcs.tctm.TcDataLink;
+import org.yamcs.tctm.TmContainer;
 import org.yamcs.tctm.TmPacketDataLink;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.ServiceUtil;
@@ -254,11 +255,12 @@ public class LinkManager {
             ertime = null;
         }
         Long obt = tmPacket.getObt() == Long.MIN_VALUE ? null : tmPacket.getObt();
-        t = new Tuple(StandardTupleDefinitions.TM,
-                new Object[] { tmPacket.getGenerationTime(), tmPacket.getSeqCount(), tmPacket.getReceptionTime(),
-                        tmPacket.getStatus(), tmPacket.getPacket(), ertime, obt, tmLink.getName() });
-        stream.emitTuple(t);
 
+        t = new Tuple(StandardTupleDefinitions.TM,
+                new Object[] {tmPacket.getGenerationTime(), tmPacket.getSeqCount(), tmPacket.getReceptionTime(),
+                    tmPacket.getStatus(), tmPacket.getPacket(), ertime, obt, tmLink.getName(), tmPacket.getContainersOrNull() });
+
+        stream.emitTuple(t);
     }
 
     private InvalidPacketAction getInvalidPacketAction(String linkName, YConfiguration linkArgs) {

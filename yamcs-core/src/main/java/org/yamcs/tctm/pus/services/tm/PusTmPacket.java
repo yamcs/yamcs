@@ -5,22 +5,22 @@ import java.util.Arrays;
 import org.yamcs.TmPacket;
 
 public class PusTmPacket{
-    int pusVersionNumber;
-
     // FIXME: Check with Sivabhishek to see if this implmented on FSW | = 0
     int spacecraftTimeReferenceStatus;
+    int messageTypeCounter;
 
     int messageType;
+    int pusVersionNumber;
     int messageSubType;
-
-    // FIXME: Check with Sivabhishek to see if this is implemented on FSW | = 0
-    int messageTypeCounter;
     int destinationID;
-
     long absoluteTime;
 
     TmPacket tmPacket;
+
     byte[] dataField;
+    byte[] spareField;
+    byte[] secondaryHeader;
+    byte[] primaryHeader;
 
     public int getMessageType() {
         return this.messageType;
@@ -50,6 +50,19 @@ public class PusTmPacket{
         return this.dataField;
     }
 
+    public byte[] getSpareField() {
+        return this.spareField;
+    }
+
+    public byte[] getSecondaryHeader() {
+        return this.secondaryHeader;
+    }
+
+    public byte[] getPrimaryHeader() {
+        return this.primaryHeader;
+    }
+
+
     public static int getInteger(byte[] arr, int off) {
         return arr[off] << 8 & 0xFF00 | arr[off + 1] & 0xFF;
     }
@@ -58,14 +71,18 @@ public class PusTmPacket{
         this.tmPacket = tmPacket;
 
         byte[] tmPacketPayload = tmPacket.getPacket();
-        byte[] tmPacketSecondaryHeader = Arrays.copyOfRange(tmPacketPayload, 6, 17);
-        this.dataField = Arrays.copyOfRange(tmPacketPayload, 17, tmPacketPayload.length);
+        primaryHeader = Arrays.copyOfRange(tmPacketPayload, 0, TmPusManager.PRIMARY_HEADER_LENGTH);
+        secondaryHeader = Arrays.copyOfRange(tmPacketPayload, TmPusManager.PRIMARY_HEADER_LENGTH, TmPusManager.PRIMARY_HEADER_LENGTH + TmPusManager.secondaryHeaderLength);
 
-        setPusVersionNumberAndSpacecraftTimeReferenceStatus(tmPacketSecondaryHeader[0]);
-        setMessageTypeAndSubType(Arrays.copyOfRange(tmPacketSecondaryHeader, 1, 3));
+        byte[] pusHeader = Arrays.copyOfRange(secondaryHeader, 0, TmPusManager.PUS_HEADER_LENGTH);
+        spareField = Arrays.copyOfRange(secondaryHeader, TmPusManager.PUS_HEADER_LENGTH, secondaryHeader.length);
+        dataField = Arrays.copyOfRange(tmPacketPayload, TmPusManager.secondaryHeaderLength, tmPacketPayload.length);
 
-        this.messageTypeCounter = getInteger(tmPacketSecondaryHeader, 3);
-        this.destinationID = getInteger(tmPacketSecondaryHeader, 5);
+        setPusVersionNumberAndSpacecraftTimeReferenceStatus(pusHeader[0]);
+        setMessageTypeAndSubType(Arrays.copyOfRange(pusHeader, 1, 3));
+
+        this.messageTypeCounter = getInteger(pusHeader, 3);
+        this.destinationID = getInteger(pusHeader, 5);
         this.absoluteTime = tmPacket.getGenerationTime();        
     }
 

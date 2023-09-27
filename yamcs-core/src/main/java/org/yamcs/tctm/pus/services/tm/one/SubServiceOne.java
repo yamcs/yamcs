@@ -1,5 +1,6 @@
 package org.yamcs.tctm.pus.services.tm.one;
 
+import org.yamcs.TmPacket;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.tctm.pus.services.PusSubService;
@@ -18,8 +19,10 @@ public class SubServiceOne implements PusSubService {
     }
 
     @Override
-    public void process(PusTmPacket pusTmPacket) {
+    public TmPacket process(PusTmPacket pusTmPacket) {
         eventProducer.sendInfo(TC_ACCEPTANCE_SUCCESS,
                 "TC with Destination ID: " + pusTmPacket.getDestinationID() + " has been accepted");
+        
+        return pusTmPacket.getTmPacket();
     }
 }

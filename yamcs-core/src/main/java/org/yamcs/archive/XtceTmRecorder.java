@@ -286,17 +286,33 @@ public class XtceTmRecorder extends AbstractYamcsService {
          * @param t
          */
         protected void saveTuple(Tuple t) {
-            long gentime = (Long) t.getColumn(0);
-            byte[] packet = (byte[]) t.getColumn(4);
-            int seqCount = (Integer) t.getColumn(1);
+            long gentime = (Long) t.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
+            byte[] packet = (byte[]) t.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
+            int seqCount = (Integer) t.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
 
             totalNumPackets++;
 
-            ContainerProcessingResult cpr = tmExtractor.processPacket(packet, gentime, timeService.getMissionTime(),
-                    seqCount, rootSequenceContainer);
+            String pname = "";
+            ArrayList<Object> uncastPusTmContainers = t.getColumn(StandardTupleDefinitions.TM_PUS_CONTAINERS);
 
-            String pname = deriveArchivePartition(cpr);
+            if (uncastPusTmContainers != null) {
+                ArrayList<byte[]> pusTmContainers = new ArrayList<>(uncastPusTmContainers.size());
 
+                for(Object uncastPusTmContainer: uncastPusTmContainers) {
+                    pusTmContainers.add((byte[]) uncastPusTmContainer);
+                }
+                for(byte[] pusTmContainer: pusTmContainers) {
+                    ContainerProcessingResult cpr = tmExtractor.processPacket(pusTmContainer, gentime, timeService.getMissionTime(),
+                            seqCount, rootSequenceContainer);
+                    pname = deriveArchivePartition(cpr);
+                }
+            } else {
+                ContainerProcessingResult cpr = tmExtractor.processPacket(packet, gentime, timeService.getMissionTime(),
+                        seqCount, rootSequenceContainer);
+                pname = deriveArchivePartition(cpr);
+            }
+
+            // FIXME: pname may be ambiguous
             try {
                 List<Object> c = t.getColumns();
                 List<Object> columns = new ArrayList<>(c.size() + 1);

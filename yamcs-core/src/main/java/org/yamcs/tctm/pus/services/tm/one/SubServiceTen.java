@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.yamcs.TmPacket;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.tctm.pus.services.PusSubService;
@@ -32,7 +33,7 @@ public class SubServiceTen implements PusSubService {
     }
 
     @Override
-    public void process(PusTmPacket pusTmPacket) {
+    public TmPacket process(PusTmPacket pusTmPacket) {
         byte[] dataField = pusTmPacket.getDataField();
 
         int errorCode = Byte.toUnsignedInt(dataField[0]);
@@ -41,6 +42,7 @@ public class SubServiceTen implements PusSubService {
         eventProducer.sendCritical(TC_ROUTING_FAILED,
                 "TC with Destination ID: " + pusTmPacket.getDestinationID() + " has failed to route correctly | Error Code: " + errorCodes.get(errorCode) + " Deduced: " + deducedPresence);
 
+        return pusTmPacket.getTmPacket();
     }
 
     public void populateErrorCodes() {
