@@ -86,9 +86,7 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
     // the offset of the time inside the PUS time packets
     int timePktTimeOffset;
 
-    YConfiguration pusServicesConfig;
-
-    public TmPusManager pusManager;
+    TmPusManager pusManager;
 
     public PusPacketPreprocessor(String yamcsInstance) {
         this(yamcsInstance, YConfiguration.emptyConfig());
@@ -103,8 +101,8 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
             this.timeEpoch = TimeEpochs.GPS;
         }
 
-        pusServicesConfig = config.getConfigOrEmpty("services");
-        pusManager = new TmPusManager(yamcsInstance, pusServicesConfig);
+        YConfiguration pusConfig = config.getConfigOrEmpty("pus");
+        pusManager = new TmPusManager(yamcsInstance, pusConfig);
     }
 
     @Override
@@ -155,9 +153,7 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
                     Integer.toHexString(tmPacket.getStatus()));
         }
 
-        pusManager.acceptTmPacket(tmPacket);
-
-        return null;
+        return pusManager.acceptTmPacket(tmPacket);
     }
 
     private void processTimePacket(TmPacket tmPacket) {
