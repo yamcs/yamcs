@@ -23,44 +23,44 @@ import com.google.gson.GsonBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class SubServiceNine extends BucketSaveHandler implements PusSubService {
+public class SubServiceTwelve extends BucketSaveHandler implements PusSubService {
     String yamcsInstance;
     Log log;
 
     private static int DEFAULT_DATA_ACQUISITION_CODE_SIZE = 2;
     private static int DEFAULT_AUXILLARY_DATA_SIZE = 4;
     private static int DEFAULT_PACT_ID_SIZE = 2;
-    private static int DEFAULT_PHYSICAL_DEVICE_ID_SIZE = 2;
-    private static int DEFAULT_PROTOCOL_SPECIFIC_DATA_SIZE = 2;
+    private static int DEFAULT_LOGICAL_DEVICE_ID_SIZE = 2;
+    private static int DEFAULT_PARAMETER_ID_DATA_SIZE = 2;
     private static int DEFAULT_DATA_ACQUIRED_SIZE = 4;
 
     private static int dataAcquisitionCodeSize;
     private static int auxillaryDataSize;
-    private static int physicalDeviceIDSize;
-    private static int protocolSpecificDataSize;
+    private static int logicalDeviceIDSize;
+    private static int parameterIDDataSize;
     private static int pactIDSize;
     private static int dataAcquiredSize;
     private static int transactionIDSize = 4;
 
-    Bucket physicalDeviceReportBucket;
+    Bucket logicalDeviceReportBucket;
     Gson gson;
     
-    public SubServiceNine(String yamcsInstance, YConfiguration subServiceSixConfig) {
+    public SubServiceTwelve(String yamcsInstance, YConfiguration subServiceSixConfig) {
         this.yamcsInstance = yamcsInstance;
         log = new Log(getClass(), yamcsInstance);
 
         dataAcquisitionCodeSize = subServiceSixConfig.getInt("dataAcquisitionCodeSize", DEFAULT_DATA_ACQUISITION_CODE_SIZE);
         auxillaryDataSize = subServiceSixConfig.getInt("auxillaryDataSize", DEFAULT_AUXILLARY_DATA_SIZE);
-        protocolSpecificDataSize = subServiceSixConfig.getInt("protocolSpecificDataSize", DEFAULT_PROTOCOL_SPECIFIC_DATA_SIZE);
-        physicalDeviceIDSize = subServiceSixConfig.getInt("physicalDeviceIDSize", DEFAULT_PHYSICAL_DEVICE_ID_SIZE);
+        parameterIDDataSize = subServiceSixConfig.getInt("parameterIDDataSize", DEFAULT_PARAMETER_ID_DATA_SIZE);
+        logicalDeviceIDSize = subServiceSixConfig.getInt("logicalDeviceIDSize", DEFAULT_LOGICAL_DEVICE_ID_SIZE);
         pactIDSize = subServiceSixConfig.getInt("pactIDSize", DEFAULT_PACT_ID_SIZE);
         dataAcquiredSize = subServiceSixConfig.getInt("dataAcquiredSize", DEFAULT_DATA_ACQUIRED_SIZE);
 
         try {
-            physicalDeviceReportBucket = getBucket("physicalDeviceReport", yamcsInstance);
+            logicalDeviceReportBucket = getBucket("logicalDeviceReport", yamcsInstance);
         } catch (InitException e) {
-            log.error("Unable to create a `physicalDeviceReport bucket` for (Service - 2 | SubService - 9)", e);
-            throw new YarchException("Failed to create RDB based bucket: physicalDeviceReport", e);
+            log.error("Unable to create a `logicalDeviceReport bucket` for (Service - 2 | SubService - 12)", e);
+            throw new YarchException("Failed to create RDB based bucket: logicalDeviceReport", e);
         }
 
         // Create Gson instance
@@ -77,35 +77,35 @@ public class SubServiceNine extends BucketSaveHandler implements PusSubService {
         int dataAcquired = ByteArrayUtils.decodeInt(dataField, (transactionIDSize + dataAcquisitionCodeSize + auxillaryDataSize));
 
         int pactID = ByteArrayUtils.decodeUnsignedShort(auxillaryData, 0);
-        int physicalDeviceID = ByteArrayUtils.decodeUnsignedShort(auxillaryData, pactIDSize);
-        int protocolSpecificData = ByteArrayUtils.decodeUnsignedShort(auxillaryData, (pactIDSize + physicalDeviceIDSize));
+        int logicalDeviceID = ByteArrayUtils.decodeUnsignedShort(auxillaryData, pactIDSize);
+        int parameterIDData = ByteArrayUtils.decodeUnsignedShort(auxillaryData, (pactIDSize + logicalDeviceIDSize));
 
-        String physicalDeviceReportName = "";
-        HashMap<String, String> physicalDeviceReportMetadata = new HashMap<>();
+        String logicalDeviceReportName = "";
+        HashMap<String, String> logicalDeviceReportMetadata = new HashMap<>();
 
         // Save file to deviceRegisterDump bucket
         try {
-            JSONArray physicalDeviceReportJSON = new JSONArray();
-            byte[] physicalDeviceReport = physicalDeviceReportBucket.getObject(physicalDeviceReportName);
+            JSONArray logicalDeviceReportJSON = new JSONArray();
+            byte[] logicalDeviceReport = logicalDeviceReportBucket.getObject(logicalDeviceReportName);
 
-            if (physicalDeviceReport != null) {
-                physicalDeviceReportJSON = new JSONArray(new String(physicalDeviceReport));
-                physicalDeviceReportBucket.deleteObject(physicalDeviceReportName);
+            if (logicalDeviceReport != null) {
+                logicalDeviceReportJSON = new JSONArray(new String(logicalDeviceReport));
+                logicalDeviceReportBucket.deleteObject(logicalDeviceReportName);
             }
 
             JSONObject currentDeviceReport = new JSONObject();
             currentDeviceReport.put("pactID", pactID);
-            currentDeviceReport.put("physicalDeviceID", physicalDeviceID);
+            currentDeviceReport.put("logicalDeviceID", logicalDeviceID);
             currentDeviceReport.put("dataAcquisitionCode", dataAcquisitionCode);
             currentDeviceReport.put("transactionID", transactionID);
-            currentDeviceReport.put("protocolSpecificData", protocolSpecificData);
+            currentDeviceReport.put("parameterIDData", parameterIDData);
             currentDeviceReport.put("dataAcquired", dataAcquired);
 
-            physicalDeviceReportJSON.put(currentDeviceReport);
-            physicalDeviceReportBucket.putObject(physicalDeviceReportName, "JSON", physicalDeviceReportMetadata, physicalDeviceReportJSON.toString().getBytes());
+            logicalDeviceReportJSON.put(currentDeviceReport);
+            logicalDeviceReportBucket.putObject(logicalDeviceReportName, "JSON", logicalDeviceReportMetadata, logicalDeviceReportJSON.toString().getBytes());
 
         } catch(IOException e) {
-            throw new UncheckedIOException("Cannot save / update physical device ID dump report in bucket: " + physicalDeviceReportName + (physicalDeviceReportBucket != null ? " -> " + physicalDeviceReportBucket.getName() : ""), e);
+            throw new UncheckedIOException("Cannot save / update logical device ID dump report in bucket: " + logicalDeviceReportName + (logicalDeviceReportBucket != null ? " -> " + logicalDeviceReportBucket.getName() : ""), e);
         }
 
         TmPacket tmPacket = pusTmPacket.getTmPacket();
