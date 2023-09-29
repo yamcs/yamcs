@@ -131,9 +131,6 @@ public class YamcsServer {
     Path incomingDir;
     Path instanceDefDir;
 
-    // Set once only on startup, after the startup has completed
-    private boolean ready = false;
-
     // Set when the shutdown hook triggers
     private boolean shuttingDown = false;
 
@@ -564,9 +561,7 @@ public class YamcsServer {
         ysi.addStateListener(new InstanceStateListener() {
             @Override
             public void failed(Throwable failure) {
-                if (ready) { // Redundant on startup, so hide it then.
-                    LOG.error("Instance {} failed", name, ExceptionUtil.unwind(failure));
-                }
+                LOG.error("Instance {} failed", name, ExceptionUtil.unwind(failure));
             }
         });
 
@@ -1434,7 +1429,6 @@ public class YamcsServer {
         }
 
         // Report start success to internal listeners
-        ready = true;
         readyListeners.forEach(ReadyListener::onReady);
     }
 
