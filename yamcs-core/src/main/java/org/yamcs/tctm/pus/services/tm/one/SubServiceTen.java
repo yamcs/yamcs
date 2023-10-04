@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.yamcs.TmPacket;
+import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.tctm.pus.services.PusSubService;
@@ -32,7 +34,7 @@ public class SubServiceTen implements PusSubService {
     }
 
     @Override
-    public void process(PusTmPacket pusTmPacket) {
+    public TmPacket process(PusTmPacket pusTmPacket) {
         byte[] dataField = pusTmPacket.getDataField();
 
         int errorCode = Byte.toUnsignedInt(dataField[0]);
@@ -41,11 +43,18 @@ public class SubServiceTen implements PusSubService {
         eventProducer.sendCritical(TC_ROUTING_FAILED,
                 "TC with Destination ID: " + pusTmPacket.getDestinationID() + " has failed to route correctly | Error Code: " + errorCodes.get(errorCode) + " Deduced: " + deducedPresence);
 
+        return pusTmPacket.getTmPacket();
     }
 
     public void populateErrorCodes() {
         errorCodes.put(1, RoutingFailedErrorCode.R1);
         errorCodes.put(2, RoutingFailedErrorCode.R2);
         errorCodes.put(3, RoutingFailedErrorCode.R3);
+    }
+
+    @Override
+    public PreparedCommand process(PreparedCommand pusTelecommand) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'process'");
     }
 }

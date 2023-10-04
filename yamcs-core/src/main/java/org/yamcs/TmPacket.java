@@ -1,6 +1,9 @@
 package org.yamcs;
 
+import java.util.ArrayList;
+
 import org.yamcs.archive.XtceTmRecorder;
+import org.yamcs.tctm.TmContainer;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
 
@@ -45,9 +48,12 @@ public class TmPacket {
     private byte[] pkt;
     private int status;
 
+    private ArrayList<TmContainer> containerList;
+
     public TmPacket(long rectime, byte[] pkt) {
         this.rectime = rectime;
         this.pkt = pkt;
+        this.containerList = new ArrayList<TmContainer>();
     }
 
     public TmPacket(long rectime, long gentime, int seqCount, byte[] pkt) {
@@ -55,6 +61,7 @@ public class TmPacket {
         this.gentime = gentime;
         this.seqCount = seqCount;
         this.pkt = pkt;
+        this.containerList = new ArrayList<>();
     }
 
     /**
@@ -100,6 +107,30 @@ public class TmPacket {
 
     public byte[] getPacket() {
         return pkt;
+    }
+
+    public ArrayList<TmContainer> getContainersOrNull() {
+        if (containerList.size() == 0) {
+            return null;
+        }
+        return containerList;
+    }
+
+    public ArrayList<TmContainer> getContainers() {
+        return containerList;
+    }
+
+    public ArrayList<byte[]> getContainersPayload() {
+        ArrayList<byte[]> arr = new ArrayList<>();
+
+        for(TmContainer t: containerList) {
+            arr.add(t.getContainerPayload());
+        }
+        return arr;
+    }
+
+    public void addToContainerList(TmContainer tmContainer) {
+        containerList.add(tmContainer);
     }
 
     public int length() {
