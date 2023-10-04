@@ -1,6 +1,5 @@
 package org.yamcs.tctm.pus.services.tm;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,7 +13,7 @@ import org.yamcs.tctm.pus.services.tm.four.ServiceFour;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.tm.five.ServiceFive;
 
-public class TmPusManager {
+public class PusTmManager {
     Log log;
     String yamcsInstance;
 
@@ -28,7 +27,7 @@ public class TmPusManager {
     Map<Integer, PusService> pusServices = new HashMap<>();
     YConfiguration pusServicesConfig;
 
-    public TmPusManager(String instanceName, YConfiguration pusConfig) {
+    public PusTmManager(String instanceName, YConfiguration pusConfig) {
         this.yamcsInstance = instanceName;
 
         this.pusServicesConfig = pusConfig.getConfigOrEmpty("services");

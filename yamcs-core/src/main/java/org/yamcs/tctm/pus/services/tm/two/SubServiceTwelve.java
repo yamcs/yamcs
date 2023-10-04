@@ -9,10 +9,11 @@ import java.util.HashMap;
 import org.yamcs.InitException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
+import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.TmContainer;
-import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tm.BucketSaveHandler;
+import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tm.PusTmPacket;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.yarch.Bucket;
@@ -121,5 +122,11 @@ public class SubServiceTwelve extends BucketSaveHandler implements PusSubService
 
         tmPacket.addToContainerList(new TmContainer(outputStream.toByteArray()));
         return tmPacket;
+    }
+
+    @Override
+    public PreparedCommand process(PreparedCommand pusTelecommand) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'process'");
     }    
 }

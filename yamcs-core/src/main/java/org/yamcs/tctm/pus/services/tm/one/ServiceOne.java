@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.yamcs.TmPacket;
+import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSubService;
@@ -33,5 +34,11 @@ public class ServiceOne implements PusService {
 
     public TmPacket acceptPusPacket(PusTmPacket pusTmPacket) {
         return pusSubServices.get(pusTmPacket.getMessageSubType()).process(pusTmPacket);
+    }
+
+    @Override
+    public PreparedCommand addPusModifiers(PreparedCommand telecommand) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'addPusModifiers'");
     }
 }

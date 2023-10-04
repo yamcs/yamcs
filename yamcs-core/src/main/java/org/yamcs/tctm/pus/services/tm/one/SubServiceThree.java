@@ -1,6 +1,7 @@
 package org.yamcs.tctm.pus.services.tm.one;
 
 import org.yamcs.TmPacket;
+import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.tctm.pus.services.PusSubService;
@@ -24,6 +25,12 @@ public class SubServiceThree implements PusSubService {
                 "TC with Destination ID: " + pusTmPacket.getDestinationID() + " has started execution");
 
         return pusTmPacket.getTmPacket();
+    }
+
+    @Override
+    public PreparedCommand process(PreparedCommand pusTelecommand) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'process'");
     }
 
 }

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.yamcs.TmPacket;
+import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.tctm.pus.services.PusSubService;
@@ -50,6 +51,12 @@ public class SubServiceFour implements PusSubService {
         errorCodes.put(1, StartExecutionFailedErrorCode.R1);
         errorCodes.put(2, StartExecutionFailedErrorCode.R2);
         errorCodes.put(3, StartExecutionFailedErrorCode.R3);
+    }
+
+    @Override
+    public PreparedCommand process(PreparedCommand pusTelecommand) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'process'");
     }
 
 }
