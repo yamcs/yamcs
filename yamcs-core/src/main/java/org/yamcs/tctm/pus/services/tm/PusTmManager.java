@@ -37,15 +37,14 @@ public class PusTmManager {
     }
 
     private void initializePUSServices() {
-        pusServices.put(1, new ServiceOne(yamcsInstance));
+        pusServices.put(1, new ServiceOne(yamcsInstance, pusServicesConfig.getConfigOrEmpty("one")));
         pusServices.put(2, new ServiceTwo(yamcsInstance, pusServicesConfig.getConfigOrEmpty("two")));
-        pusServices.put(3, new ServiceThree(yamcsInstance));
-        pusServices.put(4, new ServiceFour(yamcsInstance));
-        pusServices.put(5, new ServiceFive(yamcsInstance));
+        pusServices.put(3, new ServiceThree(yamcsInstance, pusServicesConfig.getConfigOrEmpty("three")));
+        pusServices.put(4, new ServiceFour(yamcsInstance, pusServicesConfig.getConfigOrEmpty("four")));
+        pusServices.put(5, new ServiceFive(yamcsInstance, pusServicesConfig.getConfigOrEmpty("five")));
     }
 
     public TmPacket acceptTmPacket(TmPacket tmPacket) {
-        PusTmPacket pusTmPacket = new PusTmPacket(tmPacket);
-        return pusServices.get(pusTmPacket.getMessageType()).acceptPusPacket(pusTmPacket);
+        return pusServices.get(PusTmModifier.getMessageType(tmPacket)).extractPusModifiers(tmPacket);
     }
 }

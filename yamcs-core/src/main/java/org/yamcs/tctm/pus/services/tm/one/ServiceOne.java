@@ -4,18 +4,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.yamcs.TmPacket;
+import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tm.PusTmPacket;
+import org.yamcs.tctm.pus.services.tm.PusTmModifier;
 
 public class ServiceOne implements PusService {
     Log log;
     Map<Integer, PusSubService> pusSubServices = new HashMap<>();
     private String yamcsInstance;
 
-    public ServiceOne(String yamcsInstance) {
+    public ServiceOne(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
         initializeSubServices();
     }
@@ -32,8 +33,9 @@ public class ServiceOne implements PusService {
         pusSubServices.put(10, new SubServiceTen(yamcsInstance));
     }
 
-    public TmPacket acceptPusPacket(PusTmPacket pusTmPacket) {
-        return pusSubServices.get(pusTmPacket.getMessageSubType()).process(pusTmPacket);
+    @Override
+    public TmPacket extractPusModifiers(TmPacket tmPacket) {
+        return pusSubServices.get(PusTmModifier.getMessageSubType(tmPacket)).process(tmPacket);
     }
 
     @Override

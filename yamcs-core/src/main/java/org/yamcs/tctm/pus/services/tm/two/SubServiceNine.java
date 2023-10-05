@@ -13,8 +13,8 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.TmContainer;
 import org.yamcs.tctm.pus.services.tm.BucketSaveHandler;
+import org.yamcs.tctm.pus.services.tm.PusTmModifier;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tm.PusTmPacket;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.YarchException;
@@ -69,8 +69,8 @@ public class SubServiceNine extends BucketSaveHandler implements PusSubService {
     }
 
     @Override
-    public TmPacket process(PusTmPacket pusTmPacket) {
-        byte[] dataField = pusTmPacket.getDataField();
+    public TmPacket process(TmPacket tmPacket) {
+        byte[] dataField = PusTmModifier.getDataField(tmPacket);
 
         int transactionID = ByteArrayUtils.decodeInt(dataField, 0);
         int dataAcquisitionCode = ByteArrayUtils.decodeUnsignedShort(dataField, transactionIDSize);
@@ -109,13 +109,12 @@ public class SubServiceNine extends BucketSaveHandler implements PusSubService {
             throw new UncheckedIOException("Cannot save / update physical device ID dump report in bucket: " + physicalDeviceReportName + (physicalDeviceReportBucket != null ? " -> " + physicalDeviceReportBucket.getName() : ""), e);
         }
 
-        TmPacket tmPacket = pusTmPacket.getTmPacket();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         try{
-            outputStream.write(pusTmPacket.getPrimaryHeader());
-            outputStream.write(pusTmPacket.getSecondaryHeader());
-            outputStream.write(pusTmPacket.getDataField());
+            outputStream.write(PusTmModifier.getPrimaryHeader(tmPacket));
+            outputStream.write(PusTmModifier.getSecondaryHeader(tmPacket));
+            outputStream.write(PusTmModifier.getDataField(tmPacket));
         } catch (IOException e) {
             // FIXME: Should never happen
         }

@@ -4,11 +4,11 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.utils.ByteArrayUtils;
 
 public class PusTcModifier {
-    static int messageTypeIndex = 1;
-    static int subMessageTypeInedx = 2;
+    static int messageTypeIndex = 7;
+    static int subMessageTypeInedx = 8;
 
     private static PreparedCommand setSourceID(PreparedCommand telecommand) {
-        int sourceIDInsertionIndex = 3;
+        int sourceIDInsertionIndex = 9;
 
         int newTelecommandLength = telecommand.getBinary().length + 2;
         byte[] newTelecommandBinary = new byte[newTelecommandLength];
@@ -24,7 +24,7 @@ public class PusTcModifier {
     }
 
     private static PreparedCommand insertSecondaryHeaderSpareField(PreparedCommand telecommand) {
-        int spareFieldInsertionIndex = 5;
+        int spareFieldInsertionIndex = 11;
 
         byte[] secondaryHeaderSpareField = new byte[PusTcManager.secondaryHeaderSpareLength];
         byte[] newTelecommandBinary = new byte[telecommand.getBinary().length + PusTcManager.secondaryHeaderSpareLength];

@@ -9,7 +9,7 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tm.PusTmPacket;
+import org.yamcs.tctm.pus.services.tm.PusTmModifier;
 
 // FIXME: Update the error codes
 enum ProgressExecutionFailedErrorCode {
@@ -34,16 +34,16 @@ public class SubServiceSix implements PusSubService {
     }
 
     @Override
-    public TmPacket process(PusTmPacket pusTmPacket) {
-        byte[] dataField = pusTmPacket.getDataField();
+    public TmPacket process(TmPacket tmPacket) {
+        byte[] dataField = PusTmModifier.getDataField(tmPacket);
 
         int errorCode = Byte.toUnsignedInt(dataField[0]);
         byte[] deducedPresence = Arrays.copyOfRange(dataField, 1, dataField.length);
 
         eventProducer.sendCritical(TC_PROGRESS_EXECUTION_FAILED,
-                "TC with Destination ID: " + pusTmPacket.getDestinationID() + " has failed during execution | Error Code: " + errorCodes.get(errorCode) + " Deduced: " + deducedPresence);
+                "TC with Destination ID: " + PusTmModifier.getDestinationID(tmPacket) + " has failed during execution | Error Code: " + errorCodes.get(errorCode) + " Deduced: " + deducedPresence);
 
-        return pusTmPacket.getTmPacket();
+        return tmPacket;
     }
 
     public void populateErrorCodes() {
