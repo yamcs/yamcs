@@ -4,7 +4,6 @@ import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tm.PusTmPacket;
 
 public class SubServiceFour implements PusSubService {
     String yamcsInstance;
@@ -20,9 +19,8 @@ public class SubServiceFour implements PusSubService {
     }
 
     @Override
-    public TmPacket process(PusTmPacket pusTmPacket) {
+    public TmPacket process(TmPacket tmPacket) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'process'");
     }
-    
 }

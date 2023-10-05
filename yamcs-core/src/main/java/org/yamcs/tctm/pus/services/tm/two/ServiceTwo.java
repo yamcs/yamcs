@@ -9,7 +9,7 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tm.PusTmPacket;
+import org.yamcs.tctm.pus.services.tm.PusTmModifier;
 
 public class ServiceTwo implements PusService {
     Log log;
@@ -31,9 +31,11 @@ public class ServiceTwo implements PusService {
         pusSubServices.put(12, new SubServiceNine(yamcsInstance, serviceTwoConfig.getConfigOrEmpty("twelve")));
     }
 
-    public TmPacket acceptPusPacket(PusTmPacket pusTmPacket) {
-        return pusSubServices.get(pusTmPacket.getMessageSubType()).process(pusTmPacket);
+    @Override
+    public TmPacket extractPusModifiers(TmPacket tmPacket) {
+        return pusSubServices.get(PusTmModifier.getMessageSubType(tmPacket)).process(tmPacket);
     }
+
 
     @Override
     public PreparedCommand addPusModifiers(PreparedCommand telecommand) {

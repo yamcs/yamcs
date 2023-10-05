@@ -2,7 +2,6 @@ package org.yamcs.tctm.pus.services.tm.two;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.yamcs.InitException;
@@ -12,8 +11,8 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.tm.BucketSaveHandler;
+import org.yamcs.tctm.pus.services.tm.PusTmModifier;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tm.PusTmPacket;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.yarch.YarchException;
 
@@ -54,8 +53,8 @@ public class SubServiceSix extends BucketSaveHandler implements PusSubService {
     }
 
     @Override
-    public TmPacket process(PusTmPacket pusTmPacket) {
-        byte[] dataField = pusTmPacket.getDataField();
+    public TmPacket process(TmPacket tmPacket) {
+        byte[] dataField = PusTmModifier.getDataField(tmPacket);
 
         int numberOfRegisters = ByteArrayUtils.decodeInt(dataField, 0);
         HashMap<Integer, Integer> registerValues = new HashMap<>(numberOfRegisters);
@@ -82,7 +81,7 @@ public class SubServiceSix extends BucketSaveHandler implements PusSubService {
             throw new UncheckedIOException("Cannot save device register dump report in bucket: " + registerDumpFileName + (registerDumpBucket != null ? " -> " + registerDumpBucket.getName() : ""), e);
         }
 
-        return pusTmPacket.getTmPacket();
+        return tmPacket;
     }
 
     @Override

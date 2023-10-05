@@ -10,7 +10,6 @@ import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tc.PusTcModifier;
-import org.yamcs.tctm.pus.services.tm.PusTmPacket;
 
 public class ServiceTwo implements PusService {
     Log log;
@@ -43,7 +42,7 @@ public class ServiceTwo implements PusService {
     }
 
     @Override
-    public TmPacket acceptPusPacket(PusTmPacket pusTmPacket) {
+    public TmPacket extractPusModifiers(TmPacket tmPacket) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'acceptPusPacket'");
     }

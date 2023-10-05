@@ -5,7 +5,7 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tm.PusTmPacket;
+import org.yamcs.tctm.pus.services.tm.PusTmModifier;
 
 public class SubServiceThree implements PusSubService {
     EventProducer eventProducer;
@@ -20,11 +20,11 @@ public class SubServiceThree implements PusSubService {
     }
 
     @Override
-    public TmPacket process(PusTmPacket pusTmPacket) {
+    public TmPacket process(TmPacket tmPacket) {
         eventProducer.sendInfo(TC_START_EXECUTION_SUCCESS,
-                "TC with Destination ID: " + pusTmPacket.getDestinationID() + " has started execution");
+                "TC with Destination ID: " + PusTmModifier.getDestinationID(tmPacket) + " has started execution");
 
-        return pusTmPacket.getTmPacket();
+        return tmPacket;
     }
 
     @Override

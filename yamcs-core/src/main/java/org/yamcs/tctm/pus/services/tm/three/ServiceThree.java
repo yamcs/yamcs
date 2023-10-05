@@ -4,19 +4,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.yamcs.TmPacket;
+import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tm.PusTmPacket;
+import org.yamcs.tctm.pus.services.tm.PusTmModifier;
 
 public class ServiceThree implements PusService {
-
     Log log;
     Map<Integer, PusSubService> pusSubServices = new HashMap<>();
     private String instanceName;
 
-    public ServiceThree(String instanceName) {
+    public ServiceThree(String instanceName, YConfiguration config) {
         this.instanceName = instanceName;
         initializeSubServices();
     
@@ -27,9 +27,8 @@ public class ServiceThree implements PusService {
     }
 
     @Override
-    public TmPacket acceptPusPacket(PusTmPacket pusTmPacket) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'acceptPusPacket'");
+    public TmPacket extractPusModifiers(TmPacket tmPacket) {
+        return pusSubServices.get(PusTmModifier.getMessageSubType(tmPacket)).process(tmPacket);
     }
 
     @Override
