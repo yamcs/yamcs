@@ -142,11 +142,7 @@ public class FileSystemBucket implements Bucket {
             throws IOException {
         // TODO: do something with metadata
 
-        // Prevent directory traversal
-        Path path = root.resolve(objectName);
-        if (!path.toFile().getCanonicalPath().startsWith(root.toFile().getCanonicalPath())) {
-            throw new IOException("Directory traversal attempted: " + path);
-        }
+        Path path = resolvePath(objectName);
 
         if (objectName.endsWith("/")) {
             if (!Files.exists(path)) {
@@ -192,7 +188,7 @@ public class FileSystemBucket implements Bucket {
 
     @Override
     public byte[] getObject(String objectName) throws IOException {
-        Path path = root.resolve(objectName);
+        Path path = resolvePath(objectName);
         if (Files.exists(path)) {
             return Files.readAllBytes(path);
         } else {
@@ -202,19 +198,30 @@ public class FileSystemBucket implements Bucket {
 
     @Override
     public void deleteObject(String objectName) throws IOException {
-        Path path = root.resolve(objectName);
+        Path path = resolvePath(objectName);
         Files.delete(path);
     }
 
     @Override
     public ObjectProperties findObject(String objectName) throws IOException {
-        Path path = root.resolve(objectName);
+        Path path = resolvePath(objectName);
         if (Files.exists(path)) {
             BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
             return toObjectProperties(objectName, path, attrs);
         } else {
             return null;
         }
+    }
+
+    private Path resolvePath(String objectName) throws IOException {
+        Path path = root.resolve(objectName);
+
+        // Prevent directory traversal
+        if (!path.toFile().getCanonicalPath().startsWith(root.toFile().getCanonicalPath())) {
+            throw new IOException("Directory traversal attempted: " + path);
+        }
+
+        return path;
     }
 
     public Path getBucketRoot() {
