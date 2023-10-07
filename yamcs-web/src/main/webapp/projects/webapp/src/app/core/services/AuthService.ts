@@ -238,13 +238,13 @@ export class AuthService implements OnDestroy {
     cookieExpiration.setTime(cookieExpiration.getTime() + expireMillis);
     let cookie = `access_token=${encodeURIComponent(tokenResponse.access_token)}`;
     cookie += `; expires=${cookieExpiration.toUTCString()}`;
-    cookie += '; path=/';
+    cookie += '; path=/; SameSite=Strict; Secure';
     document.cookie = cookie;
 
     // Store refresh token in a Session Cookie (bound to browser, not tab)
     if (tokenResponse.refresh_token) {
       cookie = `refresh_token=${encodeURIComponent(tokenResponse.refresh_token)}`;
-      cookie += '; path=/';
+      cookie += '; path=/; SameSite=Strict; Secure';
       document.cookie = cookie;
     }
 
