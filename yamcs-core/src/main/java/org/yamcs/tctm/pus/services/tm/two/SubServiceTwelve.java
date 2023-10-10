@@ -1,6 +1,5 @@
 package org.yamcs.tctm.pus.services.tm.two;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
@@ -11,7 +10,6 @@ import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
-import org.yamcs.tctm.TmContainer;
 import org.yamcs.tctm.pus.services.tm.BucketSaveHandler;
 import org.yamcs.tctm.pus.services.tm.PusTmModifier;
 import org.yamcs.tctm.pus.services.PusSubService;
@@ -109,17 +107,6 @@ public class SubServiceTwelve extends BucketSaveHandler implements PusSubService
             throw new UncheckedIOException("Cannot save / update logical device ID dump report in bucket: " + logicalDeviceReportName + (logicalDeviceReportBucket != null ? " -> " + logicalDeviceReportBucket.getName() : ""), e);
         }
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-        try{
-            outputStream.write(PusTmModifier.getPrimaryHeader(tmPacket));
-            outputStream.write(PusTmModifier.getSecondaryHeader(tmPacket));
-            outputStream.write(PusTmModifier.getDataField(tmPacket));
-        } catch (IOException e) {
-            // FIXME: Should never happen
-        }
-
-        tmPacket.addToContainerList(new TmContainer(outputStream.toByteArray()));
         return tmPacket;
     }
 
