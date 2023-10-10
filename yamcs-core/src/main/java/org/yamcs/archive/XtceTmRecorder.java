@@ -294,18 +294,29 @@ public class XtceTmRecorder extends AbstractYamcsService {
 
             String pname = "";
             ArrayList<Object> uncastPusTmContainers = t.getColumn(StandardTupleDefinitions.TM_PUS_CONTAINERS);
+            ArrayList<Object> uncastPusTmContainersGentime = t.getColumn(StandardTupleDefinitions.TM_PUS_CONTAINERS_GENTIME);
 
-            if (uncastPusTmContainers != null) {
+            if (uncastPusTmContainers.size() != 0) {
                 ArrayList<byte[]> pusTmContainers = new ArrayList<>(uncastPusTmContainers.size());
+                ArrayList<Long> pusTmContainersGentime = new ArrayList<>(uncastPusTmContainersGentime.size());
 
-                for(Object uncastPusTmContainer: uncastPusTmContainers) {
+                for(int i = 0; i < pusTmContainers.size(); i++) {
+                    Object uncastPusTmContainer = uncastPusTmContainers.get(i);
+                    Object uncastPusTmContainerGentime = uncastPusTmContainersGentime.get(i);
+
                     pusTmContainers.add((byte[]) uncastPusTmContainer);
+                    pusTmContainersGentime.add((long) uncastPusTmContainerGentime);
                 }
-                for(byte[] pusTmContainer: pusTmContainers) {
-                    ContainerProcessingResult cpr = tmExtractor.processPacket(pusTmContainer, gentime, timeService.getMissionTime(),
+
+                for(int i = 0; i < pusTmContainers.size(); i++) {
+                    byte[] pusTmContainer = pusTmContainers.get(i);
+                    long pusTmContainerGentime = pusTmContainersGentime.get(i);
+
+                    ContainerProcessingResult cpr = tmExtractor.processPacket(pusTmContainer, pusTmContainerGentime, timeService.getMissionTime(),
                             seqCount, rootSequenceContainer);
                     pname = deriveArchivePartition(cpr);
                 }
+
             } else {
                 ContainerProcessingResult cpr = tmExtractor.processPacket(packet, gentime, timeService.getMissionTime(),
                         seqCount, rootSequenceContainer);

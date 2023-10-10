@@ -11,6 +11,23 @@ public class PusTmModifier {
     static int subMessageTypeIndex = 8;
     static int destinationIDIndex = 11;
 
+    public static int decodeByteArrayToInteger(byte[] arr, int length, int offset) {
+        int decodedInteger = 0;
+        for(int i = 0; i < length; i++) {
+            decodedInteger += decodedInteger + (arr[offset] & 0xFF << ((length - (i + 1)) * 8));
+            offset += 1;
+        }
+
+        return decodedInteger;
+    }
+
+    public static int getAPID(TmPacket tmPacket) {
+        byte[] primaryHeader = getPrimaryHeader(tmPacket);
+        int apid = ByteArrayUtils.decodeUnsignedShort(primaryHeader, 0) & 0x7FF;
+
+        return apid;
+    }
+
     public static int getMessageType(TmPacket tmPacket) {
         return Byte.toUnsignedInt(tmPacket.getPacket()[messageTypeIndex]);
     }

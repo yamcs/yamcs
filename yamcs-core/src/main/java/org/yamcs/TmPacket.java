@@ -109,27 +109,32 @@ public class TmPacket {
         return pkt;
     }
 
-    public ArrayList<TmContainer> getContainersOrNull() {
-        if (containerList.size() == 0) {
-            return null;
-        }
+
+    public ArrayList<TmContainer> getPusTmContainers() {
         return containerList;
     }
 
-    public ArrayList<TmContainer> getContainers() {
-        return containerList;
-    }
-
-    public ArrayList<byte[]> getContainersPayload() {
+    public ArrayList<byte[]> getPusTmContainersPayload() {
         ArrayList<byte[]> arr = new ArrayList<>();
 
         for(TmContainer t: containerList) {
             arr.add(t.getContainerPayload());
         }
+
         return arr;
     }
 
-    public void addToContainerList(TmContainer tmContainer) {
+    public ArrayList<Long> getPusTmContainersGentime() {
+        ArrayList<Long> arr = new ArrayList<>();
+
+        for(TmContainer t: containerList) {
+            arr.add(t.getGenerationTime());
+        }
+
+        return arr;
+    }
+
+    public void addToPusTmContainerList(TmContainer tmContainer) {
         containerList.add(tmContainer);
     }
 

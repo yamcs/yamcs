@@ -47,7 +47,6 @@ import org.yamcs.tctm.LinkState;
 import org.yamcs.tctm.ParameterDataLink;
 import org.yamcs.tctm.StreamPbParameterSender;
 import org.yamcs.tctm.TcDataLink;
-import org.yamcs.tctm.TmContainer;
 import org.yamcs.tctm.TmPacketDataLink;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.ServiceUtil;
@@ -258,7 +257,7 @@ public class LinkManager {
 
         t = new Tuple(StandardTupleDefinitions.TM,
                 new Object[] {tmPacket.getGenerationTime(), tmPacket.getSeqCount(), tmPacket.getReceptionTime(),
-                    tmPacket.getStatus(), tmPacket.getPacket(), ertime, obt, tmLink.getName(), tmPacket.getContainersOrNull() });
+                    tmPacket.getStatus(), tmPacket.getPacket(), ertime, obt, tmLink.getName(), tmPacket.getPusTmContainersPayload(), tmPacket.getPusTmContainersGentime() });
 
         stream.emitTuple(t);
     }

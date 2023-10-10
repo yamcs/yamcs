@@ -20,9 +20,11 @@ public class PusTmManager {
     // Static Members
     static int PRIMARY_HEADER_LENGTH = 6;
     static int DEFAULT_SECONDARY_HEADER_LENGTH = 64;
+    static int DEFAULT_ABSOLUTE_TIME_LENGTH = 4;
     static int PUS_HEADER_LENGTH = 11;
 
     static int secondaryHeaderLength;
+    static int absoluteTimeLength;
 
     Map<Integer, PusService> pusServices = new HashMap<>();
     YConfiguration pusServicesConfig;
@@ -32,6 +34,7 @@ public class PusTmManager {
 
         this.pusServicesConfig = pusConfig.getConfigOrEmpty("services");
         secondaryHeaderLength = pusConfig.getInt("secondaryHeaderLength", DEFAULT_SECONDARY_HEADER_LENGTH);
+        absoluteTimeLength = pusConfig.getInt("absoluteTimeLength", DEFAULT_ABSOLUTE_TIME_LENGTH);
 
         initializePUSServices();
     }
