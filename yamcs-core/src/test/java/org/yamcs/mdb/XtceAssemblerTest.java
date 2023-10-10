@@ -208,7 +208,7 @@ public class XtceAssemblerTest {
                     compareAliases((XtceAliasSet) o1c, (XtceAliasSet) o2c);
                 } else if (o1c instanceof MetaCommand || o1c instanceof Container || o1c instanceof Parameter) {
                     // these are already compared above
-                } else if (o1c instanceof org.slf4j.impl.JDK14LoggerAdapter) {
+                } else if (o1c instanceof org.slf4j.jul.JDK14LoggerAdapter) {
                     // ignore
                 } else {
                     compareObjects(o1c, o2c);

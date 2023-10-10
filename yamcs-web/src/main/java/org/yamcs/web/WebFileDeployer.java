@@ -143,17 +143,20 @@ public class WebFileDeployer {
      * the Maven build and enables us to skip having to do classpath listings.
      */
     private void deployWebsiteFromClasspath(Path target) throws IOException {
-        try (var in = getClass().getResourceAsStream("/static/manifest.txt");
-                var reader = new InputStreamReader(in, UTF_8)) {
+        try (var in = getClass().getResourceAsStream("/static/manifest.txt")) {
+            if (in != null) {
+                try (var reader = new InputStreamReader(in, UTF_8)) {
 
-            var manifest = CharStreams.toString(reader);
-            var staticFiles = manifest.split(";");
+                    var manifest = CharStreams.toString(reader);
+                    var staticFiles = manifest.split(";");
 
-            log.debug("Unpacking {} webapp files", staticFiles.length);
-            for (var staticFile : staticFiles) {
-                try (var resource = getClass().getResourceAsStream("/static/" + staticFile)) {
-                    Files.createDirectories(target.resolve(staticFile).getParent());
-                    Files.copy(resource, target.resolve(staticFile));
+                    log.debug("Unpacking {} webapp files", staticFiles.length);
+                    for (var staticFile : staticFiles) {
+                        try (var resource = getClass().getResourceAsStream("/static/" + staticFile)) {
+                            Files.createDirectories(target.resolve(staticFile).getParent());
+                            Files.copy(resource, target.resolve(staticFile));
+                        }
+                    }
                 }
             }
         }
