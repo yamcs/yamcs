@@ -14,16 +14,19 @@ import org.yamcs.tctm.pus.services.tm.PusTmModifier;
 public class ServiceThree implements PusService {
     Log log;
     Map<Integer, PusSubService> pusSubServices = new HashMap<>();
-    private String instanceName;
+    private String yamcsInstance;
+    YConfiguration config;
 
-    public ServiceThree(String instanceName, YConfiguration config) {
-        this.instanceName = instanceName;
+    public ServiceThree(String yamcsInstance, YConfiguration config) {
+        this.yamcsInstance = yamcsInstance;
+        this.config = config;
+
         initializeSubServices();
-    
     }
 
     public void initializeSubServices() {
-
+        pusSubServices.put(25, new SubServiceTwentyFive(yamcsInstance, config.getConfigOrEmpty("twentyFive")));
+        pusSubServices.put(26, new SubServiceTwentySix(yamcsInstance, config.getConfigOrEmpty("twentySix")));
     }
 
     @Override
