@@ -38,7 +38,19 @@ service MdbApi {
       get: "/api/mdb/{instance}/space-systems/{name*}"
     };
   }
-  
+
+  // Stream Mission Database items.
+  //
+  // This operation is intended for tools that need to efficiently fetch
+  // the full list of parameters or commands, without using repeated
+  // pagination-based requests.
+  rpc StreamMissionDatabase(StreamMissionDatabaseRequest) returns (stream MissionDatabaseItem) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}:streamMissionDatabase"
+      offloaded: true
+    };
+  }
+
   // List parameters
   rpc ListParameters(ListParametersRequest) returns (ListParametersResponse) {
     option (yamcs.api.route) = {
@@ -688,6 +700,51 @@ message GetMissionDatabaseRequest {
 message ExportJavaMissionDatabaseRequest {
   // Yamcs instance name.
   optional string instance = 1;
+}
+
+message StreamMissionDatabaseRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Stream space systems. Default: ``true``
+  optional bool includeSpaceSystems = 2;
+
+  // Stream containers. Default: ``true``
+  optional bool includeContainers = 3;
+
+  // Stream parameters. Default: ``true``
+  optional bool includeParameters = 4;
+
+  // Stream parameter types. Default: ``true``
+  optional bool includeParameterTypes = 5;
+
+  // Stream commands. Default: ``true``
+  optional bool includeCommands = 6;
+
+  // Stream algorithms. Default: ``true``
+  optional bool includeAlgorithms = 7;
+}
+
+message MissionDatabaseItem {
+  oneof item {
+    // A space system
+    SpaceSystemInfo spaceSystem = 1;
+
+    // A container
+    ContainerInfo container = 2;
+
+    // A parameter
+    ParameterInfo parameter = 3;
+
+    // A parameter type
+    ParameterTypeInfo parameterType = 4;
+
+    // A command
+    CommandInfo command = 5;
+
+    // An algorithm
+    AlgorithmInfo algorithm = 6;
+  }
 }
 
 message ListSpaceSystemsResponse {

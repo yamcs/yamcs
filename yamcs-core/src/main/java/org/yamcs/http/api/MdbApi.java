@@ -58,11 +58,13 @@ import org.yamcs.protobuf.Mdb.ListParametersResponse;
 import org.yamcs.protobuf.Mdb.ListSpaceSystemsRequest;
 import org.yamcs.protobuf.Mdb.ListSpaceSystemsResponse;
 import org.yamcs.protobuf.Mdb.MissionDatabase;
+import org.yamcs.protobuf.Mdb.MissionDatabaseItem;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
 import org.yamcs.protobuf.Mdb.SpaceSystemInfo;
 import org.yamcs.protobuf.Mdb.UpdateAlgorithmRequest;
 import org.yamcs.protobuf.Mdb.UpdateParameterRequest;
+import org.yamcs.protobuf.Mdb.StreamMissionDatabaseRequest;
 import org.yamcs.protobuf.Mdb.UsedByInfo;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.YamcsInstance;
@@ -130,6 +132,66 @@ public class MdbApi extends AbstractMdbApi<Context> {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    @Override
+    public void streamMissionDatabase(Context ctx, StreamMissionDatabaseRequest request,
+            Observer<MissionDatabaseItem> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
+
+        String instance = ManagementApi.verifyInstance(request.getInstance());
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+
+        if (!request.hasIncludeSpaceSystems() || request.getIncludeSpaceSystems()) {
+            for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
+                MissionDatabaseItem item = MissionDatabaseItem.newBuilder()
+                        .setSpaceSystem(XtceToGpbAssembler.toSpaceSystemInfo(spaceSystem))
+                        .build();
+                observer.next(item);
+            }
+        }
+        if (!request.hasIncludeContainers() || request.getIncludeContainers()) {
+            for (SequenceContainer container : mdb.getSequenceContainers()) {
+                MissionDatabaseItem item = MissionDatabaseItem.newBuilder()
+                        .setContainer(XtceToGpbAssembler.toContainerInfo(container, DetailLevel.FULL))
+                        .build();
+                observer.next(item);
+            }
+        }
+        if (!request.hasIncludeParameters() || request.getIncludeParameters()) {
+            for (Parameter parameter : mdb.getParameters()) {
+                MissionDatabaseItem item = MissionDatabaseItem.newBuilder()
+                        .setParameter(XtceToGpbAssembler.toParameterInfo(parameter, DetailLevel.FULL))
+                        .build();
+                observer.next(item);
+            }
+        }
+        if (!request.hasIncludeParameterTypes() || request.getIncludeParameterTypes()) {
+            for (ParameterType parameterType : mdb.getParameterTypes()) {
+                MissionDatabaseItem item = MissionDatabaseItem.newBuilder()
+                        .setParameterType(XtceToGpbAssembler.toParameterTypeInfo(parameterType, DetailLevel.FULL))
+                        .build();
+                observer.next(item);
+            }
+        }
+        if (!request.hasIncludeCommands() || request.getIncludeCommands()) {
+            for (MetaCommand command : mdb.getMetaCommands()) {
+                MissionDatabaseItem item = MissionDatabaseItem.newBuilder()
+                        .setCommand(XtceToGpbAssembler.toCommandInfo(command, DetailLevel.FULL))
+                        .build();
+                observer.next(item);
+            }
+        }
+        if (!request.hasIncludeAlgorithms() || request.getIncludeAlgorithms()) {
+            for (Algorithm algorithm : mdb.getAlgorithms()) {
+                MissionDatabaseItem item = MissionDatabaseItem.newBuilder()
+                        .setAlgorithm(XtceToGpbAssembler.toAlgorithmInfo(algorithm, DetailLevel.FULL))
+                        .build();
+                observer.next(item);
+            }
+        }
+
+        observer.complete();
     }
 
     @Override

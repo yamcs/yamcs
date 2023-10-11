@@ -8,6 +8,7 @@ import org.yamcs.api.HttpBody;
 import org.yamcs.api.MethodHandler;
 import org.yamcs.api.Observer;
 import org.yamcs.client.Page;
+import org.yamcs.client.StreamReceiver;
 import org.yamcs.client.base.AbstractPage;
 import org.yamcs.client.base.ResponseObserver;
 import org.yamcs.client.mdb.MissionDatabaseClient.ListOptions.LimitOption;
@@ -24,7 +25,9 @@ import org.yamcs.protobuf.Mdb.ListContainersRequest;
 import org.yamcs.protobuf.Mdb.ListContainersResponse;
 import org.yamcs.protobuf.Mdb.ListParametersRequest;
 import org.yamcs.protobuf.Mdb.ListParametersResponse;
+import org.yamcs.protobuf.Mdb.MissionDatabaseItem;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
+import org.yamcs.protobuf.Mdb.StreamMissionDatabaseRequest;
 import org.yamcs.protobuf.MdbApiClient;
 
 public class MissionDatabaseClient {
@@ -127,6 +130,38 @@ public class MissionDatabaseClient {
                 .setInstance(instance)
                 .build();
         return (CompletableFuture<SystemPage<CommandInfo>>) (Object) new CommandPage(request).future();
+    }
+
+    public CompletableFuture<Void> streamMissionDatabaseItems(StreamReceiver<MissionDatabaseItem> consumer,
+            StreamMissionDatabaseOptions options) {
+        StreamMissionDatabaseRequest request = StreamMissionDatabaseRequest.newBuilder()
+                .setInstance(instance)
+                .setIncludeSpaceSystems(options.isIncludeSpaceSystems())
+                .setIncludeContainers(options.isIncludeContainers())
+                .setIncludeParameters(options.isIncludeParameters())
+                .setIncludeParameterTypes(options.isIncludeParameterTypes())
+                .setIncludeCommands(options.isIncludeCommands())
+                .setIncludeAlgorithms(options.isIncludeAlgorithms())
+                .build();
+        CompletableFuture<Void> f = new CompletableFuture<>();
+        mdbService.streamMissionDatabase(null, request, new Observer<MissionDatabaseItem>() {
+
+            @Override
+            public void next(MissionDatabaseItem message) {
+                consumer.accept(message);
+            }
+
+            @Override
+            public void completeExceptionally(Throwable t) {
+                f.completeExceptionally(t);
+            }
+
+            @Override
+            public void complete() {
+                f.complete(null);
+            }
+        });
+        return f;
     }
 
     public CompletableFuture<byte[]> getSerializedJavaDump() {
