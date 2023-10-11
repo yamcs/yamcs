@@ -29,6 +29,7 @@ public class ServiceFive implements PusService {
         pusSubServices.put(2, new SubServiceTwo(yamcsInstance, serviceFiveConfig.getConfigOrEmpty("two")));
         pusSubServices.put(3, new SubServiceThree(yamcsInstance, serviceFiveConfig.getConfigOrEmpty("three")));
         pusSubServices.put(4, new SubServiceFour(yamcsInstance, serviceFiveConfig.getConfigOrEmpty("four")));
+        pusSubServices.put(8, new SubServiceEight(yamcsInstance, serviceFiveConfig.getConfigOrEmpty("eight")));
     }
 
     @Override
