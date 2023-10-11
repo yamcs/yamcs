@@ -1,4 +1,4 @@
-package org.yamcs.tctm.pus.services.tc.three;
+package org.yamcs.tctm.pus.services.tc.five;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,26 +11,24 @@ import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tc.PusTcModifier;
 
-public class ServiceThree implements PusService  {
+public class ServiceFive implements PusService {
     Log log;
     private String yamcsInstance;
 
     Map<Integer, PusSubService> pusSubServices = new HashMap<>();
-    YConfiguration serviceThreeConfig;
+    YConfiguration serviceFiveConfig;
 
-    public ServiceThree(String yamcsInstance, YConfiguration config) {
+    public ServiceFive(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
-        serviceThreeConfig = config;
+        serviceFiveConfig = config;
         initializeSubServices();
     }
 
     @Override
     public void initializeSubServices() {
-        pusSubServices.put(5, new SubServiceFive(yamcsInstance, serviceThreeConfig.getConfigOrEmpty("five")));
-        pusSubServices.put(6, new SubServiceSix(yamcsInstance, serviceThreeConfig.getConfigOrEmpty("six")));
-        pusSubServices.put(7, new SubServiceSeven(yamcsInstance, serviceThreeConfig.getConfigOrEmpty("seven")));
-        pusSubServices.put(8, new SubServiceEight(yamcsInstance, serviceThreeConfig.getConfigOrEmpty("eight")));
-        pusSubServices.put(37, new SubServiceThirtySeven(yamcsInstance, serviceThreeConfig.getConfigOrEmpty("thirtySeven")));
+        pusSubServices.put(5, new SubServiceFive(yamcsInstance, serviceFiveConfig.getConfigOrEmpty("five")));
+        pusSubServices.put(6, new SubServiceSix(yamcsInstance, serviceFiveConfig.getConfigOrEmpty("six")));
+        pusSubServices.put(7, new SubServiceSeven(yamcsInstance, serviceFiveConfig.getConfigOrEmpty("seven")));
     }
 
     @Override

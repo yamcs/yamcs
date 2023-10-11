@@ -4,6 +4,6 @@ import org.yamcs.TmPacket;
 import org.yamcs.commanding.PreparedCommand;
 
 public interface PusSubService {
-    PreparedCommand process(PreparedCommand pusTelecommand);
+    PreparedCommand process(PreparedCommand telecommand);
     TmPacket process(TmPacket tmPacket);
 }
