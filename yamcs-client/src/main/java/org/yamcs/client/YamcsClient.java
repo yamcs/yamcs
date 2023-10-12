@@ -81,7 +81,6 @@ import io.netty.handler.codec.http.websocketx.WebSocketHandshakeException;
 
 public class YamcsClient {
 
-    private static final int MAX_FRAME_PAYLOAD_LENGTH = 10 * 1024 * 1024;
     private static final Logger log = Logger.getLogger(YamcsClient.class.getName());
 
     private final ServerURL serverURL;
@@ -128,7 +127,6 @@ public class YamcsClient {
                 connectionListeners.forEach(l -> l.disconnected());
             }
         });
-        websocketClient.setMaxFramePayloadLength(MAX_FRAME_PAYLOAD_LENGTH);
 
         methodHandler = new HttpMethodHandler(this, baseClient, websocketClient);
 
@@ -643,6 +641,8 @@ public class YamcsClient {
         private Path caCertFile;
         private String userAgent;
         private Credentials credentials;
+        private int maxResponseLength = 10 * 1024 * 1024;
+        private int maxFramePayloadLength = 10 * 1024 * 1024;
 
         private int connectionAttempts = 1;
         private long retryDelay = 5000;
@@ -691,6 +691,16 @@ public class YamcsClient {
             return this;
         }
 
+        public Builder withMaxResponseLength(int maxResponseLength) {
+            this.maxResponseLength = maxResponseLength;
+            return this;
+        }
+
+        public Builder withMaxFramePayloadLength(int maxFramePayloadLength) {
+            this.maxFramePayloadLength = maxFramePayloadLength;
+            return this;
+        }
+
         public YamcsClient build() {
             YamcsClient client = new YamcsClient(serverURL, verifyTls, connectionAttempts, retryDelay);
             client.baseClient.setInsecureTls(!verifyTls);
@@ -708,6 +718,8 @@ public class YamcsClient {
                 client.baseClient.setUserAgent(userAgent);
                 client.websocketClient.setUserAgent(userAgent);
             }
+            client.baseClient.setMaxResponseLength(maxResponseLength);
+            client.websocketClient.setMaxFramePayloadLength(maxFramePayloadLength);
             return client;
         }
     }
