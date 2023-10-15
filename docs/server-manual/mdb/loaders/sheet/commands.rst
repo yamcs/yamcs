@@ -28,7 +28,7 @@ The column names are:
     For commands: ``A`` is abstract. For arguments: ``L`` is little endian.
 
 ``argument name``
-    From this column on, most of the cells are valid for arguments only. These have to be defined on a new row after the command. The exceptions are: ``description`` and aliases.
+    From this column on, most of the cells are valid for arguments only. These have to be defined on a new row after the command. The exceptions are: ``description``, ``long description`` and aliases.
 
 ``position``
     Relative position to the previous argument. Default: 0
@@ -50,4 +50,7 @@ The column names are:
     The value of the argument cannot be higher than this. Only applies to numbers. For strings and binary arguments this means the minimum length in characters, respectively bytes.
 
 ``description``
-    Optional free text description.
+    Optional free text description. Should be one line.
+
+``long description``
+    Long textual description. In Markdown format.
