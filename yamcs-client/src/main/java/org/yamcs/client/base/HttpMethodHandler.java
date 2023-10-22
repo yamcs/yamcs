@@ -86,6 +86,7 @@ public class HttpMethodHandler implements MethodHandler {
             };
             CompletableFuture<Void> future;
             if (body == null) {
+                appendQueryString(uri, partial.build(), method.getInputType());
                 future = baseClient.doBulkRequest(httpMethod, uri.toString(), receiver);
             } else if (body instanceof HttpBody) {
                 byte[] data = ((HttpBody) body).getData().toByteArray();
