@@ -166,6 +166,7 @@ export interface Command extends NameDescription {
   argument: Argument[];
   argumentAssignment: ArgumentAssignment[];
   significance: Significance;
+  effectiveSignificance: Significance;
   constraint: TransmissionConstraint[];
   commandContainer: CommandContainer;
   verifier: Verifier[];
@@ -420,6 +421,7 @@ export interface GetCommandsOptions {
   pos?: number;
   limit?: number;
   details?: boolean;
+  fields?: Array<keyof Command>;
 }
 
 export interface CommandsPage {

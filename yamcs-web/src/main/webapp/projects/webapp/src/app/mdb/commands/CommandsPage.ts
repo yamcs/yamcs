@@ -77,6 +77,7 @@ export class CommandsPage implements AfterViewInit {
     const options: GetCommandsOptions = {
       pos: this.paginator.pageIndex * this.pageSize,
       limit: this.pageSize,
+      fields: ['name', 'qualifiedName', 'alias', 'significance', 'abstract', 'shortDescription'],
     };
     const filterValue = this.filterControl.value;
     if (filterValue) {

@@ -99,6 +99,7 @@ export class SendCommandPage implements AfterViewInit, OnDestroy {
       details: true,
       pos: this.paginator.pageIndex * this.pageSize,
       limit: this.pageSize,
+      fields: ['name', 'qualifiedName', 'alias', 'effectiveSignificance', 'shortDescription'],
     };
     const filterValue = this.filterControl.value;
     if (filterValue) {
@@ -193,9 +194,7 @@ export class SendCommandPage implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.queryParamMapSubscription) {
-      this.queryParamMapSubscription.unsubscribe();
-    }
+    this.queryParamMapSubscription?.unsubscribe();
   }
 }
 

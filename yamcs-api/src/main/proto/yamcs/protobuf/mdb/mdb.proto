@@ -505,11 +505,23 @@ message CommandInfo {
   optional bool abstract = 7;
   repeated ArgumentInfo argument = 8;
   repeated ArgumentAssignmentInfo argumentAssignment = 9;
+
+  // Command significance.
+  //
+  // This is the significance defined specifically for this command.
+  // If unset, there may still be a significance inherited from
+  // a base command.
   optional SignificanceInfo significance = 10;
   repeated TransmissionConstraintInfo constraint = 11;
   optional CommandContainerInfo commandContainer = 13;
   repeated VerifierInfo verifier = 14;
   map<string, AncillaryDataInfo> ancillaryData = 15;
+
+  // Effective command significance.
+  //
+  // This is the significance obtained by looking up the first defined
+  // significance either in this command, or the nearest base command.
+  optional SignificanceInfo effectiveSignificance = 16;
 }
 
 message VerifierInfo {

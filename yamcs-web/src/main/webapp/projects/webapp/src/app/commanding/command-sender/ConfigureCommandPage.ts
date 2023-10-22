@@ -3,7 +3,7 @@ import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, O
 import { UntypedFormControl } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Clearance, Command, CommandHistoryEntry, CommandOptionType, ConfigService, EffectiveSignificancePipe, MessageService, Value, WebsiteConfig, YamcsService } from '@yamcs/webapp-sdk';
+import { Clearance, Command, CommandHistoryEntry, CommandOptionType, ConfigService, MessageService, Value, WebsiteConfig, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { CommandForm, TemplateProvider } from './CommandForm';
@@ -37,7 +37,6 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
     private location: Location,
     configService: ConfigService,
     authService: AuthService,
-    effectiveSignificancePipe: EffectiveSignificancePipe,
     private changeDetection: ChangeDetectorRef,
   ) {
     this.config = configService.getConfig();
@@ -57,7 +56,7 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
     }
 
     Promise.all(promises).then(responses => {
-      const command = responses[0];
+      const command = responses[0] as Command;
       let template: CommandHistoryEntry | undefined;
       if (responses.length > 1) {
         template = responses[1];
@@ -71,7 +70,7 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
 
       if (this.config.commandClearanceEnabled) {
         this.connectionInfoSubscription = yamcs.clearance$.subscribe(clearance => {
-          const significance = effectiveSignificancePipe.transform(command);
+          const significance = command.effectiveSignificance;
           this.cleared$.next(this.isCleared(clearance, significance?.consequenceLevel));
         });
       }

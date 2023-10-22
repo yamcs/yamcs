@@ -63,9 +63,10 @@ export class CommandSelector implements ControlValueAccessor, AfterViewInit {
 
   constructor(readonly yamcs: YamcsService, private changeDetection: ChangeDetectorRef) {
     this.dataSource = new CommandsDataSource(yamcs);
-    this.selectedCommand$.subscribe(item => {
+    this.selectedCommand$.subscribe(async item => {
       if (item && item.command) {
-        return this.onChange(item.command);
+        const commandDetail = await this.yamcs.yamcsClient.getCommand(this.yamcs.instance!, item.command.qualifiedName);
+        return this.onChange(commandDetail);
       } else {
         return this.onChange(null);
       }
@@ -99,6 +100,7 @@ export class CommandSelector implements ControlValueAccessor, AfterViewInit {
       details: true,
       pos: this.paginator.pageIndex * this.pageSize,
       limit: this.pageSize,
+      fields: ['name', 'qualifiedName', 'alias', 'effectiveSignificance', 'shortDescription'],
     };
     const filterValue = this.filterControl.value;
     if (filterValue) {

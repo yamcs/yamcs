@@ -60,7 +60,6 @@ export * from './lib/pipes/datetime.pipe';
 export * from './lib/pipes/default-processor.pipe';
 export * from './lib/pipes/delta-with.pipe';
 export * from './lib/pipes/duration.pipe';
-export * from './lib/pipes/effective-significance.pipe';
 export * from './lib/pipes/entry-for-offset.pipe';
 export * from './lib/pipes/extension.pipe';
 export * from './lib/pipes/filename.pipe';

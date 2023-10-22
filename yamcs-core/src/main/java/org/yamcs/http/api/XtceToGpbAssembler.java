@@ -365,8 +365,14 @@ public class XtceToGpbAssembler {
             }
 
             if (cmd.getDefaultSignificance() != null) {
-                cb.setSignificance(toSignificanceInfo(cmd.getDefaultSignificance()));
+                var significanceInfo = toSignificanceInfo(cmd.getDefaultSignificance());
+                cb.setSignificance(significanceInfo);
+                cb.setEffectiveSignificance(significanceInfo);
+            } else {
+                var significanceInfo = toSignificanceInfo(cmd.getEffectiveDefaultSignificance());
+                cb.setEffectiveSignificance(significanceInfo);
             }
+
             if (cmd.getArgumentList() != null) {
                 for (Argument xtceArgument : cmd.getArgumentList()) {
                     cb.addArgument(toArgumentInfo(xtceArgument));
