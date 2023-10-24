@@ -13,10 +13,9 @@ import org.yamcs.tctm.CcsdsPacket;
 import org.yamcs.tctm.CcsdsSeqCountFiller;
 import org.yamcs.tctm.CommandPostprocessor;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
-import org.yamcs.tctm.IssCommandPostprocessor;
 
 public class PusCommandPostprocessor implements CommandPostprocessor {
-    static Logger log = LoggerFactory.getLogger(IssCommandPostprocessor.class);
+    static Logger log = LoggerFactory.getLogger(PusCommandPostprocessor.class);
 
     ErrorDetectionWordCalculator errorDetectionCalculator;
     protected CcsdsSeqCountFiller seqFiller = new CcsdsSeqCountFiller();
@@ -39,10 +38,10 @@ public class PusCommandPostprocessor implements CommandPostprocessor {
         if (hasCrc) { // 2 extra bytes for the checkword
             binary = Arrays.copyOf(binary, binary.length + 2);
         }
-       
+
         ByteBuffer bb = ByteBuffer.wrap(binary);
         bb.putShort(4, (short) (binary.length - 7)); // write packet length
-        int seqCount = seqFiller.fill(binary); //write sequence count
+        int seqCount = seqFiller.fill(binary); // write sequence count
 
         commandHistoryListener.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
         if (hasCrc) {
@@ -59,13 +58,12 @@ public class PusCommandPostprocessor implements CommandPostprocessor {
         commandHistoryListener.publish(pc.getCommandId(), PreparedCommand.CNAME_BINARY, binary);
         return binary;
     }
-    
-    
+
     @Override
     public int getBinaryLength(PreparedCommand pc) {
         byte[] binary = pc.getBinary();
         if (hasCrc(pc)) {
-            return binary.length+2;
+            return binary.length + 2;
         } else {
             return binary.length;
         }
@@ -75,9 +73,9 @@ public class PusCommandPostprocessor implements CommandPostprocessor {
         byte[] binary = pc.getBinary();
         boolean secHeaderFlag = CcsdsPacket.getSecondaryHeaderFlag(binary);
         if (secHeaderFlag) {
-            return  (errorDetectionCalculator != null);
+            return (errorDetectionCalculator != null);
         } else {
-            return false;    
+            return false;
         }
     }
 
