@@ -95,7 +95,6 @@ public class NameDescription implements Serializable {
         // addAlias(ssName, name);
     }
 
-
     /**
      * Stores the given ancillary data. If an entry already existed for the applicable name, that entry will be
      * overridden.
@@ -110,7 +109,7 @@ public class NameDescription implements Serializable {
     public void setAncillaryData(List<AncillaryData> ancillaryData) {
         this.ancillaryData = ancillaryData;
     }
-    
+
     public List<AncillaryData> getAncillaryData() {
         return ancillaryData;
     }
@@ -178,11 +177,12 @@ public class NameDescription implements Serializable {
 
     /**
      * Concatenates the root with the subsystems and returns a qualified name
+     *
      * @param root
      */
     public static String qualifiedName(String root, String... subsystems) {
         if (root.charAt(0) != PATH_SEPARATOR) {
-            throw new IllegalArgumentException("root has to start with "+PATH_SEPARATOR);
+            throw new IllegalArgumentException("root has to start with " + PATH_SEPARATOR);
         }
         StringBuilder sb = new StringBuilder();
         sb.append(root);
@@ -194,6 +194,7 @@ public class NameDescription implements Serializable {
         }
         return sb.toString();
     }
+
     /**
      * OPS name, in XTCE defined as alias for namespace "MDB:OPS Name"
      *
@@ -249,7 +250,7 @@ public class NameDescription implements Serializable {
         return fqname.substring(0, index);
     }
 
-    static public abstract class Builder<T extends Builder<T>>  {
+    static public abstract class Builder<T extends Builder<T>> {
         private String name;
         private XtceAliasSet xtceAliasSet = XtceAliasSet.NO_ALIAS;
         private List<AncillaryData> ancillaryData = null;
@@ -259,7 +260,7 @@ public class NameDescription implements Serializable {
 
         public Builder() {
         }
-        
+
         public Builder(NameDescription nd) {
             this.name = nd.name;
             this.xtceAliasSet = nd.xtceAliasSet;
@@ -268,7 +269,6 @@ public class NameDescription implements Serializable {
             this.longDescription = nd.longDescription;
             this.qualifiedName = nd.qualifiedName;
         }
-        
 
         public T setName(String name) {
             this.name = name;
@@ -295,15 +295,23 @@ public class NameDescription implements Serializable {
             return self();
         }
 
+        public T addAlias(String namespace, String alias) {
+            if (xtceAliasSet == XtceAliasSet.NO_ALIAS) {
+                xtceAliasSet = new XtceAliasSet();
+            }
+            xtceAliasSet.addAlias(namespace, alias);
+            return self();
+        }
+
         public void setAncillaryData(List<AncillaryData> ancillaryData) {
             this.ancillaryData = ancillaryData;
         }
-        
+
         @SuppressWarnings("unchecked")
         protected T self() {
             return (T) this;
         }
-        
+
         public String getName() {
             return name;
         }

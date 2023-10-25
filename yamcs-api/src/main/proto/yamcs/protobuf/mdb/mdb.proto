@@ -85,7 +85,46 @@ service MdbApi {
       body: "*"
     };
   }
-  
+
+  // Create a space system
+  rpc CreateSpaceSystem(CreateSpaceSystemRequest) returns (SpaceSystemInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/mdb/{instance}/space-systems"
+      body: "*"
+    };
+  }
+
+  // Create a parameter type
+  rpc CreateParameterType(CreateParameterTypeRequest) returns (ParameterTypeInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/mdb/{instance}/parameter-types"
+      body: "*"
+    };
+  }
+
+  // Create a parameter
+  rpc CreateParameter(CreateParameterRequest) returns (ParameterInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/mdb/{instance}/parameters"
+      body: "*"
+    };
+  }
+
+  // List parameter types
+  rpc ListParameterTypes(ListParameterTypesRequest) returns (ListParameterTypesResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/parameter-types"
+      field_mask_root: "parameterTypes"
+    };
+  }
+
+  // Get a parameter type
+  rpc GetParameterType(GetParameterTypeRequest) returns (ParameterTypeInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/parameter-types/{name*}"
+    };
+  }
+
   // List containers
   rpc ListContainers(ListContainersRequest) returns (ListContainersResponse) {
     option (yamcs.api.route) = {
@@ -275,12 +314,23 @@ message EnumValue {
 }
 
 message ParameterTypeInfo {
+  optional string name = 16;
+  optional string qualifiedName = 17;
+  optional string shortDescription = 18;
+  optional string longDescription = 19;
+  repeated NamedObjectId alias = 20;
+
+  // Engineering type
   optional string engType = 1;
   optional DataEncodingInfo dataEncoding = 2;
   repeated UnitInfo unitSet = 3;
+
+  // Default Alarm, effective when no contextual alarm takes precedence.
   optional AlarmInfo defaultAlarm = 4;
   repeated EnumValue enumValue = 5;
   optional AbsoluteTimeInfo absoluteTimeInfo = 6;
+
+  // Contextual alarms
   repeated ContextAlarmInfo contextAlarm = 7;
   repeated MemberInfo member = 8;
   optional ArrayInfo arrayInfo = 9;
@@ -289,7 +339,20 @@ message ParameterTypeInfo {
   // Provides hints on how to format the engineering
   // value as a string.
   optional NumberFormatTypeInfo numberFormat = 11;
+
+  // True if the engineering type supports signed representation.
+  // (only used by integer parameter types)
   optional bool signed = 12;
+
+  // String representation of a boolean zero (only used by boolean types)
+  optional string zeroStringValue = 13;
+
+  // String representation of a boolean one (only used by boolean types)
+  optional string oneStringValue = 14;
+
+  // Which parameters this type is used by. This field is only
+  // populated when requesting directly a single parameter type.
+  repeated ParameterInfo usedBy = 15;
 }
 
 message NumberFormatTypeInfo {
@@ -311,6 +374,14 @@ message GetContainerRequest {
   optional string instance = 1;
   
   // Container name.
+  optional string name = 2;
+}
+
+message GetParameterTypeRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Parameter type name.
   optional string name = 2;
 }
 
@@ -687,7 +758,7 @@ message ListSpaceSystemsRequest {
   // The zero-based row number at which to start outputting results. Default: ``0``
   optional int32 pos = 8;
   
-  // The maximum number of returned containers per page. Choose this value too high
+  // The maximum number of returned systems per page. Choose this value too high
   // and you risk hitting the maximum response size limit enforced by the server.
   // Default: ``100``
   optional int32 limit = 9;
@@ -716,6 +787,34 @@ message ListContainersRequest {
   optional int32 pos = 8;
   
   // The maximum number of returned containers per page. Choose this value too high
+  // and you risk hitting the maximum response size limit enforced by the server.
+  // Default: ``100``
+  optional int32 limit = 9;
+}
+
+message ListParameterTypesRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // The search keywords. This supports searching on qualified name or alias.
+  optional string q = 2;
+
+  // List only direct child sub-systems or parameter types of the specified system.
+  // For example when querying the system "/a" against an MDB with parameter types
+  // "/a/b/c" and "/a/c", the result returns the sub system "/a/b" and the
+  // parameter type "/a/c".
+  //
+  // When ``system`` and ``q`` are used together, matching containers at any
+  // depth are returned, starting from the specified space system.
+  optional string system = 10;
+
+  // Continuation token returned by a previous page response.
+  optional string next = 7;
+
+  // The zero-based row number at which to start outputting results. Default: ``0``
+  optional int32 pos = 8;
+
+  // The maximum number of returned items per page. Choose this value too high
   // and you risk hitting the maximum response size limit enforced by the server.
   // Default: ``100``
   optional int32 limit = 9;
@@ -879,6 +978,19 @@ message ListContainersResponse {
   optional int32 totalSize = 3;
 }
 
+message ListParameterTypesResponse {
+  repeated string spaceSystems = 4;
+  repeated ParameterTypeInfo parameterTypes = 1;
+
+  // Token indicating the response is only partial. More results can then
+  // be obtained by performing the same request (including all original
+  // query parameters) and setting the ``next`` parameter to this token.
+  optional string continuationToken = 2;
+
+  // The total number of results (across all pages)
+  optional int32 totalSize = 3;
+}
+
 message ListCommandsResponse {
   repeated string spaceSystems = 4;
   repeated CommandInfo commands = 1;
@@ -911,6 +1023,104 @@ message GetAlgorithmRequest {
   
   // Algorithm name.
   optional string name = 2;
+}
+
+message CreateSpaceSystemRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Space system name
+  optional string name = 2;
+
+  // Fully qualified name of the parent space system
+  optional string spaceSystem = 3;
+
+  // Short description (one line)
+  optional string shortDescription = 4;
+
+  // Long description (Markdown)
+  optional string longDescription = 5;
+
+  // Aliases, keyed by namespace
+  map<string, string> aliases = 6;
+}
+
+message CreateParameterRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Parameter name
+  optional string name = 2;
+
+  // Fully qualified name of the parent space system
+  optional string spaceSystem = 3;
+
+  // Short description (one line)
+  optional string shortDescription = 4;
+
+  // Long description (Markdown)
+  optional string longDescription = 5;
+
+  // Aliases, keyed by namespace
+  map<string, string> aliases = 6;
+
+  // Type of datasource.
+  //
+  // One of TELEMETERED, DERIVED, CONSTANT, LOCAL, SYSTEM, COMMAND, COMMAND_HISTORY,
+  // EXTERNAL1, EXTERNAL2, or EXTERNAL3
+  optional DataSourceType dataSource = 7;
+
+  // Fully qualified name of a parameter type
+  optional string parameterType = 8;
+}
+
+message CreateParameterTypeRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Parameter type name
+  optional string name = 2;
+
+  // Fully qualified name of the parent space system
+  optional string spaceSystem = 3;
+
+  // Short description (one line)
+  optional string shortDescription = 4;
+
+  // Long description (Markdown)
+  optional string longDescription = 5;
+
+  // Aliases, keyed by namespace
+  map<string, string> aliases = 6;
+
+  // Engineering type. One of ``float``, ``integer``, ``enumeration``,
+  // ``binary``, ``boolean`` or ``string``.
+  optional string engType = 7;
+
+  // Engineering unit
+  optional string unit = 8;
+
+  // Set to true if the engineering type supports signed representation.
+  // (only used with ``integer`` parameter types)
+  optional bool signed = 9;
+
+  // Default Alarm, effective when no contextual alarm takes precedence.
+  optional AlarmInfo defaultAlarm = 10;
+
+  // Contextual alarms
+  repeated ContextAlarmInfo contextAlarms = 11;
+
+  // Enumeration values.
+  // (only used with ``enumeration`` parameter types)
+  repeated EnumValue enumerationValues = 12;
+
+  // String representation of a boolean zero.
+  // (only used with ``boolean`` parameter types)
+  optional string zeroStringValue = 13;
+
+  // String representation of a boolean one.
+  // (only used with ``boolean`` parameter types)
+  optional string oneStringValue = 14;
 }
 
 message GetMissionDatabaseRequest {
@@ -1005,9 +1215,14 @@ message GetCommandRequest {
 }
 
 message SpaceSystemInfo {
+    // Space system name
   optional string name = 1;
   optional string qualifiedName = 2;
+
+  // Short description (one line)
   optional string shortDescription = 3;
+
+  // Long description (Markdown)
   optional string longDescription = 4;
   repeated NamedObjectId alias = 16;
   optional string version = 5;

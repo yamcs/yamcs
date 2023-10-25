@@ -109,6 +109,7 @@ export class InstancePage implements OnInit, OnDestroy {
     if (this.user.hasSystemPrivilege('GetMissionDatabase')) {
       this.mdbItems.push({ path: '', label: 'Overview' });
       this.mdbItems.push({ path: 'parameters', label: 'Parameters' });
+      this.mdbItems.push({ path: 'parameter-types', label: 'Parameter types' });
       this.mdbItems.push({ path: 'containers', label: 'Containers' });
       this.mdbItems.push({ path: 'commands', label: 'Commands' });
       this.mdbItems.push({ path: 'algorithms', label: 'Algorithms' });

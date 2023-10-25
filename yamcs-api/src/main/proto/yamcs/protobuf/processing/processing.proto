@@ -399,7 +399,7 @@ message BatchGetParameterValuesResponse {
   repeated pvalue.ParameterValue value = 1;
 }
 
-// Response message for `BatchSetParameterValues`.
+// Request message for `BatchSetParameterValues`.
 message BatchSetParameterValuesRequest {
   message SetParameterValueRequest {
     // Parameter identifier. This takes the form of a namespace and

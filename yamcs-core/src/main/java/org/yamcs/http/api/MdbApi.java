@@ -1,5 +1,10 @@
 package org.yamcs.http.api;
 
+import static org.yamcs.http.api.GbpToXtceAssembler.toEnumerationAlarm;
+import static org.yamcs.http.api.GbpToXtceAssembler.toEnumerationContextAlarm;
+import static org.yamcs.http.api.GbpToXtceAssembler.toNumericAlarm;
+import static org.yamcs.http.api.GbpToXtceAssembler.toNumericContextAlarm;
+
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.UncheckedIOException;
@@ -11,6 +16,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.api.HttpBody;
@@ -26,7 +32,9 @@ import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.logging.Log;
 import org.yamcs.mdb.XtceAssembler;
 import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterWithId;
+import org.yamcs.parameter.SoftwareParameterManager;
 import org.yamcs.protobuf.AbstractMdbApi;
 import org.yamcs.protobuf.Mdb.AlgorithmInfo;
 import org.yamcs.protobuf.Mdb.BatchGetParametersRequest;
@@ -34,6 +42,9 @@ import org.yamcs.protobuf.Mdb.BatchGetParametersResponse;
 import org.yamcs.protobuf.Mdb.BatchGetParametersResponse.GetParameterResponse;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Mdb.ContainerInfo;
+import org.yamcs.protobuf.Mdb.CreateParameterRequest;
+import org.yamcs.protobuf.Mdb.CreateParameterTypeRequest;
+import org.yamcs.protobuf.Mdb.CreateSpaceSystemRequest;
 import org.yamcs.protobuf.Mdb.DataSourceType;
 import org.yamcs.protobuf.Mdb.ExportJavaMissionDatabaseRequest;
 import org.yamcs.protobuf.Mdb.ExportXtceRequest;
@@ -42,6 +53,7 @@ import org.yamcs.protobuf.Mdb.GetCommandRequest;
 import org.yamcs.protobuf.Mdb.GetContainerRequest;
 import org.yamcs.protobuf.Mdb.GetMissionDatabaseRequest;
 import org.yamcs.protobuf.Mdb.GetParameterRequest;
+import org.yamcs.protobuf.Mdb.GetParameterTypeRequest;
 import org.yamcs.protobuf.Mdb.GetSpaceSystemRequest;
 import org.yamcs.protobuf.Mdb.ListAlgorithmsRequest;
 import org.yamcs.protobuf.Mdb.ListAlgorithmsResponse;
@@ -49,6 +61,8 @@ import org.yamcs.protobuf.Mdb.ListCommandsRequest;
 import org.yamcs.protobuf.Mdb.ListCommandsResponse;
 import org.yamcs.protobuf.Mdb.ListContainersRequest;
 import org.yamcs.protobuf.Mdb.ListContainersResponse;
+import org.yamcs.protobuf.Mdb.ListParameterTypesRequest;
+import org.yamcs.protobuf.Mdb.ListParameterTypesResponse;
 import org.yamcs.protobuf.Mdb.ListParametersRequest;
 import org.yamcs.protobuf.Mdb.ListParametersResponse;
 import org.yamcs.protobuf.Mdb.ListSpaceSystemsRequest;
@@ -56,6 +70,7 @@ import org.yamcs.protobuf.Mdb.ListSpaceSystemsResponse;
 import org.yamcs.protobuf.Mdb.MissionDatabase;
 import org.yamcs.protobuf.Mdb.MissionDatabaseItem;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
+import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
 import org.yamcs.protobuf.Mdb.SpaceSystemInfo;
 import org.yamcs.protobuf.Mdb.StreamMissionDatabaseRequest;
 import org.yamcs.protobuf.Mdb.UsedByInfo;
@@ -66,9 +81,15 @@ import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Algorithm.Scope;
+import org.yamcs.xtce.BaseDataType;
+import org.yamcs.xtce.BinaryParameterType;
+import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.Container;
 import org.yamcs.xtce.ContainerEntry;
 import org.yamcs.xtce.DataSource;
+import org.yamcs.xtce.EnumeratedParameterType;
+import org.yamcs.xtce.FloatParameterType;
+import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
@@ -77,6 +98,9 @@ import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.PathElement;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
+import org.yamcs.xtce.StringParameterType;
+import org.yamcs.xtce.UnitType;
+import org.yamcs.xtce.ValueEnumeration;
 import org.yamcs.xtce.XtceDb;
 
 import com.google.protobuf.ByteString;
@@ -415,6 +439,156 @@ public class MdbApi extends AbstractMdbApi<Context> {
     }
 
     @Override
+    public void createSpaceSystem(Context ctx, CreateSpaceSystemRequest request, Observer<SpaceSystemInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+
+        var spaceSystem = new SpaceSystem(request.getName());
+        spaceSystem.setQualifiedName(request.getSpaceSystem() + "/" + request.getName());
+        request.getAliasesMap().forEach(spaceSystem::addAlias);
+
+        if (request.hasShortDescription()) {
+            spaceSystem.setShortDescription(request.getShortDescription());
+        }
+        if (request.hasLongDescription()) {
+            spaceSystem.setLongDescription(request.getLongDescription());
+        }
+
+        mdb.addSpaceSystem(spaceSystem);
+        observer.complete(XtceToGpbAssembler.toSpaceSystemInfo(spaceSystem));
+    }
+
+    @Override
+    public void createParameterType(Context ctx, CreateParameterTypeRequest request,
+            Observer<ParameterTypeInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+
+        BaseDataType.Builder<?> ptypeb;
+        if ("float".equals(request.getEngType())) {
+            var floatb = new FloatParameterType.Builder();
+            if (request.hasDefaultAlarm()) {
+                var alarm = toNumericAlarm(request.getDefaultAlarm());
+                floatb.setDefaultAlarm(alarm);
+            }
+            for (var contextAlarm : request.getContextAlarmsList()) {
+                var alarm = toNumericContextAlarm(mdb, instance, contextAlarm);
+                floatb.addContextAlarm(alarm);
+            }
+            ptypeb = floatb;
+        } else if ("integer".equals(request.getEngType())) {
+            var integerb = new IntegerParameterType.Builder();
+            if (request.hasSigned()) {
+                integerb.setSigned(request.getSigned());
+            }
+            if (request.hasDefaultAlarm()) {
+                var alarm = toNumericAlarm(request.getDefaultAlarm());
+                integerb.setDefaultAlarm(alarm);
+            }
+            for (var contextAlarm : request.getContextAlarmsList()) {
+                var alarm = toNumericContextAlarm(mdb, instance, contextAlarm);
+                integerb.addContextAlarm(alarm);
+            }
+            ptypeb = integerb;
+        } else if ("enumeration".equals(request.getEngType())) {
+            var enumb = new EnumeratedParameterType.Builder();
+            for (var enumerationValue : request.getEnumerationValuesList()) {
+                var valueEnumeration = new ValueEnumeration(enumerationValue.getValue(), enumerationValue.getLabel());
+                if (enumerationValue.hasDescription()) {
+                    valueEnumeration.setDescription(enumerationValue.getDescription());
+                }
+            }
+            if (request.hasDefaultAlarm()) {
+                var alarm = toEnumerationAlarm(request.getDefaultAlarm());
+                enumb.setDefaultAlarm(alarm);
+            }
+            for (var contextAlarm : request.getContextAlarmsList()) {
+                var alarm = toEnumerationContextAlarm(mdb, instance, contextAlarm);
+                enumb.addContextAlarm(alarm);
+            }
+            ptypeb = enumb;
+        } else if ("binary".equals(request.getEngType())) {
+            var binaryb = new BinaryParameterType.Builder();
+            ptypeb = binaryb;
+        } else if ("boolean".equals(request.getEngType())) {
+            var booleanb = new BooleanParameterType.Builder();
+            if (request.hasOneStringValue()) {
+                booleanb.setOneStringValue(request.getOneStringValue());
+            }
+            if (request.hasZeroStringValue()) {
+                booleanb.setZeroStringValue(request.getZeroStringValue());
+            }
+            ptypeb = booleanb;
+        } else if ("string".equals(request.getEngType())) {
+            var stringb = new StringParameterType.Builder();
+            ptypeb = stringb;
+        } else {
+            throw new BadRequestException(
+                    "Cannot create parameters of type '" + request.getEngType() + "'");
+        }
+
+        ptypeb.setName(request.getName());
+        ptypeb.setQualifiedName(request.getSpaceSystem() + "/" + request.getName());
+        request.getAliasesMap().forEach(ptypeb::addAlias);
+
+        if (request.hasShortDescription()) {
+            ptypeb.setShortDescription(request.getShortDescription());
+        }
+        if (request.hasLongDescription()) {
+            ptypeb.setLongDescription(request.getLongDescription());
+        }
+        if (request.hasUnit()) {
+            ptypeb.addUnit(new UnitType(request.getUnit()));
+        }
+
+        var ptype = (ParameterType) ptypeb.build();
+        mdb.addParameterType(ptype, true);
+        observer.complete(XtceToGpbAssembler.toParameterTypeInfo(ptype, DetailLevel.FULL));
+    }
+
+    @Override
+    public void createParameter(Context ctx, CreateParameterRequest request, Observer<ParameterInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+
+        var parameter = new Parameter(request.getName());
+        parameter.setDataSource(DataSource.valueOf(request.getDataSource().name()));
+        parameter.setQualifiedName(request.getSpaceSystem() + "/" + request.getName());
+        request.getAliasesMap().forEach(parameter::addAlias);
+
+        if (request.hasShortDescription()) {
+            parameter.setShortDescription(request.getShortDescription());
+        }
+        if (request.hasLongDescription()) {
+            parameter.setLongDescription(request.getLongDescription());
+        }
+
+        if (request.hasParameterType()) {
+            var ptype = mdb.getParameterType(request.getParameterType());
+            if (ptype == null) {
+                throw new BadRequestException("Unknown parameter type '" + ptype + "'");
+            }
+            parameter.setParameterType(ptype);
+        }
+
+        mdb.addParameter(parameter, true);
+
+        // FIXME
+        YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(instance);
+        Processor processor = ysi.getProcessor("realtime");
+        SoftwareParameterManager mgr = processor.getParameterProcessorManager()
+                .getSoftwareParameterManager(parameter.getDataSource());
+        if (mgr instanceof ParameterProvider) {
+            ((ParameterProvider) mgr).startProviding(parameter);
+        }
+
+        observer.complete(XtceToGpbAssembler.toParameterInfo(parameter, DetailLevel.FULL));
+    }
+
+    @Override
     public void batchGetParameters(Context ctx, BatchGetParametersRequest request,
             Observer<BatchGetParametersResponse> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
@@ -441,6 +615,97 @@ public class MdbApi extends AbstractMdbApi<Context> {
         }
 
         observer.complete(responseb.build());
+    }
+
+    @Override
+    public void listParameterTypes(Context ctx, ListParameterTypesRequest request,
+            Observer<ListParameterTypesResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+
+        List<SpaceSystem> spaceSystems = new ArrayList<>();
+        List<ParameterType> ptypes = new ArrayList<>();
+        if (request.hasSystem()) {
+            if (request.hasQ()) { // get candidates for deep search starting from the system
+                for (ParameterType ptype : mdb.getParameterTypes()) {
+                    if (ptype.getQualifiedName().startsWith(request.getSystem())) {
+                        ptypes.add(ptype);
+                    }
+                }
+            } else { // get direct children of the system
+                List<SpaceSystem> filteredSpaceSystems = mdb.getSpaceSystems().stream()
+                        .filter(spaceSystem -> spaceSystem.getParameterTypeCount(true) > 0)
+                        .collect(Collectors.toList());
+                for (SpaceSystem spaceSystem : filteredSpaceSystems) {
+                    if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
+                        ptypes.addAll(spaceSystem.getParameterTypes());
+                    } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
+                        if (spaceSystem.getQualifiedName().indexOf('/', request.getSystem().length() + 1) == -1) {
+                            spaceSystems.add(spaceSystem);
+                        }
+                    }
+                }
+            }
+        } else {
+            ptypes = new ArrayList<>(mdb.getParameterTypes());
+        }
+
+        NameDescriptionSearchMatcher matcher = request.hasQ() ? new NameDescriptionSearchMatcher(request.getQ()) : null;
+
+        ptypes = ptypes.stream().filter(c -> {
+            if (matcher != null && !matcher.matches((NameDescription) c)) {
+                return false;
+            }
+            return true;
+        }).collect(Collectors.toList());
+
+        @SuppressWarnings("unchecked")
+        var nameDescriptionItems = (List<NameDescription>) (Object) ptypes;
+        var pageBuilder = new MdbPageBuilder<>(spaceSystems, nameDescriptionItems);
+        pageBuilder.setNext(request.hasNext() ? request.getNext() : null);
+        pageBuilder.setPos(request.hasPos() ? request.getPos() : 0);
+        pageBuilder.setLimit(request.hasLimit() ? request.getLimit() : 100);
+        var page = pageBuilder.buildPage();
+
+        var responseb = ListParameterTypesResponse.newBuilder()
+                .setTotalSize(page.getTotalSize());
+        for (SpaceSystem s : page.getSpaceSystems()) {
+            responseb.addSpaceSystems(s.getQualifiedName());
+        }
+        for (NameDescription c : page.getItems()) {
+            var ptype = (ParameterType) c;
+            responseb.addParameterTypes(XtceToGpbAssembler.toParameterTypeInfo(ptype, DetailLevel.SUMMARY));
+        }
+        if (page.getContinuationToken() != null) {
+            responseb.setContinuationToken(page.getContinuationToken());
+        }
+        observer.complete(responseb.build());
+    }
+
+    @Override
+    public void getParameterType(Context ctx, GetParameterTypeRequest request, Observer<ParameterTypeInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
+
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        ParameterType ptype = verifyParameterType(mdb, request.getName());
+
+        var pinfo = XtceToGpbAssembler.toParameterTypeInfo(ptype, DetailLevel.FULL);
+
+        // Add extra information about which parameters are using this type
+        // This is not efficient, but we don't expect this to get called often.
+        var pinfob = ParameterTypeInfo.newBuilder(pinfo);
+        mdb.getParameters().stream()
+                .filter(parameter -> parameter.getParameterType() == ptype)
+                .sorted((a, b) -> a.getQualifiedName().compareTo(b.getQualifiedName()))
+                .forEach(parameter -> {
+                    pinfob.addUsedBy(XtceToGpbAssembler.toParameterInfo(parameter, DetailLevel.LINK));
+                });
+        pinfo = pinfob.build();
+
+        observer.complete(pinfo);
     }
 
     @Override

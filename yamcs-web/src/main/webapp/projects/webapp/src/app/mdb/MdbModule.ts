@@ -6,6 +6,7 @@ import { AlgorithmDetail } from './algorithms/AlgorithmDetail';
 import { ArgumentEnumDialog } from './commands/ArgumentEnumDialog';
 import { CommandDetail } from './commands/CommandDetail';
 import { ContainerDetail } from './containers/ContainerDetail';
+import { ParameterTypeDetail } from './parameterTypes/ParameterTypeDetail';
 import { ParameterCalibration } from './parameters/ParameterCalibration';
 import { ParameterDetail } from './parameters/ParameterDetail';
 import { PolynomialPipe } from './pipes/PolynomialPipe';
@@ -29,6 +30,7 @@ const pipes = [
     ContainerDetail,
     ParameterCalibration,
     ParameterDetail,
+    ParameterTypeDetail,
   ],
 })
 export class MdbModule {
