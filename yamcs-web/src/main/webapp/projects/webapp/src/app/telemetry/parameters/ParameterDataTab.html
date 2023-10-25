@@ -17,7 +17,7 @@
 
       <div class="block-title">Valid for</div>
       <div class="block">
-        {{ (pval.expireMillis | duration) || '-' }}
+        {{ (pval.expireMillis | millisDuration) || '-' }}
       </div>
 
       <div class="block-title">

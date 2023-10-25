@@ -370,6 +370,9 @@ message SetParameterValueRequest {
   // The generation time of the value. If specified, must be a date
   // string in ISO 8601 format.
   optional google.protobuf.Timestamp generationTime = 5;
+
+  // How long before this value is expired, in milliseconds
+  optional uint64 expiresIn = 6;
 }
 
 // Request message for `BatchGetParameterValues`.
@@ -410,11 +413,15 @@ message BatchSetParameterValuesRequest {
     // required when the name represents an alias of that parameter.
     optional NamedObjectId id = 1;
 
+    // The new value
     optional Value value = 2;
 
     // The generation time of the value. If specified, must be a date
     // string in ISO 8601 format.
     optional google.protobuf.Timestamp generationTime = 3;
+
+    // How long before this value is expired, in milliseconds
+    optional uint64 expiresIn = 4;
   }
   
   // Yamcs instance name.
@@ -422,6 +429,8 @@ message BatchSetParameterValuesRequest {
   
   // Processor name.
   optional string processor = 3;
+
+  // Requests, one for each new value
   repeated SetParameterValueRequest request = 1;
 }
 

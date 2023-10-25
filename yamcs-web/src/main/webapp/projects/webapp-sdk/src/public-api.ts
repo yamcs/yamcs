@@ -68,6 +68,7 @@ export * from './lib/pipes/hex-dump.pipe';
 export * from './lib/pipes/hex.pipe';
 export * from './lib/pipes/may-access-admin-area.pipe';
 export * from './lib/pipes/member-path.pipe';
+export * from './lib/pipes/millis-duration.pipe';
 export * from './lib/pipes/nanos-duration.pipe';
 export * from './lib/pipes/nvl.pipe';
 export * from './lib/pipes/operator.pipe';

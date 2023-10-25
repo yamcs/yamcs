@@ -83,6 +83,7 @@ import { HexDumpPipe } from './pipes/hex-dump.pipe';
 import { HexPipe } from './pipes/hex.pipe';
 import { MayAccessAdminAreaPipe } from './pipes/may-access-admin-area.pipe';
 import { MemberPathPipe } from './pipes/member-path.pipe';
+import { MillisDurationPipe } from './pipes/millis-duration.pipe';
 import { NanosDurationPipe } from './pipes/nanos-duration.pipe';
 import { NvlPipe } from './pipes/nvl.pipe';
 import { OperatorPipe } from './pipes/operator.pipe';
@@ -118,6 +119,7 @@ const pipes = [
   HexPipe,
   MayAccessAdminAreaPipe,
   MemberPathPipe,
+  MillisDurationPipe,
   NanosDurationPipe,
   NvlPipe,
   OperatorPipe,

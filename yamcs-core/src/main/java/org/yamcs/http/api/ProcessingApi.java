@@ -295,6 +295,9 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             pv.setGenerationTime(TimeEncoding
                     .fromProtobufTimestamp(request.getGenerationTime()));
         }
+        if (request.hasExpiresIn()) {
+            pv.setExpireMillis(request.getExpiresIn());
+        }
         try {
             mgr.updateParameters(Arrays.asList(pv));
         } catch (IllegalArgumentException e) {
@@ -412,6 +415,9 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             if (r.hasGenerationTime()) {
                 pv.setGenerationTime(TimeEncoding
                         .fromProtobufTimestamp(r.getGenerationTime()));
+            }
+            if (r.hasExpiresIn()) {
+                pv.setExpireMillis(r.getExpiresIn());
             }
             List<org.yamcs.parameter.ParameterValue> l = pvmap.computeIfAbsent(p.getDataSource(),
                     k -> new ArrayList<>());
