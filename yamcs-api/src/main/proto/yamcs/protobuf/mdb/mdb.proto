@@ -206,6 +206,7 @@ enum DataSourceType {
   EXTERNAL1 = 7;
   EXTERNAL2 = 8;
   EXTERNAL3 = 9;
+  GROUND = 10;
 }
 
 enum AlarmLevelType {
