@@ -3,6 +3,8 @@ syntax="proto2";
 package yamcs.protobuf.mdb;
 option java_package = "org.yamcs.protobuf";
 
+import "google/protobuf/empty.proto";
+
 import "yamcs/api/annotations.proto";
 import "yamcs/api/httpbody.proto";
 import "yamcs/protobuf/yamcs.proto";
@@ -36,6 +38,28 @@ service MdbApi {
   rpc GetSpaceSystem(GetSpaceSystemRequest) returns (SpaceSystemInfo) {
     option (yamcs.api.route) = {
       get: "/api/mdb/{instance}/space-systems/{name*}"
+    };
+  }
+
+  // Create a space system
+  rpc CreateSpaceSystem(CreateSpaceSystemRequest) returns (SpaceSystemInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/mdb/{instance}/space-systems"
+      body: "*"
+    };
+  }
+
+  // Update a space system
+  rpc UpdateSpaceSystem(UpdateSpaceSystemRequest) returns (SpaceSystemInfo) {
+    option (yamcs.api.route) = {
+      put: "/api/mdb/{instance}/space-systems/{name*}"
+    };
+  }
+
+  // Update a space system
+  rpc DeleteSpaceSystem(DeleteSpaceSystemRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      put: "/api/mdb/{instance}/space-systems/{name*}"
     };
   }
 
@@ -77,35 +101,33 @@ service MdbApi {
       get: "/api/mdb/{instance}/parameters/{name*}"
     };
   }
-  
-  // Batch get of multiple parameters
-  rpc BatchGetParameters(BatchGetParametersRequest) returns (BatchGetParametersResponse) {
-    option (yamcs.api.route) = {
-      post: "/api/mdb/{instance}/parameters:batchGet"
-      body: "*"
-    };
-  }
-
-  // Create a space system
-  rpc CreateSpaceSystem(CreateSpaceSystemRequest) returns (SpaceSystemInfo) {
-    option (yamcs.api.route) = {
-      post: "/api/mdb/{instance}/space-systems"
-      body: "*"
-    };
-  }
-
-  // Create a parameter type
-  rpc CreateParameterType(CreateParameterTypeRequest) returns (ParameterTypeInfo) {
-    option (yamcs.api.route) = {
-      post: "/api/mdb/{instance}/parameter-types"
-      body: "*"
-    };
-  }
 
   // Create a parameter
   rpc CreateParameter(CreateParameterRequest) returns (ParameterInfo) {
     option (yamcs.api.route) = {
       post: "/api/mdb/{instance}/parameters"
+      body: "*"
+    };
+  }
+
+  // Update a parameter
+  rpc UpdateParameter(UpdateParameterRequest) returns (ParameterInfo) {
+    option (yamcs.api.route) = {
+      put: "/api/mdb/{instance}/parameters/{name*}"
+    };
+  }
+
+  // Delete a parameter
+  rpc DeleteParameter(DeleteParameterRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      delete: "/api/mdb/{instance}/parameters/{name*}"
+    };
+  }
+
+  // Batch get of multiple parameters
+  rpc BatchGetParameters(BatchGetParametersRequest) returns (BatchGetParametersResponse) {
+    option (yamcs.api.route) = {
+      post: "/api/mdb/{instance}/parameters:batchGet"
       body: "*"
     };
   }
@@ -122,6 +144,28 @@ service MdbApi {
   rpc GetParameterType(GetParameterTypeRequest) returns (ParameterTypeInfo) {
     option (yamcs.api.route) = {
       get: "/api/mdb/{instance}/parameter-types/{name*}"
+    };
+  }
+
+  // Create a parameter type
+  rpc CreateParameterType(CreateParameterTypeRequest) returns (ParameterTypeInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/mdb/{instance}/parameter-types"
+      body: "*"
+    };
+  }
+
+  // Update a parameter type
+  rpc UpdateParameterType(UpdateParameterTypeRequest) returns (ParameterTypeInfo) {
+    option (yamcs.api.route) = {
+      put: "/api/mdb/{instance}/parameter-types/{name*}"
+    };
+  }
+
+  // Delete a parameter type
+  rpc DeleteParameterType(DeleteParameterTypeRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      delete: "/api/mdb/{instance}/parameter-types/{name*}"
     };
   }
 
@@ -1046,6 +1090,31 @@ message CreateSpaceSystemRequest {
   map<string, string> aliases = 6;
 }
 
+message UpdateSpaceSystemRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Fully qualified name of the space system
+  optional string name = 2;
+
+  // Short description (one line)
+  optional string shortDescription = 4;
+
+  // Long description (Markdown)
+  optional string longDescription = 5;
+
+  // Aliases, keyed by namespace
+  map<string, string> aliases = 6;
+}
+
+message DeleteSpaceSystemRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Fully qualified name of the space system
+  optional string name = 2;
+}
+
 message CreateParameterRequest {
   // Yamcs instance name
   optional string instance = 1;
@@ -1073,6 +1142,40 @@ message CreateParameterRequest {
 
   // Fully qualified name of a parameter type
   optional string parameterType = 8;
+}
+
+message UpdateParameterRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Fully qualified parameter name
+  optional string name = 2;
+
+  // Short description (one line)
+  optional string shortDescription = 4;
+
+  // Long description (Markdown)
+  optional string longDescription = 5;
+
+  // Aliases, keyed by namespace
+  map<string, string> aliases = 6;
+
+  // Type of datasource.
+  //
+  // One of TELEMETERED, DERIVED, CONSTANT, LOCAL, SYSTEM, COMMAND, COMMAND_HISTORY,
+  // EXTERNAL1, EXTERNAL2, or EXTERNAL3
+  optional DataSourceType dataSource = 7;
+
+  // Fully qualified name of a parameter type
+  optional string parameterType = 8;
+}
+
+message DeleteParameterRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Fully qualified name of the parameter
+  optional string name = 2;
 }
 
 message CreateParameterTypeRequest {
@@ -1122,6 +1225,60 @@ message CreateParameterTypeRequest {
   // String representation of a boolean one.
   // (only used with ``boolean`` parameter types)
   optional string oneStringValue = 14;
+}
+
+message UpdateParameterTypeRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Fully qualified parameter type name
+  optional string name = 2;
+
+  // Short description (one line)
+  optional string shortDescription = 4;
+
+  // Long description (Markdown)
+  optional string longDescription = 5;
+
+  // Aliases, keyed by namespace
+  map<string, string> aliases = 6;
+
+  // Engineering type. One of ``float``, ``integer``, ``enumeration``,
+  // ``binary``, ``boolean`` or ``string``.
+  optional string engType = 7;
+
+  // Engineering unit
+  optional string unit = 8;
+
+  // Set to true if the engineering type supports signed representation.
+  // (only used with ``integer`` parameter types)
+  optional bool signed = 9;
+
+  // Default Alarm, effective when no contextual alarm takes precedence.
+  optional AlarmInfo defaultAlarm = 10;
+
+  // Contextual alarms
+  repeated ContextAlarmInfo contextAlarms = 11;
+
+  // Enumeration values.
+  // (only used with ``enumeration`` parameter types)
+  repeated EnumValue enumerationValues = 12;
+
+  // String representation of a boolean zero.
+  // (only used with ``boolean`` parameter types)
+  optional string zeroStringValue = 13;
+
+  // String representation of a boolean one.
+  // (only used with ``boolean`` parameter types)
+  optional string oneStringValue = 14;
+}
+
+message DeleteParameterTypeRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Fully qualified name of the parameter type
+  optional string name = 2;
 }
 
 message GetMissionDatabaseRequest {

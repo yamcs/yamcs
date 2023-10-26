@@ -46,6 +46,9 @@ import org.yamcs.protobuf.Mdb.CreateParameterRequest;
 import org.yamcs.protobuf.Mdb.CreateParameterTypeRequest;
 import org.yamcs.protobuf.Mdb.CreateSpaceSystemRequest;
 import org.yamcs.protobuf.Mdb.DataSourceType;
+import org.yamcs.protobuf.Mdb.DeleteParameterRequest;
+import org.yamcs.protobuf.Mdb.DeleteParameterTypeRequest;
+import org.yamcs.protobuf.Mdb.DeleteSpaceSystemRequest;
 import org.yamcs.protobuf.Mdb.ExportJavaMissionDatabaseRequest;
 import org.yamcs.protobuf.Mdb.ExportXtceRequest;
 import org.yamcs.protobuf.Mdb.GetAlgorithmRequest;
@@ -73,6 +76,9 @@ import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
 import org.yamcs.protobuf.Mdb.SpaceSystemInfo;
 import org.yamcs.protobuf.Mdb.StreamMissionDatabaseRequest;
+import org.yamcs.protobuf.Mdb.UpdateParameterRequest;
+import org.yamcs.protobuf.Mdb.UpdateParameterTypeRequest;
+import org.yamcs.protobuf.Mdb.UpdateSpaceSystemRequest;
 import org.yamcs.protobuf.Mdb.UsedByInfo;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.YamcsInstance;
@@ -104,6 +110,7 @@ import org.yamcs.xtce.ValueEnumeration;
 import org.yamcs.xtce.XtceDb;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Empty;
 
 public class MdbApi extends AbstractMdbApi<Context> {
 
@@ -460,6 +467,31 @@ public class MdbApi extends AbstractMdbApi<Context> {
     }
 
     @Override
+    public void updateSpaceSystem(Context ctx, UpdateSpaceSystemRequest request, Observer<SpaceSystemInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        SpaceSystem spaceSystem = verifySpaceSystem(mdb, request.getName());
+
+        // TODO
+
+        SpaceSystemInfo info = XtceToGpbAssembler.toSpaceSystemInfo(spaceSystem);
+        observer.complete(info);
+    }
+
+    @Override
+    public void deleteSpaceSystem(Context ctx, DeleteSpaceSystemRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        SpaceSystem spaceSystem = verifySpaceSystem(mdb, request.getName());
+
+        // TODO
+
+        observer.complete(Empty.getDefaultInstance());
+    }
+
+    @Override
     public void createParameterType(Context ctx, CreateParameterTypeRequest request,
             Observer<ParameterTypeInfo> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
@@ -549,6 +581,32 @@ public class MdbApi extends AbstractMdbApi<Context> {
     }
 
     @Override
+    public void updateParameterType(Context ctx, UpdateParameterTypeRequest request,
+            Observer<ParameterTypeInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        ParameterType ptype = verifyParameterType(mdb, request.getName());
+
+        // TODO
+
+        var info = XtceToGpbAssembler.toParameterTypeInfo(ptype, DetailLevel.FULL);
+        observer.complete(info);
+    }
+
+    @Override
+    public void deleteParameterType(Context ctx, DeleteParameterTypeRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        ParameterType ptype = verifyParameterType(mdb, request.getName());
+
+        // TODO
+
+        observer.complete(Empty.getDefaultInstance());
+    }
+
+    @Override
     public void createParameter(Context ctx, CreateParameterRequest request, Observer<ParameterInfo> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
         String instance = InstancesApi.verifyInstance(request.getInstance());
@@ -586,6 +644,31 @@ public class MdbApi extends AbstractMdbApi<Context> {
         }
 
         observer.complete(XtceToGpbAssembler.toParameterInfo(parameter, DetailLevel.FULL));
+    }
+
+    @Override
+    public void updateParameter(Context ctx, UpdateParameterRequest request, Observer<ParameterInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        Parameter parameter = verifyParameter(ctx, mdb, request.getName());
+
+        // TODO
+
+        var info = XtceToGpbAssembler.toParameterInfo(parameter, DetailLevel.FULL);
+        observer.complete(info);
+    }
+
+    @Override
+    public void deleteParameter(Context ctx, DeleteParameterRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        Parameter parameter = verifyParameter(ctx, mdb, request.getName());
+
+        // TODO
+
+        observer.complete(Empty.getDefaultInstance());
     }
 
     @Override
