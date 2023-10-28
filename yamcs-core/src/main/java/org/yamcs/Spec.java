@@ -390,6 +390,14 @@ public class Spec {
                 return null;
             }
 
+            if (arg instanceof String) {
+                try {
+                    arg = YConfiguration.expandString(null, (String) arg);
+                } catch (ConfigurationException e) {
+                    throw new ValidationException(ctx, String.format("%s: %s", path, e));
+                }
+            }
+
             var argType = forArgument(arg);
             if (this == argType) {
                 return arg;
@@ -400,11 +408,49 @@ public class Spec {
                     var elementArg = elementType.convertArgument(ctx, path, arg, null);
                     return Arrays.asList(elementArg);
                 }
+            } else if (this == INTEGER) {
+                if (arg instanceof String) {
+                    var stringValue = (String) arg;
+                    try {
+                        return Integer.parseInt(stringValue);
+                    } catch (NumberFormatException e) {
+                        try {
+                            return Long.parseLong(stringValue);
+                        } catch (NumberFormatException e2) {
+                            throw new ValidationException(
+                                    ctx, String.format("%s: invalid integer '%s'", path, stringValue));
+                        }
+                    }
+                }
             } else if (this == FLOAT) {
                 if (arg instanceof Integer) {
                     return Double.valueOf((Integer) arg);
                 } else if (arg instanceof Long) {
                     return Double.valueOf((Long) arg);
+                } else if (arg instanceof String) {
+                    var stringValue = (String) arg;
+                    try {
+                        return Double.parseDouble(stringValue);
+                    } catch (NumberFormatException e) {
+                        throw new ValidationException(
+                                ctx, String.format("%s: invalid float '%s'", path, stringValue));
+                    }
+                }
+            } else if (this == BOOLEAN) {
+                if (arg instanceof String) {
+                    var stringValue = (String) arg;
+                    switch (stringValue) {
+                    case "yes":
+                    case "true":
+                    case "on":
+                        return true;
+                    case "no":
+                    case "false":
+                    case "off":
+                        return false;
+                    default:
+                        // Fall
+                    }
                 }
             }
             throw new ValidationException(ctx, String.format(
@@ -672,9 +718,11 @@ public class Spec {
                         "%s should be one of %s", name, choices));
             }
 
-            if (type == OptionType.MAP || ((type == OptionType.LIST || type == OptionType.LIST_OR_ELEMENT) && elementType == OptionType.MAP)) {
+            if (type == OptionType.MAP || ((type == OptionType.LIST || type == OptionType.LIST_OR_ELEMENT)
+                    && elementType == OptionType.MAP)) {
                 if (spec == null) {
-                    throw new ValidationException(ctx, String.format("%s cannot be validated since it does not have a specification. This is a bug in the class that the configuration applies to.", path));
+                    throw new ValidationException(ctx, String.format(
+                            "%s cannot be validated since it does not have a specification.", path));
                 }
             }
 

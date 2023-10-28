@@ -422,4 +422,55 @@ public class SpecTest {
         spec.removeOption("bla");
         assertFalse(spec.containsOption("bla"));
     }
+
+    /**
+     * Conversions from string are allowed, because they are useful when using property expansions of the form on
+     * BOOLEAN options.
+     * <p>
+     * The values tested here, match the definition in both {@link YConfiguration} and {@link Spec}
+     */
+    @Test
+    public void testBooleanStrings() throws ValidationException {
+        var spec = new Spec();
+        spec.addOption("foo", OptionType.BOOLEAN);
+
+        var result = spec.validate(of("foo", "true"));
+        assertEquals(true, result.get("foo"));
+
+        result = spec.validate(of("foo", "yes"));
+        assertEquals(true, result.get("foo"));
+
+        result = spec.validate(of("foo", "on"));
+        assertEquals(true, result.get("foo"));
+
+        result = spec.validate(of("foo", "false"));
+        assertEquals(false, result.get("foo"));
+
+        result = spec.validate(of("foo", "no"));
+        assertEquals(false, result.get("foo"));
+
+        result = spec.validate(of("foo", "off"));
+        assertEquals(false, result.get("foo"));
+    }
+
+    @Test
+    public void testIntegerStrings() throws ValidationException {
+        var spec = new Spec();
+        spec.addOption("foo", OptionType.INTEGER);
+
+        var result = spec.validate(of("foo", "123"));
+        assertEquals(123, result.get("foo"));
+
+        result = spec.validate(of("foo", "12345678901"));
+        assertEquals(12345678901L, result.get("foo"));
+    }
+
+    @Test
+    public void testFloatStrings() throws ValidationException {
+        var spec = new Spec();
+        spec.addOption("foo", OptionType.FLOAT);
+
+        var result = spec.validate(of("foo", "123.45"));
+        assertEquals(123.45, result.get("foo"));
+    }
 }
