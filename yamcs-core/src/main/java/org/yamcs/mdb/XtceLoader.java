@@ -10,8 +10,10 @@ import java.io.RandomAccessFile;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.XMLConstants;
@@ -65,6 +67,9 @@ public class XtceLoader implements SpaceSystemLoader {
     boolean autoTmPartitions = true;
     Set<String> excludedContainers;
     private final String configHash;
+
+    // maps files to space system name
+    Map<String, String> ss2file;
 
     public XtceLoader(String fn) {
         this.xtceFileNames = Arrays.asList(fn);
@@ -149,9 +154,12 @@ public class XtceLoader implements SpaceSystemLoader {
     @Override
     public List<SpaceSystem> loadList() throws ConfigurationException, DatabaseLoadException {
         List<SpaceSystem> result = new ArrayList<>();
+        ss2file = new HashMap<>();
         for (String xtceFileName : xtceFileNames) {
             try {
-                result.add(doLoad(xtceFileName));
+                SpaceSystem ss = doLoad(xtceFileName);
+                ss2file.put(ss.getName(), xtceFileName);
+                result.add(ss);
             } catch (FileNotFoundException e) {
                 throw new ConfigurationException("XTCE file not found: " + xtceFileName);
             } catch (XMLStreamException e) {
@@ -212,5 +220,17 @@ public class XtceLoader implements SpaceSystemLoader {
     @Override
     public SpaceSystem load() throws ConfigurationException, DatabaseLoadException {
         throw new IllegalStateException("loadList should be used instead");
+    }
+
+    public boolean isWritable() {
+        return true;
+    }
+
+    @Override
+    public SpaceSystemWriter getWriter() {
+        if (ss2file == null) {
+            throw new IllegalStateException("this method should only be called after loadList has been called");
+        }
+        return new XtceMdbWriter(ss2file);
     }
 }

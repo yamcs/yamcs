@@ -8,7 +8,7 @@ import java.util.Set;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.StreamConfig.TmStreamConfigEntry;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Stream;
@@ -48,7 +48,7 @@ public class StreamTmPacketProvider extends AbstractProcessorService implements 
     private void readStreamConfig(String procName) {
         String yamcsInstance = getYamcsInstance();
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-        XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
+        XtceDb xtcedb = MdbFactory.getInstance(yamcsInstance);
 
         StreamConfig streamConfig = StreamConfig.getInstance(yamcsInstance);
 

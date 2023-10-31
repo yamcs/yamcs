@@ -30,7 +30,7 @@ import org.yamcs.http.MediaType;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.mdb.ProcessorData;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.XtceTmExtractor;
 import org.yamcs.parameter.ContainerParameterValue;
 import org.yamcs.protobuf.AbstractPacketsApi;
@@ -338,7 +338,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
                 } else {
                     var packet = packets.get(0);
 
-                    var mdb = XtceDbFactory.getInstance(instance);
+                    var mdb = MdbFactory.getInstance(instance);
 
                     // Best effort to find a suitable root container
                     // It could be that the MDB has changed so much that this
@@ -461,7 +461,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         String instance = InstancesApi.verifyInstance(request.getInstance());
 
         if (request.hasProcessor()) {
-            XtceDb mdb = XtceDbFactory.getInstance(instance);
+            XtceDb mdb = MdbFactory.getInstance(instance);
             Processor processor = ProcessingApi.verifyProcessor(instance, request.getProcessor());
             ContainerRequestManager containerRequestManager = processor.getContainerRequestManager();
             ContainerConsumer containerConsumer = result -> {
@@ -510,7 +510,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
     @Override
     public void subscribeContainers(Context ctx, SubscribeContainersRequest request, Observer<ContainerData> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = MdbFactory.getInstance(instance);
         if (request.getNamesCount() == 0) {
             throw new BadRequestException("At least one container name must be specified");
         }
@@ -551,7 +551,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
      * Get packet names this user has appropriate privileges for.
      */
     private Collection<String> getTmPacketNames(String yamcsInstance, User user) {
-        XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
+        XtceDb xtcedb = MdbFactory.getInstance(yamcsInstance);
         ArrayList<String> tl = new ArrayList<>();
         for (SequenceContainer sc : xtcedb.getSequenceContainers()) {
             if (user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, sc.getQualifiedName())) {

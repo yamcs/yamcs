@@ -50,17 +50,19 @@ import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.util.ReferenceFinder;
 import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
 
-public class XtceDbFactory {
+import static org.yamcs.xtce.NameDescription.PATH_SEPARATOR;
+
+public class MdbFactory {
 
     private static Path cacheDirectory; // This is used in client tools to overwrite
 
-    static Log log = new Log(XtceDbFactory.class);
+    static Log log = new Log(MdbFactory.class);
 
     /**
      * map instance names and config names to databases
      */
-    static transient Map<String, XtceDb> instance2Db = new HashMap<>();
-    static transient Map<String, Map<String, XtceDb>> instance2DbConfigs = new HashMap<>();
+    static transient Map<String, Mdb> instance2Db = new HashMap<>();
+    static transient Map<String, Map<String, Mdb>> instance2DbConfigs = new HashMap<>();
 
     /**
      * Creates a new instance of the database in memory. configSection is the top heading under which this appears in
@@ -68,11 +70,11 @@ public class XtceDbFactory {
      *
      * @throws DatabaseLoadException
      */
-    public static synchronized XtceDb createInstanceByConfig(String configSection) throws DatabaseLoadException {
+    public static synchronized Mdb createInstanceByConfig(String configSection) throws DatabaseLoadException {
         return createInstanceByConfig(configSection, true);
     }
 
-    public static synchronized XtceDb createInstanceByConfig(String configSection, boolean attemptToLoadSerialized)
+    public static synchronized Mdb createInstanceByConfig(String configSection, boolean attemptToLoadSerialized)
             throws ConfigurationException, DatabaseLoadException {
         YConfiguration c = YConfiguration.getConfiguration("mdb");
 
@@ -98,7 +100,7 @@ public class XtceDbFactory {
      * @return a newly created XTCE database object.
      * @throws ConfigurationException
      */
-    public static synchronized XtceDb createInstance(List<YConfiguration> treeConfig, boolean attemptToLoadSerialized,
+    public static synchronized Mdb createInstance(List<YConfiguration> treeConfig, boolean attemptToLoadSerialized,
             boolean saveSerialized) throws ConfigurationException, DatabaseLoadException {
         LoaderTree loaderTree = new LoaderTree(new RootSpaceSystemLoader());
 
@@ -128,8 +130,7 @@ public class XtceDbFactory {
                 loadSerialized = false;
             }
         }
-
-        XtceDb db = null;
+        Mdb db = null;
         if (loadSerialized) {
             try {
                 db = loadSerializedInstance(serializedFile);
@@ -146,11 +147,12 @@ public class XtceDbFactory {
         if (db == null) {
             // Construct a Space System with one branch from the config file and the other one /yamcs for system
             // variables
-            List<SpaceSystem> sslist = loaderTree.load();
-            if (sslist.size() != 1) {
+            LoadResult lr = loaderTree.load();
+
+            if (lr.ssList.size() != 1) {
                 throw new IllegalStateException("root loader has to load exactly one subsystem");
             }
-            SpaceSystem rootSs = sslist.get(0);
+            SpaceSystem rootSs = lr.ssList.get(0);
             SpaceSystem yamcsSs = new SpaceSystem(XtceDb.YAMCS_SPACESYSTEM_NAME.substring(1));
             yamcsSs.setQualifiedName(XtceDb.YAMCS_SPACESYSTEM_NAME);
 
@@ -166,7 +168,8 @@ public class XtceDbFactory {
                 throw new DatabaseLoadException("Cannot resolve (circular?) references: " + sb.toString());
             }
             setQualifiedNames(rootSs, "");
-            db = new XtceDb(rootSs);
+
+            db = new Mdb(rootSs, lr.writers);
 
             addTmPartitions(rootSs);
 
@@ -389,6 +392,11 @@ public class XtceDbFactory {
         }
 
         ltree = new LoaderTree(l);
+        var writable = c.getBoolean("writable", false);
+        if (writable && !l.isWritable()) {
+            throw new ConfigurationException("The " + type + " MDB does not support writing");
+        }
+        ltree.writable = writable;
 
         if (c.containsKey("subLoaders")) {
             List<YConfiguration> list = c.getConfigList("subLoaders");
@@ -452,11 +460,11 @@ public class XtceDbFactory {
         }
     }
 
-    private static XtceDb loadSerializedInstance(File serializedFile) throws IOException, ClassNotFoundException {
+    private static Mdb loadSerializedInstance(File serializedFile) throws IOException, ClassNotFoundException {
         log.debug("Loading serialized XTCE DB from: {}", serializedFile);
 
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(serializedFile))) {
-            XtceDb db = (XtceDb) in.readObject();
+            Mdb db = (Mdb) in.readObject();
             log.info("Loaded XTCE DB from {} with {} containers, {} parameters and {} commands",
                     serializedFile, db.getSequenceContainers().size(), db.getParameterNames().size(),
                     db.getMetaCommands().size());
@@ -500,23 +508,23 @@ public class XtceDbFactory {
      * @throws ConfigurationException
      * @throws DatabaseLoadException
      */
-    public static synchronized XtceDb getInstance(String yamcsInstance) throws ConfigurationException {
-        XtceDb db = instance2Db.get(yamcsInstance);
-        if (db == null) {
+    public static synchronized Mdb getInstance(String yamcsInstance) throws ConfigurationException {
+        Mdb mdb = instance2Db.get(yamcsInstance);
+        if (mdb == null) {
             YConfiguration instanceConfig = YConfiguration.getConfiguration("yamcs." + yamcsInstance);
             if (instanceConfig.containsKey("mdbSpec")) {
-                db = getInstanceByConfig(yamcsInstance, instanceConfig.getString("mdbSpec"));
-                instance2Db.put(yamcsInstance, db);
+                mdb = getInstanceByConfig(yamcsInstance, instanceConfig.getString("mdbSpec"));
+                instance2Db.put(yamcsInstance, mdb);
             } else if (instanceConfig.isList("mdb")) {
-                db = createInstance(instanceConfig.getConfigList("mdb"), true, true);
-                instance2Db.put(yamcsInstance, db);
+                mdb = createInstance(instanceConfig.getConfigList("mdb"), true, true);
+                instance2Db.put(yamcsInstance, mdb);
             }
         }
-        return db;
+        return mdb;
     }
 
-    public static synchronized XtceDb getInstanceByConfig(String yamcsInstance, String config) {
-        Map<String, XtceDb> dbConfigs = instance2DbConfigs.computeIfAbsent(yamcsInstance, k -> new HashMap<>());
+    public static synchronized Mdb getInstanceByConfig(String yamcsInstance, String config) {
+        Map<String, Mdb> dbConfigs = instance2DbConfigs.computeIfAbsent(yamcsInstance, k -> new HashMap<>());
 
         return dbConfigs.computeIfAbsent(config, k -> createInstanceByConfig(config));
     }
@@ -545,7 +553,7 @@ public class XtceDbFactory {
      * This method is intended for client tools.
      */
     public static void setupTool(Path cacheDirectory) {
-        XtceDbFactory.cacheDirectory = cacheDirectory;
+        MdbFactory.cacheDirectory = cacheDirectory;
         try {
             Files.createDirectories(cacheDirectory);
         } catch (IOException e) {
@@ -566,6 +574,8 @@ public class XtceDbFactory {
     static class LoaderTree {
         SpaceSystemLoader root;
         List<LoaderTree> children;
+        SpaceSystemWriter writer = null;
+        boolean writable = false;
 
         LoaderTree(SpaceSystemLoader root) {
             this.root = root;
@@ -617,24 +627,36 @@ public class XtceDbFactory {
             return false;
         }
 
-        public List<SpaceSystem> load() throws ConfigurationException {
-            List<SpaceSystem> ssList = root.loadList();
+        public LoadResult load() throws ConfigurationException {
+            LoadResult r = new LoadResult();
+            r.ssList = root.loadList();
+
+            if (writable) {
+                var w = root.getWriter();
+                for (var ss : r.ssList) {
+                    r.writers.put(ss.getName(), w);
+                }
+            }
 
             if (children != null) {
-                if (ssList.size() != 1) {
+                if (r.ssList.size() != 1) {
                     throw new ConfigurationException("Cannot load multiple space systems and have sub loaders");
                 }
-                SpaceSystem rss = ssList.get(0);
+                SpaceSystem rss = r.ssList.get(0);
 
                 for (LoaderTree lt : children) {
-                    List<SpaceSystem> clist = lt.load();
-                    for (SpaceSystem ss : clist) {
+                    LoadResult rc = lt.load();
+                    for (SpaceSystem ss : rc.ssList) {
                         rss.addSpaceSystem(ss);
                         ss.setParent(rss);
                     }
+                    for (var entry : rc.writers.entrySet()) {
+                        r.writers.put(rss.getName() + PATH_SEPARATOR + entry.getKey(), entry.getValue());
+                    }
+
                 }
             }
-            return ssList;
+            return r;
         }
 
         public void writeConsistencyDate(FileWriter fw) throws IOException {
@@ -670,6 +692,11 @@ public class XtceDbFactory {
             rootSs.setParent(rootSs);
             return rootSs;
         }
+    }
+
+    static class LoadResult {
+        List<SpaceSystem> ssList;
+        Map<String, SpaceSystemWriter> writers = new HashMap<>();
     }
 
 }

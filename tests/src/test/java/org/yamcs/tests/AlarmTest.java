@@ -21,7 +21,7 @@ import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.alarms.AlarmReporter;
 import org.yamcs.events.EventProducerFactory;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
@@ -37,7 +37,7 @@ public class AlarmTest {
     @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setupTest("refmdb");
-        XtceDbFactory.reset();
+        MdbFactory.reset();
     }
 
     private XtceDb db;
@@ -52,7 +52,7 @@ public class AlarmTest {
         String yamcsInstance = "refmdb";
         EventProducerFactory.setMockup(true);
         q = EventProducerFactory.getMockupQueue();
-        db = XtceDbFactory.getInstance(yamcsInstance);
+        db = MdbFactory.getInstance(yamcsInstance);
         assertNotNull(db.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2"));
 
         tmGenerator = new RefMdbPacketGenerator();

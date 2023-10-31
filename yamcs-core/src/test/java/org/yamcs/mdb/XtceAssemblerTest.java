@@ -59,7 +59,7 @@ public class XtceAssemblerTest {
         m1.put("spec", filename);
 
         List<YConfiguration> mdbConfigs1 = Arrays.asList(YConfiguration.wrap(m1));
-        XtceDb db1 = XtceDbFactory.createInstance(mdbConfigs1, false, false);
+        XtceDb db1 = MdbFactory.createInstance(mdbConfigs1, false, false);
 
         String xml = new XtceAssembler().toXtce(db1);
         File f = File.createTempFile("test1", ".xml");
@@ -72,7 +72,7 @@ public class XtceAssemblerTest {
         m2.put("type", "xtce");
         m2.put("spec", f.getAbsolutePath());
         List<YConfiguration> mdbConfigs2 = Arrays.asList(YConfiguration.wrap(m2));
-        XtceDb db2 = XtceDbFactory.createInstance(mdbConfigs2, false, false);
+        XtceDb db2 = MdbFactory.createInstance(mdbConfigs2, false, false);
         f.delete();
 
         compareDatabases(db1, db2);

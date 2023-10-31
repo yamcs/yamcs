@@ -30,7 +30,7 @@ import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.management.LinkManager.InvalidPacketAction.Action;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.memento.MementoDb;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.parameter.SystemParametersService;
@@ -564,7 +564,7 @@ public class LinkManager {
 
         @Override
         public void onTuple(Stream s, Tuple tuple) {
-            XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
+            XtceDb xtcedb = MdbFactory.getInstance(yamcsInstance);
             PreparedCommand pc = PreparedCommand.fromTuple(tuple, xtcedb);
             boolean sent = false;
             String reason = "no link available";

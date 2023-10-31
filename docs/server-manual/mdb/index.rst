@@ -7,6 +7,10 @@ The database organizes TM/TC definitions by *space system*. A space system may c
 
 The terminology used in the Yamcs Mission Database is very close to the terminology used in the XTCE exchange format. XTCE prescribes a useful set of building blocks: space systems, containers, parameters, commands, algorithms, etc.
 
+Generally, the Mission DaStarting is read-only. Until version 5.8.8, Yamcs allowed overriding some aspects of the MDB: calibrators and alarms for parameters and algorithms. Those changes were not permanent and they applied only to one processor.
+
+Starting with Yamcs 5.8.8., Yamcs allows designating some sub-trees of the MissionDatabase as read-write and allows adding/changing objects under those sub-systems. In Yamcs 5.8.8. it is possible to add/change Subsystems, Parameters and Parameter Types. In future versions this may be extended to other objects (containers, commands...). Yamcs will also persist the corresponding MDB tree on disk (in XTCE format) thus that the MDB will not lose the information when Yamcs restarts.
+
 
 .. toctree::
     :maxdepth: 1

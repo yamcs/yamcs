@@ -17,7 +17,7 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.Downsampler.Sample;
 import org.yamcs.http.api.ParameterRanger.Range;
 import org.yamcs.logging.Log;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterCache;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
@@ -101,7 +101,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
         YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
 
-        XtceDb mdb = XtceDbFactory.getInstance(ysi.getName());
+        XtceDb mdb = MdbFactory.getInstance(ysi.getName());
 
         ParameterWithId pid = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
 
@@ -160,7 +160,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
     public void getParameterRanges(Context ctx, GetParameterRangesRequest request, Observer<Ranges> observer) {
         YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
 
-        XtceDb mdb = XtceDbFactory.getInstance(ysi.getName());
+        XtceDb mdb = MdbFactory.getInstance(ysi.getName());
 
         ParameterWithId pid = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
 
@@ -215,7 +215,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         }
         YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
 
-        XtceDb mdb = XtceDbFactory.getInstance(ysi.getName());
+        XtceDb mdb = MdbFactory.getInstance(ysi.getName());
         ParameterWithId requestedParamWithId = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
 
         int limit = request.hasLimit() ? request.getLimit() : 100;

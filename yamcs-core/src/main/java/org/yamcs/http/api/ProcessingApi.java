@@ -31,7 +31,7 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;
@@ -245,7 +245,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             Observer<ParameterValue> observer) {
         Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
 
-        XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
+        XtceDb mdb = MdbFactory.getInstance(processor.getInstance());
 
         NamedObjectId id = MdbApi.verifyParameterId(ctx, mdb, request.getName());
 
@@ -275,7 +275,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     @Override
     public void setParameterValue(Context ctx, SetParameterValueRequest request, Observer<Empty> observer) {
         Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
-        XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
+        XtceDb mdb = MdbFactory.getInstance(processor.getInstance());
 
         ParameterWithId pid = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
         ctx.checkObjectPrivileges(ObjectPrivilegeType.WriteParameter, pid.getParameter().getQualifiedName());
@@ -457,7 +457,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     @Override
     public void getAlgorithmStatus(Context ctx, GetAlgorithmStatusRequest request, Observer<AlgorithmStatus> observer) {
         Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
-        XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
+        XtceDb xtcedb = MdbFactory.getInstance(processor.getInstance());
         Algorithm alg = MdbApi.verifyAlgorithm(xtcedb, request.getName());
         AlgorithmManager algMng = verifyAlgorithmManager(processor);
         ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadAlgorithm, alg.getQualifiedName());
@@ -469,7 +469,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     public void subscribeAlgorithmStatus(Context ctx, SubscribeAlgorithmStatusRequest request,
             Observer<AlgorithmStatus> observer) {
         Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
-        XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
+        XtceDb xtcedb = MdbFactory.getInstance(processor.getInstance());
         Algorithm alg = MdbApi.verifyAlgorithm(xtcedb, request.getName());
         AlgorithmManager algMng = verifyAlgorithmManager(processor);
 
@@ -492,7 +492,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         }
         String state = request.getState();
 
-        XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
+        XtceDb xtcedb = MdbFactory.getInstance(processor.getInstance());
         Algorithm a = MdbApi.verifyAlgorithm(xtcedb, request.getName());
 
         AlgorithmManager algMng = verifyAlgorithmManager(processor);
@@ -511,7 +511,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     public void getAlgorithmTrace(Context ctx, GetAlgorithmTraceRequest request, Observer<AlgorithmTrace> observer) {
         Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
         ctx.checkSystemPrivilege(SystemPrivilege.ControlProcessor);
-        XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
+        XtceDb xtcedb = MdbFactory.getInstance(processor.getInstance());
         Algorithm a = MdbApi.verifyAlgorithm(xtcedb, request.getName());
         AlgorithmManager algMng = verifyAlgorithmManager(processor);
 

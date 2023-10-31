@@ -19,7 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.mdb.ProcessingData;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
@@ -37,7 +37,7 @@ public class LocalParameterManagerTest {
     @BeforeAll
     static public void setupTime() {
         YConfiguration.setupTest(null);
-        XtceDbFactory.reset();
+        MdbFactory.reset();
 
     }
 
@@ -45,7 +45,7 @@ public class LocalParameterManagerTest {
     public void beforeTest() throws Exception {
         localParamMgr = new LocalParameterManager();
         localParamMgr.init("test");
-        xtceDb = XtceDbFactory.createInstanceByConfig("refmdb");
+        xtceDb = MdbFactory.createInstanceByConfig("refmdb");
         paraProc = new MyParamProcessor();
         localParamMgr.init(xtceDb);
         localParamMgr.setParameterProcessor(paraProc);

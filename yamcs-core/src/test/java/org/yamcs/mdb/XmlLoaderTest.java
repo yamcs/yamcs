@@ -57,7 +57,7 @@ public class XmlLoaderTest {
 
     @Test
     public void test1() throws Exception {
-        XtceDb db = XtceDbFactory.createInstanceByConfig("ccsds-green-book");
+        XtceDb db = MdbFactory.createInstanceByConfig("ccsds-green-book");
         Parameter pmt = db.getParameter("/SpaceVehicle/MissionTime");
         assertTrue(pmt.getParameterType() instanceof AbsoluteTimeParameterType);
 
@@ -88,7 +88,7 @@ public class XmlLoaderTest {
 
     @Test
     public void testBogusSat() throws XMLStreamException, IOException {
-        XtceDb db = XtceDbFactory.createInstanceByConfig("BogusSAT");
+        XtceDb db = MdbFactory.createInstanceByConfig("BogusSAT");
 
         SpaceSystem sc001 = db.getSpaceSystem("/BogusSAT/SC001");
         assertNotNull(sc001);
@@ -184,7 +184,7 @@ public class XmlLoaderTest {
 
     @Test
     public void testMathOpCal() throws XMLStreamException, IOException {
-        XtceDb db = XtceDbFactory.createInstanceByConfig("BogusSAT");
+        XtceDb db = MdbFactory.createInstanceByConfig("BogusSAT");
         SpaceSystem busElectronics = db.getSpaceSystem("/BogusSAT/SC001/BusElectronics");
 
         FloatParameterType ptype = (FloatParameterType) busElectronics.getParameterType("Float_MathOpCal_2_Type");
@@ -223,7 +223,7 @@ public class XmlLoaderTest {
 
     @Test
     public void testBogusSat2() throws XMLStreamException, IOException {
-        XtceDb db = XtceDbFactory.createInstanceByConfig("BogusSAT2");
+        XtceDb db = MdbFactory.createInstanceByConfig("BogusSAT2");
 
         ParameterType ptype = db.getParameterType("/BogusSAT/CCSDSAPIDType");
         assertEquals(2047, ((Long) ptype.getInitialValue()).intValue());
@@ -243,7 +243,7 @@ public class XmlLoaderTest {
 
     @Test
     public void testXtceCommandSignificance() throws XMLStreamException, IOException {
-        XtceDb db = XtceDbFactory.createInstanceByConfig("refxtce");
+        XtceDb db = MdbFactory.createInstanceByConfig("refxtce");
         MetaCommand mc = db.getMetaCommand("/RefXtce/vital_command");
         Significance significance = mc.getDefaultSignificance();
         assertEquals("no particular reason", significance.getReasonForWarning());
@@ -252,7 +252,7 @@ public class XmlLoaderTest {
 
     @Test
     public void testTransmissionConstraint() throws XMLStreamException, IOException {
-        XtceDb db = XtceDbFactory.createInstanceByConfig("refxtce");
+        XtceDb db = MdbFactory.createInstanceByConfig("refxtce");
         MetaCommand mc = db.getMetaCommand("/RefXtce/cmd_with_constraint1");
         List<TransmissionConstraint> tcList = mc.getTransmissionConstraintList();
         assertEquals(1, tcList.size());
@@ -266,7 +266,7 @@ public class XmlLoaderTest {
 
     @Test
     public void testCommandVerification() throws XMLStreamException, IOException {
-        XtceDb db = XtceDbFactory.createInstanceByConfig("refxtce");
+        XtceDb db = MdbFactory.createInstanceByConfig("refxtce");
         MetaCommand mc = db.getMetaCommand("/RefXtce/cmd_with_verifier1");
         List<CommandVerifier> cvList = mc.getCommandVerifiers();
         assertEquals(1, cvList.size());
@@ -280,14 +280,14 @@ public class XmlLoaderTest {
 
     @Test
     public void testAutoPart() throws XMLStreamException, IOException {
-        XtceDb db = XtceDbFactory.createInstanceByConfig("BogusSAT2");
+        XtceDb db = MdbFactory.createInstanceByConfig("BogusSAT2");
         assertTrue(db.getSequenceContainer("/BogusSAT/CCSDSPUSTelemetryPacket").useAsArchivePartition());
         assertFalse(db.getSequenceContainer("/BogusSAT/SC001/ECSS_Service_1_Subservice_1").useAsArchivePartition());
     }
 
     @Test
     public void testNoAutoPart() throws XMLStreamException, IOException {
-        XtceDb db = XtceDbFactory.createInstanceByConfig("BogusSAT2-noautopart");
+        XtceDb db = MdbFactory.createInstanceByConfig("BogusSAT2-noautopart");
         assertFalse(
                 db.getSequenceContainer("/BogusSAT/SC001/BusElectronics/SensorHistoryRecord").useAsArchivePartition());
         assertTrue(db.getSequenceContainer("/BogusSAT/CCSDSPUSTelemetryPacket").useAsArchivePartition());

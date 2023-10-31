@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.xml.XtceLoadException;
 
 /**
@@ -27,14 +26,14 @@ public class VariableBinaryDecodingTest {
     private static final String DATA_QN = "/VariableBinaryTest/data";
     private static final String VALUE_QN = "/VariableBinaryTest/value";
 
-    private XtceDb db;
+    private Mdb mdb;
 
     @BeforeEach
     public void setup() throws URISyntaxException, XtceLoadException,
             XMLStreamException, IOException {
 
         YConfiguration.setupTest(null);
-        db = XtceDbFactory
+        mdb = MdbFactory
                 .createInstanceByConfig("VariableBinaryTest");
 
         TimeEncoding.setUp();
@@ -42,7 +41,7 @@ public class VariableBinaryDecodingTest {
 
     @Test
     public void testProcessPacket() throws IOException {
-        XtceTmExtractor extractor = new XtceTmExtractor(db);
+        XtceTmExtractor extractor = new XtceTmExtractor(mdb);
         extractor.provideAll();
 
         byte[] data = new byte[] { 1, 2, 3, 4, 5 };
@@ -52,9 +51,9 @@ public class VariableBinaryDecodingTest {
                 now, 0);
 
         ParameterValueList pvl = result.getParameterResult();
-        assertEquals(1, pvl.count(db.getParameter(SIZE_QN)));
-        assertEquals(1, pvl.count(db.getParameter(DATA_QN)));
-        assertEquals(1, pvl.count(db.getParameter(VALUE_QN)));
+        assertEquals(1, pvl.count(mdb.getParameter(SIZE_QN)));
+        assertEquals(1, pvl.count(mdb.getParameter(DATA_QN)));
+        assertEquals(1, pvl.count(mdb.getParameter(VALUE_QN)));
         pvl.forEach(pv -> {
             if (pv.getParameterQualifiedName().equals(SIZE_QN)) {
                 assertEquals(data.length * 8,

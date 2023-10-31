@@ -44,7 +44,7 @@ import org.yamcs.logging.ConsoleFormatter;
 import org.yamcs.logging.Log;
 import org.yamcs.logging.YamcsLogManager;
 import org.yamcs.management.ManagementService;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.CryptoUtils;
 import org.yamcs.security.SecurityStore;
@@ -378,7 +378,7 @@ public class YamcsServer {
             }
         }
         YarchDatabase.removeInstance(instanceName);
-        XtceDbFactory.remove(instanceName);
+        MdbFactory.remove(instanceName);
         LOG.info("Re-loading instance '{}'", instanceName);
 
         YConfiguration instanceConfig = loadInstanceConfig(instanceName);
@@ -439,7 +439,7 @@ public class YamcsServer {
             }
         }
         YarchDatabase.removeInstance(instanceName);
-        XtceDbFactory.remove(instanceName);
+        MdbFactory.remove(instanceName);
         Path f = instanceDefDir.resolve(configFileName(instanceName));
         if (Files.exists(f)) {
             LOG.debug("Renaming {} to {}.offline", f.toAbsolutePath(), f.getFileName());

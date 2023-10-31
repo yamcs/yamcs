@@ -62,7 +62,7 @@ public class ProcessorData {
     private Map<DataEncoding, DataEncoder> encoders = new HashMap<>();
     private Map<MatchCriteria, MatchCriteriaEvaluator> evaluators = new HashMap<>();
 
-    final XtceDb xtcedb;
+    final Mdb mdb;
     final Log log;
     final String processorName;
     EventProducer eventProducer;
@@ -86,24 +86,24 @@ public class ProcessorData {
 
         long genTime = TimeEncoding.getWallclockTime();
         // populate with /yamcs/processor variables (these never change)
-        ParameterValue procNamePv = getProcessorPV(xtcedb, genTime, "name", proc.getName(),
+        ParameterValue procNamePv = getProcessorPV(mdb, genTime, "name", proc.getName(),
                 "The name of the current processor");
         lastValueCache.add(procNamePv);
 
         String mode = proc.isReplay() ? "replay" : "realtime";
-        ParameterValue procModePv = getProcessorPV(xtcedb, genTime, "mode", mode,
+        ParameterValue procModePv = getProcessorPV(mdb, genTime, "mode", mode,
                 "The mode of the current processor (either replay or realtime)");
         lastValueCache.add(procModePv);
     }
 
     /**
-     * @param xtcedb
+     * @param mdb
      * @param config
      *            - generate events in case of errors when processing data
      */
-    public ProcessorData(String instance, String procName, XtceDb xtcedb, ProcessorConfig config) {
+    public ProcessorData(String instance, String procName, Mdb mdb, ProcessorConfig config) {
         this.yamcsInstance = instance;
-        this.xtcedb = xtcedb;
+        this.mdb = mdb;
         this.processorConfig = config;
         this.processorName = procName;
 
@@ -122,7 +122,7 @@ public class ProcessorData {
         // populate last value cache with the default (initial) value for each parameter that has one
         long genTime = TimeEncoding.getWallclockTime();
 
-        List<ParameterValue> constants = xtcedb.getParameters().stream()
+        List<ParameterValue> constants = mdb.getParameters().stream()
                 .filter(p -> p.getParameterType() != null && p.getDataSource() == DataSource.CONSTANT)
                 .map(p -> getInitialValue(genTime, p))
                 .filter(pv -> pv != null)
@@ -130,7 +130,7 @@ public class ProcessorData {
 
         lastValueCache = new LastValueCache(constants);
 
-        xtcedb.getParameters().stream()
+        mdb.getParameters().stream()
                 .filter(p -> p.getParameterType() != null && p.getDataSource() != DataSource.CONSTANT)
                 .map(p -> getInitialValue(genTime, p))
                 .filter(pv -> pv != null)
@@ -159,7 +159,7 @@ public class ProcessorData {
         return null;
     }
 
-    private ParameterValue getProcessorPV(XtceDb mdb, long time, String name, String value, String description) {
+    private ParameterValue getProcessorPV(Mdb mdb, long time, String name, String value, String description) {
         var serverId = YamcsServer.getServer().getServerId();
         var namespace = XtceDb.YAMCS_SPACESYSTEM_NAME + NameDescription.PATH_SEPARATOR + serverId;
         String fqn = NameDescription.qualifiedName(namespace, "processor", name);
@@ -282,7 +282,7 @@ public class ProcessorData {
     }
 
     public XtceDb getXtceDb() {
-        return xtcedb;
+        return mdb;
     }
 
     /**

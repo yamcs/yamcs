@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
 import org.yamcs.http.Context;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.AbstractParameterValuesApi;
 import org.yamcs.protobuf.LoadParameterValuesRequest;
@@ -38,7 +38,7 @@ public class ParameterValuesApi extends AbstractParameterValuesApi<Context> {
                     var instance = InstancesApi.verifyInstance(request.getInstance());
                     var streamName = request.hasStream() ? request.getStream() : "pp_dump";
                     var stream = YarchDatabase.getInstance(instance).getStream(streamName);
-                    mdb = XtceDbFactory.getInstance(instance);
+                    mdb = MdbFactory.getInstance(instance);
                     timeService = YamcsServer.getTimeService(instance);
                     sender = new StreamParameterSender(instance, stream);
                 }

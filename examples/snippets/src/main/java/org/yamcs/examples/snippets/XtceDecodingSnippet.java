@@ -3,12 +3,12 @@ package org.yamcs.examples.snippets;
 import java.util.logging.LogManager;
 
 import org.yamcs.mdb.ContainerProcessingResult;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.Mdb;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.XtceTmExtractor;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.xtce.XtceDb;
 
 /**
  * Shows how to use Yamcs as a general-purpose library for decoding packets based on an XTCE XML definition.
@@ -24,8 +24,8 @@ public class XtceDecodingSnippet {
 
         // The name here must match with an entry in mdb.yaml which by
         // default is scanned from the classpath.
-        XtceDb xtcedb = XtceDbFactory.createInstanceByConfig("example", false);
-        XtceTmExtractor extractor = new XtceTmExtractor(xtcedb);
+        Mdb mdb = MdbFactory.createInstanceByConfig("example", false);
+        XtceTmExtractor extractor = new XtceTmExtractor(mdb);
 
         // Tell the extractor to do a full scan. For efficiency reasons
         // you may also instruct it to scan only the parameters or containers
