@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.client.mdb.MissionDatabaseClient;
 import org.yamcs.mdb.MdbFactory;
+import org.yamcs.protobuf.Mdb.DataSourceType;
 
 import com.google.common.io.Files;
 
@@ -32,13 +33,15 @@ public class MdbModificationPersistenceTest extends AbstractIntegrationTest {
 
     @Test
     public void testCreate() throws Exception {
-        mdbClient.createParameter("new_param1", "/writable_subsys", "/REFMDB/uint32").get();
+        mdbClient.createParameter("/writable_subsys/new_param1", DataSourceType.GROUND)
+                .withParameterType("/REFMDB/uint32")
+                .create()
+                .get();
 
         // this will reload the MDB from file
         YConfiguration instanceConfig = YConfiguration.getConfiguration("yamcs." + yamcsInstance);
         var mdb = MdbFactory.createInstance(instanceConfig.getConfigList("mdb"), true, true);
         var p = mdb.getParameter("/writable_subsys/new_param1");
         assertNotNull(p);
-
     }
 }

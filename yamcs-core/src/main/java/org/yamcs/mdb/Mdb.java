@@ -1,5 +1,7 @@
 package org.yamcs.mdb;
 
+import static org.yamcs.xtce.NameDescription.PATH_SEPARATOR;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,27 +14,21 @@ import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
-import static org.yamcs.xtce.NameDescription.PATH_SEPARATOR;
 
 /**
- * 
- * Wraps a {@link XtceDb} object.
+ * Wraps an {@link XtceDb} object.
  * <p>
  * Offers persistence capabilities for selected subtrees.
- * <p>
- *
  */
 public class Mdb extends XtceDb {
 
-    final Map<String, SpaceSystemWriter> susbsystemWriters;
+    private static final long serialVersionUID = 1L;
+    final transient Map<String, SpaceSystemWriter> susbsystemWriters;
 
     public Mdb(SpaceSystem spaceSystem, Map<String, SpaceSystemWriter> susbsystemWriters) {
         super(spaceSystem);
-        susbsystemWriters.put(YAMCS_SPACESYSTEM_NAME, new SpaceSystemWriter() {
+        susbsystemWriters.put(YAMCS_SPACESYSTEM_NAME, (fqn, mdb) -> {
             // writer for the /yamcs doesn't write to disk
-            @Override
-            public void write(String fqn, Mdb mdb) {
-            }
         });
         this.susbsystemWriters = susbsystemWriters;
     }

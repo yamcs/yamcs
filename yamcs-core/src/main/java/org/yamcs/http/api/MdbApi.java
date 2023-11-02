@@ -16,7 +16,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.api.HttpBody;
@@ -30,12 +29,10 @@ import org.yamcs.http.api.MdbPageBuilder.MdbPage;
 import org.yamcs.http.api.MdbSearchHelpers.EntryMatch;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.logging.Log;
-import org.yamcs.mdb.XtceAssembler;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
-import org.yamcs.parameter.ParameterProvider;
+import org.yamcs.mdb.XtceAssembler;
 import org.yamcs.parameter.ParameterWithId;
-import org.yamcs.parameter.SoftwareParameterManager;
 import org.yamcs.protobuf.AbstractMdbApi;
 import org.yamcs.protobuf.Mdb.AlgorithmInfo;
 import org.yamcs.protobuf.Mdb.BatchGetParametersRequest;
@@ -45,11 +42,7 @@ import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Mdb.ContainerInfo;
 import org.yamcs.protobuf.Mdb.CreateParameterRequest;
 import org.yamcs.protobuf.Mdb.CreateParameterTypeRequest;
-import org.yamcs.protobuf.Mdb.CreateSpaceSystemRequest;
 import org.yamcs.protobuf.Mdb.DataSourceType;
-import org.yamcs.protobuf.Mdb.DeleteParameterRequest;
-import org.yamcs.protobuf.Mdb.DeleteParameterTypeRequest;
-import org.yamcs.protobuf.Mdb.DeleteSpaceSystemRequest;
 import org.yamcs.protobuf.Mdb.ExportJavaMissionDatabaseRequest;
 import org.yamcs.protobuf.Mdb.ExportXtceRequest;
 import org.yamcs.protobuf.Mdb.GetAlgorithmRequest;
@@ -77,9 +70,6 @@ import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
 import org.yamcs.protobuf.Mdb.SpaceSystemInfo;
 import org.yamcs.protobuf.Mdb.StreamMissionDatabaseRequest;
-import org.yamcs.protobuf.Mdb.UpdateParameterRequest;
-import org.yamcs.protobuf.Mdb.UpdateParameterTypeRequest;
-import org.yamcs.protobuf.Mdb.UpdateSpaceSystemRequest;
 import org.yamcs.protobuf.Mdb.UsedByInfo;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.YamcsInstance;
@@ -111,7 +101,6 @@ import org.yamcs.xtce.ValueEnumeration;
 import org.yamcs.xtce.XtceDb;
 
 import com.google.protobuf.ByteString;
-import com.google.protobuf.Empty;
 
 public class MdbApi extends AbstractMdbApi<Context> {
 
@@ -447,52 +436,6 @@ public class MdbApi extends AbstractMdbApi<Context> {
     }
 
     @Override
-    public void createSpaceSystem(Context ctx, CreateSpaceSystemRequest request, Observer<SpaceSystemInfo> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
-        String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = MdbFactory.getInstance(instance);
-
-        var spaceSystem = new SpaceSystem(request.getName());
-        spaceSystem.setQualifiedName(request.getSpaceSystem() + "/" + request.getName());
-        request.getAliasesMap().forEach(spaceSystem::addAlias);
-
-        if (request.hasShortDescription()) {
-            spaceSystem.setShortDescription(request.getShortDescription());
-        }
-        if (request.hasLongDescription()) {
-            spaceSystem.setLongDescription(request.getLongDescription());
-        }
-
-        mdb.addSpaceSystem(spaceSystem);
-        observer.complete(XtceToGpbAssembler.toSpaceSystemInfo(spaceSystem));
-    }
-
-    @Override
-    public void updateSpaceSystem(Context ctx, UpdateSpaceSystemRequest request, Observer<SpaceSystemInfo> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
-        String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = MdbFactory.getInstance(instance);
-        SpaceSystem spaceSystem = verifySpaceSystem(mdb, request.getName());
-
-        // TODO
-
-        SpaceSystemInfo info = XtceToGpbAssembler.toSpaceSystemInfo(spaceSystem);
-        observer.complete(info);
-    }
-
-    @Override
-    public void deleteSpaceSystem(Context ctx, DeleteSpaceSystemRequest request, Observer<Empty> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
-        String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = MdbFactory.getInstance(instance);
-        SpaceSystem spaceSystem = verifySpaceSystem(mdb, request.getName());
-
-        // TODO
-
-        observer.complete(Empty.getDefaultInstance());
-    }
-
-    @Override
     public void createParameterType(Context ctx, CreateParameterTypeRequest request,
             Observer<ParameterTypeInfo> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
@@ -562,8 +505,15 @@ public class MdbApi extends AbstractMdbApi<Context> {
                     "Cannot create parameters of type '" + request.getEngType() + "'");
         }
 
-        ptypeb.setName(request.getName());
-        ptypeb.setQualifiedName(request.getSpaceSystem() + "/" + request.getName());
+        var fqn = request.getName();
+        if (!fqn.startsWith("/")) {
+            throw new BadRequestException("Parameter type name is not fully qualified");
+        }
+        var idx = fqn.lastIndexOf('/');
+        var name = fqn.substring(idx + 1);
+
+        ptypeb.setName(name);
+        ptypeb.setQualifiedName(fqn);
         request.getAliasesMap().forEach(ptypeb::addAlias);
 
         if (request.hasShortDescription()) {
@@ -580,35 +530,9 @@ public class MdbApi extends AbstractMdbApi<Context> {
         try {
             mdb.addParameterType(ptype, true);
         } catch (IOException e) {
-            throw new InternalServerErrorException("Could not save parameter", e);
+            throw new InternalServerErrorException("Could not save parameter type", e);
         }
         observer.complete(XtceToGpbAssembler.toParameterTypeInfo(ptype, DetailLevel.FULL));
-    }
-
-    @Override
-    public void updateParameterType(Context ctx, UpdateParameterTypeRequest request,
-            Observer<ParameterTypeInfo> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
-        String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = MdbFactory.getInstance(instance);
-        ParameterType ptype = verifyParameterType(mdb, request.getName());
-
-        // TODO
-
-        var info = XtceToGpbAssembler.toParameterTypeInfo(ptype, DetailLevel.FULL);
-        observer.complete(info);
-    }
-
-    @Override
-    public void deleteParameterType(Context ctx, DeleteParameterTypeRequest request, Observer<Empty> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
-        String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = MdbFactory.getInstance(instance);
-        ParameterType ptype = verifyParameterType(mdb, request.getName());
-
-        // TODO
-
-        observer.complete(Empty.getDefaultInstance());
     }
 
     @Override
@@ -617,9 +541,16 @@ public class MdbApi extends AbstractMdbApi<Context> {
         String instance = InstancesApi.verifyInstance(request.getInstance());
         Mdb mdb = MdbFactory.getInstance(instance);
 
-        var parameter = new Parameter(request.getName());
+        var fqn = request.getName();
+        if (!fqn.startsWith("/")) {
+            throw new BadRequestException("Parameter name is not fully qualified");
+        }
+        var idx = fqn.lastIndexOf('/');
+        var name = fqn.substring(idx + 1);
+
+        var parameter = new Parameter(name);
         parameter.setDataSource(DataSource.valueOf(request.getDataSource().name()));
-        parameter.setQualifiedName(request.getSpaceSystem() + "/" + request.getName());
+        parameter.setQualifiedName(fqn);
         request.getAliasesMap().forEach(parameter::addAlias);
 
         if (request.hasShortDescription()) {
@@ -643,41 +574,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
             throw new InternalServerErrorException("Could not save parameter", e);
         }
 
-        // FIXME
-        YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(instance);
-        Processor processor = ysi.getProcessor("realtime");
-        SoftwareParameterManager mgr = processor.getParameterProcessorManager()
-                .getSoftwareParameterManager(parameter.getDataSource());
-        if (mgr instanceof ParameterProvider) {
-            ((ParameterProvider) mgr).startProviding(parameter);
-        }
-
         observer.complete(XtceToGpbAssembler.toParameterInfo(parameter, DetailLevel.FULL));
-    }
-
-    @Override
-    public void updateParameter(Context ctx, UpdateParameterRequest request, Observer<ParameterInfo> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
-        String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = MdbFactory.getInstance(instance);
-        Parameter parameter = verifyParameter(ctx, mdb, request.getName());
-
-        // TODO
-
-        var info = XtceToGpbAssembler.toParameterInfo(parameter, DetailLevel.FULL);
-        observer.complete(info);
-    }
-
-    @Override
-    public void deleteParameter(Context ctx, DeleteParameterRequest request, Observer<Empty> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
-        String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = MdbFactory.getInstance(instance);
-        Parameter parameter = verifyParameter(ctx, mdb, request.getName());
-
-        // TODO
-
-        observer.complete(Empty.getDefaultInstance());
     }
 
     @Override

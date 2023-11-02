@@ -18,7 +18,7 @@ import org.yamcs.client.mdb.MissionDatabaseClient.ListOptions.QOption;
 import org.yamcs.client.mdb.MissionDatabaseClient.ListOptions.SystemOption;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Mdb.ContainerInfo;
-import org.yamcs.protobuf.Mdb.CreateParameterRequest;
+import org.yamcs.protobuf.Mdb.DataSourceType;
 import org.yamcs.protobuf.Mdb.ExportJavaMissionDatabaseRequest;
 import org.yamcs.protobuf.Mdb.GetCommandRequest;
 import org.yamcs.protobuf.Mdb.GetContainerRequest;
@@ -36,9 +36,8 @@ import org.yamcs.protobuf.MdbApiClient;
 
 public class MissionDatabaseClient {
 
-    private String instance;
-
-    private MdbApiClient mdbService;
+    String instance;
+    MdbApiClient mdbService;
 
     public MissionDatabaseClient(MethodHandler handler, String instance) {
         this.instance = instance;
@@ -58,15 +57,12 @@ public class MissionDatabaseClient {
         return f;
     }
 
-    public CompletableFuture<ParameterInfo> createParameter(String name, String spaceSystem, String parameterType) {
-        CreateParameterRequest.Builder requestb = CreateParameterRequest.newBuilder()
-                .setInstance(instance)
-                .setName(name)
-                .setSpaceSystem(spaceSystem)
-                .setParameterType(parameterType);
-        CompletableFuture<ParameterInfo> f = new CompletableFuture<>();
-        mdbService.createParameter(null, requestb.build(), new ResponseObserver<>(f));
-        return f;
+    public CreateParameterBuilder createParameter(String name, DataSourceType dataSource) {
+        return new CreateParameterBuilder(this, name, dataSource);
+    }
+
+    public CreateParameterTypeBuilder createParameterType(String name) {
+        return new CreateParameterTypeBuilder(this, name);
     }
 
     public CompletableFuture<Page<ParameterInfo>> listParameters(ListOption... options) {
