@@ -269,7 +269,8 @@ public class XtceTmExtractorTest {
         assertEquals(2, received.size());
         assertEquals("/REFMDB/ccsds-default", received.get(0).getContainer().getQualifiedName());
         assertEquals("/REFMDB/SUBSYS1/PKT1", received.get(1).getContainer().getQualifiedName());
-        assertEquals("description 1", received.get(1).getContainer().getLongDescription());
+        assertEquals("description 1", received.get(1).getContainer().getShortDescription());
+        assertEquals("long description of pkt1", received.get(1).getContainer().getLongDescription());
 
         String pkt11 = byteBufferToHexString(ByteBuffer.wrap(bb));
 
