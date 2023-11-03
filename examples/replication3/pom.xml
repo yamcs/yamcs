@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.yamcs.examples</groupId>
     <artifactId>examples</artifactId>
-    <version>5.8.8</version>
+    <version>5.8.9-SNAPSHOT</version>
   </parent>
 
   <artifactId>replication3</artifactId>
