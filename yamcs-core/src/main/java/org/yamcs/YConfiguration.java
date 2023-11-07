@@ -1,5 +1,7 @@
 package org.yamcs;
 
+import static java.util.regex.Matcher.quoteReplacement;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -460,9 +462,10 @@ public class YConfiguration {
 
     static String expandString(String confPath, String property) {
         // Expand a system property like ${foo} or an environment property like ${env.foo}
-        if (property.contains("${")) {
+        String expanded = property;
+        while (expanded.contains("${")) {
             StringBuilder buf = new StringBuilder();
-            Matcher matcher = PROPERTY_PATTERN.matcher(property);
+            Matcher matcher = PROPERTY_PATTERN.matcher(expanded);
             while (matcher.find()) {
                 String name = matcher.group("name");
 
@@ -479,14 +482,12 @@ public class YConfiguration {
                 if (replacement == null) {
                     throw new ConfigurationException(confPath, "cannot resolve property '" + name + "'");
                 }
-                // Escape special replacement characters
-                replacement = replacement.replace("$", "\\$").replace("\\", "\\\\");
-                matcher.appendReplacement(buf, replacement);
+                matcher.appendReplacement(buf, quoteReplacement(replacement));
             }
             matcher.appendTail(buf);
-            return buf.toString();
+            expanded = buf.toString();
         }
-        return property;
+        return expanded;
     }
 
     /*

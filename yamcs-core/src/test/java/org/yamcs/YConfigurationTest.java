@@ -80,6 +80,29 @@ public class YConfigurationTest {
     }
 
     @Test
+    public void testNestedPropertyExpansion() {
+        YConfiguration config = YConfiguration.getConfiguration("test-config");
+
+        // property11: ${foo:${bar}}
+        System.setProperty("bar", "stringValue");
+        assertEquals("stringValue", config.getString("property11"));
+        System.setProperty("foo", "abc");
+        assertEquals("abc", config.getString("property11"));
+
+        // property12: ${foo:${bar:defaultValue}}
+        System.clearProperty("foo");
+        System.clearProperty("bar");
+        assertEquals("defaultValue", config.getString("property12"));
+
+        // property13: ${foo:${bar:${baz}}}
+        System.setProperty("bar", "abc");
+        System.setProperty("baz", "def");
+        assertEquals("abc", config.getString("property13"));
+        System.clearProperty("bar");
+        assertEquals("def", config.getString("property13"));
+    }
+
+    @Test
     public void testBooleanPropertyExpansion() {
         YConfiguration config = YConfiguration.getConfiguration("test-config");
 
