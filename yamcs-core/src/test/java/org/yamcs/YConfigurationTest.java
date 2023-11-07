@@ -69,6 +69,14 @@ public class YConfigurationTest {
         System.setProperty("foo", "abc");
         System.setProperty("bar", "def");
         assertEquals("abc/def", config.getString("property7"));
+
+        // property9: ${foo: a value with spaces }
+        System.clearProperty("foo");
+        assertEquals(" a value with spaces ", config.getString("property9"));
+
+        // property10: ${foo:}
+        System.clearProperty("foo");
+        assertEquals("", config.getString("property10"));
     }
 
     @Test

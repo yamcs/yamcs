@@ -62,7 +62,7 @@ public class YConfiguration {
     private static final YConfiguration EMPTY_CONFIG = YConfiguration.wrap(Collections.emptyMap());
 
     public static final Pattern PROPERTY_PATTERN = Pattern
-            .compile("\\$\\{\\s*((?<name>[\\w\\.]+)(:(?<fallback>\\S+)?)?)\\s*\\}");
+            .compile("\\$\\{((?<name>[\\w\\.]+)(:(?<fallback>.*)?)?)\\}");
 
     /**
      * The parent configuration
