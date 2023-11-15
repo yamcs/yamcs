@@ -15,7 +15,7 @@ import org.yamcs.yarch.TupleDefinition;
  * the database).
  * <p>
  * Implements also some methods for converting between on-going transfers and tuples.
- * 
+ *
  * @author nm
  *
  */
@@ -97,6 +97,8 @@ public class CompletedTransfer implements CfdpFileTransfer {
             return TransferDirection.valueOf(str);
         } catch (IllegalArgumentException e) {
             log.warn("Unknown transfer direction {} retrieved from archive", str);
+        } catch (NullPointerException e) {
+            log.warn("Transfer direction retrieved from archive was NULL");
         }
         return null;
     }
