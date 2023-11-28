@@ -1,11 +1,13 @@
 package org.yamcs.yarch.streamsql;
 
+import java.util.ArrayList;
 import java.util.function.Consumer;
 
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.TableColumnDefinition;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
@@ -17,6 +19,7 @@ public class DescribeStatement extends SimpleStreamSqlStatement {
     static {
         TDEF_TABLE.addColumn("column", DataType.STRING);
         TDEF_TABLE.addColumn("type", DataType.STRING);
+        TDEF_TABLE.addColumn("partition", DataType.STRING);
         TDEF_TABLE.addColumn("key", DataType.STRING);
         TDEF_TABLE.addColumn("extra", DataType.STRING);
     }
@@ -53,19 +56,56 @@ public class DescribeStatement extends SimpleStreamSqlStatement {
     }
 
     private void describeTable(TableDefinition tdef, Consumer<Tuple> consumer) {
-        for (var cdef : tdef.getKeyDefinition()) {
+        var partitioning = tdef.getPartitioningSpec();
+        var partitionBy = new ArrayList<TableColumnDefinition>();
+
+        switch (partitioning.type) {
+        case TIME:
+            partitionBy.add(tdef.getColumnDefinition(partitioning.timeColumn));
+            break;
+        case VALUE:
+            partitionBy.add(tdef.getColumnDefinition(partitioning.valueColumn));
+            break;
+        case TIME_AND_VALUE:
+            partitionBy.add(tdef.getColumnDefinition(partitioning.timeColumn));
+            partitionBy.add(tdef.getColumnDefinition(partitioning.valueColumn));
+            break;
+        default:
+            // NOP
+            break;
+        }
+
+        for (var cdef : partitionBy) {
             var tuple = new Tuple(TDEF_TABLE, new Object[] {
                     cdef.getName(),
                     cdef.getType().toString(),
+                    "*",
+                    "",
+                    cdef.isAutoIncrement() ? "auto_increment" : "",
+            });
+            consumer.accept(tuple);
+        }
+        for (var cdef : tdef.getKeyDefinition()) {
+            if (partitionBy.contains(cdef)) {
+                continue;
+            }
+            var tuple = new Tuple(TDEF_TABLE, new Object[] {
+                    cdef.getName(),
+                    cdef.getType().toString(),
+                    "",
                     "*",
                     cdef.isAutoIncrement() ? "auto_increment" : "",
             });
             consumer.accept(tuple);
         }
         for (var cdef : tdef.getValueDefinition()) {
+            if (partitionBy.contains(cdef)) {
+                continue;
+            }
             var tuple = new Tuple(TDEF_TABLE, new Object[] {
                     cdef.getName(),
                     cdef.getType().toString(),
+                    "",
                     "",
                     cdef.isAutoIncrement() ? "auto_increment" : "",
             });
