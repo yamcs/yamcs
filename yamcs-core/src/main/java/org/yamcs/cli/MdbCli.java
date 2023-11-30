@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.yamcs.YConfiguration;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.xtce.XtceDb;
 
 import com.beust.jcommander.Parameter;
@@ -29,9 +29,9 @@ public class MdbCli extends Command {
         }
 
         if (mdbSpecs.contains(specOrInstance)) {
-            return XtceDbFactory.createInstanceByConfig(specOrInstance);
+            return MdbFactory.createInstanceByConfig(specOrInstance);
         } else {
-            return XtceDbFactory.getInstance(specOrInstance);
+            return MdbFactory.getInstance(specOrInstance);
         }
     }
 

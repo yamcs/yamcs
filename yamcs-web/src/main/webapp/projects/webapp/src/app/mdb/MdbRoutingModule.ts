@@ -11,6 +11,8 @@ import { CommandsPage } from './commands/CommandsPage';
 import { ContainerPage } from './containers/ContainerPage';
 import { ContainersPage } from './containers/ContainersPage';
 import { OverviewPage } from './overview/OverviewPage';
+import { ParameterTypePage } from './parameterTypes/ParameterTypePage';
+import { ParameterTypesPage } from './parameterTypes/ParameterTypesPage';
 import { ParameterPage } from './parameters/ParameterPage';
 import { ParametersPage } from './parameters/ParametersPage';
 
@@ -52,6 +54,13 @@ const routes: Routes = [{
   }, {
     path: 'parameters/:qualifiedName',
     component: ParameterPage,
+  }, {
+    path: 'parameter-types',
+    pathMatch: 'full',
+    component: ParameterTypesPage,
+  }, {
+    path: 'parameter-types/:qualifiedName',
+    component: ParameterTypePage,
   }]
 }];
 
@@ -71,4 +80,6 @@ export const routingComponents = [
   ContainerPage,
   ParametersPage,
   ParameterPage,
+  ParameterTypesPage,
+  ParameterTypePage,
 ];

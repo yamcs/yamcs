@@ -1,3 +1,18 @@
+Version 5.8.8 released 29-Sep-2023
+- Add API call to stream MDB items
+- Add API calls to add parameters/parameter types
+- Add API call to load large amounts of parameter values
+- Fixed some directory traversal vulnerabilities (CVE-2023-45278 and CVE-2023-45277)
+- Refactored the XtceDb/Mdb to allow writable (via API) SpaceSystems. This may break plugins using internal Xtce classes.
+
+Version 5.8.7 released 29-Sep-2023
+- Small tweaks and fixes
+
+Version 5.8.6 released 18-Sep-2023
+- Cascading: implemented command mapping such that the commands from downstream can be embeeded as binary arguments to upstream commands
+- First prototype for web extensions to allow plugins to add extensions to yamcs-web
+- Various smaller tweaks and fixes
+
 Version 5.8.5 released 02-Aug-2023
 - Fixes auth issue introduced in 5.8.4
 - Various smaller tweaks and fixes

@@ -2,10 +2,9 @@ import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Alarm, GetAlarmsOptions, MessageService, SelectComponent, SelectOption, utils } from '@yamcs/webapp-sdk';
+import { Alarm, GetAlarmsOptions, MessageService, SelectComponent, SelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import * as dayjs from 'dayjs';
 import { Dayjs } from 'dayjs';
-import { YamcsService } from '../core/services/YamcsService';
 
 @Component({
   templateUrl: './AlarmHistoryPage.html',

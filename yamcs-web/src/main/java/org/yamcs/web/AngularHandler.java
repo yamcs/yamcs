@@ -13,6 +13,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.yamcs.YConfiguration;
 import org.yamcs.http.HandlerContext;
@@ -50,11 +53,13 @@ public class AngularHandler extends StaticFileHandler {
     private String logo;
     private Path logoFile;
 
-    public AngularHandler(YConfiguration config, HttpServer httpServer, Path directory) {
-        super("", directory);
-        indexFile = directory.resolve(PATH_INDEX);
-        webManifestFile = directory.resolve(PATH_WEBMANIFEST);
-        ngswFile = directory.resolve(PATH_NGSW);
+    public AngularHandler(YConfiguration config, HttpServer httpServer, Path mainDirectory,
+            List<Path> extraStaticRoots) {
+        super("", Stream.concat(Stream.of(mainDirectory), extraStaticRoots.stream())
+                .collect(Collectors.toList()));
+        indexFile = mainDirectory.resolve(PATH_INDEX);
+        webManifestFile = mainDirectory.resolve(PATH_WEBMANIFEST);
+        ngswFile = mainDirectory.resolve(PATH_NGSW);
 
         if (config.containsKey("logo")) {
             logoFile = Path.of(config.getString("logo"));

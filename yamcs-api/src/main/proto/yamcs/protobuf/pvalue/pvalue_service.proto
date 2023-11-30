@@ -1,0 +1,60 @@
+syntax="proto2";
+
+package yamcs.protobuf.pvalue;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "ParameterValuesServiceProto";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+
+import "yamcs/api/annotations.proto";
+import "yamcs/protobuf/yamcs.proto";
+
+service ParameterValuesApi {
+
+  // Load a stream of parameter values
+  rpc LoadParameterValues(stream LoadParameterValuesRequest) returns (LoadParameterValuesResponse) {
+    option (yamcs.api.route) = {
+      post: "/api/parameter-values/{instance}/streams/{stream}:load"
+      body: "*"
+    };
+  }
+}
+
+message LoadParameterValuesRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Stream name
+  optional string stream = 2;
+
+  // A group of values, and their properties
+  repeated ParameterValueUpdate values = 3;
+}
+
+message LoadParameterValuesResponse {
+  // The number of values that were loaded
+  optional uint32 valueCount = 1;
+
+  // The earliest generation time of all received values
+  optional google.protobuf.Timestamp minGenerationTime = 2;
+
+  // The latest generation time of all received values
+  optional google.protobuf.Timestamp maxGenerationTime = 3;
+}
+
+message ParameterValueUpdate {
+  // Fully qualified parameter name
+  optional string parameter = 1;
+
+  // The new value
+  optional Value value = 2;
+
+  // The generation time of the value. If specified, must be a date
+  // string in ISO 8601 format.
+  optional google.protobuf.Timestamp generationTime = 3;
+
+  // How long before this value expires, in milliseconds
+  optional uint64 expiresIn = 4;
+}

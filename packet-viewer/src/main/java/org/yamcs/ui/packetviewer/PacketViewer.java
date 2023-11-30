@@ -87,8 +87,9 @@ import org.yamcs.client.PacketSubscription;
 import org.yamcs.client.YamcsClient;
 import org.yamcs.client.base.ServerURL;
 import org.yamcs.mdb.DatabaseLoadException;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.ProcessingData;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.XtceTmProcessor;
 import org.yamcs.parameter.ContainerParameterValue;
 import org.yamcs.parameter.ParameterProcessor;
@@ -108,7 +109,6 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.XtceDb;
 
 import com.google.common.io.CountingInputStream;
 
@@ -122,7 +122,7 @@ public class PacketViewer extends JFrame implements ActionListener,
     public static final Border ERROR_BORDER = BorderFactory.createLineBorder(new Color(205, 87, 40));
     private static PacketViewer theApp;
     private static int maxLines = -1;
-    XtceDb xtcedb;
+    Mdb mdb;
 
     private File lastFile;
     private JSplitPane hexSplit;
@@ -310,10 +310,10 @@ public class PacketViewer extends JFrame implements ActionListener,
             public void changedUpdate(DocumentEvent e) {
                 String selectedItem = filterEditor.getText();
 
-                if (selectedItem != null && !selectedItem.isEmpty() && xtcedb != null) {
+                if (selectedItem != null && !selectedItem.isEmpty() && mdb != null) {
                     clearButton.setEnabled(true);
                     try {
-                        new PacketFilter(selectedItem, xtcedb);
+                        new PacketFilter(selectedItem, mdb);
                         JTextField dummy = new JTextField();
                         filterEditor.setBackground(dummy.getBackground());
                         filterEditor.setForeground(dummy.getForeground());
@@ -340,7 +340,7 @@ public class PacketViewer extends JFrame implements ActionListener,
             try {
                 String selectedItem = (String) filterField.getSelectedItem();
                 if (selectedItem != null && !selectedItem.trim().isEmpty()) {
-                    PacketFilter filter = new PacketFilter(selectedItem, xtcedb);
+                    PacketFilter filter = new PacketFilter(selectedItem, mdb);
                     packetsTable.configureRowFilter(filter);
                     updateFilterHistory(selectedItem);
                     filterField.removeAllItems();
@@ -626,21 +626,21 @@ public class PacketViewer extends JFrame implements ActionListener,
         }
         log("Loading local XTCE db " + configName);
         try {
-            xtcedb = XtceDbFactory.createInstanceByConfig(configName);
+            mdb = MdbFactory.createInstanceByConfig(configName);
         } catch (ConfigurationException | DatabaseLoadException e) {
             log.error(e.toString(), e);
             showError(e.getMessage());
             return false;
         }
 
-        tmProcessor = new XtceTmProcessor(xtcedb, getProcessorConfig());
+        tmProcessor = new XtceTmProcessor(mdb, getProcessorConfig());
 
         tmProcessor.setParameterProcessor(this);
         tmProcessor.startProvidingAll();
         tmProcessor.startAsync();
         log(String.format("Loaded definition of %d sequence container%s and %d parameter%s",
-                xtcedb.getSequenceContainers().size(), (xtcedb.getSequenceContainers().size() != 1 ? "s" : ""),
-                xtcedb.getParameterNames().size(), (xtcedb.getParameterNames().size() != 1 ? "s" : "")));
+                mdb.getSequenceContainers().size(), (mdb.getSequenceContainers().size() != 1 ? "s" : ""),
+                mdb.getParameterNames().size(), (mdb.getParameterNames().size() != 1 ? "s" : "")));
 
         packetsTable.setupParameterColumns();
         return true;
@@ -656,7 +656,7 @@ public class PacketViewer extends JFrame implements ActionListener,
             byte[] serializedMdb = client.createMissionDatabaseClient(instance).getSerializedJavaDump().get();
             try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(serializedMdb))) {
                 Object o = ois.readObject();
-                xtcedb = (XtceDb) o;
+                mdb = (Mdb) o;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -664,14 +664,14 @@ public class PacketViewer extends JFrame implements ActionListener,
             return false;
         }
 
-        tmProcessor = new XtceTmProcessor(xtcedb, getProcessorConfig());
+        tmProcessor = new XtceTmProcessor(mdb, getProcessorConfig());
         tmProcessor.setParameterProcessor(this);
         tmProcessor.startProvidingAll();
         tmProcessor.startAsync();
         packetsTable.setupParameterColumns();
 
-        log("Loaded " + xtcedb.getSequenceContainers().size() + " sequence containers and "
-                + xtcedb.getParameterNames().size() + " parameters");
+        log("Loaded " + mdb.getSequenceContainers().size() + " sequence containers and "
+                + mdb.getParameterNames().size() + " parameters");
 
         return true;
     }
@@ -961,9 +961,9 @@ public class PacketViewer extends JFrame implements ActionListener,
     SequenceContainer getCurrentRootContainer() {
         SequenceContainer rootContainer;
         if (currentFileFormat != null && currentFileFormat.getRootContainer() != null) {
-            rootContainer = xtcedb.getSequenceContainer(currentFileFormat.getRootContainer());
+            rootContainer = mdb.getSequenceContainer(currentFileFormat.getRootContainer());
         } else {
-            rootContainer = xtcedb.getRootSequenceContainer();
+            rootContainer = mdb.getRootSequenceContainer();
         }
         if (rootContainer.getBaseContainer() != null) {
             log(rootContainer.getQualifiedName() +
@@ -1266,7 +1266,7 @@ public class PacketViewer extends JFrame implements ActionListener,
 
         // Use XDG convention
         var cacheDir = Path.of(System.getProperty("user.home"), ".cache", "packet-viewer");
-        XtceDbFactory.setupTool(cacheDir);
+        MdbFactory.setupTool(cacheDir);
 
         // Okay, launch the GUI now
         theApp = new PacketViewer(maxLines);

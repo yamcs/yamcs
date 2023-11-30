@@ -3,13 +3,13 @@ import { APP_INITIALIZER, NgModule, isDevMode } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ServiceWorkerModule } from '@angular/service-worker';
+import { ConfigService } from '@yamcs/webapp-sdk';
 import * as dayjs from 'dayjs';
 import 'dayjs/locale/en';
 import * as utc from 'dayjs/plugin/utc';
 import { AppRoutingModule } from './AppRoutingModule';
 import { AppBaseModule } from './appbase/AppBaseModule';
 import { AppComponent } from './appbase/pages/AppComponent';
-import { ConfigService } from './core/services/ConfigService';
 import { SharedModule } from './shared/SharedModule';
 
 dayjs.extend(utc);

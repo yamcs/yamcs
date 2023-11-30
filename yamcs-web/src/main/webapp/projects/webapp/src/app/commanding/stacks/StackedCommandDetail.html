@@ -29,7 +29,7 @@
 
 <div class="block-title">Significance</div>
 <div class="block">
-  <ng-container *ngIf="(entry.command | effectiveSignificance) as significance; else dash">
+  <ng-container *ngIf="entry.command?.effectiveSignificance as significance; else dash">
     <app-significance-level [level]="significance.consequenceLevel" />
     {{ significance.reasonForWarning }}
   </ng-container>

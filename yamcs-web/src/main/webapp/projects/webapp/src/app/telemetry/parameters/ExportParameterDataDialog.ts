@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/core';
 import { FormControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { DownloadParameterValuesOptions, SelectOption, utils } from '@yamcs/webapp-sdk';
+import { DownloadParameterValuesOptions, SelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   templateUrl: './ExportParameterDataDialog.html',

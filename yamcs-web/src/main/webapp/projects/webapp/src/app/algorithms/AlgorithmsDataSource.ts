@@ -1,7 +1,6 @@
 import { DataSource } from '@angular/cdk/table';
-import { Algorithm, GetAlgorithmsOptions } from '@yamcs/webapp-sdk';
+import { Algorithm, GetAlgorithmsOptions, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../core/services/YamcsService';
 
 export class ListItem {
   spaceSystem: boolean;

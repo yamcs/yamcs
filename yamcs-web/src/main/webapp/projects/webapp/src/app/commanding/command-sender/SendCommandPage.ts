@@ -4,9 +4,8 @@ import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
-import { ColumnChooserComponent, ColumnInfo, ConnectionInfo, GetCommandsOptions } from '@yamcs/webapp-sdk';
+import { ColumnChooserComponent, ColumnInfo, ConnectionInfo, GetCommandsOptions, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 import { CommandsDataSource, ListItem } from './CommandsDataSource';
 
 @Component({
@@ -100,6 +99,7 @@ export class SendCommandPage implements AfterViewInit, OnDestroy {
       details: true,
       pos: this.paginator.pageIndex * this.pageSize,
       limit: this.pageSize,
+      fields: ['name', 'qualifiedName', 'alias', 'effectiveSignificance', 'shortDescription'],
     };
     const filterValue = this.filterControl.value;
     if (filterValue) {
@@ -194,9 +194,7 @@ export class SendCommandPage implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.queryParamMapSubscription) {
-      this.queryParamMapSubscription.unsubscribe();
-    }
+    this.queryParamMapSubscription?.unsubscribe();
   }
 }
 

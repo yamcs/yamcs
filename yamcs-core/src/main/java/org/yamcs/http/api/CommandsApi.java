@@ -35,7 +35,7 @@ import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.MediaType;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.logging.Log;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.protobuf.AbstractCommandsApi;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
@@ -82,7 +82,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
         }
 
         String requestCommandName = UriEncoder.decode(request.getName());
-        XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
+        XtceDb mdb = MdbFactory.getInstance(processor.getInstance());
         MetaCommand cmd = MdbApi.verifyCommand(mdb, requestCommandName);
 
         ctx.checkObjectPrivileges(ObjectPrivilegeType.Command, cmd.getQualifiedName());
@@ -264,7 +264,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
     @Override
     public void listCommands(Context ctx, ListCommandsRequest request, Observer<ListCommandsResponse> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = MdbFactory.getInstance(instance);
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         if (ydb.getTable(CommandHistoryRecorder.TABLE_NAME) == null) {
@@ -367,7 +367,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
     @Override
     public void getCommand(Context ctx, GetCommandRequest request, Observer<CommandHistoryEntry> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = MdbFactory.getInstance(instance);
 
         Matcher matcher = PATTERN_COMMAND_ID.matcher(request.getId());
         if (!matcher.matches()) {
@@ -409,7 +409,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
     @Override
     public void exportCommand(Context ctx, ExportCommandRequest request, Observer<HttpBody> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = MdbFactory.getInstance(instance);
 
         Matcher matcher = PATTERN_COMMAND_ID.matcher(request.getId());
         if (!matcher.matches()) {
@@ -531,7 +531,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
     @Override
     public void streamCommands(Context ctx, StreamCommandsRequest request, Observer<CommandHistoryEntry> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = MdbFactory.getInstance(instance);
 
         // Quick-check in case the user is specific
         ctx.checkObjectPrivileges(ObjectPrivilegeType.CommandHistory, request.getNameList());

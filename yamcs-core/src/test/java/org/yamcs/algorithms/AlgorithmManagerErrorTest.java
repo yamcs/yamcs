@@ -21,7 +21,7 @@ import org.yamcs.ProcessorFactory;
 import org.yamcs.ValidationException;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.mdb.ProcessingData;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
@@ -37,7 +37,7 @@ public class AlgorithmManagerErrorTest {
     @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         TimeEncoding.setUp();
-        XtceDbFactory.reset();
+        MdbFactory.reset();
 
         // this test intentionally generates some errors which we don't want to see in the test output
         LoggingUtils.configureLogging(Level.SEVERE);
@@ -54,7 +54,7 @@ public class AlgorithmManagerErrorTest {
     public void beforeEachTest() throws InitException, ProcessorException, ConfigurationException, ValidationException {
         EventProducerFactory.setMockup(true);
 
-        db = XtceDbFactory.getInstance(instance);
+        db = MdbFactory.getInstance(instance);
         p1 = db.getParameter("/ERRMDB/para1");
         p2 = db.getParameter("/ERRMDB/para2");
 

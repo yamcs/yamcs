@@ -8,6 +8,7 @@
     "build-app": "ng build webapp",
     "watch-app": "ng build webapp --watch --configuration development",
     "build-lib": "ng build webapp-sdk",
+    "pack-lib": "cd dist/webapp-sdk; npm pack",
     "watch-lib": "ng build webapp-sdk --watch --configuration development"
   },
   "private": true,

@@ -11,7 +11,7 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.CommandVerifier;
@@ -31,8 +31,8 @@ public class XlsV7LoaderTest {
     @BeforeEach
     public void setupXtceDb() {
         YConfiguration.setupTest("refmdb");
-        XtceDbFactory.reset();
-        db = XtceDbFactory.getInstanceByConfig("refmdb", "refmdb");
+        MdbFactory.reset();
+        db = MdbFactory.getInstanceByConfig("refmdb", "refmdb");
     }
 
     @Test

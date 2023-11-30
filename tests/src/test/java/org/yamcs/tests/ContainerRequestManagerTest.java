@@ -15,7 +15,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.container.ContainerConsumer;
 import org.yamcs.container.ContainerRequestManager;
 import org.yamcs.events.EventProducerFactory;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 
@@ -24,7 +24,7 @@ public class ContainerRequestManagerTest {
     @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setupTest("refmdb");
-        XtceDbFactory.reset();
+        MdbFactory.reset();
         EventProducerFactory.setMockup(false);
     }
 

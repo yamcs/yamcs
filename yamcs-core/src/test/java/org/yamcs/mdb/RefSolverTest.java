@@ -12,7 +12,7 @@ public class RefSolverTest {
 
     @Test
     public void test1() {
-        XtceDb db = XtceDbFactory.createInstanceByConfig("xtce-refsolver");
+        XtceDb db = MdbFactory.createInstanceByConfig("xtce-refsolver");
         Parameter para = db.getParameter("/refsolver1/bool1");
         BooleanParameterType ptype = (BooleanParameterType) para.getParameterType();
         IntegerDataEncoding encoding = (IntegerDataEncoding) ptype.getEncoding();

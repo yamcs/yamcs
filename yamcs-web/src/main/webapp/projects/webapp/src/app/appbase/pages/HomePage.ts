@@ -6,10 +6,8 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DefaultProcessorPipe, Instance, InstancesSubscription, MessageService } from '@yamcs/webapp-sdk';
+import { ConfigService, DefaultProcessorPipe, Instance, InstancesSubscription, MessageService, YamcsService } from '@yamcs/webapp-sdk';
 import { AuthService } from '../../core/services/AuthService';
-import { ConfigService } from '../../core/services/ConfigService';
-import { YamcsService } from '../../core/services/YamcsService';
 
 
 @Component({

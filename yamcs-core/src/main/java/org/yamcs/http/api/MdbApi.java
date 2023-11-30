@@ -1,5 +1,10 @@
 package org.yamcs.http.api;
 
+import static org.yamcs.http.api.GbpToXtceAssembler.toEnumerationAlarm;
+import static org.yamcs.http.api.GbpToXtceAssembler.toEnumerationContextAlarm;
+import static org.yamcs.http.api.GbpToXtceAssembler.toNumericAlarm;
+import static org.yamcs.http.api.GbpToXtceAssembler.toNumericContextAlarm;
+
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.UncheckedIOException;
@@ -24,8 +29,9 @@ import org.yamcs.http.api.MdbPageBuilder.MdbPage;
 import org.yamcs.http.api.MdbSearchHelpers.EntryMatch;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.Mdb;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.XtceAssembler;
-import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.protobuf.AbstractMdbApi;
 import org.yamcs.protobuf.Mdb.AlgorithmInfo;
@@ -34,6 +40,8 @@ import org.yamcs.protobuf.Mdb.BatchGetParametersResponse;
 import org.yamcs.protobuf.Mdb.BatchGetParametersResponse.GetParameterResponse;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Mdb.ContainerInfo;
+import org.yamcs.protobuf.Mdb.CreateParameterRequest;
+import org.yamcs.protobuf.Mdb.CreateParameterTypeRequest;
 import org.yamcs.protobuf.Mdb.DataSourceType;
 import org.yamcs.protobuf.Mdb.ExportJavaMissionDatabaseRequest;
 import org.yamcs.protobuf.Mdb.ExportXtceRequest;
@@ -42,6 +50,7 @@ import org.yamcs.protobuf.Mdb.GetCommandRequest;
 import org.yamcs.protobuf.Mdb.GetContainerRequest;
 import org.yamcs.protobuf.Mdb.GetMissionDatabaseRequest;
 import org.yamcs.protobuf.Mdb.GetParameterRequest;
+import org.yamcs.protobuf.Mdb.GetParameterTypeRequest;
 import org.yamcs.protobuf.Mdb.GetSpaceSystemRequest;
 import org.yamcs.protobuf.Mdb.ListAlgorithmsRequest;
 import org.yamcs.protobuf.Mdb.ListAlgorithmsResponse;
@@ -49,13 +58,18 @@ import org.yamcs.protobuf.Mdb.ListCommandsRequest;
 import org.yamcs.protobuf.Mdb.ListCommandsResponse;
 import org.yamcs.protobuf.Mdb.ListContainersRequest;
 import org.yamcs.protobuf.Mdb.ListContainersResponse;
+import org.yamcs.protobuf.Mdb.ListParameterTypesRequest;
+import org.yamcs.protobuf.Mdb.ListParameterTypesResponse;
 import org.yamcs.protobuf.Mdb.ListParametersRequest;
 import org.yamcs.protobuf.Mdb.ListParametersResponse;
 import org.yamcs.protobuf.Mdb.ListSpaceSystemsRequest;
 import org.yamcs.protobuf.Mdb.ListSpaceSystemsResponse;
 import org.yamcs.protobuf.Mdb.MissionDatabase;
+import org.yamcs.protobuf.Mdb.MissionDatabaseItem;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
+import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
 import org.yamcs.protobuf.Mdb.SpaceSystemInfo;
+import org.yamcs.protobuf.Mdb.StreamMissionDatabaseRequest;
 import org.yamcs.protobuf.Mdb.UsedByInfo;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.YamcsInstance;
@@ -64,9 +78,15 @@ import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Algorithm.Scope;
+import org.yamcs.xtce.BaseDataType;
+import org.yamcs.xtce.BinaryParameterType;
+import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.Container;
 import org.yamcs.xtce.ContainerEntry;
 import org.yamcs.xtce.DataSource;
+import org.yamcs.xtce.EnumeratedParameterType;
+import org.yamcs.xtce.FloatParameterType;
+import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
@@ -75,6 +95,9 @@ import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.PathElement;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
+import org.yamcs.xtce.StringParameterType;
+import org.yamcs.xtce.UnitType;
+import org.yamcs.xtce.ValueEnumeration;
 import org.yamcs.xtce.XtceDb;
 
 import com.google.protobuf.ByteString;
@@ -91,7 +114,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
         ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
 
         String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = MdbFactory.getInstance(instance);
         MissionDatabase converted = toMissionDatabase(instance, mdb);
         observer.complete(converted);
     }
@@ -102,7 +125,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
         ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
 
         String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = MdbFactory.getInstance(instance);
 
         try (ByteString.Output output = ByteString.newOutput()) {
             try (ObjectOutputStream oos = new ObjectOutputStream(output)) {
@@ -123,11 +146,71 @@ public class MdbApi extends AbstractMdbApi<Context> {
     }
 
     @Override
+    public void streamMissionDatabase(Context ctx, StreamMissionDatabaseRequest request,
+            Observer<MissionDatabaseItem> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
+
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        XtceDb mdb = MdbFactory.getInstance(instance);
+
+        if (!request.hasIncludeSpaceSystems() || request.getIncludeSpaceSystems()) {
+            for (var spaceSystem : mdb.getSpaceSystems()) {
+                var item = MissionDatabaseItem.newBuilder()
+                        .setSpaceSystem(XtceToGpbAssembler.toSpaceSystemInfo(spaceSystem))
+                        .build();
+                observer.next(item);
+            }
+        }
+        if (!request.hasIncludeContainers() || request.getIncludeContainers()) {
+            for (var container : mdb.getSequenceContainers()) {
+                var item = MissionDatabaseItem.newBuilder()
+                        .setContainer(XtceToGpbAssembler.toContainerInfo(container, DetailLevel.FULL))
+                        .build();
+                observer.next(item);
+            }
+        }
+        if (!request.hasIncludeParameters() || request.getIncludeParameters()) {
+            for (var parameter : mdb.getParameters()) {
+                var item = MissionDatabaseItem.newBuilder()
+                        .setParameter(XtceToGpbAssembler.toParameterInfo(parameter, DetailLevel.FULL))
+                        .build();
+                observer.next(item);
+            }
+        }
+        if (!request.hasIncludeParameterTypes() || request.getIncludeParameterTypes()) {
+            for (var parameterType : mdb.getParameterTypes()) {
+                var item = MissionDatabaseItem.newBuilder()
+                        .setParameterType(XtceToGpbAssembler.toParameterTypeInfo(parameterType, DetailLevel.FULL))
+                        .build();
+                observer.next(item);
+            }
+        }
+        if (!request.hasIncludeCommands() || request.getIncludeCommands()) {
+            for (var command : mdb.getMetaCommands()) {
+                var item = MissionDatabaseItem.newBuilder()
+                        .setCommand(XtceToGpbAssembler.toCommandInfo(command, DetailLevel.FULL))
+                        .build();
+                observer.next(item);
+            }
+        }
+        if (!request.hasIncludeAlgorithms() || request.getIncludeAlgorithms()) {
+            for (var algorithm : mdb.getAlgorithms()) {
+                var item = MissionDatabaseItem.newBuilder()
+                        .setAlgorithm(XtceToGpbAssembler.toAlgorithmInfo(algorithm, DetailLevel.FULL))
+                        .build();
+                observer.next(item);
+            }
+        }
+
+        observer.complete();
+    }
+
+    @Override
     public void listSpaceSystems(Context ctx, ListSpaceSystemsRequest request,
             Observer<ListSpaceSystemsResponse> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
         String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = MdbFactory.getInstance(instance);
 
         // Should eventually be replaced in a generic mdb search operation
         NameDescriptionSearchMatcher matcher = null;
@@ -184,7 +267,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
         ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
 
         var instance = InstancesApi.verifyInstance(request.getInstance());
-        var mdb = XtceDbFactory.getInstance(instance);
+        var mdb = MdbFactory.getInstance(instance);
         var spaceSystem = verifySpaceSystem(mdb, request.getName());
         var xtce = new XtceAssembler().toXtce(mdb, spaceSystem.getQualifiedName(), fqn -> true);
         var httpBody = HttpBody.newBuilder()
@@ -201,7 +284,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
 
         String instance = InstancesApi.verifyInstance(request.getInstance());
 
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = MdbFactory.getInstance(instance);
         SpaceSystem spaceSystem = verifySpaceSystem(mdb, request.getName());
 
         SpaceSystemInfo info = XtceToGpbAssembler.toSpaceSystemInfo(spaceSystem);
@@ -211,7 +294,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
     @Override
     public void listParameters(Context ctx, ListParametersRequest request, Observer<ListParametersResponse> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = MdbFactory.getInstance(instance);
 
         Predicate<Parameter> hasPrivilege = p -> {
             return ctx.user.hasSystemPrivilege(SystemPrivilege.GetMissionDatabase)
@@ -322,7 +405,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
     public void getParameter(Context ctx, GetParameterRequest request, Observer<ParameterInfo> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
 
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = MdbFactory.getInstance(instance);
         ParameterWithId match = verifyParameterWithId(ctx, mdb, request.getName());
 
         ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(match, DetailLevel.FULL);
@@ -353,12 +436,154 @@ public class MdbApi extends AbstractMdbApi<Context> {
     }
 
     @Override
+    public void createParameterType(Context ctx, CreateParameterTypeRequest request,
+            Observer<ParameterTypeInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        Mdb mdb = MdbFactory.getInstance(instance);
+
+        BaseDataType.Builder<?> ptypeb;
+        if ("float".equals(request.getEngType())) {
+            var floatb = new FloatParameterType.Builder();
+            if (request.hasDefaultAlarm()) {
+                var alarm = toNumericAlarm(request.getDefaultAlarm());
+                floatb.setDefaultAlarm(alarm);
+            }
+            for (var contextAlarm : request.getContextAlarmsList()) {
+                var alarm = toNumericContextAlarm(mdb, instance, contextAlarm);
+                floatb.addContextAlarm(alarm);
+            }
+            ptypeb = floatb;
+        } else if ("integer".equals(request.getEngType())) {
+            var integerb = new IntegerParameterType.Builder();
+            if (request.hasSigned()) {
+                integerb.setSigned(request.getSigned());
+            }
+            if (request.hasDefaultAlarm()) {
+                var alarm = toNumericAlarm(request.getDefaultAlarm());
+                integerb.setDefaultAlarm(alarm);
+            }
+            for (var contextAlarm : request.getContextAlarmsList()) {
+                var alarm = toNumericContextAlarm(mdb, instance, contextAlarm);
+                integerb.addContextAlarm(alarm);
+            }
+            ptypeb = integerb;
+        } else if ("enumeration".equals(request.getEngType())) {
+            var enumb = new EnumeratedParameterType.Builder();
+            for (var enumerationValue : request.getEnumerationValuesList()) {
+                var valueEnumeration = new ValueEnumeration(enumerationValue.getValue(), enumerationValue.getLabel());
+                if (enumerationValue.hasDescription()) {
+                    valueEnumeration.setDescription(enumerationValue.getDescription());
+                }
+            }
+            if (request.hasDefaultAlarm()) {
+                var alarm = toEnumerationAlarm(request.getDefaultAlarm());
+                enumb.setDefaultAlarm(alarm);
+            }
+            for (var contextAlarm : request.getContextAlarmsList()) {
+                var alarm = toEnumerationContextAlarm(mdb, instance, contextAlarm);
+                enumb.addContextAlarm(alarm);
+            }
+            ptypeb = enumb;
+        } else if ("binary".equals(request.getEngType())) {
+            var binaryb = new BinaryParameterType.Builder();
+            ptypeb = binaryb;
+        } else if ("boolean".equals(request.getEngType())) {
+            var booleanb = new BooleanParameterType.Builder();
+            if (request.hasOneStringValue()) {
+                booleanb.setOneStringValue(request.getOneStringValue());
+            }
+            if (request.hasZeroStringValue()) {
+                booleanb.setZeroStringValue(request.getZeroStringValue());
+            }
+            ptypeb = booleanb;
+        } else if ("string".equals(request.getEngType())) {
+            var stringb = new StringParameterType.Builder();
+            ptypeb = stringb;
+        } else {
+            throw new BadRequestException(
+                    "Cannot create parameters of type '" + request.getEngType() + "'");
+        }
+
+        var fqn = request.getName();
+        if (!fqn.startsWith("/")) {
+            throw new BadRequestException("Parameter type name is not fully qualified");
+        }
+        var idx = fqn.lastIndexOf('/');
+        var name = fqn.substring(idx + 1);
+
+        ptypeb.setName(name);
+        ptypeb.setQualifiedName(fqn);
+        request.getAliasesMap().forEach(ptypeb::addAlias);
+
+        if (request.hasShortDescription()) {
+            ptypeb.setShortDescription(request.getShortDescription());
+        }
+        if (request.hasLongDescription()) {
+            ptypeb.setLongDescription(request.getLongDescription());
+        }
+        if (request.hasUnit()) {
+            ptypeb.addUnit(new UnitType(request.getUnit()));
+        }
+
+        var ptype = (ParameterType) ptypeb.build();
+        try {
+            mdb.addParameterType(ptype, true);
+        } catch (IOException e) {
+            throw new InternalServerErrorException("Could not save parameter type", e);
+        }
+        observer.complete(XtceToGpbAssembler.toParameterTypeInfo(ptype, DetailLevel.FULL));
+    }
+
+    @Override
+    public void createParameter(Context ctx, CreateParameterRequest request, Observer<ParameterInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        Mdb mdb = MdbFactory.getInstance(instance);
+
+        var fqn = request.getName();
+        if (!fqn.startsWith("/")) {
+            throw new BadRequestException("Parameter name is not fully qualified");
+        }
+        var idx = fqn.lastIndexOf('/');
+        var name = fqn.substring(idx + 1);
+
+        var parameter = new Parameter(name);
+        parameter.setDataSource(DataSource.valueOf(request.getDataSource().name()));
+        parameter.setQualifiedName(fqn);
+        request.getAliasesMap().forEach(parameter::addAlias);
+
+        if (request.hasShortDescription()) {
+            parameter.setShortDescription(request.getShortDescription());
+        }
+        if (request.hasLongDescription()) {
+            parameter.setLongDescription(request.getLongDescription());
+        }
+
+        if (request.hasParameterType()) {
+            var ptype = mdb.getParameterType(request.getParameterType());
+            if (ptype == null) {
+                throw new BadRequestException("Unknown parameter type '" + request.getParameterType() + "'");
+            }
+            parameter.setParameterType(ptype);
+        }
+
+        try {
+            mdb.addParameter(parameter, true, true);
+        } catch (IOException e) {
+            throw new InternalServerErrorException("Could not save parameter", e);
+        }
+
+        observer.complete(XtceToGpbAssembler.toParameterInfo(parameter, DetailLevel.FULL));
+    }
+
+    @Override
     public void batchGetParameters(Context ctx, BatchGetParametersRequest request,
             Observer<BatchGetParametersResponse> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
 
         String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = MdbFactory.getInstance(instance);
 
         BatchGetParametersResponse.Builder responseb = BatchGetParametersResponse.newBuilder();
         for (NamedObjectId id : request.getIdList()) {
@@ -382,11 +607,102 @@ public class MdbApi extends AbstractMdbApi<Context> {
     }
 
     @Override
+    public void listParameterTypes(Context ctx, ListParameterTypesRequest request,
+            Observer<ListParameterTypesResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        XtceDb mdb = MdbFactory.getInstance(instance);
+
+        List<SpaceSystem> spaceSystems = new ArrayList<>();
+        List<ParameterType> ptypes = new ArrayList<>();
+        if (request.hasSystem()) {
+            if (request.hasQ()) { // get candidates for deep search starting from the system
+                for (ParameterType ptype : mdb.getParameterTypes()) {
+                    if (ptype.getQualifiedName().startsWith(request.getSystem())) {
+                        ptypes.add(ptype);
+                    }
+                }
+            } else { // get direct children of the system
+                List<SpaceSystem> filteredSpaceSystems = mdb.getSpaceSystems().stream()
+                        .filter(spaceSystem -> spaceSystem.getParameterTypeCount(true) > 0)
+                        .collect(Collectors.toList());
+                for (SpaceSystem spaceSystem : filteredSpaceSystems) {
+                    if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
+                        ptypes.addAll(spaceSystem.getParameterTypes());
+                    } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
+                        if (spaceSystem.getQualifiedName().indexOf('/', request.getSystem().length() + 1) == -1) {
+                            spaceSystems.add(spaceSystem);
+                        }
+                    }
+                }
+            }
+        } else {
+            ptypes = new ArrayList<>(mdb.getParameterTypes());
+        }
+
+        NameDescriptionSearchMatcher matcher = request.hasQ() ? new NameDescriptionSearchMatcher(request.getQ()) : null;
+
+        ptypes = ptypes.stream().filter(c -> {
+            if (matcher != null && !matcher.matches((NameDescription) c)) {
+                return false;
+            }
+            return true;
+        }).collect(Collectors.toList());
+
+        @SuppressWarnings("unchecked")
+        var nameDescriptionItems = (List<NameDescription>) (Object) ptypes;
+        var pageBuilder = new MdbPageBuilder<>(spaceSystems, nameDescriptionItems);
+        pageBuilder.setNext(request.hasNext() ? request.getNext() : null);
+        pageBuilder.setPos(request.hasPos() ? request.getPos() : 0);
+        pageBuilder.setLimit(request.hasLimit() ? request.getLimit() : 100);
+        var page = pageBuilder.buildPage();
+
+        var responseb = ListParameterTypesResponse.newBuilder()
+                .setTotalSize(page.getTotalSize());
+        for (SpaceSystem s : page.getSpaceSystems()) {
+            responseb.addSpaceSystems(s.getQualifiedName());
+        }
+        for (NameDescription c : page.getItems()) {
+            var ptype = (ParameterType) c;
+            responseb.addParameterTypes(XtceToGpbAssembler.toParameterTypeInfo(ptype, DetailLevel.SUMMARY));
+        }
+        if (page.getContinuationToken() != null) {
+            responseb.setContinuationToken(page.getContinuationToken());
+        }
+        observer.complete(responseb.build());
+    }
+
+    @Override
+    public void getParameterType(Context ctx, GetParameterTypeRequest request, Observer<ParameterTypeInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
+
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+
+        XtceDb mdb = MdbFactory.getInstance(instance);
+        ParameterType ptype = verifyParameterType(mdb, request.getName());
+
+        var pinfo = XtceToGpbAssembler.toParameterTypeInfo(ptype, DetailLevel.FULL);
+
+        // Add extra information about which parameters are using this type
+        // This is not efficient, but we don't expect this to get called often.
+        var pinfob = ParameterTypeInfo.newBuilder(pinfo);
+        mdb.getParameters().stream()
+                .filter(parameter -> parameter.getParameterType() == ptype)
+                .sorted((a, b) -> a.getQualifiedName().compareTo(b.getQualifiedName()))
+                .forEach(parameter -> {
+                    pinfob.addUsedBy(XtceToGpbAssembler.toParameterInfo(parameter, DetailLevel.LINK));
+                });
+        pinfo = pinfob.build();
+
+        observer.complete(pinfo);
+    }
+
+    @Override
     public void listContainers(Context ctx, ListContainersRequest request,
             Observer<ListContainersResponse> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
         String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = MdbFactory.getInstance(instance);
 
         List<SpaceSystem> spaceSystems = new ArrayList<>();
         List<SequenceContainer> containers = new ArrayList<>();
@@ -450,7 +766,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
 
         String instance = InstancesApi.verifyInstance(request.getInstance());
 
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = MdbFactory.getInstance(instance);
         SequenceContainer c = verifyContainer(mdb, request.getName());
 
         ContainerInfo cinfo = XtceToGpbAssembler.toContainerInfo(c, DetailLevel.FULL);
@@ -482,7 +798,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
     @Override
     public void listCommands(Context ctx, ListCommandsRequest request, Observer<ListCommandsResponse> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = MdbFactory.getInstance(instance);
 
         Predicate<MetaCommand> hasPrivilege = c -> {
             return ctx.user.hasSystemPrivilege(SystemPrivilege.GetMissionDatabase)
@@ -568,7 +884,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
     @Override
     public void getCommand(Context ctx, GetCommandRequest request, Observer<CommandInfo> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = MdbFactory.getInstance(instance);
         MetaCommand cmd = verifyCommand(mdb, request.getName());
 
         if (!ctx.user.hasSystemPrivilege(SystemPrivilege.GetMissionDatabase) &&
@@ -584,7 +900,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
     public void listAlgorithms(Context ctx, ListAlgorithmsRequest request,
             Observer<ListAlgorithmsResponse> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = MdbFactory.getInstance(instance);
 
         Predicate<Algorithm> hasPrivilege = a -> {
             return ctx.user.hasSystemPrivilege(SystemPrivilege.GetMissionDatabase)
@@ -672,7 +988,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
     @Override
     public void getAlgorithm(Context ctx, GetAlgorithmRequest request, Observer<AlgorithmInfo> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = MdbFactory.getInstance(instance);
         Algorithm algo = verifyAlgorithm(mdb, request.getName());
 
         if (!ctx.user.hasSystemPrivilege(SystemPrivilege.GetMissionDatabase) &&

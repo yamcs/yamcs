@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { AbstractControl, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { UserInfo } from '@yamcs/webapp-sdk';
-import { YamcsService } from '../../core/services/YamcsService';
+import { UserInfo, YamcsService } from '@yamcs/webapp-sdk';
 
 const PASSWORD_VALIDATOR: ValidatorFn = (control: AbstractControl) => {
   const pw1 = control.get('password')!.value;

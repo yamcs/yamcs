@@ -32,7 +32,7 @@ import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.CommandingManager;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.mdb.MetaCommandProcessor;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.MetaCommandProcessor.CommandBuildResult;
 import org.yamcs.parameter.LocalParameterManager;
 import org.yamcs.parameter.ParameterValue;
@@ -65,7 +65,7 @@ public class RefXtceCommandingTest {
     @BeforeAll
     public static void beforeClass() throws Exception {
         YConfiguration.setupTest(null);
-        xtcedb = XtceDbFactory.getInstance("refxtce");
+        xtcedb = MdbFactory.getInstance("refxtce");
         user = new User("test", null);
     }
 

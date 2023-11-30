@@ -1,11 +1,13 @@
 import { Injectable } from '@angular/core';
-import { AuthInfo, ColumnInfo, CommandOption, InstanceConfig, User } from '@yamcs/webapp-sdk';
+import { AuthInfo, CommandOption, InstanceConfig } from '../client';
+import { ColumnInfo } from '../components/column-chooser/column-chooser.component';
 
 export interface WebsiteConfig {
   serverId: string;
   auth: AuthInfo;
   tag: string;
   logo: string;
+  plugins: string[];
   events?: EventsConfig;
   commandClearanceEnabled: boolean;
   commandExports: boolean;
@@ -23,19 +25,11 @@ export interface WebsiteConfig {
   displayFolderPerInstance: boolean;
   stackFolderPerInstance: boolean;
   siteLinks: SiteLink[];
+  extra: { [key: string]: { [key: string]: any; }; };
 }
 
 export interface EventsConfig {
   extraColumns?: ExtraColumnInfo[];
-}
-
-export type NavGroup = 'telemetry' | 'commanding' | 'archive' | 'mdb';
-
-export interface NavItem {
-  path: string;
-  label: string;
-  icon?: string;
-  condition?: (user: User) => boolean;
 }
 
 export interface SiteLink {
@@ -60,7 +54,6 @@ export class ConfigService {
 
   private websiteConfig: WebsiteConfig;
   private instanceConfig: InstanceConfig;
-  private extraNavItems = new Map<NavGroup, NavItem[]>();
 
   async loadWebsiteConfig() {
     const el = document.getElementById('appConfig')!;
@@ -74,6 +67,10 @@ export class ConfigService {
 
   getAuthInfo() {
     return this.websiteConfig.auth;
+  }
+
+  getPluginIds() {
+    return this.websiteConfig.plugins;
   }
 
   getDisplayBucket() {
@@ -100,6 +97,12 @@ export class ConfigService {
     return this.websiteConfig.disableLoginForm;
   }
 
+  getExtraConfig(key: string) {
+    if (this.websiteConfig.extra.hasOwnProperty(key)) {
+      return this.websiteConfig.extra[key];
+    }
+  }
+
   getConfig() {
     return this.websiteConfig;
   }
@@ -110,18 +113,5 @@ export class ConfigService {
 
   getSiteLinks() {
     return this.websiteConfig.siteLinks || [];
-  }
-
-  getExtraNavItems(group: NavGroup) {
-    return this.extraNavItems.get(group) || [];
-  }
-
-  addNavItem(group: NavGroup, item: NavItem) {
-    let items = this.extraNavItems.get(group);
-    if (!items) {
-      items = [];
-      this.extraNavItems.set(group, items);
-    }
-    items.push(item);
   }
 }

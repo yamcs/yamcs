@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivateChildFn, CanActivateFn, Router, RouterStateSnapshot } from '@angular/router';
-import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
+import { ConfigService, WebsiteConfig } from '@yamcs/webapp-sdk';
 
 export const clearancesEnabledGuardFn: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
   return inject(ClearancesEnabledGuard).canActivate(route, state);

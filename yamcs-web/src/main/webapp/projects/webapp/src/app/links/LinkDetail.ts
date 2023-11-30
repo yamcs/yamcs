@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Link, MessageService } from '@yamcs/webapp-sdk';
+import { Link, MessageService, YamcsService } from '@yamcs/webapp-sdk';
 import { AuthService } from '../core/services/AuthService';
-import { YamcsService } from '../core/services/YamcsService';
 
 @Component({
   selector: 'app-link-detail',

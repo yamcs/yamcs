@@ -19,7 +19,7 @@ import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.logging.Log;
 import org.yamcs.mdb.ParameterTypeListener;
 import org.yamcs.mdb.ProcessorData;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.protobuf.AbstractMdbOverrideApi;
 import org.yamcs.protobuf.AlgorithmTextOverride;
 import org.yamcs.protobuf.GetAlgorithmOverridesRequest;
@@ -83,7 +83,7 @@ public class MdbOverrideApi extends AbstractMdbOverrideApi<Context> {
     public void getParameterOverride(Context ctx, GetParameterOverrideRequest request,
             Observer<ParameterOverride> observer) {
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
-        XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
+        XtceDb xtcedb = MdbFactory.getInstance(processor.getInstance());
         Parameter parameter = MdbApi.verifyParameter(ctx, xtcedb, request.getName());
 
         ProcessorData pdata = processor.getProcessorData();
@@ -117,7 +117,7 @@ public class MdbOverrideApi extends AbstractMdbOverrideApi<Context> {
     public void getAlgorithmOverrides(Context ctx, GetAlgorithmOverridesRequest request,
             Observer<GetAlgorithmOverridesResponse> observer) {
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
-        XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
+        XtceDb xtcedb = MdbFactory.getInstance(processor.getInstance());
         Algorithm algorithm = MdbApi.verifyAlgorithm(xtcedb, request.getName());
 
         GetAlgorithmOverridesResponse.Builder responseb = GetAlgorithmOverridesResponse.newBuilder();
@@ -155,7 +155,7 @@ public class MdbOverrideApi extends AbstractMdbOverrideApi<Context> {
                     "Cannot patch algorithm when a processor has more than 1 AlgorithmManager services");
         }
         AlgorithmManager algMng = l.get(0);
-        XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
+        XtceDb xtcedb = MdbFactory.getInstance(processor.getInstance());
         Algorithm a = MdbApi.verifyAlgorithm(xtcedb, request.getName());
         if (!(a instanceof CustomAlgorithm)) {
             throw new BadRequestException("Can only patch CustomAlgorithm instances");
@@ -193,7 +193,7 @@ public class MdbOverrideApi extends AbstractMdbOverrideApi<Context> {
         ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
 
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
-        XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
+        XtceDb xtcedb = MdbFactory.getInstance(processor.getInstance());
         Parameter p = MdbApi.verifyParameter(ctx, xtcedb, request.getName());
 
         ProcessorData pdata = processor.getProcessorData();

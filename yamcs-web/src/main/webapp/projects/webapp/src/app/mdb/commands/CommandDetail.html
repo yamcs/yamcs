@@ -192,7 +192,7 @@
             <a [routerLink]="['/mdb/parameters/', entry.parameter.qualifiedName]"
                [queryParams]="{c: yamcs.context}">{{ entry.parameter.qualifiedName }}</a>
           </td>
-          <td>{{ entry.parameter.type.dataEncoding.sizeInBits }}</td>
+          <td>{{ entry.parameter.type.dataEncoding?.sizeInBits ?? '-' }}</td>
         </ng-container>
         <ng-container *ngIf="entry.fixedValue">
           <td>Fixed value</td>

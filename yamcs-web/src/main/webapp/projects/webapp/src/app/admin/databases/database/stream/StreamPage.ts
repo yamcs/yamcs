@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { Stream } from '@yamcs/webapp-sdk';
-import { YamcsService } from '../../../../core/services/YamcsService';
+import { Stream, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   templateUrl: './StreamPage.html',

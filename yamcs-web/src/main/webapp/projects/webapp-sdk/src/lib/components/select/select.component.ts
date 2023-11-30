@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, forwardRef, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, forwardRef, Input, OnChanges } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 
@@ -20,7 +20,7 @@ export interface SelectOption {
     }
   ]
 })
-export class SelectComponent implements ControlValueAccessor {
+export class SelectComponent implements OnChanges, ControlValueAccessor {
 
   @Input()
   emptyOption: string = '-- select an option --';
@@ -31,9 +31,14 @@ export class SelectComponent implements ControlValueAccessor {
   @Input()
   icon: string;
 
+  options$ = new BehaviorSubject<SelectOption[]>([]);
   selected$ = new BehaviorSubject<string | null>(null);
 
   private onChange = (_: string | null) => { };
+
+  ngOnChanges() {
+    this.options$.next(this.options);
+  }
 
   public isSelected(id: string) {
     return this.selected$.value === id;

@@ -61,7 +61,10 @@ These are the column names:
     Expected interval in milliseconds. If set then all parameters extracted from this container have an expiration time set to this interval multiplied with a configurable constant. See the option :ref:`expirationTolerance <expirationTolerance>` in :file:`etc/processor.yaml`.
 
 ``description``
-    Textual description of the container.
+    Textual description of the container. Should be one line.
+
+``long description``
+    Long textual description of the container. In Markdown format.
 
 ``namespace:<ALIAS>``
     Any numbers of namespace columns can be added using the prefix ``namespace:`` followed by the name of a namespace.

@@ -20,7 +20,8 @@ import org.yamcs.commanding.CommandingManager;
 import org.yamcs.container.ContainerRequestManager;
 import org.yamcs.logging.Log;
 import org.yamcs.mdb.ProcessorData;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.Mdb;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.XtceTmProcessor;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterCache;
@@ -36,7 +37,6 @@ import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.tctm.ArchiveTmPacketProvider;
 import org.yamcs.tctm.StreamParameterSender;
 import org.yamcs.time.TimeService;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
@@ -76,7 +76,7 @@ public class Processor extends AbstractService {
     private CommandHistoryProvider commandHistoryProvider;
     private CommandReleaser commandReleaser;
 
-    private XtceDb xtcedb;
+    private Mdb mdb;
 
     private final String name;
     private final String type;
@@ -152,7 +152,7 @@ public class Processor extends AbstractService {
             throws ProcessorException, InitException, ValidationException {
         log.debug("Initialzing the processor with the configuration {}", config);
 
-        xtcedb = XtceDbFactory.getInstance(yamcsInstance);
+        mdb = MdbFactory.getInstance(yamcsInstance);
 
         this.config = config;
 
@@ -535,8 +535,8 @@ public class Processor extends AbstractService {
         return yamcsInstance;
     }
 
-    public XtceDb getXtceDb() {
-        return xtcedb;
+    public Mdb getXtceDb() {
+        return mdb;
     }
 
     public CommandHistoryRequestManager getCommandHistoryManager() {

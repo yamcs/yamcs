@@ -4,7 +4,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.YamcsException;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.Mdb;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.xtce.XtceDb;
 
 /**
@@ -34,8 +35,8 @@ public class ReplayServer extends AbstractYamcsService {
         }
 
         try {
-            XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
-            YarchReplay yr = new YarchReplay(this, replayRequest, replayListener, xtcedb);
+            Mdb mdb = MdbFactory.getInstance(yamcsInstance);
+            YarchReplay yr = new YarchReplay(this, replayRequest, replayListener, mdb);
             replayCount.incrementAndGet();
             return yr;
         } catch (YamcsException e) {

@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Argument, Command } from '@yamcs/webapp-sdk';
-import { YamcsService } from '../../core/services/YamcsService';
+import { Argument, Command, YamcsService } from '@yamcs/webapp-sdk';
 import { ArgumentEnumDialog } from './ArgumentEnumDialog';
 
 @Component({

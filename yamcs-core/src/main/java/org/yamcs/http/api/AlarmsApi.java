@@ -38,7 +38,7 @@ import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.http.audit.AuditLog;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.AcknowledgeInfo;
 import org.yamcs.protobuf.AlarmData;
@@ -562,7 +562,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             if (processor.hasAlarmServer()) {
                 AlarmServer<Parameter, ParameterValue> parameterAlarmServer = processor.getParameterProcessorManager()
                         .getAlarmServer();
-                XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
+                XtceDb mdb = MdbFactory.getInstance(processor.getInstance());
                 Parameter parameter = mdb.getParameter(alarmName);
                 if (parameter != null) {
                     ActiveAlarm<ParameterValue> activeAlarm = parameterAlarmServer.getActiveAlarm(parameter, id);

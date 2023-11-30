@@ -61,7 +61,7 @@
   <ng-container cdkColumnDef="significance">
     <th mat-header-cell *cdkHeaderCellDef>Significance</th>
     <td mat-cell *cdkCellDef="let item">
-      <ng-container *ngIf="(item.command | effectiveSignificance) as significance; else dash">
+      <ng-container *ngIf="item.command?.effectiveSignificance as significance; else dash">
         <app-significance-level [level]="significance.consequenceLevel" />
       </ng-container>
     </td>

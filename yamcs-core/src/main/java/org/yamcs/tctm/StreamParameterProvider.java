@@ -13,7 +13,8 @@ import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.mdb.ParameterTypeProcessor;
 import org.yamcs.mdb.ProcessingData;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.Mdb;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterProcessor;
@@ -40,7 +41,7 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 public class StreamParameterProvider extends AbstractProcessorService implements StreamSubscriber, ParameterProvider {
     List<Stream> streams = new ArrayList<>();
     ParameterProcessor ppm;
-    XtceDb xtceDb;
+    Mdb mdb;
 
     ParameterTypeProcessor ptypeProcessor;
 
@@ -48,7 +49,7 @@ public class StreamParameterProvider extends AbstractProcessorService implements
         super.init(processor, config, spec);
         String yamcsInstance = processor.getInstance();
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-        xtceDb = XtceDbFactory.getInstance(yamcsInstance);
+        mdb = MdbFactory.getInstance(yamcsInstance);
 
         List<String> streamNames;
         if (config.containsKey("stream")) {
@@ -102,7 +103,7 @@ public class StreamParameterProvider extends AbstractProcessorService implements
                 org.yamcs.protobuf.Pvalue.ParameterValue gpv = (org.yamcs.protobuf.Pvalue.ParameterValue) tuple
                         .getColumn(i);
                 String name = tuple.getColumnDefinition(i).getName();
-                Parameter ppdef = xtceDb.getParameter(name);
+                Parameter ppdef = mdb.getParameter(name);
                 if (ppdef == null) {
                     continue;
                 }
@@ -111,11 +112,11 @@ public class StreamParameterProvider extends AbstractProcessorService implements
                 pv = (ParameterValue) o;
                 if (pv.getParameter() == null) {
                     String fqn = pv.getParameterQualifiedName();
-                    Parameter ppdef = xtceDb.getParameter(fqn);
+                    Parameter ppdef = mdb.getParameter(fqn);
                     if (ppdef == null) {
                         if (XtceDb.isSystemParameter(fqn)) {
                             Value engValue = pv.getEngValue();
-                            ppdef = SystemParametersService.createSystemParameter(xtceDb, fqn, engValue);
+                            ppdef = SystemParametersService.createSystemParameter(mdb, fqn, engValue);
                         } else {
                             log.trace("Ignoring unknown parameter {}", fqn);
                             continue;
@@ -153,7 +154,7 @@ public class StreamParameterProvider extends AbstractProcessorService implements
 
     @Override
     public boolean canProvide(NamedObjectId id) {
-        if (xtceDb.getParameter(id) != null) {
+        if (mdb.getParameter(id) != null) {
             return true;
         } else {
             return false;
@@ -162,12 +163,12 @@ public class StreamParameterProvider extends AbstractProcessorService implements
 
     @Override
     public boolean canProvide(Parameter p) {
-        return xtceDb.getParameter(p.getQualifiedName()) != null;
+        return mdb.getParameter(p.getQualifiedName()) != null;
     }
 
     @Override
     public Parameter getParameter(NamedObjectId id) throws InvalidIdentification {
-        Parameter p = xtceDb.getParameter(id);
+        Parameter p = mdb.getParameter(id);
         if (p == null) {
             throw new InvalidIdentification();
         } else {

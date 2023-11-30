@@ -507,7 +507,8 @@ public class V7Loader extends V7LoaderBase {
             dtr.calibration = getContent(cells, CN_DTYPE_CALIBRATION, null);
 
             dtr.initialValue = getContent(cells, CN_DTYPE_INITVALUE, null);
-            dtr.description = getContent(cells, CN_DTYPE_INITVALUE, null);
+            dtr.description = getContent(cells, CN_DTYPE_DESCRIPTION, null);
+            dtr.longDescription = getContent(cells, CN_DTYPE_LONG_DESCRIPTION, null);
             dtr.spaceSystem = spaceSystem;
 
             dataTypesDefs.put(dtr.name, dtr);
@@ -619,7 +620,12 @@ public class V7Loader extends V7LoaderBase {
         if (dtr.initialValue != null) {
             setInitialValue(dtypeb, dtr.initialValue);
         }
-        dtypeb.setShortDescription(dtr.description);
+        if (dtr.description != null && !dtr.description.isBlank()) {
+            dtypeb.setShortDescription(dtr.description);
+        }
+        if (dtr.longDescription != null && !dtr.longDescription.isBlank()) {
+            dtypeb.setLongDescription(dtr.longDescription);
+        }
 
         dtype = dtypeb.build();
         NameReference nr = algoReferences.get(encoding);
@@ -805,7 +811,14 @@ public class V7Loader extends V7LoaderBase {
             }
             if (!description.isEmpty()) {
                 param.setShortDescription(description);
-                param.setLongDescription(description);
+            }
+
+            String longDescription = "";
+            if (hasColumn(cells, CN_PARAM_LONG_DESCRIPTION)) {
+                longDescription = getContent(cells, CN_PARAM_LONG_DESCRIPTION);
+            }
+            if (!longDescription.isEmpty()) {
+                param.setLongDescription(longDescription);
             }
 
             if (hasColumn(cells, CN_PARAM_INITVALUE)) {
@@ -1214,6 +1227,11 @@ public class V7Loader extends V7LoaderBase {
                 description = getContent(cells, CN_CONT_DESCRIPTION);
             }
 
+            String longDescription = "";
+            if (hasColumn(cells, CN_CONT_LONG_DESCRIPTION)) {
+                longDescription = getContent(cells, CN_CONT_LONG_DESCRIPTION);
+            }
+
             // create a new SequenceContainer that will hold the parameters (i.e. SequenceEntries) for the
             // ORDINARY/SUB/AGGREGATE packets, and register that new SequenceContainer in the containers hashmap
             SequenceContainer container = new SequenceContainer(containerName);
@@ -1222,7 +1240,9 @@ public class V7Loader extends V7LoaderBase {
             container.setRateInStream(rate);
             if (!description.isEmpty()) {
                 container.setShortDescription(description);
-                container.setLongDescription(description);
+            }
+            if (!longDescription.isEmpty()) {
+                container.setLongDescription(longDescription);
             }
 
             if (hasColumn(cells, CN_CONT_FLAGS)) {
@@ -1504,7 +1524,9 @@ public class V7Loader extends V7LoaderBase {
             if (flags != null && flags.contains("A")) {
                 cmd.setAbstract(true);
             }
+
             cmd.setShortDescription(getContent(cells, CN_CMD_DESCRIPTION, null));
+            cmd.setLongDescription(getContent(cells, CN_CMD_LONG_DESCRIPTION, null));
 
             // we mark the start of the CMD and advance to the next line, to get to the first argument (if there is one)
             i++;
@@ -1682,6 +1704,7 @@ public class V7Loader extends V7LoaderBase {
 
         arg.setArgumentType(atype);
         arg.setShortDescription(getContent(cells, CN_CMD_DESCRIPTION, null));
+        arg.setLongDescription(getContent(cells, CN_CMD_LONG_DESCRIPTION, null));
 
         ArgumentEntry ae;
         // if absoluteoffset is -1, somewhere along the line we came across a measurement or container that had as a
@@ -2052,6 +2075,16 @@ public class V7Loader extends V7LoaderBase {
             String algorithmText = getContent(cells, CN_ALGO_TEXT);
             XtceAliasSet xas = getAliases(firstRow, cells);
 
+            String description = "";
+            if (hasColumn(cells, CN_ALGO_DESCRIPTION)) {
+                description = getContent(cells, CN_ALGO_DESCRIPTION);
+            }
+
+            String longDescription = "";
+            if (hasColumn(cells, CN_ALGO_LONG_DESCRIPTION)) {
+                longDescription = getContent(cells, CN_ALGO_LONG_DESCRIPTION);
+            }
+
             // Check that there is not specified by mistake a in/out param already on the same line with the algorithm
             // name
             if (hasColumn(cells, CN_ALGO_PARA_INOUT) || hasColumn(cells, CN_ALGO_PARA_REF)) {
@@ -2076,6 +2109,12 @@ public class V7Loader extends V7LoaderBase {
             algorithm.setLanguage(algorithmLanguage);
             // Replace smart-quotes “ and ” with regular quotes "
             algorithm.setAlgorithmText(algorithmText.replaceAll("[\u201c\u201d]", "\""));
+            if (!description.isBlank()) {
+                algorithm.setShortDescription(description);
+            }
+            if (!longDescription.isBlank()) {
+                algorithm.setLongDescription(longDescription);
+            }
 
             // In/out params
             String paraInout = null;

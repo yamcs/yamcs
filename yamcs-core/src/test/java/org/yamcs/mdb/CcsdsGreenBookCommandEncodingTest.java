@@ -18,24 +18,23 @@ import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
 import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Significance.Levels;
-import org.yamcs.xtce.XtceDb;
 
 public class CcsdsGreenBookCommandEncodingTest {
-    static XtceDb xtcedb;
+    static Mdb mdb;
     static MetaCommandProcessor metaCommandProcessor;
 
     @BeforeAll
     public static void beforeClass() throws ConfigurationException {
         YConfiguration.setupTest(null);
-        xtcedb = XtceDbFactory.createInstanceByConfig("ccsds-green-book");
+        mdb = MdbFactory.createInstanceByConfig("ccsds-green-book");
         metaCommandProcessor = new MetaCommandProcessor(
-                new ProcessorData("test", "test", xtcedb, new ProcessorConfig()));
+                new ProcessorData("test", "test", mdb, new ProcessorConfig()));
     }
 
     @Test
     public void test1() throws ErrorInCommand {
         // encode command
-        MetaCommand mc = xtcedb.getMetaCommand("/SpaceVehicle/PWHTMR");
+        MetaCommand mc = mdb.getMetaCommand("/SpaceVehicle/PWHTMR");
         assertEquals(32, mc.getCommandContainer().getSizeInBits());
         Map<String, Object> args = new HashMap<>();
         args.put("TimerStartStop", "TIMER_START");

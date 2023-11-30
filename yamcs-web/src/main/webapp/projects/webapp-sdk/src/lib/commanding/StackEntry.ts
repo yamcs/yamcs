@@ -1,5 +1,6 @@
-import { Command, Value } from '@yamcs/webapp-sdk';
-import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
+import { Command, Value } from '../client';
+import { AdvancementParams } from './AdvancementParams';
+import { CommandHistoryRecord } from './CommandHistoryRecord';
 
 export interface StackEntry {
   name: string;
@@ -12,13 +13,8 @@ export interface StackEntry {
   command?: Command;
 
   executionNumber?: number;
-  executing: boolean;
+  executing?: boolean;
   id?: string;
   record?: CommandHistoryRecord;
   err?: string;
-}
-
-export interface AdvancementParams {
-  acknowledgment?: string;
-  wait?: number;
 }

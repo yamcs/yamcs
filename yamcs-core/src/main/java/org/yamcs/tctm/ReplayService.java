@@ -29,7 +29,7 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.mdb.ParameterTypeProcessor;
 import org.yamcs.mdb.ProcessingData;
 import org.yamcs.mdb.Subscription;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.XtceTmProcessor;
 import org.yamcs.parameter.ParameterProcessor;
 import org.yamcs.parameter.ParameterProcessorManager;
@@ -89,7 +89,7 @@ public class ReplayService extends AbstractProcessorService
     @Override
     public void init(Processor proc, YConfiguration args, Object spec) {
         super.init(proc, args, spec);
-        xtceDb = XtceDbFactory.getInstance(getYamcsInstance());
+        xtceDb = MdbFactory.getInstance(getYamcsInstance());
         securityStore = YamcsServer.getServer().getSecurityStore();
         if (args.containsKey("excludeParameterGroups")) {
             excludeParameterGroups = args.getList("excludeParameterGroups");

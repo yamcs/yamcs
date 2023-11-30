@@ -1,10 +1,9 @@
 import { ChangeDetectionStrategy, Component, Inject, OnInit } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { MemberPathPipe, Parameter } from '@yamcs/webapp-sdk';
+import { MemberPathPipe, Parameter, YamcsService } from '@yamcs/webapp-sdk';
 import { Observable } from 'rxjs';
 import { debounceTime, map, switchMap } from 'rxjs/operators';
-import { YamcsService } from '../../core/services/YamcsService';
 
 export interface SelectParameterOptions {
   label?: string;

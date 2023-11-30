@@ -22,18 +22,18 @@ import org.yamcs.xtce.xml.XtceAliasSet;
 
 /**
  * XtceDB database
- *
+ * <p>
  * It contains a SpaceSystem as defined in the Xtce schema and has lots of hashes to help find things quickly
- *
- * @author nm
+ * 
+ * 
  */
 public class XtceDb implements Serializable {
     private static final long serialVersionUID = 57L;
 
     final SpaceSystem rootSystem;
 
-    // rwLock is used to guard the read/write of parameters and spaceSystems which are the only ones that can change
-    // dynamically as of now
+    // rwLock is used to guard the read/write of parameters, parameter types and spaceSystems which are the only ones
+    // that can change dynamically as of now
     ReadWriteLock rwLock = new ReentrantReadWriteLock();
 
     /**
@@ -47,12 +47,12 @@ public class XtceDb implements Serializable {
     transient static Logger log = LoggerFactory.getLogger(XtceDb.class);
 
     // map from the fully qualified names to the objects
-    private HashMap<String, SpaceSystem> spaceSystems = new HashMap<>();
-    private Map<String, SequenceContainer> sequenceContainers = new LinkedHashMap<>();
-    private Map<String, Parameter> parameters = new LinkedHashMap<>();
-    private Map<String, ParameterType> parameterTypes = new LinkedHashMap<>();
-    private HashMap<String, Algorithm> algorithms = new HashMap<>();
-    private HashMap<String, MetaCommand> commands = new HashMap<>();
+    protected HashMap<String, SpaceSystem> spaceSystems = new HashMap<>();
+    protected Map<String, SequenceContainer> sequenceContainers = new LinkedHashMap<>();
+    protected Map<String, Parameter> parameters = new LinkedHashMap<>();
+    protected Map<String, ParameterType> parameterTypes = new LinkedHashMap<>();
+    protected HashMap<String, Algorithm> algorithms = new HashMap<>();
+    protected HashMap<String, MetaCommand> commands = new HashMap<>();
 
     @SuppressWarnings("rawtypes")
     private HashMap<Class<?>, NonStandardData> nonStandardDatas = new HashMap<>();
@@ -68,8 +68,8 @@ public class XtceDb implements Serializable {
 
     private Set<String> namespaces = new HashSet<>();
 
-    // this is the sequence container where the xtce processors start processing
-    // we should perhaps have possibility to specify different ones for different streams
+    // this is the default sequence container where the xtce processors start processing
+    // specific ones can be defined per tm stream
     SequenceContainer rootSequenceContainer;
 
     /**
@@ -534,47 +534,95 @@ public class XtceDb implements Serializable {
         return sequenceContainer2InheritingContainerMap.get(container);
     }
 
+    protected void doAddParameter(Parameter p, boolean addSpaceSystem, boolean addParameterType) {
+        doAddParameters(List.of(p), addSpaceSystem, addParameterType);
+    }
+
     /**
-     * Adds a new parameter to the XTCE db.
+     * Adds a list of new parameters to the XTCE db. If createSpaceSystem is true, also create the Space Systems where
+     * these parameters belong.
      *
-     *
-     * If the SpaceSystem where this parameter belongs does not exist, and createSpaceSystem is false, throws an
-     * IllegalArgumentException If the SpaceSystem where this parameter belongs exists and already contains an parameter
-     * by this name, throws and IllegalArgumentException If the SpaceSystem where this parameter belongs does not exist,
-     * and createSpaceSystem is true, the whole SpaceSystem hierarchy is created.
+     * <p>
+     * Throws a IllegalArgumentException if:
+     * <p>
+     * - createSpaceSystem is false and the Space Systems do not exist.
+     * <p>
+     * - the parameter with the given qualified name already exist
      * 
-     * Note that this method is used to create parameters on the fly. The parameters are not saved anywhere and they
-     * will not be available when this object is created by the XtceDbFactory.
-     *
-     * @param p
-     * @param createSpaceSystem
+     * @param newparams
+     *            - the list of parameters to be added
+     * @param addParameterTypes
+     *            - if true, add also the parameter types (if not already in the database)
+     * @param addSpaceSystems
      *            - if true, create all the necessary space systems
      */
-    public void addParameter(Parameter p, boolean createSpaceSystem) {
-        log.debug("Adding parameter {} , createSpaceSystem: {}", p.getQualifiedName(), createSpaceSystem);
+    protected void doAddParameters(List<Parameter> newparams, boolean addSpaceSystems, boolean addParameterTypes) {
+        log.debug("Adding parameters {} , createSpaceSystem: {}", newparams, addSpaceSystems);
         rwLock.writeLock().lock();
         try {
-            if (parameters.containsKey(p.getQualifiedName())) {
-                throw new IllegalArgumentException(
-                        "There is already a parameter with qualified name '" + p.getQualifiedName() + "'");
-            }
-            String ssname = p.getSubsystemName();
-            SpaceSystem ss = spaceSystems.get(ssname);
-            if (ss == null) {
-                if (!createSpaceSystem) {
-                    throw new IllegalArgumentException("No SpaceSystem by name '" + ssname + "'");
-                } else {
-                    createAllSpaceSystems(ssname);
+            for (var p : newparams) {
+                if (parameters.containsKey(p.getQualifiedName())) {
+                    throw new IllegalArgumentException(
+                            "There is already a parameter with qualified name '" + p.getQualifiedName() + "'");
                 }
-                ss = spaceSystems.get(ssname);
-            }
-            ss.addParameter(p);
-            parameters.put(p.getQualifiedName(), p);
+                if (!addSpaceSystems) {
+                    SpaceSystem ss = spaceSystems.get(p.getSubsystemName());
+                    if (ss == null) {
+                        throw new IllegalArgumentException("No SpaceSystem by name '" + p.getSubsystemName() + "'");
+                    }
+                    var pt = p.getParameterType();
+                    if (pt != null) {
+                        ss = spaceSystems.get(NameDescription.getSubsystemName(pt.getQualifiedName()));
+                        if (ss == null) {
+                            throw new IllegalArgumentException("No SpaceSystem by name '" + p.getSubsystemName()
+                                    + "' (required by the type of " + p.getQualifiedName() + ")");
+                        }
+                    }
+                }
 
-            parameterAliases.add(p);
-            XtceAliasSet aliases = p.getAliasSet();
-            if (aliases != null) {
-                aliases.getNamespaces().forEach(ns -> namespaces.add(ns));
+                if (!addParameterTypes) {
+                    var pt = p.getParameterType();
+                    if (pt != null) {
+                        var pt1 = parameterTypes.get(pt.getQualifiedName());
+                        if (pt1 == null) {
+                            throw new IllegalArgumentException("Parameter Type '" + pt.getQualifiedName()
+                                    + " required by " + p.getQualifiedName() + " not found");
+                        }
+                        if (pt1 != pt) {
+                            throw new IllegalArgumentException("Parameter Type '" + pt.getQualifiedName()
+                                    + " required by " + p.getQualifiedName()
+                                    + " found but it is different than the one referenced in the parameter");
+                        }
+                    }
+                }
+            }
+            for (var p : newparams) {
+                String ssname = p.getSubsystemName();
+                SpaceSystem ss = spaceSystems.get(ssname);
+                if (ss == null) {
+                    createAllSpaceSystems(ssname);
+                    ss = spaceSystems.get(ssname);
+                }
+                var pt = p.getParameterType();
+                if (pt != null) {
+                    var pt1 = parameterTypes.get(pt.getQualifiedName());
+                    if (pt1 == null) {
+                        SpaceSystem ssPt = spaceSystems.get(NameDescription.getSubsystemName(pt.getQualifiedName()));
+                        if (ssPt == null) {
+                            createAllSpaceSystems(ssname);
+                        }
+                        ssPt.addParameterType(pt);
+                    }
+                }
+
+                ss.addParameter(p);
+                parameters.put(p.getQualifiedName(), p);
+
+                parameterAliases.add(p);
+                XtceAliasSet aliases = p.getAliasSet();
+                if (aliases != null) {
+                    aliases.getNamespaces().forEach(ns -> namespaces.add(ns));
+                }
             }
         } finally {
             rwLock.writeLock().unlock();
@@ -593,119 +641,53 @@ public class XtceDb implements Serializable {
      * <p>
      * If the SpaceSystem where this parameter belongs does not exist, and createSpaceSystem is true, the whole
      * SpaceSystem hierarchy is created.
-     * <p>
      * 
      *
-     * @param ptype
-     *            - the parameter type to be added
+     * @param ptypeList
+     *            - the parameter types to be added
      * @param createSpaceSystem
      *            - if true, create all the necessary space systems
      */
-    public void addParameterType(ParameterType ptype, boolean createSpaceSystem) {
-        String fqn = ptype.getQualifiedName();
-        log.debug("Adding parameter type {} , createSpaceSystem: {}", fqn, createSpaceSystem);
+    protected void doAddParameterType(List<ParameterType> ptypeList, boolean createSpaceSystem) {
+
+        log.debug("Adding parameter types {} , createSpaceSystem: {}", ptypeList, createSpaceSystem);
         rwLock.writeLock().lock();
+
         try {
-            if (parameterTypes.containsKey(fqn)) {
-                throw new IllegalArgumentException(
-                        "There is already a parameter with qualified name '" + fqn + "'");
-            }
-            String ssname = NameDescription.getSubsystemName(fqn);
-            SpaceSystem ss = spaceSystems.get(ssname);
-            if (ss == null) {
-                if (!createSpaceSystem) {
+            for (var ptype : ptypeList) {
+                String fqn = ptype.getQualifiedName();
+                if (parameterTypes.containsKey(fqn)) {
+                    throw new IllegalArgumentException(
+                            "There is already a parameter with qualified name '" + fqn + "'");
+                }
+                String ssname = NameDescription.getSubsystemName(fqn);
+                SpaceSystem ss = spaceSystems.get(ssname);
+                if (ss == null && !createSpaceSystem) {
                     throw new IllegalArgumentException("No SpaceSystem by name '" + ssname + "'");
-                } else {
+                }
+            }
+            for (var ptype : ptypeList) {
+                String fqn = ptype.getQualifiedName();
+                String ssname = NameDescription.getSubsystemName(fqn);
+                SpaceSystem ss = spaceSystems.get(ssname);
+                if (ss == null) {
                     createAllSpaceSystems(ssname);
                 }
-            }
-            ss = spaceSystems.get(ssname);
-            ss.addParameterType(ptype);
-            parameterTypes.put(fqn, ptype);
 
-            parameterTypeAliases.add((NameDescription) ptype);
-            XtceAliasSet aliases = ((NameDescription) ptype).getAliasSet();
-            if (aliases != null) {
-                aliases.getNamespaces().forEach(ns -> namespaces.add(ns));
-            }
-        } finally {
-            rwLock.writeLock().unlock();
-        }
-    }
+                ss = spaceSystems.get(ssname);
+                ss.addParameterType(ptype);
+                parameterTypes.put(fqn, ptype);
 
-    /**
-     * Creates and returns a system parameter with the given qualified name. If the parameter already exists it is
-     * returned.
-     * 
-     * 
-     * @param parameterQualifiedNamed
-     *            - the name of the parmaeter to be created. It must start with {@link #YAMCS_SPACESYSTEM_NAME}
-     * @param ptype
-     * @return the parameter created or already existing.
-     * @throws IllegalArgumentException
-     *             if the <code>parameterQualifiedNamed</code> does not start with {@link #YAMCS_SPACESYSTEM_NAME}
-     */
-    public SystemParameter createSystemParameter(String parameterQualifiedNamed, ParameterType ptype,
-            String shortDescription) {
-        rwLock.writeLock().lock();
-        try {
-            if (!parameterQualifiedNamed.startsWith(YAMCS_SPACESYSTEM_NAME)) {
-                throw new IllegalArgumentException(
-                        "The parameter qualified name must start with " + YAMCS_SPACESYSTEM_NAME);
-            }
-
-            SystemParameter p = (SystemParameter) parameters.get(parameterQualifiedNamed);
-            if (p == null) {
-                p = SystemParameter.getForFullyQualifiedName(parameterQualifiedNamed);
-                p.setParameterType(ptype);
-                addParameter(p, true);
-            } else {
-                if (p.getParameterType() != ptype) {
-                    throw new IllegalArgumentException("A parameter with name " + parameterQualifiedNamed
-                            + " already exists but has a different type: " + p.getParameterType()
-                            + " The type in the request was: " + ptype);
+                parameterTypeAliases.add((NameDescription) ptype);
+                XtceAliasSet aliases = ((NameDescription) ptype).getAliasSet();
+                if (aliases != null) {
+                    aliases.getNamespaces().forEach(ns -> namespaces.add(ns));
                 }
             }
-            p.setShortDescription(shortDescription);
-            return p;
         } finally {
             rwLock.writeLock().unlock();
         }
-    }
 
-    /**
-     * Adds a parameter type to the MDB. The type has to have the qualified name set and start with
-     * {@link #YAMCS_SPACESYSTEM_NAME}.
-     * <p>
-     * If a type with the same name already exists, it is returned instead. No check is performed that the existing type
-     * and the new type are the same or even compatible.
-     * 
-     * @param ptype
-     * @return
-     */
-    public ParameterType addSystemParameterType(ParameterType ptype) {
-        String fqn = ptype.getQualifiedName();
-        if (fqn == null) {
-            throw new IllegalArgumentException("The type does not have a qualified name");
-        }
-        rwLock.writeLock().lock();
-        try {
-            if (!fqn.startsWith(YAMCS_SPACESYSTEM_NAME)) {
-                throw new IllegalArgumentException(
-                        "The qualified name of the type must start with " + YAMCS_SPACESYSTEM_NAME);
-            }
-
-            ParameterType ptype1 = parameterTypes.get(fqn);
-
-            if (ptype1 == null) {
-                addParameterType(ptype, true);
-            } else {
-                ptype = ptype1;
-            }
-            return ptype;
-        } finally {
-            rwLock.writeLock().unlock();
-        }
     }
 
     private void createAllSpaceSystems(String ssname) {
@@ -947,6 +929,5 @@ public class XtceDb implements Serializable {
             removeNonOrphaned(ss1, orphanedParameters);
         }
     }
-
 
 }

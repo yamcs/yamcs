@@ -15,10 +15,9 @@ import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
 import org.yamcs.xtce.xml.XtceAliasSet;
 
 /**
- * SpaceSystem is a collection of SpaceSystem(s) including space assets, ground assets,
- * multi-satellite systems and sub-systems. A SpaceSystem is the root element for the set of data
- * necessary to monitor and command an arbitrary space device - this includes the binary decomposition the
- * data streams going into and out of a device.
+ * SpaceSystem is a collection of SpaceSystem(s) including space assets, ground assets, multi-satellite systems and
+ * sub-systems. A SpaceSystem is the root element for the set of data necessary to monitor and command an arbitrary
+ * space device - this includes the binary decomposition the data streams going into and out of a device.
  *
  *
  * @author nm
@@ -37,7 +36,7 @@ public class SpaceSystem extends NameDescription {
     private HashMap<Class<?>, NonStandardData> nonStandardDatas = new HashMap<>();
     private Map<String, CommandContainer> cmdContainers = new LinkedHashMap<>();
 
-    private Map<String, SpaceSystem> subsystems = new LinkedHashMap<String, SpaceSystem>();
+    private Map<String, SpaceSystem> subsystems = new LinkedHashMap<>();
     static Logger log = LoggerFactory.getLogger(SpaceSystem.class.getName());
     private HashMap<String, ArgumentType> argumentTypes = new HashMap<>();
 
@@ -59,21 +58,24 @@ public class SpaceSystem extends NameDescription {
      *            Container to be registered
      */
     public void addSequenceContainer(SequenceContainer container) {
-        if (containers.containsKey(container.getName()))
+        if (containers.containsKey(container.getName())) {
             throw new IllegalArgumentException("duplicate container '" + container.getName() + "'");
+        }
         containers.put(container.getName(), container);
     }
 
     public void addParameter(Parameter parameter) throws IllegalArgumentException {
-        if (parameters.containsKey(parameter.getName()))
+        if (parameters.containsKey(parameter.getName())) {
             throw new IllegalArgumentException("duplicate parameter '" + parameter.getName() + "'");
+        }
         parameters.put(parameter.getName(), parameter);
     }
 
     public void addParameterType(ParameterType parameterType) {
         String ptn = ((NameDescription) parameterType).getName();
-        if (parameterTypes.containsKey(ptn))
+        if (parameterTypes.containsKey(ptn)) {
             throw new IllegalArgumentException("duplicate parameter type '" + ptn + "'");
+        }
         parameterTypes.put(ptn, parameterType);
 
     }
@@ -84,20 +86,23 @@ public class SpaceSystem extends NameDescription {
 
     public void addArgumentType(ArgumentType argumentType) {
         String atn = ((NameDescription) argumentType).getName();
-        if (argumentTypes.containsKey(atn))
+        if (argumentTypes.containsKey(atn)) {
             throw new IllegalArgumentException("duplicate argument type '" + atn + "'");
+        }
         argumentTypes.put(atn, argumentType);
     }
 
     public void addAlgorithm(Algorithm algorithm) {
-        if (algorithms.containsKey(algorithm.getName()))
+        if (algorithms.containsKey(algorithm.getName())) {
             throw new IllegalArgumentException("duplcate algorithm '" + algorithm.getName() + "'");
+        }
         algorithms.put(algorithm.getName(), algorithm);
     }
 
     public void addMetaCommand(MetaCommand command) {
-        if (commands.containsKey(command.getName()))
+        if (commands.containsKey(command.getName())) {
             throw new IllegalArgumentException("duplicate command '" + command.getName() + "'");
+        }
         commands.put(command.getName(), command);
     }
 
@@ -118,8 +123,9 @@ public class SpaceSystem extends NameDescription {
     }
 
     public void addCommandContainer(CommandContainer cmdContainer) {
-        if (cmdContainers.containsKey(cmdContainer.getName()))
+        if (cmdContainers.containsKey(cmdContainer.getName())) {
             throw new IllegalArgumentException("duplicate container '" + cmdContainer.getName() + "'");
+        }
         cmdContainers.put(cmdContainer.getName(), cmdContainer);
     }
 
@@ -136,8 +142,9 @@ public class SpaceSystem extends NameDescription {
     }
 
     public void addSpaceSystem(SpaceSystem ss) throws IllegalArgumentException {
-        if (subsystems.containsKey(ss.getName()))
+        if (subsystems.containsKey(ss.getName())) {
             throw new IllegalArgumentException("there is already a subsystem with name " + ss.getName());
+        }
         subsystems.put(ss.getName(), ss);
         ss.setParent(this);
     }
@@ -188,12 +195,12 @@ public class SpaceSystem extends NameDescription {
     }
 
     /**
-     * Returns the parameters defined in this space system, or under any
-     * of its sub space systems
+     * Returns the parameters defined in this space system, or under any of its sub space systems
      */
     public Collection<Parameter> getParameters(boolean recurse) {
-        if (!recurse)
+        if (!recurse) {
             return getParameters();
+        }
         List<Parameter> res = new ArrayList<>();
         res.addAll(parameters.values());
         for (SpaceSystem sub : getSubSystems()) {
@@ -215,6 +222,17 @@ public class SpaceSystem extends NameDescription {
 
     public Collection<ParameterType> getParameterTypes() {
         return parameterTypes.values();
+    }
+
+    public int getParameterTypeCount(boolean recurse) {
+        if (!recurse) {
+            return parameterTypes.size();
+        }
+        int total = parameterTypes.size();
+        for (SpaceSystem sub : getSubSystems()) {
+            total += sub.getParameterTypeCount(recurse);
+        }
+        return total;
     }
 
     public Collection<ArgumentType> getArgumentTypes() {
@@ -245,8 +263,8 @@ public class SpaceSystem extends NameDescription {
     }
 
     /**
-     * remove parameter from SpaceSystem - only used during loading or from XtceDb
-     * XtceDb has several maps pointing to these parameters.
+     * remove parameter from SpaceSystem - only used during loading or from XtceDb XtceDb has several maps pointing to
+     * these parameters.
      * 
      * @param p
      *            parameter to remove
@@ -291,25 +309,26 @@ public class SpaceSystem extends NameDescription {
     }
 
     /**
-     * Add non-standard data to this SpaceSystem. This enables loading any kind
-     * of data from within custom SpaceSystemLoaders and making it available
-     * through the XtceDb.
+     * Add non-standard data to this SpaceSystem. This enables loading any kind of data from within custom
+     * SpaceSystemLoaders and making it available through the XtceDb.
      * <p>
-     * Non-standard data is distinguished from each other using the classname.
-     * Only one object is allowed for each classname.
+     * Non-standard data is distinguished from each other using the classname. Only one object is allowed for each
+     * classname.
      */
     public void addNonStandardData(NonStandardData data) {
-        if (nonStandardDatas.containsKey(data.getClass()))
+        if (nonStandardDatas.containsKey(data.getClass())) {
             throw new IllegalArgumentException("there is already non-standard data of type " + data.getClass());
+        }
         nonStandardDatas.put(data.getClass(), data);
     }
 
     @SuppressWarnings("unchecked")
     public <T extends NonStandardData> T getNonStandardDataOfType(Class<T> clazz) {
-        if (nonStandardDatas.containsKey(clazz))
+        if (nonStandardDatas.containsKey(clazz)) {
             return (T) nonStandardDatas.get(clazz);
-        else
+        } else {
             return null;
+        }
     }
 
     public Collection<NonStandardData> getNonStandardData() {

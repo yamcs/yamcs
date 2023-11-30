@@ -4,8 +4,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
-import { UserInfo } from '@yamcs/webapp-sdk';
-import { YamcsService } from '../../core/services/YamcsService';
+import { UserInfo, YamcsService } from '@yamcs/webapp-sdk';
 
 export interface MemberItem {
   label: string;

@@ -1,20 +1,20 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { CommandHistoryRecord } from './CommandHistoryRecord';
+import { CommandHistoryRecord } from '@yamcs/webapp-sdk';
 
 @Component({
-    selector: 'app-extra-acknowledgments-table',
-    templateUrl: './ExtraAcknowledgmentsTable.html',
-    styleUrls: ['./ExtraAcknowledgmentsTable.css'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-extra-acknowledgments-table',
+  templateUrl: './ExtraAcknowledgmentsTable.html',
+  styleUrls: ['./ExtraAcknowledgmentsTable.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExtraAcknowledgmentsTable {
 
-    @Input()
-    command: CommandHistoryRecord;
+  @Input()
+  command: CommandHistoryRecord;
 
-    @Input()
-    inline = false;
+  @Input()
+  inline = false;
 
-    @Input()
-    showIcons = true;
+  @Input()
+  showIcons = true;
 }

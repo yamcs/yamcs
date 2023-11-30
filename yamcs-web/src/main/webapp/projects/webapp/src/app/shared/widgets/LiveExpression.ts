@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormulaCompiler } from '@yamcs/opi';
-import { NamedObjectId, ParameterSubscription, Synchronizer, utils } from '@yamcs/webapp-sdk';
+import { NamedObjectId, ParameterSubscription, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   selector: 'app-live-expression',

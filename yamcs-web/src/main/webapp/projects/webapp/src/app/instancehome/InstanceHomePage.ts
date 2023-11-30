@@ -1,10 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { TMStatisticsSubscription, TmStatistics, User } from '@yamcs/webapp-sdk';
+import { ConfigService, TMStatisticsSubscription, TmStatistics, User, WebsiteConfig, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../core/services/AuthService';
-import { ConfigService, WebsiteConfig } from '../core/services/ConfigService';
-import { YamcsService } from '../core/services/YamcsService';
 
 @Component({
   templateUrl: './InstanceHomePage.html',

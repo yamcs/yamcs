@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { FormArray, FormBuilder, FormControl, FormGroup, UntypedFormControl } from '@angular/forms';
-import { Argument, ArgumentMember, ArgumentType, Command, CommandOption, CommandOptionType, User, Value } from '@yamcs/webapp-sdk';
+import { Argument, ArgumentMember, ArgumentType, Command, CommandOption, CommandOptionType, ConfigService, User, Value, WebsiteConfig } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
-import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
 import { renderValue } from './arguments/argument/ArgumentComponent';
 
 export interface TemplateProvider {

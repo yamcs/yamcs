@@ -81,6 +81,7 @@ import org.yamcs.xtce.BinaryArgumentType;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.BooleanArgumentType;
 import org.yamcs.xtce.BooleanDataEncoding;
+import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.CheckWindow;
 import org.yamcs.xtce.CommandContainer;
@@ -365,8 +366,14 @@ public class XtceToGpbAssembler {
             }
 
             if (cmd.getDefaultSignificance() != null) {
-                cb.setSignificance(toSignificanceInfo(cmd.getDefaultSignificance()));
+                var significanceInfo = toSignificanceInfo(cmd.getDefaultSignificance());
+                cb.setSignificance(significanceInfo);
+                cb.setEffectiveSignificance(significanceInfo);
+            } else if (cmd.getEffectiveDefaultSignificance() != null) {
+                var significanceInfo = toSignificanceInfo(cmd.getEffectiveDefaultSignificance());
+                cb.setEffectiveSignificance(significanceInfo);
             }
+
             if (cmd.getArgumentList() != null) {
                 for (Argument xtceArgument : cmd.getArgumentList()) {
                     cb.addArgument(toArgumentInfo(xtceArgument));
@@ -657,7 +664,37 @@ public class XtceToGpbAssembler {
 
     public static ParameterTypeInfo toParameterTypeInfo(ParameterType parameterType, DetailLevel detail) {
         ParameterTypeInfo.Builder infob = ParameterTypeInfo.newBuilder();
+        infob.setName(parameterType.getName());
         infob.setEngType(parameterType.getTypeAsString());
+
+        if (parameterType instanceof NameDescription) {
+            var nameDescription = (NameDescription) parameterType;
+
+            infob.setQualifiedName(parameterType.getQualifiedName());
+
+            if (detail == DetailLevel.SUMMARY || detail == DetailLevel.FULL) {
+                if (parameterType.getShortDescription() != null) {
+                    infob.setShortDescription(parameterType.getShortDescription());
+                }
+            }
+
+            if (detail == DetailLevel.FULL) {
+                if (parameterType.getLongDescription() != null) {
+                    infob.setLongDescription(parameterType.getLongDescription());
+                }
+                if (nameDescription.getAliasSet() != null) {
+                    Map<String, String> aliases = nameDescription.getAliasSet().getAliases();
+                    for (Entry<String, String> me : aliases.entrySet()) {
+                        infob.addAlias(NamedObjectId.newBuilder().setName(me.getValue()).setNamespace(me.getKey()));
+                    }
+                }
+                if (nameDescription.getAncillaryData() != null) {
+                    for (AncillaryData data : nameDescription.getAncillaryData()) {
+                        infob.putAncillaryData(data.getName(), toAncillaryDataInfo(data));
+                    }
+                }
+            }
+        }
 
         if (parameterType instanceof BaseDataType) {
             BaseDataType bdt = (BaseDataType) parameterType;
@@ -807,6 +844,10 @@ public class XtceToGpbAssembler {
                     }
                 }
                 infob.setAbsoluteTimeInfo(timeb);
+            } else if (parameterType instanceof BooleanParameterType) {
+                BooleanParameterType bpt = (BooleanParameterType) parameterType;
+                infob.setOneStringValue(bpt.getOneStringValue());
+                infob.setZeroStringValue(bpt.getZeroStringValue());
             }
         }
         return infob.build();

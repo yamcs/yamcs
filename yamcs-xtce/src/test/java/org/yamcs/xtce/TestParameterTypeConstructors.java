@@ -20,8 +20,8 @@ import org.yamcs.xtce.xml.XtceStaxReader;
 public class TestParameterTypeConstructors {
     @Test
     public void test1() throws IllegalArgumentException, IllegalAccessException, XMLStreamException, IOException {
-        XtceStaxReader reader = new XtceStaxReader();
-        SpaceSystem ss = reader.readXmlDocument("src/test/resources/BogusSAT-1.xml");
+        XtceStaxReader reader = new XtceStaxReader("src/test/resources/BogusSAT-1.xml");
+        SpaceSystem ss = reader.readXmlDocument();
         for (Parameter p : ss.getParameters()) {
             ParameterType t1 = p.getParameterType();
             if (t1 == null) {

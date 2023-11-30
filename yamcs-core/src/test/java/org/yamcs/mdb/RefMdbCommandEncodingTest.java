@@ -26,24 +26,23 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.BooleanDataType;
 import org.yamcs.xtce.MetaCommand;
-import org.yamcs.xtce.XtceDb;
 
 public class RefMdbCommandEncodingTest {
-    static XtceDb xtcedb;
+    static Mdb mdb;
     static MetaCommandProcessor metaCommandProcessor;
 
     @BeforeAll
     public static void beforeClass() throws ConfigurationException {
         YConfiguration.setupTest(null);
-        xtcedb = XtceDbFactory.createInstanceByConfig("refmdb");
+        mdb = MdbFactory.createInstanceByConfig("refmdb");
         metaCommandProcessor = new MetaCommandProcessor(
-                new ProcessorData("test", "test", xtcedb, new ProcessorConfig()));
+                new ProcessorData("test", "test", mdb, new ProcessorConfig()));
     }
 
     @Test
     public void intArgTcAbs() throws ErrorInCommand {
         // encode command
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/INT_ARG_TC_ABS");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/INT_ARG_TC_ABS");
         Map<String, Object> args = new HashMap<>();
         byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
 
@@ -53,7 +52,7 @@ public class RefMdbCommandEncodingTest {
     @Test
     public void floatCommand() throws ErrorInCommand {
         // encode command
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC");
         Map<String, Object> args = new HashMap<>();
         args.put("float_arg", "-30");
         args.put("double_arg", "1");
@@ -65,7 +64,7 @@ public class RefMdbCommandEncodingTest {
     @Test
     public void nativeFloatCommand() throws ErrorInCommand {
         // encode command
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC");
         Map<String, Object> args = new HashMap<>();
         args.put("float_arg", -30);
         args.put("double_arg", 1);
@@ -77,7 +76,7 @@ public class RefMdbCommandEncodingTest {
     @Test
     public void floatCommandDefault() {
         // encode command
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC");
         boolean errorInCommand = false;
 
         try {
@@ -93,7 +92,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void stringCommand() throws ErrorInCommand {
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/STRING_ARG_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/STRING_ARG_TC");
         Map<String, Object> args = new HashMap<>();
         args.put("string_arg", "aaaa");
         args.put("terminatedString_arg", "bbbb");
@@ -113,7 +112,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void cgsLikeStringCommand() throws ErrorInCommand {
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/CGS_LIKE_STRING_ARG_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/CGS_LIKE_STRING_ARG_TC");
         Map<String, Object> args = new HashMap<>();
         args.put("string_arg1", "aaaa");
         args.put("string_arg2", "bbbb");
@@ -129,7 +128,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void binaryCommand() throws ErrorInCommand {
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/BINARY_ARG_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/BINARY_ARG_TC");
         Map<String, Object> args = new HashMap<>();
         args.put("binary_arg1", "0102");
         args.put("binary_arg2", "0A1B");
@@ -145,7 +144,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void littleEndianUint() throws ErrorInCommand {
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/LE_ARG_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/LE_ARG_TC");
         Map<String, Object> args = new HashMap<>();
         args.put("p2", "0x12");
         byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
@@ -157,7 +156,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void booleanCommandTrue() throws ErrorInCommand {
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/BOOLEAN_ARG_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/BOOLEAN_ARG_TC");
         Map<String, Object> args = new HashMap<>();
         args.put("bool_arg1", BooleanDataType.DEFAULT_ONE_STRING_VALUE);
         byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
@@ -167,7 +166,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void booleanCommandFalseTrue() throws ErrorInCommand {
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/BOOLEAN_ARG_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/BOOLEAN_ARG_TC");
         Map<String, Object> args = new HashMap<>();
         args.put("bool_arg1", BooleanDataType.DEFAULT_ZERO_STRING_VALUE);
         byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
@@ -179,7 +178,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void int64CommandArgumentRange() throws ErrorInCommand {
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/INT64_ARG_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/INT64_ARG_TC");
 
         try {
             Map<String, Object> args = getArgAssignment("p1", "0X0102030405060707", "p2",
@@ -211,7 +210,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void int64CommandArgumentEncoding() throws ErrorInCommand {
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/INT64_ARG_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/INT64_ARG_TC");
         Map<String, Object> args = getArgAssignment("p1", "0X0102030405060708", "p2", "0xF102030405060708",
                 "p3", "-0X0102030405060708");
         byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
@@ -220,7 +219,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void testStringEncodedTc() throws Exception {
-        MetaCommand mc = XtceDbFactory.createInstanceByConfig("refmdb")
+        MetaCommand mc = MdbFactory.createInstanceByConfig("refmdb")
                 .getMetaCommand("/REFMDB/SUBSYS1/STRING_ENCODED_ARG_TC");
         assertNotNull(mc);
         Map<String, Object> args = new HashMap<>();
@@ -241,7 +240,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void testCustomCalibTc() throws Exception {
-        MetaCommand mc = XtceDbFactory.createInstanceByConfig("refmdb")
+        MetaCommand mc = MdbFactory.createInstanceByConfig("refmdb")
                 .getMetaCommand("/REFMDB/SUBSYS1/CUSTOM_CALIB_TC");
         Map<String, Object> args = new HashMap<>();
         args.put("p1", "10");
@@ -263,7 +262,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void testOneIntArg() throws Exception {
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/ONE_INT_ARG_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/ONE_INT_ARG_TC");
         assertNotNull(mc);
         byte[] b = metaCommandProcessor.buildCommand(mc, new HashMap<>()).getCmdPacket();
         assertEquals("ABCDEFAB", StringConverter.arrayToHexString(b));
@@ -271,7 +270,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void testFixedValue() throws Exception {
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/FIXED_VALUE_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/FIXED_VALUE_TC");
         assertNotNull(mc);
         byte[] b = metaCommandProcessor.buildCommand(mc, new HashMap<>()).getCmdPacket();
         assertEquals("ABCD901408081808", StringConverter.arrayToHexString(b));
@@ -279,7 +278,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void testIntegerArg() throws Exception {
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/INT_ARG_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/INT_ARG_TC");
         assertNotNull(mc);
         byte[] b = metaCommandProcessor.buildCommand(mc, new HashMap<>()).getCmdPacket();
         assertEquals("ABCD901408081808", StringConverter.arrayToHexString(b));
@@ -287,7 +286,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void testFloatArg() throws Exception {
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC");
         assertNotNull(mc);
 
         Map<String, Object> args = new HashMap<>();
@@ -306,7 +305,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void testLittleEndianFloatArg() throws Exception {
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/LE_FLOAT_INT_ARG_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/LE_FLOAT_INT_ARG_TC");
         assertNotNull(mc);
 
         Map<String, Object> args = new HashMap<>();
@@ -326,7 +325,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void testCcsdsTc() throws Exception {
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/CCSDS_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/CCSDS_TC");
         assertNotNull(mc);
 
         Map<String, Object> args = new HashMap<>();
@@ -354,7 +353,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void testValidIntegerRange() throws Exception {
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/CCSDS_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/CCSDS_TC");
         assertNotNull(mc);
         Map<String, Object> args = new HashMap<>();
         args.put("uint8_arg", "5");
@@ -373,7 +372,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void testCalibration() throws Exception {
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/CALIB_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/CALIB_TC");
         assertNotNull(mc);
 
         Map<String, Object> args = new HashMap<>();
@@ -398,7 +397,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void testInvalidEnum() throws Exception {
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/CALIB_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/CALIB_TC");
         assertNotNull(mc);
 
         Map<String, Object> args = new HashMap<>();
@@ -419,7 +418,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void testExceptionOnReassigningInheritanceArgument() {
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/CCSDS_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/CCSDS_TC");
         Map<String, Object> args = new HashMap<>();
         args.put("uint8_arg", "2");
         args.put("uint16_arg", "2");
@@ -433,7 +432,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void testTimeArg() throws Exception {
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/TIME_ARG_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/TIME_ARG_TC");
         assertNotNull(mc);
         String tstring = "2020-01-01T00:00:00.123Z";
         long tlong = TimeEncoding.parse(tstring);
@@ -452,7 +451,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void testAggregateArg() throws Exception {
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/AGGR_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/AGGR_TC");
         assertNotNull(mc);
 
         Map<String, Object> args = new HashMap<>();
@@ -465,7 +464,7 @@ public class RefMdbCommandEncodingTest {
 
     @Test
     public void testNativeAggregateArg() throws Exception {
-        MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/AGGR_TC");
+        MetaCommand mc = mdb.getMetaCommand("/REFMDB/SUBSYS1/AGGR_TC");
         assertNotNull(mc);
 
         Map<String, Object> args = new HashMap<>();

@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
-import { Table } from '@yamcs/webapp-sdk';
-import { YamcsService } from '../../../../core/services/YamcsService';
+import { Table, YamcsService } from '@yamcs/webapp-sdk';
 import { ShowEnumDialog } from './ShowEnumDialog';
 
 @Component({

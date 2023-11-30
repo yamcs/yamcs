@@ -1,8 +1,7 @@
 import { CollectionViewer } from '@angular/cdk/collections';
 import { DataSource } from '@angular/cdk/table';
-import { Alarm, GetAlarmsOptions } from '@yamcs/webapp-sdk';
+import { Alarm, GetAlarmsOptions, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 
 export class ParameterAlarmsDataSource extends DataSource<Alarm> {
 

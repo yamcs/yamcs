@@ -11,7 +11,7 @@ import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.mdb.ProcessingData;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterRequestManager;
@@ -31,7 +31,7 @@ public class XtceAlgorithmTest {
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setupTest(instance);
         EventProducerFactory.setMockup(false);
-        XtceDbFactory.reset();
+        MdbFactory.reset();
         AlgorithmManager am = new AlgorithmManager();
         proc = ProcessorFactory.create(instance, "XtceAlgorithmTest", new MyParaProvider(), am);
         ppm = proc.getParameterProcessorManager();

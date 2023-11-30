@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--  this is used for MdbModificationPersistenceTest test.
+This file is copied into the writable_subsys.xml and it is overwritten with the parameters/types added in the test -->
+
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" name="writable_subsys">
+</SpaceSystem>

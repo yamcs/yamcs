@@ -1,6 +1,7 @@
 package org.yamcs.security;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,9 +15,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.logging.Log;
 import org.yamcs.security.protobuf.AccountCollection;
-import org.yamcs.security.protobuf.AccountRecord;
 import org.yamcs.security.protobuf.GroupCollection;
-import org.yamcs.security.protobuf.GroupRecord;
 import org.yamcs.yarch.ProtobufDatabase;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
@@ -32,11 +31,11 @@ public class Directory {
     // Users and groups used to be stored in "ProtobufDatabase", but we're slowly phasing that
     // out in favor of tables in the Yamcs DB, now that this has the functionality we need.
     //
-    // Current phase: mirror ProtobufDB to Yamcs DB, and read from Yamcs DB.
+    // Current phase: mirror Yamcs DB to ProtobufDB, and read from Yamcs DB.
     //
     // Next planned phases:
-    // - mirror Yamcs DB to ProtobufDB instead.
-    // - remove ProtobufDB
+    // - remove mirror (it is only done for backwards compatibility), only upgrade on-start.
+    // - remove ProtobufDB (long-term, no rush)
 
     private static final Log log = new Log(Directory.class);
     private static final String ACCOUNT_COLLECTION = "accounts";
@@ -45,12 +44,18 @@ public class Directory {
 
     // Reserve first few ids for potential future use
     // (also not to overlap with system and guest users which are not currently in the directory)
+    @Deprecated
     private AtomicInteger accountIdSequence = new AtomicInteger(5);
+    @Deprecated
     private AtomicInteger groupIdSequence = new AtomicInteger(5);
 
+    @Deprecated
     private Map<String, User> users = new ConcurrentHashMap<>();
+    @Deprecated
     private Map<String, ServiceAccount> serviceAccounts = new ConcurrentHashMap<>();
+    @Deprecated
     private Map<String, Group> groups = new ConcurrentHashMap<>();
+
     private Map<String, Role> roles = new ConcurrentHashMap<>();
 
     private DirectoryDb db;
@@ -61,36 +66,66 @@ public class Directory {
             db = new DirectoryDb();
             YarchDatabaseInstance yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
             protobufDatabase = yarch.getProtobufDatabase();
-            AccountCollection accountCollection = protobufDatabase.get(ACCOUNT_COLLECTION, AccountCollection.class);
-            if (accountCollection != null) {
-                accountIdSequence.set(accountCollection.getSeq());
-                for (AccountRecord rec : accountCollection.getRecordsList()) {
-                    switch (rec.getAccountTypeCase()) {
-                    case USERDETAIL:
-                        users.put(rec.getName(), new User(rec));
-                        break;
-                    case SERVICEDETAIL:
-                        serviceAccounts.put(rec.getName(), new ServiceAccount(rec));
-                        break;
-                    case ACCOUNTTYPE_NOT_SET:
-                        throw new IllegalStateException("Unexpected account type");
-                    }
-                }
-            }
-            GroupCollection groupCollection = protobufDatabase.get(GROUP_COLLECTION, GroupCollection.class);
-            if (groupCollection != null) {
-                groupIdSequence.set(groupCollection.getSeq());
-                for (GroupRecord rec : groupCollection.getRecordsList()) {
-                    groups.put(rec.getName(), new Group(rec));
-                }
+
+            if (db.listAccounts().isEmpty()) {
+                migrateFromProtobufDatabase();
             }
 
-            mirrorToYamcsDB();
+            // Populate in-memory model required for legacy ProtobufDatabase
+            // During this migration also the ID is determined from memory (as opposed to using the DB sequence)
+            for (var account : db.listAccounts()) {
+                if (account instanceof User) {
+                    users.put(account.getName(), (User) account);
+                    accountIdSequence.set((int) Math.max(accountIdSequence.get(), account.getId()));
+                } else if (account instanceof ServiceAccount) {
+                    serviceAccounts.put(account.getName(), (ServiceAccount) account);
+                    accountIdSequence.set((int) Math.max(accountIdSequence.get(), account.getId()));
+                }
+            }
+            for (var group : db.listGroups()) {
+                groups.put(group.getName(), group);
+                groupIdSequence.set((int) Math.max(groupIdSequence.get(), group.getId()));
+            }
         } catch (YarchException | IOException e) {
             throw new InitException(e);
         }
 
         loadRoles();
+    }
+
+    /**
+     * Users and groups used to be stored in "ProtobufDatabase", but that is being phased out in favor of tables in the
+     * Yamcs DB, now that this has the functionality we need.
+     *
+     * This migration is to be kept around for a long time, to allow people with old Yamcs versions to upgrade.
+     */
+    private void migrateFromProtobufDatabase() throws IOException {
+        var yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
+        var groupCollection = protobufDatabase.get(GROUP_COLLECTION, GroupCollection.class);
+        if (groupCollection != null) {
+            var idSequence = yarch.getTable("group").getColumnDefinition("id").getSequence();
+            idSequence.reset(groupCollection.getSeq() + 1);
+
+            for (var rec : groupCollection.getRecordsList()) {
+                db.addGroup(new Group(rec));
+            }
+        }
+
+        var accountCollection = protobufDatabase.get(ACCOUNT_COLLECTION, AccountCollection.class);
+        if (accountCollection != null) {
+            var idSequence = yarch.getTable("account").getColumnDefinition("id").getSequence();
+            idSequence.reset(accountCollection.getSeq() + 1);
+
+            for (var rec : accountCollection.getRecordsList()) {
+                if (rec.hasUserDetail()) {
+                    db.addAccount(new User(rec));
+                } else if (rec.hasServiceDetail()) {
+                    db.addAccount(new ServiceAccount(rec));
+                } else {
+                    throw new IllegalStateException("Unexpected account type");
+                }
+            }
+        }
     }
 
     public synchronized void addUser(User user) throws IOException {
@@ -109,13 +144,17 @@ public class Directory {
             }
         }
         log.info("Saving new user {}", user);
-        updateUserProperties(user);
-    }
-
-    public synchronized void updateUserProperties(User user) throws IOException {
         setUserPrivileges(user);
         users.put(user.getName(), user);
-        persistChanges();
+        mirrorToProtobufDatabase();
+        db.addAccount(user);
+    }
+
+    public synchronized void updateUserProperties(User user) {
+        setUserPrivileges(user);
+        users.put(user.getName(), user);
+        mirrorToProtobufDatabase();
+        db.updateAccount(user);
     }
 
     private void setUserPrivileges(User user) {
@@ -134,7 +173,6 @@ public class Directory {
     }
 
     public synchronized void deleteUser(User user) throws IOException {
-        String username = user.getName();
         log.info("Removing user {}", user);
         var groups = db.listGroups();
         for (var group : groups) {
@@ -142,11 +180,12 @@ public class Directory {
                 db.updateGroup(group);
             }
         }
-        users.remove(username);
-        persistChanges();
+        users.remove(user.getName());
+        mirrorToProtobufDatabase();
+        db.deleteAccount(user);
     }
 
-    public synchronized void addGroup(Group group) throws IOException {
+    public synchronized void addGroup(Group group) {
         String groupName = group.getName();
         if (db.findGroupByName(groupName) != null) {
             throw new IllegalArgumentException("Group '" + groupName + "' already exists");
@@ -156,10 +195,11 @@ public class Directory {
 
         log.info("Saving new group {}", group);
         groups.put(group.getName(), group);
-        persistChanges();
+        mirrorToProtobufDatabase();
+        db.addGroup(group);
     }
 
-    public synchronized void renameGroup(String from, String to) throws IOException {
+    public synchronized void renameGroup(String from, String to) {
         if (db.findGroupByName(to) != null) {
             throw new IllegalArgumentException("Group '" + to + "' already exists");
         }
@@ -168,17 +208,20 @@ public class Directory {
 
         groups.remove(from);
         groups.put(to, group);
-        persistChanges();
+        mirrorToProtobufDatabase();
+        db.updateGroup(group);
     }
 
-    public synchronized void updateGroupProperties(Group group) throws IOException {
+    public synchronized void updateGroupProperties(Group group) {
         groups.put(group.getName(), group);
-        persistChanges();
+        mirrorToProtobufDatabase();
+        db.updateGroup(group);
     }
 
-    public synchronized void deleteGroup(Group group) throws IOException {
+    public synchronized void deleteGroup(Group group) {
         groups.remove(group.getName());
-        persistChanges();
+        mirrorToProtobufDatabase();
+        db.deleteGroup(group);
     }
 
     /**
@@ -202,19 +245,22 @@ public class Directory {
 
         log.info("Saving new service account {}", service);
         serviceAccounts.put(service.getName(), service);
-        persistChanges();
+        mirrorToProtobufDatabase();
+        db.addAccount(service);
 
         return new ApplicationCredentials(applicationId, applicationSecret /* not the hash */);
     }
 
-    public synchronized void deleteServiceAccount(String name) throws IOException {
-        serviceAccounts.remove(name);
-        persistChanges();
+    public synchronized void deleteServiceAccount(ServiceAccount service) {
+        serviceAccounts.remove(service.getName());
+        mirrorToProtobufDatabase();
+        db.deleteAccount(service);
     }
 
-    public synchronized void updateApplicationProperties(ServiceAccount service) throws IOException {
+    public synchronized void updateApplicationProperties(ServiceAccount service) {
         serviceAccounts.put(service.getName(), service);
-        persistChanges();
+        mirrorToProtobufDatabase();
+        db.updateAccount(service);
     }
 
     @SuppressWarnings("unchecked")
@@ -246,7 +292,12 @@ public class Directory {
         }
     }
 
-    private synchronized void persistChanges() throws IOException {
+    /**
+     * For backwards compatibility reasons, copy the Yamcs DB in full to the legacy Protobuf Database. This can be
+     * removed in a year or so.
+     */
+    @Deprecated
+    private synchronized void mirrorToProtobufDatabase() {
         AccountCollection.Builder accountsb = AccountCollection.newBuilder();
         accountsb.setSeq(accountIdSequence.get());
         for (User user : users.values()) {
@@ -260,41 +311,11 @@ public class Directory {
         for (Group group : groups.values()) {
             groupsb.addRecords(group.toRecord());
         }
-        protobufDatabase.save(ACCOUNT_COLLECTION, accountsb.build());
-        protobufDatabase.save(GROUP_COLLECTION, groupsb.build());
-
-        mirrorToYamcsDB();
-    }
-
-    private void mirrorToYamcsDB() throws IOException {
-        db.deleteGroups();
-        var groupCollection = protobufDatabase.get(GROUP_COLLECTION, GroupCollection.class);
-        if (groupCollection != null) {
-            var yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
-            var idSequence = yarch.getTable("group").getColumnDefinition("id").getSequence();
-            idSequence.reset(groupCollection.getSeq() + 1);
-
-            for (var rec : groupCollection.getRecordsList()) {
-                db.addGroup(new Group(rec));
-            }
-        }
-
-        db.deleteAccounts();
-        var accountCollection = protobufDatabase.get(ACCOUNT_COLLECTION, AccountCollection.class);
-        if (accountCollection != null) {
-            var yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
-            var idSequence = yarch.getTable("account").getColumnDefinition("id").getSequence();
-            idSequence.reset(accountCollection.getSeq() + 1);
-
-            for (var rec : accountCollection.getRecordsList()) {
-                if (rec.hasUserDetail()) {
-                    db.addAccount(new User(rec));
-                } else if (rec.hasServiceDetail()) {
-                    db.addAccount(new ServiceAccount(rec));
-                } else {
-                    throw new IllegalStateException("Unexpected account type");
-                }
-            }
+        try {
+            protobufDatabase.save(ACCOUNT_COLLECTION, accountsb.build());
+            protobufDatabase.save(GROUP_COLLECTION, groupsb.build());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -331,7 +352,7 @@ public class Directory {
         }
     }
 
-    public void changePassword(User user, char[] password) throws IOException {
+    public void changePassword(User user, char[] password) {
         if (user.isExternallyManaged()) {
             throw new IllegalArgumentException("The identity of this user is not managed by Yamcs");
         }
@@ -339,7 +360,8 @@ public class Directory {
             String hash = hasher.createHash(password);
             user.setHash(hash);
             users.put(user.name, user);
-            persistChanges();
+            mirrorToProtobufDatabase();
+            db.updateAccount(user);
         }
     }
 
@@ -392,7 +414,10 @@ public class Directory {
     }
 
     public ServiceAccount getServiceAccount(String name) {
-        return serviceAccounts.get(name);
+        var account = db.findAccountByName(name);
+        return (account instanceof ServiceAccount)
+                ? (ServiceAccount) account
+                : null;
     }
 
     public List<ServiceAccount> getServiceAccounts() {

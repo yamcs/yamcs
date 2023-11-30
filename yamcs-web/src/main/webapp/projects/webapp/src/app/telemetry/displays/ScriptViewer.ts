@@ -1,13 +1,11 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
-import { StorageClient } from '@yamcs/webapp-sdk';
+import { ConfigService, StorageClient, YamcsService } from '@yamcs/webapp-sdk';
 import * as ace from 'brace';
 import 'brace/mode/javascript';
 import 'brace/theme/eclipse';
 import 'brace/theme/twilight';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
-import { ConfigService } from '../../core/services/ConfigService';
-import { YamcsService } from '../../core/services/YamcsService';
 import { Viewer } from './Viewer';
 
 @Component({
@@ -25,7 +23,7 @@ import { Viewer } from './Viewer';
 export class ScriptViewer implements Viewer {
 
   @ViewChild('scriptContainer', { static: true })
-  private scriptContainer: ElementRef;
+  private scriptContainer: ElementRef<HTMLDivElement>;
 
   objectName: string;
 
@@ -50,8 +48,14 @@ export class ScriptViewer implements Viewer {
     this.objectName = objectName;
     this.storageClient.getObject(this.bucket, objectName).then(response => {
       response.text().then(text => {
-        this.scriptContainer.nativeElement.innerHTML = text;
         this.editor = ace.edit(this.scriptContainer.nativeElement);
+        this.editor.$blockScrolling = Infinity; // Required to suppress a warning
+        this.editor.getSession().setMode('ace/mode/javascript');
+        this.changeDetector.detectChanges();
+
+        this.editor.setTheme('ace/theme/eclipse');
+        this.editor.setValue(text, -1);
+
         if (this.mayManageDisplays()) {
           this.editor.addEventListener('change', () => {
             this.hasUnsavedChanges$.next(true);
@@ -59,10 +63,6 @@ export class ScriptViewer implements Viewer {
         } else {
           this.editor.setReadOnly(true);
         }
-        this.editor.getSession().setMode('ace/mode/javascript');
-        this.changeDetector.detectChanges();
-
-        this.editor.setTheme('ace/theme/eclipse');
       });
     });
 

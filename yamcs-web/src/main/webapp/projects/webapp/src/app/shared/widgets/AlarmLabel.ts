@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { FaviconService, GlobalAlarmStatus, GlobalAlarmStatusSubscription } from '@yamcs/webapp-sdk';
+import { FaviconService, GlobalAlarmStatus, GlobalAlarmStatusSubscription, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
-import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   selector: 'app-alarm-label',
