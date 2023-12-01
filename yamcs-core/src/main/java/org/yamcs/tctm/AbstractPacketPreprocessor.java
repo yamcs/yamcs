@@ -20,8 +20,7 @@ import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
 
 /**
- * This class provides some common facilities for the packet preprocessors.
- * Options:
+ * This class provides some common facilities for the packet preprocessors. Options:
  * 
  * <pre>
  *   dataLinks:
@@ -54,8 +53,7 @@ import org.yamcs.utils.TimeEncoding;
  * The time read from the packet is interpreted as delta from {@code epochUTC}.
  * <p>
  * If {@code timeIncludesLeapSeconds} is {@code true} (default), the delta time is considered as having the leap seconds
- * included
- * (practically it is the real time that passed).
+ * included (practically it is the real time that passed).
  * <p>
  * TAI, J2000 and GPS have the leap seconds included, UNIX does not.
  * <p>
@@ -87,7 +85,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
     protected static final String CONFIG_KEY_BYTE_ORDER = "byteOrder";
     protected static final String CONFIG_KEY_CHECK_SEQUENCE = "checkSequence";
 
-    static final String ETYPE_CORRUPTED_PACKET = "CORRUPTED_PACKET";
+    protected static final String ETYPE_CORRUPTED_PACKET = "CORRUPTED_PACKET";
 
     // which error detection algorithm to use (null = no checksum)
     protected ErrorDetectionWordCalculator errorDetectionCalculator;
