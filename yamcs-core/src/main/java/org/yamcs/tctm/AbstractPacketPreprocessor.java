@@ -13,6 +13,7 @@ import org.yamcs.logging.Log;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
 import org.yamcs.time.FixedSizeTimeDecoder;
+import org.yamcs.time.Float64TimeDecoder;
 import org.yamcs.time.TimeCorrelationService;
 import org.yamcs.time.TimeDecoder;
 import org.yamcs.time.TimeService;
@@ -76,7 +77,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
     };
 
     public static enum TimeDecoderType {
-        CUC, FIXED
+        CUC, FIXED, FLOAT64
     }
 
     protected static final String CONFIG_KEY_ERROR_DETECTION = "errorDetection";
@@ -179,6 +180,9 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
             }
             double multiplier = c.getDouble("multiplier", 1);
             timeDecoder = new FixedSizeTimeDecoder(size, multiplier);
+            break;
+        case FLOAT64:
+            timeDecoder = new Float64TimeDecoder(byteOrder);
             break;
         default:
             throw new UnsupportedOperationException("unknown time decoder type " + type);
