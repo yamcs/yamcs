@@ -1896,8 +1896,14 @@ public class XtceStaxReader extends AbstractStaxReader {
         String tag = xmlEvent.asStartElement().getName().getLocalPart();
         EnumerationAlarm alarm = new EnumerationAlarm();
 
-        // initialValue attribute
         alarm.setMinViolations(readIntAttribute("minViolations", xmlEvent.asStartElement(), 1));
+
+        var defaultAlarmLevel = AlarmLevels.NORMAL;
+        var defaultAlarmLevelString = readAttribute("defaultAlarmLevel", xmlEvent.asStartElement(), null);
+        if (defaultAlarmLevelString != null) {
+            defaultAlarmLevel = getAlarmLevel(defaultAlarmLevelString);
+        }
+        alarm.setDefaultAlarmLevel(defaultAlarmLevel);
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
