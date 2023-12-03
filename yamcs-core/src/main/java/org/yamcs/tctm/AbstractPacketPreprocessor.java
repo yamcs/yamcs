@@ -120,6 +120,10 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
 
     protected AbstractPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         log = new Log(this.getClass(), yamcsInstance);
+
+        // Before anything else
+        byteOrder = getByteOrder(config);
+
         errorDetectionCalculator = getErrorDetectionWordCalculator(config);
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, this.getClass().getSimpleName(), 10000);
         timeService = YamcsServer.getTimeService(yamcsInstance);
@@ -136,7 +140,6 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
                         "Cannot find a time correlation service with name " + tcoServiceName);
             }
         }
-        byteOrder = getByteOrder(config);
     }
 
     private void configureTimeDecoder(YConfiguration config) {
