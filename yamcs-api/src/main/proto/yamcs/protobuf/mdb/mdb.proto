@@ -659,7 +659,8 @@ message ContainerInfo {
   optional int64 maxInterval = 6;
   optional int32 sizeInBits = 7;
   optional ContainerInfo baseContainer = 8;
-  repeated ComparisonInfo restrictionCriteria = 9;
+  repeated ComparisonInfo restrictionCriteria = 9 [deprecated=true];
+  optional string restrictionCriteriaExpression = 13;
   repeated SequenceEntryInfo entry = 10;
   optional UsedByInfo usedBy = 11;
   map<string, AncillaryDataInfo> ancillaryData = 12;

@@ -334,7 +334,7 @@ export interface Container extends NameDescription {
   maxInterval: number;
   sizeInBits: number;
   baseContainer: Container;
-  restrictionCriteria: ComparisonInfo[];
+  restrictionCriteriaExpression: string;
   entry: SequenceEntry[];
 }
 

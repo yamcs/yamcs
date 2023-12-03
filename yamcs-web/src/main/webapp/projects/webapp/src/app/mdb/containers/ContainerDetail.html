@@ -50,18 +50,9 @@
   </dd>
 
   <dt>Restriction Criteria</dt>
-  <dd *ngIf="container.restrictionCriteria">
-    <ng-container *ngFor="let criteria of container.restrictionCriteria">
-      <a [routerLink]="['/mdb/parameters/', criteria.parameter.qualifiedName]"
-         [queryParams]="{c: yamcs.context}"
-         class="ya-link">
-        {{ criteria.parameter.qualifiedName }}</a>
-      {{ criteria.operator | operator }}
-      {{ criteria.value }}
-      <br>
-    </ng-container>
+  <dd>
+    {{ container.restrictionCriteriaExpression || '-' }}
   </dd>
-  <dd *ngIf="!container.restrictionCriteria">-</dd>
 </dl>
 
 <mat-divider />

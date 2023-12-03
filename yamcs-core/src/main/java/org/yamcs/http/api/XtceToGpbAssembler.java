@@ -197,6 +197,7 @@ public class XtceToGpbAssembler {
                 }
             }
             if (c.getRestrictionCriteria() != null) {
+                cb.setRestrictionCriteriaExpression(toExpressionString(c.getRestrictionCriteria()));
                 if (c.getRestrictionCriteria() instanceof ComparisonList) {
                     ComparisonList xtceList = (ComparisonList) c.getRestrictionCriteria();
                     for (Comparison comparison : xtceList.getComparisonList()) {

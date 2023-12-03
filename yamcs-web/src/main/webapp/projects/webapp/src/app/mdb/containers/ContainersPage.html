@@ -56,17 +56,7 @@
       <ng-container matColumnDef="restrictionCriteria">
         <th mat-header-cell *matHeaderCellDef>Restriction criteria</th>
         <td mat-cell *matCellDef="let container">
-          <ng-container *ngFor="let criteria of container.restrictionCriteria">
-            <a [routerLink]="['/mdb/parameters/', criteria.parameter.qualifiedName]"
-               [queryParams]="{c: yamcs.context}"
-               class="secundary">
-              {{ criteria.parameter.qualifiedName }}
-            </a>
-            {{ criteria.operator | operator }}
-            {{ criteria.value }}
-            <br>
-          </ng-container>
-          <ng-container *ngIf="!container.restrictionCriteria">-</ng-container>
+          {{ container.restrictionCriteriaExpression || '-' }}
         </td>
       </ng-container>
 
