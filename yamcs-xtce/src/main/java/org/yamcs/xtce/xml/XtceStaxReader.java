@@ -1108,8 +1108,9 @@ public class XtceStaxReader extends AbstractStaxReader {
                 typeBuilder.setEncoding(readBinaryDataEncoding(spaceSystem));
             } else if (isStartElementWithName(ELEM_STRING_DATA_ENCODING)) {
                 typeBuilder.setEncoding(readStringDataEncoding(spaceSystem));
-            } else if (isStartElementWithName(ELEM_INTEGER_DATA_ENCODING)
-                    || isStartElementWithName(ELEM_FLOAT_DATA_ENCODING)) {
+            } else if (isStartElementWithName(ELEM_INTEGER_DATA_ENCODING)) {
+                typeBuilder.setEncoding(readIntegerDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(ELEM_FLOAT_DATA_ENCODING)) {
                 throw new XMLStreamException("Encoding " + xmlEvent.asStartElement().getName().getLocalPart()
                         + " not supported for binary parameter", xmlEvent.getLocation());
             } else if (isEndElementWithName(ELEM_BINARY_PARAMETER_TYPE)) {
