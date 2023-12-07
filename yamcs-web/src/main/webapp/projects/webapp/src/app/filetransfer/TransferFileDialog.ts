@@ -320,7 +320,7 @@ export class TransferFileDialog implements OnDestroy {
   }
 
   private getTransferOptions() {
-    return this.service.transferOptions.reduce((options, option) => {
+    return this.service.transferOptions?.reduce((options, option) => {
       const controlName = this.optionsMapping.get(option);
       if (!controlName) {
         return options;
