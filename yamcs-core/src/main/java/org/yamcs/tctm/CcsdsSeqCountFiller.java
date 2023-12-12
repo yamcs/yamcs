@@ -48,4 +48,12 @@ public class CcsdsSeqCountFiller {
 
         return seqCount;
     }
+
+    public int getApid(byte[] packet) {
+        int apidseqcount = ByteArrayUtils.decodeInt(packet, 0);
+        int apid = (apidseqcount >> 16) & 0x07FF;
+
+        return apid;
+    }
+
 }

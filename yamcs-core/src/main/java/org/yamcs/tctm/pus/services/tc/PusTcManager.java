@@ -46,4 +46,9 @@ public class PusTcManager {
     public PreparedCommand addPusModifiers(PreparedCommand telecommand) {
         return pusServices.get(PusTcModifier.getMessageType(telecommand)).addPusModifiers(telecommand);
     }
+
+    public int getSourceID() {
+        return sourceID;
+    }
+
 }

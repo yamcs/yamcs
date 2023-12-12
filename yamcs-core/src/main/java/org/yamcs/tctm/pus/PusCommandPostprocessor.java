@@ -52,7 +52,9 @@ public class PusCommandPostprocessor implements CommandPostprocessor {
         bb.putShort(4, (short) (binary.length - 7)); // write packet length
         int seqCount = seqFiller.fill(binary); // write sequence count
 
-        commandHistoryListener.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
+        commandHistoryListener.publish(pc.getCommandId(), CommandHistoryPublisher.CcsdsSeq_KEY, seqCount);
+        commandHistoryListener.publish(pc.getCommandId(), CommandHistoryPublisher.Apid_KEY, seqFiller.getApid(binary));
+
         if (hasCrc) {
             int pos = binary.length - 2;
             try {
@@ -64,6 +66,7 @@ public class PusCommandPostprocessor implements CommandPostprocessor {
             }
         }
 
+        commandHistoryListener.publish(pc.getCommandId(), CommandHistoryPublisher.SourceID_KEY, pusTcManager.getSourceID());
         commandHistoryListener.publish(pc.getCommandId(), PreparedCommand.CNAME_BINARY, binary);
         return binary;
     }
