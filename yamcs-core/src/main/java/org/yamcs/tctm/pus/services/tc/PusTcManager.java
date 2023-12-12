@@ -8,7 +8,7 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.tc.two.ServiceTwo;
-import org.yamcs.tctm.pus.services.tm.three.ServiceThree;
+import org.yamcs.tctm.pus.services.tc.three.ServiceThree;
 
 public class PusTcManager {
     Log log;
