@@ -32,6 +32,12 @@ public interface CommandHistoryPublisher {
     public final static String CcsdsSeq_KEY = "ccsds-seqcount";
     public final static String Queue_KEY = "queue";
 
+    /*
+     * Used primarily in CMD verifier algorithms to subscribe to CMD and CMDHist arguments
+     */
+    public final static String SourceID_KEY = "SourceID";
+    public final static String Apid_KEY = "Apid";
+
     // these are used when publishing acks
     public final static String SUFFIX_STATUS = "_Status";
     public final static String SUFFIX_TIME = "_Time";

@@ -23,7 +23,6 @@ import org.yamcs.yarch.YarchDatabaseInstance;
  */
 public class StreamCommandHistoryPublisher implements CommandHistoryPublisher {
     static public final String REALTIME_CMDHIST_STREAM_NAME = "cmdhist_realtime";
-    static public final String DUMP_CMDHIST_STREAM_NAME = "cmdhist_dump";
 
     Stream stream;
     final String instance;
