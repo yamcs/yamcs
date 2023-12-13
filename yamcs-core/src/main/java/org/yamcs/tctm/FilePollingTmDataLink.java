@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.zip.GZIPInputStream;
 
 import org.yamcs.ConfigurationException;
@@ -84,9 +85,15 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
         if (config.containsKey("packetInputStreamClassName")) {
             packetInputStreamClassName = config.getString("packetInputStreamClassName");
             packetInputStreamArgs = config.getConfigOrEmpty("packetInputStreamArgs");
-        } else {// compatibility with the previous releases, should eventually be removed
-            packetInputStreamClassName = UsocPacketInputStream.class.getName();
-            packetPreprocessor = new IssPacketPreprocessor(yamcsInstance);
+        } else {
+            packetInputStreamClassName = GenericPacketInputStream.class.getName();
+            HashMap<String, Object> m = new HashMap<>();
+            m.put("maxPacketLength", 1000);
+            m.put("lengthFieldOffset", 4);
+            m.put("lengthFieldLength", 2);
+            m.put("lengthAdjustment", 7);
+            m.put("initialBytesToStrip", 0);
+            packetInputStreamArgs = YConfiguration.wrap(m);
         }
     }
 
