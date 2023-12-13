@@ -313,26 +313,26 @@ public class XtceStaxReader extends AbstractStaxReader {
         String name = readMandatoryAttribute(ATTR_NAME, element);
         String mimeType = readAttribute("mimeType", element, null);
         String href = readAttribute("href", element, null);
+        String text = null;
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-
             if (xmlEvent.isCharacters()) {
-                String value = xmlEvent.asCharacters().getData().trim();
-                AncillaryData ad = new AncillaryData(name, value);
-                if (mimeType != null) {
-                    ad.setMimeType(mimeType);
-                }
-                if (href != null) {
-                    ad.setHref(URI.create(href));
-                }
-                ancillaryData.add(ad);
+                text = xmlEvent.asCharacters().getData().trim();
                 break;
             } else if (isEndElementWithName(ELEM_ANCILLARY_DATA)) {
-                return;
+                break;
             }
         }
 
+        AncillaryData ad = new AncillaryData(name, text);
+        if (mimeType != null) {
+            ad.setMimeType(mimeType);
+        }
+        if (href != null) {
+            ad.setHref(URI.create(href));
+        }
+        ancillaryData.add(ad);
     }
 
     /**
@@ -3695,6 +3695,7 @@ public class XtceStaxReader extends AbstractStaxReader {
         if (stage == null) {
             stage = type;
         }
+        List<AncillaryData> ancillaryData = Collections.emptyList();
         CommandVerifier cmdVerifier = null;
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -3728,7 +3729,8 @@ public class XtceStaxReader extends AbstractStaxReader {
                 }
                 CheckWindow cw = readCheckWindow(spaceSystem);
                 cmdVerifier.setCheckWindow(cw);
-
+            } else if (isStartElementWithName(ELEM_ANCILLARY_DATA_SET)) {
+                ancillaryData = readAncillaryDataSet();
             } else if (isStartElementWithName(ELEM_RETURN_PARAM_REF)) {
                 if (cmdVerifier == null) {
                     throw new XMLStreamException("ReturnParmRef specified before the verifier.",
@@ -3745,14 +3747,45 @@ public class XtceStaxReader extends AbstractStaxReader {
                         throw new XMLStreamException("No CheckWindow specified for command verifier",
                                 xmlEvent.getLocation());
                     }
+                    TerminationAction onSuccess = null;
+                    TerminationAction onFail = null;
+                    TerminationAction onTimeout = null;
                     if ("Failed".equals(type)) {
-                        cmdVerifier.setOnSuccess(TerminationAction.FAIL);
+                        onSuccess = TerminationAction.FAIL;
                     } else if ("Complete".equals(type)) {
-                        cmdVerifier.setOnSuccess(TerminationAction.SUCCESS);
-                        cmdVerifier.setOnFail(TerminationAction.FAIL);
+                        onSuccess = TerminationAction.SUCCESS;
+                        onFail = TerminationAction.FAIL;
                     } else {
-                        cmdVerifier.setOnFail(TerminationAction.FAIL);
+                        onFail = TerminationAction.FAIL;
                     }
+
+                    // Allow overriding the default behaviour through
+                    // ancillary data elements
+                    for (var item : ancillaryData) {
+                        if (item.getName().equals("yamcs.onSuccess")) {
+                            if (item.getValue() != null) {
+                                onSuccess = TerminationAction.valueOf(item.getValue());
+                            } else {
+                                onSuccess = null;
+                            }
+                        } else if (item.getName().equals("yamcs.onFail")) {
+                            if (item.getValue() != null) {
+                                onFail = TerminationAction.valueOf(item.getValue());
+                            } else {
+                                onFail = null;
+                            }
+                        } else if (item.getName().equals("yamcs.onTimeout")) {
+                            if (item.getValue() != null) {
+                                onTimeout = TerminationAction.valueOf(item.getValue());
+                            } else {
+                                onTimeout = null;
+                            }
+                        }
+                    }
+
+                    cmdVerifier.setOnSuccess(onSuccess);
+                    cmdVerifier.setOnFail(onFail);
+                    cmdVerifier.setOnTimeout(onTimeout);
                 }
                 return cmdVerifier;
             } else {

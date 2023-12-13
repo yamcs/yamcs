@@ -21,6 +21,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
@@ -1634,6 +1635,16 @@ public class XtceAssembler {
             return;
         }
         doc.writeStartElement(verifier.getStage() + "Verifier");
+
+        var ancillaryData = new ArrayList<AncillaryData>();
+        ancillaryData.add(new AncillaryData("yamcs.onSuccess",
+                verifier.getOnSuccess() != null ? verifier.getOnSuccess().name() : null));
+        ancillaryData.add(new AncillaryData("yamcs.onFail",
+                verifier.getOnFail() != null ? verifier.getOnFail().name() : null));
+        ancillaryData.add(new AncillaryData("yamcs.onTimeout",
+                verifier.getOnTimeout() != null ? verifier.getOnTimeout().name() : null));
+        writeAncillaryData(doc, ancillaryData);
+
         switch (verifier.getType()) {
         case MATCH_CRITERIA:
             writeMatchCriteria(doc, verifier.getMatchCriteria());

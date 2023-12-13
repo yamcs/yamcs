@@ -494,6 +494,9 @@ public class XtceToGpbAssembler {
         if (xtceVerifier.getContainerRef() != null) {
             b.setContainer(toContainerInfo(xtceVerifier.getContainerRef(), DetailLevel.SUMMARY));
         }
+        if (xtceVerifier.getMatchCriteria() != null) {
+            b.setExpression(toExpressionString(xtceVerifier.getMatchCriteria()));
+        }
         return b.build();
     }
 

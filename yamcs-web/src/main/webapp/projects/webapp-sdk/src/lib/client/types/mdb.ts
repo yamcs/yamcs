@@ -186,6 +186,7 @@ export interface Verifier {
   stage: string;
   container?: Container;
   algorithm?: Algorithm;
+  expression?: string;
   onSuccess: TerminationActionType;
   onFail: TerminationActionType;
   onTimeout: TerminationActionType;
