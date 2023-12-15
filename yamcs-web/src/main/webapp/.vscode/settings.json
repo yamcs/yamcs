@@ -2,7 +2,7 @@
     "html.format.wrapAttributes": "preserve-aligned",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-        "source.organizeImports": true
+      "source.organizeImports": "explicit"
     },
     "editor.detectIndentation": false,
     "editor.tabSize": 2,

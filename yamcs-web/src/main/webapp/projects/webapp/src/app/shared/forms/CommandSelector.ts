@@ -2,7 +2,7 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, Input, ViewChild } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
-import { ColumnChooserComponent, ColumnInfo, Command, GetCommandsOptions, SearchFilterComponent, YamcsService } from '@yamcs/webapp-sdk';
+import { ColumnChooserComponent, ColumnInfo, Command, GetCommandsOptions, SearchFilterComponent, SpaceSystem, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { CommandsDataSource } from '../../commanding/command-sender/CommandsDataSource';
 
@@ -129,7 +129,7 @@ export class CommandSelector implements ControlValueAccessor, AfterViewInit {
   }
 
   selectRow(row: ListItem) {
-    if (row.spaceSystem) {
+    if (row.system) {
       this.selectedCommand$.next(null);
       this.changeSystem(row.name);
     } else {
@@ -201,8 +201,8 @@ export class CommandSelector implements ControlValueAccessor, AfterViewInit {
 }
 
 export class ListItem {
-  spaceSystem: boolean;
   name: string;
+  system?: SpaceSystem;
   command?: Command;
 }
 

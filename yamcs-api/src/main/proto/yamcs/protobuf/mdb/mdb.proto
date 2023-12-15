@@ -953,7 +953,13 @@ message ListParametersRequest {
 }
 
 message ListParametersResponse {
-  repeated string spaceSystems = 4;
+  // Matching subsystems when the ``system`` option was specified
+  repeated SpaceSystemInfo systems = 5;
+
+  // Deprecated. Use ``systems`` instead
+  repeated string spaceSystems = 4 [deprecated=true];
+
+  // Matching parameters
   repeated ParameterInfo parameters = 1;
   
   // Token indicating the response is only partial. More results can then
@@ -979,7 +985,13 @@ message BatchGetParametersResponse {
 }
 
 message ListContainersResponse {
-  repeated string spaceSystems = 4;
+  // Matching subsystems when the ``system`` option was specified
+  repeated SpaceSystemInfo systems = 5;
+
+  // Deprecated. Use ``systems`` instead
+  repeated string spaceSystems = 4 [deprecated=true];
+
+  // Matching containers
   repeated ContainerInfo containers = 1;
   
   // Token indicating the response is only partial. More results can then
@@ -992,7 +1004,13 @@ message ListContainersResponse {
 }
 
 message ListParameterTypesResponse {
-  repeated string spaceSystems = 4;
+  // Matching subsystems when the ``system`` option was specified
+  repeated SpaceSystemInfo systems = 5;
+
+  // Deprecated. Use ``systems`` instead
+  repeated string spaceSystems = 4 [deprecated=true];
+
+  // Matching parameter types
   repeated ParameterTypeInfo parameterTypes = 1;
 
   // Token indicating the response is only partial. More results can then
@@ -1005,7 +1023,13 @@ message ListParameterTypesResponse {
 }
 
 message ListCommandsResponse {
-  repeated string spaceSystems = 4;
+  // Matching subsystems when the ``system`` option was specified
+  repeated SpaceSystemInfo systems = 5;
+
+  // Deprecated. Use ``systems`` instead
+  repeated string spaceSystems = 4 [deprecated=true];
+
+  // Matching commands
   repeated CommandInfo commands = 1;
   
   // Token indicating the response is only partial. More results can then
@@ -1018,7 +1042,13 @@ message ListCommandsResponse {
 }
 
 message ListAlgorithmsResponse {
-  repeated string spaceSystems = 4;
+  // Matching subsystems when the ``system`` option was specified
+  repeated SpaceSystemInfo systems = 5;
+
+  // Deprecated. Use ``systems`` instead
+  repeated string spaceSystems = 4 [deprecated=true];
+
+  // Matching algorithms
   repeated AlgorithmInfo algorithms = 1;
   
   // Token indicating the response is only partial. More results can then
@@ -1166,6 +1196,7 @@ message MissionDatabaseItem {
 }
 
 message ListSpaceSystemsResponse {
+  // Matching space systems
   repeated SpaceSystemInfo spaceSystems = 1;
   
   // Token indicating the response is only partial. More results can then

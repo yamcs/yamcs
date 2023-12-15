@@ -71,6 +71,12 @@
   word-break: break-word;
 }
 
+.ya-data-table td.mat-mdc-cell.wrap400 {
+  min-width: 400px;
+  white-space: normal;
+  word-break: break-word;
+}
+
 .ya-data-table mat-icon {
   font-size: 16px !important;
   height: 16px !important;

@@ -1,10 +1,10 @@
 import { DataSource } from '@angular/cdk/table';
-import { GetParametersOptions, MemberPathPipe, NamedObjectId, Parameter, ParameterSubscription, ParameterValue, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
+import { GetParametersOptions, MemberPathPipe, NamedObjectId, Parameter, ParameterSubscription, ParameterValue, SpaceSystem, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 export class ListItem {
-  spaceSystem: boolean;
   name: string;
+  system?: SpaceSystem;
   parameter?: Parameter;
   pval?: ParameterValue;
 }
@@ -50,12 +50,11 @@ export class ParametersDataSource extends DataSource<ListItem> {
     return this.yamcs.yamcsClient.getParameters(this.yamcs.instance!, options).then(page => {
       this.totalSize$.next(page.totalSize);
       const items: ListItem[] = [];
-      for (const spaceSystem of (page.spaceSystems || [])) {
-        items.push({ spaceSystem: true, name: spaceSystem });
+      for (const system of (page.systems || [])) {
+        items.push({ name: system.qualifiedName, system });
       }
       for (const parameter of (page.parameters || [])) {
         items.push({
-          spaceSystem: false,
           name: this.memberPathPipe.transform(parameter)!,
           parameter: parameter,
         });
@@ -68,7 +67,7 @@ export class ParametersDataSource extends DataSource<ListItem> {
   private refreshTable() {
     const items = this.items$.value;
     for (const item of items) {
-      if (!item.spaceSystem) {
+      if (!item.system) {
         item.pval = this.latestValues.get(item.name);
       }
     }

@@ -203,8 +203,10 @@ public class XtceStaxReader extends AbstractStaxReader {
     private SpaceSystem readSpaceSystem() throws XMLStreamException {
         checkStartElementPreconditions();
 
-        String value = readMandatoryAttribute(ATTR_NAME, xmlEvent.asStartElement());
+        var startElement = xmlEvent.asStartElement();
+        String value = readMandatoryAttribute(ATTR_NAME, startElement);
         SpaceSystem spaceSystem = new SpaceSystem(value);
+        spaceSystem.setShortDescription(readAttribute(ATTR_SHORT_DESCRIPTION, startElement, null));
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();

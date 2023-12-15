@@ -156,7 +156,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
         if (!request.hasIncludeSpaceSystems() || request.getIncludeSpaceSystems()) {
             for (var spaceSystem : mdb.getSpaceSystems()) {
                 var item = MissionDatabaseItem.newBuilder()
-                        .setSpaceSystem(XtceToGpbAssembler.toSpaceSystemInfo(spaceSystem))
+                        .setSpaceSystem(XtceToGpbAssembler.toSpaceSystemInfo(spaceSystem, DetailLevel.FULL))
                         .build();
                 observer.next(item);
             }
@@ -254,7 +254,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
         ListSpaceSystemsResponse.Builder responseb = ListSpaceSystemsResponse.newBuilder();
         responseb.setTotalSize(totalSize);
         for (SpaceSystem s : matchedSpaceSystems) {
-            responseb.addSpaceSystems(XtceToGpbAssembler.toSpaceSystemInfo(s));
+            responseb.addSpaceSystems(XtceToGpbAssembler.toSpaceSystemInfo(s, DetailLevel.FULL));
         }
         if (continuationToken != null) {
             responseb.setContinuationToken(continuationToken.encodeAsString());
@@ -287,7 +287,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
         XtceDb mdb = MdbFactory.getInstance(instance);
         SpaceSystem spaceSystem = verifySpaceSystem(mdb, request.getName());
 
-        SpaceSystemInfo info = XtceToGpbAssembler.toSpaceSystemInfo(spaceSystem);
+        SpaceSystemInfo info = XtceToGpbAssembler.toSpaceSystemInfo(spaceSystem, DetailLevel.FULL);
         observer.complete(info);
     }
 
@@ -377,6 +377,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
                 .setTotalSize(page.getTotalSize());
         for (SpaceSystem s : page.getSpaceSystems()) {
             responseb.addSpaceSystems(s.getQualifiedName());
+            responseb.addSystems(XtceToGpbAssembler.toSpaceSystemInfo(s, DetailLevel.SUMMARY));
         }
         DetailLevel detail = request.getDetails() ? DetailLevel.FULL : DetailLevel.SUMMARY;
         for (NameDescription item : page.getItems()) {
@@ -661,6 +662,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
                 .setTotalSize(page.getTotalSize());
         for (SpaceSystem s : page.getSpaceSystems()) {
             responseb.addSpaceSystems(s.getQualifiedName());
+            responseb.addSystems(XtceToGpbAssembler.toSpaceSystemInfo(s, DetailLevel.SUMMARY));
         }
         for (NameDescription c : page.getItems()) {
             var ptype = (ParameterType) c;
@@ -750,6 +752,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
                 .setTotalSize(page.getTotalSize());
         for (SpaceSystem s : page.getSpaceSystems()) {
             responseb.addSpaceSystems(s.getQualifiedName());
+            responseb.addSystems(XtceToGpbAssembler.toSpaceSystemInfo(s, DetailLevel.SUMMARY));
         }
         for (SequenceContainer c : page.getItems()) {
             responseb.addContainers(XtceToGpbAssembler.toContainerInfo(c, DetailLevel.SUMMARY));
@@ -870,6 +873,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
                 .setTotalSize(page.getTotalSize());
         for (SpaceSystem s : page.getSpaceSystems()) {
             responseb.addSpaceSystems(s.getQualifiedName());
+            responseb.addSystems(XtceToGpbAssembler.toSpaceSystemInfo(s, DetailLevel.SUMMARY));
         }
         DetailLevel detail = request.getDetails() ? DetailLevel.FULL : DetailLevel.SUMMARY;
         for (MetaCommand c : page.getItems()) {
@@ -975,6 +979,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
                 .setTotalSize(page.getTotalSize());
         for (SpaceSystem s : page.getSpaceSystems()) {
             responseb.addSpaceSystems(s.getQualifiedName());
+            responseb.addSystems(XtceToGpbAssembler.toSpaceSystemInfo(s, DetailLevel.SUMMARY));
         }
         for (Algorithm a : page.getItems()) {
             responseb.addAlgorithms(XtceToGpbAssembler.toAlgorithmInfo(a, DetailLevel.SUMMARY));
@@ -1217,7 +1222,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
         b.setParameterTypeCount(mdb.getParameterTypes().size());
         SpaceSystem ss = mdb.getRootSpaceSystem();
         for (SpaceSystem sub : ss.getSubSystems()) {
-            b.addSpaceSystem(XtceToGpbAssembler.toSpaceSystemInfo(sub));
+            b.addSpaceSystem(XtceToGpbAssembler.toSpaceSystemInfo(sub, DetailLevel.FULL));
         }
         return b.build();
     }
