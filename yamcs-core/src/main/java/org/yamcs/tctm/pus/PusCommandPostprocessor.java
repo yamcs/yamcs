@@ -13,7 +13,6 @@ import org.yamcs.tctm.CcsdsPacket;
 import org.yamcs.tctm.CcsdsSeqCountFiller;
 import org.yamcs.tctm.CommandPostprocessor;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
-import org.yamcs.tctm.IssCommandPostprocessor;
 import org.yamcs.tctm.pus.services.tc.PusTcManager;
 
 public class PusCommandPostprocessor implements CommandPostprocessor {
@@ -33,7 +32,11 @@ public class PusCommandPostprocessor implements CommandPostprocessor {
     public PusCommandPostprocessor(String yamcsInstance, YConfiguration config) {
         errorDetectionCalculator = AbstractPacketPreprocessor.getErrorDetectionWordCalculator(config);
 
-        YConfiguration pusConfig = config.getConfigOrEmpty("pus");
+        YConfiguration pusConfig = YConfiguration.emptyConfig();
+        if (config != null) {
+            pusConfig = config.getConfigOrEmpty("pus");
+        }
+
         pusTcManager = new PusTcManager(yamcsInstance, pusConfig);
     }
 
