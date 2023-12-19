@@ -60,7 +60,6 @@ public class ByteArrayUtils {
         return 0;
     }
 
-
     /**
      * write an long into a byte array at offset and returns the array
      */
@@ -228,9 +227,23 @@ public class ByteArrayUtils {
         return a;
     }
 
+    public static byte[] encodeIntLE(int x, byte[] a, int offset) {
+        a[offset + 3] = (byte) (x >> 24);
+        a[offset + 2] = (byte) (x >> 16);
+        a[offset + 1] = (byte) (x >> 8);
+        a[offset] = (byte) (x);
+
+        return a;
+    }
+
     public static byte[] encodeInt(int x) {
         byte[] toReturn = new byte[4];
         return encodeInt(x, toReturn, 0);
+    }
+
+    public static byte[] encodeIntLE(int x) {
+        byte[] toReturn = new byte[4];
+        return encodeIntLE(x, toReturn, 0);
     }
 
     public static int decodeInt(byte[] a, int offset) {
@@ -274,6 +287,22 @@ public class ByteArrayUtils {
         a[offset + 1] = (byte) (x);
 
         return a;
+    }
+
+    public static byte[] encodeUnsignedShort(int x) {
+        byte[] toReturn = new byte[2];
+        return encodeUnsignedShort(x, toReturn, 0);
+    }
+
+    public static byte[] encodeUnsignedShortLE(int x, byte[] a, int offset) {
+        a[offset + 1] = (byte) (x >> 8);
+        a[offset] = (byte) (x);
+        return a;
+    }
+
+    public static byte[] encodeUnsignedShortLE(int x) {
+        byte[] toReturn = new byte[2];
+        return encodeUnsignedShortLE(x, toReturn, 0);
     }
 
     public static short decodeShort(byte[] a, int offset) {
