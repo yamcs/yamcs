@@ -182,7 +182,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
                         "Unsupported size " + size + " for fixed decoder. Only 4 and 8 bytes supported");
             }
             double multiplier = c.getDouble("multiplier", 1);
-            timeDecoder = new FixedSizeTimeDecoder(size, multiplier);
+            timeDecoder = new FixedSizeTimeDecoder(byteOrder, size, multiplier);
             break;
         case FLOAT64:
             timeDecoder = new Float64TimeDecoder(byteOrder);
