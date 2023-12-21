@@ -51,6 +51,9 @@ public class PreparedCommand {
     // same as attributes but converted to parameters for usage in verifiers and transmission constraints
     private volatile ParameterValueList cmdParams;
 
+    // Timetag holder (only for a brief holder | Initialised to 0)
+    private long timetag = 0;
+
     // column names to use when converting to tuple
     public final static String CNAME_GENTIME = StandardTupleDefinitions.GENTIME_COLUMN;
     public final static String CNAME_SEQNUM = StandardTupleDefinitions.SEQNUM_COLUMN;
@@ -91,6 +94,14 @@ public class PreparedCommand {
         protectedColumns.add(CNAME_SEQNUM);
         protectedColumns.add(CNAME_ORIGIN);
         protectedColumns.add(CNAME_ASSIGNMENTS);
+    }
+
+    public void setTimetag(long timetag) {
+        this.timetag = timetag;
+    }
+
+    public long getTimetag() {
+        return this.timetag;
     }
 
     public PreparedCommand(CommandId id) {

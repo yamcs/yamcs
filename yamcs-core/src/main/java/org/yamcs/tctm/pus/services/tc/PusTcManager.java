@@ -17,13 +17,14 @@ public class PusTcManager {
     String yamcsInstance;
 
     // Static Members
-    static int PRIMARY_HEADER_LENGTH = 6;
-    static int DEFAULT_SECONDARY_HEADER_LENGTH = 64;
-    static int PUS_HEADER_LENGTH = 5;
+    public static int DEFAULT_PRIMARY_HEADER_LENGTH = 6;
+    public static int DEFAULT_SECONDARY_HEADER_LENGTH = 32;
+    public static int DEFAULT_PUS_HEADER_LENGTH = 5;
+    public static int DEFAULT_SOURCE_ID = 14;   // FIXME: Not needed
 
-    static int secondaryHeaderLength;
-    static int sourceID;
-    static int secondaryHeaderSpareLength;
+    public static int secondaryHeaderLength;
+    public static int sourceID;
+    public static int secondaryHeaderSpareLength;
 
     Map<Integer, PusService> pusServices = new HashMap<>();
     YConfiguration pusServicesConfig;
@@ -31,11 +32,10 @@ public class PusTcManager {
     public PusTcManager(String instanceName, YConfiguration pusConfig) {
         this.yamcsInstance = instanceName;
 
-        this.pusServicesConfig = pusConfig.getConfigOrEmpty("services");
+        pusServicesConfig = pusConfig.getConfigOrEmpty("services");
         secondaryHeaderLength = pusConfig.getInt("secondaryHeaderLength", DEFAULT_SECONDARY_HEADER_LENGTH);
-        sourceID = pusConfig.getInt("sourceID");
-
-        secondaryHeaderSpareLength = secondaryHeaderLength - PUS_HEADER_LENGTH;
+        sourceID = pusConfig.getInt("sourceID", DEFAULT_SOURCE_ID);
+        secondaryHeaderSpareLength = secondaryHeaderLength - DEFAULT_PUS_HEADER_LENGTH;
 
         initializePUSServices();
     }
@@ -48,5 +48,10 @@ public class PusTcManager {
 
     public PreparedCommand addPusModifiers(PreparedCommand telecommand) {
         return pusServices.get(PusTcModifier.getMessageType(telecommand)).addPusModifiers(telecommand);
+    }
+
+    public PreparedCommand addTimetagModifiers(PreparedCommand telecommand) {
+        ServiceEleven serviceEleven = (ServiceEleven) pusServices.get(11);
+        return serviceEleven.addTimetagModifiers(telecommand);
     }
 }

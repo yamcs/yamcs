@@ -18,10 +18,27 @@ public class ServiceEleven implements PusService{
     Map<Integer, PusSubService> pusSubServices = new HashMap<>();
     YConfiguration serviceElevenConfig;
 
+    final static int DEFAULT_FSW_APID = 20;     // FIXME: Check if correct
+
+    // Primary Header fields
+    final static byte ccsdsVersionNumber = 0;   // FIXME: Check if correct
+    final static byte ccsdsPacketType = 1;
+    final static byte secondaryHeaderFlag = 1;
+    final static byte sequenceFlags = 3;
+    static short fswApid;
+    final static short packetSequenceCount = 0; // `CcsdsSeqCountFiller` class will fill up the seqCount when invoked within the PostProcessor
+
+    // Secondary Header fields
+    final static byte pusVersionNumber = 2;
+    final static byte acknowledgementFlags = 15; // FIME: Confirm once
+    final static byte serviceType = 11;
+
+
     public ServiceEleven(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
         serviceElevenConfig = config;
 
+        fswApid = (short) config.getInt("fswApid", ServiceEleven.DEFAULT_FSW_APID);
         initializeSubServices();
     }
 
@@ -48,4 +65,7 @@ public class ServiceEleven implements PusService{
         throw new UnsupportedOperationException("Unimplemented method 'extractPusModifiers'");
     }
     
+    public PreparedCommand addTimetagModifiers(PreparedCommand telecommand) {
+        return pusSubServices.get(4).process(telecommand);
+    }
 }

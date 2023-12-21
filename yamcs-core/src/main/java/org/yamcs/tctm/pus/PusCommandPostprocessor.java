@@ -1,6 +1,10 @@
 package org.yamcs.tctm.pus;
 
 import java.nio.ByteBuffer;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 
 import org.slf4j.Logger;
@@ -33,39 +37,75 @@ public class PusCommandPostprocessor implements CommandPostprocessor {
     public PusCommandPostprocessor(String yamcsInstance, YConfiguration config) {
         errorDetectionCalculator = AbstractPacketPreprocessor.getErrorDetectionWordCalculator(config);
 
+        if (config == null) {
+            config = YConfiguration.emptyConfig();
+        }
         YConfiguration pusConfig = config.getConfigOrEmpty("pus");
+
         pusTcManager = new PusTcManager(yamcsInstance, pusConfig);
     }
 
-    @Override
-    public byte[] process(PreparedCommand pc) {
-        pc = pusTcManager.addPusModifiers(pc);
-
+    public void partialProcess(PreparedCommand pc) {
         byte[] binary = pc.getBinary();
         boolean hasCrc = hasCrc(pc);
 
         if (hasCrc) { // 2 extra bytes for the checkword
+            // Fixme: Does the spare field (the one outside the secondary header) need to be added?
             binary = Arrays.copyOf(binary, binary.length + 2);
         }
        
         ByteBuffer bb = ByteBuffer.wrap(binary);
         bb.putShort(4, (short) (binary.length - 7)); // write packet length
-        int seqCount = seqFiller.fill(binary); //write sequence count
+        seqFiller.fill(binary); //write sequence count
 
-        commandHistoryListener.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
+        pc.setBinary(binary);
+
         if (hasCrc) {
             int pos = binary.length - 2;
             try {
                 int checkword = errorDetectionCalculator.compute(binary, 0, pos);
                 log.debug("Appending checkword on position {}: {}", pos, Integer.toHexString(checkword));
                 bb.putShort(pos, (short) checkword);
+                pc.setBinary(bb.array());
+
             } catch (IllegalArgumentException e) {
                 log.warn("Error when computing checkword: " + e.getMessage());
             }
         }
+    }
 
+    @Override
+    public byte[] process(PreparedCommand pc) {
+        pc = pusTcManager.addPusModifiers(pc);
+        partialProcess(pc);
+
+        // Check if it is a timetag command
+        if (pc.getTimetag() != 0) {
+            byte[] preBinary = pc.getBinary();
+
+            int apid = seqFiller.getApid(preBinary);
+            int ccsdsSeqCount = seqFiller.getCcsdsSeqCount(preBinary);
+            long timetag = pc.getTimetag(); // This will be UNIX timestamp
+            LocalDateTime localTimetag = LocalDateTime.ofInstant(
+                Instant.ofEpochMilli(timetag),
+                ZoneId.of("GMT")
+            );
+
+            pc = pusTcManager.addTimetagModifiers(pc);
+            partialProcess(pc);
+
+            commandHistoryListener.publish(pc.getCommandId(), CommandHistoryPublisher.Timetag_KEY, localTimetag.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss' UTC'")));
+            commandHistoryListener.publish(pc.getCommandId(), CommandHistoryPublisher.Timetagged_CommandApid_KEY, apid);
+            commandHistoryListener.publish(pc.getCommandId(), CommandHistoryPublisher.Timetagged_CommandCcsdsSeq_KEY, ccsdsSeqCount);
+            commandHistoryListener.publish(pc.getCommandId(), CommandHistoryPublisher.Timetagged_Command_KEY, preBinary);
+        }
+
+        byte[] binary = pc.getBinary();
+
+        commandHistoryListener.publish(pc.getCommandId(), CommandHistoryPublisher.CcsdsSeq_KEY, seqFiller.getCcsdsSeqCount(binary));
         commandHistoryListener.publish(pc.getCommandId(), PreparedCommand.CNAME_BINARY, binary);
-        return binary;
+
+        return pc.getBinary();
     }
     
     
