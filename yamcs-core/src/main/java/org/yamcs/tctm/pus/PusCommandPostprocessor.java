@@ -10,8 +10,11 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.tctm.CcsdsPacket;
 import org.yamcs.tctm.CcsdsSeqCountFiller;
@@ -19,6 +22,8 @@ import org.yamcs.tctm.CommandPostprocessor;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
 import org.yamcs.tctm.IssCommandPostprocessor;
 import org.yamcs.tctm.pus.services.tc.PusTcManager;
+import org.yamcs.time.TimeService;
+import org.yamcs.utils.TimeEncoding;
 
 public class PusCommandPostprocessor implements CommandPostprocessor {
     static Logger log = LoggerFactory.getLogger(IssCommandPostprocessor.class);
@@ -29,6 +34,10 @@ public class PusCommandPostprocessor implements CommandPostprocessor {
     protected CommandHistoryPublisher commandHistoryListener;
 
     PusTcManager pusTcManager;
+    protected TimeService timeService;
+
+    public static final int DEFAULT_TIMETAG_BUFFER = 5;     // Seconds
+    public static int timetagBuffer;
 
     public PusCommandPostprocessor(String yamcsInstance) {
         this(yamcsInstance, null);
@@ -41,6 +50,9 @@ public class PusCommandPostprocessor implements CommandPostprocessor {
             config = YConfiguration.emptyConfig();
         }
         YConfiguration pusConfig = config.getConfigOrEmpty("pus");
+
+        timetagBuffer = config.getInt("timetagBuffer", DEFAULT_TIMETAG_BUFFER);
+        timeService = YamcsServer.getTimeService(yamcsInstance);
 
         pusTcManager = new PusTcManager(yamcsInstance, pusConfig);
     }
@@ -74,6 +86,33 @@ public class PusCommandPostprocessor implements CommandPostprocessor {
         }
     }
 
+    protected long getCurrentTime() {
+        if (timeService != null) {
+            return timeService.getMissionTime();
+        } else {
+            return TimeEncoding.getWallclockTime();
+        }
+    }
+
+    public boolean timetagSanityCheck(long timetag) {
+        if (timetag < 0)
+            return false;
+        
+        if (Instant.now().plusSeconds(timetagBuffer).atZone(ZoneId.of("GMT")).isAfter(Instant.ofEpochSecond(timetag).atZone(ZoneId.of("GMT"))))
+            return false;
+
+        return true;
+    }
+
+    /** Send to command history the failed command */
+    protected void failedCommand(CommandId commandId, String reason) {
+        log.debug("Failing command {}: {}", commandId, reason);
+        long currentTime = getCurrentTime();
+
+        commandHistoryListener.publishAck(commandId, CommandHistoryPublisher.AcknowledgeSent_KEY, currentTime, AckStatus.NOK, reason);
+        commandHistoryListener.commandFailed(commandId, currentTime, reason);
+    }
+
     @Override
     public byte[] process(PreparedCommand pc) {
         pc = pusTcManager.addPusModifiers(pc);
@@ -81,6 +120,12 @@ public class PusCommandPostprocessor implements CommandPostprocessor {
 
         // Check if it is a timetag command
         if (pc.getTimetag() != 0) {
+            boolean timetagSanity = timetagSanityCheck(pc.getTimetag());
+            if (!timetagSanity) {
+                failedCommand(pc.getCommandId(), "Failed due to complications from an incorrect Timetag value provided. Please check the logs for more details");
+                return null;
+            }
+
             byte[] preBinary = pc.getBinary();
 
             int apid = seqFiller.getApid(preBinary);
