@@ -95,6 +95,9 @@ public class PusCommandPostprocessor implements CommandPostprocessor {
     }
 
     public boolean timetagSanityCheck(long timetag) {
+        if (timetag == 0)
+            return true;
+
         if (timetag < 0)
             return false;
         
@@ -102,7 +105,7 @@ public class PusCommandPostprocessor implements CommandPostprocessor {
             .plusSeconds(timetagBuffer)
             .atZone(ZoneId.of("GMT"))
             .isAfter(
-                Instant.ofEpochSecond(timetag)
+                Instant.ofEpochMilli(timetag)
                 .atZone(ZoneId.of("GMT"))
             )
         )
@@ -123,16 +126,14 @@ public class PusCommandPostprocessor implements CommandPostprocessor {
     @Override
     public byte[] process(PreparedCommand pc) {
         pc = pusTcManager.addPusModifiers(pc);
+        boolean timetagSanity = timetagSanityCheck(pc.getTimetag());
+        if (!timetagSanity) {
+            failedCommand(pc.getCommandId(), "Failed due to complications from an incorrect Timetag value provided. Please check the logs for more details");
+            return null;
+        }
         partialProcess(pc);
 
-        // Check if it is a timetag command
-        if (pc.getTimetag() != 0) {
-            boolean timetagSanity = timetagSanityCheck(pc.getTimetag());
-            if (!timetagSanity) {
-                failedCommand(pc.getCommandId(), "Failed due to complications from an incorrect Timetag value provided. Please check the logs for more details");
-                return null;
-            }
-
+        if (timetagSanity && pc.getTimetag() != 0) {
             byte[] preBinary = pc.getBinary();
 
             int apid = seqFiller.getApid(preBinary);
