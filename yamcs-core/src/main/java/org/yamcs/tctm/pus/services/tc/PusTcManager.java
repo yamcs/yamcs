@@ -54,4 +54,9 @@ public class PusTcManager {
         ServiceEleven serviceEleven = (ServiceEleven) pusServices.get(11);
         return serviceEleven.addTimetagModifiers(telecommand);
     }
+
+    public int getSourceID() {
+        return sourceID;
+    }
+
 }

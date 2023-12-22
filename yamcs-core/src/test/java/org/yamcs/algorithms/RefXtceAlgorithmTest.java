@@ -15,8 +15,9 @@ import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.mdb.ContainerProcessingResult;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.ProcessingData;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.XtceTmExtractor;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ParameterConsumer;
@@ -45,7 +46,7 @@ public class RefXtceAlgorithmTest {
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setupTest(instance);
         EventProducerFactory.setMockup(false);
-        XtceDbFactory.reset();
+        MdbFactory.reset();
         AlgorithmManager am = new AlgorithmManager();
         proc = ProcessorFactory.create(instance, "XtceAlgorithmTest", mpp, am);
         prm = proc.getParameterRequestManager();
@@ -110,19 +111,19 @@ public class RefXtceAlgorithmTest {
     static class MyProcService extends AbstractService implements ParameterProvider {
         ParameterProcessorManager ppm;
         XtceTmExtractor extractor;
-        XtceDb db;
+        Mdb mdb;
 
         @Override
         public void init(Processor processor, YConfiguration config, Object spec) {
             this.ppm = processor.getParameterProcessorManager();
             ppm.addParameterProvider(this);
-            db = processor.getXtceDb();
-            extractor = new XtceTmExtractor(db);
+            mdb = processor.getXtceDb();
+            extractor = new XtceTmExtractor(mdb);
             extractor.provideAll();
         }
 
         public void injectPacket(byte[] array, String name) {
-            ContainerProcessingResult cpr = extractor.processPacket(array, 0, 0, 0, db.getSequenceContainer(name));
+            ContainerProcessingResult cpr = extractor.processPacket(array, 0, 0, 0, mdb.getSequenceContainer(name));
             ppm.process(cpr);
         }
 
@@ -150,7 +151,7 @@ public class RefXtceAlgorithmTest {
 
         @Override
         public Parameter getParameter(NamedObjectId paraId) throws InvalidIdentification {
-            return db.getParameter(paraId.getName());
+            return mdb.getParameter(paraId.getName());
         }
 
         @Override

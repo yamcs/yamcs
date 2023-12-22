@@ -8,7 +8,7 @@ import org.yamcs.xtce.XtceDb;
 public class XtceFilesetTest {
     @Test
     public void testXtceFileset() throws Exception {
-        XtceDb db = XtceDbFactory.createInstanceByConfig("xtce-fileset");
+        XtceDb db = MdbFactory.createInstanceByConfig("xtce-fileset");
         assertNotNull(db.getSpaceSystem("/a1"));
         assertNotNull(db.getSpaceSystem("/a2"));
         assertNotNull(db.getSpaceSystem("/b"));

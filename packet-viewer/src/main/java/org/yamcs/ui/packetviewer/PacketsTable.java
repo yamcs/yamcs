@@ -38,6 +38,7 @@ import javax.swing.table.TableRowSorter;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.TmPacket;
 import org.yamcs.mdb.ContainerProcessingResult;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.XtceTmExtractor;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.ui.packetviewer.filter.PacketFilter;
@@ -45,7 +46,6 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueComparator;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.XtceDb;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -619,12 +619,12 @@ public class PacketsTable extends JTable implements ListSelectionListener {
      * 
      */
     void setupParameterColumns() {
-        XtceDb xtceDb = packetViewer.xtcedb;
+        Mdb mdb = packetViewer.mdb;
 
-        tmExtractor = new XtceTmExtractor(xtceDb);
+        tmExtractor = new XtceTmExtractor(mdb);
         resetDynamicColumns();
         for (String pn : columnParaNames) {
-            Parameter p = packetViewer.xtcedb.getParameter(pn);
+            Parameter p = packetViewer.mdb.getParameter(pn);
             if (p == null) {
                 // log("Cannot find a parameter with name " + pn + " in XtceDB, ignoring");
             } else {
@@ -639,11 +639,11 @@ public class PacketsTable extends JTable implements ListSelectionListener {
             }
         }
 
-        SequenceContainer rootsc = xtceDb.getRootSequenceContainer();
-        if (xtceDb.getInheritingContainers(rootsc) == null) {
+        SequenceContainer rootsc = mdb.getRootSequenceContainer();
+        if (mdb.getInheritingContainers(rootsc) == null) {
             tmExtractor.startProviding(rootsc);
         } else {
-            for (SequenceContainer sc : xtceDb.getInheritingContainers(rootsc)) {
+            for (SequenceContainer sc : mdb.getInheritingContainers(rootsc)) {
                 tmExtractor.startProviding(sc);
             }
         }

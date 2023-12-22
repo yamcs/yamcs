@@ -1,8 +1,7 @@
 import { CollectionViewer } from '@angular/cdk/collections';
 import { DataSource } from '@angular/cdk/table';
-import { GetParameterValuesOptions, ParameterValue } from '@yamcs/webapp-sdk';
+import { GetParameterValuesOptions, ParameterValue, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 
 export class ParameterDataDataSource extends DataSource<ParameterValue> {
 

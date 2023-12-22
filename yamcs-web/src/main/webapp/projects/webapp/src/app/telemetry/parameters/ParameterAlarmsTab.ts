@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { GetAlarmsOptions, SelectOption, utils } from '@yamcs/webapp-sdk';
-import { YamcsService } from '../../core/services/YamcsService';
+import { GetAlarmsOptions, SelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { ParameterAlarmsDataSource } from './ParameterAlarmsDataSource';
 
 const defaultInterval = 'P1M';

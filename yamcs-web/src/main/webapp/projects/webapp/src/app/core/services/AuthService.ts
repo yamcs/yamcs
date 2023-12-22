@@ -1,10 +1,8 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { Inject, Injectable, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthInfo, HttpHandler, OpenIDConnectInfo, Synchronizer, TokenResponse, User, UserInfo } from '@yamcs/webapp-sdk';
+import { AuthInfo, ConfigService, HttpHandler, OpenIDConnectInfo, Synchronizer, TokenResponse, User, UserInfo, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { ConfigService } from './ConfigService';
-import { YamcsService } from './YamcsService';
 
 export interface Claims {
   iss: string;
@@ -240,13 +238,13 @@ export class AuthService implements OnDestroy {
     cookieExpiration.setTime(cookieExpiration.getTime() + expireMillis);
     let cookie = `access_token=${encodeURIComponent(tokenResponse.access_token)}`;
     cookie += `; expires=${cookieExpiration.toUTCString()}`;
-    cookie += '; path=/';
+    cookie += '; path=/; SameSite=Strict; Secure';
     document.cookie = cookie;
 
     // Store refresh token in a Session Cookie (bound to browser, not tab)
     if (tokenResponse.refresh_token) {
       cookie = `refresh_token=${encodeURIComponent(tokenResponse.refresh_token)}`;
-      cookie += '; path=/';
+      cookie += '; path=/; SameSite=Strict; Secure';
       document.cookie = cookie;
     }
 

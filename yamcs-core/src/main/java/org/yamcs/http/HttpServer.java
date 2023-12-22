@@ -44,6 +44,7 @@ import org.yamcs.http.api.MdbApi;
 import org.yamcs.http.api.MdbOverrideApi;
 import org.yamcs.http.api.PacketsApi;
 import org.yamcs.http.api.ParameterArchiveApi;
+import org.yamcs.http.api.ParameterValuesApi;
 import org.yamcs.http.api.ProcessingApi;
 import org.yamcs.http.api.QueuesApi;
 import org.yamcs.http.api.ReplicationApi;
@@ -297,6 +298,7 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new MdbOverrideApi());
         addApi(new PacketsApi());
         addApi(new ParameterArchiveApi());
+        addApi(new ParameterValuesApi());
         addApi(new ProcessingApi());
         addApi(new QueuesApi(auditLog));
         addApi(new ReplicationApi());

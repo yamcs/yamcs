@@ -104,11 +104,7 @@ public class IamApi extends AbstractIamApi<Context> {
             throw new NotFoundException();
         }
         user.deleteRole(request.getRole());
-        try {
-            directory.updateUserProperties(user);
-        } catch (IOException e) {
-            throw new InternalServerErrorException(e);
-        }
+        directory.updateUserProperties(user);
         observer.complete(Empty.getDefaultInstance());
     }
 
@@ -232,14 +228,10 @@ public class IamApi extends AbstractIamApi<Context> {
         if (request.hasRoleAssignment()) {
             user.setRoles(request.getRoleAssignment().getRolesList());
         }
-        try {
-            directory.updateUserProperties(user);
+        directory.updateUserProperties(user);
 
-            if (request.hasPassword()) {
-                directory.changePassword(user, request.getPassword().toCharArray());
-            }
-        } catch (IOException e) {
-            throw new InternalServerErrorException(e);
+        if (request.hasPassword()) {
+            directory.changePassword(user, request.getPassword().toCharArray());
         }
 
         var sensitiveDetails = ctx.user.hasSystemPrivilege(SystemPrivilege.ControlAccess);
@@ -257,11 +249,7 @@ public class IamApi extends AbstractIamApi<Context> {
             throw new NotFoundException();
         }
         user.deleteIdentity(request.getProvider());
-        try {
-            directory.updateUserProperties(user);
-        } catch (IOException e) {
-            throw new InternalServerErrorException(e);
-        }
+        directory.updateUserProperties(user);
         observer.complete(Empty.getDefaultInstance());
     }
 
@@ -309,12 +297,12 @@ public class IamApi extends AbstractIamApi<Context> {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlAccess);
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
         Directory directory = securityStore.getDirectory();
-        try {
-            directory.deleteServiceAccount(request.getName());
-            observer.complete(Empty.getDefaultInstance());
-        } catch (IOException e) {
-            observer.completeExceptionally(e);
+        ServiceAccount serviceAccount = directory.getServiceAccount(request.getName());
+        if (serviceAccount == null) {
+            throw new NotFoundException();
         }
+        directory.deleteServiceAccount(serviceAccount);
+        observer.complete(Empty.getDefaultInstance());
     }
 
     @Override
@@ -417,11 +405,7 @@ public class IamApi extends AbstractIamApi<Context> {
             group.addMember(memberId);
         }
 
-        try {
-            directory.addGroup(group);
-        } catch (IOException e) {
-            throw new InternalServerErrorException(e);
-        }
+        directory.addGroup(group);
         observer.complete(toGroupInfo(group, true, directory));
     }
 
@@ -437,36 +421,32 @@ public class IamApi extends AbstractIamApi<Context> {
             throw new NotFoundException();
         }
 
-        try {
-            if (request.hasNewName() && !request.getNewName().equals(group.getName())) {
-                String newName = request.getNewName().trim();
-                if (newName.isEmpty()) {
-                    throw new BadRequestException("Name must not be empty");
-                } else if (directory.getGroup(newName) != null) {
-                    throw new BadRequestException("Group '" + newName + "' already exists");
-                }
-                directory.renameGroup(group.getName(), newName);
-                group.setName(newName);
+        if (request.hasNewName() && !request.getNewName().equals(group.getName())) {
+            String newName = request.getNewName().trim();
+            if (newName.isEmpty()) {
+                throw new BadRequestException("Name must not be empty");
+            } else if (directory.getGroup(newName) != null) {
+                throw new BadRequestException("Group '" + newName + "' already exists");
             }
-            if (request.hasDescription()) {
-                group.setDescription(request.getDescription());
-            }
-            if (request.hasMemberInfo()) {
-                Set<Long> memberIds = new HashSet<>();
-                for (String username : request.getMemberInfo().getUsersList()) {
-                    User user = directory.getUser(username);
-                    memberIds.add(user.getId());
-                }
-                for (String serviceAccountName : request.getMemberInfo().getServiceAccountsList()) {
-                    ServiceAccount serviceAccount = directory.getServiceAccount(serviceAccountName);
-                    memberIds.add(serviceAccount.getId());
-                }
-                group.setMembers(memberIds);
-            }
-            directory.updateGroupProperties(group);
-        } catch (IOException e) {
-            throw new InternalServerErrorException(e);
+            directory.renameGroup(group.getName(), newName);
+            group.setName(newName);
         }
+        if (request.hasDescription()) {
+            group.setDescription(request.getDescription());
+        }
+        if (request.hasMemberInfo()) {
+            Set<Long> memberIds = new HashSet<>();
+            for (String username : request.getMemberInfo().getUsersList()) {
+                User user = directory.getUser(username);
+                memberIds.add(user.getId());
+            }
+            for (String serviceAccountName : request.getMemberInfo().getServiceAccountsList()) {
+                ServiceAccount serviceAccount = directory.getServiceAccount(serviceAccountName);
+                memberIds.add(serviceAccount.getId());
+            }
+            group.setMembers(memberIds);
+        }
+        directory.updateGroupProperties(group);
 
         observer.complete(toGroupInfo(group, true, directory));
     }
@@ -481,11 +461,7 @@ public class IamApi extends AbstractIamApi<Context> {
         if (group == null) {
             throw new NotFoundException();
         }
-        try {
-            directory.deleteGroup(group);
-        } catch (IOException e) {
-            throw new InternalServerErrorException(e);
-        }
+        directory.deleteGroup(group);
         observer.complete(toGroupInfo(group, true, directory));
     }
 

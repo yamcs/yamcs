@@ -3,9 +3,8 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MessageService, SelectOption, TimelineItem, UpdateTimelineItemRequest, utils } from '@yamcs/webapp-sdk';
+import { MessageService, SelectOption, TimelineItem, UpdateTimelineItemRequest, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { YamcsService } from '../core/services/YamcsService';
 
 @Component({
   templateUrl: './EditItemPage.html',

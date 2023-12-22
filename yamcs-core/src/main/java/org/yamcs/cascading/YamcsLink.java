@@ -152,9 +152,11 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
                 .withDefault(true);
         spec.addOption("tmArchiveStream", OptionType.STRING);
 
-        spec.addOption("containers", OptionType.LIST).withAliases("packets").withRequired(true)
+        spec.addOption("containers", OptionType.LIST).withAliases("packets")
                 .withElementType(OptionType.STRING)
                 .withDescription("The list of packets to subscribe to.");
+
+        spec.when("tm", true).requireAll("containers");
 
         spec.addOption("retrievalDays", OptionType.INTEGER);
         spec.addOption("mergeTime", OptionType.INTEGER);

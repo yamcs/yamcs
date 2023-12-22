@@ -18,7 +18,6 @@ import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.MetaCommand;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.xml.XtceLoadException;
 
 /**
@@ -26,7 +25,7 @@ import org.yamcs.xtce.xml.XtceLoadException;
  */
 public class ArrayArgTest {
 
-    private XtceDb db;
+    private Mdb mdb;
     private MetaCommandProcessor metaCommandProcessor;
 
     @BeforeEach
@@ -34,15 +33,15 @@ public class ArrayArgTest {
             XMLStreamException, IOException {
 
         YConfiguration.setupTest(null);
-        db = XtceDbFactory
+        mdb = MdbFactory
                 .createInstanceByConfig("ArrayArgCommandTest");
         metaCommandProcessor = new MetaCommandProcessor(
-                new ProcessorData("test", "test", db, new ProcessorConfig()));
+                new ProcessorData("test", "test", mdb, new ProcessorConfig()));
     }
 
     @Test
     public void testCommandEncoding() throws ErrorInCommand, IOException {
-        MetaCommand mc = db.getMetaCommand("/ArrayArgTest/cmd1");
+        MetaCommand mc = mdb.getMetaCommand("/ArrayArgTest/cmd1");
         Map<String, Object> args = new HashMap<>();
 
         args.put("length", "5");
@@ -54,7 +53,7 @@ public class ArrayArgTest {
 
     @Test
     public void testCommandEncodingAutomaticLength() throws ErrorInCommand, IOException {
-        MetaCommand mc = db.getMetaCommand("/ArrayArgTest/cmd1");
+        MetaCommand mc = mdb.getMetaCommand("/ArrayArgTest/cmd1");
         Map<String, Object> args = new HashMap<>();
 
         args.put("array1", "[1,2,3,4,5]");
@@ -65,7 +64,7 @@ public class ArrayArgTest {
 
     @Test
     public void testCommandEncodingInvalidLength() throws IOException {
-        MetaCommand mc = db.getMetaCommand("/ArrayArgTest/cmd1");
+        MetaCommand mc = mdb.getMetaCommand("/ArrayArgTest/cmd1");
         Map<String, Object> args = new HashMap<>();
 
         args.put("length", "3");// length does not match the array length
@@ -77,7 +76,7 @@ public class ArrayArgTest {
 
     @Test
     public void testMaxLengthExceeded() throws ErrorInCommand, IOException {
-        MetaCommand mc = db.getMetaCommand("/ArrayArgTest/cmd1");
+        MetaCommand mc = mdb.getMetaCommand("/ArrayArgTest/cmd1");
         Map<String, Object> args = new HashMap<>();
 
         args.put("array1", "[1,2,3,4,5,6]");
@@ -88,7 +87,7 @@ public class ArrayArgTest {
 
     @Test
     public void testNativeArrayArgument() throws ErrorInCommand, IOException {
-        MetaCommand mc = db.getMetaCommand("/ArrayArgTest/cmd1");
+        MetaCommand mc = mdb.getMetaCommand("/ArrayArgTest/cmd1");
         Map<String, Object> args = new HashMap<>();
 
         args.put("length", 5);

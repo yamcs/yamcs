@@ -162,6 +162,9 @@
             Restart
           </button>
         </ya-more>
+        <span class="alert" *ngIf="instance.failureCause as failureCause">
+          {{ failureCause }}
+        </span>
       </td>
     </ng-container>
 

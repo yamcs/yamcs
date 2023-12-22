@@ -1,8 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { MessageService, StorageClient } from '@yamcs/webapp-sdk';
-import { YamcsService } from '../../core/services/YamcsService';
+import { MessageService, StorageClient, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-create-bucket-dialog',

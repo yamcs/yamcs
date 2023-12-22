@@ -2,10 +2,9 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy } from '@a
 import { UntypedFormControl } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Synchronizer, ThreadInfo } from '@yamcs/webapp-sdk';
+import { Synchronizer, ThreadInfo, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   templateUrl: './ThreadsPage.html',

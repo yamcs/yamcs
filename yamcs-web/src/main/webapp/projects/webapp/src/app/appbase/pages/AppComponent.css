@@ -1,6 +1,6 @@
 mat-toolbar-row {
   height: 48px;
-  box-shadow: 0 .125rem .3125rem rgba(0, 0, 0, .26);
+  box-shadow: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.26);
   z-index: 2;
   padding-left: 6px;
   padding-right: calc(24px - 16px);
@@ -43,6 +43,9 @@ mat-toolbar-row {
   margin-right: auto;
   text-align: center;
   pointer-events: none;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .selected-instance.mat-mdc-button {

@@ -24,7 +24,7 @@ jobs:
             mvn_opts: '"-Dsurefire.useFile=false"'
             experimental: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-java@v3
         with:
           distribution: temurin
@@ -48,7 +48,7 @@ jobs:
       matrix:
         java: ['11', '17']
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-java@v3
         with:
           distribution: temurin
@@ -60,7 +60,7 @@ jobs:
     name: Web
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
           node-version: 16
@@ -73,7 +73,7 @@ jobs:
     name: Documentation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-java@v3
         with:
           distribution: temurin

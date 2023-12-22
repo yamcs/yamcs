@@ -44,7 +44,7 @@ import org.yamcs.logging.ConsoleFormatter;
 import org.yamcs.logging.Log;
 import org.yamcs.logging.YamcsLogManager;
 import org.yamcs.management.ManagementService;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.CryptoUtils;
 import org.yamcs.security.SecurityStore;
@@ -130,9 +130,6 @@ public class YamcsServer {
     int maxNumInstances = 20;
     Path incomingDir;
     Path instanceDefDir;
-
-    // Set once only on startup, after the startup has completed
-    private boolean ready = false;
 
     // Set when the shutdown hook triggers
     private boolean shuttingDown = false;
@@ -381,7 +378,7 @@ public class YamcsServer {
             }
         }
         YarchDatabase.removeInstance(instanceName);
-        XtceDbFactory.remove(instanceName);
+        MdbFactory.remove(instanceName);
         LOG.info("Re-loading instance '{}'", instanceName);
 
         YConfiguration instanceConfig = loadInstanceConfig(instanceName);
@@ -442,7 +439,7 @@ public class YamcsServer {
             }
         }
         YarchDatabase.removeInstance(instanceName);
-        XtceDbFactory.remove(instanceName);
+        MdbFactory.remove(instanceName);
         Path f = instanceDefDir.resolve(configFileName(instanceName));
         if (Files.exists(f)) {
             LOG.debug("Renaming {} to {}.offline", f.toAbsolutePath(), f.getFileName());
@@ -564,9 +561,7 @@ public class YamcsServer {
         ysi.addStateListener(new InstanceStateListener() {
             @Override
             public void failed(Throwable failure) {
-                if (ready) { // Redundant on startup, so hide it then.
-                    LOG.error("Instance {} failed", name, ExceptionUtil.unwind(failure));
-                }
+                LOG.error("Instance {} failed", name, ExceptionUtil.unwind(failure));
             }
         });
 
@@ -1434,7 +1429,6 @@ public class YamcsServer {
         }
 
         // Report start success to internal listeners
-        ready = true;
         readyListeners.forEach(ReadyListener::onReady);
     }
 

@@ -3,15 +3,12 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ColumnChooserComponent, ColumnInfo, GetCommandHistoryOptions, MessageService, PrintService, SelectComponent, SelectOption, Synchronizer, User, rowAnimation, utils } from '@yamcs/webapp-sdk';
+import { ColumnChooserComponent, ColumnInfo, CommandHistoryRecord, ConfigService, GetCommandHistoryOptions, MessageService, PrintService, SelectComponent, SelectOption, Synchronizer, User, WebsiteConfig, YamcsService, rowAnimation, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AuthService } from '../../core/services/AuthService';
-import { ConfigService, WebsiteConfig } from '../../core/services/ConfigService';
-import { YamcsService } from '../../core/services/YamcsService';
 import { CommandHistoryDataSource } from './CommandHistoryDataSource';
 import { CommandHistoryPrintable } from './CommandHistoryPrintable';
-import { CommandHistoryRecord } from './CommandHistoryRecord';
 
 
 const defaultInterval = 'PT1H';

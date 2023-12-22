@@ -1,8 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { utils } from '@yamcs/webapp-sdk';
-import { YamcsService } from '../../core/services/YamcsService';
+import { YamcsService, utils } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-select-range-dialog',

@@ -14,7 +14,7 @@ import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Stream;
@@ -60,7 +60,7 @@ public class CmdHistoryRecordingTest extends YarchTestCase {
         assertEquals(n, tlist.size());
         for (int i = 0; i < n; i++) {
             Tuple tuple = tlist.get(i);
-            XtceDb xtcedb = XtceDbFactory.getInstance(instance);
+            XtceDb xtcedb = MdbFactory.getInstance(instance);
             PreparedCommand pc = PreparedCommand.fromTuple(tuple, xtcedb);
             assertEquals("test" + i, pc.getCmdName());
         }

@@ -13,7 +13,8 @@ import org.yamcs.client.ParameterSubscription;
 import org.yamcs.client.YamcsClient;
 import org.yamcs.client.base.WebSocketClient;
 import org.yamcs.client.mdb.MissionDatabaseClient.ListOptions;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.Mdb;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersService;
@@ -46,7 +47,7 @@ public class YamcsParameterLink extends AbstractLink implements ParameterDataLin
     ParameterSink paraSink;
     AtomicLong paraCount = new AtomicLong();
     int seqCount;
-    XtceDb xtcedb;
+    Mdb mdb;
 
     // when subscribing to remote Yamcs parameters, we rename them to include the upstream name into their name
     Map<String, String> remoteYamcsParams;
@@ -59,7 +60,7 @@ public class YamcsParameterLink extends AbstractLink implements ParameterDataLin
         config = YamcsTmLink.swapConfig(config, "ppRealtimeStream", "ppStream", "pp_realtime");
         super.init(instance, name, config);
         this.parameters = config.getList("parameters");
-        this.xtcedb = XtceDbFactory.getInstance(instance);
+        this.mdb = MdbFactory.getInstance(instance);
     }
 
     @Override
@@ -123,7 +124,7 @@ public class YamcsParameterLink extends AbstractLink implements ParameterDataLin
             } else if (p.startsWith("/yamcs/")) {
                 requestedYamcsParamsFilter.add(p);
             } else if (p.endsWith("/")) {
-                SpaceSystem sps = xtcedb.getSpaceSystem(p.substring(0, p.length() - 1));
+                SpaceSystem sps = mdb.getSpaceSystem(p.substring(0, p.length() - 1));
 
                 if (sps == null) {
                     log.warn("Cannot find space system {} in local MDB; ignoring", p);
@@ -134,7 +135,7 @@ public class YamcsParameterLink extends AbstractLink implements ParameterDataLin
                 PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + p);
 
                 boolean added = false;
-                for (Parameter param : xtcedb.getParameters()) {
+                for (Parameter param : mdb.getParameters()) {
                     if (matcher.matches(Path.of(param.getQualifiedName()))) {
                         toAdd.add(param.getQualifiedName());
                         added = true;
@@ -230,13 +231,13 @@ public class YamcsParameterLink extends AbstractLink implements ParameterDataLin
                     log.warn("Received system parameter not subscribed " + gpv);
                     continue;
                 }
-                pdef = xtcedb.getParameter(newName);
+                pdef = mdb.getParameter(newName);
                 if (pdef == null) {
-                    pdef = SystemParametersService.createSystemParameter(xtcedb, newName,
+                    pdef = SystemParametersService.createSystemParameter(mdb, newName,
                             ValueUtility.fromGpb(gpv.getEngValue()));
                 }
             } else {
-                pdef = xtcedb.getParameter(gpv.getId());
+                pdef = mdb.getParameter(gpv.getId());
             }
             if (pdef == null) {
                 log.warn("Ignoring unknown parameter {}", gpv.getId());

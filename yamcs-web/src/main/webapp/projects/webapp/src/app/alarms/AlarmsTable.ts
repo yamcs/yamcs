@@ -1,7 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Alarm } from '@yamcs/webapp-sdk';
-import { YamcsService } from '../core/services/YamcsService';
+import { Alarm, YamcsService } from '@yamcs/webapp-sdk';
 import { AlarmsDataSource } from './AlarmsDataSource';
 
 @Component({

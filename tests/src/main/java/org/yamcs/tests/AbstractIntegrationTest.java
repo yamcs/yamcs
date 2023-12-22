@@ -20,7 +20,7 @@ import org.yamcs.client.ClientException;
 import org.yamcs.client.ConnectionListener;
 import org.yamcs.client.YamcsClient;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -260,7 +260,7 @@ public abstract class AbstractIntegrationTest {
         @Override
         public void init(String yamcsInstance, String linkName, YConfiguration config) {
             instance[config.getInt("num", 0)] = this;
-            xtcedb = XtceDbFactory.getInstance(yamcsInstance);
+            xtcedb = MdbFactory.getInstance(yamcsInstance);
             this.config = config;
             this.name = linkName;
         }

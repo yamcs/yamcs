@@ -1,12 +1,10 @@
 import { ChangeDetectorRef, Component, Inject, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { AcknowledgmentInfo, Command, CommandOptionType, SelectOption, Value, utils } from '@yamcs/webapp-sdk';
+import { AcknowledgmentInfo, AdvancementParams, Command, CommandOptionType, SelectOption, StackEntry, Value, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 import { CommandSelector } from '../../shared/forms/CommandSelector';
 import { CommandForm, TemplateProvider } from '../command-sender/CommandForm';
-import { AdvancementParams, StackEntry } from './StackEntry';
 
 export interface CommandResult {
   command: Command;

@@ -40,6 +40,12 @@ public interface CommandHistoryPublisher {
     public final static String Timetagged_CommandCcsdsSeq_KEY = "Timetagged_CommandCcsdsSeqCount";
     public final static String Timetagged_Command_KEY = "Timetagged_Command";
 
+    /*
+     * Used primarily in CMD verifier algorithms to subscribe to CMD and CMDHist arguments
+     */
+    public final static String SourceID_KEY = "SourceID";
+    public final static String Apid_KEY = "Apid";
+
     // these are used when publishing acks
     public final static String SUFFIX_STATUS = "_Status";
     public final static String SUFFIX_TIME = "_Time";

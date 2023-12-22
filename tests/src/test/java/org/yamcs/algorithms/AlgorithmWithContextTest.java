@@ -19,7 +19,7 @@ import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.mdb.ProcessingData;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.tests.RefMdbPacketGenerator;
@@ -38,13 +38,13 @@ public class AlgorithmWithContextTest {
     @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setupTest("refmdb");
-        XtceDbFactory.reset();
+        MdbFactory.reset();
         EventProducerFactory.setMockup(true);
     }
 
     @BeforeEach
     public void beforeEachTest() throws Exception {
-        db = XtceDbFactory.getInstance("refmdb");
+        db = MdbFactory.getInstance("refmdb");
         assertNotNull(db.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2"));
 
         tmGenerator = new RefMdbPacketGenerator();

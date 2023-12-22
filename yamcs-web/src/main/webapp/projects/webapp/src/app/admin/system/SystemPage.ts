@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { PluginInfo, SystemInfo, SystemInfoSubscription } from '@yamcs/webapp-sdk';
+import { PluginInfo, SystemInfo, SystemInfoSubscription, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   templateUrl: './SystemPage.html',

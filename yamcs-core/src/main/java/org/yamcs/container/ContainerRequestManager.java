@@ -44,7 +44,7 @@ public class ContainerRequestManager implements ContainerListener {
     }
 
     public synchronized void subscribeAll(ContainerConsumer subscriber) {
-        for (SequenceContainer c : tmProcessor.xtcedb.getSequenceContainers()) {
+        for (SequenceContainer c : tmProcessor.mdb.getSequenceContainers()) {
             addSubscription(subscriber, c);
         }
     }

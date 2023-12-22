@@ -1,9 +1,8 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
-import { CommandQueue, ConnectionInfo, MessageService, QueueEventsSubscription, QueueStatisticsSubscription, Synchronizer } from '@yamcs/webapp-sdk';
+import { CommandQueue, ConnectionInfo, MessageService, QueueEventsSubscription, QueueStatisticsSubscription, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 import { TrackBySelectionModel } from '../../shared/table/TrackBySelectionModel';
 
 @Component({

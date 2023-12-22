@@ -124,7 +124,7 @@ service TableApi {
   // The table load will overwrite any data existing in the table with the 
   // same key as the imported row.
   //
-  // The table load will not update the historgrams so a histogram rebuild
+  // The table load will not update the histograms so a histogram rebuild
   // is required after the load.  
   rpc WriteRows(stream WriteRowsRequest) returns (WriteRowsResponse) {
     option (yamcs.api.route) = {
@@ -133,9 +133,9 @@ service TableApi {
     };
   }
   
-  // Rebulds histograms - this is required after a table load.
+  // Rebuilds histograms - this is required after a table load.
   //
-  // Turrently the time interval passed in the request will be used to select the 
+  // Currently the time interval passed in the request will be used to select the
   // partitions which will be rebuild - any partition overlapping with the interval will be rebuilt.
   // If the table is not partitioned by time,  the histogram for the entire table will be rebuild.
   rpc RebuildHistogram(RebuildHistogramRequest) returns (RebuildHistogramResponse) {

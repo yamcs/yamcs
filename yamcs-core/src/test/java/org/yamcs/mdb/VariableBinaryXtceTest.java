@@ -11,7 +11,7 @@ import javax.xml.stream.XMLStreamException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentType;
@@ -40,7 +40,7 @@ public class VariableBinaryXtceTest {
             XMLStreamException, IOException {
 
         YConfiguration.setupTest(null);
-        db = XtceDbFactory.createInstanceByConfig("VariableBinaryTest");
+        db = MdbFactory.createInstanceByConfig("VariableBinaryTest");
 
         TimeEncoding.setUp();
     }

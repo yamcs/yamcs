@@ -5,15 +5,10 @@ import { FormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AcknowledgmentInfo, BasenamePipe, Command, CommandSubscription, ExtensionPipe, FilenamePipe, MessageService, SelectOption, StorageClient, Value } from '@yamcs/webapp-sdk';
+import { AcknowledgmentInfo, AdvancementParams, Argument, BasenamePipe, Command, CommandHistoryRecord, CommandSubscription, ConfigService, ExtensionPipe, FilenamePipe, MessageService, SelectOption, StackEntry, StackFormatter, StorageClient, Value, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ConfigService } from '../../core/services/ConfigService';
-import { YamcsService } from '../../core/services/YamcsService';
-import { CommandHistoryRecord } from '../command-history/CommandHistoryRecord';
 import { CommandResult, EditStackEntryDialog } from './EditStackEntryDialog';
-import { AdvancementParams, StackEntry } from './StackEntry';
-import { StackFormatter } from './StackFormatter';
 
 @Component({
   templateUrl: './StackFilePage.html',
@@ -277,8 +272,6 @@ export class StackFilePage implements OnDestroy {
           const xmlParser = new DOMParser();
           const doc = xmlParser.parseFromString(text, 'text/xml') as XMLDocument;
           entries = StackFilePage.parseXML(doc.documentElement, this.configService.getCommandOptions());
-          // (Uncomment in later release)
-          //this.messageService.showWarning("XML-formatted command stacks are deprecated, convert to *.YCS");
           break;
       }
 
@@ -299,6 +292,34 @@ export class StackFilePage implements OnDestroy {
           await promise;
         } catch {
           // For now, don't care
+        }
+      }
+
+      // Convert enum values to labels. This provides some resilience to MDB changes
+      // where a numeric parameter becomes an enumeration.
+      for (const entry of entries) {
+        if (entry.command) {
+          for (const argumentName in entry.args) {
+            const argument = this.getArgument(argumentName, entry.command);
+            if (argument?.type.engType === 'enumeration') {
+              let match = false;
+              for (const enumValue of argument.type.enumValue || []) {
+                if (enumValue.label === entry.args[argumentName]) {
+                  match = true;
+                  break;
+                }
+              }
+              if (!match) {
+                for (const enumValue of argument.type.enumValue || []) {
+                  if (String(enumValue.value) === String(entry.args[argumentName])) {
+                    entry.args[argumentName] = enumValue.label;
+                    match = true;
+                    break;
+                  }
+                }
+              }
+            }
+          }
         }
       }
 
@@ -333,6 +354,19 @@ export class StackFilePage implements OnDestroy {
       return this.isComplex(argumentName, info.baseCommand);
     } else {
       return false;
+    }
+  }
+
+  private getArgument(argumentName: string, info: Command): Argument | null {
+    for (const argument of (info.argument || [])) {
+      if (argument.name === argumentName) {
+        return argument;
+      }
+    }
+    if (info.baseCommand) {
+      return this.getArgument(argumentName, info.baseCommand);
+    } else {
+      return null;
     }
   }
 

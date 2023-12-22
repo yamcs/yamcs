@@ -24,6 +24,7 @@ import org.yamcs.Spec.OptionType;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.time.TimeService;
@@ -81,7 +82,7 @@ public class SystemParametersService extends AbstractYamcsService implements Run
     // /yamcs/<server_id>
     private String namespace;
     private String serverId;
-    XtceDb mdb;
+    Mdb mdb;
 
     TimeService timeService;
     ScheduledFuture<?> collectionFuture;
@@ -97,7 +98,7 @@ public class SystemParametersService extends AbstractYamcsService implements Run
     @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         super.init(yamcsInstance, serviceName, config);
-        mdb = YamcsServer.getServer().getInstance(yamcsInstance).getXtceDb();
+        mdb = YamcsServer.getServer().getInstance(yamcsInstance).getMdb();
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         stream = ydb.getStream(STREAM_NAME);
@@ -287,23 +288,23 @@ public class SystemParametersService extends AbstractYamcsService implements Run
         return createSystemParameter(relativeName, basicType, null, description);
     }
 
-    public static SystemParameter createSystemParameter(XtceDb mdb, String fqn, Value engValue) {
+    public static SystemParameter createSystemParameter(Mdb mdb, String fqn, Value engValue) {
         return createSystemParameter(mdb, fqn, engValue, null);
     }
 
-    public static SystemParameter createSystemParameter(XtceDb mdb, String fqn, Value engValue, UnitType unit) {
+    public static SystemParameter createSystemParameter(Mdb mdb, String fqn, Value engValue, UnitType unit) {
         String name = NameDescription.getName(fqn);
         ParameterType ptype = createSystemParameterType(mdb, name, engValue, unit);
         return mdb.createSystemParameter(fqn, ptype, null);
     }
 
-    public static SystemParameter createSystemParameter(XtceDb mdb, String fqn, Yamcs.Value.Type basicType,
+    public static SystemParameter createSystemParameter(Mdb mdb, String fqn, Yamcs.Value.Type basicType,
             UnitType unit, String description) {
         ParameterType ptype = getBasicType(mdb, basicType, unit);
         return mdb.createSystemParameter(fqn, ptype, description);
     }
 
-    public static SystemParameter createSystemParameter(XtceDb mdb, String fqn, Yamcs.Value.Type basicType,
+    public static SystemParameter createSystemParameter(Mdb mdb, String fqn, Yamcs.Value.Type basicType,
             String description) {
         return createSystemParameter(mdb, fqn, basicType, null, description);
     }
@@ -332,7 +333,7 @@ public class SystemParametersService extends AbstractYamcsService implements Run
         return mdb.createSystemParameter(qualifiedName(namespace, relativeName), type, description);
     }
 
-    public static ParameterType createSystemParameterType(XtceDb mdb, String name, Value v, UnitType unit) {
+    public static ParameterType createSystemParameterType(Mdb mdb, String name, Value v, UnitType unit) {
         if (v instanceof AggregateValue) {
             AggregateValue aggrv = (AggregateValue) v;
             AggregateParameterType.Builder aggrType = new AggregateParameterType.Builder();
@@ -381,7 +382,7 @@ public class SystemParametersService extends AbstractYamcsService implements Run
         return getBasicType(mdb, type, unit);
     }
 
-    public static ParameterType getBasicType(XtceDb mdb, Type type, UnitType unit) {
+    public static ParameterType getBasicType(Mdb mdb, Type type, UnitType unit) {
 
         switch (type) {
         case BINARY:
@@ -424,7 +425,7 @@ public class SystemParametersService extends AbstractYamcsService implements Run
         return getOrCreateType(mdb, name, null, supplier);
     }
 
-    static private ParameterType getOrCreateType(XtceDb mdb, String name, UnitType unit,
+    static private ParameterType getOrCreateType(Mdb mdb, String name, UnitType unit,
             Supplier<ParameterType.Builder<?>> supplier) {
 
         String units;

@@ -14,7 +14,8 @@ import org.yamcs.Spec.OptionType;
 import org.yamcs.logging.Log;
 import org.yamcs.management.LinkManager;
 import org.yamcs.mdb.DatabaseLoadException;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.Mdb;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.protobuf.Mdb.MissionDatabase;
 import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
@@ -49,7 +50,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
     TimeService timeService;
     private CrashHandler crashHandler;
     List<ServiceWithConfig> services;
-    private XtceDb xtceDb;
+    private Mdb mdb;
 
     InstanceMetadata metadata;
     YConfiguration config;
@@ -78,6 +79,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
         Spec mdbSpec = new Spec();
         mdbSpec.addOption("type", OptionType.STRING).withRequired(true);
         mdbSpec.addOption("spec", OptionType.STRING);
+        mdbSpec.addOption("writable", OptionType.BOOLEAN).withDefault(false);
         mdbSpec.addOption("args", OptionType.MAP).withSpec(Spec.ANY);
         mdbSpec.addOption("subLoaders", OptionType.LIST).withElementType(OptionType.MAP).withSpec(mdbSpec);
 
@@ -134,7 +136,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
             loadCrashHandler();
 
             // first load the XtceDB (if there is an error in it, we don't want to load any other service)
-            xtceDb = XtceDbFactory.getInstance(name);
+            mdb = MdbFactory.getInstance(name);
             StreamInitializer.createStreams(name);
 
             // create services before the link manager so that the pre-processors can find them
@@ -203,8 +205,8 @@ public class YamcsServerInstance extends YamcsInstanceService {
         }, MoreExecutors.directExecutor());
     }
 
-    public XtceDb getXtceDb() {
-        return xtceDb;
+    public Mdb getMdb() {
+        return mdb;
     }
 
     /**
@@ -218,7 +220,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
         awaitOffline();
 
         // set to null to free some memory
-        xtceDb = null;
+        mdb = null;
         services = null;
     }
 
@@ -358,7 +360,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
                     String configName = config.getString("mdb");
                     mdb.setConfigName(configName);
                 }
-                XtceDb xtcedb = getXtceDb();
+                XtceDb xtcedb = getMdb();
                 if (xtcedb != null) { // if the instance is in a failed state, it could be that it doesn't have a XtceDB
                                       // (the failure might be due to the load of the XtceDb)
                     mdb.setName(xtcedb.getRootSpaceSystem().getName());

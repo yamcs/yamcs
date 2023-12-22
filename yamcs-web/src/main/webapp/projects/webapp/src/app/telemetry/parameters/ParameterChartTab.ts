@@ -1,9 +1,8 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Parameter, Synchronizer, utils } from '@yamcs/webapp-sdk';
+import { Parameter, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 import { DyDataSource } from '../../shared/widgets/DyDataSource';
 import { ParameterPlot } from '../../shared/widgets/ParameterPlot';
 import { ParameterSeries } from '../../shared/widgets/ParameterSeries';

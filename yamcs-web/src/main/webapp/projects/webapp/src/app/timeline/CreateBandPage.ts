@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { YamcsService } from '../core/services/YamcsService';
+import { YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   templateUrl: './CreateBandPage.html',

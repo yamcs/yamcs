@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { Alarm } from '@yamcs/webapp-sdk';
-import { YamcsService } from '../core/services/YamcsService';
+import { Alarm, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-alarm-detail',

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { YamcsService } from '../../core/services/YamcsService';
+import { YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   templateUrl: './AlgorithmPage.html',

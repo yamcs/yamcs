@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Alarm, SelectOption, ShelveAlarmOptions, utils } from '@yamcs/webapp-sdk';
-import { YamcsService } from '../core/services/YamcsService';
+import { Alarm, SelectOption, ShelveAlarmOptions, YamcsService, utils } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-shelve-alarm-dialog',

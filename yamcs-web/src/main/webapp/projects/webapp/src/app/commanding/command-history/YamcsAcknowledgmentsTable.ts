@@ -1,20 +1,20 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { CommandHistoryRecord } from './CommandHistoryRecord';
+import { CommandHistoryRecord } from '@yamcs/webapp-sdk';
 
 @Component({
-    selector: 'app-yamcs-acknowledgments-table',
-    templateUrl: './YamcsAcknowledgmentsTable.html',
-    styleUrls: ['./YamcsAcknowledgmentsTable.css'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-yamcs-acknowledgments-table',
+  templateUrl: './YamcsAcknowledgmentsTable.html',
+  styleUrls: ['./YamcsAcknowledgmentsTable.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class YamcsAcknowledgmentsTable {
 
-    @Input()
-    command: CommandHistoryRecord;
+  @Input()
+  command: CommandHistoryRecord;
 
-    @Input()
-    inline = false;
+  @Input()
+  inline = false;
 
-    @Input()
-    showIcons = true;
+  @Input()
+  showIcons = true;
 }

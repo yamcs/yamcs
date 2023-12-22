@@ -4,8 +4,7 @@ import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } 
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CreateServiceAccountRequest, CreateServiceAccountResponse, MessageService } from '@yamcs/webapp-sdk';
-import { YamcsService } from '../../core/services/YamcsService';
+import { CreateServiceAccountRequest, CreateServiceAccountResponse, MessageService, YamcsService } from '@yamcs/webapp-sdk';
 import { ApplicationCredentialsDialog } from './ApplicationCredentialsDialog';
 
 @Component({

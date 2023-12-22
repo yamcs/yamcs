@@ -12,6 +12,10 @@ public class WellKnownTypes {
     static final public Instant TIMESTAMP_MIN = Instant.parse("0001-01-01T00:00:00Z");
     static final public Instant TIMESTAMP_MAX = Instant.parse("9999-12-31T23:59:59Z");
 
+    public static Instant toInstant(Timestamp timestamp) {
+        return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
+    }
+
     public static Timestamp toTimestamp(Instant instant) {
         if (instant.isBefore(TIMESTAMP_MIN)) {
             throw new IllegalArgumentException("instant too small");

@@ -51,6 +51,12 @@ The column names are:
     ``M``
         Short for mandatory. The algorithm will not trigger unless a value is set for this input parameter.
 
+``description``
+    Textual description of the algorithm. Should be one line.
+
+``long description``
+    Long textual description of the algorithm. In Markdown format.
+
 ``namespace:<ALIAS>``
     Any numbers of namespace columns can be added using the prefix ``namespace:`` followed by the name of a namespace.
 

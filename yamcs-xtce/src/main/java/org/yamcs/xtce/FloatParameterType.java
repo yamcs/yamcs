@@ -117,6 +117,7 @@ public class FloatParameterType extends FloatDataType implements NumericParamete
             contextAlarmList.addAll(ncas);
         }
 
+        @Override
         public NumericAlarm createOrGetAlarm(MatchCriteria contextMatch) {
             if (contextMatch == null) {
                 if (defaultAlarm == null) {

@@ -12,12 +12,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
 import org.yamcs.archive.SpeedSpec.Type;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.parser.ParseException;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -52,7 +52,7 @@ public class YarchReplay implements StreamSubscriber {
     private volatile String errorString = "";
     final String instance;
     static AtomicInteger counter = new AtomicInteger();
-    XtceDb xtceDb;
+    Mdb mdb;
 
     volatile ReplayOptions currentRequest;
 
@@ -68,11 +68,11 @@ public class YarchReplay implements StreamSubscriber {
     ReplayListener listener;
     volatile long replayTime;
 
-    public YarchReplay(ReplayServer replayServer, ReplayOptions rr, ReplayListener listener, XtceDb xtceDb)
+    public YarchReplay(ReplayServer replayServer, ReplayOptions rr, ReplayListener listener, Mdb mdb)
             throws YamcsException {
         this.listener = listener;
         this.replayServer = replayServer;
-        this.xtceDb = xtceDb;
+        this.mdb = mdb;
         this.instance = replayServer.getYamcsInstance();
         setRequest(rr);
     }
@@ -106,13 +106,13 @@ public class YarchReplay implements StreamSubscriber {
             handlers.put(ProtoDataType.EVENT, new EventReplayHandler());
         }
         if (currentRequest.hasPacketRequest()) {
-            handlers.put(ProtoDataType.TM_PACKET, new XtceTmReplayHandler(xtceDb));
+            handlers.put(ProtoDataType.TM_PACKET, new XtceTmReplayHandler(mdb));
         }
         if (currentRequest.hasPpRequest()) {
-            handlers.put(ProtoDataType.PP, new ParameterReplayHandler(xtceDb));
+            handlers.put(ProtoDataType.PP, new ParameterReplayHandler(mdb));
         }
         if (currentRequest.hasCommandHistoryRequest()) {
-            handlers.put(ProtoDataType.CMD_HISTORY, new CommandHistoryReplayHandler(instance, xtceDb));
+            handlers.put(ProtoDataType.CMD_HISTORY, new CommandHistoryReplayHandler(instance, mdb));
         }
 
         for (ReplayHandler rh : handlers.values()) {

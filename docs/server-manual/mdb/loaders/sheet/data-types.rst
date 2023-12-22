@@ -49,7 +49,10 @@ This sheet describes data types that can then be used in the definition of :doc:
     .. include:: _includes/initial-value.rst
 
 ``description``
-    A description for the parameter or command argument.
+    A description for the parameter or command argument. Should be one line.
+
+``long description``
+    Long textual description. In Markdown format.
 
 
 .. _raw-encoding:

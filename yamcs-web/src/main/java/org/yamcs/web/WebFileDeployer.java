@@ -14,10 +14,12 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import org.yamcs.Experimental;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
@@ -55,6 +57,7 @@ import com.google.protobuf.util.JsonFormat;
 public class WebFileDeployer {
 
     private static final Log log = new Log(WebFileDeployer.class);
+    public static final String PATH_INDEX_TEMPLATE = "index.template.html";
     public static final String PATH_INDEX = "index.html";
     public static final String PATH_NGSW = "ngsw.json";
     public static final String PATH_WEBMANIFEST = "manifest.webmanifest";
@@ -66,24 +69,18 @@ public class WebFileDeployer {
     // Required, but with modified files
     private Path target;
 
+    private List<Path> extraStaticRoots;
+    private Map<String, Map<String, Object>> extraConfigs;
+
     private YConfiguration config;
     private String contextPath;
 
-    /**
-     * Deploy the website, for practical reasons we have three different mechanisms. In order:
-     * 
-     * <ul>
-     * <li>(1) Check a system property yamcs.web.staticRoot
-     * <li>(2) Check a property in yamcs.yaml
-     * <li>(3) Load from classpath (packaged inside yamcs-web)
-     * </ul>
-     * 
-     * End-users should use (3). (1) and (2) make it possible to develop on the web sources. (1) Allows doing so without
-     * needing to modify the yamcs.yaml
-     */
-    public WebFileDeployer(YConfiguration config, String contextPath) throws IOException, ParseException {
+    public WebFileDeployer(YConfiguration config, String contextPath, List<Path> extraStaticRoots,
+            Map<String, Map<String, Object>> extraConfigs) throws IOException, ParseException {
         this.config = config;
         this.contextPath = contextPath;
+        this.extraStaticRoots = extraStaticRoots;
+        this.extraConfigs = extraConfigs;
 
         target = YamcsServer.getServer().getCacheDirectory().resolve(WebPlugin.CONFIG_SECTION);
         FileUtils.deleteRecursivelyIfExists(target);
@@ -98,21 +95,24 @@ public class WebFileDeployer {
             source = source.toAbsolutePath().normalize();
         }
 
-        if (source != null && Files.exists(source)) {
+        var deployed = false;
+        if (source != null) {
             if (Files.exists(source)) {
                 log.debug("Deploying yamcs-web from {}", source);
                 FileUtils.copyRecursively(source, target);
+                deployed = true;
 
                 // Watch for changes
-                new Redeployer().start();
+                new Redeployer(source, target).start();
             } else {
                 log.warn("Static root for yamcs-web not found at '{}'", source);
             }
-        } else {
+        }
+        if (!deployed) {
             deployWebsiteFromClasspath(target);
         }
 
-        prepareWebApplication(target);
+        prepareWebApplication();
     }
 
     /**
@@ -122,44 +122,64 @@ public class WebFileDeployer {
         return target;
     }
 
+    @Experimental
+    public List<Path> getExtraStaticRoots() {
+        return extraStaticRoots;
+    }
+
+    @Experimental
+    public void setExtraSources(List<Path> extraStaticRoots, Map<String, Map<String, Object>> extraConfigs) {
+        this.extraStaticRoots = extraStaticRoots;
+        this.extraConfigs = extraConfigs;
+        try { // Silent redeploy
+            prepareWebApplication();
+        } catch (IOException | ParseException e) {
+            log.error("Failed to deploy additional static roots", e);
+        }
+    }
+
     /**
      * Deploys all web files located in the classpath, as listed in a manifest.txt file. This file is generated during
      * the Maven build and enables us to skip having to do classpath listings.
      */
     private void deployWebsiteFromClasspath(Path target) throws IOException {
-        try (var in = getClass().getResourceAsStream("/static/manifest.txt");
-                var reader = new InputStreamReader(in, UTF_8)) {
+        try (var in = getClass().getResourceAsStream("/static/manifest.txt")) {
+            if (in != null) {
+                try (var reader = new InputStreamReader(in, UTF_8)) {
 
-            var manifest = CharStreams.toString(reader);
-            var staticFiles = manifest.split(";");
+                    var manifest = CharStreams.toString(reader);
+                    var staticFiles = manifest.split(";");
 
-            log.debug("Unpacking {} webapp files", staticFiles.length);
-            for (var staticFile : staticFiles) {
-                try (var resource = getClass().getResourceAsStream("/static/" + staticFile)) {
-                    Files.createDirectories(target.resolve(staticFile).getParent());
-                    Files.copy(resource, target.resolve(staticFile));
+                    log.debug("Unpacking {} webapp files", staticFiles.length);
+                    for (var staticFile : staticFiles) {
+                        try (var resource = getClass().getResourceAsStream("/static/" + staticFile)) {
+                            Files.createDirectories(target.resolve(staticFile).getParent());
+                            Files.copy(resource, target.resolve(staticFile));
+                        }
+                    }
                 }
             }
         }
     }
 
-    private void prepareWebApplication(Path directory) throws IOException, ParseException {
+    private synchronized void prepareWebApplication() throws IOException, ParseException {
         // Keep track of SHA1 of modified files (for injection in ngsw.json)
-        Map<String, String> hashTableOverrides = new HashMap<>();
+        var hashTableOverrides = new HashMap<String, String>();
 
-        var indexFile = directory.resolve(PATH_INDEX);
-        if (Files.exists(indexFile)) {
-            var content = renderIndex(indexFile);
+        var indexTemplateFile = target.resolve(PATH_INDEX_TEMPLATE);
+        var indexFile = target.resolve(PATH_INDEX);
+        if (Files.exists(indexTemplateFile)) {
+            var content = renderIndex(indexTemplateFile);
             Files.writeString(indexFile, content, UTF_8);
             hashTableOverrides.put("/" + PATH_INDEX, calculateSha1(content));
         }
-        var webManifestFile = directory.resolve(PATH_WEBMANIFEST);
+        var webManifestFile = target.resolve(PATH_WEBMANIFEST);
         if (Files.exists(webManifestFile)) {
             var content = renderWebManifest(webManifestFile);
             Files.writeString(webManifestFile, content, UTF_8);
             hashTableOverrides.put("/" + PATH_WEBMANIFEST, calculateSha1(content));
         }
-        var ngswFile = directory.resolve(PATH_NGSW);
+        var ngswFile = target.resolve(PATH_NGSW);
         if (Files.exists(ngswFile)) {
             var ngswContent = renderNgsw(ngswFile, hashTableOverrides);
             Files.writeString(ngswFile, ngswContent, UTF_8);
@@ -170,8 +190,41 @@ public class WebFileDeployer {
     private String renderIndex(Path file) throws IOException, ParseException {
         var template = new String(Files.readAllBytes(file), UTF_8);
 
+        var cssFiles = new ArrayList<Path>();
+        var jsFiles = new ArrayList<Path>();
+        for (var extraStaticRoot : extraStaticRoots) {
+            try (var listing = Files.list(extraStaticRoot)) {
+                listing.forEachOrdered(extensionFile -> {
+                    var lcFilename = extensionFile.getFileName().toString().toLowerCase();
+                    if (lcFilename.endsWith(".css")) {
+                        cssFiles.add(extensionFile);
+                    } else if (lcFilename.endsWith(".js")) {
+                        jsFiles.add(extensionFile);
+                    }
+                });
+            }
+        }
+
+        var extraHeaderHtml = new StringBuilder();
+        for (var cssFile : cssFiles) {
+            extraHeaderHtml.append("<link rel=\"stylesheet\" href=\"")
+                    .append(contextPath)
+                    .append("/")
+                    .append(cssFile.getFileName())
+                    .append("\">\n");
+        }
+        for (var jsFile : jsFiles) {
+            extraHeaderHtml.append("<script src=\"")
+                    .append(contextPath)
+                    .append("/")
+                    .append(jsFile.getFileName())
+                    .append("\" type=\"module\"></script>\n");
+        }
+
+        extraHeaderHtml.append(config.getString("extraHeaderHTML", ""));
+
         // Don't use template for this, because Angular compiler messes up the HTML
-        template = template.replace("<!--[[ EXTRA_HEADER_HTML ]]-->", config.getString("extraHeaderHTML", ""));
+        template = template.replace("<!--[[ EXTRA_HEADER_HTML ]]-->", extraHeaderHtml.toString());
 
         var webConfig = new HashMap<>(config.toMap());
 
@@ -188,6 +241,14 @@ public class WebFileDeployer {
         webConfig.put("auth", authMap);
 
         var yamcs = YamcsServer.getServer();
+
+        var pluginManager = yamcs.getPluginManager();
+        var plugins = new ArrayList<String>();
+        for (var plugin : pluginManager.getPlugins()) {
+            var pluginName = pluginManager.getMetadata(plugin.getClass()).getName();
+            plugins.add(pluginName);
+        }
+        webConfig.put("plugins", plugins);
 
         var commandOptions = new ArrayList<Map<String, Object>>();
         for (var option : yamcs.getCommandOptions()) {
@@ -213,6 +274,9 @@ public class WebFileDeployer {
             }
         }
         webConfig.put("queueNames", queueNames);
+
+        // May be used by web extensions to pass arbitrary information
+        webConfig.put("extra", extraConfigs);
 
         var args = new HashMap<String, Object>();
         args.put("contextPath", contextPath);
@@ -279,6 +343,14 @@ public class WebFileDeployer {
 
     private class Redeployer extends Thread {
 
+        private Path source;
+        private Path target;
+
+        private Redeployer(Path source, Path target) {
+            this.source = source;
+            this.target = target;
+        }
+
         @Override
         public void run() {
             try {
@@ -297,7 +369,7 @@ public class WebFileDeployer {
                                 log.debug("Redeploying yamcs-web from {}", source);
                                 FileUtils.deleteContents(target);
                                 FileUtils.copyRecursively(source, target);
-                                prepareWebApplication(target);
+                                prepareWebApplication();
                             }
                             loop = key.reset();
                         }

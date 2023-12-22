@@ -42,12 +42,15 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
     static final String CN_CONT_SIZEINBITS = "size in bits";
     static final String CN_CONT_EXPECTED_INTERVAL = "expected interval";
     static final String CN_CONT_DESCRIPTION = "description";
+    static final String CN_CONT_LONG_DESCRIPTION = "long description";
 
     // columns in the algorithms sheet
     static final String CN_ALGO_NAME = "algorithm name";
     static final String CN_ALGO_LANGUGAGE = "language";
     static final String CN_ALGO_TEXT = "text";
     static final String CN_ALGO_TRIGGER = "trigger";
+    static final String CN_ALGO_DESCRIPTION = "description";
+    static final String CN_ALGO_LONG_DESCRIPTION = "long description";
     static final String CN_ALGO_PARA_INOUT = "in/out";
     static final String CN_ALGO_PARA_REF = "parameter reference";
     static final String CN_ALGO_PARA_INSTANCE = "instance";
@@ -82,6 +85,7 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
     protected static final String CN_CMD_RANGELOW = "range low";
     protected static final String CN_CMD_RANGEHIGH = "range high";
     protected static final String CN_CMD_DESCRIPTION = "description";
+    protected static final String CN_CMD_LONG_DESCRIPTION = "long description";
 
     // columns in the command options sheet
     protected static final int IDX_CMDOPT_NAME = 0;
@@ -132,12 +136,14 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
     static final String CN_DTYPE_CALIBRATION = "calibration";
     static final String CN_DTYPE_INITVALUE = "initial value";
     static final String CN_DTYPE_DESCRIPTION = "description";
+    static final String CN_DTYPE_LONG_DESCRIPTION = "long description";
 
     // columns names in the parameter type sheet
     static final String CN_PARAM_NAME = "parameter name";
     static final String CN_PARAM_DTYPE = "data type";
     static final String CN_PARAM_INITVALUE = "initial value";
     static final String CN_PARAM_DESCRIPTION = "description";
+    static final String CN_PARAM_LONG_DESCRIPTION = "long description";
 
     protected static final String SHEET_DATATYPES = "DataTypes";
 
@@ -368,16 +374,18 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
             }
         }
     }
+
     /**
-     * parses strings of type 
+     * parses strings of type
+     *
      * <pre>
-     *   { 
-     *      type1 name1; 
+     *   {
+     *      type1 name1;
      *      type2 name2
-     *    }
+     *   }
      * </pre>
+     *
      * into a map mapping names to types
-     * @return
      */
     protected List<AggrMember> parseAggregateExpr(String engType) {
         String s = engType.substring(1, engType.length() - 1).replace("\n\r", "").trim();
@@ -440,6 +448,7 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
         String calibration;
         String initialValue;
         String description;
+        String longDescription;
         SpaceSystem spaceSystem;
     }
 

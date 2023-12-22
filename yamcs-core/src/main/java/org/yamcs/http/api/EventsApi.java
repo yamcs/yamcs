@@ -487,7 +487,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
             sqlb.whereColIn("body.severity", Arrays.asList(SEVERE, ERROR));
             break;
         default:
-            sqlb.whereColIn("body.severity = ?", Arrays.asList(severity));
+            sqlb.whereColIn("body.severity", Arrays.asList(severity));
         }
     }
 

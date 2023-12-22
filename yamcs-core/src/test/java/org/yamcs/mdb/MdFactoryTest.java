@@ -10,7 +10,6 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
-import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
@@ -20,7 +19,7 @@ import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.util.ReferenceFinder;
 import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
 
-public class XtceDbFactoryTest {
+public class MdFactoryTest {
 
     /*
      * This test constructs the following tree:
@@ -34,7 +33,7 @@ public class XtceDbFactoryTest {
     @Test
     public void testNamespaces() throws Exception {
         YConfiguration.setupTest("refmdb");
-        XtceDbFactory.reset();
+        MdbFactory.reset();
 
         ReferenceFinder refFinder = new ReferenceFinder(s -> {
         });
@@ -43,7 +42,7 @@ public class XtceDbFactoryTest {
         m.put("spec", "mdb/refmdb.xls");
 
         List<YConfiguration> mdbConfigs = Arrays.asList(YConfiguration.wrap(m));
-        XtceDb db = XtceDbFactory.createInstance(mdbConfigs, true, true);
+        XtceDb db = MdbFactory.createInstance(mdbConfigs, true, true);
 
         SequenceContainer pkt1 = db.getSequenceContainer("/REFMDB/SUBSYS1/PKT1");
         assertNotNull(pkt1);

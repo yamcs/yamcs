@@ -17,12 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
-import org.yamcs.mdb.MetaCommandProcessor;
-import org.yamcs.mdb.ProcessorData;
-import org.yamcs.mdb.XtceDbFactory;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.MetaCommand;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.xml.XtceLoadException;
 
 /**
@@ -30,7 +26,7 @@ import org.yamcs.xtce.xml.XtceLoadException;
  */
 public class VariableBinaryCommandEncodingTest {
 
-    private XtceDb db;
+    private Mdb mdb;
     private MetaCommandProcessor metaCommandProcessor;
 
     @BeforeEach
@@ -38,13 +34,13 @@ public class VariableBinaryCommandEncodingTest {
             XMLStreamException, IOException {
 
         YConfiguration.setupTest(null);
-        db = XtceDbFactory.createInstanceByConfig("VariableBinaryTest");
-        metaCommandProcessor = new MetaCommandProcessor(new ProcessorData("test", "test", db, new ProcessorConfig()));
+        mdb = MdbFactory.createInstanceByConfig("VariableBinaryTest");
+        metaCommandProcessor = new MetaCommandProcessor(new ProcessorData("test", "test", mdb, new ProcessorConfig()));
     }
 
     @Test
     public void testCommandEncoding() throws ErrorInCommand, IOException {
-        MetaCommand mc = db.getMetaCommand("/VariableBinaryTest/Command");
+        MetaCommand mc = mdb.getMetaCommand("/VariableBinaryTest/Command");
         Map<String, Object> args = new HashMap<>();
 
         byte[] data = new byte[] { 1, 2, 3, 4, 5 };
@@ -59,7 +55,7 @@ public class VariableBinaryCommandEncodingTest {
 
     @Test
     public void testCommandEncodingWithoutSize() throws ErrorInCommand, IOException {
-        MetaCommand mc = db.getMetaCommand("/VariableBinaryTest/Command1");
+        MetaCommand mc = mdb.getMetaCommand("/VariableBinaryTest/Command1");
         Map<String, Object> args = new HashMap<>();
 
         byte[] data = new byte[] { 1, 2, 3, 4, 5 };
@@ -77,7 +73,7 @@ public class VariableBinaryCommandEncodingTest {
 
     @Test
     public void testCommandEncodingWithoutSizeTooSmall() {
-        MetaCommand mc = db.getMetaCommand("/VariableBinaryTest/Command1");
+        MetaCommand mc = mdb.getMetaCommand("/VariableBinaryTest/Command1");
         Map<String, Object> args = new HashMap<>();
         args.put("data", "01");
         args.put("value", "3.14");
@@ -88,7 +84,7 @@ public class VariableBinaryCommandEncodingTest {
 
     @Test
     public void testCommandEncodingWithoutSizeTooLong() {
-        MetaCommand mc = db.getMetaCommand("/VariableBinaryTest/Command1");
+        MetaCommand mc = mdb.getMetaCommand("/VariableBinaryTest/Command1");
         Map<String, Object> args = new HashMap<>();
         args.put("data", "01020304050607");
         args.put("value", "3.14");

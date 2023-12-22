@@ -4,8 +4,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Algorithm, ColumnInfo, GetAlgorithmsOptions } from '@yamcs/webapp-sdk';
-import { YamcsService } from '../../core/services/YamcsService';
+import { Algorithm, ColumnInfo, GetAlgorithmsOptions, YamcsService } from '@yamcs/webapp-sdk';
 import { AlgorithmsDataSource } from './AlgorithmsDataSource';
 
 @Component({

@@ -1,5 +1,6 @@
-import { Value } from '@yamcs/webapp-sdk';
-import { AdvancementParams, StackEntry } from './StackEntry';
+import { Value } from '../client';
+import { AdvancementParams } from './AdvancementParams';
+import { StackEntry } from './StackEntry';
 
 export class StackFormatter {
   private entries: StackEntry[];

@@ -23,7 +23,7 @@ public class XtceTmExtractor {
     protected final Subscription subscription;
     private ProcessingStatistics stats = new ProcessingStatistics();
 
-    public final XtceDb xtcedb;
+    public final XtceDb mdb;
     final SequenceContainer rootContainer;
     ContainerProcessingOptions options;
     final ProcessorData pdata;
@@ -31,26 +31,26 @@ public class XtceTmExtractor {
     /**
      * Create a standalone TM extractor
      * 
-     * @param xtcedb
+     * @param mdb
      */
-    public XtceTmExtractor(XtceDb xtcedb) {
-        this(xtcedb, new ProcessorData(null, "XTCEPROC", xtcedb, new ProcessorConfig()));
+    public XtceTmExtractor(Mdb mdb) {
+        this(mdb, new ProcessorData(null, "XTCEPROC", mdb, new ProcessorConfig()));
     }
 
     /**
      * Create a new TM extractor with the given context
      *
-     * @param xtcedb
+     * @param mdb
      * @param pdata
      */
-    public XtceTmExtractor(XtceDb xtcedb, ProcessorData pdata) {
-        this.xtcedb = xtcedb;
-        this.subscription = new Subscription(xtcedb);
-        rootContainer = xtcedb.getRootSequenceContainer();
+    public XtceTmExtractor(Mdb mdb, ProcessorData pdata) {
+        this.mdb = mdb;
+        this.subscription = new Subscription(mdb);
+        rootContainer = mdb.getRootSequenceContainer();
         this.pdata = pdata;
         this.options = pdata.getProcessorConfig().getContainerProcessingOptions();
         if (pdata.getProcessorConfig().subscribeContainerArchivePartitions()) {
-            for (SequenceContainer sc : xtcedb.getSequenceContainers()) {
+            for (SequenceContainer sc : mdb.getSequenceContainers()) {
                 if (sc.useAsArchivePartition()) {
                     subscription.addSequenceContainer(sc);
                 }
@@ -85,7 +85,7 @@ public class XtceTmExtractor {
      * Adds all containers and parameters to the subscription
      */
     public void provideAll() {
-        for (SequenceContainer c : xtcedb.getSequenceContainers()) {
+        for (SequenceContainer c : mdb.getSequenceContainers()) {
             if (c.getBaseContainer() == null) {
                 subscription.addAll(c);
             }

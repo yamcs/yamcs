@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.archive.IndexRequestListener.IndexType;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.StringConverter;
@@ -90,7 +90,7 @@ public class IndexRequestProcessor implements Runnable {
 
         if (req.isSendAllTm() || req.getTmPackets().size() > 0) {
             sendTms = true;
-            XtceDb db = XtceDbFactory.getInstance(yamcsInstance);
+            XtceDb db = MdbFactory.getInstance(yamcsInstance);
 
             if (req.isSendAllTm()) {
                 if (req.getDefaultNamespace() != null) {

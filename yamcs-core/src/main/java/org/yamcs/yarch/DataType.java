@@ -440,6 +440,9 @@ public class DataType {
         if (dt1 instanceof ArrayDataType && dt2 instanceof ArrayDataType) {
             return compatible(((ArrayDataType) dt1).getElementType(), ((ArrayDataType) dt2).getElementType());
         }
+        if (dt1 instanceof ProtobufDataType && dt2 instanceof ProtobufDataType) {
+            return ((ProtobufDataType) dt1).getClassName().equals(((ProtobufDataType) dt2).getClassName());
+        }
         return false;
     }
 

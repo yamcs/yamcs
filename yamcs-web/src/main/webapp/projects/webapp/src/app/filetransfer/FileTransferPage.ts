@@ -2,10 +2,9 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FileTransferService, Synchronizer, Transfer, TransferSubscription } from '@yamcs/webapp-sdk';
+import { FileTransferService, Synchronizer, Transfer, TransferSubscription, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../core/services/AuthService';
-import { YamcsService } from '../core/services/YamcsService';
 import { TransferFileDialog } from './TransferFileDialog';
 
 @Component({

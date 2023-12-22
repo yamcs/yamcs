@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
@@ -17,8 +17,8 @@ public class XtceToGpbAssemblerTest {
     public void toCommandInfo_float_test() throws Exception {
         // Arrange
         YConfiguration.setupTest("refmdb");
-        XtceDbFactory.reset();
-        XtceDb db = XtceDbFactory.getInstance("refmdb");
+        MdbFactory.reset();
+        XtceDb db = MdbFactory.getInstance("refmdb");
         MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC");
 
         // Act
@@ -36,8 +36,8 @@ public class XtceToGpbAssemblerTest {
     public void toCommandInfo_int_test() throws Exception {
         // Arrange
         YConfiguration.setupTest("refmdb");
-        XtceDbFactory.reset();
-        XtceDb db = XtceDbFactory.getInstance("refmdb");
+        MdbFactory.reset();
+        XtceDb db = MdbFactory.getInstance("refmdb");
         MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/CCSDS_TC");
 
         // Act
@@ -55,8 +55,8 @@ public class XtceToGpbAssemblerTest {
     public void toCommandInfo_calib_test() throws Exception {
         // Arrange
         YConfiguration.setupTest("refmdb");
-        XtceDbFactory.reset();
-        XtceDb db = XtceDbFactory.getInstance("refmdb");
+        MdbFactory.reset();
+        XtceDb db = MdbFactory.getInstance("refmdb");
         MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/CALIB_TC");
 
         // Act

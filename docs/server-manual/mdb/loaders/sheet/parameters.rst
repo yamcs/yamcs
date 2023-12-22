@@ -12,7 +12,10 @@ Recognised column names are:
     Reference to a data type define in the :doc:`DataTypes sheet <data-types>`.
 
 ``description``
-    Textual description of the parameter.
+    Textual description of the parameter. Should be one line.
+
+``long description``
+    Long textual description of the parameter. In Markdown format.
 
 ``namespace:<ALIAS>``
     Any numbers of namespace columns can be added using the prefix ``namespace:`` followed by the name of a namespace.

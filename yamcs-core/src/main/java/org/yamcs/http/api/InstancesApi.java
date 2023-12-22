@@ -421,7 +421,7 @@ public class InstancesApi extends AbstractInstancesApi<Context> {
         }
 
         if (yamcsInstance.hasMissionDatabase()) {
-            XtceDb mdb = yamcs.getInstance(yamcsInstance.getName()).getXtceDb();
+            XtceDb mdb = yamcs.getInstance(yamcsInstance.getName()).getMdb();
             if (mdb != null) {
                 instanceb.setMissionDatabase(MdbApi.toMissionDatabase(yamcsInstance.getName(), mdb));
             }
