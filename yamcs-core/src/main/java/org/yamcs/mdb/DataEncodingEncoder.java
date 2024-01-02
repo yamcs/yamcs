@@ -1,6 +1,6 @@
 package org.yamcs.mdb;
 
-import static org.yamcs.mdb.DataEncodingUtils.*;
+import static org.yamcs.mdb.DataEncodingUtils.rawRawStringValue;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteOrder;
@@ -17,8 +17,8 @@ import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding;
-import org.yamcs.xtce.ParameterOrArgumentRef;
 import org.yamcs.xtce.IntegerDataEncoding.Encoding;
+import org.yamcs.xtce.ParameterOrArgumentRef;
 import org.yamcs.xtce.StringDataEncoding;
 
 /**
@@ -42,7 +42,7 @@ public class DataEncodingEncoder {
 
         if (de.getToBinaryTransformAlgorithm() != null) {
             DataEncoder denc = pcontext.pdata.getDataEncoder(de);
-            denc.encodeRaw(de, rawValue, pcontext.bitbuf);
+            denc.encodeRaw(de, rawValue, pcontext.bitbuf, pcontext);
         } else {
             if (de instanceof IntegerDataEncoding) {
                 encodeRawInteger((IntegerDataEncoding) de, rawValue);

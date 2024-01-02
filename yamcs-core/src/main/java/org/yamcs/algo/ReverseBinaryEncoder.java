@@ -2,6 +2,7 @@ package org.yamcs.algo;
 
 import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.mdb.AbstractDataEncoder;
+import org.yamcs.mdb.TcProcessingContext;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.CustomAlgorithm;
@@ -17,7 +18,7 @@ public class ReverseBinaryEncoder extends AbstractDataEncoder {
     }
 
     @Override
-    public void encodeRaw(DataEncoding de, Value rawValue, BitBuffer buffer) {
+    public void encodeRaw(DataEncoding de, Value rawValue, BitBuffer buffer, TcProcessingContext ctx) {
         var bytes = rawValue.getBinaryValue();
 
         var reversedCopy = new byte[bytes.length];
