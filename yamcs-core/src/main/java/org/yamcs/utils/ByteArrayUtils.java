@@ -90,7 +90,7 @@ public class ByteArrayUtils {
     }
 
     /**
-     * write a long in to a byte array of 8 bytes
+     * write a long into a byte array of 8 bytes
      * 
      * @param x
      * @return
@@ -98,6 +98,14 @@ public class ByteArrayUtils {
     public static byte[] encodeLong(long x) {
         byte[] toReturn = new byte[8];
         return encodeLong(x, toReturn, 0);
+    }
+
+    /**
+     * write a long into a byte array of 8 bytes, in little endian
+     */
+    public static byte[] encodeLongLE(long x) {
+        byte[] toReturn = new byte[8];
+        return encodeLongLE(x, toReturn, 0);
     }
 
     // ----------------- 8 bytes(long) encoding/decoding
