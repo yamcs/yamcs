@@ -8,7 +8,7 @@ import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
-import org.yamcs.tctm.TmContainer;
+import org.yamcs.tctm.TmPackage;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tm.PusTmModifier;
 
@@ -73,7 +73,7 @@ public class SubServiceTwentySix implements PusSubService {
     }
 
     private void addPusTmContainer(TmPacket tmPacket, byte[] pusTmContainer, long gentime) {
-        tmPacket.addToPusTmContainerList(new TmContainer(pusTmContainer, gentime));
+        tmPacket.addToTmPackageList(new TmPackage(pusTmContainer, gentime));
     }
 
     @Override

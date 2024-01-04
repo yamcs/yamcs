@@ -256,8 +256,10 @@ public class LinkManager {
         Long obt = tmPacket.getObt() == Long.MIN_VALUE ? null : tmPacket.getObt();
 
         t = new Tuple(StandardTupleDefinitions.TM,
-                new Object[] {tmPacket.getGenerationTime(), tmPacket.getSeqCount(), tmPacket.getReceptionTime(),
-                    tmPacket.getStatus(), tmPacket.getPacket(), ertime, obt, tmLink.getName(), tmPacket.getPusTmContainersPayload(), tmPacket.getPusTmContainersGentime() });
+                new Object[] {
+                    tmPacket.getGenerationTime(), tmPacket.getSeqCount(), tmPacket.getReceptionTime(), tmPacket.getStatus(), tmPacket.getPacket(), ertime, obt, tmLink.getName(), tmPacket.getTmPackagesPairs()
+                }
+            );
 
         stream.emitTuple(t);
     }

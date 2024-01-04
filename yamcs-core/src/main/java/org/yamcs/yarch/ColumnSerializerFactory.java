@@ -10,6 +10,7 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
@@ -47,6 +48,9 @@ public class ColumnSerializerFactory {
     static final NullTerminatedStringColumnSerializer STRING_CS_V3 = new NullTerminatedStringColumnSerializer();
 
     static final BinaryColumnSerializer BINARY_CS = new BinaryColumnSerializer();
+
+    static final ColumnSerializer<Pair<Long, byte[]>> TIMESTAMP_BINARY_PAIR_V3 = new ColumnSerializerV3.TimestampBinaryPairColumnSerializer();
+    static final ColumnSerializer<Pair<Long, byte[]>> TIMESTAMP_BINARY_PAIR_V2 = new ColumnSerializerV2.TimestampBinaryPairColumnSerializer();
 
     static final ColumnSerializer<Instant> HRES_TIMESTAMP_CS_V2 = new ColumnSerializerV2.HresTimestampColumnSerializer();
     static final ColumnSerializer<Instant> HRES_TIMESTAMP_CS_V3 = new ColumnSerializerV3.HresTimestampColumnSerializer();
@@ -150,6 +154,8 @@ public class ColumnSerializerFactory {
         case TUPLE:
             // TODO
             throw new UnsupportedOperationException("Tuple not implemented");
+        case TIMESTAMP_BINARY_PAIR:
+            return (ColumnSerializer<T>) TIMESTAMP_BINARY_PAIR_V3;
         default:
             throw new IllegalArgumentException("' " + type + " is not a basic type");
         }
@@ -189,6 +195,8 @@ public class ColumnSerializerFactory {
         case TUPLE:
             // TODO
             throw new UnsupportedOperationException("List and Tuple not implemented");
+        case TIMESTAMP_BINARY_PAIR:
+            return (ColumnSerializer<T>) TIMESTAMP_BINARY_PAIR_V2;
         default:
             throw new IllegalArgumentException("' " + type + " is not a basic type");
         }

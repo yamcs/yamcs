@@ -1,9 +1,11 @@
 package org.yamcs.archive;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StandardTupleDefinitions;
@@ -85,7 +87,9 @@ public class XtceTmReplayHandler implements ReplayHandler {
         long genTime = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
         int seqNum = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
         String pname = (String) tuple.getColumn(XtceTmRecorder.PNAME_COLUMN);
-        return new ReplayPacket(pname, recTime, genTime, seqNum, pbody);
+        ArrayList<Pair<Long, byte[]>> tmPackages = (ArrayList<Pair<Long, byte[]>>) tuple.getColumn(StandardTupleDefinitions.TM_PACKAGES);
+
+        return new ReplayPacket(pname, recTime, genTime, seqNum, pbody, tmPackages);
     }
 
     public static class ReplayPacket {
@@ -94,13 +98,15 @@ public class XtceTmReplayHandler implements ReplayHandler {
         final long genTime;
         final int seqNum;
         final byte[] packet;
+        final ArrayList<Pair<Long, byte[]>> tmPackages;
 
-        public ReplayPacket(String pname, long recTime, long genTime, int seqNum, byte[] packet) {
+        public ReplayPacket(String pname, long recTime, long genTime, int seqNum, byte[] packet, ArrayList<Pair<Long, byte[]>> tmPackages) {
             this.pname = pname;
             this.recTime = recTime;
             this.genTime = genTime;
             this.seqNum = seqNum;
             this.packet = packet;
+            this.tmPackages = tmPackages;
         }
 
         public long getGenerationTime() {
@@ -125,6 +131,10 @@ public class XtceTmReplayHandler implements ReplayHandler {
          */
         public String getQualifiedName() {
             return pname;
+        }
+
+        public ArrayList<Pair<Long, byte[]>> getTmPackages() {
+            return tmPackages;
         }
     }
 }
