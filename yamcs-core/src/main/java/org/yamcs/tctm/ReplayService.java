@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.yamcs.AbstractProcessorService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
@@ -142,8 +143,12 @@ public class ReplayService extends AbstractProcessorService
                     container = parent;
                 }
 
-                tmProcessor.processPacket(new TmPacket(rp.getReceptionTime(), rp.getGenerationTime(),
-                        rp.getSequenceNumber(), rp.getPacket()), container);
+                TmPacket pkt = new TmPacket(rp.getReceptionTime(), rp.getGenerationTime(), rp.getSequenceNumber(), rp.getPacket());
+                for(Pair<Long, byte[]> tmPackage: rp.getTmPackages()) {
+                    pkt.addToTmPackageList(new TmPackage(tmPackage.getRight(), tmPackage.getLeft()));
+                }
+
+                tmProcessor.processPacket(pkt, container);
             }
             break;
         case PP:

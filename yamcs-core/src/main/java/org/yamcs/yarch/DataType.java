@@ -5,6 +5,7 @@ package org.yamcs.yarch;
 
 import java.util.List;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
@@ -39,7 +40,8 @@ public class DataType {
         TUPLE,
         ARRAY,
         HRES_TIMESTAMP,
-        UUID
+        UUID,
+        TIMESTAMP_BINARY_PAIR
     }
 
     public final _type val;
@@ -55,10 +57,12 @@ public class DataType {
     public static final DataType TIMESTAMP = new DataType(_type.TIMESTAMP, (byte) 9, true);
     public static final DataType ENUM = new DataType(_type.ENUM, (byte) 10);
     public static final DataType PARAMETER_VALUE = new DataType(_type.PARAMETER_VALUE, (byte) 11);
+    public static final DataType TIMESTAMP_BINARY_PAIR = new TimestampBinaryPairDataType();
 
     public static final byte PROTOBUF_ID = 12;
     public static final byte TUPLE_ID = 13;
     public static final byte ARRAY_ID = 14;
+    public static final byte TIMESTAMP_BINARY_PAIR_ID = 17;
 
     public static final DataType HRES_TIMESTAMP = new DataType(_type.HRES_TIMESTAMP, (byte) 15, true);
     public static final DataType UUID = new DataType(_type.UUID, (byte) 16);
@@ -133,6 +137,8 @@ public class DataType {
             return UUID;
         case "PARAMETER_VALUE":
             return PARAMETER_VALUE;
+        case "TIMESTAMP_BINARY_PAIR":
+            return TIMESTAMP_BINARY_PAIR;
         default:
             if (name.toUpperCase().startsWith("PROTOBUF(")) {
                 return protobuf(name.substring(9, name.length() - 1));
@@ -140,7 +146,6 @@ public class DataType {
             if (name.toUpperCase().startsWith("ARRAY(")) {
                 return array(byName(name.substring(6, name.length() - 1)));
             }
-
             throw new IllegalArgumentException("invalid or unsupported DataType '" + name + "'");
         }
     }
@@ -205,6 +210,8 @@ public class DataType {
             return "java.util.UUID";
         case ARRAY:
             return "java.util.List";
+        case TIMESTAMP_BINARY_PAIR:  // FIXME: This means that the library must always be a part of the pom.xml file | Check if needed
+            return "org.apache.commons.lang3.tuple.Pair";
         default:
             throw new IllegalStateException("no java type available for " + this);
         }
@@ -279,6 +286,8 @@ public class DataType {
             return HRES_TIMESTAMP;
         } else if (v instanceof java.util.UUID) {
             return UUID;
+        } else if (v instanceof org.apache.commons.lang3.tuple.Pair<?, ?>) {    // FIXME: Need to generalise this to any type of pairs. Currently only a single pair in the implementation so it works!
+            return TIMESTAMP_BINARY_PAIR;
         } else if (v instanceof List<?>) {
             List<?> l = (List<?>) v;
             if (l.isEmpty()) {
@@ -443,6 +452,10 @@ public class DataType {
         if (dt1 instanceof ProtobufDataType && dt2 instanceof ProtobufDataType) {
             return ((ProtobufDataType) dt1).getClassName().equals(((ProtobufDataType) dt2).getClassName());
         }
+        if (dt1 instanceof TimestampBinaryPairDataType && dt2 instanceof TimestampBinaryPairDataType) {
+            return true;
+        }
+
         return false;
     }
 

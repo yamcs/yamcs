@@ -1,5 +1,6 @@
 package org.yamcs.mdb;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.AbstractProcessorService;
@@ -17,6 +18,7 @@ import org.yamcs.parameter.ParameterProcessor;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.tctm.TmPackage;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Container;
 import org.yamcs.xtce.Parameter;
@@ -134,23 +136,26 @@ public class XtceTmProcessor extends AbstractProcessorService
 
     @Override
     public void processPacket(TmPacket pkt, SequenceContainer sc) {
+        // FIXME: Should the exception be handled at a tmPackage level?
         try {
             long rectime = pkt.getReceptionTime();
             if (rectime == TimeEncoding.INVALID_INSTANT) {
                 rectime = TimeEncoding.getWallclockTime();
             }
-            ContainerProcessingResult result = tmExtractor.processPacket(pkt.getPacket(), pkt.getGenerationTime(),
-                    rectime, pkt.getSeqCount(), sc);
 
-            ParameterValueList paramResult = result.getTmParams();
-            List<ContainerExtractionResult> containerResult = result.containers;
+            ArrayList<TmPackage> pkgs = pkt.getTmPackages();
+            for(TmPackage pkg: pkgs) {
+                ContainerProcessingResult result = tmExtractor.processPacket(pkg.getPkg(), pkg.getGenerationTime(), rectime, pkt.getSeqCount(), sc);
+                ParameterValueList paramResult = result.getTmParams();
+                List<ContainerExtractionResult> containerResult = result.containers;
 
-            if ((parameterProcessorManager != null) && (paramResult.size() > 0)) {
-                parameterProcessorManager.process(result);
-            }
+                if ((parameterProcessorManager != null) && (paramResult.size() > 0)) {
+                    parameterProcessorManager.process(result);
+                }
 
-            if ((containerRequestManager != null) && (containerResult.size() > 0)) {
-                containerRequestManager.update(containerResult);
+                if ((containerRequestManager != null) && (containerResult.size() > 0)) {
+                    containerRequestManager.update(containerResult);
+                }
             }
 
         } catch (Exception e) {

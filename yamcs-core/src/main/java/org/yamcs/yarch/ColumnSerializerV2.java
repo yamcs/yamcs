@@ -1,7 +1,9 @@
 package org.yamcs.yarch;
 
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.ByteArray;
 import org.yamcs.utils.ByteArrayUtils;
@@ -53,6 +55,53 @@ public class ColumnSerializerV2 {
         @Override
         public void serialize(ByteBuffer byteBuf, Integer v) {
             byteBuf.putInt((Integer) v);
+        }
+    }
+
+    static class TimestampBinaryPairColumnSerializer implements ColumnSerializer<Pair<Long, byte[]>> {
+
+        @Override
+        public Pair<Long, byte[]> deserialize(ByteArray byteArray, ColumnDefinition cd) {
+            long longVal = byteArray.getLong();
+
+            int length = byteArray.getInt();
+            if (length > ColumnSerializerFactory.maxBinaryLength) {
+                throw new YarchException("binary length " + length + " greater than maxBinaryLenght " + ColumnSerializerFactory.maxBinaryLength
+                        + " (is the endianess wrong?)");
+            }
+            byte[] bp = new byte[length];
+            byteArray.get(bp);
+
+            return Pair.of(longVal, bp);
+        }
+
+        @Override
+        public Pair<Long, byte[]> deserialize(ByteBuffer byteBuf, ColumnDefinition cd) {
+            long longVal = byteBuf.getLong();
+
+            int length = byteBuf.getInt();
+            if (length > ColumnSerializerFactory.maxBinaryLength) {
+                throw new YarchException("binary length " + length + " greater than maxBinaryLenght " + ColumnSerializerFactory.maxBinaryLength
+                        + " (is the endianess wrong?)");
+            }
+            byte[] bp = new byte[length];
+            byteBuf.get(bp);
+
+            return Pair.of(longVal, bp);
+        }
+
+        @Override
+        public void serialize(ByteArray byteArray, Pair<Long, byte[]> v) {
+            byteArray.addLong(v.getLeft());
+            byteArray.addInt(v.getRight().length);
+            byteArray.add(v.getRight());
+        }
+
+        @Override
+        public void serialize(ByteBuffer byteBuf, Pair<Long, byte[]> v) throws BufferOverflowException {
+            byteBuf.putLong(v.getLeft()); 
+            byteBuf.putInt(v.getRight().length);
+            byteBuf.put(v.getRight());
         }
     }
 

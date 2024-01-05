@@ -64,7 +64,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
     private long totalNumPackets;
 
     final Tuple END_MARK = new Tuple(StandardTupleDefinitions.TM,
-            new Object[] { null, null, null, null, null, null, null, null, null, null });
+            new Object[] { null, null, null, null, null, null, null, null, null });
 
     Mdb mdb;
 
@@ -293,38 +293,9 @@ public class XtceTmRecorder extends AbstractYamcsService {
 
             totalNumPackets++;
 
-            String pname = "";
-            ArrayList<Object> uncastPusTmContainers = t.getColumn(StandardTupleDefinitions.TM_PUS_CONTAINERS);
-            ArrayList<Object> uncastPusTmContainersGentime = t.getColumn(StandardTupleDefinitions.TM_PUS_CONTAINERS_GENTIME);
+            ContainerProcessingResult cpr = tmExtractor.processPacket(packet, gentime, timeService.getMissionTime(), seqCount, rootSequenceContainer);
+            String pname = deriveArchivePartition(cpr);
 
-            if (uncastPusTmContainers.size() != 0) {
-                ArrayList<byte[]> pusTmContainers = new ArrayList<>(uncastPusTmContainers.size());
-                ArrayList<Long> pusTmContainersGentime = new ArrayList<>(uncastPusTmContainersGentime.size());
-
-                for(int i = 0; i < pusTmContainers.size(); i++) {
-                    Object uncastPusTmContainer = uncastPusTmContainers.get(i);
-                    Object uncastPusTmContainerGentime = uncastPusTmContainersGentime.get(i);
-
-                    pusTmContainers.add((byte[]) uncastPusTmContainer);
-                    pusTmContainersGentime.add((long) uncastPusTmContainerGentime);
-                }
-
-                for(int i = 0; i < pusTmContainers.size(); i++) {
-                    byte[] pusTmContainer = pusTmContainers.get(i);
-                    long pusTmContainerGentime = pusTmContainersGentime.get(i);
-
-                    ContainerProcessingResult cpr = tmExtractor.processPacket(pusTmContainer, pusTmContainerGentime, timeService.getMissionTime(),
-                            seqCount, rootSequenceContainer);
-                    pname = deriveArchivePartition(cpr);
-                }
-
-            } else {
-                ContainerProcessingResult cpr = tmExtractor.processPacket(packet, gentime, timeService.getMissionTime(),
-                        seqCount, rootSequenceContainer);
-                pname = deriveArchivePartition(cpr);
-            }
-
-            // FIXME: pname may be ambiguous
             try {
                 List<Object> c = t.getColumns();
                 List<Object> columns = new ArrayList<>(c.size() + 1);

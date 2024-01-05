@@ -57,6 +57,7 @@ public class StreamSqlParser implements StreamSqlParserConstants {
         if("BINARY".equalsIgnoreCase(type))  {return DataType.BINARY;}
         if("HRES_TIMESTAMP".equalsIgnoreCase(type)) {return DataType.HRES_TIMESTAMP;}
         if("UUID".equalsIgnoreCase(type)) {return DataType.UUID;}
+        if("TIMESTAMP_BINARY_PAIR".equalsIgnoreCase(type)) {return DataType.TIMESTAMP_BINARY_PAIR;} // FIXME: How to generalise this to any type of pair, if needed in the future?
 
         throw new ParseException("Unknown data type '"+type+"'");
     }
