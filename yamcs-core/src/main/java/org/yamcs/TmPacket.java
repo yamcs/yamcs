@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.yamcs.archive.XtceTmRecorder;
-import org.yamcs.tctm.TmPackage;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
 
@@ -49,12 +48,9 @@ public class TmPacket {
     private byte[] pkt;
     private int status;
 
-    private ArrayList<TmPackage> packageList;
-
     public TmPacket(long rectime, byte[] pkt) {
         this.rectime = rectime;
         this.pkt = pkt;
-        this.packageList = new ArrayList<TmPackage>();
     }
 
     public TmPacket(long rectime, long gentime, int seqCount, byte[] pkt) {
@@ -62,7 +58,6 @@ public class TmPacket {
         this.gentime = gentime;
         this.seqCount = seqCount;
         this.pkt = pkt;
-        this.packageList = new ArrayList<TmPackage>();
     }
 
     /**
@@ -108,24 +103,6 @@ public class TmPacket {
 
     public byte[] getPacket() {
         return pkt;
-    }
-
-    public ArrayList<TmPackage> getTmPackages() {
-        return packageList;
-    }
-
-    public ArrayList<Pair<Long, byte[]>> getTmPackagesPairs() {
-        ArrayList<Pair<Long, byte[]>> arr = new ArrayList<Pair<Long, byte[]>>();
-        for (TmPackage t: packageList) {
-            arr.add(
-                Pair.of(t.getGenerationTime(), t.getPkg())
-            );
-        }
-        return arr;
-    }
-
-    public void addToTmPackageList(TmPackage TmPackage) {
-        packageList.add(TmPackage);
     }
 
     public int length() {
