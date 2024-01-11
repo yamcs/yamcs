@@ -1,6 +1,7 @@
 package org.yamcs.tctm.pus.services.tm;
 
 import org.yamcs.TmPacket;
+import org.yamcs.tctm.pus.PusTmManager;
 import org.yamcs.yarch.Stream;
 
 /**

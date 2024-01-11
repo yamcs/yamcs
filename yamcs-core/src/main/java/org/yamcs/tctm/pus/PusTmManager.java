@@ -1,4 +1,4 @@
-package org.yamcs.tctm.pus.services.tm;
+package org.yamcs.tctm.pus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,6 +9,7 @@ import java.util.Objects;
 
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
+import org.yamcs.InitException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.StandardTupleDefinitions;
@@ -25,6 +26,8 @@ import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.tm.one.ServiceOne;
 import org.yamcs.tctm.pus.services.tm.two.ServiceTwo;
 import org.yamcs.tctm.pus.services.tm.three.ServiceThree;
+import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
+import org.yamcs.tctm.pus.services.tm.PusTmSink;
 import org.yamcs.tctm.pus.services.tm.five.ServiceFive;
 
 
@@ -55,13 +58,17 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
         streamMatrixSpec.addOption("inStream", OptionType.STRING);
         streamMatrixSpec.addOption("outStream", OptionType.STRING);
 
-        spec.addOption("streamMatrix", OptionType.LIST).withSpec(streamMatrixSpec);
+        spec.addOption("streamMatrix", OptionType.LIST).withElementType(OptionType.MAP).withSpec(streamMatrixSpec);
+        spec.addOption("secondaryHeaderLength", OptionType.INTEGER);
+        spec.addOption("absoluteTimeLength", OptionType.INTEGER);
         // FIXME:
         // Add pus spec options
         return spec;
     }
 
-    public PusTmManager(String yamcsInstance, YConfiguration config) {
+    @Override
+    public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
+        super.init(yamcsInstance, serviceName, config);
         this.yamcsInstance = yamcsInstance;
 
         serviceConfig = config.getConfigOrEmpty("services");
@@ -74,14 +81,13 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
         if (!config.containsKey("streamMatrix"))
             throw new ConfigurationException(this.getClass() + ": streamMatrix needs to be defined to know the inputStream -> outStream mapping");
 
-        List<Object> matrix = config.getList("streamMatrix");
-        for(Object o : matrix) {
-            @SuppressWarnings("unchecked")
-            LinkedHashMap<String, String> mp = (LinkedHashMap<String, String>) o;
+        for(YConfiguration c: config.getConfigList("streamMatrix")) {
+            String inStream = c.getString("inStream");
+            String outStream = c.getString("outStream");
 
             streamMatrix.put(
-                Objects.requireNonNull(ydb.getStream(mp.get("inStream"))),
-                Objects.requireNonNull(ydb.getStream(mp.get("outStream")))
+                Objects.requireNonNull(ydb.getStream(inStream)),
+                Objects.requireNonNull(ydb.getStream(outStream))
             );
         }
 
