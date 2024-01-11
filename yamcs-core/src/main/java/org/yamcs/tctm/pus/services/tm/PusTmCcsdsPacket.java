@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import org.yamcs.tctm.CcsdsPacket;
+import org.yamcs.tctm.pus.PusTmManager;
 import org.yamcs.utils.ByteArrayUtils;
 
 public class PusTmCcsdsPacket extends CcsdsPacket {
