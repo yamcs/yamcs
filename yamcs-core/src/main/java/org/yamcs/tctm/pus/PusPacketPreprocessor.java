@@ -1,17 +1,12 @@
 package org.yamcs.tctm.pus;
 
 import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
-import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.tctm.CcsdsPacket;
 import org.yamcs.tctm.CcsdsPacketPreprocessor;
 import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
-import org.yamcs.tctm.pus.services.tm.PusTmManager;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
@@ -86,8 +81,6 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
     // the offset of the time inside the PUS time packets
     int timePktTimeOffset;
 
-    PusTmManager pusManager;
-
     public PusPacketPreprocessor(String yamcsInstance) {
         this(yamcsInstance, YConfiguration.emptyConfig());
     }
@@ -100,9 +93,6 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
             this.timeDecoder = new CucTimeDecoder(-1);
             this.timeEpoch = TimeEpochs.GPS;
         }
-
-        YConfiguration pusConfig = config.getConfigOrEmpty("pus");
-        pusManager = new PusTmManager(yamcsInstance, pusConfig);
     }
 
     @Override
@@ -143,7 +133,6 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
         }
 
         tmPacket.setSequenceCount(apidseqcount);
-
         setRealtimePacketTime(tmPacket, pktTimeOffset);
 
         if (log.isTraceEnabled()) {
@@ -153,7 +142,7 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
                     Integer.toHexString(tmPacket.getStatus()));
         }
 
-        return pusManager.acceptTmPacket(tmPacket);
+        return tmPacket;
     }
 
     private void processTimePacket(TmPacket tmPacket) {

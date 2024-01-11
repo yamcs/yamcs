@@ -1,5 +1,7 @@
 package org.yamcs.tctm.pus.services.tc.two;
 
+import java.util.ArrayList;
+
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
@@ -19,7 +21,7 @@ public class SubServiceEleven implements PusSubService {
     }
 
     @Override
-    public TmPacket process(TmPacket tmPacket) {
+    public ArrayList<TmPacket> process(TmPacket tmPacket) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'process'");
     }

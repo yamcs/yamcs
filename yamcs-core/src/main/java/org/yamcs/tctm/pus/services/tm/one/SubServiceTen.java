@@ -1,5 +1,7 @@
 package org.yamcs.tctm.pus.services.tm.one;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +11,8 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tm.PusTmModifier;
+import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
+import org.yamcs.utils.ByteArrayUtils;
 
 // FIXME: Update the error codes
 enum RoutingFailedErrorCode {
@@ -19,7 +22,7 @@ enum RoutingFailedErrorCode {
 }
 
 public class SubServiceTen implements PusSubService {
-    Map<Integer, RoutingFailedErrorCode> errorCodes = new HashMap<>();
+    Map<Long, RoutingFailedErrorCode> errorCodes = new HashMap<>();
     EventProducer eventProducer;
 
     static final String source = "Service: 1 | SubService: 10";
@@ -34,22 +37,28 @@ public class SubServiceTen implements PusSubService {
     }
 
     @Override
-    public TmPacket process(TmPacket tmPacket) {
-        byte[] dataField = PusTmModifier.getDataField(tmPacket);
+    public ArrayList<TmPacket> process(TmPacket tmPacket) {
+        PusTmCcsdsPacket pPkt = new PusTmCcsdsPacket(tmPacket.getPacket());
 
-        int errorCode = Byte.toUnsignedInt(dataField[0]);
-        byte[] deducedPresence = Arrays.copyOfRange(dataField, 1, dataField.length);
+        byte[] dataField = pPkt.getDataField();
+        byte[] failureNotice = Arrays.copyOfRange(dataField, ServiceOne.REQUEST_ID_LENGTH, dataField.length);
+
+        long errorCode = ByteArrayUtils.decodeCustomInteger(failureNotice, 0, ServiceOne.failureCodeSize);
+        byte[] deducedPresence = Arrays.copyOfRange(failureNotice, ServiceOne.failureCodeSize, failureNotice.length);
 
         eventProducer.sendCritical(TC_ROUTING_FAILED,
-                "TC with Destination ID: " + PusTmModifier.getDestinationID(tmPacket) + " has failed to route correctly | Error Code: " + errorCodes.get(errorCode) + " Deduced: " + deducedPresence);
+                "TC with Destination ID: " + pPkt.getDestinationID() + " has failed to route correctly | Error Code: " + errorCodes.get(errorCode) + " Deduced: " + deducedPresence);
 
-        return tmPacket;
+        ArrayList<TmPacket> pktList = new ArrayList<>();
+        pktList.add(tmPacket);
+
+        return pktList;
     }
 
     public void populateErrorCodes() {
-        errorCodes.put(1, RoutingFailedErrorCode.R1);
-        errorCodes.put(2, RoutingFailedErrorCode.R2);
-        errorCodes.put(3, RoutingFailedErrorCode.R3);
+        errorCodes.put((long)1, RoutingFailedErrorCode.R1);
+        errorCodes.put((long)2, RoutingFailedErrorCode.R2);
+        errorCodes.put((long)3, RoutingFailedErrorCode.R3);
     }
 
     @Override

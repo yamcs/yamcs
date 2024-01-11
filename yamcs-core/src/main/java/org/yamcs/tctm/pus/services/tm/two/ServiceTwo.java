@@ -1,5 +1,6 @@
 package org.yamcs.tctm.pus.services.tm.two;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,7 +10,7 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tm.PusTmModifier;
+import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
 
 public class ServiceTwo implements PusService {
     Log log;
@@ -32,10 +33,10 @@ public class ServiceTwo implements PusService {
     }
 
     @Override
-    public TmPacket extractPusModifiers(TmPacket tmPacket) {
-        return pusSubServices.get(PusTmModifier.getMessageSubType(tmPacket)).process(tmPacket);
+    public ArrayList<TmPacket> extractPusModifiers(TmPacket tmPacket) {
+        byte[] b = tmPacket.getPacket();
+        return pusSubServices.get(PusTmCcsdsPacket.getMessageSubType(b)).process(tmPacket);
     }
-
 
     @Override
     public PreparedCommand addPusModifiers(PreparedCommand telecommand) {

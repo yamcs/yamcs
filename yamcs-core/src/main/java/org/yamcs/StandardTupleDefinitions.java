@@ -16,7 +16,6 @@ public class StandardTupleDefinitions {
     public static final String TM_OBT_COLUMN = "obt";
     public static final String TM_PACKET_COLUMN = "packet";
     public static final String TM_LINK_COLUMN = "link";
-    public static final String TM_PACKAGES = "packages";
 
     public static final String CMDHIST_TUPLE_COL_CMDNAME = "cmdName";
 
@@ -47,7 +46,6 @@ public class StandardTupleDefinitions {
         TM.addColumn(TM_ERTIME_COLUMN, DataType.HRES_TIMESTAMP);
         TM.addColumn(TM_OBT_COLUMN, DataType.LONG);
         TM.addColumn(TM_LINK_COLUMN, DataType.ENUM);
-        TM.addColumn(TM_PACKAGES, DataType.array(DataType.TIMESTAMP_BINARY_PAIR));
     }
     static {
         INVALID_TM.addColumn(TM_RECTIME_COLUMN, DataType.TIMESTAMP);

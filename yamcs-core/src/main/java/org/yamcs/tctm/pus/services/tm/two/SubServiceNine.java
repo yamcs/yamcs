@@ -2,6 +2,7 @@ package org.yamcs.tctm.pus.services.tm.two;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -11,7 +12,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.tm.BucketSaveHandler;
-import org.yamcs.tctm.pus.services.tm.PusTmModifier;
+import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.yarch.Bucket;
@@ -67,8 +68,9 @@ public class SubServiceNine extends BucketSaveHandler implements PusSubService {
     }
 
     @Override
-    public TmPacket process(TmPacket tmPacket) {
-        byte[] dataField = PusTmModifier.getDataField(tmPacket);
+    public ArrayList<TmPacket> process(TmPacket tmPacket) {
+        PusTmCcsdsPacket pPkt = new PusTmCcsdsPacket(tmPacket.getPacket());
+        byte[] dataField = pPkt.getDataField();
 
         int transactionID = ByteArrayUtils.decodeInt(dataField, 0);
         int dataAcquisitionCode = ByteArrayUtils.decodeUnsignedShort(dataField, transactionIDSize);
@@ -107,7 +109,10 @@ public class SubServiceNine extends BucketSaveHandler implements PusSubService {
             throw new UncheckedIOException("Cannot save / update physical device ID dump report in bucket: " + physicalDeviceReportName + (physicalDeviceReportBucket != null ? " -> " + physicalDeviceReportBucket.getName() : ""), e);
         }
 
-        return tmPacket;
+        ArrayList<TmPacket> pktList = new ArrayList<>();
+        pktList.add(tmPacket);
+
+        return pktList;
     }
 
     @Override

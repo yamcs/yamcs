@@ -49,9 +49,6 @@ public class ColumnSerializerFactory {
 
     static final BinaryColumnSerializer BINARY_CS = new BinaryColumnSerializer();
 
-    static final ColumnSerializer<Pair<Long, byte[]>> TIMESTAMP_BINARY_PAIR_V3 = new ColumnSerializerV3.TimestampBinaryPairColumnSerializer();
-    static final ColumnSerializer<Pair<Long, byte[]>> TIMESTAMP_BINARY_PAIR_V2 = new ColumnSerializerV2.TimestampBinaryPairColumnSerializer();
-
     static final ColumnSerializer<Instant> HRES_TIMESTAMP_CS_V2 = new ColumnSerializerV2.HresTimestampColumnSerializer();
     static final ColumnSerializer<Instant> HRES_TIMESTAMP_CS_V3 = new ColumnSerializerV3.HresTimestampColumnSerializer();
     static final ColumnSerializer<java.util.UUID> UUID_CS = new ColumnSerializerV3.UUIDColumnSerializer();
@@ -154,8 +151,6 @@ public class ColumnSerializerFactory {
         case TUPLE:
             // TODO
             throw new UnsupportedOperationException("Tuple not implemented");
-        case TIMESTAMP_BINARY_PAIR:
-            return (ColumnSerializer<T>) TIMESTAMP_BINARY_PAIR_V3;
         default:
             throw new IllegalArgumentException("' " + type + " is not a basic type");
         }
@@ -195,8 +190,6 @@ public class ColumnSerializerFactory {
         case TUPLE:
             // TODO
             throw new UnsupportedOperationException("List and Tuple not implemented");
-        case TIMESTAMP_BINARY_PAIR:
-            return (ColumnSerializer<T>) TIMESTAMP_BINARY_PAIR_V2;
         default:
             throw new IllegalArgumentException("' " + type + " is not a basic type");
         }

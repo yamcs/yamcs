@@ -1,5 +1,6 @@
 package org.yamcs.tctm.pus.services.tc.three;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,7 +40,7 @@ public class ServiceThree implements PusService  {
     }
 
     @Override
-    public TmPacket extractPusModifiers(TmPacket tmPacket) {
+    public ArrayList<TmPacket> extractPusModifiers(TmPacket tmPacket) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'extractPusModifiers'");
     }
