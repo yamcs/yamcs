@@ -143,12 +143,8 @@ public class ReplayService extends AbstractProcessorService
                     container = parent;
                 }
 
-                TmPacket pkt = new TmPacket(rp.getReceptionTime(), rp.getGenerationTime(), rp.getSequenceNumber(), rp.getPacket());
-                for(Pair<Long, byte[]> tmPackage: rp.getTmPackages()) {
-                    pkt.addToTmPackageList(new TmPackage(tmPackage.getRight(), tmPackage.getLeft()));
-                }
-
-                tmProcessor.processPacket(pkt, container);
+                tmProcessor.processPacket(new TmPacket(rp.getReceptionTime(), rp.getGenerationTime(),
+                        rp.getSequenceNumber(), rp.getPacket()), container);
             }
             break;
         case PP:

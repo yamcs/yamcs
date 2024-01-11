@@ -257,7 +257,7 @@ public class LinkManager {
 
         t = new Tuple(StandardTupleDefinitions.TM,
                 new Object[] {
-                    tmPacket.getGenerationTime(), tmPacket.getSeqCount(), tmPacket.getReceptionTime(), tmPacket.getStatus(), tmPacket.getPacket(), ertime, obt, tmLink.getName(), tmPacket.getTmPackagesPairs()
+                    tmPacket.getGenerationTime(), tmPacket.getSeqCount(), tmPacket.getReceptionTime(), tmPacket.getStatus(), tmPacket.getPacket(), ertime, obt, tmLink.getName()
                 }
             );
 

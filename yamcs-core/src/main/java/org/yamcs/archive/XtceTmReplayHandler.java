@@ -87,9 +87,8 @@ public class XtceTmReplayHandler implements ReplayHandler {
         long genTime = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
         int seqNum = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
         String pname = (String) tuple.getColumn(XtceTmRecorder.PNAME_COLUMN);
-        ArrayList<Pair<Long, byte[]>> tmPackages = (ArrayList<Pair<Long, byte[]>>) tuple.getColumn(StandardTupleDefinitions.TM_PACKAGES);
 
-        return new ReplayPacket(pname, recTime, genTime, seqNum, pbody, tmPackages);
+        return new ReplayPacket(pname, recTime, genTime, seqNum, pbody);
     }
 
     public static class ReplayPacket {
@@ -98,15 +97,13 @@ public class XtceTmReplayHandler implements ReplayHandler {
         final long genTime;
         final int seqNum;
         final byte[] packet;
-        final ArrayList<Pair<Long, byte[]>> tmPackages;
 
-        public ReplayPacket(String pname, long recTime, long genTime, int seqNum, byte[] packet, ArrayList<Pair<Long, byte[]>> tmPackages) {
+        public ReplayPacket(String pname, long recTime, long genTime, int seqNum, byte[] packet) {
             this.pname = pname;
             this.recTime = recTime;
             this.genTime = genTime;
             this.seqNum = seqNum;
             this.packet = packet;
-            this.tmPackages = tmPackages;
         }
 
         public long getGenerationTime() {
@@ -131,10 +128,6 @@ public class XtceTmReplayHandler implements ReplayHandler {
          */
         public String getQualifiedName() {
             return pname;
-        }
-
-        public ArrayList<Pair<Long, byte[]>> getTmPackages() {
-            return tmPackages;
         }
     }
 }

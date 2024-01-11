@@ -64,7 +64,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
     private long totalNumPackets;
 
     final Tuple END_MARK = new Tuple(StandardTupleDefinitions.TM,
-            new Object[] { null, null, null, null, null, null, null, null, null });
+            new Object[] { null, null, null, null, null, null, null, null });
 
     Mdb mdb;
 
@@ -87,7 +87,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
         try {
             if (ydb.getTable(TABLE_NAME) == null) {
                 String query = "create table " + TABLE_NAME + "(" + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition1()
-                        + ", primary key(gentime, seqNum)) histogram(pname) partition by value(pname) table_format=compressed";
+                        + ", primary key(gentime, seqNum, pname)) histogram(pname) partition by value(pname) table_format=compressed";
                 ydb.execute(query);
             }
             ydb.execute("create stream " + REC_STREAM_NAME + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition());

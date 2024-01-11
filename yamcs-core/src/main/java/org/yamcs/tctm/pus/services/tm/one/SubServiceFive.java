@@ -1,11 +1,13 @@
 package org.yamcs.tctm.pus.services.tm.one;
 
+import java.util.ArrayList;
+
 import org.yamcs.TmPacket;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tm.PusTmModifier;
+import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
 
 public class SubServiceFive implements PusSubService {
     EventProducer eventProducer;
@@ -20,11 +22,16 @@ public class SubServiceFive implements PusSubService {
     }
 
     @Override
-    public TmPacket process(TmPacket tmPacket) {
+    public ArrayList<TmPacket> process(TmPacket tmPacket) {
+        PusTmCcsdsPacket pPkt = new PusTmCcsdsPacket(tmPacket.getPacket());
+
         eventProducer.sendInfo(TC_PROGRESS_EXECUTION_SUCCESS,
-                "TC with Destination ID: " + PusTmModifier.getDestinationID(tmPacket) + " has succeeded during execution");
+                "TC with Destination ID: " + pPkt.getDestinationID() + " has succeeded during execution");
         
-        return tmPacket;
+        ArrayList<TmPacket> pktList = new ArrayList<>();
+        pktList.add(tmPacket);
+
+        return pktList;
     }
 
     @Override

@@ -2,6 +2,7 @@ package org.yamcs.tctm.pus.services.tm.two;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.yamcs.InitException;
@@ -11,7 +12,7 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.tm.BucketSaveHandler;
-import org.yamcs.tctm.pus.services.tm.PusTmModifier;
+import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.yarch.YarchException;
@@ -53,8 +54,9 @@ public class SubServiceSix extends BucketSaveHandler implements PusSubService {
     }
 
     @Override
-    public TmPacket process(TmPacket tmPacket) {
-        byte[] dataField = PusTmModifier.getDataField(tmPacket);
+    public ArrayList<TmPacket> process(TmPacket tmPacket) {
+        PusTmCcsdsPacket pPkt = new PusTmCcsdsPacket(tmPacket.getPacket());
+        byte[] dataField = pPkt.getDataField();
 
         int numberOfRegisters = ByteArrayUtils.decodeInt(dataField, 0);
         HashMap<Integer, Integer> registerValues = new HashMap<>(numberOfRegisters);
@@ -81,7 +83,12 @@ public class SubServiceSix extends BucketSaveHandler implements PusSubService {
             throw new UncheckedIOException("Cannot save device register dump report in bucket: " + registerDumpFileName + (registerDumpBucket != null ? " -> " + registerDumpBucket.getName() : ""), e);
         }
 
-        return tmPacket;
+        ArrayList<TmPacket> pPkts = new ArrayList<>();
+        pPkts.add(tmPacket); 
+
+        return pPkts; // FIXME: This returns null because the PUS packages carved out have the same
+                      // (gentime, apidseqcount), which means they cannot all be archived by the
+                      // XtceTmRecorder nor processed by the StreamTmPacketProvider
     }
 
     @Override

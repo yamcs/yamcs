@@ -90,6 +90,19 @@ public class ByteArrayUtils {
         return a;
     }
 
+    public static long decodeCustomInteger(byte[] a, int offset, int length) {
+        if (offset < 0 || length <= 0 || offset + length > a.length) {
+            throw new IllegalArgumentException("Invalid offset or length");
+        }
+
+        long result = 0;
+        for (int i = 0; i < length; i++) {
+            result = (result << 8) | (a[offset + i] & 0xFF);
+        }
+
+        return result;
+    }
+
     /**
      * write a long in to a byte array of 8 bytes
      * 
