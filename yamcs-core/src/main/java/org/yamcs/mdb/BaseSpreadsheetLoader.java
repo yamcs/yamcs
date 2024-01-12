@@ -14,6 +14,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.mdb.ConditionParser.ParameterReferenceFactory;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.ValueEnumeration;
+import org.yamcs.xtce.util.AlgorithmReference;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.ParameterReference;
 
@@ -347,6 +348,13 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
         spaceSystem.addUnresolvedReference(paraRef);
 
         return paraRef;
+    }
+
+    public static AlgorithmReference getAlgorithmReference(SpaceSystem ss, String algoName) {
+        AlgorithmReference algoRef = new AlgorithmReference(algoName);
+        ss.addUnresolvedReference(algoRef);
+
+        return algoRef;
     }
 
     protected void validateNameType(String name) {
