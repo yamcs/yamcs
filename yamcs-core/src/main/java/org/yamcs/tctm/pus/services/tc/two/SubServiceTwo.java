@@ -6,7 +6,8 @@ import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tc.PusTcModifier;
+import org.yamcs.tctm.pus.services.tc.PusTcCcsdsPacket;
+
 
 public class SubServiceTwo implements PusSubService {
     String yamcsInstance;
@@ -17,7 +18,7 @@ public class SubServiceTwo implements PusSubService {
 
     @Override
     public PreparedCommand process(PreparedCommand telecommand) {
-        return PusTcModifier.setPusHeadersSpareFieldAndSourceID(telecommand);
+        return PusTcCcsdsPacket.setPusHeadersSpareFieldAndSourceID(telecommand);
     }
 
     @Override

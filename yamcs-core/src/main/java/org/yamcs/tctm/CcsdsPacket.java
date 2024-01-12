@@ -38,6 +38,14 @@ public class CcsdsPacket {
         return (bb.getShort(0) >> 11) & 1;
     }
 
+    public void setBinary(byte[] packet) {
+        this.bb = ByteBuffer.wrap(packet);
+    }
+
+    public void setBinary(ByteBuffer bb) {
+        this.bb = bb;
+    }
+
     static public boolean getSecondaryHeaderFlag(byte[] packet) {
         return (packet[0] & 0x8) == 0x8;
     }

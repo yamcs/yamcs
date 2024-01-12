@@ -21,6 +21,7 @@ import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.VerifierConfig;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.tctm.pus.services.tc.PusTcCcsdsPacket;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.ValueHelper;
 import org.yamcs.utils.ValueUtility;
@@ -82,6 +83,10 @@ public class PreparedCommand {
         reservedColumns.add(CNAME_NO_POSTPROCESSING);
         reservedColumns.add(CNAME_NO_TRANSMISSION_CONSTRAINTS);
         reservedColumns.add(CNAME_NO_VERIFIERS);
+    }
+
+    public PusTcCcsdsPacket getPusTcCcsdsPacket() {
+        return tcCcsdsPacket;
     }
 
     /**
@@ -358,6 +363,11 @@ public class PreparedCommand {
     }
 
     public void setBinary(byte[] b) {
+        if (tcCcsdsPacket == null)
+            tcCcsdsPacket = new PusTcCcsdsPacket(b);
+        else
+            tcCcsdsPacket.setBinary(b);
+
         setAttribute(CNAME_BINARY, b);
     }
 
