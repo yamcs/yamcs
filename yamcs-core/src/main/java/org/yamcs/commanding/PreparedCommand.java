@@ -21,6 +21,7 @@ import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.VerifierConfig;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.tctm.pus.services.tc.PusTcCcsdsPacket;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.ValueHelper;
 import org.yamcs.utils.ValueUtility;
@@ -43,7 +44,7 @@ public class PreparedCommand {
 
     List<CommandHistoryAttribute> attributes = new ArrayList<>();
     private Map<Argument, ArgumentValue> argAssignment; // Ordered from top entry to bottom entry
-    private Set<String> userAssignedArgumentNames;
+    private Set<String> userAssignedArgumentNames = new HashSet<>();
 
     // Verifier-specific configuration options (that override the MDB verifier settings)
     private Map<String, VerifierConfig> verifierConfig = new HashMap<>();
@@ -52,7 +53,6 @@ public class PreparedCommand {
     private volatile ParameterValueList cmdParams;
 
     // Timetag holder (only for a brief holder | Initialised to 0)
-    private long timetag = 0;
 
     // column names to use when converting to tuple
     public final static String CNAME_GENTIME = StandardTupleDefinitions.GENTIME_COLUMN;
@@ -85,6 +85,10 @@ public class PreparedCommand {
         reservedColumns.add(CNAME_NO_VERIFIERS);
     }
 
+    public PusTcCcsdsPacket getPusTcCcsdsPacket() {
+        return tcCcsdsPacket;
+    }
+
     /**
      * Columns that can't be updated via cmdhist_realtime attributes.
      */
@@ -94,14 +98,6 @@ public class PreparedCommand {
         protectedColumns.add(CNAME_SEQNUM);
         protectedColumns.add(CNAME_ORIGIN);
         protectedColumns.add(CNAME_ASSIGNMENTS);
-    }
-
-    public void setTimetag(long timetag) {
-        this.timetag = timetag;
-    }
-
-    public long getTimetag() {
-        return this.timetag;
     }
 
     public PreparedCommand(CommandId id) {
@@ -137,6 +133,28 @@ public class PreparedCommand {
             Value v = ValueUtility.fromGpb(a.getValue());
             if (v.getType() == Type.BOOLEAN) {
                 return v.getBooleanValue();
+            }
+        }
+        return null;
+    }
+
+    public Long getTimestampAttribute(String attrname) {
+        CommandHistoryAttribute a = getAttribute(attrname);
+        if (a != null) {
+            Value v = ValueUtility.fromGpb(a.getValue());
+            if (v.getType() == Type.TIMESTAMP) {
+                return v.getTimestampValue();
+            }
+        }
+        return null;
+    }
+
+    public Integer getSignedIntegerAttribute(String attrname) {
+        CommandHistoryAttribute a = getAttribute(attrname);
+        if (a != null) {
+            Value v = ValueUtility.fromGpb(a.getValue());
+            if (v.getType() == Type.SINT32) {
+                return v.getSint32Value();
             }
         }
         return null;
@@ -210,8 +228,13 @@ public class PreparedCommand {
         al.add(id.getCommandName());
 
         for (CommandHistoryAttribute a : attributes) {
-            td.addColumn(a.getName(), ValueUtility.getYarchType(a.getValue().getType()));
-            al.add(ValueUtility.getYarchValue(a.getValue()));
+            try{
+                td.addColumn(a.getName(), ValueUtility.getYarchType(a.getValue().getType()));
+                al.add(ValueUtility.getYarchValue(a.getValue()));
+
+            } catch (IllegalArgumentException e) {
+                continue;
+            } 
         }
 
         AssignmentInfo.Builder assignmentb = AssignmentInfo.newBuilder();
@@ -297,6 +320,8 @@ public class PreparedCommand {
                 ArgumentValue argv = new ArgumentValue(arg);
                 argv.setEngValue(v);
                 pc.argAssignment.put(arg, argv);
+                if (assignment.getUserInput())
+                    pc.userAssignedArgumentNames.add(arg.getName());
             }
         }
         return pc;
@@ -338,6 +363,11 @@ public class PreparedCommand {
     }
 
     public void setBinary(byte[] b) {
+        if (tcCcsdsPacket == null)
+            tcCcsdsPacket = new PusTcCcsdsPacket(b);
+        else
+            tcCcsdsPacket.setBinary(b);
+
         setAttribute(CNAME_BINARY, b);
     }
 
@@ -454,12 +484,16 @@ public class PreparedCommand {
         }
         CommandHistoryAttribute.Builder attr = CommandHistoryAttribute.newBuilder()
                 .setName(name);
-        if (value instanceof String) {
+        if (value instanceof Integer) {
+            attr.setValue(ValueHelper.newValue((Integer) value));
+        } else if (value instanceof String) {
             attr.setValue(ValueHelper.newValue((String) value));
         } else if (value instanceof Boolean) {
             attr.setValue(ValueHelper.newValue((Boolean) value));
         } else if (value instanceof byte[]) {
             attr.setValue(ValueHelper.newValue((byte[]) value));
+        } else if (value instanceof Long) {
+            attr.setValue(ValueHelper.newTimestampValue((long) value));
         } else {
             throw new IllegalArgumentException("Unexpected attribute type");
         }

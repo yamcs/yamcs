@@ -3,28 +3,48 @@ package org.yamcs.tctm.pus.services.tc;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.tctm.CcsdsPacket;
+import org.yamcs.tctm.pus.PusTcManager;
 import org.yamcs.utils.ByteArrayUtils;
 
-public class PusTcModifier {
+public class PusTcCcsdsPacket extends CcsdsPacket {
     static int messageTypeIndex = 7;
     static int subMessageTypeIndex = 8;
+    static int sourceIDInsertionIndex = 9;
 
-    private static int DEFAULT_TIMETAG_INDEX = PusTcManager.DEFAULT_PRIMARY_HEADER_LENGTH + PusTcManager.DEFAULT_PUS_HEADER_LENGTH;
-    public static int DEFAULT_TIMETAG_LENGTH = 8;
+    public PusTcCcsdsPacket(byte[] packet) {
+        super(packet);
+    }
 
-    private static PreparedCommand setSourceID(PreparedCommand pc) {
+    public PusTcCcsdsPacket(ByteBuffer bb) {
+        super(bb);
+    }
+
+    public static int getMessageType(PreparedCommand pc) {
+        return Byte.toUnsignedInt(pc.getBinary()[messageTypeIndex]);
+    }
+
+    public static int getMessageSubType(PreparedCommand pc) {
+        return Byte.toUnsignedInt(pc.getBinary()[subMessageTypeIndex]);
+    }
+
+    public static int getSourceId(byte[] b) {
+        return ByteArrayUtils.decodeUnsignedShort(b, sourceIDInsertionIndex);
+    }
+
+    private static void setSourceID(PreparedCommand pc) {
         int sourceIDInsertionIndex = 9;
         byte[] telecommandPayload = pc.getBinary();
 
         ByteBuffer buffer = ByteBuffer.wrap(telecommandPayload);
-        buffer.putShort(sourceIDInsertionIndex, (short) PusTcManager.sourceID);
+        buffer.putShort(sourceIDInsertionIndex, (short) PusTcManager.sourceId);
 
         pc.setBinary(telecommandPayload);
-        return pc;
     }
 
-    private static PreparedCommand insertSecondaryHeaderSpareField(PreparedCommand pc) {
+    private static void insertSecondaryHeaderSpareField(PreparedCommand pc) {
         int spareFieldInsertionIndex = 11;
         byte[] telecommandPayload = pc.getBinary();
 
@@ -38,34 +58,25 @@ public class PusTcModifier {
         bb.put(Arrays.copyOfRange(telecommandPayload, spareFieldInsertionIndex, telecommandPayload.length));
 
         pc.setBinary(newTelecommandBinary);
-
-        return pc;
     }
 
-    private static PreparedCommand manipulateTimetag(PreparedCommand pc) {
+    private static void manipulateTimetag(PreparedCommand pc) {
         byte[] telecommandPayload = pc.getBinary();
 
-        long timetag = ByteArrayUtils.decodeLong(telecommandPayload, DEFAULT_TIMETAG_INDEX);        // FIXME: Check to make sure if the timetag is compiled to seconds / milliseconds within Yamcs
+        long timetag = ByteArrayUtils.decodeLong(telecommandPayload, PusTcManager.DEFAULT_TIMETAG_INDEX);        // FIXME: Check to make sure if the timetag is compiled to seconds / milliseconds within Yamcs
 
-        int newTelecommandPayloadLength = telecommandPayload.length - DEFAULT_TIMETAG_LENGTH;
+        int newTelecommandPayloadLength = telecommandPayload.length - PusTcManager.timetagLength;
         byte[] newTelecommandPayload = new byte[newTelecommandPayloadLength];
         
         ByteBuffer buffer = ByteBuffer.wrap(newTelecommandPayload);
-        buffer.put(Arrays.copyOfRange(telecommandPayload, 0, DEFAULT_TIMETAG_INDEX));
-        buffer.put(Arrays.copyOfRange(telecommandPayload, DEFAULT_TIMETAG_INDEX + DEFAULT_TIMETAG_LENGTH, telecommandPayload.length));
+        buffer.put(Arrays.copyOfRange(telecommandPayload, 0, PusTcManager.DEFAULT_TIMETAG_INDEX));
+        buffer.put(Arrays.copyOfRange(telecommandPayload, PusTcManager.DEFAULT_TIMETAG_INDEX + PusTcManager.timetagLength, telecommandPayload.length));
 
         pc.setBinary(newTelecommandPayload);
-        pc.setTimetag(timetag);
-
-        return pc;
-    }
-
-    public static int getMessageType(PreparedCommand telecommand) {
-        return Byte.toUnsignedInt(telecommand.getBinary()[messageTypeIndex]);
-    }
-
-    public static int getMessageSubType(PreparedCommand telecommand) {
-        return Byte.toUnsignedInt(telecommand.getBinary()[subMessageTypeIndex]);
+        pc.setAttribute(
+            CommandHistoryPublisher.Timetag_KEY,
+            timetag
+        );
     }
 
     public static PreparedCommand setPusHeadersSpareFieldAndSourceID(PreparedCommand telecommand) {
@@ -76,4 +87,3 @@ public class PusTcModifier {
         return telecommand;
     }
 }
-

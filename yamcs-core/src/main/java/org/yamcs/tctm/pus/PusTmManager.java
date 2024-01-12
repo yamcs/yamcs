@@ -2,8 +2,6 @@ package org.yamcs.tctm.pus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -12,6 +10,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
+import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
@@ -22,12 +21,11 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.tctm.pus.services.PusService;
-
+import org.yamcs.tctm.pus.services.PusSink;
 import org.yamcs.tctm.pus.services.tm.one.ServiceOne;
 import org.yamcs.tctm.pus.services.tm.two.ServiceTwo;
 import org.yamcs.tctm.pus.services.tm.three.ServiceThree;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
-import org.yamcs.tctm.pus.services.tm.PusTmSink;
 import org.yamcs.tctm.pus.services.tm.five.ServiceFive;
 
 
@@ -46,7 +44,7 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
 
     Map<Integer, PusService> pusServices = new HashMap<>();
     YConfiguration serviceConfig;
-    PusTmSink tmSink;
+    PusSink tmSink;
     HashMap<Stream, Stream> streamMatrix = new HashMap<>();
     YarchDatabaseInstance ydb;
 
@@ -90,11 +88,9 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
                 Objects.requireNonNull(ydb.getStream(outStream))
             );
         }
-
-        initializePUSServices();
-        tmSink = new PusTmSink() {
+        tmSink = new PusSink() {
             @Override
-            public void processPusPacket(TmPacket tmPacket, Stream stream, String tmLinkName) {
+            public void emitTmTuple(TmPacket tmPacket, Stream stream, String tmLinkName) {
                 Long obt = tmPacket.getObt() == Long.MIN_VALUE ? null : tmPacket.getObt();
 
                 Tuple t = new Tuple(StandardTupleDefinitions.TM,
@@ -103,8 +99,14 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
                     }
                 );
                 stream.emitTuple(t);
-            }   
+            }
+            @Override
+            public void emitTcTuple(PreparedCommand pc, Stream stream) {
+                throw new UnsupportedOperationException("Unimplemented method 'emitTcTuple'");
+            }
         };
+
+        initializePUSServices();
     }
 
     private void initializePUSServices() {
@@ -120,7 +122,7 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
 
         if (pkts != null){
             for (TmPacket pkt: pkts) {
-                tmSink.processPusPacket(pkt, stream, tmLinkName);
+                tmSink.emitTmTuple(pkt, stream, tmLinkName);
             }
         }
     }
