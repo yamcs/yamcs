@@ -85,10 +85,6 @@ public class PreparedCommand {
         reservedColumns.add(CNAME_NO_VERIFIERS);
     }
 
-    public PusTcCcsdsPacket getPusTcCcsdsPacket() {
-        return tcCcsdsPacket;
-    }
-
     /**
      * Columns that can't be updated via cmdhist_realtime attributes.
      */
@@ -363,11 +359,6 @@ public class PreparedCommand {
     }
 
     public void setBinary(byte[] b) {
-        if (tcCcsdsPacket == null)
-            tcCcsdsPacket = new PusTcCcsdsPacket(b);
-        else
-            tcCcsdsPacket.setBinary(b);
-
         setAttribute(CNAME_BINARY, b);
     }
 
