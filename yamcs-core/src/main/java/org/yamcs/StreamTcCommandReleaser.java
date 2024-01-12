@@ -126,9 +126,7 @@ public class StreamTcCommandReleaser extends AbstractProcessorService implements
             if (tcPatterns == null
                     || tcPatterns.stream().anyMatch(p -> p.matcher(pc.getCommandName()).matches())) {
                 log.trace("Releasing command {} on stream {}", pc.getLoggingId(), stream.getName());
-                Tuple t = pc.toTuple();
-                System.out.println(t);
-                stream.emitTuple(t);
+                stream.emitTuple(pc.toTuple());
                 return true;
             }
             return false;
