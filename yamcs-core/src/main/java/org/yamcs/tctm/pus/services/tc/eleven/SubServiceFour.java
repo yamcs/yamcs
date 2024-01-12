@@ -5,9 +5,11 @@ import java.util.ArrayList;
 
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
+import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.tctm.pus.PusTcManager;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tc.PusTcModifier;
+import org.yamcs.tctm.pus.services.tc.PusTcCcsdsPacket;
 
 
 public class SubServiceFour implements PusSubService {
@@ -69,8 +71,8 @@ public class SubServiceFour implements PusSubService {
         byte[] secondaryHeader = constructSecondaryHeader();
         byte[] telecommandPayload = telecommand.getBinary();
 
-        byte[] wrappedTelecommandPayload = new byte[primaryHeader.length + secondaryHeader.length + NUMBER_OF_TELECOMMANDS_SIZE + PusTcModifier.DEFAULT_TIMETAG_LENGTH +  telecommandPayload.length];
-        long timetag = telecommand.getTimetag();
+        byte[] wrappedTelecommandPayload = new byte[primaryHeader.length + secondaryHeader.length + NUMBER_OF_TELECOMMANDS_SIZE + PusTcManager.timetagLength +  telecommandPayload.length];
+        long timetag = telecommand.getTimestampAttribute(CommandHistoryPublisher.Timetag_KEY);
 
         ByteBuffer buffer = ByteBuffer.wrap(wrappedTelecommandPayload);
         buffer.put(primaryHeader);

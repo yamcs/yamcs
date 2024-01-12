@@ -10,6 +10,7 @@ import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.StreamConfig.TcStreamConfigEntry;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.yarch.Stream;
@@ -125,7 +126,9 @@ public class StreamTcCommandReleaser extends AbstractProcessorService implements
             if (tcPatterns == null
                     || tcPatterns.stream().anyMatch(p -> p.matcher(pc.getCommandName()).matches())) {
                 log.trace("Releasing command {} on stream {}", pc.getLoggingId(), stream.getName());
-                stream.emitTuple(pc.toTuple());
+                Tuple t = pc.toTuple();
+                System.out.println(t);
+                stream.emitTuple(t);
                 return true;
             }
             return false;

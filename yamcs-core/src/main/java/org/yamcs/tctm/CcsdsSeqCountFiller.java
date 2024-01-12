@@ -25,6 +25,7 @@ public class CcsdsSeqCountFiller {
         if (seqCounts.containsKey(apid)) {
             seqCount = seqCounts.get(apid);
         }
+
         seqCount = (seqCount + 1) % (1 << 14);
         seqCounts.put(apid, seqCount);
         return seqCount;
@@ -43,7 +44,6 @@ public class CcsdsSeqCountFiller {
         int seqFlags = apidseqcount >>> 14;
         
         int seqCount = generateSeqCount(apid);
-
         ByteArrayUtils.encodeUnsignedShort((short) ((seqFlags << 14) | seqCount), packet, 2);
 
         return seqCount;

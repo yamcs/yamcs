@@ -10,7 +10,8 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tc.PusTcModifier;
+import org.yamcs.tctm.pus.services.tc.PusTcCcsdsPacket;
+
 
 public class ServiceThree implements PusService  {
     Log log;
@@ -36,7 +37,7 @@ public class ServiceThree implements PusService  {
 
     @Override
     public PreparedCommand addPusModifiers(PreparedCommand telecommand) {
-        return pusSubServices.get(PusTcModifier.getMessageSubType(telecommand)).process(telecommand);
+        return pusSubServices.get(PusTcCcsdsPacket.getMessageSubType(telecommand)).process(telecommand);
     }
 
     @Override

@@ -29,22 +29,22 @@ public interface CommandHistoryPublisher {
      */
     public final static String AcknowledgeSent_KEY = "Acknowledge_Sent";
     public final static String Verifier_KEY_PREFIX = "Verifier";
-    public final static String CcsdsSeq_KEY = "ccsds-seqcount";
+    public final static String CcsdsSeq_KEY = "CommandCcsdsSeqCount";
     public final static String Queue_KEY = "queue";
 
     /**
      * Timetag related information added to the command history
      */
     public final static String Timetag_KEY = "Timetag";
-    public final static String Timetagged_CommandApid_KEY = "Timetagged_CommandApid";
-    public final static String Timetagged_CommandCcsdsSeq_KEY = "Timetagged_CommandCcsdsSeqCount";
-    public final static String Timetagged_Command_KEY = "Timetagged_Command";
+    public final static String Timetagged_CommandApid_KEY = "Timetag_CommandApid";
+    public final static String Timetagged_CommandCcsdsSeq_KEY = "Timetag_CommandCcsdsSeqCount";
+    public final static String Timetagged_Command_KEY = "Timetag_Command";
 
     /*
      * Used primarily in CMD verifier algorithms to subscribe to CMD and CMDHist arguments
      */
-    public final static String SourceID_KEY = "SourceID";
-    public final static String Apid_KEY = "Apid";
+    public final static String SourceId_KEY = "CommandSourceId";
+    public final static String Apid_KEY = "CommandApid";
 
     // these are used when publishing acks
     public final static String SUFFIX_STATUS = "_Status";
