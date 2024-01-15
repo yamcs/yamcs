@@ -1021,18 +1021,21 @@ export default class YamcsClient implements HttpHandler {
     return url + this.queryString(options);
   }
 
-  getPacketDownloadURL(instance: string, gentime: string, seqnum: number) {
-    return `${this.apiUrl}/archive/${instance}/packets/${gentime}/${seqnum}:export`;
+  getPacketDownloadURL(instance: string, pname: string, gentime: string, seqnum: number) {
+    const encodedName = encodeURIComponent(pname);
+    return `${this.apiUrl}/archive/${instance}/packets/${encodedName}/${gentime}/${seqnum}:export`;
   }
 
-  async getPacket(instance: string, generationTime: string, sequenceNumber: number) {
-    const url = `${this.apiUrl}/archive/${instance}/packets/${generationTime}/${sequenceNumber}`;
+  async getPacket(instance: string, pname: string, generationTime: string, sequenceNumber: number) {
+    const encodedName = encodeURIComponent(pname);
+    const url = `${this.apiUrl}/archive/${instance}/packets/${encodedName}/${generationTime}/${sequenceNumber}`;
     const response = await this.doFetch(url);
     return await response.json() as Packet;
   }
 
-  async extractPacket(instance: string, generationTime: string, sequenceNumber: number): Promise<ExtractPacketResponse> {
-    const url = `${this.apiUrl}/archive/${instance}/packets/${generationTime}/${sequenceNumber}:extract`;
+  async extractPacket(instance: string, pname: string, generationTime: string, sequenceNumber: number): Promise<ExtractPacketResponse> {
+    const encodedName = encodeURIComponent(pname);
+    const url = `${this.apiUrl}/archive/${instance}/packets/${encodedName}/${generationTime}/${sequenceNumber}:extract`;
     const response = await this.doFetch(url);
     return await response.json() as ExtractPacketResponse;
   }

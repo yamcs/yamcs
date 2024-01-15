@@ -281,7 +281,11 @@ export class PacketsPage {
   }
 
   extractPacket(packet: Packet) {
-    this.router.navigate([packet.generationTime, packet.sequenceNumber], {
+    this.router.navigate([
+      encodeURIComponent(packet.id.name),
+      packet.generationTime,
+      packet.sequenceNumber,
+    ], {
       relativeTo: this.route,
       queryParams: {
         c: this.yamcs.context,

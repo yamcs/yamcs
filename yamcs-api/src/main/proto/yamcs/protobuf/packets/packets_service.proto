@@ -33,7 +33,10 @@ service PacketsApi {
   // Get a packet
   rpc GetPacket(GetPacketRequest) returns (TmPacketData) {
     option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/packets/{gentime}/{seqnum}"
+      get: "/api/archive/{instance}/packets/{pname}/{gentime}/{seqnum}"
+      additional_bindings {
+        get: "/api/archive/{instance}/packets/{gentime}/{seqnum}"
+      }
     };
   }
 
@@ -44,7 +47,10 @@ service PacketsApi {
   // values, and corresponding bit positions.
   rpc ExtractPacket(ExtractPacketRequest) returns (ExtractPacketResponse) {
     option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/packets/{gentime}/{seqnum}:extract"
+      get: "/api/archive/{instance}/packets/{pname}/{gentime}/{seqnum}:extract"
+      additional_bindings {
+        get: "/api/archive/{instance}/packets/{gentime}/{seqnum}:extract"
+      }
     };
   }
   
@@ -59,7 +65,10 @@ service PacketsApi {
   // Export a raw packet
   rpc ExportPacket(ExportPacketRequest) returns (yamcs.api.HttpBody) {
     option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/packets/{gentime}/{seqnum}:export"
+      get: "/api/archive/{instance}/packets/{pname}/{gentime}/{seqnum}:export"
+      additional_bindings {
+        get: "/api/archive/{instance}/packets/{gentime}/{seqnum}:export"
+      }
     };
   }
   
@@ -150,7 +159,10 @@ message ListPacketsResponse {
 message GetPacketRequest {
   // Yamcs instance name.
   optional string instance = 1;
-  
+
+  // Stored packet name
+  optional string pname = 4;
+
   // An exact match of the packet's generation time in
   // ISO 8601 format.
   optional google.protobuf.Timestamp gentime = 2;
@@ -170,6 +182,9 @@ message StreamPacketsRequest {
 message ExtractPacketRequest {
   // Yamcs instance name.
   optional string instance = 1;
+
+  // Stored packet name
+  optional string pname = 4;
 
   // An exact match of the packet's generation time in
   // ISO 8601 format.
@@ -217,6 +232,9 @@ message ExtractedParameterValue {
 message ExportPacketRequest {
   // Yamcs instance name.
   optional string instance = 1;
+
+  // Stored packet name
+  optional string pname = 4;
   
   // An exact match of the packet's generation time in
   // ISO 8601 format.

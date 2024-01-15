@@ -55,19 +55,20 @@ export class PacketPage implements AfterViewInit {
     readonly yamcs: YamcsService,
     messageService: MessageService,
   ) {
-    title.setTitle('Packet Content');
+    const pname = decodeURIComponent(route.snapshot.paramMap.get('pname')!);
     const gentime = route.snapshot.paramMap.get('gentime')!;
     const seqno = Number(route.snapshot.paramMap.get('seqno')!);
+    title.setTitle(pname);
 
     this.dataSource.filterPredicate = (pval, filter) => {
       return pval.parameter.qualifiedName.toLowerCase().indexOf(filter) >= 0;
     };
 
-    yamcs.yamcsClient.getPacket(yamcs.instance!, gentime, seqno).then(packet => {
+    yamcs.yamcsClient.getPacket(yamcs.instance!, pname, gentime, seqno).then(packet => {
       this.packet$.next(packet);
     }).catch(err => messageService.showError(err));
 
-    yamcs.yamcsClient.extractPacket(yamcs.instance!, gentime, seqno).then(result => {
+    yamcs.yamcsClient.extractPacket(yamcs.instance!, pname, gentime, seqno).then(result => {
       this.result$.next(result);
       this.dataSource.data = result.parameterValues;
     }).catch(err => messageService.showError(err));

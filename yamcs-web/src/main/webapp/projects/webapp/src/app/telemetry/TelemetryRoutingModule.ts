@@ -60,7 +60,7 @@ const routes: Routes = [
             pathMatch: 'full',
             component: PacketsPage,
           }, {
-            path: ':gentime/:seqno',
+            path: ':pname/:gentime/:seqno',
             component: PacketPage,
           }
         ]
