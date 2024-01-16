@@ -226,9 +226,9 @@ public class UdpTcTmDataLink extends AbstractTmDataLink implements TcDataLink {
     @Override
     public String getDetailedStatus() {
         if (isDisabled()) {
-            return String.format("DISABLED (should exchange with %s:%d)", host, port);
+            return String.format("DISABLED (client to %s:%d)", host, port);
         } else {
-            return String.format("OK, exchanging with %s:%d", host, port);
+            return String.format("OK, client to %s:%d", host, port);
         }
     }
 

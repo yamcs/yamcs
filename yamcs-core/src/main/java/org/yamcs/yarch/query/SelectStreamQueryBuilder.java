@@ -3,23 +3,22 @@ package org.yamcs.yarch.query;
 import java.io.StringReader;
 
 import org.yamcs.utils.parser.ParseException;
-import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlParser;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
 import org.yamcs.yarch.streamsql.TokenMgrError;
 
-public class DeleteFromTableQueryBuilder implements QueryBuilder {
+public class SelectStreamQueryBuilder implements QueryBuilder {
 
-    private String table;
+    private String stream;
     private String whereClause;
     private Object whereParameter;
 
-    public DeleteFromTableQueryBuilder(String table) {
-        this.table = table;
+    public SelectStreamQueryBuilder(String stream) {
+        this.stream = stream;
     }
 
-    public DeleteFromTableQueryBuilder where(String column, Object value) {
+    public SelectStreamQueryBuilder where(String column, Object value) {
         whereClause = "\"" + column + "\" = ?";
         whereParameter = sanitizeValue(value);
         return this;
@@ -27,7 +26,7 @@ public class DeleteFromTableQueryBuilder implements QueryBuilder {
 
     @Override
     public String toSQL() {
-        var buf = new StringBuilder("DELETE FROM ").append(table);
+        var buf = new StringBuilder("SELECT * FROM ").append(stream);
 
         if (whereClause != null) {
             buf.append(" WHERE ").append(whereClause);
@@ -37,7 +36,7 @@ public class DeleteFromTableQueryBuilder implements QueryBuilder {
     }
 
     @Override
-    public StreamSqlStatement toStatement() {
+    public StreamSqlStatement toStatement() throws ParseException, StreamSqlException {
         var query = toSQL();
         var args = new Object[] { whereParameter };
 
@@ -46,9 +45,7 @@ public class DeleteFromTableQueryBuilder implements QueryBuilder {
         try {
             return parser.OneStatement();
         } catch (TokenMgrError e) {
-            throw new YarchException(new ParseException(e.getMessage()));
-        } catch (StreamSqlException | ParseException e) {
-            throw new YarchException(e);
+            throw new ParseException(e.getMessage());
         }
     }
 }

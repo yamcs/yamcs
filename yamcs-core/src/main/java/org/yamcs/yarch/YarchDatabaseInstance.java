@@ -459,7 +459,18 @@ public class YarchDatabaseInstance {
     }
 
     /**
-     * Same as {@link #executeUnchecked(String, Object...)} but it embeds any exception into a {@link YarchException}
+     * Same as {@link #execute(StreamSqlStatement)} but it embeds any exception into a {@link YarchException}
+     */
+    public StreamSqlResult executeUnchecked(StreamSqlStatement stmt) {
+        try {
+            return execute(stmt);
+        } catch (StreamSqlException e) {
+            throw new YarchException(e);
+        }
+    }
+
+    /**
+     * Same as {@link #execute(String, Object...)} but it embeds any exception into a {@link YarchException}
      * 
      * @param query
      * @param args

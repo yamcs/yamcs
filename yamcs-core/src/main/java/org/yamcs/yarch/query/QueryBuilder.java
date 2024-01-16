@@ -8,6 +8,8 @@ import org.yamcs.yarch.streamsql.StreamSqlStatement;
 
 public interface QueryBuilder {
 
+    String toSQL();
+
     StreamSqlStatement toStatement() throws ParseException, StreamSqlException;
 
     default Object sanitizeValue(Object value) {

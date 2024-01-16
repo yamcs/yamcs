@@ -52,7 +52,7 @@ public class UpdateTableQueryBuilder implements QueryBuilder {
     }
 
     @Override
-    public StreamSqlStatement toStatement() throws ParseException, StreamSqlException {
+    public String toSQL() {
         var buf = new StringBuilder("UPDATE ").append(table);
 
         if (!setClauses.isEmpty()) {
@@ -63,8 +63,12 @@ public class UpdateTableQueryBuilder implements QueryBuilder {
             buf.append(" WHERE ").append(whereClause);
         }
 
-        var query = buf.toString();
+        return buf.toString();
+    }
 
+    @Override
+    public StreamSqlStatement toStatement() throws ParseException, StreamSqlException {
+        var query = toSQL();
         var args = Stream.concat(setParameters.stream(), whereParameters.stream()).toArray();
 
         var parser = new StreamSqlParser(new StringReader(query));
