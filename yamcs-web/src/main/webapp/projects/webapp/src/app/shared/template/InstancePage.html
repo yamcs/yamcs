@@ -94,6 +94,32 @@
           </ya-sidebar-nav-item>
         </ya-sidebar-nav-group>
 
+        <ya-sidebar-nav-item *ngIf="((connectionInfo$ | async)?.instance?.capabilities | arrayContains:'file-transfer') && showFileTransferItem()"
+                             routerLink="/filetransfer"
+                             [queryParams]="{c: yamcs.context}">
+          <mat-icon class="item-icon">file_copy</mat-icon>
+          File transfer
+        </ya-sidebar-nav-item>
+
+        <ya-sidebar-nav-group *ngIf="proceduresItems.length"
+                              label="Procedures" icon="playlist_play"
+                              [active]="proceduresActive"
+                              [expanded]="proceduresExpanded"
+                              (toggle)="toggleProceduresGroup()">
+          <ya-sidebar-nav-item *ngFor="let item of proceduresItems"
+                               [routerLink]="'/procedures/' + item.path"
+                               [queryParams]="{c: yamcs.context}"
+                               [exact]="item.path === ''"
+                               [subitem]="true">
+            {{ item.label }}
+          </ya-sidebar-nav-item>
+        </ya-sidebar-nav-group>
+
+        <ng-container
+                      *ngIf="showActivitiesItem() && ((connectionInfo$ | async)?.instance?.capabilities | arrayContains:'activities')">
+          <app-activities-label />
+        </ng-container>
+
         <ng-container *ngIf="((connectionInfo$ | async)?.instance?.capabilities | arrayContains:'timeline')">
           <ya-sidebar-nav-group *ngIf=" timelineItems.length"
                                 label="Timeline" icon="view_timeline"
@@ -109,13 +135,6 @@
             </ya-sidebar-nav-item>
           </ya-sidebar-nav-group>
         </ng-container>
-
-        <ya-sidebar-nav-item *ngIf="((connectionInfo$ | async)?.instance?.capabilities | arrayContains:'file-transfer') && showFileTransferItem()"
-                             routerLink="/filetransfer"
-                             [queryParams]="{c: yamcs.context}">
-          <mat-icon class="item-icon">file_copy</mat-icon>
-          File transfer
-        </ya-sidebar-nav-item>
 
         <ya-sidebar-nav-group *ngIf="mdbItems.length"
                               label="Mission database" icon="auto_stories"

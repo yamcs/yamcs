@@ -57,7 +57,7 @@ export class CommandHistoryBuffer {
       if (!entry) return;
 
       const existingIndex = splicedRecords.findIndex(r => r.id == entry.id);
-      if (existingIndex == -1) {
+      if (existingIndex === -1) {
         splicedRecords.push(new CommandHistoryRecord(entry));
       } else {
         splicedRecords[existingIndex] = splicedRecords[existingIndex].mergeEntry(entry);

@@ -27,6 +27,11 @@ public class SystemPrivilege {
     public static final SystemPrivilege ModifyCommandHistory = new SystemPrivilege("ModifyCommandHistory");
 
     /**
+     * Allows to control activities
+     */
+    public static final SystemPrivilege ControlActivities = new SystemPrivilege("ControlActivities");
+
+    /**
      * Allows to control the state of command queues.
      */
     public static final SystemPrivilege ControlCommandQueue = new SystemPrivilege("ControlCommandQueue");
@@ -62,12 +67,22 @@ public class SystemPrivilege {
     public static final SystemPrivilege GetMissionDatabase = new SystemPrivilege("GetMissionDatabase");
 
     /**
+     * Allows to read activity state
+     */
+    public static final SystemPrivilege ReadActivities = new SystemPrivilege("ReadActivities");
+
+    /**
      * Allows to read alarm state
      */
     public static final SystemPrivilege ReadAlarms = new SystemPrivilege("ReadAlarms");
 
     /**
-     * Allows to read alarm state
+     * Allows to read tasks
+     */
+    public static final SystemPrivilege ReadTasks = new SystemPrivilege("ReadTasks");
+
+    /**
+     * Allows to manage alarms
      */
     public static final SystemPrivilege ControlAlarms = new SystemPrivilege("ControlAlarms");
 

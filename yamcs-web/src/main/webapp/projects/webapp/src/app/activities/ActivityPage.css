@@ -1,0 +1,43 @@
+.activity-header {
+  height: 100px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+}
+
+.activity-header-left {
+  flex: 1 1 auto;
+  align-self: center;
+  margin-left: 24px;
+  margin-right: 24px;
+}
+
+.activity-header-left .title {
+  font-size: larger;
+}
+
+.activity-header-left .subtitle {
+  font-size: smaller;
+  color: gray;
+}
+
+.activity-header-right {
+  flex: 1 1 auto;
+  align-self: center;
+  text-align: right;
+  margin-left: 24px;
+  margin-right: 24px;
+}
+
+.tab-content-wrapper {
+  position: absolute;
+  /* tab height + border + header */
+  top: calc(36px + 1px + 100px);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+}
+
+.tab-content-wrapper.noscroll {
+  overflow: hidden;
+}

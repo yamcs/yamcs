@@ -248,14 +248,57 @@ export class TimelineChartPage implements AfterViewInit, OnDestroy {
         label: itemInfo.name,
         data: { item: itemInfo },
       };
+      const { properties } = itemInfo;
+      if (properties) {
+        if ('backgroundColor' in properties) {
+          item.background = properties.backgroundColor;
+        }
+        if ('borderColor' in properties) {
+          item.borderColor = properties.borderColor;
+        }
+        if ('borderWidth' in properties) {
+          item.borderWidth = Number(properties.borderWidth);
+        }
+        if ('cornerRadius' in properties) {
+          item.cornerRadius = Number(properties.cornerRadius);
+        }
+        if ('marginLeft' in properties) {
+          item.marginLeft = Number(properties.marginLeft);
+        }
+        if ('textColor' in properties) {
+          item.textColor = properties.textColor;
+        }
+        if ('textSize' in properties) {
+          item.textSize = Number(properties.textSize);
+        }
+      }
+      if (itemInfo.status) {
+        switch (itemInfo.status) {
+          case 'COMPLETED':
+            item.label = item.label ? item.label + ' ✓' : '✓';
+            break;
+          case 'FAILED':
+            item.label = item.label ? item.label + ' ✗' : '✗';
+            break;
+          case 'PLANNED':
+          case 'IN_PROGRESS':
+            item.label = item.label ? item.label + ' ◷' : '◷';
+            break;
+          case 'ABORTED':
+            item.label = item.label ? item.label + ' ⏹' : '⏹';
+            break;
+        }
+      }
       items.push(item);
     }
     band.items = items;
   }
 
-  openCreateItemDialog() {
+  openCreateItemDialog(type: string) {
     this.dialog.open(CreateItemDialog, {
       width: '600px',
+      panelClass: 'dialog-force-no-scrollbar',
+      data: { type },
     }).afterClosed().subscribe(() => this.refreshData());
   }
 

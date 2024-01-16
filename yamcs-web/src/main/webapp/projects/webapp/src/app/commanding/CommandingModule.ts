@@ -12,6 +12,8 @@ import { ExtraAcknowledgmentsTable } from './command-history/ExtraAcknowledgment
 import { TransmissionConstraintsIcon } from './command-history/TransmissionConstraintsIcon';
 import { YamcsAcknowledgmentsTable } from './command-history/YamcsAcknowledgmentsTable';
 import { CommandForm } from './command-sender/CommandForm';
+
+import { ScheduleCommandDialog } from './command-sender/ScheduleCommandDialog';
 import { SelectEnumerationDialog } from './command-sender/SelectEnumerationDialog';
 import { SendCommandWizardStep } from './command-sender/SendCommandWizardStep';
 import { AggregateArgument } from './command-sender/arguments/aggregate/AggregateArgument';
@@ -32,6 +34,7 @@ import { CreateFolderDialog } from './stacks/CreateFolderDialog';
 import { CreateStackDialog } from './stacks/CreateStackDialog';
 import { EditStackEntryDialog } from './stacks/EditStackEntryDialog';
 import { RenameStackDialog } from './stacks/RenameStackDialog';
+import { ScheduleStackDialog } from './stacks/ScheduleStackDialog';
 import { StackFilePageDirtyDialog } from './stacks/StackFilePageDirtyDialog';
 import { StackedCommandDetail } from './stacks/StackedCommandDetail';
 
@@ -71,6 +74,8 @@ const pipes = [
     IntegerArgument,
     QueuedCommandsTable,
     RenameStackDialog,
+    ScheduleCommandDialog,
+    ScheduleStackDialog,
     SelectEnumerationDialog,
     SendCommandWizardStep,
     StackedCommandDetail,

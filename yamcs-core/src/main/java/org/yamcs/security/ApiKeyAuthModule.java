@@ -39,9 +39,7 @@ public class ApiKeyAuthModule extends AbstractHttpRequestAuthModule implements A
         var securityStore = YamcsServer.getServer().getSecurityStore();
         var apiKey = request.headers().get(X_API_KEY);
 
-        System.out.println("Search for " + apiKey);
         var username = securityStore.getUsernameForApiKey(apiKey);
-        System.out.println("Got .. " + username);
         if (username == null) {
             throw new AuthenticationException("Invalid API key");
         } else if (username.equals(securityStore.getSystemUser().getName())) {

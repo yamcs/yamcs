@@ -6,20 +6,23 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.yamcs.InitException;
 import org.yamcs.StandardTupleDefinitions;
+import org.yamcs.activities.protobuf.ActivityDefinition;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.ItemFilter;
-import org.yamcs.protobuf.LogEntry;
-import org.yamcs.protobuf.TimelineSourceCapabilities;
 import org.yamcs.protobuf.ItemFilter.FilterCriterion;
+import org.yamcs.protobuf.LogEntry;
 import org.yamcs.protobuf.TimelineItemLog;
+import org.yamcs.protobuf.TimelineSourceCapabilities;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.InvalidRequestException;
 import org.yamcs.utils.TimeInterval;
@@ -57,6 +60,8 @@ public class TimelineItemDb implements ItemProvider {
     public static final String CNAME_RELTIME_START = "reltime_start";
     public static final String CNAME_DESCRIPTION = "description";
     public static final String CNAME_FAILURE_REASON = "failure_reason";
+    public static final String CNAME_ACTIVITY_DEFINITION = "activity_definition";
+    public static final String CNAME_RUNS = "runs";
     public static final String CRIT_KEY_TAG = "tag";
 
     static {
@@ -69,6 +74,8 @@ public class TimelineItemDb implements ItemProvider {
         TIMELINE_DEF.addColumn(CNAME_GROUP_ID, DataType.UUID);
         TIMELINE_DEF.addColumn(CNAME_RELTIME_ID, DataType.UUID);
         TIMELINE_DEF.addColumn(CNAME_RELTIME_START, DataType.LONG);
+        TIMELINE_DEF.addColumn(CNAME_ACTIVITY_DEFINITION, DataType.protobuf(ActivityDefinition.class));
+        TIMELINE_DEF.addColumn(CNAME_RUNS, DataType.array(DataType.UUID));
     }
     final Log log;
     final private ReadWriteLock rwlock = new ReentrantReadWriteLock();
@@ -78,6 +85,7 @@ public class TimelineItemDb implements ItemProvider {
     final Stream timelineStream;
     final TupleMatcher matcher;
     final TimelineItemLogDb logDb;
+    private Set<ItemListener> itemListeners = new CopyOnWriteArraySet<>();
 
     LoadingCache<UUID, TimelineItem> itemCache = CacheBuilder.newBuilder()
             .maximumSize(1000)
@@ -140,8 +148,7 @@ public class TimelineItemDb implements ItemProvider {
                     throw new InvalidRequestException(
                             "Assigned group " + groupItem.getId() + " is not a real group");
                 }
-                if (groupItem instanceof ActivityGroup
-                        && !((item instanceof ManualActivity) || (item instanceof AutomatedActivity))) {
+                if (groupItem instanceof ActivityGroup && !(item instanceof TimelineActivity)) {
                     throw new InvalidRequestException(
                             "An activity group " + groupItem.getId() + " can only contain activity items");
                 }
@@ -149,10 +156,12 @@ public class TimelineItemDb implements ItemProvider {
             Tuple tuple = item.toTuple();
             log.debug("Adding timeline item to RDB: {}", tuple);
             timelineStream.emitTuple(tuple);
-            return item;
         } finally {
             rwlock.writeLock().unlock();
         }
+
+        itemListeners.forEach(l -> l.onItemCreated(item));
+        return item;
     }
 
     @Override
@@ -180,8 +189,7 @@ public class TimelineItemDb implements ItemProvider {
                     throw new InvalidRequestException(
                             "Assigned group " + groupItem.getId() + " is not a real group");
                 }
-                if (groupItem instanceof ActivityGroup
-                        && !((item instanceof ManualActivity) || (item instanceof AutomatedActivity))) {
+                if (groupItem instanceof ActivityGroup && !(item instanceof TimelineActivity)) {
                     throw new InvalidRequestException(
                             "An activity group " + groupItem.getId() + " can only contain activity items");
                 }
@@ -194,10 +202,12 @@ public class TimelineItemDb implements ItemProvider {
             timelineStream.emitTuple(tuple);
 
             updateDependentStart(item);
-            return item;
         } finally {
             rwlock.writeLock().unlock();
         }
+
+        itemListeners.forEach(l -> l.onItemUpdated(item));
+        return item;
     }
 
     // update the start time of all items having their time specified as relative to this
@@ -271,9 +281,10 @@ public class TimelineItemDb implements ItemProvider {
 
     @Override
     public TimelineItem deleteItem(UUID uuid) {
+        TimelineItem item = null;
         rwlock.writeLock().lock();
         try {
-            TimelineItem item = doGetItem(uuid);
+            item = doGetItem(uuid);
             if (item == null) {
                 return null;
             }
@@ -303,11 +314,13 @@ public class TimelineItemDb implements ItemProvider {
                 r.close();
             }
             doDeleteItem(uuid);
-
-            return item;
         } finally {
             rwlock.writeLock().unlock();
         }
+
+        var fItem = item;
+        itemListeners.forEach(l -> l.onItemDeleted(fItem));
+        return item;
     }
 
     @Override
@@ -343,7 +356,7 @@ public class TimelineItemDb implements ItemProvider {
     }
 
     @Override
-    public void getItems(int limit, String token, RetrievalFilter filter, ItemListener consumer) {
+    public void getItems(int limit, String token, RetrievalFilter filter, ItemReceiver consumer) {
         rwlock.readLock().lock();
         try {
             SqlBuilder sqlBuilder = new SqlBuilder(TABLE_NAME);
@@ -416,6 +429,14 @@ public class TimelineItemDb implements ItemProvider {
             }
         }
         return r;
+    }
+
+    public void addItemListener(ItemListener itemListener) {
+        itemListeners.add(itemListener);
+    }
+
+    public void removeItemListener(ItemListener itemListener) {
+        itemListeners.remove(itemListener);
     }
 
     private static String getRandomToken() {

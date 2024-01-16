@@ -31,6 +31,8 @@ export class InstancePage implements OnInit, OnDestroy {
   telemetryExpanded = false;
   commandingActive = false;
   commandingExpanded = false;
+  proceduresActive = false;
+  proceduresExpanded = false;
   timelineActive = false;
   timelineExpanded = false;
   mdbActive = false;
@@ -38,6 +40,7 @@ export class InstancePage implements OnInit, OnDestroy {
 
   telemetryItems: NavItem[] = [];
   commandingItems: NavItem[] = [];
+  proceduresItems: NavItem[] = [];
   timelineItems: NavItem[] = [];
   mdbItems: NavItem[] = [];
   extraItems: NavItem[] = [];
@@ -100,6 +103,15 @@ export class InstancePage implements OnInit, OnDestroy {
       }
     }
 
+    if (this.user.hasAnyObjectPrivilegeOfType('ControlActivities')) {
+      this.proceduresItems.push({ path: 'script', label: 'Run a script' });
+    }
+    for (const item of extensionService.getExtraNavItems('procedures')) {
+      if (item.condition && item.condition(this.user)) {
+        this.proceduresItems.push(item);
+      }
+    }
+
     if (this.user.hasSystemPrivilege('ReadTimeline')) {
       this.timelineItems.push({ path: 'chart', label: 'Chart' });
     }
@@ -149,6 +161,9 @@ export class InstancePage implements OnInit, OnDestroy {
       } else if (url.match(/\/commanding.*/)) {
         this.commandingActive = true;
         this.commandingExpanded = true;
+      } else if (url.match(/\/procedures.*/)) {
+        this.proceduresActive = true;
+        this.proceduresExpanded = true;
       } else if (url.match(/\/telemetry.*/)) {
         this.telemetryActive = true;
         this.telemetryExpanded = true;
@@ -187,6 +202,7 @@ export class InstancePage implements OnInit, OnDestroy {
   private collapseAllGroups() {
     this.telemetryExpanded = false;
     this.commandingExpanded = false;
+    this.proceduresExpanded = false;
     this.timelineExpanded = false;
     this.mdbExpanded = false;
   }
@@ -201,6 +217,12 @@ export class InstancePage implements OnInit, OnDestroy {
     const expanded = this.commandingExpanded;
     this.collapseAllGroups();
     this.commandingExpanded = !expanded;
+  }
+
+  toggleProceduresGroup() {
+    const expanded = this.proceduresExpanded;
+    this.collapseAllGroups();
+    this.proceduresExpanded = !expanded;
   }
 
   toggleMdbGroup() {
@@ -233,6 +255,10 @@ export class InstancePage implements OnInit, OnDestroy {
 
   showFileTransferItem() {
     return this.user.hasSystemPrivilege('ReadFileTransfers');
+  }
+
+  showActivitiesItem() {
+    return this.user.hasSystemPrivilege('ReadActivities');
   }
 
   showArchiveBrowserItem() {

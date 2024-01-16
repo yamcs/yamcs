@@ -1,6 +1,6 @@
 <div class="tag-select">
   <ng-container *ngIf="tags$ | async as tags">
-    <ya-label *ngFor="let tag of tags" backgroundColor="#cdeefd">
+    <ya-label *ngFor="let tag of tags">
       {{ tag }}
       <mat-icon class="tag-icon" (click)="removeTag(tag)">close</mat-icon>
     </ya-label>

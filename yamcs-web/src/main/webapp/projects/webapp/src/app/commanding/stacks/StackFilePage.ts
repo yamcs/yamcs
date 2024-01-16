@@ -5,10 +5,12 @@ import { FormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AcknowledgmentInfo, AdvancementParams, Argument, BasenamePipe, Command, CommandHistoryRecord, CommandSubscription, ConfigService, ExtensionPipe, FilenamePipe, MessageService, SelectOption, StackEntry, StackFormatter, StorageClient, Value, YamcsService } from '@yamcs/webapp-sdk';
+import { AcknowledgmentInfo, AdvancementParams, Argument, BasenamePipe, Command, CommandHistoryRecord, CommandSubscription, ConfigService, CreateTimelineItemRequest, ExtensionPipe, FilenamePipe, MessageService, SelectOption, StackEntry, StackFormatter, StorageClient, Value, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { AuthService } from '../../core/services/AuthService';
 import { CommandResult, EditStackEntryDialog } from './EditStackEntryDialog';
+import { ScheduleStackDialog } from './ScheduleStackDialog';
 
 @Component({
   templateUrl: './StackFilePage.html',
@@ -90,6 +92,7 @@ export class StackFilePage implements OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private title: Title,
+    private authService: AuthService,
     private configService: ConfigService,
     private messageService: MessageService,
     private sanitizer: DomSanitizer,
@@ -821,6 +824,42 @@ export class StackFilePage implements OnDestroy {
       this.selectEntry(copiedEntry);
       this.dirty$.next(true);
     }
+  }
+
+  showSchedule() {
+    const capabilities = this.yamcs.connectionInfo$.value?.instance?.capabilities || [];
+    return capabilities.indexOf('activities') !== -1
+      && this.authService.getUser()!.hasSystemPrivilege('ControlActivities');
+  }
+
+  openScheduleStackDialog() {
+    this.dialog.open(ScheduleStackDialog, {
+      width: '600px',
+    }).afterClosed().subscribe(scheduleOptions => {
+      if (scheduleOptions) {
+        const options: CreateTimelineItemRequest = {
+          type: 'ACTIVITY',
+          duration: '0s',
+          name: this.filename,
+          start: scheduleOptions['executionTime'],
+          tags: scheduleOptions['tags'],
+          activityDefinition: {
+            "type": "COMMAND_STACK",
+            "args": {
+              "processor": this.yamcs.processor!,
+              "bucket": this.bucket,
+              "stack": this.filename,
+            }
+          },
+        };
+
+        this.yamcs.yamcsClient.createTimelineItem(this.yamcs.instance!, options)
+          .then(() => {
+            this.messageService.showInfo('Command stack scheduled');
+          })
+          .catch(err => this.messageService.showError(err));
+      }
+    });
   }
 
   saveStack() {

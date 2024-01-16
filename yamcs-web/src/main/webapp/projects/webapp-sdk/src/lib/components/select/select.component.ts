@@ -6,6 +6,7 @@ export interface SelectOption {
   id: string;
   label: string;
   group?: boolean;
+  icon?: string;
 }
 
 @Component({

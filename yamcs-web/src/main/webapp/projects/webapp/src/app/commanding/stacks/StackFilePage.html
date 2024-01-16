@@ -61,6 +61,14 @@
       <mat-icon>playlist_play</mat-icon>
     </button>
     <mat-divider vertical style="height: 100%" />
+    <button mat-button color="primary" matTooltip="Run command stack at a later time"
+            (click)="openScheduleStackDialog()"
+            *ngIf="showSchedule()"
+            [disabled]="!loaded || (format !== 'ycs') || !entries$.value.length">
+      <mat-icon>schedule</mat-icon>
+      Schedule
+    </button>
+    <mat-divider vertical style="height: 100%" />
     <button mat-button color="primary" matTooltip="Export command stack" [matMenuTriggerFor]="exportMenu"
             [disabled]="!format"
             (click)="setExportURLs()">

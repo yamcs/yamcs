@@ -83,9 +83,11 @@ export class ItemsPage implements AfterViewInit {
     return !this.selection.isEmpty();
   }
 
-  openCreateItemDialog() {
+  openCreateItemDialog(type: string) {
     const dialogRef = this.dialog.open(CreateItemDialog, {
       width: '600px',
+      panelClass: 'dialog-force-no-scrollbar',
+      data: { type },
     });
     dialogRef.afterClosed().subscribe(() => this.refreshData());
   }

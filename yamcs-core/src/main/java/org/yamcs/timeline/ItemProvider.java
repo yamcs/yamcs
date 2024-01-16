@@ -14,7 +14,7 @@ public interface ItemProvider {
 
     public TimelineItem getItem(String id);
 
-    public void getItems(int limit, String next, RetrievalFilter filter, ItemListener consumer);
+    public void getItems(int limit, String next, RetrievalFilter filter, ItemReceiver consumer);
 
     /**
      * Add an item and return the added item.

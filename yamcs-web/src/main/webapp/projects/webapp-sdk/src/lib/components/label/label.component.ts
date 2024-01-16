@@ -17,5 +17,5 @@ export class LabelComponent {
   color = 'inherit';
 
   @Input()
-  borderColor = 'transparent';
+  borderColor = '#ccc';
 }

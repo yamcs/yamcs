@@ -183,6 +183,7 @@ public class SecurityStore {
         systemPrivileges.add(SystemPrivilege.ChangeMissionDatabase);
         systemPrivileges.add(SystemPrivilege.CommandOptions);
         systemPrivileges.add(SystemPrivilege.ControlAccess);
+        systemPrivileges.add(SystemPrivilege.ControlActivities);
         systemPrivileges.add(SystemPrivilege.ControlAlarms);
         systemPrivileges.add(SystemPrivilege.ControlArchiving);
         systemPrivileges.add(SystemPrivilege.ControlCommandClearances);
@@ -198,6 +199,7 @@ public class SecurityStore {
         systemPrivileges.add(SystemPrivilege.ManageAnyBucket);
         systemPrivileges.add(SystemPrivilege.ManageParameterLists);
         systemPrivileges.add(SystemPrivilege.ModifyCommandHistory);
+        systemPrivileges.add(SystemPrivilege.ReadActivities);
         systemPrivileges.add(SystemPrivilege.ReadAlarms);
         systemPrivileges.add(SystemPrivilege.ReadCommandHistory);
         systemPrivileges.add(SystemPrivilege.ReadFileTransfers);
@@ -205,6 +207,7 @@ public class SecurityStore {
         systemPrivileges.add(SystemPrivilege.ReadLinks);
         systemPrivileges.add(SystemPrivilege.ReadSystemInfo);
         systemPrivileges.add(SystemPrivilege.ReadTables);
+        systemPrivileges.add(SystemPrivilege.ReadTasks);
         systemPrivileges.add(SystemPrivilege.ReadTimeline);
         systemPrivileges.add(SystemPrivilege.WriteEvents);
         systemPrivileges.add(SystemPrivilege.WriteTables);

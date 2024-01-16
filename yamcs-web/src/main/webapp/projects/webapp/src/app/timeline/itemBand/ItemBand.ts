@@ -23,6 +23,16 @@ export const propertyInfo: PropertyInfoSet = {
   spaceBetweenLines: new NumberProperty(2),
 };
 
+export const itemPropertyInfo: PropertyInfoSet = {
+  backgroundColor: new ColorProperty(propertyInfo.itemBackgroundColor.defaultValue),
+  borderColor: new ColorProperty(propertyInfo.itemBorderColor.defaultValue),
+  borderWidth: new NumberProperty(propertyInfo.itemBorderWidth.defaultValue),
+  cornerRadius: new NumberProperty(propertyInfo.itemCornerRadius.defaultValue),
+  marginLeft: new NumberProperty(propertyInfo.itemMarginLeft.defaultValue),
+  textColor: new ColorProperty(propertyInfo.itemTextColor.defaultValue),
+  textSize: new NumberProperty(propertyInfo.itemTextSize.defaultValue),
+};
+
 export class ItemBand extends DefaultItemBand {
 
   constructor(chart: TimelineChartPage, bandInfo: TimelineBand, dialog: MatDialog) {
@@ -50,6 +60,7 @@ export class ItemBand extends DefaultItemBand {
     this.addItemClickListener(evt => {
       dialog.open(EditItemDialog, {
         width: '600px',
+        panelClass: 'dialog-force-no-scrollbar',
         data: { item: evt.item.data.item }
       }).afterClosed().subscribe(() => chart.refreshData());
     });

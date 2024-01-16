@@ -5,6 +5,7 @@ import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { SessionListener } from './SessionListener';
 import { WebSocketClient } from './WebSocketClient';
+import { ActivitiesPage, Activity, ActivityLog, ActivityLogSubscription, ActivityScriptsPage, ActivitySubscription, CompleteManualActivityOptions, ExecutorsWrapper, GetActivitiesOptions, GetActivityLogResponse, GlobalActivityStatus, GlobalActivityStatusSubscription, StartActivityOptions, SubscribeActivitiesRequest, SubscribeActivityLogRequest, SubscribeGlobalActivityStatusRequest } from './types/activities';
 import { AcknowledgeAlarmOptions, Alarm, AlarmSubscription, ClearAlarmOptions, GetAlarmsOptions, GlobalAlarmStatus, GlobalAlarmStatusSubscription, ShelveAlarmOptions, SubscribeAlarmsRequest, SubscribeGlobalAlarmStatusRequest } from './types/alarms';
 import { CommandSubscription, SubscribeCommandsRequest } from './types/commandHistory';
 import { Cop1Config, Cop1Status, Cop1Subscription, DisableCop1Request, InitiateCop1Request, SubscribeCop1Request } from './types/cop1';
@@ -635,6 +636,10 @@ export default class YamcsClient implements HttpHandler {
     return this.webSocketClient!.createSubscription('global-alarm-status', options, observer);
   }
 
+  createGlobalActivityStatusSubscription(options: SubscribeGlobalActivityStatusRequest, observer: (status: GlobalActivityStatus) => void): GlobalActivityStatusSubscription {
+    return this.webSocketClient!.createSubscription('global-activity-status', options, observer);
+  }
+
   createTMStatisticsSubscription(options: SubscribeTMStatisticsRequest, observer: (time: Statistics) => void): TMStatisticsSubscription {
     return this.webSocketClient!.createSubscription('tmstats', options, observer);
   }
@@ -649,6 +654,14 @@ export default class YamcsClient implements HttpHandler {
 
   createLinkSubscription(options: SubscribeLinksRequest, observer: (linkEvent: LinkEvent) => void): LinkSubscription {
     return this.webSocketClient!.createSubscription('links', options, observer);
+  }
+
+  createActivitySubscription(options: SubscribeActivitiesRequest, observer: (update: Activity) => void): ActivitySubscription {
+    return this.webSocketClient!.createSubscription('activities', options, observer);
+  }
+
+  createActivityLogSubscription(options: SubscribeActivityLogRequest, observer: (update: ActivityLog) => void): ActivityLogSubscription {
+    return this.webSocketClient!.createSubscription('activity-log', options, observer);
   }
 
   createTransferSubscription(options: SubscribeTransfersRequest, observer: (transfer: Transfer) => void): TransferSubscription {
@@ -1275,6 +1288,66 @@ export default class YamcsClient implements HttpHandler {
     const url = `${this.apiUrl}/mdb/${instance}/containers${qualifiedName}`;
     const response = await this.doFetch(url);
     return await response.json() as Container;
+  }
+
+  async getActivities(instance: string, options: GetActivitiesOptions = {}) {
+    const url = `${this.apiUrl}/activities/${instance}/activities`;
+    const response = await this.doFetch(url + this.queryString(options));
+    return await response.json() as ActivitiesPage;
+  }
+
+  async getActivity(instance: string, activityId: string) {
+    const url = `${this.apiUrl}/activities/${instance}/activities/${activityId}`;
+    const response = await this.doFetch(url);
+    return await response.json() as Activity;
+  }
+
+  async getActivityLog(instance: string, activityId: string) {
+    const url = `${this.apiUrl}/activities/${instance}/activities/${activityId}/log`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as GetActivityLogResponse;
+    return wrapper.logs || [];
+  }
+
+  async startActivity(instance: string, options: StartActivityOptions) {
+    const url = `${this.apiUrl}/activities/${instance}/activities`;
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(url, {
+      body,
+      method: 'POST',
+    });
+    return await response.json() as Activity;
+  }
+
+  async cancelActivity(instance: string, activity: string) {
+    const url = `${this.apiUrl}/activities/${instance}/activities/${activity}:cancel`;
+    const response = await this.doFetch(url, {
+      method: 'POST',
+    });
+    return await response.json() as Activity;
+  }
+
+  async completeManualActivity(instance: string, activity: string, options: CompleteManualActivityOptions = {}) {
+    const url = `${this.apiUrl}/activities/${instance}/activities/${activity}:complete`;
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(url, {
+      body,
+      method: 'POST',
+    });
+    return await response.json() as Activity;
+  }
+
+  async getExecutors(instance: string) {
+    const url = `${this.apiUrl}/activities/${instance}/executors`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as ExecutorsWrapper;
+    return wrapper.executors || [];
+  }
+
+  async getActivityScripts(instance: string) {
+    const url = `${this.apiUrl}/activities/${instance}/scripts`;
+    const response = await this.doFetch(url);
+    return await response.json() as ActivityScriptsPage;
   }
 
   async getAlgorithms(instance: string, options: GetAlgorithmsOptions = {}) {

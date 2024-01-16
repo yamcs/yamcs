@@ -39,11 +39,27 @@
       </button>
       <button mat-button
               color="primary"
-              (click)="openCreateItemDialog()"
+              [matMenuTriggerFor]="itemMenu"
               *ngIf="view$ | async">
         <mat-icon>add_circle_outline</mat-icon>
         Add item
       </button>
+      <mat-menu #itemMenu="matMenu"
+                class="ya-menu"
+                [overlapTrigger]="false">
+        <button mat-menu-item
+                (click)="openCreateItemDialog('EVENT')"
+                matTooltipShowDelay="1000"
+                matTooltip="Events are items that simply appear on the timeline">
+          Event item
+        </button>
+        <button mat-menu-item
+                (click)="openCreateItemDialog('ACTIVITY')"
+                matTooltipShowDelay="1000"
+                matTooltip="Activities are like events, but in addition have an execution status">
+          Activity item
+        </button>
+      </mat-menu>
       <button mat-button
               color="primary"
               (click)="saveSnapshot()"

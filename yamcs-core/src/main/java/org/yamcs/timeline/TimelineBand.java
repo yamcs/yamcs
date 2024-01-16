@@ -1,6 +1,15 @@
 package org.yamcs.timeline;
 
-import static org.yamcs.timeline.TimelineBandDb.*;
+import static org.yamcs.timeline.TimelineBandDb.CNAME_DESCRIPTION;
+import static org.yamcs.timeline.TimelineBandDb.CNAME_FILTER;
+import static org.yamcs.timeline.TimelineBandDb.CNAME_ID;
+import static org.yamcs.timeline.TimelineBandDb.CNAME_NAME;
+import static org.yamcs.timeline.TimelineBandDb.CNAME_SHARED;
+import static org.yamcs.timeline.TimelineBandDb.CNAME_SOURCE;
+import static org.yamcs.timeline.TimelineBandDb.CNAME_TAGS;
+import static org.yamcs.timeline.TimelineBandDb.CNAME_TYPE;
+import static org.yamcs.timeline.TimelineBandDb.CNAME_USERNAME;
+import static org.yamcs.timeline.TimelineBandDb.PROP_PREFIX;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -103,7 +112,7 @@ public class TimelineBand {
     }
 
     public org.yamcs.protobuf.TimelineBand toProtobuf() {
-        org.yamcs.protobuf.TimelineBand.Builder b = org.yamcs.protobuf.TimelineBand.newBuilder()
+        var b = org.yamcs.protobuf.TimelineBand.newBuilder()
                 .setId(id.toString())
                 .setType(type)
                 .setShared(shared)
@@ -130,7 +139,7 @@ public class TimelineBand {
         tuple.addColumn(CNAME_USERNAME, username);
         tuple.addColumn(CNAME_SOURCE, source);
         tuple.addColumn(CNAME_FILTER, DataType.protobuf(BandFilter.class), filter);
-        for (Map.Entry<String, String> entry : properties.entrySet()) {
+        for (var entry : properties.entrySet()) {
             tuple.addColumn(PROP_PREFIX + entry.getKey(), entry.getValue());
         }
         if (!tags.isEmpty()) {
@@ -182,5 +191,4 @@ public class TimelineBand {
     static private BandFilter.FilterCriterion fromApi(FilterCriterion fc) {
         return BandFilter.FilterCriterion.newBuilder().setKey(fc.getKey()).setValue(fc.getValue()).build();
     }
-
 }

@@ -1,25 +1,23 @@
 import { ChangeDetectionStrategy, Component, forwardRef } from '@angular/core';
-import { ControlValueAccessor, UntypedFormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR, UntypedFormControl } from '@angular/forms';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
-  selector: 'app-tag-select',
-  templateUrl: './TagSelect.html',
-  styleUrls: ['./TagSelect.css'],
+  selector: 'ya-tag-select',
+  templateUrl: './tag-select.component.html',
+  styleUrls: ['./tag-select.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => TagSelect),
+      useExisting: forwardRef(() => TagSelectComponent),
       multi: true
     }
   ]
 })
-export class TagSelect implements ControlValueAccessor {
+export class TagSelectComponent implements ControlValueAccessor {
 
   control = new UntypedFormControl(null);
-
-  filteredOptions: Observable<string[]>;
 
   private onChange = (_: string[]) => { };
 

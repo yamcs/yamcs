@@ -57,6 +57,7 @@ import { SelectComponent } from './components/select/select.component';
 import { SidebarNavGroupComponent } from './components/sidebar/sidebar-nav-group.component';
 import { SidebarNavItemComponent } from './components/sidebar/sidebar-nav-item.component';
 import { TableToggleComponent } from './components/table-toggle/table-toggle.component';
+import { TagSelectComponent } from './components/tag-select/tag-select.component';
 import { TextActionComponent } from './components/text-action/text-action.component';
 import { TimezoneSelectComponent } from './components/timezone-select/timezone-select.component';
 import { TitleCopyComponent } from './components/title-copy/title-copy.component';
@@ -176,6 +177,7 @@ const sharedComponents = [
   SidebarNavGroupComponent,
   SidebarNavItemComponent,
   TableToggleComponent,
+  TagSelectComponent,
   TextActionComponent,
   TimezoneSelectComponent,
   TitleCopyComponent,
