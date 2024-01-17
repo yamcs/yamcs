@@ -2,7 +2,7 @@ name: Create package on push to master
 
 on:
   push:
-    branches: [ CI_CD_Dev ]
+    branches: [ master, CI_CD_Dev ]
   
   workflow_dispatch:
 
