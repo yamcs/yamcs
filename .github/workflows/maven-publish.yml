@@ -40,9 +40,9 @@ jobs:
           maven-version: 3.8.2
 
       - name: Build with Maven
-        run: /usr/bin/mvn clean install -DskipTests
+        run: mvn clean install -DskipTests
 
       - name: Publish to GitHub Packages Apache Maven
-        run: /usr/bin/mvn deploy -DskipTests -s $GITHUB_WORKSPACE/settings.xml 
+        run: mvn deploy -DskipTests -s $GITHUB_WORKSPACE/settings.xml 
         env:
           GITHUB_TOKEN: ${{ github.token }}
