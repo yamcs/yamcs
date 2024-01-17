@@ -35,9 +35,9 @@ jobs:
           settings-path: ${{ github.workspace }} # location for the settings.xml file
 
       - name: Build with Maven
-        run: mvn clean install -DskipTests
+        run: /usr/bin/mvn clean install -DskipTests
 
       - name: Publish to GitHub Packages Apache Maven
-        run: mvn deploy -DskipTests -s $GITHUB_WORKSPACE/settings.xml 
+        run: /usr/bin/mvn deploy -DskipTests -s $GITHUB_WORKSPACE/settings.xml 
         env:
           GITHUB_TOKEN: ${{ github.token }}
