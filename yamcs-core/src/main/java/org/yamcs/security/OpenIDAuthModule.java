@@ -1,14 +1,14 @@
 package org.yamcs.security;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
@@ -110,9 +110,8 @@ public class OpenIDAuthModule implements AuthModule {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
-            String auth = Base64.getEncoder().encodeToString(
-                    (clientId + ":" + clientSecret).getBytes(StandardCharsets.UTF_8));
-            conn.setRequestProperty("Authorization", "Basic " + auth);
+            var authorizationHeader = generateAuthorizationHeader(clientId, clientSecret);
+            conn.setRequestProperty("Authorization", authorizationHeader);
 
             Map<String, String> formData = new HashMap<>();
             formData.put("grant_type", "authorization_code");
@@ -128,7 +127,7 @@ public class OpenIDAuthModule implements AuthModule {
 
             int statusCode = conn.getResponseCode();
             if (statusCode == 200) {
-                Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+                Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), UTF_8));
                 JsonObject response = new Gson().fromJson(in, JsonObject.class);
 
                 String idToken = response.get("id_token").getAsString();
@@ -136,7 +135,7 @@ public class OpenIDAuthModule implements AuthModule {
                 JsonObject claims = JwtHelper.decodeUnverified(idToken);
                 return createAuthenticationInfo(idToken, accessToken, claims);
             } else {
-                Reader in = new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8));
+                Reader in = new BufferedReader(new InputStreamReader(conn.getErrorStream(), UTF_8));
                 JsonObject response = new Gson().fromJson(in, JsonObject.class);
                 throw new AuthenticationException(response.toString());
             }
@@ -194,21 +193,26 @@ public class OpenIDAuthModule implements AuthModule {
         return scope;
     }
 
+    static String generateAuthorizationHeader(String clientId, String clientSecret) {
+        // See https://datatracker.ietf.org/doc/html/rfc6749#section-2.3.1
+        var encodedClientId = URLEncoder.encode(clientId, UTF_8);
+        var encodedSecret = URLEncoder.encode(clientSecret, UTF_8);
+        var auth = Base64.getEncoder().encodeToString(
+                (encodedClientId + ":" + encodedSecret).getBytes(UTF_8));
+        return "Basic " + auth;
+    }
+
     private static byte[] encodeRequestBody(Map<String, String> params) {
-        try {
-            StringBuilder postData = new StringBuilder();
-            for (Entry<String, String> param : params.entrySet()) {
-                if (postData.length() != 0) {
-                    postData.append('&');
-                }
-                postData.append(URLEncoder.encode(param.getKey(), StandardCharsets.UTF_8.name()));
-                postData.append('=');
-                postData.append(URLEncoder.encode(param.getValue(), StandardCharsets.UTF_8.name()));
+        StringBuilder postData = new StringBuilder();
+        for (Entry<String, String> param : params.entrySet()) {
+            if (postData.length() != 0) {
+                postData.append('&');
             }
-            return postData.toString().getBytes(StandardCharsets.UTF_8);
-        } catch (UnsupportedEncodingException e) {
-            throw new Error(e);
+            postData.append(URLEncoder.encode(param.getKey(), UTF_8));
+            postData.append('=');
+            postData.append(URLEncoder.encode(param.getValue(), UTF_8));
         }
+        return postData.toString().getBytes(UTF_8);
     }
 
     protected static class OpenIDAuthenticationInfo extends AuthenticationInfo {
