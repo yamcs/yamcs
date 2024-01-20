@@ -82,6 +82,18 @@
 				</xtce:StringDataEncoding>
 			</xtce:StringParameterType>
 
+			<!-- string in buffer whose size is given by another parameter -->
+			<xtce:StringParameterType name="string6">
+				<xtce:StringDataEncoding encoding="UTF-8">
+					<xtce:Variable maxSizeInBits="48">
+						<xtce:DynamicValue>
+							<xtce:ParameterInstanceRef parameterRef="uint16_param2" />
+							<xtce:LinearAdjustment slope="8" />
+						</xtce:DynamicValue>
+					</xtce:Variable>
+				</xtce:StringDataEncoding>
+			</xtce:StringParameterType>
+
 			<xtce:IntegerParameterType signed="false" name="uint16">
 				<xtce:IntegerDataEncoding encoding="unsigned" sizeInBits="16" />
 			</xtce:IntegerParameterType>
@@ -92,6 +104,7 @@
 			<xtce:Parameter name="string3" parameterTypeRef="string3" />
 			<xtce:Parameter name="string4" parameterTypeRef="string4" />
 			<xtce:Parameter name="string5" parameterTypeRef="string5" />
+			<xtce:Parameter name="string6" parameterTypeRef="string6" />
 			<xtce:Parameter name="uint16_param1" parameterTypeRef="uint16" />
 			<xtce:Parameter name="uint16_param2" parameterTypeRef="uint16" />
 		</xtce:ParameterSet>
@@ -124,6 +137,13 @@
 			<xtce:SequenceContainer name="packet5">
 				<xtce:EntryList>
 					<xtce:ParameterRefEntry parameterRef="string5" />
+					<xtce:ParameterRefEntry parameterRef="uint16_param1" />
+				</xtce:EntryList>
+			</xtce:SequenceContainer>
+			<xtce:SequenceContainer name="packet6">
+				<xtce:EntryList>
+					<xtce:ParameterRefEntry parameterRef="uint16_param2" />
+					<xtce:ParameterRefEntry parameterRef="string6" />
 					<xtce:ParameterRefEntry parameterRef="uint16_param1" />
 				</xtce:EntryList>
 			</xtce:SequenceContainer>

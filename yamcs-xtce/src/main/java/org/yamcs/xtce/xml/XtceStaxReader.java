@@ -1237,7 +1237,7 @@ public class XtceStaxReader extends AbstractStaxReader {
             } else if (isEndElementWithName(ELEM_STRING_DATA_ENCODING)) {
                 if (stringDataEncoding.getSizeType() == null) {
                     throw new XMLStreamException(
-                            ELEM_SIZE_IN_BITS + "or " + ELEM_VARIABLE + " not specified for the StringDataEncoding",
+                            ELEM_SIZE_IN_BITS + " or " + ELEM_VARIABLE + " not specified for the StringDataEncoding",
                             xmlEvent.getLocation());
                 }
                 return stringDataEncoding;
@@ -1287,6 +1287,7 @@ public class XtceStaxReader extends AbstractStaxReader {
             if (isStartElementWithName(ELEM_DYNAMIC_VALUE)) {
                 DynamicIntegerValue div = readDynamicValue(spaceSystem);
                 if (div != IGNORED_DYNAMIC_VALUE) {
+                    stringDataEncoding.setSizeType(SizeType.FIXED);
                     stringDataEncoding.setDynamicBufferSize(div);
                 }
             } else if (isStartElementWithName(ELEM_TERMINATION_CHAR)) {
