@@ -47,7 +47,6 @@ public class PusTcManager extends AbstractYamcsService implements StreamSubscrib
     public static int DEFAULT_PRIMARY_HEADER_LENGTH = 6;
     public static int DEFAULT_SECONDARY_HEADER_LENGTH = 32;
     public static int DEFAULT_PUS_HEADER_LENGTH = 5;
-    public static int DEFAULT_SOURCE_ID = 14;   // FIXME: Not needed
     public static int DEFAULT_TIMETAG_BUFFER = 5; // Seconds
     public static int DEFAULT_TIMETAG_INDEX = DEFAULT_PRIMARY_HEADER_LENGTH + DEFAULT_PUS_HEADER_LENGTH;
     public static int DEFAULT_TIMETAG_LENGTH = 8;
@@ -97,7 +96,7 @@ public class PusTcManager extends AbstractYamcsService implements StreamSubscrib
 
         pusConfig = config.getConfigOrEmpty("services");
         secondaryHeaderLength = config.getInt("secondaryHeaderLength", DEFAULT_SECONDARY_HEADER_LENGTH);
-        sourceId = config.getInt("sourceId", DEFAULT_SOURCE_ID);
+        sourceId = config.getInt("sourceId");
         timetagBuffer = config.getInt("timetagBuffer", DEFAULT_TIMETAG_BUFFER);
         timetagLength = config.getInt("timetagLength", DEFAULT_TIMETAG_LENGTH);
         secondaryHeaderSpareLength = secondaryHeaderLength - DEFAULT_PUS_HEADER_LENGTH;
