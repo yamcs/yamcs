@@ -21,10 +21,13 @@ public class SubServiceTwentyFive implements PusSubService {
     private int DEFAULT_SIMPLE_COMMUTATIVE_DIFFERENTIATOR = 1;
     private int DEFAULT_SUPER_COMMUTATIVE_DIFFERENTIATOR = 2;
     private int DEFAULT_COLLECTION_INTERVAL_SIZE = 4;
+    private int DEFAULT_HOUSEKEEPING_PARAMETER_REPORT_STRUCTURE_ID_SIZE = 4;
 
     private int simpleCommutatedSize;
     private int superCommutatedSampleRepetitionNumberSize;
     private int collectionIntervalSize;
+    private int housekeepingParameterReportStructureIDSize;
+
     private byte simpleCommutativeDifferentiator;
     private byte superCommutativeDifferentiator;
 
@@ -36,6 +39,7 @@ public class SubServiceTwentyFive implements PusSubService {
         simpleCommutatedSize = config.getInt("simpleCommutatedSize", DEFAULT_SIMPLE_COMMUTATED_SIZE);
         superCommutatedSampleRepetitionNumberSize = config.getInt("superCommutatedSampleRepetitionNumberSize", DEFAULT_SUPER_COMMUTATED_SAMPLE_REPETITION_NUMBER_SIZE);
         collectionIntervalSize = config.getInt("collectionIntervalSize", DEFAULT_COLLECTION_INTERVAL_SIZE);
+        housekeepingParameterReportStructureIDSize = config.getInt("housekeepingParameterReportStructureIDSize", DEFAULT_HOUSEKEEPING_PARAMETER_REPORT_STRUCTURE_ID_SIZE);
 
         simpleCommutativeDifferentiator = (byte) config.getInt("simpleCommutativeDifferentiator", DEFAULT_SIMPLE_COMMUTATIVE_DIFFERENTIATOR);
         superCommutativeDifferentiator = (byte) config.getInt("superCommutativeDifferentiator", DEFAULT_SUPER_COMMUTATIVE_DIFFERENTIATOR);
@@ -93,7 +97,6 @@ public class SubServiceTwentyFive implements PusSubService {
         int superCommutatedSampleRepetitionNumber = (int) ByteArrayUtils.decodeCustomInteger(spareField, simpleCommutatedSize, superCommutatedSampleRepetitionNumberSize);
         int collectionInterval = (int) ByteArrayUtils.decodeCustomInteger(spareField, (simpleCommutatedSize + superCommutatedSampleRepetitionNumberSize), collectionIntervalSize);
 
-        int housekeepingParameterReportStructureIDSize = 4;
         byte[] housekeepingParameterReportStructureID = Arrays.copyOfRange(
             dataField,
             0,
@@ -108,20 +111,26 @@ public class SubServiceTwentyFive implements PusSubService {
             createSimpleCommutativePusTmPacket(tmPacket, housekeepingParameterReportStructureID, simpleCommutatedParameterArray)
         );
 
-        byte[] superCommutedParameterArray = Arrays.copyOfRange(dataField, (housekeepingParameterReportStructureIDSize + simpleCommutatedLength), dataField.length);
-        int superCommutatedParameterSubStructureSize = (int) superCommutedParameterArray.length / superCommutatedSampleRepetitionNumber; // FIXME: No need to typecast, since it will always be perfectly divisbible
-        
-        long gentime = tmPacket.getGenerationTime();
-        long collectionIntervalOffset = collectionInterval / superCommutatedSampleRepetitionNumber;
+        if (superCommutatedSampleRepetitionNumber != 0) {
+            byte[] superCommutedParameterArray = Arrays.copyOfRange(dataField, (housekeepingParameterReportStructureIDSize + simpleCommutatedLength), dataField.length);
+            int superCommutatedParameterSubStructureSize = (int) superCommutedParameterArray.length / superCommutatedSampleRepetitionNumber; // FIXME: No need to typecast, since it will always be perfectly divisbible
 
-        for(int index = 0; index < superCommutatedSampleRepetitionNumber; index++) {            
-            byte[] superCommutativeParameterSubStructure = Arrays.copyOfRange(superCommutedParameterArray, index * superCommutatedParameterSubStructureSize, (index + 1) * superCommutatedParameterSubStructureSize);
-            pPkts.add(createSuperCommutativePusTmPacket(
-                tmPacket,
-                housekeepingParameterReportStructureID,
-                superCommutativeParameterSubStructure,
-                gentime + index * collectionIntervalOffset
-            ));
+            long gentime = tmPacket.getGenerationTime();
+            long collectionIntervalOffset = collectionInterval / superCommutatedSampleRepetitionNumber;
+
+            for (int index = 0; index < superCommutatedSampleRepetitionNumber; index++) {
+                byte[] superCommutativeParameterSubStructure = Arrays.copyOfRange(
+                    superCommutedParameterArray,
+                    index * superCommutatedParameterSubStructureSize,
+                    (index + 1) * superCommutatedParameterSubStructureSize
+                );
+                pPkts.add(createSuperCommutativePusTmPacket(
+                    tmPacket,
+                    housekeepingParameterReportStructureID,
+                    superCommutativeParameterSubStructure,
+                    gentime - (index * collectionIntervalOffset)    // Sampling time of parameters comes packet generation time
+                ));
+            }
         }
 
         return pPkts;

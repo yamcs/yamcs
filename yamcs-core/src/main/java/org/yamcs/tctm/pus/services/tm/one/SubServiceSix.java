@@ -9,9 +9,11 @@ import org.yamcs.TmPacket;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.tctm.pus.PusTmManager;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
 import org.yamcs.utils.ByteArrayUtils;
+import org.yamcs.utils.StringConverter;
 
 // FIXME: Update the error codes
 enum ProgressExecutionFailedErrorCode {
@@ -40,14 +42,21 @@ public class SubServiceSix implements PusSubService {
         PusTmCcsdsPacket pPkt = new PusTmCcsdsPacket(tmPacket.getPacket());
 
         byte[] dataField = pPkt.getDataField();
-        byte[] failureNotice = Arrays.copyOfRange(dataField, ServiceOne.REQUEST_ID_LENGTH, dataField.length);
+        int tcCcsdsApid = ByteArrayUtils.decodeUnsignedShort(dataField, 0) & 0x07FF;
+        int tcCcsdsSeqCount = ByteArrayUtils.decodeUnsignedShort(dataField, 2) & 0x3FFF;
 
+        if (PusTmManager.destinationId != pPkt.getDestinationID())
+            return null;
+
+        byte[] failureNotice = Arrays.copyOfRange(dataField, ServiceOne.REQUEST_ID_LENGTH, dataField.length);
         long errorCode = ByteArrayUtils.decodeCustomInteger(failureNotice, 0, ServiceOne.failureCodeSize);
         byte[] deducedPresence = Arrays.copyOfRange(failureNotice, ServiceOne.failureCodeSize, failureNotice.length);
 
         eventProducer.sendCritical(TC_PROGRESS_EXECUTION_FAILED,
-                "TC with Destination ID: " + pPkt.getDestinationID() + " has failed during execution | Error Code: " + errorCodes.get(errorCode) + " Deduced: " + deducedPresence);
-
+            "TC with (Source ID: " + pPkt.getDestinationID() + " | Apid: " + tcCcsdsApid + " | Packet Seq Count: "
+                    + tcCcsdsSeqCount
+                    + ") has failed during execution | Error Code: " + errorCodes.get(errorCode) + " Deduced: " + StringConverter.arrayToHexString(deducedPresence)
+        );
         ArrayList<TmPacket> pktList = new ArrayList<>();
         pktList.add(tmPacket);
 
