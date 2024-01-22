@@ -1,8 +1,8 @@
-name: Create package on push to master
+name: Create package on push to release branch
 
 on:
   push:
-    branches: [ master, CI_CD_Dev ]
+    branches: [ release ]
   
   workflow_dispatch:
 
