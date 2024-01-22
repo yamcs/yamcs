@@ -1,4 +1,4 @@
-Version 5.8.8 released 29-Sep-2023
+Version 5.8.8 released 3-Nov-2023
 - Add API call to stream MDB items
 - Add API calls to add parameters/parameter types
 - Add API call to load large amounts of parameter values
