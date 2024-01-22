@@ -376,7 +376,10 @@ public class ReferenceFinder {
                 ((ParameterReference) nr).resolved((Parameter) nd, aggregateMemberPath);
             } else if (nr instanceof ArgumentReference) {
                 ((ArgumentReference) nr).resolved((Argument) nd, aggregateMemberPath);
-            } else {
+            } else if (nr instanceof AlgorithmReference) {
+                ((AlgorithmReference) nr).resolved(nd);
+            } 
+            else {
                 nr.resolved(nd);
             }
         }
