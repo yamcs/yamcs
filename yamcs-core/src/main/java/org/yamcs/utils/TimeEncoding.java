@@ -131,6 +131,11 @@ public class TimeEncoding {
      * @return
      */
     public static String toString(long instant) {
+        if (instant == MIN_INSTANT)
+            return "-inf";
+        if (instant == MAX_INSTANT)
+            return "+inf";
+
         TaiUtcConverter.DateTimeComponents dtc = taiUtcConverter.instantToUtc(instant);
         StringBuilder sb = new StringBuilder();
         formatOn4Digits(dtc.year, sb);
