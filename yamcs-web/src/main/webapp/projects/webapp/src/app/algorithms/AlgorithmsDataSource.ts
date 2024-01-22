@@ -1,10 +1,10 @@
 import { DataSource } from '@angular/cdk/table';
-import { Algorithm, GetAlgorithmsOptions, YamcsService } from '@yamcs/webapp-sdk';
+import { Algorithm, GetAlgorithmsOptions, SpaceSystem, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 
 export class ListItem {
-  spaceSystem: boolean;
   name: string;
+  system?: SpaceSystem;
   algorithm?: Algorithm;
 }
 
@@ -28,15 +28,11 @@ export class AlgorithmsDataSource extends DataSource<ListItem> {
       this.loading$.next(false);
       this.totalSize$.next(page.totalSize);
       const items: ListItem[] = [];
-      for (const spaceSystem of (page.spaceSystems || [])) {
-        items.push({ spaceSystem: true, name: spaceSystem });
+      for (const system of (page.systems || [])) {
+        items.push({ name: system.qualifiedName, system });
       }
       for (const algorithm of (page.algorithms || [])) {
-        items.push({
-          spaceSystem: false,
-          name: algorithm.qualifiedName,
-          algorithm,
-        });
+        items.push({ name: algorithm.qualifiedName, algorithm });
       }
       this.items$.next(items);
     });

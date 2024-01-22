@@ -49,13 +49,13 @@
         <ng-container cdkColumnDef="name">
           <th mat-header-cell *cdkHeaderCellDef>Name</th>
           <td mat-cell *matCellDef="let item" class="primary-td">
-            <ng-container *ngIf="item.spaceSystem">
+            <ng-container *ngIf="item.system">
               <mat-icon class="icon12" style="vertical-align: middle">folder</mat-icon>
               <a [routerLink]="['/commanding/send']"
                  [queryParams]="{c: yamcs.context, system: item.name}">{{ item.name | filename }}/
               </a>
             </ng-container>
-            <ng-container *ngIf="!item.spaceSystem">
+            <ng-container *ngIf="item.command">
               <mat-icon class="icon12" style="vertical-align: middle">rss_feed</mat-icon>
               <a [routerLink]="['/commanding/send', item.command.qualifiedName]"
                  [queryParams]="{c: yamcs.context}">
@@ -72,9 +72,14 @@
 
         <ng-container matColumnDef="shortDescription">
           <th mat-header-cell *matHeaderCellDef>Description</th>
-          <td mat-cell *matCellDef="let item" class="wrap200">
-            <ng-container *ngIf="(item.command?.shortDescription) as desc; else dash">
-              <ya-highlight [text]="desc" [term]="filterControl.value" />
+          <td mat-cell *matCellDef="let item" class="wrap400">
+            <ng-container *ngIf="item.system">
+              {{ item.system.shortDescription || '-' }}
+            </ng-container>
+            <ng-container *ngIf="item.command">
+              <ng-container *ngIf="(item.command?.shortDescription) as desc; else dash">
+                <ya-highlight [text]="desc" [term]="filterControl.value" />
+              </ng-container>
             </ng-container>
           </td>
         </ng-container>

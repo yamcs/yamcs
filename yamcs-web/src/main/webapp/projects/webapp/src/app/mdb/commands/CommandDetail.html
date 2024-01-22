@@ -143,6 +143,7 @@
         <td>
           <ng-container *ngIf="verifier.algorithm">Algorithm</ng-container>
           <ng-container *ngIf="verifier.container">Container</ng-container>
+          <ng-container *ngIf="verifier.expression">Expression</ng-container>
         </td>
         <td>
           <ng-container *ngIf="verifier.algorithm">
@@ -152,6 +153,9 @@
           <ng-container *ngIf="verifier.container">
             <a [routerLink]="['/mdb/containers/', verifier.container.qualifiedName]"
                [queryParams]="{c: yamcs.context}">{{ verifier.container.qualifiedName }}</a>
+          </ng-container>
+          <ng-container *ngIf="verifier.expression">
+            {{ verifier.expression }}
           </ng-container>
         </td>
         <td>

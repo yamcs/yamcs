@@ -101,7 +101,6 @@ dataLinks (list)
     
 mdb (list)
     The configuration of the Mission Database (MDB). The configuration is hierarchical, each loader having the possibility to load sub-loaders which become child Space Systems. More information about the MDB can be found in :doc:`../mdb/index`
-
     
 streamConfig(map)
     This configures the list of streams created when Yamcs starts. The map contains an entry for each standard stream type (``tm``, ``cmdHist``, ``event``, etc) and additionally a key ``sqlFile`` can be used to load a StreamSQL file where user defined streams can be created. More information can be found in :doc:`../data-management/streams`
@@ -149,3 +148,12 @@ YAML configuration values may use properties names in the following notations:
 
 ``${env.foo:bar}``
     Same as ``${env.foo}``, but defaults to the value ``bar`` when the environment variable is not set.
+
+``${foo:${bar}}``
+    Same as ``${foo}``, but defaults to the value of the ``bar`` property.
+
+.. note::
+    When properties are defined, the configuration file must remain valid YAML. This may sometimes require surrounding the YAML value with explicit string quotes. The following two notations are identical:
+
+    * ``host: ${simulator.port}``
+    * ``host: "${simulator.port}"``

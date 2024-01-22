@@ -13,6 +13,7 @@ import org.yamcs.logging.Log;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
 import org.yamcs.time.FixedSizeTimeDecoder;
+import org.yamcs.time.Float64TimeDecoder;
 import org.yamcs.time.TimeCorrelationService;
 import org.yamcs.time.TimeDecoder;
 import org.yamcs.time.TimeService;
@@ -20,8 +21,7 @@ import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
 
 /**
- * This class provides some common facilities for the packet preprocessors.
- * Options:
+ * This class provides some common facilities for the packet preprocessors. Options:
  * 
  * <pre>
  *   dataLinks:
@@ -54,8 +54,7 @@ import org.yamcs.utils.TimeEncoding;
  * The time read from the packet is interpreted as delta from {@code epochUTC}.
  * <p>
  * If {@code timeIncludesLeapSeconds} is {@code true} (default), the delta time is considered as having the leap seconds
- * included
- * (practically it is the real time that passed).
+ * included (practically it is the real time that passed).
  * <p>
  * TAI, J2000 and GPS have the leap seconds included, UNIX does not.
  * <p>
@@ -78,7 +77,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
     };
 
     public static enum TimeDecoderType {
-        CUC, FIXED
+        CUC, FIXED, FLOAT64
     }
 
     protected static final String CONFIG_KEY_ERROR_DETECTION = "errorDetection";
@@ -87,7 +86,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
     protected static final String CONFIG_KEY_BYTE_ORDER = "byteOrder";
     protected static final String CONFIG_KEY_CHECK_SEQUENCE = "checkSequence";
 
-    static final String ETYPE_CORRUPTED_PACKET = "CORRUPTED_PACKET";
+    protected static final String ETYPE_CORRUPTED_PACKET = "CORRUPTED_PACKET";
 
     // which error detection algorithm to use (null = no checksum)
     protected ErrorDetectionWordCalculator errorDetectionCalculator;
@@ -121,6 +120,10 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
 
     protected AbstractPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         log = new Log(this.getClass(), yamcsInstance);
+
+        // Before anything else
+        byteOrder = getByteOrder(config);
+
         errorDetectionCalculator = getErrorDetectionWordCalculator(config);
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, this.getClass().getSimpleName(), 10000);
         timeService = YamcsServer.getTimeService(yamcsInstance);
@@ -137,7 +140,6 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
                         "Cannot find a time correlation service with name " + tcoServiceName);
             }
         }
-        byteOrder = getByteOrder(config);
     }
 
     private void configureTimeDecoder(YConfiguration config) {
@@ -180,7 +182,10 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
                         "Unsupported size " + size + " for fixed decoder. Only 4 and 8 bytes supported");
             }
             double multiplier = c.getDouble("multiplier", 1);
-            timeDecoder = new FixedSizeTimeDecoder(size, multiplier);
+            timeDecoder = new FixedSizeTimeDecoder(byteOrder, size, multiplier);
+            break;
+        case FLOAT64:
+            timeDecoder = new Float64TimeDecoder(byteOrder);
             break;
         default:
             throw new UnsupportedOperationException("unknown time decoder type " + type);

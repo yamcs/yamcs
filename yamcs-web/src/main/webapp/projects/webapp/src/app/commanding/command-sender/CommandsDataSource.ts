@@ -1,10 +1,10 @@
 import { DataSource } from '@angular/cdk/table';
-import { Command, GetCommandsOptions, YamcsService } from '@yamcs/webapp-sdk';
+import { Command, GetCommandsOptions, SpaceSystem, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 
 export class ListItem {
-  spaceSystem: boolean;
   name: string;
+  system?: SpaceSystem;
   command?: Command;
 }
 
@@ -28,15 +28,11 @@ export class CommandsDataSource extends DataSource<ListItem> {
       this.loading$.next(false);
       this.totalSize$.next(page.totalSize);
       const items: ListItem[] = [];
-      for (const spaceSystem of (page.spaceSystems || [])) {
-        items.push({ spaceSystem: true, name: spaceSystem });
+      for (const system of (page.systems || [])) {
+        items.push({ name: system.qualifiedName, system });
       }
       for (const command of (page.commands || [])) {
-        items.push({
-          spaceSystem: false,
-          name: command.qualifiedName,
-          command,
-        });
+        items.push({ name: command.qualifiedName, command });
       }
       this.items$.next(items);
     });

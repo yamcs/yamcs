@@ -69,6 +69,37 @@ public class YConfigurationTest {
         System.setProperty("foo", "abc");
         System.setProperty("bar", "def");
         assertEquals("abc/def", config.getString("property7"));
+
+        // property9: ${foo: a value with spaces }
+        System.clearProperty("foo");
+        assertEquals(" a value with spaces ", config.getString("property9"));
+
+        // property10: ${foo:}
+        System.clearProperty("foo");
+        assertEquals("", config.getString("property10"));
+    }
+
+    @Test
+    public void testNestedPropertyExpansion() {
+        YConfiguration config = YConfiguration.getConfiguration("test-config");
+
+        // property11: ${foo:${bar}}
+        System.setProperty("bar", "stringValue");
+        assertEquals("stringValue", config.getString("property11"));
+        System.setProperty("foo", "abc");
+        assertEquals("abc", config.getString("property11"));
+
+        // property12: ${foo:${bar:defaultValue}}
+        System.clearProperty("foo");
+        System.clearProperty("bar");
+        assertEquals("defaultValue", config.getString("property12"));
+
+        // property13: ${foo:${bar:${baz}}}
+        System.setProperty("bar", "abc");
+        System.setProperty("baz", "def");
+        assertEquals("abc", config.getString("property13"));
+        System.clearProperty("bar");
+        assertEquals("def", config.getString("property13"));
     }
 
     @Test
