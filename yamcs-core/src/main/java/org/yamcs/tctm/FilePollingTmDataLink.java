@@ -127,8 +127,8 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
             }
             log.info("Injecting the content of {}", f);
             long count = 0;
-            long minTime = TimeEncoding.MAX_INSTANT;
-            long maxTime = TimeEncoding.MIN_INSTANT;
+            long minTime = TimeEncoding.POSITIVE_INFINITY;
+            long maxTime = TimeEncoding.NEGATIVE_INFINITY;
             try (PacketInputStream packetInputStream = getPacketInputStream(f.getAbsolutePath())) {
                 byte[] packet;
                 while ((packet = packetInputStream.readPacket()) != null) {

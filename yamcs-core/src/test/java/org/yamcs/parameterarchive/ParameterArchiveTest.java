@@ -156,11 +156,13 @@ public class ParameterArchiveTest {
         parchive.writeToArchive(pgSegment1);
 
         // ascending request on two value
-        List<ParameterValueArray> l4a = retrieveSingleParamSingleGroup(0, TimeEncoding.MAX_INSTANT, p1id, pg1id, true);
+        List<ParameterValueArray> l4a = retrieveSingleParamSingleGroup(0, TimeEncoding.POSITIVE_INFINITY, p1id, pg1id,
+                true);
         checkEquals(l4a.get(0), pv1_0, pv1_1);
 
         // descending request on two value
-        List<ParameterValueArray> l4d = retrieveSingleParamSingleGroup(0, TimeEncoding.MAX_INSTANT, p1id, pg1id, false);
+        List<ParameterValueArray> l4d = retrieveSingleParamSingleGroup(0, TimeEncoding.POSITIVE_INFINITY, p1id, pg1id,
+                false);
         checkEquals(l4d.get(0), pv1_1, pv1_0);
 
         // ascending request on two value with start on first value
@@ -258,15 +260,18 @@ public class ParameterArchiveTest {
         assertNull(parchive.getTablespace().getRdb()
                 .get(new SegmentKey(p1id, pg1id, segmentStart, SegmentKey.TYPE_RAW_VALUE).encode()));
 
-        List<ParameterValueArray> l1a = retrieveSingleParamSingleGroup(0, TimeEncoding.MAX_INSTANT, p1id, pg1id, true,
+        List<ParameterValueArray> l1a = retrieveSingleParamSingleGroup(0, TimeEncoding.POSITIVE_INFINITY, p1id, pg1id,
+                true,
                 false, true, false);
         checkEquals(false, true, false, l1a.get(0), pv1_0, pv1_1);
 
-        List<ParameterValueArray> l1d = retrieveSingleParamSingleGroup(0, TimeEncoding.MAX_INSTANT, p1id, pg1id, false,
+        List<ParameterValueArray> l1d = retrieveSingleParamSingleGroup(0, TimeEncoding.POSITIVE_INFINITY, p1id, pg1id,
+                false,
                 false, true, true);
         checkEquals(false, true, true, l1d.get(0), pv1_1, pv1_0);
 
-        List<ParameterIdValueList> params = retrieveMultipleParameters(0, TimeEncoding.MAX_INSTANT, new int[] { p1id },
+        List<ParameterIdValueList> params = retrieveMultipleParameters(0, TimeEncoding.POSITIVE_INFINITY,
+                new int[] { p1id },
                 new int[] { pg1id }, true);
         assertEquals(2, params.size());
         checkEquals(params.get(0), 100, pv1_0);
@@ -345,11 +350,11 @@ public class ParameterArchiveTest {
         int pg2id = parchive.getParameterGroupIdDb().createAndGet(IntArray.wrap(p1id));
 
         // ascending on empty db
-        List<ParameterValueArray> l0a = retrieveSingleValueMultigroup(0, TimeEncoding.MAX_INSTANT, p1id,
+        List<ParameterValueArray> l0a = retrieveSingleValueMultigroup(0, TimeEncoding.POSITIVE_INFINITY, p1id,
                 new int[] { pg1id, pg2id }, true);
         assertEquals(0, l0a.size());
         // descending on empty db
-        List<ParameterValueArray> l0d = retrieveSingleValueMultigroup(0, TimeEncoding.MAX_INSTANT, p1id,
+        List<ParameterValueArray> l0d = retrieveSingleValueMultigroup(0, TimeEncoding.POSITIVE_INFINITY, p1id,
                 new int[] { pg1id, pg2id }, false);
         assertEquals(0, l0d.size());
 
@@ -482,12 +487,12 @@ public class ParameterArchiveTest {
         int pg2id = parchive.getParameterGroupIdDb().createAndGet(IntArray.wrap(p1id));
 
         // ascending on empty db
-        List<ParameterIdValueList> l0a = retrieveMultipleParameters(0, TimeEncoding.MAX_INSTANT,
+        List<ParameterIdValueList> l0a = retrieveMultipleParameters(0, TimeEncoding.POSITIVE_INFINITY,
                 new int[] { p1id, p2id }, new int[] { pg1id, pg1id }, true);
         assertEquals(0, l0a.size());
 
         // descending on empty db
-        List<ParameterIdValueList> l0d = retrieveMultipleParameters(0, TimeEncoding.MAX_INSTANT,
+        List<ParameterIdValueList> l0d = retrieveMultipleParameters(0, TimeEncoding.POSITIVE_INFINITY,
                 new int[] { p1id, p2id }, new int[] { pg1id, pg1id }, false);
         assertEquals(0, l0d.size());
 
@@ -697,10 +702,12 @@ public class ParameterArchiveTest {
 
         parchive.writeToArchive(pgSegment1);
 
-        List<ParameterValueArray> l1a = retrieveSingleParamSingleGroup(0, TimeEncoding.MAX_INSTANT, p1id, pg1id, true);
+        List<ParameterValueArray> l1a = retrieveSingleParamSingleGroup(0, TimeEncoding.POSITIVE_INFINITY, p1id, pg1id,
+                true);
         checkEquals(l1a.get(0), pv1_0, pv1_1);
 
-        List<ParameterIdValueList> l2a = retrieveMultipleParameters(0, TimeEncoding.MAX_INSTANT, new int[] { p1id },
+        List<ParameterIdValueList> l2a = retrieveMultipleParameters(0, TimeEncoding.POSITIVE_INFINITY,
+                new int[] { p1id },
                 new int[] { pg1id }, true);
         assertEquals(1, l1a.size());
         checkEquals(l2a.get(0), 100, pv1_0, pv1_1);
