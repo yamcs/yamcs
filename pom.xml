@@ -4,7 +4,7 @@
 
 	<groupId>org.yamcs</groupId>
 	<artifactId>yamcs</artifactId>
-	<version>5.8.9.Pixxel-SNAPSHOT</version>
+	<version>5.8.9-Pixxel-1.0.0</version>
 
 	<packaging>pom</packaging>
 
@@ -382,13 +382,10 @@
 	</build>
 
 	<distributionManagement>
-		<snapshotRepository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-		</snapshotRepository>
 		<repository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+			<id>github</id>
+			<name>GitHub PixxelHQ Apache Maven Packages</name>
+			<url>https://maven.pkg.github.com/pixxelhq/yamcs</url>
 		</repository>
 	</distributionManagement>
 

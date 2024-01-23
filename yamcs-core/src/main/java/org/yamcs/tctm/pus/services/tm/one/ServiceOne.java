@@ -20,7 +20,7 @@ public class ServiceOne implements PusService {
 
     public static final int DEFAULT_FAILURE_CODE_SIZE = 1;
     public static final int DEFAULT_FAILURE_DATA_SIZE = 4;
-    public static final int REQUEST_ID_LENGTH = 6;
+    public static final int REQUEST_ID_LENGTH = 4;
 
     public static int failureCodeSize;
     public static int failureDataSize;

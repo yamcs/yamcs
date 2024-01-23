@@ -108,20 +108,26 @@ public class SubServiceTwentySix implements PusSubService {
             createSimpleCommutativePusTmPacket(tmPacket, housekeepingParameterReportStructureID, simpleCommutatedParameterArray)
         );
 
-        byte[] superCommutedParameterArray = Arrays.copyOfRange(dataField, (housekeepingParameterReportStructureIDSize + simpleCommutatedLength), dataField.length);
-        int superCommutatedParameterSubStructureSize = (int) superCommutedParameterArray.length / superCommutatedSampleRepetitionNumber; // FIXME: No need to typecast, since it will always be perfectly divisbible
-        
-        long gentime = tmPacket.getGenerationTime();
-        long collectionIntervalOffset = collectionInterval / superCommutatedSampleRepetitionNumber;
+        if (superCommutatedSampleRepetitionNumber != 0) {
+            byte[] superCommutedParameterArray = Arrays.copyOfRange(dataField, (housekeepingParameterReportStructureIDSize + simpleCommutatedLength), dataField.length);
+            int superCommutatedParameterSubStructureSize = (int) superCommutedParameterArray.length / superCommutatedSampleRepetitionNumber; // FIXME: No need to typecast, since it will always be perfectly divisbible
 
-        for(int index = 0; index < superCommutatedSampleRepetitionNumber; index++) {            
-            byte[] superCommutativeParameterSubStructure = Arrays.copyOfRange(superCommutedParameterArray, index * superCommutatedParameterSubStructureSize, (index + 1) * superCommutatedParameterSubStructureSize);
-            pPkts.add(createSuperCommutativePusTmPacket(
-                tmPacket,
-                housekeepingParameterReportStructureID,
-                superCommutativeParameterSubStructure,
-                gentime + index * collectionIntervalOffset
-            ));
+            long gentime = tmPacket.getGenerationTime();
+            long collectionIntervalOffset = collectionInterval / superCommutatedSampleRepetitionNumber;
+
+            for (int index = 0; index < superCommutatedSampleRepetitionNumber; index++) {
+                byte[] superCommutativeParameterSubStructure = Arrays.copyOfRange(
+                    superCommutedParameterArray,
+                    index * superCommutatedParameterSubStructureSize,
+                    (index + 1) * superCommutatedParameterSubStructureSize
+                );
+                pPkts.add(createSuperCommutativePusTmPacket(
+                    tmPacket,
+                    housekeepingParameterReportStructureID,
+                    superCommutativeParameterSubStructure,
+                    gentime - (index * collectionIntervalOffset) // Sampling time of parameters comes packet generation time
+                ));
+            }
         }
 
         return pPkts;
