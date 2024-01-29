@@ -129,22 +129,22 @@ public class SubServiceTen extends BucketSaveHandler implements PusSubService {
         generateTimetagScheduleDetailReport(requestTcPacketsMap);
 
         ArrayList<TmPacket> pPkts = new ArrayList<>();
-        for (Map.Entry<Long, byte[]> requestTcMap : requestTcPacketsMap.entrySet()) {
-            ByteBuffer bb = ByteBuffer.allocate(
-                    pPkt.getPrimaryHeader().length + pPkt.getSecondaryHeader().length + PusTmManager.absoluteTimeLength
-                            + requestTcMap.getValue().length);
-            bb.put(pPkt.getPrimaryHeader());
-            bb.put(pPkt.getSecondaryHeader());
-            bb.putLong(requestTcMap.getKey());
-            bb.put(requestTcMap.getValue());
+        // for (Map.Entry<Long, byte[]> requestTcMap : requestTcPacketsMap.entrySet()) {
+        //     ByteBuffer bb = ByteBuffer.allocate(
+        //             pPkt.getPrimaryHeader().length + pPkt.getSecondaryHeader().length + PusTmManager.absoluteTimeLength
+        //                     + requestTcMap.getValue().length);
+        //     bb.put(pPkt.getPrimaryHeader());
+        //     bb.put(pPkt.getSecondaryHeader());
+        //     bb.putLong(requestTcMap.getKey());
+        //     bb.put(requestTcMap.getValue());
 
-            TmPacket newPkt = new TmPacket(
-                    tmPacket.getReceptionTime(), tmPacket.getGenerationTime(), tmPacket.getSeqCount(), bb.array());
-            newPkt.setEarthReceptionTime(tmPacket.getEarthReceptionTime());
-            pPkts.add(newPkt);
+        //     TmPacket newPkt = new TmPacket(
+        //             tmPacket.getReceptionTime(), tmPacket.getGenerationTime(), tmPacket.getSeqCount(), bb.array());
+        //     newPkt.setEarthReceptionTime(tmPacket.getEarthReceptionTime());
+        //     pPkts.add(newPkt);
+        // }
 
-        }
-
+        pPkts.add(tmPacket);
         return pPkts;
     }
 }
