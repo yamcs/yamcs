@@ -341,22 +341,25 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             }
         }
 
-        var listener = new CsvParameterStreamer(observer, filename, ids, addRaw, addMonitoring, interval);
+        char columnDelimiter = '\t';
         if (request.hasDelimiter()) {
             switch (request.getDelimiter()) {
             case "TAB":
-                listener.columnDelimiter = '\t';
+                columnDelimiter = '\t';
                 break;
             case "SEMICOLON":
-                listener.columnDelimiter = ';';
+                columnDelimiter = ';';
                 break;
             case "COMMA":
-                listener.columnDelimiter = ',';
+                columnDelimiter = ',';
                 break;
             default:
                 throw new BadRequestException("Unexpected column delimiter");
             }
         }
+        var listener = new CsvParameterStreamer(
+                observer, filename, ids, addRaw, addMonitoring, interval, columnDelimiter);
+
         observer.setCancelHandler(listener::requestReplayAbortion);
         ReplayFactory.replay(instance, ctx.user, repl, listener);
     }
@@ -389,11 +392,10 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
     private static class CsvParameterStreamer extends ParameterReplayListener {
 
         Observer<HttpBody> observer;
-        char columnDelimiter = '\t';
         ParameterFormatter formatter;
 
         CsvParameterStreamer(Observer<HttpBody> observer, String filename, List<NamedObjectId> ids,
-                boolean addRaw, boolean addMonitoring, int interval) {
+                boolean addRaw, boolean addMonitoring, int interval, char columnDelimiter) {
             this.observer = observer;
 
             formatter = new ParameterFormatter(null, ids, columnDelimiter);
