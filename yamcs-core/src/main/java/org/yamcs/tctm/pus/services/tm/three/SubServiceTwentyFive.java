@@ -64,8 +64,11 @@ public class SubServiceTwentyFive implements PusSubService {
         bb.put(superCommutativeDifferentiator);
         bb.put(dataField);
 
-        return new TmPacket(tmPacket.getGenerationTime(), gentime,
+        TmPacket newPkt = new TmPacket(tmPacket.getReceptionTime(), gentime,
             tmPacket.getSeqCount(), bb.array());
+        newPkt.setEarthReceptionTime(tmPacket.getEarthReceptionTime());
+
+        return newPkt;
     }
 
     private TmPacket createSimpleCommutativePusTmPacket(TmPacket tmPacket, byte[] housekeepingParameterReportStructureID, byte[] dataField) {
@@ -81,8 +84,11 @@ public class SubServiceTwentyFive implements PusSubService {
         bb.put(simpleCommutativeDifferentiator);
         bb.put(dataField);
 
-        return new TmPacket(tmPacket.getReceptionTime(), tmPacket.getGenerationTime(),
+        TmPacket newPkt = new TmPacket(tmPacket.getReceptionTime(), tmPacket.getGenerationTime(),
             tmPacket.getSeqCount(), bb.array());
+        newPkt.setEarthReceptionTime(tmPacket.getEarthReceptionTime());
+
+        return newPkt;
     }
 
     @Override

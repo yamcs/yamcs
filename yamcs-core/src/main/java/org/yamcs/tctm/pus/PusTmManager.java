@@ -24,6 +24,7 @@ import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSink;
 import org.yamcs.tctm.pus.services.tm.one.ServiceOne;
 import org.yamcs.tctm.pus.services.tm.two.ServiceTwo;
+import org.yamcs.time.Instant;
 import org.yamcs.tctm.pus.services.tm.three.ServiceThree;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
 import org.yamcs.tctm.pus.services.tm.five.ServiceFive;
@@ -134,11 +135,15 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
     public void onTuple(Stream stream, Tuple tuple) {
         long rectime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN);
         long gentime = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
+        Instant ertime = (Instant) tuple.getColumn(StandardTupleDefinitions.TM_ERTIME_COLUMN);
+
         int seqCount = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
         byte[] pkt = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
         String tmLinkName = (String) tuple.getColumn(StandardTupleDefinitions.TM_LINK_COLUMN);
 
         TmPacket tmPacket = new TmPacket(rectime, gentime, seqCount, pkt);
+        tmPacket.setEarthReceptionTime(ertime);
+
         Stream outStream = streamMatrix.get(stream);
 
         acceptTmPacket(tmPacket, tmLinkName, outStream);

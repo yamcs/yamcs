@@ -26,10 +26,11 @@ public class SubServiceSix extends BucketSaveHandler implements PusSubService {
 
     private static int REGISTER_ADDRESS_SIZE = 4;
     private static int REGISTER_VALUE_SIZE = 4;
+    private static int DEFAULT_REPORT_COUNT_SIZE = 4;
 
     private static int registerAddressSize;
     private static int registerValueSize;
-    private static int registerStartOffset;
+    private static int reportCountSize;
 
     Bucket registerDumpBucket;
     Gson gson;
@@ -40,7 +41,7 @@ public class SubServiceSix extends BucketSaveHandler implements PusSubService {
 
         registerAddressSize = subServiceSixConfig.getInt("addressSize", REGISTER_ADDRESS_SIZE);
         registerValueSize = subServiceSixConfig.getInt("valueSize", REGISTER_VALUE_SIZE);
-        registerStartOffset = 4;
+        reportCountSize = subServiceSixConfig.getInt("reportCountSize", DEFAULT_REPORT_COUNT_SIZE);
 
         try{
             registerDumpBucket = getBucket("deviceRegisterDump", yamcsInstance);
@@ -58,13 +59,13 @@ public class SubServiceSix extends BucketSaveHandler implements PusSubService {
         PusTmCcsdsPacket pPkt = new PusTmCcsdsPacket(tmPacket.getPacket());
         byte[] dataField = pPkt.getDataField();
 
-        int numberOfRegisters = ByteArrayUtils.decodeInt(dataField, 0);
+        int numberOfRegisters = (int) ByteArrayUtils.decodeCustomInteger(dataField, 0, reportCountSize);
         HashMap<Integer, Integer> registerValues = new HashMap<>(numberOfRegisters);
 
         for(int registerIndex = 0; registerIndex < numberOfRegisters; registerIndex++){
             
-            int address = ByteArrayUtils.decodeInt(dataField, registerStartOffset + registerIndex * (registerAddressSize + registerValueSize));
-            int value = ByteArrayUtils.decodeInt(dataField, registerStartOffset + registerIndex * (registerAddressSize + registerValueSize) + registerAddressSize);
+            int address = ByteArrayUtils.decodeInt(dataField, reportCountSize + registerIndex * (registerAddressSize + registerValueSize));
+            int value = ByteArrayUtils.decodeInt(dataField, reportCountSize + registerIndex * (registerAddressSize + registerValueSize) + registerAddressSize);
 
             registerValues.put(address, value);
         }

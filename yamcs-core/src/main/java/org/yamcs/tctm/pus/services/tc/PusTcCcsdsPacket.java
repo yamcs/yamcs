@@ -22,6 +22,14 @@ public class PusTcCcsdsPacket extends CcsdsPacket {
         super(bb);
     }
 
+    public static int getMessageType(byte[] pc) {
+        return Byte.toUnsignedInt(pc[messageTypeIndex]);
+    }
+
+    public static int getMessageSubType(byte[] pc) {
+        return Byte.toUnsignedInt(pc[subMessageTypeIndex]);
+    }
+
     public static int getMessageType(PreparedCommand pc) {
         return Byte.toUnsignedInt(pc.getBinary()[messageTypeIndex]);
     }
