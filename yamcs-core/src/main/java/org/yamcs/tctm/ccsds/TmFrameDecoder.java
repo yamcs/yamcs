@@ -37,10 +37,7 @@ public class TmFrameDecoder implements TransferFrameDecoder {
         if(version != 0) {
             throw new TcTmException("Bad frame version number " + version + "; expected 0 (TM)");
         }
-        
-        if (length != tmParams.frameLength) {
-            throw new TcTmException("Bad frame length " + length + "; expected " + tmParams.frameLength);
-        }
+
         int dataEnd = offset + length;
         if (crc!=null) {
             dataEnd -= 2;
