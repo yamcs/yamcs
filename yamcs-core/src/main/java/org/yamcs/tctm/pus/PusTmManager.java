@@ -145,7 +145,6 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
         tmPacket.setEarthReceptionTime(ertime);
 
         Stream outStream = streamMatrix.get(stream);
-
         acceptTmPacket(tmPacket, tmLinkName, outStream);
     }
 

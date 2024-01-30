@@ -85,6 +85,7 @@ public class PusTcManager extends AbstractYamcsService implements StreamSubscrib
         spec.addOption("errorDetection", OptionType.MAP).withSpec(crcType);
         spec.addOption("timetagLength", OptionType.INTEGER);
         spec.addOption("timetagBuffer", OptionType.INTEGER);
+        spec.addOption("services", OptionType.MAP).withSpec(Spec.ANY);
         // FIXME:
         // Add pus spec options
         return spec;

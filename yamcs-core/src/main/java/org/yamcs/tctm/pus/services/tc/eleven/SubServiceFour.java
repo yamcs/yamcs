@@ -28,12 +28,12 @@ public class SubServiceFour implements PusSubService {
         acknowledgementFlags = (byte) config.getInt("acknowledgementFlags", DEFAULT_ACKNOWLEDGEMENT_FLAGS);
     }
 
-    private byte[] constructPrimaryHeader() {
+    private byte[] constructPrimaryHeader(int commandApid) {
         short primaryHeaderFirstHalf = (short) (
             ((ServiceEleven.ccsdsVersionNumber & 0x07) << 13) |
             ((ServiceEleven.ccsdsPacketType & 0x01) << 12) |
             ((ServiceEleven.secondaryHeaderFlag & 0x01) << 11) |
-            ((ServiceEleven.fswApid & 0x07FF))
+            ((ServiceEleven.fswApidMap.get(commandApid) & 0x07FF))
         );
         short primaryHeaderSecondHalf = (short) (
             ((ServiceEleven.sequenceFlags & 3) << 14) |
@@ -67,7 +67,9 @@ public class SubServiceFour implements PusSubService {
 
     @Override
     public PreparedCommand process(PreparedCommand telecommand) {
-        byte[] primaryHeader = constructPrimaryHeader();
+        int commandApid = PusTcCcsdsPacket.getAPID(telecommand.getBinary());
+
+        byte[] primaryHeader = constructPrimaryHeader(commandApid);
         byte[] secondaryHeader = constructSecondaryHeader();
         byte[] telecommandPayload = telecommand.getBinary();
 
