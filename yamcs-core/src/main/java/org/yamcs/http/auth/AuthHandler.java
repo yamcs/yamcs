@@ -1,6 +1,5 @@
 package org.yamcs.http.auth;
 
-import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -42,7 +41,6 @@ import org.yamcs.security.UsernamePasswordToken;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -302,10 +300,8 @@ public class AuthHandler extends BodyHandler {
     }
 
     private UserSession createSession(HandlerContext ctx, String username) {
-        Channel channel = ctx.getNettyChannelHandlerContext().channel();
-        InetSocketAddress address = (InetSocketAddress) channel.remoteAddress();
-        String ipAddress = address.getAddress().getHostAddress();
-        String hostname = address.getHostName();
+        String ipAddress = ctx.getOriginalHostAddress();
+        String hostname = ctx.getOriginalHostName();
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
         SessionManager sessionManager = securityStore.getSessionManager();
         UserSession session = sessionManager.createSession(username, ipAddress, hostname);
