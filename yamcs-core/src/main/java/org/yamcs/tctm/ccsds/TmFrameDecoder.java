@@ -64,7 +64,7 @@ public class TmFrameDecoder implements TransferFrameDecoder {
         }
 
         TmTransferFrame ttf = new TmTransferFrame(data, spacecraftId, virtualChannelId);
-        ttf.setVcFrameSeq(data[3] & 0xFF);
+        ttf.setVcFrameSeq(data[offset + 3] & 0xFF);
 
         boolean ocfPresent = (data[offset + 1] & 1) == 1;
         if (ocfPresent) {
