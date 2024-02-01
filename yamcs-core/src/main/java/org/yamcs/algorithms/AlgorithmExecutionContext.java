@@ -100,7 +100,7 @@ public class AlgorithmExecutionContext {
             AlgorithmStatus.Builder status = activeAlgo.getStatus()
                     .setTraceEnabled(tracers.containsKey(algo.getQualifiedName()))
                     .setActive(false);
-            
+
             status.setErrorMessage("Deactivated after " + maxErrCount + " errors. Last error: "
                     + status.getErrorMessage());
             algorithmsInError.put(algo.getQualifiedName(), status.build());
@@ -135,6 +135,7 @@ public class AlgorithmExecutionContext {
         Optional<ActiveAlgorithm> algo = getByFqn(algoFqn);
         if (algo.isPresent()) {
             executionOrder.remove(algo.get());
+            algo.get().executor.dispose();
             return algo.get();
         } else {
             return null;
