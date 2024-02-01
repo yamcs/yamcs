@@ -62,6 +62,7 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
         spec.addOption("secondaryHeaderLength", OptionType.INTEGER);
         spec.addOption("absoluteTimeLength", OptionType.INTEGER);
         spec.addOption("destinationId", OptionType.INTEGER);
+        spec.addOption("services", OptionType.MAP).withSpec(Spec.ANY);
         // FIXME:
         // Add pus spec options
         return spec;
@@ -99,7 +100,7 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
 
                 Tuple t = new Tuple(StandardTupleDefinitions.TM,
                     new Object[] {
-                        tmPacket.getGenerationTime(), tmPacket.getSeqCount(), tmPacket.getReceptionTime(), tmPacket.getStatus(), tmPacket.getPacket(), tmPacket.getEarthReceptionTime(), obt, tmLinkName, stream.getName()
+                        tmPacket.getGenerationTime(), tmPacket.getSeqCount(), tmPacket.getReceptionTime(), tmPacket.getStatus(), tmPacket.getPacket(), tmPacket.getEarthReceptionTime(), obt, tmLinkName
                     }
                 );
                 stream.emitTuple(t);
