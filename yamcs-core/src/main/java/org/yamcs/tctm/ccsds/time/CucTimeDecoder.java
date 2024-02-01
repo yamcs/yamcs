@@ -43,8 +43,8 @@ public class CucTimeDecoder implements TimeDecoder {
             int btBytes = 1 + ((pfield1 >> 2) & 3);
             int ftBytes = pfield1 & 3;
 
-            if ((pfield1 & 0x80) == 1) { // extended pfield
-                btBytes += ((pfield2 >> 6) & 3);
+            if (((pfield1 & 0x80) >> 7) == 1) { // extended pfield
+                btBytes += (1 + ((pfield2 >> 5) & 3));
                 ftBytes += ((pfield2 >> 2) & 7);
             }
 
