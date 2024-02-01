@@ -11,6 +11,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.RawEngValue;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.Algorithm.Scope;
 import org.yamcs.xtce.ArgumentInstanceRef;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.OnParameterUpdateTrigger;
@@ -85,7 +86,18 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
         boolean triggered = false;
         TriggerSetType triggerSet = algorithmDef.getTriggerSet();
         if (triggerSet == null) {
-            triggered = true;
+            // In XTCE, verifier algorithms don't have explicit triggers
+            if (algorithmDef.getScope() == Scope.COMMAND_VERIFICATION && !algorithmDef.getInputList().isEmpty()) {
+                for (var inputParameter : algorithmDef.getInputList()) {
+                    var p = inputParameter.getParameterInstance().getParameter();
+                    if (processingData.containsUpdate(p)) {
+                        triggered = true;
+                        break;
+                    }
+                }
+            } else {
+                triggered = true;
+            }
         } else {
             for (OnParameterUpdateTrigger trigger : triggerSet.getOnParameterUpdateTriggers()) {
                 if (processingData.containsUpdate(trigger.getParameter())) {
