@@ -102,6 +102,7 @@ public class AlgorithmManager extends AbstractProcessorService
     static {
         registerScriptEngines();
         registerAlgorithmEngine("Java", jae);
+        registerAlgorithmEngine("java", jae);
         registerAlgorithmEngine("java-expression", jae);
     }
 
