@@ -153,6 +153,11 @@
         <pre>{{ (value.binaryValue | hexDump) || '-' }}</pre>
       </div>
     </ng-container>
+    <ng-container *ngSwitchCase="'STRING'">
+      <div class="block">
+        <pre style="margin: 0; line-height: 1em">{{ value.stringValue }}</pre>
+      </div>
+    </ng-container>
     <ng-container *ngSwitchDefault>
       <div class="block">
         {{ value | value }}

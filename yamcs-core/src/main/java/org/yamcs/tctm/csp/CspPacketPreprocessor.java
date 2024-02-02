@@ -7,7 +7,6 @@ import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.utils.ByteArrayUtils;
-import org.yamcs.utils.TimeEncoding;
 
 /**
  * Link preprocessor for CSP 1.x packets (CubeSat Protocol)
@@ -74,7 +73,7 @@ public class CspPacketPreprocessor extends AbstractPacketPreprocessor {
      * Because no time information is available in CSP header, returns Yamcs-local time by default.
      */
     protected long getGenerationTime(TmPacket packet) {
-        return TimeEncoding.getWallclockTime();
+        return packet.getReceptionTime();
     }
 
     /**
