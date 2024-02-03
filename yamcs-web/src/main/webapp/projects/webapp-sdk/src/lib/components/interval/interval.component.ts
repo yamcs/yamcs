@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
+export type RangeForm = 'inside' | 'outside';
+
 @Component({
   selector: 'ya-interval',
   templateUrl: './interval.component.html',
@@ -23,9 +25,17 @@ export class IntervalComponent implements OnChanges {
   @Input()
   singleValueIfEqual = false;
 
+  @Input()
+  outside = false;
+
   interval$ = new BehaviorSubject<string | null>(null);
 
   ngOnChanges() {
+    const result = this.outside ? this.printOutsideForm() : this.printInsideForm();
+    this.interval$.next(result);
+  }
+
+  private printInsideForm() {
     let result;
     if (this.singleValueIfEqual && this.left !== undefined && this.left === this.right) {
       result = String(this.left);
@@ -45,7 +55,27 @@ export class IntervalComponent implements OnChanges {
         result += '+∞)';
       }
     }
+    return result;
+  }
 
-    this.interval$.next(result);
+  private printOutsideForm() {
+    let result = '';
+    if (this.left !== undefined) {
+      result += '(-∞, ';
+      result += this.left;
+      result += this.leftInclusive ? ')' : ']';
+
+      if (this.right !== undefined) {
+        result += ', ';
+      }
+    }
+
+    if (this.right !== undefined) {
+      result += this.rightInclusive ? '(' : '[';
+      result += this.right;
+      result += ', +∞)';
+    }
+
+    return result;
   }
 }

@@ -257,7 +257,8 @@
                            [left]="range.minInclusive | nvl:range.minExclusive"
                            [right]="range.maxInclusive | nvl:range.maxExclusive"
                            [leftInclusive]="range.minInclusive !== undefined"
-                           [rightInclusive]="range.maxInclusive !== undefined" />
+                           [rightInclusive]="range.maxInclusive !== undefined"
+                           [outside]="true" />
               <ng-template #dash>-</ng-template>
             </td>
           </tr>
@@ -288,7 +289,8 @@
                            [left]="range.minInclusive | nvl:range.minExclusive"
                            [right]="range.maxInclusive | nvl:range.maxExclusive"
                            [leftInclusive]="range.minInclusive !== undefined"
-                           [rightInclusive]="range.maxInclusive !== undefined" />
+                           [rightInclusive]="range.maxInclusive !== undefined"
+                           [outside]="true" />
               <ng-template #dash>-</ng-template>
             </td>
           </tr>
