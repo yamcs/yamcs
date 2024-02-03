@@ -1,6 +1,7 @@
 package org.yamcs.tctm.csp;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import org.yamcs.utils.ByteArrayUtils;
 
@@ -36,7 +37,11 @@ public class CspPacket {
     }
 
     public int getDestination() {
-        return (bb.getShort(0) & 0x01F0) >>> 4;
+        var originalOrder = bb.order();
+        bb.order(ByteOrder.BIG_ENDIAN);
+        int dest = (bb.getShort(0) & 0x01F0) >>> 4;
+        bb.order(originalOrder);
+        return dest;
     }
 
     public static int getDestination(byte[] packet) {
@@ -44,7 +49,11 @@ public class CspPacket {
     }
 
     public int getDestinationPort() {
-        return (bb.getShort(1) & 0x0FC0) >>> 6;
+        var originalOrder = bb.order();
+        bb.order(ByteOrder.BIG_ENDIAN);
+        int dport = (bb.getShort(1) & 0x0FC0) >>> 6;
+        bb.order(originalOrder);
+        return dport;
     }
 
     public boolean getHmacFlag() {
@@ -77,16 +86,15 @@ public class CspPacket {
 
     public void setHeader(byte priority, byte source, byte destination, byte destinationPort, byte sourcePort,
             boolean hmacFlag, boolean xteaFlag, boolean rdpFlag, boolean crcFlag) {
-        int headerBits =
-                    (priority & 0b11) << 30 |
-                    (source & 0b11111) << 25 |
-                    (destination & 0b11111) << 20 |
-                    (destinationPort & 0b111111) << 14 |
-                    (sourcePort & 0b111111) << 8 |
-                    (byte) (hmacFlag ? (0b1 << 3) : 0b0) |
-                    (byte) (xteaFlag ? (0b1 << 2) : 0b0) |
-                    (byte) (rdpFlag ? (0b1 << 1) : 0b0) |
-                    (byte) (crcFlag ? 0b1 : 0b0);
+        int headerBits = (priority & 0b11) << 30 |
+                (source & 0b11111) << 25 |
+                (destination & 0b11111) << 20 |
+                (destinationPort & 0b111111) << 14 |
+                (sourcePort & 0b111111) << 8 |
+                (byte) (hmacFlag ? (0b1 << 3) : 0b0) |
+                (byte) (xteaFlag ? (0b1 << 2) : 0b0) |
+                (byte) (rdpFlag ? (0b1 << 1) : 0b0) |
+                (byte) (crcFlag ? 0b1 : 0b0);
         bb.putInt(0, headerBits);
     }
 
