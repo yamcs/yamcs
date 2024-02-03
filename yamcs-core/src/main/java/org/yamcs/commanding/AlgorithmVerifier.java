@@ -19,10 +19,6 @@ import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.XtceDb;
 
 public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener {
-    /**
-     * Imaginary parameter for publishing an optional return value to cmdhist
-     */
-    public static final String YAMCS_PARAMETER_RETURN_VALUE = XtceDb.YAMCS_CMD_SPACESYSTEM_NAME + "/returnValue";
 
     final Algorithm alg;
     final AlgorithmExecutionContext algCtx;
