@@ -127,6 +127,7 @@
                                 [foldersOnly]="false"
                                 [noSelect]="true"
                                 [allowFolderSelection]="true"
+                                [fileListExtraColumns]="service.capabilities.fileListExtraColumns || []"
                                 (prefixChange)="updateRemoteBreadcrumb($event)">
           </remote-file-selector>
         </ng-container>

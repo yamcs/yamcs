@@ -16,7 +16,7 @@ export class TransferFileDialog implements OnDestroy {
   isDownloadEnabled = false;
   isUploadEnabled = false;
   form: UntypedFormGroup;
-  service: FileTransferService;
+  readonly service: FileTransferService;
   private storageClient: StorageClient;
   dataSource = new MatTableDataSource<Bucket>();
 

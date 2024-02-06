@@ -129,7 +129,7 @@ message ListFileTransferServicesResponse {
   repeated FileTransferServiceInfo services = 1;
 }
 
-//This message is used to configure the yacms-web
+//This message is used to configure the yamcs-web
 message FileTransferCapabilities {
   //if true, yamcs-web shows a button for initiating an upload
   optional bool upload = 1;
@@ -148,8 +148,16 @@ message FileTransferCapabilities {
 
   // if true, yamcs-web will show the "Transfer Type" string column
   optional bool hasTransferType = 6;
+
+  // Additional columns to show in a file listing, where id
+  // is a key of ``RemoteFile.extra``
+  repeated ExtraColumnInfo fileListExtraColumns = 7;
 }
 
+message ExtraColumnInfo {
+  optional string id = 1;
+  optional string label = 2;
+}
 
 message FileTransferServiceInfo {
   optional string instance = 1;
@@ -342,23 +350,43 @@ message SubscribeTransfersRequest {
 message ListFilesRequest {
   // Yamcs instance name.
   optional string instance = 1;
-  // service name
+
+  // Service name
   optional string serviceName = 2;
+
   // Entity from which to get the file list
   optional string source = 3;
+
   // Entity from which to get the file list
   optional string destination = 4;
+
   // Path of folder to list files from
   optional string remotePath = 5;
+
   // Options for the transfer
   optional google.protobuf.Struct options = 6;
 }
 
 message RemoteFile {
+
+  // Filename
   optional string name = 1;
+
+  // Optional display name. Can be used when the ``name``
+  // field contains information that should be hidden from the user.
+  optional string displayName = 5;
+
+  // True if the path represents a directory
   optional bool isDirectory = 2;
+
+  // File size
   optional uint64 size = 3;
+
+  // Modification time
   optional google.protobuf.Timestamp modified = 4;
+
+  // Implementation-specific fields
+  optional google.protobuf.Struct extra = 6;
 }
 
 message ListFilesResponse {
