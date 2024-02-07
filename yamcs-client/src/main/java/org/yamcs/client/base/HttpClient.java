@@ -162,7 +162,7 @@ public class HttpClient {
             SpnegoInfo spnegoInfo = credentials.getSpnegoInfo();
             String authorizationCode = authorizeKerberos(spnegoInfo);
             loginWithAuthorizationCode(tokenUrl, authorizationCode);
-            credentials.setSpnegoInfo(spnegoInfo); // We have a new credentials object
+            ((OAuth2Credentials) this.credentials).setSpnegoInfo(spnegoInfo); // We have a new credentials object
         } else {
             throw new ClientException("No refresh token available");
         }
