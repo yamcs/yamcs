@@ -1,5 +1,6 @@
 package org.yamcs.http;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.ALLOW;
 import static io.netty.handler.codec.http.HttpHeaderNames.AUTHORIZATION;
 import static io.netty.handler.codec.http.HttpHeaderNames.CACHE_CONTROL;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
@@ -346,6 +347,13 @@ public class HandlerContext {
         response.headers().set(CONTENT_TYPE, "application/json");
         response.headers().set(CONTENT_LENGTH, body.readableBytes());
         HttpRequestHandler.sendResponse(nettyContext, nettyRequest, response);
+    }
+
+    public void sendAllow(HttpMethod... methods) {
+        var response = new DefaultFullHttpResponse(HTTP_1_1, OK);
+        response.headers().set(ALLOW, Arrays.asList(methods));
+        response.headers().set(CONTENT_LENGTH, 0);
+        sendResponse(response);
     }
 
     /**
