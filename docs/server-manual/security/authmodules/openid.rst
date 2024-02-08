@@ -5,6 +5,10 @@ This AuthModule supports federated identity by redirecting web application users
 
 This AuthModule is used for authentication only. It does not directly support importing roles. But you could do so by extending this module.
 
+If the token endpoint of the OpenID server provides a refresh token, then Yamcs will refresh the access token whenever it has expired.
+
+If the token endpoint of the OpenID server does not provide a refresh token, Yamcs will only interact once with the OpenID server (for the initial auth), and afterwards no longer.
+
 
 Class Name
 ----------

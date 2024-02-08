@@ -1,8 +1,6 @@
 package org.yamcs.security;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.yamcs.security.HttpsUrlConnectionUtils.NO_HOSTNAME_VERIFICATION;
-import static org.yamcs.security.HttpsUrlConnectionUtils.TRUST_ALL_CERTS;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,7 +11,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
@@ -21,7 +18,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
 
 import org.yamcs.InitException;
 import org.yamcs.Spec;
@@ -29,6 +25,7 @@ import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.http.auth.JwtHelper;
 import org.yamcs.http.auth.JwtHelper.JwtDecodeException;
+import org.yamcs.logging.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -40,6 +37,8 @@ import com.google.gson.JsonObject;
  * See https://openid.net/connect/
  */
 public class OpenIDAuthModule implements AuthModule {
+
+    private static final Log log = new Log(OpenIDAuthModule.class);
 
     private String clientId;
     private String clientSecret;
@@ -128,10 +127,7 @@ public class OpenIDAuthModule implements AuthModule {
 
             if (!verifyTls && (conn instanceof HttpsURLConnection)) {
                 try {
-                    var ctx = SSLContext.getInstance("TLS");
-                    ctx.init(null, TRUST_ALL_CERTS, new SecureRandom());
-                    ((HttpsURLConnection) conn).setSSLSocketFactory(ctx.getSocketFactory());
-                    ((HttpsURLConnection) conn).setHostnameVerifier(NO_HOSTNAME_VERIFICATION);
+                    HttpsUrlConnectionUtils.makeInsecure((HttpsURLConnection) conn);
                 } catch (NoSuchAlgorithmException | KeyManagementException e) {
                     throw new AuthenticationException("Failed to configure HTTPS connection", e);
                 }
@@ -157,7 +153,11 @@ public class OpenIDAuthModule implements AuthModule {
                 String idToken = response.get("id_token").getAsString();
                 String accessToken = response.get("access_token").getAsString();
                 JsonObject claims = JwtHelper.decodeUnverified(idToken);
-                return createAuthenticationInfo(idToken, accessToken, claims);
+
+                var refreshTokenElement = response.get("refresh_token");
+                String refreshToken = (refreshTokenElement != null) ? refreshTokenElement.getAsString() : null;
+
+                return createAuthenticationInfo(redirectUri, idToken, accessToken, refreshToken, claims);
             } else {
                 Reader in = new BufferedReader(new InputStreamReader(conn.getErrorStream(), UTF_8));
                 JsonObject response = new Gson().fromJson(in, JsonObject.class);
@@ -168,10 +168,13 @@ public class OpenIDAuthModule implements AuthModule {
         }
     }
 
-    private OpenIDAuthenticationInfo createAuthenticationInfo(String idToken, String accessToken, JsonObject claims) {
+    private OpenIDAuthenticationInfo createAuthenticationInfo(String redirectUri,
+            String idToken, String accessToken, String refreshToken, JsonObject claims) {
         String username = findAttribute(claims, nameAttributes);
 
-        OpenIDAuthenticationInfo authInfo = new OpenIDAuthenticationInfo(this, idToken, accessToken, username);
+        var authInfo = new OpenIDAuthenticationInfo(
+                this, redirectUri, idToken, accessToken, refreshToken, username);
+        authInfo.expiresAt = claims.get("exp").getAsLong() * 1000L;
         authInfo.setEmail(findAttribute(claims, emailAttributes));
         authInfo.setDisplayName(findAttribute(claims, displayNameAttributes));
 
@@ -202,7 +205,70 @@ public class OpenIDAuthModule implements AuthModule {
 
     @Override
     public boolean verifyValidity(AuthenticationInfo authenticationInfo) {
-        return true; // TODO
+        if (authenticationInfo instanceof OpenIDAuthenticationInfo) {
+            var info = (OpenIDAuthenticationInfo) authenticationInfo;
+            var now = System.currentTimeMillis();
+            var expired = info.expiresAt > 0 && info.expiresAt < now;
+            if (expired && info.refreshToken != null) {
+                return refreshToken(info);
+            }
+            return true; // Only enforce refresh check if we have a refresh token
+        }
+
+        return false;
+    }
+
+    private boolean refreshToken(OpenIDAuthenticationInfo info) {
+        try {
+            URL url = new URL(tokenEndpoint);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+
+            var authorizationHeader = generateAuthorizationHeader(clientId, clientSecret);
+            conn.setRequestProperty("Authorization", authorizationHeader);
+
+            if (!verifyTls && (conn instanceof HttpsURLConnection)) {
+                HttpsUrlConnectionUtils.makeInsecure((HttpsURLConnection) conn);
+            }
+
+            Map<String, String> formData = new HashMap<>();
+            formData.put("grant_type", "refresh_token");
+            formData.put("refresh_token", info.refreshToken);
+
+            // OIDC requires the same redirect_uri to be used as was used to get the code from
+            // the authorization endpoint. There's not actually a redirect going to happen.
+            formData.put("redirect_uri", info.redirectUri);
+
+            conn.setDoOutput(true);
+            byte[] b = encodeRequestBody(formData);
+            conn.getOutputStream().write(b);
+
+            int statusCode = conn.getResponseCode();
+            if (statusCode == 200) {
+                Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), UTF_8));
+                JsonObject response = new Gson().fromJson(in, JsonObject.class);
+
+                info.idToken = response.get("id_token").getAsString();
+                info.accessToken = response.get("access_token").getAsString();
+                var claims = JwtHelper.decodeUnverified(info.idToken);
+                info.expiresAt = claims.get("exp").getAsLong() * 1000L;
+
+                var refreshTokenElement = response.get("refresh_token");
+                info.refreshToken = (refreshTokenElement != null) ? refreshTokenElement.getAsString() : null;
+            } else {
+                Reader in = new BufferedReader(new InputStreamReader(conn.getErrorStream(), UTF_8));
+                JsonObject response = new Gson().fromJson(in, JsonObject.class);
+                log.error("Received error from identity provider: " + response);
+                return false;
+            }
+
+            return true;
+        } catch (IOException | NoSuchAlgorithmException | KeyManagementException | JwtDecodeException e) {
+            log.error("Failed to refresh", e);
+            return false;
+        }
     }
 
     public String getClientId() {
@@ -243,11 +309,22 @@ public class OpenIDAuthModule implements AuthModule {
         // Make available for extensions that maybe want to add roles.
         public String idToken;
         public String accessToken;
+        public String refreshToken;
 
-        OpenIDAuthenticationInfo(AuthModule authenticator, String idToken, String accessToken, String username) {
+        // Redirect URI for use in outgoing requests
+        public String redirectUri;
+
+        // When the ID Token expires
+        public long expiresAt;
+
+        OpenIDAuthenticationInfo(AuthModule authenticator, String redirectUri,
+                String idToken, String accessToken,
+                String refreshToken, String username) {
             super(authenticator, username);
+            this.redirectUri = redirectUri;
             this.idToken = idToken;
             this.accessToken = accessToken;
+            this.refreshToken = refreshToken;
         }
     }
 }
