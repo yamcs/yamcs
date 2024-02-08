@@ -18,8 +18,12 @@ Configuration Options
 authorizationEndpoint (string)
     **Required.** The URL of the OpenID server page where to redirect users for authorization and/or consent.
 
+    This URL must be accessible by clients.
+
 tokenEndpoint (string)
     **Required.** The URL of the OpenID server page where OAuth2 tokens can be retrieved.
+
+    This URL must be accessible by Yamcs itself.
 
 clientId (string)
     **Required.** An identifier that identifies your Yamcs server installation as a client against the Open ID server. This should be set up using the configuration tools of the Open ID server.
@@ -32,6 +36,9 @@ scope (string)
 
 attributes (map)
     Configure how claims are mapped to Yamcs attributes. If unset, Yamcs uses defaults that work out of the box against some common OpenID Connect providers.
+
+verifyTls (boolean)
+    If false, disable TLS and hostname verification when Yamcs uses the token endpoint. Default: true.
 
 
 Attributes sub-configuration

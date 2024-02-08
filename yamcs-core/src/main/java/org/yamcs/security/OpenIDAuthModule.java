@@ -1,6 +1,8 @@
 package org.yamcs.security;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.yamcs.security.HttpsUrlConnectionUtils.NO_HOSTNAME_VERIFICATION;
+import static org.yamcs.security.HttpsUrlConnectionUtils.TRUST_ALL_CERTS;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,11 +11,17 @@ import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
 
 import org.yamcs.InitException;
 import org.yamcs.Spec;
@@ -43,6 +51,8 @@ public class OpenIDAuthModule implements AuthModule {
     private String[] displayNameAttributes;
     private String[] emailAttributes;
 
+    private boolean verifyTls;
+
     @Override
     public Spec getSpec() {
         Spec attributesSpec = new Spec();
@@ -64,6 +74,7 @@ public class OpenIDAuthModule implements AuthModule {
         spec.addOption("scope", OptionType.STRING).withDefault("openid profile email");
         spec.addOption("attributes", OptionType.MAP).withSpec(attributesSpec)
                 .withApplySpecDefaults(true);
+        spec.addOption("verifyTls", OptionType.BOOLEAN).withDefault(true);
 
         return spec;
     }
@@ -80,6 +91,8 @@ public class OpenIDAuthModule implements AuthModule {
         nameAttributes = attributesArgs.getList("name").toArray(new String[0]);
         displayNameAttributes = attributesArgs.getList("displayName").toArray(new String[0]);
         emailAttributes = attributesArgs.getList("email").toArray(new String[0]);
+
+        verifyTls = args.getBoolean("verifyTls");
     }
 
     @Override
@@ -112,6 +125,17 @@ public class OpenIDAuthModule implements AuthModule {
 
             var authorizationHeader = generateAuthorizationHeader(clientId, clientSecret);
             conn.setRequestProperty("Authorization", authorizationHeader);
+
+            if (!verifyTls && (conn instanceof HttpsURLConnection)) {
+                try {
+                    var ctx = SSLContext.getInstance("TLS");
+                    ctx.init(null, TRUST_ALL_CERTS, new SecureRandom());
+                    ((HttpsURLConnection) conn).setSSLSocketFactory(ctx.getSocketFactory());
+                    ((HttpsURLConnection) conn).setHostnameVerifier(NO_HOSTNAME_VERIFICATION);
+                } catch (NoSuchAlgorithmException | KeyManagementException e) {
+                    throw new AuthenticationException("Failed to configure HTTPS connection", e);
+                }
+            }
 
             Map<String, String> formData = new HashMap<>();
             formData.put("grant_type", "authorization_code");
