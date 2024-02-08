@@ -2,6 +2,7 @@ package org.yamcs;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 
@@ -24,5 +25,15 @@ public class InvalidIdentification extends Exception {
 
     public List<NamedObjectId> getInvalidParameters() {
         return invalidParameters;
+    }
+
+    @Override
+    public String getMessage() {
+        if (invalidParameters != null) {
+            return invalidParameters.stream()
+                    .map(NamedObjectId::toString)
+                    .collect(Collectors.joining(", "));
+        }
+        return super.getMessage();
     }
 }
