@@ -19,6 +19,7 @@ export interface WebsiteConfig {
   hasTemplates: boolean;
   disableLoginForm: boolean;
   logoutRedirectUrl: string;
+  cookie: CookieConfig;
   dass: boolean;
   tc: boolean;
   tmArchive: boolean;
@@ -30,6 +31,11 @@ export interface WebsiteConfig {
 
 export interface EventsConfig {
   extraColumns?: ExtraColumnInfo[];
+}
+
+export interface CookieConfig {
+  secure: boolean;
+  sameSite: string;
 }
 
 export interface SiteLink {
