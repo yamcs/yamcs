@@ -1,7 +1,6 @@
 <div #extensionInitializers>
 </div>
-<mat-toolbar color="primary" *ngIf="user$ | async as user"
-             [class.zen]="zenMode$ | async">
+<mat-toolbar color="primary" [class.zen]="zenMode$ | async">
   <mat-toolbar-row class="app-bar"
                    [class.replay]="(connectionInfo$ | async)?.processor?.replay"
                    [class.nosidebar]="!(sidebar$ | async)">
@@ -21,7 +20,7 @@
 
     <div style="flex: 1 1 auto"></div>
 
-    <nav mat-tab-nav-bar class="top-tabs" [tabPanel]="tabPanel">
+    <nav mat-tab-nav-bar class="top-tabs" [tabPanel]="tabPanel" *ngIf="user$ | async as user">
       <!--a mat-tab-link matTooltip="Search (/)">
         <mat-icon>search</mat-icon>
       </a-->

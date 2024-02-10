@@ -36,6 +36,12 @@ export class AuthService implements OnDestroy {
     this.authInfo = configService.getAuthInfo();
     this.logoutRedirectUrl = configService.getConfig().logoutRedirectUrl;
 
+    yamcsService.sessionEnded$.subscribe(ended => {
+      if (ended) {
+        this.logout(true);
+      }
+    });
+
     /*
      * Attempts to prevent 401 exceptions by checking if locally available
      * tokens should (still) work. If not, then the user is navigated

@@ -3,6 +3,7 @@ import { FrameLossListener } from './FrameLossListener';
 import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
+import { SessionListener } from './SessionListener';
 import { WebSocketClient } from './WebSocketClient';
 import { AcknowledgeAlarmOptions, Alarm, AlarmSubscription, ClearAlarmOptions, GetAlarmsOptions, GlobalAlarmStatus, GlobalAlarmStatusSubscription, ShelveAlarmOptions, SubscribeAlarmsRequest, SubscribeGlobalAlarmStatusRequest } from './types/alarms';
 import { CommandSubscription, SubscribeCommandsRequest } from './types/commandHistory';
@@ -15,6 +16,7 @@ import { AlgorithmOverrides, AlgorithmStatus, AlgorithmTrace, AlgorithmsPage, Co
 import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, ExecutorInfo, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetGapsOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListApidsResponse, ListGapsResponse, ListPacketsResponse, Packet, ParameterData, ParameterValue, PlaybackInfo, Range, RequestPlaybackRequest, Sample, StartProcedureOptions, Value } from './types/monitoring';
 import { AlgorithmStatusSubscription, ExtractPacketResponse, PacketNamesResponse, ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeAlgorithmStatusRequest, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
 import { CommandQueue, CommandQueueEvent, QueueEventsSubscription, QueueStatisticsSubscription, SubscribeQueueEventsRequest, SubscribeQueueStatisticsRequest } from './types/queue';
+import { SessionEvent, SessionSubscription } from './types/session';
 import { AuditRecordsPage, AuthInfo, Clearance, ClearanceSubscription, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, Database, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GetAuditRecordsOptions, GroupInfo, HttpTraffic, Instance, InstanceConfig, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListDatabasesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListThreadsResponse, ListTopicsResponse, ReplicationInfo, ReplicationInfoSubscription, ResultSet, RoleInfo, Service, ServiceAccount, SystemInfo, SystemInfoSubscription, ThreadInfo, TokenResponse, UserInfo } from './types/system';
 import { Record, Stream, StreamData, StreamEvent, StreamStatisticsSubscription, StreamSubscription, SubscribeStreamRequest, SubscribeStreamStatisticsRequest, Table } from './types/table';
 import { SubscribeTimeRequest, Time, TimeSubscription } from './types/time';
@@ -33,7 +35,11 @@ export default class YamcsClient implements HttpHandler {
   readonly connected$ = new BehaviorSubject<boolean>(false);
   private webSocketClient?: WebSocketClient;
 
-  constructor(readonly baseHref = '/', private frameLossListener: FrameLossListener) {
+  constructor(
+    readonly baseHref = '/',
+    private frameLossListener: FrameLossListener,
+    private sessionListener: SessionListener,
+  ) {
     this.apiUrl = `${this.baseHref}api`;
     this.authUrl = `${this.baseHref}auth`;
   }
@@ -558,6 +564,10 @@ export default class YamcsClient implements HttpHandler {
   async closeClientConnection(id: string) {
     const url = `${this.apiUrl}/connections/${id}`;
     return await this.doFetch(url, { method: 'DELETE' });
+  }
+
+  createSessionSubscription(observer: (sessionEvent: SessionEvent) => void): SessionSubscription {
+    return this.webSocketClient!.createSubscription('session', {}, observer);
   }
 
   createTimeSubscription(options: SubscribeTimeRequest, observer: (time: Time) => void): TimeSubscription {
@@ -1389,6 +1399,11 @@ export default class YamcsClient implements HttpHandler {
       // WebSocket was not yet set up (for example because auth is still
       // required).
       this.webSocketClient.connected$.subscribe(connected => {
+        if (connected) {
+          this.createSessionSubscription(evt => {
+            this.sessionListener.onSessionEnd(evt.endReason);
+          });
+        }
         this.connected$.next(connected);
       });
     }
