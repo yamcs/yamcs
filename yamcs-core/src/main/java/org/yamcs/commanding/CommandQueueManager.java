@@ -127,9 +127,6 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
                 if (queueConfig.containsKey("groups")) {
                     q.addGroups(queueConfig.getList("groups"));
                 }
-                if (queueConfig.containsKey("stateExpirationTimeS")) {
-                    q.stateExpirationTimeS = queueConfig.getInt("stateExpirationTimeS");
-                }
                 if (queueConfig.containsKey("minLevel")) {
                     Levels minLevel = Levels.valueOf(queueConfig.getString("minLevel").toUpperCase());
                     q.setMinLevel(minLevel);
@@ -147,20 +144,6 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
             var queue = new CommandQueue(processor, defaultQueueName, state);
             queues.put(queue.getName(), queue);
         }
-
-        // schedule timer update to client
-        timer.scheduleAtFixedRate(() -> {
-            for (CommandQueue q : queues.values()) {
-                if (q.state == q.defaultState && q.stateExpirationRemainingS > 0) {
-                    q.stateExpirationRemainingS = 0;
-                    notifyUpdateQueue(q);
-                } else if (q.stateExpirationRemainingS >= 0) {
-                    log.trace("notifying update queue with new remaining seconds: {}", q.stateExpirationRemainingS);
-                    q.stateExpirationRemainingS--;
-                    notifyUpdateQueue(q);
-                }
-            }
-        }, 1, 1, TimeUnit.SECONDS);
     }
 
     /**
@@ -188,9 +171,6 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
     private Spec getQueueSpec() {
         Spec spec = new Spec();
         spec.addOption("state", OptionType.STRING).withChoices("enabled", "blocked", "disabled");
-        spec.addOption("stateExpirationTimeS", OptionType.INTEGER)
-                .withDeprecationMessage("Proposed for future removal. Let us know if have a current"
-                        + " use case for this functionality");
         spec.addOption("minLevel", OptionType.STRING);
         spec.addOption("users", OptionType.LIST).withElementType(OptionType.STRING);
         spec.addOption("groups", OptionType.LIST).withElementType(OptionType.STRING);
@@ -587,13 +567,6 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
         }
 
         if (queue.state == newState) {
-            if (queue.stateExpirationJob != null && newState != queue.defaultState) {
-                log.debug("same state selected, resetting expiration time");
-                // reset state expiration date
-                scheduleStateExpiration(queue);
-                // Notify the monitoring clients
-                notifyUpdateQueue(queue);
-            }
             return queue;
         }
 
@@ -613,32 +586,10 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
             queue.clear(false);
         }
 
-        if (queue.stateExpirationTimeS > 0 && newState != queue.defaultState) {
-            log.info("Scheduling expiration for {} queue [state={}]", queue.getName(), newState);
-            scheduleStateExpiration(queue);
-        }
-
         // Notify the monitoring clients
         notifyUpdateQueue(queue);
         saveMemento();
         return queue;
-    }
-
-    private void scheduleStateExpiration(final CommandQueue queue) {
-
-        if (queue.stateExpirationJob != null) {
-            log.debug("expiration job existing, removing...");
-            queue.stateExpirationJob.cancel(false);
-            queue.stateExpirationJob = null;
-        }
-        Runnable r = () -> {
-            log.info("Returning {} queue to default state {}", queue.getName(), queue.defaultState);
-            setQueueState(queue.getName(), queue.defaultState);
-            queue.stateExpirationJob = null;
-        };
-
-        queue.stateExpirationRemainingS = queue.stateExpirationTimeS;
-        queue.stateExpirationJob = timer.schedule(r, queue.stateExpirationTimeS, TimeUnit.SECONDS);
     }
 
     private void saveMemento() {

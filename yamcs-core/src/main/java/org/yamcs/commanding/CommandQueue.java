@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ScheduledFuture;
 import java.util.regex.Pattern;
 
 import org.yamcs.Processor;
@@ -40,10 +39,6 @@ public class CommandQueue {
 
     int nbSentCommands = 0;
     int nbRejectedCommands = 0;
-    int stateExpirationTimeS = 0;
-
-    int stateExpirationRemainingS = -1;
-    ScheduledFuture<?> stateExpirationJob = null;
 
     SystemParameter spQueueState, spNumSentCommands, spNumRejectedCommands, spNumCommands;
 
@@ -217,10 +212,6 @@ public class CommandQueue {
 
     public int getNbRejectedCommands() {
         return nbRejectedCommands;
-    }
-
-    public int getStateExpirationRemainingS() {
-        return stateExpirationRemainingS;
     }
 
     public int getNbSentCommands() {
