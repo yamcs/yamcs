@@ -172,7 +172,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
                     withCrc, // no CRC
                     entityIdLength,
                     seqNrSize,
-                    cfdpTransactionId.getInitiatorEntity(), // my Entity Id
+                    cfdpTransactionId.getInitiatorEntityId(), // my Entity Id
                     request.getDestinationCfdpEntityId(), // the id of the target
                     cfdpTransactionId.getSequenceNumber());
 
@@ -183,7 +183,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
                     withCrc, // no CRC
                     entityIdLength,
                     seqNrSize,
-                    getTransactionId().getInitiatorEntity(), // my Entity Id
+                    getTransactionId().getInitiatorEntityId(), // my Entity Id
                     request.getDestinationCfdpEntityId(), // the id of the target
                     this.cfdpTransactionId.getSequenceNumber());
         }
@@ -329,6 +329,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         }
         eofTimer.cancel();
 
+        eofAckReceived = true;  // FIXME: Should this be added?
         if (outTxState == OutTxState.CANCELING) {
             complete(reasonForCancellation);
         }
@@ -534,7 +535,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         } else {
             filesize = getTransferredSize();
             checksum = ChecksumCalculator.calculateChecksum(request.getFileData(), 0l, filesize);
-            tlv = TLV.getEntityIdTLV(cfdpTransactionId.getInitiatorEntity(), entityIdLength);
+            tlv = TLV.getEntityIdTLV(cfdpTransactionId.getInitiatorEntityId(), entityIdLength);
         }
 
         return new EofPacket(code, checksum, filesize, tlv, directiveHeader);
