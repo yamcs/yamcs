@@ -1,0 +1,25 @@
+.args {
+  margin: 0;
+  margin-left: 10px;
+}
+
+.args .key {
+  min-width: 80px;
+  white-space: nowrap;
+  vertical-align: top;
+}
+
+.args .value {
+  color: grey;
+  padding-left: 10px;
+}
+
+:host.nomargin .args,
+:host.nomargin .args td.key:first-child {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+:host.nomargin .args {
+  border-spacing: 0;
+}

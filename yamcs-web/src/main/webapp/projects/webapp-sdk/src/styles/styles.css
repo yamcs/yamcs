@@ -301,6 +301,10 @@ input[type="checkbox"], input[type="radio"] {
   background-color: inherit !important;
 }
 
+.mat-mdc-button-toggle-focus-overlay {
+  display: none;
+}
+
 .blink {
   animation: yblink 1s linear infinite;
 }

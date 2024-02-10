@@ -38,6 +38,7 @@ export * from './lib/components/search-filter/search-filter.component';
 export * from './lib/components/select/select.component';
 export * from './lib/components/sidebar/sidebar-nav-group.component';
 export * from './lib/components/sidebar/sidebar-nav-item.component';
+export * from './lib/components/table-toggle/table-toggle.component';
 export * from './lib/components/text-action/text-action.component';
 export * from './lib/components/timezone-select/timezone-select.component';
 export * from './lib/components/title-copy/title-copy.component';

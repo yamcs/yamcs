@@ -111,7 +111,10 @@
       </form>
 
       <div class="table-status" [ngSwitch]="appliedInterval">
-        <div class="message-zone">
+        <div class="toggles">
+          <ya-table-toggle #args preferenceKey="cmdhist.arguments">Arguments</ya-table-toggle>
+          &nbsp;&nbsp;
+          <ya-table-toggle #rv preferenceKey="cmdhist.returnValue">Return value</ya-table-toggle>
         </div>
         <span *ngSwitchCase="'PT1H'">
           Showing entries from <b>the last hour</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
@@ -132,7 +135,8 @@
 
       <table mat-table
              [dataSource]="dataSource"
-             class="ya-data-table expand">
+             class="ya-data-table expand nohover"
+             multiTemplateDataRows>
 
         <ng-container matColumnDef="commandId">
           <th mat-header-cell *matHeaderCellDef>ID</th>
@@ -290,13 +294,62 @@
           </td>
         </ng-container>
 
+        <ng-container matColumnDef="detail">
+          <td mat-cell *matCellDef="let row" [attr.colspan]="(columnChooser.displayedColumns$ | async)?.length">
+            <div style="display: flex;">
+              <div *ngIf="args.checked" style="min-width: 300px">
+                <div class="block-title" style="padding-top: 0">
+                  Arguments
+                </div>
+                <div class="block">
+                  <app-command-arguments *ngIf="row.userAssignments.length" [command]="row" [nomargin]="true" />
+                  <ng-container *ngIf="!row.userAssignments.length">-</ng-container>
+                </div>
+              </div>
+              <div *ngIf="rv.checked">
+                <div class="block-title" style="padding-top: 0">
+                  Return value
+                </div>
+                <ng-container *ngIf="row.completed?.returnValue as rv" [ngSwitch]="rv.type">
+                  <ng-container *ngSwitchCase="'BINARY'">
+                    <div class="block no-print" style="margin-top: 4px">
+                      <app-hex [base64String]="rv.binaryValue" />
+                    </div>
+                    <div class="block print-only">
+                      <pre style="margin: 0; line-height: 1em">{{ (rv.binaryValue | hexDump) || '-' }}</pre>
+                    </div>
+                  </ng-container>
+                  <ng-container *ngSwitchCase="'STRING'">
+                    <div class="block">
+                      <pre style="margin: 0; margin-top: 4px; line-height: 1em">{{ rv.stringValue }}</pre>
+                    </div>
+                  </ng-container>
+                  <ng-container *ngSwitchDefault>
+                    <div class="block">
+                      {{ rv | value }}
+                    </div>
+                  </ng-container>
+                </ng-container>
+                <ng-container *ngIf="!row.completed?.returnValue">-</ng-container>
+              </div>
+              <div style="flex: 1 1 auto"></div>
+            </div>
+          </td>
+        </ng-container>
+
         <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
         <tr mat-row *matRowDef="let row; columns: (columnChooser.displayedColumns$ | async);"
             (click)="selectRecord(row)"
-            [@rowAnimation]="row.animate"
+            class="item-row"
+            [class.expanded]="args.checked || rv.checked"
             [class.selected]="(selectedRecord$ | async) === row"
             [class.success]="row.completed?.status === 'OK'"
             [class.failed]="row.completed?.status === 'NOK'">
+        </tr>
+        <tr mat-row *matRowDef="let row; columns: ['detail']"
+            class="item-detail"
+            [class.expanded]="args.checked || rv.checked"
+            (click)="selectRecord(row)">
         </tr>
       </table>
 

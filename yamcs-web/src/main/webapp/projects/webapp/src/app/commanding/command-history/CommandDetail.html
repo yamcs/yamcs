@@ -6,14 +6,7 @@
 <div class="block-title">Command</div>
 <div class="block command-text">
   {{ command.commandName }}
-  <table class="args">
-    <tr *ngFor="let arg of command.userAssignments">
-      <td class="key" width="1">{{ arg.name }}</td>
-      <td class="value">
-        <ya-value [value]="arg.value" />
-      </td>
-    </tr>
-  </table>
+  <app-command-arguments [command]="command" />
 </div>
 
 <ng-container *ngIf="command.unprocessedBinary && (command.unprocessedBinary !== command.binary)">
