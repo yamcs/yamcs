@@ -63,9 +63,9 @@ public class S13IncomingTransfer extends OngoingS13Transfer {
 
     public S13IncomingTransfer(String yamcsInstance, long id, long creationTime, ScheduledThreadPoolExecutor executor,
             YConfiguration config, S13TransactionId transactionId, long destinationId, String objectNamePrefix, FileSaveHandler fileSaveHandler,
-            EventProducer eventProducer, TransferMonitor monitor, String contentType,
+            EventProducer eventProducer, TransferMonitor monitor, String transferType, String contentType,
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
-        super(yamcsInstance, id, creationTime, executor, config, transactionId, destinationId, eventProducer, monitor, faultHandlerActions);
+        super(yamcsInstance, id, creationTime, executor, config, transactionId, destinationId, eventProducer, monitor, transferType, faultHandlerActions);
 
         long checkAckTimeout = config.getLong("checkAckTimeout", 10000l);
         int checkAckLimit = config.getInt("checkAckLimit", 5);
@@ -335,8 +335,6 @@ public class S13IncomingTransfer extends OngoingS13Transfer {
 
     @Override
     public String getTransferType() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getTransferType'");
+        return transferType;
     }
-
 }

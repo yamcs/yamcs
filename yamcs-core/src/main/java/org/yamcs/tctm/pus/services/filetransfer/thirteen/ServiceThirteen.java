@@ -47,6 +47,7 @@ import org.yamcs.protobuf.ListFilesResponse;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.security.Directory;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.OngoingS13Transfer.FaultHandlingAction;
+import org.yamcs.tctm.pus.services.filetransfer.thirteen.S13FileTransfer.PredefinedTransferTypes;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.DownlinkS13Packet;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.CancelRequest;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.FilePutRequest;
@@ -398,9 +399,9 @@ public class ServiceThirteen extends AbstractYamcsService
     }
 
     private S13FileTransfer processPutRequest(long initiatorEntityId, long transferId, long largePacketTransactionId, long creationTime,
-            PutRequest request, Bucket bucket, Integer customPacketSize, Integer customPacketDelay) {
+            PutRequest request, Bucket bucket, String transferType, Integer customPacketSize, Integer customPacketDelay) {
         S13OutgoingTransfer transfer = new S13OutgoingTransfer(yamcsInstance, initiatorEntityId, transferId, largePacketTransactionId, creationTime,
-                executor, request, config, bucket, customPacketSize, customPacketDelay, eventProducer, this, senderFaultHandlers);
+                executor, request, config, bucket, customPacketSize, customPacketDelay, eventProducer, this, transferType, senderFaultHandlers);
 
         dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
 
@@ -507,7 +508,7 @@ public class ServiceThirteen extends AbstractYamcsService
 
         return new S13IncomingTransfer(yamcsInstance, fileTransferId.next(), creationTime, executor, config,
                 packet.getTransactionId(), packet.getTransactionId().getInitiatorEntityId(),
-                remoteEntity.getName(), fileSaveHandler, eventProducer, this, contentTypeMap.get(remoteEntity.getId()), receiverFaultHandlers);
+                remoteEntity.getName(), fileSaveHandler, eventProducer, this, PredefinedTransferTypes.DOWNLOAD_LARGE_FILE_TRANSFER.toString(), contentTypeMap.get(remoteEntity.getId()), receiverFaultHandlers);
     }
 
     public EntityConf getRemoteEntity(long entityId) {
@@ -596,22 +597,31 @@ public class ServiceThirteen extends AbstractYamcsService
     }
 
     @Override
+    public List<FileTransferOption> getFileTransferOptions() {
+        var options = new ArrayList<FileTransferOption>();
+        options.add(FileTransferOption.newBuilder()
+                .setName(RELIABLE_OPTION)
+                .setType(FileTransferOption.Type.BOOLEAN)
+                .setTitle("Reliability")
+                .setDescription("Acknowledged or unacknowledged transmission mode")
+                .setAssociatedText("Reliable")
+                .setDefault("false")
+                .build());
+
+        return options;
+    }
+
+    @Override
     public FileTransferCapabilities getCapabilities() {
         return FileTransferCapabilities
                 .newBuilder()
                 .setDownload(hasDownloadCapability)
                 .setUpload(true)
-                .setReliability(true) // Reliability DEPRECATED: use FileTransferOption
-                .setRemotePath(true)
+                .setReliability(false) // Reliability DEPRECATED: use FileTransferOption
+                .setRemotePath(false)
                 .setFileList(hasFileListingCapability)
-                .setHasTransferType(true)
+                .setHasTransferType(false)
                 .build();
-    }
-
-    @Override
-    public List<FileTransferOption> getFileTransferOptions() {
-        var options = new ArrayList<FileTransferOption>();
-        return options;
     }
 
     private static class OptionValues {
@@ -694,7 +704,7 @@ public class ServiceThirteen extends AbstractYamcsService
         Double packetSize = optionValues.doubleOptions.get(PACKET_SIZE_OPTION);
         Double pduDelay = optionValues.doubleOptions.get(PACKET_DELAY_OPTION);
 
-        return processPutRequest(sourceId, fileTransferId.next(), destinationId, creationTime, request, bucket,
+        return processPutRequest(sourceId, fileTransferId.next(), destinationId, creationTime, request, bucket, PredefinedTransferTypes.UPLOAD_LARGE_FILE_TRANSFER.toString(),
                 packetSize != null ? packetSize.intValue() : null, pduDelay != null ? pduDelay.intValue() : null);
     }
 
@@ -729,7 +739,7 @@ public class ServiceThirteen extends AbstractYamcsService
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
         fileDownloadRequests.addTransfer(transactionId, bucket.getName());
-        return processPutRequest(destinationId, transactionId.getTransferId(), sourceId, creationTime, request, bucket,
+        return processPutRequest(destinationId, transactionId.getTransferId(), sourceId, creationTime, request, bucket, PredefinedTransferTypes.DOWNLOAD_REQUEST.toString(),
                 packetSize != null ? packetSize.intValue() : null, packetDelay != null ? packetDelay.intValue() : null);
     }
 

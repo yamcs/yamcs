@@ -78,11 +78,11 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
             ScheduledThreadPoolExecutor executor,
             PutRequest request, YConfiguration config, Bucket bucket,
             Integer customPacketSize, Integer customPacketDelay,
-            EventProducer eventProducer, TransferMonitor monitor, 
+            EventProducer eventProducer, TransferMonitor monitor, String transferType,
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
 
         super(yamcsInstance, transferId, creationTime, executor, config, makeTransactionId(initiatorEntityId, transferId,
-                largePacketTransactionId), request.getDestinationId(), eventProducer, monitor, faultHandlerActions);
+                largePacketTransactionId), request.getDestinationId(), eventProducer, monitor, transferType, faultHandlerActions);
         this.request = request;
         this.bucket = bucket;
         this.origin = ServiceThirteen.origin;
@@ -332,7 +332,7 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
 
     @Override
     public String getTransferType() {
-        throw new UnsupportedOperationException("Unimplemented method 'getTransferType'");
+        return transferType;
     }
 
     @Override

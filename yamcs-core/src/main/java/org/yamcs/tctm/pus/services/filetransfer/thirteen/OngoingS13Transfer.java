@@ -45,6 +45,8 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
     protected final long wallclockStartTime;
     protected final long creationTime;
 
+    protected String transferType;
+
     // Origin
     protected String origin;
 
@@ -82,7 +84,7 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
 
     public OngoingS13Transfer(String yamcsInstance, long id, long creationTime, ScheduledThreadPoolExecutor executor,
             YConfiguration config, S13TransactionId s13TransactionId, long destinationId,
-            EventProducer eventProducer, TransferMonitor monitor,
+            EventProducer eventProducer, TransferMonitor monitor, String transferType,
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
         this.s13TransactionId = s13TransactionId;
         this.state = TransferState.RUNNING;
@@ -97,6 +99,7 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
         if (monitor == null) {
             throw new NullPointerException("the monitor cannot be null");
         }
+        this.transferType = transferType;
         this.monitor = monitor;
         this.inactivityTimeout = config.getLong("inactivityTimeout", 10000);
         this.faultHandlerActions = faultHandlerActions;
