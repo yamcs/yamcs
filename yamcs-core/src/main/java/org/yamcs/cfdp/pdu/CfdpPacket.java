@@ -178,7 +178,7 @@ public abstract class CfdpPacket {
         TupleDefinition td = CFDP;
         ArrayList<Object> al = new ArrayList<>();
         al.add(startTime);
-        al.add(id.getInitiatorEntity());
+        al.add(id.getInitiatorEntityId());
         al.add(id.getSequenceNumber());
         al.add(this.toByteArray());
         return new Tuple(td, al);

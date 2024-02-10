@@ -290,7 +290,7 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
      * @return
      */
     public long getInitiatorId() {
-        return cfdpTransactionId.getInitiatorEntity();
+        return cfdpTransactionId.getInitiatorEntityId();
     }
 
     /**

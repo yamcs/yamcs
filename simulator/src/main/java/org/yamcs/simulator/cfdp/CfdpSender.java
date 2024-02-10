@@ -82,7 +82,7 @@ public class CfdpSender {
                 false, // no CRC
                 ENTITY_ID_LENGTH, // entityIdLength
                 SEQ_NR_LENGTH, // seq nr length
-                cfdpTransactionId.getInitiatorEntity(), // my Entity Id
+                cfdpTransactionId.getInitiatorEntityId(), // my Entity Id
                 destinationId, // the id of the target
                 cfdpTransactionId.getSequenceNumber());
 
@@ -93,7 +93,7 @@ public class CfdpSender {
                 false, // no CRC
                 ENTITY_ID_LENGTH,
                 SEQ_NR_LENGTH,
-                cfdpTransactionId.getInitiatorEntity(), // my Entity Id
+                cfdpTransactionId.getInitiatorEntityId(), // my Entity Id
                 destinationId, // the id of the target
                 cfdpTransactionId.getSequenceNumber());
 

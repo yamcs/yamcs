@@ -1,4 +1,4 @@
-package org.yamcs.cfdp;
+package org.yamcs.filetransfer;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -9,17 +9,17 @@ import java.util.Map;
  */
 public class FileDownloadRequests {
 
-    private Map<CfdpTransactionId, String> buckets = new HashMap<>();
+    private Map<FileTransferId, String> buckets = new HashMap<>();
 
-    public synchronized void addTransfer(CfdpTransactionId transactionId, String bucket) {
+    public synchronized void addTransfer(FileTransferId transactionId, String bucket) {
         buckets.put(transactionId, bucket);
     }
 
-    public synchronized String removeTransfer(CfdpTransactionId transactionId) {
+    public synchronized String removeTransfer(FileTransferId transactionId) {
         return buckets.remove(transactionId);
     }
 
-    public synchronized Map<CfdpTransactionId, String> getBuckets() {
+    public synchronized Map<FileTransferId, String> getBuckets() {
         return Collections.unmodifiableMap(buckets);
     }
 }
