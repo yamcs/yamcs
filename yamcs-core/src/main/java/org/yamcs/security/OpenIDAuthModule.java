@@ -1,5 +1,6 @@
 package org.yamcs.security;
 
+import static com.google.common.collect.Multimaps.synchronizedMultimap;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
@@ -14,6 +15,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -23,10 +25,17 @@ import org.yamcs.InitException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
+import org.yamcs.http.HttpServer;
 import org.yamcs.http.auth.JwtHelper;
 import org.yamcs.http.auth.JwtHelper.JwtDecodeException;
 import org.yamcs.logging.Log;
+import org.yamcs.security.OpenIDAuthenticationInfo.ExternalClaim;
+import org.yamcs.security.OpenIDAuthenticationInfo.ExternalSession;
+import org.yamcs.security.OpenIDAuthenticationInfo.ExternalSubject;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -36,9 +45,10 @@ import com.google.gson.JsonObject;
  * <p>
  * See https://openid.net/connect/
  */
-public class OpenIDAuthModule implements AuthModule {
+public class OpenIDAuthModule implements AuthModule, SessionListener {
 
     private static final Log log = new Log(OpenIDAuthModule.class);
+    private OpenIDBackChannelHandler backChannelHandler;
 
     private String clientId;
     private String clientSecret;
@@ -51,6 +61,11 @@ public class OpenIDAuthModule implements AuthModule {
     private String[] emailAttributes;
 
     private boolean verifyTls;
+
+    // Map external sub and/or sid to Yamcs sessions.
+    // This structure allows handling OIDC backchannel logout requests
+    private Multimap<ExternalClaim, UserSession> sessionsByClaim = synchronizedMultimap(
+            ArrayListMultimap.create());
 
     @Override
     public Spec getSpec() {
@@ -92,6 +107,11 @@ public class OpenIDAuthModule implements AuthModule {
         emailAttributes = attributesArgs.getList("email").toArray(new String[0]);
 
         verifyTls = args.getBoolean("verifyTls");
+
+        backChannelHandler = new OpenIDBackChannelHandler(this);
+
+        var httpServer = YamcsServer.getServer().getGlobalService(HttpServer.class);
+        httpServer.addRoute("openid", () -> backChannelHandler);
     }
 
     @Override
@@ -157,7 +177,13 @@ public class OpenIDAuthModule implements AuthModule {
                 var refreshTokenElement = response.get("refresh_token");
                 String refreshToken = (refreshTokenElement != null) ? refreshTokenElement.getAsString() : null;
 
-                return createAuthenticationInfo(redirectUri, idToken, accessToken, refreshToken, claims);
+                String username = findAttribute(claims, nameAttributes);
+
+                var authInfo = new OpenIDAuthenticationInfo(
+                        this, redirectUri, idToken, accessToken, refreshToken, username, claims);
+                authInfo.setEmail(findAttribute(claims, emailAttributes));
+                authInfo.setDisplayName(findAttribute(claims, displayNameAttributes));
+                return authInfo;
             } else {
                 Reader in = new BufferedReader(new InputStreamReader(conn.getErrorStream(), UTF_8));
                 JsonObject response = new Gson().fromJson(in, JsonObject.class);
@@ -166,26 +192,6 @@ public class OpenIDAuthModule implements AuthModule {
         } catch (IOException | JwtDecodeException e) {
             throw new AuthenticationException(e.getMessage(), e);
         }
-    }
-
-    private OpenIDAuthenticationInfo createAuthenticationInfo(String redirectUri,
-            String idToken, String accessToken, String refreshToken, JsonObject claims) {
-        String username = findAttribute(claims, nameAttributes);
-
-        var authInfo = new OpenIDAuthenticationInfo(
-                this, redirectUri, idToken, accessToken, refreshToken, username);
-        authInfo.expiresAt = claims.get("exp").getAsLong() * 1000L;
-        authInfo.setEmail(findAttribute(claims, emailAttributes));
-        authInfo.setDisplayName(findAttribute(claims, displayNameAttributes));
-
-        // According to OpenID spec, only the combination of "iss" with "sub" is a
-        // reasonably unique identifier.
-        JsonObject externalId = new JsonObject();
-        externalId.add("iss", claims.get("iss"));
-        externalId.add("sub", claims.get("sub"));
-        authInfo.addExternalIdentity(getClass().getName(), externalId.toString());
-
-        return authInfo;
     }
 
     private String findAttribute(JsonObject claims, String[] possibleNames) {
@@ -271,6 +277,81 @@ public class OpenIDAuthModule implements AuthModule {
         }
     }
 
+    @Override
+    public void onCreated(UserSession session) {
+        if (session.getAuthenticationInfo() instanceof OpenIDAuthenticationInfo) {
+            var authInfo = (OpenIDAuthenticationInfo) session.getAuthenticationInfo();
+
+            sessionsByClaim.put(authInfo.getIssuerSub(), session);
+            var issuerSid = authInfo.getIssuerSid();
+            if (issuerSid != null) {
+                sessionsByClaim.put(issuerSid, session);
+            }
+        }
+    }
+
+    @Override
+    public void onExpired(UserSession session) {
+        if (session.getAuthenticationInfo() instanceof OpenIDAuthenticationInfo) {
+            var authInfo = (OpenIDAuthenticationInfo) session.getAuthenticationInfo();
+
+            var sub = authInfo.getIssuerSub();
+            sessionsByClaim.removeAll(sub);
+            var sid = authInfo.getIssuerSid();
+            if (sid != null) {
+                sessionsByClaim.removeAll(sid);
+            }
+        }
+    }
+
+    @Override
+    public void onInvalidated(UserSession session) {
+        if (session.getAuthenticationInfo() instanceof OpenIDAuthenticationInfo) {
+            var authInfo = (OpenIDAuthenticationInfo) session.getAuthenticationInfo();
+
+            var sub = authInfo.getIssuerSub();
+            sessionsByClaim.removeAll(sub);
+            var sid = authInfo.getIssuerSid();
+            if (sid != null) {
+                sessionsByClaim.removeAll(sid);
+            }
+        }
+    }
+
+    /**
+     * Log out all Yamcs sessions for the provided OpenID subject.
+     */
+    public void logoutByOidcSubject(String iss, String sub) {
+        var sessions = sessionsByClaim.get(new ExternalSubject(iss, sub));
+
+        var sessionIds = new HashSet<String>();
+        synchronized (sessionsByClaim) {
+            sessions.forEach(session -> sessionIds.add(session.getId()));
+        }
+
+        var sessionManager = YamcsServer.getServer().getSecurityStore().getSessionManager();
+        for (var sessionId : sessionIds) {
+            sessionManager.invalidateSession(sessionId);
+        }
+    }
+
+    /**
+     * Log out all Yamcs sessions for the provided OpenID session.
+     */
+    public void logoutByOidcSessionId(String iss, String sid) {
+        var sessions = sessionsByClaim.get(new ExternalSession(iss, sid));
+
+        var sessionIds = new HashSet<String>();
+        synchronized (sessionsByClaim) {
+            sessions.forEach(session -> sessionIds.add(session.getId()));
+        }
+
+        var sessionManager = YamcsServer.getServer().getSecurityStore().getSessionManager();
+        for (var sessionId : sessionIds) {
+            sessionManager.invalidateSession(sessionId);
+        }
+    }
+
     public String getClientId() {
         return clientId;
     }
@@ -303,28 +384,5 @@ public class OpenIDAuthModule implements AuthModule {
             postData.append(URLEncoder.encode(param.getValue(), UTF_8));
         }
         return postData.toString().getBytes(UTF_8);
-    }
-
-    protected static class OpenIDAuthenticationInfo extends AuthenticationInfo {
-        // Make available for extensions that maybe want to add roles.
-        public String idToken;
-        public String accessToken;
-        public String refreshToken;
-
-        // Redirect URI for use in outgoing requests
-        public String redirectUri;
-
-        // When the ID Token expires
-        public long expiresAt;
-
-        OpenIDAuthenticationInfo(AuthModule authenticator, String redirectUri,
-                String idToken, String accessToken,
-                String refreshToken, String username) {
-            super(authenticator, username);
-            this.redirectUri = redirectUri;
-            this.idToken = idToken;
-            this.accessToken = accessToken;
-            this.refreshToken = refreshToken;
-        }
     }
 }

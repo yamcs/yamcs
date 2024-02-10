@@ -58,7 +58,14 @@ displayName (string or string[])
     The claim that matches with the display name. If multiples are defined, they are tried in order. Default: ``name``.
 
 
-.. rubric:: Note to third-party developers
+Back-channel Logout
+-------------------
+
+This AuthModule adds an endpoint ``/openid/backchannel-logout`` to Yamcs that may be called by the OpenID server when a user is to be logged out. This is called back-channel because the communication is directly from the Open ID server to Yamcs, rather than via the user agent. If not used, a logout on the Open ID server is only detected when the next token refresh is attempted.
+
+
+Note to third-party developers
+------------------------------
 
 This AuthModule implements the conventions for server-side web applications. In other words: the ``id_token`` is retrieved and decoded on Yamcs server only. Before Yamcs can obtain the ``id_token`` it expects to be given some information by the integrating application.
 

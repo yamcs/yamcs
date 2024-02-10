@@ -116,6 +116,10 @@ public class SecurityStore {
             for (YConfiguration moduleConfig : config.getConfigList("authModules")) {
                 AuthModule authModule = loadAuthModule(moduleConfig);
                 authModules.add(authModule);
+
+                if (authModule instanceof SessionListener) {
+                    sessionManager.addSessionListener((SessionListener) authModule);
+                }
             }
         }
 

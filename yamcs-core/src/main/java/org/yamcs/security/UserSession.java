@@ -11,7 +11,7 @@ import java.util.TreeSet;
 public class UserSession {
 
     private String id;
-    private String login;
+    private AuthenticationInfo authenticationInfo;
     private String ipAddress;
     private String hostname;
     private Instant startTime;
@@ -19,9 +19,10 @@ public class UserSession {
     private Set<String> clients = new TreeSet<>();
     private long lifespan;
 
-    public UserSession(String id, String login, String ipAddress, String hostname, long lifespan) {
+    public UserSession(String id, AuthenticationInfo authenticationInfo,
+            String ipAddress, String hostname, long lifespan) {
         this.id = id;
-        this.login = login;
+        this.authenticationInfo = authenticationInfo;
         this.ipAddress = ipAddress;
         this.hostname = hostname;
         this.lifespan = lifespan;
@@ -34,7 +35,11 @@ public class UserSession {
     }
 
     public String getLogin() {
-        return login;
+        return authenticationInfo.getUsername();
+    }
+
+    public AuthenticationInfo getAuthenticationInfo() {
+        return authenticationInfo;
     }
 
     public String getIpAddress() {
@@ -74,7 +79,21 @@ public class UserSession {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof UserSession)) {
+            return false;
+        }
+        var other = (UserSession) obj;
+        return id.equals(other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
+    @Override
     public String toString() {
-        return String.format("%s [login=%s]", id, login);
+        return String.format("%s [login=%s]", id, authenticationInfo.getUsername());
     }
 }
