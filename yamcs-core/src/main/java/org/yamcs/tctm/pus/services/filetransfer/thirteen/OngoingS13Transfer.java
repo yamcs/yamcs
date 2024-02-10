@@ -15,6 +15,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
 import org.yamcs.cfdp.pdu.ConditionCode;
+import org.yamcs.commanding.CommandingManager;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.events.EventProducer;
 import org.yamcs.filetransfer.TransferMonitor;
@@ -22,6 +23,8 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.TransferState;
+import org.yamcs.security.Directory;
+import org.yamcs.security.SecurityStore;
 import org.yamcs.security.User;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.FileTransferPacket;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.UplinkS13Packet;
@@ -35,7 +38,6 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
     protected final S13TransactionId s13TransactionId;
     protected TransferState state;
 
-    private Stream s13Out;
     protected final ScheduledThreadPoolExecutor executor;
     protected final EventProducer eventProducer;
     protected final Log log;
@@ -54,9 +56,6 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
 
     protected ScheduledFuture<?> inactivityFuture;
     final long inactivityTimeout;
-
-    Processor processor;
-    XtceDb db;
 
     // accumulate the errors
     List<String> errors = new ArrayList<>();
@@ -82,11 +81,10 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
     final Map<ConditionCode, FaultHandlingAction> faultHandlerActions;
 
     public OngoingS13Transfer(String yamcsInstance, long id, long creationTime, ScheduledThreadPoolExecutor executor,
-            YConfiguration config, S13TransactionId s13TransactionId, long destinationId, Stream s13Out,
+            YConfiguration config, S13TransactionId s13TransactionId, long destinationId,
             EventProducer eventProducer, TransferMonitor monitor,
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
         this.s13TransactionId = s13TransactionId;
-        this.s13Out = s13Out;
         this.state = TransferState.RUNNING;
         this.executor = executor;
         this.eventProducer = eventProducer;
@@ -102,16 +100,14 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
         this.monitor = monitor;
         this.inactivityTimeout = config.getLong("inactivityTimeout", 10000);
         this.faultHandlerActions = faultHandlerActions;
-
-        processor = YamcsServer.getServer().getInstance(yamcsInstance).getProcessor("realtime");
-        db = YamcsServer.getServer().getInstance(yamcsInstance).getMdb();
     }
 
     public abstract void processPacket(FileTransferPacket packet);
 
     // FIXME: Propagate user | Include privilege checking?
     public PreparedCommand createS13Telecommand(String fullyQualifiedCmdName, Map<String, Object> assignments, User user) {
-        MetaCommand cmd = db.getMetaCommand(fullyQualifiedCmdName);
+        Processor processor = ServiceThirteen.getProcessor();
+        MetaCommand cmd = processor.getXtceDb().getMetaCommand(fullyQualifiedCmdName);
 
         PreparedCommand pc = null;
         try {
@@ -132,14 +128,20 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
         errors.add(err);
     }
 
+    public User getCommandReleaseUser() {
+        return ServiceThirteen.getUserDirectory().getUser(ServiceThirteen.commandReleaseUser);
+    }
+
     protected void sendPacket(FileTransferPacket packet) {
         UplinkS13Packet pkt = (UplinkS13Packet) packet;
-        Tuple t = pkt.toTuple(this);
+        PreparedCommand pc = pkt.getPreparedCommand(this);
         
         if (log.isDebugEnabled()) {
             log.debug("TXID{} sending S13 Packet: {}", s13TransactionId, packet);
         }
-        s13Out.emitTuple(t);
+
+        // Job done, I think
+        ServiceThirteen.getCommandingManager().sendCommand(getCommandReleaseUser(), pc);
     }
 
     public final boolean isOngoing() {

@@ -76,15 +76,13 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
 
     public S13OutgoingTransfer(String yamcsInstance, long initiatorEntityId, long transferId, long largePacketTransactionId, long creationTime,
             ScheduledThreadPoolExecutor executor,
-            PutRequest request, Stream s13Out, YConfiguration config, Bucket bucket,
+            PutRequest request, YConfiguration config, Bucket bucket,
             Integer customPacketSize, Integer customPacketDelay,
             EventProducer eventProducer, TransferMonitor monitor, 
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
 
-        super(yamcsInstance, transferId, creationTime,
-                executor, config, makeTransactionId(initiatorEntityId, transferId, largePacketTransactionId),
-                request.getDestinationId(), s13Out,
-                eventProducer, monitor, faultHandlerActions);
+        super(yamcsInstance, transferId, creationTime, executor, config, makeTransactionId(initiatorEntityId, transferId,
+                largePacketTransactionId), request.getDestinationId(), eventProducer, monitor, faultHandlerActions);
         this.request = request;
         this.bucket = bucket;
         this.origin = ServiceThirteen.origin;
@@ -217,6 +215,26 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
 
     }
 
+    private void handleFault(ConditionCode conditionCode) {
+        log.debug("TXID{} Handling fault {}", s13TransactionId, conditionCode);
+
+        if (outTxState == OutTxState.CANCELING) {
+            complete(conditionCode);
+        } else {
+            FaultHandlingAction action = getFaultHandlingAction(conditionCode);
+            switch (action) {
+                case ABANDON:
+                    complete(conditionCode);
+                    break;
+                case CANCEL:
+                    cancel(conditionCode);
+                    break;
+                case SUSPEND:
+                    suspend();
+            }
+        }
+    }
+
     @Override
     protected void cancel(ConditionCode conditionCode) {
         log.debug("TXID{} Cancelling with code {}", s13TransactionId, conditionCode);
@@ -227,6 +245,7 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
                 suspended = false; // wake up if sleeping
                 outTxState = OutTxState.CANCELING;
                 changeState(TransferState.CANCELLING);
+                handleFault(conditionCode);
                 break;
             case CANCELING:
             case COMPLETED:

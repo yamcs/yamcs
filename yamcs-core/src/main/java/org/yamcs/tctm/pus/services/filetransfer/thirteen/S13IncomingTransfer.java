@@ -56,19 +56,16 @@ public class S13IncomingTransfer extends OngoingS13Transfer {
 
     Timer checkTimer;
 
-    final long maxFileSize;
-
     // in case we start a transaction before receiving the metadata, this list will save the packets which will be
     // processed after we have the metadata
     List<DownlinkS13Packet> queuedPackets = new ArrayList<>();
     List<Long> partSequenceNumbers = new ArrayList<>();
 
     public S13IncomingTransfer(String yamcsInstance, long id, long creationTime, ScheduledThreadPoolExecutor executor,
-            YConfiguration config, S13TransactionId transactionId, long destinationId, Stream s13Out, String objectNamePrefix, FileSaveHandler fileSaveHandler,
+            YConfiguration config, S13TransactionId transactionId, long destinationId, String objectNamePrefix, FileSaveHandler fileSaveHandler,
             EventProducer eventProducer, TransferMonitor monitor, String contentType,
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
-        super(yamcsInstance, id, creationTime, executor, config, transactionId, destinationId,
-                s13Out, eventProducer, monitor, faultHandlerActions);
+        super(yamcsInstance, id, creationTime, executor, config, transactionId, destinationId, eventProducer, monitor, faultHandlerActions);
 
         long checkAckTimeout = config.getLong("checkAckTimeout", 10000l);
         int checkAckLimit = config.getInt("checkAckLimit", 5);
@@ -90,7 +87,6 @@ public class S13IncomingTransfer extends OngoingS13Transfer {
         }
 
         rescheduleInactivityTimer();
-        this.maxFileSize = config.getLong("maxFileSize", 100 * 1024 * 1024l);
     }
 
     private void handleFault(ConditionCode conditionCode) {

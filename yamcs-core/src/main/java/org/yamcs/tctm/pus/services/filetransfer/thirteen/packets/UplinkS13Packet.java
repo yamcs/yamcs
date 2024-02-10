@@ -27,7 +27,7 @@ public class UplinkS13Packet extends FileTransferPacket {
         this.filePart = filePart;
     }
 
-    public Tuple toTuple(OngoingS13Transfer trans) {
+    public PreparedCommand getPreparedCommand(OngoingS13Transfer trans) {
         Map<String, Object> assignments = new LinkedHashMap<>();
 
         assignments.put("Pus_Acknowledgement_Flags", "Acceptance | Completion");
@@ -35,7 +35,7 @@ public class UplinkS13Packet extends FileTransferPacket {
         assignments.put("Part_Sequence_Number", partSequenceNumber);
         assignments.put("File_Part", filePart);
 
-        PreparedCommand pc = trans.createS13Telecommand(fullyQualifiedCmdName, assignments, null);  // FIXME: Include some user | No clue how to get
+        PreparedCommand pc = trans.createS13Telecommand(fullyQualifiedCmdName, assignments, trans.getCommandReleaseUser());
         
         // Set extra options
         var commandOption = YamcsServer.getServer().getCommandOption(Cop1TcPacketHandler.OPTION_BYPASS.getId());
@@ -48,7 +48,7 @@ public class UplinkS13Packet extends FileTransferPacket {
             .setValue(commandOption.coerceValue(v))
             .build());
 
-        return pc.toTuple();
+        return pc;
     }
 
     public String getFullyQualifiedName() {

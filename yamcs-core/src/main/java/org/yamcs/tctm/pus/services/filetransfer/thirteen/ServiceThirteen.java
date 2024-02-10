@@ -22,10 +22,12 @@ import java.util.stream.Collectors;
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
+import org.yamcs.Processor;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.cfdp.EntityConf;
 import org.yamcs.cfdp.pdu.ConditionCode;
+import org.yamcs.commanding.CommandingManager;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.events.EventProducer;
@@ -43,6 +45,7 @@ import org.yamcs.protobuf.FileTransferCapabilities;
 import org.yamcs.protobuf.FileTransferOption;
 import org.yamcs.protobuf.ListFilesResponse;
 import org.yamcs.protobuf.TransferState;
+import org.yamcs.security.Directory;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.OngoingS13Transfer.FaultHandlingAction;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.DownlinkS13Packet;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.CancelRequest;
@@ -51,6 +54,7 @@ import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.PauseRequest;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.PutRequest;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.ResumeRequest;
 import org.yamcs.utils.parser.ParseException;
+import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Sequence;
 import org.yamcs.yarch.Stream;
@@ -89,8 +93,11 @@ public class ServiceThirteen extends AbstractYamcsService
     static final Map<String, ConditionCode> VALID_CODES = new HashMap<>();
 
     static {
-        VALID_CODES.put("FileSizeError", ConditionCode.FILE_SIZE_ERROR);
         VALID_CODES.put("CancelRequestReceived", ConditionCode.CANCEL_REQUEST_RECEIVED);
+        VALID_CODES.put("FilestoreRejection", ConditionCode.FILESTORE_REJECTION);
+        VALID_CODES.put("InactivityDetected", ConditionCode.INACTIVITY_DETECTED);
+        VALID_CODES.put("FileChecksumFailure", ConditionCode.FILE_CHECKSUM_FAILURE);
+        VALID_CODES.put("CheckLimitReached", ConditionCode.CHECK_LIMIT_REACHED);
     }
 
     Map<S13TransactionId, OngoingS13Transfer> pendingTransfers = new ConcurrentHashMap<>();
@@ -101,7 +108,6 @@ public class ServiceThirteen extends AbstractYamcsService
     Map<ConditionCode, FaultHandlingAction> senderFaultHandlers;
 
     Stream s13In;
-    Stream s13Out;
 
     Bucket defaultIncomingBucket;
     EventProducer eventProducer;
@@ -122,10 +128,15 @@ public class ServiceThirteen extends AbstractYamcsService
     int archiveRetrievalLimit;
 
     boolean allowConcurrentFileOverwrites;
-    List<String> directoryTerminators;
 
     private boolean hasDownloadCapability;
     private boolean hasFileListingCapability;
+
+    private static Processor processor;
+    private static Directory directory;
+    private static CommandingManager commandingManager;
+
+    public static String commandReleaseUser;
 
     @Override
     public Spec getSpec() {
@@ -133,26 +144,35 @@ public class ServiceThirteen extends AbstractYamcsService
         entitySpec.addOption("name", OptionType.STRING);
         entitySpec.addOption("id", OptionType.INTEGER);
         entitySpec.addOption(BUCKET_OPT, OptionType.STRING).withDefault(null);
+        entitySpec.addOption("subSystem", OptionType.STRING);
+        entitySpec.addOption("contentType", OptionType.STRING);
 
         Spec spec = new Spec();
         spec.addOption("inStream", OptionType.STRING).withDefault("cfdp_in");
         spec.addOption("outStream", OptionType.STRING).withDefault("cfdp_out");
         spec.addOption("incomingBucket", OptionType.STRING).withDefault("cfdpDown");
         spec.addOption("maxExistingFileRenames", OptionType.INTEGER).withDefault(1000);
-        spec.addOption("maxPacketSize", OptionType.INTEGER).withDefault(512);
-        spec.addOption("sleepBetweenPackets", OptionType.INTEGER).withDefault(500);
         spec.addOption("localEntities", OptionType.LIST).withElementType(OptionType.MAP).withSpec(entitySpec);
         spec.addOption("remoteEntities", OptionType.LIST).withElementType(OptionType.MAP).withSpec(entitySpec);
         spec.addOption("archiveRetrievalLimit", OptionType.INTEGER).withDefault(100);
         spec.addOption("receiverFaultHandlers", OptionType.MAP).withSpec(Spec.ANY);
         spec.addOption("senderFaultHandlers", OptionType.MAP).withSpec(Spec.ANY);
-        spec.addOption("receiverFaultHandlers", OptionType.MAP).withSpec(Spec.ANY);
-        spec.addOption("senderFaultHandlers", OptionType.MAP).withSpec(Spec.ANY);
         spec.addOption("allowConcurrentFileOverwrites", OptionType.BOOLEAN).withDefault(false);
-        spec.addOption("directoryTerminators", OptionType.LIST).withElementType(OptionType.STRING)
-                .withDefault(Arrays.asList(":", "/", "\\"));
         spec.addOption("pendingAfterCompletion", OptionType.INTEGER).withDefault(600000);
         spec.addOption("hasDownloadCapability", OptionType.BOOLEAN).withDefault(true);
+        spec.addOption("spaceSystem", OptionType.STRING).withDefault("FF");
+        spec.addOption("commandReleaseUser", OptionType.STRING).withDefault("administrator");
+
+        spec.addOption("checkAckTimeout", OptionType.INTEGER).withDefault(10000l);
+        spec.addOption("checkAckLimit", OptionType.INTEGER).withDefault(5);
+
+        spec.addOption("maxPacketSize", OptionType.INTEGER).withDefault(512);
+        spec.addOption("sleepBetweenPackets", OptionType.INTEGER).withDefault(500);
+        spec.addOption("useCop1Bypass", OptionType.BOOLEAN).withDefault(true);
+        spec.addOption("firstPacketCmdName", OptionType.STRING).withDefault("FirstUplinkPart");
+        spec.addOption("intermediatePacketCmdName", OptionType.STRING).withDefault("IntermediateUplinkPart");
+        spec.addOption("lastPacketCmdName", OptionType.STRING).withDefault("LastUplinkPart");
+        spec.addOption("startDownlinkCmdName", OptionType.STRING).withDefault("StartLargePacketDownload");
 
         spec.addOption("hasFileListingCapability", OptionType.BOOLEAN).withDefault(false);
         return spec;
@@ -170,20 +190,16 @@ public class ServiceThirteen extends AbstractYamcsService
         if (s13In == null) {
             throw new ConfigurationException("cannot find stream " + inStream);
         }
-        s13Out = ydb.getStream(outStream);
-        if (s13Out == null) {
-            throw new ConfigurationException("cannot find stream " + outStream);
-        }
 
         defaultIncomingBucket = getBucket(config.getString("incomingBucket"), true);
         archiveRetrievalLimit = config.getInt("archiveRetrievalLimit", 100);
         pendingAfterCompletion = config.getInt("pendingAfterCompletion", 600000);
         allowConcurrentFileOverwrites = config.getBoolean("allowConcurrentFileOverwrites");
-        directoryTerminators = config.getList("directoryTerminators");
         hasDownloadCapability = config.getBoolean("hasDownloadCapability");
         hasFileListingCapability = config.getBoolean("hasFileListingCapability", false);
         spaceSystem = config.getString("spaceSystem");
         maxExistingFileRenames = config.getInt("maxExistingFileRenames", 1000);
+        commandReleaseUser = config.getString("", "administrator");
 
         initSrcDst(config);
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, "PusService-13", 10000);
@@ -200,6 +216,22 @@ public class ServiceThirteen extends AbstractYamcsService
             receiverFaultHandlers = Collections.emptyMap();
         }
         setupRecording(ydb);
+
+        processor = YamcsServer.getServer().getInstance(yamcsInstance).getProcessor("realtime");
+        directory = YamcsServer.getServer().getSecurityStore().getDirectory();
+        commandingManager = processor.getCommandingManager();
+    }
+
+    public static Processor getProcessor() {
+        return processor;
+    }
+
+    public static Directory getUserDirectory() {
+        return directory;
+    }
+
+    public static CommandingManager getCommandingManager() {
+        return commandingManager;
     }
 
     private Map<ConditionCode, FaultHandlingAction> readFaultHandlers(Map<String, String> map) {
@@ -368,7 +400,7 @@ public class ServiceThirteen extends AbstractYamcsService
     private S13FileTransfer processPutRequest(long initiatorEntityId, long transferId, long largePacketTransactionId, long creationTime,
             PutRequest request, Bucket bucket, Integer customPacketSize, Integer customPacketDelay) {
         S13OutgoingTransfer transfer = new S13OutgoingTransfer(yamcsInstance, initiatorEntityId, transferId, largePacketTransactionId, creationTime,
-                executor, request, s13Out, config, bucket, customPacketSize, customPacketDelay, eventProducer, this, senderFaultHandlers);
+                executor, request, config, bucket, customPacketSize, customPacketDelay, eventProducer, this, senderFaultHandlers);
 
         dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
 
@@ -474,7 +506,7 @@ public class ServiceThirteen extends AbstractYamcsService
                 false, false, false, maxExistingFileRenames);
 
         return new S13IncomingTransfer(yamcsInstance, fileTransferId.next(), creationTime, executor, config,
-                packet.getTransactionId(), packet.getTransactionId().getInitiatorEntityId(), s13Out, 
+                packet.getTransactionId(), packet.getTransactionId().getInitiatorEntityId(),
                 remoteEntity.getName(), fileSaveHandler, eventProducer, this, contentTypeMap.get(remoteEntity.getId()), receiverFaultHandlers);
     }
 
@@ -621,9 +653,6 @@ public class ServiceThirteen extends AbstractYamcsService
         }
         if (destinationPath == null) {
             return localObjectName;
-        }
-        if (directoryTerminators.stream().anyMatch(destinationPath::endsWith)) {
-            return destinationPath + localObjectName;
         }
         return destinationPath;
     }
