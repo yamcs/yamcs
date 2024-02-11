@@ -1,6 +1,6 @@
 <app-admin-page>
   <app-admin-toolbar>
-    Activity
+    Action log
   </app-admin-toolbar>
 
   <div class="panel-content">
@@ -87,7 +87,7 @@
       </table>
     </ng-container>
     <ya-empty-message *ngIf="!(rowGroups$ | async)!.length">
-      No activity for the current filter criteria.
+      No actions for the current filter criteria.
     </ya-empty-message>
   </div>
 </app-admin-page>

@@ -10,11 +10,11 @@ import { RequestOption, Row, RowGroup } from './model';
 const defaultInterval = 'NO_LIMIT';
 
 @Component({
-  templateUrl: './AdminActivityPage.html',
-  styleUrls: ['./AdminActivityPage.css'],
+  templateUrl: './AdminActionLogPage.html',
+  styleUrls: ['./AdminActionLogPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AdminActivityPage {
+export class AdminActionLogPage {
 
   @ViewChild('intervalSelect')
   intervalSelect: SelectComponent;

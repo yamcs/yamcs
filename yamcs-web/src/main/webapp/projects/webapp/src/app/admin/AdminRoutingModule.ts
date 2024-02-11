@@ -7,7 +7,7 @@ import { mayControlAccessGuardFn } from '../core/guards/MayControlAccessGuard';
 import { mayControlArchivingGuardFn } from '../core/guards/MayControlArchivingGuard';
 import { mayControlServicesGuardFn } from '../core/guards/MayControlServicesGuard';
 import { mayReadSystemInfoGuardFn } from '../core/guards/MayReadSystemInfoGuard';
-import { AdminActivityPage } from './activity/AdminActivityPage';
+import { AdminActionLogPage } from './action-log/AdminActionLogPage';
 import { DatabasePage } from './databases/database/DatabasePage';
 import { DatabaseShellTab } from './databases/database/shell/DatabaseShellTab';
 import { StreamColumnsTab } from './databases/database/stream/StreamColumnsTab';
@@ -56,7 +56,7 @@ const routes: Routes = [{
   children: [{
     path: '',
     pathMatch: 'full',
-    component: AdminActivityPage,
+    component: AdminActionLogPage,
   }, {
     path: 'http-traffic',
     canActivate: [mayReadSystemInfoGuardFn],
@@ -250,7 +250,7 @@ const routes: Routes = [{
 export class AdminRoutingModule { }
 
 export const routingComponents = [
-  AdminActivityPage,
+  AdminActionLogPage,
   CreateGroupPage,
   CreateServiceAccountPage,
   CreateUserPage,
