@@ -145,6 +145,15 @@ public class PreparedCommand {
         return null;
     }
 
+    public boolean hasAttribute(String attrname) {
+        CommandHistoryAttribute a = getAttribute(attrname);
+
+        if (a != null) 
+            return true;
+        
+        return false;
+    }
+
     public Integer getSignedIntegerAttribute(String attrname) {
         CommandHistoryAttribute a = getAttribute(attrname);
         if (a != null) {

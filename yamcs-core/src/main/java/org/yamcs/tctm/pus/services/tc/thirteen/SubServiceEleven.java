@@ -29,8 +29,14 @@ public class SubServiceEleven implements PusSubService {
         byte[] filePartSizeWithPadding = Arrays.copyOfRange(dataField, 
                 ServiceThirteen.largePacketTransactionIdSize + ServiceThirteen.partSequenceNumberSize, dataField.length);
 
-        // Get Actual File Part from CmdHistoryAttribute
-        int filePartActualSize = pc.getSignedIntegerAttribute("FilePartSize");
+        int filePartActualSize;
+        if (pc.hasAttribute("FilePartSize")) {
+            // Get Actual File Part from CmdHistoryAttribute
+            filePartActualSize = pc.getSignedIntegerAttribute("FilePartSize");
+
+        } else {
+            filePartActualSize = filePartSizeWithPadding.length;
+        }
 
         // Extract just the actual File Part from the padded binary
         byte[] filePartActual = Arrays.copyOfRange(filePartSizeWithPadding, 0, filePartActualSize);

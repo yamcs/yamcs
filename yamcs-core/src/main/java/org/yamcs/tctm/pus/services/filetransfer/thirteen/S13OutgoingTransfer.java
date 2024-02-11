@@ -20,6 +20,7 @@ import org.yamcs.protobuf.TransferState;
 import org.yamcs.tctm.pus.PusTcManager;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.FileTransferPacket;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.StartS13DownlinkPacket;
+import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.StartS13UplinkPacket;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.UplinkS13Packet;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.PutRequest;
 import org.yamcs.yarch.Bucket;
@@ -73,7 +74,6 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
     public static String firstPacketCmdName;
     public static String intermediatePacketCmdName;
     public static String lastPacketCmdName;
-    public static String startDownlinkCmdName;
     public static int maxDataSize;
 
     public S13OutgoingTransfer(String yamcsInstance, long initiatorEntityId, long transferId, long largePacketTransactionId, long creationTime,
@@ -100,7 +100,6 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
         firstPacketCmdName = config.getString("firstPacketCmdName", "FirstUplinkPart");
         intermediatePacketCmdName = config.getString("intermediatePacketCmdName", "IntermediateUplinkPart");
         lastPacketCmdName = config.getString("lastPacketCmdName", "LastUplinkPart");
-        startDownlinkCmdName = config.getString("startDownlinkCmdName", "StartLargePacketDownload");
     }
 
     private static S13TransactionId makeTransactionId(long sourceId, long transferId, long largePacketTransactionId) {
@@ -123,7 +122,7 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
             return;
         }
 
-        FileTransferPacket packet;
+        UplinkS13Packet packet;
         String fullyQualifiedCmdName;
         switch (outTxState) {
             case START:
@@ -143,7 +142,7 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
 
                 } else {    // First Packet
                     fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(firstPacketCmdName, request.getDestinationId());
-                    packet = new UplinkS13Packet(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart());
+                    packet = new StartS13UplinkPacket(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart());
                     sentPackets.add(packet);
                     try{
                         sendPacket(packet);
@@ -167,7 +166,7 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
                     partSequenceNumber++;
 
                     fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(lastPacketCmdName, request.getDestinationId());
-                    packet = new UplinkS13Packet(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart());
+                    packet = new StartS13UplinkPacket(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart());
                     sentPackets.add(packet);
                     try {
                         sendPacket(packet);
@@ -187,7 +186,7 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
                     partSequenceNumber++;
 
                     fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(intermediatePacketCmdName, request.getDestinationId());
-                    packet = new UplinkS13Packet(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart());
+                    packet = new StartS13UplinkPacket(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart());
                     sentPackets.add(packet);
                     try {
                         sendPacket(packet);

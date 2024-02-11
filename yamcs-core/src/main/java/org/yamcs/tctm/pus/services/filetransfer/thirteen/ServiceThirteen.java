@@ -140,6 +140,7 @@ public class ServiceThirteen extends AbstractYamcsService
     private static CommandingManager commandingManager;
 
     public static String commandReleaseUser;
+    public static String startDownlinkCmdName;
 
     @Override
     public Spec getSpec() {
@@ -165,9 +166,11 @@ public class ServiceThirteen extends AbstractYamcsService
         spec.addOption("hasDownloadCapability", OptionType.BOOLEAN).withDefault(true);
         spec.addOption("spaceSystem", OptionType.STRING).withDefault("FF");
         spec.addOption("commandReleaseUser", OptionType.STRING).withDefault("administrator");
+        spec.addOption("startDownlinkCmdName", OptionType.STRING).withDefault("StartLargePacketDownload");
 
         spec.addOption("checkAckTimeout", OptionType.INTEGER).withDefault(10000l);
         spec.addOption("checkAckLimit", OptionType.INTEGER).withDefault(5);
+        spec.addOption("inactivityTimeout", OptionType.INTEGER).withDefault(10000);
 
         spec.addOption("maxPacketSize", OptionType.INTEGER).withDefault(512);
         spec.addOption("sleepBetweenPackets", OptionType.INTEGER).withDefault(500);
@@ -175,7 +178,6 @@ public class ServiceThirteen extends AbstractYamcsService
         spec.addOption("firstPacketCmdName", OptionType.STRING).withDefault("FirstUplinkPart");
         spec.addOption("intermediatePacketCmdName", OptionType.STRING).withDefault("IntermediateUplinkPart");
         spec.addOption("lastPacketCmdName", OptionType.STRING).withDefault("LastUplinkPart");
-        spec.addOption("startDownlinkCmdName", OptionType.STRING).withDefault("StartLargePacketDownload");
 
         spec.addOption("hasFileListingCapability", OptionType.BOOLEAN).withDefault(false);
         return spec;
@@ -203,6 +205,7 @@ public class ServiceThirteen extends AbstractYamcsService
         spaceSystem = config.getString("spaceSystem");
         maxExistingFileRenames = config.getInt("maxExistingFileRenames", 1000);
         commandReleaseUser = config.getString("", "administrator");
+        startDownlinkCmdName = config.getString("startDownlinkCmdName", "StartLargePacketDownload");
 
         initSrcDst(config);
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, "PusService-13", 10000);
@@ -417,7 +420,7 @@ public class ServiceThirteen extends AbstractYamcsService
         } else {
             String remoteEntityName = getEntityFromId(largePacketTransactionId, remoteEntities).getName();
             eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
-                    "Starting new CFDP upload TXID[" + transfer.getTransactionId() + "] \n"
+                    "Starting new S13 upload TXID[" + transfer.getTransactionId() + "] \n"
                             + "Fileless transfer: \n"
                             + "     Remote Source Entity Line: " + remoteEntityName + "\n"
                             + "     Large Packet Transaction ID: " + largePacketTransactionId + "\n");

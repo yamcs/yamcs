@@ -16,18 +16,18 @@ public class ServiceThirteen implements PusService {
     Log log;
     private String yamcsInstance;
 
-    protected final int DEFAULT_LARGE_PACKET_TRANSACTION_ID_SIZE = 8;
-    protected final int DEFAULT_PART_SEQUENCE_NUMBER = 8;
+    protected final int DEFAULT_LARGE_PACKET_TRANSACTION_ID_SIZE = 2;
+    protected final int DEFAULT_PART_SEQUENCE_NUMBER = 2;
 
     public static int largePacketTransactionIdSize;
     public static int partSequenceNumberSize;
 
     Map<Integer, PusSubService> pusSubServices = new HashMap<>();
-    YConfiguration serviceFiveConfig;
+    YConfiguration config;
 
     public ServiceThirteen(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
-        serviceFiveConfig = config;
+        this.config = config;
 
         largePacketTransactionIdSize = config.getInt("largePacketTransactionIdSize", DEFAULT_LARGE_PACKET_TRANSACTION_ID_SIZE);
         partSequenceNumberSize = config.getInt("partSequenceNumberSize", DEFAULT_PART_SEQUENCE_NUMBER);
@@ -37,9 +37,9 @@ public class ServiceThirteen implements PusService {
 
     @Override
     public void initializeSubServices() {
-        pusSubServices.put(9, new SubServiceNine(yamcsInstance, serviceFiveConfig.getConfigOrEmpty("nine")));
-        pusSubServices.put(10, new SubServiceTen(yamcsInstance, serviceFiveConfig.getConfigOrEmpty("ten")));
-        pusSubServices.put(11, new SubServiceEleven(yamcsInstance, serviceFiveConfig.getConfigOrEmpty("eleven")));
+        pusSubServices.put(9, new SubServiceNine(yamcsInstance, config.getConfigOrEmpty("nine")));
+        pusSubServices.put(10, new SubServiceTen(yamcsInstance, config.getConfigOrEmpty("ten")));
+        pusSubServices.put(11, new SubServiceEleven(yamcsInstance, config.getConfigOrEmpty("eleven")));
     }
 
     @Override

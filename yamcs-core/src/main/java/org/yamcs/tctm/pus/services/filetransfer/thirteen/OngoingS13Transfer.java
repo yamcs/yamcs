@@ -31,6 +31,8 @@ import org.yamcs.security.Directory;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.security.User;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.FileTransferPacket;
+import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.StartS13DownlinkPacket;
+import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.StartS13UplinkPacket;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.UplinkS13Packet;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
@@ -112,15 +114,14 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
 
     public abstract void processPacket(FileTransferPacket packet);
 
-    public PreparedCommand createS13Telecommand(String fullyQualifiedCmdName, Map<String, Object> assignments, User user) {
+    public PreparedCommand createS13Telecommand(String fullyQualifiedCmdName, Map<String, Object> assignments, User user) throws BadRequestException, 
+            InternalServerErrorException {
         Processor processor = ServiceThirteen.getProcessor();
         MetaCommand cmd = processor.getXtceDb().getMetaCommand(fullyQualifiedCmdName);
 
         PreparedCommand pc = null;
         try {
             pc = processor.getCommandingManager().buildCommand(cmd, assignments, origin, 0, user);
-            pc.disableCommandVerifiers(false);
-            pc.disableTransmissionConstraints(false);
 
         } catch (ErrorInCommand e) {
             throw new BadRequestException(e);
@@ -139,21 +140,42 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
         return ServiceThirteen.getUserDirectory().getUser(ServiceThirteen.commandReleaseUser);
     }
 
-    protected void sendPacket(FileTransferPacket packet) {
-        UplinkS13Packet pkt = (UplinkS13Packet) packet;
-
+    protected void sendPacket(UplinkS13Packet packet) {
         try {
-            PreparedCommand pc = pkt.getPreparedCommand(this);
+            PreparedCommand pc = packet.generatePreparedCommand(this);
             ServiceThirteen.getCommandingManager().sendCommand(getCommandReleaseUser(), pc);
 
             if (log.isDebugEnabled()) {
-                log.debug("TXID{} sending S13 Packet: {} | Qualified Name: {} | Part Sequence Number: {}", s13TransactionId, pkt.getFullyQualifiedName(), pkt.getPartSequenceNumber(), pkt.getPartSequenceNumber());
-            }
+                if (packet instanceof StartS13UplinkPacket){
+                    StartS13UplinkPacket pkt = (StartS13UplinkPacket) packet;
+                    log.debug("TXID{} sending StartUplinkS13 Packet | Qualified Name: {} | Part Sequence Number: {}",
+                            s13TransactionId, pkt.getFullyQualifiedName(), pkt.getPartSequenceNumber());
 
+                } else if (packet instanceof StartS13DownlinkPacket) {
+                    StartS13DownlinkPacket pkt = (StartS13DownlinkPacket) packet;
+                    log.debug("TXID{} sending StartDownlinkS13 Packet: {} | Qualified Name: {}",
+                            s13TransactionId, pkt.getFullyQualifiedName());
+                }
+            }
         } catch (BadRequestException | InternalServerErrorException e) {
-            log.error("TXID{} could not send S13 Packet: Qualified Name: {} | Part Sequence Number: {} | ERROR: {}", s13TransactionId,
-                    pkt.getFullyQualifiedName(), pkt.getPartSequenceNumber(), pkt.getPartSequenceNumber(), e.toString());
-            sendWarnEvent(ETYPE_TRANSFER_PACKET_ERRROR, "Unable to construct the correct Prepared Command | Transaction ID " + s13TransactionId + " | CommandName: " + pkt.getFullyQualifiedName() + " Part Sequence Number: " + pkt.getPartSequenceNumber());
+
+            if (packet instanceof StartS13UplinkPacket){
+                StartS13UplinkPacket pkt = (StartS13UplinkPacket) packet;
+                log.error("TXID{} could not send StartUplinkS13 Packet: Qualified Name: {} | Part Sequence Number: {} | ERROR: {}",
+                        s13TransactionId, pkt.getFullyQualifiedName(), pkt.getPartSequenceNumber(), e.toString());
+                sendWarnEvent(ETYPE_TRANSFER_PACKET_ERRROR,
+                        "Unable to construct the StartUplinkS13 Command | Transaction ID: " + s13TransactionId
+                                + " | CommandName: " + pkt.getFullyQualifiedName() + " Part Sequence Number: "
+                                + pkt.getPartSequenceNumber());
+
+            } else if (packet instanceof StartS13DownlinkPacket) {
+                StartS13DownlinkPacket pkt = (StartS13DownlinkPacket) packet;
+                log.error("TXID{} could not send StartDownlinkS13 Packet: Qualified Name: {} | ERROR: {}",
+                        s13TransactionId, pkt.getFullyQualifiedName(), e.toString());
+                sendWarnEvent(ETYPE_TRANSFER_PACKET_ERRROR,
+                        "Unable to construct the StartDownlinkS13 Command | Transaction ID: " + s13TransactionId
+                                + " | CommandName: " + pkt.getFullyQualifiedName());
+            }
 
             throw new CommandEncodingException(e.toString());
         }

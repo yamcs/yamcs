@@ -1,11 +1,10 @@
 package org.yamcs.tctm.pus.services.filetransfer.thirteen.requests;
 
 import org.yamcs.YConfiguration;
-import org.yamcs.tctm.pus.services.filetransfer.thirteen.S13OutgoingTransfer;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.S13TransactionId;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.ServiceThirteen;
-import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.FileTransferPacket;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.StartS13DownlinkPacket;
+import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.UplinkS13Packet;
 
 public class PutRequest extends S13Request {
 
@@ -17,7 +16,7 @@ public class PutRequest extends S13Request {
     private String destinationFileName;
 
     // ========== Extra fields ==========
-    private FileTransferPacket fdrPacket;
+    private UplinkS13Packet fdrPacket;
 
     public PutRequest(long destinationId) {
         super(S13RequestType.PUT);
@@ -44,7 +43,7 @@ public class PutRequest extends S13Request {
     public S13TransactionId process(long initiatorEntityId, long transferId, long largePacketTransactionId, YConfiguration config) {
         S13TransactionId s13TransactionId = new S13TransactionId(initiatorEntityId, transferId, largePacketTransactionId);
 
-        String fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(S13OutgoingTransfer.startDownlinkCmdName, largePacketTransactionId);
+        String fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(ServiceThirteen.startDownlinkCmdName, largePacketTransactionId);
         fdrPacket = new StartS13DownlinkPacket(s13TransactionId, fullyQualifiedCmdName);
         
         return s13TransactionId;
@@ -63,7 +62,7 @@ public class PutRequest extends S13Request {
     }
 
     // ========== Extra getters ==========
-    public FileTransferPacket getFileDownloadRequestPacket() {
+    public UplinkS13Packet getFileDownloadRequestPacket() {
         return fdrPacket;
     }
 
