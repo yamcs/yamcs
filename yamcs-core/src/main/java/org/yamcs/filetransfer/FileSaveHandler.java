@@ -1,9 +1,7 @@
 package org.yamcs.filetransfer;
 
 import org.yamcs.YamcsServer;
-import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.cfdp.DataFile;
-import org.yamcs.cfdp.FileDownloadRequests;
 import org.yamcs.logging.Log;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.YarchDatabase;
@@ -44,13 +42,26 @@ public class FileSaveHandler {
         this(yamcsInstance, defaultBucket, null, false, false, false, 1000);
     }
 
-    public void saveFile(String objectName, DataFile file, Map<String, String> metadata, CfdpTransactionId originatingTransactionId)
+    public void saveFile(byte[] fileData, Map<String, String> metadata, FileTransferId transactionId, String contentType) {
+        if (bucket == null) {
+            bucket = defaultBucket;
+        }
+        try {
+            bucket.putObject(this.objectName, contentType, metadata, fileData);
+
+        } catch (IOException e) {
+            throw new UncheckedIOException("Cannot save incoming file in bucket: " + objectName
+                    + (bucket != null ? " -> " + bucket.getName() : ""), e);
+        }
+    }
+
+    public void saveFile(String objectName, DataFile file, Map<String, String> metadata, FileTransferId originatingTransactionId)
             throws FileAlreadyExistsException {
         setObjectName(objectName);
         saveFile(file, metadata, originatingTransactionId);
     }
 
-    public void saveFile(DataFile file, Map<String, String> metadata, CfdpTransactionId originatingTransactionId) {
+    public void saveFile(DataFile file, Map<String, String> metadata, FileTransferId originatingTransactionId) {
         if(objectName == null) {
             log.warn("File name not set, not saving");
             return;
@@ -137,7 +148,7 @@ public class FileSaveHandler {
         return bucket;
     }
 
-    public void processOriginatingTransactionId(CfdpTransactionId originatingTransactionId) throws IOException {
+    public void processOriginatingTransactionId(FileTransferId originatingTransactionId) throws IOException {
         String bucketName = fileDownloadRequests.getBuckets().get(originatingTransactionId);
         fileDownloadRequests.removeTransfer(originatingTransactionId);
         if(bucketName != null) {

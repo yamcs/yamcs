@@ -47,6 +47,7 @@ import org.yamcs.cfdp.pdu.TLV;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.filetransfer.BasicListingParser;
+import org.yamcs.filetransfer.FileDownloadRequests;
 import org.yamcs.filetransfer.FileListingParser;
 import org.yamcs.filetransfer.FileListingService;
 import org.yamcs.filetransfer.FileSaveHandler;
@@ -663,10 +664,10 @@ public class CfdpService extends AbstractYamcsService
             return null;
         }
 
-        EntityConf remoteEntity = getRemoteEntity(txId.getInitiatorEntity());
+        EntityConf remoteEntity = getRemoteEntity(txId.getInitiatorEntityId());
         if (remoteEntity == null) {
             eventProducer.sendWarning(ETYPE_UNEXPECTED_CFDP_PDU,
-                    "Received a transaction start for an unknown remote entity Id " + txId.getInitiatorEntity());
+                    "Received a transaction start for an unknown remote entity Id " + txId.getInitiatorEntityId());
             return null;
         }
 
@@ -1067,9 +1068,9 @@ public class CfdpService extends AbstractYamcsService
             return;
         }
 
-        EntityConf remoteEntity = remoteEntities.values().stream().filter(entity -> entity.id == incomingTransfer.cfdpTransactionId.getInitiatorEntity()).findFirst().orElse(null);
+        EntityConf remoteEntity = remoteEntities.values().stream().filter(entity -> entity.id == incomingTransfer.cfdpTransactionId.getInitiatorEntityId()).findFirst().orElse(null);
         if (remoteEntity == null) {
-            eventProducer.sendWarning("Directory Listing Response coming from an unknown remote entity: id=" + incomingTransfer.cfdpTransactionId.getInitiatorEntity());
+            eventProducer.sendWarning("Directory Listing Response coming from an unknown remote entity: id=" + incomingTransfer.cfdpTransactionId.getInitiatorEntityId());
             return;
         }
 

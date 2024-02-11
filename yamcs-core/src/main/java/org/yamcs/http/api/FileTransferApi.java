@@ -14,6 +14,7 @@ import org.yamcs.api.Observer;
 import org.yamcs.cfdp.CfdpFileTransfer;
 import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.filetransfer.FileTransfer;
+import org.yamcs.filetransfer.FileTransferId;
 import org.yamcs.filetransfer.FileTransferService;
 import org.yamcs.filetransfer.InvalidRequestException;
 import org.yamcs.filetransfer.RemoteFileListMonitor;
@@ -45,6 +46,8 @@ import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferInfo;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
+import org.yamcs.tctm.pus.services.filetransfer.thirteen.S13FileTransfer;
+import org.yamcs.tctm.pus.services.filetransfer.thirteen.S13TransactionId;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.YarchDatabase;
@@ -364,6 +367,13 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
             }
         }
 
+        if (transfer instanceof S13FileTransfer) {
+            S13TransactionId txid = ((S13FileTransfer) transfer).getTransactionId();
+            if (txid != null) {// queued transfers do not have a transaction id
+                tib.setTransactionId(toTransactionId(txid));
+            }
+        }
+
         if (transfer.getStartTime() != TimeEncoding.INVALID_INSTANT) {
             tib.setStartTime(TimeEncoding.toProtobufTimestamp(transfer.getStartTime()));
         }
@@ -385,9 +395,9 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         return tib.build();
     }
 
-    private static TransactionId toTransactionId(CfdpTransactionId id) {
-        return TransactionId.newBuilder().setInitiatorEntity(id.getInitiatorEntity())
-                .setSequenceNumber(id.getSequenceNumber()).build();
+    private static TransactionId toTransactionId(FileTransferId id) {
+        return TransactionId.newBuilder().setInitiatorEntity(id.getInitiatorEntityId())
+                .setSequenceNumber((int) id.getTransferId()).build();
     }
 
     private FileTransferService verifyService(String yamcsInstance, String serviceName) throws NotFoundException {
