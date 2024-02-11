@@ -1,5 +1,8 @@
 package org.yamcs.tctm.pus.services.filetransfer.thirteen;
 
+import static org.yamcs.tctm.pus.services.filetransfer.thirteen.ServiceThirteen.ETYPE_TRANSFER_FINISHED;
+import static org.yamcs.tctm.pus.services.filetransfer.thirteen.ServiceThirteen.ETYPE_TRANSFER_PACKET_ERRROR;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +25,7 @@ import org.yamcs.filetransfer.TransferMonitor;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.CommandEncodingException;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.security.Directory;
 import org.yamcs.security.SecurityStore;
@@ -103,11 +107,11 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
         this.monitor = monitor;
         this.inactivityTimeout = config.getLong("inactivityTimeout", 10000);
         this.faultHandlerActions = faultHandlerActions;
+        this.origin = "0.0.0.0";    // FIXME: Is this alright?
     }
 
     public abstract void processPacket(FileTransferPacket packet);
 
-    // FIXME: Propagate user | Include privilege checking?
     public PreparedCommand createS13Telecommand(String fullyQualifiedCmdName, Map<String, Object> assignments, User user) {
         Processor processor = ServiceThirteen.getProcessor();
         MetaCommand cmd = processor.getXtceDb().getMetaCommand(fullyQualifiedCmdName);
@@ -137,14 +141,22 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
 
     protected void sendPacket(FileTransferPacket packet) {
         UplinkS13Packet pkt = (UplinkS13Packet) packet;
-        PreparedCommand pc = pkt.getPreparedCommand(this);
-        
-        if (log.isDebugEnabled()) {
-            log.debug("TXID{} sending S13 Packet: {}", s13TransactionId, packet);
-        }
 
-        // Job done, I think
-        ServiceThirteen.getCommandingManager().sendCommand(getCommandReleaseUser(), pc);
+        try {
+            PreparedCommand pc = pkt.getPreparedCommand(this);
+            ServiceThirteen.getCommandingManager().sendCommand(getCommandReleaseUser(), pc);
+
+            if (log.isDebugEnabled()) {
+                log.debug("TXID{} sending S13 Packet: {} | Qualified Name: {} | Part Sequence Number: {}", s13TransactionId, pkt.getFullyQualifiedName(), pkt.getPartSequenceNumber(), pkt.getPartSequenceNumber());
+            }
+
+        } catch (BadRequestException | InternalServerErrorException e) {
+            log.error("TXID{} could not send S13 Packet: Qualified Name: {} | Part Sequence Number: {} | ERROR: {}", s13TransactionId,
+                    pkt.getFullyQualifiedName(), pkt.getPartSequenceNumber(), pkt.getPartSequenceNumber(), e.toString());
+            sendWarnEvent(ETYPE_TRANSFER_PACKET_ERRROR, "Unable to construct the correct Prepared Command | Transaction ID " + s13TransactionId + " | CommandName: " + pkt.getFullyQualifiedName() + " Part Sequence Number: " + pkt.getPartSequenceNumber());
+
+            throw new CommandEncodingException(e.toString());
+        }
     }
 
     public final boolean isOngoing() {

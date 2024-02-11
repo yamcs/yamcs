@@ -14,8 +14,10 @@ import org.yamcs.YConfiguration;
 import org.yamcs.cfdp.pdu.ConditionCode;
 import org.yamcs.events.EventProducer;
 import org.yamcs.filetransfer.TransferMonitor;
+import org.yamcs.mdb.CommandEncodingException;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
+import org.yamcs.tctm.pus.PusTcManager;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.FileTransferPacket;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.StartS13DownlinkPacket;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.UplinkS13Packet;
@@ -49,7 +51,6 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
     }
 
     private Bucket bucket;
-    private final int maxDataSize;
     private final int sleepBetweenPackets;
 
     private final List<FileTransferPacket> sentPackets = new ArrayList<>();
@@ -73,6 +74,7 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
     public static String intermediatePacketCmdName;
     public static String lastPacketCmdName;
     public static String startDownlinkCmdName;
+    public static int maxDataSize;
 
     public S13OutgoingTransfer(String yamcsInstance, long initiatorEntityId, long transferId, long largePacketTransactionId, long creationTime,
             ScheduledThreadPoolExecutor executor,
@@ -86,8 +88,9 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
         this.request = request;
         this.bucket = bucket;
         this.origin = ServiceThirteen.origin;
-        this.maxDataSize = customPacketSize != null && customPacketSize > 0 ? customPacketSize
-                : config.getInt("maxPacketSize", 512);
+        int maxPacketSize = customPacketSize != null && customPacketSize > 0 ? customPacketSize : config.getInt("maxPacketSize", 512);
+        maxDataSize = maxPacketSize - (PusTcManager.secondaryHeaderLength + PusTcManager.DEFAULT_PRIMARY_HEADER_LENGTH + 
+                org.yamcs.tctm.pus.services.tc.thirteen.ServiceThirteen.largePacketTransactionIdSize + org.yamcs.tctm.pus.services.tc.thirteen.ServiceThirteen.partSequenceNumberSize);
 
         outTxState = OutTxState.START;
         this.sleepBetweenPackets = customPacketDelay != null && customPacketDelay > 0 ? customPacketDelay
@@ -129,14 +132,26 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
 
                 if (request.getFileDownloadRequestPacket() != null) {
                     packet = request.getFileDownloadRequestPacket();
-                    sendPacket(packet);
+                    try {
+                        sendPacket(packet);
+                    } catch (CommandEncodingException e) {
+                        pushError(e.toString());
+                        handleFault(ConditionCode.UNSUPPORTED_CHECKSUM_TYPE);
+                        return;
+                    }
                     complete(ConditionCode.NO_ERROR);
 
                 } else {    // First Packet
                     fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(firstPacketCmdName, request.getDestinationId());
                     packet = new UplinkS13Packet(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart());
                     sentPackets.add(packet);
-                    sendPacket(packet);
+                    try{
+                        sendPacket(packet);
+                    } catch (CommandEncodingException e) {
+                        pushError(e.toString());
+                        handleFault(ConditionCode.UNSUPPORTED_CHECKSUM_TYPE);
+                        return;
+                    }
 
                     transferred += (end - offset);
                     offset = end;
@@ -154,7 +169,13 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
                     fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(lastPacketCmdName, request.getDestinationId());
                     packet = new UplinkS13Packet(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart());
                     sentPackets.add(packet);
-                    sendPacket(packet);
+                    try {
+                        sendPacket(packet);
+                    } catch (CommandEncodingException e) {
+                        pushError(e.toString());
+                        handleFault(ConditionCode.UNSUPPORTED_CHECKSUM_TYPE);
+                        return;
+                    }
 
                     transferred += (end - offset);
                     offset = end;
@@ -168,8 +189,13 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
                     fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(intermediatePacketCmdName, request.getDestinationId());
                     packet = new UplinkS13Packet(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart());
                     sentPackets.add(packet);
-                    sendPacket(packet);
-
+                    try {
+                        sendPacket(packet);
+                    } catch (CommandEncodingException e) {
+                        pushError(e.toString());
+                        handleFault(ConditionCode.UNSUPPORTED_CHECKSUM_TYPE);
+                        return;
+                    }
                     transferred += (end - offset);
                     offset = end;
                 }

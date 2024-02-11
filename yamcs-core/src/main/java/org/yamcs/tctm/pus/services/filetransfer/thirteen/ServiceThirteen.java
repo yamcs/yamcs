@@ -74,6 +74,7 @@ public class ServiceThirteen extends AbstractYamcsService
     static final String ETYPE_TRANSFER_FINISHED = "TRANSFER_FINISHED";
     static final String ETYPE_TRANSFER_SUSPENDED = "TRANSFER_SUSPENDED";
     static final String ETYPE_TRANSFER_RESUMED = "TRANSFER_RESUMED";
+    static final String ETYPE_TRANSFER_PACKET_ERRROR = "TRANSFER_PACKET_ERROR";
 
     static final String BUCKET_OPT = "bucket";
 
@@ -99,6 +100,7 @@ public class ServiceThirteen extends AbstractYamcsService
         VALID_CODES.put("InactivityDetected", ConditionCode.INACTIVITY_DETECTED);
         VALID_CODES.put("FileChecksumFailure", ConditionCode.FILE_CHECKSUM_FAILURE);
         VALID_CODES.put("CheckLimitReached", ConditionCode.CHECK_LIMIT_REACHED);
+        VALID_CODES.put("PreparedCommandNotFomed", ConditionCode.UNSUPPORTED_CHECKSUM_TYPE);
     }
 
     Map<S13TransactionId, OngoingS13Transfer> pendingTransfers = new ConcurrentHashMap<>();
