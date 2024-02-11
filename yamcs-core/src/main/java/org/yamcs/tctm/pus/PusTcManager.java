@@ -36,6 +36,7 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.tctm.pus.services.tc.PusTcCcsdsPacket;
 import org.yamcs.tctm.pus.services.tc.eleven.ServiceEleven;
+import org.yamcs.tctm.pus.services.tc.thirteen.ServiceThirteen;
 import org.yamcs.tctm.pus.services.tc.three.ServiceThree;
 
 
@@ -175,6 +176,7 @@ public class PusTcManager extends AbstractYamcsService implements StreamSubscrib
         pusServices.put(2, new ServiceTwo(yamcsInstance, pusConfig.getConfigOrEmpty("two")));
         pusServices.put(3, new ServiceThree(yamcsInstance, pusConfig.getConfigOrEmpty("three")));
         pusServices.put(11, new ServiceEleven(yamcsInstance, pusConfig.getConfigOrEmpty("eleven")));
+        pusServices.put(13, new ServiceThirteen(yamcsInstance, pusConfig.getConfigOrEmpty("thirteen")));
     }
 
     public static boolean timetagSanityCheck(long timetag) {

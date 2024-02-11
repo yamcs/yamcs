@@ -10,9 +10,12 @@ import org.yamcs.tctm.pus.PusTcManager;
 import org.yamcs.utils.ByteArrayUtils;
 
 public class PusTcCcsdsPacket extends CcsdsPacket {
-    static int messageTypeIndex = 7;
-    static int subMessageTypeIndex = 8;
-    static int sourceIDInsertionIndex = 9;
+    public static int messageTypeIndex = 7;
+    public static int subMessageTypeIndex = 8;
+    public static int sourceIDInsertionIndex = 9;
+    public static int spareFieldInsertionIndex = 11;
+
+    static int dataFieldStartIndex = PusTcManager.DEFAULT_PRIMARY_HEADER_LENGTH + PusTcManager.secondaryHeaderLength;    // NOTE: THIS IS ONLY AFTER THE SECONDAY HEADER HAS BEEN CORRECTLY SET, OTHERWISE DO NOT USE IT
 
     public PusTcCcsdsPacket(byte[] packet) {
         super(packet);
@@ -42,6 +45,14 @@ public class PusTcCcsdsPacket extends CcsdsPacket {
         return ByteArrayUtils.decodeUnsignedShort(b, sourceIDInsertionIndex);
     }
 
+    /*
+     * NOTE: THIS IS ONLY AFTER THE SECONDAY HEADER HAS BEEN CORRECTLY SET,
+     * OTHERWISE DO NOT USE IT
+     */
+    public static byte[] getDataField(byte[] b) {
+        return Arrays.copyOfRange(b, dataFieldStartIndex, b.length);
+    }
+
     private static void setSourceID(PreparedCommand pc) {
         int sourceIDInsertionIndex = 9;
         byte[] telecommandPayload = pc.getBinary();
@@ -53,7 +64,6 @@ public class PusTcCcsdsPacket extends CcsdsPacket {
     }
 
     private static void insertSecondaryHeaderSpareField(PreparedCommand pc) {
-        int spareFieldInsertionIndex = 11;
         byte[] telecommandPayload = pc.getBinary();
 
         // Insert Spare Field
