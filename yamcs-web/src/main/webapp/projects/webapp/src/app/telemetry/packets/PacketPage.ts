@@ -3,9 +3,17 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { BitRange, ExtractPacketResponse, ExtractedParameter, MessageService, Packet, SelectOption, YamcsService } from '@yamcs/webapp-sdk';
+import { BitRange, ColumnInfo, Container, ExtractPacketResponse, ExtractedParameter, MessageService, Packet, SelectOption, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { Hex } from '../../shared/hex/Hex';
+
+export interface ExtractedItem {
+  type: 'PARAMETER' | 'CONTAINER';
+  parent?: ExtractedItem;
+  container?: Container;
+  pval?: ExtractedParameter;
+  expanded: boolean;
+}
 
 @Component({
   templateUrl: './PacketPage.html',
@@ -22,18 +30,17 @@ export class PacketPage implements AfterViewInit {
   packet$ = new BehaviorSubject<Packet | null>(null);
   result$ = new BehaviorSubject<ExtractPacketResponse | null>(null);
 
-  dataSource = new MatTableDataSource<ExtractedParameter>();
+  dataSource = new MatTableDataSource<ExtractedItem>();
 
   _hex?: Hex;
 
-  displayedColumns = [
-    'position',
-    'parameter',
-    'type',
-    'rawValue',
-    'engValue',
-    'container',
-    'actions',
+  columns: ColumnInfo[] = [
+    { id: 'position', label: 'Position', visible: true },
+    { id: 'entry', label: 'Entry', alwaysVisible: true },
+    { id: 'type', label: 'Type', visible: true },
+    { id: 'rawValue', label: 'Raw value', visible: false },
+    { id: 'engValue', label: 'Engineering value', visible: true },
+    { id: 'actions', label: '', alwaysVisible: true },
   ];
 
   typeOptions: SelectOption[] = [
@@ -60,8 +67,8 @@ export class PacketPage implements AfterViewInit {
     const seqno = Number(route.snapshot.paramMap.get('seqno')!);
     title.setTitle(pname);
 
-    this.dataSource.filterPredicate = (pval, filter) => {
-      return pval.parameter.qualifiedName.toLowerCase().indexOf(filter) >= 0;
+    this.dataSource.filterPredicate = (node, filter) => {
+      return !node.pval || (node.pval.parameter.qualifiedName.toLowerCase().indexOf(filter) >= 0);
     };
 
     yamcs.yamcsClient.getPacket(yamcs.instance!, pname, gentime, seqno).then(packet => {
@@ -70,7 +77,23 @@ export class PacketPage implements AfterViewInit {
 
     yamcs.yamcsClient.extractPacket(yamcs.instance!, pname, gentime, seqno).then(result => {
       this.result$.next(result);
-      this.dataSource.data = result.parameterValues;
+      const items: ExtractedItem[] = [];
+      let prevContainerItem: ExtractedItem | undefined;
+      for (const pval of result.parameterValues) {
+        if (pval.entryContainer.qualifiedName !== prevContainerItem?.container?.qualifiedName) {
+          const item: ExtractedItem = { type: 'CONTAINER', container: pval.entryContainer, expanded: false };
+          items.push(item);
+          prevContainerItem = item;
+        }
+        items.push({ type: 'PARAMETER', pval, parent: prevContainerItem, expanded: false });
+      }
+
+      // Expand last container
+      if (prevContainerItem) {
+        prevContainerItem.expanded = true;
+      }
+
+      this.dataSource.data = items;
     }).catch(err => messageService.showError(err));
   }
 
@@ -89,11 +112,20 @@ export class PacketPage implements AfterViewInit {
     this._hex = _hex;
   }
 
-  highlightBitRange(bitPosition: number, bitSize: number) {
-    this.hex?.setHighlight(new BitRange(bitPosition, bitSize));
+  highlightBitRange(item: ExtractedItem) {
+    if (item.pval) {
+      const { pval } = item;
+      this.hex?.setHighlight(new BitRange(pval.location, pval.size));
+    }
   }
 
   clearHighlightedBitRange() {
     this.hex?.setHighlight(null);
+  }
+
+  toggleRow(item: ExtractedItem) {
+    if (item.container) {
+      item.expanded = !item.expanded;
+    }
   }
 }

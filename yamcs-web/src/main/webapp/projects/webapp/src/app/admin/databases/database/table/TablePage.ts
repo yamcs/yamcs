@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Table, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
+  selector: 'app-table-page',
   templateUrl: './TablePage.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

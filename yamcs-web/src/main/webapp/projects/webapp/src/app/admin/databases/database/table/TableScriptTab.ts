@@ -5,6 +5,7 @@ import * as utils from '../../utils';
 
 
 @Component({
+  selector: 'app-table-script-tab',
   templateUrl: './TableScriptTab.html',
   styleUrls: [
     './TableScriptTab.css',

@@ -6,6 +6,7 @@ import { AuditRecord, GetAuditRecordsOptions, MessageService, SelectComponent, S
 
 
 @Component({
+  selector: 'app-queues-action-log-tab',
   templateUrl: './ActionLogTab.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
