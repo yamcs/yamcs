@@ -2390,22 +2390,44 @@ public class V7Loader extends V7LoaderBase {
             if (ptypeb instanceof IntegerParameterType.Builder) {
                 double tvd = parseDouble(ctx1, cells[columnIndex]);
                 IntegerParameterType.Builder ipt = (IntegerParameterType.Builder) ptypeb;
-                if ("low".equals(trigger)) {
-                    ipt.addAlarmRange(context, new DoubleRange(tvd, Double.POSITIVE_INFINITY), level);
-                } else if ("high".equals(trigger)) {
-                    ipt.addAlarmRange(context, new DoubleRange(Double.NEGATIVE_INFINITY, tvd), level);
-                } else {
+                switch (trigger) {
+                case "low":
+                case "lowInclusive":
+                    ipt.addAlarmRange(context, new DoubleRange(tvd, Double.POSITIVE_INFINITY, true, true), level);
+                    break;
+                case "lowExclusive:":
+                    ipt.addAlarmRange(context, new DoubleRange(tvd, Double.POSITIVE_INFINITY, false, true), level);
+                    break;
+                case "high":
+                case "highInclusive":
+                    ipt.addAlarmRange(context, new DoubleRange(Double.NEGATIVE_INFINITY, tvd, true, true), level);
+                    break;
+                case "highExclusive":
+                    ipt.addAlarmRange(context, new DoubleRange(Double.NEGATIVE_INFINITY, tvd, true, false), level);
+                    break;
+                default:
                     throw new SpreadsheetLoadException(ctx1,
                             "Unexpected trigger type '" + trigger + "' for numeric parameter " + para.getName());
                 }
             } else if (ptypeb instanceof FloatParameterType.Builder) {
                 double tvd = parseDouble(ctx1, cells[columnIndex]);
                 FloatParameterType.Builder fpt = (FloatParameterType.Builder) ptypeb;
-                if ("low".equals(trigger)) {
-                    fpt.addAlarmRange(context, new DoubleRange(tvd, Double.POSITIVE_INFINITY), level);
-                } else if ("high".equals(trigger)) {
-                    fpt.addAlarmRange(context, new DoubleRange(Double.NEGATIVE_INFINITY, tvd), level);
-                } else {
+                switch (trigger) {
+                case "low":
+                case "lowInclusive":
+                    fpt.addAlarmRange(context, new DoubleRange(tvd, Double.POSITIVE_INFINITY, true, true), level);
+                    break;
+                case "lowExclusive:":
+                    fpt.addAlarmRange(context, new DoubleRange(tvd, Double.POSITIVE_INFINITY, false, true), level);
+                    break;
+                case "high":
+                case "highInclusive":
+                    fpt.addAlarmRange(context, new DoubleRange(Double.NEGATIVE_INFINITY, tvd, true, true), level);
+                    break;
+                case "highExclusive":
+                    fpt.addAlarmRange(context, new DoubleRange(Double.NEGATIVE_INFINITY, tvd, true, false), level);
+                    break;
+                default:
                     throw new SpreadsheetLoadException(ctx1,
                             "Unexpected trigger type '" + trigger + "' for numeric parameter " + para.getName());
                 }
