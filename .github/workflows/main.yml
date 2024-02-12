@@ -10,22 +10,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: ['11', '17']
+        java: ["11", "17", "21"]
         platform: [ubuntu-latest]
-        mvn_opts: ['-Dsurefire.useFile=false']
+        mvn_opts: ["-Dsurefire.useFile=false"]
         experimental: [false]
         include:
           - platform: macos-latest
-            java: '11'
-            mvn_opts: '-Dsurefire.useFile=false'
+            java: "11"
+            mvn_opts: "-Dsurefire.useFile=false"
             experimental: true
           - platform: windows-latest
-            java: '11'
+            java: "11"
             mvn_opts: '"-Dsurefire.useFile=false"'
             experimental: true
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: ${{ matrix.java }}
@@ -34,22 +34,22 @@ jobs:
       - uses: actions/upload-artifact@v3.1.2
         if: failure()
         with:
-           name: errdump
-           path: |
-             yamcs-core/hs_err*
-             yamcs-core/target/surefire-reports/*.dump*
-             tests/hs_err*
-             tests/target/surefire-reports/*.dump*
+          name: errdump
+          path: |
+            yamcs-core/hs_err*
+            yamcs-core/target/surefire-reports/*.dump*
+            tests/hs_err*
+            tests/target/surefire-reports/*.dump*
 
   javadoc:
     name: Javadoc ${{ matrix.java }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: ['11', '17']
+        java: ["11", "17", "21"]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: ${{ matrix.java }}
@@ -74,15 +74,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 11
       - name: Generate protobin
         run: mvn -B --no-transfer-progress -DskipTests compile
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v5
         with:
-          python-version: 3.7
+          python-version: 3.8
       - name: Set up sphinx
         run: |
           cd docs
