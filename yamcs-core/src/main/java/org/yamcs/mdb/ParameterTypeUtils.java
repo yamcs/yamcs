@@ -57,10 +57,9 @@ public class ParameterTypeUtils {
             .putAll(AggregateParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.AGGREGATE)
             .build();
 
-
     /**
-     * Checks that a value can be assigned to a parameter as engineering value
-     * Throws an IllegalArgumentException if not
+     * Checks that a value can be assigned to a parameter as engineering value. Otherwise throws an
+     * IllegalArgumentException
      *
      * @param p
      * @param engValue
@@ -118,8 +117,7 @@ public class ParameterTypeUtils {
                 IntegerValidRange vr = ((IntegerArgumentType) type).getValidRange();
                 if (vr != null) {
                     if (!ValidRangeChecker.checkIntegerRange(vr, l)) {
-                        throw new IllegalArgumentException(
-                                "Value " + l + " is not in the range required for the type " + type);
+                        throw new IllegalArgumentException("Value " + l + " is not in the range " + vr);
                     }
                 }
                 v = ValueUtility.getSint64Value(l);
@@ -128,8 +126,7 @@ public class ParameterTypeUtils {
                 IntegerValidRange vr = ((IntegerParameterType) type).getValidRange();
                 if (vr != null) {
                     if (!ValidRangeChecker.checkUnsignedIntegerRange(vr, l)) {
-                        throw new IllegalArgumentException(
-                                "Value " + l + " is not in the range required for the type " + type);
+                        throw new IllegalArgumentException("Value " + l + " is not in the range " + vr);
                     }
                 }
                 v = ValueUtility.getUint64Value(l);
@@ -140,8 +137,7 @@ public class ParameterTypeUtils {
             FloatValidRange vr = ((FloatDataType) type).getValidRange();
             if (vr != null) {
                 if (!ValidRangeChecker.checkFloatRange(vr, d)) {
-                    throw new IllegalArgumentException(
-                            "Value " + d + " is not in the range required for the type " + type);
+                    throw new IllegalArgumentException("Value " + d + " is not in the range " + vr);
                 }
             }
             v = ValueUtility.getDoubleValue(d);
@@ -186,8 +182,6 @@ public class ParameterTypeUtils {
         }
         return v;
     }
-
-
 
     /**
      * Returns a Value corresponding to the java object and the parameter type or null if the parameter cannot be
