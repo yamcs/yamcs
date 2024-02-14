@@ -83,8 +83,8 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
             EventProducer eventProducer, TransferMonitor monitor, String transferType,
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
 
-        super(yamcsInstance, transferId, creationTime, executor, config, makeTransactionId(initiatorEntityId, transferId,
-                largePacketTransactionId), request.getDestinationId(), eventProducer, monitor, transferType, faultHandlerActions);
+        super(yamcsInstance, transferId, creationTime, executor, config, makeTransactionId(request.getRemoteId(), transferId, largePacketTransactionId),
+            request.getRemoteId(), eventProducer, monitor, transferType, faultHandlerActions);
         this.request = request;
         this.bucket = bucket;
         this.origin = ServiceThirteen.origin;
@@ -102,8 +102,8 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
         lastPacketCmdName = config.getString("lastPacketCmdName", "LastUplinkPart");
     }
 
-    private static S13TransactionId makeTransactionId(long sourceId, long transferId, long largePacketTransactionId) {
-        return new S13TransactionId(sourceId, transferId, largePacketTransactionId);
+    private static S13TransactionId makeTransactionId(long remoteId, long transferId, long largePacketTransactionId) {
+        return new S13TransactionId(remoteId, transferId, largePacketTransactionId, TransferDirection.UPLOAD);
     }
 
     /**
@@ -141,7 +141,7 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
                     complete(ConditionCode.NO_ERROR);
 
                 } else {    // First Packet
-                    fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(firstPacketCmdName, request.getDestinationId());
+                    fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(firstPacketCmdName, request.getRemoteId());
                     packet = new StartS13UplinkPacket(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart());
                     sentPackets.add(packet);
                     try{
@@ -165,7 +165,7 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
                     end = Math.min(offset + maxDataSize, request.getFileLength());
                     partSequenceNumber++;
 
-                    fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(lastPacketCmdName, request.getDestinationId());
+                    fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(lastPacketCmdName, request.getRemoteId());
                     packet = new StartS13UplinkPacket(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart());
                     sentPackets.add(packet);
                     try {
@@ -185,7 +185,7 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
                     end = Math.min(offset + maxDataSize, request.getFileLength());
                     partSequenceNumber++;
 
-                    fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(intermediatePacketCmdName, request.getDestinationId());
+                    fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(intermediatePacketCmdName, request.getRemoteId());
                     packet = new StartS13UplinkPacket(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart());
                     sentPackets.add(packet);
                     try {
@@ -250,9 +250,11 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
             switch (action) {
                 case ABANDON:
                     complete(conditionCode);
+                    pushError(conditionCode.toString());
                     break;
                 case CANCEL:
                     cancel(conditionCode);
+                    pushError(conditionCode.toString());
                     break;
                 case SUSPEND:
                     suspend();
@@ -266,7 +268,6 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
         switch (outTxState) {
             case START:
             case SENDING_DATA:
-                reasonForCancellation = conditionCode;
                 suspended = false; // wake up if sleeping
                 outTxState = OutTxState.CANCELING;
                 changeState(TransferState.CANCELLING);
