@@ -1,4 +1,4 @@
-package org.yamcs.tctm.pus.services.tm.two;
+package org.yamcs.tctm.pus.services.tm.nine;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,30 +12,26 @@ import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
 
-public class ServiceTwo implements PusService {
+public class ServiceNine implements PusService {
     Log log;
-    Map<Integer, PusSubService> pusSubServices = new HashMap<>();
-
+    Map<Integer, PusSubService> subServices = new HashMap<>();
     String yamcsInstance;
-    YConfiguration serviceTwoConfig;
+    YConfiguration config;
 
-    public ServiceTwo(String yamcsInstance, YConfiguration serviceTwoConfig) {
+    public ServiceNine(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
-        this.serviceTwoConfig = serviceTwoConfig;
+        this.config = config;
 
-        initializeSubServices();    
+        initializeSubServices();
     }
 
     public void initializeSubServices() {
-        pusSubServices.put(6, new SubServiceSix(yamcsInstance, serviceTwoConfig.getConfigOrEmpty("six")));
-        pusSubServices.put(9, new SubServiceNine(yamcsInstance, serviceTwoConfig.getConfigOrEmpty("nine")));
-        pusSubServices.put(12, new SubServiceTwelve(yamcsInstance, serviceTwoConfig.getConfigOrEmpty("twelve")));
+        subServices.put(2, new SubServiceTwo(yamcsInstance, config.getConfigOrEmpty("two")));
     }
 
     @Override
     public ArrayList<TmPacket> extractPusModifiers(TmPacket tmPacket) {
-        byte[] b = tmPacket.getPacket();
-        return pusSubServices.get(PusTmCcsdsPacket.getMessageSubType(b)).process(tmPacket);
+        return subServices.get(PusTmCcsdsPacket.getMessageSubType(tmPacket.getPacket())).process(tmPacket);
     }
 
     @Override
