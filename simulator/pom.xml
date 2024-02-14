@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>5.8.9-Pixxel.SNAPSHOT-1.5.0</version>
+    <version>5.8.9-Pixxel.SNAPSHOT-1.6.0</version>
   </parent>
 
   <artifactId>simulator</artifactId>
