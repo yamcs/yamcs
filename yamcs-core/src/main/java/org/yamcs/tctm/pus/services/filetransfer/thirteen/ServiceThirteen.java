@@ -45,19 +45,19 @@ import org.yamcs.protobuf.FileTransferCapabilities;
 import org.yamcs.protobuf.FileTransferOption;
 import org.yamcs.protobuf.ListFilesResponse;
 import org.yamcs.protobuf.TransferState;
+import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.security.Directory;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.OngoingS13Transfer.FaultHandlingAction;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.S13FileTransfer.PredefinedTransferTypes;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.DownlinkS13Packet;
+import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.DownlinkS13Packet.PacketType;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.CancelRequest;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.FilePutRequest;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.PauseRequest;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.PutRequest;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.ResumeRequest;
 import org.yamcs.utils.parser.ParseException;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Bucket;
-import org.yamcs.yarch.Sequence;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -91,8 +91,8 @@ public class ServiceThirteen extends AbstractYamcsService
 
     private Stream dbStream;
 
-    Sequence fileTransferId;
     static final Map<String, ConditionCode> VALID_CODES = new HashMap<>();
+    static final Map<Integer, String> FAILURE_CODES = new HashMap<>();
 
     static {
         VALID_CODES.put("CancelRequestReceived", ConditionCode.CANCEL_REQUEST_RECEIVED);
@@ -101,6 +101,14 @@ public class ServiceThirteen extends AbstractYamcsService
         VALID_CODES.put("FileChecksumFailure", ConditionCode.FILE_CHECKSUM_FAILURE);
         VALID_CODES.put("CheckLimitReached", ConditionCode.CHECK_LIMIT_REACHED);
         VALID_CODES.put("PreparedCommandNotFomed", ConditionCode.UNSUPPORTED_CHECKSUM_TYPE);
+    }
+
+    static {
+        FAILURE_CODES.put(4, "FILESTORE_REJECTION_ONBOARD");
+        FAILURE_CODES.put(5, "FILE_CHECKSUM_ERROR_ONBOARD");
+        FAILURE_CODES.put(6, "FILE_SIZE_ERROR_ONBOARD");
+        FAILURE_CODES.put(8, "INACTIVITY_DETECTED_ONBOARD");
+        FAILURE_CODES.put(9, "INVALID_FILE_STRUCTURE_RECEIVED_ONBOARD");
     }
 
     Map<S13TransactionId, OngoingS13Transfer> pendingTransfers = new ConcurrentHashMap<>();
@@ -209,7 +217,6 @@ public class ServiceThirteen extends AbstractYamcsService
 
         initSrcDst(config);
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, "PusService-13", 10000);
-        fileTransferId = ydb.getSequence(SEQUENCE_NAME, true);
         if (config.containsKey("senderFaultHandlers")) {
             senderFaultHandlers = readFaultHandlers(config.getMap("senderFaultHandlers"));
         } else {
@@ -362,6 +369,26 @@ public class ServiceThirteen extends AbstractYamcsService
         }
     }
 
+    public FileTransfer getOngoingUploadFileTransfer(long largePacketTransactionId) {
+        Optional<OngoingS13Transfer> r = pendingTransfers.values().stream()
+                .filter(c -> c.getTransactionId().getLargePacketTransactionId() == largePacketTransactionId)
+                .filter(c -> c.getTransactionId().getTransferDirection() == TransferDirection.UPLOAD).findAny();
+        if (r.isPresent()) {
+            return r.get();
+        }
+        return null;
+    }
+
+    public FileTransfer getOngoingDownloadFileTransfer(long largePacketTransactionId) {
+        Optional<OngoingS13Transfer> r = pendingTransfers.values().stream()
+                .filter(c -> c.getTransactionId().getLargePacketTransactionId() == largePacketTransactionId)
+                .filter(c -> c.getTransactionId().getTransferDirection() == TransferDirection.DOWNLOAD).findAny();
+        if (r.isPresent()) {
+            return r.get();
+        }
+        return null;
+    }
+
     private FileTransfer searchInArchive(long id) {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         try {
@@ -453,10 +480,23 @@ public class ServiceThirteen extends AbstractYamcsService
         return transfer;
     }
 
-
     @Override
     public void onTuple(Stream stream, Tuple tuple) {
         DownlinkS13Packet packet = DownlinkS13Packet.fromTuple(tuple);
+
+        // Check if it is an Uplink abortion packet
+        if (packet.getPacketType() == PacketType.ABORTION) {
+            FileTransfer filetransfer = getOngoingUploadFileTransfer(packet.getTransactionId().getTransferId());
+            if (filetransfer != null) {
+                S13OutgoingTransfer outgoingTransfer = (S13OutgoingTransfer) filetransfer;
+                outgoingTransfer.cancel(ConditionCode.readConditionCode((byte) packet.getFailureCode().byteValue()));
+
+            } else {
+                log.warn("Erroneous Uplink abortion request received");
+            }
+            return;
+        }
+
         S13TransactionId id = packet.getTransactionId();
 
         OngoingS13Transfer transfer = null;
@@ -511,9 +551,10 @@ public class ServiceThirteen extends AbstractYamcsService
         final FileSaveHandler fileSaveHandler = new FileSaveHandler(yamcsInstance, bucket, fileDownloadRequests,
                 false, false, false, maxExistingFileRenames);
 
-        return new S13IncomingTransfer(yamcsInstance, fileTransferId.next(), creationTime, executor, config,
+        return new S13IncomingTransfer(yamcsInstance, txId.getLargePacketTransactionId(), creationTime, executor, config,
                 packet.getTransactionId(), packet.getTransactionId().getInitiatorEntityId(),
-                remoteEntity.getName(), fileSaveHandler, eventProducer, this, PredefinedTransferTypes.DOWNLOAD_LARGE_FILE_TRANSFER.toString(), contentTypeMap.get(remoteEntity.getId()), receiverFaultHandlers);
+                remoteEntity.getName(), fileSaveHandler, eventProducer, this, PredefinedTransferTypes.DOWNLOAD_LARGE_FILE_TRANSFER.toString(),
+                contentTypeMap.get(remoteEntity.getId()), receiverFaultHandlers);
     }
 
     public EntityConf getRemoteEntity(long entityId) {
@@ -681,19 +722,21 @@ public class ServiceThirteen extends AbstractYamcsService
         if (objData == null) {
             throw new InvalidRequestException("No object named '" + objectName + "' in bucket " + bucket.getName());
         }
+
+        long sourceId = getEntityFromName(source, localEntities).getId();
+        long destinationId = getEntityFromName(destination, remoteEntities).getId();
+
         String absoluteDestinationPath = getAbsoluteDestinationPath(destinationPath, objectName);
         if (!allowConcurrentFileOverwrites) {
             if (pendingTransfers.values().stream()
                     .filter(ServiceThirteen::isRunning)
-                    .anyMatch(trsf -> trsf.getRemotePath().equals(absoluteDestinationPath))) {
+                    .anyMatch(trsf -> getEntityFromId(trsf.getTransactionId()
+                            .getLargePacketTransactionId(), remoteEntities).getId() == destinationId)) {
                 throw new InvalidRequestException(
-                        "There is already a transfer ongoing to '" + absoluteDestinationPath
-                                + "' and allowConcurrentFileOverwrites is false");
+                        "There is already a transfer ongoing to '" + getEntityFromName(destination, remoteEntities).getId() + " - " + getEntityFromName(
+                                destination, remoteEntities).getName() + "'");
             }
         }
-
-        long sourceId = getEntityFromName(source, localEntities).getId();
-        long destinationId = getEntityFromName(destination, remoteEntities).getId();
 
         // For backwards compatibility
         var booleanOptions = new HashMap<>(Map.of(
@@ -709,7 +752,7 @@ public class ServiceThirteen extends AbstractYamcsService
         Double packetSize = optionValues.doubleOptions.get(PACKET_SIZE_OPTION);
         Double pduDelay = optionValues.doubleOptions.get(PACKET_DELAY_OPTION);
 
-        return processPutRequest(sourceId, fileTransferId.next(), destinationId, creationTime, request, bucket, PredefinedTransferTypes.UPLOAD_LARGE_FILE_TRANSFER.toString(),
+        return processPutRequest(sourceId, destinationId, destinationId, creationTime, request, bucket, PredefinedTransferTypes.UPLOAD_LARGE_FILE_TRANSFER.toString(),
                 packetSize != null ? packetSize.intValue() : null, pduDelay != null ? pduDelay.intValue() : null);
     }
 
@@ -739,7 +782,15 @@ public class ServiceThirteen extends AbstractYamcsService
         Double packetDelay = optionValues.doubleOptions.get(PACKET_DELAY_OPTION);
 
         PutRequest request = new PutRequest(sourceId);
-        S13TransactionId transactionId = request.process(destinationId, fileTransferId.next(), sourceId, config);
+        S13TransactionId transactionId = request.process(sourceId, sourceId, sourceId, config);
+
+        if (getOngoingUploadFileTransfer(transactionId.getLargePacketTransactionId()) != null) {
+            throw new InvalidRequestException("Downloading and Uploading from the same largePacketTransactionId: " + transactionId.getLargePacketTransactionId() + " is not allowed");
+        }
+
+        if (getOngoingDownloadFileTransfer(transactionId.getLargePacketTransactionId()) != null) {
+            throw new InvalidRequestException("Downloading for the largePacketTransactionId: " + transactionId.getLargePacketTransactionId() + " is already underway. Simultaneous downloads of the same largePacketTransactionId not permitted");
+        }
 
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 

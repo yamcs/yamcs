@@ -1,5 +1,7 @@
 package org.yamcs.tctm.pus.services.filetransfer.thirteen;
 
+import javax.xml.crypto.Data;
+
 import org.yamcs.YamcsServer;
 import org.yamcs.filetransfer.FileTransfer;
 import org.yamcs.logging.Log;
@@ -41,8 +43,8 @@ public class CompletedTransfer implements S13FileTransfer {
     static final String COL_CREATION_TIME = "creationTime";
     static final String COL_ORIGIN = "origin";
     static final String COL_TRANSFER_TYPE = "transferType";
-
     static final String COL_FAILURE_REASON = "failureReason";
+
     static final String SERVER_ID = YamcsServer.getServer().getServerId();
 
     static {
@@ -63,6 +65,7 @@ public class CompletedTransfer implements S13FileTransfer {
         TDEF.addColumn(COL_CREATION_TIME, DataType.TIMESTAMP);
         TDEF.addColumn(COL_ORIGIN, DataType.STRING);
         TDEF.addColumn(COL_TRANSFER_TYPE, DataType.STRING);
+        TDEF.addColumn(COL_FAILURE_REASON, DataType.STRING);
     }
     final Tuple tuple;
 
@@ -126,7 +129,7 @@ public class CompletedTransfer implements S13FileTransfer {
     public S13TransactionId getTransactionId() {
         if (tuple.hasColumn(COL_FILE_TRANSFER_ID)) {
             return new S13TransactionId(tuple.getLongColumn(COL_SOURCE_ID), tuple.getLongColumn(COL_FILE_TRANSFER_ID),
-                    tuple.getLongColumn(COL_LARGE_PACKET_TRANSACTION_ID));
+                    tuple.getLongColumn(COL_LARGE_PACKET_TRANSACTION_ID), getDirection());
         } else {
             return null;
         }

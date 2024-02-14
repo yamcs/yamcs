@@ -3,14 +3,17 @@ package org.yamcs.tctm.pus.services.filetransfer.thirteen;
 import java.util.Objects;
 
 import org.yamcs.filetransfer.FileTransferId;
+import org.yamcs.protobuf.TransferDirection;
 
 
 public class S13TransactionId extends FileTransferId{
     protected long largePacketTransactionId;
-
-    public S13TransactionId(long initiatorEntityId, long transferId, long largePacketTransactionId) {
-        super(initiatorEntityId, transferId);
+    protected TransferDirection direction;
+    
+    public S13TransactionId(long remoteId, long transferId, long largePacketTransactionId, TransferDirection direction) {
+        super(remoteId, transferId);
         this.largePacketTransactionId = largePacketTransactionId;
+        this.direction = direction;
     }
 
     public boolean equals(Object o) {
@@ -24,7 +27,7 @@ public class S13TransactionId extends FileTransferId{
             return false;
         }
         S13TransactionId other = (S13TransactionId) o;
-        return transferId == other.transferId && initiatorEntityId == other.initiatorEntityId && largePacketTransactionId == other.largePacketTransactionId;
+        return transferId == other.transferId && initiatorEntityId == other.initiatorEntityId && largePacketTransactionId == other.largePacketTransactionId && direction == other.direction;
     }
 
     public long getLargePacketTransactionId() {
@@ -36,8 +39,12 @@ public class S13TransactionId extends FileTransferId{
         return Objects.hash(initiatorEntityId, transferId, largePacketTransactionId);
     }
     
+    public TransferDirection getTransferDirection() {
+        return direction;
+    }
+
     @Override
     public String toString() {
-        return initiatorEntityId + "_" + transferId + "_" + largePacketTransactionId;
+        return "Remote ID: " + initiatorEntityId + "_" + "TransferId: "  + transferId + "_" + "LPTId: " + largePacketTransactionId;
     }
 }

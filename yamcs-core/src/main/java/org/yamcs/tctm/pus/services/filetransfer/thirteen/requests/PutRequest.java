@@ -5,11 +5,12 @@ import org.yamcs.tctm.pus.services.filetransfer.thirteen.S13TransactionId;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.ServiceThirteen;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.StartS13DownlinkPacket;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.UplinkS13Packet;
+import org.yamcs.protobuf.TransferDirection;
 
 public class PutRequest extends S13Request {
 
     // Required fields
-    private final long destinationId;
+    private final long remoteId;
 
     // Optional fields
     private String sourceFileName;
@@ -18,13 +19,13 @@ public class PutRequest extends S13Request {
     // ========== Extra fields ==========
     private UplinkS13Packet fdrPacket;
 
-    public PutRequest(long destinationId) {
+    public PutRequest(long remoteId) {
         super(S13RequestType.PUT);
-        this.destinationId = destinationId;
+        this.remoteId = remoteId;
     }
 
-    public PutRequest(long destinationId, String sourceFileName, String destinationFileName) {
-        this(destinationId);
+    public PutRequest(long remoteId, String sourceFileName, String destinationFileName) {
+        this(remoteId);
         this.sourceFileName = sourceFileName;
         this.destinationFileName = destinationFileName;
     }
@@ -41,7 +42,7 @@ public class PutRequest extends S13Request {
      * @return
      */
     public S13TransactionId process(long initiatorEntityId, long transferId, long largePacketTransactionId, YConfiguration config) {
-        S13TransactionId s13TransactionId = new S13TransactionId(initiatorEntityId, transferId, largePacketTransactionId);
+        S13TransactionId s13TransactionId = new S13TransactionId(initiatorEntityId, transferId, largePacketTransactionId, TransferDirection.UPLOAD);
 
         String fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(ServiceThirteen.startDownlinkCmdName, largePacketTransactionId);
         fdrPacket = new StartS13DownlinkPacket(s13TransactionId, fullyQualifiedCmdName);
@@ -49,8 +50,8 @@ public class PutRequest extends S13Request {
         return s13TransactionId;
     }
 
-    public long getDestinationId() {
-        return destinationId;
+    public long getRemoteId() {
+        return remoteId;
     }
 
     public String getSourceFileName() {
