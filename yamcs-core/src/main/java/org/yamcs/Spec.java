@@ -274,7 +274,23 @@ public class Spec {
         return options.values();
     }
 
-    private Option getOption(String key) {
+    public boolean isAllowUnknownKeys() {
+        return allowUnknownKeys;
+    }
+
+    public List<List<String>> getRequiredOneOfGroups() {
+        return requiredOneOfGroups;
+    }
+
+    public List<List<String>> getRequireTogetherGroups() {
+        return requireTogetherGroups;
+    }
+
+    public List<WhenCondition> getWhenConditions() {
+        return whenConditions;
+    }
+
+    public Option getOption(String key) {
         key = aliases.getOrDefault(key, key);
         return options.get(key);
     }

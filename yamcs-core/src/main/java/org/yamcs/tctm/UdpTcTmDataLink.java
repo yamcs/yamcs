@@ -48,7 +48,7 @@ public class UdpTcTmDataLink extends AbstractTmDataLink implements TcDataLink {
         spec.addOption("initialDelay", OptionType.INTEGER);
         spec.addOption("commandPostprocessorClassName", OptionType.STRING);
         spec.addOption("commandPostprocessorArgs", OptionType.MAP).withSpec(Spec.ANY);
-        return super.getSpec();
+        return spec;
     }
 
     @Override
