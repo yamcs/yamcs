@@ -8,10 +8,10 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tc.PusTcCcsdsPacket;
 
-public class SubServiceThree implements PusSubService {
+public class SubServiceOne implements PusSubService {
     String yamcsInstance;
 
-    SubServiceThree(String yamcsInstance, YConfiguration config) {
+    SubServiceOne(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
     }
 

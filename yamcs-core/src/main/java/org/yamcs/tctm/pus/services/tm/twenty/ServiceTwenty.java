@@ -1,4 +1,4 @@
-package org.yamcs.tctm.pus.services.tc.twenty;
+package org.yamcs.tctm.pus.services.tm.twenty;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,16 +7,13 @@ import java.util.Map;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tc.PusTcCcsdsPacket;
+import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
 
 public class ServiceTwenty implements PusService {
-    Log log;
-    private String yamcsInstance;
-
     Map<Integer, PusSubService> pusSubServices = new HashMap<>();
+    private String yamcsInstance;
     YConfiguration config;
 
     public ServiceTwenty(String yamcsInstance, YConfiguration config) {
@@ -28,18 +25,17 @@ public class ServiceTwenty implements PusService {
 
     @Override
     public void initializeSubServices() {
-        pusSubServices.put(1, new SubServiceOne(yamcsInstance, config.getConfigOrEmpty("one")));
-        pusSubServices.put(3, new SubServiceThree(yamcsInstance, config.getConfigOrEmpty("three")));
+        pusSubServices.put(2, new SubServiceTwo(yamcsInstance, config.getConfigOrEmpty("two")));
     }
 
     @Override
     public PreparedCommand addPusModifiers(PreparedCommand telecommand) {
-        return pusSubServices.get(PusTcCcsdsPacket.getMessageSubType(telecommand)).process(telecommand);
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'addPusModifiers'");
     }
 
     @Override
     public ArrayList<TmPacket> extractPusModifiers(TmPacket tmPacket) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'extractPusModifiers'");
+        return pusSubServices.get(PusTmCcsdsPacket.getMessageSubType(tmPacket.getPacket())).process(tmPacket);
     }
 }
