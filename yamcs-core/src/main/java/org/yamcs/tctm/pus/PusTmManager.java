@@ -23,6 +23,7 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.time.Instant;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSink;
+import org.yamcs.tctm.pus.services.tm.seventeen.ServiceSeventeen;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
 import org.yamcs.tctm.pus.services.tm.one.ServiceOne;
 import org.yamcs.tctm.pus.services.tm.two.ServiceTwo;
@@ -122,6 +123,7 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
         pusServices.put(3, new ServiceThree(yamcsInstance, serviceConfig.getConfigOrEmpty("three")));
         pusServices.put(5, new ServiceFive(yamcsInstance, serviceConfig.getConfigOrEmpty("five")));
         pusServices.put(9, new ServiceNine(yamcsInstance, serviceConfig.getConfigOrEmpty("nine")));
+        pusServices.put(17, new ServiceSeventeen(yamcsInstance, serviceConfig.getConfigOrEmpty("seventeen")));
         pusServices.put(13, new ServiceThirteen(yamcsInstance, serviceConfig.getConfigOrEmpty("thirteen")));
     }
 
