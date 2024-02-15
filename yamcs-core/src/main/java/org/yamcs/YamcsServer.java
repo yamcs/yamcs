@@ -379,6 +379,7 @@ public class YamcsServer {
         }
         YarchDatabase.removeInstance(instanceName);
         MdbFactory.remove(instanceName);
+        StreamConfig.removeInstance(instanceName);
         LOG.info("Re-loading instance '{}'", instanceName);
 
         YConfiguration instanceConfig = loadInstanceConfig(instanceName);
