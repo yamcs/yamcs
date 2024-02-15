@@ -683,6 +683,7 @@ message ContainerInfo {
   repeated SequenceEntryInfo entry = 10;
   optional UsedByInfo usedBy = 11;
   map<string, AncillaryDataInfo> ancillaryData = 12;
+  optional bool archivePartition = 14;
 }
 
 message InputParameterInfo {

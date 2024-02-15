@@ -60,6 +60,14 @@
         </td>
       </ng-container>
 
+      <ng-container matColumnDef="archivePartition">
+        <th mat-header-cell *matHeaderCellDef>Partition</th>
+        <td mat-cell *matCellDef="let container">
+          <mat-icon *ngIf="container.archivePartition">check</mat-icon>
+          <mat-icon *ngIf="!container.archivePartition">close</mat-icon>
+        </td>
+      </ng-container>
+
       <ng-container matColumnDef="shortDescription">
         <th mat-header-cell *matHeaderCellDef>Description</th>
         <td mat-cell *matCellDef="let container" class="wrap200">{{ container.shortDescription || '-' }}</td>
