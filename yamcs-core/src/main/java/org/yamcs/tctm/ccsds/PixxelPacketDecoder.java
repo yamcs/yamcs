@@ -47,7 +47,6 @@ public class PixxelPacketDecoder {
     private final int maxPacketLength;
 
     static final int PACKET_VERSION_CCSDS = 0;
-    static final int PACKET_VERSION_ENCAPSULATION = 7;
 
     // the actual header length (valid when the headerOffset>0)
     private int headerLength;
@@ -121,7 +120,6 @@ public class PixxelPacketDecoder {
 
     private void sendToConsumer() {
         if (!skipIdlePackets || !isIdle(header)) {
-            System.out.println("Packet: " + StringConverter.arrayToHexString(packet));
             consumer.accept(packet);
         } else {
             log.trace("skiping idle packet of size {}", packet.length);
@@ -162,17 +160,6 @@ public class PixxelPacketDecoder {
         int pv = h0 >>> 5;
         if (pv == PACKET_VERSION_CCSDS) {
             return 7 + ByteArrayUtils.decodeUnsignedShort(header, 4);
-        } else if (pv == PACKET_VERSION_ENCAPSULATION) {
-            int l = h0 & 3;
-            if (l == 0) {
-                return 1;
-            } else if (l == 1) {
-                return header[1] & 0xFF;
-            } else if (l == 2) {
-                return ByteArrayUtils.decodeUnsignedShort(header, 2);
-            } else {
-                return ByteArrayUtils.decodeInt(header, 4);
-            }
         } else {
             throw new UnsupportedPacketVersionException(pv);
         }
