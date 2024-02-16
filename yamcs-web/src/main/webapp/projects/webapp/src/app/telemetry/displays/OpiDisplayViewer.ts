@@ -1,8 +1,8 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, Inject, OnDestroy, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AlarmSeverity, Display, PV, PVProvider, Sample } from '@yamcs/opi';
-import { ConfigService, MessageService, NamedObjectId, ParameterSubscription, ParameterValue, StorageClient, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ConfigService, MessageService, NamedObjectId, ParameterSubscription, ParameterValue, StorageClient, SubscribedParameterInfo, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 import { OpiDisplayConsoleHandler } from './OpiDisplayConsoleHandler';
 import { OpiDisplayFontResolver } from './OpiDisplayFontResolver';
@@ -15,6 +15,9 @@ import { YamcsScriptLibrary } from './YamcsScriptLibrary';
 // datasource.
 const OPS_NAMESPACE = "MDB:OPS Name";
 const OPS_DATASOURCE = "ops://";
+
+// Prefix used in query params to distinguish from non-OPI params
+const ARGS_PREFIX = 'args.';
 
 @Component({
   selector: 'app-opi-display-viewer',
@@ -43,6 +46,7 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
 
   private parameterSubscription: ParameterSubscription;
   private idMapping: { [key: number]: NamedObjectId; } = {};
+  private idInfo: { [key: number]: SubscribedParameterInfo; } = {};
 
   private pvsByName = new Map<string, PV>();
   private subscriptionDirty = false;
@@ -51,6 +55,7 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
   constructor(
     private yamcs: YamcsService,
     private router: Router,
+    private route: ActivatedRoute,
     private synchronizer: Synchronizer,
     private messageService: MessageService,
     @Inject(APP_BASE_HREF) private baseHref: string,
@@ -94,6 +99,9 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
           if (data.mapping) {
             this.idMapping = data.mapping;
           }
+          if (data.info) {
+            this.idInfo = data.info;
+          }
           for (const id of (data.invalid || [])) {
             let pvName = id.name;
             if (id.namespace === OPS_NAMESPACE) {
@@ -112,7 +120,8 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
               if (pval.id.namespace === OPS_NAMESPACE) {
                 pvName = OPS_DATASOURCE + pvName;
               }
-              samples.set(pvName, this.toSample(pval));
+              const info = this.idInfo[pval.numericId];
+              samples.set(pvName, this.toSample(pval, info));
             }
             this.display.setValues(samples);
           }
@@ -121,7 +130,7 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
     }
   }
 
-  private toSample(pval: ParameterValue): Sample {
+  private toSample(pval: ParameterValue, info: SubscribedParameterInfo): Sample {
     const time = utils.toDate(pval.generationTime);
     const severity = this.toAlarmSeverity(pval);
     const sample: Sample = { time, severity, value: undefined };
@@ -130,6 +139,9 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
       if (pval.engValue.type === 'ENUMERATED') {
         sample.valueIndex = Number(pval.engValue.sint64Value);
       }
+    }
+    if (info.units) {
+      sample.units = info.units;
     }
     return sample;
   }
@@ -179,11 +191,18 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
       this.yamcs, this.messageService));
 
     this.display.addEventListener('opendisplay', evt => {
+      let url;
       if (evt.path.startsWith('/')) {
-        this.router.navigateByUrl(`/telemetry/displays/files${evt.path}?c=${this.yamcs.context}`);
+        url = `/telemetry/displays/files${evt.path}?c=${this.yamcs.context}`;
       } else {
-        this.router.navigateByUrl(`/telemetry/displays/files/${currentFolder}${evt.path}?c=${this.yamcs.context}`);
+        url = `/telemetry/displays/files/${currentFolder}${evt.path}?c=${this.yamcs.context}`;
       }
+      if (evt.args) {
+        for (const k in evt.args) {
+          url += '&' + ARGS_PREFIX + encodeURIComponent(k) + '=' + encodeURIComponent(evt.args[k]);
+        }
+      }
+      this.router.navigateByUrl(url);
     });
 
     this.display.addEventListener('closedisplay', evt => {
@@ -224,7 +243,14 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
     this.display.absPrefix = this.storageClient.getObjectURL(this.bucket, '');
 
     const objectUrl = this.storageClient.getObjectURL(this.bucket, objectName);
-    const promise = this.display.setSource(objectUrl);
+    const displayArgs: { [key: string]: string; } = {};
+    const queryParams = this.route.snapshot.queryParams;
+    for (const param in queryParams) {
+      if (param.startsWith('args.')) {
+        displayArgs[param.substring('args.'.length)] = queryParams[param];
+      }
+    }
+    const promise = this.display.setSource(objectUrl, displayArgs);
     promise.then(() => {
       this.syncSubscription = this.synchronizer.sync(() => this.updateSubscription());
     });

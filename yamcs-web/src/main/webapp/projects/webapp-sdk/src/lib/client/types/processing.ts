@@ -64,8 +64,14 @@ export interface SubscribeParametersRequest {
 
 export interface SubscribeParametersData {
   mapping: { [key: number]: NamedObjectId; };
+  info: { [key: number]: SubscribedParameterInfo; };
   invalid: NamedObjectId[];
   values: ParameterValue[];
+}
+
+export interface SubscribedParameterInfo {
+  parameter: string;
+  units?: string;
 }
 
 export interface SubscribeProcessorsRequest {
