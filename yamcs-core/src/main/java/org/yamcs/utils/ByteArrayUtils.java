@@ -1,6 +1,7 @@
 package org.yamcs.utils;
 
 import java.util.Arrays;
+import java.nio.ByteBuffer;
 
 public class ByteArrayUtils {
     public static final byte[] EMPTY = new byte[0];
@@ -101,6 +102,19 @@ public class ByteArrayUtils {
         }
 
         return result;
+    }
+
+    public static byte[] encodeCustomInteger(long value, int size) {
+        if (size < 1 || size > 8) {
+            throw new IllegalArgumentException("Byte size must be between 1 and 8");
+        }
+        
+        byte[] bb = new byte[size];
+        for (int i = (size - 1); i >= 0; i--) {
+            bb[size - (i + 1)] = (byte) (value >> (i * 8));
+        }
+
+        return bb;
     }
 
     /**
