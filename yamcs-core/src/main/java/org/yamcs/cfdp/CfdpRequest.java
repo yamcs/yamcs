@@ -18,5 +18,4 @@ public abstract class CfdpRequest {
     public CfdpRequestType getType() {
         return this.type;
     }
-
 }

@@ -1,5 +1,10 @@
 package org.yamcs.filetransfer;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.FileAlreadyExistsException;
+import java.util.Map;
+
 import org.yamcs.YamcsServer;
 import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.cfdp.DataFile;
@@ -8,11 +13,6 @@ import org.yamcs.logging.Log;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.FileAlreadyExistsException;
-import java.util.Map;
 
 public class FileSaveHandler {
 
@@ -23,14 +23,12 @@ public class FileSaveHandler {
     private final boolean allowRemoteProvidedSubdirectory;
     private final boolean allowDownloadOverwrites;
     private final int maxExistingFileRenames;
-    private final String yamcsInstance;
     private Bucket bucket;
     private String objectName;
 
     public FileSaveHandler(String yamcsInstance, Bucket defaultBucket, FileDownloadRequests fileDownloadRequests,
-            boolean allowRemoteProvidedBucket,
-            boolean allowRemoteProvidedSubdirectory, boolean allowDownloadOverwrites, int maxExistingFileRenames) {
-        this.yamcsInstance = yamcsInstance;
+            boolean allowRemoteProvidedBucket, boolean allowRemoteProvidedSubdirectory, boolean allowDownloadOverwrites,
+            int maxExistingFileRenames) {
         this.log = new Log(this.getClass(), yamcsInstance);
         this.defaultBucket = defaultBucket;
         this.fileDownloadRequests = fileDownloadRequests;
@@ -44,37 +42,41 @@ public class FileSaveHandler {
         this(yamcsInstance, defaultBucket, null, false, false, false, 1000);
     }
 
-    public void saveFile(String objectName, DataFile file, Map<String, String> metadata, CfdpTransactionId originatingTransactionId)
+    public void saveFile(String objectName, DataFile file, Map<String, String> metadata,
+            CfdpTransactionId originatingTransactionId)
             throws FileAlreadyExistsException {
         setObjectName(objectName);
         saveFile(file, metadata, originatingTransactionId);
     }
 
     public void saveFile(DataFile file, Map<String, String> metadata, CfdpTransactionId originatingTransactionId) {
-        if(objectName == null) {
+        if (objectName == null) {
             log.warn("File name not set, not saving");
             return;
         }
-        if(bucket == null) { bucket = defaultBucket; }
+        if (bucket == null) {
+            bucket = defaultBucket;
+        }
 
         try {
             bucket.putObject(this.objectName, null, metadata, file.getData());
         } catch (IOException e) {
-            throw new UncheckedIOException("Cannot save incoming file in bucket: " + objectName + (bucket != null ? " -> " + bucket.getName() : ""), e);
+            throw new UncheckedIOException("Cannot save incoming file in bucket: " + objectName
+                    + (bucket != null ? " -> " + bucket.getName() : ""), e);
         }
     }
 
     private String parseObjectName(String name) throws IOException {
-        if(bucket == null) {
+        if (bucket == null) {
             bucket = defaultBucket;
 
-            if(allowRemoteProvidedBucket) {
+            if (allowRemoteProvidedBucket) {
                 String[] split = name.split(":", 2);
-                if(split.length == 2) {
-                    YarchDatabaseInstance ydb = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE); // Instance buckets?
+                if (split.length == 2) {
+                    YarchDatabaseInstance ydb = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
 
                     Bucket customBucket = ydb.getBucket(split[0]);
-                    if(customBucket != null) {
+                    if (customBucket != null) {
                         this.bucket = customBucket;
                         name = split[1];
                     }
@@ -82,7 +84,7 @@ public class FileSaveHandler {
             }
         }
 
-        if(!allowRemoteProvidedSubdirectory) {
+        if (!allowRemoteProvidedSubdirectory) {
             name = name.replaceAll("[/\\\\]", "_");
         } else {
             // Removing leading slashes, spaces and dots (permitting ".filename")
@@ -104,11 +106,12 @@ public class FileSaveHandler {
             }
         }
 
-        throw new FileAlreadyExistsException("CANCELLED: \"" + name + "\" already exists in bucket \"" + bucket.getName() + "\"");
+        throw new FileAlreadyExistsException(
+                "CANCELLED: \"" + name + "\" already exists in bucket \"" + bucket.getName() + "\"");
     }
 
     public void setObjectName(String objectName) throws FileAlreadyExistsException {
-        if(objectName == null) {
+        if (objectName == null) {
             return;
         }
 
@@ -117,7 +120,8 @@ public class FileSaveHandler {
         } catch (FileAlreadyExistsException e) {
             throw e;
         } catch (IOException e) {
-            throw new UncheckedIOException("Cannot save incoming file in bucket: " + objectName + (bucket != null ? " -> " + bucket.getName() : ""), e);
+            throw new UncheckedIOException("Cannot save incoming file in bucket: " + objectName
+                    + (bucket != null ? " -> " + bucket.getName() : ""), e);
         }
     }
 
@@ -140,12 +144,13 @@ public class FileSaveHandler {
     public void processOriginatingTransactionId(CfdpTransactionId originatingTransactionId) throws IOException {
         String bucketName = fileDownloadRequests.getBuckets().get(originatingTransactionId);
         fileDownloadRequests.removeTransfer(originatingTransactionId);
-        if(bucketName != null) {
+        if (bucketName != null) {
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE); // Instance buckets?
             try {
                 bucket = ydb.getBucket(bucketName);
             } catch (IOException e) {
-                throw new IOException("Recognised originating transaction id " +  originatingTransactionId + " from incoming transfer but bucket does not exist");
+                throw new IOException("Recognised originating transaction id " + originatingTransactionId
+                        + " from incoming transfer but bucket does not exist");
             }
         }
     }

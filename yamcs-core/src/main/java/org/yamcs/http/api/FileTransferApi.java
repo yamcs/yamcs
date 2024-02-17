@@ -27,8 +27,6 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.protobuf.AbstractFileTransferApi;
 import org.yamcs.protobuf.CancelTransferRequest;
 import org.yamcs.protobuf.CreateTransferRequest;
-import org.yamcs.protobuf.CreateTransferRequest.DownloadOptions;
-import org.yamcs.protobuf.CreateTransferRequest.UploadOptions;
 import org.yamcs.protobuf.FileTransferServiceInfo;
 import org.yamcs.protobuf.GetTransferRequest;
 import org.yamcs.protobuf.ListFileTransferServicesRequest;
@@ -130,24 +128,8 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         if (request.getDirection() == TransferDirection.UPLOAD) {
             TransferOptions transferOptions = new TransferOptions();
             transferOptions.putExtraOptions(GpbWellKnownHelper.toJava(request.getOptions()));
-
             transferOptions.setOverwrite(true);
             transferOptions.setCreatePath(true);
-            if (request.hasUploadOptions()) {
-                UploadOptions opts = request.getUploadOptions();
-                if (opts.hasOverwrite()) {
-                    transferOptions.setOverwrite(opts.getOverwrite());
-                }
-                if (opts.hasCreatePath()) {
-                    transferOptions.setCreatePath(opts.getCreatePath());
-                }
-                if (opts.hasReliable()) {
-                    transferOptions.setReliable(opts.getReliable());
-                }
-                if (opts.hasClosureRequested()) {
-                    transferOptions.setClosureRequested(opts.getClosureRequested());
-                }
-            }
 
             if (transferOptions.isReliable() && transferOptions.isClosureRequested()) {
                 throw new BadRequestException("Cannot set both reliable and closureRequested options");
@@ -170,24 +152,8 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         } else if (request.getDirection() == TransferDirection.DOWNLOAD) {
             TransferOptions transferOptions = new TransferOptions();
             transferOptions.putExtraOptions(GpbWellKnownHelper.toJava(request.getOptions()));
-
             transferOptions.setOverwrite(true);
             transferOptions.setCreatePath(true);
-            if (request.hasDownloadOptions()) {
-                DownloadOptions opts = request.getDownloadOptions();
-                if (opts.hasOverwrite()) {
-                    transferOptions.setOverwrite(opts.getOverwrite());
-                }
-                if (opts.hasCreatePath()) {
-                    transferOptions.setCreatePath(opts.getCreatePath());
-                }
-                if (opts.hasReliable()) {
-                    transferOptions.setReliable(opts.getReliable());
-                }
-                if (opts.hasClosureRequested()) {
-                    transferOptions.setClosureRequested(opts.getClosureRequested());
-                }
-            }
 
             String sourcePath = request.getRemotePath();
             String source = request.hasSource() ? request.getSource() : null;
@@ -414,15 +380,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
     }
 
     private void checkReadFileTransfers(User user) throws ForbiddenException {
-        if (user.hasSystemPrivilege(SystemPrivilege.ReadFileTransfers)) {
-            return;
-        } else if (user.hasSystemPrivilege(SystemPrivilege.ControlFileTransfers)) {
-            log.warn("DEPRECATION WARNING: access to file transfer information should use"
-                    + " the  \"ReadFileTransfers\" system privilege. Currently only"
-                    + " \"ControlFileTransfers\" is assigned to this user. While this is"
-                    + " authorised at the moment, such access will be removed in a future"
-                    + " release.");
-        } else {
+        if (!user.hasSystemPrivilege(SystemPrivilege.ReadFileTransfers)) {
             throw new ForbiddenException(
                     "Missing system privilege '" + SystemPrivilege.ReadFileTransfers + "'");
         }

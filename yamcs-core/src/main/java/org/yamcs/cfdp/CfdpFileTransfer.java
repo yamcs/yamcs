@@ -30,13 +30,10 @@ public interface CfdpFileTransfer extends FileTransfer {
 
     /**
      * Get the CFDP transaction id. Returns null for queued transfers.
-     * 
-     * @return
      */
     CfdpTransactionId getTransactionId();
 
     long getInitiatorEntityId();
 
     long getDestinationId();
-
 }

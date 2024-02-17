@@ -137,9 +137,6 @@ message FileTransferCapabilities {
   //if true, yamcs-web shows a button for initiating a download
   optional bool download = 2;
 
-  // DEPRECATED: use a FileTransferOption in FileTransferServiceInfo to get a reliability toggle
-  optional bool reliability = 3 [deprecated=true];
-
   //if true, yamcs-web will show the section with the destination file/folder name (upload only)
   optional bool remotePath = 4;
 
@@ -211,53 +208,10 @@ message TransferInfo {
 }
 
 message CreateTransferRequest {
-  // Deprecated: use 'options' instead
-  message UploadOptions {
-    // Deprecated: use 'options' instead (name: overwrite)
-    // Set to ``True`` if an already existing destination should be overwritten.
-    // Default: ``True``.
-    optional bool overwrite = 1 [deprecated=true];
-
-    // Deprecated: use 'options' instead (name: createPath)
-    // Set to ``True`` if the destination path should be created if it does not exist.
-    // Default: ``True``.
-    optional bool createPath = 2 [deprecated=true];
-
-    // Deprecated: use 'options' instead (name: reliable)
-    // Set to ``True`` if reliable (class 2) CFDP transfer should be used,
-    // otherwise unreliable (class 1). Default: ``False``.
-    optional bool reliable = 3 [deprecated=true];
-
-    // Deprecated: use 'options' instead (name: closureRequested)
-    // Introduced in Issue 5 of the CFDP standard for non reliable (class 1) transfers
-    // Requests the receiver to send a Finished PDU at the end of the transfer
-    optional bool closureRequested = 4 [deprecated=true];
-  }
-  // Deprecated: use 'options' instead
-  message DownloadOptions {
-    // Deprecated: use 'options' instead (name: overwrite)
-    // Set to ``True`` if an already existing destination should be overwritten.
-    // Default: ``True``.
-    optional bool overwrite = 1 [deprecated=true];
-
-    // Deprecated: use 'options' instead (name: createPath)
-    // Set to ``True`` if the destination path should be created if it does not exist.
-    // Default: ``True``.
-    optional bool createPath = 2 [deprecated=true];
-
-    // Deprecated: use 'options' instead (name: reliable)
-    // Set to ``True`` if reliable (class 2) CFDP transfer should be used,
-    // otherwise unreliable (class 1). Default: ``False``.
-    optional bool reliable = 3 [deprecated=true];
-
-    // Deprecated: use 'options' instead (name: closureRequested)
-    // Introduced in Issue 5 of the CFDP standard for non reliable (class 1) transfers
-    // Requests the receiver to send a Finished PDU at the end of the transfer
-    optional bool closureRequested = 4 [deprecated=true];
-  }
-
+  // Yamcs instance name
   optional string instance = 1;
-  //service name
+
+  // File transfer service name
   optional string serviceName = 8;
 
   // **Required** One of ``UPLOAD`` or ``DOWNLOAD``.
@@ -274,14 +228,6 @@ message CreateTransferRequest {
   
   // **Required** The path at the remote entity. Example: ``a/local/path/some_filename``.
   optional string remotePath = 5;
-
-  // Deprecated: use 'options' instead
-  // Configuration options specific to ``DOWNLOAD`` transfers.
-  optional DownloadOptions downloadOptions = 6 [deprecated=true];
-
-  // Deprecated: use 'options' instead
-  // Configuration options specific to ``UPLOAD`` transfers.
-  optional UploadOptions uploadOptions = 7 [deprecated=true];
   
   //used to derive the source entity id
   optional string source = 9;
@@ -294,19 +240,23 @@ message CreateTransferRequest {
 }
 
 message PauseTransferRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
-  //service name
+
+  // File transfer service name
   optional string serviceName = 3;
+
   // Transfer identifier (assigned by Yamcs)
   optional int64 id = 2;
 }
 
 message CancelTransferRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
+
   // service name
   optional string serviceName = 3;
+
   // Transfer identifier (assigned by Yamcs)
   optional int64 id = 2;
 }
@@ -328,10 +278,12 @@ message ListTransfersRequest {
 }
 
 message GetTransferRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
+
   // service name
   optional string serviceName = 3;
+
   // Transfer identifier (assigned by Yamcs)
   optional int64 id = 2;
 }
@@ -343,6 +295,7 @@ message ListTransfersResponse {
 message SubscribeTransfersRequest {
   // Yamcs instance name.
   optional string instance = 1;
+
   // service name
   optional string serviceName = 2;
 }
@@ -369,7 +322,10 @@ message ListFilesRequest {
 
 message RemoteFile {
 
-  // Filename
+  // File identifier
+  //
+  // Typically, a remote file path, or a filename
+  // in case of a flat file table.
   optional string name = 1;
 
   // Optional display name. Can be used when the ``name``
