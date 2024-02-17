@@ -54,7 +54,7 @@ export class StackFolderPage implements OnDestroy {
     private configService: ConfigService,
     private basenamePipe: BasenamePipe
   ) {
-    title.setTitle('Stacks');
+    title.setTitle('Command stacks');
     this.storageClient = yamcs.createStorageClient();
 
     const config = configService.getConfig();

@@ -312,7 +312,8 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
     /**
      * Return the entity id of the Sender
      */
-    public long getInitiatorId() {
+    @Override
+    public long getInitiatorEntityId() {
         return cfdpTransactionId.getInitiatorEntity();
     }
 

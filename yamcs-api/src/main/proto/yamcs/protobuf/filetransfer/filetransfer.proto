@@ -205,6 +205,12 @@ message TransferInfo {
 
   // depending on the implementation, can mean normal file transfer, directory listing request, file download request, etc.
   optional string transferType = 14;
+
+  // Local entity, may be empty if there is only one such entity.
+  optional EntityInfo localEntity = 15;
+
+  // Remote entity, may be empty if there is only one such entity.
+  optional EntityInfo remoteEntity = 16;
 }
 
 message CreateTransferRequest {

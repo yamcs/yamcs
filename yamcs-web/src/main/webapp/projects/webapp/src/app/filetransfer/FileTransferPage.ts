@@ -39,7 +39,7 @@ export class FileTransferPage implements OnDestroy {
     synchronizer: Synchronizer,
     private authService: AuthService,
   ) {
-    title.setTitle('File Transfer');
+    title.setTitle('File transfer');
 
     const queryParams = route.snapshot.queryParamMap;
     const requestedService = queryParams.get('service');

@@ -1,6 +1,7 @@
 package org.yamcs.cfdp;
 
 import org.yamcs.filetransfer.FileTransfer;
+import org.yamcs.protobuf.TransferDirection;
 
 public interface CfdpFileTransfer extends FileTransfer {
 
@@ -36,4 +37,22 @@ public interface CfdpFileTransfer extends FileTransfer {
     long getInitiatorEntityId();
 
     long getDestinationId();
+
+    @Override
+    default Long getLocalEntityId() {
+        if (getDirection() == TransferDirection.UPLOAD) {
+            return getInitiatorEntityId();
+        } else {
+            return getDestinationId();
+        }
+    }
+
+    @Override
+    default Long getRemoteEntityId() {
+        if (getDirection() == TransferDirection.UPLOAD) {
+            return getDestinationId();
+        } else {
+            return getInitiatorEntityId();
+        }
+    }
 }

@@ -17,8 +17,10 @@ export class FileTransferTable implements OnChanges {
 
   private defaultColumns = [
     'startTime',
+    'localEntity',
     'localFile',
     'direction',
+    'remoteEntity',
     'remoteFile',
     'size',
     'status',
@@ -43,11 +45,7 @@ export class FileTransferTable implements OnChanges {
   }
 
   ngOnChanges() {
-    if (this.showActions) {
-      this.displayedColumns$.next([...this.defaultColumns, ...this.extraColumns, 'actions']);
-    } else {
-      this.displayedColumns$.next([...this.defaultColumns, ...this.extraColumns]);
-    }
+    this.displayedColumns$.next([...this.defaultColumns, ...this.extraColumns, 'actions']);
   }
 
   transferPercent(transfer: Transfer) {

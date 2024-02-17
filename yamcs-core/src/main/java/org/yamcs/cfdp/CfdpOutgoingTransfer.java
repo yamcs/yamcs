@@ -493,11 +493,6 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
     }
 
     @Override
-    public long getInitiatorEntityId() {
-        return getInitiatorId();
-    }
-
-    @Override
     public long getTotalSize() {
         return this.request.getFileLength();
     }
