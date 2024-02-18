@@ -13,8 +13,8 @@ import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.Service.State;
 
 /**
- * Expected class type for use with {@link org.yamcs.http.api.ReplayFactory} Adds functionality for stopping a replay, and
- * has support for pagination
+ * Expected class type for use with {@link org.yamcs.http.api.ReplayFactory} Adds functionality for stopping a replay,
+ * and has support for pagination
  */
 public abstract class ParameterReplayListener extends Service.Listener implements ParameterWithIdConsumer {
 
@@ -31,15 +31,19 @@ public abstract class ParameterReplayListener extends Service.Listener implement
     private Value lastValue;
 
     public ParameterReplayListener() {
-        paginate = false;
-        pos = -1;
-        limit = -1;
+        this(-1, -1);
     }
 
     public ParameterReplayListener(long pos, int limit) {
-        paginate = true;
-        this.pos = Math.max(pos, 0);
-        this.limit = Math.max(limit, 0);
+        if (pos == -1 && limit == -1) {
+            paginate = false;
+            this.pos = pos;
+            this.limit = limit;
+        } else {
+            paginate = true;
+            this.pos = Math.max(pos, 0);
+            this.limit = Math.max(limit, 0);
+        }
     }
 
     public void setNoRepeat(boolean noRepeat) {

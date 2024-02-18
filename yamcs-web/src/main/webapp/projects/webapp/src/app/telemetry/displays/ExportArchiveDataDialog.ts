@@ -72,6 +72,9 @@ export class ExportArchiveDataDialog implements OnDestroy {
       if (this.form.value['interval']) {
         dlOptions.interval = this.form.value['interval'];
       }
+      if (this.data.filename) {
+        dlOptions.filename = this.data.filename;
+      }
       const url = this.yamcs.yamcsClient.getParameterValuesDownloadURL(this.yamcs.instance!, dlOptions);
       this.downloadURL$.next(url);
     } else {

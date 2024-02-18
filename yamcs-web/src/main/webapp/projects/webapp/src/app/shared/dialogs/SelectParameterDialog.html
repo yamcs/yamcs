@@ -9,6 +9,7 @@
         {{ option | memberPath}}
       </mat-option>
     </mat-autocomplete>
+    <span class="hint" *ngIf="hint">{{ hint }}</span>
   </label>
 </mat-dialog-content>
 

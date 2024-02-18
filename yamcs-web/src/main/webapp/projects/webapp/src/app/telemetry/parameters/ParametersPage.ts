@@ -8,6 +8,43 @@ import { ColumnChooserComponent, ColumnInfo, GetParametersOptions, MemberPathPip
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { ListItem, ParametersDataSource } from './ParametersDataSource';
 
+export const PLIST_COLUMNS: ColumnInfo[] = [
+  { id: 'name', label: 'Name', alwaysVisible: true },
+  { id: 'type', label: 'Type', visible: true },
+  { id: 'dataSource', label: 'Data source', visible: true },
+  { id: 'engValue', label: 'Value', visible: true },
+  { id: 'shortDescription', label: 'Description', visible: true },
+  { id: 'actions', label: '', alwaysVisible: true },
+];
+
+export const PLIST_TYPE_OPTIONS: SelectOption[] = [
+  { id: 'ANY', label: 'Any type' },
+  { id: 'aggregate', label: 'aggregate' },
+  { id: 'array', label: 'array' },
+  { id: 'binary', label: 'binary' },
+  { id: 'boolean', label: 'boolean' },
+  { id: 'enumeration', label: 'enumeration' },
+  { id: 'float', label: 'float' },
+  { id: 'integer', label: 'integer' },
+  { id: 'string', label: 'string' },
+  { id: 'time', label: 'time' },
+];
+
+export const PLIST_SOURCE_OPTIONS: SelectOption[] = [
+  { id: 'ANY', label: 'Any source' },
+  { id: 'COMMAND', label: 'Command' },
+  { id: 'COMMAND_HISTORY', label: 'Command History' },
+  { id: 'CONSTANT', label: 'Constant' },
+  { id: 'DERIVED', label: 'Derived' },
+  { id: 'EXTERNAL1', label: 'External 1' },
+  { id: 'EXTERNAL2', label: 'External 2' },
+  { id: 'EXTERNAL3', label: 'External 3' },
+  { id: 'GROUND', label: 'Ground' },
+  { id: 'LOCAL', label: 'Local' },
+  { id: 'SYSTEM', label: 'System' },
+  { id: 'TELEMETERED', label: 'Telemetered' },
+];
+
 @Component({
   templateUrl: './ParametersPage.html',
   styleUrls: ['./ParametersPage.css'],
@@ -43,45 +80,12 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
 
   dataSource: ParametersDataSource;
 
-  columns: ColumnInfo[] = [
-    { id: 'name', label: 'Name', alwaysVisible: true },
-    { id: 'type', label: 'Type', visible: true },
-    { id: 'dataSource', label: 'Data source', visible: true },
-    { id: 'engValue', label: 'Value', visible: true },
-    { id: 'shortDescription', label: 'Description', visible: true },
-    { id: 'actions', label: '', alwaysVisible: true },
-  ];
+  columns = PLIST_COLUMNS;
+  typeOptions = PLIST_TYPE_OPTIONS;
+  sourceOptions = PLIST_SOURCE_OPTIONS;
 
   // Added dynamically based on actual commands.
   aliasColumns$ = new BehaviorSubject<ColumnInfo[]>([]);
-
-  typeOptions: SelectOption[] = [
-    { id: 'ANY', label: 'Any type' },
-    { id: 'aggregate', label: 'aggregate' },
-    { id: 'array', label: 'array' },
-    { id: 'binary', label: 'binary' },
-    { id: 'boolean', label: 'boolean' },
-    { id: 'enumeration', label: 'enumeration' },
-    { id: 'float', label: 'float' },
-    { id: 'integer', label: 'integer' },
-    { id: 'string', label: 'string' },
-    { id: 'time', label: 'time' },
-  ];
-
-  sourceOptions: SelectOption[] = [
-    { id: 'ANY', label: 'Any source' },
-    { id: 'COMMAND', label: 'Command' },
-    { id: 'COMMAND_HISTORY', label: 'Command History' },
-    { id: 'CONSTANT', label: 'Constant' },
-    { id: 'DERIVED', label: 'Derived' },
-    { id: 'EXTERNAL1', label: 'External 1' },
-    { id: 'EXTERNAL2', label: 'External 2' },
-    { id: 'EXTERNAL3', label: 'External 3' },
-    { id: 'GROUND', label: 'Ground' },
-    { id: 'LOCAL', label: 'Local' },
-    { id: 'SYSTEM', label: 'System' },
-    { id: 'TELEMETERED', label: 'Telemetered' },
-  ];
 
   private queryParamMapSubscription: Subscription;
 

@@ -29,6 +29,7 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.logging.Log;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
+import org.yamcs.plists.ParameterListService;
 import org.yamcs.protobuf.AbstractInstancesApi;
 import org.yamcs.protobuf.CreateInstanceRequest;
 import org.yamcs.protobuf.GetInstanceRequest;
@@ -463,6 +464,9 @@ public class InstancesApi extends AbstractInstancesApi<Context> {
         }
         if (!ysi.getServicesWithConfig(TimelineService.class).isEmpty()) {
             instanceb.addCapabilities("timeline");
+        }
+        if (!ysi.getServicesWithConfig(ParameterListService.class).isEmpty()) {
+            instanceb.addCapabilities("parameter-lists");
         }
         return instanceb.build();
     }

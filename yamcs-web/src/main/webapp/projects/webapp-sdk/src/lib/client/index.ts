@@ -13,6 +13,7 @@ export * from './types/filetransfer';
 export * from './types/management';
 export * from './types/mdb';
 export * from './types/monitoring';
+export * from './types/plists';
 export * from './types/processing';
 export * from './types/queue';
 export * from './types/session';

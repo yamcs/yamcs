@@ -9,6 +9,7 @@ export interface SelectParameterOptions {
   label?: string;
   okLabel?: string;
   exclude?: string[];
+  hint?: string;
   limit?: number;
 }
 
@@ -30,6 +31,7 @@ export class SelectParameterDialog implements OnInit {
   label: string;
   okLabel: string;
   limit: number;
+  hint?: string;
 
   constructor(
     private dialogRef: MatDialogRef<SelectParameterDialog>,
@@ -40,6 +42,7 @@ export class SelectParameterDialog implements OnInit {
     this.label = data.label || 'Search parameter';
     this.okLabel = data.okLabel || 'SELECT';
     this.limit = data.limit || 10;
+    this.hint = data.hint;
   }
 
   ngOnInit() {

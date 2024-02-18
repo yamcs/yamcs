@@ -46,6 +46,6 @@ public class WebApi extends AbstractWebApi<Context> {
         }
         b.setStackBucket(stackBucket);
 
-        observer.next(b.build());
+        observer.complete(b.build());
     }
 }

@@ -216,6 +216,19 @@ export interface DownloadParameterValuesOptions {
   norepeat?: boolean;
   delimiter?: 'TAB' | 'COMMA' | 'SEMICOLON';
   interval?: number;
+  filename?: string;
+}
+
+export interface ExportParameterValuesOptions {
+  start?: string;
+  stop?: string;
+  parameters?: string[];
+  namespace?: string;
+  delimiter?: 'TAB' | 'COMMA' | 'SEMICOLON';
+  preserveLastValue?: boolean;
+  interval?: number;
+  limit?: number;
+  order?: 'asc' | 'desc';
 }
 
 export interface GetParameterSamplesOptions {

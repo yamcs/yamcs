@@ -13,7 +13,8 @@ import { CreateTransferRequest, ListFilesRequest, ListFilesResponse, RemoteFileL
 import { AlarmsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstanceTemplatesWrapper, InstancesWrapper, LinksWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SessionsWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
 import { AlgorithmOverrides, AlgorithmStatus, AlgorithmTrace, AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParameterTypesOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParameterType, ParameterTypesPage, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
-import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, ExecutorInfo, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetGapsOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListApidsResponse, ListGapsResponse, ListPacketsResponse, Packet, ParameterData, ParameterValue, PlaybackInfo, Range, RequestPlaybackRequest, Sample, StartProcedureOptions, Value } from './types/monitoring';
+import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, ExecutorInfo, ExportParameterValuesOptions, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetGapsOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListApidsResponse, ListGapsResponse, ListPacketsResponse, Packet, ParameterData, ParameterValue, PlaybackInfo, Range, RequestPlaybackRequest, Sample, StartProcedureOptions, Value } from './types/monitoring';
+import { CreateParameterListRequest, GetParameterListsResponse, ParameterList, UpdateParameterListRequest } from './types/plists';
 import { AlgorithmStatusSubscription, ExtractPacketResponse, PacketNamesResponse, ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeAlgorithmStatusRequest, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
 import { CommandQueue, CommandQueueEvent, QueueEventsSubscription, QueueStatisticsSubscription, SubscribeQueueEventsRequest, SubscribeQueueStatisticsRequest } from './types/queue';
 import { SessionEvent, SessionSubscription } from './types/session';
@@ -454,6 +455,42 @@ export default class YamcsClient implements HttpHandler {
     return await this.doFetch(url, {
       method: 'DELETE',
     });
+  }
+
+  async getParameterLists(instance: string) {
+    const url = `${this.apiUrl}/parameter-lists/${instance}/lists`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as GetParameterListsResponse;
+    return wrapper.lists || [];
+  }
+
+  async getParameterList(instance: string, id: string) {
+    const url = `${this.apiUrl}/parameter-lists/${instance}/lists/${id}`;
+    const response = await this.doFetch(url);
+    return await response.json() as ParameterList;
+  }
+
+  async createParameterList(instance: string, options: CreateParameterListRequest) {
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(`${this.apiUrl}/parameter-lists/${instance}/lists`, {
+      body,
+      method: 'POST',
+    });
+    return await response.json() as ParameterList;
+  }
+
+  async updateParameterList(instance: string, id: string, options: UpdateParameterListRequest) {
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(`${this.apiUrl}/parameter-lists/${instance}/lists/${id}`, {
+      body,
+      method: 'PATCH',
+    });
+    return await response.json() as ParameterList;
+  }
+
+  async deleteParameterList(instance: string, id: string) {
+    const url = `${this.apiUrl}/parameter-lists/${instance}/lists/${id}`;
+    return await this.doFetch(url, { method: 'DELETE' });
   }
 
   async getUsers() {
@@ -1122,6 +1159,15 @@ export default class YamcsClient implements HttpHandler {
   getParameterValuesDownloadURL(instance: string, options: DownloadParameterValuesOptions = {}) {
     const url = `${this.apiUrl}/archive/${instance}:exportParameterValues`;
     return url + this.queryString(options);
+  }
+
+  async exportParameterValues(instance: string, options: ExportParameterValuesOptions) {
+    const url = `${this.apiUrl}/archive/${instance}:exportParameterValues`;
+    const response = await this.doFetch(url, {
+      method: 'POST',
+      body: JSON.stringify(options),
+    });
+    return await response.text();
   }
 
   async setParameterValue(instance: string, processorName: string, qualifiedName: string, value: Value) {

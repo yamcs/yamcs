@@ -196,6 +196,7 @@ public class SecurityStore {
         systemPrivileges.add(SystemPrivilege.CreateInstances);
         systemPrivileges.add(SystemPrivilege.GetMissionDatabase);
         systemPrivileges.add(SystemPrivilege.ManageAnyBucket);
+        systemPrivileges.add(SystemPrivilege.ManageParameterLists);
         systemPrivileges.add(SystemPrivilege.ModifyCommandHistory);
         systemPrivileges.add(SystemPrivilege.ReadAlarms);
         systemPrivileges.add(SystemPrivilege.ReadCommandHistory);
