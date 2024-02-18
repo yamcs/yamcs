@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
@@ -296,6 +297,9 @@ public class WebFileDeployer {
         var gson = new GsonBuilder().setPrettyPrinting().create();
         try (var reader = Files.newBufferedReader(file, UTF_8)) {
             var jsonObject = gson.fromJson(reader, JsonObject.class);
+            if (jsonObject == null) { // EOF
+                throw new EOFException();
+            }
             if (jsonObject.get("configVersion").getAsInt() != 1) {
                 log.warn("Unexpected ngsw.json config version");
             }
@@ -369,7 +373,11 @@ public class WebFileDeployer {
                                 log.debug("Redeploying yamcs-web from {}", source);
                                 FileUtils.deleteContents(target);
                                 FileUtils.copyRecursively(source, target);
-                                prepareWebApplication();
+                                try {
+                                    prepareWebApplication();
+                                } catch (EOFException e) {
+                                    // Ignore, expect another later watch event
+                                }
                             }
                             loop = key.reset();
                         }
