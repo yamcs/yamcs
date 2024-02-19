@@ -64,6 +64,12 @@ maxContentLength (integer)
 
     Some routes may specify a custom ``maxBodySize`` option, in which case the maximum of the two values gets applied.
 
+maxInitialLineLength (integer)
+    Maximum allowed length of the initial line (for example: ``GET / HTTP/1.1``). Default: ``8192``
+
+maxHeaderSize (integer)
+    Maximum allowed length of all headers combined. Default: ``8192``
+
 nThreads (integer)
     Configure the number of threads that handle HTTP requests. The value ``0`` resolves to two times the number of CPU cores. Default: ``0``
 

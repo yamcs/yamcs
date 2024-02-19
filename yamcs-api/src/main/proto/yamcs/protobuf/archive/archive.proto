@@ -47,6 +47,10 @@ service StreamArchiveApi {
   rpc ExportParameterValues(ExportParameterValuesRequest) returns (stream yamcs.api.HttpBody) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}:exportParameterValues"
+      additional_bindings {
+        post: "/api/archive/{instance}:exportParameterValues"
+        body: "*"
+      }
     };
   }
 }

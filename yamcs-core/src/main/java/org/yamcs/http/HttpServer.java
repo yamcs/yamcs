@@ -192,6 +192,8 @@ public class HttpServer extends AbstractYamcsService {
         spec.addOption("tlsKey", OptionType.STRING);
         spec.addOption("contextPath", OptionType.STRING).withDefault("" /* NOT null */);
         spec.addOption("zeroCopyEnabled", OptionType.BOOLEAN).withDefault(true);
+        spec.addOption("maxInitialLineLength", OptionType.INTEGER).withDefault(8192);
+        spec.addOption("maxHeaderSize", OptionType.INTEGER).withDefault(8192);
         spec.addOption("maxContentLength", OptionType.INTEGER).withDefault(65536);
         spec.addOption("cors", OptionType.MAP).withSpec(corsSpec);
         spec.addOption("webSocket", OptionType.MAP).withSpec(websocketSpec).withApplySpecDefaults(true);
