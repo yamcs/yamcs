@@ -3,8 +3,7 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuditRecord, GetAuditRecordsOptions, MessageService, SelectComponent, SelectOption, utils } from '@yamcs/webapp-sdk';
-import { YamcsService } from '../../core/services/YamcsService';
+import { AuditRecord, GetAuditRecordsOptions, MessageService, SelectComponent, SelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 
 
 @Component({

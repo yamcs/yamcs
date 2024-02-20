@@ -14,10 +14,9 @@ import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.XtceDb;
 
 public class RefXtceDecodingTest {
-    static XtceDb mdb;
+    static Mdb mdb;
     static MetaCommandProcessor metaCommandProcessor;
     long now = TimeEncoding.getWallclockTime();
     XtceTmExtractor extractor;
@@ -25,7 +24,7 @@ public class RefXtceDecodingTest {
     @BeforeAll
     public static void beforeClass() throws ConfigurationException {
         YConfiguration.setupTest(null);
-        mdb = XtceDbFactory.createInstanceByConfig("refxtce");
+        mdb = MdbFactory.createInstanceByConfig("refxtce");
         metaCommandProcessor = new MetaCommandProcessor(new ProcessorData("test", "test", mdb, new ProcessorConfig()));
     }
 

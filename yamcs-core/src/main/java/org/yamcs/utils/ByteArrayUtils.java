@@ -1,6 +1,7 @@
 package org.yamcs.utils;
 
 import java.util.Arrays;
+import java.nio.ByteBuffer;
 
 public class ByteArrayUtils {
     public static final byte[] EMPTY = new byte[0];
@@ -88,6 +89,32 @@ public class ByteArrayUtils {
         a[offset + 7] = (byte) (x >> 56);
 
         return a;
+    }
+
+    public static long decodeCustomInteger(byte[] a, int offset, int length) {
+        if (offset < 0 || length <= 0 || offset + length > a.length) {
+            throw new IllegalArgumentException("Invalid offset or length");
+        }
+
+        long result = 0;
+        for (int i = 0; i < length; i++) {
+            result = (result << 8) | (a[offset + i] & 0xFF);
+        }
+
+        return result;
+    }
+
+    public static byte[] encodeCustomInteger(long value, int size) {
+        if (size < 1 || size > 8) {
+            throw new IllegalArgumentException("Byte size must be between 1 and 8");
+        }
+        
+        byte[] bb = new byte[size];
+        for (int i = (size - 1); i >= 0; i--) {
+            bb[size - (i + 1)] = (byte) (value >> (i * 8));
+        }
+
+        return bb;
     }
 
     /**

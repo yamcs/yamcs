@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ConfigService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
-import { ConfigService } from '../../core/services/ConfigService';
 import { ScriptViewer } from './ScriptViewer';
 
 @Component({

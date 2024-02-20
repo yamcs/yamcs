@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Parameter, ParameterSubscription, ParameterValue, Synchronizer } from '@yamcs/webapp-sdk';
+import { Parameter, ParameterSubscription, ParameterValue, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   templateUrl: './ParameterSummaryTab.html',

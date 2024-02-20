@@ -75,7 +75,6 @@ import { DateTimePipe } from './pipes/datetime.pipe';
 import { DefaultProcessorPipe } from './pipes/default-processor.pipe';
 import { DeltaWithPipe } from './pipes/delta-with.pipe';
 import { DurationPipe } from './pipes/duration.pipe';
-import { EffectiveSignificancePipe } from './pipes/effective-significance.pipe';
 import { EntryForOffsetPipe } from './pipes/entry-for-offset.pipe';
 import { ExtensionPipe } from './pipes/extension.pipe';
 import { FilenamePipe } from './pipes/filename.pipe';
@@ -84,6 +83,7 @@ import { HexDumpPipe } from './pipes/hex-dump.pipe';
 import { HexPipe } from './pipes/hex.pipe';
 import { MayAccessAdminAreaPipe } from './pipes/may-access-admin-area.pipe';
 import { MemberPathPipe } from './pipes/member-path.pipe';
+import { MillisDurationPipe } from './pipes/millis-duration.pipe';
 import { NanosDurationPipe } from './pipes/nanos-duration.pipe';
 import { NvlPipe } from './pipes/nvl.pipe';
 import { OperatorPipe } from './pipes/operator.pipe';
@@ -110,7 +110,6 @@ const pipes = [
   DefaultProcessorPipe,
   DeltaWithPipe,
   DurationPipe,
-  EffectiveSignificancePipe,
   EntryForOffsetPipe,
   ExtensionPipe,
   FilenamePipe,
@@ -120,6 +119,7 @@ const pipes = [
   HexPipe,
   MayAccessAdminAreaPipe,
   MemberPathPipe,
+  MillisDurationPipe,
   NanosDurationPipe,
   NvlPipe,
   OperatorPipe,

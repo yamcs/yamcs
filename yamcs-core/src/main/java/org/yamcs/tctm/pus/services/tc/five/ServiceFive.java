@@ -1,5 +1,6 @@
 package org.yamcs.tctm.pus.services.tc.five;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,7 +10,8 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tc.PusTcModifier;
+import org.yamcs.tctm.pus.services.tc.PusTcCcsdsPacket;
+
 
 public class ServiceFive implements PusService {
     Log log;
@@ -33,11 +35,11 @@ public class ServiceFive implements PusService {
 
     @Override
     public PreparedCommand addPusModifiers(PreparedCommand telecommand) {
-        return pusSubServices.get(PusTcModifier.getMessageSubType(telecommand)).process(telecommand);
+        return pusSubServices.get(PusTcCcsdsPacket.getMessageSubType(telecommand)).process(telecommand);
     }
 
     @Override
-    public TmPacket extractPusModifiers(TmPacket tmPacket) {
+    public ArrayList<TmPacket> extractPusModifiers(TmPacket tmPacket) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'extractPusModifiers'");
     }

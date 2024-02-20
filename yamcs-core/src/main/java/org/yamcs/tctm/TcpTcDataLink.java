@@ -9,8 +9,6 @@ import java.nio.channels.CancelledKeyException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
@@ -50,24 +48,6 @@ public class TcpTcDataLink extends AbstractThreadedTcDataLink {
     private void configure(String yamcsInstance, YConfiguration config) {
         host = config.getString("host");
         port = config.getInt("port");
-    }
-
-    @Override
-    protected void initPostprocessor(String instance, YConfiguration config) {
-        // traditionally this has used by default the ISS post-processor
-        Map<String, Object> m = null;
-        if (config == null) {
-            m = new HashMap<>();
-            config = YConfiguration.wrap(m);
-        } else if (!config.containsKey("commandPostprocessorClassName")) {
-            m = config.getRoot();
-        }
-        if (m != null) {
-            log.warn(
-                    "Please set the commandPostprocessorClassName for the TcpTcDataLink; in the future versions it will default to GenericCommandPostprocessor");
-            m.put("commandPostprocessorClassName", IssCommandPostprocessor.class.getName());
-        }
-        super.initPostprocessor(instance, config);
     }
 
     /**

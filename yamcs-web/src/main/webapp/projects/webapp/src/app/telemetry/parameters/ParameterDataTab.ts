@@ -3,9 +3,8 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GetParameterValuesOptions, SelectOption, utils } from '@yamcs/webapp-sdk';
+import { GetParameterValuesOptions, SelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 import { ExportParameterDataDialog } from './ExportParameterDataDialog';
 import { ParameterDataDataSource } from './ParameterDataDataSource';
 

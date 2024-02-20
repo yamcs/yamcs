@@ -8,6 +8,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StandardTupleDefinitions;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersService;
@@ -26,13 +27,13 @@ import org.yamcs.yarch.protobuf.Db.ProtoDataType;
 public class ParameterReplayHandler implements ReplayHandler {
     Set<String> includeGroups = new HashSet<>();
     Set<String> excludeGroups = new HashSet<>();
-    final XtceDb xtceDb;
+    final Mdb mdb;
     ReplayOptions request;
     static final Logger log = LoggerFactory.getLogger(ParameterReplayHandler.class);
     boolean emptyReplay;
 
-    public ParameterReplayHandler(XtceDb xtceDb) {
-        this.xtceDb = xtceDb;
+    public ParameterReplayHandler(Mdb mdb) {
+        this.mdb = mdb;
     }
 
     @Override
@@ -99,10 +100,10 @@ public class ParameterReplayHandler implements ReplayHandler {
                 log.warn("got unexpected value for column {}: {}", colName, o);
                 continue;
             }
-            Parameter p = xtceDb.getParameter(pv.getParameterQualifiedName());
+            Parameter p = mdb.getParameter(pv.getParameterQualifiedName());
             if (p == null) {
                 if (XtceDb.isSystemParameter(pv.getParameterQualifiedName())) {
-                    p = SystemParametersService.createSystemParameter(xtceDb, pv.getParameterQualifiedName(),
+                    p = SystemParametersService.createSystemParameter(mdb, pv.getParameterQualifiedName(),
                             pv.getEngValue());
                 } else {
                     log.info("Cannot find a parameter with fqn {}", pv.getParameterQualifiedName());

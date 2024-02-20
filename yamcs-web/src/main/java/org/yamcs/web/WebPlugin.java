@@ -2,7 +2,14 @@ package org.yamcs.web;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.yamcs.Experimental;
 import org.yamcs.Plugin;
 import org.yamcs.PluginException;
 import org.yamcs.YConfiguration;
@@ -33,6 +40,14 @@ public class WebPlugin implements Plugin {
 
     private Log log = new Log(getClass());
 
+    private WebFileDeployer deployer;
+    private AngularHandler angularHandler;
+
+    // We need these outside of deployer because we cannot predict the order in which
+    // plugins are loaded.
+    private List<Path> extraStaticRoots = new ArrayList<>();
+    private Map<String, Map<String, Object>> extraConfigs = new HashMap<>();
+
     @Override
     public void onLoad(YConfiguration config) throws PluginException {
         var yamcs = YamcsServer.getServer();
@@ -44,8 +59,8 @@ public class WebPlugin implements Plugin {
         createBuckets(config);
 
         try {
-            var deployer = new WebFileDeployer(config, contextPath);
-            setupRoutes(config, deployer.getDirectory());
+            deployer = new WebFileDeployer(config, contextPath, extraStaticRoots, extraConfigs);
+            setupRoutes(config, deployer);
         } catch (IOException | ParseException e) {
             throw new PluginException("Could not deploy website", e);
         }
@@ -57,6 +72,19 @@ public class WebPlugin implements Plugin {
                 log.info("Website deployed at {}{}", binding, contextPath);
             }
         });
+    }
+
+    @Experimental
+    public void addExtension(String id, Map<String, Object> config, Path staticRoot) {
+        extraConfigs.put(id, config);
+        extraStaticRoots.add(staticRoot);
+        if (deployer != null) { // Trigger deploy, if deployer is already available
+            deployer.setExtraSources(extraStaticRoots, extraConfigs);
+            angularHandler.setStaticRoots(Stream.concat(
+                    Stream.of(deployer.getDirectory()),
+                    deployer.getExtraStaticRoots().stream())
+                    .collect(Collectors.toList()));
+        }
     }
 
     private void createBuckets(YConfiguration config) throws PluginException {
@@ -110,10 +138,15 @@ public class WebPlugin implements Plugin {
     /**
      * Add routes used by Web UI.
      */
-    private void setupRoutes(YConfiguration config, Path directory) throws PluginException {
+    private void setupRoutes(YConfiguration config, WebFileDeployer deployer)
+            throws PluginException {
         var httpServer = YamcsServer.getServer().getGlobalService(HttpServer.class);
 
-        var angularHandler = new AngularHandler(config, httpServer, directory);
+        angularHandler = new AngularHandler(
+                config,
+                httpServer,
+                deployer.getDirectory(),
+                deployer.getExtraStaticRoots());
         httpServer.addRoute("*", () -> angularHandler);
 
         // Additional API Routes

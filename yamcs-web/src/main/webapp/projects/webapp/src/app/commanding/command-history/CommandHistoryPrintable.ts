@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Printable } from '@yamcs/webapp-sdk';
-import { CommandHistoryRecord } from './CommandHistoryRecord';
+import { CommandHistoryRecord, Printable } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-command-history-printable',

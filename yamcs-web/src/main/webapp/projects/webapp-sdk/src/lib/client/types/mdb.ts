@@ -72,6 +72,11 @@ export interface NamedObjectId {
 }
 
 export interface ParameterType {
+  name: string;
+  qualifiedName: string;
+  shortDescription: string;
+  longDescription: string;
+  alias: NamedObjectId[];
   engType: string;
   arrayInfo?: ArrayInfo;
   dataEncoding?: DataEncoding;
@@ -82,6 +87,9 @@ export interface ParameterType {
   absoluteTimeInfo: AbsoluteTimeInfo;
   member: Member[];
   signed?: boolean;
+  oneStringValue?: string;
+  zeroStringValue?: string;
+  usedBy?: Parameter[];
 }
 
 export interface ArrayInfo {
@@ -166,6 +174,7 @@ export interface Command extends NameDescription {
   argument: Argument[];
   argumentAssignment: ArgumentAssignment[];
   significance: Significance;
+  effectiveSignificance: Significance;
   constraint: TransmissionConstraint[];
   commandContainer: CommandContainer;
   verifier: Verifier[];
@@ -377,9 +386,25 @@ export interface GetParametersOptions {
   next?: string;
 }
 
+export interface GetParameterTypesOptions {
+  q?: string;
+  system?: string;
+  pos?: number;
+  limit?: number;
+  next?: string;
+  fields?: Array<keyof ParameterType>;
+}
+
 export interface ParametersPage {
   spaceSystems?: string[];
   parameters?: Parameter[];
+  continuationToken?: string;
+  totalSize: number;
+}
+
+export interface ParameterTypesPage {
+  spaceSystems?: string[];
+  parameterTypes?: ParameterType[];
   continuationToken?: string;
   totalSize: number;
 }
@@ -420,6 +445,7 @@ export interface GetCommandsOptions {
   pos?: number;
   limit?: number;
   details?: boolean;
+  fields?: Array<keyof Command>;
 }
 
 export interface CommandsPage {

@@ -31,6 +31,7 @@ public class BasicParameterValue extends RawEngValue {
     // copy constructor - copies all the fields in a shallow mode
     public BasicParameterValue(BasicParameterValue pv) {
         super(pv);
+        this.status = pv.status;
     }
 
 

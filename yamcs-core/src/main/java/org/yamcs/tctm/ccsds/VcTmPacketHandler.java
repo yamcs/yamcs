@@ -14,6 +14,7 @@ import org.yamcs.tctm.TmPacketDataLink;
 import org.yamcs.tctm.TmSink;
 import org.yamcs.time.Instant;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.YObjectLoader;
 
 /**
@@ -31,6 +32,7 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
     int packetLostCount;
     private final Log log;
     PacketDecoder packetDecoder;
+    PixxelPacketDecoder pPacketDecoder;
     long idleFrameCount = 0;
     PacketPreprocessor packetPreprocessor;
     final String name;
@@ -48,6 +50,9 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, this.getClass().getSimpleName(), 10000);
         log = new Log(this.getClass(), yamcsInstance);
         log.setContext(name);
+
+        // Temporary Packet Decoder
+        pPacketDecoder = new PixxelPacketDecoder(vmp.maxPacketLength, p -> handlePacket(p));
 
         packetDecoder = new PacketDecoder(vmp.maxPacketLength, p -> handlePacket(p));
         packetDecoder.stripEncapsulationHeader(vmp.stripEncapsulationHeader);
@@ -92,33 +97,61 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
         int dataEnd = frame.getDataEnd();
         byte[] data = frame.getData();
 
-        try {
-            int frameLoss = frame.lostFramesCount(lastFrameSeq);
-            lastFrameSeq = frame.getVcFrameSeq();
+        if (!vmp.usePixxelDecoder) {
+            try {
+                int frameLoss = frame.lostFramesCount(lastFrameSeq);
+                lastFrameSeq = frame.getVcFrameSeq();
 
-            if (packetDecoder.hasIncompletePacket()) {
-                if (frameLoss != 0) {
-                    log.warn("Incomplete packet dropped because of frame loss ");
-                    packetDecoder.reset();
-                } else {
-                    if (packetStart != -1) {
-                        packetDecoder.process(data, dataStart, packetStart - dataStart);
+                if (packetDecoder.hasIncompletePacket()) {
+                    if (frameLoss != 0) {
+                        log.warn("Incomplete packet dropped because of frame loss ");
+                        packetDecoder.reset();
                     } else {
-                        packetDecoder.process(data, dataStart, dataEnd - dataStart);
+                        if (packetStart != -1) {
+                            packetDecoder.process(data, dataStart, packetStart - dataStart);
+                        } else {
+                            packetDecoder.process(data, dataStart, dataEnd - dataStart);
+                        }
                     }
                 }
-            }
-            if (packetStart != -1) {
-                if (packetDecoder.hasIncompletePacket()) {
-                    eventProducer
-                            .sendWarning("Incomplete packet decoded when reaching the beginning of another packet");
-                    packetDecoder.reset();
+                if (packetStart != -1) {
+                    if (packetDecoder.hasIncompletePacket()) {
+                        eventProducer
+                                .sendWarning("Incomplete packet decoded when reaching the beginning of another packet");
+                        packetDecoder.reset();
+                    }
+                    packetDecoder.process(data, packetStart, dataEnd - packetStart);
                 }
-                packetDecoder.process(data, packetStart, dataEnd - packetStart);
+            } catch (TcTmException e) {
+                packetDecoder.reset();
+                eventProducer.sendWarning(e.toString());
             }
-        } catch (TcTmException e) {
-            packetDecoder.reset();
-            eventProducer.sendWarning(e.toString());
+
+        } else {
+            try {
+                int frameLoss = frame.lostFramesCount(lastFrameSeq);
+                lastFrameSeq = frame.getVcFrameSeq();
+
+                if (frameLoss != 0) {
+                    log.warn("Frame has been dropped, sigh");
+                }
+
+                if (packetStart != -1) {
+                    pPacketDecoder.process(data, packetStart, dataEnd - packetStart);
+                    pPacketDecoder.reset();
+                }   
+            } catch (TcTmException e) {
+                pPacketDecoder.reset();
+                eventProducer.sendWarning(e.toString());
+            } catch (ArrayIndexOutOfBoundsException e) {
+                pPacketDecoder.reset();
+                log.warn(e.toString() + "\n"
+                        + "     Full Frame: " + StringConverter.arrayToHexString(data, true) + "\n"
+                        + "     Packet Start: " + packetStart + "\n"
+                        + "     Data (i.e Frame) End: " + dataEnd + "\n"
+                );
+                eventProducer.sendWarning(e.toString());
+            }
         }
     }
 

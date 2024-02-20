@@ -30,7 +30,7 @@ import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.management.LinkManager.InvalidPacketAction.Action;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.memento.MementoDb;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.parameter.SystemParametersService;
@@ -256,8 +256,10 @@ public class LinkManager {
         Long obt = tmPacket.getObt() == Long.MIN_VALUE ? null : tmPacket.getObt();
 
         t = new Tuple(StandardTupleDefinitions.TM,
-                new Object[] {tmPacket.getGenerationTime(), tmPacket.getSeqCount(), tmPacket.getReceptionTime(),
-                    tmPacket.getStatus(), tmPacket.getPacket(), ertime, obt, tmLink.getName(), tmPacket.getPusTmContainersPayload(), tmPacket.getPusTmContainersGentime() });
+                new Object[] {
+                    tmPacket.getGenerationTime(), tmPacket.getSeqCount(), tmPacket.getReceptionTime(), tmPacket.getStatus(), tmPacket.getPacket(), ertime, obt, tmLink.getName()
+                }
+            );
 
         stream.emitTuple(t);
     }
@@ -565,7 +567,7 @@ public class LinkManager {
 
         @Override
         public void onTuple(Stream s, Tuple tuple) {
-            XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
+            XtceDb xtcedb = MdbFactory.getInstance(yamcsInstance);
             PreparedCommand pc = PreparedCommand.fromTuple(tuple, xtcedb);
             boolean sent = false;
             String reason = "no link available";

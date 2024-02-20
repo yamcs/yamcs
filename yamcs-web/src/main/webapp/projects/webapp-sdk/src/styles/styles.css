@@ -121,7 +121,8 @@ a.ya-link.ya-header-link {
   min-height: 24px;
 }
  
-.ya-menu .mat-mdc-menu-content .mat-mdc-menu-item .mdc-list-item__primary-text {
+.ya-menu .mat-mdc-menu-content .mat-mdc-menu-item .mdc-list-item__primary-text,
+.ya-menu .mat-mdc-menu-content .mat-mdc-menu-item .mat-mdc-menu-item-text {
   font-size: 12px;
 }
 

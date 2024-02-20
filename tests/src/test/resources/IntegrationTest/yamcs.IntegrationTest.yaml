@@ -37,7 +37,11 @@ mdb:
     args: 
       file: "mdb/refmdb.xls"
       enableAliasReferences: false
-
+  - type: "xtce"    
+    args:
+      file: "mdb/writable_subsys.xml"
+    writable: true
+    
 streamConfig:
   tm: 
    - name: tm_realtime

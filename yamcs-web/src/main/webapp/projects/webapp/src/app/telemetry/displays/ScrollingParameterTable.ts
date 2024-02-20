@@ -1,9 +1,8 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { ParameterValue, Synchronizer } from '@yamcs/webapp-sdk';
+import { ParameterValue, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 import { ParameterTableBuffer } from './ParameterTableBuffer';
 import { ParameterTable } from './ParameterTableModel';
 

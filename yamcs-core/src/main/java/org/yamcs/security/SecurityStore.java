@@ -443,21 +443,22 @@ public class SecurityStore {
             }
 
             log.info("Successfully logged in {}", user);
-            try {
-                user.updateLoginData();
-                if (!authenticationInfo.getExternalIdentities().isEmpty()) {
-                    authenticationInfo.getExternalIdentities().forEach(user::addIdentity);
-                    if (authenticationInfo.getDisplayName() != null) {
-                        user.setDisplayName(authenticationInfo.getDisplayName());
-                    }
-                    if (authenticationInfo.getEmail() != null) {
-                        user.setEmail(authenticationInfo.getEmail());
-                    }
+
+            user.updateLoginData();
+            if (!authenticationInfo.getExternalIdentities().isEmpty()) {
+                authenticationInfo.getExternalIdentities().forEach(user::addIdentity);
+                if (authenticationInfo.getDisplayName() != null) {
+                    user.setDisplayName(authenticationInfo.getDisplayName());
                 }
+                if (authenticationInfo.getEmail() != null) {
+                    user.setEmail(authenticationInfo.getEmail());
+                }
+            }
+            try {
                 directory.updateUserProperties(user);
                 userCache.putUserInCache(user);
                 f.complete(authenticationInfo);
-            } catch (IOException e) {
+            } catch (Throwable e) {
                 f.completeExceptionally(e);
             }
         }, loginExecutor);

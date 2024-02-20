@@ -13,7 +13,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tm.PusTmModifier;
+import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.yarch.Bucket;
 
@@ -42,15 +42,16 @@ public class SubServiceEight implements PusSubService {
     }
 
     @Override
-    public TmPacket process(TmPacket tmPacket) {
-        byte[] dataField = PusTmModifier.getDataField(tmPacket);
+    public ArrayList<TmPacket> process(TmPacket tmPacket) {
+        PusTmCcsdsPacket pPkt = new PusTmCcsdsPacket(tmPacket.getPacket());
+        byte[] dataField = pPkt.getDataField();
 
         byte[] eventDefinitionsIDsArr = Arrays.copyOfRange(dataField, DEFAULT_INTEGER_SIZE, dataField.length);
         int numberOfEventDefinitions = ByteArrayUtils.decodeInt(dataField, 0);
 
         ArrayList<Integer> eventDefinitionIDs = new ArrayList<Integer>(numberOfEventDefinitions);
         for(int index = 0; index < numberOfEventDefinitions; index++) {
-            int eventDefinitionID = PusTmModifier.decodeByteArrayToInteger(eventDefinitionsIDsArr, eventDefinitionIDSize, (index * eventDefinitionIDSize));
+            int eventDefinitionID = (int) ByteArrayUtils.decodeCustomInteger(eventDefinitionsIDsArr,(index * eventDefinitionIDSize), eventDefinitionIDSize);
             eventDefinitionIDs.add(eventDefinitionID);
         }
 
@@ -77,6 +78,11 @@ public class SubServiceEight implements PusSubService {
             throw new UncheckedIOException("Cannot save disabled event definitions IDs report in bucket: " + disabledEventDefinitionIDListFileName + (disabledEventDefinitionsListBucket != null ? " -> " + disabledEventDefinitionsListBucket.getName() : ""), e);
         }
 
-        return tmPacket;
+        ArrayList<TmPacket> pPkts = new ArrayList<>();
+        pPkts.add(tmPacket);
+
+        return pPkts; // FIXME: This returns null because the PUS packages carved out have the same
+                      // (gentime, apidseqcount), which means they cannot all be archived by the
+                      // XtceTmRecorder nor processed by the StreamTmPacketProvider
     }
 }

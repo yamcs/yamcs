@@ -7,6 +7,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.yamcs.YamcsServerInstance;
+import org.yamcs.management.ManagementListener;
+import org.yamcs.management.ManagementService;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -25,21 +28,36 @@ import com.google.gson.JsonPrimitive;
 /**
  * General purpose facility for persisting state information.
  */
-public class MementoDb {
+public class MementoDb implements ManagementListener {
 
     private static final String TABLE_NAME = "memento";
     private static final TupleDefinition TDEF = new TupleDefinition();
     private static final String CNAME_KEY = "key";
     private static final String CNAME_VALUE = "value";
+    private static ConcurrentMap<String, MementoDb> dbs = new ConcurrentHashMap<>();
     static {
         TDEF.addColumn(CNAME_KEY, DataType.STRING);
 
         // the 'value' column is a string type, but we really treat it as if it was a json type
         // (which yarch does not natively support), so it can represent primitives, objects or arrays.
         TDEF.addColumn(CNAME_VALUE, DataType.STRING);
-    }
 
-    private static ConcurrentMap<String, MementoDb> dbs = new ConcurrentHashMap<>();
+        // TODO Figure out a better way to get rid of outdated DBs.
+        // (we don't have a service available here).
+        ManagementService.getInstance().addManagementListener(new ManagementListener() {
+            @Override
+            public void instanceStateChanged(YamcsServerInstance ysi) {
+                switch (ysi.state()) {
+                case OFFLINE:
+                case FAILED:
+                    dbs.remove(ysi.getName());
+                    break;
+                default:
+                    // Ignore
+                }
+            }
+        });
+    }
 
     private YarchDatabaseInstance ydb;
     private Stream tableStream;

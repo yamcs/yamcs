@@ -15,7 +15,8 @@ import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.TmStreamConfigEntry;
 import org.yamcs.mdb.ContainerProcessingResult;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.Mdb;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.XtceTmExtractor;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
@@ -65,7 +66,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
     final Tuple END_MARK = new Tuple(StandardTupleDefinitions.TM,
             new Object[] { null, null, null, null, null, null, null, null });
 
-    XtceDb xtceDb;
+    Mdb mdb;
 
     private final List<StreamRecorder> recorders = new ArrayList<>();
 
@@ -86,7 +87,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
         try {
             if (ydb.getTable(TABLE_NAME) == null) {
                 String query = "create table " + TABLE_NAME + "(" + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition1()
-                        + ", primary key(gentime, seqNum)) histogram(pname) partition by value(pname) table_format=compressed";
+                        + ", primary key(gentime, seqNum, pname)) histogram(pname) partition by value(pname) table_format=compressed";
                 ydb.execute(query);
             }
             ydb.execute("create stream " + REC_STREAM_NAME + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition());
@@ -94,7 +95,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
         } catch (ParseException | StreamSqlException e) {
             throw new InitException(e);
         }
-        xtceDb = XtceDbFactory.getInstance(yamcsInstance);
+        mdb = MdbFactory.getInstance(yamcsInstance);
 
         StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
         if (config.containsKey("streams")) {
@@ -120,7 +121,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         SequenceContainer rootsc = streamConf.getRootContainer();
         if (rootsc == null) {
-            rootsc = xtceDb.getRootSequenceContainer();
+            rootsc = mdb.getRootSequenceContainer();
         }
         if (rootsc == null) {
             throw new ConfigurationException(
@@ -191,7 +192,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
             if (async) {
                 tmQueue = new LinkedBlockingQueue<>(100000);
             }
-            tmExtractor = new XtceTmExtractor(xtceDb);
+            tmExtractor = new XtceTmExtractor(mdb);
 
             // we do not want to get the containers which are included via container entry
             // we only want the inherited from the root
@@ -231,8 +232,8 @@ public class XtceTmRecorder extends AbstractYamcsService {
                 tmExtractor.startProviding(sc);
             }
 
-            if (xtceDb.getInheritingContainers(sc) != null) {
-                for (SequenceContainer sc1 : xtceDb.getInheritingContainers(sc)) {
+            if (mdb.getInheritingContainers(sc) != null) {
+                for (SequenceContainer sc1 : mdb.getInheritingContainers(sc)) {
                     subscribeContainers(sc1);
                 }
             }
@@ -292,38 +293,9 @@ public class XtceTmRecorder extends AbstractYamcsService {
 
             totalNumPackets++;
 
-            String pname = "";
-            ArrayList<Object> uncastPusTmContainers = t.getColumn(StandardTupleDefinitions.TM_PUS_CONTAINERS);
-            ArrayList<Object> uncastPusTmContainersGentime = t.getColumn(StandardTupleDefinitions.TM_PUS_CONTAINERS_GENTIME);
+            ContainerProcessingResult cpr = tmExtractor.processPacket(packet, gentime, timeService.getMissionTime(), seqCount, rootSequenceContainer);
+            String pname = deriveArchivePartition(cpr);
 
-            if (uncastPusTmContainers.size() != 0) {
-                ArrayList<byte[]> pusTmContainers = new ArrayList<>(uncastPusTmContainers.size());
-                ArrayList<Long> pusTmContainersGentime = new ArrayList<>(uncastPusTmContainersGentime.size());
-
-                for(int i = 0; i < pusTmContainers.size(); i++) {
-                    Object uncastPusTmContainer = uncastPusTmContainers.get(i);
-                    Object uncastPusTmContainerGentime = uncastPusTmContainersGentime.get(i);
-
-                    pusTmContainers.add((byte[]) uncastPusTmContainer);
-                    pusTmContainersGentime.add((long) uncastPusTmContainerGentime);
-                }
-
-                for(int i = 0; i < pusTmContainers.size(); i++) {
-                    byte[] pusTmContainer = pusTmContainers.get(i);
-                    long pusTmContainerGentime = pusTmContainersGentime.get(i);
-
-                    ContainerProcessingResult cpr = tmExtractor.processPacket(pusTmContainer, pusTmContainerGentime, timeService.getMissionTime(),
-                            seqCount, rootSequenceContainer);
-                    pname = deriveArchivePartition(cpr);
-                }
-
-            } else {
-                ContainerProcessingResult cpr = tmExtractor.processPacket(packet, gentime, timeService.getMissionTime(),
-                        seqCount, rootSequenceContainer);
-                pname = deriveArchivePartition(cpr);
-            }
-
-            // FIXME: pname may be ambiguous
             try {
                 List<Object> c = t.getColumns();
                 List<Object> columns = new ArrayList<>(c.size() + 1);

@@ -12,22 +12,21 @@ import org.yamcs.YConfiguration;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.xtce.XtceDb;
 
 public class ParameterValidityRangesTest {
-    static XtceDb db;
+    static Mdb mdb;
     long now = TimeEncoding.getWallclockTime();
     XtceTmExtractor extractor;
 
     @BeforeAll
     public static void beforeClass() throws ConfigurationException {
         YConfiguration.setupTest(null);
-        db = XtceDbFactory.createInstanceByConfig("ranges-test");
+        mdb = MdbFactory.createInstanceByConfig("ranges-test");
     }
 
     @BeforeEach
     public void before() {
-        extractor = new XtceTmExtractor(db);
+        extractor = new XtceTmExtractor(mdb);
         extractor.provideAll();
     }
 
@@ -38,19 +37,19 @@ public class ParameterValidityRangesTest {
         ByteBuffer.wrap(buf).putDouble(90);
         ContainerProcessingResult cpr = processPacket(buf);
         ParameterValue pv = cpr.getParameterResult()
-                .getFirstInserted(db.getParameter("/Example/latitude"));
+                .getFirstInserted(mdb.getParameter("/Example/latitude"));
         assertEquals(AcquisitionStatus.ACQUIRED, pv.getAcquisitionStatus());
 
         ByteBuffer.wrap(buf).putDouble(90.01);
         cpr = processPacket(buf);
         ParameterValue pv1 = cpr.getParameterResult()
-                .getFirstInserted(db.getParameter("/Example/latitude"));
+                .getFirstInserted(mdb.getParameter("/Example/latitude"));
         assertEquals(AcquisitionStatus.INVALID, pv1.getAcquisitionStatus());
 
         ByteBuffer.wrap(buf).putDouble(-90.01);
         cpr = processPacket(buf);
         ParameterValue pv2 = cpr.getParameterResult()
-                .getFirstInserted(db.getParameter("/Example/latitude"));
+                .getFirstInserted(mdb.getParameter("/Example/latitude"));
         assertEquals(AcquisitionStatus.INVALID, pv2.getAcquisitionStatus());
     }
 

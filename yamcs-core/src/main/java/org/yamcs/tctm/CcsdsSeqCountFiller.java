@@ -20,11 +20,12 @@ public class CcsdsSeqCountFiller {
      * @param apid
      * @return
      */
-    private synchronized int getSeqCount(int apid) {
+    private synchronized int generateSeqCount(int apid) {
         int seqCount = 0;
         if (seqCounts.containsKey(apid)) {
             seqCount = seqCounts.get(apid);
         }
+
         seqCount = (seqCount + 1) % (1 << 14);
         seqCounts.put(apid, seqCount);
         return seqCount;
@@ -42,10 +43,23 @@ public class CcsdsSeqCountFiller {
         int apid = (apidseqcount >> 16) & 0x07FF;
         int seqFlags = apidseqcount >>> 14;
         
-        int seqCount = getSeqCount(apid);
-
+        int seqCount = generateSeqCount(apid);
         ByteArrayUtils.encodeUnsignedShort((short) ((seqFlags << 14) | seqCount), packet, 2);
 
         return seqCount;
     }
+
+    public int getApid(byte[] packet) {
+        int apidseqcount = ByteArrayUtils.decodeInt(packet, 0);
+        int apid = (apidseqcount >> 16) & 0x07FF;
+
+        return apid;
+    }
+
+    public int getCcsdsSeqCount(byte[] packet) {
+        int seqFlagsSeqCount = ByteArrayUtils.decodeUnsignedShort(packet, 2);
+
+        return seqFlagsSeqCount & 0x3FFF;
+    }
+
 }

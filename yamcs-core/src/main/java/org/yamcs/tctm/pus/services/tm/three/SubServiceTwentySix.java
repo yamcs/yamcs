@@ -1,16 +1,16 @@
 package org.yamcs.tctm.pus.services.tm.three;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
-import org.yamcs.tctm.TmContainer;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tm.PusTmModifier;
+import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
+import org.yamcs.utils.ByteArrayUtils;
 
 public class SubServiceTwentySix implements PusSubService {
     String yamcsInstance;
@@ -47,69 +47,96 @@ public class SubServiceTwentySix implements PusSubService {
         throw new UnsupportedOperationException("Unimplemented method 'process'");
     }
 
-    private void createSuperCommutativePusTmContainer(TmPacket tmPacket, byte[] housekeepingParameterReportStructureID, byte[] dataField, long gentimeOffset) throws IOException {
-        long gentime = tmPacket.getGenerationTime() + gentimeOffset;
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    private TmPacket createSuperCommutativePusTmPacket(TmPacket tmPacket, byte[] housekeepingParameterReportStructureID, byte[] dataField, long gentime) {
+        PusTmCcsdsPacket pPkt = new PusTmCcsdsPacket(tmPacket.getPacket());
+        
+        ByteBuffer bb = ByteBuffer.allocate(
+            pPkt.getPrimaryHeader().length + pPkt.getSecondaryHeader().length + housekeepingParameterReportStructureID.length + 1 + dataField.length
+        );
 
-        outputStream.write(PusTmModifier.getPrimaryHeader(tmPacket));
-        outputStream.write(PusTmModifier.getSecondaryHeader(tmPacket));
-        outputStream.write(housekeepingParameterReportStructureID);
-        outputStream.write(superCommutativeDifferentiator);
-        outputStream.write(dataField);
+        bb.put(pPkt.getPrimaryHeader());
+        bb.put(pPkt.getSecondaryHeader());
+        bb.put(housekeepingParameterReportStructureID);
+        bb.put(superCommutativeDifferentiator);
+        bb.put(dataField);
 
-        addPusTmContainer(tmPacket, outputStream.toByteArray(), gentime);
+        TmPacket newPkt = new TmPacket(tmPacket.getReceptionTime(), gentime,
+            tmPacket.getSeqCount(), bb.array());
+        newPkt.setEarthReceptionTime(tmPacket.getEarthReceptionTime());
+
+        return newPkt;
     }
 
-    private void createSimpleCommutativePusTmContainer(TmPacket tmPacket, byte[] housekeepingParameterReportStructureID, byte[] dataField) throws IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    private TmPacket createSimpleCommutativePusTmPacket(TmPacket tmPacket, byte[] housekeepingParameterReportStructureID, byte[] dataField) {
+        PusTmCcsdsPacket pPkt = new PusTmCcsdsPacket(tmPacket.getPacket());
+        
+        ByteBuffer bb = ByteBuffer.allocate(
+            pPkt.getPrimaryHeader().length + pPkt.getSecondaryHeader().length + housekeepingParameterReportStructureID.length + 1 + dataField.length
+        );
 
-        outputStream.write(PusTmModifier.getPrimaryHeader(tmPacket));
-        outputStream.write(PusTmModifier.getSecondaryHeader(tmPacket));
-        outputStream.write(housekeepingParameterReportStructureID);
-        outputStream.write(simpleCommutativeDifferentiator);
-        outputStream.write(dataField);
+        bb.put(pPkt.getPrimaryHeader());
+        bb.put(pPkt.getSecondaryHeader());
+        bb.put(housekeepingParameterReportStructureID);
+        bb.put(simpleCommutativeDifferentiator);
+        bb.put(dataField);
 
-        addPusTmContainer(tmPacket, outputStream.toByteArray(), tmPacket.getGenerationTime());
-    }
+        TmPacket newPkt = new TmPacket(tmPacket.getReceptionTime(), tmPacket.getGenerationTime(),
+            tmPacket.getSeqCount(), bb.array());
+        newPkt.setEarthReceptionTime(tmPacket.getEarthReceptionTime());
 
-    private void addPusTmContainer(TmPacket tmPacket, byte[] pusTmContainer, long gentime) {
-        tmPacket.addToPusTmContainerList(new TmContainer(pusTmContainer, gentime));
+        return newPkt;
     }
 
     @Override
-    public TmPacket process(TmPacket tmPacket) {
-        byte[] spareField = PusTmModifier.getSpareField(tmPacket);
-        byte[] dataField = PusTmModifier.getDataField(tmPacket);
+    public ArrayList<TmPacket> process(TmPacket tmPacket) {
+        ArrayList<TmPacket> pPkts = new ArrayList<>();
+        PusTmCcsdsPacket pPkt = new PusTmCcsdsPacket(tmPacket.getPacket());
 
-        int simpleCommutatedLength = PusTmModifier.decodeByteArrayToInteger(spareField, simpleCommutatedSize, 0);
-        int superCommutatedSampleRepetitionNumber = PusTmModifier.decodeByteArrayToInteger(spareField, superCommutatedSampleRepetitionNumberSize, simpleCommutatedSize);
-        int collectionInterval = PusTmModifier.decodeByteArrayToInteger(spareField, collectionIntervalSize, (simpleCommutatedSize + superCommutatedSampleRepetitionNumberSize));
+        byte[] spareField = pPkt.getSpareField();
+        byte[] dataField = pPkt.getDataField();
+
+        int simpleCommutatedLength = (int) ByteArrayUtils.decodeCustomInteger(spareField, 0, simpleCommutatedSize);
+        int superCommutatedSampleRepetitionNumber = (int) ByteArrayUtils.decodeCustomInteger(spareField, simpleCommutatedSize, superCommutatedSampleRepetitionNumberSize);
+        int collectionInterval = (int) ByteArrayUtils.decodeCustomInteger(spareField, (simpleCommutatedSize + superCommutatedSampleRepetitionNumberSize), collectionIntervalSize);
 
         int housekeepingParameterReportStructureIDSize = 4;
-        byte[] housekeepingParameterReportStructureID = Arrays.copyOfRange(dataField, 0, housekeepingParameterReportStructureIDSize);
+        byte[] housekeepingParameterReportStructureID = Arrays.copyOfRange(
+            dataField,
+            0,
+            housekeepingParameterReportStructureIDSize
+        );
+        byte[] simpleCommutatedParameterArray = Arrays.copyOfRange(
+            dataField,
+            housekeepingParameterReportStructureIDSize,
+            (housekeepingParameterReportStructureIDSize + simpleCommutatedLength)
+        );
+        pPkts.add(
+            createSimpleCommutativePusTmPacket(tmPacket, housekeepingParameterReportStructureID, simpleCommutatedParameterArray)
+        );
 
-        try {
-            byte[] simpleCommutatedParameterArray = Arrays.copyOfRange(dataField, housekeepingParameterReportStructureIDSize, (housekeepingParameterReportStructureIDSize + simpleCommutatedLength));
-            createSimpleCommutativePusTmContainer(tmPacket, housekeepingParameterReportStructureID, simpleCommutatedParameterArray);
+        if (superCommutatedSampleRepetitionNumber != 0) {
+            byte[] superCommutedParameterArray = Arrays.copyOfRange(dataField, (housekeepingParameterReportStructureIDSize + simpleCommutatedLength), dataField.length);
+            int superCommutatedParameterSubStructureSize = (int) superCommutedParameterArray.length / superCommutatedSampleRepetitionNumber; // FIXME: No need to typecast, since it will always be perfectly divisbible
 
-        } catch (IOException e) {
-            // FIXME: Should not be thrown
-        }
+            long gentime = tmPacket.getGenerationTime();
+            long collectionIntervalOffset = collectionInterval / superCommutatedSampleRepetitionNumber;
 
-        byte[] superCommutedParameterArray = Arrays.copyOfRange(dataField, (housekeepingParameterReportStructureIDSize + simpleCommutatedLength), dataField.length);
-        int superCommutatedParameterSubStructureSize = (int) superCommutedParameterArray.length / superCommutatedSampleRepetitionNumber; // No need to typecast, since it will always be perfectly divisbible
-
-        for(int index = 0; index < superCommutatedSampleRepetitionNumber; index++) {            
-            try {
-                byte[] superCommutativeParameterSubStructure = Arrays.copyOfRange(superCommutedParameterArray, index * superCommutatedParameterSubStructureSize, (index + 1) * superCommutatedParameterSubStructureSize);
-                createSuperCommutativePusTmContainer(tmPacket, housekeepingParameterReportStructureID, superCommutativeParameterSubStructure, (long) collectionInterval / superCommutatedSampleRepetitionNumber); // FIXME: Might lose 
-
-            } catch (IOException e) {
-                // FIXME: Should not happen
+            for (int index = 0; index < superCommutatedSampleRepetitionNumber; index++) {
+                byte[] superCommutativeParameterSubStructure = Arrays.copyOfRange(
+                    superCommutedParameterArray,
+                    index * superCommutatedParameterSubStructureSize,
+                    (index + 1) * superCommutatedParameterSubStructureSize
+                );
+                pPkts.add(createSuperCommutativePusTmPacket(
+                    tmPacket,
+                    housekeepingParameterReportStructureID,
+                    superCommutativeParameterSubStructure,
+                    gentime - (index * collectionIntervalOffset) // Sampling time of parameters comes packet generation time
+                ));
             }
         }
 
-        return tmPacket;
+        return pPkts;
     }
-    
+ 
 }

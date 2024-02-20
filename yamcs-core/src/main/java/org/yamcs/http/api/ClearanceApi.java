@@ -1,13 +1,11 @@
 package org.yamcs.http.api;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
 import org.yamcs.http.Context;
-import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.audit.AuditLog;
 import org.yamcs.protobuf.AbstractClearanceApi;
@@ -68,11 +66,7 @@ public class ClearanceApi extends AbstractClearanceApi<Context> {
                 .setIssueTime(TimeEncoding.toProtobufTimestamp(TimeEncoding.getWallclockTime()))
                 .build());
 
-        try {
-            directory.updateUserProperties(user);
-        } catch (IOException e) {
-            throw new InternalServerErrorException(e);
-        }
+        directory.updateUserProperties(user);
         observer.complete(toClearanceInfo(user));
     }
 
@@ -89,12 +83,7 @@ public class ClearanceApi extends AbstractClearanceApi<Context> {
         }
 
         user.setClearance(null);
-
-        try {
-            directory.updateUserProperties(user);
-        } catch (IOException e) {
-            throw new InternalServerErrorException(e);
-        }
+        directory.updateUserProperties(user);
         observer.complete(Empty.getDefaultInstance());
     }
 

@@ -37,10 +37,7 @@ public class TmFrameDecoder implements TransferFrameDecoder {
         if(version != 0) {
             throw new TcTmException("Bad frame version number " + version + "; expected 0 (TM)");
         }
-        
-        if (length != tmParams.frameLength) {
-            throw new TcTmException("Bad frame length " + length + "; expected " + tmParams.frameLength);
-        }
+
         int dataEnd = offset + length;
         if (crc!=null) {
             dataEnd -= 2;
@@ -67,7 +64,7 @@ public class TmFrameDecoder implements TransferFrameDecoder {
         }
 
         TmTransferFrame ttf = new TmTransferFrame(data, spacecraftId, virtualChannelId);
-        ttf.setVcFrameSeq(data[3] & 0xFF);
+        ttf.setVcFrameSeq(data[offset + 3] & 0xFF);
 
         boolean ocfPresent = (data[offset + 1] & 1) == 1;
         if (ocfPresent) {

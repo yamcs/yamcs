@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { YamcsService } from '../../core/services/YamcsService';
+import { YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-bucket-page-tabs',

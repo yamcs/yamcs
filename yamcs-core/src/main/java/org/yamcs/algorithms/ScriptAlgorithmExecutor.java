@@ -55,7 +55,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
 
     // Each ValueBinding class represent a unique raw/eng type combination (== key)
     private static Map<String, Class<ValueBinding>> valueBindingClasses = Collections
-            .synchronizedMap(new HashMap<String, Class<ValueBinding>>());
+            .synchronizedMap(new HashMap<>());
     ParameterTypeProcessor parameterTypeProcessor;
     final String functionName;
     final EventProducer eventProducer;
@@ -217,6 +217,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         sb.append(") returnValue: ").append(String.valueOf(returnValue));
         log.trace(sb.toString());
     }
+
     /**
      * converts the output of the algorithm to a value corresponding to a parameter type
      * <p>
@@ -419,6 +420,14 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             } else {
                 source.append("  public String value;\n");
                 return "    value=v.getEngValue().getStringValue();\n";
+            }
+        } else if (v.getType() == Type.TIMESTAMP) {
+            if (raw) {
+                source.append("  public String rawValue;\n");
+                return "    rawValue=org.yamcs.utils.TimeEncoding.toString(v.getRawValue().getTimestampValue());\n";
+            } else {
+                source.append("  public String value;\n");
+                return "    value=org.yamcs.utils.TimeEncoding.toString(v.getEngValue().getTimestampValue());\n";
             }
         } else {
             throw new IllegalArgumentException("Unexpected value of type " + v.getType());

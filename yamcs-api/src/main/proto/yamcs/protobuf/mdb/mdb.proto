@@ -50,7 +50,19 @@ service MdbApi {
       get: "/api/mdb/{instance}/space-systems/{name*}:exportXTCE"
     };
   }
-  
+
+  // Stream Mission Database items.
+  //
+  // This operation is intended for tools that need to efficiently fetch
+  // the full list of parameters or commands, without using repeated
+  // pagination-based requests.
+  rpc StreamMissionDatabase(StreamMissionDatabaseRequest) returns (stream MissionDatabaseItem) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}:streamMissionDatabase"
+      offloaded: true
+    };
+  }
+
   // List parameters
   rpc ListParameters(ListParametersRequest) returns (ListParametersResponse) {
     option (yamcs.api.route) = {
@@ -65,7 +77,15 @@ service MdbApi {
       get: "/api/mdb/{instance}/parameters/{name*}"
     };
   }
-  
+
+  // Create a parameter
+  rpc CreateParameter(CreateParameterRequest) returns (ParameterInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/mdb/{instance}/parameters"
+      body: "*"
+    };
+  }
+
   // Batch get of multiple parameters
   rpc BatchGetParameters(BatchGetParametersRequest) returns (BatchGetParametersResponse) {
     option (yamcs.api.route) = {
@@ -73,7 +93,30 @@ service MdbApi {
       body: "*"
     };
   }
-  
+
+  // List parameter types
+  rpc ListParameterTypes(ListParameterTypesRequest) returns (ListParameterTypesResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/parameter-types"
+      field_mask_root: "parameterTypes"
+    };
+  }
+
+  // Get a parameter type
+  rpc GetParameterType(GetParameterTypeRequest) returns (ParameterTypeInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/parameter-types/{name*}"
+    };
+  }
+
+  // Create a parameter type
+  rpc CreateParameterType(CreateParameterTypeRequest) returns (ParameterTypeInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/mdb/{instance}/parameter-types"
+      body: "*"
+    };
+  }
+
   // List containers
   rpc ListContainers(ListContainersRequest) returns (ListContainersResponse) {
     option (yamcs.api.route) = {
@@ -155,6 +198,7 @@ enum DataSourceType {
   EXTERNAL1 = 7;
   EXTERNAL2 = 8;
   EXTERNAL3 = 9;
+  GROUND = 10;
 }
 
 enum AlarmLevelType {
@@ -263,12 +307,23 @@ message EnumValue {
 }
 
 message ParameterTypeInfo {
+  optional string name = 16;
+  optional string qualifiedName = 17;
+  optional string shortDescription = 18;
+  optional string longDescription = 19;
+  repeated NamedObjectId alias = 20;
+
+  // Engineering type
   optional string engType = 1;
   optional DataEncodingInfo dataEncoding = 2;
   repeated UnitInfo unitSet = 3;
+
+  // Default Alarm, effective when no contextual alarm takes precedence.
   optional AlarmInfo defaultAlarm = 4;
   repeated EnumValue enumValue = 5;
   optional AbsoluteTimeInfo absoluteTimeInfo = 6;
+
+  // Contextual alarms
   repeated ContextAlarmInfo contextAlarm = 7;
   repeated MemberInfo member = 8;
   optional ArrayInfo arrayInfo = 9;
@@ -277,7 +332,20 @@ message ParameterTypeInfo {
   // Provides hints on how to format the engineering
   // value as a string.
   optional NumberFormatTypeInfo numberFormat = 11;
+
+  // True if the engineering type supports signed representation.
+  // (only used by integer parameter types)
   optional bool signed = 12;
+
+  // String representation of a boolean zero (only used by boolean types)
+  optional string zeroStringValue = 13;
+
+  // String representation of a boolean one (only used by boolean types)
+  optional string oneStringValue = 14;
+
+  // Which parameters this type is used by. This field is only
+  // populated when requesting directly a single parameter type.
+  repeated ParameterInfo usedBy = 15;
 }
 
 message NumberFormatTypeInfo {
@@ -299,6 +367,14 @@ message GetContainerRequest {
   optional string instance = 1;
   
   // Container name.
+  optional string name = 2;
+}
+
+message GetParameterTypeRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Parameter type name.
   optional string name = 2;
 }
 
@@ -493,11 +569,23 @@ message CommandInfo {
   optional bool abstract = 7;
   repeated ArgumentInfo argument = 8;
   repeated ArgumentAssignmentInfo argumentAssignment = 9;
+
+  // Command significance.
+  //
+  // This is the significance defined specifically for this command.
+  // If unset, there may still be a significance inherited from
+  // a base command.
   optional SignificanceInfo significance = 10;
   repeated TransmissionConstraintInfo constraint = 11;
   optional CommandContainerInfo commandContainer = 13;
   repeated VerifierInfo verifier = 14;
   map<string, AncillaryDataInfo> ancillaryData = 15;
+
+  // Effective command significance.
+  //
+  // This is the significance obtained by looking up the first defined
+  // significance either in this command, or the nearest base command.
+  optional SignificanceInfo effectiveSignificance = 16;
 }
 
 message VerifierInfo {
@@ -663,7 +751,7 @@ message ListSpaceSystemsRequest {
   // The zero-based row number at which to start outputting results. Default: ``0``
   optional int32 pos = 8;
   
-  // The maximum number of returned containers per page. Choose this value too high
+  // The maximum number of returned systems per page. Choose this value too high
   // and you risk hitting the maximum response size limit enforced by the server.
   // Default: ``100``
   optional int32 limit = 9;
@@ -692,6 +780,34 @@ message ListContainersRequest {
   optional int32 pos = 8;
   
   // The maximum number of returned containers per page. Choose this value too high
+  // and you risk hitting the maximum response size limit enforced by the server.
+  // Default: ``100``
+  optional int32 limit = 9;
+}
+
+message ListParameterTypesRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // The search keywords. This supports searching on qualified name or alias.
+  optional string q = 2;
+
+  // List only direct child sub-systems or parameter types of the specified system.
+  // For example when querying the system "/a" against an MDB with parameter types
+  // "/a/b/c" and "/a/c", the result returns the sub system "/a/b" and the
+  // parameter type "/a/c".
+  //
+  // When ``system`` and ``q`` are used together, matching containers at any
+  // depth are returned, starting from the specified space system.
+  optional string system = 10;
+
+  // Continuation token returned by a previous page response.
+  optional string next = 7;
+
+  // The zero-based row number at which to start outputting results. Default: ``0``
+  optional int32 pos = 8;
+
+  // The maximum number of returned items per page. Choose this value too high
   // and you risk hitting the maximum response size limit enforced by the server.
   // Default: ``100``
   optional int32 limit = 9;
@@ -855,6 +971,19 @@ message ListContainersResponse {
   optional int32 totalSize = 3;
 }
 
+message ListParameterTypesResponse {
+  repeated string spaceSystems = 4;
+  repeated ParameterTypeInfo parameterTypes = 1;
+
+  // Token indicating the response is only partial. More results can then
+  // be obtained by performing the same request (including all original
+  // query parameters) and setting the ``next`` parameter to this token.
+  optional string continuationToken = 2;
+
+  // The total number of results (across all pages)
+  optional int32 totalSize = 3;
+}
+
 message ListCommandsResponse {
   repeated string spaceSystems = 4;
   repeated CommandInfo commands = 1;
@@ -889,6 +1018,78 @@ message GetAlgorithmRequest {
   optional string name = 2;
 }
 
+message CreateParameterRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Fully qualified parameter name
+  optional string name = 2;
+
+  // Short description (one line)
+  optional string shortDescription = 3;
+
+  // Long description (Markdown)
+  optional string longDescription = 4;
+
+  // Aliases, keyed by namespace
+  map<string, string> aliases = 5;
+
+  // Type of datasource.
+  //
+  // One of TELEMETERED, DERIVED, CONSTANT, LOCAL, SYSTEM, COMMAND, COMMAND_HISTORY,
+  // EXTERNAL1, EXTERNAL2, or EXTERNAL3
+  optional DataSourceType dataSource = 6;
+
+  // Fully qualified name of a parameter type
+  optional string parameterType = 7;
+}
+
+message CreateParameterTypeRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Fully qualified parameter type name
+  optional string name = 2;
+
+  // Short description (one line)
+  optional string shortDescription = 3;
+
+  // Long description (Markdown)
+  optional string longDescription = 4;
+
+  // Aliases, keyed by namespace
+  map<string, string> aliases = 5;
+
+  // Engineering type. One of ``float``, ``integer``, ``enumeration``,
+  // ``binary``, ``boolean`` or ``string``.
+  optional string engType = 6;
+
+  // Engineering unit
+  optional string unit = 7;
+
+  // Set to true if the engineering type supports signed representation.
+  // (only used with ``integer`` parameter types)
+  optional bool signed = 8;
+
+  // Default Alarm, effective when no contextual alarm takes precedence.
+  optional AlarmInfo defaultAlarm = 9;
+
+  // Contextual alarms
+  repeated ContextAlarmInfo contextAlarms = 10;
+
+  // Enumeration values.
+  // (only used with ``enumeration`` parameter types)
+  repeated EnumValue enumerationValues = 11;
+
+  // String representation of a boolean zero.
+  // (only used with ``boolean`` parameter types)
+  optional string zeroStringValue = 12;
+
+  // String representation of a boolean one.
+  // (only used with ``boolean`` parameter types)
+  optional string oneStringValue = 13;
+}
+
 message GetMissionDatabaseRequest {
   // Yamcs instance name.
   optional string instance = 1;
@@ -897,6 +1098,51 @@ message GetMissionDatabaseRequest {
 message ExportJavaMissionDatabaseRequest {
   // Yamcs instance name.
   optional string instance = 1;
+}
+
+message StreamMissionDatabaseRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+
+  // Stream space systems. Default: ``true``
+  optional bool includeSpaceSystems = 2;
+
+  // Stream containers. Default: ``true``
+  optional bool includeContainers = 3;
+
+  // Stream parameters. Default: ``true``
+  optional bool includeParameters = 4;
+
+  // Stream parameter types. Default: ``true``
+  optional bool includeParameterTypes = 5;
+
+  // Stream commands. Default: ``true``
+  optional bool includeCommands = 6;
+
+  // Stream algorithms. Default: ``true``
+  optional bool includeAlgorithms = 7;
+}
+
+message MissionDatabaseItem {
+  oneof item {
+    // A space system
+    SpaceSystemInfo spaceSystem = 1;
+
+    // A container
+    ContainerInfo container = 2;
+
+    // A parameter
+    ParameterInfo parameter = 3;
+
+    // A parameter type
+    ParameterTypeInfo parameterType = 4;
+
+    // A command
+    CommandInfo command = 5;
+
+    // An algorithm
+    AlgorithmInfo algorithm = 6;
+  }
 }
 
 message ListSpaceSystemsResponse {
@@ -936,9 +1182,14 @@ message GetCommandRequest {
 }
 
 message SpaceSystemInfo {
+  // Space system name
   optional string name = 1;
   optional string qualifiedName = 2;
+
+  // Short description (one line)
   optional string shortDescription = 3;
+
+  // Long description (Markdown)
   optional string longDescription = 4;
   repeated NamedObjectId alias = 16;
   optional string version = 5;

@@ -16,7 +16,7 @@ import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.Value;
 import org.yamcs.tctm.AbstractLink;
 import org.yamcs.time.TimeService;
@@ -84,7 +84,7 @@ public class TseDataLink extends AbstractLink {
 
         cmdhistPublisher = new StreamCommandHistoryPublisher(yamcsInstance);
 
-        xtcedb = XtceDbFactory.getInstance(yamcsInstance);
+        xtcedb = MdbFactory.getInstance(yamcsInstance);
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
 
         host = config.getString("host");

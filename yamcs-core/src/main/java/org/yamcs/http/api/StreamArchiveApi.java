@@ -18,7 +18,7 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.MediaType;
 import org.yamcs.http.api.Downsampler.Sample;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.protobuf.AbstractStreamArchiveApi;
@@ -78,7 +78,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             Observer<ListParameterHistoryResponse> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
 
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = MdbFactory.getInstance(instance);
         String pathName = request.getName();
 
         ParameterWithId p = MdbApi.verifyParameterWithId(ctx, mdb, pathName);
@@ -157,7 +157,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             Observer<TimeSeries> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
 
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = MdbFactory.getInstance(instance);
         Parameter p = MdbApi.verifyParameter(ctx, mdb, request.getName());
 
         ParameterType ptype = p.getParameterType();
@@ -216,7 +216,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
         ReplayOptions repl = ReplayOptions.getAfapReplay();
         List<NamedObjectId> ids = new ArrayList<>();
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = MdbFactory.getInstance(instance);
 
         if (request.hasStart()) {
             repl.setRangeStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
@@ -281,7 +281,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         ReplayOptions repl = ReplayOptions.getAfapReplay();
 
         List<NamedObjectId> ids = new ArrayList<>();
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        XtceDb mdb = MdbFactory.getInstance(instance);
         String namespace = null;
         int interval = -1;
 

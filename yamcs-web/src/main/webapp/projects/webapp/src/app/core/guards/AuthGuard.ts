@@ -1,10 +1,8 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { Inject, Injectable, inject } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivateChildFn, CanActivateFn, Router, RouterStateSnapshot } from '@angular/router';
-import { AuthInfo, OpenIDConnectInfo, utils } from '@yamcs/webapp-sdk';
+import { AuthInfo, ConfigService, OpenIDConnectInfo, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { AuthService } from '../services/AuthService';
-import { ConfigService } from '../services/ConfigService';
-import { YamcsService } from '../services/YamcsService';
 
 export const authGuardFn: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
   return inject(AuthGuard).canActivate(route, state);
@@ -39,7 +37,11 @@ class AuthGuard {
         this.router.navigate(['/down'], { queryParams: { next: state.url } });
         return false;
       } else {
-        this.authService.logout(false);
+        if (this.configService.getConfig().logoutRedirectUrl) {
+          this.authService.logout(true /* redirect to external login */);
+        } else {
+          this.authService.logout(false);
+        }
         if (this.authInfo.openid) {
           const redirectURI = this.authService.buildServerSideOpenIDRedirectURI();
           window.location.href = this.buildRedirector(this.authInfo.openid, redirectURI, state.url);

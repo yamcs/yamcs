@@ -216,5 +216,13 @@ public class EnumeratedDataType extends BaseDataType {
             }
             return null;
         }
+
+        public List<ValueEnumeration> getValueEnumerationList() {
+            return Collections.unmodifiableList(enumerationList);
+        }
+
+        public List<ValueEnumerationRange> getValueEnumerationRangeList() {
+            return Collections.unmodifiableList(ranges);
+        }
     }
 }

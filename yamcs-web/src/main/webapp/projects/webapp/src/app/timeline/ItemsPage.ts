@@ -3,8 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
-import { MessageService, TimelineItem } from '@yamcs/webapp-sdk';
-import { YamcsService } from '../core/services/YamcsService';
+import { MessageService, TimelineItem, YamcsService } from '@yamcs/webapp-sdk';
 import { TrackBySelectionModel } from '../shared/table/TrackBySelectionModel';
 import { CreateItemDialog } from './dialogs/CreateItemDialog';
 

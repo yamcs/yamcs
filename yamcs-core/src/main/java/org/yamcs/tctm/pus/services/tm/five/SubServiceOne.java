@@ -1,5 +1,7 @@
 package org.yamcs.tctm.pus.services.tm.five;
 
+import java.util.ArrayList;
+
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
@@ -31,9 +33,13 @@ public class SubServiceOne implements PusSubService {
     }
 
     @Override
-    public TmPacket process(TmPacket tmPacket) {
+    public ArrayList<TmPacket> process(TmPacket tmPacket) {
         // FIXME: ToDo | Send event notification as per the deduced auxillary data
-        return tmPacket;
+
+        ArrayList<TmPacket> pPkts = new ArrayList<>();
+        pPkts.add(tmPacket);
+
+        return pPkts;
     }
-    
+
 }

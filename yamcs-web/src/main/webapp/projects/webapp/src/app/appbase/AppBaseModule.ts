@@ -5,6 +5,7 @@ import { ContextSwitchPage } from './pages/ContextSwitchPage';
 import { CreateInstancePage1 } from './pages/CreateInstancePage1';
 import { CreateInstancePage2 } from './pages/CreateInstancePage2';
 import { CreateInstanceWizardStep } from './pages/CreateInstanceWizardStep';
+import { ExtensionPage } from './pages/ExtensionPage';
 import { ForbiddenPage } from './pages/ForbiddenPage';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -18,6 +19,7 @@ const appComponents = [
   CreateInstancePage1,
   CreateInstancePage2,
   CreateInstanceWizardStep,
+  ExtensionPage,
   ForbiddenPage,
   HomePage,
   NotFoundPage,
@@ -42,7 +44,7 @@ const appComponents = [
   ],
   exports: [
     appComponents,
-  ]
+  ],
 })
 export class AppBaseModule {
 }

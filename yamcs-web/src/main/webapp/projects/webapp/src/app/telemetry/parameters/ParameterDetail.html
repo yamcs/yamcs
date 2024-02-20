@@ -30,7 +30,7 @@
   <ng-container *ngIf="ptype$ | async as ptype">
     <ng-container *ngIf="ptype.signed !== undefined">
       <dt>Signed</dt>
-      <dd>{{ ptype.signed }}</dd>
+      <dd>{{ ptype.signed ?? '-' }}</dd>
     </ng-container>
   </ng-container>
 

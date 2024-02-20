@@ -1,9 +1,8 @@
 import { CdkColumnDef } from '@angular/cdk/table';
 import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, QueryList, ViewChildren } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { StreamData, Synchronizer, rowAnimation } from '@yamcs/webapp-sdk';
+import { StreamData, Synchronizer, YamcsService, rowAnimation } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { YamcsService } from '../../../../core/services/YamcsService';
 import { StreamDataDataSource } from './StreamDataDataSource';
 
 @Component({

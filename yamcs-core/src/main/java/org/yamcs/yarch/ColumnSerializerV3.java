@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.ByteArray;
 import org.yamcs.utils.ByteArrayUtils;
@@ -77,7 +78,6 @@ public class ColumnSerializerV3 {
             byteBuf.putInt(invertSign(v));
         }
     }
-
     
     static class LongColumnSerializer implements ColumnSerializer<Long> {
         @Override

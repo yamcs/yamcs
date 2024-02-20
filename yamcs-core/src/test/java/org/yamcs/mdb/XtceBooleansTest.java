@@ -21,10 +21,9 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.XtceDb;
 
 public class XtceBooleansTest {
-    static XtceDb mdb;
+    static Mdb mdb;
     long now = TimeEncoding.getWallclockTime();
     XtceTmExtractor extractor;
     MetaCommandProcessor metaCommandProcessor;
@@ -33,7 +32,7 @@ public class XtceBooleansTest {
     @BeforeAll
     public static void beforeClass() throws ConfigurationException {
         YConfiguration.setupTest(null);
-        mdb = XtceDbFactory.createInstanceByConfig("xtce-booleans");
+        mdb = MdbFactory.createInstanceByConfig("xtce-booleans");
         pdata = new ProcessorData("test", "test", mdb, new ProcessorConfig());
     }
 

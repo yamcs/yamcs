@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { TimelineBand, TimelineBandsPage } from '@yamcs/webapp-sdk';
-import { YamcsService } from '../../core/services/YamcsService';
+import { TimelineBand, TimelineBandsPage, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-band-multi-select',

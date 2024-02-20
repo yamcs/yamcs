@@ -15,7 +15,7 @@ import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
@@ -33,7 +33,7 @@ public class AlgorithmManagerJavaExprTest {
     @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setupTest(instance);
-        XtceDbFactory.reset();
+        MdbFactory.reset();
     }
 
     static String instance = "refmdb";

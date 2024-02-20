@@ -13,16 +13,11 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
-import org.yamcs.mdb.MetaCommandProcessor;
-import org.yamcs.mdb.ProcessorData;
-import org.yamcs.mdb.XtceDbFactory;
-import org.yamcs.mdb.XtceTmExtractor;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.MetaCommand;
-import org.yamcs.xtce.XtceDb;
 
 public class XtceStringEncodingTest {
-    static XtceDb mdb;
+    static Mdb mdb;
     static MetaCommandProcessor metaCommandProcessor;
     long now = TimeEncoding.getWallclockTime();
     XtceTmExtractor extractor;
@@ -30,7 +25,7 @@ public class XtceStringEncodingTest {
     @BeforeAll
     public static void beforeClass() throws ConfigurationException {
         YConfiguration.setupTest(null);
-        mdb = XtceDbFactory.createInstanceByConfig("xtce-strings-cmd");
+        mdb = MdbFactory.createInstanceByConfig("xtce-strings-cmd");
         metaCommandProcessor = new MetaCommandProcessor(
                 new ProcessorData("test", "test", mdb, new ProcessorConfig()));
     }

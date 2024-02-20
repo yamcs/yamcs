@@ -25,4 +25,7 @@ public class EntityConf {
         return name;
     }
 
+    public Bucket getBucket() {
+        return bucket;
+    }
 }

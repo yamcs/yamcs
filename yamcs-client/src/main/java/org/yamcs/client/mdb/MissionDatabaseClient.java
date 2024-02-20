@@ -8,6 +8,7 @@ import org.yamcs.api.HttpBody;
 import org.yamcs.api.MethodHandler;
 import org.yamcs.api.Observer;
 import org.yamcs.client.Page;
+import org.yamcs.client.StreamReceiver;
 import org.yamcs.client.base.AbstractPage;
 import org.yamcs.client.base.ResponseObserver;
 import org.yamcs.client.mdb.MissionDatabaseClient.ListOptions.DetailsOption;
@@ -17,6 +18,7 @@ import org.yamcs.client.mdb.MissionDatabaseClient.ListOptions.QOption;
 import org.yamcs.client.mdb.MissionDatabaseClient.ListOptions.SystemOption;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Mdb.ContainerInfo;
+import org.yamcs.protobuf.Mdb.DataSourceType;
 import org.yamcs.protobuf.Mdb.ExportJavaMissionDatabaseRequest;
 import org.yamcs.protobuf.Mdb.GetCommandRequest;
 import org.yamcs.protobuf.Mdb.GetContainerRequest;
@@ -27,14 +29,15 @@ import org.yamcs.protobuf.Mdb.ListContainersRequest;
 import org.yamcs.protobuf.Mdb.ListContainersResponse;
 import org.yamcs.protobuf.Mdb.ListParametersRequest;
 import org.yamcs.protobuf.Mdb.ListParametersResponse;
+import org.yamcs.protobuf.Mdb.MissionDatabaseItem;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
+import org.yamcs.protobuf.Mdb.StreamMissionDatabaseRequest;
 import org.yamcs.protobuf.MdbApiClient;
 
 public class MissionDatabaseClient {
 
-    private String instance;
-
-    private MdbApiClient mdbService;
+    String instance;
+    MdbApiClient mdbService;
 
     public MissionDatabaseClient(MethodHandler handler, String instance) {
         this.instance = instance;
@@ -52,6 +55,14 @@ public class MissionDatabaseClient {
         CompletableFuture<ParameterInfo> f = new CompletableFuture<>();
         mdbService.getParameter(null, requestb.build(), new ResponseObserver<>(f));
         return f;
+    }
+
+    public CreateParameterBuilder createParameter(String name, DataSourceType dataSource) {
+        return new CreateParameterBuilder(this, name, dataSource);
+    }
+
+    public CreateParameterTypeBuilder createParameterType(String name) {
+        return new CreateParameterTypeBuilder(this, name);
     }
 
     public CompletableFuture<Page<ParameterInfo>> listParameters(ListOption... options) {
@@ -127,6 +138,38 @@ public class MissionDatabaseClient {
                 .setInstance(instance)
                 .build();
         return (CompletableFuture<SystemPage<CommandInfo>>) (Object) new CommandPage(request).future();
+    }
+
+    public CompletableFuture<Void> streamMissionDatabaseItems(StreamReceiver<MissionDatabaseItem> consumer,
+            StreamMissionDatabaseOptions options) {
+        var request = StreamMissionDatabaseRequest.newBuilder()
+                .setInstance(instance)
+                .setIncludeSpaceSystems(options.isIncludeSpaceSystems())
+                .setIncludeContainers(options.isIncludeContainers())
+                .setIncludeParameters(options.isIncludeParameters())
+                .setIncludeParameterTypes(options.isIncludeParameterTypes())
+                .setIncludeCommands(options.isIncludeCommands())
+                .setIncludeAlgorithms(options.isIncludeAlgorithms())
+                .build();
+        var f = new CompletableFuture<Void>();
+        mdbService.streamMissionDatabase(null, request, new Observer<MissionDatabaseItem>() {
+
+            @Override
+            public void next(MissionDatabaseItem message) {
+                consumer.accept(message);
+            }
+
+            @Override
+            public void completeExceptionally(Throwable t) {
+                f.completeExceptionally(t);
+            }
+
+            @Override
+            public void complete() {
+                f.complete(null);
+            }
+        });
+        return f;
     }
 
     public CompletableFuture<byte[]> getSerializedJavaDump() {

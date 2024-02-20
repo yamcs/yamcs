@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Acknowledgment } from './Acknowledgment';
+import { Acknowledgment } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-acknowledgment-icon',

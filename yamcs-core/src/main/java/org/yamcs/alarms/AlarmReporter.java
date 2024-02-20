@@ -12,7 +12,7 @@ import org.yamcs.ProcessorService;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Event.EventSeverity;
@@ -50,7 +50,7 @@ public class AlarmReporter extends AbstractProcessorService implements Processor
         // Auto-subscribe to parameters with alarms
         Set<Parameter> requiredParameters = new HashSet<>();
         try {
-            XtceDb xtcedb = XtceDbFactory.getInstance(getYamcsInstance());
+            XtceDb xtcedb = MdbFactory.getInstance(getYamcsInstance());
             for (Parameter parameter : xtcedb.getParameters()) {
                 ParameterType ptype = parameter.getParameterType();
                 if (ptype != null && ptype.hasAlarm()) {

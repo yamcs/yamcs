@@ -458,7 +458,7 @@ public class YConfiguration {
         return getString(m, subkey);
     }
 
-    private static String expandString(String confPath, String property) {
+    static String expandString(String confPath, String property) {
         // Expand a system property like ${foo} or an environment property like ${env.foo}
         if (property.contains("${")) {
             StringBuilder buf = new StringBuilder();

@@ -25,22 +25,21 @@ import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.ValueEnumeration;
-import org.yamcs.xtce.XtceDb;
 
 public class BogusSat2Test {
-    static XtceDb db;
+    static Mdb mdb;
     long now = TimeEncoding.getWallclockTime();
     XtceTmExtractor extractor;
 
     @BeforeAll
     public static void beforeClass() throws ConfigurationException {
         YConfiguration.setupTest(null);
-        db = XtceDbFactory.createInstanceByConfig("BogusSAT2");
+        mdb = MdbFactory.createInstanceByConfig("BogusSAT2");
     }
 
     @BeforeEach
     public void before() {
-        extractor = new XtceTmExtractor(db);
+        extractor = new XtceTmExtractor(mdb);
         extractor.provideAll();
     }
 
@@ -55,7 +54,7 @@ public class BogusSat2Test {
         ContainerProcessingResult cpr = processPacket(buf);
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(4, pvl.size());
-        ParameterValue pushdr = pvl.getFirstInserted(db.getParameter("/BogusSAT/PUS_Data_Field_Header"));
+        ParameterValue pushdr = pvl.getFirstInserted(mdb.getParameter("/BogusSAT/PUS_Data_Field_Header"));
         assertTrue(pushdr.getEngValue() instanceof AggregateValue);
         AggregateValue v = (AggregateValue) pushdr.getEngValue();
         assertEquals(3, v.getMemberValue("SeqCount").getUint32Value());
@@ -63,7 +62,7 @@ public class BogusSat2Test {
 
     @Test
     public void test2() {
-        XtceTmExtractor extractor = new XtceTmExtractor(db);
+        XtceTmExtractor extractor = new XtceTmExtractor(mdb);
         extractor.provideAll();
         byte[] x = new byte[4];
         ByteBuffer.wrap(x).putFloat(15);
@@ -77,15 +76,15 @@ public class BogusSat2Test {
         ContainerProcessingResult cpr = processPacket(buf);
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(8, pvl.size());
-        assertNull(pvl.getFirstInserted(db.getParameter("/BogusSAT/SC001/BusElectronics/Solar_Array_Voltage_1")));
-        assertNotNull(pvl.getFirstInserted(db.getParameter("/BogusSAT/SC001/BusElectronics/Solar_Array_Voltage_2")));
-        ParameterValue pv = pvl.getFirstInserted(db.getParameter("/BogusSAT/SC001/BusElectronics/Battery_Current"));
+        assertNull(pvl.getFirstInserted(mdb.getParameter("/BogusSAT/SC001/BusElectronics/Solar_Array_Voltage_1")));
+        assertNotNull(pvl.getFirstInserted(mdb.getParameter("/BogusSAT/SC001/BusElectronics/Solar_Array_Voltage_2")));
+        ParameterValue pv = pvl.getFirstInserted(mdb.getParameter("/BogusSAT/SC001/BusElectronics/Battery_Current"));
         assertEquals(15.0, pv.getEngValue().getFloatValue(), 1e-5);
     }
 
     @Test
     public void test6() {
-        XtceTmExtractor extractor = new XtceTmExtractor(db);
+        XtceTmExtractor extractor = new XtceTmExtractor(mdb);
         extractor.provideAll();
         byte[] x = new byte[4];
         float xfloat = 16;
@@ -143,36 +142,36 @@ public class BogusSat2Test {
         assertEquals(17, pvl.size());
 
         ParameterValue pv = pvl
-                .getFirstInserted(db.getParameter("/BogusSAT/SC001/Payload1/PAYLOAD_ANTENNA_POINTING_ARRAY1"));
+                .getFirstInserted(mdb.getParameter("/BogusSAT/SC001/Payload1/PAYLOAD_ANTENNA_POINTING_ARRAY1"));
         ArrayValue v = (ArrayValue) pv.getEngValue();
         assertEquals(9, v.flatLength());
         assertEquals(-2.0, v.getElementValue(0).getDoubleValue(), 1E-5);
 
-        pv = pvl.getLastInserted(db.getParameter("/BogusSAT/SC001/Payload1/PAYLOAD_ANTENNA_POINTING_ARRAY2"));
+        pv = pvl.getLastInserted(mdb.getParameter("/BogusSAT/SC001/Payload1/PAYLOAD_ANTENNA_POINTING_ARRAY2"));
         v = (ArrayValue) pv.getEngValue();
         assertEquals(9, v.flatLength());
         assertEquals(xfloat, v.getElementValue(8).getFloatValue(), 1E-5);
 
-        pv = pvl.getFirstInserted(db.getParameter("/BogusSAT/SC001/Payload1/Basic_int32_signmag"));
+        pv = pvl.getFirstInserted(mdb.getParameter("/BogusSAT/SC001/Payload1/Basic_int32_signmag"));
         assertEquals(-6, pv.getRawValue().getSint32Value());
 
-        pv = pvl.getFirstInserted(db.getParameter("/BogusSAT/SC001/Payload1/Basic_int32_twoscomp"));
+        pv = pvl.getFirstInserted(mdb.getParameter("/BogusSAT/SC001/Payload1/Basic_int32_twoscomp"));
         assertEquals(-6, pv.getRawValue().getSint32Value());
 
-        pv = pvl.getFirstInserted(db.getParameter("/BogusSAT/SC001/Payload1/Basic_int32_onescomp"));
+        pv = pvl.getFirstInserted(mdb.getParameter("/BogusSAT/SC001/Payload1/Basic_int32_onescomp"));
         assertEquals(-6, pv.getRawValue().getSint32Value());
 
     }
 
     @Test
     public void testAbstractMetaCommand() {
-        MetaCommand mc = db.getMetaCommand("/BogusSAT/CCSDSTelecommand");
+        MetaCommand mc = mdb.getMetaCommand("/BogusSAT/CCSDSTelecommand");
         assertTrue(mc.isAbstract());
     }
 
     @Test
     public void testAggregatePtypeNameDescription() {
-        AggregateParameterType pt = (AggregateParameterType) db
+        AggregateParameterType pt = (AggregateParameterType) mdb
                 .getParameterType("/BogusSAT/SC001/Onboard_Processor_Config/Config_Log_Levels_Type");
 
         assertEquals("Test Long Description", pt.getLongDescription());
@@ -185,7 +184,7 @@ public class BogusSat2Test {
 
     @Test
     public void testEnumDescription() {
-        EnumeratedParameterType ept = (EnumeratedParameterType) db
+        EnumeratedParameterType ept = (EnumeratedParameterType) mdb
                 .getParameterType("/BogusSAT/LOG_MSGS/ERRORCODE_Type");
         ValueEnumeration ve = ept.enumValue(123l);
         assertEquals("Detailed description of error case A", ve.getDescription());
@@ -193,7 +192,7 @@ public class BogusSat2Test {
 
     @Test
     public void testArchivePartition() {
-        SequenceContainer seq = db.getSequenceContainer("/BogusSAT/SC001/Payload1/IncludedContainer1");
+        SequenceContainer seq = mdb.getSequenceContainer("/BogusSAT/SC001/Payload1/IncludedContainer1");
         assertFalse(seq.useAsArchivePartition());
     }
 

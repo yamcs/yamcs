@@ -16,7 +16,7 @@ t\ :sub:`i`
 ev\ :sub:`i`
     the engineering value of the parameter at the given time.
 rv\ :sub:`i`
-    the engineering value of the parameter at the given time.
+    the raw value of the parameter at the given time.
 ps\ :sub:`i`
     the parameter status of the parameter at the given time.
 

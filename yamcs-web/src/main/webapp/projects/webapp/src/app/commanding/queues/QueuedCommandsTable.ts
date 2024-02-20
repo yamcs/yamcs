@@ -1,9 +1,8 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, Input, ViewChild } from '@angular/core';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { CommandQueue, CommandQueueEntry } from '@yamcs/webapp-sdk';
+import { CommandQueue, CommandQueueEntry, YamcsService } from '@yamcs/webapp-sdk';
 import { Observable } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   selector: 'app-queued-commands-table',

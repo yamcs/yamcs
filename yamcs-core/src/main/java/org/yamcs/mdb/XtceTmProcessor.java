@@ -1,5 +1,6 @@
 package org.yamcs.mdb;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.AbstractProcessorService;
@@ -39,15 +40,15 @@ public class XtceTmProcessor extends AbstractProcessorService
     private ParameterProcessor parameterProcessorManager;
     private ContainerListener containerRequestManager;
 
-    public final XtceDb xtcedb;
+    public final Mdb mdb;
     final XtceTmExtractor tmExtractor;
 
     public XtceTmProcessor(Processor processor) {
         this.processor = processor;
-        this.xtcedb = processor.getXtceDb();
+        this.mdb = processor.getXtceDb();
         log = new Log(getClass(), processor.getInstance());
         log.setContext(processor.getName());
-        tmExtractor = new XtceTmExtractor(xtcedb, processor.getProcessorData());
+        tmExtractor = new XtceTmExtractor(mdb, processor.getProcessorData());
     }
 
     /**
@@ -55,11 +56,11 @@ public class XtceTmProcessor extends AbstractProcessorService
      * It still uses the processor config for configuration parameters relevant to container processing
      * 
      */
-    public XtceTmProcessor(XtceDb xtcedb, ProcessorConfig pconfig) {
+    public XtceTmProcessor(Mdb mdb, ProcessorConfig pconfig) {
         this.processor = null;
-        this.xtcedb = xtcedb;
+        this.mdb = mdb;
         log = new Log(getClass());
-        tmExtractor = new XtceTmExtractor(xtcedb, new ProcessorData(null, "XTCEPROC", xtcedb, pconfig));
+        tmExtractor = new XtceTmExtractor(mdb, new ProcessorData(null, "XTCEPROC", mdb, pconfig));
     }
 
     @Override
@@ -105,22 +106,22 @@ public class XtceTmProcessor extends AbstractProcessorService
 
     @Override
     public boolean canProvide(NamedObjectId paraId) {
-        Parameter p = xtcedb.getParameter(paraId);
+        Parameter p = mdb.getParameter(paraId);
         if (p == null) {
             return false;
         }
 
-        return xtcedb.getParameterEntries(p) != null;
+        return mdb.getParameterEntries(p) != null;
     }
 
     @Override
     public boolean canProvide(Parameter para) {
-        return xtcedb.getParameterEntries(para) != null;
+        return mdb.getParameterEntries(para) != null;
     }
 
     @Override
     public Parameter getParameter(NamedObjectId paraId) throws InvalidIdentification {
-        Parameter p = xtcedb.getParameter(paraId);
+        Parameter p = mdb.getParameter(paraId);
         if (p == null) {
             throw new InvalidIdentification(paraId);
         }
@@ -173,7 +174,7 @@ public class XtceTmProcessor extends AbstractProcessorService
 
     @Override
     public boolean canProvideContainer(NamedObjectId containerId) {
-        return xtcedb.getSequenceContainer(containerId) != null;
+        return mdb.getSequenceContainer(containerId) != null;
     }
 
     @Override
@@ -193,7 +194,7 @@ public class XtceTmProcessor extends AbstractProcessorService
 
     @Override
     public Container getContainer(NamedObjectId containerId) throws InvalidIdentification {
-        SequenceContainer c = xtcedb.getSequenceContainer(containerId);
+        SequenceContainer c = mdb.getSequenceContainer(containerId);
         if (c == null) {
             throw new InvalidIdentification(containerId);
         }
@@ -215,6 +216,6 @@ public class XtceTmProcessor extends AbstractProcessorService
     }
 
     public XtceDb getXtceDb() {
-        return xtcedb;
+        return mdb;
     }
 }

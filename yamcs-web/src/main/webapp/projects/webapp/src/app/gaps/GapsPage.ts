@@ -5,9 +5,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Gap, GetGapsOptions, MessageService, SelectComponent, SelectOption, utils } from '@yamcs/webapp-sdk';
+import { Gap, GetGapsOptions, MessageService, SelectComponent, SelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../core/services/YamcsService';
 import { RequestMultipleRangesPlaybackDialog } from './RequestMultipleRangesPlaybackDialog';
 import { RequestSingleRangePlaybackDialog } from './RequestSingleRangePlaybackDialog';
 

@@ -3,9 +3,8 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { BitRange, ExtractPacketResponse, ExtractedParameter, MessageService, Packet, SelectOption } from '@yamcs/webapp-sdk';
+import { BitRange, ExtractPacketResponse, ExtractedParameter, MessageService, Packet, SelectOption, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 import { Hex } from '../../shared/hex/Hex';
 
 @Component({

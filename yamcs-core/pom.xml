@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>5.8.6.1-SNAPSHOT</version>
+    <version>5.8.9-Pixxel.SNAPSHOT-2.0.0</version>
   </parent>
 
   <artifactId>yamcs-core</artifactId>
@@ -54,6 +54,16 @@
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-codec-http</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.14</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>3.9</version>
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>

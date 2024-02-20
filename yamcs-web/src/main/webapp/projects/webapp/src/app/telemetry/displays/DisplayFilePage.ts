@@ -1,14 +1,13 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, Type, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { ConfigService, YamcsService } from '@yamcs/webapp-sdk';
 import * as ace from 'brace';
 import 'brace/mode/javascript';
 import 'brace/theme/eclipse';
 import 'brace/theme/twilight';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { ConfigService } from '../../core/services/ConfigService';
-import { YamcsService } from '../../core/services/YamcsService';
 import { ImageViewer } from './ImageViewer';
 import { OpiDisplayViewer } from './OpiDisplayViewer';
 import { OpiDisplayViewerControls } from './OpiDisplayViewerControls';

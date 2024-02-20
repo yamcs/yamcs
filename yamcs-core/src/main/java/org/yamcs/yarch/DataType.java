@@ -5,6 +5,7 @@ package org.yamcs.yarch;
 
 import java.util.List;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
@@ -39,7 +40,7 @@ public class DataType {
         TUPLE,
         ARRAY,
         HRES_TIMESTAMP,
-        UUID
+        UUID,
     }
 
     public final _type val;
@@ -140,7 +141,6 @@ public class DataType {
             if (name.toUpperCase().startsWith("ARRAY(")) {
                 return array(byName(name.substring(6, name.length() - 1)));
             }
-
             throw new IllegalArgumentException("invalid or unsupported DataType '" + name + "'");
         }
     }
@@ -440,6 +440,10 @@ public class DataType {
         if (dt1 instanceof ArrayDataType && dt2 instanceof ArrayDataType) {
             return compatible(((ArrayDataType) dt1).getElementType(), ((ArrayDataType) dt2).getElementType());
         }
+        if (dt1 instanceof ProtobufDataType && dt2 instanceof ProtobufDataType) {
+            return ((ProtobufDataType) dt1).getClassName().equals(((ProtobufDataType) dt2).getClassName());
+        }
+
         return false;
     }
 

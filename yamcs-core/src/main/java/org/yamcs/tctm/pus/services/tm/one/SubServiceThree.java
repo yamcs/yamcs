@@ -1,11 +1,15 @@
 package org.yamcs.tctm.pus.services.tm.one;
 
+import java.util.ArrayList;
+
 import org.yamcs.TmPacket;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.tctm.pus.PusTmManager;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tm.PusTmModifier;
+import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
+import org.yamcs.utils.ByteArrayUtils;
 
 public class SubServiceThree implements PusSubService {
     EventProducer eventProducer;
@@ -20,11 +24,25 @@ public class SubServiceThree implements PusSubService {
     }
 
     @Override
-    public TmPacket process(TmPacket tmPacket) {
-        eventProducer.sendInfo(TC_START_EXECUTION_SUCCESS,
-                "TC with Destination ID: " + PusTmModifier.getDestinationID(tmPacket) + " has started execution");
+    public ArrayList<TmPacket> process(TmPacket tmPacket) {
+        PusTmCcsdsPacket pPkt = new PusTmCcsdsPacket(tmPacket.getPacket());
 
-        return tmPacket;
+        byte[] dataField = pPkt.getDataField();
+        int tcCcsdsApid = ByteArrayUtils.decodeUnsignedShort(dataField, 0) & 0x07FF;
+        int tcCcsdsSeqCount = ByteArrayUtils.decodeUnsignedShort(dataField, 2) & 0x3FFF;
+
+        if (PusTmManager.destinationId != pPkt.getDestinationID())
+            return null;
+
+        eventProducer.sendInfo(TC_START_EXECUTION_SUCCESS,
+                "TC with (Source ID: " + pPkt.getDestinationID() + " | Apid: " + tcCcsdsApid + " | Packet Seq Count: "
+                        + tcCcsdsSeqCount + ") has started execution"
+        );
+
+        ArrayList<TmPacket> pktList = new ArrayList<>();
+        pktList.add(tmPacket);
+
+        return pktList;
     }
 
     @Override

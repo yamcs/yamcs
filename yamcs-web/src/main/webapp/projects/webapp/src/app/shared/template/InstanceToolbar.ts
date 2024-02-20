@@ -1,10 +1,9 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ConnectionInfo, MessageService, Processor, ProcessorSubscription } from '@yamcs/webapp-sdk';
+import { ConnectionInfo, MessageService, Processor, ProcessorSubscription, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { AppearanceService } from '../../core/services/AppearanceService';
-import { YamcsService } from '../../core/services/YamcsService';
 import { SessionExpiredDialog } from '../dialogs/SessionExpiredDialog';
 import { StartReplayDialog } from './StartReplayDialog';
 

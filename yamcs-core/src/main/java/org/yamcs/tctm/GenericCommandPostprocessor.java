@@ -12,7 +12,7 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.utils.ByteArrayUtils;
 
 public class GenericCommandPostprocessor implements CommandPostprocessor {
-    static Logger log = LoggerFactory.getLogger(IssCommandPostprocessor.class);
+    static Logger log = LoggerFactory.getLogger(GenericCommandPostprocessor.class);
 
     final ErrorDetectionWordCalculator errorDetectionCalculator;
 
@@ -55,7 +55,9 @@ public class GenericCommandPostprocessor implements CommandPostprocessor {
         this.commandHistoryListener = commandHistoryListener;
     }
 
+    @Override
     public int getBinaryLength(PreparedCommand pc) {
-        return pc.getBinary().length + (errorDetectionCalculator == null ? 0 : errorDetectionCalculator.sizeInBits()>>3);
+        return pc.getBinary().length
+                + (errorDetectionCalculator == null ? 0 : errorDetectionCalculator.sizeInBits() >> 3);
     }
 }

@@ -1,10 +1,13 @@
 package org.yamcs.tctm.pus.services.tc.two;
 
+import java.util.ArrayList;
+
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tc.PusTcModifier;
+import org.yamcs.tctm.pus.services.tc.PusTcCcsdsPacket;
+
 
 public class SubServiceOne implements PusSubService {
     String yamcsInstance;
@@ -17,11 +20,11 @@ public class SubServiceOne implements PusSubService {
 
     @Override
     public PreparedCommand process(PreparedCommand telecommand) {
-        return PusTcModifier.setPusHeadersSpareFieldAndSourceID(telecommand);
+        return PusTcCcsdsPacket.setPusHeadersSpareFieldAndSourceID(telecommand);
     }
 
     @Override
-    public TmPacket process(TmPacket tmPacket) {
+    public ArrayList<TmPacket> process(TmPacket tmPacket) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'process'");
     }

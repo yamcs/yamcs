@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
-import { ValidityRange } from '@yamcs/webapp-sdk';
-import { YamcsService } from '../../core/services/YamcsService';
+import { ValidityRange, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   templateUrl: './LeapSecondsPage.html',

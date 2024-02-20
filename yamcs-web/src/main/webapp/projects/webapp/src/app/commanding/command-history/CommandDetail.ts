@@ -1,7 +1,6 @@
 import { Clipboard } from '@angular/cdk/clipboard';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { utils } from '@yamcs/webapp-sdk';
-import { CommandHistoryRecord } from './CommandHistoryRecord';
+import { CommandHistoryRecord, utils } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-command-detail2',

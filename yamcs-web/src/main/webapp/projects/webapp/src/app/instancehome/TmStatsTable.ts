@@ -1,10 +1,8 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnDestroy, ViewChild } from '@angular/core';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { TmStatistics } from '@yamcs/webapp-sdk';
+import { ConfigService, TmStatistics, WebsiteConfig, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { ConfigService, WebsiteConfig } from '../core/services/ConfigService';
-import { YamcsService } from '../core/services/YamcsService';
 
 export interface PacketStats {
   packetName: string;
@@ -81,8 +79,6 @@ export class TmStatsTable implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.tmstatsSubscription) {
-      this.tmstatsSubscription.unsubscribe();
-    }
+    this.tmstatsSubscription?.unsubscribe();
   }
 }

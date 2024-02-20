@@ -13,7 +13,7 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.http.audit.AuditLog;
 import org.yamcs.management.LinkListener;
 import org.yamcs.management.LinkManager;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.protobuf.links.AbstractLinksApi;
@@ -310,7 +310,7 @@ public class LinksApi extends AbstractLinksApi<Context> {
         if (link instanceof SystemParametersProducer) {
             var systemParametersService = SystemParametersService.getInstance(yamcsInstance);
             if (systemParametersService != null) {
-                var mdb = XtceDbFactory.getInstance(yamcsInstance);
+                var mdb = MdbFactory.getInstance(yamcsInstance);
                 var spaceSystemName = systemParametersService.getNamespace() + "/" + link.getName();
                 var spaceSystem = mdb.getSpaceSystem(spaceSystemName);
                 if (spaceSystem != null) {

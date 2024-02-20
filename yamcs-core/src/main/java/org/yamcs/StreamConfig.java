@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.mdb.XtceDbFactory;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 
@@ -46,7 +46,7 @@ public class StreamConfig {
 
     @SuppressWarnings("unchecked")
     private StreamConfig(String yamcsInstance) {
-        XtceDb xtceDb = XtceDbFactory.getInstance(yamcsInstance);
+        XtceDb xtceDb = MdbFactory.getInstance(yamcsInstance);
         YamcsServerInstance instance = YamcsServer.getServer().getInstance(yamcsInstance);
         YConfiguration instanceConfig = instance.getConfig();
         if (!instanceConfig.containsKey("streamConfig")) {

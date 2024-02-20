@@ -1,7 +1,6 @@
 import { DataSource } from '@angular/cdk/table';
-import { GetParametersOptions, MemberPathPipe, NamedObjectId, Parameter, ParameterSubscription, ParameterValue, Synchronizer } from '@yamcs/webapp-sdk';
+import { GetParametersOptions, MemberPathPipe, NamedObjectId, Parameter, ParameterSubscription, ParameterValue, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 
 export class ListItem {
   spaceSystem: boolean;

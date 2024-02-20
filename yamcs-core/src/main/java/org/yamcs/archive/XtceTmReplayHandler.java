@@ -1,9 +1,11 @@
 package org.yamcs.archive;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StandardTupleDefinitions;
@@ -85,6 +87,7 @@ public class XtceTmReplayHandler implements ReplayHandler {
         long genTime = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
         int seqNum = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
         String pname = (String) tuple.getColumn(XtceTmRecorder.PNAME_COLUMN);
+
         return new ReplayPacket(pname, recTime, genTime, seqNum, pbody);
     }
 

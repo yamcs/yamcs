@@ -4,9 +4,8 @@ import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } 
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CreateGroupRequest, MessageService } from '@yamcs/webapp-sdk';
+import { CreateGroupRequest, MessageService, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
 import { AddMembersDialog, MemberItem } from './AddMembersDialog';
 
 @Component({

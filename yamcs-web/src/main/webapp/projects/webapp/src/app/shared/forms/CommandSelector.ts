@@ -2,10 +2,9 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, Input, ViewChild } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
-import { ColumnChooserComponent, ColumnInfo, Command, GetCommandsOptions, SearchFilterComponent } from '@yamcs/webapp-sdk';
+import { ColumnChooserComponent, ColumnInfo, Command, GetCommandsOptions, SearchFilterComponent, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { CommandsDataSource } from '../../commanding/command-sender/CommandsDataSource';
-import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   selector: 'app-command-selector',
@@ -64,9 +63,10 @@ export class CommandSelector implements ControlValueAccessor, AfterViewInit {
 
   constructor(readonly yamcs: YamcsService, private changeDetection: ChangeDetectorRef) {
     this.dataSource = new CommandsDataSource(yamcs);
-    this.selectedCommand$.subscribe(item => {
+    this.selectedCommand$.subscribe(async item => {
       if (item && item.command) {
-        return this.onChange(item.command);
+        const commandDetail = await this.yamcs.yamcsClient.getCommand(this.yamcs.instance!, item.command.qualifiedName);
+        return this.onChange(commandDetail);
       } else {
         return this.onChange(null);
       }
@@ -100,6 +100,7 @@ export class CommandSelector implements ControlValueAccessor, AfterViewInit {
       details: true,
       pos: this.paginator.pageIndex * this.pageSize,
       limit: this.pageSize,
+      fields: ['name', 'qualifiedName', 'alias', 'effectiveSignificance', 'shortDescription'],
     };
     const filterValue = this.filterControl.value;
     if (filterValue) {
