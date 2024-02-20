@@ -14,6 +14,7 @@ import org.yamcs.tctm.TmPacketDataLink;
 import org.yamcs.tctm.TmSink;
 import org.yamcs.time.Instant;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.YObjectLoader;
 
 /**
@@ -141,6 +142,14 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
                 }   
             } catch (TcTmException e) {
                 pPacketDecoder.reset();
+                eventProducer.sendWarning(e.toString());
+            } catch (ArrayIndexOutOfBoundsException e) {
+                pPacketDecoder.reset();
+                log.warn(e.toString() + "\n"
+                        + "     Full Frame: " + StringConverter.arrayToHexString(data, true) + "\n"
+                        + "     Packet Start: " + packetStart + "\n"
+                        + "     Data (i.e Frame) End: " + dataEnd + "\n"
+                );
                 eventProducer.sendWarning(e.toString());
             }
         }

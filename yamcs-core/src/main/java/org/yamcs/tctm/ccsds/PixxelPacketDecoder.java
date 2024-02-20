@@ -73,7 +73,7 @@ public class PixxelPacketDecoder {
         this.consumer = consumer;
     }
 
-    public void process(byte[] data, int offset, int length) throws TcTmException {
+    public void process(byte[] data, int offset, int length) throws TcTmException, ArrayIndexOutOfBoundsException {
         while (length > 0) {
             if (headerOffset == 0) { // read the first byte of the header to know what kind of packet it is as well
                                      // as
