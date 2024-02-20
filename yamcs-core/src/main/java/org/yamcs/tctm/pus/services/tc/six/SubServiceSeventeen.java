@@ -7,11 +7,11 @@ import org.yamcs.tctm.pus.services.PusSubService;
 
 import java.util.ArrayList;
 
-public class SubServiceFive implements PusSubService {
+public class SubServiceSeventeen implements PusSubService {
     String yamcsInstance;
     YConfiguration config;
 
-    SubServiceFive(String yamcsInstance, YConfiguration config) {
+    SubServiceSeventeen(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
         this.config = config;
     }

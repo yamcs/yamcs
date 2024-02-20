@@ -27,7 +27,9 @@ import org.yamcs.tctm.ErrorDetectionWordCalculator;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSink;
 import org.yamcs.tctm.pus.services.tc.fifteen.ServiceFifteen;
+import org.yamcs.tctm.pus.services.tc.five.ServiceFive;
 import org.yamcs.tctm.pus.services.tc.fourteen.ServiceFourteen;
+import org.yamcs.tctm.pus.services.tc.six.ServiceSix;
 import org.yamcs.tctm.pus.services.tc.two.ServiceTwo;
 import org.yamcs.time.TimeService;
 import org.yamcs.xtce.XtceDb;
@@ -180,7 +182,9 @@ public class PusTcManager extends AbstractYamcsService implements StreamSubscrib
     private void initializePUSServices() {
         pusServices.put(2, new ServiceTwo(yamcsInstance, pusConfig.getConfigOrEmpty("two")));
         pusServices.put(3, new ServiceThree(yamcsInstance, pusConfig.getConfigOrEmpty("three")));
-        pusServices.put(9, new ServiceNine(yamcsInstance, pusConfig.getConfigOrEmpty("three")));
+        pusServices.put(5, new ServiceFive(yamcsInstance, pusConfig.getConfigOrEmpty("five")));
+        pusServices.put(6, new ServiceSix(yamcsInstance, pusConfig.getConfigOrEmpty("six")));
+        pusServices.put(9, new ServiceNine(yamcsInstance, pusConfig.getConfigOrEmpty("nine")));
         pusServices.put(11, new ServiceEleven(yamcsInstance, pusConfig.getConfigOrEmpty("eleven")));
         pusServices.put(13, new ServiceThirteen(yamcsInstance, pusConfig.getConfigOrEmpty("thirteen")));
         pusServices.put(14, new ServiceFourteen(yamcsInstance, pusConfig.getConfigOrEmpty("fourteen")));

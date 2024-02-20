@@ -5,11 +5,15 @@ import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.tctm.pus.services.PusSubService;
 
+import java.util.ArrayList;
+
 public class SubServiceNine implements PusSubService {
     String yamcsInstance;
+    YConfiguration config;
 
     SubServiceNine(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
+        this.config = config;
     }
 
     @Override
@@ -19,9 +23,9 @@ public class SubServiceNine implements PusSubService {
     }
 
     @Override
-    public TmPacket process(TmPacket tmPacket) {
+    public ArrayList<TmPacket> process(TmPacket tmPacket) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'process'");
     }
-    
+
 }
