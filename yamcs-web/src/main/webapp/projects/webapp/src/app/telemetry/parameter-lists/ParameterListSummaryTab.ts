@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ColumnChooserComponent, ParameterList, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { PLIST_COLUMNS, PLIST_SOURCE_OPTIONS, PLIST_TYPE_OPTIONS } from '../parameters/ParametersPage';
+import { PLIST_COLUMNS } from '../parameters/ParametersPage';
 import { StreamingParametersDataSource } from './StreamingParametersDataSource';
 
 @Component({
@@ -11,12 +10,6 @@ import { StreamingParametersDataSource } from './StreamingParametersDataSource';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParameterListSummaryTab implements OnDestroy {
-
-  filterForm = new UntypedFormGroup({
-    filter: new UntypedFormControl(),
-    type: new UntypedFormControl('ANY'),
-    source: new UntypedFormControl('ANY'),
-  });
 
   plist$ = new BehaviorSubject<ParameterList | null>(null);
 
@@ -26,8 +19,6 @@ export class ParameterListSummaryTab implements OnDestroy {
   dataSource: StreamingParametersDataSource;
 
   columns = PLIST_COLUMNS;
-  typeOptions = PLIST_TYPE_OPTIONS;
-  sourceOptions = PLIST_SOURCE_OPTIONS;
 
   constructor(
     route: ActivatedRoute,

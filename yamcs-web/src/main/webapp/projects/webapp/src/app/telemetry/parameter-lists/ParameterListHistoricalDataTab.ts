@@ -3,7 +3,7 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ExportParameterValuesOptions, ParameterList, SelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ExportParameterValuesOptions, FilenamePipe, ParameterList, SelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { ExportArchiveDataDialog } from '../displays/ExportArchiveDataDialog';
 
@@ -65,6 +65,7 @@ export class ParameterListHistoricalDataTab {
     readonly route: ActivatedRoute,
     readonly yamcs: YamcsService,
     private dialog: MatDialog,
+    private filenamePipe: FilenamePipe,
   ) {
     this.plistId = route.snapshot.paramMap.get('list')!;
 
@@ -145,7 +146,7 @@ export class ParameterListHistoricalDataTab {
     this.updateURL();
     const options: ExportParameterValuesOptions = {
       delimiter: 'TAB',
-      limit: 200,
+      limit: 100,
       order: 'desc',
     };
     if (this.validStart) {
@@ -165,7 +166,7 @@ export class ParameterListHistoricalDataTab {
       if (plist.match) {
         this.yamcs.yamcsClient.exportParameterValues(this.yamcs.instance!, {
           ...options,
-          parameters: plist.match.map(parameter => parameter.qualifiedName),
+          list: plist.id,
         }).then(pdata => {
           const exportData = this.processCsv(pdata);
           this.exportData$.next(exportData);
@@ -199,10 +200,9 @@ export class ParameterListHistoricalDataTab {
       records.push(snapshot);
     }
 
-    const result: ValueExport = {
-      headers: lines[0].split(/\t/).slice(1),
-      records,
-    };
+    const qualifiedNames = lines[0].split(/\t/).slice(1);
+    const headers: string[] = qualifiedNames.map(x => this.filenamePipe.transform(x)!);
+    const result: ValueExport = { headers, records };
     return result;
   }
 
@@ -235,7 +235,7 @@ export class ParameterListHistoricalDataTab {
       this.dialog.open(ExportArchiveDataDialog, {
         width: '400px',
         data: {
-          parameterIds: parameters.map(p => p.qualifiedName),
+          list: plist.id,
           start: this.validStart,
           stop: this.validStop,
           filename,

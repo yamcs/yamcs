@@ -18,6 +18,7 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.MediaType;
 import org.yamcs.http.api.Downsampler.Sample;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;
@@ -283,7 +284,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         String instance = InstancesApi.verifyInstance(request.getInstance());
 
         List<NamedObjectId> ids = new ArrayList<>();
-        XtceDb mdb = MdbFactory.getInstance(instance);
+        Mdb mdb = MdbFactory.getInstance(instance);
         String namespace = null;
         int interval = -1;
         boolean ascending = !request.getOrder().equals("desc");
@@ -308,7 +309,23 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             interval = request.getInterval();
         }
 
-        if (ids.isEmpty()) {
+        if (request.hasList()) {
+            var plistService = ParameterListsApi.verifyService(instance);
+            var plist = ParameterListsApi.verifyParameterList(plistService, request.getList());
+            for (Parameter p : ParameterListsApi.resolveParameters(ctx, mdb, plist)) {
+                if (!ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
+                    continue;
+                }
+                if (namespace != null) {
+                    String alias = p.getAlias(namespace);
+                    if (alias != null) {
+                        ids.add(NamedObjectId.newBuilder().setNamespace(namespace).setName(alias).build());
+                    }
+                } else {
+                    ids.add(NamedObjectId.newBuilder().setName(p.getQualifiedName()).build());
+                }
+            }
+        } else if (ids.isEmpty()) {
             for (Parameter p : mdb.getParameters()) {
                 if (!ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
                     continue;

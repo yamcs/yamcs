@@ -204,6 +204,12 @@ message ExportParameterValuesRequest {
   
   // The parameters to add to the export.
   repeated string parameters = 4;
+
+  // Identifier of a Parameter List, describing the parameters to
+  // export.
+  //
+  // This may be used as an alternative to the ``parameters`` field.
+  optional string list = 14;
   
   // Namespace used to display parameter names in csv header.
   // Only used when no parameter ids were specified.

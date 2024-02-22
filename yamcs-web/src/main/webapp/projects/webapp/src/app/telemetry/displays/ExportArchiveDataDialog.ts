@@ -60,9 +60,14 @@ export class ExportArchiveDataDialog implements OnDestroy {
   private updateURL() {
     if (this.form.valid) {
       const dlOptions: DownloadParameterValuesOptions = {
-        parameters: this.data.parameterIds,
         delimiter: this.form.value['delimiter'],
       };
+      if (this.data.parameterIds) {
+        dlOptions.parameters = this.data.parameterIds;
+      }
+      if (this.data.list) {
+        dlOptions.list = this.data.list;
+      }
       if (this.form.value['start']) {
         dlOptions.start = utils.toISOString(this.form.value['start']);
       }

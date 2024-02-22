@@ -4,7 +4,9 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
@@ -38,7 +40,7 @@ import com.google.protobuf.Empty;
 
 public class ParameterListsApi extends AbstractParameterListsApi<Context> {
 
-    private Log log = new Log(ParameterListsApi.class);
+    private static final Log log = new Log(ParameterListsApi.class);
 
     @Override
     public void listParameterLists(Context ctx, ListParameterListsRequest request,
@@ -77,14 +79,9 @@ public class ParameterListsApi extends AbstractParameterListsApi<Context> {
     public void getParameterList(Context ctx, GetParameterListRequest request, Observer<ParameterListInfo> observer) {
         var instance = InstancesApi.verifyInstance(request.getInstance());
         var plistService = verifyService(instance);
-        var plistId = verifyId(request.getList());
-        var plist = plistService.getParameterListDb().getById(plistId);
-        if (plist == null) {
-            throw new NotFoundException("Unknown parameter list");
-        } else {
-            var mdb = MdbFactory.getInstance(instance);
-            observer.complete(toParameterListInfo(ctx, mdb, plist, true));
-        }
+        var plist = verifyParameterList(plistService, request.getList());
+        var mdb = MdbFactory.getInstance(instance);
+        observer.complete(toParameterListInfo(ctx, mdb, plist, true));
     }
 
     @Override
@@ -120,14 +117,9 @@ public class ParameterListsApi extends AbstractParameterListsApi<Context> {
         ctx.checkSystemPrivilege(SystemPrivilege.ManageParameterLists);
         var instance = InstancesApi.verifyInstance(request.getInstance());
         var plistService = verifyService(instance);
-        var plistId = verifyId(request.getList());
         var db = plistService.getParameterListDb();
         var mdb = MdbFactory.getInstance(instance);
-
-        var plist = db.getById(plistId);
-        if (plist == null) {
-            throw new NotFoundException();
-        }
+        var plist = verifyParameterList(plistService, request.getList());
 
         if (request.hasName()) {
             var newName = request.getName().trim();
@@ -169,36 +161,40 @@ public class ParameterListsApi extends AbstractParameterListsApi<Context> {
         plistb.addAllPatterns(plist.getPatterns());
 
         if (addResolvedParameters) {
-            var parameters = new ArrayList<Parameter>();
-            for (String p : plist.getPatterns()) {
-                if (p.endsWith("/")) {
-                    var system = mdb.getSpaceSystem(p.substring(0, p.length() - 1));
-                    if (system == null) {
-                        continue;
-                    }
-                    system.getParameters().forEach(parameters::add);
-                } else {
-                    var matcher = FileSystems.getDefault().getPathMatcher("glob:" + p);
-                    for (var candidate : mdb.getParameters()) {
-                        if (matcher.matches(Path.of(candidate.getQualifiedName()))) {
-                            parameters.add(candidate);
-                        }
-                    }
-                }
-            }
-
-            for (var parameter : parameters) {
-                if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, parameter.getQualifiedName())) {
-                    var pinfo = XtceToGpbAssembler.toParameterInfo(parameter, DetailLevel.SUMMARY);
-                    plistb.addMatch(pinfo);
-                }
+            for (var parameter : resolveParameters(ctx, mdb, plist)) {
+                var pinfo = XtceToGpbAssembler.toParameterInfo(parameter, DetailLevel.SUMMARY);
+                plistb.addMatch(pinfo);
             }
         }
 
         return plistb.build();
     }
 
-    private ParameterListService verifyService(String yamcsInstance) {
+    public static List<Parameter> resolveParameters(Context ctx, Mdb mdb, ParameterList plist) {
+        var parameters = new ArrayList<Parameter>();
+        for (String p : plist.getPatterns()) {
+            if (p.endsWith("/")) {
+                var system = mdb.getSpaceSystem(p.substring(0, p.length() - 1));
+                if (system == null) {
+                    continue;
+                }
+                system.getParameters().forEach(parameters::add);
+            } else {
+                var matcher = FileSystems.getDefault().getPathMatcher("glob:" + p);
+                for (var candidate : mdb.getParameters()) {
+                    if (matcher.matches(Path.of(candidate.getQualifiedName()))) {
+                        parameters.add(candidate);
+                    }
+                }
+            }
+        }
+
+        return parameters.stream()
+                .filter(p -> ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName()))
+                .collect(Collectors.toList());
+    }
+
+    public static ParameterListService verifyService(String yamcsInstance) {
         String instance = InstancesApi.verifyInstance(yamcsInstance);
 
         var services = YamcsServer.getServer().getInstance(instance)
@@ -211,6 +207,15 @@ public class ParameterListsApi extends AbstractParameterListsApi<Context> {
             }
             return services.get(0);
         }
+    }
+
+    public static ParameterList verifyParameterList(ParameterListService plistService, String id) {
+        var plistId = verifyId(id);
+        var plist = plistService.getParameterListDb().getById(plistId);
+        if (plist == null) {
+            throw new NotFoundException("Parameter list not found");
+        }
+        return plist;
     }
 
     private static UUID verifyId(String id) {

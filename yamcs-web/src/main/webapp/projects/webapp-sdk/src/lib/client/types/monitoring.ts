@@ -211,6 +211,7 @@ export interface GetParameterValuesOptions {
 
 export interface DownloadParameterValuesOptions {
   parameters?: string | string[];
+  list?: string;
   start?: string;
   stop?: string;
   norepeat?: boolean;
@@ -223,6 +224,7 @@ export interface ExportParameterValuesOptions {
   start?: string;
   stop?: string;
   parameters?: string[];
+  list?: string;
   namespace?: string;
   delimiter?: 'TAB' | 'COMMA' | 'SEMICOLON';
   preserveLastValue?: boolean;

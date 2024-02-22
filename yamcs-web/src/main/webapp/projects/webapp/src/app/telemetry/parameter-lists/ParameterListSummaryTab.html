@@ -1,19 +1,12 @@
 <div class="panel-content">
   <ng-container *ngIf="plist$ | async as plist">
-    <form [formGroup]="filterForm">
-      <div class="filter-bar">
-        <ya-search-filter [formControl]="filterForm.controls['filter']"
-                          placeholder="Search by name"
-                          icon="search" />
-        <ya-select [options]="typeOptions" formControlName="type" />
-        <ya-select [options]="sourceOptions" formControlName="source" />
-        <ya-column-chooser #columnChooser
-                           [columns]="columns"
-                           preferenceKey="tmParameters" />
+    <div class="filter-bar">
+      <ya-column-chooser #columnChooser
+                         [columns]="columns"
+                         preferenceKey="tmParameters" />
 
-        <ya-dots *ngIf="dataSource.loading$ | async" />
-      </div>
-    </form>
+      <ya-dots *ngIf="dataSource.loading$ | async" />
+    </div>
     <table mat-table
            class="ya-data-table expand"
            [dataSource]="dataSource">
