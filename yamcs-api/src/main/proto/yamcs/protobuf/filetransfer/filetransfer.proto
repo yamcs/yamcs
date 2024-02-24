@@ -25,6 +25,13 @@ service FileTransferApi {
     };
   }
 
+  // Get a file transfer service
+  rpc GetFileTransferService(GetFileTransferServiceRequest) returns (FileTransferServiceInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/filetransfer/{instance}/services/{serviceName}"
+    };
+  }
+
   // List transfers
   rpc ListTransfers(ListTransfersRequest) returns (ListTransfersResponse) {
     option (yamcs.api.route) = {
@@ -71,14 +78,14 @@ service FileTransferApi {
     };
   }
   
-  // Receive transfer updates
+  // Subscribe to transfer updates
   rpc SubscribeTransfers(SubscribeTransfersRequest) returns (stream TransferInfo) {
     option (yamcs.api.websocket) = {
       topic: "file-transfers"
     };
   }
 
-  // Receive remote file lists
+  // Subscribe to remote file list updates
   rpc SubscribeRemoteFileList(SubscribeTransfersRequest) returns (stream ListFilesResponse) {
     option (yamcs.api.websocket) = {
       topic: "remote-file-list"
@@ -117,33 +124,41 @@ enum TransferState {
 }
 
 message TransactionId {
-    optional uint32 sequenceNumber = 1;
-    optional uint64 initiatorEntity = 2;
+  optional uint32 sequenceNumber = 1;
+  optional uint64 initiatorEntity = 2;
 }
 
 message ListFileTransferServicesRequest {
+  // Yamcs instance name
   optional string instance = 1;
+}
+
+message GetFileTransferServiceRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // File transfer service name
+  optional string serviceName = 2;
 }
 
 message ListFileTransferServicesResponse {
   repeated FileTransferServiceInfo services = 1;
 }
 
-//This message is used to configure the yamcs-web
 message FileTransferCapabilities {
-  //if true, yamcs-web shows a button for initiating an upload
+  // Whether the transfer service supports uploads
   optional bool upload = 1;
 
-  //if true, yamcs-web shows a button for initiating a download
+  // Whether the transfer service supports downloads
   optional bool download = 2;
 
-  //if true, yamcs-web will show the section with the destination file/folder name (upload only)
+  // Whether the transfer service supports specifying an upload path
   optional bool remotePath = 4;
 
-  // true = service supports remote file list
+  // Whether the transfer service supports remote file listings
   optional bool fileList = 5;
 
-  // if true, yamcs-web will show the "Transfer Type" string column
+  // Whether transfers contain a column describing the Transfer Type
   optional bool hasTransferType = 6;
 
   // Additional columns to show in a file listing, where id
@@ -157,7 +172,10 @@ message ExtraColumnInfo {
 }
 
 message FileTransferServiceInfo {
+  // Yamcs instance name
   optional string instance = 1;
+
+  // File transfer service name
   optional string name = 2;
  
   repeated EntityInfo localEntities = 3;
@@ -171,7 +189,6 @@ message EntityInfo {
   optional uint64 id = 2;
 }
 
-//message sent as reponse to the info and also when starting a new transfer
 message TransferInfo {
   //unique identifier assigned by the file transfer service
   optional uint64 id = 1;
@@ -260,7 +277,7 @@ message CancelTransferRequest {
   // Yamcs instance name
   optional string instance = 1;
 
-  // service name
+  // File transfer service name
   optional string serviceName = 3;
 
   // Transfer identifier (assigned by Yamcs)
@@ -268,18 +285,21 @@ message CancelTransferRequest {
 }
 
 message ResumeTransferRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
-  // service name
+
+  // File transfer service name
   optional string serviceName = 3;
+
   // Transfer identifier (assigned by Yamcs)
   optional int64 id = 2;
 }
 
 message ListTransfersRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
-  // service name
+
+  // File transfer service name
   optional string serviceName = 2;
 }
 
@@ -287,7 +307,7 @@ message GetTransferRequest {
   // Yamcs instance name
   optional string instance = 1;
 
-  // service name
+  // File transfer service name
   optional string serviceName = 3;
 
   // Transfer identifier (assigned by Yamcs)
@@ -299,18 +319,18 @@ message ListTransfersResponse {
 }
 
 message SubscribeTransfersRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
-  // service name
+  // File transfer service name
   optional string serviceName = 2;
 }
 
 message ListFilesRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
-  // Service name
+  // File transfer service name
   optional string serviceName = 2;
 
   // Entity from which to get the file list

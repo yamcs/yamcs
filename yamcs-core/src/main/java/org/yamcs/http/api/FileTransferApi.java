@@ -28,6 +28,7 @@ import org.yamcs.protobuf.CancelTransferRequest;
 import org.yamcs.protobuf.CreateTransferRequest;
 import org.yamcs.protobuf.EntityInfo;
 import org.yamcs.protobuf.FileTransferServiceInfo;
+import org.yamcs.protobuf.GetFileTransferServiceRequest;
 import org.yamcs.protobuf.GetTransferRequest;
 import org.yamcs.protobuf.ListFileTransferServicesRequest;
 import org.yamcs.protobuf.ListFileTransferServicesResponse;
@@ -68,6 +69,14 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
             }
         }
         observer.complete(responseb.build());
+    }
+
+    @Override
+    public void getFileTransferService(Context ctx, GetFileTransferServiceRequest request,
+            Observer<FileTransferServiceInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadFileTransfers);
+        var ftService = verifyService(request.getInstance(), request.getServiceName());
+        observer.complete(toFileTransferServiceInfo(request.getServiceName(), ftService));
     }
 
     @Override
@@ -300,7 +309,6 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
                 .setId(transfer.getId())
                 .setState(transfer.getTransferState())
                 .setDirection(transfer.getDirection())
-
                 .setSizeTransferred(transfer.getTransferredSize())
                 .setReliable(transfer.isReliable());
 
