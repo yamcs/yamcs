@@ -375,7 +375,7 @@
 				<plugin>
 					<groupId>org.yamcs</groupId>
 					<artifactId>yamcs-maven-plugin</artifactId>
-					<version>1.2.11</version>
+					<version>1.2.12</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>

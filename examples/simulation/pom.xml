@@ -25,54 +25,19 @@
       <groupId>org.yamcs</groupId>
       <artifactId>yamcs-core</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.yamcs</groupId>
       <artifactId>yamcs-tse</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.yamcs</groupId>
       <artifactId>yamcs-web</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
-
-  <profiles>
-    <profile>
-      <id>bundle-examples</id>
-      <activation>
-        <property>
-          <name>bundle-examples</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-assembly-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>dropin-assembly</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>single</goal>
-                </goals>
-                <configuration>
-                  <descriptors>
-                    <descriptor>src/main/assembly/dropin.descriptor.xml</descriptor>
-                  </descriptors>
-                  <finalName>${project.artifactId}-${project.version}</finalName>
-                </configuration>
-              </execution>
-            </executions>
-            <configuration>
-              <tarLongFileMode>posix</tarLongFileMode>
-              <attach>false</attach>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>
