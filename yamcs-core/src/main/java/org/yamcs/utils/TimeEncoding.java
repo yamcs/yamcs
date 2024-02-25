@@ -29,7 +29,6 @@ public class TimeEncoding {
     public static final long NEGATIVE_INFINITY = MIN_INSTANT - 1;
     public static final long POSITIVE_INFINITY = MAX_INSTANT + 1;
 
-
     static final long GPS_EPOCH_YAMCS_EPOCH_DELTA = 315964819000L;
     static final long TAI_EPOCH_YAMCS_EPOCH_DELTA = -378691200000L;
     static final long J2000_EPOCH_YAMCS_EPOCH_DELTA = 946727967816L;
@@ -139,10 +138,12 @@ public class TimeEncoding {
      * @return
      */
     public static String toString(long instant) {
-        if (instant < MIN_INSTANT)
+        if (instant < MIN_INSTANT) {
             return "-inf";
-        if (instant > MAX_INSTANT)
+        }
+        if (instant > MAX_INSTANT) {
             return "+inf";
+        }
 
         TaiUtcConverter.DateTimeComponents dtc = taiUtcConverter.instantToUtc(instant);
         StringBuilder sb = new StringBuilder();
@@ -455,27 +456,31 @@ public class TimeEncoding {
     }
 
     /**
-     * Transforms the cal from UNIX (millisec since 1970) to instant
-     * 
-     * @param cal
-     * @return
+     * Transforms a {@link java.util.Calendar} from UNIX (millisec since 1970) to instant
      */
     public static long fromCalendar(Calendar cal) {
         return fromUnixMillisec(cal.getTimeInMillis());
     }
 
     /**
-     * Transforms a Date from UNIX (millisec since 1970) to instant
+     * Transforms a {@link java.util.Date} from UNIX (millisec since 1970) to instant
      */
     public static long fromDate(Date date) {
         return fromUnixMillisec(date.getTime());
     }
 
     /**
-     * transforms instant into a java cal containing milliseconds since 1970
+     * Transforms a {@link java.time.Instant} from UNIX (millisec since 1970) to instant
+     */
+    public static long fromJavaInstant(java.time.Instant instant) {
+        return fromUnixMillisec(instant.toEpochMilli());
+    }
+
+    /**
+     * Transforms instant into a {@link java.util.Calendar} containing milliseconds since 1970
      * 
      * @param instant
-     * @return
+     *            Yamcs instant
      */
     public static Calendar toCalendar(long instant) {
         if (instant == TimeEncoding.INVALID_INSTANT) {
@@ -485,6 +490,20 @@ public class TimeEncoding {
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(t);
         return cal;
+    }
+
+    /**
+     * Transforms instant into a {@link java.time.Instant} containing milliseconds since 1970
+     * 
+     * @param instant
+     *            Yamcs instant
+     */
+    public static java.time.Instant toJavaInstant(long instant) {
+        if (instant == TimeEncoding.INVALID_INSTANT) {
+            return null;
+        }
+        long t = taiUtcConverter.instantToUnix(instant);
+        return java.time.Instant.ofEpochMilli(t);
     }
 
     /**
