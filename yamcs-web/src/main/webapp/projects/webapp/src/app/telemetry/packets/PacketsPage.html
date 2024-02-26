@@ -131,6 +131,13 @@
           </td>
         </ng-container>
 
+        <ng-container matColumnDef="sequenceNumber">
+          <th mat-header-cell *matHeaderCellDef>Seq</th>
+          <td mat-cell *matCellDef="let packet">
+            {{ packet.sequenceNumber ?? '-' }}
+          </td>
+        </ng-container>
+
         <ng-container matColumnDef="earthReceptionTime">
           <th mat-header-cell *matHeaderCellDef>Earth reception time</th>
           <td mat-cell *matCellDef="let packet">

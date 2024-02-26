@@ -78,6 +78,7 @@ export * from './lib/pipes/print-json.pipe';
 export * from './lib/pipes/reverse.pipe';
 export * from './lib/pipes/short-name.pipe';
 export * from './lib/pipes/space-system.pipe';
+export * from './lib/pipes/storage-url.pipe';
 export * from './lib/pipes/to-value.pipe';
 export * from './lib/pipes/units.pipe';
 export * from './lib/pipes/value.pipe';

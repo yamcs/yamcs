@@ -24,6 +24,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
+import { StorageUrlPipe } from '../public-api';
 import { BinaryInputComponent } from './components/binary-input/binary-input.component';
 import { BreadcrumbTrailComponent } from './components/breadcrumb/breadcrumb-trail.component';
 import { BreadcrumbComponent } from './components/breadcrumb/breadcrumb.component';
@@ -129,6 +130,7 @@ const pipes = [
   ReversePipe,
   ShortNamePipe,
   SpaceSystemPipe,
+  StorageUrlPipe,
   ToValuePipe,
   UnitsPipe,
   ValuePipe,
