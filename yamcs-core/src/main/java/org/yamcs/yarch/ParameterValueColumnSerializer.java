@@ -51,7 +51,7 @@ public class ParameterValueColumnSerializer implements ColumnSerializer<Paramete
 
     @Override
     public void serialize(ByteArray byteArray, ParameterValue pv) {
-        byteArray.addSizePrefixedProto(toProto(pv));
+        byteArray.addSizePrefixedParameterValue(pv);
     }
 
     @Override

@@ -1,10 +1,16 @@
 package org.yamcs.parameter;
 
+import java.io.IOException;
+
+import org.yamcs.http.YamcsEncoded;
+
+import com.google.protobuf.CodedOutputStream;
+
 /**
  * Union like class
  * 
  */
-public abstract class Value {
+public abstract class Value implements YamcsEncoded {
     public abstract org.yamcs.protobuf.Yamcs.Value.Type getType();
 
     public int getUint32Value() {
@@ -71,5 +77,15 @@ public abstract class Value {
 
     private UnsupportedOperationException cantUseException(String method) {
         return new UnsupportedOperationException("Cannot use " + method + " for " + getType() + " values");
+    }
+
+    @Override
+    public void writeTo(CodedOutputStream output) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getSerializedSize() {
+        throw new UnsupportedOperationException("getSerializedSize not implemented for " + this.getClass());
     }
 }

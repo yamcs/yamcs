@@ -6,6 +6,8 @@ import java.io.UncheckedIOException;
 import java.nio.BufferOverflowException;
 import java.util.Arrays;
 
+import org.yamcs.parameter.ParameterValue;
+
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.CodedOutputStream;
 import com.google.protobuf.MessageLite;
@@ -15,8 +17,6 @@ import com.google.protobuf.MessageLite;
  * 
  * All non byte operations are big endian.
  * 
- * @author nm
- *
  */
 public class ByteArray {
     public static int DEFAULT_CAPACITY = 10;
@@ -112,6 +112,22 @@ public class ByteArray {
         addInt(size);
         try {
             msg.writeTo(CodedOutputStream.newInstance(a, length, size));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        length += size;
+    }
+
+    /**
+     * Writes a parameter value to the buffer prefixed by its size in 4 bytes big endian.
+     * 
+     */
+    public void addSizePrefixedParameterValue(ParameterValue pv) {
+        int size = pv.getSerializedSize();
+        ensureCapacity(length + size + 4);
+        addInt(size);
+        try {
+            pv.writeTo(CodedOutputStream.newInstance(a, length, size));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

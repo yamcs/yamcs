@@ -291,7 +291,8 @@ public class TableDefinition {
      */
     public Row generateRow(Tuple t) throws YarchException {
         Row tableTuple = new Row(histoIdx);
-        ByteArray byteArray = new ByteArray();
+        ByteArray byteArray = new ByteArray(keyDef.size() * 4);
+
         for (int keyIdx = 0; keyIdx < keyDef.size(); keyIdx++) {
             TableColumnDefinition tableCd = keyDef.get(keyIdx);
             String colName = tableCd.getName();
@@ -524,7 +525,7 @@ public class TableDefinition {
      * 
      */
     public byte[] serializeValue(Tuple tuple, Row sertuple) {
-        ByteArray byteArray = new ByteArray();
+        ByteArray byteArray = new ByteArray(tuple.size() * 8);
         serializeValue(tuple, sertuple, byteArray);
         return byteArray.toArray();
     }
