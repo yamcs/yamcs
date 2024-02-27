@@ -1,4 +1,4 @@
-package org.yamcs.tctm.pus.services.tc.six;
+package org.yamcs.tctm.pus.services.tm.six;
 
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
@@ -7,11 +7,11 @@ import org.yamcs.tctm.pus.services.PusSubService;
 
 import java.util.ArrayList;
 
-public class SubServiceFive implements PusSubService {
+public class SubServiceEight implements PusSubService {
     String yamcsInstance;
     YConfiguration config;
 
-    SubServiceFive(String yamcsInstance, YConfiguration config) {
+    SubServiceEight(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
         this.config = config;
     }
@@ -27,5 +27,4 @@ public class SubServiceFive implements PusSubService {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'process'");
     }
-
 }

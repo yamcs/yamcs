@@ -27,5 +27,4 @@ public class SubServiceSeven implements PusSubService {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'process'");
     }
-
 }
