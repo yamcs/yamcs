@@ -205,8 +205,9 @@ public class RdbBucket implements Bucket {
                         .build();
                 TablespaceRecord.Builder trb = TablespaceRecord.newBuilder().setType(Type.BUCKET)
                         .setBucketProperties(bucketProps1).setTbsIndex(tbsIndex);
-                tablespace.writeToBatch(objectName, writeBatch, trb);
+                tablespace.writeToBatch(yamcsInstance, writeBatch, trb);
                 tablespace.getRdb().getDb().write(writeOpts, writeBatch);
+
                 bucketProps = bucketProps1;
             }
         } catch (RocksDBException e) {
