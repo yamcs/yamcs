@@ -1,6 +1,10 @@
 package org.yamcs.parameter;
 
+import java.io.IOException;
+
 import org.yamcs.protobuf.Yamcs.Value.Type;
+
+import com.google.protobuf.CodedOutputStream;
 
 public class UInt32Value extends Value {
     final int v;
@@ -45,5 +49,22 @@ public class UInt32Value extends Value {
     @Override
     public String toString() {
         return Integer.toUnsignedString(v);
+    }
+
+
+    /**** Protobuf methods **/
+    static final int FIELD_NUM = org.yamcs.protobuf.Yamcs.Value.UINT32VALUE_FIELD_NUMBER;
+    static final int TYPE = org.yamcs.protobuf.Yamcs.Value.Type.UINT32_VALUE;
+    static final int TYPE_SIZE = com.google.protobuf.CodedOutputStream.computeEnumSize(1, TYPE);
+
+    @Override
+    public int getSerializedSize() {
+        return TYPE_SIZE + com.google.protobuf.CodedOutputStream.computeUInt32Size(FIELD_NUM, v);
+    }
+
+    @Override
+    public void writeTo(CodedOutputStream output) throws IOException {
+        output.writeEnum(1, TYPE);
+        output.writeUInt32(FIELD_NUM, v);
     }
 }

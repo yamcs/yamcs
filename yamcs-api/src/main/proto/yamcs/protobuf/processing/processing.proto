@@ -5,6 +5,7 @@ package yamcs.protobuf.processing;
 option java_package = "org.yamcs.protobuf";
 option java_outer_classname = "ProcessingProto";
 option java_multiple_files = true;
+option optimize_for = LITE_RUNTIME;
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
@@ -13,6 +14,8 @@ import "yamcs/api/annotations.proto";
 import "yamcs/protobuf/pvalue/pvalue.proto";
 import "yamcs/protobuf/yamcsManagement/yamcsManagement.proto";
 import "yamcs/protobuf/yamcs.proto";
+//import "yamcs/pvstub.proto";
+
 
 service ProcessingApi {
 

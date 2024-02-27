@@ -1,6 +1,10 @@
 package org.yamcs.parameter;
 
+import java.io.IOException;
+
 import org.yamcs.protobuf.Yamcs.Value.Type;
+
+import com.google.protobuf.CodedOutputStream;
 
 public class DoubleValue extends Value {
     final double v;
@@ -38,4 +42,21 @@ public class DoubleValue extends Value {
     public String toString() {
         return Double.toString(v);
     }
+
+    /**** Protobuf methods **/
+    static final int FIELD_NUM = org.yamcs.protobuf.Yamcs.Value.DOUBLEVALUE_FIELD_NUMBER;
+    static final int TYPE = org.yamcs.protobuf.Yamcs.Value.Type.DOUBLE_VALUE;
+    static final int TYPE_SIZE = com.google.protobuf.CodedOutputStream.computeEnumSize(1, TYPE);
+
+    @Override
+    public int getSerializedSize() {
+        return TYPE_SIZE + com.google.protobuf.CodedOutputStream.computeDoubleSize(FIELD_NUM, v);
+    }
+
+    @Override
+    public void writeTo(CodedOutputStream output) throws IOException {
+        output.writeEnum(1, TYPE);
+        output.writeDouble(FIELD_NUM, v);
+    }
+
 }

@@ -1,5 +1,6 @@
 package org.yamcs.http.api;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,18 +17,22 @@ import org.yamcs.NoPermissionException;
 import org.yamcs.Processor;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.YamcsEncoded;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
-import org.yamcs.protobuf.SubscribeParametersData;
 import org.yamcs.protobuf.SubscribeParametersRequest;
 import org.yamcs.protobuf.SubscribeParametersRequest.Action;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.security.User;
 import org.yamcs.utils.StringConverter;
+
+import com.google.protobuf.CodedOutputStream;
+import com.google.protobuf.MapEntry;
+import com.google.protobuf.WireFormat;
 
 public class SubscribeParameterObserver implements Observer<SubscribeParametersRequest> {
 
@@ -63,15 +68,15 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
                 if (params.isEmpty()) {
                     return;
                 }
-                SubscribeParametersData.Builder datab = SubscribeParametersData.newBuilder();
+                SubscribeParametersData datab = new SubscribeParametersData();
                 for (ParameterValueWithId pvwi : params) {
                     ParameterValue pval = pvwi.getParameterValue();
                     Integer numericId = numericIdMap.get(pvwi.getId());
                     if (numericId != null) {
-                        datab.addValues(toGpb(pval, numericId));
+                        datab.addValues(numericId, pval);
                     }
                 }
-                responseObserver.next(datab.build());
+                responseObserver.next(datab);
             });
         }
 
@@ -86,6 +91,7 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
             try {
                 updateSubscription(action, idList, request.getUpdateOnExpiration());
             } catch (InvalidIdentification e) {
+                System.out.println("invalid: " + invalid);
                 invalid.addAll(e.getInvalidParameters());
 
                 if (!request.hasAbortOnInvalid() || request.getAbortOnInvalid()) {
@@ -113,7 +119,7 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
                 }
             }
 
-            SubscribeParametersData.Builder datab = SubscribeParametersData.newBuilder()
+            SubscribeParametersData datab = new SubscribeParametersData()
                     .addAllInvalid(invalid);
 
             Map<NamedObjectId, Integer> mappingUpdate = new HashMap<>(idList.size());
@@ -127,12 +133,11 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
                     ParameterValue pval = rec.getParameterValue();
                     Integer numericId = mappingUpdate.get(rec.getId());
                     if (numericId != null) {
-                        datab.addValues(toGpb(pval, numericId));
+                        datab.addValues(numericId, pval);
                     }
                 }
             }
-
-            responseObserver.next(datab.build());
+            responseObserver.next(datab);
 
             // After having sent out the mapping, update internal state
             // (updates come from another thread, and we want to client to
@@ -144,6 +149,8 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
         } catch (NoPermissionException e) {
             log.warn("No permission for parameters: {}", e.getMessage());
             responseObserver.completeExceptionally(e);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -207,6 +214,100 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
     public void complete() {
         if (pidrm != null) {
             pidrm.quit();
+        }
+    }
+
+    static public class SubscribeParametersData {
+        Map<Integer, ParameterValue> values = new HashMap<>();
+        Map<Integer, NamedObjectId> mappings = new HashMap<>();
+        List<NamedObjectId> invalid = new ArrayList<>();
+
+        public void addValues(Integer numericId, ParameterValue pval) {
+            values.put(numericId, pval);
+        }
+
+        public void putMapping(int numericId, NamedObjectId id) {
+            mappings.put(numericId, id);
+        }
+
+        public SubscribeParametersData addAllInvalid(List<NamedObjectId> invalid) {
+            this.invalid.addAll(invalid);
+            return this;
+        }
+
+        int memoizedSize = -1;
+
+        static final com.google.protobuf.MapEntry<java.lang.Integer, org.yamcs.protobuf.Yamcs.NamedObjectId> defaultEntry = com.google.protobuf.MapEntry.<java.lang.Integer, org.yamcs.protobuf.Yamcs.NamedObjectId> newDefaultInstance(
+                null,
+                com.google.protobuf.WireFormat.FieldType.UINT32,
+                0,
+                com.google.protobuf.WireFormat.FieldType.MESSAGE,
+                org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
+
+        public int getSerializedSize() {
+            int size = memoizedSize;
+            if (size != -1)
+                return size;
+
+            size = 0;
+            for (java.util.Map.Entry<Integer, NamedObjectId> entry : mappings
+                    .entrySet()) {
+                com.google.protobuf.MapEntry<Integer, NamedObjectId> mapping__ = defaultEntry
+                        .newBuilderForType()
+                        .setKey(entry.getKey())
+                        .setValue(entry.getValue())
+                        .build();
+                size += com.google.protobuf.CodedOutputStream
+                        .computeMessageSize(1, mapping__);
+            }
+            for (int i = 0; i < invalid.size(); i++) {
+                size += com.google.protobuf.CodedOutputStream
+                        .computeMessageSize(2, invalid.get(i));
+            }
+            for (Map.Entry<Integer, ParameterValue> entry : values.entrySet()) {
+                size += CodedOutputStream.computeTagSize(3);
+                size += YamcsEncoded
+                        .computeLengthDelimitedFieldSize(entry.getValue().getSerializedSize(entry.getKey()));
+            }
+
+            memoizedSize = size;
+            return size;
+        }
+
+        public void writeTo(CodedOutputStream output) throws IOException {
+            serializeMapTo(output, mappings, defaultEntry, 1);
+
+            for (int i = 0; i < invalid.size(); i++) {
+                output.writeMessage(2, invalid.get(i));
+            }
+            for (Map.Entry<Integer, ParameterValue> entry : values.entrySet()) {
+                int numericId = entry.getKey();
+                ParameterValue pval = entry.getValue();
+                output.writeTag(3, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+                output.writeUInt32NoTag(pval.getSerializedSize(numericId));
+                pval.writeTo(output, numericId);
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "SubscribeParametersData [values=" + values + ", mappings=" + mappings + ", invalid=" + invalid
+                    + ", memoizedSize=" + memoizedSize + "]";
+        }
+
+        private static <K, V> void serializeMapTo(
+                CodedOutputStream out,
+                Map<K, V> m,
+                MapEntry<K, V> defaultEntry,
+                int fieldNumber)
+                throws IOException {
+            for (Map.Entry<K, V> entry : m.entrySet()) {
+                out.writeMessage(fieldNumber,
+                        defaultEntry.newBuilderForType()
+                                .setKey(entry.getKey())
+                                .setValue(entry.getValue())
+                                .build());
+            }
         }
     }
 }

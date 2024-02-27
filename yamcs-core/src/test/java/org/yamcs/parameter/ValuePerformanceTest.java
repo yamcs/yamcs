@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 
-public class ValueTest {
+public class ValuePerformanceTest {
     int n = 10000000;
     int m = 50;
     Value[] newValues;

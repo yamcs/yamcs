@@ -1,78 +1,83 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.yamcs</groupId>
-    <artifactId>yamcs</artifactId>
-    <version>5.8.9-SNAPSHOT</version>
-  </parent>
+	<parent>
+		<groupId>org.yamcs</groupId>
+		<artifactId>yamcs</artifactId>
+		<version>5.8.9-SNAPSHOT</version>
+	</parent>
 
-  <artifactId>yamcs-api</artifactId>
-  <packaging>jar</packaging>
-  <name>Yamcs :: API</name>
-  <description>Used by external clients to communicate with Yamcs</description>
+	<artifactId>yamcs-api</artifactId>
+	<packaging>jar</packaging>
+	<name>Yamcs :: API</name>
+	<description>Used by external clients to communicate with Yamcs</description>
 
-  <licenses>
-    <license>
-      <name>GNU Lesser General Public License (LGPL)</name>
-      <url>https://www.gnu.org/licenses/lgpl-3.0.html</url>
-    </license>
-  </licenses>
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License (LGPL)</name>
+			<url>https://www.gnu.org/licenses/lgpl-3.0.html</url>
+		</license>
+	</licenses>
 
 
-  <properties>
-    <javaModuleName>org.yamcs.api</javaModuleName>
-  </properties>
+	<properties>
+		<javaModuleName>org.yamcs.api</javaModuleName>
+	</properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>com.google.protobuf</groupId>
-      <artifactId>protobuf-java</artifactId>
-    </dependency>
-  </dependencies>
+	<dependencies>
+		<dependency>
+			<groupId>com.google.protobuf</groupId>
+			<artifactId>protobuf-java</artifactId>
+		</dependency>
+	</dependencies>
 
-  <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-      </resource>
-      <resource>
-        <directory>${project.build.directory}/generated-resources/protobuf</directory>
-      </resource>
-    </resources>
-  
-    <plugins>
-      <plugin> <!-- Sets the 'os.detected.classifier' maven property (used by protobuf-maven-plugin) -->
-        <groupId>kr.motd.maven</groupId>
-        <artifactId>os-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.xolstice.maven.plugins</groupId>
-        <artifactId>protobuf-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <writeDescriptorSet>true</writeDescriptorSet>
-          <descriptorSetFileName>${project.artifactId}.protobin</descriptorSetFileName>
-          <descriptorSetOutputDirectory>${project.build.directory}/generated-resources/protobuf</descriptorSetOutputDirectory>
-          <includeDependenciesInDescriptorSet>true</includeDependenciesInDescriptorSet>
-          <includeSourceInfoInDescriptorSet>true</includeSourceInfoInDescriptorSet>
-          <protocPlugins>
-            <protocPlugin>
-              <id>yamcs</id>
-              <groupId>org.yamcs</groupId>
-              <artifactId>yamcs-protoc-plugin</artifactId>
-              <version>5.3.1</version>
-              <mainClass>org.yamcs.protoc.ServiceGenerator</mainClass>
-            </protocPlugin>
-          </protocPlugins>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<resource>
+				<directory>${project.build.directory}/generated-resources/protobuf</directory>
+			</resource>
+		</resources>
+
+		<plugins>
+			<plugin> <!-- Sets the 'os.detected.classifier' maven property (used by protobuf-maven-plugin) -->
+				<groupId>kr.motd.maven</groupId>
+				<artifactId>os-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.xolstice.maven.plugins</groupId>
+				<artifactId>protobuf-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+						<configuration>
+							<javaOptions>lite</javaOptions>
+						</configuration>
+					</execution>
+				</executions>
+				<configuration>
+					<writeDescriptorSet>true</writeDescriptorSet>
+					<descriptorSetFileName>${project.artifactId}.protobin</descriptorSetFileName>
+					<descriptorSetOutputDirectory>${project.build.directory}/generated-resources/protobuf</descriptorSetOutputDirectory>
+					<includeDependenciesInDescriptorSet>true</includeDependenciesInDescriptorSet>
+					<includeSourceInfoInDescriptorSet>true</includeSourceInfoInDescriptorSet>
+					<excludes>yamcs/pvstub.proto</excludes>
+					<protocPlugins>
+						<protocPlugin>
+							<id>yamcs</id>
+							<groupId>org.yamcs</groupId>
+							<artifactId>yamcs-protoc-plugin</artifactId>
+							<version>5.3.1</version>
+							<mainClass>org.yamcs.protoc.ServiceGenerator</mainClass>
+						</protocPlugin>
+					</protocPlugins>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>

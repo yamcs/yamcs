@@ -28,6 +28,7 @@ import org.yamcs.http.Context;
 import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.NotFoundException;
+import org.yamcs.http.api.SubscribeParameterObserver.SubscribeParametersData;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
@@ -40,7 +41,6 @@ import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.parameter.PartialParameterValue;
 import org.yamcs.parameter.SoftwareParameterManager;
 import org.yamcs.parameter.Value;
-import org.yamcs.protobuf.AbstractProcessingApi;
 import org.yamcs.protobuf.AlgorithmStatus;
 import org.yamcs.protobuf.AlgorithmTrace;
 import org.yamcs.protobuf.BatchGetParameterValuesRequest;
@@ -63,7 +63,6 @@ import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.SetParameterValueRequest;
 import org.yamcs.protobuf.Statistics;
 import org.yamcs.protobuf.SubscribeAlgorithmStatusRequest;
-import org.yamcs.protobuf.SubscribeParametersData;
 import org.yamcs.protobuf.SubscribeParametersRequest;
 import org.yamcs.protobuf.SubscribeProcessorsRequest;
 import org.yamcs.protobuf.SubscribeTMStatisticsRequest;
@@ -273,7 +272,8 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     }
 
     @Override
-    public void setParameterValue(Context ctx, SetParameterValueRequest request, Observer<Empty> observer) {
+    public void setParameterValue(Context ctx, SetParameterValueRequest request,
+            Observer<Empty> observer) {
         Processor processor = verifyProcessor(request.getInstance(), request.getProcessor());
         XtceDb mdb = MdbFactory.getInstance(processor.getInstance());
 
@@ -661,5 +661,8 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         }
         return l.get(0);
     }
+
+
+
 
 }

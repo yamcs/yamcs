@@ -52,12 +52,12 @@ public class Topic {
         return api.getResponsePrototype(getMethodDescriptor());
     }
 
-    public void callMethod(Context ctx, Message request, Observer<Message> observer) {
+    public void callMethod(Context ctx, Message request, Observer observer) {
         MethodDescriptor method = getMethodDescriptor();
         api.callMethod(method, ctx, request, observer);
     }
 
-    public Observer<Message> callMethod(Context ctx, Observer<Message> observer) {
+    public Observer<Message> callMethod(Context ctx, Observer observer) {
         MethodDescriptor method = getMethodDescriptor();
         return api.callMethod(method, ctx, observer);
     }

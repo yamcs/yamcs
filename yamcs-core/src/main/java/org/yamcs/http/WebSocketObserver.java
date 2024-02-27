@@ -9,9 +9,7 @@ import org.yamcs.http.WebSocketServerMessageHandler.Priority;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Reply;
 
-import com.google.protobuf.Message;
-
-public class WebSocketObserver implements Observer<Message> {
+public class WebSocketObserver implements Observer<Object> {
 
     private Log log;
 
@@ -24,7 +22,7 @@ public class WebSocketObserver implements Observer<Message> {
     private Runnable cancelHandler;
 
     private boolean replied;
-    private List<Message> pendingMessages = new ArrayList<>(); // Messages received while not yet replied
+    private List<Object> pendingMessages = new ArrayList<>(); // Messages received while not yet replied
 
     public WebSocketObserver(TopicContext ctx) {
         this.ctx = ctx;
@@ -53,7 +51,7 @@ public class WebSocketObserver implements Observer<Message> {
      * should be passed in-order to netty, matching messageCount.
      */
     @Override
-    public synchronized void next(Message message) {
+    public synchronized void next(Object message) {
         if (!replied) {
             pendingMessages.add(message);
             return;
@@ -69,7 +67,7 @@ public class WebSocketObserver implements Observer<Message> {
         sendMessage(ctx.getTopic().getName(), message, lowPriority ? Priority.LOW : Priority.NORMAL);
     }
 
-    private void sendMessage(String type, Message data, Priority priority) {
+    private void sendMessage(String type, Object data, Priority priority) {
         ctx.nettyContext.channel()
                 .writeAndFlush(new InternalServerMessage(type, ctx.getId(), messageCount, data, priority));
     }
