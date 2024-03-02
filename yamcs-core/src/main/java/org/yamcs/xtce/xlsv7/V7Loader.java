@@ -127,6 +127,7 @@ import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumeration;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtce.util.AlgorithmReference;
 import org.yamcs.xtce.util.ArgumentReference;
 import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.xtce.util.NameReference;
@@ -1889,16 +1890,18 @@ public class V7Loader extends V7LoaderBase {
                         }
                         cmdVerifier.setContainerRef(container);
                     } else if (type == CommandVerifier.Type.ALGORITHM) {
-                        String algoName = getContent(cells, CN_CMDVERIF_TEXT);
-                        CustomAlgorithm algo = (CustomAlgorithm) spaceSystem.getAlgorithm(algoName);
-                        if (algo == null) {
-                            throw new SpreadsheetLoadException(ctx, "Cannot find algorithm '"
-                                    + algoName + "' required for the verifier");
-                        }
-                        // duplicate algorithm to set references to arguments
-                        algo = makeAlgoVerifier(spaceSystem, cmd, algo);
+                        String algoName = getContent(cells, CN_CMDVERIF_TEXT);  
+                        AlgorithmReference algoRef = getAlgorithmReference(spaceSystem, algoName);
 
-                        cmdVerifier.setAlgorithm(algo);
+                        final ArrayList<Algorithm> algos = new ArrayList<>();
+                        algoRef.addResolvedAction(t -> {
+                            // duplicate algorithm to set references to arguments
+                            algos.add(makeAlgoVerifier(spaceSystem, cmd, (CustomAlgorithm) t));
+                        });
+                        if (algos.isEmpty())
+                            throw new SpreadsheetLoadException(ctx,
+                                    "Cannot find sequence container '" + algoName + "' required for the verifier");
+                        cmdVerifier.setAlgorithm(algos.get(0));
                     } else {
                         throw new SpreadsheetLoadException(ctx,
                                 "Command verifier type '" + type + "' not implemented ");
