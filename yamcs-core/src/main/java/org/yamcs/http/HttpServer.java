@@ -44,6 +44,7 @@ import org.yamcs.http.api.MdbApi;
 import org.yamcs.http.api.MdbOverrideApi;
 import org.yamcs.http.api.PacketsApi;
 import org.yamcs.http.api.ParameterArchiveApi;
+import org.yamcs.http.api.ParameterListsApi;
 import org.yamcs.http.api.ParameterValuesApi;
 import org.yamcs.http.api.ProcessingApi;
 import org.yamcs.http.api.QueuesApi;
@@ -192,6 +193,8 @@ public class HttpServer extends AbstractYamcsService {
         spec.addOption("tlsKey", OptionType.STRING);
         spec.addOption("contextPath", OptionType.STRING).withDefault("" /* NOT null */);
         spec.addOption("zeroCopyEnabled", OptionType.BOOLEAN).withDefault(true);
+        spec.addOption("maxInitialLineLength", OptionType.INTEGER).withDefault(8192);
+        spec.addOption("maxHeaderSize", OptionType.INTEGER).withDefault(8192);
         spec.addOption("maxContentLength", OptionType.INTEGER).withDefault(65536);
         spec.addOption("cors", OptionType.MAP).withSpec(corsSpec);
         spec.addOption("webSocket", OptionType.MAP).withSpec(websocketSpec).withApplySpecDefaults(true);
@@ -298,6 +301,7 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new MdbOverrideApi());
         addApi(new PacketsApi());
         addApi(new ParameterArchiveApi());
+        addApi(new ParameterListsApi());
         addApi(new ParameterValuesApi());
         addApi(new ProcessingApi());
         addApi(new QueuesApi(auditLog));

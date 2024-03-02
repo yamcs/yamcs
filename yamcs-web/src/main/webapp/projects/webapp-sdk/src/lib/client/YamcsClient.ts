@@ -3,6 +3,7 @@ import { FrameLossListener } from './FrameLossListener';
 import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
+import { SessionListener } from './SessionListener';
 import { WebSocketClient } from './WebSocketClient';
 import { AcknowledgeAlarmOptions, Alarm, AlarmSubscription, ClearAlarmOptions, GetAlarmsOptions, GlobalAlarmStatus, GlobalAlarmStatusSubscription, ShelveAlarmOptions, SubscribeAlarmsRequest, SubscribeGlobalAlarmStatusRequest } from './types/alarms';
 import { CommandSubscription, SubscribeCommandsRequest } from './types/commandHistory';
@@ -12,9 +13,11 @@ import { CreateTransferRequest, ListFilesRequest, ListFilesResponse, RemoteFileL
 import { AlarmsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstanceTemplatesWrapper, InstancesWrapper, LinksWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SessionsWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
 import { AlgorithmOverrides, AlgorithmStatus, AlgorithmTrace, AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParameterTypesOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParameterType, ParameterTypesPage, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
-import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, ExecutorInfo, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetGapsOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListApidsResponse, ListGapsResponse, ListPacketsResponse, Packet, ParameterData, ParameterValue, PlaybackInfo, Range, RequestPlaybackRequest, Sample, StartProcedureOptions, Value } from './types/monitoring';
+import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, ExecutorInfo, ExportParameterValuesOptions, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetGapsOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListApidsResponse, ListGapsResponse, ListPacketsResponse, Packet, ParameterData, ParameterValue, PlaybackInfo, Range, RequestPlaybackRequest, Sample, StartProcedureOptions, Value } from './types/monitoring';
+import { CreateParameterListRequest, GetParameterListsResponse, ParameterList, UpdateParameterListRequest } from './types/plists';
 import { AlgorithmStatusSubscription, ExtractPacketResponse, PacketNamesResponse, ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeAlgorithmStatusRequest, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
 import { CommandQueue, CommandQueueEvent, QueueEventsSubscription, QueueStatisticsSubscription, SubscribeQueueEventsRequest, SubscribeQueueStatisticsRequest } from './types/queue';
+import { SessionEvent, SessionSubscription } from './types/session';
 import { AuditRecordsPage, AuthInfo, Clearance, ClearanceSubscription, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, Database, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GetAuditRecordsOptions, GroupInfo, HttpTraffic, Instance, InstanceConfig, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListDatabasesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListThreadsResponse, ListTopicsResponse, ReplicationInfo, ReplicationInfoSubscription, ResultSet, RoleInfo, Service, ServiceAccount, SystemInfo, SystemInfoSubscription, ThreadInfo, TokenResponse, UserInfo } from './types/system';
 import { Record, Stream, StreamData, StreamEvent, StreamStatisticsSubscription, StreamSubscription, SubscribeStreamRequest, SubscribeStreamStatisticsRequest, Table } from './types/table';
 import { SubscribeTimeRequest, Time, TimeSubscription } from './types/time';
@@ -33,7 +36,11 @@ export default class YamcsClient implements HttpHandler {
   readonly connected$ = new BehaviorSubject<boolean>(false);
   private webSocketClient?: WebSocketClient;
 
-  constructor(readonly baseHref = '/', private frameLossListener: FrameLossListener) {
+  constructor(
+    readonly baseHref = '/',
+    private frameLossListener: FrameLossListener,
+    private sessionListener: SessionListener,
+  ) {
     this.apiUrl = `${this.baseHref}api`;
     this.authUrl = `${this.baseHref}auth`;
   }
@@ -450,6 +457,42 @@ export default class YamcsClient implements HttpHandler {
     });
   }
 
+  async getParameterLists(instance: string) {
+    const url = `${this.apiUrl}/parameter-lists/${instance}/lists`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as GetParameterListsResponse;
+    return wrapper.lists || [];
+  }
+
+  async getParameterList(instance: string, id: string) {
+    const url = `${this.apiUrl}/parameter-lists/${instance}/lists/${id}`;
+    const response = await this.doFetch(url);
+    return await response.json() as ParameterList;
+  }
+
+  async createParameterList(instance: string, options: CreateParameterListRequest) {
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(`${this.apiUrl}/parameter-lists/${instance}/lists`, {
+      body,
+      method: 'POST',
+    });
+    return await response.json() as ParameterList;
+  }
+
+  async updateParameterList(instance: string, id: string, options: UpdateParameterListRequest) {
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(`${this.apiUrl}/parameter-lists/${instance}/lists/${id}`, {
+      body,
+      method: 'PATCH',
+    });
+    return await response.json() as ParameterList;
+  }
+
+  async deleteParameterList(instance: string, id: string) {
+    const url = `${this.apiUrl}/parameter-lists/${instance}/lists/${id}`;
+    return await this.doFetch(url, { method: 'DELETE' });
+  }
+
   async getUsers() {
     const url = `${this.apiUrl}/users`;
     const response = await this.doFetch(url);
@@ -558,6 +601,10 @@ export default class YamcsClient implements HttpHandler {
   async closeClientConnection(id: string) {
     const url = `${this.apiUrl}/connections/${id}`;
     return await this.doFetch(url, { method: 'DELETE' });
+  }
+
+  createSessionSubscription(observer: (sessionEvent: SessionEvent) => void): SessionSubscription {
+    return this.webSocketClient!.createSubscription('session', {}, observer);
   }
 
   createTimeSubscription(options: SubscribeTimeRequest, observer: (time: Time) => void): TimeSubscription {
@@ -1021,18 +1068,21 @@ export default class YamcsClient implements HttpHandler {
     return url + this.queryString(options);
   }
 
-  getPacketDownloadURL(instance: string, gentime: string, seqnum: number) {
-    return `${this.apiUrl}/archive/${instance}/packets/${gentime}/${seqnum}:export`;
+  getPacketDownloadURL(instance: string, pname: string, gentime: string, seqnum: number) {
+    const encodedName = encodeURIComponent(pname);
+    return `${this.apiUrl}/archive/${instance}/packets/${encodedName}/${gentime}/${seqnum}:export`;
   }
 
-  async getPacket(instance: string, generationTime: string, sequenceNumber: number) {
-    const url = `${this.apiUrl}/archive/${instance}/packets/${generationTime}/${sequenceNumber}`;
+  async getPacket(instance: string, pname: string, generationTime: string, sequenceNumber: number) {
+    const encodedName = encodeURIComponent(pname);
+    const url = `${this.apiUrl}/archive/${instance}/packets/${encodedName}/${generationTime}/${sequenceNumber}`;
     const response = await this.doFetch(url);
     return await response.json() as Packet;
   }
 
-  async extractPacket(instance: string, generationTime: string, sequenceNumber: number): Promise<ExtractPacketResponse> {
-    const url = `${this.apiUrl}/archive/${instance}/packets/${generationTime}/${sequenceNumber}:extract`;
+  async extractPacket(instance: string, pname: string, generationTime: string, sequenceNumber: number): Promise<ExtractPacketResponse> {
+    const encodedName = encodeURIComponent(pname);
+    const url = `${this.apiUrl}/archive/${instance}/packets/${encodedName}/${generationTime}/${sequenceNumber}:extract`;
     const response = await this.doFetch(url);
     return await response.json() as ExtractPacketResponse;
   }
@@ -1109,6 +1159,15 @@ export default class YamcsClient implements HttpHandler {
   getParameterValuesDownloadURL(instance: string, options: DownloadParameterValuesOptions = {}) {
     const url = `${this.apiUrl}/archive/${instance}:exportParameterValues`;
     return url + this.queryString(options);
+  }
+
+  async exportParameterValues(instance: string, options: ExportParameterValuesOptions) {
+    const url = `${this.apiUrl}/archive/${instance}:exportParameterValues`;
+    const response = await this.doFetch(url, {
+      method: 'POST',
+      body: JSON.stringify(options),
+    });
+    return await response.text();
   }
 
   async setParameterValue(instance: string, processorName: string, qualifiedName: string, value: Value) {
@@ -1386,6 +1445,11 @@ export default class YamcsClient implements HttpHandler {
       // WebSocket was not yet set up (for example because auth is still
       // required).
       this.webSocketClient.connected$.subscribe(connected => {
+        if (connected) {
+          this.createSessionSubscription(evt => {
+            this.sessionListener.onSessionEnd(evt.endReason);
+          });
+        }
         this.connected$.next(connected);
       });
     }

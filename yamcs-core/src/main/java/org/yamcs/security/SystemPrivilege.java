@@ -47,6 +47,11 @@ public class SystemPrivilege {
     public static final SystemPrivilege ReadFileTransfers = new SystemPrivilege("ReadFileTransfers");
 
     /**
+     * Allows to create, update and delete parameter lists.
+     */
+    public static final SystemPrivilege ManageParameterLists = new SystemPrivilege("ManageParameterLists");
+
+    /**
      * Allows specifying command options (extra attributes in the command history, disable/modify verifiers)
      */
     public static final SystemPrivilege CommandOptions = new SystemPrivilege("CommandOptions");

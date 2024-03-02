@@ -13,3 +13,12 @@
   overflow: auto;
   height: 100%;
 }
+
+tr.container td {
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+tr.container:hover td {
+  background-color: #f0f0f0 !important;
+}

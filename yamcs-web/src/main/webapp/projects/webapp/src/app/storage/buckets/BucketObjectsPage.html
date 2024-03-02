@@ -147,6 +147,12 @@
                   </a>
                   <mat-divider />
                   <button mat-menu-item
+                          [disabled]="!item.metadata"
+                          (click)="openViewMetadataDialog(item)">
+                    View metadata
+                  </button>
+                  <mat-divider />
+                  <button mat-menu-item
                           (click)="deleteFile(item)">
                     Delete
                   </button>

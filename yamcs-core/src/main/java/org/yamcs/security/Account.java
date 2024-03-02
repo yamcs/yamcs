@@ -64,6 +64,13 @@ public abstract class Account {
     }
 
     /**
+     * True if this is a built-in account (i.e. one that is not stored)
+     */
+    public boolean isBuiltIn() {
+        return "System".equals(name) || "guest".equals(name);
+    }
+
+    /**
      * Identifying attribute, e.g. a username or an application name.
      */
     public String getName() {

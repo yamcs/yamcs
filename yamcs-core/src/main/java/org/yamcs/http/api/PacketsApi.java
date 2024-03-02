@@ -29,8 +29,8 @@ import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.MediaType;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
-import org.yamcs.mdb.ProcessorData;
 import org.yamcs.mdb.MdbFactory;
+import org.yamcs.mdb.ProcessorData;
 import org.yamcs.mdb.XtceTmExtractor;
 import org.yamcs.parameter.ContainerParameterValue;
 import org.yamcs.protobuf.AbstractPacketsApi;
@@ -202,9 +202,12 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         long gentime = TimeEncoding.fromProtobufTimestamp(request.getGentime());
         int seqNum = request.getSeqnum();
 
-        SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME)
-                .where("gentime = ?", gentime)
-                .where("seqNum = ?", seqNum);
+        var sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
+        if (request.hasPname()) { // Optional due to deprecated API where name is not provided
+            sqlb = sqlb.where("pname = ?", request.getPname());
+        }
+        sqlb = sqlb.where("gentime = ?", gentime);
+        sqlb = sqlb.where("seqNum = ?", seqNum);
 
         List<TmPacketData> packets = new ArrayList<>();
         StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
@@ -271,9 +274,12 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         long gentime = TimeEncoding.fromProtobufTimestamp(request.getGentime());
         int seqNum = request.getSeqnum();
 
-        SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME)
-                .where("gentime = ?", gentime)
-                .where("seqNum = ?", seqNum);
+        var sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
+        if (request.hasPname()) { // Optional due to deprecated API where name is not provided
+            sqlb = sqlb.where("pname = ?", request.getPname());
+        }
+        sqlb = sqlb.where("gentime = ?", gentime);
+        sqlb = sqlb.where("seqNum = ?", seqNum);
 
         List<TmPacketData> packets = new ArrayList<>();
         StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
@@ -314,9 +320,12 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         long gentime = TimeEncoding.fromProtobufTimestamp(request.getGentime());
         int seqNum = request.getSeqnum();
 
-        SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME)
-                .where("gentime = ?", gentime)
-                .where("seqNum = ?", seqNum);
+        var sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
+        if (request.hasPname()) { // Optional due to deprecated API where name is not provided
+            sqlb = sqlb.where("pname = ?", request.getPname());
+        }
+        sqlb = sqlb.where("gentime = ?", gentime);
+        sqlb = sqlb.where("seqNum = ?", seqNum);
 
         List<TmPacketData> packets = new ArrayList<>();
         StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {

@@ -1,6 +1,5 @@
 package org.yamcs.http.auth;
 
-import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -42,7 +41,6 @@ import org.yamcs.security.UsernamePasswordToken;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -242,8 +240,8 @@ public class AuthHandler extends BodyHandler {
         AuthenticationToken token = new UsernamePasswordToken(username, password.toCharArray());
         try {
             AuthenticationInfo authenticationInfo = getSecurityStore().login(token).get();
-            UserSession session = createSession(ctx, authenticationInfo.getUsername());
-            String refreshToken = tokenStore.generateRefreshToken(authenticationInfo, session);
+            UserSession session = createSession(ctx, authenticationInfo);
+            String refreshToken = tokenStore.generateRefreshToken(session);
             sendNewAccessToken(ctx, authenticationInfo, refreshToken);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -284,7 +282,7 @@ public class AuthHandler extends BodyHandler {
             }
         }
 
-        UserSession session = createSession(ctx, authenticationInfo.getUsername());
+        UserSession session = createSession(ctx, authenticationInfo);
 
         // Don't support refresh on SPNEGO-backed sessions. Yamcs knows only about a SPNEGO ticket and cannot check
         // the lifetime of the client's TGT. Clients are required to be smart and fetch another authorization token
@@ -296,19 +294,17 @@ public class AuthHandler extends BodyHandler {
             long lifespan = getSecurityStore().getAccessTokenLifespan();
             session.setLifespan(lifespan);
         } else {
-            refreshToken = tokenStore.generateRefreshToken(authenticationInfo, session);
+            refreshToken = tokenStore.generateRefreshToken(session);
         }
         sendNewAccessToken(ctx, authenticationInfo, refreshToken);
     }
 
-    private UserSession createSession(HandlerContext ctx, String username) {
-        Channel channel = ctx.getNettyChannelHandlerContext().channel();
-        InetSocketAddress address = (InetSocketAddress) channel.remoteAddress();
-        String ipAddress = address.getAddress().getHostAddress();
-        String hostname = address.getHostName();
+    private UserSession createSession(HandlerContext ctx, AuthenticationInfo authenticationInfo) {
+        String ipAddress = ctx.getOriginalHostAddress();
+        String hostname = ctx.getOriginalHostName();
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
         SessionManager sessionManager = securityStore.getSessionManager();
-        UserSession session = sessionManager.createSession(username, ipAddress, hostname);
+        UserSession session = sessionManager.createSession(authenticationInfo, ipAddress, hostname);
 
         String userAgent = ctx.getHeader(HttpHeaderNames.USER_AGENT);
         if (userAgent != null) {
@@ -328,7 +324,7 @@ public class AuthHandler extends BodyHandler {
         if (result == null) {
             throw new UnauthorizedException("Invalid refresh token");
         } else {
-            sendNewAccessToken(ctx, result.authenticationInfo, result.refreshToken);
+            sendNewAccessToken(ctx, result.session.getAuthenticationInfo(), result.refreshToken);
         }
     }
 

@@ -5,11 +5,7 @@ import org.yamcs.yarch.Bucket;
 
 /**
  * A Put.request is a primitive that requests data delivery from a source to a destination
- * 
- * @author ddw
- *
  */
-
 public class FilePutRequest extends PutRequest {
     private long sourceId;
     private byte[] fileData;
@@ -18,10 +14,12 @@ public class FilePutRequest extends PutRequest {
     private boolean createpath;
     private long checksum;
 
-    public FilePutRequest(long sourceId, long destinationCfdpEntityId, String sourceFileName, String destinationFileName, boolean overwrite,
-            boolean acknowledged, boolean closureRequested, boolean createpath, Bucket b, byte[] data) {
+    public FilePutRequest(long sourceId, long destinationCfdpEntityId, String sourceFileName,
+            String destinationFileName, boolean overwrite, boolean acknowledged, boolean closureRequested,
+            boolean createpath, Bucket b, byte[] data) {
         super(destinationCfdpEntityId, sourceFileName, destinationFileName, null, null,
-                null, acknowledged ? CfdpPacket.TransmissionMode.ACKNOWLEDGED : CfdpPacket.TransmissionMode.UNACKNOWLEDGED,
+                null,
+                acknowledged ? CfdpPacket.TransmissionMode.ACKNOWLEDGED : CfdpPacket.TransmissionMode.UNACKNOWLEDGED,
                 closureRequested, null, null);
         this.sourceId = sourceId;
         this.overwrite = overwrite;

@@ -179,7 +179,13 @@ public abstract class IntegerDataType extends NumericDataType {
             if (sv.startsWith("-", off) || sv.startsWith("+", off)) {
                 throw new NumberFormatException("Sign character in the middle of the number");
             }
-            BigInteger bn = new BigInteger(sv.substring(off), radix);
+            BigInteger bn;
+            try {
+                bn = new BigInteger(sv.substring(off), radix);
+            } catch (NumberFormatException e) {
+                // Customize the message for better user experience
+                throw new NumberFormatException("Not a valid integer");
+            }
 
             int bs = sizeInBits;
             if (signed) {

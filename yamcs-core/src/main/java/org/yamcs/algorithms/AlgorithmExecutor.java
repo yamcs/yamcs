@@ -22,8 +22,7 @@ public interface AlgorithmExecutor {
     /**
      * This method is called each time new parameters are received (for example extracting them from a packet).
      * <p>
-     * The executor should copy its inputs if updated or should use the list to determine if it should
-     * run.
+     * The executor should copy its inputs if updated or should use the list to determine if it should run.
      * 
      * @return true if the algorithm should run
      */
@@ -77,5 +76,13 @@ public interface AlgorithmExecutor {
      */
     default List<InputParameter> getInputList() {
         return getAlgorithm().getInputList();
+    }
+
+    /**
+     * Called when this executor instance is no longer used.
+     * <p>
+     * The default implementation does nothing. Inheriting classes may override to clean-up any resources.
+     */
+    default void dispose() {
     }
 }

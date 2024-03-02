@@ -7,9 +7,9 @@ import java.util.List;
 import org.yamcs.InitException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsService;
-import org.yamcs.protobuf.FileTransferOption;
 import org.yamcs.protobuf.EntityInfo;
 import org.yamcs.protobuf.FileTransferCapabilities;
+import org.yamcs.protobuf.FileTransferOption;
 import org.yamcs.yarch.Bucket;
 
 /**
@@ -17,8 +17,8 @@ import org.yamcs.yarch.Bucket;
  * <p>
  * The service provides file transfer operations between named "entities".
  * <p>
- * The entity term is borrowed from CFDP (CCSDS File Delivery Protocol) and it
- * can mean anything for a particular implementation. For example it could mean a host in a traditional TCP/IP network.
+ * The entity term is borrowed from CFDP (CCSDS File Delivery Protocol) and it can mean anything for a particular
+ * implementation. For example it could mean a host in a traditional TCP/IP network.
  * <p>
  * Each file transfer is identified by a unique 64 bit identifier.
  * 
@@ -27,13 +27,16 @@ import org.yamcs.yarch.Bucket;
  */
 public interface FileTransferService extends YamcsService, FileListingService {
 
+    @Override
+    default void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
+    }
+
     /**
      * Get the list of configured local entities. These contain the {@code source) used in the {@link
      * #startUpload(String, Bucket, String, String, String, TransferOptions)} call.
      * 
      * <p>
-     * Can return an empty list if there is only one unnamed entity.
-     * @return
+     * Can return an empty list if there is only one unnamed entity. @return
      */
     public List<EntityInfo> getLocalEntities();
 
@@ -58,6 +61,7 @@ public interface FileTransferService extends YamcsService, FileListingService {
 
     /**
      * Get configured options for the file transfers
+     *
      * @return
      */
     default List<FileTransferOption> getFileTransferOptions() {
@@ -77,10 +81,10 @@ public interface FileTransferService extends YamcsService, FileListingService {
      *            the destination (remote) entity. Can be null if the service supports only one unnamed destination
      *            entity.
      * @param destinationPath
-     *            the path on the destination where the file will be uploaded. Depending on the implementation this
-     *            can be the path of a directory in which case the objectName will be used as a destination file name or
-     *            can be the name of a (non-existent) file which will then be used as the destination file.
-     *            if the destinationPath is null, then the objectName will be used as the name at the destination.
+     *            the path on the destination where the file will be uploaded. Depending on the implementation this can
+     *            be the path of a directory in which case the objectName will be used as a destination file name or can
+     *            be the name of a (non-existent) file which will then be used as the destination file. if the
+     *            destinationPath is null, then the objectName will be used as the name at the destination.
      * @param options
      *            transfer options.
      * @return
@@ -181,19 +185,11 @@ public interface FileTransferService extends YamcsService, FileListingService {
 
     /**
      * Register a monitor to be called each time a file transfer is started or changes state.
-     * 
-     * @param listener
      */
     void registerTransferMonitor(TransferMonitor listener);
 
     /**
      * Unregister the monitor. If the monitor was not registered, this call has no effect.
-     * 
-     * @param listener
      */
     void unregisterTransferMonitor(TransferMonitor listener);
-
-    @Override
-    default void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
-    }
 }

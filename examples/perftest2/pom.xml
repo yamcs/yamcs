@@ -22,21 +22,19 @@
       <groupId>org.yamcs</groupId>
       <artifactId>yamcs-core</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.yamcs</groupId>
       <artifactId>yamcs-tse</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.yamcs</groupId>
       <artifactId>yamcs-web</artifactId>
       <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.beust</groupId>
-      <artifactId>jcommander</artifactId>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 </project>

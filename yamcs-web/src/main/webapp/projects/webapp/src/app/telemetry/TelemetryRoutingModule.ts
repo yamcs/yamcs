@@ -10,6 +10,12 @@ import { DisplayPage } from './displays/DisplayPage';
 import { DisplaysPage } from './displays/DisplaysPage';
 import { PacketPage } from './packets/PacketPage';
 import { PacketsPage } from './packets/PacketsPage';
+import { CreateParameterListPage } from './parameter-lists/CreateParameterListPage';
+import { EditParameterListPage } from './parameter-lists/EditParameterListPage';
+import { ParameterListHistoricalDataTab } from './parameter-lists/ParameterListHistoricalDataTab';
+import { ParameterListPage } from './parameter-lists/ParameterListPage';
+import { ParameterListSummaryTab } from './parameter-lists/ParameterListSummaryTab';
+import { ParameterListsPage } from './parameter-lists/ParameterListsPage';
 import { ParameterAlarmsTab } from './parameters/ParameterAlarmsTab';
 import { ParameterChartTab } from './parameters/ParameterChartTab';
 import { ParameterDataTab } from './parameters/ParameterDataTab';
@@ -60,7 +66,7 @@ const routes: Routes = [
             pathMatch: 'full',
             component: PacketsPage,
           }, {
-            path: ':gentime/:seqno',
+            path: ':pname/:gentime/:seqno',
             component: PacketPage,
           }
         ]
@@ -90,6 +96,34 @@ const routes: Routes = [
             component: ParameterAlarmsTab,
           }
         ]
+      }, {
+        path: 'parameter-lists',
+        pathMatch: 'full',
+        component: ParameterListsPage,
+      }, {
+        path: 'parameter-lists/create',
+        pathMatch: 'full',
+        component: CreateParameterListPage,
+      }, {
+        path: 'parameter-lists/:list',
+        component: ParameterListPage,
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            redirectTo: 'realtime',
+          }, {
+            path: 'realtime',
+            component: ParameterListSummaryTab,
+          }, {
+            path: 'data',
+            component: ParameterListHistoricalDataTab,
+          }
+        ],
+      }, {
+        path: 'parameter-lists/:list/edit',
+        pathMatch: 'full',
+        component: EditParameterListPage,
       }
     ]
   }
@@ -105,16 +139,22 @@ const routes: Routes = [
 export class TelemetryRoutingModule { }
 
 export const routingComponents = [
-  DisplaysPage,
+  CreateParameterListPage,
   DisplayFilePage,
   DisplayFolderPage,
   DisplayPage,
-  PacketsPage,
+  DisplaysPage,
+  EditParameterListPage,
   PacketPage,
-  ParametersPage,
-  ParameterPage,
+  PacketsPage,
   ParameterAlarmsTab,
-  ParameterDataTab,
   ParameterChartTab,
+  ParameterDataTab,
+  ParameterListHistoricalDataTab,
+  ParameterListPage,
+  ParameterListsPage,
+  ParameterListSummaryTab,
+  ParameterPage,
+  ParametersPage,
   ParameterSummaryTab,
 ];

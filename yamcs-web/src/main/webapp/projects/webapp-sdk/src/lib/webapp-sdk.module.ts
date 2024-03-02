@@ -24,7 +24,8 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
-import { BinaryInputComponent } from '../public-api';
+import { StorageUrlPipe } from '../public-api';
+import { BinaryInputComponent } from './components/binary-input/binary-input.component';
 import { BreadcrumbTrailComponent } from './components/breadcrumb/breadcrumb-trail.component';
 import { BreadcrumbComponent } from './components/breadcrumb/breadcrumb.component';
 import { ColumnChooserComponent } from './components/column-chooser/column-chooser.component';
@@ -55,6 +56,7 @@ import { SearchFilterComponent } from './components/search-filter/search-filter.
 import { SelectComponent } from './components/select/select.component';
 import { SidebarNavGroupComponent } from './components/sidebar/sidebar-nav-group.component';
 import { SidebarNavItemComponent } from './components/sidebar/sidebar-nav-item.component';
+import { TableToggleComponent } from './components/table-toggle/table-toggle.component';
 import { TextActionComponent } from './components/text-action/text-action.component';
 import { TimezoneSelectComponent } from './components/timezone-select/timezone-select.component';
 import { TitleCopyComponent } from './components/title-copy/title-copy.component';
@@ -128,6 +130,7 @@ const pipes = [
   ReversePipe,
   ShortNamePipe,
   SpaceSystemPipe,
+  StorageUrlPipe,
   ToValuePipe,
   UnitsPipe,
   ValuePipe,
@@ -172,6 +175,7 @@ const sharedComponents = [
   SelectComponent,
   SidebarNavGroupComponent,
   SidebarNavItemComponent,
+  TableToggleComponent,
   TextActionComponent,
   TimezoneSelectComponent,
   TitleCopyComponent,

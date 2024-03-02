@@ -53,6 +53,12 @@
   <dd>
     {{ container.restrictionCriteriaExpression || '-' }}
   </dd>
+
+  <dt>Archive Partition</dt>
+  <dd>
+    <mat-icon *ngIf="container.archivePartition">check</mat-icon>
+    <mat-icon *ngIf="!container.archivePartition">close</mat-icon>
+  </dd>
 </dl>
 
 <mat-divider />

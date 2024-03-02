@@ -4,6 +4,7 @@ import { Stream, YamcsService } from '@yamcs/webapp-sdk';
 import * as utils from '../../utils';
 
 @Component({
+  selector: 'app-stream-script-tab',
   templateUrl: './StreamScriptTab.html',
   styleUrls: [
     './StreamScriptTab.css',

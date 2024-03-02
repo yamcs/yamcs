@@ -44,6 +44,10 @@ public class StreamConfig {
         return instances.computeIfAbsent(yamcsInstance, StreamConfig::new);
     }
 
+    public static synchronized void removeInstance(String instanceName) {
+        instances.remove(instanceName);
+    }
+
     @SuppressWarnings("unchecked")
     private StreamConfig(String yamcsInstance) {
         XtceDb xtceDb = MdbFactory.getInstance(yamcsInstance);

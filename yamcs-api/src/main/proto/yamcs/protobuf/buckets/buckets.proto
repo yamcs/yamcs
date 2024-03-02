@@ -58,7 +58,7 @@ service BucketsApi {
   }
   
   // Create a bucket
-  rpc CreateBucket(CreateBucketRequest) returns (google.protobuf.Empty) {
+  rpc CreateBucket(CreateBucketRequest) returns (BucketInfo) {
     option (yamcs.api.route) = {
       post: "/api/buckets/{instance}"
       body: "*"

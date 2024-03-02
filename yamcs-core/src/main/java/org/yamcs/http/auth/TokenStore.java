@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import org.yamcs.InitException;
@@ -15,8 +16,8 @@ import org.yamcs.http.UnauthorizedException;
 import org.yamcs.http.auth.JwtHelper.JwtDecodeException;
 import org.yamcs.security.AuthenticationInfo;
 import org.yamcs.security.CryptoUtils;
-import org.yamcs.security.SecurityStore;
 import org.yamcs.security.SessionExpiredException;
+import org.yamcs.security.SessionListener;
 import org.yamcs.security.SessionManager;
 import org.yamcs.security.UserSession;
 
@@ -30,16 +31,17 @@ import com.google.common.cache.CacheBuilder;
  * This class maintains a cache from a JWT bearer token to the original authentication info. This allows skipping the
  * login process as long as the bearer is valid.
  */
-public class TokenStore extends AbstractHttpService {
+public class TokenStore extends AbstractHttpService implements SessionListener {
 
-    private final ConcurrentHashMap<String, AuthenticationInfo> accessTokens = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, AuthenticationInfo> accessTokens = new ConcurrentHashMap<>();
     private int cleaningCounter = 0;
 
-    private Map<Hmac, RefreshState> refreshTokens = new HashMap<>();
-
+    private Map<Hmac, UserSession> refreshTokens = new HashMap<>();
     private Cache<Hmac, RefreshResult> refreshCache = CacheBuilder.newBuilder()
             .expireAfterWrite(5, TimeUnit.SECONDS)
             .build();
+
+    private SessionManager sessionManager;
 
     @Override
     public void init(HttpServer httpServer) throws InitException {
@@ -47,11 +49,15 @@ public class TokenStore extends AbstractHttpService {
 
     @Override
     protected void doStart() {
+        var securityStore = YamcsServer.getServer().getSecurityStore();
+        sessionManager = securityStore.getSessionManager();
+        sessionManager.addSessionListener(this);
         notifyStarted();
     }
 
     @Override
     protected void doStop() {
+        sessionManager.removeSessionListener(this);
         accessTokens.clear();
         refreshTokens.clear();
         refreshCache.invalidateAll();
@@ -81,7 +87,6 @@ public class TokenStore extends AbstractHttpService {
             }
             AuthenticationInfo authenticationInfo = accessTokens.get(accessToken);
             if (authenticationInfo == null) {
-                log.warn("Got an invalid access token");
                 throw new UnauthorizedException("Invalid access token");
             }
 
@@ -104,17 +109,18 @@ public class TokenStore extends AbstractHttpService {
 
     public synchronized void forgetUser(String username) {
         refreshTokens.entrySet().removeIf(entry -> {
-            return username.equals(entry.getValue().authenticationInfo.getUsername());
+            var authenticationInfo = entry.getValue().getAuthenticationInfo();
+            return username.equals(authenticationInfo.getUsername());
         });
         accessTokens.entrySet().removeIf(entry -> {
             return username.equals(entry.getValue().getUsername());
         });
     }
 
-    public synchronized String generateRefreshToken(AuthenticationInfo authenticationInfo, UserSession session) {
-        String refreshToken = UUID.randomUUID().toString();
-        Hmac hmac = new Hmac(refreshToken);
-        refreshTokens.put(hmac, new RefreshState(authenticationInfo, session));
+    public synchronized String generateRefreshToken(UserSession session) {
+        var refreshToken = UUID.randomUUID().toString();
+        var hmac = new Hmac(refreshToken);
+        refreshTokens.put(hmac, session);
         return refreshToken;
     }
 
@@ -128,16 +134,16 @@ public class TokenStore extends AbstractHttpService {
      * @return a new refresh token, or null if the token could not be exchanged.
      */
     public synchronized RefreshResult verifyRefreshToken(String refreshToken) {
-        Hmac hmac = new Hmac(refreshToken);
-        RefreshState state = refreshTokens.get(hmac);
-        if (state != null) { // Token valid, generate new token (once only)
-            String nextToken = generateRefreshToken(state.authenticationInfo, state.userSession);
+        var hmac = new Hmac(refreshToken);
+        var session = refreshTokens.get(hmac);
+        if (session != null) { // Token valid, generate new token (once only)
+            String nextToken = generateRefreshToken(session);
             try {
-                renewSession(state.userSession);
+                renewSession(session);
             } catch (SessionExpiredException e) {
                 throw new UnauthorizedException("Token expired");
             }
-            RefreshResult result = new RefreshResult(state.authenticationInfo, nextToken);
+            var result = new RefreshResult(session, nextToken);
             refreshCache.put(hmac, result);
             refreshTokens.remove(hmac);
             return result;
@@ -153,8 +159,6 @@ public class TokenStore extends AbstractHttpService {
     }
 
     private void renewSession(UserSession userSession) throws SessionExpiredException {
-        SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-        SessionManager sessionManager = securityStore.getSessionManager();
         sessionManager.renewSession(userSession.getId());
     }
 
@@ -162,16 +166,6 @@ public class TokenStore extends AbstractHttpService {
         Hmac hmac = new Hmac(refreshToken);
         refreshTokens.remove(hmac);
         refreshCache.invalidate(hmac);
-    }
-
-    private static final class RefreshState {
-        final AuthenticationInfo authenticationInfo;
-        final UserSession userSession;
-
-        RefreshState(AuthenticationInfo authenticationInfo, UserSession userSession) {
-            this.authenticationInfo = authenticationInfo;
-            this.userSession = userSession;
-        }
     }
 
     /**
@@ -200,12 +194,29 @@ public class TokenStore extends AbstractHttpService {
     }
 
     static final class RefreshResult {
-        AuthenticationInfo authenticationInfo;
+        UserSession session;
         String refreshToken;
 
-        RefreshResult(AuthenticationInfo authenticationInfo, String refreshToken) {
-            this.authenticationInfo = authenticationInfo;
+        RefreshResult(UserSession session, String refreshToken) {
+            this.session = session;
             this.refreshToken = refreshToken;
         }
+    }
+
+    @Override
+    public void onCreated(UserSession session) {
+        // NOP
+    }
+
+    @Override
+    public void onExpired(UserSession session) {
+        // NOP
+    }
+
+    @Override
+    public void onInvalidated(UserSession session) {
+        accessTokens.entrySet().removeIf(entry -> {
+            return entry.getValue().equals(session.getAuthenticationInfo());
+        });
     }
 }

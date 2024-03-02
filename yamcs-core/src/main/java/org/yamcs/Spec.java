@@ -49,6 +49,8 @@ public class Spec {
                 .withElementType(OptionType.ANY);
         OPTION_DESCRIPTOR.addOption("suboptions", OptionType.MAP)
                 .withSpec(ANY);
+        OPTION_DESCRIPTOR.addOption("applySpecDefaults", OptionType.BOOLEAN)
+                .withDefault(false);
     }
 
     private Map<String, Option> options = new HashMap<>();
@@ -272,7 +274,23 @@ public class Spec {
         return options.values();
     }
 
-    private Option getOption(String key) {
+    public boolean isAllowUnknownKeys() {
+        return allowUnknownKeys;
+    }
+
+    public List<List<String>> getRequiredOneOfGroups() {
+        return requiredOneOfGroups;
+    }
+
+    public List<List<String>> getRequireTogetherGroups() {
+        return requireTogetherGroups;
+    }
+
+    public List<WhenCondition> getWhenConditions() {
+        return whenConditions;
+    }
+
+    public Option getOption(String key) {
         key = aliases.getOrDefault(key, key);
         return options.get(key);
     }
@@ -801,6 +819,7 @@ public class Spec {
                 var suboptionDescriptors = (Map<String, Map<String, Object>>) optionDescriptor.get("suboptions");
                 var subspec = fromDescriptor(suboptionDescriptors);
                 option.withSpec(subspec);
+                option.withApplySpecDefaults((boolean) optionDescriptor.get("applySpecDefaults"));
             }
             if (optionDescriptor.containsKey("choices")) {
                 var choices = (List<Object>) optionDescriptor.get("choices");

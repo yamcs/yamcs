@@ -17,7 +17,8 @@ public class DirectoryAuthModule implements AuthModule {
 
     @Override
     public void init(YConfiguration args) throws InitException {
-        // no config for this module
+        throw new UnsupportedOperationException(
+                getClass() + " is a built-in. Remove it from etc/security.yaml");
     }
 
     @Override

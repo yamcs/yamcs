@@ -1,5 +1,6 @@
 package org.yamcs.http;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.ALLOW;
 import static io.netty.handler.codec.http.HttpHeaderNames.AUTHORIZATION;
 import static io.netty.handler.codec.http.HttpHeaderNames.CACHE_CONTROL;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
@@ -14,8 +15,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
@@ -113,6 +116,26 @@ public class HandlerContext {
             return String.format("https://%s%s", port == 443 ? host : host + ":" + port, contextPath);
         } else {
             return String.format("http://%s%s", port == 80 ? host : host + ":" + port, contextPath);
+        }
+    }
+
+    public String getOriginalHostAddress() {
+        var forwardedFor = nettyRequest.headers().get("x-forwarded-for");
+        if (forwardedFor != null) {
+            return forwardedFor;
+        } else {
+            var address = (InetSocketAddress) nettyContext.channel().remoteAddress();
+            return address.getAddress().getHostAddress();
+        }
+    }
+
+    public String getOriginalHostName() {
+        var ipAddress = getOriginalHostAddress();
+        try {
+            var inetAddress = InetAddress.getByName(ipAddress);
+            return inetAddress.getHostName();
+        } catch (UnknownHostException e) {
+            return ipAddress;
         }
     }
 
@@ -324,6 +347,13 @@ public class HandlerContext {
         response.headers().set(CONTENT_TYPE, "application/json");
         response.headers().set(CONTENT_LENGTH, body.readableBytes());
         HttpRequestHandler.sendResponse(nettyContext, nettyRequest, response);
+    }
+
+    public void sendAllow(HttpMethod... methods) {
+        var response = new DefaultFullHttpResponse(HTTP_1_1, OK);
+        response.headers().set(ALLOW, Arrays.asList(methods));
+        response.headers().set(CONTENT_LENGTH, 0);
+        sendResponse(response);
     }
 
     /**

@@ -64,6 +64,9 @@ export class InstancePage implements OnInit, OnDestroy {
     }
     if (this.user.hasAnyObjectPrivilegeOfType('ReadParameter')) {
       this.telemetryItems.push({ path: 'parameters', label: 'Parameters' });
+      if (yamcs.connectionInfo$.value?.instance.capabilities.indexOf('parameter-lists') !== -1) {
+        this.telemetryItems.push({ path: 'parameter-lists', label: 'Parameter lists' });
+      }
     }
     const displayBucket = configService.getDisplayBucket();
     if (this.user.hasObjectPrivilege('ReadBucket', displayBucket)) {
@@ -80,10 +83,10 @@ export class InstancePage implements OnInit, OnDestroy {
     }
     const stackBucket = configService.getStackBucket();
     if (this.config.tc && this.user.hasObjectPrivilege('ReadBucket', stackBucket)) {
-      this.commandingItems.push({ path: 'stacks', label: 'Command Stacks' });
+      this.commandingItems.push({ path: 'stacks', label: 'Command stacks' });
     }
     if (this.user.hasAnyObjectPrivilegeOfType('CommandHistory')) {
-      this.commandingItems.push({ path: 'history', label: 'Command History' });
+      this.commandingItems.push({ path: 'history', label: 'Command history' });
     }
     if (this.config.tc && this.user.hasSystemPrivilege('ControlCommandQueue')) {
       this.commandingItems.push({ path: 'queues', label: 'Queues' });
@@ -229,10 +232,7 @@ export class InstancePage implements OnInit, OnDestroy {
   }
 
   showFileTransferItem() {
-    // TODO should become ReadFileTransfers only once the
-    // deprecation period is over (see FileTransferApi)
-    return this.user.hasSystemPrivilege('ReadFileTransfers')
-      || this.user.hasSystemPrivilege('ControlFileTransfers');
+    return this.user.hasSystemPrivilege('ReadFileTransfers');
   }
 
   showArchiveBrowserItem() {

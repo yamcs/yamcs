@@ -51,8 +51,8 @@ public class XtceTmProcessor extends AbstractProcessorService
     }
 
     /**
-     * Creates a TmProcessor to be used in "standalone" mode, outside of any processor
-     * It still uses the processor config for configuration parameters relevant to container processing
+     * Creates a TmProcessor to be used in "standalone" mode, outside of any processor It still uses the processor
+     * config for configuration parameters relevant to container processing
      * 
      */
     public XtceTmProcessor(Mdb mdb, ProcessorConfig pconfig) {
@@ -131,7 +131,6 @@ public class XtceTmProcessor extends AbstractProcessorService
      * Process telemetry packets
      *
      */
-
     @Override
     public void processPacket(TmPacket pkt, SequenceContainer sc) {
         try {
@@ -145,14 +144,13 @@ public class XtceTmProcessor extends AbstractProcessorService
             ParameterValueList paramResult = result.getTmParams();
             List<ContainerExtractionResult> containerResult = result.containers;
 
-            if ((parameterProcessorManager != null) && (paramResult.size() > 0)) {
-                parameterProcessorManager.process(result);
-            }
-
             if ((containerRequestManager != null) && (containerResult.size() > 0)) {
                 containerRequestManager.update(containerResult);
             }
 
+            if ((parameterProcessorManager != null) && (paramResult.size() > 0)) {
+                parameterProcessorManager.process(result);
+            }
         } catch (Exception e) {
             log.error("got exception in tmprocessor ", e);
         }

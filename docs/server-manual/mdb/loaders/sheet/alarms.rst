@@ -18,21 +18,23 @@ This sheet defines how the monitoring results of a parameter should be derived. 
     Number of successive instances that meet any of the alarm conditions under the given context before the alarm event triggers (defaults to 1). This field affects when an event is generated (i.e. only after X violations). It does not affect the monitoring result associated with each parameter. That would still be out of limits, even after a first violation.
 
 ``watch: trigger type``
-    One of ``low``, ``high`` or ``state``. For each context of a numeric parameter, you can have both a low and a high trigger that lead to the ``WATCH`` state. For each context of an enumerated parameter, you can have multiple state triggers that lead to the ``WATCH`` state.
+    One of ``low`` (or alias ``lowInclusive``), ``high`` (or alias ``highInclusive``), ``lowExclusive``, ``highExlusive`` or ``state``. For each context of a numeric parameter, you can have both a low and a high trigger that lead to the ``WATCH`` state. For each context of an enumerated parameter, you can have multiple state triggers that lead to the ``WATCH`` state.
 
 ``watch: trigger value``
-    If the trigger type is ``low`` or ``high``: a numeric value indicating the low resp. high limit value. The value is considered inclusive with respect to its nominal range. For example, a low limit of 20, will have a ``WATCH`` alarm if and only if its value is smaller than 20.
+    If the trigger type is ``low``, ``lowInclusive``, ``high`` or ``highInclusive``: a numeric value indicating the low resp. high limit value. The value is considered inclusive with respect to its nominal range. For example, a low limit of 20, will have a ``WATCH`` alarm if and only if its value is smaller than 20.
+
+    If the trigger type is ``lowExclusive`` or ``highExclusive``: a numeric value indicating the low resp. heigh limit value. The value is considered exclusive with respect to its nominal range. For example, a lowExclusive limit of 20, will have a ``WATCH`` alarm if and only if its value is smaller than or equal to 20.
 
     If the trigger value is ``state``: a state that would bring the given parameter in its ``WATCH`` state.
 
 ``warning trigger type``, ``warning trigger value``
-    Analogous to ``watch`` condition
+    Analogous to ``watch`` trigger
 
 ``distress trigger type``, ``distress trigger value``
-    Analogous to ``watch`` condition
+    Analogous to ``watch`` trigger
 
 ``critical trigger type``, ``critical trigger value``
-    Analogous to ``watch`` condition
+    Analogous to ``watch`` trigger
 
 ``severe trigger type``, ``severe trigger value``
-    Analogous to ``watch`` condition
+    Analogous to ``watch`` trigger

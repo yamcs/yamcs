@@ -6,6 +6,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Bucket;
 
 public class QueuedCfdpOutgoingTransfer implements CfdpFileTransfer {
+
     private final PutRequest putRequest;
     private final long initiatorEntityId;
     private final long id;
@@ -17,7 +18,8 @@ public class QueuedCfdpOutgoingTransfer implements CfdpFileTransfer {
     private final Integer customPduDelay;
     private final String transferType;
 
-    public QueuedCfdpOutgoingTransfer(long initiatorEntityId, long id, long creationTime, PutRequest putRequest, Bucket bucket, Integer customPduSize, Integer customPduDelay) {
+    public QueuedCfdpOutgoingTransfer(long initiatorEntityId, long id, long creationTime, PutRequest putRequest,
+            Bucket bucket, Integer customPduSize, Integer customPduDelay) {
         this.initiatorEntityId = initiatorEntityId;
         this.id = id;
         this.putRequest = putRequest;
@@ -116,6 +118,7 @@ public class QueuedCfdpOutgoingTransfer implements CfdpFileTransfer {
         this.failureReason = failureReason;
     }
 
+    @Override
     public long getCreationTime() {
         return creationTime;
     }

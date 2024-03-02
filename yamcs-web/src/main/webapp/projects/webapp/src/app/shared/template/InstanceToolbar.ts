@@ -4,6 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConnectionInfo, MessageService, Processor, ProcessorSubscription, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { AppearanceService } from '../../core/services/AppearanceService';
+import { AuthService } from '../../core/services/AuthService';
 import { SessionExpiredDialog } from '../dialogs/SessionExpiredDialog';
 import { StartReplayDialog } from './StartReplayDialog';
 
@@ -36,6 +37,7 @@ export class InstanceToolbar implements OnDestroy {
     private snackBar: MatSnackBar,
     private messageService: MessageService,
     private appearanceService: AppearanceService,
+    authService: AuthService,
   ) {
     this.processor$.next(yamcs.getProcessor());
     if (yamcs.processor) {
@@ -52,7 +54,7 @@ export class InstanceToolbar implements OnDestroy {
     this.zenMode$ = appearanceService.zenMode$;
 
     this.connectedSubscription = this.connected$.subscribe(connected => {
-      if (!connected) {
+      if (!connected && authService.user$.value) {
         dialog.open(SessionExpiredDialog);
       }
     });

@@ -1,0 +1,43 @@
+<app-instance-page *ngIf="plist$ | async as plist">
+  <app-instance-toolbar>
+    <a mat-icon-button
+       routerLink=".."
+       [queryParams]="{c: yamcs.context}"
+       color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </a> {{ plist.name }}
+    &nbsp;&nbsp;&nbsp;
+    <a mat-button
+       color="primary"
+       routerLink="edit"
+       [queryParams]="{c: yamcs.context}"
+       *ngIf="mayManageParameterLists()">
+      <mat-icon>edit</mat-icon>
+      Edit list
+    </a>
+  </app-instance-toolbar>
+
+  <nav #tabs mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
+    <a mat-tab-link
+       routerLink="realtime"
+       routerLinkActive #rla="routerLinkActive"
+       [active]="rla.isActive"
+       [queryParams]="{c: yamcs.context}">
+      Realtime
+    </a>
+    <a mat-tab-link
+       routerLink="data"
+       routerLinkActive #rlb="routerLinkActive"
+       [active]="rlb.isActive"
+       [queryParams]="{c: yamcs.context}"
+       *ngIf="config.tmArchive">
+      Historical Data
+    </a>
+  </nav>
+
+  <div class="tab-content-wrapper">
+    <mat-tab-nav-panel #tabPanel>
+      <router-outlet />
+    </mat-tab-nav-panel>
+  </div>
+</app-instance-page>

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, forwardRef, Input, OnChanges, OnDestroy, Output } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { ListFilesResponse } from '@yamcs/webapp-sdk';
+import { ColumnInfo, FileListExtraColumnInfo, ListFilesResponse } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Component({
@@ -34,10 +34,14 @@ export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDe
   @Input()
   allowFolderSelection = false;
 
+  @Input()
+  fileListExtraColumns: FileListExtraColumnInfo[] = [];
+
   @Output()
   prefixChange = new EventEmitter<string | null>();
 
-  displayedColumns = ['name', 'size', 'modified'];
+  displayedColumns$ = new BehaviorSubject<string[]>(['name', 'size', 'modified']);
+  extraColumns$ = new BehaviorSubject<ColumnInfo[]>([]);
   dataSource = new MatTableDataSource<RemoteFileItem>([]);
 
   currentPrefix$ = new BehaviorSubject<string | null>(null);
@@ -56,6 +60,16 @@ export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDe
   // Called when inputs have changed
   ngOnChanges() {
     this.loadCurrentFolder();
+
+    const displayedColumns = ['name'];
+    for (const extraColumn of this.fileListExtraColumns) {
+      displayedColumns.push(extraColumn.id);
+    }
+    displayedColumns.push('size');
+    displayedColumns.push('modified');
+
+    this.extraColumns$.next(this.fileListExtraColumns);
+    this.displayedColumns$.next(displayedColumns);
   }
 
   // Called when breadcrumb is selected
@@ -96,8 +110,10 @@ export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDe
       items.push({
         folder: file.isDirectory,
         name: fullFileName,
+        displayName: file.displayName ?? file.name,
         modified: file.modified,
         size: file.size,
+        extra: file.extra || {},
       });
     }
     this.dataSource.data = items;
@@ -202,6 +218,8 @@ export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDe
 export class RemoteFileItem {
   folder: boolean;
   name: string;
+  displayName: string;
+  extra: { [key: string]: any; };
   modified?: string;
   size?: number;
 }

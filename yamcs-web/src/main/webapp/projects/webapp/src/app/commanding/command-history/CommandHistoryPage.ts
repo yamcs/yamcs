@@ -99,7 +99,7 @@ export class CommandHistoryPage implements AfterViewInit, OnDestroy {
   ) {
     this.config = configService.getConfig();
     this.user = authService.getUser()!;
-    title.setTitle('Command History');
+    title.setTitle('Command history');
 
     this.dataSource = new CommandHistoryDataSource(this.yamcs, synchronizer);
 

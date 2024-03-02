@@ -34,7 +34,6 @@ public class FixedSizeTimeDecoder implements TimeDecoder {
      *
      */
     public FixedSizeTimeDecoder(ByteOrder byteOrder, int size, double multiplier) {
-        System.out.println("Fixed size " + size + " , x " + multiplier);
         this.byteOrder = byteOrder;
         this.multiplier = multiplier;
         if (size != 4 && size != 8) {

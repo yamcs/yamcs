@@ -12,6 +12,7 @@ import { CreateFolderDialog } from './CreateFolderDialog';
 import { RenameObjectDialog } from './RenameObjectDialog';
 import { Upload } from './Upload';
 import { UploadProgressDialog } from './UploadProgressDialog';
+import { ViewObjectMetadataDialog } from './ViewObjectMetadataDialog';
 
 @Component({
   templateUrl: './BucketObjectsPage.html',
@@ -100,6 +101,7 @@ export class BucketObjectsPage implements OnDestroy {
         modified: object.created,
         size: object.size,
         objectUrl: this.storageClient.getObjectURL(this.name, object.name),
+        metadata: object.metadata,
       });
     }
     this.dataSource.data = items;
@@ -268,6 +270,13 @@ export class BucketObjectsPage implements OnDestroy {
     }
   }
 
+  openViewMetadataDialog(item: BrowseItem) {
+    this.dialog.open(ViewObjectMetadataDialog, {
+      width: '600px',
+      data: { metadata: item.metadata || {} },
+    });
+  }
+
   dragEnter(evt: DragEvent) {
     this.dragActive$.next(true);
     evt.preventDefault();
@@ -413,6 +422,7 @@ export class BrowseItem {
   modified?: string;
   objectUrl?: string;
   size?: number;
+  metadata?: { [key: string]: string; };
 }
 
 export interface BreadCrumbItem {

@@ -1,0 +1,119 @@
+syntax="proto2";
+
+package yamcs.protobuf.plists;
+
+option java_package = "org.yamcs.protobuf.plists";
+option java_outer_classname = "ParameterListsServiceProto";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+
+import "yamcs/api/annotations.proto";
+import "yamcs/protobuf/plists/plists.proto";
+
+service ParameterListsApi {
+
+  // List parameter lists
+  rpc ListParameterLists(ListParameterListsRequest) returns (ListParameterListsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/parameter-lists/{instance}/lists"
+    };
+  }
+
+  // Get a parameter list
+  rpc GetParameterList(GetParameterListRequest) returns (ParameterListInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/parameter-lists/{instance}/lists/{list}"
+    };
+  }
+
+  // Create a parameter list
+  rpc CreateParameterList(CreateParameterListRequest) returns (ParameterListInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/parameter-lists/{instance}/lists",
+      body: "*"
+    };
+  }
+
+  // Update a parameter list
+  rpc UpdateParameterList(UpdateParameterListRequest) returns (ParameterListInfo) {
+    option (yamcs.api.route) = {
+      patch: "/api/parameter-lists/{instance}/lists/{list}"
+      body: "*"
+    };
+  }
+
+  // Delete a parameter list
+  rpc DeleteParameterList(DeleteParameterListRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      delete: "/api/parameter-lists/{instance}/lists/{list}"
+    };
+  }
+}
+
+message ListParameterListsRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+}
+
+message GetParameterListRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // List identifier
+  optional string list = 2;
+}
+
+message ListParameterListsResponse {
+
+  // List of lists, sorted by name
+  //
+  // The returned items include the patterns, however does
+  // not resolve them. Use a specific parameter list request
+  // to get that level of detail instead.  
+  repeated ParameterListInfo lists = 1;
+}
+
+message CreateParameterListRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // List name
+  optional string name = 2;
+
+  // Optional description
+  optional string description = 3;
+
+  // Parameter names (either exact match or glob pattern)
+  repeated string patterns = 4;
+}
+
+message UpdateParameterListRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // List identifier
+  optional string list = 2;
+
+  // List name
+  optional string name = 3;
+
+  // Optional description
+  optional string description = 4;
+
+  // List of parameter patterns
+  optional PatternDefinition patternDefinition = 5;
+}
+
+message PatternDefinition {
+  // Parameter names (either exact match or glob pattern)
+  repeated string patterns = 1;
+}
+
+message DeleteParameterListRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // List identifier
+  optional string list = 2;
+}

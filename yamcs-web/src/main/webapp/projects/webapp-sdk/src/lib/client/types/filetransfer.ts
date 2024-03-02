@@ -25,8 +25,14 @@ export interface FileTransferCapabilities {
   download: boolean;
   reliability: boolean;
   remotePath: boolean;
-  fileList: boolean;
   hasTransferType: boolean;
+  fileList: boolean;
+  fileListExtraColumns?: FileListExtraColumnInfo[];
+}
+
+export interface FileListExtraColumnInfo {
+  id: string;
+  label: string;
 }
 
 export interface Entity {
@@ -72,9 +78,11 @@ export interface ListFilesRequest {
 
 export interface RemoteFile {
   name: string;
+  displayName: string;
   isDirectory: boolean;
   size: number;
   modified: string;
+  extra?: { [key: string]: any; };
 }
 
 export interface ListFilesResponse {

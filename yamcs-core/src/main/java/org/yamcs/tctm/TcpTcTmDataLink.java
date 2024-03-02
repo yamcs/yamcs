@@ -51,7 +51,7 @@ public class TcpTcTmDataLink extends AbstractTmDataLink implements TcDataLink, R
         spec.addOption("packetInputStreamArgs", OptionType.MAP).withSpec(Spec.ANY);
         spec.addOption("commandPostprocessorClassName", OptionType.STRING);
         spec.addOption("commandPostprocessorArgs", OptionType.MAP).withSpec(Spec.ANY);
-        return super.getSpec();
+        return spec;
     }
 
     @Override

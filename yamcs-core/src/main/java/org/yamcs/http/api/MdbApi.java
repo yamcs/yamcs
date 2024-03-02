@@ -78,6 +78,7 @@ import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Algorithm.Scope;
+import org.yamcs.xtce.ArrayParameterType;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.BinaryParameterType;
 import org.yamcs.xtce.BooleanParameterType;
@@ -1008,6 +1009,9 @@ public class MdbApi extends AbstractMdbApi<Context> {
     private boolean parameterTypeMatches(ParameterType ptype, List<String> types) {
         if (types.isEmpty()) {
             return true;
+        }
+        if (ptype instanceof ArrayParameterType) {
+            return types.contains("array");
         }
         return ptype != null && types.contains(ptype.getTypeAsString());
     }

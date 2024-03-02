@@ -6,6 +6,7 @@ import { AuditRecord, GetAuditRecordsOptions, MessageService, SelectComponent, S
 
 
 @Component({
+  selector: 'app-alarms-action-log-tab',
   templateUrl: './ActionLogTab.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

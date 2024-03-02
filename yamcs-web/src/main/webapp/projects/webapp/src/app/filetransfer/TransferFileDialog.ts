@@ -13,10 +13,10 @@ import { RemoteFileSelector } from './RemoteFileSelector';
   styleUrls: ['./TransferFileDialog.css'],
 })
 export class TransferFileDialog implements OnDestroy {
-  isDownloadEnabled = false;
-  isUploadEnabled = false;
+  public isDownloadEnabled = false;
+  public isUploadEnabled = false;
   form: UntypedFormGroup;
-  service: FileTransferService;
+  readonly service: FileTransferService;
   private storageClient: StorageClient;
   dataSource = new MatTableDataSource<Bucket>();
 

@@ -13,6 +13,7 @@ export class PacketDownloadLinkPipe implements PipeTransform {
     }
 
     const instance = this.yamcs.instance!;
-    return this.yamcs.yamcsClient.getPacketDownloadURL(instance, packet.generationTime, packet.sequenceNumber);
+    return this.yamcs.yamcsClient.getPacketDownloadURL(
+      instance, packet.id.name, packet.generationTime, packet.sequenceNumber);
   }
 }

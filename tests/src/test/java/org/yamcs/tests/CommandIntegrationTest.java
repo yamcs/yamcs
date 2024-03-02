@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -448,17 +449,23 @@ public class CommandIntegrationTest extends AbstractIntegrationTest {
             throws InterruptedException, TimeoutException {
 
         CommandHistoryEntry cmdhist = captor.expectTimely();
-        assertEquals(message == null ? 2 : 3, cmdhist.getAttrCount());
 
-        CommandHistoryAttribute cha = cmdhist.getAttr(0);
+        // Filter out permitted attributes, that we are not testing for
+        var filteredArgs = cmdhist.getAttrList().stream()
+                .filter(attr -> !attr.getName().equals(name + "_Return"))
+                .collect(Collectors.toList());
+
+        assertEquals(message == null ? 2 : 3, filteredArgs.size());
+
+        CommandHistoryAttribute cha = filteredArgs.get(0);
         assertEquals(name + "_Status", cha.getName());
         assertEquals(ack.name(), cha.getValue().getStringValue());
 
-        cha = cmdhist.getAttr(1);
+        cha = filteredArgs.get(1);
         assertEquals(name + "_Time", cha.getName());
 
         if (message != null) {
-            cha = cmdhist.getAttr(2);
+            cha = filteredArgs.get(2);
             assertEquals(name + "_Message", cha.getName());
             assertEquals(message, cha.getValue().getStringValue());
         }

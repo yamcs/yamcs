@@ -49,18 +49,14 @@
 
   <dependencies>
     <dependency>
+      <groupId>com.fazecast</groupId>
+      <artifactId>jSerialComm</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.yamcs</groupId>
       <artifactId>yamcs-core</artifactId>
       <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.beust</groupId>
-      <artifactId>jcommander</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.fazecast</groupId>
-      <artifactId>jSerialComm</artifactId>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 </project>

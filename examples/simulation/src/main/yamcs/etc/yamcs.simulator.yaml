@@ -19,6 +19,7 @@ services:
       type: "realtime" 
   - class: org.yamcs.archive.CommandHistoryRecorder
   - class: org.yamcs.timeline.TimelineService
+  - class: org.yamcs.plists.ParameterListService
   - class: org.yamcs.parameterarchive.ParameterArchive
     args:
       realtimeFiller: 

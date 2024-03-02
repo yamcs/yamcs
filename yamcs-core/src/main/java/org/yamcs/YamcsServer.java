@@ -379,6 +379,7 @@ public class YamcsServer {
         }
         YarchDatabase.removeInstance(instanceName);
         MdbFactory.remove(instanceName);
+        StreamConfig.removeInstance(instanceName);
         LOG.info("Re-loading instance '{}'", instanceName);
 
         YConfiguration instanceConfig = loadInstanceConfig(instanceName);
@@ -1201,7 +1202,8 @@ public class YamcsServer {
         spec.addOption("incomingDir", OptionType.STRING).withDefault("yamcs-incoming");
         spec.addOption(CFG_SERVER_ID_KEY, OptionType.STRING);
         spec.addOption(CFG_SECRET_KEY, OptionType.STRING).withSecret(true);
-        spec.addOption("disabledPlugins", OptionType.LIST).withElementType(OptionType.STRING);
+        spec.addOption("disabledPlugins", OptionType.LIST).withElementType(OptionType.STRING)
+                .withDeprecationMessage("use: \"enabled\" property inside the plugin's configuration section instead");
         spec.addOption("archive", OptionType.ANY);
         spec.addOption("rdbConfig", OptionType.ANY);
 

@@ -6,6 +6,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
  * query parameters.
  */
 @Component({
+  selector: 'app-displays-page',
   template: '<router-outlet />',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

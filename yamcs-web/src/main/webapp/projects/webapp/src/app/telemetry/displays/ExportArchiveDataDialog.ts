@@ -60,9 +60,14 @@ export class ExportArchiveDataDialog implements OnDestroy {
   private updateURL() {
     if (this.form.valid) {
       const dlOptions: DownloadParameterValuesOptions = {
-        parameters: this.data.parameterIds,
         delimiter: this.form.value['delimiter'],
       };
+      if (this.data.parameterIds) {
+        dlOptions.parameters = this.data.parameterIds;
+      }
+      if (this.data.list) {
+        dlOptions.list = this.data.list;
+      }
       if (this.form.value['start']) {
         dlOptions.start = utils.toISOString(this.form.value['start']);
       }
@@ -71,6 +76,9 @@ export class ExportArchiveDataDialog implements OnDestroy {
       }
       if (this.form.value['interval']) {
         dlOptions.interval = this.form.value['interval'];
+      }
+      if (this.data.filename) {
+        dlOptions.filename = this.data.filename;
       }
       const url = this.yamcs.yamcsClient.getParameterValuesDownloadURL(this.yamcs.instance!, dlOptions);
       this.downloadURL$.next(url);

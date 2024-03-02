@@ -22,6 +22,7 @@ export class PacketsPage {
     { id: 'generationTime', label: 'Generation time', alwaysVisible: true },
     { id: 'earthReceptionTime', label: 'Earth reception time', visible: false },
     { id: 'receptionTime', label: 'Reception time', visible: true },
+    { id: 'sequenceNumber', label: 'Sequence number', visible: false },
     { id: 'link', label: 'Link', visible: true },
     { id: 'data', label: 'Data', visible: false },
     { id: 'size', label: 'Size', visible: true },
@@ -281,7 +282,11 @@ export class PacketsPage {
   }
 
   extractPacket(packet: Packet) {
-    this.router.navigate([packet.generationTime, packet.sequenceNumber], {
+    this.router.navigate([
+      encodeURIComponent(packet.id.name),
+      packet.generationTime,
+      packet.sequenceNumber,
+    ], {
       relativeTo: this.route,
       queryParams: {
         c: this.yamcs.context,

@@ -5,6 +5,7 @@ import { CreateBucketDialog } from './buckets/CreateBucketDialog';
 import { CreateFolderDialog } from './buckets/CreateFolderDialog';
 import { RenameObjectDialog } from './buckets/RenameObjectDialog';
 import { UploadProgressDialog } from './buckets/UploadProgressDialog';
+import { ViewObjectMetadataDialog } from './buckets/ViewObjectMetadataDialog';
 import { StoragePage } from './StoragePage';
 import { StoragePageTemplate } from './StoragePageTemplate';
 import { routingComponents, StorageRoutingModule } from './StorageRoutingModule';
@@ -25,6 +26,7 @@ import { StorageToolbar } from './StorageToolbar';
     StoragePage,
     StoragePageTemplate,
     StorageToolbar,
+    ViewObjectMetadataDialog,
   ],
 })
 export class StorageModule {

@@ -6,14 +6,7 @@
 <div class="block-title">Command</div>
 <div class="block command-text">
   {{ command.commandName }}
-  <table class="args">
-    <tr *ngFor="let arg of command.userAssignments">
-      <td class="key" width="1">{{ arg.name }}</td>
-      <td class="value">
-        <ya-value [value]="arg.value" />
-      </td>
-    </tr>
-  </table>
+  <app-command-arguments [command]="command" />
 </div>
 
 <ng-container *ngIf="command.unprocessedBinary && (command.unprocessedBinary !== command.binary)">
@@ -129,6 +122,41 @@
     <app-extra-acknowledgments-table [command]="command"
                                      [showIcons]="showIcons" />
   </div>
+</ng-container>
+
+<ng-container *ngIf="command.completed?.returnValue as value">
+  <mat-divider style="margin-top: 1em; margin-bottom: 1em" />
+  <div class="block-title" style="padding-top: 0">
+    Return value
+    <ya-more *ngIf="value.type === 'BINARY'" icon="more_horiz">
+      <button mat-menu-item (click)="copyHex(value.binaryValue)">
+        Copy Hex
+      </button>
+      <button mat-menu-item (click)="copyBinary(value.binaryValue)">
+        Copy Binary
+      </button>
+    </ya-more>
+  </div>
+  <ng-container [ngSwitch]="value.type">
+    <ng-container *ngSwitchCase="'BINARY'">
+      <div class="block no-print" style="margin-top: 4px">
+        <app-hex [base64String]="value.binaryValue" />
+      </div>
+      <div class="block print-only">
+        <pre>{{ (value.binaryValue | hexDump) || '-' }}</pre>
+      </div>
+    </ng-container>
+    <ng-container *ngSwitchCase="'STRING'">
+      <div class="block">
+        <pre style="margin: 0; line-height: 1em">{{ value.stringValue }}</pre>
+      </div>
+    </ng-container>
+    <ng-container *ngSwitchDefault>
+      <div class="block">
+        {{ value | value }}
+      </div>
+    </ng-container>
+  </ng-container>
 </ng-container>
 
 <div class="block-title">Completion</div>

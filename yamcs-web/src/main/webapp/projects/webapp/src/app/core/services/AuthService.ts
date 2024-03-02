@@ -36,6 +36,12 @@ export class AuthService implements OnDestroy {
     this.authInfo = configService.getAuthInfo();
     this.logoutRedirectUrl = configService.getConfig().logoutRedirectUrl;
 
+    yamcsService.sessionEnded$.subscribe(ended => {
+      if (ended) {
+        this.logout(true);
+      }
+    });
+
     /*
      * Attempts to prevent 401 exceptions by checking if locally available
      * tokens should (still) work. If not, then the user is navigated
@@ -238,13 +244,22 @@ export class AuthService implements OnDestroy {
     cookieExpiration.setTime(cookieExpiration.getTime() + expireMillis);
     let cookie = `access_token=${encodeURIComponent(tokenResponse.access_token)}`;
     cookie += `; expires=${cookieExpiration.toUTCString()}`;
-    cookie += '; path=/; SameSite=Strict; Secure';
+    cookie += '; path=/';
+    const cookieConfig = this.configService.getConfig().cookie;
+    cookie += `; SameSite=${cookieConfig.sameSite}`;
+    if (cookieConfig.secure) {
+      cookie += '; Secure';
+    }
     document.cookie = cookie;
 
     // Store refresh token in a Session Cookie (bound to browser, not tab)
     if (tokenResponse.refresh_token) {
       cookie = `refresh_token=${encodeURIComponent(tokenResponse.refresh_token)}`;
-      cookie += '; path=/; SameSite=Strict; Secure';
+      cookie += '; path=/';
+      cookie += `; SameSite=${cookieConfig.sameSite}`;
+      if (cookieConfig.secure) {
+        cookie += '; Secure';
+      }
       document.cookie = cookie;
     }
 

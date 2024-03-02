@@ -34,17 +34,6 @@ message CommandQueueInfo {
   // Current queue state
   optional QueueState state = 4;
 
-  // Renamed to ``acceptedCommandsCount``
-  optional int32 nbSentCommands = 5 [deprecated=true];
-
-  // Renamed to ``rejectedCommandsCount``
-  optional int32 nbRejectedCommands = 6 [deprecated=true];
-
-  optional int32 stateExpirationTimeS = 7 [deprecated=true];
-
-  // Renamed to ``entries``
-  repeated CommandQueueEntry entry = 8 [deprecated=true];
-
   // Submitted commands are matches to the first queue that
   // whose filter criteria (if any) match the command's
   // features. Queues are considered in the order specified by

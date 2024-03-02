@@ -6,6 +6,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { TransferItem } from './TransferItem';
 
 @Component({
+  selector: 'app-successful-transfers-tab',
   templateUrl: './SuccessfulTransfersTab.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
