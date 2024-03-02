@@ -71,4 +71,11 @@ public class SecondaryIndexTest extends YarchTestCase {
         assertEquals("b", idx1.get(0));
     }
 
+    @Test
+    public void testDropTable() throws Exception {
+        ydb.execute("create table test_drop(a int, b int, primary key(a), index(b))");
+        ydb.execute("drop table test_drop");
+        ydb.execute("create table test_drop(a int, b int, primary key(a), index(b))");
+    }
+
 }
