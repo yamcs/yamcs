@@ -1,3 +1,6 @@
+Version 5.9.0 released 
+- Parameter Archive is now stored on a different column family (only for new archives) - that gives better performance and avoids some limitations created by the many tombstones created due to the parameter archive reconstruction
+
 Version 5.8.8 released 3-Nov-2023
 - Add API call to stream MDB items
 - Add API calls to add parameters/parameter types
