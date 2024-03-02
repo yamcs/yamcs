@@ -98,15 +98,21 @@ public class YRDB {
                 db = RocksDB.open(dbOptions, dir, cfdList, cfhList);
                 for (int i = 0; i < cfl.size(); i++) {
                     byte[] b = cfl.get(i);
+
                     columnFamilies.put(new String(b, StandardCharsets.UTF_8), cfhList.get(i));
                 }
 
-            } else { // no existing column families
+            } else { // no existing column families. Is it ever the case??
                 db = RocksDB.open(opt, dir);
+                columnFamilies.put(new String(RocksDB.DEFAULT_COLUMN_FAMILY, StandardCharsets.UTF_8),
+                        db.getDefaultColumnFamily());
             }
         } else {
             // new DB
             db = RocksDB.open(opt, dir);
+            columnFamilies.put(new String(RocksDB.DEFAULT_COLUMN_FAMILY, StandardCharsets.UTF_8),
+                    db.getDefaultColumnFamily());
+
         }
         for (int i = 0; i < NUM_LOCKS; i++) {
             locks[i] = new ReentrantLock();
@@ -158,6 +164,9 @@ public class YRDB {
         }
     }
 
+    public ColumnFamilyHandle getDefaultColumnFamilyHandle() {
+        return db.getDefaultColumnFamily();
+    }
 
     public synchronized ColumnFamilyHandle getColumnFamilyHandle(String cfname) {
         return columnFamilies.get(cfname);
@@ -257,7 +266,7 @@ public class YRDB {
         for (Map.Entry<String, ColumnFamilyHandle> e : columnFamilies.entrySet()) {
             Object o = e.getKey();
             ColumnFamilyHandle chf = e.getValue();
-            sb.append("============== Column Family: " + o + "========\n");
+            sb.append("============== Column Family: " + o + " ========\n");
             for (String p : slprops) {
                 sb.append(p).append(": ");
                 sb.append(db.getProperty(chf, p));
