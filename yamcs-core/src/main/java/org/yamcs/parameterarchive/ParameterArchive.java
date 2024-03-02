@@ -74,8 +74,8 @@ public class ParameterArchive extends AbstractYamcsService {
     public static final int TIMESTAMP_MASK = (0xFFFFFFFF >>> (32 - NUMBITS_MASK));
     public static final long INTERVAL_MASK = ~TIMESTAMP_MASK;
 
-    // from Yamcs 5.8.1, store the parameter archive data into a separate Column Family with this name
-    public static final String CF_NAME = "parchive";
+    // from Yamcs 5.9.0, store the parameter archive data into a separate Column Family with this name
+    public static final String CF_NAME = "parameter-archive";
 
     private ParameterIdDb parameterIdDb;
 
@@ -249,7 +249,7 @@ public class ParameterArchive extends AbstractYamcsService {
         byte[] timeKey = new SegmentKey(parameterIdDb.timeParameterId, pgs.getParameterGroupId(),
                 pgs.getSegmentStart(), SegmentKey.TYPE_ENG_VALUE).encode();
         byte[] timeValue = vsEncoder.encode(timeSegment);
-        writeToBatch(cfh, writeBatch, timeKey, timeValue);
+        writeBatch.put(cfh, timeKey, timeValue);
 
         // and then the consolidated value segments
         List<BaseSegment> consolidated = pgs.getConsolidatedValueSegments();
@@ -272,7 +272,7 @@ public class ParameterArchive extends AbstractYamcsService {
             byte[] engKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getSegmentStart(),
                     SegmentKey.TYPE_ENG_VALUE).encode();
             byte[] engValue = vsEncoder.encode(vs);
-            writeToBatch(cfh, writeBatch, engKey, engValue);
+            writeBatch.put(cfh, engKey, engValue);
 
             if (STORE_RAW_VALUES && consolidatedRawValues != null) {
                 BaseSegment rvs = consolidatedRawValues.get(i);
@@ -289,7 +289,7 @@ public class ParameterArchive extends AbstractYamcsService {
                     byte[] rawKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getSegmentStart(),
                             SegmentKey.TYPE_RAW_VALUE).encode();
                     byte[] rawValue = vsEncoder.encode(rvs);
-                    writeToBatch(cfh, writeBatch, rawKey, rawValue);
+                    writeBatch.put(cfh, rawKey, rawValue);
                 }
             }
             ParameterStatusSegment pss = satusSegments.get(i);
@@ -304,16 +304,7 @@ public class ParameterArchive extends AbstractYamcsService {
             byte[] pssKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getSegmentStart(),
                     SegmentKey.TYPE_PARAMETER_STATUS).encode();
             byte[] pssValue = vsEncoder.encode(pss);
-            writeToBatch(cfh, writeBatch, pssKey, pssValue);
-        }
-    }
-
-    private void writeToBatch(ColumnFamilyHandle cfh, WriteBatch writeBatch, byte[] key, byte[] value)
-            throws RocksDBException {
-        if (cfh != null) {
-            writeBatch.put(cfh, key, value);
-        } else {
-            writeBatch.put(key, value);
+            writeBatch.put(cfh, pssKey, pssValue);
         }
     }
 
@@ -470,7 +461,7 @@ public class ParameterArchive extends AbstractYamcsService {
 
     public RocksIterator getIterator(Partition p) throws RocksDBException, IOException {
         YRDB rdb = tablespace.getRdb(p.partitionDir, false);
-        System.out.println("aici cfh: " + cfh(rdb, p) + " cfName: " + p.cfName + " p.dir: " + p.partitionDir);
+
         return rdb.newIterator(cfh(rdb, p));
     }
 
@@ -479,9 +470,11 @@ public class ParameterArchive extends AbstractYamcsService {
         byte[] timeKey = new SegmentKey(parameterIdDb.timeParameterId, parameterGroupId, segmentStart,
                 SegmentKey.TYPE_ENG_VALUE).encode();
         YRDB rdb = tablespace.getRdb(p.partitionDir, false);
+
         var cfh = cfh(rdb, p);
 
         byte[] tv = rdb.get(cfh, timeKey);
+
         if (tv == null) {
             return null;
         }
@@ -558,9 +551,17 @@ public class ParameterArchive extends AbstractYamcsService {
 
     }
 
+    /**
+     * 
+     * Returns the ColumnFamilyHandle for the partition.
+     * <p>
+     * The databases created after 5.9.0 will use a different column family; before that version the data will be stored
+     * in the default column family
+     * 
+     */
     ColumnFamilyHandle cfh(YRDB rdb, Partition p) throws RocksDBException {
         if (p.cfName == null) {
-            return null;
+            return rdb.getDefaultColumnFamilyHandle();
         } else {
             return rdb.createAndGetColumnFamilyHandle(p.cfName);
         }
