@@ -255,10 +255,10 @@ public class ParameterArchiveTest {
         long segmentStart = ParameterArchive.getIntervalStart(100);
 
         Partition p = parchive.getPartitions(100);
-        assertNotNull(parchive.getTablespace().getRdb(p.partitionDir)
-                .get(new SegmentKey(p1id, pg1id, segmentStart, SegmentKey.TYPE_ENG_VALUE).encode()));
-        assertNull(parchive.getTablespace().getRdb()
-                .get(new SegmentKey(p1id, pg1id, segmentStart, SegmentKey.TYPE_RAW_VALUE).encode()));
+        var rdb = parchive.getTablespace().getRdb(p.partitionDir);
+        var cfh = rdb.getColumnFamilyHandle(ParameterArchive.CF_NAME);
+        assertNotNull(rdb.get(cfh, new SegmentKey(p1id, pg1id, segmentStart, SegmentKey.TYPE_ENG_VALUE).encode()));
+        assertNull(rdb.get(cfh, new SegmentKey(p1id, pg1id, segmentStart, SegmentKey.TYPE_RAW_VALUE).encode()));
 
         List<ParameterValueArray> l1a = retrieveSingleParamSingleGroup(0, TimeEncoding.POSITIVE_INFINITY, p1id, pg1id,
                 true,
