@@ -7,7 +7,6 @@ import java.util.List;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
-import org.rocksdb.Snapshot;
 import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 import org.yamcs.utils.ByteArrayUtils;
@@ -112,9 +111,10 @@ public class SecondaryIndexTableWalker implements TableWalker {
         int tbsIndex = table.getSecondaryIndexWriter().getTbsIndex();
         DbRange dbRange = RdbTableWalker.getDbRange(tbsIndex, skRange);
         YRDB rdb = tablespace.getRdb();
+        var cfh = rdb.getColumnFamilyHandle(table.cfName());
 
         try (ReadOptions readOptions = new ReadOptions();
-                RocksIterator rocksIt = rdb.getDb().newIterator(readOptions);
+                RocksIterator rocksIt = rdb.getDb().newIterator(cfh, readOptions);
                 AscendingRangeIterator it = new AscendingRangeIterator(rocksIt, dbRange);
                 WriteBatch writeBatch = batchUpdates ? new WriteBatch() : null;) {
             while (isRunning() && it.isValid()) {
@@ -135,7 +135,8 @@ public class SecondaryIndexTableWalker implements TableWalker {
         }
     }
 
-    private void visitRow(WriteBatch writeBatch, byte[] pk, byte[] skValue) throws StreamSqlException {
+    private void visitRow(WriteBatch writeBatch, byte[] pk, byte[] skValue)
+            throws StreamSqlException {
         String part = null;
         int rowTbsIndex = tbsIndex(skValue);
         if (skValue.length > TBS_INDEX_SIZE) {
@@ -144,14 +145,15 @@ public class SecondaryIndexTableWalker implements TableWalker {
         YRDB rdb = null;
         try {
             rdb = tablespace.getRdb(part);
+            var cfh = rdb.getColumnFamilyHandle(table.cfName());
             byte[] dbKey = RdbStorageEngine.dbKey(rowTbsIndex, pk);
-            byte[] rowValue = rdb.get(dbKey);
+            byte[] rowValue = rdb.get(cfh, dbKey);
             if (rowValue != null) {
                 TableVisitor.Action action = visitor.visit(pk, rowValue);
                 if (writeBatch == null) {
-                    RdbTableWalker.executeAction(rdb, action, dbKey);
+                    RdbTableWalker.executeAction(rdb, cfh, action, dbKey);
                 } else {
-                    RdbTableWalker.executeAction(rdb, writeBatch, action, dbKey);
+                    RdbTableWalker.executeAction(rdb, cfh, writeBatch, action, dbKey);
                 }
                 if (action.stop()) {
                     close();

@@ -371,6 +371,7 @@ TableColumnDefinition TableColumnDefinition() throws StreamSqlException: {
 void TableOption(CreateTableStatement cts) throws StreamSqlException: {
    String columnName, tablespace, engine;
    PartitioningSpec pspec;
+   CreateTableStatement.TableFormatOption tfo;
 } {
    <K_HISTOGRAM> "(" columnName=ObjectName() {cts.addHistogramColumn(columnName);} ("," columnName=ObjectName(){cts.addHistogramColumn(columnName);})* ")"
    |
@@ -380,9 +381,11 @@ void TableOption(CreateTableStatement cts) throws StreamSqlException: {
    |
    <K_TABLESPACE> tablespace=ObjectName() {cts.setTablespace(tablespace);}
    |
-   <K_TABLE_FORMAT> "=" "COMPRESSED" {cts.setCompressed(true);}
+   <K_TABLE_FORMAT> "="  tfo=TableFormatOption() {cts.addTableFormatOption(tfo);} 
+                         ("," tfo=TableFormatOption(){cts.addTableFormatOption(tfo);})*
 
 }
+
 
 PartitioningSpec PartitioningSpec() throws StreamSqlException: {
     PartitioningSpec pspec;
@@ -404,6 +407,19 @@ PartitioningSpec PartitioningSpec() throws StreamSqlException: {
        return pspec;
     }
 }
+
+CreateTableStatement.TableFormatOption TableFormatOption() throws StreamSqlException: {
+     CreateTableStatement.TableFormatOption tfo;
+     String cfName;
+} {
+	("COMPRESSED" {tfo = new CreateTableStatement.TableFormatOption("COMPRESSED");}
+       |
+    "COLUMN_FAMILY" ":" cfName=ObjectName() {tfo = new CreateTableStatement.TableFormatOption("COLUMN_FAMILY", cfName);}
+    ) {
+    	return tfo;
+    }
+}
+
 
 CreateStreamStatement CreateStreamStatement() throws StreamSqlException: {
     String name;

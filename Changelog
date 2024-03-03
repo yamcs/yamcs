@@ -1,5 +1,7 @@
 Version 5.9.0 released 
-- Parameter Archive is now stored on a different column family (only for new archives) - that gives better performance and avoids some limitations created by the many tombstones created due to the parameter archive reconstruction
+- Reorganized the archive for improving performance:
+   - Parameter Archive is stored on a separate column family "parameter-archive". The parameter-archive suffers frequent rebuilds and storing data in a different cf will leave other data undisturbed when the parameter archive rebuilds.
+   - The tm,pp and events tables are stored on a separate column family "rt_data" - these tables are mostly append only and require "realtimeish" performance.
 
 Version 5.8.8 released 3-Nov-2023
 - Add API call to stream MDB items

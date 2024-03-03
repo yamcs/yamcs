@@ -78,7 +78,7 @@ public class RdbPartitionManagerTest {
         tablespace.loadDb(false);
 
         TableDefinition tblDef = getTableDefTimeAndValue();
-        RdbTable table = new RdbTable("test", tablespace, tblDef, 1);
+        RdbTable table = new RdbTable("test", tablespace, tblDef, 1, "default");
 
         RdbPartitionManager pm = table.getPartitionManager();
         RdbPartition part = (RdbPartition) pm.createAndGetPartition(TimeEncoding.parse("2011-01-01T00:00:00"), 1);
@@ -117,7 +117,7 @@ public class RdbPartitionManagerTest {
 
         tablespace.loadDb(true);
 
-        table = new RdbTable("test", tablespace, tblDef, 1);
+        table = new RdbTable("test", tablespace, tblDef, 1, "default");
         pm = table.getPartitionManager();
         pm.readPartitions();
         List<Partition> plist = pm.getPartitions();
@@ -138,7 +138,7 @@ public class RdbPartitionManagerTest {
 
         TableDefinition tblDef = getTableDefTimeAndValue();
 
-        RdbTable table = new RdbTable("test", tablespace, tblDef, 1);
+        RdbTable table = new RdbTable("test", tablespace, tblDef, 1, "default");
 
         RdbPartitionManager pm = table.getPartitionManager();
         RdbPartition part = (RdbPartition) pm.createAndGetPartition(TimeEncoding.parse("0001-01-01T00:00:00"), 1);

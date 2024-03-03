@@ -24,8 +24,7 @@ public class CreateTableStatement extends SimpleStreamSqlStatement {
     PartitioningSpec partitioningSpec;
     String tablespace;
     String engine;
-
-    private boolean compressed = false;
+    List<TableFormatOption> formatOptions = new ArrayList<>();
 
     public CreateTableStatement(boolean ifNotExists, String tableName, TupleDefinition tupleDefinition,
             List<String> primaryKey, List<String> index) {
@@ -45,15 +44,15 @@ public class CreateTableStatement extends SimpleStreamSqlStatement {
         this.partitioningSpec = pspec;
     }
 
-    public void setCompressed(boolean c) {
-        this.compressed = c;
-    }
-
     public void addHistogramColumn(String columnName) {
         if (histoColumns == null) {
             histoColumns = new ArrayList<>();
         }
         histoColumns.add(columnName);
+    }
+
+    public void addTableFormatOption(TableFormatOption tfo) {
+        formatOptions.add(tfo);
     }
 
     @Override
@@ -79,7 +78,17 @@ public class CreateTableStatement extends SimpleStreamSqlStatement {
                 tableDefinition.setStorageEngineName(YarchDatabase.getDefaultStorageEngineName());
             }
 
-            tableDefinition.setCompressed(compressed);
+            for (var tfo : formatOptions) {
+                if ("COMPRESSED".equals(tfo.key)) {
+                    tableDefinition.setCompressed(true);
+                } else if ("COLUMN_FAMILY".equals(tfo.key)) {
+                    tableDefinition.setCfName(tfo.value);
+                } else {
+                    throw new GenericStreamSqlException(
+                            "Invalid table format option '" + tfo.key
+                                    + "'. Supported are COMPRESSED and COLUMN_FAMILY");
+                }
+            }
             if (partitioningSpec != null) {
                 tableDefinition.setPartitioningSpec(partitioningSpec);
             } else {
@@ -102,5 +111,19 @@ public class CreateTableStatement extends SimpleStreamSqlStatement {
 
     public void setEngine(String engine) {
         this.engine = engine;
+    }
+
+    public static class TableFormatOption {
+        final String key;
+        final String value;
+
+        public TableFormatOption(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public TableFormatOption(String key) {
+            this(key, null);
+        }
     }
 }

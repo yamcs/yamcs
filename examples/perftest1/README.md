@@ -1,7 +1,7 @@
 This configuration is used to asses the performance of Yamcs for processing telemetry. The simulator sends a configurable number of packets with random content. On the Yamcs server side a MDB will be generated (by the PerfMdbLoader) to define all the packets and parameters within.
 
 Settings which can be adjusted:
-- number of packets - how many different packets will be send. Each packet will have an identier (part of the secondary CCSDS header) and will be decomposed into a number of fixed size integer parameters. The number of packets has to be specified both in the SimulatorCommander perfTest (to configure the simulator to send that number of packets) as well as in the mdb -> PerfMdbLoader settings (to generate that number of packets in the MDB)
+- number of packets - how many different packets will be sent. Each packet will have an identier (part of the secondary CCSDS header) and will be decomposed into a number of fixed size integer parameters. The number of packets has to be specified both in the SimulatorCommander perfTest (to configure the simulator to send that number of packets) as well as in the mdb -> PerfMdbLoader settings (to generate that number of packets in the MDB)
 - packet size  - size in bytes of each packet. Again this has to be configured both in the simulator and MDB loader.
 - interval in milliseconds between sending each batch of packets
 - parameter size in bits - this is configured in the PerfMdbLoader and implicitly determines also how many parameters are inside one packet.

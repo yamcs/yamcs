@@ -66,7 +66,11 @@ public class TableDefinition {
 
     private YarchDatabaseInstance ydb;
 
+    // compressed and column family name are actually storage dependent
+    // if we ever support a secondary storage, we should move them into some sort of options
     private boolean compressed;
+    private String cfName;
+
     private PartitioningSpec partitioningSpec = PartitioningSpec.noneSpec();
 
     private String storageEngineName = YarchDatabase.RDB_ENGINE_NAME;
@@ -584,6 +588,23 @@ public class TableDefinition {
 
     public boolean isCompressed() {
         return compressed;
+    }
+
+    /**
+     * 
+     * returns column family name (RocksDB specific) where the table is stored.
+     * <p>
+     * Null means to use the default (which is actually called "default" in RocksDB)
+     */
+    public String getCfName() {
+        return cfName;
+    }
+
+    /**
+     * sets the column family name (RocksDB specific)
+     */
+    public void setCfName(String cfName) {
+        this.cfName = cfName;
     }
 
     /**

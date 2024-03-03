@@ -91,6 +91,7 @@ import com.google.protobuf.TextFormat;
  */
 public class Tablespace {
     private Log log;
+    private static final String DEFAULT_CF = "default";
 
     // unique name for this tablespace
     private final String name;
@@ -489,8 +490,8 @@ public class Tablespace {
                 trbsidx.setTableName(tblDef.getName());
                 createMetadataRecord(yamcsInstance, trbsidx);
             }
-
-            RdbTable table = new RdbTable(yamcsInstance, this, tblDef, trb.getTbsIndex());
+            String cfName = tblDef.getCfName() == null ? DEFAULT_CF : tblDef.getCfName();
+            RdbTable table = new RdbTable(yamcsInstance, this, tblDef, trb.getTbsIndex(), cfName);
 
             tables.put(tblDef, table);
 
@@ -633,8 +634,9 @@ public class Tablespace {
 
             TableDefinition tblDef = TableDefinitionSerializer.fromProtobuf(tr.getTableDefinition());
             tblDef.setName(tr.getTableName());
+            String cfName = DEFAULT_CF;
 
-            RdbTable table = new RdbTable(yamcsInstance, this, tblDef, tr.getTbsIndex());
+            RdbTable table = new RdbTable(yamcsInstance, this, tblDef, tr.getTbsIndex(), cfName);
             tables.put(tblDef, table);
             table.readPartitions();
 

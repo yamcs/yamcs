@@ -201,7 +201,6 @@ public class YRDB {
         return db.get(k);
     }
 
-
     public synchronized ColumnFamilyHandle createColumnFamily(String name) throws RocksDBException {
         if (closed) {
             throw new IllegalStateException("Database is closed");
@@ -227,13 +226,12 @@ public class YRDB {
         db.put(k, v);
     }
 
-    public void put(WriteOptions writeOpt, byte[] k, byte[] v) throws RocksDBException {
+    public void put(ColumnFamilyHandle cfh, WriteOptions writeOpt, byte[] k, byte[] v) throws RocksDBException {
         if (closed) {
             throw new IllegalStateException("Database is closed");
         }
-        db.put(writeOpt, k, v);
+        db.put(cfh, writeOpt, k, v);
     }
-
 
     public Collection<String> getColumnFamiliesAsStrings() {
         return columnFamilies.keySet();
@@ -319,6 +317,13 @@ public class YRDB {
         db.delete(k);
     }
 
+    public void delete(ColumnFamilyHandle cfh, byte[] k) throws RocksDBException {
+        if (closed) {
+            throw new IllegalStateException("Database is closed");
+        }
+        db.delete(cfh, k);
+    }
+
     /**
      * Returns an iterator that iterates over all elements with key starting with the prefix
      */
@@ -402,4 +407,5 @@ public class YRDB {
         }
 
     }
+
 }

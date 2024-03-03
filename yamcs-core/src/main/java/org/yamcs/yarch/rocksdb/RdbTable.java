@@ -23,13 +23,16 @@ public class RdbTable extends Table {
     final String yamcsInstance;
     final RdbPartitionManager partitionManager;
     final HistogramWriter histoWriter;
+    // column family name
+    final String cfName;
     SecondaryIndexWriter indexWriter;
 
-    public RdbTable(String yamcsInstance, Tablespace tablespace, TableDefinition tblDef, int tbsIndex) {
+    public RdbTable(String yamcsInstance, Tablespace tablespace, TableDefinition tblDef, int tbsIndex, String cfName) {
         super(tblDef);
         this.tbsIndex = tbsIndex;
         this.tablespace = tablespace;
         this.yamcsInstance = yamcsInstance;
+        this.cfName = cfName;
 
         partitionManager = new RdbPartitionManager(this, yamcsInstance, tblDef);
 
@@ -72,6 +75,10 @@ public class RdbTable extends Table {
 
     public RdbHistogramInfo createAndGetHistogram(long instant, String columnName) {
         return (RdbHistogramInfo) partitionManager.createAndGetHistogram(instant, columnName);
+    }
+
+    public String cfName() {
+        return cfName;
     }
 
 }

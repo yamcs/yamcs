@@ -182,5 +182,6 @@ message ProtoTableDefinition {
   	optional bool compressed = 9;
   	optional PartitioningInfo partitioningInfo = 10;
   	repeated SecondaryIndex secondaryIndex = 11;
+  	optional string cfName = 12;
 }
 

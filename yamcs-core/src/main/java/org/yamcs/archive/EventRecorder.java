@@ -35,7 +35,7 @@ public class EventRecorder extends AbstractYamcsService {
                 ydb.execute("create table " + TABLE_NAME
                         + "(gentime timestamp, source enum, seqNum int, body PROTOBUF('" + Event.class.getName()
                         + "'), primary key(gentime, source, seqNum)) histogram(source)"
-                        + " table_format=compressed");
+                        + " table_format=compressed,column_family:rt_data");
             }
 
             StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
