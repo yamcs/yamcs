@@ -75,7 +75,7 @@ public class ParameterArchive extends AbstractYamcsService {
     public static final long INTERVAL_MASK = ~TIMESTAMP_MASK;
 
     // from Yamcs 5.9.0, store the parameter archive data into a separate Column Family with this name
-    public static final String CF_NAME = "parameter-archive";
+    public static final String CF_NAME = "parameter_archive";
 
     private ParameterIdDb parameterIdDb;
 
