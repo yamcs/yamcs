@@ -1,7 +1,20 @@
 Version 5.9.0 released 
+- Added activities and procedures services and improved the timeline service
 - Reorganized the archive for improving performance:
    - Parameter Archive is stored on a separate column family "parameter-archive". The parameter-archive suffers frequent rebuilds and storing data in a different cf will leave other data undisturbed when the parameter archive rebuilds.
    - The tm,pp and events tables are stored on a separate column family "rt_data" - these tables are mostly append only and require "realtimeish" performance.
+- Fix on-demand packet extraction in case of multiple on same timestamp
+- Add CSP 1.x pre/post processors
+- Add UdpTcTmDataLink for both TM and TC on a single socket pair
+- Improve application properties: dashes allowed, nesting allowed, spaces allowed in fallback value
+- Allow mapping verifier onSuccess/onFail/onTimeout from and to XTCE
+- Improve support for returning values from a verifier
+- Refresh OIDC tokens granted by external identity provider
+- Add opt-in OIDC back-channel logout support
+- Redirect to login following invalidation of the auth session
+- Allow seeing arguments inline, directly on command history page
+- Add ParameterListService for storing, and exporting lists of parameters
+- Rework server-side algorithm API to better allow for both system logging, as well as publishing events.
 
 Version 5.8.8 released 3-Nov-2023
 - Add API call to stream MDB items
