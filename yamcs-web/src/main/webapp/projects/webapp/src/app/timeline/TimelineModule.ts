@@ -8,9 +8,9 @@ import { EditItemDialog } from './dialogs/EditItemDialog';
 import { EditViewDialog } from './dialogs/EditViewDialog';
 import { JumpToDialog } from './dialogs/JumpToDialog';
 import { BandMultiSelect } from './forms/BandMultiSelect';
-import { TagSelect } from './forms/TagSelect';
 import { EditItemBandComponent } from './itemBand/EditItemBandComponent';
 import { ItemBandStyles } from './itemBand/ItemBandStyles';
+import { ItemStyles } from './itemBand/ItemStyles';
 import { EditSpacerComponent } from './spacer/EditSpacerComponent';
 import { SpacerStyles } from './spacer/SpacerStyles';
 import { routingComponents, TimelineRoutingModule } from './TimelineRoutingModule';
@@ -34,9 +34,9 @@ import { EditTimeRulerComponent } from './timeRuler/EditTimeRulerComponent';
     EditTimeRulerComponent,
     EditViewDialog,
     ItemBandStyles,
+    ItemStyles,
     JumpToDialog,
     SpacerStyles,
-    TagSelect,
   ],
 })
 export class TimelineModule {

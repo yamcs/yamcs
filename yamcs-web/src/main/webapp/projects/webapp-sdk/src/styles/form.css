@@ -3,7 +3,7 @@
   margin: -3px 0 20px 0;
   font-weight: 500;
   font-size: 11px;
-  letter-spacing: .02em;
+  letter-spacing: 0.02em;
   line-height: 12px;
   color: black;
   text-transform: inherit;
@@ -45,7 +45,12 @@
   display: block;
 }
 
-.ya-form input[type="text"], .ya-form input[type="number"], .ya-form input[type="color"], .ya-form input[type="password"], .ya-form select, .ya-input {
+.ya-form input[type="text"],
+.ya-form input[type="number"],
+.ya-form input[type="color"],
+.ya-form input[type="password"],
+.ya-form select,
+.ya-input {
   background: white;
   border: 1px solid #d3d3d3;
   border-radius: 1px;

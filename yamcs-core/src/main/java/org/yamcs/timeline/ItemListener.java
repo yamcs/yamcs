@@ -2,14 +2,18 @@ package org.yamcs.timeline;
 
 public interface ItemListener {
 
-    void next(TimelineItem item);
+    /**
+     * An item was created
+     */
+    void onItemCreated(TimelineItem item);
 
     /**
-     * If a paged request has been performed, the token can be used to retrieve the next chunk.
-     * <p>
-     * token is null if there was no limit or there were less items than the specified limit
+     * An item was updated
      */
-    void complete(String token);
+    void onItemUpdated(TimelineItem item);
 
-    void completeExceptionally(Throwable t);
+    /**
+     * An item was deleted
+     */
+    void onItemDeleted(TimelineItem item);
 }

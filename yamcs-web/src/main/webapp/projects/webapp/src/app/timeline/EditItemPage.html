@@ -14,7 +14,7 @@
           Tags allow to categorise items per band. Bands only show items for which one of the tags is matching.
         </ya-help>
         <br>
-        <app-tag-select formControlName="tags" />
+        <ya-tag-select formControlName="tags" />
       </div>
       <br>
       <div class="label">
@@ -30,6 +30,14 @@
         Start<br>
         <ya-date-time-input formControlName="start" />
       </div>
+      <br>
+      <div class="section-divider">
+        <mat-divider />
+      </div>
+
+      <h4>Styles</h4>
+      <app-item-styles [form]="form" />
+      <br>
     </form>
     <p>&nbsp;</p>
     <div class="action-bar">

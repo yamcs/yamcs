@@ -9,7 +9,7 @@ input {
 }
 
 .duration-input input {
-  width: 100px;
+  width: 100px !important;
   margin-right: 5px !important;
 }
 

@@ -1,0 +1,12 @@
+<ng-container *ngIf="context$ | async as context">
+  <ya-sidebar-nav-item routerLink="/activities"
+                       [queryParams]="{c: yamcs.context}">
+    <mat-icon class="item-icon">pending_actions</mat-icon>
+    Activities
+    <ng-container *ngIf="status$ | async as status">
+      <div class="count ongoing" *ngIf="status.ongoingCount">
+        {{ status.ongoingCount }} ongoing
+      </div>
+    </ng-container>
+  </ya-sidebar-nav-item>
+</ng-container>

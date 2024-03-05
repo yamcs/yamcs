@@ -1,0 +1,22 @@
+<h2 mat-dialog-title>Start manual activity</h2>
+
+<mat-dialog-content class="mat-typography">
+  <p class="hint">
+    Use this dialog to start a <em>manual</em> activity. This is an activity whose
+    execution status is not managed by Yamcs, but directly by the user.
+  </p>
+  <form [formGroup]="form" class="ya-form" novalidate autocomplete="off">
+    <div class="label">
+      Name <span class="hint">(required)</span><br>
+      <input type="text" formControlName="name">
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <button class="ya-button primary" (click)="onConfirm()"
+          [disabled]="!form.valid">
+    START
+  </button>
+</mat-dialog-actions>

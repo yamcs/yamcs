@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.yamcs.protobuf.TimelineItemType;
 import org.yamcs.yarch.Tuple;
 
-public class ActivityGroup extends Activity {
+public class ActivityGroup extends TimelineActivity {
 
     public ActivityGroup(UUID id) {
         super(TimelineItemType.ACTIVITY_GROUP, id);
@@ -14,5 +14,4 @@ public class ActivityGroup extends Activity {
     ActivityGroup(Tuple tuple) {
         super(TimelineItemType.ACTIVITY_GROUP, tuple);
     }
-
 }

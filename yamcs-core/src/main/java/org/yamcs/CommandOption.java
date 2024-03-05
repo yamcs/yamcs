@@ -112,6 +112,73 @@ public class CommandOption {
         }
     }
 
+    /**
+     * Returns a new value whose type matches more closely the type of this command option.
+     * <p>
+     * The purpose here, is that we want to be forgiving on clients that run commands, while at the same time be more
+     * specific when it is recorded in Command History, or passed to a link.
+     */
+    public Value coerceValue(Object value) {
+        switch (type) {
+        case BOOLEAN:
+            if (value instanceof String) {
+                var booleanValue = "true".equals((String) value);
+                return Value.newBuilder()
+                        .setType(Value.Type.BOOLEAN)
+                        .setBooleanValue(booleanValue)
+                        .build();
+            } else if (value instanceof Boolean) {
+                return Value.newBuilder()
+                        .setType(Value.Type.BOOLEAN)
+                        .setBooleanValue((Boolean) value)
+                        .build();
+            } else {
+                throw new IllegalArgumentException("Command option cannot be converted to boolean");
+            }
+        case NUMBER:
+            if (value instanceof String) {
+                var numberValue = Double.parseDouble((String) value);
+                return Value.newBuilder()
+                        .setType(Value.Type.DOUBLE)
+                        .setDoubleValue(numberValue)
+                        .build();
+            } else if (value instanceof Double) {
+                return Value.newBuilder()
+                        .setType(Value.Type.DOUBLE)
+                        .setDoubleValue((Double) value)
+                        .build();
+            } else if (value instanceof Float) {
+                return Value.newBuilder()
+                        .setType(Value.Type.FLOAT)
+                        .setFloatValue((Float) value)
+                        .build();
+            } else if (value instanceof Integer) {
+                return Value.newBuilder()
+                        .setType(Value.Type.SINT32)
+                        .setSint32Value((Integer) value)
+                        .build();
+            } else if (value instanceof Long) {
+                return Value.newBuilder()
+                        .setType(Value.Type.SINT64)
+                        .setSint64Value((Integer) value)
+                        .build();
+            } else {
+                throw new IllegalArgumentException("Command option cannot be converted to number");
+            }
+        case STRING:
+            if (value instanceof String) {
+                return Value.newBuilder()
+                        .setType(Value.Type.STRING)
+                        .setStringValue((String) value)
+                        .build();
+            } else {
+                throw new IllegalArgumentException("Command option cannot be converted to string");
+            }
+        default:
+            throw new IllegalStateException("Unexpected type " + type);
+        }
+    }
+
     @Override
     public String toString() {
         return verboseName;

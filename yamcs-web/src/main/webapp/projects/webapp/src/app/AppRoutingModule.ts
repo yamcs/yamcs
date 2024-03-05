@@ -54,6 +54,10 @@ const routes: Routes = [
         canActivate: [authGuardFn],
         data: { 'hasSidebar': false }
       }, {
+        path: 'activities',
+        loadChildren: () => import('projects/webapp/src/app/activities/ActivitiesModule').then(m => m.ActivitiesModule),
+        canActivate: [authGuardFn],
+      }, {
         path: 'alarms',
         loadChildren: () => import('projects/webapp/src/app/alarms/AlarmsModule').then(m => m.AlarmsModule),
         canActivate: [authGuardFn],
@@ -93,6 +97,10 @@ const routes: Routes = [
       }, {
         path: 'links',
         loadChildren: () => import('projects/webapp/src/app/links/LinksModule').then(m => m.LinksModule),
+        canActivate: [authGuardFn],
+      }, {
+        path: 'procedures',
+        loadChildren: () => import('projects/webapp/src/app/procedures/ProceduresModule').then(m => m.ProceduresModule),
         canActivate: [authGuardFn],
       }, {
         path: 'search',

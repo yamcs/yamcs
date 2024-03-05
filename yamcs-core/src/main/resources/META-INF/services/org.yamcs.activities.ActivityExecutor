@@ -1,0 +1,3 @@
+org.yamcs.activities.CommandExecutor
+org.yamcs.activities.CommandStackExecutor
+org.yamcs.activities.ScriptExecutor

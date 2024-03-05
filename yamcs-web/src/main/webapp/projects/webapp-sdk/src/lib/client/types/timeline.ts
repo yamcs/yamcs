@@ -5,6 +5,8 @@ export interface CreateTimelineItemRequest {
   duration: string;
   type: TimelineItemType;
   tags?: string[];
+  properties?: { [key: string]: string; };
+  activityDefinition?: ActivityDefinition;
 }
 
 export interface UpdateTimelineItemRequest {
@@ -12,9 +14,12 @@ export interface UpdateTimelineItemRequest {
   start: string;
   duration: string;
   tags?: string[];
+  properties?: { [key: string]: string; };
+  clearTags?: boolean;
+  clearProperties?: boolean;
 }
 
-export type TimelineItemType = 'EVENT' | 'MANUAL_ACTIVITY' | 'AUTO_ACTIVITY';
+export type TimelineItemType = 'EVENT' | 'ACTIVITY';
 
 export interface TimelineItem {
   id: string;
@@ -23,6 +28,14 @@ export interface TimelineItem {
   duration: string;
   type: TimelineItemType;
   tags?: string[];
+  properties?: { [key: string]: string; };
+  status?: string;
+  activityDefinition?: ActivityDefinition;
+}
+
+export interface ActivityDefinition {
+  type: string;
+  args?: { [key: string]: any; };
 }
 
 export interface TimelineViewsPage {

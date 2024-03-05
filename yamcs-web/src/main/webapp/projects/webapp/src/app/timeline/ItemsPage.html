@@ -2,12 +2,28 @@
   <app-instance-toolbar>
     Items
     &nbsp;&nbsp;&nbsp;
-    <a mat-button
-       color="primary"
-       (click)="openCreateItemDialog()">
+    <button mat-button
+            color="primary"
+            [matMenuTriggerFor]="itemMenu">
       <mat-icon>add_circle_outline</mat-icon>
       Create item
-    </a>
+    </button>
+    <mat-menu #itemMenu="matMenu"
+              class="ya-menu"
+              [overlapTrigger]="false">
+      <button mat-menu-item
+              (click)="openCreateItemDialog('EVENT')"
+              matTooltipShowDelay="1000"
+              matTooltip="Events are items that simply appear on the timeline">
+        Event item
+      </button>
+      <button mat-menu-item
+              (click)="openCreateItemDialog('ACTIVITY')"
+              matTooltipShowDelay="1000"
+              matTooltip="Activities are like events, but in addition have an execution status">
+        Activity item
+      </button>
+    </mat-menu>
     <button mat-button
             color="primary"
             [disabled]="!isGroupDeleteEnabled()"
@@ -53,8 +69,7 @@
       <ng-container cdkColumnDef="tags">
         <th mat-header-cell *cdkHeaderCellDef mat-sort-header>Tags</th>
         <td mat-cell *cdkCellDef="let row">
-          <ya-label *ngFor="let tag of (row.tags || [])"
-                    backgroundColor="#cdeefd">{{ tag }}</ya-label>
+          <ya-label *ngFor="let tag of (row.tags || [])">{{ tag }}</ya-label>
           <ng-container *ngIf="!row.tags">-</ng-container>
         </td>
       </ng-container>

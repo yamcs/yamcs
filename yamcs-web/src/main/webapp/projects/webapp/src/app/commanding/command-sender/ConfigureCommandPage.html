@@ -100,6 +100,24 @@
         <mat-icon>send</mat-icon>
         Send
       </button>
+      <ng-container *ngIf="showSchedule()">
+        &nbsp;
+        <ya-icon-action [matMenuTriggerFor]="sendMenu"
+                        icon="arrow_drop_down"
+                        [padding]="false"
+                        [disabled]="(config.twoStageCommanding && !armControl.value) || !(cleared$ | async) || !commandForm.form.valid"
+                        style="line-height: 12px" />
+        <mat-menu #sendMenu="matMenu"
+                  class="ya-menu"
+                  [overlapTrigger]="false">
+          <button mat-menu-item (click)="sendCommand()">
+            Send now
+          </button>
+          <button mat-menu-item (click)="openScheduleCommandDialog()">
+            Send later...
+          </button>
+        </mat-menu>
+      </ng-container>
     </mat-toolbar>
   </div>
 </app-instance-page>

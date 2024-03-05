@@ -1,13 +1,26 @@
 package org.yamcs.timeline;
 
-import static org.yamcs.timeline.TimelineItemDb.*;
+import static org.yamcs.timeline.TimelineBandDb.PROP_PREFIX;
+import static org.yamcs.timeline.TimelineItemDb.CNAME_DESCRIPTION;
+import static org.yamcs.timeline.TimelineItemDb.CNAME_DURATION;
+import static org.yamcs.timeline.TimelineItemDb.CNAME_GROUP_ID;
+import static org.yamcs.timeline.TimelineItemDb.CNAME_ID;
+import static org.yamcs.timeline.TimelineItemDb.CNAME_NAME;
+import static org.yamcs.timeline.TimelineItemDb.CNAME_RELTIME_ID;
+import static org.yamcs.timeline.TimelineItemDb.CNAME_RELTIME_START;
+import static org.yamcs.timeline.TimelineItemDb.CNAME_START;
+import static org.yamcs.timeline.TimelineItemDb.CNAME_TAGS;
+import static org.yamcs.timeline.TimelineItemDb.CNAME_TYPE;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.yamcs.protobuf.RelativeTime;
 import org.yamcs.protobuf.TimelineItemType;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Tuple;
 
@@ -27,7 +40,8 @@ public abstract class TimelineItem {
     protected final String id;
     protected final TimelineItemType type;
 
-    protected long start, duration;
+    protected long start;
+    protected long duration;
 
     // if relativeItemUuid!= null -> the item start is relative to another item
     protected UUID relativeItemUuid;
@@ -42,6 +56,7 @@ public abstract class TimelineItem {
     protected String tooltip;
     protected String description;
     protected List<String> tags;
+    protected Map<String, String> properties = new HashMap<>();
 
     protected TimelineItem(TimelineItemType type, Tuple tuple) {
         this.id = ((UUID) tuple.getColumn(CNAME_ID)).toString();
@@ -57,6 +72,14 @@ public abstract class TimelineItem {
         }
         if (tuple.hasColumn(CNAME_DESCRIPTION)) {
             this.description = tuple.getColumn(CNAME_DESCRIPTION);
+        }
+
+        for (int i = 0; i < tuple.size(); i++) {
+            ColumnDefinition column = tuple.getColumnDefinition(i);
+            if (column.getName().startsWith(PROP_PREFIX)) {
+                String columnName = column.getName().substring(PROP_PREFIX.length());
+                properties.put(columnName, tuple.getColumn(column.getName()));
+            }
         }
     }
 
@@ -153,14 +176,24 @@ public abstract class TimelineItem {
         this.tags = tags;
     }
 
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(Map<String, String> properties) {
+        this.properties.clear();
+        this.properties.putAll(properties);
+    }
+
     protected abstract void addToProto(boolean detail, org.yamcs.protobuf.TimelineItem.Builder protob);
 
     public org.yamcs.protobuf.TimelineItem toProtoBuf(boolean detail) {
-        org.yamcs.protobuf.TimelineItem.Builder protob = org.yamcs.protobuf.TimelineItem.newBuilder();
-        protob.setType(type);
-        protob.setId(id.toString());
-        protob.setStart(TimeEncoding.toProtobufTimestamp(start));
-        protob.setDuration(Durations.fromMillis(duration));
+        var protob = org.yamcs.protobuf.TimelineItem.newBuilder()
+                .setType(type)
+                .setId(id.toString())
+                .setStart(TimeEncoding.toProtobufTimestamp(start))
+                .setDuration(Durations.fromMillis(duration))
+                .putAllProperties(properties);
         if (name != null) {
             protob.setName(name);
         }
@@ -196,6 +229,9 @@ public abstract class TimelineItem {
         if (name != null) {
             tuple.addColumn(CNAME_NAME, name);
         }
+        for (var entry : properties.entrySet()) {
+            tuple.addColumn(PROP_PREFIX + entry.getKey(), entry.getValue());
+        }
         if (tags != null) {
             tuple.addColumn(CNAME_TAGS, DataType.array(DataType.ENUM), tags);
         }
@@ -222,16 +258,13 @@ public abstract class TimelineItem {
         switch (type) {
         case ACTIVITY_GROUP:
             return new ActivityGroup(tuple);
-        case AUTO_ACTIVITY:
-            return new AutomatedActivity(tuple);
+        case ACTIVITY:
+            return new TimelineActivity(TimelineItemType.ACTIVITY, tuple);
         case EVENT:
             return new TimelineEvent(tuple);
         case ITEM_GROUP:
             return new ItemGroup(tuple);
-        case MANUAL_ACTIVITY:
-            return new ManualActivity(tuple);
         }
         return null;
     }
-
 }

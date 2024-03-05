@@ -46,7 +46,7 @@ public class CommandItemProvider implements ItemProvider {
     }
 
     @Override
-    public void getItems(int limit, String next, RetrievalFilter filter, ItemListener consumer) {
+    public void getItems(int limit, String next, RetrievalFilter filter, ItemReceiver consumer) {
 
         SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME);
         TimeInterval interval = filter.getTimeInterval();

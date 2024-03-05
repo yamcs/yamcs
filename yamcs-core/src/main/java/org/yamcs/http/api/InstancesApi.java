@@ -464,6 +464,7 @@ public class InstancesApi extends AbstractInstancesApi<Context> {
         }
         if (!ysi.getServicesWithConfig(TimelineService.class).isEmpty()) {
             instanceb.addCapabilities("timeline");
+            instanceb.addCapabilities("activities");
         }
         if (!ysi.getServicesWithConfig(ParameterListService.class).isEmpty()) {
             instanceb.addCapabilities("parameter-lists");

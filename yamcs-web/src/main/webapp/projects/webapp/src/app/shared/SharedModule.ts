@@ -15,6 +15,7 @@ import { InstancePageTemplate } from './template/InstancePageTemplate';
 import { InstanceToolbar } from './template/InstanceToolbar';
 import { SignificanceLevel } from './template/SignificanceLevel';
 import { StartReplayDialog } from './template/StartReplayDialog';
+import { ActivitiesLabel } from './widgets/ActivitiesLabel';
 import { AlarmLabel } from './widgets/AlarmLabel';
 import { LiveExpression } from './widgets/LiveExpression';
 import { ParameterLegend } from './widgets/ParameterLegend';
@@ -23,6 +24,7 @@ import { ParameterSeries } from './widgets/ParameterSeries';
 import { TimestampTracker } from './widgets/TimestampTracker';
 
 const sharedComponents = [
+  ActivitiesLabel,
   Ago,
   AlarmLabel,
   AlarmLevel,

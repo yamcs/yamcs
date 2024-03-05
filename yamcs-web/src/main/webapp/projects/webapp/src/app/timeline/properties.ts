@@ -68,22 +68,22 @@ export class SelectProperty<T extends string> implements PropertyInfo<T> {
   }
 }
 
-export type PropertyInfoSet = { [key: string]: PropertyInfo<any> };
+export type PropertyInfoSet = { [key: string]: PropertyInfo<any>; };
 
 /**
  * Adds missing properties, and converts string values to type-specific values
  * depending on the provided info model.
  */
 export function resolveProperties(info: PropertyInfoSet, properties: { [key: string]: string; }) {
-  const defaultProperties: { [key: string]: any; } = {}
+  const defaultProperties: { [key: string]: any; } = {};
   for (const p in info) {
-    defaultProperties[p] = info.defaultValue;
+    defaultProperties[p] = info[p].defaultValue;
   }
   return { ...defaultProperties, ...convertStringTypes(info, properties) };
 }
 
-function convertStringTypes(info: PropertyInfoSet, properties: {[key: string]: string}) {
-  const result: { [key: string]: any; } = {...properties};
+function convertStringTypes(info: PropertyInfoSet, properties: { [key: string]: string; }) {
+  const result: { [key: string]: any; } = { ...properties };
   for (const key in properties) {
     const propertyInfo = info[key];
     if (propertyInfo?.inputType === PropertyInputType.BOOLEAN) {

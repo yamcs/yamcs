@@ -2,8 +2,9 @@
   border-spacing: 0;
 }
 
-::ng-deep .help td, ::ng-deep .help th {
+::ng-deep .help td,
+::ng-deep .help th {
   font-size: 12px;
-  color: rgba(0, 0, 0, .654);
+  color: rgba(0, 0, 0, 0.654);
   border-bottom: 1px solid #d3d3d3;
 }

@@ -27,6 +27,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.api.Api;
 import org.yamcs.api.HttpRoute;
 import org.yamcs.api.WebSocketTopic;
+import org.yamcs.http.api.ActivitiesApi;
 import org.yamcs.http.api.AlarmsApi;
 import org.yamcs.http.api.AuditApi;
 import org.yamcs.http.api.BucketsApi;
@@ -284,6 +285,7 @@ public class HttpServer extends AbstractYamcsService {
         }
         nThreads = config.getInt("nThreads");
 
+        addApi(new ActivitiesApi());
         addApi(new AlarmsApi(auditLog));
         addApi(new AuditApi(auditLog));
         addApi(new BucketsApi());
@@ -540,9 +542,9 @@ public class HttpServer extends AbstractYamcsService {
             return true; // Force use of Callable interface, instead of Runnable
         });
         closers.shutdown();
-        Futures.addCallback(Futures.allAsList(future1, future2, future3), new FutureCallback<Object>() {
+        Futures.addCallback(Futures.allAsList(future1, future2, future3), new FutureCallback<>() {
             @Override
-            public void onSuccess(Object result) {
+            public void onSuccess(List<Object> result) {
                 notifyStopped();
             }
 

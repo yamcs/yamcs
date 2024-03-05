@@ -279,7 +279,7 @@ public class BackupCli extends Command {
                     BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);) {
                 backupEngine.purgeOldBackups(backupsToKeep);
                 int n = backupEngine.getBackupInfo().size();
-                console.println("Purged operation successfull; " + n + " backups remaining.");
+                console.println("Purged operation successful; " + n + " backups remaining.");
             }
         }
     }

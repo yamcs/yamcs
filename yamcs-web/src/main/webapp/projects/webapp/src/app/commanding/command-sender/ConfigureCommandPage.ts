@@ -1,12 +1,14 @@
 import { Location } from '@angular/common';
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Clearance, Command, CommandHistoryEntry, CommandOptionType, ConfigService, MessageService, Value, WebsiteConfig, YamcsService } from '@yamcs/webapp-sdk';
+import { Clearance, Command, CommandHistoryEntry, CommandOptionType, ConfigService, CreateTimelineItemRequest, MessageService, Value, WebsiteConfig, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { CommandForm, TemplateProvider } from './CommandForm';
+import { ScheduleCommandDialog } from './ScheduleCommandDialog';
 
 @Component({
   templateUrl: './ConfigureCommandPage.html',
@@ -36,8 +38,9 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
     readonly yamcs: YamcsService,
     private location: Location,
     configService: ConfigService,
-    authService: AuthService,
+    private authService: AuthService,
     private changeDetection: ChangeDetectorRef,
+    private dialog: MatDialog,
   ) {
     this.config = configService.getConfig();
 
@@ -124,6 +127,48 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
     });
   }
 
+  showSchedule() {
+    const capabilities = this.yamcs.connectionInfo$.value?.instance?.capabilities || [];
+    return capabilities.indexOf('activities') !== -1
+      && this.authService.getUser()!.hasSystemPrivilege('ControlActivities');
+  }
+
+  openScheduleCommandDialog() {
+    this.dialog.open(ScheduleCommandDialog, {
+      width: '600px',
+    }).afterClosed().subscribe(scheduleOptions => {
+      if (scheduleOptions) {
+        this.armControl.setValue(false);
+
+        const qname = this.command$.value!.qualifiedName;
+        const args = this.commandForm.getAssignments();
+
+        const options: CreateTimelineItemRequest = {
+          type: 'ACTIVITY',
+          duration: '0s',
+          name: qname,
+          start: scheduleOptions['executionTime'],
+          tags: scheduleOptions['tags'],
+          activityDefinition: {
+            "type": "COMMAND",
+            "args": {
+              "processor": this.yamcs.processor!,
+              "command": qname,
+              "args": args,
+            }
+          },
+        };
+
+        this.yamcs.yamcsClient.createTimelineItem(this.yamcs.instance!, options)
+          .then(() => {
+            this.messageService.showInfo('Command scheduled');
+            this.router.navigateByUrl(`/commanding/send?c=${this.yamcs.context}`);
+          })
+          .catch(err => this.messageService.showError(err));
+      }
+    });
+  }
+
   private isCleared(clearance: Clearance | null, level?: string) {
     if (!clearance) {
       return false;
@@ -165,9 +210,7 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.connectionInfoSubscription) {
-      this.connectionInfoSubscription.unsubscribe();
-    }
+    this.connectionInfoSubscription?.unsubscribe();
   }
 }
 

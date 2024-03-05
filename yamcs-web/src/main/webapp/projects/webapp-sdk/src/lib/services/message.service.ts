@@ -52,6 +52,9 @@ export class MessageService implements OnDestroy {
 
   dismiss() {
     this.siteMessage$.next(null);
+  }
+
+  dismissSnackBar() {
     this.snackBar.dismiss();
   }
 
