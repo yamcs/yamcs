@@ -40,13 +40,15 @@ public class YRDB {
     private final RocksDB db;
     private volatile boolean closed = false;
     private final String path;
-    private final ColumnFamilyOptions cfoptions;
+    static final String DEFAULT_CF = new String(RocksDB.DEFAULT_COLUMN_FAMILY, StandardCharsets.UTF_8);
+
     static final String ROCKS_PROP_NUM_KEYS = "rocksdb.estimate-num-keys";
     // keep track
     int refcount = 0;
     long lastAccessTime;
 
     private final DBOptions dbOptions;
+    private final TablespaceConfig tablespaceConfig;
 
     // locks used for row locking
     static final int NUM_LOCKS = 1 << 4;
@@ -79,39 +81,43 @@ public class YRDB {
         }
         RdbConfig rdbConfig = RdbConfig.getInstance();
         String tblSpaceName = f.getName().replace(".rdb", "");
-        TablespaceConfig tc = rdbConfig.getTablespaceConfig(tblSpaceName);
-        cfoptions = (tc == null) ? rdbConfig.getDefaultColumnFamilyOptions() : tc.getColumnFamilyOptions();
-        Options opt = (tc == null) ? rdbConfig.getDefaultOptions() : tc.getOptions();
-        dbOptions = (tc == null) ? rdbConfig.getDefaultDBOptions() : tc.getDBOptions();
+        tablespaceConfig = rdbConfig.getTablespaceConfig(tblSpaceName);
+
+        dbOptions = tablespaceConfig.getDBOptions();
         this.path = dir;
         File current = new File(dir + File.separatorChar + "CURRENT");
         if (current.exists()) {
-            List<byte[]> cfl = RocksDB.listColumnFamilies(opt, dir);
+            List<byte[]> cfl = RocksDB.listColumnFamilies(new Options(), dir);
 
             if (cfl != null) {
                 List<ColumnFamilyDescriptor> cfdList = new ArrayList<>(cfl.size());
 
                 for (byte[] b : cfl) {
-                    cfdList.add(new ColumnFamilyDescriptor(b, cfoptions));
+                    String cfName = cfName(b);
+                    ColumnFamilyOptions cfOptions = tablespaceConfig.getColumnFamilyOptions(cfName);
+                    cfdList.add(new ColumnFamilyDescriptor(b, cfOptions));
                 }
                 List<ColumnFamilyHandle> cfhList = new ArrayList<>(cfl.size());
                 db = RocksDB.open(dbOptions, dir, cfdList, cfhList);
                 for (int i = 0; i < cfl.size(); i++) {
                     byte[] b = cfl.get(i);
 
-                    columnFamilies.put(new String(b, StandardCharsets.UTF_8), cfhList.get(i));
+                    columnFamilies.put(cfName(b), cfhList.get(i));
                 }
 
             } else { // no existing column families. Is it ever the case??
-                db = RocksDB.open(opt, dir);
-                columnFamilies.put(new String(RocksDB.DEFAULT_COLUMN_FAMILY, StandardCharsets.UTF_8),
-                        db.getDefaultColumnFamily());
+                throw new IllegalStateException(
+                        "Found a directory containing a CURRENT file but no database inside? " + dir);
             }
         } else {
             // new DB
-            db = RocksDB.open(opt, dir);
-            columnFamilies.put(new String(RocksDB.DEFAULT_COLUMN_FAMILY, StandardCharsets.UTF_8),
-                    db.getDefaultColumnFamily());
+            List<ColumnFamilyHandle> columnFamilyHandles = new ArrayList<>();
+            List<ColumnFamilyDescriptor> columnFamilyDescriptors = new ArrayList<>();
+            columnFamilyDescriptors.add(new ColumnFamilyDescriptor(RocksDB.DEFAULT_COLUMN_FAMILY,
+                    tablespaceConfig.getColumnFamilyOptions(DEFAULT_CF)));
+
+            db = RocksDB.open(dbOptions, dir, columnFamilyDescriptors, columnFamilyHandles);
+            columnFamilies.put(DEFAULT_CF, db.getDefaultColumnFamily());
 
         }
         for (int i = 0; i < NUM_LOCKS; i++) {
@@ -205,8 +211,8 @@ public class YRDB {
         if (closed) {
             throw new IllegalStateException("Database is closed");
         }
-        byte[] cfname = name.getBytes(StandardCharsets.UTF_8);
-        ColumnFamilyDescriptor cfd = new ColumnFamilyDescriptor(cfname, cfoptions);
+        var cfoptions = tablespaceConfig.getColumnFamilyOptions(name);
+        ColumnFamilyDescriptor cfd = new ColumnFamilyDescriptor(cfNameb(name), cfoptions);
         ColumnFamilyHandle cfh = db.createColumnFamily(cfd);
         columnFamilies.put(name, cfh);
         return cfh;
@@ -345,11 +351,11 @@ public class YRDB {
     }
 
     /**
-     * Lock the key - that is if another thread called this method for that key, wait until someone calls the unlock
-     * on the same key.
+     * Lock the key - that is if another thread called this method for that key, wait until someone calls the unlock on
+     * the same key.
      * <p>
-     * The method is implemented by first selecting a {@link Lock} from an fixed size array based on a
-     * hash of the key and performing the {@link Lock#lock()} operation on it.
+     * The method is implemented by first selecting a {@link Lock} from an fixed size array based on a hash of the key
+     * and performing the {@link Lock#lock()} operation on it.
      * 
      * @param dbKey
      */
@@ -396,6 +402,21 @@ public class YRDB {
         }
     }
 
+    /**
+     * Compact the given column family between start and stop
+     * <p>
+     * Throws an {@link IllegalArgumentException} if there is no column family by the given name
+     */
+    public void compactRange(String cfName, byte[] start, byte[] stop) throws RocksDBException {
+
+        var cfh = cfName == null ? db.getDefaultColumnFamily() : getColumnFamilyHandle(cfName);
+
+        if (cfh == null) {
+            throw new IllegalArgumentException("Unknown column family '" + cfName + "'");
+        }
+        db.compactRange(cfh, start, stop);
+    }
+
     public void compactRange(ColumnFamilyHandle cfh) throws RocksDBException {
         if (closed) {
             throw new IllegalStateException("Database is closed");
@@ -405,7 +426,14 @@ public class YRDB {
         } else {
             db.compactRange();
         }
+    }
 
+    public static String cfName(byte[] cfb) {
+        return new String(cfb, StandardCharsets.UTF_8);
+    }
+
+    public static byte[] cfNameb(String cfName) {
+        return cfName.getBytes(StandardCharsets.UTF_8);
     }
 
 }

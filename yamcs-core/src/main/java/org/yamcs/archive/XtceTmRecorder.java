@@ -43,8 +43,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
  * 
  * <p>
  * It subscribes to all the streams configured with the "streams" config key or, if not present, to all TM streams
- * defined
- * in the instance (streamConfig section of the instance configuration).
+ * defined in the instance (streamConfig section of the instance configuration).
  * 
  * @author nm
  *
@@ -53,6 +52,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
     public static final String REC_STREAM_NAME = "xtce_tm_recorder_stream";
     public static final String TABLE_NAME = "tm";
     public static final String PNAME_COLUMN = "pname";
+    public static final String CF_NAME = "rt_data";
 
     public static final TupleDefinition RECORDED_TM_TUPLE_DEFINITION;
     static {
@@ -87,7 +87,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
             if (ydb.getTable(TABLE_NAME) == null) {
                 String query = "create table " + TABLE_NAME + "(" + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition1()
                         + ", primary key(gentime, seqNum)) histogram(pname) partition by value(pname) "
-                        + "table_format=compressed,column_family:rt_data";
+                        + "table_format=compressed,column_family:" + CF_NAME;
                 ydb.execute(query);
             }
             ydb.execute("create stream " + REC_STREAM_NAME + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition());
@@ -340,4 +340,5 @@ public class XtceTmRecorder extends AbstractYamcsService {
 
         return pname;
     }
+
 }

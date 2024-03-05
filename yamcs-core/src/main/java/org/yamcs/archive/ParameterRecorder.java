@@ -36,7 +36,8 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 public class ParameterRecorder extends AbstractYamcsService {
 
     public static final String TABLE_NAME = "pp";
-
+    public static final String CF_NAME = XtceTmRecorder.CF_NAME;
+    
     Stream realtimeStream;
     Stream dumpStream;
 
@@ -59,7 +60,7 @@ public class ParameterRecorder extends AbstractYamcsService {
             if (ydb.getTable(TABLE_NAME) == null) {
                 String query = "create table " + TABLE_NAME + "(" + cols + ", primary key(gentime, seqNum)) histogram("
                         + PARAMETER_COL_GROUP + ") partition by value(group) "
-                        + "table_format=compressed,column_family:rt_data";
+                        + "table_format=compressed,column_family:"+CF_NAME;
                 ydb.execute(query);
             }
 

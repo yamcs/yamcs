@@ -101,6 +101,13 @@ message BackupDatabaseRequest {
 message CompactDatabaseRequest {
   optional string tablespace = 1;
   optional string dbpath = 2;
+  // Column Family Name
+  // Starting with Yamcs 5.9.0 the following column families are used:
+  // _metadata_ - stores informationa about tables, partitions
+  // rt_data - stores the tm, pp and events tables
+  // parameter_archive - stores the parameter archive
+  // default - stores everything else: cmdhistory, alarms, completeness indices, timeline, activities, users, buckets,...
+  optional string cfname = 3;
 }
 
 message DescribeDatabaseRequest {

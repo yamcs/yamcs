@@ -17,7 +17,11 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.rocksdb.BlockBasedTableConfig;
+import org.rocksdb.BloomFilter;
 import org.rocksdb.ColumnFamilyHandle;
+import org.rocksdb.ColumnFamilyOptions;
+import org.rocksdb.IndexType;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
@@ -97,7 +101,7 @@ public class Tablespace {
     private final String name;
 
     private String customDataDir;
-    private static final String CF_METADATA = "_metadata_";
+    public static final String CF_METADATA = "_metadata_";
     private static final byte PREV_METADATA_VERSION = 1;
     private static final byte METADATA_VERSION = 2;
 
@@ -785,5 +789,20 @@ public class Tablespace {
             throw new YarchException(e);
         }
         return seqlist;
+    }
+
+    // to be used for the metadata column family
+    public static ColumnFamilyOptions getDefaultColumnFamilyOptions() {
+        ColumnFamilyOptions opts = new ColumnFamilyOptions();
+        opts.setWriteBufferSize(5l * 1024 * 1024);// 5MB
+
+        BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
+        tableFormatConfig.setBlockSize(4l * 1024);// 256KB
+        tableFormatConfig.setFormatVersion(5);
+        tableFormatConfig.setFilterPolicy(new BloomFilter());
+        tableFormatConfig.setIndexType(IndexType.kTwoLevelIndexSearch);
+        opts.setTableFormatConfig(tableFormatConfig);
+
+        return opts;
     }
 }
