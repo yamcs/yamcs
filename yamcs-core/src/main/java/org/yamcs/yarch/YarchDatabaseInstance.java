@@ -136,7 +136,7 @@ public class YarchDatabaseInstance {
                     bucket = getBucket(name);
                     if (bucket == null) {
                         log.info("Creating bucket {}", name);
-                        createBucket(name);
+                        bucket = createBucket(name);
                     }
                 }
                 if (config.containsKey("maxSize")) {
