@@ -1,6 +1,7 @@
 package org.yamcs.yarch;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import org.yamcs.logging.Log;
 import org.yamcs.yarch.rocksdb.RDBFactory;
@@ -25,6 +26,15 @@ public class BackupControl implements BackupControlMBean {
 
         BackupUtils.verifyBackupDirectory(backupDir, false);
         RDBFactory rdbFactory = tablespace.getRdbFactory();
-        rdbFactory.doBackup(backupDir);
+
+        try {
+            rdbFactory.doBackup(backupDir).get();
+            log.info("Backup finished");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return;
+        } catch (ExecutionException e) {
+            log.error("Error while creating backup", e);
+        }
     }
 }
