@@ -1,4 +1,4 @@
-Version 5.9.0 released 
+Version 5.9.0 released 5-March-2024
 - Added activities and procedures services and improved the timeline service
 - Reorganized the archive for improving performance:
    - Parameter Archive is stored on a separate column family "parameter-archive". The parameter-archive suffers frequent rebuilds and storing data in a different cf will leave other data undisturbed when the parameter archive rebuilds.
