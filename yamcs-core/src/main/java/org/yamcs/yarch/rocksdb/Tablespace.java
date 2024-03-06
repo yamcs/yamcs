@@ -638,7 +638,8 @@ public class Tablespace {
 
             TableDefinition tblDef = TableDefinitionSerializer.fromProtobuf(tr.getTableDefinition());
             tblDef.setName(tr.getTableName());
-            String cfName = DEFAULT_CF;
+
+            String cfName = tblDef.getCfName() == null ? DEFAULT_CF : tblDef.getCfName();
 
             RdbTable table = new RdbTable(yamcsInstance, this, tblDef, tr.getTbsIndex(), cfName);
             tables.put(tblDef, table);

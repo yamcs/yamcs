@@ -125,7 +125,7 @@ public class RdbConfig {
 
             defaultCfOptions.useFixedLengthPrefixExtractor(4);
 
-            // bigDbCfOptions.optimizeLevelStyleCompaction();
+            bigDbCfOptions.optimizeLevelStyleCompaction();
             bigDbCfOptions.useFixedLengthPrefixExtractor(4);
 
             BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
@@ -133,9 +133,8 @@ public class RdbConfig {
             tableFormatConfig.setFormatVersion(5);
             tableFormatConfig.setFilterPolicy(new BloomFilter());
             tableFormatConfig.setIndexType(IndexType.kTwoLevelIndexSearch);
+
             bigDbCfOptions.setTableFormatConfig(tableFormatConfig);
-            bigDbCfOptions.setWriteBufferSize(50 * 1024 * 1024);
-            bigDbCfOptions.setMaxWriteBufferNumber(2);
 
             // special configs for the parameter_archive, rt_data and metadata
             cfConfigList.add(new CfConfig(Pattern.compile(ParameterArchive.CF_NAME), bigDbCfOptions));

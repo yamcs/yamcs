@@ -53,6 +53,9 @@ class TableDefinitionSerializer {
         if (scndIdx != null) {
             infob.addSecondaryIndex(SecondaryIndex.newBuilder().addAllColumnName(scndIdx).build());
         }
+        if (def.getCfName() != null) {
+            infob.setCfName(def.getCfName());
+        }
         return infob.build();
     }
 
@@ -164,6 +167,10 @@ class TableDefinitionSerializer {
         }
         tdef.setCompressed(protodef.getCompressed());
         tdef.setStorageEngineName(protodef.getStorageEngine());
+
+        if (protodef.hasCfName()) {
+            tdef.setCfName(protodef.getCfName());
+        }
 
         return tdef;
 
