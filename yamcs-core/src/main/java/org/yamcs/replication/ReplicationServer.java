@@ -167,7 +167,8 @@ public class ReplicationServer extends AbstractYamcsService {
         return activeChannels.stream().filter(ch -> {
             for (Entry<String, ChannelHandler> entry : ch.pipeline()) {
                 if (entry.getValue() instanceof MasterChannelHandler) {
-                    return true;
+                    var handler = (MasterChannelHandler) entry.getValue();
+                    return replicationMaster.equals(handler.replMaster);
                 }
             }
             return false;
@@ -178,7 +179,8 @@ public class ReplicationServer extends AbstractYamcsService {
         return activeChannels.stream().filter(ch -> {
             for (Entry<String, ChannelHandler> entry : ch.pipeline()) {
                 if (entry.getValue() instanceof SlaveChannelHandler) {
-                    return true;
+                    var handler = (SlaveChannelHandler) entry.getValue();
+                    return replicationSlave.equals(handler.replSlave);
                 }
             }
             return false;
