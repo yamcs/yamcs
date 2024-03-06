@@ -1,8 +1,6 @@
 package org.yamcs.tctm.pus.services.tm.six;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
@@ -18,17 +16,34 @@ public class ServiceSix implements PusService {
     String yamcsInstance;
     YConfiguration config;
 
+    protected static int DEFAULT_MEMORY_ID_SIZE = 1;
+    protected static int DEFAULT_BASE_ID_SIZE = 1;
+    protected static int DEFAULT_NFIELDS_SIZE = 1;
+    protected static int DEFAULT_OFFSET_SIZE = 1;
+    protected static int DEFAULT_LENGTH_SIZE = 1;
+
+    protected static int memoryIdSize;
+    protected static int baseIdSize;
+    protected static int nfieldsSize;
+    protected static int offsetSize;
+    protected static int lengthSize;
+
+
     public ServiceSix(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
         this.config = config;
+
+        memoryIdSize = config.getInt("memoryIdSize", DEFAULT_MEMORY_ID_SIZE);
+        baseIdSize = config.getInt("baseIdSize", DEFAULT_BASE_ID_SIZE);
+        nfieldsSize = config.getInt("nfieldsSize", DEFAULT_NFIELDS_SIZE);
+        offsetSize = config.getInt("offsetSize", DEFAULT_OFFSET_SIZE);
+        lengthSize = config.getInt("lengthSize", DEFAULT_LENGTH_SIZE);
 
         initializeSubServices();
     }
 
     public void initializeSubServices() {
         subServices.put(4, new SubServiceFour(yamcsInstance, config.getConfigOrEmpty("four")));
-        subServices.put(8, new SubServiceEight(yamcsInstance, config.getConfigOrEmpty("eight")));
-        subServices.put(18, new SubServiceEighteen(yamcsInstance, config.getConfigOrEmpty("eighteen")));
     }
 
     @Override
@@ -40,5 +55,17 @@ public class ServiceSix implements PusService {
     public PreparedCommand addPusModifiers(PreparedCommand telecommand) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'addPusModifiers'");
+    }
+
+    public static HashMap<Integer, byte[]> keySort(HashMap<Integer, byte[]> map) {
+        List<Map.Entry<Integer, byte[]>> entryList = new ArrayList<>(map.entrySet());
+        entryList.sort(Map.Entry.comparingByKey());
+
+        LinkedHashMap<Integer, byte[]> result = new LinkedHashMap<>();
+        for (Map.Entry<Integer, byte[]> entry : entryList) {
+            result.put(entry.getKey(), entry.getValue());
+        }
+        
+        return result;
     }
 }

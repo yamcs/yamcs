@@ -45,7 +45,7 @@ public class PusTcCcsdsPacket extends CcsdsPacket {
         return ByteArrayUtils.decodeUnsignedShort(b, sourceIDInsertionIndex);
     }
 
-    /*
+    /**
      * NOTE: THIS IS ONLY AFTER THE SECONDAY HEADER HAS BEEN CORRECTLY SET,
      * OTHERWISE DO NOT USE IT
      */
