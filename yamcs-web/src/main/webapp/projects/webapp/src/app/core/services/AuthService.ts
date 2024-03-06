@@ -244,7 +244,7 @@ export class AuthService implements OnDestroy {
     cookieExpiration.setTime(cookieExpiration.getTime() + expireMillis);
     let cookie = `access_token=${encodeURIComponent(tokenResponse.access_token)}`;
     cookie += `; expires=${cookieExpiration.toUTCString()}`;
-    cookie += '; path=/';
+    cookie += `; path=${this.getCookiePath()}`;
     const cookieConfig = this.configService.getConfig().cookie;
     cookie += `; SameSite=${cookieConfig.sameSite}`;
     if (cookieConfig.secure) {
@@ -255,7 +255,7 @@ export class AuthService implements OnDestroy {
     // Store refresh token in a Session Cookie (bound to browser, not tab)
     if (tokenResponse.refresh_token) {
       cookie = `refresh_token=${encodeURIComponent(tokenResponse.refresh_token)}`;
-      cookie += '; path=/';
+      cookie += `; path=${this.getCookiePath()}`;
       cookie += `; SameSite=${cookieConfig.sameSite}`;
       if (cookieConfig.secure) {
         cookie += '; Secure';
@@ -333,7 +333,19 @@ export class AuthService implements OnDestroy {
   }
 
   private clearCookie(name: string) {
-    document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+    const path = this.getCookiePath();
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}`;
+    // Remove also from root path, to avoid refresh loop when removing a previously
+    // used context root.
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+  }
+
+  private getCookiePath() {
+    if (this.baseHref === '/') {
+      return '/';
+    } else if (this.baseHref.endsWith('/')) {
+      return this.baseHref.substring(0, this.baseHref.length - 1);
+    }
   }
 
   ngOnDestroy() {
