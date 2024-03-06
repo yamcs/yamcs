@@ -1,3 +1,7 @@
+Version 5.9.1 released 6-March-2024
+- Fixed a bug whereas Yamcs won't remember after the first restart that it stored the tm,pp and events table in a different RocksDB column family (option introduced in 5.9.0)
+
+
 Version 5.9.0 released 5-March-2024
 - Added activities and procedures services and improved the timeline service
 - Reorganized the archive for improving performance:
