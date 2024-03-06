@@ -33,6 +33,7 @@ public class RdbConfig {
     public static final String KEY_CF_CONFIG = "columnFamilyConfig";
     public static final String KEY_OPTIONS = "options";
     public static final String KEY_TABLESPACE_NAME_PATTERN = "tablespaceNamePattern";
+    public static final String KEY_CF_PATTERN = "columnFamilyPattern";
     public static final String KEY_TF_CONFIG = "tableFormatConfig";
 
     public static final int DEFAULT_MAX_OPEN_FILES = 1000;
@@ -198,7 +199,7 @@ public class RdbConfig {
         }
 
         public CfConfig(YConfiguration cfConfig) {
-            String s = cfConfig.getString(KEY_TABLESPACE_NAME_PATTERN);
+            String s = cfConfig.getString(KEY_CF_PATTERN);
             try {
                 cfNamePattern = Pattern.compile(s);
             } catch (PatternSyntaxException e) {
