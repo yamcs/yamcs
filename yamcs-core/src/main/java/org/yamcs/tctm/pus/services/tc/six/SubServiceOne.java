@@ -40,22 +40,27 @@ public class SubServiceOne implements PusSubService {
         List<ServiceSix.Pair<Integer, Integer>> baseIdMap = ServiceSix.memoryIds.get(new ServiceSix.Pair<>(apid, memoryId)).get(baseId);
         ArrayList<byte[]> loadData = new ArrayList<>();
 
-        if (nFields != baseIdMap.size())
-            throw new CommandEncodingException("Number of the offsets provided in the config does not match the command populated in the MDb");
+        for (int index = 0; index <= nFields; index++) {
+            int argOffsetValue = (int) ByteArrayUtils.decodeCustomInteger(cmdLoadData, 0, ServiceSix.offsetArgumentSize);
 
-        for(ServiceSix.Pair<Integer, Integer> offsetMap: baseIdMap) {
-            int offsetValue = offsetMap.getFirst();
-            int dataLength = offsetMap.getSecond();
+            int offsetValue, dataLength;
+            for (ServiceSix.Pair<Integer, Integer> offsetMap: baseIdMap) {
+                offsetValue = offsetMap.getFirst();
+                dataLength = offsetMap.getSecond();
 
-            ByteBuffer bb = ByteBuffer.wrap(new byte[ServiceSix.offsetSize + ServiceSix.lengthSize + dataLength]);
-            bb.put(ByteArrayUtils.encodeCustomInteger(offsetValue, ServiceSix.offsetSize));
-            bb.put(ByteArrayUtils.encodeCustomInteger(dataLength, ServiceSix.lengthSize));
-            bb.put(Arrays.copyOfRange(cmdLoadData, 0, dataLength));
+                if (offsetValue == argOffsetValue) {
+                    ByteBuffer bb = ByteBuffer.wrap(new byte[ServiceSix.offsetSize + ServiceSix.lengthSize + dataLength]);
+                    bb.put(ByteArrayUtils.encodeCustomInteger(offsetValue, ServiceSix.offsetSize));
+                    bb.put(ByteArrayUtils.encodeCustomInteger(dataLength, ServiceSix.lengthSize));
+                    bb.put(Arrays.copyOfRange(cmdLoadData, ServiceSix.offsetArgumentSize, dataLength));
 
-            loadData.add(bb.array());
-            cmdLoadData = Arrays.copyOfRange(cmdLoadData, dataLength, cmdLoadData.length);
+                    loadData.add(bb.array());
+                    cmdLoadData = Arrays.copyOfRange(cmdLoadData, ServiceSix.offsetArgumentSize + dataLength, cmdLoadData.length);
+                    break;
+                }
+            }
         }
-
+        
         // Construct new TC
         int loadDataSize = loadData.stream()
                             .mapToInt(arr -> arr.length)

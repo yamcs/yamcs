@@ -30,6 +30,7 @@ public class ServiceSix implements PusService {
     protected static int nfieldsSize;
     protected static int offsetSize;
     protected static int lengthSize;
+    protected static int offsetArgumentSize = 1;
 
     public ServiceSix(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;

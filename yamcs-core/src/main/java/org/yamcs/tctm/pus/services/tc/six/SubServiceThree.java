@@ -34,22 +34,29 @@ public class SubServiceThree implements PusSubService {
         int memoryId = (int) ByteArrayUtils.decodeCustomInteger(dataField, 0, ServiceSix.memoryIdSize);
         int baseId = (int) ByteArrayUtils.decodeCustomInteger(dataField, ServiceSix.memoryIdSize, ServiceSix.baseIdSize);
         int nFields = (int) ByteArrayUtils.decodeCustomInteger(dataField, ServiceSix.memoryIdSize + ServiceSix.baseIdSize, ServiceSix.nfieldsSize);
-
+        byte[] argOffsetValues = Arrays.copyOfRange(dataField, ServiceSix.memoryIdSize + ServiceSix.baseIdSize + ServiceSix.nfieldsSize, dataField.length);
+        
         List<ServiceSix.Pair<Integer, Integer>> baseIdMap = ServiceSix.memoryIds.get(new ServiceSix.Pair<>(apid, memoryId)).get(baseId);
         ArrayList<byte[]> loadData = new ArrayList<>();
 
-        if (nFields != baseIdMap.size())
-            throw new CommandEncodingException("Number of the offsets provided in the config does not match the command populated in the MDb");
+        while(nFields > 0) {
+            int argOffsetValue = (int) ByteArrayUtils.decodeCustomInteger(argOffsetValues, 0, ServiceSix.offsetArgumentSize);
+            
+            for(ServiceSix.Pair<Integer, Integer> offsetMap: baseIdMap) {
+                int offsetValue = offsetMap.getFirst();
+                int dataLength = offsetMap.getSecond();
 
-        for(ServiceSix.Pair<Integer, Integer> offsetMap: baseIdMap) {
-            int offsetValue = offsetMap.getFirst();
-            int dataLength = offsetMap.getSecond();
+                if (argOffsetValue == offsetValue) {
+                    ByteBuffer bb = ByteBuffer.wrap(new byte[ServiceSix.offsetSize + ServiceSix.lengthSize]);
+                    bb.put(ByteArrayUtils.encodeCustomInteger(offsetValue, ServiceSix.offsetSize));
+                    bb.put(ByteArrayUtils.encodeCustomInteger(dataLength, ServiceSix.lengthSize));
 
-            ByteBuffer bb = ByteBuffer.wrap(new byte[ServiceSix.offsetSize + ServiceSix.lengthSize]);
-            bb.put(ByteArrayUtils.encodeCustomInteger(offsetValue, ServiceSix.offsetSize));
-            bb.put(ByteArrayUtils.encodeCustomInteger(dataLength, ServiceSix.lengthSize));
-
-            loadData.add(bb.array());
+                    loadData.add(bb.array());
+                    break;
+                }
+            }
+            argOffsetValues = Arrays.copyOfRange(argOffsetValues, ServiceSix.offsetArgumentSize, argOffsetValues.length);
+            nFields--;
         }
 
         // Construct new TC
