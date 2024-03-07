@@ -13,8 +13,10 @@ import org.yamcs.utils.ByteArrayUtils;
  */
 public class CspPacketPreprocessor extends AbstractPacketPreprocessor {
 
-    // Unless -1, filter incoming packets on their CSP destination ID
-    private int cspId = -1;
+    private static final String CONFIG_CSP_ID_FILTER = "cspId";
+
+    // Unless empty, filter incoming packets on their CSP destination ID
+    private int[] cspIdFilter;
     private AtomicInteger seqCount = new AtomicInteger();
 
     // Arbitrary max sequence count, only to distinguish archived packets
@@ -26,7 +28,17 @@ public class CspPacketPreprocessor extends AbstractPacketPreprocessor {
 
     public CspPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         super(yamcsInstance, config);
-        cspId = config.getInt("cspId", -1);
+        if (config.containsKey(CONFIG_CSP_ID_FILTER)) {
+            if (config.isList(CONFIG_CSP_ID_FILTER)) {
+                cspIdFilter = config.getList(CONFIG_CSP_ID_FILTER).stream()
+                        .mapToInt(x -> (int) x)
+                        .toArray();
+            } else {
+                cspIdFilter = new int[] { config.getInt(CONFIG_CSP_ID_FILTER) };
+            }
+        } else {
+            cspIdFilter = new int[0]; // Accept all
+        }
     }
 
     @Override
@@ -39,8 +51,18 @@ public class CspPacketPreprocessor extends AbstractPacketPreprocessor {
             return null; // Drop packet
         }
 
-        if (cspId != -1 && cspId != CspPacket.getDestination(bytes)) {
-            return null; // Drop packet, it's not for us
+        if (cspIdFilter.length > 0) {
+            var dst = CspPacket.getDestination(bytes);
+            var match = false;
+            for (int i = 0; i < cspIdFilter.length; i++) {
+                if (dst == cspIdFilter[i]) {
+                    match = true;
+                    break;
+                }
+            }
+            if (!match) {
+                return null; // Drop packet, it's not for us
+            }
         }
 
         var checksumIndicator = CspPacket.getCrcFlag(bytes);
