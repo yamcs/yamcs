@@ -59,12 +59,18 @@ public class PusCommandPostprocessor implements CommandPostprocessor {
     @Override
     public byte[] process(PreparedCommand pc) {
         long timetag = pc.getTimestampAttribute(CommandHistoryPublisher.Timetag_KEY);
-        if (!PusTcManager.timetagSanityCheck(timetag)) {
+        
+        boolean timetagSanity = PusTcManager.timetagSanityCheck(timetag);
+        if (!timetagSanity) {
             failedCommand(pc.getCommandId(), "Failed due to complications from an incorrect Timetag value provided. Please check the logs for more details");
             return null;
         }
 
-        if (PusTcManager.timetagSanityCheck(timetag) && timetag != 0) {
+        // If timetag != 0, then it is an actual timetag command
+        if (timetag != 0) {
+            if (PusTcManager.timetagResolution == PusTcManager.TimetagResolution.SECOND) {
+                timetag *= 1000;
+            }
             LocalDateTime localTimetag = LocalDateTime.ofInstant(
                 Instant.ofEpochMilli(timetag),
                 ZoneId.of("GMT")

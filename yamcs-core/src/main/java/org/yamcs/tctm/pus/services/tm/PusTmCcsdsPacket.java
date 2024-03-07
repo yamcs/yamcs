@@ -74,6 +74,7 @@ public class PusTmCcsdsPacket extends CcsdsPacket {
         byte[] secondaryHeader = getSecondaryHeader();
         byte[] pusHeader = Arrays.copyOfRange(secondaryHeader, 0, PusTmManager.PUS_HEADER_LENGTH);
 
-        return ByteArrayUtils.decodeUnsignedShort(pusHeader, destinationIDIndex);
+        int pusHeaderDestinationIndex = 5;
+        return ByteArrayUtils.decodeUnsignedShort(pusHeader, pusHeaderDestinationIndex);
     }
 }

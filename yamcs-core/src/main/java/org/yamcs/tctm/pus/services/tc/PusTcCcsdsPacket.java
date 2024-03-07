@@ -45,7 +45,7 @@ public class PusTcCcsdsPacket extends CcsdsPacket {
         return ByteArrayUtils.decodeUnsignedShort(b, sourceIDInsertionIndex);
     }
 
-    /*
+    /**
      * NOTE: THIS IS ONLY AFTER THE SECONDAY HEADER HAS BEEN CORRECTLY SET,
      * OTHERWISE DO NOT USE IT
      */
@@ -78,10 +78,17 @@ public class PusTcCcsdsPacket extends CcsdsPacket {
         pc.setBinary(newTelecommandBinary);
     }
 
+    /**
+     *
+     * @param pc
+     * As long as the timetag argument in the MDb as epoch:UNIX and a scaling factor of 0:1 (i.e, the timetag is a long number in seconds)
+     * the value extracted from the telecommandPayload will be in seconds
+     *
+     * Also, our mission only supports second resolution when it comes to timetagged commands
+     */
     private static void manipulateTimetag(PreparedCommand pc) {
         byte[] telecommandPayload = pc.getBinary();
-
-        long timetag = ByteArrayUtils.decodeLong(telecommandPayload, PusTcManager.DEFAULT_TIMETAG_INDEX);        // FIXME: Check to make sure if the timetag is compiled to seconds / milliseconds within Yamcs
+        long timetag = ByteArrayUtils.decodeLong(telecommandPayload, PusTcManager.DEFAULT_TIMETAG_INDEX);
 
         int newTelecommandPayloadLength = telecommandPayload.length - PusTcManager.timetagLength;
         byte[] newTelecommandPayload = new byte[newTelecommandPayloadLength];
