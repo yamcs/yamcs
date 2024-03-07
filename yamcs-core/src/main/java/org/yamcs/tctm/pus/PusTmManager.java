@@ -17,6 +17,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.tm.fifteen.ServiceFifteen;
 import org.yamcs.tctm.pus.services.tm.fourteen.ServiceFourteen;
+import org.yamcs.tctm.pus.services.tm.six.ServiceSix;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -125,6 +126,7 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
         pusServices.put(2, new ServiceTwo(yamcsInstance, serviceConfig.getConfigOrEmpty("two")));
         pusServices.put(3, new ServiceThree(yamcsInstance, serviceConfig.getConfigOrEmpty("three")));
         pusServices.put(5, new ServiceFive(yamcsInstance, serviceConfig.getConfigOrEmpty("five")));
+        pusServices.put(6, new ServiceSix(yamcsInstance, serviceConfig.getConfigOrEmpty("six")));
         pusServices.put(9, new ServiceNine(yamcsInstance, serviceConfig.getConfigOrEmpty("nine")));
         pusServices.put(14, new ServiceFourteen(yamcsInstance, serviceConfig.getConfigOrEmpty("fourteen")));
         pusServices.put(15, new ServiceFifteen(yamcsInstance, serviceConfig.getConfigOrEmpty("fifteen")));
