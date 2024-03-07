@@ -48,6 +48,10 @@ import org.yamcs.tctm.pus.services.tc.twenty.ServiceTwenty;
 
 
 public class PusTcManager extends AbstractYamcsService implements StreamSubscriber  {
+    enum TimetagResolution {
+        SECOND, MILLISECOND
+    }
+
     Log log = new Log(PusTcManager.class);
     String yamcsInstance;
 
@@ -72,6 +76,7 @@ public class PusTcManager extends AbstractYamcsService implements StreamSubscrib
     PusSink tcSink;
     XtceDb xtcedb;
     TimeService timeService;
+    static TimetagResolution timetagResolution;
 
     protected CcsdsSeqCountFiller seqFiller = new CcsdsSeqCountFiller();
     protected ErrorDetectionWordCalculator errorDetectionCalculator;
@@ -93,6 +98,7 @@ public class PusTcManager extends AbstractYamcsService implements StreamSubscrib
         spec.addOption("errorDetection", OptionType.MAP).withSpec(crcType);
         spec.addOption("timetagLength", OptionType.INTEGER);
         spec.addOption("timetagBuffer", OptionType.INTEGER);
+        spec.addOption("timetagResolution", OptionType.STRING);
         spec.addOption("services", OptionType.MAP).withSpec(Spec.ANY);
         // FIXME:
         // Add pus spec options
@@ -107,6 +113,7 @@ public class PusTcManager extends AbstractYamcsService implements StreamSubscrib
         secondaryHeaderLength = config.getInt("secondaryHeaderLength", DEFAULT_SECONDARY_HEADER_LENGTH);
         sourceId = config.getInt("sourceId");
         timetagBuffer = config.getInt("timetagBuffer", DEFAULT_TIMETAG_BUFFER);
+        timetagResolution = config.getEnum("timetagResolution", TimetagResolution.class, TimetagResolution.SECOND);
         timetagLength = config.getInt("timetagLength", DEFAULT_TIMETAG_LENGTH);
         secondaryHeaderSpareLength = secondaryHeaderLength - DEFAULT_PUS_HEADER_LENGTH;
 
@@ -199,18 +206,18 @@ public class PusTcManager extends AbstractYamcsService implements StreamSubscrib
 
         if (timetag < 0)
             return false;
-        
-        if (Instant.now()
-            .plusSeconds(timetagBuffer)
-            .atZone(ZoneId.of("GMT"))
-            .isAfter(
-                Instant.ofEpochMilli(timetag)
-                .atZone(ZoneId.of("GMT"))
-            )
-        )
-            return false;
 
-        return true;
+        // If timetagResolution is in seconds, convert to milliseconds
+        if (timetagResolution == TimetagResolution.SECOND)
+            timetag *= 1000;
+
+        return !Instant.now()
+                .plusSeconds(timetagBuffer)
+                .atZone(ZoneId.of("GMT"))
+                .isAfter(
+                    Instant.ofEpochMilli(timetag)
+                            .atZone(ZoneId.of("GMT"))
+                );
     }
 
     public void addPusModifiers(PreparedCommand telecommand, Stream stream) {
