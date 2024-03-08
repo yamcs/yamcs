@@ -30,6 +30,7 @@ export class TransferFileDialog implements OnDestroy {
   breadcrumb$ = new BehaviorSubject<BreadcrumbItem[]>([]);
   remoteBreadcrumb$ = new BehaviorSubject<BreadcrumbItem[]>([]);
   lastFileListTime$ = new BehaviorSubject<string>("");
+  lastFileListState$ = new BehaviorSubject<string | undefined>(undefined);
 
   private fileListSubscription: RemoteFileListSubscription;
 
@@ -91,6 +92,7 @@ export class TransferFileDialog implements OnDestroy {
         if (fileList.remotePath == currentFolder) {
           this.remoteSelector.setFolderContent(currentFolder, fileList);
           this.lastFileListTime$.next(fileList.listTime);
+          this.lastFileListState$.next(fileList.state);
         }
       }
     });
@@ -315,6 +317,7 @@ export class TransferFileDialog implements OnDestroy {
         this.remoteSelector.setFolderContent(prefix, fileList);
         this.setPreferenceValue("remoteDirectory", prefix);
         this.lastFileListTime$.next(fileList.listTime);
+        this.lastFileListState$.next(fileList.state);
       });
     }
   }

@@ -114,6 +114,7 @@
         <a class="lastFileListTime mat-button mat-primary" title="Refresh file list" (click)="requestFileList()"
            *ngIf="service.capabilities.fileList">
           <mat-icon>refresh</mat-icon> {{ lastFileListTime$ | async | datetime }}
+          {{ (lastFileListState$ | async) ? "(" + (lastFileListState$ | async) + ")" : ""}}
           <!-- TODO: throws a RangeError for some reason -->
         </a>
       </div>

@@ -376,6 +376,7 @@ message ListFilesResponse {
   optional string destination = 2;
   optional string remotePath = 3;
   optional google.protobuf.Timestamp listTime = 4;
+  optional string state = 5;
 }
 
 /*

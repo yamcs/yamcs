@@ -90,6 +90,7 @@ export interface ListFilesResponse {
   destination: string;
   remotePath: string;
   listTime: string;
+  state?: string;
 }
 
 export interface ServicesPage {
