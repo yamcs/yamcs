@@ -72,13 +72,17 @@
         </ng-container>
 
         <ya-dots *ngIf="dataSource.loading$ | async" />
+
+        <div style="flex: 1 1 auto"></div>
+
+        <button class="ya-button primary" style="margin-right: 0" (click)="exportParameterData()">
+          <mat-icon>download</mat-icon>
+          Export CSV
+        </button>
       </div>
     </form>
 
     <div class="table-status" [ngSwitch]="appliedInterval">
-      <div class="message-zone">
-        <ya-text-action (click)="exportParameterData()">Download Data</ya-text-action>
-      </div>
       <span *ngSwitchCase="'PT1H'">
         Showing data from <b>the last hour</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
       </span>

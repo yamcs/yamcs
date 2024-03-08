@@ -26,7 +26,7 @@
       </button>
       <ng-container *ngIf="showSchedule()">
         &nbsp;
-        <ya-icon-action [matMenuTriggerFor]="sendMenu"
+        <ya-icon-action [matMenuTriggerFor]="(!form.valid)?null:sendMenu"
                         icon="arrow_drop_down"
                         [padding]="false"
                         [disabled]="!form.valid"

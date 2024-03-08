@@ -72,13 +72,17 @@
           Listening for events
           <ya-dots fontSize="16px" color="#1b61b9" />
         </div>
+
+        <div style="flex: 1 1 auto"></div>
+
+        <button class="ya-button primary" style="margin-right: 0" (click)="exportEvents()">
+          <mat-icon>download</mat-icon>
+          Export CSV
+        </button>
       </div>
     </form>
 
     <div class="table-status" [ngSwitch]="appliedInterval">
-      <div class="message-zone">
-        <ya-text-action (click)="exportEvents()">Download events</ya-text-action>
-      </div>
       <span *ngSwitchCase="'PT1H'">
         Showing events from <b>the last hour</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
       </span>
