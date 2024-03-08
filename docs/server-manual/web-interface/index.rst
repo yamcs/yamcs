@@ -13,10 +13,14 @@ Most pages (the homepage excluding) show data specific to a particular Yamcs ins
 
     configuration
     links
+    algorithms
     telemetry
     events
     alarms
     commanding
+    procedures
+    activities
+    timeline
     mdb
     archive
     admin/index

@@ -23,7 +23,7 @@ export class CreateParameterListPage {
     title: Title,
     private router: Router,
     private route: ActivatedRoute,
-    private yamcs: YamcsService,
+    readonly yamcs: YamcsService,
     private dialog: MatDialog,
     private messageService: MessageService,
     readonly location: Location,

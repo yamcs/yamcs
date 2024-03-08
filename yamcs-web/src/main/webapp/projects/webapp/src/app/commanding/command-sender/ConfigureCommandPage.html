@@ -102,7 +102,7 @@
       </button>
       <ng-container *ngIf="showSchedule()">
         &nbsp;
-        <ya-icon-action [matMenuTriggerFor]="sendMenu"
+        <ya-icon-action [matMenuTriggerFor]="((config.twoStageCommanding && !armControl.value) || !(cleared$ | async) || !commandForm.form.valid)?null:sendMenu"
                         icon="arrow_drop_down"
                         [padding]="false"
                         [disabled]="(config.twoStageCommanding && !armControl.value) || !(cleared$ | async) || !commandForm.form.valid"

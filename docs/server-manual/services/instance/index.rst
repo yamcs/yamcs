@@ -10,12 +10,14 @@ Instance Services
     event-recorder
     ccsds-tm-index
     parameter-archive-service
+    parameter-list-service
     parameter-recorder
     processor-creator-service
     replay-server
     system-parameters-service
     xtce-tm-recorder
     time-correlation
+    timeline-service
     replication-master
     replication-slave
     cfdp
