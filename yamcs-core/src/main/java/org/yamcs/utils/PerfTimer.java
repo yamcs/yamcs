@@ -10,9 +10,12 @@ package org.yamcs.utils;
 public class PerfTimer {
     final int numOps;
     final String name;
-    long duration;
     int count;
     long before;
+    long min = Long.MAX_VALUE;;
+    long max = Long.MIN_VALUE;;
+    long sum;
+    double sum2;
     
     /**
      * name will be printed in the output
@@ -29,12 +32,37 @@ public class PerfTimer {
     }
 
     public void after() {
-        duration += (System.nanoTime() - before);
-        count+=1;
-        if (count == numOps) {
-            System.out.println(name + ": " + duration / numOps + " nanosec/op");
-            count = 0;
-            duration = 0;
+        long elapsed = System.nanoTime() - before;
+        sum += elapsed;
+        sum2 += elapsed * elapsed;
+
+        if (elapsed < min) {
+            min = elapsed;
         }
+        if (elapsed > max) {
+            max = elapsed;
+        }
+        count += 1;
+        if (count == numOps) {
+            computeAndPrintStats();
+            resetStats();
+        }
+    }
+
+    private void computeAndPrintStats() {
+        long avg = sum / numOps;
+        double variance = (sum2 / numOps) - (avg * avg);
+        long mdev = (long) Math.sqrt(variance);
+
+        System.out.println(String.format("%-30s: min/avg/max/mdev: %d/%d/%d/%d ns/op",
+                name, min, avg, max, mdev));
+    }
+
+    private void resetStats() {
+        min = Long.MAX_VALUE;
+        max = Long.MIN_VALUE;
+        sum = 0;
+        sum2 = 0;
+        count = 0;
     }
 }
