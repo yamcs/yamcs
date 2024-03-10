@@ -2,22 +2,15 @@
   <app-instance-toolbar>
     Activities
     &nbsp;&nbsp;&nbsp;
+
     <button mat-button
             color="primary"
             *ngIf="mayControlActivities()"
-            (click)="openStartManualActivityDialog()">
-      <mat-icon>new_label</mat-icon>
-      New activity
-    </button>
-
-    <a mat-button
-       color="primary"
-       *ngIf="mayControlActivities()"
-       [disabled]="!isGroupCancelEnabled()"
-       (click)="cancelSelectedActivities()">
+            [disabled]="!isGroupCancelEnabled()"
+            (click)="cancelSelectedActivities()">
       <mat-icon>cancel</mat-icon>
       Cancel
-    </a>
+    </button>
   </app-instance-toolbar>
 
   <div class="panel-content">
@@ -120,7 +113,7 @@
       <ng-container cdkColumnDef="type">
         <th mat-header-cell *cdkHeaderCellDef>Type</th>
         <td mat-cell *cdkCellDef="let item">
-          {{ item.type | titlecase }}
+          {{ item.type }}
         </td>
       </ng-container>
 

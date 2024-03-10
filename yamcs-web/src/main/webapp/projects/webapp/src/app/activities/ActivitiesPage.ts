@@ -9,7 +9,6 @@ import { BehaviorSubject, debounceTime } from 'rxjs';
 import { AuthService } from '../core/services/AuthService';
 import { ActivitiesDataSource } from './ActivitiesDataSource';
 import { SetFailedDialog } from './SetFailedDialog';
-import { StartManualActivityDialog } from './StartManualActivityDialog';
 
 const defaultInterval = 'NO_LIMIT';
 
@@ -292,8 +291,8 @@ export class ActivitiesPage {
 
   isGroupCancelEnabled() {
     // Allow if at least one of the selected activities is cancellable
-    for (const instance of this.selection.selected) {
-      if (!instance.stop) {
+    for (const activity of this.selection.selected) {
+      if (!activity.stop) {
         return true;
       }
     }
@@ -301,21 +300,15 @@ export class ActivitiesPage {
   }
 
   cancelSelectedActivities() {
-    for (const instance of this.selection.selected) {
-      if (!instance.stop) { }
-      this.cancelActivity(instance);
+    for (const activity of this.selection.selected) {
+      if (!activity.stop) { }
+      this.cancelActivity(activity);
     }
   }
 
   cancelActivity(activity: Activity) {
     this.yamcs.yamcsClient.cancelActivity(this.yamcs.instance!, activity.id)
       .catch(err => this.messageService.showError(err));
-  }
-
-  openStartManualActivityDialog() {
-    this.dialog.open(StartManualActivityDialog, {
-      width: '600px',
-    });
   }
 
   setSuccessful(activity: Activity) {

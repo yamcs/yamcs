@@ -14,5 +14,5 @@ export interface RequestOption {
 export interface Row {
   expanded: boolean;
   item: AuditRecord;
-  requestOptions: Request[];
+  requestOptions: RequestOption[];
 }

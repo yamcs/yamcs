@@ -17,6 +17,7 @@ import org.yamcs.activities.ActivityLogListener;
 import org.yamcs.activities.ActivityService;
 import org.yamcs.activities.ScriptExecutor;
 import org.yamcs.api.Observer;
+import org.yamcs.client.utils.WellKnownTypes;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.NotFoundException;
@@ -50,6 +51,7 @@ import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 
 import com.google.gson.Gson;
+import com.google.protobuf.Struct;
 
 public class ActivitiesApi extends AbstractActivitiesApi<Context> {
 
@@ -297,6 +299,13 @@ public class ActivitiesApi extends AbstractActivitiesApi<Context> {
                 .setId(activity.getId().toString())
                 .setType(activity.getType())
                 .setStartedBy(activity.getStartedBy());
+
+        var args = activity.getArgs();
+        if (args != null) {
+            activityb.setArgs(WellKnownTypes.toStruct(args));
+        } else {
+            activityb.setArgs(Struct.getDefaultInstance());
+        }
 
         activityb.setStatus(org.yamcs.protobuf.activities.ActivityStatus.valueOf(
                 activity.getStatus().name()));

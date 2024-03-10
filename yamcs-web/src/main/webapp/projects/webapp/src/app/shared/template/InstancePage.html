@@ -115,11 +115,6 @@
           </ya-sidebar-nav-item>
         </ya-sidebar-nav-group>
 
-        <ng-container
-                      *ngIf="showActivitiesItem() && ((connectionInfo$ | async)?.instance?.capabilities | arrayContains:'activities')">
-          <app-activities-label />
-        </ng-container>
-
         <ng-container *ngIf="((connectionInfo$ | async)?.instance?.capabilities | arrayContains:'timeline')">
           <ya-sidebar-nav-group *ngIf=" timelineItems.length"
                                 label="Timeline" icon="view_timeline"
@@ -134,6 +129,11 @@
               {{ item.label }}
             </ya-sidebar-nav-item>
           </ya-sidebar-nav-group>
+        </ng-container>
+
+        <ng-container
+                      *ngIf="showActivitiesItem() && ((connectionInfo$ | async)?.instance?.capabilities | arrayContains:'activities')">
+          <app-activities-label />
         </ng-container>
 
         <ya-sidebar-nav-group *ngIf="mdbItems.length"
