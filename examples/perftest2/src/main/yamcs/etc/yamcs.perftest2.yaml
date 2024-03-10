@@ -20,12 +20,12 @@ services:
   - class: org.yamcs.archive.CommandHistoryRecorder
   - class: org.yamcs.parameterarchive.ParameterArchive
     args:
-      maxSegmentSize: 1000
+      maxSegmentSize: 200
       realtimeFiller: 
         enabled: false
       backFiller:
         enabled: true
-        streamUpdateFillFrequency: 3600
+        streamUpdateFillFrequency: 1800
         
   - class: org.yamcs.simulator.SimulatorCommander
     args:

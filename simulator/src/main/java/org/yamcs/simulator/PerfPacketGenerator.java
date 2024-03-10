@@ -20,6 +20,8 @@ public class PerfPacketGenerator extends AbstractExecutionThreadService {
     int packetSize;
     long interval;
     double changePercent;
+
+    volatile boolean paused;
     final ColSimulator simulator;
     private static final Logger log = LoggerFactory.getLogger(PerfPacketGenerator.class);
     final public static int PERF_TEST_PACKET_ID = 1000; // the packet id of the packets used for performance testing
@@ -51,22 +53,35 @@ public class PerfPacketGenerator extends AbstractExecutionThreadService {
         if (changeChunk < 4) {
             changeChunk = 4;
         }
-        
-        while (isRunning()) {
-            for (int i = 0; i < numPackets; i++) {
-                ColumbusCcsdsPacket packet = new ColumbusCcsdsPacket(ColSimulator.PERF_TEST_APID, packetSize,
-                        PERF_TEST_PACKET_ID + i);
-                ByteBuffer bb = packet.getUserDataBuffer();
-                bb.put(pktData[i]);
-                for (int j = 0; j < packetSize - changeChunk; j += changeChunk) {
-                    int offset = j + (changeChunk > 4 ? r.nextInt(changeChunk - 4) : 0);
-                    bb.putInt(offset, r.nextInt());
-                }
-                packet.setTime(TimeEncoding.getWallclockTime());
 
-                simulator.transmitRealtimeTM(packet);
+        while (isRunning()) {
+            if (!paused) {
+                for (int i = 0; i < numPackets; i++) {
+                    ColumbusCcsdsPacket packet = new ColumbusCcsdsPacket(ColSimulator.PERF_TEST_APID, packetSize,
+                            PERF_TEST_PACKET_ID + i);
+                    ByteBuffer bb = packet.getUserDataBuffer();
+                    bb.put(pktData[i]);
+                    for (int j = 0; j < packetSize - changeChunk; j += changeChunk) {
+                        int offset = j + (changeChunk > 4 ? r.nextInt(changeChunk - 4) : 0);
+                        bb.putInt(offset, r.nextInt());
+                    }
+                    packet.setTime(TimeEncoding.getWallclockTime());
+
+                    simulator.transmitRealtimeTM(packet);
+                }
+                Thread.sleep(interval);
+            } else {
+                Thread.sleep(1000);
             }
-            Thread.sleep(interval);
         }
     }
+
+    public void pause() {
+        this.paused = true;
+    }
+
+    public void resume() {
+        this.paused = false;
+    }
+
 }

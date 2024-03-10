@@ -251,6 +251,7 @@ public class SimulatorCommander extends ProcessRunner {
             if (runtimeOptions.perfNp > 0) {
                 PerfPacketGenerator ppg = new PerfPacketGenerator(sim, runtimeOptions.perfNp, runtimeOptions.perfPs,
                         runtimeOptions.perfMs, runtimeOptions.perfChangePercent);
+                sim.setPerfPacketGenerator(ppg);
                 services.add(ppg);
             }
         }
