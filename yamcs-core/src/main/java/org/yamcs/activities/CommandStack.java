@@ -3,6 +3,7 @@ package org.yamcs.activities;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.xtce.MetaCommand;
 
@@ -12,7 +13,16 @@ import com.google.gson.JsonObject;
 public class CommandStack {
 
     private List<StackedCommand> commands = new ArrayList<>();
+    private String acknowledgment = CommandHistoryPublisher.AcknowledgeQueued_KEY;
     private int waitTime = 0;
+
+    public void setAcknowledgment(String acknowledgment) {
+        this.acknowledgment = acknowledgment;
+    }
+
+    public String getAcknowledgment() {
+        return acknowledgment;
+    }
 
     public int getWaitTime() {
         return waitTime;
@@ -38,6 +48,10 @@ public class CommandStack {
 
         if (stackObject.has("advancement")) {
             var advancementObject = stackObject.get("advancement").getAsJsonObject();
+            if (advancementObject.has("acknowledgment")) {
+                var acknowledgment = advancementObject.get("acknowledgment").getAsString();
+                stack.setAcknowledgment(acknowledgment);
+            }
             if (advancementObject.has("wait")) {
                 var wait = advancementObject.get("wait").getAsInt();
                 if (wait >= 0) {
@@ -76,6 +90,10 @@ public class CommandStack {
                 }
                 if (commandObject.has("advancement")) {
                     var advancementObject = commandObject.get("advancement").getAsJsonObject();
+                    if (advancementObject.has("acknowledgment")) {
+                        var acknowledgment = advancementObject.get("acknowledgment").getAsString();
+                        command.setAcknowledgment(acknowledgment);
+                    }
                     if (advancementObject.has("wait")) {
                         var wait = advancementObject.get("wait").getAsInt();
                         if (wait >= 0) {
