@@ -1,5 +1,7 @@
 package org.yamcs.activities;
 
+import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -12,8 +14,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -29,8 +31,9 @@ import org.yamcs.utils.ExceptionUtil;
 import org.yamcs.utils.TimeEncoding;
 
 import com.google.common.util.concurrent.AbstractService;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.common.util.concurrent.UncheckedExecutionException;
 
 /**
  * Yamcs service for executing activities.
@@ -53,8 +56,8 @@ public class ActivityService extends AbstractService {
     // Distinguish records with the same timestamp
     private AtomicInteger activitySeqSequence = new AtomicInteger();
 
-    private ExecutorService exec = Executors.newCachedThreadPool(
-            new ThreadFactoryBuilder().setNameFormat("YamcsActivityService-worker").build());
+    private ListeningExecutorService exec = listeningDecorator(Executors.newCachedThreadPool(
+            new ThreadFactoryBuilder().setNameFormat("YamcsActivityService-worker").build()));
 
     public Spec getSpec() {
         var spec = new Spec();
@@ -167,14 +170,11 @@ public class ActivityService extends AbstractService {
             try {
                 execution = executor.createExecution(activity, user);
                 var fExecution = execution;
-                ongoingActivity.workFuture = new CompletableFuture<Void>().completeAsync(() -> {
-                    try {
-                        fExecution.call();
-                    } catch (Exception e) {
-                        throw new UncheckedExecutionException(e);
-                    }
+                ongoingActivity.workFuture = new FutureTask<>(() -> {
+                    fExecution.call();
                     return null;
-                }, exec);
+                });
+                ongoingActivity.workFuture = exec.submit(fExecution);
             } catch (Throwable t) {
                 execution = null;
                 ongoingActivity.workFuture = CompletableFuture.failedFuture(t);
@@ -182,52 +182,68 @@ public class ActivityService extends AbstractService {
         }
 
         var fExecution = execution;
-        ongoingActivity.resultFuture = ongoingActivity.workFuture.whenCompleteAsync((res, err) -> {
-            var loggedName = "Activity (" + activity.getId() + ")";
+        ongoingActivity.resultFuture = new CompletableFuture<>();
 
-            // Set if there was a cancellation. Or in the case of a manual activity,
-            // it is always set.
-            var stopRequester = ongoingActivity.getStopRequester();
-
-            if (err instanceof CancellationException) {
-                log.info("{} cancel requested by {}", loggedName, stopRequester.getName());
-                logServiceInfo(activity, "Cancel requested by " + stopRequester.getName());
-                if (fExecution != null) {
-                    try {
-                        fExecution.stop();
-                    } catch (Throwable t) {
-                        log.error("Failed to stop activity execution", t);
-                    }
-                }
-                log.info("{} was cancelled by {}", loggedName, stopRequester.getName());
-                logServiceInfo(activity, "Activity cancelled");
-                activity.cancel(stopRequester);
-            } else if (err != null) {
-                var cause = ExceptionUtil.unwind(err);
-                if (cause instanceof ManualFailureException) {
-                    log.error("{} failed: {}", loggedName, cause.getMessage());
-                } else {
-                    log.error("{} failed", loggedName, cause);
-                }
-                var failureReason = cause.getMessage();
-                if (failureReason == null) {
-                    failureReason = cause.getClass().getSimpleName();
-                }
-                logServiceError(activity, "Activity failed: " + failureReason);
-                activity.completeExceptionally(failureReason, ongoingActivity.getStopRequester());
-            } else {
-                log.info("{} successful", loggedName);
-                logServiceInfo(activity, "Activity successful");
-                activity.complete(ongoingActivity.getStopRequester());
-            }
-
-            ongoingActivities.remove(activity.getId());
-            activityDb.update(activity);
-            listeners.forEach(l -> l.onActivityUpdated(activity));
-        }, exec);
+        if (ongoingActivity.workFuture instanceof ListenableFuture) {
+            ((ListenableFuture<Void>) ongoingActivity.workFuture).addListener(() -> {
+                onActivityFinished(ongoingActivity, fExecution);
+            }, exec);
+        } else {
+            ((CompletableFuture<Void>) ongoingActivity.workFuture).whenCompleteAsync((res, err) -> {
+                onActivityFinished(ongoingActivity, null);
+            }, exec);
+        }
 
         ongoingActivities.put(activity.getId(), ongoingActivity);
         listeners.forEach(l -> l.onActivityUpdated(activity));
+
+    }
+
+    private void onActivityFinished(OngoingActivity ongoingActivity, ActivityExecution execution) {
+        var activity = ongoingActivity.getActivity();
+        var loggedName = "Activity (" + activity.getId() + ")";
+
+        // Set if there was a cancellation. Or in the case of a manual activity,
+        // it is always set.
+        var stopRequester = ongoingActivity.getStopRequester();
+
+        try {
+            ongoingActivity.workFuture.get();
+
+            log.info("{} successful", loggedName);
+            logServiceInfo(activity, "Activity successful");
+            activity.complete(ongoingActivity.getStopRequester());
+        } catch (CancellationException e) {
+            log.info("{} cancel requested by {}", loggedName, stopRequester.getName());
+            logServiceInfo(activity, "Cancel requested by " + stopRequester.getName());
+            if (execution != null) {
+                try {
+                    execution.stop();
+                } catch (Throwable t) {
+                    log.error("Failed to stop activity execution", t);
+                }
+            }
+            log.info("{} was cancelled by {}", loggedName, stopRequester.getName());
+            logServiceInfo(activity, "Activity cancelled");
+            activity.cancel(stopRequester);
+        } catch (Exception e) {
+            var cause = ExceptionUtil.unwind(e);
+            if (cause instanceof ManualFailureException) {
+                log.error("{} failed: {}", loggedName, cause.getMessage());
+            } else {
+                log.error("{} failed", loggedName, cause);
+            }
+            var failureReason = cause.getMessage();
+            if (failureReason == null) {
+                failureReason = cause.getClass().getSimpleName();
+            }
+            logServiceError(activity, "Activity failed: " + failureReason);
+            activity.completeExceptionally(failureReason, ongoingActivity.getStopRequester());
+        } finally {
+            ongoingActivities.remove(activity.getId());
+            activityDb.update(activity);
+            listeners.forEach(l -> l.onActivityUpdated(activity));
+        }
     }
 
     public Activity cancelActivity(UUID id, User user) {

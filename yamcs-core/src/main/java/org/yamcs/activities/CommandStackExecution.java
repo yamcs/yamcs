@@ -27,8 +27,6 @@ public class CommandStackExecution extends ActivityExecution {
     private String stackName;
     private User user;
 
-    private AtomicReference<PendingCommand> pencingCommandRef;
-
     public CommandStackExecution(
             ActivityService activityService,
             CommandStackExecutor executor,

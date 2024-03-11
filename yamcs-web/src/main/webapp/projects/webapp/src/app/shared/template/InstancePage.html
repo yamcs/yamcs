@@ -101,7 +101,7 @@
           File transfer
         </ya-sidebar-nav-item>
 
-        <ya-sidebar-nav-group *ngIf="proceduresItems.length"
+        <ya-sidebar-nav-group *ngIf="((connectionInfo$ | async)?.instance?.capabilities | arrayContains:'activities') && proceduresItems.length"
                               label="Procedures" icon="playlist_play"
                               [active]="proceduresActive"
                               [expanded]="proceduresExpanded"
