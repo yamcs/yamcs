@@ -55,7 +55,6 @@ export * from './lib/pipes/action-log-format.pipe';
 export * from './lib/pipes/alias.pipe';
 export * from './lib/pipes/array-contains.pipe';
 export * from './lib/pipes/basename.pipe';
-export * from './lib/pipes/binary-size.pipe';
 export * from './lib/pipes/class-name-html.pipe';
 export * from './lib/pipes/data-rate.pipe';
 export * from './lib/pipes/datetime.pipe';

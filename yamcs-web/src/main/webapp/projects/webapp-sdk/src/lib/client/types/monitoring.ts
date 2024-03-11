@@ -184,6 +184,7 @@ export interface GetPacketsOptions {
   next?: string;
   limit?: number;
   order?: 'asc' | 'desc';
+  fields?: Array<keyof Packet>;
 }
 
 export interface ListPacketsResponse {
@@ -194,9 +195,12 @@ export interface ListPacketsResponse {
 export interface Packet {
   id: NamedObjectId;
   receptionTime: string;
+  earthReceptionTime: string;
   generationTime: string;
   sequenceNumber: number;
   packet: string;
+  size: number;
+  link: string;
 }
 
 export interface GetParameterValuesOptions {

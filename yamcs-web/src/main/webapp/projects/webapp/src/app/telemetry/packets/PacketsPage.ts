@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ColumnInfo, DownloadPacketsOptions, GetPacketsOptions, Packet, SelectComponent, SelectOption, Synchronizer, YamcsService, rowAnimation, utils } from '@yamcs/webapp-sdk';
+import { ColumnInfo, DownloadPacketsOptions, GetPacketsOptions, MessageService, Packet, SelectComponent, SelectOption, Synchronizer, YamcsService, rowAnimation, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { PacketsDataSource } from './PacketsDataSource';
 
@@ -82,6 +82,7 @@ export class PacketsPage {
     title: Title,
     synchronizer: Synchronizer,
     private clipboard: Clipboard,
+    private messageService: MessageService,
   ) {
     title.setTitle('Packets');
 
@@ -253,13 +254,25 @@ export class PacketsPage {
   }
 
   copyHex(packet: Packet) {
-    const hex = utils.convertBase64ToHex(packet.packet);
-    this.clipboard.copy(hex);
+    this.fetchPacket(packet).then(packetDetail => {
+      const hex = utils.convertBase64ToHex(packetDetail.packet ?? '');
+      if (this.clipboard.copy(hex)) {
+        this.messageService.showInfo('Hex copied');
+      } else {
+        this.messageService.showInfo('Hex copy failed');
+      }
+    }).catch(err => this.messageService.showError(err));
   }
 
   copyBinary(packet: Packet) {
-    const raw = window.atob(packet.packet);
-    this.clipboard.copy(raw);
+    this.fetchPacket(packet).then(packetDetail => {
+      const raw = window.atob(packetDetail.packet ?? '');
+      if (this.clipboard.copy(raw)) {
+        this.messageService.showInfo('Binary copied');
+      } else {
+        this.messageService.showInfo('Binary copy failed');
+      }
+    }).catch(err => this.messageService.showError(err));
   }
 
   private updateURL() {
@@ -278,7 +291,15 @@ export class PacketsPage {
   }
 
   selectPacket(packet: Packet) {
-    this.detailPacket$.next(packet);
+    this.fetchPacket(packet).then(packetDetail => {
+      this.detailPacket$.next(packetDetail);
+    }).catch(err => this.messageService.showError(err));
+  }
+
+  private fetchPacket(packet: Packet) {
+    // Fetch the full detail of a packet, which includes the binary
+    return this.yamcs.yamcsClient.getPacket(
+      this.yamcs.instance!, packet.id.name, packet.generationTime, packet.sequenceNumber);
   }
 
   extractPacket(packet: Packet) {
@@ -292,5 +313,15 @@ export class PacketsPage {
         c: this.yamcs.context,
       }
     });
+  }
+
+  isSelected(packet: Packet) {
+    const detail = this.detailPacket$.value;
+    if (detail) {
+      return packet.id.name === detail.id.name
+        && packet.generationTime === detail.generationTime
+        && packet.sequenceNumber === detail.sequenceNumber;
+    }
+    return false;
   }
 }

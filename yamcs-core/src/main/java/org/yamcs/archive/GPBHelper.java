@@ -32,6 +32,7 @@ public final class GPBHelper {
         var b = TmPacketData.newBuilder()
                 .setReceptionTime(TimeEncoding.toProtobufTimestamp(recTime))
                 .setPacket(ByteString.copyFrom(pbody))
+                .setSize(pbody.length)
                 .setGenerationTime(TimeEncoding.toProtobufTimestamp(genTime))
                 .setSequenceNumber(seqNum)
                 .setId(NamedObjectId.newBuilder().setName(pname).build());

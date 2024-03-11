@@ -71,7 +71,6 @@ import { ActionLogFormatPipe } from './pipes/action-log-format.pipe';
 import { AliasPipe } from './pipes/alias.pipe';
 import { ArrayContainsPipe } from './pipes/array-contains.pipe';
 import { BasenamePipe } from './pipes/basename.pipe';
-import { BinarySizePipe } from './pipes/binary-size.pipe';
 import { ClassNameHtmlPipe } from './pipes/class-name-html.pipe';
 import { DataRatePipe } from './pipes/data-rate.pipe';
 import { DateTimePipe } from './pipes/datetime.pipe';
@@ -106,7 +105,6 @@ const pipes = [
   AliasPipe,
   ArrayContainsPipe,
   BasenamePipe,
-  BinarySizePipe,
   ClassNameHtmlPipe,
   DataRatePipe,
   DateTimePipe,
