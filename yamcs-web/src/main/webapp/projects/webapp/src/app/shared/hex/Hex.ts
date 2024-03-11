@@ -8,7 +8,7 @@ import { HexModel, Line } from './model';
 @Component({
   selector: 'app-hex',
   templateUrl: './Hex.html',
-  styleUrls: ['./Hex.css'],
+  styleUrl: './Hex.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Hex implements AfterViewInit, OnChanges, OnDestroy {

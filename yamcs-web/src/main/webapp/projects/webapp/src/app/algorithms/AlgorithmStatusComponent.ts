@@ -4,7 +4,7 @@ import { AlgorithmStatus, OFF_COLOR, ON_COLOR } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-algorithm-status',
   templateUrl: './AlgorithmStatusComponent.html',
-  styleUrls: ['./AlgorithmStatusComponent.css'],
+  styleUrl: './AlgorithmStatusComponent.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlgorithmStatusComponent {

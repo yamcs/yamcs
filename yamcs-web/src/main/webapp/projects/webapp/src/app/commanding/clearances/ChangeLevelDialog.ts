@@ -6,7 +6,7 @@ import { Clearance } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-change-level-dialog',
   templateUrl: './ChangeLevelDialog.html',
-  styleUrls: ['./ChangeLevelDialog.css'],
+  styleUrl: './ChangeLevelDialog.css',
 })
 export class ChangeLevelDialog {
 

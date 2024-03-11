@@ -17,7 +17,7 @@ import { StackFilePage } from './StackFilePage';
 
 @Component({
   templateUrl: './StackFolderPage.html',
-  styleUrls: ['./StackFolderPage.css'],
+  styleUrl: './StackFolderPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StackFolderPage implements OnDestroy {

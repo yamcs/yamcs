@@ -9,7 +9,7 @@ import { AuthService } from '../../core/services/AuthService';
 
 @Component({
   templateUrl: './AdminPage.html',
-  styleUrls: ['./AdminPage.css'],
+  styleUrl: './AdminPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminPage implements OnDestroy {

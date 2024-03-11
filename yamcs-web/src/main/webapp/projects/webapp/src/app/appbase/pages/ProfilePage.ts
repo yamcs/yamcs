@@ -5,7 +5,7 @@ import { BehaviorSubject } from 'rxjs';
 
 @Component({
   templateUrl: './ProfilePage.html',
-  styleUrls: ['./ProfilePage.css'],
+  styleUrl: './ProfilePage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfilePage {

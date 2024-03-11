@@ -6,7 +6,7 @@ import { BehaviorSubject } from 'rxjs';
 
 @Component({
   templateUrl: './BucketPropertiesPage.html',
-  styleUrls: ['./BucketPropertiesPage.css'],
+  styleUrl: './BucketPropertiesPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BucketPropertiesPage {

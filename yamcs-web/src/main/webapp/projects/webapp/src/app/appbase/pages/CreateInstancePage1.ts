@@ -6,7 +6,7 @@ import { InstanceTemplate, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   templateUrl: './CreateInstancePage1.html',
-  styleUrls: ['./CreateInstancePage1.css'],
+  styleUrl: './CreateInstancePage1.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CreateInstancePage1 {

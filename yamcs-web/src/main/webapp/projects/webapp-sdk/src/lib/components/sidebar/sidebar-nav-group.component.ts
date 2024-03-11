@@ -4,7 +4,7 @@ import { slideDownAnimation } from '../../animations';
 @Component({
   selector: 'ya-sidebar-nav-group',
   templateUrl: './sidebar-nav-group.component.html',
-  styleUrls: ['./sidebar-nav-group.component.css'],
+  styleUrl: './sidebar-nav-group.component.css',
   animations: [slideDownAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

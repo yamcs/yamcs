@@ -7,7 +7,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 @Component({
   selector: 'remote-file-selector',
   templateUrl: './RemoteFileSelector.html',
-  styleUrls: ['./RemoteFileSelector.css'],
+  styleUrl: './RemoteFileSelector.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {

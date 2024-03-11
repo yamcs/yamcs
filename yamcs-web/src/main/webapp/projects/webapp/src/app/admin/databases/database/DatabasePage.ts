@@ -13,7 +13,7 @@ interface DatabaseObject {
 
 @Component({
   templateUrl: './DatabasePage.html',
-  styleUrls: ['./DatabasePage.css'],
+  styleUrl: './DatabasePage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DatabasePage implements OnDestroy {

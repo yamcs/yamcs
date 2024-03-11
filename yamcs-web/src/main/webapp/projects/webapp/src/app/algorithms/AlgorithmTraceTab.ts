@@ -6,7 +6,7 @@ import { BehaviorSubject } from 'rxjs';
 
 @Component({
   templateUrl: './AlgorithmTraceTab.html',
-  styleUrls: ['./AlgorithmTraceTab.css'],
+  styleUrl: './AlgorithmTraceTab.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlgorithmTraceTab implements AfterViewInit {

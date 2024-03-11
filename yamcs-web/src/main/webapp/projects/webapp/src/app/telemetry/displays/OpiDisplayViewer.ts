@@ -28,7 +28,7 @@ const ARGS_PREFIX = 'args.';
       </div>
     </div>
   `,
-  styleUrls: ['./OpiDisplayViewer.css'],
+  styleUrl: './OpiDisplayViewer.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {

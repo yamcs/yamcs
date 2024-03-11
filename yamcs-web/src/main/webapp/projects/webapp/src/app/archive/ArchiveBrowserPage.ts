@@ -37,7 +37,7 @@ interface DateRange {
 
 @Component({
   templateUrl: './ArchiveBrowserPage.html',
-  styleUrls: ['./ArchiveBrowserPage.css'],
+  styleUrl: './ArchiveBrowserPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {

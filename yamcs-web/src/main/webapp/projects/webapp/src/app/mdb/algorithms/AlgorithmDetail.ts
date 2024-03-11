@@ -9,7 +9,7 @@ import 'brace/theme/twilight';
 @Component({
   selector: 'app-algorithm-detail',
   templateUrl: './AlgorithmDetail.html',
-  styleUrls: ['./AlgorithmDetail.css'],
+  styleUrl: './AlgorithmDetail.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlgorithmDetail {

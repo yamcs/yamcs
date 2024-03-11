@@ -9,7 +9,7 @@ import { BehaviorSubject } from 'rxjs';
 
 @Component({
   templateUrl: './RoutesPage.html',
-  styleUrls: ['./RoutesPage.css'],
+  styleUrl: './RoutesPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RoutesPage implements AfterViewInit {

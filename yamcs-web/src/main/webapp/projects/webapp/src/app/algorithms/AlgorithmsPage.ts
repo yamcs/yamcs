@@ -10,7 +10,7 @@ import { AlgorithmsDataSource, ListItem } from './AlgorithmsDataSource';
 
 @Component({
   templateUrl: './AlgorithmsPage.html',
-  styleUrls: ['./AlgorithmsPage.css'],
+  styleUrl: './AlgorithmsPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlgorithmsPage implements AfterViewInit, OnDestroy {

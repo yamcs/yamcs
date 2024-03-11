@@ -12,7 +12,7 @@ import { AuthService } from '../../core/services/AuthService';
 
 @Component({
   templateUrl: './HomePage.html',
-  styleUrls: ['./HomePage.css'],
+  styleUrl: './HomePage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomePage implements AfterViewInit, OnDestroy {

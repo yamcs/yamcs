@@ -15,7 +15,7 @@ const defaultInterval = 'PT1H';
 
 @Component({
   templateUrl: './CommandHistoryPage.html',
-  styleUrls: ['./CommandHistoryPage.css'],
+  styleUrl: './CommandHistoryPage.css',
   animations: [rowAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

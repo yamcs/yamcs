@@ -1,9 +1,9 @@
-import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-event-severity',
   templateUrl: './EventSeverity.html',
-  styleUrls: ['./EventSeverity.css'],
+  styleUrl: './EventSeverity.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventSeverity {

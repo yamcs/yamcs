@@ -4,7 +4,7 @@ import { Alarm, YamcsService } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-alarm-detail',
   templateUrl: './AlarmDetail.html',
-  styleUrls: ['./AlarmDetail.css'],
+  styleUrl: './AlarmDetail.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlarmDetail {

@@ -16,7 +16,7 @@ interface ValueNode {
 @Component({
   selector: 'ya-value',
   templateUrl: './value.component.html',
-  styleUrls: ['./value.component.css'],
+  styleUrl: './value.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ValueComponent implements OnChanges {

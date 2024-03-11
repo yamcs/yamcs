@@ -16,7 +16,7 @@ import { ViewObjectMetadataDialog } from './ViewObjectMetadataDialog';
 
 @Component({
   templateUrl: './BucketObjectsPage.html',
-  styleUrls: ['./BucketObjectsPage.css'],
+  styleUrl: './BucketObjectsPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BucketObjectsPage implements OnDestroy {

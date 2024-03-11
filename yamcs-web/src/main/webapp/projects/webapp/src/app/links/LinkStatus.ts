@@ -8,7 +8,7 @@ const EXPIRY = 2000;
 @Component({
   selector: 'app-link-status',
   templateUrl: './LinkStatus.html',
-  styleUrls: ['./LinkStatus.css'],
+  styleUrl: './LinkStatus.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LinkStatus implements OnChanges, OnDestroy {

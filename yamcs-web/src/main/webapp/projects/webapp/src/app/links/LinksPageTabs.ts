@@ -4,7 +4,7 @@ import { YamcsService } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-links-page-tabs',
   templateUrl: './LinksPageTabs.html',
-  styleUrls: ['./LinksPageTabs.css'],
+  styleUrl: './LinksPageTabs.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LinksPageTabs {

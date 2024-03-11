@@ -6,7 +6,7 @@ import { ShowEnumDialog } from './ShowEnumDialog';
 
 @Component({
   templateUrl: './TableInfoTab.html',
-  styleUrls: ['./TableInfoTab.css'],
+  styleUrl: './TableInfoTab.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableInfoTab {

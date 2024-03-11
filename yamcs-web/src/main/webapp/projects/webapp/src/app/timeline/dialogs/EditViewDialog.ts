@@ -7,7 +7,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 @Component({
   selector: 'app-edit-view-dialog',
   templateUrl: './EditViewDialog.html',
-  styleUrls: ['./EditViewDialog.css'],
+  styleUrl: './EditViewDialog.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditViewDialog implements OnDestroy {

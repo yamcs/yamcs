@@ -17,7 +17,7 @@ export interface ExtractedItem {
 
 @Component({
   templateUrl: './PacketPage.html',
-  styleUrls: ['./PacketPage.css'],
+  styleUrl: './PacketPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PacketPage implements AfterViewInit {

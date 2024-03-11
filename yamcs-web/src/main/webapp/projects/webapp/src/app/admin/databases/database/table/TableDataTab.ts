@@ -5,7 +5,7 @@ import { BehaviorSubject } from 'rxjs';
 
 @Component({
   templateUrl: './TableDataTab.html',
-  styleUrls: ['./TableDataTab.css'],
+  styleUrl: './TableDataTab.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableDataTab {

@@ -6,7 +6,7 @@ import { TimelineBand, TimelineBandsPage, YamcsService } from '@yamcs/webapp-sdk
 @Component({
   selector: 'app-band-multi-select',
   templateUrl: './BandMultiSelect.html',
-  styleUrls: ['./BandMultiSelect.css'],
+  styleUrl: './BandMultiSelect.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {

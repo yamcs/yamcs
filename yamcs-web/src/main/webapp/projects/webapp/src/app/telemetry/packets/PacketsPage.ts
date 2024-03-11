@@ -11,7 +11,7 @@ const defaultInterval = 'PT1H';
 
 @Component({
   templateUrl: './PacketsPage.html',
-  styleUrls: ['./PacketsPage.css'],
+  styleUrl: './PacketsPage.css',
   animations: [rowAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

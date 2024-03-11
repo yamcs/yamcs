@@ -11,7 +11,7 @@ import { SelectRangeDialog } from './SelectRangeDialog';
 
 @Component({
   templateUrl: './ParameterChartTab.html',
-  styleUrls: ['./ParameterChartTab.css'],
+  styleUrl: './ParameterChartTab.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParameterChartTab implements AfterViewInit, OnDestroy {

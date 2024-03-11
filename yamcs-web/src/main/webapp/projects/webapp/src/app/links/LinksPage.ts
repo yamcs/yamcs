@@ -11,7 +11,7 @@ import { LinkItem } from './LinkItem';
 
 @Component({
   templateUrl: './LinksPage.html',
-  styleUrls: ['./LinksPage.css'],
+  styleUrl: './LinksPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LinksPage implements AfterViewInit, OnDestroy {

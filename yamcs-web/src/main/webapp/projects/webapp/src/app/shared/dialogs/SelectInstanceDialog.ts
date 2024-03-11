@@ -9,7 +9,7 @@ import { AuthService } from '../../core/services/AuthService';
 
 @Component({
   templateUrl: './SelectInstanceDialog.html',
-  styleUrls: ['./SelectInstanceDialog.css'],
+  styleUrl: './SelectInstanceDialog.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SelectInstanceDialog implements AfterViewInit {

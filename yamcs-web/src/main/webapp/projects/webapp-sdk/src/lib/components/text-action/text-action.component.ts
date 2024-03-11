@@ -4,7 +4,7 @@ import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular
   selector: 'ya-text-action',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './text-action.component.html',
-  styleUrls: ['./text-action.component.css'],
+  styleUrl: './text-action.component.css',
 })
 export class TextActionComponent {
 

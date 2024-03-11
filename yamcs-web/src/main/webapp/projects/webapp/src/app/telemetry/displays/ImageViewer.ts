@@ -5,7 +5,7 @@ import { Viewer } from './Viewer';
 @Component({
   selector: 'app-image-viewer',
   templateUrl: './ImageViewer.html',
-  styles: [`
+  styles: `
     .checkerboard {
       position: absolute;
       width: 100%;
@@ -17,7 +17,7 @@ import { Viewer } from './Viewer';
       left: 50%;
       transform: translate(-50%,-50%);
     }
-  `],
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ImageViewer implements Viewer {

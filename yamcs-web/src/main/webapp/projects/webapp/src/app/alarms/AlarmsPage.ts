@@ -14,7 +14,7 @@ import { ShelveAlarmDialog } from './ShelveAlarmDialog';
 
 @Component({
   templateUrl: './AlarmsPage.html',
-  styleUrls: ['./AlarmsPage.css'],
+  styleUrl: './AlarmsPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlarmsPage implements OnDestroy {

@@ -7,7 +7,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 @Component({
   selector: 'app-object-selector',
   templateUrl: './ObjectSelector.html',
-  styleUrls: ['./ObjectSelector.css'],
+  styleUrl: './ObjectSelector.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {

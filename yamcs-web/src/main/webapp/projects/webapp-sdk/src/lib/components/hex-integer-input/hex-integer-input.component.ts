@@ -4,7 +4,7 @@ import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormCont
 @Component({
   selector: 'ya-hex-integer-input',
   templateUrl: './hex-integer-input.component.html',
-  styleUrls: ['./hex-integer-input.component.css'],
+  styleUrl: './hex-integer-input.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {

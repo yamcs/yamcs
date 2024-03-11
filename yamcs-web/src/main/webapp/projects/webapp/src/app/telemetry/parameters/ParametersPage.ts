@@ -47,7 +47,7 @@ export const PLIST_SOURCE_OPTIONS: SelectOption[] = [
 
 @Component({
   templateUrl: './ParametersPage.html',
-  styleUrls: ['./ParametersPage.css'],
+  styleUrl: './ParametersPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParametersPage implements AfterViewInit, OnDestroy {

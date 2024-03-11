@@ -7,7 +7,7 @@ import { StreamDataDataSource } from './StreamDataDataSource';
 
 @Component({
   templateUrl: './StreamDataTab.html',
-  styleUrls: ['./StreamDataTab.css'],
+  styleUrl: './StreamDataTab.css',
   animations: [rowAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -6,7 +6,7 @@ import { HelpDialog } from './help.dialog';
 @Component({
   selector: 'ya-help',
   templateUrl: './help.component.html',
-  styleUrls: ['./help.component.css'],
+  styleUrl: './help.component.css',
 })
 export class HelpComponent {
 

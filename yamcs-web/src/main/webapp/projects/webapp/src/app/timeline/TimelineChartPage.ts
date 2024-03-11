@@ -23,7 +23,7 @@ interface DateRange {
 
 @Component({
   templateUrl: './TimelineChartPage.html',
-  styleUrls: ['./TimelineChartPage.css'],
+  styleUrl: './TimelineChartPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TimelineChartPage implements AfterViewInit, OnDestroy {

@@ -12,7 +12,7 @@ import { ScheduleCommandDialog } from './ScheduleCommandDialog';
 
 @Component({
   templateUrl: './ConfigureCommandPage.html',
-  styleUrls: ['./ConfigureCommandPage.css'],
+  styleUrl: './ConfigureCommandPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConfigureCommandPage implements AfterViewInit, OnDestroy {

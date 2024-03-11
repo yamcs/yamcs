@@ -9,7 +9,7 @@ import { ParameterTable } from './ParameterTableModel';
 @Component({
   selector: 'app-scrolling-parameter-table',
   templateUrl: './ScrollingParameterTable.html',
-  styleUrls: ['./ScrollingParameterTable.css'],
+  styleUrl: './ScrollingParameterTable.css',
   // changeDetection: ChangeDetectionStrategy.OnPush, // FIXME
 })
 export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {

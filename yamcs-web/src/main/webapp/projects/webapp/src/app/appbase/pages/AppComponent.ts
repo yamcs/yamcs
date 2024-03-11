@@ -12,7 +12,7 @@ import { SelectInstanceDialog } from '../../shared/dialogs/SelectInstanceDialog'
 @Component({
   selector: 'app-root',
   templateUrl: './AppComponent.html',
-  styleUrls: ['./AppComponent.css'],
+  styleUrl: './AppComponent.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent implements AfterViewInit, OnDestroy {

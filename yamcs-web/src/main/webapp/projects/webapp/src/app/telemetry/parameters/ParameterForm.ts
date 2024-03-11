@@ -6,7 +6,7 @@ import { BehaviorSubject } from 'rxjs';
 @Component({
   selector: 'app-parameter-form',
   templateUrl: './ParameterForm.html',
-  styleUrls: ['./ParameterForm.css'],
+  styleUrl: './ParameterForm.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParameterForm implements OnInit {

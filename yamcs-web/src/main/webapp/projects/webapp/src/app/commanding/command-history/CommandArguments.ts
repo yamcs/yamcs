@@ -4,7 +4,7 @@ import { CommandHistoryRecord } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-command-arguments',
   templateUrl: './CommandArguments.html',
-  styleUrls: ['./CommandArguments.css'],
+  styleUrl: './CommandArguments.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommandArguments {

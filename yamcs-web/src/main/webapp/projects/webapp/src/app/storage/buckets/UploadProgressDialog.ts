@@ -7,7 +7,7 @@ import { Upload } from './Upload';
 @Component({
   selector: 'app-upload-progress-dialog',
   templateUrl: './UploadProgressDialog.html',
-  styleUrls: ['./UploadProgressDialog.css'],
+  styleUrl: './UploadProgressDialog.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UploadProgressDialog {

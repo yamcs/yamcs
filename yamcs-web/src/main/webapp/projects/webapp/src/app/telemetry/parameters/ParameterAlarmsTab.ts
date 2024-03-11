@@ -8,7 +8,7 @@ const defaultInterval = 'P1M';
 
 @Component({
   templateUrl: './ParameterAlarmsTab.html',
-  styleUrls: ['./ParameterAlarmsTab.css'],
+  styleUrl: './ParameterAlarmsTab.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParameterAlarmsTab {

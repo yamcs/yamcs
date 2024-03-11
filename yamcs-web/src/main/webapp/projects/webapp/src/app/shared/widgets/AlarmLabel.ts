@@ -6,7 +6,7 @@ import { AuthService } from '../../core/services/AuthService';
 @Component({
   selector: 'app-alarm-label',
   templateUrl: './AlarmLabel.html',
-  styleUrls: ['./AlarmLabel.css'],
+  styleUrl: './AlarmLabel.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlarmLabel implements OnDestroy {

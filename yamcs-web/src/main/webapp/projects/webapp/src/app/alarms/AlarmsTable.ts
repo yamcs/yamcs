@@ -6,7 +6,7 @@ import { AlarmsDataSource } from './AlarmsDataSource';
 @Component({
   selector: 'app-alarms-table',
   templateUrl: './AlarmsTable.html',
-  styleUrls: ['./AlarmsTable.css'],
+  styleUrl: './AlarmsTable.css',
 })
 export class AlarmsTable {
 

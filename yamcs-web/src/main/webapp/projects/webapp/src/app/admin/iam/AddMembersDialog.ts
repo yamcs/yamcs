@@ -14,7 +14,7 @@ export interface MemberItem {
 @Component({
   selector: 'app-add-members-dialog',
   templateUrl: './AddMembersDialog.html',
-  styleUrls: ['./AddMembersDialog.css'],
+  styleUrl: './AddMembersDialog.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddMembersDialog implements AfterViewInit {

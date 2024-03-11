@@ -12,7 +12,7 @@ import { AuthService } from '../core/services/AuthService';
 @Component({
   selector: 'app-algorithm-detail',
   templateUrl: './AlgorithmDetail.html',
-  styleUrls: ['./AlgorithmDetail.css'],
+  styleUrl: './AlgorithmDetail.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlgorithmDetail implements AfterViewInit {

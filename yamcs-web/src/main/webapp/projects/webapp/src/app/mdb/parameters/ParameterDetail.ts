@@ -5,7 +5,7 @@ import { BehaviorSubject } from 'rxjs';
 @Component({
   selector: 'app-parameter-detail',
   templateUrl: './ParameterDetail.html',
-  styleUrls: ['./ParameterDetail.css'],
+  styleUrl: './ParameterDetail.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParameterDetail implements OnChanges {

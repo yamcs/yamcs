@@ -7,7 +7,7 @@ import { BehaviorSubject } from 'rxjs';
 
 @Component({
   templateUrl: './ParameterPage.html',
-  styleUrls: ['./ParameterPage.css'],
+  styleUrl: './ParameterPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParameterPage {

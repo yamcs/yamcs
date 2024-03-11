@@ -6,7 +6,7 @@ import { ArgumentEnumDialog } from './ArgumentEnumDialog';
 @Component({
   selector: 'app-command-detail',
   templateUrl: './CommandDetail.html',
-  styleUrls: ['./CommandDetail.css'],
+  styleUrl: './CommandDetail.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommandDetail {

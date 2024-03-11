@@ -6,7 +6,7 @@ import { PrintableDirective } from './printable.directive';
 @Component({
   selector: 'ya-print-zone',
   templateUrl: './print-zone.component.html',
-  styleUrls: ['./print-zone.component.css'],
+  styleUrl: './print-zone.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PrintZoneComponent {

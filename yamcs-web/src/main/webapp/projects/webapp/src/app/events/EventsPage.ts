@@ -16,7 +16,7 @@ const defaultInterval = 'PT1H';
 
 @Component({
   templateUrl: './EventsPage.html',
-  styleUrls: ['./EventsPage.css'],
+  styleUrl: './EventsPage.css',
   animations: [rowAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

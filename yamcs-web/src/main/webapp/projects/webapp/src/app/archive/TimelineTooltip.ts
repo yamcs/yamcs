@@ -2,7 +2,7 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 
 @Component({
   template: '<div #tt class="ya-tooltip"></div>',
-  styleUrls: ['./TimelineTooltip.css'],
+  styleUrl: './TimelineTooltip.css',
 })
 export class TimelineTooltip {
 

@@ -5,7 +5,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Component({
   templateUrl: './ActivityLogTab.html',
-  styleUrls: ['./ActivityLogTab.css'],
+  styleUrl: './ActivityLogTab.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActivityLogTab implements OnDestroy {

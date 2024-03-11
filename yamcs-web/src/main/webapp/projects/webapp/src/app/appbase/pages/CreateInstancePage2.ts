@@ -8,7 +8,7 @@ import { BehaviorSubject } from 'rxjs';
 
 @Component({
   templateUrl: './CreateInstancePage2.html',
-  styleUrls: ['./CreateInstancePage2.css'],
+  styleUrl: './CreateInstancePage2.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CreateInstancePage2 {

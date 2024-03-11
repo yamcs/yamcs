@@ -3,7 +3,7 @@ import { Component, Input } from '@angular/core';
 @Component({
   selector: 'ya-label',
   templateUrl: './label.component.html',
-  styleUrls: ['./label.component.css'],
+  styleUrl: './label.component.css',
 })
 export class LabelComponent {
 

@@ -8,7 +8,7 @@ import { ShowStreamsDialog } from './ShowStreamsDialog';
 
 @Component({
   templateUrl: './ReplicationPage.html',
-  styleUrls: ['./ReplicationPage.css'],
+  styleUrl: './ReplicationPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ReplicationPage implements OnDestroy {

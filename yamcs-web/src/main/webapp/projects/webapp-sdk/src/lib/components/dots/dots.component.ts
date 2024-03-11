@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 @Component({
   selector: 'ya-dots',
   templateUrl: './dots.component.html',
-  styleUrls: ['./dots.component.css'],
+  styleUrl: './dots.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DotsComponent {

@@ -14,7 +14,7 @@ export interface RoleItem {
 @Component({
   selector: 'app-add-roles-dialog',
   templateUrl: './AddRolesDialog.html',
-  styleUrls: ['./AddRolesDialog.css'],
+  styleUrl: './AddRolesDialog.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddRolesDialog implements AfterViewInit {

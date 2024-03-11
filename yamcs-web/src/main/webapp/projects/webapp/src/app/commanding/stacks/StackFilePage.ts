@@ -14,7 +14,7 @@ import { ScheduleStackDialog } from './ScheduleStackDialog';
 
 @Component({
   templateUrl: './StackFilePage.html',
-  styleUrls: ['./StackFilePage.css'],
+  styleUrl: './StackFilePage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StackFilePage implements OnDestroy {

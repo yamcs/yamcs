@@ -5,7 +5,7 @@ import { SelectOption } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-item-band-styles',
   templateUrl: './ItemBandStyles.html',
-  styleUrls: ['../StyleTable.css'],
+  styleUrl: '../StyleTable.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ItemBandStyles {

@@ -5,7 +5,7 @@ import { BehaviorSubject } from 'rxjs';
 @Component({
   selector: 'ya-tag-select',
   templateUrl: './tag-select.component.html',
-  styleUrls: ['./tag-select.component.css'],
+  styleUrl: './tag-select.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {

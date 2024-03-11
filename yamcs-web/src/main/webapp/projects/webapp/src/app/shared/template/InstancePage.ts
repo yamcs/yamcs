@@ -10,7 +10,7 @@ import { AuthService } from '../../core/services/AuthService';
 
 @Component({
   templateUrl: './InstancePage.html',
-  styleUrls: ['./InstancePage.css'],
+  styleUrl: './InstancePage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InstancePage implements OnInit, OnDestroy {

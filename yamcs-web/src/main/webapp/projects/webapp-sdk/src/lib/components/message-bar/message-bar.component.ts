@@ -7,7 +7,7 @@ import { MessageService, SiteMessage } from '../../services/message.service';
 @Component({
   selector: 'ya-message-bar',
   templateUrl: './message-bar.component.html',
-  styleUrls: ['./message-bar.component.css'],
+  styleUrl: './message-bar.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
     trigger('openClose', [

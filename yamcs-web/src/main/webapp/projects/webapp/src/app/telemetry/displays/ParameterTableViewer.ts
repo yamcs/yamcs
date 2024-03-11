@@ -11,7 +11,7 @@ import { Viewer } from './Viewer';
 @Component({
   selector: 'app-parameter-table-viewer',
   templateUrl: './ParameterTableViewer.html',
-  styleUrls: ['./ParameterTableViewer.css'],
+  styleUrl: './ParameterTableViewer.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParameterTableViewer implements Viewer, OnDestroy {

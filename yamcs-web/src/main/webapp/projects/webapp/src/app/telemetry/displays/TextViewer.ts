@@ -7,11 +7,11 @@ import { Viewer } from './Viewer';
   template: `
     <pre *ngIf="text">{{ text }}</pre>
   `,
-  styles: [`
+  styles: `
     pre {
       margin: 1em;
     }
-  `],
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TextViewer implements Viewer {

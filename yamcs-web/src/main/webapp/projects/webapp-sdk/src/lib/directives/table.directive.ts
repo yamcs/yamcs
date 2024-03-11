@@ -6,7 +6,7 @@ import { ChangeDetectionStrategy, Component, HostBinding, ViewEncapsulation } fr
 @Component({
   selector: 'table[yaTable]',
   template: '<ng-content />',
-  styles: [`
+  styles: `
     table.ya-table {
       border-spacing: 0;
       border-collapse: collapse;
@@ -25,7 +25,7 @@ import { ChangeDetectionStrategy, Component, HostBinding, ViewEncapsulation } fr
       font-weight: 400;
       text-align: left;
     }
-  `],
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })

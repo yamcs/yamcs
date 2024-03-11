@@ -8,7 +8,7 @@ import { SetFailedDialog } from './SetFailedDialog';
 
 @Component({
   templateUrl: './ActivityPage.html',
-  styleUrls: ['./ActivityPage.css'],
+  styleUrl: './ActivityPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActivityPage {

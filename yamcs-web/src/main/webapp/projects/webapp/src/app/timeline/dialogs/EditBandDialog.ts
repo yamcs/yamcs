@@ -6,7 +6,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Component({
   templateUrl: './EditBandDialog.html',
-  styleUrls: ['./EditBandDialog.css'],
+  styleUrl: './EditBandDialog.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditBandDialog implements OnDestroy {

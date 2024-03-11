@@ -10,7 +10,7 @@ import { CommandsDataSource, ListItem } from './CommandsDataSource';
 
 @Component({
   templateUrl: './SendCommandPage.html',
-  styleUrls: ['./SendCommandPage.css'],
+  styleUrl: './SendCommandPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SendCommandPage implements AfterViewInit, OnDestroy {

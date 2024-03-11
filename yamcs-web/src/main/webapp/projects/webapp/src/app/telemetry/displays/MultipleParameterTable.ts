@@ -9,7 +9,7 @@ import { ParameterTable } from './ParameterTableModel';
 @Component({
   selector: 'app-multiple-parameter-table',
   templateUrl: './MultipleParameterTable.html',
-  styleUrls: ['./MultipleParameterTable.css'],
+  styleUrl: './MultipleParameterTable.css',
   // changeDetection: ChangeDetectionStrategy.OnPush, // FIXME
 })
 export class MultipleParameterTable implements OnInit, OnChanges, OnDestroy {

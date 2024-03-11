@@ -9,7 +9,7 @@ import { ArgumentType, EnumValue } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-select-enumeration-dialog',
   templateUrl: './SelectEnumerationDialog.html',
-  styleUrls: ['./SelectEnumerationDialog.css'],
+  styleUrl: './SelectEnumerationDialog.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SelectEnumerationDialog implements AfterViewInit {

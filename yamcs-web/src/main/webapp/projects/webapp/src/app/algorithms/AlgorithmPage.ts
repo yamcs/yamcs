@@ -5,7 +5,7 @@ import { YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   templateUrl: './AlgorithmPage.html',
-  styleUrls: ['./AlgorithmPage.css'],
+  styleUrl: './AlgorithmPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlgorithmPage {

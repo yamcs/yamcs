@@ -4,7 +4,7 @@ import { YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   templateUrl: './CreateBandPage.html',
-  styleUrls: ['./CreateBandPage.css'],
+  styleUrl: './CreateBandPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CreateBandPage {

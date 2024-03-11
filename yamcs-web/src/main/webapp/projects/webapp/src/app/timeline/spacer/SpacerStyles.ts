@@ -4,7 +4,7 @@ import { UntypedFormGroup } from '@angular/forms';
 @Component({
   selector: 'app-spacer-styles',
   templateUrl: './SpacerStyles.html',
-  styleUrls: ['../StyleTable.css'],
+  styleUrl: '../StyleTable.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SpacerStyles {
