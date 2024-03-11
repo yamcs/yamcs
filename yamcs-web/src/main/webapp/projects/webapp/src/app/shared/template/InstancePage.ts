@@ -67,7 +67,7 @@ export class InstancePage implements OnInit, OnDestroy {
     }
     if (this.user.hasAnyObjectPrivilegeOfType('ReadParameter')) {
       this.telemetryItems.push({ path: 'parameters', label: 'Parameters' });
-      if (yamcs.connectionInfo$.value?.instance.capabilities.indexOf('parameter-lists') !== -1) {
+      if ((yamcs.connectionInfo$.value?.instance.capabilities ?? []).indexOf('parameter-lists') !== -1) {
         this.telemetryItems.push({ path: 'parameter-lists', label: 'Parameter lists' });
       }
     }
