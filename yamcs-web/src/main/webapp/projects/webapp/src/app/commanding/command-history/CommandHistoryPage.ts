@@ -3,7 +3,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ColumnChooserComponent, ColumnInfo, CommandHistoryRecord, ConfigService, GetCommandHistoryOptions, MessageService, PrintService, SelectComponent, SelectOption, Synchronizer, User, WebsiteConfig, YamcsService, rowAnimation, utils } from '@yamcs/webapp-sdk';
+import { ColumnChooserComponent, ColumnInfo, CommandHistoryRecord, ConfigService, GetCommandHistoryOptions, MessageService, PrintService, SelectComponent, SelectOption, Synchronizer, User, WebsiteConfig, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AuthService } from '../../core/services/AuthService';
@@ -16,7 +16,6 @@ const defaultInterval = 'PT1H';
 @Component({
   templateUrl: './CommandHistoryPage.html',
   styleUrl: './CommandHistoryPage.css',
-  animations: [rowAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommandHistoryPage implements AfterViewInit, OnDestroy {

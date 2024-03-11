@@ -1,14 +1,13 @@
 import { CdkColumnDef } from '@angular/cdk/table';
 import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, QueryList, ViewChildren } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { StreamData, Synchronizer, YamcsService, rowAnimation } from '@yamcs/webapp-sdk';
+import { StreamData, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { StreamDataDataSource } from './StreamDataDataSource';
 
 @Component({
   templateUrl: './StreamDataTab.html',
   styleUrl: './StreamDataTab.css',
-  animations: [rowAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StreamDataTab implements AfterViewInit, OnDestroy {

@@ -31,7 +31,6 @@
 
       <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"
-          [@rowAnimation]="row.animate"
           [ngClass]="{selected: (row === (selectedStreamData$ | async))}"
           (click)="selectStreamData(row)"></tr>
     </table>

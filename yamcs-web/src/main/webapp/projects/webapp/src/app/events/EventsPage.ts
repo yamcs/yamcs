@@ -3,7 +3,7 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ColumnInfo, ConfigService, ExtraColumnInfo, GetEventsOptions, SelectComponent, SelectOption, Synchronizer, YamcsService, rowAnimation, utils } from '@yamcs/webapp-sdk';
+import { ColumnInfo, ConfigService, ExtraColumnInfo, GetEventsOptions, SelectComponent, SelectOption, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AuthService } from '../core/services/AuthService';
@@ -17,7 +17,6 @@ const defaultInterval = 'PT1H';
 @Component({
   templateUrl: './EventsPage.html',
   styleUrl: './EventsPage.css',
-  animations: [rowAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventsPage {

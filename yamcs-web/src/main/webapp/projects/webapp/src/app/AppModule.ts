@@ -1,7 +1,8 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { APP_INITIALIZER, NgModule, isDevMode } from '@angular/core';
+import { MAT_TOOLTIP_DEFAULT_OPTIONS, MAT_TOOLTIP_DEFAULT_OPTIONS_FACTORY, MatTooltipDefaultOptions } from '@angular/material/tooltip';
 import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { ConfigService } from '@yamcs/webapp-sdk';
 import * as dayjs from 'dayjs';
@@ -15,10 +16,15 @@ import { SharedModule } from './shared/SharedModule';
 dayjs.extend(utc);
 dayjs.locale('en');
 
+export const matTooltipOptions: MatTooltipDefaultOptions = {
+  ...MAT_TOOLTIP_DEFAULT_OPTIONS_FACTORY(),
+  disableTooltipInteractivity: true,
+};
+
 @NgModule({
   imports: [
     BrowserModule,
-    BrowserAnimationsModule,
+    NoopAnimationsModule,
 
     AppBaseModule,
     AppRoutingModule, // Keep in front of modules that contribute child routing
@@ -30,6 +36,7 @@ dayjs.locale('en');
   ],
   providers: [
     ConfigService,
+    { provide: MAT_TOOLTIP_DEFAULT_OPTIONS, useValue: matTooltipOptions },
     {
       provide: APP_BASE_HREF,
       useFactory: () => {
@@ -48,12 +55,6 @@ dayjs.locale('en');
       multi: true,
       deps: [ConfigService]
     }
-  ],
-  exports: [
-    BrowserModule,
-    BrowserAnimationsModule,
-    AppRoutingModule,
-    SharedModule,
   ],
   bootstrap: [AppComponent]
 })

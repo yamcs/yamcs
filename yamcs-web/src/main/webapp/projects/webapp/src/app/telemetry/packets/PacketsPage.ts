@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ColumnInfo, DownloadPacketsOptions, GetPacketsOptions, MessageService, Packet, SelectComponent, SelectOption, Synchronizer, YamcsService, rowAnimation, utils } from '@yamcs/webapp-sdk';
+import { ColumnInfo, DownloadPacketsOptions, GetPacketsOptions, MessageService, Packet, SelectComponent, SelectOption, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { PacketsDataSource } from './PacketsDataSource';
 
@@ -12,7 +12,6 @@ const defaultInterval = 'PT1H';
 @Component({
   templateUrl: './PacketsPage.html',
   styleUrl: './PacketsPage.css',
-  animations: [rowAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PacketsPage {

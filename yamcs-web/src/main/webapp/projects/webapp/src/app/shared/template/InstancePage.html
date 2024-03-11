@@ -2,8 +2,7 @@
 
 <mat-sidenav-container class="mat-typography"
                        [class.zen]="zenMode$ | async"
-                       [class.message-bar-visible]="messageBar.show$ | async"
-                       [@.disabled]="true">
+                       [class.message-bar-visible]="messageBar.show$ | async">
   <mat-sidenav mode="side" [opened]="!(zenMode$ | async)" [disableClose]="true">
     <div class="sidenav-content">
       <mat-toolbar class="top module-title" (click)="searchInput.focus()" style="cursor: text">

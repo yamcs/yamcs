@@ -163,7 +163,6 @@
 
       <tr mat-header-row *cdkHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
       <tr mat-row *cdkRowDef="let row; columns: (columnChooser.displayedColumns$ | async);"
-          [@rowAnimation]="row.animate"
           [ngClass]="row.severity"></tr>
     </table>
 

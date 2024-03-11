@@ -198,7 +198,6 @@
         <tr mat-row
             *matRowDef="let row; columns: (columnChooser.displayedColumns$ | async);"
             (click)="selectPacket(row)"
-            [@rowAnimation]="row.animate"
             [class.selected]="isSelected(row)"></tr>
       </table>
 

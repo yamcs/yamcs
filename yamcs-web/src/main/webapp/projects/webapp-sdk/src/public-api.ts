@@ -1,6 +1,5 @@
 export * from './lib/BitRange';
 export * from './lib/User';
-export { rowAnimation, slideDownAnimation } from './lib/animations';
 export * from './lib/client';
 export * from './lib/commanding/Acknowledgment';
 export * from './lib/commanding/AdvancementParams';
