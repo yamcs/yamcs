@@ -6,27 +6,49 @@ import java.util.Map;
 
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
+import org.yamcs.time.TimeService;
 
 public class ServiceEleven implements PusService {
     Log log;
 
     Map<Integer, PusSubService> pusSubServices = new HashMap<>();
-    YConfiguration serviceElevenConfig;
-    private String yamcsInstance;
+    YConfiguration config;
+    private final String yamcsInstance;
+
+    private static final int DEFAULT_REPORT_COUNT_SIZE = 1;
+    private static final int DEFAULT_SOURCE_ID_SIZE = 2;
+    private static final int DEFAULT_APID_SIZE = 2;
+    private static final int DEFAULT_SEQ_COUNT_SIZE = 2;
+
+    protected static int sourceIdSize;
+    protected static int apidSize;
+    protected static int seqCountSize;
+    protected static int reportCountSize;
+
+    protected static TimeService timeService;
 
     public ServiceEleven(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
-        serviceElevenConfig = config;
+        this.config = config;
         initializeSubServices();
+
+        reportCountSize = config.getInt("reportCountSize", DEFAULT_REPORT_COUNT_SIZE);
+        sourceIdSize = config.getInt("sourceIdSize", DEFAULT_SOURCE_ID_SIZE);
+        apidSize = config.getInt("apidSize", DEFAULT_APID_SIZE);
+        seqCountSize = config.getInt("seqCountSize", DEFAULT_SEQ_COUNT_SIZE);
+
+        timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
     public void initializeSubServices() {
-        pusSubServices.put(10, new SubServiceTen(yamcsInstance, serviceElevenConfig.getConfigOrEmpty("ten")));
+        pusSubServices.put(10, new SubServiceTen(yamcsInstance, config.getConfigOrEmpty("ten")));
+        pusSubServices.put(13, new SubServiceThirteen(yamcsInstance, config.getConfigOrEmpty("thirteen")));
     }
 
     @Override

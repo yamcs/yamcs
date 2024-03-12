@@ -16,8 +16,10 @@ import java.util.Map;
 import org.yamcs.InitException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
+import org.yamcs.tctm.pus.PusTcManager;
 import org.yamcs.tctm.pus.PusTmManager;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tc.PusTcCcsdsPacket;
@@ -34,10 +36,9 @@ public class SubServiceTen extends BucketSaveHandler implements PusSubService {
     String yamcsInstance;
     Log log;
 
-    private static int DEFAULT_REPORT_COUNT_SIZE = 4;
-
-    private static int reportCountSize;
-    private static int packIdPackSeqControlLength = 4;
+    private static final int packIdPackSeqControlLength = 4;
+    private static final int messageTypeSize = 2;
+    private static final int messageSubTypeSize = 2;
 
     Bucket timetagScheduleDetailReportBucket;
     Gson gson;
@@ -45,8 +46,6 @@ public class SubServiceTen extends BucketSaveHandler implements PusSubService {
     public SubServiceTen(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
         log = new Log(getClass(), yamcsInstance);
-
-        reportCountSize = config.getInt("reportCountSize", DEFAULT_REPORT_COUNT_SIZE);
 
         try {
             timetagScheduleDetailReportBucket = getBucket("timetagScheduleDetailReport", yamcsInstance);
@@ -59,12 +58,18 @@ public class SubServiceTen extends BucketSaveHandler implements PusSubService {
         gson = new GsonBuilder().setPrettyPrinting().create();
     }
 
-    public void generateTimetagScheduleDetailReport(Map<Long, byte[]> requestTcPacketsMap) {
+    public ArrayList<byte[]> generateTimetagScheduleDetailReport(Map<Long, byte[]> requestTcPacketsMap) {
         // Apid, SeqCount, Timetag, Service, SubService, sourceId
 
-        String timetagDetailReportName = "";   // FIXME: What name & metadata to put?
-        HashMap<String, String> timetagDetailReportMetadata = new HashMap<>();
+        long missionTime = ServiceEleven.timeService.getMissionTime();
+        String timetagDetailReportName = "TimeTagSchedule_DetailReport | " + LocalDateTime.ofInstant(
+            Instant.ofEpochMilli(missionTime),
+            ZoneId.of("GMT")
+        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss' UTC'"));
         
+        HashMap<String, String> timetagDetailReportMetadata = new HashMap<>();
+        ArrayList<byte[]> releaseAndRequestTimes = new ArrayList<>();
+
         try (StringWriter stringWriter = new StringWriter();
              BufferedWriter writer = new BufferedWriter(stringWriter)) {
             
@@ -73,9 +78,10 @@ public class SubServiceTen extends BucketSaveHandler implements PusSubService {
 
             for(Map.Entry<Long, byte[]> requestTcMap: requestTcPacketsMap.entrySet()) {
                 byte[] tcPacket = requestTcMap.getValue();
+                long timetag = requestTcMap.getKey();
 
                 String timetagStr = LocalDateTime.ofInstant(
-                    Instant.ofEpochMilli(requestTcMap.getKey()),
+                    Instant.ofEpochSecond(timetag),
                     ZoneId.of("GMT")
                 ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss' UTC'"));
 
@@ -86,6 +92,17 @@ public class SubServiceTen extends BucketSaveHandler implements PusSubService {
                 int commandPusSubService = PusTcCcsdsPacket.getMessageSubType(tcPacket);
 
                 writer.write(timetagStr + "," + sourceId + "," + commandApid + "," + commandCcsdsSeqCount + "," + commandPusService + "," + commandPusSubService + "\n");
+
+                // Create new Payload
+                ByteBuffer bb = ByteBuffer.wrap(new byte[PusTcManager.timetagLength + ServiceEleven.sourceIdSize + ServiceEleven.apidSize + ServiceEleven.seqCountSize + messageTypeSize + messageSubTypeSize]);
+                bb.put(ByteArrayUtils.encodeCustomInteger(timetag, PusTcManager.timetagLength));
+                bb.put(ByteArrayUtils.encodeCustomInteger(sourceId, ServiceEleven.sourceIdSize));
+                bb.put(ByteArrayUtils.encodeCustomInteger(commandApid, ServiceEleven.apidSize));
+                bb.put(ByteArrayUtils.encodeCustomInteger(commandCcsdsSeqCount, ServiceEleven.seqCountSize));
+                bb.put(ByteArrayUtils.encodeCustomInteger(commandPusService, messageTypeSize));
+                bb.put(ByteArrayUtils.encodeCustomInteger(commandPusSubService, messageSubTypeSize));
+
+                releaseAndRequestTimes.add(bb.array());
             }
 
             // Put report in the bucket
@@ -93,7 +110,10 @@ public class SubServiceTen extends BucketSaveHandler implements PusSubService {
 
         } catch (IOException e) {
             // FIXME: Should not happen
+            e.printStackTrace();
         }
+
+        return releaseAndRequestTimes;
     }
 
     @Override
@@ -107,44 +127,47 @@ public class SubServiceTen extends BucketSaveHandler implements PusSubService {
         PusTmCcsdsPacket pPkt = new PusTmCcsdsPacket(tmPacket.getPacket());
         byte[] dataField = pPkt.getDataField();
 
-        int numOfReports = (int) ByteArrayUtils.decodeCustomInteger(dataField, 0, reportCountSize);
-        byte[] reportArr = Arrays.copyOfRange(dataField, reportCountSize, dataField.length);
+        Map<Long, byte[]> requestTcPacketsMap = getRequestTcPacketMap(dataField);
+
+        // Generate the report
+        ArrayList<byte[]> newPayload = generateTimetagScheduleDetailReport(requestTcPacketsMap);
+
+        // Create a new TmPacket similar S(11, 13)
+        byte[] primaryHeader = pPkt.getPrimaryHeader();
+        byte[] secondaryHeader = pPkt.getSecondaryHeader();
+        byte[] numOfReportsArr = Arrays.copyOfRange(dataField, 0, ServiceEleven.reportCountSize);
+
+        ByteBuffer bb = ByteBuffer.wrap(new byte[PusTmManager.PRIMARY_HEADER_LENGTH + PusTmManager.secondaryHeaderLength + ServiceEleven.reportCountSize + PusTcManager.timetagLength + ServiceEleven.sourceIdSize + ServiceEleven.apidSize + ServiceEleven.seqCountSize + messageTypeSize + messageSubTypeSize]);
+        bb.put(primaryHeader);
+        bb.put(secondaryHeader);
+        bb.put(numOfReportsArr);
+        newPayload.forEach(bb::put);
+
+        ArrayList<TmPacket> pPkts = new ArrayList<>();
+        pPkts.add(tmPacket);
+        
+        return pPkts;
+    }
+
+    private static Map<Long, byte[]> getRequestTcPacketMap(byte[] dataField) {
+        int numOfReports = (int) ByteArrayUtils.decodeCustomInteger(dataField, 0, ServiceEleven.reportCountSize);
+        byte[] reportArr = Arrays.copyOfRange(dataField, ServiceEleven.reportCountSize, dataField.length);
 
         Map<Long, byte[]> requestTcPacketsMap = new HashMap<>(numOfReports);
 
         for (int reportIndex = 0; reportIndex < numOfReports; reportIndex++) {
             long releaseTime = ByteArrayUtils.decodeLong(reportArr, 0);
             int requestTcPacketLength = (ByteArrayUtils.decodeShort(reportArr,
-                    PusTmManager.absoluteTimeLength + packIdPackSeqControlLength) + 1) + 6;
+                    PusTcManager.timetagLength + packIdPackSeqControlLength) + 1) + 6;
 
-            byte[] requestTcPacket = Arrays.copyOfRange(reportArr, PusTmManager.absoluteTimeLength,
-                    PusTmManager.absoluteTimeLength + requestTcPacketLength);
+            byte[] requestTcPacket = Arrays.copyOfRange(reportArr, PusTcManager.timetagLength,
+                    PusTcManager.timetagLength + requestTcPacketLength);
             requestTcPacketsMap.put(releaseTime, requestTcPacket);
 
-            reportArr = Arrays.copyOfRange(reportArr, PusTmManager.absoluteTimeLength + requestTcPacketLength,
+            reportArr = Arrays.copyOfRange(reportArr, PusTcManager.timetagLength + requestTcPacketLength,
                     reportArr.length);
         }
-
-        // Generate the report
-        generateTimetagScheduleDetailReport(requestTcPacketsMap);
-
-        ArrayList<TmPacket> pPkts = new ArrayList<>();
-        // for (Map.Entry<Long, byte[]> requestTcMap : requestTcPacketsMap.entrySet()) {
-        //     ByteBuffer bb = ByteBuffer.allocate(
-        //             pPkt.getPrimaryHeader().length + pPkt.getSecondaryHeader().length + PusTmManager.absoluteTimeLength
-        //                     + requestTcMap.getValue().length);
-        //     bb.put(pPkt.getPrimaryHeader());
-        //     bb.put(pPkt.getSecondaryHeader());
-        //     bb.putLong(requestTcMap.getKey());
-        //     bb.put(requestTcMap.getValue());
-
-        //     TmPacket newPkt = new TmPacket(
-        //             tmPacket.getReceptionTime(), tmPacket.getGenerationTime(), tmPacket.getSeqCount(), bb.array());
-        //     newPkt.setEarthReceptionTime(tmPacket.getEarthReceptionTime());
-        //     pPkts.add(newPkt);
-        // }
-
-        pPkts.add(tmPacket);
-        return pPkts;
+        
+        return requestTcPacketsMap;
     }
 }

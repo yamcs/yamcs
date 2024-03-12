@@ -59,6 +59,10 @@ public class ServiceEleven implements PusService {
         pusSubServices.put(4, new SubServiceFour(yamcsInstance, config.getConfigOrEmpty("four")));
         pusSubServices.put(5, new SubServiceFive(yamcsInstance, config.getConfigOrEmpty("five")));
         pusSubServices.put(6, new SubServiceSix(yamcsInstance, config.getConfigOrEmpty("six")));
+        pusSubServices.put(9, new SubServiceNine(yamcsInstance, config.getConfigOrEmpty("nine")));
+        pusSubServices.put(11, new SubServiceEleven(yamcsInstance, config.getConfigOrEmpty("eleven")));
+        pusSubServices.put(12, new SubServiceTwelve(yamcsInstance, config.getConfigOrEmpty("twelve")));
+        pusSubServices.put(14, new SubServiceFourteen(yamcsInstance, config.getConfigOrEmpty("fourteen")));
         pusSubServices.put(16, new SubServiceSixteen(yamcsInstance, config.getConfigOrEmpty("sixteen")));
         pusSubServices.put(17, new SubServiceSeventeen(yamcsInstance, config.getConfigOrEmpty("seventeen")));
     }
