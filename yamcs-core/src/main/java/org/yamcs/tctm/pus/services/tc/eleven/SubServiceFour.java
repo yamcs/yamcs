@@ -80,7 +80,7 @@ public class SubServiceFour implements PusSubService {
         buffer.put(primaryHeader);
         buffer.put(secondaryHeader);
         buffer.putInt(NUMBER_OF_TELECOMMANDS);
-        buffer.putLong(timetag);
+        buffer.putInt((int) timetag);       // FF mission only supports 4bytes timetag
         buffer.put(telecommandPayload);
 
         telecommand.setBinary(wrappedTelecommandPayload);                  // Replace with the wrapped telecommand
