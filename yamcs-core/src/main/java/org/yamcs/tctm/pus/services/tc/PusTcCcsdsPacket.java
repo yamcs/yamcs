@@ -88,7 +88,7 @@ public class PusTcCcsdsPacket extends CcsdsPacket {
      */
     private static void manipulateTimetag(PreparedCommand pc) {
         byte[] telecommandPayload = pc.getBinary();
-        long timetag = ByteArrayUtils.decodeLong(telecommandPayload, PusTcManager.DEFAULT_TIMETAG_INDEX);
+        long timetag = ByteArrayUtils.decodeCustomInteger(telecommandPayload, PusTcManager.DEFAULT_TIMETAG_INDEX, PusTcManager.timetagLength);
 
         int newTelecommandPayloadLength = telecommandPayload.length - PusTcManager.timetagLength;
         byte[] newTelecommandPayload = new byte[newTelecommandPayloadLength];

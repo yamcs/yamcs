@@ -100,7 +100,7 @@ public class ServiceThirteen extends AbstractYamcsService
         VALID_CODES.put("InactivityDetected", ConditionCode.INACTIVITY_DETECTED);
         VALID_CODES.put("FileChecksumFailure", ConditionCode.FILE_CHECKSUM_FAILURE);
         VALID_CODES.put("CheckLimitReached", ConditionCode.CHECK_LIMIT_REACHED);
-        VALID_CODES.put("PreparedCommandNotFomed", ConditionCode.UNSUPPORTED_CHECKSUM_TYPE);
+        VALID_CODES.put("PreparedCommandNotFormed", ConditionCode.UNSUPPORTED_CHECKSUM_TYPE);
     }
 
     static {
