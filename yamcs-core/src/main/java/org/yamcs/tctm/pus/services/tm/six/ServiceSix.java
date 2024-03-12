@@ -6,6 +6,7 @@ import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
+import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
@@ -28,6 +29,8 @@ public class ServiceSix implements PusService {
     protected static int offsetSize;
     protected static int lengthSize;
 
+    protected static int checksumSize = 2;
+    protected static CrcCciitCalculator crc = new CrcCciitCalculator();
 
     public ServiceSix(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;

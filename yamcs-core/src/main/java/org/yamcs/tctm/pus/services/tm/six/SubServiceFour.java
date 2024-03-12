@@ -43,12 +43,17 @@ public class SubServiceFour implements PusSubService {
             int offset = (int) ByteArrayUtils.decodeCustomInteger(dumpData, 0, ServiceSix.offsetSize);
             int length = (int) ByteArrayUtils.decodeCustomInteger(dumpData, ServiceSix.offsetSize, ServiceSix.lengthSize);
             int data = (int) ByteArrayUtils.decodeCustomInteger(dumpData, ServiceSix.offsetSize + ServiceSix.lengthSize, length);
+            int checksum = (int) ByteArrayUtils.decodeCustomInteger(dumpData, ServiceSix.offsetSize + ServiceSix.lengthSize + length, ServiceSix.checksumSize);
 
+            /*
+             * FIXME: Verify the checksum | But how?
+             *  In case of checksum verification failure for an offset, the MDb unfortunately still expects all the N fields to be filled, in the correct order
+             * */
             dumpObject.put(offset, ByteArrayUtils.encodeCustomInteger(data, length));
             totalLength += length;
 
             // Reset the dumpData for the next iteration
-            dumpData = Arrays.copyOfRange(dumpData, ServiceSix.offsetSize + ServiceSix.lengthSize + length, dumpData.length);
+            dumpData = Arrays.copyOfRange(dumpData, ServiceSix.offsetSize + ServiceSix.lengthSize + length + ServiceSix.checksumSize, dumpData.length);
             nFields--;
         }
 
