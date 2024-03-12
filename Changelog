@@ -1,3 +1,11 @@
+Version 5.9.2 released 12-March-2024
+- Tweak activity-related UI
+- Fix issue with cancelling of activities
+- Fix issue with verification of commands with non-parameter inputs
+- Fix yamcs-web packaging issue
+- Added a option dataPartitioningByTime to allow partitioning the tm, pp, events, alarms, cmdhistory tables and the parameter archive by time.
+
+
 Version 5.9.1 released 6-March-2024
 - Fixed a bug whereas Yamcs won't remember after the first restart that it stored the tm,pp and events table in a different RocksDB column family (option introduced in 5.9.0)
 

@@ -89,6 +89,9 @@ The instance configuration file :file:`etc/yamcs.{instance}.yaml` contains most 
 
     timeService:
         class: org.yamcs.time.SimulationTimeService
+    
+    dataPartitioningByTime: YYYY/MM
+
 
 
 The following options are supported
@@ -107,6 +110,10 @@ streamConfig(map)
     
 timeService(map)
     This configures the source of the "mission time". By default the RealtimeTimeService uses the local computer clock as the time source. The :javadoc:`org.yamcs.time.SimulationTimeService` can be used to simulate a mission time in the past or the future. If configured, the time can be controlled using the :apidoc:`HTTP API <time/set-time>`. The ``updateSimulationTime: true`` option on a telemetry data link can also be used to manipulate the simulation time - in this case the time will be set to be the generation time of the packet.
+    
+dataPartitioningByTime(String)
+    One of "none", "YYYY", "YYYY/MM" or "YYYY/DOY"
+    If specified, partition the tm, pp, events, alarms, cmdhistory tables and the parameter archive by time. For example, specifying YYYY/MM will store the data of each month into a different RocksdDB database. This option is useful when the archive is expected to grow very large: the new data will not disturb the old data (otherwise RocksDB always merges new files with old ones) and data can be spread over multiple filesystems. 
 
 
 Configuration Properties
