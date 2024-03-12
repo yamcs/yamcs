@@ -16,6 +16,7 @@ import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;
 import org.rocksdb.DBOptions;
+import org.rocksdb.MutableColumnFamilyOptions;
 import org.rocksdb.Options;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
@@ -414,7 +415,28 @@ public class YRDB {
         if (cfh == null) {
             throw new IllegalArgumentException("Unknown column family '" + cfName + "'");
         }
+
         db.compactRange(cfh, start, stop);
+    }
+
+    public void disableAutoCompaction(ColumnFamilyHandle cfh) throws RocksDBException {
+        if (closed) {
+            throw new IllegalStateException("Database is closed");
+        }
+        MutableColumnFamilyOptions.MutableColumnFamilyOptionsBuilder mcfo = MutableColumnFamilyOptions.builder() ;
+        mcfo.setDisableAutoCompactions(true);
+
+        db.setOptions(cfh, mcfo.build());
+    }
+
+    public void enableAutoCompaction(ColumnFamilyHandle cfh) throws RocksDBException {
+        if (closed) {
+            throw new IllegalStateException("Database is closed");
+        }
+        MutableColumnFamilyOptions.MutableColumnFamilyOptionsBuilder mcfo = MutableColumnFamilyOptions.builder();
+        mcfo.setDisableAutoCompactions(false);
+
+        db.setOptions(cfh, mcfo.build());
     }
 
     public void compactRange(ColumnFamilyHandle cfh) throws RocksDBException {
@@ -435,5 +457,6 @@ public class YRDB {
     public static byte[] cfNameb(String cfName) {
         return cfName.getBytes(StandardCharsets.UTF_8);
     }
+
 
 }

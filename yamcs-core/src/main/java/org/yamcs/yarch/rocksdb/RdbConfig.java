@@ -36,7 +36,8 @@ public class RdbConfig {
     public static final String KEY_CF_PATTERN = "columnFamilyPattern";
     public static final String KEY_TF_CONFIG = "tableFormatConfig";
 
-    public static final int DEFAULT_MAX_OPEN_FILES = 1000;
+
+    public static final int DEFAULT_MAX_OPEN_FILES = 10000;
 
     static final Map<String, CompressionType> COMP_TYPES = new HashMap<>();
     static {
@@ -102,8 +103,9 @@ public class RdbConfig {
         DBOptions dboptions;
 
         ColumnFamilyOptions defaultCfOptions = new ColumnFamilyOptions();
-        ColumnFamilyOptions smallDbCfOptions = new ColumnFamilyOptions();
-        ColumnFamilyOptions bigDbCfOptions = new ColumnFamilyOptions();
+        ColumnFamilyOptions metadataDbCfOptions = new ColumnFamilyOptions();
+        ColumnFamilyOptions rtDataCfOptions = new ColumnFamilyOptions();
+        ColumnFamilyOptions parchiveCfOptions = new ColumnFamilyOptions();
 
         List<CfConfig> cfConfigList = new ArrayList<>();
 
@@ -115,19 +117,30 @@ public class RdbConfig {
         public TablespaceConfig() {
             dboptions = new DBOptions();
             dboptions.setCreateIfMissing(true);
-            dboptions.setIncreaseParallelism(4);
             dboptions.setMaxOpenFiles(DEFAULT_MAX_OPEN_FILES);
             int halfNumProc = Runtime.getRuntime().availableProcessors() / 2;
             if (halfNumProc > 1) {
                 dboptions.setIncreaseParallelism(halfNumProc);
             }
 
-            smallDbCfOptions.optimizeForSmallDb();
+            metadataDbCfOptions.optimizeForSmallDb();
 
             defaultCfOptions.useFixedLengthPrefixExtractor(4);
 
-            bigDbCfOptions.optimizeLevelStyleCompaction();
-            bigDbCfOptions.useFixedLengthPrefixExtractor(4);
+            rtDataCfOptions.useFixedLengthPrefixExtractor(4);
+            rtDataCfOptions.setCompressionType(CompressionType.LZ4_COMPRESSION);
+            rtDataCfOptions.setMaxWriteBufferNumber(4);
+            rtDataCfOptions.setTargetFileSizeMultiplier(2);
+            rtDataCfOptions.setLevel0SlowdownWritesTrigger(50);
+            rtDataCfOptions.setLevel0StopWritesTrigger(100);
+
+            parchiveCfOptions.useFixedLengthPrefixExtractor(4);
+            parchiveCfOptions.setCompressionType(CompressionType.LZ4_COMPRESSION);
+            parchiveCfOptions.setTargetFileSizeMultiplier(2);
+            parchiveCfOptions.setMaxWriteBufferNumber(4);
+            parchiveCfOptions.setLevel0FileNumCompactionTrigger(20);
+            parchiveCfOptions.setLevel0SlowdownWritesTrigger(50);
+            parchiveCfOptions.setLevel0StopWritesTrigger(100);
 
             BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
             tableFormatConfig.setBlockSize(256l * 1024);
@@ -135,12 +148,12 @@ public class RdbConfig {
             tableFormatConfig.setFilterPolicy(new BloomFilter());
             tableFormatConfig.setIndexType(IndexType.kTwoLevelIndexSearch);
 
-            bigDbCfOptions.setTableFormatConfig(tableFormatConfig);
+            rtDataCfOptions.setTableFormatConfig(tableFormatConfig);
+            parchiveCfOptions.setTableFormatConfig(tableFormatConfig);
 
-            // special configs for the parameter_archive, rt_data and metadata
-            cfConfigList.add(new CfConfig(Pattern.compile(ParameterArchive.CF_NAME), bigDbCfOptions));
-            cfConfigList.add(new CfConfig(Pattern.compile(XtceTmRecorder.CF_NAME), bigDbCfOptions));
-            cfConfigList.add(new CfConfig(Pattern.compile(Tablespace.CF_METADATA), smallDbCfOptions));
+            cfConfigList.add(new CfConfig(Pattern.compile(ParameterArchive.CF_NAME), parchiveCfOptions));
+            cfConfigList.add(new CfConfig(Pattern.compile(XtceTmRecorder.CF_NAME), rtDataCfOptions));
+            cfConfigList.add(new CfConfig(Pattern.compile(Tablespace.CF_METADATA), metadataDbCfOptions));
         }
 
         TablespaceConfig(YConfiguration tblspConfig) throws ConfigurationException {

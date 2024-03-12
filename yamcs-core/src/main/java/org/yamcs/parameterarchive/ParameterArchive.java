@@ -130,10 +130,9 @@ public class ParameterArchive extends AbstractYamcsService {
             log.debug("realtimeFillerConfig: {}", realtimeFillerConfig);
         }
 
-        String schema = config.getString("partitioningSchema");
-        if (!"none".equalsIgnoreCase(schema)) {
-            partitioningSchema = TimePartitionSchema.getInstance(schema);
-        }
+        manualCompactions = (!realtimeFillerEnabled && backFillerEnabled);
+
+        partitioningSchema = ydb.getTimePartitioningSchema(config);
 
         if (!config.containsKey("backFiller") && !config.containsKey("realtimeFiller")) {
             backFiller = new BackFiller(this, YConfiguration.emptyConfig());
@@ -219,6 +218,7 @@ public class ParameterArchive extends AbstractYamcsService {
         Partition p = createAndGetPartition(getIntervalStart(pgs.getSegmentStart()));
         YRDB rdb = tablespace.getRdb(p.partitionDir, false);
         ColumnFamilyHandle cfh = cfh(rdb, p);
+
         try (WriteBatch writeBatch = new WriteBatch(); WriteOptions wo = new WriteOptions()) {
             writeToBatch(cfh, writeBatch, pgs);
             rdb.write(wo, writeBatch);
@@ -535,6 +535,37 @@ public class ParameterArchive extends AbstractYamcsService {
     public RealtimeArchiveFiller getRealtimeFiller() {
         return realtimeFiller;
     }
+
+    public void disableAutoCompaction(long start, long stop) {
+        try {
+            var interval = new TimeInterval(start, stop);
+            log.debug("Disabling auto-compaction on partitions overlapping with {}", interval.toStringEncoded());
+            var it = partitions.overlappingIterator(interval);
+            while (it.hasNext()) {
+                Partition p = it.next();
+                YRDB rdb = tablespace.getRdb(p.partitionDir, false);
+                rdb.disableAutoCompaction(cfh(rdb, p));
+            }
+        } catch (RocksDBException e) {
+            throw new ParameterArchiveException("error compacting", e);
+        }
+    }
+
+    public void enableAutoCompaction(long start, long stop) {
+        try {
+            var interval = new TimeInterval(start, stop);
+            log.debug("Enabling auto-compaction on partitions overlapping with {}", interval.toStringEncoded());
+            var it = partitions.overlappingIterator(interval);
+            while (it.hasNext()) {
+                Partition p = it.next();
+                YRDB rdb = tablespace.getRdb(p.partitionDir, false);
+                rdb.enableAutoCompaction(cfh(rdb, p));
+            }
+        } catch (RocksDBException e) {
+            throw new ParameterArchiveException("error compacting", e);
+        }
+    }
+
 
     public void compact() {
         try {
