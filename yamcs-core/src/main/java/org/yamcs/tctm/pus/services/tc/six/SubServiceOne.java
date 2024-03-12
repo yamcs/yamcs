@@ -8,6 +8,7 @@ import org.yamcs.tctm.pus.PusTcManager;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tc.PusTcCcsdsPacket;
 import org.yamcs.utils.ByteArrayUtils;
+import org.yamcs.utils.StringConverter;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ public class SubServiceOne implements PusSubService {
         List<ServiceSix.Pair<Integer, Integer>> baseIdMap = ServiceSix.memoryIds.get(new ServiceSix.Pair<>(apid, memoryId)).get(baseId);
         ArrayList<byte[]> loadData = new ArrayList<>();
 
-        for (int index = 0; index <= nFields; index++) {
+        for (int index = 0; index < nFields; index++) {
             int argOffsetValue = (int) ByteArrayUtils.decodeCustomInteger(cmdLoadData, 0, ServiceSix.offsetArgumentSize);
 
             int offsetValue, dataLength;
@@ -49,11 +50,22 @@ public class SubServiceOne implements PusSubService {
                 dataLength = offsetMap.getSecond();
 
                 if (offsetValue == argOffsetValue) {
-                    ByteBuffer bb = ByteBuffer.wrap(new byte[ServiceSix.offsetSize + ServiceSix.lengthSize + dataLength]);
+                    // Calculate CRC16 checksum
+                    int dataToBeLoaded = (int) ByteArrayUtils.decodeCustomInteger(
+                            Arrays.copyOfRange(cmdLoadData, ServiceSix.offsetArgumentSize, ServiceSix.offsetArgumentSize + dataLength), 0, dataLength);
+                    ByteBuffer bbN = ByteBuffer.wrap(new byte[dataLength + ServiceSix.lengthSize]);
+                    bbN.put(ByteArrayUtils.encodeCustomInteger(dataLength, ServiceSix.lengthSize));
+                    bbN.put(ByteArrayUtils.encodeCustomInteger(dataToBeLoaded, dataLength));
+
+                    int checksum = ServiceSix.crc.compute(bbN.array(), 0, dataLength + ServiceSix.lengthSize);
+
+                    // Create data to load for each N (dataLength + data)
+                    ByteBuffer bb = ByteBuffer.wrap(new byte[ServiceSix.offsetSize + ServiceSix.lengthSize + dataLength + ServiceSix.checksumSize]);
                     bb.put(ByteArrayUtils.encodeCustomInteger(offsetValue, ServiceSix.offsetSize));
                     bb.put(ByteArrayUtils.encodeCustomInteger(dataLength, ServiceSix.lengthSize));
-                    bb.put(Arrays.copyOfRange(cmdLoadData, ServiceSix.offsetArgumentSize, dataLength));
-
+                    bb.put(ByteArrayUtils.encodeCustomInteger(dataToBeLoaded, dataLength));
+                    bb.put(ByteArrayUtils.encodeCustomInteger(checksum, ServiceSix.checksumSize));
+                    
                     loadData.add(bb.array());
                     cmdLoadData = Arrays.copyOfRange(cmdLoadData, ServiceSix.offsetArgumentSize + dataLength, cmdLoadData.length);
                     break;
