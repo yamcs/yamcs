@@ -2395,7 +2395,7 @@ public class V7Loader extends V7LoaderBase {
                 case "lowInclusive":
                     ipt.addAlarmRange(context, new DoubleRange(tvd, Double.POSITIVE_INFINITY, true, true), level);
                     break;
-                case "lowExclusive:":
+                case "lowExclusive":
                     ipt.addAlarmRange(context, new DoubleRange(tvd, Double.POSITIVE_INFINITY, false, true), level);
                     break;
                 case "high":
@@ -2417,7 +2417,7 @@ public class V7Loader extends V7LoaderBase {
                 case "lowInclusive":
                     fpt.addAlarmRange(context, new DoubleRange(tvd, Double.POSITIVE_INFINITY, true, true), level);
                     break;
-                case "lowExclusive:":
+                case "lowExclusive":
                     fpt.addAlarmRange(context, new DoubleRange(tvd, Double.POSITIVE_INFINITY, false, true), level);
                     break;
                 case "high":

@@ -51,4 +51,9 @@ export class ActivityPage {
       }
     });
   }
+
+  cancelActivity(activity: Activity) {
+    this.yamcs.yamcsClient.cancelActivity(this.yamcs.instance!, activity.id)
+      .catch(err => this.messageService.showError(err));
+  }
 }

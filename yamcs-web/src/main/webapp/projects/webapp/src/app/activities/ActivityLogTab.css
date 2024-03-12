@@ -1,3 +1,24 @@
+.log-container {
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  position: absolute;
+  top: 48px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+  padding-left: 12px;
+}
+
+.log-actions {
+  height: 24px;
+  margin: 12px;
+  display: flex;
+}
+
+.log-actions .ya-button {
+  margin-right: 7px;
+}
+
 .extra-bar-container {
   padding: 12px;
   border-bottom: 1.1px solid rgba(0, 0, 0, 0.08);
@@ -32,4 +53,10 @@ table.logs tr.service td {
 
 table.logs td.message {
   white-space: pre-wrap;
+}
+
+.top,
+.bottom {
+  visibility: hidden;
+  line-height: 0;
 }

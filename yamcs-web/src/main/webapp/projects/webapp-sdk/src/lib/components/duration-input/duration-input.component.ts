@@ -37,8 +37,7 @@ export class DurationInputComponent implements ControlValueAccessor, Validator {
 
   resolutionControl: UntypedFormControl;
 
-  constructor(
-  ) {
+  constructor() {
     this.resolutionControl = new UntypedFormControl('seconds', Validators.required);
     this.resolutionControl.valueChanges.subscribe(() => this.fireChange());
   }

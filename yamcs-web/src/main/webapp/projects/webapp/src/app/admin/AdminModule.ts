@@ -13,10 +13,11 @@ import { ApplicationCredentialsDialog } from './iam/ApplicationCredentialsDialog
 import { ChangeUserPasswordDialog } from './iam/ChangeUserPasswordDialog';
 import { UsersTable } from './iam/UsersTable';
 import { ReplicationState } from './replication/ReplicationState';
+import { ShowStreamsDialog } from './replication/ShowStreamsDialog';
 import { MessageNamePipe } from './routes/MessageNamePipe';
 import { RouteDetail } from './routes/RouteDetail';
-import { ServicesTable } from './services/ServicesTable';
 import { ServiceState } from './services/ServiceState';
+import { ServicesTable } from './services/ServicesTable';
 import { AdminSharedModule } from './shared/AdminSharedModule';
 import { ThreadsTable } from './threads/ThreadsTable';
 import { TraceElement } from './threads/TraceElement';
@@ -47,6 +48,7 @@ const pipes = [
     ServicesTable,
     Shell,
     ShowEnumDialog,
+    ShowStreamsDialog,
     StreamDataComponent,
     ThreadsTable,
     TraceElement,

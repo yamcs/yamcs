@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.yamcs.client.Acknowledgment;
-import org.yamcs.client.Command;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.MetaCommand;
@@ -15,6 +13,7 @@ import org.yamcs.xtce.MetaCommand;
  */
 public class StackedCommand {
 
+    private String acknowledgment;
     // -1 means: inherit from stack
     private int waitTime = -1;
     private MetaCommand meta;
@@ -23,9 +22,15 @@ public class StackedCommand {
 
     private String comment;
 
-    private Command execution;
-
     public StackedCommand() {
+    }
+
+    public void setAcknowledgment(String acknowledgment) {
+        this.acknowledgment = acknowledgment;
+    }
+
+    public String getAcknowledgment() {
+        return acknowledgment;
     }
 
     public void setWaitTime(int waitTime) {
@@ -55,18 +60,6 @@ public class StackedCommand {
 
     public MetaCommand getMetaCommand() {
         return meta;
-    }
-
-    public Acknowledgment getQueuedState() {
-        return execution != null ? execution.getQueuedAcknowledgment() : null;
-    }
-
-    public Acknowledgment getReleasedState() {
-        return execution != null ? execution.getReleasedAcknowledgment() : null;
-    }
-
-    public Acknowledgment getSentState() {
-        return execution != null ? execution.getSentAcknowledgment() : null;
     }
 
     public void addAssignment(Argument arg, String value) {

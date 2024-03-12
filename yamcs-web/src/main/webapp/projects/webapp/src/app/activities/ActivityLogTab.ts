@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ActivityLog, ActivityLogSubscription, MessageService, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -23,6 +23,15 @@ export class ActivityLogTab implements OnDestroy {
 
   private syncSubscription: Subscription;
   private activityLogSubscription: ActivityLogSubscription;
+
+  @ViewChild('logContainer')
+  logContainer: ElementRef<HTMLDivElement>;
+
+  @ViewChild('top')
+  topAnchor: ElementRef<HTMLDivElement>;
+
+  @ViewChild('bottom')
+  bottomAnchor: ElementRef<HTMLDivElement>;
 
   constructor(
     route: ActivatedRoute,
@@ -62,6 +71,16 @@ export class ActivityLogTab implements OnDestroy {
 
   private emitLogs() {
     this.logs$.next([...this.archivedLogs, ...this.realtimeLogs]);
+
+    if (this.logContainer) {
+      const { nativeElement: el } = this.logContainer;
+      const isAtBottom = Math.abs(el.scrollHeight - el.clientHeight - el.scrollTop) <= 1;
+      if (isAtBottom) {
+        setTimeout(() => { // T/O to allow for page update
+          this.bottomAnchor.nativeElement.scrollIntoView();
+        });
+      }
+    }
   }
 
   ngOnDestroy() {

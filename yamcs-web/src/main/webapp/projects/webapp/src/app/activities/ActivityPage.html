@@ -12,12 +12,19 @@
         <mat-icon>thumb_up</mat-icon>
         Set successful
       </button>
-      &nbsp;
       <button mat-button color="primary" (click)="setFailed(activity)">
         <mat-icon>thumb_down</mat-icon>
         Set failed
       </button>
     </ng-container>
+    <button mat-button
+            color="primary"
+            *ngIf="mayControlActivities()"
+            [disabled]="!!activity.stop"
+            (click)="cancelActivity(activity)">
+      <mat-icon>cancel</mat-icon>
+      Cancel
+    </button>
   </app-instance-toolbar>
 
   <div class="activity-header">
@@ -38,6 +45,13 @@
        [active]="rla.isActive"
        [queryParams]="{c: yamcs.context}">
       Activity Log
+    </a>
+    <a mat-tab-link
+       routerLink="details"
+       routerLinkActive #rlb="routerLinkActive"
+       [active]="rlb.isActive"
+       [queryParams]="{c: yamcs.context}">
+      Details
     </a>
   </nav>
 

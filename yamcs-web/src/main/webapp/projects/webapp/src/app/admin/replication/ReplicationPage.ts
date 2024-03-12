@@ -1,11 +1,14 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ReplicationInfoSubscription, ReplicationMaster, ReplicationSlave, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
+import { ShowStreamsDialog } from './ShowStreamsDialog';
 
 @Component({
   templateUrl: './ReplicationPage.html',
+  styleUrls: ['./ReplicationPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ReplicationPage implements OnDestroy {
@@ -19,6 +22,7 @@ export class ReplicationPage implements OnDestroy {
     'remoteAddress',
     'pullFrom',
     'tx',
+    'actions',
   ];
 
   masterColumns = [
@@ -31,6 +35,7 @@ export class ReplicationPage implements OnDestroy {
     'pushTo',
     'localTx',
     'nextTx',
+    'actions',
   ];
 
   slavesDataSource = new MatTableDataSource<ReplicationSlave>();
@@ -43,6 +48,7 @@ export class ReplicationPage implements OnDestroy {
   constructor(
     yamcs: YamcsService,
     title: Title,
+    private dialog: MatDialog,
   ) {
     title.setTitle('Replication');
     this.replicationInfoSubscription = yamcs.yamcsClient.createReplicationInfoSubscription(info => {
@@ -50,6 +56,13 @@ export class ReplicationPage implements OnDestroy {
       this.mastersDataSource.data = info.masters || [];
       this.hasSlaves$.next(this.slavesDataSource.data.length > 0);
       this.hasMasters$.next(this.mastersDataSource.data.length > 0);
+    });
+  }
+
+  showReplicationStreams(streams: string) {
+    this.dialog.open(ShowStreamsDialog, {
+      width: '500px',
+      data: { streams },
     });
   }
 

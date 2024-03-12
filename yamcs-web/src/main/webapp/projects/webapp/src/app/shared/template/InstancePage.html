@@ -101,7 +101,7 @@
           File transfer
         </ya-sidebar-nav-item>
 
-        <ya-sidebar-nav-group *ngIf="proceduresItems.length"
+        <ya-sidebar-nav-group *ngIf="((connectionInfo$ | async)?.instance?.capabilities | arrayContains:'activities') && proceduresItems.length"
                               label="Procedures" icon="playlist_play"
                               [active]="proceduresActive"
                               [expanded]="proceduresExpanded"
@@ -114,11 +114,6 @@
             {{ item.label }}
           </ya-sidebar-nav-item>
         </ya-sidebar-nav-group>
-
-        <ng-container
-                      *ngIf="showActivitiesItem() && ((connectionInfo$ | async)?.instance?.capabilities | arrayContains:'activities')">
-          <app-activities-label />
-        </ng-container>
 
         <ng-container *ngIf="((connectionInfo$ | async)?.instance?.capabilities | arrayContains:'timeline')">
           <ya-sidebar-nav-group *ngIf=" timelineItems.length"
@@ -134,6 +129,11 @@
               {{ item.label }}
             </ya-sidebar-nav-item>
           </ya-sidebar-nav-group>
+        </ng-container>
+
+        <ng-container
+                      *ngIf="showActivitiesItem() && ((connectionInfo$ | async)?.instance?.capabilities | arrayContains:'activities')">
+          <app-activities-label />
         </ng-container>
 
         <ya-sidebar-nav-group *ngIf="mdbItems.length"

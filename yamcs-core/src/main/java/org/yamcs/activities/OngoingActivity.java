@@ -1,6 +1,7 @@
 package org.yamcs.activities;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 import org.yamcs.security.User;
 
@@ -9,7 +10,7 @@ public class OngoingActivity {
     private final Activity activity;
 
     // Underlying work. This can be cancelled, after which the resultFuture triggers
-    CompletableFuture<Void> workFuture;
+    Future<Void> workFuture;
 
     // Future that updates state following completion of the work
     CompletableFuture<Void> resultFuture;
@@ -49,13 +50,13 @@ public class OngoingActivity {
     public void complete(User user) {
         verifyManualActivity();
         stopRequester = user;
-        workFuture.complete(null);
+        ((CompletableFuture<Void>) workFuture).complete(null);
     }
 
     public void completeExceptionally(String failureReason, User user) {
         verifyManualActivity();
         stopRequester = user;
-        workFuture.completeExceptionally(new ManualFailureException(failureReason));
+        ((CompletableFuture<Void>) workFuture).completeExceptionally(new ManualFailureException(failureReason));
     }
 
     private void verifyManualActivity() {
