@@ -152,3 +152,7 @@ streamConfig:
 
       
   sqlFile: "etc/extra_streams.sql"
+
+#store data (tm, pp, events, alarms, cmdhistory, parameter archive) in partitions year/day_of_year
+dataPartitioningByTime: YYYY/MM
+

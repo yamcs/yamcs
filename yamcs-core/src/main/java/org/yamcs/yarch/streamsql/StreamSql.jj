@@ -390,20 +390,28 @@ void TableOption(CreateTableStatement cts) throws StreamSqlException: {
 PartitioningSpec PartitioningSpec() throws StreamSqlException: {
     PartitioningSpec pspec;
     String cname1, cname2;
-    Token timePartSchema = null;
+    Token t;
+    String timePartSchema = null;
 } {
-  ( <K_TIME> "(" cname1=ObjectName() [ "(" timePartSchema = <S_STRING> ")" ] ")" {pspec = PartitioningSpec.timeSpec(cname1);} 
+  ( <K_TIME> "(" 
+                 cname1=ObjectName() 
+                 [ "(" t = <S_STRING> ")" {timePartSchema = getNonEscapedString(t.image);} ] 
+             ")" {
+  		         pspec = PartitioningSpec.timeSpec(cname1, timePartSchema);
+  	         } 
     |
-	<K_VALUE> "(" cname1=ObjectName() ")" {pspec = PartitioningSpec.valueSpec(cname1);} 
+	<K_VALUE> "(" cname1=ObjectName() ")" {
+	   pspec = PartitioningSpec.valueSpec(cname1);
+	 } 
     |
-	<K_TIME_AND_VALUE> "(" cname1=ObjectName() [ "(" timePartSchema = <S_STRING> ")" ] "," cname2=ObjectName() ")" { pspec = PartitioningSpec.timeAndValueSpec(cname1, cname2);} 
-  ) {  if(timePartSchema!=null) {
-          try {
-          	 pspec.setTimePartitioningSchema(getNonEscapedString(timePartSchema.image));
-           } catch (IllegalArgumentException e) {
-               throw new ParseException(e.getMessage());
-           }
-       }
+	<K_TIME_AND_VALUE> "(" 
+	            cname1=ObjectName() 
+	            [ "(" t = <S_STRING> ")" {timePartSchema =  getNonEscapedString(t.image);} ]
+	            "," cname2=ObjectName() 
+	   ")" {
+	        pspec = PartitioningSpec.timeAndValueSpec(cname1, cname2, timePartSchema);
+	    } 
+  ) { 
        return pspec;
     }
 }

@@ -31,7 +31,7 @@ public class RdbEngineTest extends YarchTestCase {
         tdef.addColumn(new ColumnDefinition("packetid", DataType.INT));
         TableDefinition tblDef = new TableDefinition("RdbEngineTest", tdef, Arrays.asList("gentime"));
 
-        PartitioningSpec pspec = PartitioningSpec.timeAndValueSpec("gentime", "packetid");
+        PartitioningSpec pspec = PartitioningSpec.timeAndValueSpec("gentime", "packetid", "YYYY");
         pspec.setValueColumnType(DataType.INT);
         tblDef.setPartitioningSpec(pspec);
 

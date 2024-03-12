@@ -181,24 +181,30 @@ public class TableDefinitionConstructor extends Constructor {
                 pspec = PartitioningSpec.noneSpec();
             } else if (type == _type.TIME) {
                 String timeColumn = (String) m.get(K_TIME_COLUMN);
-                pspec = PartitioningSpec.timeSpec(timeColumn);
+                pspec = PartitioningSpec.timeSpec(timeColumn, getSchema(m));
             } else if ((type == _type.VALUE)) {
                 String valueColumn = (String) m.get(K_VALUE_COLUMN);
                 pspec = PartitioningSpec.valueSpec(valueColumn);
             } else if (type == _type.TIME_AND_VALUE) {
                 String timeColumn = (String) m.get(K_TIME_COLUMN);
                 String valueColumn = (String) m.get(K_VALUE_COLUMN);
-                pspec = PartitioningSpec.timeAndValueSpec(timeColumn, valueColumn);
+                pspec = PartitioningSpec.timeAndValueSpec(timeColumn, valueColumn, getSchema(m));
             } else {
                 throw new IllegalArgumentException("Unknown partitioning type " + type);
             }
 
-            if (m.containsKey(K_TIME_PARTITIONING_SCHEMA)) {
-                pspec.setTimePartitioningSchema((String) m.get(K_TIME_PARTITIONING_SCHEMA));
-            } else {
-                pspec.setTimePartitioningSchema("YYYY/DOY");
-            }
+
             return pspec;
         }
     }
+
+    private String getSchema(Map<String, Object> m) {
+        if (m.containsKey(K_TIME_PARTITIONING_SCHEMA)) {
+            return (String) m.get(K_TIME_PARTITIONING_SCHEMA);
+        } else {// this probably should indicate some sort of database corruption but we keep it for compatibility
+                // reasons
+            return "YYYY/DOY";
+        }
+    }
+
 }

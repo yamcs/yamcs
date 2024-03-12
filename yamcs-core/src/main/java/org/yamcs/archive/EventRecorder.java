@@ -33,9 +33,14 @@ public class EventRecorder extends AbstractYamcsService {
 
         try {
             if (ydb.getTable(TABLE_NAME) == null) {
+                var timePart = ydb.getTimePartitioningSchema(config);
+
+                var partitionBy = timePart == null ? ""
+                        : "partition by time(gentime('" + timePart.getName() + "'))";
+
                 ydb.execute("create table " + TABLE_NAME
                         + "(gentime timestamp, source enum, seqNum int, body PROTOBUF('" + Event.class.getName()
-                        + "'), primary key(gentime, source, seqNum)) histogram(source)"
+                        + "'), primary key(gentime, source, seqNum)) histogram(source) " + partitionBy
                         + " table_format=compressed,column_family:"+CF_NAME);
             }
 

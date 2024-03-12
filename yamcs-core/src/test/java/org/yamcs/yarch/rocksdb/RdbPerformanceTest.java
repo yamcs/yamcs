@@ -153,8 +153,7 @@ public class RdbPerformanceTest extends YarchTestCase {
         tdef.addColumn(new ColumnDefinition("packet", DataType.BINARY));
         TableDefinition tblDef = new TableDefinition(tblname, tdef, Arrays.asList("gentime"));
 
-        PartitioningSpec pspec = PartitioningSpec.timeSpec("gentime");
-        pspec.setTimePartitioningSchema("YYYY");
+        PartitioningSpec pspec = PartitioningSpec.timeSpec("gentime", "YYYY");
         tblDef.setPartitioningSpec(pspec);
 
         tblDef.setStorageEngineName(YarchDatabase.RDB_ENGINE_NAME);
@@ -174,8 +173,7 @@ public class RdbPerformanceTest extends YarchTestCase {
         tdef.addColumn(new ColumnDefinition("packet", DataType.BINARY));
         TableDefinition tblDef = new TableDefinition(tblname, tdef, Arrays.asList("gentime", "pname"));
 
-        PartitioningSpec pspec = PartitioningSpec.timeAndValueSpec("gentime", "pname");
-        pspec.setTimePartitioningSchema("YYYY");
+        PartitioningSpec pspec = PartitioningSpec.timeAndValueSpec("gentime", "pname", "YYYY");
         tblDef.setPartitioningSpec(pspec);
 
         tblDef.setStorageEngineName(YarchDatabase.RDB_ENGINE_NAME);

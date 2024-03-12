@@ -83,11 +83,15 @@ public class XtceTmRecorder extends AbstractYamcsService {
         super.init(yamcsInstance, serviceName, config);
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+        var timePart = ydb.getTimePartitioningSchema(config);
+
+        var partitionBy = timePart == null ? "partition by value(pname)"
+                : "partition by time_and_value(gentime('" + timePart.getName() + "'), pname)";
         try {
             if (ydb.getTable(TABLE_NAME) == null) {
                 String query = "create table " + TABLE_NAME + "(" + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition1()
-                        + ", primary key(gentime, seqNum)) histogram(pname) partition by value(pname) "
-                        + "table_format=compressed,column_family:" + CF_NAME;
+                        + ", primary key(gentime, seqNum)) histogram(pname) " + partitionBy
+                        + " table_format=compressed,column_family:" + CF_NAME;
                 ydb.execute(query);
             }
             ydb.execute("create stream " + REC_STREAM_NAME + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition());

@@ -25,7 +25,7 @@ services:
         enabled: false
       backFiller:
         enabled: true
-        streamUpdateFillFrequency: 1800
+        streamUpdateFillFrequency: 3600
         
   - class: org.yamcs.simulator.SimulatorCommander
     args:
@@ -154,3 +154,6 @@ streamConfig:
 
       
   sqlFile: "etc/extra_streams.sql"
+
+#store data (tm, pp, events, alarms, cmdhistory, parameter archive) in partitions year/day_of_year
+dataPartitioningByTime: YYYY/DOY

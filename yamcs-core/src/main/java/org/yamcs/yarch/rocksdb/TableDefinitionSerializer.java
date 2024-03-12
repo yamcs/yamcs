@@ -179,11 +179,12 @@ class TableDefinitionSerializer {
     private static PartitioningSpec fromProtobuf(PartitioningInfo pinfo) {
         switch (pinfo.getType()) {
         case TIME:
-            return PartitioningSpec.timeSpec(pinfo.getTimeColumn());
+            return PartitioningSpec.timeSpec(pinfo.getTimeColumn(), pinfo.getTimePartitionSchema());
         case VALUE:
             return PartitioningSpec.valueSpec(pinfo.getValueColumn());
         case TIME_AND_VALUE:
-            return PartitioningSpec.timeAndValueSpec(pinfo.getTimeColumn(), pinfo.getValueColumn());
+            return PartitioningSpec.timeAndValueSpec(pinfo.getTimeColumn(), pinfo.getValueColumn(),
+                    pinfo.getTimePartitionSchema());
         default:
             throw new IllegalStateException("Unexpected partitioning type " + pinfo.getType());
         }

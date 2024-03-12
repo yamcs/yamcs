@@ -44,7 +44,6 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
  *
  */
 public class YamcsServerInstance extends YamcsInstanceService {
-
     private String name;
     Log log;
     TimeService timeService;
@@ -85,7 +84,6 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
         Spec spec = new Spec();
         spec.addOption("services", OptionType.LIST).withElementType(OptionType.MAP).withSpec(serviceSpec);
-        spec.addOption("tablespace", OptionType.STRING);
 
         // Detailed validation on these is done
         // in LinkManager, XtceDbFactory, and StreamInitializer
@@ -99,6 +97,8 @@ public class YamcsServerInstance extends YamcsInstanceService {
         spec.addOption("timeService", OptionType.ANY);
         spec.addOption("tmIndexer", OptionType.ANY);
         spec.addOption("eventDecoders", OptionType.ANY);
+
+        YarchDatabaseInstance.addSpec(spec);
 
         // "anchors" is used to allow yaml anchors (reuse of blocks)
         spec.addOption("anchors", OptionType.ANY);

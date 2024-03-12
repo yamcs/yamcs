@@ -35,8 +35,7 @@ public class RdbPartitionManagerTest {
         TupleDefinition tdef = new TupleDefinition();
         tdef.addColumn(new ColumnDefinition("gentime", DataType.TIMESTAMP));
         tdef.addColumn(new ColumnDefinition("packetid", DataType.INT));
-        PartitioningSpec spec = PartitioningSpec.timeAndValueSpec("gentime", "packetid");
-        spec.setTimePartitioningSchema("YYYY/DOY");
+        PartitioningSpec spec = PartitioningSpec.timeAndValueSpec("gentime", "packetid", "YYYY/DOY");
 
         TableDefinition tblDef = new TableDefinition("tbltest", tdef, Arrays.asList("gentime"));
         tblDef.setPartitioningSpec(spec);
@@ -60,8 +59,7 @@ public class RdbPartitionManagerTest {
         TupleDefinition tdef = new TupleDefinition();
         tdef.addColumn(new ColumnDefinition("gentime", DataType.TIMESTAMP));
         tdef.addColumn(new ColumnDefinition("packetid", DataType.INT));
-        PartitioningSpec spec = PartitioningSpec.timeSpec("gentime");
-        spec.setTimePartitioningSchema("YYYY/DOY");
+        PartitioningSpec spec = PartitioningSpec.timeSpec("gentime", "YYYYY/DOY");
 
         TableDefinition tblDef = new TableDefinition("tbltest", tdef, Arrays.asList("gentime"));
         tblDef.setPartitioningSpec(spec);

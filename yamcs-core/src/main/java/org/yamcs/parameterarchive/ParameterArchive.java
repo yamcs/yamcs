@@ -130,8 +130,6 @@ public class ParameterArchive extends AbstractYamcsService {
             log.debug("realtimeFillerConfig: {}", realtimeFillerConfig);
         }
 
-        manualCompactions = (!realtimeFillerEnabled && backFillerEnabled);
-
         partitioningSchema = ydb.getTimePartitioningSchema(config);
 
         if (!config.containsKey("backFiller") && !config.containsKey("realtimeFiller")) {
