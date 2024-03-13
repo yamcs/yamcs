@@ -1,0 +1,7 @@
+quickstart:
+  # Configuration of the active loaders
+  # Valid loaders are: sheet, xtce or fully qualified name of the class
+  - type: xtce
+    args:
+      file: mdb/xtce.xml
+

@@ -34,6 +34,7 @@ rm %{buildroot}/opt/packet-viewer/bin/*.bat
 %config /opt/packet-viewer/mdb
 %config /opt/packet-viewer/etc
 /opt/packet-viewer/lib
+/opt/packet-viewer/tm-data
 
 %dir /opt/packet-viewer/bin
 %attr(755, root, root) /opt/packet-viewer/bin/*

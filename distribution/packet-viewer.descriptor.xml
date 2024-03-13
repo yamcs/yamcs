@@ -29,14 +29,14 @@
       <directory>../packet-viewer/etc-packaged</directory>
       <outputDirectory>etc</outputDirectory>
     </fileSet>
-
-    <!-- Trick to add empty directories... -->
     <fileSet>
-      <directory>.</directory>
+      <directory>../packet-viewer/mdb-packaged</directory>
       <outputDirectory>mdb</outputDirectory>
-      <excludes>
-        <exclude>*/**</exclude>
-      </excludes>
     </fileSet>
+    <fileSet>
+      <directory>../packet-viewer/tm-data</directory>
+      <outputDirectory>tm-data</outputDirectory>
+    </fileSet>
+
   </fileSets>
 </assembly>
