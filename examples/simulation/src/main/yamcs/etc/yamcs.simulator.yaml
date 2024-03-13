@@ -13,6 +13,8 @@ services:
     args:
       provideJvmVariables: true
       provideFsVariables: true
+      provideIostatVariables: true
+
   - class: org.yamcs.ProcessorCreatorService
     args: 
       name: "realtime"

@@ -92,6 +92,7 @@ public class SystemParametersService extends AbstractYamcsService implements Run
         Spec spec = new Spec();
         spec.addOption("provideJvmVariables", OptionType.BOOLEAN).withDefault(false);
         spec.addOption("provideFsVariables", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("provideIostatVariables", OptionType.BOOLEAN).withDefault(false);
         return spec;
     }
 
@@ -117,6 +118,18 @@ public class SystemParametersService extends AbstractYamcsService implements Run
         if (config.getBoolean("provideFsVariables")) {
             try {
                 providers.add(new SysVarProducer(new FileStoreParameterProducer(this)));
+            } catch (IOException e) {
+                throw new InitException(e);
+            }
+        }
+
+        if (config.getBoolean("provideIostatVariables")) {
+            try {
+                if (IostatParameterProducer.hasDisksStats()) {
+                    providers.add(new SysVarProducer(new IostatParameterProducer(this)));
+                } else {
+                    log.info("No /proc/diskstats present, cannot produce iostat parametes");
+                }
             } catch (IOException e) {
                 throw new InitException(e);
             }
