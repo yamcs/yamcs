@@ -11,8 +11,7 @@ services:
         - tm_dump
   - class: org.yamcs.parameter.SystemParametersService
     args:
-      provideJvmVariables: true
-      provideFsVariables: true
+      producers: ['jvm', 'fs']
   - class: org.yamcs.ProcessorCreatorService
     args: 
       name: "realtime"

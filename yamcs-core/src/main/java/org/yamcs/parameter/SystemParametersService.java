@@ -90,9 +90,12 @@ public class SystemParametersService extends AbstractYamcsService implements Run
     @Override
     public Spec getSpec() {
         Spec spec = new Spec();
-        spec.addOption("provideJvmVariables", OptionType.BOOLEAN).withDefault(false);
-        spec.addOption("provideFsVariables", OptionType.BOOLEAN).withDefault(false);
-        spec.addOption("provideIostatVariables", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("provideJvmVariables", OptionType.BOOLEAN).withDefault(false)
+                .withDeprecationMessage("This option is obsolete, please add 'jvm' to the list of producers");
+        spec.addOption("provideFsVariables", OptionType.BOOLEAN).withDefault(false)
+                .withDeprecationMessage("This option is obsolete, please add 'fs' to the list of producers");
+        spec.addOption("producers", OptionType.LIST).withElementType(OptionType.STRING)
+                .withDescription("Current providers are: jvm, fs and diskstats. Diskstats only works on Linux");
         return spec;
     }
 
@@ -109,13 +112,14 @@ public class SystemParametersService extends AbstractYamcsService implements Run
 
         serverId = YamcsServer.getServer().getServerId();
         namespace = XtceDb.YAMCS_SPACESYSTEM_NAME + NameDescription.PATH_SEPARATOR + serverId;
+        List<String> producers = config.getList("producers");
 
         log.debug("Using {} as serverId, and {} as namespace for system parameters", serverId, namespace);
-        if (config.getBoolean("provideJvmVariables")) {
+        if (config.getBoolean("provideJvmVariables") || producers.contains("jvm")) {
             providers.add(new SysVarProducer(new JvmParameterProducer(this)));
         }
 
-        if (config.getBoolean("provideFsVariables")) {
+        if (config.getBoolean("provideFsVariables") || producers.contains("fs")) {
             try {
                 providers.add(new SysVarProducer(new FileStoreParameterProducer(this)));
             } catch (IOException e) {
@@ -123,12 +127,12 @@ public class SystemParametersService extends AbstractYamcsService implements Run
             }
         }
 
-        if (config.getBoolean("provideIostatVariables")) {
+        if (producers.contains("diskstats")) {
             try {
-                if (IostatParameterProducer.hasDisksStats()) {
-                    providers.add(new SysVarProducer(new IostatParameterProducer(this)));
+                if (DiskstatsParameterProducer.hasDisksStats()) {
+                    providers.add(new SysVarProducer(new DiskstatsParameterProducer(this)));
                 } else {
-                    log.info("No /proc/diskstats present, cannot produce iostat parametes");
+                    log.info("No /proc/diskstats present, cannot produce diskstats parametes");
                 }
             } catch (IOException e) {
                 throw new InitException(e);

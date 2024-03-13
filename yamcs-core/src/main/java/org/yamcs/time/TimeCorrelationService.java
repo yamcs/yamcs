@@ -522,7 +522,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
     }
 
     @Override
-    public List<ParameterValue> getSystemParameters() {
+    public List<ParameterValue> getSystemParameters(long gentime) {
         if (deviationPv != null) {
             return Arrays.asList(deviationPv);
         } else {

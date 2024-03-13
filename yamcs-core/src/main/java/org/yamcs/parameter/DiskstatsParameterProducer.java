@@ -26,14 +26,14 @@ import static org.yamcs.utils.ValueUtility.getFloatValue;
  * Works only on Linux, reads all the info from /proc/diskstats.
  * 
  */
-public class IostatParameterProducer implements SystemParametersProducer {
-    final static Log log = new Log(IostatParameterProducer.class);
+public class DiskstatsParameterProducer implements SystemParametersProducer {
+    final static Log log = new Log(DiskstatsParameterProducer.class);
 
-    final List<IOStatParam> iostatParams;
+    final List<DiskStatsParam> diskstatsParams;
 
-    private AggregateParameterType iostatAggrType;
+    private AggregateParameterType diskstatAggrType;
 
-    public IostatParameterProducer(SystemParametersService sysParamsService) throws IOException {
+    public DiskstatsParameterProducer(SystemParametersService sysParamsService) throws IOException {
         UnitType kbsecunit = new UnitType("KB/s");
         UnitType readsecunit = new UnitType("reads/s");
         UnitType writesecunit = new UnitType("writes/s");
@@ -63,7 +63,7 @@ public class IostatParameterProducer implements SystemParametersProducer {
         utilMember.setShortDescription("Percentage  of  elapsed  time during which "
                 + "I/O requests were issued to the device");
 
-        iostatAggrType = new AggregateParameterType.Builder().setName("IoStat")
+        diskstatAggrType = new AggregateParameterType.Builder().setName("DiskStats")
                 .addMember(diskReadsMember)
                 .addMember(kbReadsMember)
                 .addMember(readWaitMember)
@@ -73,13 +73,13 @@ public class IostatParameterProducer implements SystemParametersProducer {
                 .addMember(utilMember)
                 .build();
 
-        iostatParams = new ArrayList<>();
+        diskstatsParams = new ArrayList<>();
 
         for (var me : readStats().entrySet()) {
             String device = me.getKey();
-            Parameter p = sysParamsService.createSystemParameter("iostat/" + device, iostatAggrType,
+            Parameter p = sysParamsService.createSystemParameter("diskstats/" + device, diskstatAggrType,
                     "Disk statistics for " + device);
-            iostatParams.add(new IOStatParam(device, p, me.getValue()));
+            diskstatsParams.add(new DiskStatsParam(device, p, me.getValue()));
         }
     }
 
@@ -89,7 +89,7 @@ public class IostatParameterProducer implements SystemParametersProducer {
         try {
             Map<String, DiskStat> stats = readStats();
 
-            for (IOStatParam ioparam : iostatParams) {
+            for (DiskStatsParam ioparam : diskstatsParams) {
                 var s1 = stats.get(ioparam.devName);
                 if (s1 == null) {
                     continue;
@@ -102,7 +102,7 @@ public class IostatParameterProducer implements SystemParametersProducer {
                     return pvlist;
                 }
 
-                AggregateValue v = new AggregateValue(iostatAggrType.getMemberNames());
+                AggregateValue v = new AggregateValue(diskstatAggrType.getMemberNames());
 
                 v.setMemberValue("diskReads", getFloatValue((s1.diskReads - s0.diskReads) / timeSec));
                 v.setMemberValue("kbReads", getFloatValue((s1.sectorReads - s0.sectorReads) / timeSec / 2f));
@@ -177,13 +177,13 @@ public class IostatParameterProducer implements SystemParametersProducer {
         return 5;
     }
 
-    static class IOStatParam {
+    static class DiskStatsParam {
         final String devName;
         final Parameter param;
 
         DiskStat stats;
 
-        public IOStatParam(String devName, Parameter param, DiskStat stats) {
+        public DiskStatsParam(String devName, Parameter param, DiskStat stats) {
             this.devName = devName;
             this.param = param;
             this.stats = stats;

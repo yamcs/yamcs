@@ -11,9 +11,7 @@ services:
         - tm_dump
   - class: org.yamcs.parameter.SystemParametersService
     args:
-      provideJvmVariables: true
-      provideFsVariables: true
-      provideIostatVariables: true
+      producers: ['jvm', 'fs', 'diskstats']
 
   - class: org.yamcs.ProcessorCreatorService
     args: 

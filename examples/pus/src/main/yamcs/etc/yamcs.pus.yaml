@@ -6,8 +6,7 @@ services:
   - class: org.yamcs.archive.ReplayServer
   - class: org.yamcs.parameter.SystemParametersService
     args:
-      provideJvmVariables: true
-      provideFsVariables: true
+      producers: ['jvm', 'fs']
   - class: org.yamcs.time.TimeCorrelationService
     name: tco0
     args:

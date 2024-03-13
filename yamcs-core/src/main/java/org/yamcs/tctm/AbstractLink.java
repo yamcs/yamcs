@@ -170,8 +170,7 @@ public abstract class AbstractLink extends AbstractService
     }
 
     @Override
-    public List<ParameterValue> getSystemParameters() {
-        long time = getCurrentTime();
+    public List<ParameterValue> getSystemParameters(long time) {
 
         ArrayList<ParameterValue> list = new ArrayList<>();
         try {
