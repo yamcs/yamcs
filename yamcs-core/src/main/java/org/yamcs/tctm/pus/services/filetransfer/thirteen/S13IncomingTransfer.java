@@ -24,7 +24,6 @@ import org.yamcs.protobuf.TransferState;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.DownlinkS13Packet;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.FileTransferPacket;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.DownlinkS13Packet.PacketType;
-import org.yamcs.yarch.Stream;
 
 public class S13IncomingTransfer extends OngoingS13Transfer {
     private final FileSaveHandler fileSaveHandler;
@@ -48,11 +47,11 @@ public class S13IncomingTransfer extends OngoingS13Transfer {
     }
 
     private InTxState inTxState = InTxState.RECEIVING_DATA;
-    private String objectName;
-    private String objectNamePrefix;
+    private final String objectNamePrefix;
     private boolean suspended = false;
     private long transferred;
-    private String contentType;
+    private final long remoteId;
+    private final String contentType;
 
     Timer checkTimer;
 
@@ -61,11 +60,11 @@ public class S13IncomingTransfer extends OngoingS13Transfer {
     List<DownlinkS13Packet> queuedPackets = new ArrayList<>();
     List<Long> partSequenceNumbers = new ArrayList<>();
 
-    public S13IncomingTransfer(String yamcsInstance, long id, long creationTime, ScheduledThreadPoolExecutor executor,
-            YConfiguration config, S13TransactionId transactionId, long destinationId, String objectNamePrefix, FileSaveHandler fileSaveHandler,
+    public S13IncomingTransfer(String yamcsInstance, long transferId, long remoteId, long creationTime, ScheduledThreadPoolExecutor executor,
+            YConfiguration config, S13TransactionId transactionId, String objectNamePrefix, FileSaveHandler fileSaveHandler,
             EventProducer eventProducer, TransferMonitor monitor, String transferType, String contentType,
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
-        super(yamcsInstance, id, creationTime, executor, config, transactionId, destinationId, eventProducer, monitor, transferType, faultHandlerActions);
+        super(yamcsInstance, transferId, creationTime, executor, config, transactionId, eventProducer, monitor, transferType, faultHandlerActions);
 
         long checkAckTimeout = config.getLong("checkAckTimeout", 10000l);
         int checkAckLimit = config.getInt("checkAckLimit", 5);
@@ -73,8 +72,10 @@ public class S13IncomingTransfer extends OngoingS13Transfer {
 
         this.fileSaveHandler = fileSaveHandler;
         this.objectNamePrefix = objectNamePrefix;
-        this.objectName = objectNamePrefix + "-" + startTime;
+        String objectName = objectNamePrefix + "-" + startTime;
+
         this.contentType = contentType;
+        this.remoteId = remoteId;
 
         try {
             fileSaveHandler.setObjectName(objectName);
@@ -145,7 +146,7 @@ public class S13IncomingTransfer extends OngoingS13Transfer {
         Collections.sort(partSequenceNumbers);
         int filePartCount = partSequenceNumbers.size();
 
-        long expectedSum = filePartCount * (filePartCount + 1) / 2; // Sum of numbers from 0 to n
+        long expectedSum = (long) filePartCount * (filePartCount + 1) / 2; // Sum of numbers from 0 to n
         long actualSum = partSequenceNumbers.stream().mapToLong(Long::longValue).sum();
 
         if ((expectedSum - actualSum) == 0) {
@@ -165,10 +166,10 @@ public class S13IncomingTransfer extends OngoingS13Transfer {
             saveFile(missingSegments);
         } catch (IOException e) {
             sendWarnEvent(ETYPE_TRANSFER_FINISHED,
-                    " downlink finished partially. However the file could not be saved in the intented location: "
+                    " downlink finished partially. However the file could not be saved in the intended location: "
                             + getBucketName() + "/" + getObjectName());
             pushError(ETYPE_TRANSFER_FINISHED + 
-                    " downlink finished partially. However the file could not be saved in the intented location: "
+                    " downlink finished partially. However the file could not be saved in the intended location: "
                             + getBucketName() + "/" + getObjectName());
         }
         handleFault(ConditionCode.FILE_CHECKSUM_FAILURE);
@@ -196,7 +197,7 @@ public class S13IncomingTransfer extends OngoingS13Transfer {
             metadata.put("missingSegments", joiner.toString());
         }
         // FIXME: Edge case - Repeated duplicate packets are currently not handled
-        Collections.sort(queuedPackets, Comparator.comparingLong(DownlinkS13Packet::getPartSequenceNumber));
+        queuedPackets.sort(Comparator.comparingLong(DownlinkS13Packet::getPartSequenceNumber));
 
         ByteArrayOutputStream fileDataStream = new ByteArrayOutputStream();
         for(DownlinkS13Packet packet: queuedPackets) {
@@ -217,9 +218,9 @@ public class S13IncomingTransfer extends OngoingS13Transfer {
 
         } catch(IOException e) {
             sendWarnEvent(ETYPE_TRANSFER_FINISHED, 
-                        " downlink finished. However the file could not be saved in the intented location: " + getBucketName() + "/" + getObjectName());
+                        " downlink finished. However the file could not be saved in the intended location: " + getBucketName() + "/" + getObjectName());
             pushError(ETYPE_TRANSFER_FINISHED +
-                    " downlink finished. However the file could not be saved in the intented location: "
+                    " downlink finished. However the file could not be saved in the intended location: "
                             + getBucketName() + "/" + getObjectName());
             complete(ConditionCode.FILESTORE_REJECTION);
         }
@@ -241,6 +242,9 @@ public class S13IncomingTransfer extends OngoingS13Transfer {
 
         queuedPackets.add(packet);
         partSequenceNumbers.add(packet.getPartSequenceNumber());
+
+        // Increment the size of the data transferred
+        transferred += packet.getFilePart().length;
 
         if(packet.getPacketType() == PacketType.LAST) {
             checkTimer.start(this::checkFileComplete, () -> {
@@ -298,11 +302,6 @@ public class S13IncomingTransfer extends OngoingS13Transfer {
     }
 
     @Override
-    public long getInitiatorEntityId() {
-        return getInitiatorId();
-    }
-
-    @Override
     public long getTotalSize() {
         // Impossible to know total size of Large file in S13
         return -1;
@@ -316,6 +315,10 @@ public class S13IncomingTransfer extends OngoingS13Transfer {
     @Override
     public String getObjectName() {
         return fileSaveHandler.getObjectName();
+    }
+    @Override
+    public long getRemoteId() {
+        return remoteId;
     }
 
     @Override

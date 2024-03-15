@@ -19,16 +19,10 @@ public interface S13FileTransfer extends FileTransfer {
             return value.toUpperCase();
         }
     }
-    /**
-     * Get the S13 transaction id. Returns null for queued transfers.
-     * 
-     * @return
-     */
+
     S13TransactionId getTransactionId();
-
-    long getInitiatorEntityId();
-
-    long getDestinationId();
+    
+    long getRemoteId();
 
     String getOrigin();
 }

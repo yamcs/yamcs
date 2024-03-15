@@ -31,19 +31,17 @@ public class CompletedTransfer implements S13FileTransfer {
     static final String COL_START_TIME = "startTime";
     static final String COL_BUCKET = "bucket";
     static final String COL_OBJECT_NAME = "objectName";
-    static final String COL_REMOTE_PATH = "remotePath";
     static final String COL_DIRECTION = "direction";
-    static final String COL_SOURCE_ID = "sourceId";
-    static final String COL_DESTINATION_ID = "destinationId";
-    static final String COL_FILE_TRANSFER_ID = "transferId";
+    static final String COL_REMOTE_ID = "remoteId";
     static final String COL_LARGE_PACKET_TRANSACTION_ID = "largePacketTransactionId";
     static final String COL_TOTAL_SIZE = "totalSize";
-    static final String COL_TRANSFERED_SIZE = "transferredSize";
+    static final String COL_TRANSFERRED_SIZE = "transferredSize";
     static final String COL_TRANSFER_STATE = "transferState";
     static final String COL_CREATION_TIME = "creationTime";
     static final String COL_ORIGIN = "origin";
     static final String COL_TRANSFER_TYPE = "transferType";
     static final String COL_FAILURE_REASON = "failureReason";
+    static final String COL_REMOTE_PATH = "remotePath";
 
     static final String SERVER_ID = YamcsServer.getServer().getServerId();
 
@@ -53,19 +51,16 @@ public class CompletedTransfer implements S13FileTransfer {
         TDEF.addColumn(COL_START_TIME, DataType.TIMESTAMP);
         TDEF.addColumn(COL_BUCKET, DataType.STRING);
         TDEF.addColumn(COL_OBJECT_NAME, DataType.STRING);
-        TDEF.addColumn(COL_REMOTE_PATH, DataType.STRING);
         TDEF.addColumn(COL_DIRECTION, DataType.ENUM);
-        TDEF.addColumn(COL_SOURCE_ID, DataType.LONG);
-        TDEF.addColumn(COL_DESTINATION_ID, DataType.LONG);
-        TDEF.addColumn(COL_FILE_TRANSFER_ID, DataType.LONG);
         TDEF.addColumn(COL_LARGE_PACKET_TRANSACTION_ID, DataType.LONG);
         TDEF.addColumn(COL_TOTAL_SIZE, DataType.LONG);
-        TDEF.addColumn(COL_TRANSFERED_SIZE, DataType.LONG);
+        TDEF.addColumn(COL_TRANSFERRED_SIZE, DataType.LONG);
         TDEF.addColumn(COL_TRANSFER_STATE, DataType.STRING);
         TDEF.addColumn(COL_CREATION_TIME, DataType.TIMESTAMP);
         TDEF.addColumn(COL_ORIGIN, DataType.STRING);
         TDEF.addColumn(COL_TRANSFER_TYPE, DataType.STRING);
         TDEF.addColumn(COL_FAILURE_REASON, DataType.STRING);
+        TDEF.addColumn(COL_REMOTE_ID, DataType.LONG);
     }
     final Tuple tuple;
 
@@ -116,8 +111,7 @@ public class CompletedTransfer implements S13FileTransfer {
 
     @Override
     public long getTransferredSize() {
-        Long l = tuple.getColumn(COL_TRANSFERED_SIZE);
-        return l == null ? -1 : l;
+        return tuple.getColumn(COL_TRANSFERRED_SIZE);
     }
 
     @Override
@@ -127,13 +121,7 @@ public class CompletedTransfer implements S13FileTransfer {
 
     @Override
     public S13TransactionId getTransactionId() {
-        if (tuple.hasColumn(COL_FILE_TRANSFER_ID)) {
-            return new S13TransactionId(tuple.getLongColumn(COL_SOURCE_ID), tuple.getLongColumn(COL_FILE_TRANSFER_ID),
-                    tuple.getLongColumn(COL_LARGE_PACKET_TRANSACTION_ID), getDirection());
-        } else {
-            return null;
-        }
-
+        return new S13TransactionId(tuple.getLongColumn(COL_REMOTE_ID), tuple.getLongColumn(COL_LARGE_PACKET_TRANSACTION_ID), getDirection());
     }
 
     @Override
@@ -169,14 +157,11 @@ public class CompletedTransfer implements S13FileTransfer {
         }
         t.addEnumColumn(COL_DIRECTION, transfer.getDirection().name());
         t.addColumn(COL_TOTAL_SIZE, transfer.getTotalSize());
-        t.addColumn(COL_SOURCE_ID, transfer.getInitiatorEntityId());
+        t.addColumn(COL_REMOTE_ID, transfer.getRemoteId());
 
         S13TransactionId txId = transfer.getTransactionId();
-        if (txId != null) {// queued transfers have no transaction id
-            t.addColumn(COL_FILE_TRANSFER_ID, txId.getTransferId());
-            t.addColumn(COL_LARGE_PACKET_TRANSACTION_ID, txId.getLargePacketTransactionId());
-        }
-        t.addColumn(COL_DESTINATION_ID, transfer.getDestinationId());
+        t.addColumn(COL_LARGE_PACKET_TRANSACTION_ID, txId.getLargePacketTransactionId());
+        
         t.addEnumColumn(COL_TRANSFER_STATE, transfer.getTransferState().name());
         t.addColumn(COL_ORIGIN, transfer.getOrigin());
         t.addColumn(COL_TRANSFER_TYPE, transfer.getTransferType());
@@ -194,7 +179,7 @@ public class CompletedTransfer implements S13FileTransfer {
         t.addTimestampColumn(COL_START_TIME, transfer.getStartTime());
         t.addEnumColumn(COL_TRANSFER_STATE, transfer.getTransferState().name());
         t.addColumn(COL_TOTAL_SIZE, transfer.getTotalSize());
-        t.addColumn(COL_TRANSFERED_SIZE, transfer.getTransferredSize());
+        t.addColumn(COL_TRANSFERRED_SIZE, transfer.getTransferredSize());
         t.addColumn(COL_TRANSFER_TYPE, transfer.getTransferType());
 
         t.addColumn(COL_FAILURE_REASON, transfer.getFailuredReason());
@@ -222,13 +207,8 @@ public class CompletedTransfer implements S13FileTransfer {
     }
 
     @Override
-    public long getInitiatorEntityId() {
-        return tuple.getLongColumn(COL_SOURCE_ID);
-    }
-
-    @Override
-    public long getDestinationId() {
-        return tuple.getLongColumn(COL_DESTINATION_ID);
+    public long getRemoteId() {
+        return tuple.getLongColumn(COL_REMOTE_ID);
     }
 
     @Override

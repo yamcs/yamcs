@@ -16,7 +16,7 @@ public class FilePutRequest extends PutRequest {
     private Bucket bucket;
 
     public FilePutRequest(long sourceId, long destinationId, String sourceFileName,
-            String destinationFileName, boolean createpath, Bucket b, byte[] data) {
+            String destinationFileName, Bucket b, byte[] data) {
         super(destinationId, sourceFileName, destinationFileName);
         this.sourceId = sourceId;
         this.bucket = b;

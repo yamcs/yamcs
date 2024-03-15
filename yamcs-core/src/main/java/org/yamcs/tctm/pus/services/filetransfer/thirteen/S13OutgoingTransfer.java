@@ -67,24 +67,22 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
     private boolean suspended = false;
     private PutRequest request;
     private ScheduledFuture<?> packetSendingSchedule;
-
-    ConditionCode reasonForCancellation;
-
+    
     public static boolean cop1Bypass;
     public static String firstPacketCmdName;
     public static String intermediatePacketCmdName;
     public static String lastPacketCmdName;
     public static int maxDataSize;
 
-    public S13OutgoingTransfer(String yamcsInstance, long initiatorEntityId, long transferId, long largePacketTransactionId, long creationTime,
+    public S13OutgoingTransfer(String yamcsInstance, long transferId, long creationTime,
             ScheduledThreadPoolExecutor executor,
             PutRequest request, YConfiguration config, Bucket bucket,
             Integer customPacketSize, Integer customPacketDelay,
             EventProducer eventProducer, TransferMonitor monitor, String transferType,
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
 
-        super(yamcsInstance, transferId, creationTime, executor, config, makeTransactionId(request.getRemoteId(), transferId, largePacketTransactionId),
-            request.getRemoteId(), eventProducer, monitor, transferType, faultHandlerActions);
+        super(yamcsInstance, transferId, creationTime, executor, config, makeTransactionId(request.getRemoteId(), transferId),
+            eventProducer, monitor, transferType, faultHandlerActions);
         this.request = request;
         this.bucket = bucket;
         this.origin = ServiceThirteen.origin;
@@ -102,8 +100,8 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
         lastPacketCmdName = config.getString("lastPacketCmdName", "LastUplinkPart");
     }
 
-    private static S13TransactionId makeTransactionId(long remoteId, long transferId, long largePacketTransactionId) {
-        return new S13TransactionId(remoteId, transferId, largePacketTransactionId, TransferDirection.UPLOAD);
+    private static S13TransactionId makeTransactionId(long remoteId, long transferId) {
+        return new S13TransactionId(remoteId, transferId, TransferDirection.UPLOAD);
     }
 
     /**
@@ -299,12 +297,7 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
     public TransferDirection getDirection() {
         return TransferDirection.UPLOAD;
     }
-
-    @Override
-    public long getInitiatorEntityId() {
-        return getInitiatorId();
-    }
-
+    
     @Override
     public long getTotalSize() {
         return this.request.getFileLength();
@@ -323,6 +316,11 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
     @Override
     public String getRemotePath() {
         return request.getDestinationFileName();
+    }
+
+    @Override
+    public long getRemoteId() {
+        return request.getRemoteId();
     }
 
     @Override

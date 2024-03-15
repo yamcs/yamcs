@@ -34,17 +34,15 @@ public class PutRequest extends S13Request {
      * Generate relevant header and metadata the put request
      * (Only implemented for Messages To User currently)
      * 
-     * @param initiatorEntityId
+     * @param remoteId
      * @param transferId
-     * @param largePacketTransactionId
-     * @param checksumType
      * @param config
      * @return
      */
-    public S13TransactionId process(long initiatorEntityId, long transferId, long largePacketTransactionId, YConfiguration config) {
-        S13TransactionId s13TransactionId = new S13TransactionId(initiatorEntityId, transferId, largePacketTransactionId, TransferDirection.UPLOAD);
+    public S13TransactionId process(long remoteId, long transferId, YConfiguration config) {
+        S13TransactionId s13TransactionId = new S13TransactionId(remoteId, transferId, TransferDirection.UPLOAD);
 
-        String fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(ServiceThirteen.startDownlinkCmdName, largePacketTransactionId);
+        String fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(ServiceThirteen.startDownlinkCmdName, transferId);
         fdrPacket = new StartS13DownlinkPacket(s13TransactionId, fullyQualifiedCmdName);
         
         return s13TransactionId;

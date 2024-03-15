@@ -4,7 +4,6 @@ import static org.yamcs.tctm.pus.services.filetransfer.thirteen.CompletedTransfe
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -74,18 +73,13 @@ public class ServiceThirteen extends AbstractYamcsService
     static final String ETYPE_TRANSFER_FINISHED = "TRANSFER_FINISHED";
     static final String ETYPE_TRANSFER_SUSPENDED = "TRANSFER_SUSPENDED";
     static final String ETYPE_TRANSFER_RESUMED = "TRANSFER_RESUMED";
-    static final String ETYPE_TRANSFER_PACKET_ERRROR = "TRANSFER_PACKET_ERROR";
+    static final String ETYPE_TRANSFER_PACKET_ERROR = "TRANSFER_PACKET_ERROR";
 
     static final String BUCKET_OPT = "bucket";
-
     static final String TABLE_NAME = "s13";
-    static final String SEQUENCE_NAME = "s13";
+
 
     // FileTransferOption name literals
-    private final String OVERWRITE_OPTION = "overwrite";
-    private final String RELIABLE_OPTION = "reliable";
-    private final String CLOSURE_OPTION = "closureRequested";
-    private final String CREATE_PATH_OPTION = "createPath";
     private final String PACKET_DELAY_OPTION = "packetDelay";
     private final String PACKET_SIZE_OPTION = "packetSize";
 
@@ -128,7 +122,7 @@ public class ServiceThirteen extends AbstractYamcsService
     static Map<Long, String> contentTypeMap = new HashMap<>();
     static String origin;
 
-    private Set<TransferMonitor> transferListeners = new CopyOnWriteArraySet<>();
+    private final Set<TransferMonitor> transferListeners = new CopyOnWriteArraySet<>();
     
     protected static Map<String, EntityConf> localEntities = new LinkedHashMap<>();
     protected static Map<String, EntityConf> remoteEntities = new LinkedHashMap<>();
@@ -196,7 +190,6 @@ public class ServiceThirteen extends AbstractYamcsService
         super.init(yamcsInstance, serviceName, config);
 
         String inStream = config.getString("inStream");
-        String outStream = config.getString("outStream");
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         s13In = ydb.getStream(inStream);
@@ -344,11 +337,7 @@ public class ServiceThirteen extends AbstractYamcsService
             throw new InitException(e);
         }
     }
-
-    public OngoingS13Transfer getS13Transfer(S13TransactionId transferId) {
-        return pendingTransfers.get(transferId);
-    }
-
+    
     public static String getCmdSubsystem(long remoteEntityId) {
         return "/" + spaceSystem + "/" + spaceSubSystems.get(remoteEntityId);
 
@@ -373,20 +362,17 @@ public class ServiceThirteen extends AbstractYamcsService
         Optional<OngoingS13Transfer> r = pendingTransfers.values().stream()
                 .filter(c -> c.getTransactionId().getLargePacketTransactionId() == largePacketTransactionId)
                 .filter(c -> c.getTransactionId().getTransferDirection() == TransferDirection.UPLOAD).findAny();
-        if (r.isPresent()) {
-            return r.get();
-        }
-        return null;
+
+        return r.orElse(null);
+
     }
 
     public FileTransfer getOngoingDownloadFileTransfer(long largePacketTransactionId) {
         Optional<OngoingS13Transfer> r = pendingTransfers.values().stream()
                 .filter(c -> c.getTransactionId().getLargePacketTransactionId() == largePacketTransactionId)
                 .filter(c -> c.getTransactionId().getTransferDirection() == TransferDirection.DOWNLOAD).findAny();
-        if (r.isPresent()) {
-            return r.get();
-        }
-        return null;
+
+        return r.orElse(null);
     }
 
     private FileTransfer searchInArchive(long id) {
@@ -404,7 +390,7 @@ public class ServiceThirteen extends AbstractYamcsService
             log.error("Error executing query", e);
             return null;
         }
-    }
+    }                                                               
 
     @Override
     public List<FileTransfer> getTransfers() {
@@ -430,10 +416,9 @@ public class ServiceThirteen extends AbstractYamcsService
         }
     }
 
-    private S13FileTransfer processPutRequest(long initiatorEntityId, long transferId, long largePacketTransactionId, long creationTime,
-            PutRequest request, Bucket bucket, String transferType, Integer customPacketSize, Integer customPacketDelay) {
-        S13OutgoingTransfer transfer = new S13OutgoingTransfer(yamcsInstance, initiatorEntityId, transferId, largePacketTransactionId, creationTime,
-                executor, request, config, bucket, customPacketSize, customPacketDelay, eventProducer, this, transferType, senderFaultHandlers);
+    private S13FileTransfer processPutRequest(long transferId, long creationTime, PutRequest request, Bucket bucket, String transferType) {
+        S13OutgoingTransfer transfer = new S13OutgoingTransfer(yamcsInstance, transferId, creationTime,
+                executor, request, config, bucket, null, null, eventProducer, this, transferType, senderFaultHandlers);
 
         dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
 
@@ -445,12 +430,12 @@ public class ServiceThirteen extends AbstractYamcsService
                     "Starting new S13 upload TXID[" + transfer.getTransactionId() + "] " + transfer.getObjectName()
                             + " -> " + transfer.getRemotePath());
         } else {
-            String remoteEntityName = getEntityFromId(largePacketTransactionId, remoteEntities).getName();
+            String remoteEntityName = getEntityFromId(transferId, remoteEntities).getName();
             eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
                     "Starting new S13 upload TXID[" + transfer.getTransactionId() + "] \n"
                             + "Fileless transfer: \n"
                             + "     Remote Source Entity Line: " + remoteEntityName + "\n"
-                            + "     Large Packet Transaction ID: " + largePacketTransactionId + "\n");
+                            + "     Large Packet Transaction ID: " + transferId + "\n");
         }
 
         transfer.start();
@@ -462,22 +447,19 @@ public class ServiceThirteen extends AbstractYamcsService
                 || trsf.state == TransferState.CANCELLING;
     }
 
-    private OngoingS13Transfer processPauseRequest(PauseRequest request) {
+    private void processPauseRequest(PauseRequest request) {
         OngoingS13Transfer transfer = request.getTransfer();
         transfer.pauseTransfer();
-        return transfer;
     }
 
-    private OngoingS13Transfer processResumeRequest(ResumeRequest request) {
+    private void processResumeRequest(ResumeRequest request) {
         OngoingS13Transfer transfer = request.getTransfer();
         transfer.resumeTransfer();
-        return transfer;
     }
 
-    private OngoingS13Transfer processCancelRequest(CancelRequest request) {
+    private void processCancelRequest(CancelRequest request) {
         OngoingS13Transfer transfer = request.getTransfer();
         transfer.cancelTransfer();
-        return transfer;
     }
 
     @Override
@@ -486,7 +468,7 @@ public class ServiceThirteen extends AbstractYamcsService
 
         // Check if it is an Uplink abortion packet
         if (packet.getPacketType() == PacketType.ABORTION) {
-            FileTransfer filetransfer = getOngoingUploadFileTransfer(packet.getTransactionId().getTransferId());
+            FileTransfer filetransfer = getOngoingUploadFileTransfer(packet.getTransactionId().getLargePacketTransactionId());
             if (filetransfer != null) {
                 S13OutgoingTransfer outgoingTransfer = (S13OutgoingTransfer) filetransfer;
                 outgoingTransfer.cancel(ConditionCode.readConditionCode((byte) packet.getFailureCode().byteValue()));
@@ -521,29 +503,19 @@ public class ServiceThirteen extends AbstractYamcsService
     private OngoingS13Transfer instantiateIncomingTransaction(DownlinkS13Packet packet) {
         S13TransactionId txId = packet.getTransactionId();
 
-        EntityConf remoteEntity = getRemoteEntity(txId.getInitiatorEntityId());
+        EntityConf remoteEntity = getRemoteEntity(txId.getLargePacketTransactionId());
         if (remoteEntity == null) {
             eventProducer.sendWarning(ETYPE_UNEXPECTED_S13_PACKET,
-                    "Received a transaction start for an unknown remote entity Id " + txId.getInitiatorEntityId());
-            return null;
-        }
-
-        EntityConf localEntity = getLocalEntity(txId.getInitiatorEntityId());
-        if (localEntity == null) {
-            eventProducer.sendWarning(ETYPE_UNEXPECTED_S13_PACKET,
-                    "Received a transaction start for an unknown local entity Id "
-                            + txId.getInitiatorEntityId());
+                    "Received a transaction start for an unknown remote entity Id " + txId.getLargePacketTransactionId());
             return null;
         }
 
         eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
-                "Starting new CFDP downlink TXID[" + txId + "] " + remoteEntity + " -> " + localEntity);
+                "Starting new S13 downlink TXID[" + txId + "] | from: " + remoteEntity);
 
         Bucket bucket = defaultIncomingBucket;
 
-        if (localEntity.getBucket() != null) {
-            bucket = localEntity.getBucket();
-        } else if (remoteEntity.getBucket() != null) {
+        if (remoteEntity.getBucket() != null) {
             bucket = remoteEntity.getBucket();
         }
 
@@ -551,26 +523,23 @@ public class ServiceThirteen extends AbstractYamcsService
         final FileSaveHandler fileSaveHandler = new FileSaveHandler(yamcsInstance, bucket, fileDownloadRequests,
                 false, false, false, maxExistingFileRenames);
 
-        return new S13IncomingTransfer(yamcsInstance, txId.getLargePacketTransactionId(), creationTime, executor, config,
-                packet.getTransactionId(), packet.getTransactionId().getInitiatorEntityId(),
-                remoteEntity.getName(), fileSaveHandler, eventProducer, this, PredefinedTransferTypes.DOWNLOAD_LARGE_FILE_TRANSFER.toString(),
+        return new S13IncomingTransfer(yamcsInstance, txId.getLargePacketTransactionId(), remoteEntity.getId(), creationTime, executor, config,
+                packet.getTransactionId(), remoteEntity.getName(), fileSaveHandler, eventProducer, this, PredefinedTransferTypes.DOWNLOAD_LARGE_FILE_TRANSFER.toString(),
                 contentTypeMap.get(remoteEntity.getId()), receiverFaultHandlers);
     }
 
     public EntityConf getRemoteEntity(long entityId) {
-        return remoteEntities.entrySet()
+        return remoteEntities.values()
                 .stream()
-                .filter(me -> me.getValue().getId() == entityId)
-                .map(Map.Entry::getValue)
+                .filter(entityConf -> entityConf.getId() == entityId)
                 .findAny()
                 .orElse(null);
     }
 
     public EntityConf getLocalEntity(long entityId) {
-        return localEntities.entrySet()
+        return localEntities.values()
                 .stream()
-                .filter(me -> me.getValue().getId() == entityId)
-                .map(Map.Entry::getValue)
+                .filter(entityConf -> entityConf.getId() == entityId)
                 .findAny()
                 .orElse(null);
     }
@@ -638,15 +607,11 @@ public class ServiceThirteen extends AbstractYamcsService
                 .collect(Collectors.toList());
     }
 
-    public OngoingS13Transfer getOngoingCfdpTransfer(long id) {
-        return pendingTransfers.values().stream().filter(c -> c.getId() == id).findAny().orElse(null);
-    }
-
     @Override
     public List<FileTransferOption> getFileTransferOptions() {
         var options = new ArrayList<FileTransferOption>();
         options.add(FileTransferOption.newBuilder()
-                .setName(RELIABLE_OPTION)
+                .setName("reliable")
                 .setType(FileTransferOption.Type.BOOLEAN)
                 .setTitle("Reliability")
                 .setDescription("Acknowledged or unacknowledged transmission mode")
@@ -669,40 +634,7 @@ public class ServiceThirteen extends AbstractYamcsService
                 .setHasTransferType(false)
                 .build();
     }
-
-    private static class OptionValues {
-        HashMap<String, Boolean> booleanOptions = new HashMap<>();
-        HashMap<String, Double> doubleOptions = new HashMap<>();
-    }
-
-    private OptionValues getOptionValues(Map<String, Object> extraOptions) {
-        var optionValues = new OptionValues();
-
-        for (Map.Entry<String, Object> option : extraOptions.entrySet()) {
-            try {
-                switch (option.getKey()) {
-                    case OVERWRITE_OPTION:
-                    case RELIABLE_OPTION:
-                    case CLOSURE_OPTION:
-                    case CREATE_PATH_OPTION:
-                        optionValues.booleanOptions.put(option.getKey(), (boolean) option.getValue());
-                        break;
-                    case PACKET_DELAY_OPTION:
-                    case PACKET_SIZE_OPTION:
-                        optionValues.doubleOptions.put(option.getKey(), (double) option.getValue());
-                        break;
-                    default:
-                        log.warn("Unknown file transfer option: {} (value: {})", option.getKey(), option.getValue());
-                }
-            } catch (ClassCastException e) {
-                log.warn("Failed to cast option '{}' to its correct type (value: {})", option.getKey(),
-                        option.getValue());
-            }
-        }
-
-        return optionValues;
-    }
-
+    
     private String getAbsoluteDestinationPath(String destinationPath, String localObjectName) {
         if (localObjectName == null) {
             throw new NullPointerException("local object name cannot be null");
@@ -738,22 +670,10 @@ public class ServiceThirteen extends AbstractYamcsService
             }
         }
 
-        // For backwards compatibility
-        var booleanOptions = new HashMap<>(Map.of(
-            CREATE_PATH_OPTION, options.isCreatePath()
-        ));
-
-        OptionValues optionValues = getOptionValues(options.getExtraOptions());
-        booleanOptions.putAll(optionValues.booleanOptions);
-
-        FilePutRequest request = new FilePutRequest(sourceId, destinationId, objectName, absoluteDestinationPath, booleanOptions.get(CREATE_PATH_OPTION), bucket, objData);
+        FilePutRequest request = new FilePutRequest(sourceId, destinationId, objectName, absoluteDestinationPath, bucket, objData);
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
-        Double packetSize = optionValues.doubleOptions.get(PACKET_SIZE_OPTION);
-        Double pduDelay = optionValues.doubleOptions.get(PACKET_DELAY_OPTION);
-
-        return processPutRequest(sourceId, destinationId, destinationId, creationTime, request, bucket, PredefinedTransferTypes.UPLOAD_LARGE_FILE_TRANSFER.toString(),
-                packetSize != null ? packetSize.intValue() : null, pduDelay != null ? pduDelay.intValue() : null);
+        return processPutRequest(destinationId, creationTime, request, bucket, PredefinedTransferTypes.UPLOAD_LARGE_FILE_TRANSFER.toString());
     }
 
     @Override
@@ -763,26 +683,10 @@ public class ServiceThirteen extends AbstractYamcsService
             throw new InvalidRequestException("Downloading is not enabled on this CFDP service");
         }
 
-        long destinationId = getEntityFromName(destinationEntity, localEntities).getId();
-        long sourceId = getEntityFromName(sourceEntity, remoteEntities).getId();
+        long remoteId = getEntityFromName(sourceEntity, remoteEntities).getId();
 
-        // For backwards compatibility
-        var booleanOptions = new HashMap<>(Map.of(
-                OVERWRITE_OPTION, options.isOverwrite(),
-                RELIABLE_OPTION, options.isReliable(),
-                CLOSURE_OPTION, options.isClosureRequested(),
-                CREATE_PATH_OPTION, options.isCreatePath()
-        ));
-
-        OptionValues optionValues = getOptionValues(options.getExtraOptions());
-
-        booleanOptions.putAll(optionValues.booleanOptions);
-
-        Double packetSize = optionValues.doubleOptions.get(PACKET_SIZE_OPTION);
-        Double packetDelay = optionValues.doubleOptions.get(PACKET_DELAY_OPTION);
-
-        PutRequest request = new PutRequest(sourceId);
-        S13TransactionId transactionId = request.process(sourceId, sourceId, sourceId, config);
+        PutRequest request = new PutRequest(remoteId);
+        S13TransactionId transactionId = request.process(remoteId, remoteId, config);
 
         if (getOngoingUploadFileTransfer(transactionId.getLargePacketTransactionId()) != null) {
             throw new InvalidRequestException("Downloading and Uploading from the same largePacketTransactionId: " + transactionId.getLargePacketTransactionId() + " is not allowed");
@@ -795,8 +699,7 @@ public class ServiceThirteen extends AbstractYamcsService
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
         fileDownloadRequests.addTransfer(transactionId, bucket.getName());
-        return processPutRequest(destinationId, transactionId.getTransferId(), sourceId, creationTime, request, bucket, PredefinedTransferTypes.DOWNLOAD_REQUEST.toString(),
-                packetSize != null ? packetSize.intValue() : null, packetDelay != null ? packetDelay.intValue() : null);
+        return processPutRequest(transactionId.getLargePacketTransactionId(), creationTime, request, bucket, PredefinedTransferTypes.DOWNLOAD_REQUEST.toString());
     }
 
     @Override
@@ -878,7 +781,7 @@ public class ServiceThirteen extends AbstractYamcsService
     public void streamClosed(Stream stream) {
         if (isRunning()) {
             log.debug("Stream {} closed", stream.getName());
-            notifyFailed(new Exception("Stream " + stream.getName() + " cloased"));
+            notifyFailed(new Exception("Stream " + stream.getName() + " closed"));
         }
     }
 

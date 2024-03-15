@@ -7,12 +7,10 @@ import org.yamcs.protobuf.TransferDirection;
 
 
 public class S13TransactionId extends FileTransferId{
-    protected long largePacketTransactionId;
     protected TransferDirection direction;
     
-    public S13TransactionId(long remoteId, long transferId, long largePacketTransactionId, TransferDirection direction) {
+    public S13TransactionId(long remoteId, long transferId, TransferDirection direction) {
         super(remoteId, transferId);
-        this.largePacketTransactionId = largePacketTransactionId;
         this.direction = direction;
     }
 
@@ -27,16 +25,16 @@ public class S13TransactionId extends FileTransferId{
             return false;
         }
         S13TransactionId other = (S13TransactionId) o;
-        return transferId == other.transferId && initiatorEntityId == other.initiatorEntityId && largePacketTransactionId == other.largePacketTransactionId && direction == other.direction;
+        return transferId == other.transferId && initiatorEntityId == other.initiatorEntityId && direction == other.direction;
     }
 
     public long getLargePacketTransactionId() {
-        return largePacketTransactionId;
+        return transferId;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(initiatorEntityId, transferId, largePacketTransactionId);
+        return Objects.hash(initiatorEntityId, transferId);
     }
     
     public TransferDirection getTransferDirection() {
@@ -45,6 +43,6 @@ public class S13TransactionId extends FileTransferId{
 
     @Override
     public String toString() {
-        return "Remote ID: " + initiatorEntityId + "_" + "TransferId: "  + transferId + "_" + "LPTId: " + largePacketTransactionId;
+        return "Remote ID: " + initiatorEntityId + " | " + "LargePacketTransactionId: "  + transferId;
     }
 }

@@ -1,12 +1,9 @@
 package org.yamcs.tctm.pus.services.filetransfer.thirteen;
 
 import static org.yamcs.tctm.pus.services.filetransfer.thirteen.ServiceThirteen.ETYPE_TRANSFER_FINISHED;
-import static org.yamcs.tctm.pus.services.filetransfer.thirteen.ServiceThirteen.ETYPE_TRANSFER_PACKET_ERRROR;
+import static org.yamcs.tctm.pus.services.filetransfer.thirteen.ServiceThirteen.ETYPE_TRANSFER_PACKET_ERROR;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -57,7 +54,6 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
     protected String origin;
 
     final TransferMonitor monitor;
-    final long destinationId;
 
     // transaction unique identifier (coming from a database)
     final long id;
@@ -67,8 +63,8 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
 
     // accumulate the errors
     List<String> errors = new ArrayList<>();
-
-    enum FaultHandlingAction {
+    
+    public enum FaultHandlingAction {
         SUSPEND, CANCEL, ABANDON;
 
         public static FaultHandlingAction fromString(String str) {
@@ -89,7 +85,7 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
     final Map<ConditionCode, FaultHandlingAction> faultHandlerActions;
 
     public OngoingS13Transfer(String yamcsInstance, long id, long creationTime, ScheduledThreadPoolExecutor executor,
-            YConfiguration config, S13TransactionId s13TransactionId, long destinationId,
+            YConfiguration config, S13TransactionId s13TransactionId,
             EventProducer eventProducer, TransferMonitor monitor, String transferType,
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
         this.s13TransactionId = s13TransactionId;
@@ -100,7 +96,6 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
         this.wallclockStartTime = System.currentTimeMillis();
         this.log = new Log(this.getClass(), yamcsInstance);
         this.id = id;
-        this.destinationId = destinationId;
         this.creationTime = creationTime;
         if (monitor == null) {
             throw new NullPointerException("the monitor cannot be null");
@@ -163,7 +158,7 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
                 StartS13UplinkPacket pkt = (StartS13UplinkPacket) packet;
                 log.error("TXID{} could not send StartUplinkS13 Packet: Qualified Name: {} | Part Sequence Number: {} | ERROR: {}",
                         s13TransactionId, pkt.getFullyQualifiedName(), pkt.getPartSequenceNumber(), e.toString());
-                sendWarnEvent(ETYPE_TRANSFER_PACKET_ERRROR,
+                sendWarnEvent(ETYPE_TRANSFER_PACKET_ERROR,
                         "Unable to construct the StartUplinkS13 Command | Transaction ID: " + s13TransactionId
                                 + " | CommandName: " + pkt.getFullyQualifiedName() + " Part Sequence Number: "
                                 + pkt.getPartSequenceNumber());
@@ -172,7 +167,7 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
                 StartS13DownlinkPacket pkt = (StartS13DownlinkPacket) packet;
                 log.error("TXID{} could not send StartDownlinkS13 Packet: Qualified Name: {} | ERROR: {}",
                         s13TransactionId, pkt.getFullyQualifiedName(), e.toString());
-                sendWarnEvent(ETYPE_TRANSFER_PACKET_ERRROR,
+                sendWarnEvent(ETYPE_TRANSFER_PACKET_ERROR,
                         "Unable to construct the StartDownlinkS13 Command | Transaction ID: " + s13TransactionId
                                 + " | CommandName: " + pkt.getFullyQualifiedName());
             }
@@ -269,7 +264,7 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
 
     @Override
     public String getFailuredReason() {
-        return errors.stream().collect(Collectors.joining("; "));
+        return String.join("; ", errors);
     }
 
     @Override
@@ -279,31 +274,9 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
 
     protected FaultHandlingAction getFaultHandlingAction(ConditionCode code) {
         FaultHandlingAction action = faultHandlerActions.get(code);
-        if (action == null) {
-            return FaultHandlingAction.CANCEL;
-        } else {
-            return action;
-        }
+        return Objects.requireNonNullElse(action, FaultHandlingAction.CANCEL);
     }
-
-    /**
-     * Return the entity id of the Sender
-     *
-     * @return
-     */
-    public long getInitiatorId() {
-        return s13TransactionId.getInitiatorEntityId();
-    }
-
-    /**
-     * Return the entity id of the Receiver
-     *
-     * @return
-     */
-    public long getDestinationId() {
-        return destinationId;
-    }
-
+    
     protected void sendInfoEvent(String type, String msg) {
         eventProducer.sendInfo(type, "TXID[" + s13TransactionId + "] " + msg);
     }

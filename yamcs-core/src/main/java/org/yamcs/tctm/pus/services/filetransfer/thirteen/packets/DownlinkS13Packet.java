@@ -12,7 +12,7 @@ public class DownlinkS13Packet extends FileTransferPacket {
     public static enum PacketType {
         FIRST("FIRST"), INTERMEDIATE("INTERMEDIATE"), LAST("LAST"), ABORTION("ABORTION");
 
-        private String packetType;
+        private final String packetType;
 
         PacketType(String packetType) {
             this.packetType = packetType;
@@ -33,7 +33,6 @@ public class DownlinkS13Packet extends FileTransferPacket {
     }
 
     static final String COL_LARGE_PACKET_TRANSACTION_ID = "largePacketTransactionId";
-    static final String COL_SOURCE_ID = "sourceId";
     static final String COL_FILE_PART = "filePart";
     static final String COL_PART_SEQUENCE_NUMBER = "partSequenceNumber";
     static final String COL_PACKET_TYPE = "packetType";
@@ -41,7 +40,6 @@ public class DownlinkS13Packet extends FileTransferPacket {
 
     static {
         S13_TM.addColumn(COL_LARGE_PACKET_TRANSACTION_ID, DataType.LONG);
-        S13_TM.addColumn(COL_SOURCE_ID, DataType.LONG);
         S13_TM.addColumn(COL_FILE_PART, DataType.BINARY);
         S13_TM.addColumn(COL_PART_SEQUENCE_NUMBER, DataType.LONG);
         S13_TM.addColumn(COL_PACKET_TYPE, DataType.ENUM);
@@ -62,15 +60,14 @@ public class DownlinkS13Packet extends FileTransferPacket {
     }
 
     public static DownlinkS13Packet fromTuple(Tuple t) {
-        Long largePacketTransactionId = (Long) t.getLongColumn(COL_LARGE_PACKET_TRANSACTION_ID);
-        Long sourceId = (Long) t.getLongColumn(COL_SOURCE_ID);
-        Long partSequenceNumber = (Long) t.getLongColumn(COL_PART_SEQUENCE_NUMBER);
+        long largePacketTransactionId = (Long) t.getLongColumn(COL_LARGE_PACKET_TRANSACTION_ID);
+        long partSequenceNumber = (Long) t.getLongColumn(COL_PART_SEQUENCE_NUMBER);
         byte[] filePart = (byte[]) t.getColumn(COL_FILE_PART);
         PacketType packetType = PacketType.fromString((String) t.getColumn(COL_PACKET_TYPE));
-        Integer failureCode = (Integer) t.getColumn(COL_FAILURE_REASON);
+        int failureCode = (Integer) t.getColumn(COL_FAILURE_REASON);
 
-        return new DownlinkS13Packet(new S13TransactionId(sourceId, 
-                largePacketTransactionId, largePacketTransactionId, TransferDirection.DOWNLOAD), partSequenceNumber, filePart, packetType, failureCode);
+        // In the case of S13, largePacketTransactionId is the sourceId (i.e the remoteId)
+        return new DownlinkS13Packet(new S13TransactionId(largePacketTransactionId, largePacketTransactionId, TransferDirection.DOWNLOAD), partSequenceNumber, filePart, packetType, failureCode);
     }
     
     public PacketType getPacketType() {
@@ -88,5 +85,4 @@ public class DownlinkS13Packet extends FileTransferPacket {
     public Integer getFailureCode() {
         return failureCode;
     }
-
 }

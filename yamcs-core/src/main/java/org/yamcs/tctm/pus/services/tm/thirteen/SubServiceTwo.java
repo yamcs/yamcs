@@ -37,13 +37,11 @@ public class SubServiceTwo implements PusSubService {
         int largePacketTransactionId = (int) ByteArrayUtils.decodeCustomInteger(dataField, 0, ServiceThirteen.largePacketTransactionIdSize);
         int partSequenceNumber = (int) ByteArrayUtils.decodeCustomInteger(dataField, ServiceThirteen.largePacketTransactionIdSize, ServiceThirteen.partSequenceNumberSize);
         byte[] filePart = Arrays.copyOfRange(dataField, ServiceThirteen.largePacketTransactionIdSize + ServiceThirteen.partSequenceNumberSize, dataField.length);
-        int sourceId = largePacketTransactionId;
         String packetType = PacketType.INTERMEDIATE.getText();
 
         TupleDefinition td = S13_TM.copy();
         ServiceThirteen.s13In.emitTuple(new Tuple(td, new Object[] {
             largePacketTransactionId,
-            sourceId,
             filePart,
             partSequenceNumber,
             packetType,
