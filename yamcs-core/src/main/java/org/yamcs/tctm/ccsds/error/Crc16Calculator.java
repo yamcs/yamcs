@@ -4,7 +4,13 @@ import java.nio.ByteBuffer;
 
 public class Crc16Calculator {
     final int polynomial;
+    boolean xor = false;
     short r[] = new short[256];
+
+    public Crc16Calculator(int polynomial, boolean xor) {
+        this(polynomial);
+        this.xor = xor;
+    }
 
     public Crc16Calculator(int polynomial) {
         this.polynomial = polynomial;
@@ -36,8 +42,10 @@ public class Crc16Calculator {
             crc = r[idx] ^ (crc << 8);
         }
 
-        return crc & 0xFFFF;
+        if (xor)
+            return crc ^ 0xFFFF;
 
+        return crc & 0xFFFF;
     }
 
     public int compute(ByteBuffer bb, int offset, int length, int initialValue) {
@@ -47,6 +55,9 @@ public class Crc16Calculator {
             int idx = (bb.get(i) ^ (crc >> 8)) & 0xff;
             crc = r[idx] ^ (crc << 8);
         }
+
+        if (xor)
+            return crc ^ 0xFFFF;
 
         return crc & 0xFFFF;
     }

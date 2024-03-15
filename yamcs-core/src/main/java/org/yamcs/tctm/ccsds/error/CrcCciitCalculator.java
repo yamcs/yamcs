@@ -17,14 +17,18 @@ import org.yamcs.tctm.ErrorDetectionWordCalculator;
 public class CrcCciitCalculator implements ErrorDetectionWordCalculator {
     final int initialValue;
     final int polynomial = 0x1021; // 0001 0000 0010 0001 (0, 5, 12)
-    Crc16Calculator cc = new Crc16Calculator(0x1021);
+    Crc16Calculator cc;
 
     public CrcCciitCalculator() {
         initialValue = 0xFFFF;
+        cc = new Crc16Calculator(polynomial);
     }
 
     public CrcCciitCalculator(YConfiguration c) {
         initialValue = c.getInt("initialValue", 0xFFFF);
+        boolean xor = c.getBoolean("useXor", false);
+
+        cc = new Crc16Calculator(polynomial, xor);
     }
 
     @Override
