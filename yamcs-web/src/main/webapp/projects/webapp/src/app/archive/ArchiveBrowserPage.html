@@ -95,7 +95,7 @@
       &nbsp;&nbsp;&nbsp;&nbsp;
       <label *ngFor="let option of legendOptions"
              class="legend no-select"
-             [style.backgroundColor]="option.bg"
+             [style.background]="option.bg"
              [style.color]="option.fg">
         <input type="checkbox" [formControlName]="option.id" (change)="updateLegend()">
         {{ option.name }}

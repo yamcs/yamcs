@@ -1,7 +1,7 @@
 .ya-tooltip {
   position: absolute;
   display: none;
-  white-space: nowrap;
+  white-space: pre;
   color: #fff;
   border-radius: 2px;
   max-width: 250px;

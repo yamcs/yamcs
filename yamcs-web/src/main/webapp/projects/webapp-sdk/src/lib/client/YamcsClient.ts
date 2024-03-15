@@ -14,7 +14,7 @@ import { CreateTransferRequest, ListFilesRequest, ListFilesResponse, RemoteFileL
 import { AlarmsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstanceTemplatesWrapper, InstancesWrapper, LinksWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SessionsWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
 import { AlgorithmOverrides, AlgorithmStatus, AlgorithmTrace, AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParameterTypesOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParameterType, ParameterTypesPage, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
-import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, ExecutorInfo, ExportParameterValuesOptions, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetGapsOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListApidsResponse, ListGapsResponse, ListPacketsResponse, Packet, ParameterData, ParameterValue, PlaybackInfo, Range, RequestPlaybackRequest, Sample, StartProcedureOptions, Value } from './types/monitoring';
+import { ArchiveRecord, CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, ExecutorInfo, ExportParameterValuesOptions, GetCommandHistoryOptions, GetCompletenessIndexOptions, GetGapsOptions, GetPacketsOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListApidsResponse, ListGapsResponse, ListPacketsResponse, Packet, ParameterData, ParameterValue, PlaybackInfo, Range, RequestPlaybackRequest, Sample, StartProcedureOptions, StreamCommandIndexOptions, StreamCompletenessIndexOptions, StreamEventIndexOptions, StreamPacketIndexOptions, StreamParameterIndexOptions, Value } from './types/monitoring';
 import { CreateParameterListRequest, GetParameterListsResponse, ParameterList, UpdateParameterListRequest } from './types/plists';
 import { AlgorithmStatusSubscription, ExtractPacketResponse, PacketNamesResponse, ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeAlgorithmStatusRequest, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
 import { CommandQueue, CommandQueueEvent, QueueEventsSubscription, QueueStatisticsSubscription, SubscribeQueueEventsRequest, SubscribeQueueStatisticsRequest } from './types/queue';
@@ -1041,32 +1041,52 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as PacketNamesResponse;
   }
 
-  async getPacketIndex(instance: string, options: GetPacketIndexOptions): Promise<IndexGroup[]> {
-    const url = `${this.apiUrl}/archive/${instance}/packet-index`;
-    const response = await this.doFetch(url + this.queryString(options));
-    const wrapper = await response.json() as IndexResult;
-    return wrapper.group || [];
+  async streamPacketIndex(instance: string, options: StreamPacketIndexOptions): Promise<ArchiveRecord[]> {
+    const url = `${this.apiUrl}/archive/${instance}:streamPacketIndex`;
+    const response = await this.doFetch(url, {
+      body: JSON.stringify(options),
+      method: 'POST',
+    });
+    // In-memory, we expect the stream to be limited by using an appropriate mergeTime
+    const text = await response.text();
+    const sanitized = '[' + text.replace(/}{/g, '},{') + ']';
+    return JSON.parse(sanitized);
   }
 
-  async getParameterIndex(instance: string, options: GetParameterIndexOptions): Promise<IndexGroup[]> {
-    const url = `${this.apiUrl}/archive/${instance}/parameter-index`;
-    const response = await this.doFetch(url + this.queryString(options));
-    const wrapper = await response.json() as IndexResult;
-    return wrapper.group || [];
+  async streamParameterIndex(instance: string, options: StreamParameterIndexOptions): Promise<ArchiveRecord[]> {
+    const url = `${this.apiUrl}/archive/${instance}:streamParameterIndex`;
+    const response = await this.doFetch(url, {
+      body: JSON.stringify(options),
+      method: 'POST',
+    });
+    // In-memory, we expect the stream to be limited by using an appropriate mergeTime
+    const text = await response.text();
+    const sanitized = '[' + text.replace(/}{/g, '},{') + ']';
+    return JSON.parse(sanitized);
   }
 
-  async getCommandIndex(instance: string, options: GetCommandIndexOptions): Promise<IndexGroup[]> {
-    const url = `${this.apiUrl}/archive/${instance}/command-index`;
-    const response = await this.doFetch(url + this.queryString(options));
-    const wrapper = await response.json() as IndexResult;
-    return wrapper.group || [];
+  async streamCommandIndex(instance: string, options: StreamCommandIndexOptions): Promise<ArchiveRecord[]> {
+    const url = `${this.apiUrl}/archive/${instance}:streamCommandIndex`;
+    const response = await this.doFetch(url, {
+      body: JSON.stringify(options),
+      method: 'POST',
+    });
+    // In-memory, we expect the stream to be limited by using an appropriate mergeTime
+    const text = await response.text();
+    const sanitized = '[' + text.replace(/}{/g, '},{') + ']';
+    return JSON.parse(sanitized);
   }
 
-  async getEventIndex(instance: string, options: GetEventIndexOptions): Promise<IndexGroup[]> {
-    const url = `${this.apiUrl}/archive/${instance}/event-index`;
-    const response = await this.doFetch(url + this.queryString(options));
-    const wrapper = await response.json() as IndexResult;
-    return wrapper.group || [];
+  async streamEventIndex(instance: string, options: StreamEventIndexOptions): Promise<ArchiveRecord[]> {
+    const url = `${this.apiUrl}/archive/${instance}:streamEventIndex`;
+    const response = await this.doFetch(url, {
+      body: JSON.stringify(options),
+      method: 'POST',
+    });
+    // In-memory, we expect the stream to be limited by using an appropriate mergeTime
+    const text = await response.text();
+    const sanitized = '[' + text.replace(/}{/g, '},{') + ']';
+    return JSON.parse(sanitized);
   }
 
   async getCompletenessIndex(instance: string, options: GetCompletenessIndexOptions): Promise<IndexGroup[]> {
@@ -1074,6 +1094,18 @@ export default class YamcsClient implements HttpHandler {
     const response = await this.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as IndexResult;
     return wrapper.group || [];
+  }
+
+  async streamCompletenessIndex(instance: string, options: StreamCompletenessIndexOptions): Promise<ArchiveRecord[]> {
+    const url = `${this.apiUrl}/archive/${instance}:streamCompletenessIndex`;
+    const response = await this.doFetch(url, {
+      body: JSON.stringify(options),
+      method: 'POST',
+    });
+    // In-memory, we expect the stream to be limited by using an appropriate mergeTime
+    const text = await response.text();
+    const sanitized = '[' + text.replace(/}{/g, '},{') + ']';
+    return JSON.parse(sanitized);
   }
 
   getPacketsDownloadURL(instance: string, options: DownloadPacketsOptions = {}) {

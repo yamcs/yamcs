@@ -7,14 +7,14 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 export class TimelineTooltip {
 
   @ViewChild('tt', { static: true })
-  tt: ElementRef;
+  tt: ElementRef<HTMLDivElement>;
 
   show(text: string, left: number, top: number) {
     const el = this.tt.nativeElement;
     el.style.left = left + 'px';
     el.style.top = top + 'px';
     el.style.display = 'block';
-    el.innerHTML = text;
+    el.innerText = text;
   }
 
   hide() {

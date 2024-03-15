@@ -7,32 +7,38 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { MouseTracker, TimeLocator, TimeRuler, Timeline, Tool } from '@fqqb/timeline';
-import { DateTimePipe, EditReplayProcessorRequest, IndexGroup, MessageService, Processor, ProcessorSubscription, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ArchiveRecord, DateTimePipe, EditReplayProcessorRequest, MessageService, Processor, ProcessorSubscription, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { StartReplayDialog } from '../shared/template/StartReplayDialog';
+import { ArchiveRecordGroup } from './ArchiveRecordGroup';
 import { DownloadDumpDialog } from './DownloadDumpDialog';
 import { IndexGroupBand } from './IndexGroupBand';
 import { JumpToDialog } from './JumpToDialog';
 import { ModifyReplayDialog } from './ModifyReplayDialog';
+import { RGB } from './RGB';
 import { ReplayOverlay } from './ReplayOverlay';
 import { TimelineTooltip } from './TimelineTooltip';
 import { TitleBand } from './TitleBand';
 
-const COMMANDS_BG = '#ffcc00';
-const COMMANDS_FG = '#1c4b8b';
-const COMPLETENESS_BG = 'orange';
-const COMPLETENESS_FG = 'rgb(173, 94, 0)';
-const EVENTS_BG = '#ffff66';
-const EVENTS_FG = '#1c4b8b';
-const PACKETS_BG = 'palegoldenrod';
-const PACKETS_FG = '#555';
-const PARAMETERS_BG = 'navajowhite';
-const PARAMETERS_FG = '#1c4b8b';
+const COMMANDS_BG = new RGB(255, 204, 0);
+const COMMANDS_FG = new RGB(28, 75, 139);
+const COMPLETENESS_BG = new RGB(255, 165, 0);
+const COMPLETENESS_FG = new RGB(173, 94, 0);
+const EVENTS_BG = new RGB(255, 255, 102);
+const EVENTS_FG = new RGB(28, 75, 139);
+const PACKETS_BG = new RGB(238, 232, 170);
+const PACKETS_FG = new RGB(85, 85, 85);
+const PARAMETERS_BG = new RGB(255, 222, 173);
+const PARAMETERS_FG = new RGB(28, 75, 139);
 
 interface DateRange {
   start: Date;
   stop: Date;
+}
+
+function makeGradient(rgb: RGB) {
+  return 'linear-gradient(to right, ' + rgb.toCssString(0.3) + ' 30%, ' + rgb.toCssString() + ')';
 }
 
 @Component({
@@ -43,10 +49,34 @@ interface DateRange {
 export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
 
   legendOptions = [
-    { id: 'packets', name: 'Packets', bg: PACKETS_BG, fg: PACKETS_FG, checked: true },
-    { id: 'parameters', name: 'Parameter Groups', bg: PARAMETERS_BG, fg: PARAMETERS_FG, checked: true },
-    { id: 'commands', name: 'Commands', bg: COMMANDS_BG, fg: COMMANDS_FG, checked: false },
-    { id: 'events', name: 'Events', bg: EVENTS_BG, fg: EVENTS_FG, checked: false },
+    {
+      id: 'packets',
+      name: 'Packets',
+      bg: makeGradient(PACKETS_BG),
+      fg: PACKETS_FG.toCssString(),
+      checked: true,
+    },
+    {
+      id: 'parameters',
+      name: 'Parameter Groups',
+      bg: makeGradient(PARAMETERS_BG),
+      fg: PARAMETERS_FG.toCssString(),
+      checked: true,
+    },
+    {
+      id: 'commands',
+      name: 'Commands',
+      bg: makeGradient(COMMANDS_BG),
+      fg: COMMANDS_FG.toCssString(),
+      checked: false,
+    },
+    {
+      id: 'events',
+      name: 'Events',
+      bg: makeGradient(EVENTS_BG),
+      fg: EVENTS_FG.toCssString(),
+      checked: false,
+    },
   ];
 
   @ViewChild('container', { static: true })
@@ -87,7 +117,13 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
     const capabilities = yamcs.connectionInfo$.value?.instance?.capabilities || [];
     if (capabilities.indexOf('ccsds-completeness') !== -1) {
       this.legendOptions = [
-        { id: 'completeness', name: 'Completeness', bg: COMPLETENESS_BG, fg: COMPLETENESS_FG, checked: true },
+        {
+          id: 'completeness',
+          name: 'Completeness',
+          bg: makeGradient(COMPLETENESS_BG),
+          fg: COMPLETENESS_FG.toCssString(),
+          checked: true,
+        },
         ... this.legendOptions,
       ];
     }
@@ -397,34 +433,38 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
     const start = new Date(this.timeline.start - viewportRange).toISOString();
     const stop = new Date(this.timeline.stop + viewportRange).toISOString();
 
-    let completenessPromise: Promise<IndexGroup[]> = Promise.resolve([]);
+    const mergeTime = Math.floor(viewportRange / 1000);
+
+    let completenessPromise: Promise<ArchiveRecordGroup[]> = Promise.resolve([]);
     if (this.filterForm.value['completeness']) {
-      completenessPromise = this.yamcs.yamcsClient.getCompletenessIndex(
-        this.yamcs.instance!, { start, stop, limit: 1000 });
+      completenessPromise = this.yamcs.yamcsClient.streamCompletenessIndex(
+        this.yamcs.instance!, { start, stop, mergeTime }).then(records => {
+          return this.groupRecordsByName(records);
+        });
     }
 
-    let tmPromise: Promise<IndexGroup[]> = Promise.resolve([]);
+    let tmPromise: Promise<ArchiveRecordGroup[]> = Promise.resolve([]);
     if (this.filterForm.value['packets']) {
-      tmPromise = this.yamcs.yamcsClient.getPacketIndex(
-        this.yamcs.instance!, { start, stop, limit: 1000 });
+      tmPromise = this.yamcs.yamcsClient.streamPacketIndex(
+        this.yamcs.instance!, { start, stop, mergeTime }).then(records => this.groupRecordsByName(records));
     }
 
-    let parameterPromise: Promise<IndexGroup[]> = Promise.resolve([]);
+    let parameterPromise: Promise<ArchiveRecordGroup[]> = Promise.resolve([]);
     if (this.filterForm.value['parameters']) {
-      parameterPromise = this.yamcs.yamcsClient.getParameterIndex(
-        this.yamcs.instance!, { start, stop, limit: 1000 });
+      parameterPromise = this.yamcs.yamcsClient.streamParameterIndex(
+        this.yamcs.instance!, { start, stop, mergeTime }).then(records => this.groupRecordsByName(records));
     }
 
-    let commandPromise: Promise<IndexGroup[]> = Promise.resolve([]);
+    let commandPromise: Promise<ArchiveRecordGroup[]> = Promise.resolve([]);
     if (this.filterForm.value['commands']) {
-      commandPromise = this.yamcs.yamcsClient.getCommandIndex(
-        this.yamcs.instance!, { start, stop, limit: 1000 });
+      commandPromise = this.yamcs.yamcsClient.streamCommandIndex(
+        this.yamcs.instance!, { start, stop, mergeTime }).then(records => this.groupRecordsByName(records));
     }
 
-    let eventPromise: Promise<IndexGroup[]> = Promise.resolve([]);
+    let eventPromise: Promise<ArchiveRecordGroup[]> = Promise.resolve([]);
     if (this.filterForm.value['events']) {
-      eventPromise = this.yamcs.yamcsClient.getEventIndex(
-        this.yamcs.instance!, { start, stop, limit: 1000 });
+      eventPromise = this.yamcs.yamcsClient.streamEventIndex(
+        this.yamcs.instance!, { start, stop, mergeTime }).then(records => this.groupRecordsByName(records));
     }
 
     Promise.all([
@@ -450,9 +490,7 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
           new TitleBand(this.timeline, 'Completeness');
         }
         const group = completenessGroups[i];
-        const band = new IndexGroupBand(this.timeline, group.id.name);
-        band.itemBackground = COMPLETENESS_BG;
-        band.itemTextColor = COMPLETENESS_FG;
+        const band = new IndexGroupBand(this.timeline, group.name, COMPLETENESS_BG, COMPLETENESS_FG);
         band.borderWidth = i === completenessGroups.length - 1 ? 1 : 0;
         band.marginBottom = i === completenessGroups.length - 1 ? 20 : 0;
         band.setupTooltip(this.tooltipInstance, this.dateTimePipe);
@@ -465,13 +503,11 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
             new TitleBand(this.timeline, 'Packets');
           }
           const packetName = this.packetNames[i];
-          const band = new IndexGroupBand(this.timeline, packetName);
-          band.itemBackground = PACKETS_BG;
-          band.itemTextColor = PACKETS_FG;
+          const band = new IndexGroupBand(this.timeline, packetName, PACKETS_BG, PACKETS_FG);
           band.borderWidth = i === this.packetNames.length - 1 ? 1 : 0;
           band.marginBottom = i === this.packetNames.length - 1 ? 20 : 0;
           band.setupTooltip(this.tooltipInstance, this.dateTimePipe);
-          const group = tmGroups.find(candidate => candidate.id.name === packetName);
+          const group = tmGroups.find(candidate => candidate.name === packetName);
           if (group) {
             band.loadData(group);
           }
@@ -483,9 +519,7 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
           new TitleBand(this.timeline, 'Parameter Groups');
         }
         const group = parameterGroups[i];
-        const band = new IndexGroupBand(this.timeline, group.id.name);
-        band.itemBackground = PARAMETERS_BG;
-        band.itemTextColor = PARAMETERS_FG;
+        const band = new IndexGroupBand(this.timeline, group.name, PARAMETERS_BG, PARAMETERS_FG);
         band.borderWidth = i === parameterGroups.length - 1 ? 1 : 0;
         band.marginBottom = i === parameterGroups.length - 1 ? 20 : 0;
         band.setupTooltip(this.tooltipInstance, this.dateTimePipe);
@@ -497,9 +531,7 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
           new TitleBand(this.timeline, 'Commands');
         }
         const group = commandGroups[i];
-        const band = new IndexGroupBand(this.timeline, group.id.name);
-        band.itemBackground = COMMANDS_BG;
-        band.itemTextColor = COMMANDS_FG;
+        const band = new IndexGroupBand(this.timeline, group.name, COMMANDS_BG, COMMANDS_FG);
         band.borderWidth = i === commandGroups.length - 1 ? 1 : 0;
         band.marginBottom = i === commandGroups.length - 1 ? 30 : 0;
         band.setupTooltip(this.tooltipInstance, this.dateTimePipe);
@@ -511,15 +543,26 @@ export class ArchiveBrowserPage implements AfterViewInit, OnDestroy {
           new TitleBand(this.timeline, 'Events');
         }
         const group = eventGroups[i];
-        const band = new IndexGroupBand(this.timeline, group.id.name);
-        band.itemBackground = EVENTS_BG;
-        band.itemTextColor = EVENTS_FG;
+        const band = new IndexGroupBand(this.timeline, group.name, EVENTS_BG, EVENTS_FG);
         band.borderWidth = i === eventGroups.length - 1 ? 1 : 0;
         band.marginBottom = i === eventGroups.length - 1 ? 20 : 0;
         band.setupTooltip(this.tooltipInstance, this.dateTimePipe);
         band.loadData(group);
       }
     });
+  }
+
+  private groupRecordsByName(records: ArchiveRecord[]) {
+    const groupsByName = new Map<String, ArchiveRecordGroup>();
+    for (const record of records) {
+      let group = groupsByName.get(record.id.name);
+      if (!group) {
+        group = { name: record.id.name, records: [] };
+        groupsByName.set(record.id.name, group);
+      }
+      group.records.push(record);
+    }
+    return [...groupsByName.values()];
   }
 
   ngOnDestroy() {

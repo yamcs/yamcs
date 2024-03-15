@@ -255,8 +255,14 @@ export interface GetParameterRangesOptions {
 export interface GetPacketIndexOptions {
   start?: string;
   stop?: string;
-  mergeTime?: number;
   limit?: number;
+  mergeTime?: number;
+}
+
+export interface StreamPacketIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
 }
 
 export interface GetParameterIndexOptions {
@@ -266,11 +272,23 @@ export interface GetParameterIndexOptions {
   limit?: number;
 }
 
+export interface StreamParameterIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
+}
+
 export interface GetCommandIndexOptions {
   start?: string;
   stop?: string;
   mergeTime?: number;
   limit?: number;
+}
+
+export interface StreamCommandIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
 }
 
 export interface GetEventIndexOptions {
@@ -280,10 +298,22 @@ export interface GetEventIndexOptions {
   limit?: number;
 }
 
+export interface StreamEventIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
+}
+
 export interface GetCompletenessIndexOptions {
   start?: string;
   stop?: string;
   limit?: number;
+}
+
+export interface StreamCompletenessIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
 }
 
 export interface DownloadPacketsOptions {
@@ -310,6 +340,13 @@ export interface IndexEntry {
   start: string;
   stop: string;
   count: number;
+}
+
+export interface ArchiveRecord {
+  id: NamedObjectId;
+  first: string;
+  last: string;
+  num: number;
 }
 
 export interface Gap {
