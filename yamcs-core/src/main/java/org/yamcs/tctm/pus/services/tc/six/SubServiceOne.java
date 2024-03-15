@@ -53,11 +53,10 @@ public class SubServiceOne implements PusSubService {
                     // Calculate CRC16 checksum
                     int dataToBeLoaded = (int) ByteArrayUtils.decodeCustomInteger(
                             Arrays.copyOfRange(cmdLoadData, ServiceSix.offsetArgumentSize, ServiceSix.offsetArgumentSize + dataLength), 0, dataLength);
-                    ByteBuffer bbN = ByteBuffer.wrap(new byte[dataLength + ServiceSix.lengthSize]);
-                    bbN.put(ByteArrayUtils.encodeCustomInteger(dataLength, ServiceSix.lengthSize));
+                    ByteBuffer bbN = ByteBuffer.wrap(new byte[dataLength]);
                     bbN.put(ByteArrayUtils.encodeCustomInteger(dataToBeLoaded, dataLength));
 
-                    int checksum = ServiceSix.crc.compute(bbN.array(), 0, dataLength + ServiceSix.lengthSize);
+                    int checksum = ServiceSix.crc.compute(bbN.array(), 0, dataLength);
 
                     // Create data to load for each N (dataLength + data)
                     ByteBuffer bb = ByteBuffer.wrap(new byte[ServiceSix.offsetSize + ServiceSix.lengthSize + dataLength + ServiceSix.checksumSize]);

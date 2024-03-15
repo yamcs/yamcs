@@ -23,7 +23,7 @@ public class ServiceSix implements PusService {
     protected static int DEFAULT_MEMORY_ID_SIZE = 1;
     protected static int DEFAULT_BASE_ID_SIZE = 1;
     protected static int DEFAULT_NFIELDS_SIZE = 1;
-    protected static int DEFAULT_OFFSET_SIZE = 1;
+    protected static int DEFAULT_OFFSET_SIZE = 2;
     protected static int DEFAULT_LENGTH_SIZE = 1;
 
     protected static int memoryIdSize;
@@ -31,10 +31,10 @@ public class ServiceSix implements PusService {
     protected static int nfieldsSize;
     protected static int offsetSize;
     protected static int lengthSize;
-    protected static int offsetArgumentSize = 1;
+    protected static int offsetArgumentSize = 2;
     protected static int checksumSize = 2;
 
-    protected static CrcCciitCalculator crc = new CrcCciitCalculator();
+    protected static CrcCciitCalculator crc;
 
     public ServiceSix(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
@@ -46,6 +46,7 @@ public class ServiceSix implements PusService {
         offsetSize = config.getInt("offsetSize", DEFAULT_OFFSET_SIZE);
         lengthSize = config.getInt("lengthSize", DEFAULT_LENGTH_SIZE);
 
+        crc = new CrcCciitCalculator(config.getConfig("crc"));
         List<String> memoryIdStr = config.getList("memoryId");
         YConfiguration memoryIdConfig = YConfiguration.getConfiguration("pus.six");
         

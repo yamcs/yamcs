@@ -20,7 +20,7 @@ public class ServiceSix implements PusService {
     protected static int DEFAULT_MEMORY_ID_SIZE = 1;
     protected static int DEFAULT_BASE_ID_SIZE = 1;
     protected static int DEFAULT_NFIELDS_SIZE = 1;
-    protected static int DEFAULT_OFFSET_SIZE = 1;
+    protected static int DEFAULT_OFFSET_SIZE = 2;
     protected static int DEFAULT_LENGTH_SIZE = 1;
 
     protected static int memoryIdSize;

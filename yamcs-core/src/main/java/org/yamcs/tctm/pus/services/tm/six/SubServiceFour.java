@@ -34,6 +34,7 @@ public class SubServiceFour implements PusSubService {
         int memoryId = (int) ByteArrayUtils.decodeCustomInteger(dataField, 0, ServiceSix.memoryIdSize);
         int baseId = (int) ByteArrayUtils.decodeCustomInteger(dataField, ServiceSix.memoryIdSize, ServiceSix.baseIdSize);
         int nFields = (int) ByteArrayUtils.decodeCustomInteger(dataField, ServiceSix.memoryIdSize + ServiceSix.baseIdSize, ServiceSix.nfieldsSize);
+        int nFieldsToBeFilled = nFields;
 
         byte[] dumpData = Arrays.copyOfRange(dataField, ServiceSix.memoryIdSize + ServiceSix.baseIdSize + ServiceSix.nfieldsSize, dataField.length);
 
@@ -64,15 +65,15 @@ public class SubServiceFour implements PusSubService {
         byte[] primaryHeader = pPkt.getPrimaryHeader();
         byte[] secondaryHeader = pPkt.getSecondaryHeader();
 
-        ByteBuffer bb = ByteBuffer.wrap(new byte[primaryHeader.length + secondaryHeader.length + ServiceSix.memoryIdSize + ServiceSix.baseIdSize + totalLength]);
+        ByteBuffer bb = ByteBuffer.wrap(new byte[primaryHeader.length + secondaryHeader.length + ServiceSix.memoryIdSize + ServiceSix.baseIdSize + ServiceSix.nfieldsSize + totalLength]);
         bb.put(primaryHeader);
         bb.put(secondaryHeader);
         bb.put(ByteArrayUtils.encodeCustomInteger(memoryId, ServiceSix.memoryIdSize));
         bb.put(ByteArrayUtils.encodeCustomInteger(baseId, ServiceSix.baseIdSize));
+        bb.put(ByteArrayUtils.encodeCustomInteger(nFieldsToBeFilled, ServiceSix.nfieldsSize));
+        sortedDumpObject.forEach((key, value) -> bb.put(value));
 
-        for(Map.Entry<Integer, byte[]> dumpObj: sortedDumpObject.entrySet()) {
-            bb.put(dumpObj.getValue());
-        }
+        byte[] newbb = bb.array();
 
         // Construct new TmPacket
         TmPacket newPkt = new TmPacket(tmPacket.getReceptionTime(), tmPacket.getGenerationTime(),
