@@ -14,7 +14,7 @@ import org.yamcs.utils.ByteArrayUtils;
 public class SubServiceSeven implements PusSubService {
     EventProducer eventProducer;
 
-    static final String source = "Service: 1 | SubService: 7";
+    static final String source = "Service: 1 | SubService: 7 | Completion";
     static final String TC_COMPLETION_EXECUTION_SUCCESS = "TC_COMPLETION_EXECUTION_SUCCESS";
 
     public SubServiceSeven(String yamcsInstance) {
@@ -35,7 +35,7 @@ public class SubServiceSeven implements PusSubService {
             return null;
 
         eventProducer.sendInfo(TC_COMPLETION_EXECUTION_SUCCESS,
-                "TC with (Source ID: " + pPkt.getDestinationID() + " | Apid: " + tcCcsdsApid + " | Packet Seq Count: " + tcCcsdsSeqCount + ") has succeeded execution");
+                "TC with (Source ID: " + pPkt.getDestinationID() + " | Apid: " + ServiceOne.CcsdsApid.fromValue(tcCcsdsApid) + " | Packet Seq Count: " + tcCcsdsSeqCount + ") has succeeded execution");
         
         ArrayList<TmPacket> pktList = new ArrayList<>();
         pktList.add(tmPacket);

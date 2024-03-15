@@ -14,7 +14,7 @@ import org.yamcs.utils.ByteArrayUtils;
 public class SubServiceOne implements PusSubService {
     EventProducer eventProducer;
 
-    static final String source = "Service: 1 | SubService: 1";
+    static final String source = "Service: 1 | SubService: 1 | ACCEPTED";
     static final String TC_ACCEPTANCE_SUCCESS = "TC_ACCEPTANCE_SUCCESS";
 
     public SubServiceOne(String yamcsInstance) {
@@ -35,7 +35,7 @@ public class SubServiceOne implements PusSubService {
             return null;
 
         eventProducer.sendInfo(TC_ACCEPTANCE_SUCCESS,
-                "TC with (Source ID: " + pPkt.getDestinationID() + " | Apid: " + tcCcsdsApid + " | Packet Seq Count: " + tcCcsdsSeqCount + ") has been accepted");
+                "TC with (Source ID: " + pPkt.getDestinationID() + " | Apid: " + ServiceOne.CcsdsApid.fromValue(tcCcsdsApid) + " | Packet Seq Count: " + tcCcsdsSeqCount + ") has been accepted");
         
         ArrayList<TmPacket> pktList = new ArrayList<>();
         pktList.add(tmPacket);
