@@ -46,7 +46,7 @@
           </ng-container>
           <ng-container *ngIf="item.algorithm">
             <mat-icon class="icon12" style="vertical-align: middle">transform</mat-icon>
-            <a [routerLink]="['/algorithms', item.algorithm.qualifiedName]"
+            <a [routerLink]="'/algorithms' + item.algorithm.qualifiedName"
                [queryParams]="{c: yamcs.context}">
               <ya-highlight *ngIf="!system"
                             [text]="item.algorithm.qualifiedName"

@@ -169,9 +169,9 @@ export class AlarmHistoryPage {
     }
 
     this.router.navigate([
-      '/telemetry/parameters',
-      alarm.parameterDetail?.triggerValue.id.name,
-      'chart'
+      '/telemetry/parameters' + alarm.parameterDetail?.triggerValue.id.name,
+      '-',
+      'chart',
     ], {
       queryParams: {
         c: this.yamcs.context,
@@ -197,9 +197,9 @@ export class AlarmHistoryPage {
     }
 
     this.router.navigate([
-      '/telemetry/parameters',
-      alarm.parameterDetail?.triggerValue.id.name,
-      'data'
+      '/telemetry/parameters' + alarm.parameterDetail?.triggerValue.id.name,
+      '-',
+      'data',
     ], {
       queryParams: {
         c: this.yamcs.context,

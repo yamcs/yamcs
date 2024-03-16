@@ -52,8 +52,8 @@ export class ParameterAlarmsTable {
     }
 
     this.router.navigate([
-      '/telemetry/parameters',
-      alarm.parameterDetail?.triggerValue.id.name,
+      '/telemetry/parameters' + alarm.parameterDetail?.triggerValue.id.name,
+      '-',
       'chart'
     ], {
       queryParams: {
@@ -80,8 +80,8 @@ export class ParameterAlarmsTable {
     }
 
     this.router.navigate([
-      '/telemetry/parameters',
-      alarm.parameterDetail?.triggerValue.id.name,
+      '/telemetry/parameters' + alarm.parameterDetail?.triggerValue.id.name,
+      '-',
       'data'
     ], {
       queryParams: {

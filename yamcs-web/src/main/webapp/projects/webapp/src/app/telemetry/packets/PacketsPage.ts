@@ -303,11 +303,12 @@ export class PacketsPage {
 
   extractPacket(packet: Packet) {
     this.router.navigate([
-      encodeURIComponent(packet.id.name),
+      '/telemetry/packets' + packet.id.name,
+      '-',
+      'log',
       packet.generationTime,
       packet.sequenceNumber,
     ], {
-      relativeTo: this.route,
       queryParams: {
         c: this.yamcs.context,
       }

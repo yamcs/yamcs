@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, ViewChild, input } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Parameter, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
@@ -14,7 +14,9 @@ import { SelectRangeDialog } from './SelectRangeDialog';
   styleUrl: './ParameterChartTab.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ParameterChartTab implements AfterViewInit, OnDestroy {
+export class ParameterChartTab implements OnInit, OnDestroy {
+
+  qualifiedName = input.required<string>({ alias: 'parameter' });
 
   @ViewChild(ParameterPlot)
   plot: ParameterPlot;
@@ -34,11 +36,13 @@ export class ParameterChartTab implements AfterViewInit, OnDestroy {
     readonly yamcs: YamcsService,
     private dialog: MatDialog,
     private synchronizer: Synchronizer,
-  ) {
-    this.missionTime = yamcs.getMissionTime();
+  ) { }
+
+  ngOnInit() {
+    this.missionTime = this.yamcs.getMissionTime();
     this.initializeOptions();
 
-    const qualifiedName = this.route.parent!.snapshot.paramMap.get('qualifiedName')!;
+    const qualifiedName = this.qualifiedName();
     this.dataSource = new DyDataSource(this.yamcs, this.synchronizer);
     this.parameter$ = this.yamcs.yamcsClient.getParameter(this.yamcs.instance!, qualifiedName);
     this.parameter$.then(parameter => {
@@ -66,9 +70,6 @@ export class ParameterChartTab implements AfterViewInit, OnDestroy {
         }
       });
     });
-  }
-
-  ngAfterViewInit() {
   }
 
   private initializeOptions() {
@@ -159,9 +160,7 @@ export class ParameterChartTab implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.timeSubscription) {
-      this.timeSubscription.unsubscribe();
-    }
-    this.dataSource.disconnect();
+    this.timeSubscription?.unsubscribe();
+    this.dataSource?.disconnect();
   }
 }

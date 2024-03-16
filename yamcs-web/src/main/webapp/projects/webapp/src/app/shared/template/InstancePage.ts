@@ -194,7 +194,7 @@ export class InstancePage implements OnInit, OnDestroy {
 
   onSearchSelect(event: MatAutocompleteSelectedEvent) {
     this.searchControl.setValue('');
-    this.router.navigate(['/telemetry/parameters/', event.option.value], {
+    this.router.navigate(['/telemetry/parameters' + event.option.value], {
       queryParams: { c: this.yamcs.context }
     });
   }

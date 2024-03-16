@@ -43,7 +43,7 @@
 
                 <td style="width: 400px">
                   <ng-container *ngFor="let input of (run.inputs || []); last as last">
-                    <a [routerLink]="['/telemetry/parameters/', input.id.name]"
+                    <a [routerLink]="'/telemetry/parameters' + input.id.name"
                        [queryParams]="{c: yamcs.context}"
                        class="secundary">
                       {{ input.id.name }}</a>:
@@ -55,7 +55,7 @@
 
                 <td style="width: 400px">
                   <ng-container *ngFor="let output of (run.outputs || []); last as last">
-                    <a [routerLink]="['/telemetry/parameters/', output.id.name]"
+                    <a [routerLink]="'/telemetry/parameters' + output.id.name"
                        [queryParams]="{c: yamcs.context}"
                        class="secundary">
                       {{ output.id.name }}</a>:

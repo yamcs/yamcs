@@ -73,6 +73,7 @@ export * from './lib/pipes/nanos-duration.pipe';
 export * from './lib/pipes/nvl.pipe';
 export * from './lib/pipes/operator.pipe';
 export * from './lib/pipes/parameter-type-for-path.pipe';
+export * from './lib/pipes/parents.pipe';
 export * from './lib/pipes/print-json.pipe';
 export * from './lib/pipes/reverse.pipe';
 export * from './lib/pipes/short-name.pipe';

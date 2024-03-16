@@ -1,6 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, input } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
 import { GetAlarmsOptions, SelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { ParameterAlarmsDataSource } from './ParameterAlarmsDataSource';
 
@@ -11,9 +10,9 @@ const defaultInterval = 'P1M';
   styleUrl: './ParameterAlarmsTab.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ParameterAlarmsTab {
+export class ParameterAlarmsTab implements OnInit, OnDestroy {
 
-  qualifiedName: string;
+  qualifiedName = input.required<string>({ alias: 'parameter' });
 
   intervalOptions: SelectOption[] = [
     { id: 'P1M', label: 'Last Month' },
@@ -38,11 +37,14 @@ export class ParameterAlarmsTab {
 
   dataSource: ParameterAlarmsDataSource;
 
-  constructor(route: ActivatedRoute, readonly yamcs: YamcsService) {
-    this.qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;
-    this.dataSource = new ParameterAlarmsDataSource(yamcs, this.qualifiedName);
+  constructor(readonly yamcs: YamcsService) {
+  }
 
-    this.validStop = yamcs.getMissionTime();
+  ngOnInit() {
+    const qualifiedName = this.qualifiedName();
+    this.dataSource = new ParameterAlarmsDataSource(this.yamcs, qualifiedName);
+
+    this.validStop = this.yamcs.getMissionTime();
     this.validStart = utils.subtractDuration(this.validStop, defaultInterval);
     this.appliedInterval = defaultInterval;
     this.loadData();
@@ -59,7 +61,7 @@ export class ParameterAlarmsTab {
         this.appliedInterval = nextInterval;
         this.loadData();
       } else {
-        this.validStop = yamcs.getMissionTime();
+        this.validStop = this.yamcs.getMissionTime();
         this.validStart = utils.subtractDuration(this.validStop, nextInterval);
         this.appliedInterval = nextInterval;
         this.loadData();
@@ -118,5 +120,9 @@ export class ParameterAlarmsTab {
       options.start = this.validStart.toISOString();
     }
     this.dataSource.loadMoreData(options);
+  }
+
+  ngOnDestroy() {
+    this.dataSource?.disconnect();
   }
 }

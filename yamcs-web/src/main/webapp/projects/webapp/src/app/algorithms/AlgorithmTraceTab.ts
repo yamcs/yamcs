@@ -1,5 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component } from '@angular/core';
-import { Title } from '@angular/platform-browser';
+import { AfterViewInit, ChangeDetectionStrategy, Component, OnInit, input } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlgorithmStatus, AlgorithmTrace, MessageService, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
@@ -9,9 +8,9 @@ import { BehaviorSubject } from 'rxjs';
   styleUrl: './AlgorithmTraceTab.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AlgorithmTraceTab implements AfterViewInit {
+export class AlgorithmTraceTab implements OnInit, AfterViewInit {
 
-  private qualifiedName: string;
+  qualifiedName = input.required<string>({ alias: 'algorithm' });
 
   algorithm$: Promise<Algorithm>;
   status$ = new BehaviorSubject<AlgorithmStatus | null>(null);
@@ -23,14 +22,11 @@ export class AlgorithmTraceTab implements AfterViewInit {
     private route: ActivatedRoute,
     private router: Router,
     readonly yamcs: YamcsService,
-    title: Title,
     private messageService: MessageService,
-  ) {
-    this.qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;
-    this.algorithm$ = yamcs.yamcsClient.getAlgorithm(this.yamcs.instance!, this.qualifiedName);
-    this.algorithm$.then(algorithm => {
-      title.setTitle(algorithm.name);
-    });
+  ) { }
+
+  ngOnInit(): void {
+    this.algorithm$ = this.yamcs.yamcsClient.getAlgorithm(this.yamcs.instance!, this.qualifiedName());
     this.refreshData();
   }
 
@@ -54,7 +50,7 @@ export class AlgorithmTraceTab implements AfterViewInit {
   refreshData() {
     if (this.yamcs.processor) {
       this.yamcs.yamcsClient.getAlgorithmStatus(
-        this.yamcs.instance!, this.yamcs.processor, this.qualifiedName
+        this.yamcs.instance!, this.yamcs.processor, this.qualifiedName()
       ).then(status => {
         this.status$.next(status);
       }).catch(err => {
@@ -62,7 +58,7 @@ export class AlgorithmTraceTab implements AfterViewInit {
       });
 
       this.yamcs.yamcsClient.getAlgorithmTrace(
-        this.yamcs.instance!, this.yamcs.processor, this.qualifiedName
+        this.yamcs.instance!, this.yamcs.processor, this.qualifiedName()
       ).then(trace => {
         this.trace$.next(trace);
       }).catch(err => {
@@ -75,20 +71,16 @@ export class AlgorithmTraceTab implements AfterViewInit {
   }
 
   startTrace() {
-    const qualifiedName = this.route.parent!.snapshot.paramMap.get('qualifiedName')!;
     this.yamcs.yamcsClient.startAlgorithmTrace(
-      this.yamcs.instance!, this.yamcs.processor!, qualifiedName
+      this.yamcs.instance!, this.yamcs.processor!, this.qualifiedName()
     ).then(() => {
       this.refreshData();
-    }).catch(err => {
-      this.messageService.showError(err);
-    });
+    }).catch(err => this.messageService.showError(err));
   }
 
   stopTrace() {
-    const qualifiedName = this.route.parent!.snapshot.paramMap.get('qualifiedName')!;
     this.yamcs.yamcsClient.stopAlgorithmTrace(
-      this.yamcs.instance!, this.yamcs.processor!, qualifiedName
+      this.yamcs.instance!, this.yamcs.processor!, this.qualifiedName()
     ).then(() => {
       this.refreshData();
       this.switchToSection('runs');
@@ -98,8 +90,6 @@ export class AlgorithmTraceTab implements AfterViewInit {
         queryParams: { section: null },
         queryParamsHandling: 'merge',
       });
-    }).catch(err => {
-      this.messageService.showError(err);
-    });
+    }).catch(err => this.messageService.showError(err));
   }
 }

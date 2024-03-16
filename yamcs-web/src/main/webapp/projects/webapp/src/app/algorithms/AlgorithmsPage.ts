@@ -195,7 +195,7 @@ export class AlgorithmsPage implements AfterViewInit, OnDestroy {
       const item = this.selection.selected[0];
       const items = this.dataSource.items$.value;
       if (items.indexOf(item) !== -1) {
-        this.router.navigate(['/algorithms', item.algorithm?.qualifiedName], {
+        this.router.navigate(['/algorithms' + item.algorithm?.qualifiedName], {
           queryParams: { c: this.yamcs.context }
         });
       }
@@ -203,9 +203,7 @@ export class AlgorithmsPage implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.queryParamMapSubscription) {
-      this.queryParamMapSubscription.unsubscribe();
-    }
+    this.queryParamMapSubscription?.unsubscribe();
     this.dataSource.disconnect();
   }
 }

@@ -73,7 +73,7 @@ export class ParameterDataDataSource extends DataSource<ParameterValue> {
     });
   }
 
-  disconnect(collectionViewer: CollectionViewer) {
+  disconnect() {
     this.pvals$.complete();
     this.loading$.complete();
   }

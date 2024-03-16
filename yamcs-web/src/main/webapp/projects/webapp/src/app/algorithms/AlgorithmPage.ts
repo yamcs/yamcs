@@ -1,6 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, input } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { ActivatedRoute } from '@angular/router';
 import { YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
@@ -8,15 +7,19 @@ import { YamcsService } from '@yamcs/webapp-sdk';
   styleUrl: './AlgorithmPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AlgorithmPage {
+export class AlgorithmPage implements OnInit {
+
+  qualifiedName = input.required<string>({ alias: 'algorithm' });
 
   algorithm$: Promise<Algorithm>;
 
-  constructor(route: ActivatedRoute, readonly yamcs: YamcsService, title: Title) {
-    const qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
-    this.algorithm$ = yamcs.yamcsClient.getAlgorithm(this.yamcs.instance!, qualifiedName);
+  constructor(readonly yamcs: YamcsService, private title: Title) {
+  }
+
+  ngOnInit(): void {
+    this.algorithm$ = this.yamcs.yamcsClient.getAlgorithm(this.yamcs.instance!, this.qualifiedName());
     this.algorithm$.then(algorithm => {
-      title.setTitle(algorithm.name);
+      this.title.setTitle(algorithm.name);
     });
   }
 }

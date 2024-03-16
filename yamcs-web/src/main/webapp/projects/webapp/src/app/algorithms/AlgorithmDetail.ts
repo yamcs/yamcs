@@ -1,5 +1,4 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 import { Algorithm, AlgorithmOverrides, AlgorithmStatus, MessageService, YamcsService } from '@yamcs/webapp-sdk';
 import * as ace from 'brace';
 import 'brace/mode/javascript';
@@ -20,7 +19,7 @@ export class AlgorithmDetail implements AfterViewInit {
   @ViewChild('text', { static: false })
   textContainer: ElementRef;
 
-  @Input()
+  @Input({ required: true })
   algorithm: Algorithm;
 
   @Input()
@@ -32,7 +31,6 @@ export class AlgorithmDetail implements AfterViewInit {
   dirty$ = new BehaviorSubject<boolean>(false);
 
   constructor(
-    private route: ActivatedRoute,
     readonly yamcs: YamcsService,
     private messageService: MessageService,
     private authService: AuthService,
@@ -77,7 +75,7 @@ export class AlgorithmDetail implements AfterViewInit {
   }
 
   private refreshOverrides() {
-    const qualifiedName = this.route.parent!.snapshot.paramMap.get('qualifiedName')!;
+    const qualifiedName = this.algorithm.qualifiedName;
     const instance = this.yamcs.instance!;
     const processor = this.yamcs.processor!;
     this.yamcs.yamcsClient.getAlgorithmOverrides(instance, processor, qualifiedName).then(overrides => {

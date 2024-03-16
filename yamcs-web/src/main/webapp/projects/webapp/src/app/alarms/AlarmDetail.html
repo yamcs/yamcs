@@ -1,7 +1,7 @@
 <ng-container *ngIf="alarm.type === 'PARAMETER'">
   <div class="block-title">Parameter</div>
   <div class="block">
-    <a [routerLink]="['/telemetry/parameters/', alarm.id.namespace! + '/' + alarm.id.name]"
+    <a [routerLink]="'/telemetry/parameters/' + alarm.id.namespace! + '/' + alarm.id.name"
        [queryParams]="{c: yamcs.context}"
        class="ya-link">
       {{ alarm.id.namespace }}/{{ alarm.id.name }}

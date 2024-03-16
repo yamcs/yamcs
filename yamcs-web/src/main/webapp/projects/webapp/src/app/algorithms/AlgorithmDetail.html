@@ -2,11 +2,11 @@
   <dt>Algorithm</dt>
   <dd>{{ algorithm.qualifiedName | shortName }}</dd>
 
-  <dt>Space system</dt>
+  <dt>System</dt>
   <dd>
     <ng-container *ngIf="(algorithm.qualifiedName | spaceSystemName) as spaceSystemName">
       <a routerLink="/algorithms"
-         [queryParams]="{c: yamcs.context, filter: spaceSystemName}"
+         [queryParams]="{c: yamcs.context, system: spaceSystemName}"
          class="ya-link">
         {{ spaceSystemName }}
       </a>
@@ -163,7 +163,7 @@
       <tr *ngFor="let inputParameter of algorithm.inputParameter">
         <td>{{ inputParameter.inputName || '-' }}</td>
         <td>
-          <a [routerLink]="['/telemetry/parameters/', inputParameter.parameter.qualifiedName]"
+          <a [routerLink]="'/telemetry/parameters' + inputParameter.parameter.qualifiedName"
              [queryParams]="{c: yamcs.context}">
             {{ inputParameter.parameter.qualifiedName }}
           </a>
@@ -194,7 +194,7 @@
       <tr *ngFor="let outputParameter of algorithm.outputParameter">
         <td>{{ outputParameter.outputName || '-' }}</td>
         <td>
-          <a [routerLink]="['/telemetry/parameters/', outputParameter.parameter.qualifiedName]"
+          <a [routerLink]="'/telemetry/parameters' + outputParameter.parameter.qualifiedName"
              [queryParams]="{c: yamcs.context}">
             {{ outputParameter.parameter.qualifiedName }}
           </a>
@@ -218,7 +218,7 @@
       <tr *ngFor="let trigger of algorithm.onParameterUpdate">
         <td>OnParameterUpdate</td>
         <td>
-          <a [routerLink]="['/telemetry/parameters/', trigger.qualifiedName]"
+          <a [routerLink]="'/telemetry/parameters' + trigger.qualifiedName"
              [queryParams]="{c: yamcs.context}">
             {{ trigger.qualifiedName }}
           </a>

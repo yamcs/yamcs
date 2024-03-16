@@ -1,13 +1,14 @@
 <app-instance-page *ngIf="parameter$ | async as parameter">
   <app-instance-toolbar>
-    <ng-container *ngIf="(parameter.qualifiedName | spaceSystemName) as spaceSystemName">
-      <a routerLink="/telemetry/parameters"
-         [queryParams]="{c: yamcs.context, system: spaceSystemName}"
-         class="ya-link ya-header-link">
-        {{ spaceSystemName }}
-      </a>/{{ parameter.qualifiedName | shortName }}{{ offset$ | async}}
-      <ya-title-copy [text]="parameter.qualifiedName + ((offset$ | async) || '')" />
+    <ng-container *ngFor="let parent of parameter.qualifiedName | parents; first as isFirst">
+      <a *ngIf="!isFirst"
+         routerLink="/telemetry/parameters"
+         class="ya-link ya-header-link"
+         [queryParams]="{c: yamcs.context, system: parent.path}">{{ parent.name }}</a>/
     </ng-container>
+    <span>{{ parameter.qualifiedName | shortName }}{{ offset$ | async}}</span>
+    <ya-title-copy [text]="parameter.qualifiedName + ((offset$ | async) || '')" />
+
     &nbsp;&nbsp;&nbsp;
     <button *ngIf="isWritable() && maySetParameter() && !(offset$ | async)"
             mat-button
@@ -28,14 +29,14 @@
 
   <nav #tabs mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
     <a mat-tab-link
-       routerLink="summary"
+       routerLink="-/summary"
        routerLinkActive #rla="routerLinkActive"
        [active]="rla.isActive"
        [queryParams]="{c: yamcs.context}">
       Summary
     </a>
     <a mat-tab-link
-       routerLink="chart"
+       routerLink="-/chart"
        routerLinkActive #rlb="routerLinkActive"
        [active]="rlb.isActive"
        [queryParams]="{c: yamcs.context}"
@@ -43,7 +44,7 @@
       Chart
     </a>
     <a mat-tab-link
-       routerLink="alarms"
+       routerLink="-/alarms"
        routerLinkActive #rlc="routerLinkActive"
        [active]="rlc.isActive"
        [queryParams]="{c: yamcs.context}"
@@ -51,7 +52,7 @@
       Alarm History
     </a>
     <a mat-tab-link
-       routerLink="data"
+       routerLink="-/data"
        routerLinkActive #rld="routerLinkActive"
        [active]="rld.isActive"
        [queryParams]="{c: yamcs.context}"

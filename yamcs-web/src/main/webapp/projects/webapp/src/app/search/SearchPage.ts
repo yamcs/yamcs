@@ -67,7 +67,7 @@ export class SearchPage {
       return {
         label: p.qualifiedName,
         type: 'Parameter',
-        link: ['/telemetry/parameters/', p.qualifiedName],
+        link: ['/telemetry/parameters' + p.qualifiedName],
       };
     });
   }

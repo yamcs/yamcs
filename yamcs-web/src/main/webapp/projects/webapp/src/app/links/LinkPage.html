@@ -94,7 +94,7 @@
       <h4>System parameters</h4>
       <ng-container *ngFor="let parameter of link.parameters">
         <mat-icon class="icon12" style="vertical-align: middle">toll</mat-icon>&nbsp;
-        <a [routerLink]="['/telemetry/parameters', parameter]"
+        <a [routerLink]="'/telemetry/parameters' + parameter"
            [queryParams]="{c: yamcs.context}"
            class="ya-link">{{ parameter }}</a>
         <br>

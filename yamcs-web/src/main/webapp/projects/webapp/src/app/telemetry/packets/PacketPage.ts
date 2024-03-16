@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, OnInit, ViewChild, input } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
@@ -20,7 +20,9 @@ export interface ExtractedItem {
   styleUrl: './PacketPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PacketPage implements AfterViewInit {
+export class PacketPage implements OnInit, AfterViewInit {
+
+  packetName = input.required<string>({ alias: 'packet' });
 
   filterForm = new UntypedFormGroup({
     filter: new UntypedFormControl(),
@@ -57,25 +59,27 @@ export class PacketPage implements AfterViewInit {
   ];
 
   constructor(
-    title: Title,
+    private title: Title,
     readonly route: ActivatedRoute,
     readonly yamcs: YamcsService,
-    messageService: MessageService,
-  ) {
-    const pname = decodeURIComponent(route.snapshot.paramMap.get('pname')!);
-    const gentime = route.snapshot.paramMap.get('gentime')!;
-    const seqno = Number(route.snapshot.paramMap.get('seqno')!);
-    title.setTitle(pname);
+    private messageService: MessageService,
+  ) { }
+
+  ngOnInit(): void {
+    const pname = this.packetName();
+    const gentime = this.route.snapshot.paramMap.get('gentime')!;
+    const seqno = Number(this.route.snapshot.paramMap.get('seqno')!);
+    this.title.setTitle(pname);
 
     this.dataSource.filterPredicate = (node, filter) => {
       return !node.pval || (node.pval.parameter.qualifiedName.toLowerCase().indexOf(filter) >= 0);
     };
 
-    yamcs.yamcsClient.getPacket(yamcs.instance!, pname, gentime, seqno).then(packet => {
+    this.yamcs.yamcsClient.getPacket(this.yamcs.instance!, pname, gentime, seqno).then(packet => {
       this.packet$.next(packet);
-    }).catch(err => messageService.showError(err));
+    }).catch(err => this.messageService.showError(err));
 
-    yamcs.yamcsClient.extractPacket(yamcs.instance!, pname, gentime, seqno).then(result => {
+    this.yamcs.yamcsClient.extractPacket(this.yamcs.instance!, pname, gentime, seqno).then(result => {
       this.result$.next(result);
       const items: ExtractedItem[] = [];
       let prevContainerItem: ExtractedItem | undefined;
@@ -94,7 +98,7 @@ export class PacketPage implements AfterViewInit {
       }
 
       this.dataSource.data = items;
-    }).catch(err => messageService.showError(err));
+    }).catch(err => this.messageService.showError(err));
   }
 
   ngAfterViewInit() {
