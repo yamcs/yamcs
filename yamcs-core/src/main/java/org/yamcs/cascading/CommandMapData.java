@@ -60,7 +60,7 @@ public class CommandMapData {
             if (this.upstreamPath.endsWith("/")) {
                 throw new ConfigurationException(
                         "upstream '" + this.upstreamPath
-                                + "' cannot be a path (has to be a command qualified name) in case of EMBEEDED_BINARY");
+                                + "' cannot be a path (has to be a command qualified name) in case of EMBEDDED_BINARY");
             } else if (this.type == CommandType.DIRECT) {
                 if (this.localPath.endsWith("/") && !this.upstreamPath.endsWith("/")) {
                     throw new ConfigurationException(
