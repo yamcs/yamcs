@@ -1,13 +1,12 @@
 instances:
- - IntegrationTest
- - IntegrationTest2
+  - IntegrationTest
+  - IntegrationTest2
 
 services:
   - class: org.yamcs.http.HttpServer
     args:
       port: 9190
 
-incomingDir: ${java.io.tmpdir}/yamcs-incoming
 dataDir: ${java.io.tmpdir}/yamcs-IntegrationTest-data
 
 secretKey: testtest

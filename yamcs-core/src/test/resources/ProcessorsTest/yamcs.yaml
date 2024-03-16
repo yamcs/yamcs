@@ -1,13 +1,12 @@
 services:
- - class: org.yamcs.http.HttpServer
-   args:
-     port: 28090
+  - class: org.yamcs.http.HttpServer
+    args:
+      port: 28090
 
 instances:
- - yproctest0
- - yproctest1
+  - yproctest0
+  - yproctest1
 
-incomingDir: ${java.io.tmpdir}/yamcs-incoming
 dataDir: ${java.io.tmpdir}/yamcs-data
 
 secretKey: testtest
