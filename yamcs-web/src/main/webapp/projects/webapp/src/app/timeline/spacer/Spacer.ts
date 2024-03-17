@@ -1,7 +1,7 @@
 import { Banner } from '@fqqb/timeline';
 import { TimelineBand } from '@yamcs/webapp-sdk';
-import { TimelineChartPage } from '../TimelineChartPage';
-import { NumberProperty, PropertyInfoSet, resolveProperties } from '../properties';
+import { NumberProperty, PropertyInfoSet, resolveProperties } from '../shared/properties';
+import { TimelineChartComponent } from '../timeline-chart/timeline-chart.component';
 
 export const propertyInfo: PropertyInfoSet = {
   height: new NumberProperty(34),
@@ -9,7 +9,7 @@ export const propertyInfo: PropertyInfoSet = {
 
 export class Spacer extends Banner {
 
-  constructor(chart: TimelineChartPage, bandInfo: TimelineBand) {
+  constructor(chart: TimelineChartComponent, bandInfo: TimelineBand) {
     super(chart.timeline);
 
     this.label = bandInfo.name;
