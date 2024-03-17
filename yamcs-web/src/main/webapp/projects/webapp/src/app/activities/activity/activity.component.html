@@ -34,7 +34,7 @@
       <span class="subtitle">Started {{ activity.start | datetime }}</span><br>
     </div>
     <div class="activity-header-right">
-      <ya-label>{{ activity.status }}</ya-label>
+      <app-activity-status [activity]="activity" />
     </div>
   </div>
 

@@ -6,17 +6,27 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Activity, ColumnInfo, GetActivitiesOptions, MessageService, SelectComponent, SelectOption, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, debounceTime } from 'rxjs';
-import { AuthService } from '../core/services/AuthService';
-import { ActivitiesDataSource } from './ActivitiesDataSource';
-import { SetFailedDialog } from './SetFailedDialog';
+import { AuthService } from '../../core/services/AuthService';
+import { SharedModule } from '../../shared/SharedModule';
+import { SetFailedDialogComponent } from '../set-failed-dialog/set-failed-dialog.component';
+import { ActivityDurationComponent } from '../shared/activity-duration.component';
+import { ActivityIconComponent } from '../shared/activity-icon.component';
+import { ActivitiesDataSource } from './activities.datasource';
 
 const defaultInterval = 'NO_LIMIT';
 
 @Component({
-  templateUrl: './ActivitiesPage.html',
+  standalone: true,
+  templateUrl: './activity-list.component.html',
+  styleUrl: './activity-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    ActivityDurationComponent,
+    ActivityIconComponent,
+    SharedModule,
+  ],
 })
-export class ActivitiesPage {
+export class ActivityListComponent {
 
   @ViewChild('intervalSelect')
   intervalSelect: SelectComponent;
@@ -317,7 +327,7 @@ export class ActivitiesPage {
   }
 
   setFailed(activity: Activity) {
-    this.dialog.open(SetFailedDialog, {
+    this.dialog.open(SetFailedDialogComponent, {
       width: '400px',
       data: { activity },
     }).afterClosed().subscribe(result => {

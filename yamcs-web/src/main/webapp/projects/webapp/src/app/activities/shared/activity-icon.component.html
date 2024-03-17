@@ -1,0 +1,27 @@
+<ng-container *ngIf="activity() as activity">
+  <mat-icon *ngIf="activity.status === 'SUCCESSFUL'"
+            class="success"
+            [matTooltip]="activity.status">
+    check_circle
+  </mat-icon>
+  <mat-icon *ngIf="activity.status === 'RUNNING'"
+            class="spin"
+            [matTooltip]="activity.status">
+    cached
+  </mat-icon>
+  <mat-icon *ngIf="activity.status === 'FAILED'"
+            class="alert"
+            [matTooltip]="activity.status">
+    highlight_off
+  </mat-icon>
+  <mat-icon *ngIf="activity.status === 'CANCELLED' && !activity.stop"
+            class="warning spin"
+            [matTooltip]="activity.status">
+    cached
+  </mat-icon>
+  <mat-icon *ngIf="activity.status === 'CANCELLED' && activity.stop"
+            class="down"
+            [matTooltip]="activity.status">
+    stop_circle
+  </mat-icon>
+</ng-container>

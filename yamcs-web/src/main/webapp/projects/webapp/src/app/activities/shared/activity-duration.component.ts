@@ -1,13 +1,18 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges, OnDestroy, inject } from '@angular/core';
 import { Activity, Synchronizer } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
+import { SharedModule } from '../../shared/SharedModule';
 
 @Component({
+  standalone: true,
   selector: 'app-activity-duration',
   template: '{{ elapsed$ | async | duration }}',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    SharedModule,
+  ],
 })
-export class ActivityDuration implements OnChanges, OnDestroy {
+export class ActivityDurationComponent implements OnChanges, OnDestroy {
 
   private synchronizer = inject(Synchronizer);
 

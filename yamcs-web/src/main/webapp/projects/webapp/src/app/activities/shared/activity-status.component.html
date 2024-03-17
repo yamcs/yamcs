@@ -1,0 +1,8 @@
+<span *ngIf="activity() as activity"
+      class="status"
+      [class.successful]="activity.status === 'SUCCESSFUL'"
+      [class.running]="activity.status === 'RUNNING'"
+      [class.failed]="activity.status === 'FAILED'"
+      [class.cancelled]="activity.status === 'CANCELLED'">
+  {{ activity.status }}
+</span>

@@ -1,0 +1,24 @@
+.status {
+  padding: 4px;
+  border-radius: 2px;
+}
+
+.status.successful {
+  background: #28a745;
+  color: white;
+}
+
+.status.failed {
+  background: #dc3545;
+  color: white;
+}
+
+.status.running {
+  background: #eee;
+  color: #333;
+}
+
+.status.cancelled {
+  background: #eee;
+  color: #333;
+}

@@ -23,6 +23,11 @@
       </td>
       <td class="message">{{ log.message }}</td>
     </tr>
+    <ng-container *ngIf="activity$ | async as activity">
+      <tr *ngIf="!activity.stop">
+        <td colspan="3"><ya-dots /></td>
+      </tr>
+    </ng-container>
   </table>
   <div #bottom class="bottom"></div>
 </div>

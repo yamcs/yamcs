@@ -95,26 +95,21 @@ public class Binding {
      * unconventional for the PROTOCOL.
      */
     public String getURI() {
-        StringBuilder b = new StringBuilder();
+        String host;
+        if (address != null && !address.isAnyLocalAddress()) {
+            host = address.getHostName();
+        } else {
+            host = "localhost";
+        }
+
+        var b = new StringBuilder();
         if (isTLS()) {
-            b.append("https://");
-            try {
-                InetAddress inetAddress = address != null ? address : InetAddress.getLocalHost();
-                b.append(inetAddress.getHostName());
-            } catch (UnknownHostException e) {
-                b.append("localhost");
-            }
+            b.append("https://").append(host);
             if (port != 443) {
                 b.append(":").append(port);
             }
         } else {
-            b.append("http://");
-            try {
-                InetAddress inetAddress = address != null ? address : InetAddress.getLocalHost();
-                b.append(inetAddress.getHostName());
-            } catch (UnknownHostException e) {
-                b.append("localhost");
-            }
+            b.append("http://").append(host);
             if (port != 80) {
                 b.append(":").append(port);
             }

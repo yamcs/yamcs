@@ -1,20 +1,24 @@
-import { Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { YamcsService } from '@yamcs/webapp-sdk';
+import { SharedModule } from '../../shared/SharedModule';
 
 @Component({
+  standalone: true,
   selector: 'app-set-failed-dialog',
-  templateUrl: './SetFailedDialog.html',
+  templateUrl: './set-failed-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    SharedModule,
+  ],
 })
-export class SetFailedDialog {
+export class SetFailedDialogComponent {
 
   form: UntypedFormGroup;
 
   constructor(
-    private dialogRef: MatDialogRef<SetFailedDialog>,
+    private dialogRef: MatDialogRef<SetFailedDialogComponent>,
     formBuilder: UntypedFormBuilder,
-    yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.form = formBuilder.group({

@@ -1,14 +1,22 @@
-import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { ActivityLog, ActivityLogSubscription, MessageService, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild, input } from '@angular/core';
+import { Activity, ActivityLog, ActivityLogSubscription, MessageService, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { SharedModule } from '../../shared/SharedModule';
+import { ActivityService } from '../shared/activity.service';
 
 @Component({
-  templateUrl: './ActivityLogTab.html',
-  styleUrl: './ActivityLogTab.css',
+  standalone: true,
+  templateUrl: './activity-log-tab.component.html',
+  styleUrl: './activity-log-tab.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    SharedModule,
+  ],
 })
-export class ActivityLogTab implements OnDestroy {
+export class ActivityLogTabComponent implements OnDestroy {
+
+  activityId = input.required<string>();
+  activity$: Observable<Activity | null>;
 
   // Separate archived and realtime logs, so that we can sort them correctly.
   //
@@ -34,17 +42,22 @@ export class ActivityLogTab implements OnDestroy {
   bottomAnchor: ElementRef<HTMLDivElement>;
 
   constructor(
-    route: ActivatedRoute,
     readonly yamcs: YamcsService,
-    messageService: MessageService,
-    syncService: Synchronizer,
+    private messageService: MessageService,
+    private syncService: Synchronizer,
+    activityService: ActivityService,
   ) {
-    const activityId = route.parent!.snapshot.paramMap.get('activityId')!;
+    this.activity$ = activityService.activity$;
+  }
+
+  ngOnInit() {
+    const { yamcs } = this;
     this.activityLogSubscription = yamcs.yamcsClient.createActivityLogSubscription({
       instance: yamcs.instance!,
-      activity: activityId,
+      activity: this.activityId(),
     }, newLog => {
       // Discard logs we're already aware of from a REST response
+      // (would be better to solve this with a seqnum)
       for (const log of this.archivedLogs) {
         if (newLog.time === log.time
           && newLog.level === log.level
@@ -56,12 +69,25 @@ export class ActivityLogTab implements OnDestroy {
       this.realtimeLogs.push(newLog);
       this.dirty$.next(true);
     });
-    yamcs.yamcsClient.getActivityLog(yamcs.instance!, activityId).then(logs => {
-      this.archivedLogs = logs;
-      this.emitLogs();
-    }).catch(err => messageService.showError(err));
 
-    this.syncSubscription = syncService.syncFast(() => {
+    yamcs.yamcsClient.getActivityLog(yamcs.instance!, this.activityId()).then(logs => {
+      this.archivedLogs = logs.filter(newLog => {
+        // Discard logs we're already aware of from the WebSocket subscription
+        // (would be better to solve this with a seqnum)
+        for (const log of this.realtimeLogs) {
+          if (newLog.time === log.time
+            && newLog.level === log.level
+            && newLog.message === log.message
+            && newLog.source === log.source) {
+            return false;
+          }
+        }
+        return true;
+      });
+      this.emitLogs();
+    }).catch(err => this.messageService.showError(err));
+
+    this.syncSubscription = this.syncService.syncFast(() => {
       if (this.dirty$.value) {
         this.emitLogs();
         this.dirty$.next(false);

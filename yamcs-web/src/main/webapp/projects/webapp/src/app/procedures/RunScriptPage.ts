@@ -89,7 +89,7 @@ export class RunScriptPage {
     const options: ActivityDefinition = {
       type: 'SCRIPT',
       args: {
-        processor: this.yamcs.instance || null,
+        processor: this.yamcs.processor || null,
         script: formValue['script'],
       },
     };
