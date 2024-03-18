@@ -62,7 +62,7 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
 
     private long offset = 0;
     private long end = 0;
-    private long partSequenceNumber = 0;
+    private long partSequenceNumber = 1;        // Start from 1, not 0
 
     private boolean suspended = false;
     private PutRequest request;

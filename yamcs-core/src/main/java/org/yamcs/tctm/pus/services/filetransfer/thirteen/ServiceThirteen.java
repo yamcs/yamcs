@@ -665,7 +665,7 @@ public class ServiceThirteen extends AbstractYamcsService
                     .anyMatch(trsf -> getEntityFromId(trsf.getTransactionId()
                             .getLargePacketTransactionId(), remoteEntities).getId() == destinationId)) {
                 throw new InvalidRequestException(
-                        "There is already a transfer ongoing to '" + getEntityFromName(destination, remoteEntities).getId() + " - " + getEntityFromName(
+                        "There is already a transfer ongoing to LargePacketId: '" + getEntityFromName(destination, remoteEntities).getId() + " - " + getEntityFromName(
                                 destination, remoteEntities).getName() + "'");
             }
         }
