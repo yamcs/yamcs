@@ -36,7 +36,7 @@ service ActivitiesApi {
 
   // Start an activity
   //
-  // The body of the request allows for the execution of arbitrary activities.
+  // The request body allows for the execution of arbitrary activities.
   // The following activity types are included in the core Yamcs module:
   //
   // .. rubric:: Command
@@ -67,14 +67,14 @@ service ActivitiesApi {
   // .. code-block:: json
   //
   //     {
-  //       "type": "COMMAND",
-  //       "args": {
-  //         "command": "/YSS/SIMULATOR/SWITCH_VOLTAGE_ON",
+  //         "type": "COMMAND",
   //         "args": {
-  //           "voltage_num": 3
-  //         },
-  //         "processor": "realtime"
-  //       }
+  //             "command": "/YSS/SIMULATOR/SWITCH_VOLTAGE_ON",
+  //             "args": {
+  //                 "voltage_num": 3
+  //             },
+  //             "processor": "realtime"
+  //         }
   //     }
   //
   // .. rubric:: Command Stack
@@ -102,12 +102,12 @@ service ActivitiesApi {
   // .. code-block:: json
   //
   //     {
-  //       "type": "COMMAND_STACK",
-  //       "args": {
-  //         "bucket": "mybucket",
-  //         "stack": "mystack.ycs",
-  //         "processor": "realtime"
-  //       }
+  //         "type": "COMMAND_STACK",
+  //         "args": {
+  //             "bucket": "mybucket",
+  //             "stack": "mystack.ycs",
+  //             "processor": "realtime"
+  //         }
   //     }
   //
   // .. rubric:: Script
@@ -138,12 +138,12 @@ service ActivitiesApi {
   // .. code-block:: json
   //
   //     {
-  //       "type": "SCRIPT",
-  //       "args": {
-  //         "script": "simulate_los.py",
-  //         "args": "--duration 60",
-  //         "processor": "realtime"
-  //       }
+  //         "type": "SCRIPT",
+  //         "args": {
+  //             "script": "simulate_los.py",
+  //             "args": "--duration 60",
+  //             "processor": "realtime"
+  //         }
   //     }
   rpc StartActivity(StartActivityRequest) returns (ActivityInfo) {
     option (yamcs.api.route) = {
