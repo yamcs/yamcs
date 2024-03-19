@@ -1,21 +1,14 @@
 package org.yamcs.tctm;
 
-import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
-import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
-import org.yamcs.cmdhistory.CommandHistoryPublisher;
-import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.utils.YObjectLoader;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
@@ -28,11 +21,7 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
 /**
  * A UDP-based link that acts as a client: sending TC and receiving TM on the same socket pair.
  */
-public class UdpTcTmDataLink extends AbstractTmDataLink implements TcDataLink {
-
-    protected CommandHistoryPublisher commandHistoryPublisher;
-    protected AtomicLong dataOutCount = new AtomicLong();
-    protected CommandPostprocessor cmdPostProcessor;
+public class UdpTcTmDataLink extends AbstractTcTmDataLink {
 
     protected String host;
     protected int port;
@@ -46,8 +35,6 @@ public class UdpTcTmDataLink extends AbstractTmDataLink implements TcDataLink {
         spec.addOption("host", OptionType.STRING).withRequired(true);
         spec.addOption("port", OptionType.INTEGER).withRequired(true);
         spec.addOption("initialDelay", OptionType.INTEGER);
-        spec.addOption("commandPostprocessorClassName", OptionType.STRING);
-        spec.addOption("commandPostprocessorArgs", OptionType.MAP).withSpec(Spec.ANY);
         return spec;
     }
 
@@ -57,7 +44,6 @@ public class UdpTcTmDataLink extends AbstractTmDataLink implements TcDataLink {
         host = config.getString("host");
         port = config.getInt("port");
         initialDelay = config.getLong("initialDelay", -1);
-        initPostprocessor(yamcsInstance, config);
     }
 
     @Override
@@ -74,69 +60,12 @@ public class UdpTcTmDataLink extends AbstractTmDataLink implements TcDataLink {
         return true;
     }
 
-    protected void initPostprocessor(String instance, YConfiguration config) {
-        String commandPostprocessorClassName = GenericCommandPostprocessor.class.getName();
-        YConfiguration commandPostprocessorArgs = null;
-
-        // The GenericCommandPostprocessor class does nothing if there are no arguments,
-        // which is what we want.
-        if (config != null) {
-            commandPostprocessorClassName = config.getString("commandPostprocessorClassName",
-                    GenericCommandPostprocessor.class.getName());
-            if (config.containsKey("commandPostprocessorArgs")) {
-                commandPostprocessorArgs = config.getConfig("commandPostprocessorArgs");
-            }
-        }
-
-        try {
-            if (commandPostprocessorArgs != null) {
-                cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName, instance,
-                        commandPostprocessorArgs);
-            } else {
-                cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName, instance);
-            }
-        } catch (ConfigurationException e) {
-            log.error("Cannot instantiate the command postprocessor", e);
-            throw e;
-        }
-    }
-
-    /**
-     * Postprocesses the command, unless postprocessing is disabled.
-     * 
-     * @return potentially modified binary, or {@code null} to indicate that the command should not be handled further.
-     */
-    protected byte[] postprocess(PreparedCommand pc) {
-        byte[] binary = pc.getBinary();
-        if (!pc.disablePostprocessing()) {
-            binary = cmdPostProcessor.process(pc);
-            if (binary == null) {
-                log.warn("command postprocessor did not process the command");
-            }
-        }
-        return binary;
-    }
-
-    @Override
-    public void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryPublisher) {
-        this.commandHistoryPublisher = commandHistoryPublisher;
-        cmdPostProcessor.setCommandHistoryPublisher(commandHistoryPublisher);
-    }
-
     @Override
     protected Status connectionStatus() {
         if (channel == null || !channel.isActive()) {
             return Status.UNAVAIL;
         }
         return Status.OK;
-    }
-
-    /**
-     * Save an ack in the command history that the command has been sent out of the link
-     */
-    protected void ackCommand(CommandId commandId) {
-        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent_KEY, getCurrentTime(),
-                AckStatus.OK);
     }
 
     @Override
@@ -212,16 +141,6 @@ public class UdpTcTmDataLink extends AbstractTmDataLink implements TcDataLink {
         });
     }
 
-    @Override
-    public long getDataOutCount() {
-        return dataOutCount.get();
-    }
-
-    @Override
-    public void resetCounters() {
-        super.resetCounters();
-        dataOutCount.set(0);
-    }
 
     @Override
     public String getDetailedStatus() {

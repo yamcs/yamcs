@@ -178,34 +178,41 @@ public class LinkManager {
         Stream ppStream = getStream(linkArgs, "ppStream");
 
         if (link instanceof TmPacketDataLink) {
-            Stream streamf = tmStream == null ? singleStream : tmStream;
-            if (streamf != null) {
-                TmPacketDataLink tmLink = (TmPacketDataLink) link;
-                InvalidPacketAction ipa = getInvalidPacketAction(link.getName(), linkArgs);
-                tmLink.setTmSink(tmPacket -> processTmPacket(tmLink, tmPacket, streamf, ipa));
+            TmPacketDataLink tmLink = (TmPacketDataLink) link;
+            if (tmLink.isTmPacketDataLinkImplemented()) {
+                Stream streamf = tmStream == null ? singleStream : tmStream;
+                if (streamf != null) {
+                    InvalidPacketAction ipa = getInvalidPacketAction(link.getName(), linkArgs);
+                    tmLink.setTmSink(tmPacket -> processTmPacket(tmLink, tmPacket, streamf, ipa));
+                }
             }
         }
 
         if (link instanceof TcDataLink) {
             TcDataLink tcLink = (TcDataLink) link;
-            Stream stream = tcStream == null ? singleStream : tcStream;
+            if (tcLink.isTcDataLinkImplemented()) {
+                Stream stream = tcStream == null ? singleStream : tcStream;
 
-            if (stream != null) {
-                TcStreamSubscriber tcs = tcStreamSubscribers.get(stream);
-                if (tcs == null) {
-                    tcs = new TcStreamSubscriber(true);
-                    tcStreamSubscribers.put(stream, tcs);
-                    stream.addSubscriber(tcs);
+                if (stream != null) {
+                    TcStreamSubscriber tcs = tcStreamSubscribers.get(stream);
+                    if (tcs == null) {
+                        tcs = new TcStreamSubscriber(true);
+                        tcStreamSubscribers.put(stream, tcs);
+                        stream.addSubscriber(tcs);
+                    }
+                    tcs.addLink(tcLink);
                 }
-                tcs.addLink(tcLink);
+                tcLink.setCommandHistoryPublisher(cmdHistPublisher);
             }
-            tcLink.setCommandHistoryPublisher(cmdHistPublisher);
         }
 
         if (link instanceof ParameterDataLink) {
-            Stream stream = ppStream == null ? singleStream : ppStream;
-            if (stream != null) {
-                ((ParameterDataLink) link).setParameterSink(new StreamPbParameterSender(yamcsInstance, stream));
+            ParameterDataLink ppLink = (ParameterDataLink) link;
+            if (ppLink.isParameterDataLinkImplemented()) {
+                Stream stream = ppStream == null ? singleStream : ppStream;
+                if (stream != null) {
+                    ppLink.setParameterSink(new StreamPbParameterSender(yamcsInstance, stream));
+                }
             }
         }
 

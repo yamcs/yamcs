@@ -2,6 +2,7 @@ package org.yamcs.tctm;
 
 import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
 
+import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.yamcs.ConfigurationException;
@@ -15,43 +16,39 @@ import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.utils.YObjectLoader;
 
 /**
- * Base implementation for a TC data link that initialises a post processor and implements basic methods.
- * 
- * 
- * @author nm
- *
+ * Base class for TM/TC links.
  */
-public abstract class AbstractTcDataLink extends AbstractLink implements TcDataLink {
-
+public abstract class AbstractTcTmDataLink extends AbstractTmDataLink implements TcDataLink {
     protected CommandHistoryPublisher commandHistoryPublisher;
-
-    protected AtomicLong dataCount = new AtomicLong();
-
+    protected AtomicLong dataOutCount = new AtomicLong();
     protected CommandPostprocessor cmdPostProcessor;
-    static final PreparedCommand SIGNAL_QUIT = new PreparedCommand(new byte[0]);
 
-    protected long housekeepingInterval = 10000;
-    
+    String packetInputStreamClassName;
+    YConfiguration packetInputStreamArgs;
+    PacketInputStream packetInputStream;
+    OutputStream outputStream;
 
     @Override
     public Spec getDefaultSpec() {
-        var spec = super.getDefaultSpec();
+        var spec = super.getDefaultSpec();        
         spec.addOption("commandPostprocessorClassName", OptionType.STRING);
         spec.addOption("commandPostprocessorArgs", OptionType.MAP).withSpec(Spec.ANY);
         return spec;
     }
 
     @Override
-    public void init(String yamcsInstance, String linkName, YConfiguration config) throws ConfigurationException {
-        super.init(yamcsInstance, linkName, config);
+    public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
+        super.init(instance, name, config);
 
+        // Setup tc postprocessor
         initPostprocessor(yamcsInstance, config);
     }
 
-    protected void initPostprocessor(String instance, YConfiguration config) {
+    protected void initPostprocessor(String instance, YConfiguration config) throws ConfigurationException {
         String commandPostprocessorClassName = GenericCommandPostprocessor.class.getName();
         YConfiguration commandPostprocessorArgs = null;
 
+        // The GenericCommandPostprocessor class does nothing if there are no arguments, which is what we want.
         if (config != null) {
             commandPostprocessorClassName = config.getString("commandPostprocessorClassName",
                     GenericCommandPostprocessor.class.getName());
@@ -60,6 +57,7 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
             }
         }
 
+        // Instantiate
         try {
             if (commandPostprocessorArgs != null) {
                 cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName, instance,
@@ -73,11 +71,6 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
         }
     }
 
-    @Override
-    public void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryListener) {
-        this.commandHistoryPublisher = commandHistoryListener;
-        cmdPostProcessor.setCommandHistoryPublisher(commandHistoryListener);
-    }
 
     /**
      * Postprocesses the command, unless postprocessing is disabled.
@@ -94,28 +87,18 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
         }
         return binary;
     }
-
+    
     @Override
-    public long getDataInCount() {
-        return 0;
-    }
-
-    @Override
-    public long getDataOutCount() {
-        return dataCount.get();
-    }
-
-    @Override
-    public void resetCounters() {
-        dataCount.set(0);
+    public void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryListener) {
+        this.commandHistoryPublisher = commandHistoryListener;
+        cmdPostProcessor.setCommandHistoryPublisher(commandHistoryListener);
     }
 
     /** Send to command history the failed command */
     protected void failedCommand(CommandId commandId, String reason) {
         log.debug("Failing command {}: {}", commandId, reason);
         long currentTime = getCurrentTime();
-        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent_KEY,
-                currentTime, AckStatus.NOK, reason);
+        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent_KEY, currentTime, AckStatus.NOK, reason);
         commandHistoryPublisher.commandFailed(commandId, currentTime, reason);
     }
 
@@ -125,7 +108,17 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
      * @param commandId
      */
     protected void ackCommand(CommandId commandId) {
-        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent_KEY, getCurrentTime(),
-                AckStatus.OK);
+        commandHistoryPublisher.publishAck(commandId, AcknowledgeSent_KEY, getCurrentTime(), AckStatus.OK);
+    }
+
+    @Override
+    public long getDataOutCount() {
+        return dataOutCount.get();
+    }
+
+    @Override
+    public void resetCounters() {
+        super.resetCounters();
+        dataOutCount.set(0);
     }
 }

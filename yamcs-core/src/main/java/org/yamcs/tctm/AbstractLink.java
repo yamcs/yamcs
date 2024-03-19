@@ -19,6 +19,7 @@ import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.Parameter;
 
@@ -44,7 +45,8 @@ public abstract class AbstractLink extends AbstractService
     private Parameter spLinkStatus, spDataOutCount, spDataInCount;
     protected TimeService timeService;
     private Map<String, LinkAction> actions = new LinkedHashMap<>(); // Keep them in order of registration
-
+    private AggregatedDataLink parent = null;
+    
     /**
      * singleton for netty worker group. In the future we may have an option to create different worker groups for
      * different links but for now we stick to one.
@@ -144,8 +146,9 @@ public abstract class AbstractLink extends AbstractService
      */
     protected abstract Status connectionStatus();
 
+
     protected long getCurrentTime() {
-        return timeService.getMissionTime();
+        return TimeEncoding.getWallclockTime();
     }
 
     @Override
@@ -211,5 +214,19 @@ public abstract class AbstractLink extends AbstractService
     @Override
     public LinkAction getAction(String actionId) {
         return actions.get(actionId);
+    }
+    
+    @Override
+    public AggregatedDataLink getParent() {
+        return parent;
+    }
+
+    @Override
+    public void setParent(AggregatedDataLink parent) {
+        this.parent = parent;
+    }
+    
+    public String getYamcsInstance() {
+        return yamcsInstance;
     }
 }
