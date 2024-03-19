@@ -18,6 +18,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.rocksdb.ColumnFamilyHandle;
+import org.rocksdb.MemoryUsageType;
+import org.rocksdb.MemoryUtil;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
@@ -60,8 +62,13 @@ import com.google.protobuf.TextFormat;
  * Tablespaces can also have time based partitions in different RocksDB databases in sub-directories such as
  * &lt;tablespace-name&gt;.rdb/YYYY/
  * <p>
- * There are two column families in the main database: - the _metadata_ column family - contains metadata. - the default
- * column family - contains data.
+ * There are four column families in the main database:
+ * <ul>
+ * <li>_metadata_ - contains metadata - tables definition, tbsIndices,...</li>
+ * <li>rt_data - stores data for tm, pp and events tables.</li>
+ * <li>parameter_archive - stores data for parameter archive</li>
+ * <li>the default column family - contains other data (alarms, activities, timeline...)</li>
+ * </ul>
  * <p>
  * The data is partitioned by the first 4 bytes of the key which we call tbsIndex.
  * <p>
@@ -786,5 +793,34 @@ public class Tablespace {
             throw new YarchException(e);
         }
         return seqlist;
+    }
+
+    RocksdbMemoryUsage getApproximateMemoryUsage() {
+        var lruCache = RdbConfig.getInstance().getTablespaceConfig(name).getTableCache();
+        List<YRDB> dbList = rdbFactory.getOpenDbs(false);
+        var mbt = MemoryUtil.getApproximateMemoryUsageByType(rdbFactory.getOpenRdbs(), null);
+        dbList.forEach(yrdb -> rdbFactory.dispose(yrdb));
+        RocksdbMemoryUsage memUsage = new RocksdbMemoryUsage();
+
+        memUsage.blockCacheMemoryUsage = lruCache.getUsage();
+        memUsage.indexMemoryUsage = mbt.get(MemoryUsageType.kTableReadersTotal);
+        memUsage.memtableMemoryUsage = mbt.get(MemoryUsageType.kMemTableTotal);
+        memUsage.pinnedBlocksMemoryUsage = lruCache.getPinnedUsage();
+
+        return memUsage;
+    }
+
+    static class RocksdbMemoryUsage {
+        long blockCacheMemoryUsage;
+        long indexMemoryUsage;
+        long memtableMemoryUsage;
+        long pinnedBlocksMemoryUsage;
+
+        @Override
+        public String toString() {
+            return "RocksdbMemoryUsage [blockCacheMemoryUsage=" + blockCacheMemoryUsage + ", indexMemoryUsage="
+                    + indexMemoryUsage + ", memtableMemoryUsage=" + memtableMemoryUsage + ", pinnedBlocksMemoryUsage="
+                    + pinnedBlocksMemoryUsage + "]";
+        }
     }
 }

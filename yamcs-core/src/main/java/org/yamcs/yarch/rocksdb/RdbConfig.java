@@ -10,10 +10,12 @@ import java.util.stream.Collectors;
 
 import org.rocksdb.BlockBasedTableConfig;
 import org.rocksdb.BloomFilter;
+import org.rocksdb.Cache;
 import org.rocksdb.ColumnFamilyOptions;
 import org.rocksdb.CompressionType;
 import org.rocksdb.DBOptions;
 import org.rocksdb.IndexType;
+import org.rocksdb.LRUCache;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.archive.XtceTmRecorder;
@@ -108,8 +110,10 @@ public class RdbConfig {
         ColumnFamilyOptions parchiveCfOptions = new ColumnFamilyOptions();
 
         List<CfConfig> cfConfigList = new ArrayList<>();
+        BlockBasedTableConfig tableFormatConfig;
 
         long targetFileSizeBase;
+        final LRUCache lruCache;
 
         /**
          * default tablespace config containing default
@@ -142,18 +146,21 @@ public class RdbConfig {
             parchiveCfOptions.setLevel0SlowdownWritesTrigger(50);
             parchiveCfOptions.setLevel0StopWritesTrigger(100);
 
-            BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
+            tableFormatConfig = new BlockBasedTableConfig();
             tableFormatConfig.setBlockSize(256l * 1024);
             tableFormatConfig.setFormatVersion(5);
             tableFormatConfig.setFilterPolicy(new BloomFilter());
+            lruCache = new LRUCache(16 * 1024 * 1024);
+            tableFormatConfig.setBlockCache(lruCache);
+
             tableFormatConfig.setIndexType(IndexType.kTwoLevelIndexSearch);
 
             rtDataCfOptions.setTableFormatConfig(tableFormatConfig);
             parchiveCfOptions.setTableFormatConfig(tableFormatConfig);
 
-            cfConfigList.add(new CfConfig(Pattern.compile(ParameterArchive.CF_NAME), parchiveCfOptions));
-            cfConfigList.add(new CfConfig(Pattern.compile(XtceTmRecorder.CF_NAME), rtDataCfOptions));
-            cfConfigList.add(new CfConfig(Pattern.compile(Tablespace.CF_METADATA), metadataDbCfOptions));
+            cfConfigList.add(new CfConfig(lruCache, Pattern.compile(ParameterArchive.CF_NAME), parchiveCfOptions));
+            cfConfigList.add(new CfConfig(lruCache, Pattern.compile(XtceTmRecorder.CF_NAME), rtDataCfOptions));
+            cfConfigList.add(new CfConfig(lruCache, Pattern.compile(Tablespace.CF_METADATA), metadataDbCfOptions));
         }
 
         TablespaceConfig(YConfiguration tblspConfig) throws ConfigurationException {
@@ -180,7 +187,7 @@ public class RdbConfig {
                 int count = 0;
                 List<YConfiguration> cfConfigs = tblspConfig.getConfigList(KEY_CF_CONFIG);
                 for (YConfiguration cfConfig : cfConfigs) {
-                    CfConfig cfConf = new CfConfig(cfConfig);
+                    CfConfig cfConf = new CfConfig(lruCache, cfConfig);
                     cfConfigList.add(count, cfConf); // make sure to add them before the three ones added in the default
                                                      // constructor
                     count++;
@@ -200,18 +207,25 @@ public class RdbConfig {
         public DBOptions getDBOptions() {
             return dboptions;
         }
+
+        public Cache getTableCache() {
+            return lruCache;
+        }
     }
 
     static class CfConfig {
         Pattern cfNamePattern;
         ColumnFamilyOptions options;
+        final LRUCache lruCache;
 
-        public CfConfig(Pattern cfNamePattern, ColumnFamilyOptions options) {
+        public CfConfig(LRUCache lruCache, Pattern cfNamePattern, ColumnFamilyOptions options) {
+            this.lruCache = lruCache;
             this.cfNamePattern = cfNamePattern;
             this.options = options;
         }
 
-        public CfConfig(YConfiguration cfConfig) {
+        public CfConfig(LRUCache lruCache, YConfiguration cfConfig) {
+            this.lruCache = lruCache;
             String s = cfConfig.getString(KEY_CF_PATTERN);
             try {
                 cfNamePattern = Pattern.compile(s);

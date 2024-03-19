@@ -52,6 +52,7 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 
 import com.google.common.io.Files;
 
@@ -132,11 +133,16 @@ public class SystemParametersService extends AbstractYamcsService implements Run
                 if (DiskstatsParameterProducer.hasDisksStats()) {
                     providers.add(new SysVarProducer(new DiskstatsParameterProducer(this)));
                 } else {
-                    log.info("No /proc/diskstats present, cannot produce diskstats parametes");
+                    log.info("No /proc/diskstats present, cannot produce diskstats parameters (only works on Linux)");
                 }
             } catch (IOException e) {
                 throw new InitException(e);
             }
+        }
+
+        if (producers.contains("rocksdb")) {
+            var producer = RdbStorageEngine.getInstance().newRdbParameterProducer(yamcsInstance, this);
+            providers.add(new SysVarProducer(producer));
         }
 
         synchronized (instances) {
