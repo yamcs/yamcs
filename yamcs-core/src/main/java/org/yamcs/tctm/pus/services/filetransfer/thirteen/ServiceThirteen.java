@@ -205,7 +205,7 @@ public class ServiceThirteen extends AbstractYamcsService
         hasFileListingCapability = config.getBoolean("hasFileListingCapability", false);
         spaceSystem = config.getString("spaceSystem");
         maxExistingFileRenames = config.getInt("maxExistingFileRenames", 1000);
-        commandReleaseUser = config.getString("", "administrator");
+        commandReleaseUser = config.getString("commandReleaseUser", "admin");
         startDownlinkCmdName = config.getString("startDownlinkCmdName", "StartLargePacketDownload");
 
         initSrcDst(config);
