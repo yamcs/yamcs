@@ -10,6 +10,7 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.tctm.pus.PusTcManager;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tc.PusTcCcsdsPacket;
+import org.yamcs.utils.ByteArrayUtils;
 
 
 public class SubServiceFour implements PusSubService {
@@ -17,15 +18,17 @@ public class SubServiceFour implements PusSubService {
 
     final static private byte DEFAULT_ACKNOWLEDGEMENT_FLAGS = 15;  // FIXME: Assuming default ack Flags of (1111)2 | Is this alright?
     final static private byte SUBSERVICE_TYPE = 4;
-    final static private int NUMBER_OF_TELECOMMANDS_SIZE = 4;
-    final static private int NUMBER_OF_TELECOMMANDS = 1;           // FIXME: Assumed by default that only 1 time-tagged telecommand can be packetised at once
+    final static private int DEFAULT_N_TELECOMMANDS_SIZE = 1;
 
+    final static private int N_Telecommands = 1;
     private static byte acknowledgementFlags;
+    private static int N_TelecommandsSize;
 
     SubServiceFour(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
 
         acknowledgementFlags = (byte) config.getInt("acknowledgementFlags", DEFAULT_ACKNOWLEDGEMENT_FLAGS);
+        N_TelecommandsSize = config.getInt("nTelecommandsSize", DEFAULT_N_TELECOMMANDS_SIZE);
     }
 
     private byte[] constructPrimaryHeader(int commandApid) {
@@ -51,16 +54,18 @@ public class SubServiceFour implements PusSubService {
 
     private byte[] constructSecondaryHeader() {
         byte pusVersionAcknowledgementFlags = (byte) (
-            ((ServiceEleven.pusVersionNumber & 0xF0) << 4) |
+            ServiceEleven.pusVersionNumber |
             (acknowledgementFlags & 0x0F) 
         );
-
-        byte[] secondaryHeader = new byte[5];
+        System.out.println("PusVersion: " + pusVersionAcknowledgementFlags);
+        byte[] secondaryHeader = new byte[PusTcManager.secondaryHeaderLength];
 
         ByteBuffer bb = ByteBuffer.wrap(secondaryHeader);
         bb.put(pusVersionAcknowledgementFlags);
         bb.put((byte) ServiceEleven.serviceType);
         bb.put((byte) SUBSERVICE_TYPE);
+        bb.putShort((short)PusTcManager.sourceId);
+        // Spare Field is already included when initializing secondaryHeader
 
         return secondaryHeader;
     }
@@ -73,13 +78,13 @@ public class SubServiceFour implements PusSubService {
         byte[] secondaryHeader = constructSecondaryHeader();
         byte[] telecommandPayload = telecommand.getBinary();
 
-        byte[] wrappedTelecommandPayload = new byte[primaryHeader.length + secondaryHeader.length + NUMBER_OF_TELECOMMANDS_SIZE + PusTcManager.timetagLength +  telecommandPayload.length];
+        byte[] wrappedTelecommandPayload = new byte[primaryHeader.length + secondaryHeader.length + N_TelecommandsSize + PusTcManager.timetagLength +  telecommandPayload.length];
         long timetag = telecommand.getTimestampAttribute(CommandHistoryPublisher.Timetag_KEY);
 
         ByteBuffer buffer = ByteBuffer.wrap(wrappedTelecommandPayload);
         buffer.put(primaryHeader);
         buffer.put(secondaryHeader);
-        buffer.putInt(NUMBER_OF_TELECOMMANDS);
+        buffer.put(ByteArrayUtils.encodeCustomInteger(N_Telecommands, N_TelecommandsSize));
         buffer.putInt((int) timetag);       // FF mission only supports 4bytes timetag
         buffer.put(telecommandPayload);
 

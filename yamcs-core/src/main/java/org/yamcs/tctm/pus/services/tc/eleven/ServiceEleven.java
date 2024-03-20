@@ -16,7 +16,7 @@ import org.yamcs.tctm.pus.services.tc.PusTcCcsdsPacket;
 
 public class ServiceEleven implements PusService {
     Log log;
-    private String yamcsInstance;
+    private final String yamcsInstance;
 
     Map<Integer, PusSubService> pusSubServices = new HashMap<>();
     YConfiguration config;
@@ -29,8 +29,7 @@ public class ServiceEleven implements PusService {
     final static short packetSequenceCount = 0; // `CcsdsSeqCountFiller` class will fill up the seqCount when invoked within the PostProcessor
 
     // Secondary Header fields
-    final static byte pusVersionNumber = 2;
-    final static byte acknowledgementFlags = 8; // FIME: Only acceptance can be acheived at the moment
+    final static byte pusVersionNumber = 32; // After bit-manipulation, it will be correctly inserted in the TC
     final static byte serviceType = 11;
 
     // APID mapping
