@@ -1,4 +1,5 @@
 import { WebSocketCall } from '../WebSocketCall';
+import { Spec } from './config';
 import { Instance } from './system';
 
 export interface ListInstancesOptions {
@@ -40,6 +41,7 @@ export interface LinkAction {
   style: 'CHECK_BOX' | 'PUSH_BUTTON';
   enabled: boolean;
   checked: boolean;
+  spec?: Spec;
 }
 
 export interface SubscribeLinksRequest {

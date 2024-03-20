@@ -1,6 +1,5 @@
 package org.yamcs.tctm;
 
-
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
@@ -9,6 +8,8 @@ import org.yamcs.Spec.OptionType;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
+
+import com.google.gson.JsonObject;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
@@ -72,6 +73,7 @@ public class UdpTcTmDataLink extends AbstractTcTmDataLink {
     protected void doStart() {
         var eventLoopGroup = getEventLoop();
         eventLoopGroup.schedule(() -> createBootstrap(), initialDelay, TimeUnit.MILLISECONDS);
+        addAction(new ChangeDestinationAction());
         notifyStarted();
     }
 
@@ -141,7 +143,6 @@ public class UdpTcTmDataLink extends AbstractTcTmDataLink {
         });
     }
 
-
     @Override
     public String getDetailedStatus() {
         if (isDisabled()) {
@@ -160,6 +161,42 @@ public class UdpTcTmDataLink extends AbstractTcTmDataLink {
                 processPacket(tmPacket);
             }
             packetCount.incrementAndGet();
+        }
+    }
+
+    private class ChangeDestinationAction extends LinkAction {
+
+        ChangeDestinationAction() {
+            super("change-destination", "Change destination");
+        }
+
+        @Override
+        public Spec getSpec() {
+            var spec = new Spec();
+            spec.addOption("host", OptionType.STRING)
+                    .withRequired(true)
+                    .withDefault(host);
+            spec.addOption("port", OptionType.INTEGER)
+                    .withRequired(true)
+                    .withDefault(port);
+            return spec;
+        }
+
+        @Override
+        public JsonObject execute(Link link, JsonObject request) {
+            host = request.get("host").getAsString();
+            port = request.get("port").getAsInt();
+            log.info("Changing destination to {}:{}", host, port);
+
+            if (isRunningAndEnabled()) {
+                var ch = UdpTcTmDataLink.this.channel;
+                disable();
+                ch.close().addListener(f -> {
+                    enable();
+                });
+            }
+
+            return null;
         }
     }
 }

@@ -77,11 +77,11 @@
         <ng-container *ngFor="let action of link.actions">
           <button mat-menu-item
                   [disabled]="!action.enabled"
-                  (click)="runAction(action.id)">
+                  (click)="runAction(action)">
             <ng-container *ngIf="action.style === 'CHECK_BOX'">
               <mat-icon [style.visibility]="action.checked ? 'visible' : 'hidden'">check</mat-icon>
             </ng-container>
-            {{ action.label }}
+            {{ action.label }}<ng-container *ngIf="action.spec">...</ng-container>
           </button>
         </ng-container>
       </ng-container>

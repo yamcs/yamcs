@@ -8,6 +8,7 @@ export { default as YamcsClient } from './YamcsClient';
 export * from './types/activities';
 export * from './types/alarms';
 export * from './types/commandHistory';
+export * from './types/config';
 export * from './types/cop1';
 export * from './types/events';
 export * from './types/filetransfer';

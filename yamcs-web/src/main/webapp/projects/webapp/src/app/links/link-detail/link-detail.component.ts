@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Link, MessageService, YamcsService } from '@yamcs/webapp-sdk';
+import { Link, LinkAction, MessageService, YamcsService } from '@yamcs/webapp-sdk';
 import { AuthService } from '../../core/services/AuthService';
 import { SharedModule } from '../../shared/SharedModule';
 import { LinkStatusComponent } from '../link-status/link-status.component';
+import { LinkService } from '../shared/link.service';
 
 @Component({
   standalone: true,
@@ -23,6 +24,7 @@ export class LinkDetailComponent {
     private authService: AuthService,
     private yamcs: YamcsService,
     private messageService: MessageService,
+    private linkService: LinkService,
   ) { }
 
   mayControlLinks() {
@@ -44,9 +46,8 @@ export class LinkDetailComponent {
       .catch(err => this.messageService.showError(err));
   }
 
-  runAction(action: string) {
-    this.yamcs.yamcsClient.runLinkAction(this.link.instance, this.link.name, action)
-      .catch(err => this.messageService.showError(err));
+  runAction(action: LinkAction) {
+    this.linkService.runAction(this.link.name, action);
   }
 
   getEntriesForValue(value: any) {

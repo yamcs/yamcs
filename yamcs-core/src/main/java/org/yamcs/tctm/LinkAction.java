@@ -3,6 +3,8 @@ package org.yamcs.tctm;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.yamcs.Spec;
+
 import com.google.gson.JsonObject;
 
 public abstract class LinkAction {
@@ -47,6 +49,13 @@ public abstract class LinkAction {
      */
     public String getLabel() {
         return label;
+    }
+
+    /**
+     * Specification of action arguments (if the actions supports or requires this)
+     */
+    public Spec getSpec() {
+        return new Spec();
     }
 
     /**

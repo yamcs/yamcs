@@ -1,16 +1,18 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ColumnInfo, LinkEvent, LinkSubscription, MessageService, YamcsService } from '@yamcs/webapp-sdk';
+import { ColumnInfo, LinkAction, LinkEvent, LinkSubscription, MessageService, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { SharedModule } from '../../shared/SharedModule';
 import { LinkDetailComponent } from '../link-detail/link-detail.component';
 import { LinkStatusComponent } from '../link-status/link-status.component';
 import { LinksPageTabsComponent } from '../links-page-tabs/links-page-tabs.component';
+import { LinkService } from '../shared/link.service';
 import { LinkItem } from './model';
 
 @Component({
@@ -59,6 +61,8 @@ export class LinkListComponent implements AfterViewInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private messageService: MessageService,
+    private dialog: MatDialog,
+    private linkService: LinkService,
   ) {
     title.setTitle('Links');
 
@@ -158,9 +162,8 @@ export class LinkListComponent implements AfterViewInit, OnDestroy {
       .catch(err => this.messageService.showError(err));
   }
 
-  runAction(link: string, action: string) {
-    this.yamcs.yamcsClient.runLinkAction(this.yamcs.instance!, link, action)
-      .catch(err => this.messageService.showError(err));
+  runAction(link: string, action: LinkAction) {
+    this.linkService.runAction(link, action);
   }
 
   mayControlLinks() {

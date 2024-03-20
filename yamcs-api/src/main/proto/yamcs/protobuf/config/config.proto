@@ -35,8 +35,7 @@ message SpecInfo {
   // be specified, or none at all.
   repeated OptionGroupInfo requireTogether = 4;
 
-  // Conditional constraints on a group of options. When the condition
-  // is satisfied, all Each  Options that may only be specified when a condition is met
+  // Conditional constraints on a group of options
   repeated WhenConditionInfo whenConditions = 5;
 }
 

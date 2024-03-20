@@ -38,11 +38,11 @@
             <ng-container *ngFor="let action of selectedItem.link.actions">
               <button mat-menu-item
                       [disabled]="!action.enabled"
-                      (click)="runAction(selectedItem.link.name, action.id)">
+                      (click)="runAction(selectedItem.link.name, action)">
                 <ng-container *ngIf="action.style === 'CHECK_BOX'">
                   <mat-icon [style.visibility]="action.checked ? 'visible' : 'hidden'">check</mat-icon>
                 </ng-container>
-                {{ action.label }}
+                {{ action.label }}<ng-container *ngIf="action.spec">...</ng-container>
               </button>
             </ng-container>
           </ng-container>
@@ -179,12 +179,12 @@
                 <mat-divider />
                 <button *ngFor="let action of (row.link.actions || [])"
                         mat-menu-item
-                        (click)="runAction(row.link.name, action.id)"
+                        (click)="runAction(row.link.name, action)"
                         [disabled]="!action.enabled">
                   <ng-container *ngIf="action.style === 'CHECK_BOX'">
                     <mat-icon [style.visibility]="action.checked ? 'visible': 'hidden'">check</mat-icon>
                   </ng-container>
-                  {{ action.label }}
+                  {{ action.label }}<ng-container *ngIf="action.spec">...</ng-container>
                 </button>
               </ng-container>
             </ya-more>

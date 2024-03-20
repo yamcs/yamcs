@@ -825,9 +825,10 @@ export default class YamcsClient implements HttpHandler {
     });
   }
 
-  async runLinkAction(instance: string, link: string, action: string) {
+  async runLinkAction(instance: string, link: string, action: string, message?: { [key: string]: any; }) {
     return this.doFetch(`${this.apiUrl}/links/${instance}/${link}/actions/${action}`, {
       method: 'POST',
+      body: JSON.stringify(message || {}),
     });
   }
 
