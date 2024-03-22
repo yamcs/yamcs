@@ -6,6 +6,7 @@ import static org.yamcs.xtce.XtceDb.YAMCS_SPACESYSTEM_NAME;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,7 +96,9 @@ public class SystemParametersService extends AbstractYamcsService implements Run
                 .withDeprecationMessage("This option is obsolete, please add 'jvm' to the list of producers");
         spec.addOption("provideFsVariables", OptionType.BOOLEAN).withDefault(false)
                 .withDeprecationMessage("This option is obsolete, please add 'fs' to the list of producers");
-        spec.addOption("producers", OptionType.LIST).withElementType(OptionType.STRING)
+        spec.addOption("producers", OptionType.LIST)
+                .withRequired(false)
+                .withElementType(OptionType.STRING)
                 .withDescription("Current providers are: jvm, fs and diskstats. Diskstats only works on Linux");
         return spec;
     }
@@ -113,7 +116,9 @@ public class SystemParametersService extends AbstractYamcsService implements Run
 
         serverId = YamcsServer.getServer().getServerId();
         namespace = XtceDb.YAMCS_SPACESYSTEM_NAME + NameDescription.PATH_SEPARATOR + serverId;
-        List<String> producers = config.getList("producers");
+
+        List<String> producers = config.containsKey("producers") ? producers = config.getList("producers")
+                : Collections.emptyList();
 
         log.debug("Using {} as serverId, and {} as namespace for system parameters", serverId, namespace);
         if (config.getBoolean("provideJvmVariables") || producers.contains("jvm")) {
