@@ -1,5 +1,5 @@
 import { Value } from './client';
-const PREVIEW_LENGTH = 5;
+const PREVIEW_LENGTH = 3;
 
 export type ISOResolution = 'day' | 'hhmm' | 'hhmmss' | 'millis';
 
@@ -195,8 +195,7 @@ export function convertValue(value: Value) {
     case 'AGGREGATE':
       const aggregate: Map<string, any> = new Map<string, any>();
       let membersLength = value.aggregateValue?.value.length || 0;
-      for(let i = 0; i< membersLength; i++)
-      {
+      for (let i = 0; i < membersLength; i++) {
         let memberName = value.aggregateValue?.name[i] || "";
         let memberValue = convertValue(value.aggregateValue?.value[i] as Value);
         aggregate.set(memberName, memberValue);

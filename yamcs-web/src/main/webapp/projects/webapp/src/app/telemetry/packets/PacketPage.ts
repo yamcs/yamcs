@@ -1,48 +1,118 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, OnInit, ViewChild, input } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { Clipboard } from '@angular/cdk/clipboard';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewChild, input } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { BitRange, ColumnInfo, Container, ExtractPacketResponse, ExtractedParameter, MessageService, Packet, SelectOption, YamcsService } from '@yamcs/webapp-sdk';
+import { BitRange, Container, ExtractPacketResponse, ExtractedParameter, MessageService, Packet, Parameter, ParameterType, SelectOption, Value, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { Hex } from '../../shared/hex/Hex';
 
-export interface ExtractedItem {
-  type: 'PARAMETER' | 'CONTAINER';
-  parent?: ExtractedItem;
-  container?: Container;
-  pval?: ExtractedParameter;
+export interface INode {
+  parent?: Node;
   expanded: boolean;
+  rawValue?: Value;
+  engValue?: Value;
 }
+
+export interface ContainerNode extends INode {
+  type: 'CONTAINER';
+  container: Container;
+}
+
+export interface SimpleParameterNode extends INode {
+  type: 'SIMPLE_PARAMETER';
+  location: number;
+  size: number;
+  parameter: Parameter;
+}
+
+export interface AggregateParameterNode extends INode {
+  type: 'AGGREGATE_PARAMETER';
+  location: number;
+  size: number;
+  parameter: Parameter;
+}
+
+export interface ArrayParameterNode extends INode {
+  type: 'ARRAY_PARAMETER';
+  location: number;
+  size: number;
+  parameter: Parameter;
+}
+
+export interface SimpleValueNode extends INode {
+  type: 'SIMPLE_VALUE';
+  parameter: Parameter;
+  name: string;
+  offset: string;
+  parameterType: ParameterType;
+  depth: number;
+}
+
+export interface ArrayValueNode extends INode {
+  type: 'ARRAY_VALUE';
+  parameter: Parameter;
+  name: string;
+  offset: string;
+  parameterType: ParameterType;
+  depth: number;
+}
+
+export interface AggregateValueNode extends INode {
+  type: 'AGGREGATE_VALUE';
+  parameter: Parameter;
+  name: string;
+  offset: string;
+  parameterType: ParameterType;
+  depth: number;
+}
+
+export type Node = ContainerNode
+  | SimpleParameterNode
+  | AggregateParameterNode
+  | ArrayParameterNode
+  | SimpleValueNode
+  | AggregateValueNode
+  | ArrayValueNode;
 
 @Component({
   templateUrl: './PacketPage.html',
   styleUrl: './PacketPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PacketPage implements OnInit, AfterViewInit {
+export class PacketPage implements OnInit {
 
   packetName = input.required<string>({ alias: 'packet' });
 
-  filterForm = new UntypedFormGroup({
-    filter: new UntypedFormControl(),
-    type: new UntypedFormControl('ANY'),
-  });
-
   packet$ = new BehaviorSubject<Packet | null>(null);
-  result$ = new BehaviorSubject<ExtractPacketResponse | null>(null);
 
-  dataSource = new MatTableDataSource<ExtractedItem>();
+  messages$ = new BehaviorSubject<string[]>([]);
+
+  private allNodes: Node[] = [];
+  dataSource = new MatTableDataSource<Node>();
 
   _hex?: Hex;
 
-  columns: ColumnInfo[] = [
-    { id: 'position', label: 'Position', visible: true },
-    { id: 'entry', label: 'Entry', alwaysVisible: true },
-    { id: 'type', label: 'Type', visible: true },
-    { id: 'rawValue', label: 'Raw value', visible: false },
-    { id: 'engValue', label: 'Engineering value', visible: true },
-    { id: 'actions', label: '', alwaysVisible: true },
+  displayedColumns = [
+    'icon',
+    'location',
+    'size',
+    'expand-aggray',
+    'entry',
+    'type',
+    'rawValue',
+    'engValue',
+    'actions',
+  ];
+
+  containerColumns = [
+    'icon',
+    'containerName',
+    'entry',
+    'type',
+    'rawValue',
+    'engValue',
+    'actions',
   ];
 
   typeOptions: SelectOption[] = [
@@ -63,6 +133,8 @@ export class PacketPage implements OnInit, AfterViewInit {
     readonly route: ActivatedRoute,
     readonly yamcs: YamcsService,
     private messageService: MessageService,
+    private clipboard: Clipboard,
+    private changeDetection: ChangeDetectorRef,
   ) { }
 
   ngOnInit(): void {
@@ -71,40 +143,205 @@ export class PacketPage implements OnInit, AfterViewInit {
     const seqno = Number(this.route.snapshot.paramMap.get('seqno')!);
     this.title.setTitle(pname);
 
-    this.dataSource.filterPredicate = (node, filter) => {
-      return !node.pval || (node.pval.parameter.qualifiedName.toLowerCase().indexOf(filter) >= 0);
-    };
+    this.yamcs.yamcsClient.getPacket(this.yamcs.instance!, pname, gentime, seqno)
+      .then(packet => this.packet$.next(packet))
+      .catch(err => this.messageService.showError(err));
 
-    this.yamcs.yamcsClient.getPacket(this.yamcs.instance!, pname, gentime, seqno).then(packet => {
-      this.packet$.next(packet);
-    }).catch(err => this.messageService.showError(err));
-
-    this.yamcs.yamcsClient.extractPacket(this.yamcs.instance!, pname, gentime, seqno).then(result => {
-      this.result$.next(result);
-      const items: ExtractedItem[] = [];
-      let prevContainerItem: ExtractedItem | undefined;
-      for (const pval of result.parameterValues) {
-        if (pval.entryContainer.qualifiedName !== prevContainerItem?.container?.qualifiedName) {
-          const item: ExtractedItem = { type: 'CONTAINER', container: pval.entryContainer, expanded: false };
-          items.push(item);
-          prevContainerItem = item;
-        }
-        items.push({ type: 'PARAMETER', pval, parent: prevContainerItem, expanded: false });
-      }
-
-      // Expand last container
-      if (prevContainerItem) {
-        prevContainerItem.expanded = true;
-      }
-
-      this.dataSource.data = items;
-    }).catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient.extractPacket(this.yamcs.instance!, pname, gentime, seqno)
+      .then(result => this.processResponse(result))
+      .catch(err => this.messageService.showError(err));
   }
 
-  ngAfterViewInit() {
-    this.filterForm.valueChanges.subscribe(value => {
-      this.dataSource.filter = (value.filter ?? '').toLowerCase();
-    });
+  private processResponse(result: ExtractPacketResponse) {
+    this.messages$.next(result.messages || []);
+
+    let prevContainerNode: ContainerNode | undefined;
+    for (const pval of result.parameterValues || []) {
+      if (pval.entryContainer.qualifiedName !== prevContainerNode?.container.qualifiedName) {
+        const containerNode: ContainerNode = {
+          type: 'CONTAINER',
+          container: pval.entryContainer,
+          expanded: false,
+        };
+        this.allNodes.push(containerNode);
+
+        prevContainerNode = containerNode;
+      }
+
+      this.addParameterNodes(prevContainerNode, pval, this.allNodes);
+    }
+
+    // Expand last container
+    if (prevContainerNode) {
+      prevContainerNode.expanded = true;
+    }
+
+    this.updateDataSource();
+  }
+
+  private addParameterNodes(parent: Node, pval: ExtractedParameter, nodes: Node[]) {
+    const { parameter, location, rawValue, engValue, size } = pval;
+    if (parameter.type?.engType.endsWith('[]')) {
+      const arrayNode: Node = {
+        type: 'ARRAY_PARAMETER',
+        parent,
+        expanded: false,
+        parameter,
+        location,
+        rawValue,
+        engValue,
+        size,
+      };
+      nodes.push(arrayNode);
+
+
+      //  Nodes for array entries
+      const rawValues = rawValue.arrayValue || [];
+      const engValues = engValue.arrayValue || [];
+      const entryType = parameter.type!.arrayInfo!.type;
+      for (let i = 0; i < engValues.length; i++) {
+        this.addValueNode(
+          arrayNode,
+          parameter,
+          entryType,
+          '[' + i + ']',
+          '[' + i + ']',
+          1,
+          rawValues[i],
+          engValues[i],
+          nodes);
+      }
+
+    } else if (parameter.type?.engType === 'aggregate') {
+      const aggregateNode: Node = {
+        type: 'AGGREGATE_PARAMETER',
+        parent,
+        expanded: false,
+        parameter,
+        location,
+        rawValue,
+        engValue,
+        size,
+      };
+      nodes.push(aggregateNode);
+
+      // Nodes for aggregate members
+      const rawAggregateValue = rawValue.aggregateValue!;
+      const engAggregateValue = engValue.aggregateValue!;
+      for (let i = 0; i < engAggregateValue.name.length; i++) {
+        const memberType = parameter.type!.member[i].type as ParameterType;
+        this.addValueNode(
+          aggregateNode,
+          parameter,
+          memberType,
+          engAggregateValue.name[i],
+          '.' + engAggregateValue.name[i],
+          1,
+          rawAggregateValue.value[i],
+          engAggregateValue.value[i],
+          nodes);
+      }
+    } else {
+      nodes.push({
+        type: 'SIMPLE_PARAMETER',
+        parent,
+        expanded: false,
+        parameter,
+        location,
+        rawValue,
+        engValue,
+        size,
+      });
+    }
+  }
+
+  private addValueNode(
+    parent: Node,
+    parameter: Parameter,
+    parameterType: ParameterType,
+    name: string,
+    offset: string,
+    depth: number,
+    rawValue: Value,
+    engValue: Value,
+    nodes: Node[],
+  ) {
+    if (parameterType.engType.endsWith('[]')) {
+      const node: ArrayValueNode = {
+        type: 'ARRAY_VALUE',
+        parent,
+        expanded: false,
+        parameter,
+        parameterType,
+        name,
+        offset,
+        rawValue,
+        engValue,
+        depth,
+      };
+      nodes.push(node);
+
+      //  Nodes for array entries
+      const rawValues = rawValue.arrayValue || [];
+      const engValues = engValue.arrayValue || [];
+      for (let i = 0; i < engValues.length; i++) {
+        this.addValueNode(
+          node,
+          parameter,
+          parameterType.arrayInfo!.type,
+          '[' + i + ']',
+          offset + '[' + i + ']',
+          depth + 1,
+          rawValues[i],
+          engValues[i],
+          nodes);
+      }
+    } else if (parameterType.engType === 'aggregate') {
+      const node: AggregateValueNode = {
+        type: 'AGGREGATE_VALUE',
+        parent,
+        expanded: false,
+        parameter,
+        parameterType,
+        name,
+        offset,
+        rawValue,
+        engValue,
+        depth,
+      };
+      nodes.push(node);
+
+      //  Nodes for aggregate members
+      const rawAggregateValue = rawValue.aggregateValue!;
+      const engAggregateValue = engValue.aggregateValue!;
+      for (let i = 0; i < engAggregateValue.name.length; i++) {
+        const memberType = parameterType.member[i].type as ParameterType;
+
+        this.addValueNode(
+          node,
+          parameter,
+          memberType,
+          engAggregateValue.name[i],
+          offset + '.' + engAggregateValue.name[i],
+          depth + 1,
+          rawAggregateValue.value[i],
+          engAggregateValue.value[i],
+          nodes);
+      }
+    } else {
+      nodes.push({
+        type: 'SIMPLE_VALUE',
+        parent,
+        expanded: false,
+        parameter,
+        parameterType,
+        name,
+        offset,
+        rawValue,
+        engValue,
+        depth,
+      });
+    }
   }
 
   get hex() {
@@ -116,10 +353,11 @@ export class PacketPage implements OnInit, AfterViewInit {
     this._hex = _hex;
   }
 
-  highlightBitRange(item: ExtractedItem) {
-    if (item.pval) {
-      const { pval } = item;
-      this.hex?.setHighlight(new BitRange(pval.location, pval.size));
+  highlightBitRange(node: Node) {
+    if (node.type === 'SIMPLE_PARAMETER'
+      || node.type === 'AGGREGATE_PARAMETER'
+      || node.type === 'ARRAY_PARAMETER') {
+      this.hex?.setHighlight(new BitRange(node.location, node.size));
     }
   }
 
@@ -127,9 +365,107 @@ export class PacketPage implements OnInit, AfterViewInit {
     this.hex?.setHighlight(null);
   }
 
-  toggleRow(item: ExtractedItem) {
-    if (item.container) {
-      item.expanded = !item.expanded;
+  selectBitRange(node: Node) {
+    if (node.type === 'SIMPLE_PARAMETER'
+      || node.type === 'AGGREGATE_PARAMETER'
+      || node.type === 'ARRAY_PARAMETER') {
+      this.hex?.setSelection(new BitRange(node.location, node.size));
     }
+  }
+
+  toggleRow(node: Node) {
+    if (this.isExpandable(node)) {
+      if (node.expanded) {
+        this.collapseNode(node);
+      } else {
+        node.expanded = true;
+      }
+    }
+    this.updateDataSource();
+  }
+
+  collapseNode(node: Node) {
+    for (const child of this.allNodes) {
+      if (child.parent === node) {
+        this.collapseNode(child);
+      }
+    }
+    node.expanded = false;
+    this.updateDataSource();
+  }
+
+  expandAll() {
+    for (const node of this.allNodes) {
+      if (this.isExpandable(node)) {
+        node.expanded = true;
+      }
+    }
+    this.updateDataSource();
+  }
+
+  collapseAll() {
+    for (const node of this.allNodes) {
+      node.expanded = false;
+    }
+    this.updateDataSource();
+  }
+
+  isExpandable(node: Node) {
+    return node.type === 'CONTAINER'
+      || node.type === 'AGGREGATE_PARAMETER'
+      || node.type === 'ARRAY_PARAMETER'
+      || node.type === 'AGGREGATE_VALUE'
+      || node.type === 'ARRAY_VALUE';
+  }
+
+  /**
+   * Renders only visible nodes
+   */
+  private updateDataSource() {
+    const filteredNodes: Node[] = [];
+    for (const node of this.allNodes) {
+      if (!node.parent || node.parent?.expanded) {
+        filteredNodes.push(node);
+      }
+    }
+    this.dataSource.data = filteredNodes;
+  }
+
+  isContainer(index: number, node: Node) {
+    return node.type === 'CONTAINER';
+  }
+
+  isNoContainer(index: number, node: Node) {
+    return node.type !== 'CONTAINER';
+  }
+
+  copyHex(base64: string) {
+    const hex = utils.convertBase64ToHex(base64);
+    if (this.clipboard.copy(hex)) {
+      this.messageService.showInfo('Hex copied');
+    } else {
+      this.messageService.showInfo('Hex copy failed');
+    }
+  }
+
+  copyBinary(base64: string) {
+    const raw = window.atob(base64);
+    if (this.clipboard.copy(raw)) {
+      this.messageService.showInfo('Binary copied');
+    } else {
+      this.messageService.showInfo('Binary copy failed');
+    }
+  }
+
+  fillTypeWithValueDimension(engType: string, arrayValue?: Value[]) {
+    // Note: in case of an array of arrays, we should set the last
+    // [] occurrence only.
+    if (engType.endsWith('[]')) {
+      const length = arrayValue?.length || 0;
+      engType = engType.substring(0, engType.length - 2) + '[' + length + ']';
+    }
+
+    // Any nested array can vary
+    return engType.replaceAll('[]', '[?]');
   }
 }

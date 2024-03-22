@@ -160,7 +160,7 @@
         <th>Index</th>
         <th>Value</th>
       </tr>
-      <tr *ngFor="let element of value.arrayValue!; index as i">
+      <tr *ngFor="let element of (value.arrayValue || []); index as i">
         <td>
           <a [routerLink]="'/telemetry/parameters' + parameter.qualifiedName + (offset || '') + '[' + i + ']'"
              [queryParams]="{c: yamcs.context}">{{ i }}</a>

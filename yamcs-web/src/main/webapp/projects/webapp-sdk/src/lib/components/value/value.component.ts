@@ -24,6 +24,9 @@ export class ValueComponent implements OnChanges {
   @Input()
   value?: Value;
 
+  @Input()
+  alwaysExpand = false;
+
   nodes$ = new BehaviorSubject<ValueNode[]>([]);
 
   collapsed$ = new BehaviorSubject<boolean>(true);
@@ -38,7 +41,7 @@ export class ValueComponent implements OnChanges {
     // Flattened list of nodes, which could be either
     // leafs or have (flattened) children.
     const nodes: ValueNode[] = [];
-    this.processValue(value, false, nodes);
+    this.processValue(value, this.alwaysExpand, nodes);
     this.nodes$.next(nodes);
   }
 

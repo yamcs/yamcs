@@ -1,5 +1,4 @@
 import { WebSocketCall } from '../WebSocketCall';
-import { Event } from './events';
 import { AlgorithmStatus, Container, NamedObjectId, Parameter } from './mdb';
 import { ParameterValue, Value } from './monitoring';
 import { Service, ServiceState } from './system';
@@ -23,8 +22,9 @@ export interface Statistics {
 }
 
 export interface ExtractPacketResponse {
+  packetName: string;
   parameterValues: ExtractedParameter[];
-  events: Event[];
+  messages?: string[];
 }
 
 export interface ExtractedParameter {

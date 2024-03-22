@@ -16,9 +16,40 @@
 
 tr.container td {
   background-color: #f0f0f0;
-  cursor: pointer;
 }
 
 tr.container:hover td {
   background-color: #f0f0f0 !important;
+}
+
+tr.expandable td {
+  cursor: pointer;
+}
+
+td.vtop {
+  vertical-align: top;
+}
+
+td.icon {
+  padding: 0;
+  line-height: 25px;
+  text-align: right;
+}
+
+th.entry,
+td.entry {
+  padding-left: 7px;
+}
+
+td.right {
+  text-align: right;
+}
+
+th.no-left-padding,
+td.no-left-padding {
+  padding-left: 5px;
+}
+
+.icon12 {
+  vertical-align: middle;
 }
