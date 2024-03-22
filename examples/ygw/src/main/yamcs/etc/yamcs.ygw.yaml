@@ -11,8 +11,7 @@ services:
         - tm_dump
   - class: org.yamcs.parameter.SystemParametersService
     args:
-      provideJvmVariables: true
-      provideFsVariables: true
+      producers: ["jvm", "fs"]
   - class: org.yamcs.ProcessorCreatorService
     args: 
       name: "realtime"
@@ -28,13 +27,13 @@ services:
 
 
 dataLinks:
-  - name: frontend
-    class: org.yamcs.yfe.YfeLink
+  - name: ygw
+    class: org.yamcs.ygw.YgwLink
     host: localhost
     port: 7897
     tcStream: "tc_realtime"
     tmStream: "tm_realtime"
-    packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
+    #packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
     
 
 mdb:

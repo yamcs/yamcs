@@ -2,54 +2,49 @@ package org.yamcs.ygw;
 
 import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
 
-import org.yamcs.ConfigurationException;
-import org.yamcs.YConfiguration;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.tctm.AbstractTcTmDataLink;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.CommandPostprocessor;
-import org.yamcs.tctm.GenericCommandPostprocessor;
 import org.yamcs.tctm.ParameterDataLink;
 import org.yamcs.tctm.ParameterSink;
-import org.yamcs.tctm.TmSink;
-import org.yamcs.utils.YObjectLoader;
 import org.yamcs.ygw.protobuf.Ygw.MessageType;
 
-public class YgwNodeLink  extends AbstractTcTmDataLink implements ParameterDataLink {
+/**
+ * Corresponds to a Node in the Yamcs Gateway or to a sub-link (in the gateway each node can have zero or more
+ * sub-links)
+ */
+public class YgwNodeLink extends AbstractTcTmDataLink implements ParameterDataLink {
     final int nodeId;
     final int linkId;
+
     final YgwLink ygwLink;
+
+    // only for sub-links
+    YgwNodeLink parentLink;
+
     protected CommandHistoryPublisher commandHistoryPublisher;
     protected CommandPostprocessor cmdPostProcessor;
-    
-    public YgwNodeLink(YgwLink ygwLink, int nodeId, int linkId) {
+    final boolean tmEnabled;
+    final boolean tcEnabled;
+    final Map<Integer, YgwNodeLink> subLinks = new HashMap<>();
+
+    public YgwNodeLink(YgwLink ygwLink, int nodeId, int linkId, boolean tmEnabled, boolean tcEnabled) {
         this.ygwLink = ygwLink;
         this.nodeId = nodeId;
         this.linkId = linkId;
-    }
-    
-    @Override
-    public long getDataInCount() {
-        return 0;
-    }
-
-    @Override
-    public long getDataOutCount() {
-        return 0;
-    }
-
-    @Override
-    public void resetCounters() {
-        // TODO Auto-generated method stub
+        this.tmEnabled = tmEnabled;
+        this.tcEnabled = tcEnabled;
     }
 
     @Override
     protected Status connectionStatus() {
-        // TODO Auto-generated method stub
-        return null;
+        return ygwLink.connectionStatus();
     }
 
     @Override
@@ -79,7 +74,7 @@ public class YgwNodeLink  extends AbstractTcTmDataLink implements ParameterDataL
             if (binary == null) {
                 log.warn("command postprocessor did not process the command");
             }
-        }       
+        }
 
         pc.setBinary(binary);
 
@@ -104,4 +99,13 @@ public class YgwNodeLink  extends AbstractTcTmDataLink implements ParameterDataL
     public AggregatedDataLink getParent() {
         return ygwLink;
     }
+
+    public boolean isTmPacketDataLinkImplemented() {
+        return tmEnabled;
+    }
+
+    public boolean isTcPacketDataLinkImplemented() {
+        return tcEnabled;
+    }
+
 }

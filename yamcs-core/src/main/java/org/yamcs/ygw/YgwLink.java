@@ -21,6 +21,7 @@ import org.yamcs.tctm.Link;
 import org.yamcs.utils.ProtoBufUtils;
 import org.yamcs.ygw.protobuf.Ygw.Event;
 import org.yamcs.ygw.protobuf.Ygw.MessageType;
+import org.yamcs.ygw.protobuf.Ygw.NodeList;
 import org.yamcs.ygw.protobuf.Ygw.ParameterData;
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -40,6 +41,7 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 
 public class YgwLink extends AbstractLink implements AggregatedDataLink {
     final static int MAX_PACKET_LENGTH = 0xFFFF;
+    public static final byte VERSION = 0;
 
     String instance;
     YConfiguration config;
@@ -51,11 +53,11 @@ public class YgwLink extends AbstractLink implements AggregatedDataLink {
     String linkName;
     TcLink tcLink;
 
-    List<Link> subLinks = new ArrayList<>();
+    List<Link> nodes = new ArrayList<>();
     Map<Integer, TmLink> tmLinks = new HashMap<>();
 
     YfeChannelHandler handler;
-    public static final byte VERSION = 0;
+
 
     @Override
     public void init(String instance, String name, YConfiguration config) {
@@ -70,22 +72,6 @@ public class YgwLink extends AbstractLink implements AggregatedDataLink {
         log.setContext(name);
         eventProducer = EventProducerFactory.getEventProducer(instance, name, 10000);
         timeService = YamcsServer.getTimeService(instance);
-
-        // TODO configure properly
-        TmLink tmLink1 = new TmLink(this);
-        tmLink1.init(instance, name + ".mil1553-tm", config);
-        tmLinks.put(1, tmLink1);
-
-        TmLink tmLink2 = new TmLink(this);
-        tmLink2.init(instance, name + ".lan-tm", config);
-        tmLinks.put(2, tmLink2);
-
-        TcLink tcLink = new TcLink(this, 100);
-        tcLink.init(instance, name + ".tc", config);
-
-        subLinks.add(tcLink);
-        subLinks.add(tmLink1);
-        subLinks.add(tmLink2);
     }
 
     @Override
@@ -101,10 +87,6 @@ public class YgwLink extends AbstractLink implements AggregatedDataLink {
                 .withDescription("If the connection to the Yamcs frontend fails or breaks, "
                         + "the time (in milliseconds) to wait before reconnection.");
 
-        // FIXME - should be possible to add them from the AbstractTmDataLink
-        spec.addOption("packetPreprocessorClassName", OptionType.STRING);
-        spec.addOption("packetPreprocessorArgs", OptionType.MAP).withSpec(Spec.ANY);
-        spec.addOption("updateSimulationTime", OptionType.BOOLEAN).withDefault(false);
         
         return spec;
 
@@ -145,13 +127,13 @@ public class YgwLink extends AbstractLink implements AggregatedDataLink {
 
     @Override
     public List<Link> getSubLinks() {
-        return subLinks;
+        return nodes;
     }
 
     @Override
     public long getDataInCount() {
         long count = 0;
-        for (Link l : subLinks) {
+        for (Link l : nodes) {
             count += l.getDataInCount();
         }
         return count;
@@ -164,7 +146,7 @@ public class YgwLink extends AbstractLink implements AggregatedDataLink {
 
     @Override
     public void resetCounters() {
-        for (Link l : subLinks) {
+        for (Link l : nodes) {
             l.resetCounters();
         }
     }
@@ -278,11 +260,22 @@ public class YgwLink extends AbstractLink implements AggregatedDataLink {
                 processParameters(buf);
             } else if (type == MessageType.EVENT_VALUE) {
                 processEvent(buf);
+            } else if (type == MessageType.NODE_INFO_VALUE) {
+                processNodeInfo(buf);
             } else {
                 // TODO
                 log.warn("message of type {} not implemented", type);
             }
 
+        }
+
+        private void processNodeInfo(ByteBuf buf) {
+            try {
+                NodeList nodeList = ProtoBufUtils.fromByteBuf(buf, NodeList.newBuilder());
+                System.out.println("got nodeList " + nodeList);
+            } catch (InvalidProtocolBufferException e) {
+                log.warn("Failed to decode node info", e);
+            }
         }
 
         private void processTm(ByteBuf buf) {
@@ -296,7 +289,7 @@ public class YgwLink extends AbstractLink implements AggregatedDataLink {
         }
 
         private void processEvent(ByteBuf buf) {
-            int targetId = buf.readInt();
+            int nodeId = buf.readInt();
 
             try {
                 Event ev = ProtoBufUtils.fromByteBuf(buf, Event.newBuilder());
@@ -307,7 +300,7 @@ public class YgwLink extends AbstractLink implements AggregatedDataLink {
         }
 
         private void processParameters(ByteBuf buf) {
-            int targetId = buf.readInt();
+            int nodeId = buf.readInt();
 
             try {
                 ParameterData para = ProtoBufUtils.fromByteBuf(buf, ParameterData.newBuilder());
