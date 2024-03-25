@@ -98,7 +98,6 @@ import com.google.protobuf.TextFormat;
  */
 public class Tablespace {
     private Log log;
-    private static final String DEFAULT_CF = "default";
 
     // unique name for this tablespace
     private final String name;
@@ -423,14 +422,24 @@ public class Tablespace {
             for (int i = 0; i < tbsIndexArray.size(); i++) {
                 int tbsIndex = tbsIndexArray.get(i);
                 wb.delete(cfMetadata, getMetadataKey(type, tbsIndexArray.get(i)));
-                byte[] beginKey = new byte[TBS_INDEX_SIZE];
-                byte[] endKey = new byte[TBS_INDEX_SIZE];
-                ByteArrayUtils.encodeInt(tbsIndex, beginKey, 0);
-                ByteArrayUtils.encodeInt(tbsIndex + 1, endKey, 0);
+                byte[] beginKey = dbKey(tbsIndex);
+                byte[] endKey = dbKey(tbsIndex + 1);
                 wb.deleteRange(beginKey, endKey);
             }
             mainDb.getDb().write(wo, wb);
         }
+    }
+
+    /**
+     * Removes all metadata records of a given type
+     * 
+     * @param type
+     * @throws RocksDBException
+     */
+    public void removeMetadataRecords(Type type) throws RocksDBException {
+        byte[] beginKey = new byte[] { METADATA_FB_TR, (byte) type.getNumber() };
+        byte[] endKey = new byte[] { METADATA_FB_TR, (byte) (type.getNumber() + 1) };
+        mainDb.getDb().deleteRange(cfMetadata, beginKey, endKey);
     }
 
     /**
@@ -497,7 +506,7 @@ public class Tablespace {
                 trbsidx.setTableName(tblDef.getName());
                 createMetadataRecord(yamcsInstance, trbsidx);
             }
-            String cfName = tblDef.getCfName() == null ? DEFAULT_CF : tblDef.getCfName();
+            String cfName = tblDef.getCfName() == null ? YRDB.DEFAULT_CF : tblDef.getCfName();
             RdbTable table = new RdbTable(yamcsInstance, this, tblDef, trb.getTbsIndex(), cfName);
 
             tables.put(tblDef, table);
@@ -642,7 +651,7 @@ public class Tablespace {
             TableDefinition tblDef = TableDefinitionSerializer.fromProtobuf(tr.getTableDefinition());
             tblDef.setName(tr.getTableName());
 
-            String cfName = tblDef.getCfName() == null ? DEFAULT_CF : tblDef.getCfName();
+            String cfName = tblDef.getCfName() == null ? YRDB.DEFAULT_CF : tblDef.getCfName();
 
             RdbTable table = new RdbTable(yamcsInstance, this, tblDef, tr.getTbsIndex(), cfName);
             tables.put(tblDef, table);
@@ -823,4 +832,5 @@ public class Tablespace {
                     + pinnedBlocksMemoryUsage + "]";
         }
     }
+
 }

@@ -28,8 +28,6 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
  * 
  * 
  * Backed by RocksDB
- * 
- * @author nm
  *
  */
 public class ParameterIdDb {
@@ -52,7 +50,7 @@ public class ParameterIdDb {
     public static final String TIME_PARAMETER_FQN = "__time_parameter_";
     static final int UNSET = -1;
 
-    ParameterGroupIdDb pgidMap;
+    private ParameterGroupIdDb pgidMap;
 
     ParameterIdDb(String yamcsInstance, Tablespace tablespace) throws RocksDBException, IOException {
         this.tablespace = tablespace;
@@ -508,6 +506,20 @@ public class ParameterIdDb {
                 .toArray(ParameterId[]::new);
     }
 
+    /**
+     * returns an array of all parameter ids (including the time pseudo-parameter id)
+     */
+    public IntArray getAllPids() {
+        IntArray r = new IntArray(size + 1);
+        r.add(timeParameterId);
+        for (var e : entries) {
+            if (e != null) {
+                r.add(e.pid);
+            }
+        }
+        return r;
+    }
+
     static class Entry implements ParameterId {
         final int pid;
         final int type;
@@ -596,4 +608,5 @@ public class ParameterIdDb {
             return "AggArrayEntry [pid=" + pid + ", fqn=" + fqn + "+components=" + components + "]";
         }
     }
+
 }

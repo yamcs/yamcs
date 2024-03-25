@@ -6,8 +6,6 @@ import org.yamcs.utils.StringConverter;
 
 /**
  * Holder, encoder and decoder for the segment keys (in the sense of key,value storage used for RocksDb)
- *   
- * @author nm
  *
  */
 public class SegmentKey {

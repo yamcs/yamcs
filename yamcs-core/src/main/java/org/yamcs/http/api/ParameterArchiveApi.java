@@ -44,6 +44,7 @@ import org.yamcs.protobuf.GetArchivedParameterGroupRequest;
 import org.yamcs.protobuf.GetArchivedParameterSegmentsRequest;
 import org.yamcs.protobuf.GetArchivedParametersInfoRequest;
 import org.yamcs.protobuf.GetParameterRangesRequest;
+import org.yamcs.protobuf.PurgeRequest;
 import org.yamcs.protobuf.Pvalue.Ranges;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.RebuildRangeRequest;
@@ -570,4 +571,22 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         });
         observer.complete(resp.build());
     }
+
+    @Override
+    public void purge(Context ctx, PurgeRequest request, Observer<Empty> observer) {
+        YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
+
+        ParameterArchive parchive = getParameterArchive(ysi);
+        try {
+            parchive.purge();
+        } catch (RocksDBException | InterruptedException | IOException e) {
+            log.error("Error purging parameter archive", e);
+            throw new InternalServerErrorException(e.toString());
+        }
+
+        observer.complete(Empty.getDefaultInstance());
+
+    }
+
 }

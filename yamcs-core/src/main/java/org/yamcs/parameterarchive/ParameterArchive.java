@@ -1,6 +1,7 @@
 package org.yamcs.parameterarchive;
 
 import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
+import static org.yamcs.yarch.rocksdb.RdbStorageEngine.dbKey;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -41,7 +42,6 @@ import org.yamcs.yarch.rocksdb.YRDB;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition;
-
 /**
  * 
  * The parameter archive stores data in partitions(optional) -> intervals -> segments.
@@ -62,9 +62,6 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition;
  * When new data has been received in the past, the whole interval has to be re-created (by doing a replay); that likely
  * means a new split of the respective interval into segments.
  * 
- * 
- * @author nm
- *
  */
 public class ParameterArchive extends AbstractYamcsService {
 
@@ -165,6 +162,9 @@ public class ParameterArchive extends AbstractYamcsService {
         }
     }
 
+    /**
+     * Called in the init function to initialize the database
+     */
     private void initializeDb() throws RocksDBException {
         log.debug("initializing db");
 
@@ -183,6 +183,9 @@ public class ParameterArchive extends AbstractYamcsService {
         return partitioningSchema;
     }
 
+    /**
+     * Called in the init function to read the existing partitions
+     */
     private void readPartitions() throws IOException, RocksDBException {
         YRDB db = tablespace.getRdb();
         byte[] range = new byte[TBS_INDEX_SIZE];
@@ -341,7 +344,7 @@ public class ParameterArchive extends AbstractYamcsService {
      * @param intervalStart
      * @throws RocksDBException
      */
-    public Partition createAndGetPartition(long intervalStart) throws RocksDBException {
+    private Partition createAndGetPartition(long intervalStart) throws RocksDBException {
         synchronized (partitions) {
             Partition p = partitions.getFit(intervalStart);
 
@@ -457,6 +460,80 @@ public class ParameterArchive extends AbstractYamcsService {
         throw new UnsupportedOperationException("operation not supported");
     }
 
+    /**
+     * Remove all the data and metadata related to the parameter archive and initialize a new database
+     * <p>
+     * Prior to Yamcs 5.9.0 the Parameter Archive was stored on the default RocksDB column family. After the purge
+     * operation, the parameter archive will be moved to its own column family
+     * <p>
+     * If the parameter archive is stored in the default column family this operation will remove all the records.
+     * <p>
+     * If the parameter archive is stored into its own column family this operation will simply drop that column family
+     * (for all time based partitions)
+     * 
+     * @throws RocksDBException
+     * @throws InterruptedException
+     * @throws IOException
+     */
+    public void purge() throws RocksDBException, InterruptedException, IOException {
+        log.info("Purging the parameter archive");
+
+        if (backFiller != null) {
+            log.debug("Shutting down the back filler");
+            backFiller.shutDown();
+        }
+        if (realtimeFiller != null) {
+            log.debug("Shutting down the realtime filler");
+            realtimeFiller.shutDown();
+        }
+        var allPids = parameterIdDb.getAllPids();
+        int pgTbsIndex = parameterIdDb.getParameterGroupIdDb().tbsIndex;
+
+        for (var p : partitions) {
+            log.debug("purging partition {}", p);
+            YRDB rdb = tablespace.getRdb(p.partitionDir, false);
+            if (p.cfName == null || YRDB.DEFAULT_CF.equals(p.cfName)) {
+                WriteBatch wb = new WriteBatch();
+                for (int i = 0; i < allPids.size(); i++) {
+                    var tbsIndex = allPids.get(i);
+                    wb.deleteRange(dbKey(tbsIndex), dbKey(tbsIndex + 1));
+                }
+                try (WriteOptions wo = new WriteOptions()) {
+                    rdb.write(wo, wb);
+                }
+            } else {
+                rdb.dropColumnFamily(p.cfName);
+            }
+        }
+
+        log.debug("removing metadata records related to main parameter archive data");
+        // data has been removed in the partition loop above
+        tablespace.removeMetadataRecords(TablespaceRecord.Type.PARCHIVE_DATA);
+
+        log.debug("removing parameter groups and related metadata");
+        tablespace.removeTbsIndex(TablespaceRecord.Type.PARCHIVE_PGID2PG, pgTbsIndex);
+
+        log.debug("removing partitions and related metadata");
+        tablespace.removeTbsIndex(TablespaceRecord.Type.PARCHIVE_PINFO, partitionTbsIndex);
+
+        log.debug("removing metadata storing aggregate/array composition");
+        // there is no data of this type stored
+        tablespace.removeMetadataRecords(TablespaceRecord.Type.PARCHIVE_AGGARR_INFO);
+
+        parameterIdDb = new ParameterIdDb(yamcsInstance, tablespace);
+        initializeDb();
+        if (backFillerEnabled) {
+            log.debug("Starting the back filler");
+            backFiller = new BackFiller(this, backFillerConfig);
+            backFiller.start();
+        }
+        if (realtimeFillerEnabled) {
+            log.debug("Starting the realtime filler");
+            realtimeFiller = new RealtimeArchiveFiller(this, realtimeFillerConfig);
+            realtimeFiller.start();
+        }
+    }
+
     public RocksIterator getIterator(Partition p) throws RocksDBException, IOException {
         YRDB rdb = tablespace.getRdb(p.partitionDir, false);
 
@@ -563,7 +640,6 @@ public class ParameterArchive extends AbstractYamcsService {
             throw new ParameterArchiveException("error compacting", e);
         }
     }
-
 
     public void compact() {
         try {

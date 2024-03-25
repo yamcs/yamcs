@@ -41,7 +41,7 @@ public class YRDB {
     private final RocksDB db;
     private volatile boolean closed = false;
     private final String path;
-    static final String DEFAULT_CF = new String(RocksDB.DEFAULT_COLUMN_FAMILY, StandardCharsets.UTF_8);
+    public static final String DEFAULT_CF = new String(RocksDB.DEFAULT_COLUMN_FAMILY, StandardCharsets.UTF_8);
 
     static final String ROCKS_PROP_NUM_KEYS = "rocksdb.estimate-num-keys";
     // keep track
@@ -185,6 +185,20 @@ public class YRDB {
             cfh = createColumnFamily(cfname);
         }
         return cfh;
+    }
+
+    /**
+     * 
+     * Removes all data belonging to the column family
+     * <p>
+     * If the column family does not exist returns without doing anything
+     */
+    public synchronized void dropColumnFamily(String cfname) throws RocksDBException {
+        ColumnFamilyHandle cfh = columnFamilies.get(cfname);
+        if (cfh != null) {
+            db.dropColumnFamily(cfh);
+            columnFamilies.remove(cfname);
+        }
     }
 
     public byte[] get(ColumnFamilyHandle cfh, byte[] key) throws RocksDBException {
@@ -457,6 +471,7 @@ public class YRDB {
     public static byte[] cfNameb(String cfName) {
         return cfName.getBytes(StandardCharsets.UTF_8);
     }
+
 
 
 }

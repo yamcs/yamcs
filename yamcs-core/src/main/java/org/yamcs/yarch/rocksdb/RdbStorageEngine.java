@@ -330,10 +330,16 @@ public class RdbStorageEngine implements StorageEngine {
         return getTablespace(ydb).getSequencesInfo();
     }
 
-    static final byte[] dbKey(int tbsIndex) {
+    /**
+     * returns a byte array containing the encoded tbsIndex
+     */
+    public static final byte[] dbKey(int tbsIndex) {
         return ByteArrayUtils.encodeInt(tbsIndex, new byte[TBS_INDEX_SIZE], 0);
     }
 
+    /**
+     * returns a byte array containing the encoded tbsIndex followed by the given key
+     */
     static final byte[] dbKey(int tbsIndex, byte[] key) {
         byte[] dbKey = ByteArrayUtils.encodeInt(tbsIndex, new byte[key.length + 4], 0);
         System.arraycopy(key, 0, dbKey, 4, key.length);
