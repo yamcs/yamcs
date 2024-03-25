@@ -75,7 +75,7 @@ export class StackEntryTemplateProvider implements TemplateProvider {
 
 @Component({
   templateUrl: './EditStackEntryDialog.html',
-  styleUrls: ['./EditStackEntryDialog.css'],
+  styleUrl: './EditStackEntryDialog.css',
 })
 export class EditStackEntryDialog {
 

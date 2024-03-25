@@ -146,10 +146,10 @@ a.ya-link.ya-header-link {
   min-height: 24px;
 }
 
-.ng-invalid:not(.ng-pristine) > .date-time-input > input,
-.ng-invalid:not(.ng-pristine) > .binary-input > input,
+.ng-invalid:not(.ng-pristine)>.date-time-input>input,
+.ng-invalid:not(.ng-pristine)>.binary-input>input,
 input.ng-invalid:not(.ng-pristine),
-.ng-invalid:not(.ng-pristine) > .duration-input > input {
+.ng-invalid:not(.ng-pristine)>.duration-input>input {
   border-color: crimson !important;
 }
 
@@ -339,6 +339,10 @@ input[type="radio"] {
   font-weight: normal;
 }
 
+.mat-mdc-snack-bar-container .mat-mdc-button.mat-mdc-snack-bar-action {
+  color: whitesmoke !important;
+}
+
 .action-bar .ya-button,
 .mat-mdc-dialog-actions .ya-button:not(:last-child),
 .filter-bar .date-time-input,
@@ -395,6 +399,7 @@ hr.half-break {
 }
 
 @media print {
+
   .mat-drawer,
   .mat-toolbar,
   button.expandable,

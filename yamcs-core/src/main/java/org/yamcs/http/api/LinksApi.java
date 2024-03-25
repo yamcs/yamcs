@@ -1,7 +1,11 @@
 package org.yamcs.http.api;
 
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.yamcs.ValidationException;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.api.Observer;
@@ -39,11 +43,15 @@ import org.yamcs.xtce.Parameter;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Struct;
 import com.google.protobuf.util.JsonFormat;
 
 public class LinksApi extends AbstractLinksApi<Context> {
+
+    public static final Type HASHMAP_TYPE = new TypeToken<HashMap<String, Object>>() {
+    }.getType();
 
     public LinksApi(AuditLog auditLog) {
         auditLog.addPrivilegeChecker(getClass().getSimpleName(), user -> {
@@ -232,9 +240,12 @@ public class LinksApi extends AbstractLinksApi<Context> {
 
         Gson gson = new Gson();
         JsonObject actionMessage = null;
+        Map<String, Object> actionOptions = null;
         try {
             String json = JsonFormat.printer().print(request.getMessage());
             actionMessage = gson.fromJson(json, JsonElement.class).getAsJsonObject();
+
+            actionOptions = gson.fromJson(actionMessage, HASHMAP_TYPE);
         } catch (InvalidProtocolBufferException e) {
             // Should not happen, it's already been converted from JSON through transcoding
             throw new InternalServerErrorException(e);
@@ -248,6 +259,17 @@ public class LinksApi extends AbstractLinksApi<Context> {
             if (action != null) {
                 if (!action.isEnabled()) {
                     throw new BadRequestException("Action '" + request.getAction() + "' is not enabled");
+                }
+
+                var spec = action.getSpec();
+                if (spec != null) {
+                    try {
+                        // Validate, and apply defaults
+                        actionOptions = spec.validate(actionOptions);
+                        actionMessage = gson.toJsonTree(actionOptions, HASHMAP_TYPE).getAsJsonObject();
+                    } catch (ValidationException e) {
+                        throw new BadRequestException(e.getMessage());
+                    }
                 }
 
                 JsonElement response = action.execute(link, actionMessage);
@@ -333,6 +355,10 @@ public class LinksApi extends AbstractLinksApi<Context> {
                 .setEnabled(linkAction.isEnabled());
         if (linkAction.getStyle() == ActionStyle.CHECK_BOX) {
             b.setChecked(linkAction.isChecked());
+        }
+        var spec = linkAction.getSpec();
+        if (spec != null && !spec.getOptions().isEmpty()) {
+            b.setSpec(ConfigApi.toSpecInfo(spec));
         }
         return b.build();
     }

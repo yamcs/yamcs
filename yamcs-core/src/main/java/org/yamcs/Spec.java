@@ -15,8 +15,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Specifies the valid structure of a {@link YConfiguration} instance. While not strictly 'validation', the spec also
- * allows defining additional metadata like the 'default' keyword which is used in the merged result of a validation.
+ * Specifies the valid structure of a {@link YConfiguration} instance.
+ * <p>
+ * While not strictly 'validation', the spec also allows defining additional metadata like the 'default' keyword which
+ * is used in the merged result of a validation.
+ * <p>
+ * Furthermore, a spec validation applies a limited set of type transformations.
  */
 public class Spec {
 
@@ -448,6 +452,10 @@ public class Spec {
                                     ctx, String.format("%s: invalid integer '%s'", path, stringValue));
                         }
                     }
+                } else if ((arg instanceof Float) && (((Float) arg) % 1) == 0) {
+                    return ((Float) arg).intValue();
+                } else if ((arg instanceof Double) && ((Double) arg % 1) == 0) {
+                    return ((Double) arg).intValue();
                 }
             } else if (this == FLOAT) {
                 if (arg instanceof Integer) {

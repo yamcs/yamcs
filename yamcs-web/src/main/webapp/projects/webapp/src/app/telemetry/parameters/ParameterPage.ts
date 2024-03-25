@@ -1,7 +1,6 @@
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnChanges, OnDestroy, input } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
-import { ActivatedRoute } from '@angular/router';
 import { ConfigService, MessageService, Parameter, ParameterSubscription, ParameterValue, UnitsPipe, Value, ValuePipe, WebsiteConfig, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
@@ -10,10 +9,12 @@ import { SetParameterDialog } from './SetParameterDialog';
 
 @Component({
   templateUrl: './ParameterPage.html',
-  styleUrls: ['./ParameterPage.css'],
+  styleUrl: './ParameterPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ParameterPage implements OnDestroy {
+export class ParameterPage implements OnChanges, OnDestroy {
+
+  qualifiedName = input.required<string>({ alias: 'parameter' });
 
   config: WebsiteConfig;
   parameter$ = new BehaviorSubject<Parameter | null>(null);
@@ -23,7 +24,6 @@ export class ParameterPage implements OnDestroy {
   parameterValueSubscription: ParameterSubscription;
 
   constructor(
-    route: ActivatedRoute,
     readonly yamcs: YamcsService,
     private authService: AuthService,
     private messageService: MessageService,
@@ -34,16 +34,10 @@ export class ParameterPage implements OnDestroy {
     configService: ConfigService,
   ) {
     this.config = configService.getConfig();
-
-    // When clicking links pointing to this same component, Angular will not reinstantiate
-    // the component. Therefore subscribe to routeParams
-    route.paramMap.subscribe(params => {
-      const qualifiedName = params.get('qualifiedName')!;
-      this.changeParameter(qualifiedName);
-    });
   }
 
-  changeParameter(qualifiedName: string) {
+  ngOnChanges() {
+    const qualifiedName = this.qualifiedName();
     this.yamcs.yamcsClient.getParameter(this.yamcs.instance!, qualifiedName).then(parameter => {
       this.parameter$.next(parameter);
 
@@ -145,8 +139,6 @@ export class ParameterPage implements OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.parameterValueSubscription) {
-      this.parameterValueSubscription.cancel();
-    }
+    this.parameterValueSubscription?.cancel();
   }
 }

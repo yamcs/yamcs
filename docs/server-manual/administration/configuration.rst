@@ -20,8 +20,6 @@ The number of configuration options in :file:`etc/yamcs.yaml` are relatively lim
         - simulator
 
     dataDir: /storage/yamcs-data
-    
-    incomingDir: /storage/yamcs-incoming
 
     secretKey: "changeme"
 
@@ -39,9 +37,6 @@ instances (list)
 dataDir (string)
     A directory which will be the root of the Yamcs archive. The directory must exist and it shall be possible for the user who runs Yamcs to write into it. More information about the Yamcs archive can be found in :doc:`../data-management/index`.
     In addition to the directories used for the archive, there are two directories named :file:`instance-def` and :file:`instance-templates` which are used for the dynamic creation of instances.
-
-incomingDir (string)
-    A directory used by the :javadoc:`~org.yamcs.tctm.FilePollingTmDataLink` to load incoming telemetry files. This is a relic from when Yamcs was used only for that; the option should be specified in the link configuration instead (it is left here because some users are quite accustomed to it).
 
 cacheDir (string)
     A directory that Yamcs can use to cache files. Defaults to a directory called :file:`cache` relative to the directory where Yamcs is running from.

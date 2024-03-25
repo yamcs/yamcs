@@ -7,7 +7,7 @@ import { ScrollBuffer } from './ScrollBuffer';
 @Component({
   selector: 'app-shell',
   templateUrl: './Shell.html',
-  styleUrls: ['./Shell.css'],
+  styleUrl: './Shell.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Shell implements AfterViewInit {

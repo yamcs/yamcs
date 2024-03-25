@@ -6,7 +6,7 @@ import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 @Component({
   selector: 'ya-search-filter',
   templateUrl: './search-filter.component.html',
-  styleUrls: ['./search-filter.component.css'],
+  styleUrl: './search-filter.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {

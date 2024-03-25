@@ -1,9 +1,9 @@
-import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-alarm-level',
   templateUrl: './AlarmLevel.html',
-  styleUrls: ['./AlarmLevel.css'],
+  styleUrl: './AlarmLevel.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlarmLevel {

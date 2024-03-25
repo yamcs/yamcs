@@ -8,7 +8,7 @@ const INVALID_PROTOSTRING = 'invalid';
 @Component({
   selector: 'ya-duration-input',
   templateUrl: './duration-input.component.html',
-  styleUrls: ['./duration-input.component.css'],
+  styleUrl: './duration-input.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {

@@ -4,7 +4,7 @@ import { DyLegendData, TimestampTrackerData } from './dygraphs';
 @Component({
   selector: 'app-timestamp-tracker',
   templateUrl: './TimestampTracker.html',
-  styleUrls: ['./TimestampTracker.css'],
+  styleUrl: './TimestampTracker.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TimestampTracker {

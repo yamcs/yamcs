@@ -5,7 +5,7 @@
       {{ parameter.qualifiedName | shortName }}{{ offset }}
     </dd>
 
-    <dt>Space System</dt>
+    <dt>System</dt>
     <dd>
       <ng-container *ngIf="(parameter.qualifiedName | spaceSystemName) as spaceSystemName">
         <a routerLink="/mdb/parameters"
@@ -62,7 +62,7 @@
     </ng-container>
 
     <ng-container *ngIf="!offset">
-      <dt>Space System</dt>
+      <dt>System</dt>
       <dd>
         <ng-container *ngIf="(parameter.qualifiedName | spaceSystemName) as spaceSystemName">
           <a routerLink="/mdb/parameters"

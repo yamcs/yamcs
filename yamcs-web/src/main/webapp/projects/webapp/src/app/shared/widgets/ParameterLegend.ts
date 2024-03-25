@@ -4,7 +4,7 @@ import { DyLegendData } from './dygraphs';
 @Component({
   selector: 'app-parameter-legend',
   templateUrl: './ParameterLegend.html',
-  styleUrls: ['./ParameterLegend.css'],
+  styleUrl: './ParameterLegend.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParameterLegend {

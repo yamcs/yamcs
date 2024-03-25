@@ -3,7 +3,7 @@ package org.yamcs.activities;
 public enum ActivityStatus {
 
     /**
-     * An activity is runing
+     * An activity is running
      */
     RUNNING,
 

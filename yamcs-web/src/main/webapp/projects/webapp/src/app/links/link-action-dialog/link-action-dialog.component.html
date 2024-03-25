@@ -1,0 +1,24 @@
+<h2 mat-dialog-title>{{ data.action.label }}</h2>
+
+<mat-dialog-content class="mat-typography">
+  <form [formGroup]="form" class="ya-form">
+    <ng-container *ngFor="let option of options; let first = first">
+      <hr class="half-break" *ngIf="!first">
+      <ng-container [ngSwitch]="option.type">
+        <app-boolean-option *ngSwitchCase="'BOOLEAN'"
+                            [formControlName]="option.name" [option]="option" />
+        <app-float-option *ngSwitchCase="'FLOAT'"
+                          [formControlName]="option.name" [option]="option" />
+        <app-integer-option *ngSwitchCase="'INTEGER'"
+                            [formControlName]="option.name" [option]="option" />
+        <app-string-option *ngSwitchCase="'STRING'"
+                           [formControlName]="option.name" [option]="option" />
+      </ng-container>
+    </ng-container>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <button class="ya-button primary" (click)="sendRequest()" [disabled]="!form.valid">SUBMIT</button>
+</mat-dialog-actions>

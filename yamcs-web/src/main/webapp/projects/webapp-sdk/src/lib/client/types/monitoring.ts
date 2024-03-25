@@ -184,6 +184,7 @@ export interface GetPacketsOptions {
   next?: string;
   limit?: number;
   order?: 'asc' | 'desc';
+  fields?: Array<keyof Packet>;
 }
 
 export interface ListPacketsResponse {
@@ -194,9 +195,12 @@ export interface ListPacketsResponse {
 export interface Packet {
   id: NamedObjectId;
   receptionTime: string;
+  earthReceptionTime: string;
   generationTime: string;
   sequenceNumber: number;
   packet: string;
+  size: number;
+  link: string;
 }
 
 export interface GetParameterValuesOptions {
@@ -251,8 +255,14 @@ export interface GetParameterRangesOptions {
 export interface GetPacketIndexOptions {
   start?: string;
   stop?: string;
-  mergeTime?: number;
   limit?: number;
+  mergeTime?: number;
+}
+
+export interface StreamPacketIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
 }
 
 export interface GetParameterIndexOptions {
@@ -262,11 +272,23 @@ export interface GetParameterIndexOptions {
   limit?: number;
 }
 
+export interface StreamParameterIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
+}
+
 export interface GetCommandIndexOptions {
   start?: string;
   stop?: string;
   mergeTime?: number;
   limit?: number;
+}
+
+export interface StreamCommandIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
 }
 
 export interface GetEventIndexOptions {
@@ -276,10 +298,22 @@ export interface GetEventIndexOptions {
   limit?: number;
 }
 
+export interface StreamEventIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
+}
+
 export interface GetCompletenessIndexOptions {
   start?: string;
   stop?: string;
   limit?: number;
+}
+
+export interface StreamCompletenessIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
 }
 
 export interface DownloadPacketsOptions {
@@ -306,6 +340,13 @@ export interface IndexEntry {
   start: string;
   stop: string;
   count: number;
+}
+
+export interface ArchiveRecord {
+  id: NamedObjectId;
+  first: string;
+  last: string;
+  num: number;
 }
 
 export interface Gap {

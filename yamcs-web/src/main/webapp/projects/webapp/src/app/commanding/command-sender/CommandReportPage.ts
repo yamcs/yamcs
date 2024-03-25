@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, input } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { CommandHistoryEntry, CommandHistoryRecord, CommandSubscription, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 
@@ -7,28 +7,31 @@ import { BehaviorSubject } from 'rxjs';
   templateUrl: './CommandReportPage.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CommandReportPage implements OnDestroy {
+export class CommandReportPage implements OnInit, OnDestroy {
+
+  qualifiedName = input.required<string>({ alias: 'command' });
+  commandId = input.required<string>();
 
   private commandSubscription: CommandSubscription;
   command$ = new BehaviorSubject<CommandHistoryRecord | null>(null);
 
-  constructor(
-    route: ActivatedRoute,
-    readonly yamcs: YamcsService,
-  ) {
-    const id = route.snapshot.paramMap.get('commandId')!;
+  constructor(readonly yamcs: YamcsService, private title: Title) { }
 
-    this.commandSubscription = yamcs.yamcsClient.createCommandSubscription({
-      instance: yamcs.instance!,
-      processor: yamcs.processor!,
+  ngOnInit(): void {
+    this.title.setTitle(this.qualifiedName());
+
+    const commandId = this.commandId();
+    this.commandSubscription = this.yamcs.yamcsClient.createCommandSubscription({
+      instance: this.yamcs.instance!,
+      processor: this.yamcs.processor!,
       ignorePastCommands: false,
     }, wsEntry => {
-      if (wsEntry.id === id) {
+      if (wsEntry.id === commandId) {
         this.mergeEntry(wsEntry, false);
       }
     });
     this.commandSubscription.addReplyListener(() => {
-      yamcs.yamcsClient.getCommandHistoryEntry(this.yamcs.instance!, id).then(entry => {
+      this.yamcs.yamcsClient.getCommandHistoryEntry(this.yamcs.instance!, commandId).then(entry => {
         this.mergeEntry(entry, true /* append ws replies to rest response */);
       });
     });

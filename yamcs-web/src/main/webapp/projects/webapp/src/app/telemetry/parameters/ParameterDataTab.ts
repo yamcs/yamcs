@@ -1,5 +1,5 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, input } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,12 +12,12 @@ const defaultInterval = 'PT1H';
 
 @Component({
   templateUrl: './ParameterDataTab.html',
-  styleUrls: ['./ParameterDataTab.css'],
+  styleUrl: './ParameterDataTab.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ParameterDataTab {
+export class ParameterDataTab implements OnInit, OnDestroy {
 
-  qualifiedName: string;
+  qualifiedName = input.required<string>({ alias: 'parameter' });
 
   intervalOptions: SelectOption[] = [
     { id: 'PT1H', label: 'Last Hour' },
@@ -50,11 +50,13 @@ export class ParameterDataTab {
     readonly yamcs: YamcsService,
     private dialog: MatDialog,
     private clipboard: Clipboard,
-  ) {
-    this.qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;
-    this.dataSource = new ParameterDataDataSource(yamcs, this.qualifiedName);
+  ) { }
 
-    this.validStop = yamcs.getMissionTime();
+  ngOnInit() {
+    const qualifiedName = this.qualifiedName();
+    this.dataSource = new ParameterDataDataSource(this.yamcs, qualifiedName);
+
+    this.validStop = this.yamcs.getMissionTime();
     this.validStart = utils.subtractDuration(this.validStop, defaultInterval);
     this.appliedInterval = defaultInterval;
 
@@ -73,7 +75,7 @@ export class ParameterDataTab {
         this.appliedInterval = nextInterval;
         this.loadData();
       } else {
-        this.validStop = yamcs.getMissionTime();
+        this.validStop = this.yamcs.getMissionTime();
         this.validStart = utils.subtractDuration(this.validStop, nextInterval);
         this.appliedInterval = nextInterval;
         this.loadData();
@@ -192,10 +194,14 @@ export class ParameterDataTab {
     this.dialog.open(ExportParameterDataDialog, {
       width: '400px',
       data: {
-        parameter: this.qualifiedName,
+        parameter: this.qualifiedName(),
         start: this.validStart,
         stop: this.validStop,
       }
     });
+  }
+
+  ngOnDestroy() {
+    this.dataSource?.disconnect();
   }
 }

@@ -7,7 +7,7 @@ import { TransferItem } from './TransferItem';
 @Component({
   selector: 'app-file-transfer-table',
   templateUrl: './FileTransferTable.html',
-  styleUrls: ['./FileTransferTable.css'],
+  styleUrl: './FileTransferTable.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FileTransferTable implements OnChanges {

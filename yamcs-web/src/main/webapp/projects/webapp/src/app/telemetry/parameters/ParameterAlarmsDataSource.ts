@@ -74,7 +74,7 @@ export class ParameterAlarmsDataSource extends DataSource<Alarm> {
     });
   }
 
-  disconnect(collectionViewer: CollectionViewer) {
+  disconnect() {
     this.alarms$.complete();
     this.loading$.complete();
   }

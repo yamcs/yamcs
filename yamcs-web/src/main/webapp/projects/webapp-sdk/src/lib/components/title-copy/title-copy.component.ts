@@ -8,7 +8,7 @@ const defaultText = "Copy to clipboard";
 @Component({
   selector: 'ya-title-copy',
   templateUrl: './title-copy.component.html',
-  styleUrls: ['./title-copy.component.css'],
+  styleUrl: './title-copy.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TitleCopyComponent {

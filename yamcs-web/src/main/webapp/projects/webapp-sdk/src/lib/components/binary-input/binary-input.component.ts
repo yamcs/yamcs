@@ -5,7 +5,7 @@ import { requireHex } from '../../validators';
 @Component({
   selector: 'ya-binary-input',
   templateUrl: './binary-input.component.html',
-  styleUrls: ['./binary-input.component.css'],
+  styleUrl: './binary-input.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {

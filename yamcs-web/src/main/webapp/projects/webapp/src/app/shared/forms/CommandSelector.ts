@@ -9,7 +9,7 @@ import { CommandsDataSource } from '../../commanding/command-sender/CommandsData
 @Component({
   selector: 'app-command-selector',
   templateUrl: './CommandSelector.html',
-  styleUrls: ['./CommandSelector.css'],
+  styleUrl: './CommandSelector.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {

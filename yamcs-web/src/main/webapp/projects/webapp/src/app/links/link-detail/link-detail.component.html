@@ -1,0 +1,90 @@
+<div class="block-title">Name</div>
+<div class="block">
+  {{ link.name }}
+</div>
+
+<div class="block-title">Class</div>
+<div class="block">
+  {{ link.type }}
+</div>
+
+<br>
+<mat-divider />
+
+<div class="block-title">Status</div>
+<div class="block">
+  <app-link-status [link]="link" />
+  {{ link.status }}
+</div>
+
+<div class="block-title">In count</div>
+<div class="block">
+  {{ link.dataInCount | number }}
+</div>
+
+<div class="block-title">Out count</div>
+<div class="block">
+  {{ link.dataOutCount | number }}
+</div>
+
+<div class="block-title">Detail</div>
+<div class="block">
+  {{ link.detailedStatus || '-' }}
+</div>
+
+<ng-container *ngIf="link.extra">
+  <br>
+  <mat-divider />
+  <ng-container *ngFor="let entry of link.extra | keyvalue">
+    <div class="block-title">{{ entry.key }}</div>
+    <div class="block">
+      <ng-container *ngIf="getEntriesForValue(entry.value) as subentries">
+        <ng-container *ngIf="subentries.length">
+          <ng-container *ngFor="let subentry of subentries">
+            {{ subentry || '-' }}<br>
+          </ng-container>
+        </ng-container>
+        <ng-container *ngIf="!subentries.length">-</ng-container>
+      </ng-container>
+    </div>
+  </ng-container>
+</ng-container>
+
+<div class="action-bar" *ngIf="mayControlLinks()">
+  <button class="ya-button"
+          (click)="enableLink()"
+          *ngIf="link.status === 'DISABLED'">
+    ENABLE LINK
+  </button>
+  <button class="ya-button"
+          (click)="disableLink()"
+          *ngIf="link.status !== 'DISABLED'">
+    DISABLE LINK
+  </button>
+
+  <button class="ya-button" [matMenuTriggerFor]="moreActions">
+    MORE
+    <mat-icon>arrow_drop_down</mat-icon>
+  </button>
+  <mat-menu #moreActions class="ya-menu" yPosition="below" [overlapTrigger]="false">
+    <ng-template matMenuContent>
+      <button mat-menu-item
+              (click)="resetCounters()">
+        Reset counters
+      </button>
+      <ng-container *ngIf="link.actions">
+        <mat-divider />
+        <ng-container *ngFor="let action of link.actions">
+          <button mat-menu-item
+                  [disabled]="!action.enabled"
+                  (click)="runAction(action)">
+            <ng-container *ngIf="action.style === 'CHECK_BOX'">
+              <mat-icon [style.visibility]="action.checked ? 'visible' : 'hidden'">check</mat-icon>
+            </ng-container>
+            {{ action.label }}<ng-container *ngIf="action.spec">...</ng-container>
+          </button>
+        </ng-container>
+      </ng-container>
+    </ng-template>
+  </mat-menu>
+</div>

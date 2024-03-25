@@ -142,11 +142,11 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
     @Override
     public void onTuple(Stream stream, Tuple tuple) {
         byte[] packet = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
-        long time = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
         if (packet.length < 7) {
             log.warn("Short packet (size : {}) received by the CcsdsTmIndex Ignored.", packet.length);
             return;
         }
+        long time = getTime(tuple);
         short apid = CcsdsPacket.getAPID(packet);
         short seq = (short) CcsdsPacket.getSequenceCount(packet);
         try {
@@ -154,6 +154,16 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
         } catch (RocksDBException e) {
             log.error("got exception while saving the packet into index", e);
         }
+    }
+
+    /**
+     * Get the generation time for use in the index key.
+     * <p>
+     * The default implementations returns the value of the <code>gentime</code> column from the tuple (set by the data
+     * link preprocessor).
+     */
+    protected long getTime(Tuple tuple) {
+        return (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
     }
 
     synchronized void addPacket(short apid, long instant, short seq) throws RocksDBException {

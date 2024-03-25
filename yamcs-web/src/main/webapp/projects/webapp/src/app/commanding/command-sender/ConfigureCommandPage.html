@@ -11,7 +11,7 @@
       <dt>Command</dt>
       <dd>{{ command.qualifiedName | shortName }}</dd>
 
-      <dt>Space system</dt>
+      <dt>System</dt>
       <dd>{{ (command.qualifiedName | spaceSystemName) || '-' }}</dd>
 
       <ng-container *ngFor="let alias of command.alias">

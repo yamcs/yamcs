@@ -28,7 +28,7 @@ const ARGS_PREFIX = 'args.';
       </div>
     </div>
   `,
-  styleUrls: ['./OpiDisplayViewer.css'],
+  styleUrl: './OpiDisplayViewer.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
@@ -211,16 +211,14 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
 
     this.display.addEventListener('openpv', evt => {
       if (evt.pvName.startsWith('/')) {
-        const encoded = encodeURIComponent(evt.pvName);
-        this.router.navigateByUrl(`/telemetry/parameters/${encoded}/summary?c=${this.yamcs.context}`);
+        this.router.navigateByUrl(`/telemetry/parameters${evt.pvName}/-/summary?c=${this.yamcs.context}`);
       } else if (evt.pvName.startsWith(OPS_DATASOURCE)) {
         // Find first the qualified name
         this.yamcs.yamcsClient.getParameterById(this.yamcs.instance!, {
           namespace: OPS_NAMESPACE,
-          name: evt.pvName.substr(6),
+          name: evt.pvName.substring(6),
         }).then(response => {
-          const encoded = encodeURIComponent(response.qualifiedName);
-          this.router.navigateByUrl(`/telemetry/parameters/${encoded}/summary?c=${this.yamcs.context}`);
+          this.router.navigateByUrl(`/telemetry/parameters${response.qualifiedName}/-/summary?c=${this.yamcs.context}`);
         });
       } else {
         alert(`Can't navigate to PV ${evt.pvName}`);

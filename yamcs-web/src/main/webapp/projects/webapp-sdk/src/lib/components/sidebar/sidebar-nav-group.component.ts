@@ -1,11 +1,9 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { slideDownAnimation } from '../../animations';
 
 @Component({
   selector: 'ya-sidebar-nav-group',
   templateUrl: './sidebar-nav-group.component.html',
-  styleUrls: ['./sidebar-nav-group.component.css'],
-  animations: [slideDownAnimation],
+  styleUrl: './sidebar-nav-group.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SidebarNavGroupComponent {

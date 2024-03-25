@@ -4,11 +4,11 @@
     {{ parameter.qualifiedName | shortName }}{{ offset }}
   </dd>
 
-  <dt>Space System</dt>
+  <dt>System</dt>
   <dd>
     <ng-container *ngIf="(parameter.qualifiedName | spaceSystemName) as spaceSystemName">
       <a routerLink="/telemetry/parameters"
-         [queryParams]="{c: yamcs.context, filter: spaceSystemName}"
+         [queryParams]="{c: yamcs.context, system: spaceSystemName}"
          class="ya-link">
         {{ spaceSystemName }}
       </a>
@@ -57,7 +57,7 @@
   <ng-container *ngIf="offset">
     <dt>Host Parameter</dt>
     <dd>
-      <a [routerLink]="['/telemetry/parameters', parameter.qualifiedName]"
+      <a [routerLink]="'/telemetry/parameters' + parameter.qualifiedName"
          [queryParams]="{c: yamcs.context}"
          class="ya-link">
         {{ parameter.qualifiedName | shortName }}
@@ -71,11 +71,11 @@
   </ng-container>
 
   <ng-container *ngIf="!offset">
-    <dt>Space System</dt>
+    <dt>System</dt>
     <dd>
       <ng-container *ngIf="(parameter.qualifiedName | spaceSystemName) as spaceSystemName">
         <a routerLink="/telemetry/parameters"
-           [queryParams]="{c: yamcs.context, filter: spaceSystemName}"
+           [queryParams]="{c: yamcs.context, system: spaceSystemName}"
            class="ya-link">
           {{ spaceSystemName }}
         </a>
@@ -135,7 +135,7 @@
       <tr *ngFor="let name of value.aggregateValue!.name; index as i">
         <ng-container *ngIf="((offset || '') + '.' + name) as memberOffset">
           <td>
-            <a [routerLink]="['/telemetry/parameters', parameter.qualifiedName + memberOffset]"
+            <a [routerLink]="'/telemetry/parameters' + parameter.qualifiedName + memberOffset"
                [queryParams]="{c: yamcs.context}">{{ name }}</a>
           </td>
           <td>
@@ -160,9 +160,9 @@
         <th>Index</th>
         <th>Value</th>
       </tr>
-      <tr *ngFor="let element of value.arrayValue!; index as i">
+      <tr *ngFor="let element of (value.arrayValue || []); index as i">
         <td>
-          <a [routerLink]="['/telemetry/parameters', parameter.qualifiedName + (offset || '') + '[' + i + ']']"
+          <a [routerLink]="'/telemetry/parameters' + parameter.qualifiedName + (offset || '') + '[' + i + ']'"
              [queryParams]="{c: yamcs.context}">{{ i }}</a>
         </td>
         <td>{{ element | value }}</td>

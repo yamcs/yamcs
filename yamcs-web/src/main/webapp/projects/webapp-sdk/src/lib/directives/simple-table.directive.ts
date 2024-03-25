@@ -6,7 +6,7 @@ import { ChangeDetectionStrategy, Component, HostBinding, ViewEncapsulation } fr
 @Component({
   selector: 'table[yaSimpleTable]',
   template: '<ng-content />',
-  styles: [`
+  styles: `
     table.ya-simple-table {
       width: 100%;
       overflow: auto;
@@ -27,7 +27,7 @@ import { ChangeDetectionStrategy, Component, HostBinding, ViewEncapsulation } fr
       width: 150px;
       vertical-align: top;
     }
-  `],
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })

@@ -187,6 +187,9 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
 
         IndexRequest indexRequest = new IndexRequest(instance);
         indexRequest.setSendCompletenessIndex(true);
+        if (request.hasMergeTime()) {
+            indexRequest.setMergeTime(request.getMergeTime());
+        }
 
         if (request.hasStart()) {
             long start = TimeEncoding.fromProtobufTimestamp(request.getStart());
@@ -231,6 +234,9 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
 
         IndexRequest indexRequest = new IndexRequest(instance);
         indexRequest.setSendAllPp(true);
+        if (request.hasMergeTime()) {
+            indexRequest.setMergeTime(request.getMergeTime());
+        }
 
         if (request.hasStart()) {
             indexRequest.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
@@ -248,6 +254,9 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
 
         IndexRequest indexRequest = new IndexRequest(instance);
         indexRequest.setSendAllCmd(true);
+        if (request.hasMergeTime()) {
+            indexRequest.setMergeTime(request.getMergeTime());
+        }
 
         if (request.hasStart()) {
             indexRequest.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
@@ -265,6 +274,9 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
 
         IndexRequest indexRequest = new IndexRequest(instance);
         indexRequest.setSendAllEvent(true);
+        if (request.hasMergeTime()) {
+            indexRequest.setMergeTime(request.getMergeTime());
+        }
 
         if (request.hasStart()) {
             indexRequest.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
@@ -287,6 +299,9 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
 
         IndexRequest indexRequest = new IndexRequest(instance);
         indexRequest.setSendCompletenessIndex(true);
+        if (request.hasMergeTime()) {
+            indexRequest.setMergeTime(request.getMergeTime());
+        }
 
         if (request.hasStart()) {
             indexRequest.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));

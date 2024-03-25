@@ -4,7 +4,7 @@ import { BehaviorSubject } from 'rxjs';
 @Component({
   selector: 'ya-progress',
   templateUrl: './progress.component.html',
-  styleUrls: ['./progress.component.css'],
+  styleUrl: './progress.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProgressComponent implements OnChanges {

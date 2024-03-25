@@ -14,7 +14,7 @@ export interface TemplateProvider {
 @Component({
   selector: 'app-command-form',
   templateUrl: './CommandForm.html',
-  styleUrls: ['./CommandForm.css'],
+  styleUrl: './CommandForm.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommandForm implements OnChanges {

@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ChangeDetectionStrategy, Component, OnChanges, OnDestroy, input } from '@angular/core';
 import { Parameter, ParameterSubscription, ParameterValue, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
@@ -7,7 +6,9 @@ import { BehaviorSubject, Subscription } from 'rxjs';
   templateUrl: './ParameterSummaryTab.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ParameterSummaryTab implements OnDestroy {
+export class ParameterSummaryTab implements OnChanges, OnDestroy {
+
+  qualifiedName = input.required<string>({ alias: 'parameter' });
 
   parameter$ = new BehaviorSubject<Parameter | null>(null);
   offset$ = new BehaviorSubject<string | null>(null);
@@ -19,16 +20,7 @@ export class ParameterSummaryTab implements OnDestroy {
   private syncSubscription: Subscription;
   pval$ = new BehaviorSubject<ParameterValue | null>(null);
 
-  constructor(route: ActivatedRoute, readonly yamcs: YamcsService, private synchronizer: Synchronizer) {
-
-    // When clicking links pointing to this same component, Angular will not reinstantiate
-    // the component. Therefore subscribe to routeParams
-    route.parent!.paramMap.subscribe(params => {
-      const qualifiedName = params.get('qualifiedName')!;
-      this.changeParameter(qualifiedName);
-    });
-
-    // Extra step to slow down UI updates
+  constructor(readonly yamcs: YamcsService, private synchronizer: Synchronizer) {
     this.syncSubscription = this.synchronizer.syncFast(() => {
       if (this.dirty) {
         this.pval$.next(this.parameterValue$.value);
@@ -37,7 +29,8 @@ export class ParameterSummaryTab implements OnDestroy {
     });
   }
 
-  changeParameter(qualifiedName: string) {
+  ngOnChanges() {
+    const qualifiedName = this.qualifiedName();
     this.yamcs.yamcsClient.getParameter(this.yamcs.instance!, qualifiedName).then(parameter => {
       this.parameter$.next(parameter);
 

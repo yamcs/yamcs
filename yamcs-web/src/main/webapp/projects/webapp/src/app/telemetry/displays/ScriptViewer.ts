@@ -13,11 +13,11 @@ import { Viewer } from './Viewer';
   template: `
     <div #scriptContainer class="script-container"></div>
   `,
-  styles: [`
+  styles: `
     .script-container {
       height: 100%;
     }
-  `],
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ScriptViewer implements Viewer {

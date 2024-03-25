@@ -4,7 +4,7 @@ import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular
   selector: 'ya-icon-action',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './icon-action.component.html',
-  styleUrls: ['./icon-action.component.css'],
+  styleUrl: './icon-action.component.css',
 })
 export class IconActionComponent {
 

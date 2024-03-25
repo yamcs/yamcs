@@ -2,7 +2,6 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
-import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { ColumnChooserComponent, ColumnInfo, GetParametersOptions, MemberPathPipe, SelectOption, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -47,7 +46,7 @@ export const PLIST_SOURCE_OPTIONS: SelectOption[] = [
 
 @Component({
   templateUrl: './ParametersPage.html',
-  styleUrls: ['./ParametersPage.css'],
+  styleUrl: './ParametersPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParametersPage implements AfterViewInit, OnDestroy {
@@ -99,14 +98,12 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
 
   constructor(
     readonly yamcs: YamcsService,
-    title: Title,
     private route: ActivatedRoute,
     private router: Router,
-    synchronizer: Synchronizer,
-    memberPathPipe: MemberPathPipe,
+    private synchronizer: Synchronizer,
+    private memberPathPipe: MemberPathPipe,
   ) {
-    title.setTitle('Parameters');
-    this.dataSource = new ParametersDataSource(yamcs, synchronizer, memberPathPipe);
+    this.dataSource = new ParametersDataSource(this.yamcs, this.synchronizer, this.memberPathPipe);
   }
 
   ngAfterViewInit() {
@@ -190,10 +187,11 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
       this.system$.next(this.system);
 
       // Reset alias columns
+      const newColumns = [...this.columns];
       for (const aliasColumn of this.aliasColumns$.value) {
-        const idx = this.columns.indexOf(aliasColumn);
+        const idx = newColumns.indexOf(aliasColumn);
         if (idx !== -1) {
-          this.columns.splice(idx, 1);
+          newColumns.splice(idx, 1);
         }
       }
       const aliasColumns = [];
@@ -201,9 +199,9 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
         const aliasColumn = { id: namespace, label: namespace, alwaysVisible: true };
         aliasColumns.push(aliasColumn);
       }
-      this.columns.splice(1, 0, ...aliasColumns); // Insert after name column
+      newColumns.splice(1, 0, ...aliasColumns); // Insert after name column
       this.aliasColumns$.next(aliasColumns);
-      this.columnChooser.recalculate(this.columns);
+      this.columnChooser.recalculate(newColumns);
     });
   }
 
@@ -267,7 +265,7 @@ export class ParametersPage implements AfterViewInit, OnDestroy {
       const item = this.selection.selected[0];
       const items = this.dataSource.items$.value;
       if (item.parameter && items.indexOf(item) !== -1) {
-        this.router.navigate(['/telemetry/parameters', item.parameter?.qualifiedName], {
+        this.router.navigate(['/telemetry/parameters' + item.parameter?.qualifiedName], {
           queryParams: { c: this.yamcs.context }
         });
       }

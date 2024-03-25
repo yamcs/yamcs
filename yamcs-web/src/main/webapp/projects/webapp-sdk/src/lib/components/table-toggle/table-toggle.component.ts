@@ -6,7 +6,7 @@ import { PreferenceStore } from '../../services/preference-store.service';
 @Component({
   selector: 'ya-table-toggle',
   templateUrl: './table-toggle.component.html',
-  styleUrls: ['./table-toggle.component.css'],
+  styleUrl: './table-toggle.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableToggleComponent implements OnInit {

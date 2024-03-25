@@ -2,7 +2,7 @@
   <dt>Container</dt>
   <dd>{{ container.qualifiedName | shortName }}</dd>
 
-  <dt>Space System</dt>
+  <dt>System</dt>
   <dd>
     <ng-container *ngIf="(container.qualifiedName | spaceSystemName) as spaceSystemName">
       <a routerLink="/mdb/containers"
@@ -56,8 +56,10 @@
 
   <dt>Archive Partition</dt>
   <dd>
-    <mat-icon *ngIf="container.archivePartition">check</mat-icon>
-    <mat-icon *ngIf="!container.archivePartition">close</mat-icon>
+    <mat-icon *ngIf="container.archivePartition"
+              class="icon14" style="vertical-align: middle">check</mat-icon>
+    <mat-icon *ngIf="!container.archivePartition"
+              class="icon14" style="vertical-align: middle">close</mat-icon>
   </dd>
 </dl>
 

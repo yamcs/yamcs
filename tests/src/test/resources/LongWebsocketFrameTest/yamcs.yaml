@@ -8,7 +8,6 @@ services:
 instances:
   - LongWebsocketFrameTest
 
-incomingDir: ${java.io.tmpdir}/yamcs-incoming
 dataDir: ${java.io.tmpdir}/yamcs-LongWebsocketFrameTest-data
 
 secretKey: testtest

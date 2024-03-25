@@ -36,7 +36,6 @@
       </div>
     </form>
     <table mat-table
-           *ngIf="dataSource"
            class="ya-data-table expand"
            [dataSource]="dataSource">
 
@@ -45,13 +44,13 @@
         <td mat-cell *matCellDef="let item" class="primary-td">
           <ng-container *ngIf="item.system">
             <mat-icon class="icon12" style="vertical-align: middle">folder</mat-icon>
-            <a [routerLink]="['/telemetry/parameters']"
+            <a routerLink="/telemetry/parameters"
                [queryParams]="{c: yamcs.context, system: item.name}">{{ item.name | filename }}/
             </a>
           </ng-container>
           <ng-container *ngIf="!item.system">
             <mat-icon class="icon12" style="vertical-align: middle">toll</mat-icon>
-            <a [routerLink]="['/telemetry/parameters', item.name]"
+            <a [routerLink]="'/telemetry/parameters' + item.name"
                [queryParams]="{c: yamcs.context}">
               <ya-highlight *ngIf="!(system$ | async)"
                             [text]="item.name"

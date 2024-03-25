@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 @Component({
   selector: 'ya-sidebar-nav-item',
   templateUrl: './sidebar-nav-item.component.html',
-  styleUrls: ['./sidebar-nav-item.component.css'],
+  styleUrl: './sidebar-nav-item.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SidebarNavItemComponent {

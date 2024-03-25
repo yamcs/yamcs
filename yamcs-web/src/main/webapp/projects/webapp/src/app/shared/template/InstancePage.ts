@@ -10,7 +10,7 @@ import { AuthService } from '../../core/services/AuthService';
 
 @Component({
   templateUrl: './InstancePage.html',
-  styleUrls: ['./InstancePage.css'],
+  styleUrl: './InstancePage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InstancePage implements OnInit, OnDestroy {
@@ -194,7 +194,7 @@ export class InstancePage implements OnInit, OnDestroy {
 
   onSearchSelect(event: MatAutocompleteSelectedEvent) {
     this.searchControl.setValue('');
-    this.router.navigate(['/telemetry/parameters/', event.option.value], {
+    this.router.navigate(['/telemetry/parameters' + event.option.value], {
       queryParams: { c: this.yamcs.context }
     });
   }

@@ -6,7 +6,7 @@ import { Service } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-services-table',
   templateUrl: './ServicesTable.html',
-  styleUrls: ['./ServicesTable.css'],
+  styleUrl: './ServicesTable.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ServicesTable implements AfterViewInit {

@@ -10,7 +10,7 @@ import { CommandsDataSource, ListItem } from './CommandsDataSource';
 
 @Component({
   templateUrl: './SendCommandPage.html',
-  styleUrls: ['./SendCommandPage.css'],
+  styleUrl: './SendCommandPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SendCommandPage implements AfterViewInit, OnDestroy {
@@ -186,7 +186,7 @@ export class SendCommandPage implements AfterViewInit, OnDestroy {
       const item = this.selection.selected[0];
       const items = this.dataSource.items$.value;
       if (item.command && items.indexOf(item) !== -1) {
-        this.router.navigate(['/commanding/send', item.command?.qualifiedName], {
+        this.router.navigate(['/commanding/send' + item.command?.qualifiedName], {
           queryParams: { c: this.yamcs.context }
         });
       }

@@ -56,7 +56,7 @@
           <mat-divider />
           <br>
           <button class="ya-button"
-                  [routerLink]="['/commanding/send', selectedRecord?.commandName]"
+                  [routerLink]="'/commanding/send' + selectedRecord?.commandName"
                   [queryParams]="{c: yamcs.context, template: selectedRecord?.id}">
             Resend
           </button>
@@ -185,7 +185,7 @@
         <ng-container matColumnDef="issuer">
           <th mat-header-cell *matHeaderCellDef>Issuer</th>
           <td mat-cell *matCellDef="let item">
-            {{ item.username }}<span *ngIf="item.origin">@{{ item.origin }}</span>
+            {{ item.username }}<span *ngIf="item.origin">&#64;{{ item.origin }}</span>
           </td>
         </ng-container>
 
@@ -272,7 +272,7 @@
             <ya-more>
               <ng-container *ngIf="showResend()">
                 <button mat-menu-item
-                        [routerLink]="['/commanding/send', item.commandName]"
+                        [routerLink]="'/commanding/send' + item.commandName"
                         [queryParams]="{c: yamcs.context, template: item.id}">
                   Resend
                 </button>

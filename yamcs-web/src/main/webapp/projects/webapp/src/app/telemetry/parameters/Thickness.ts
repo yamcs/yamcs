@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@a
 @Component({
   selector: 'app-thickness',
   templateUrl: './Thickness.html',
-  styleUrls: ['./Thickness.css'],
+  styleUrl: './Thickness.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Thickness {

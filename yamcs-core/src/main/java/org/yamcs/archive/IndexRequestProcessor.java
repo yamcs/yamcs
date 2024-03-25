@@ -364,7 +364,7 @@ public class IndexRequestProcessor implements Runnable {
                 res.put(ar.getId(), ar);
                 return null;
             }
-            long tdelta = Durations.toMillis(Timestamps.between(ar.getFirst(), ar.getLast()));
+            long tdelta = Durations.toMillis(Timestamps.between(ar1.getFirst(), ar.getLast()));
             if (tdelta < mergeTime) {
                 ArchiveRecord ar2 = ArchiveRecord.newBuilder().setFirst(ar1.getFirst())
                         .setLast(ar.getLast()).setNum(ar1.getNum() + ar.getNum())

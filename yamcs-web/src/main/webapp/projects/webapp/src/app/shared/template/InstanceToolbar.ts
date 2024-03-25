@@ -12,7 +12,7 @@ import { StartReplayDialog } from './StartReplayDialog';
 @Component({
   selector: 'app-instance-toolbar',
   templateUrl: './InstanceToolbar.html',
-  styleUrls: ['./InstanceToolbar.css'],
+  styleUrl: './InstanceToolbar.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InstanceToolbar implements OnDestroy {

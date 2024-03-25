@@ -11,7 +11,7 @@ const defaultInterval = 'NO_LIMIT';
 
 @Component({
   templateUrl: './AdminActionLogPage.html',
-  styleUrls: ['./AdminActionLogPage.css'],
+  styleUrl: './AdminActionLogPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminActionLogPage {

@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 @Component({
   selector: 'app-significance-level',
   templateUrl: './SignificanceLevel.html',
-  styleUrls: ['./SignificanceLevel.css'],
+  styleUrl: './SignificanceLevel.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SignificanceLevel {

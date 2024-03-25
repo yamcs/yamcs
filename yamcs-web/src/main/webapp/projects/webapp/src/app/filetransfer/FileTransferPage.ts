@@ -9,7 +9,7 @@ import { TransferFileDialog } from './TransferFileDialog';
 
 @Component({
   templateUrl: './FileTransferPage.html',
-  styleUrls: ['./FileTransferPage.css'],
+  styleUrl: './FileTransferPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FileTransferPage implements OnDestroy {

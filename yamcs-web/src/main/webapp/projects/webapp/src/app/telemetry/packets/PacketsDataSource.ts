@@ -25,7 +25,7 @@ export class PacketsDataSource extends DataSource<AnimatablePacket> {
     super();
     this.syncSubscription = synchronizer.sync(() => {
       if (this.buffer.dirty && !this.loading$.getValue()) {
-        this.packets$.next(this.buffer.snapshot());
+        this.emitPackets();
         this.buffer.dirty = false;
       }
     });
@@ -33,8 +33,12 @@ export class PacketsDataSource extends DataSource<AnimatablePacket> {
     this.buffer = new PacketBuffer();
   }
 
-  connect() {
+  override connect() {
     return this.packets$;
+  }
+
+  private emitPackets() {
+    this.packets$.next(this.buffer.snapshot());
   }
 
   loadEntries(processorName: string, options: GetPacketsOptions) {
@@ -47,6 +51,9 @@ export class PacketsDataSource extends DataSource<AnimatablePacket> {
       this.buffer.reset();
       this.blockHasMore = false;
       this.buffer.addArchiveData(packets);
+
+      // Quick emit, don't wait on sync tick
+      this.emitPackets();
     });
   }
 
@@ -55,7 +62,18 @@ export class PacketsDataSource extends DataSource<AnimatablePacket> {
   }
 
   private loadPage(options: GetPacketsOptions) {
-    return this.yamcs.yamcsClient.getPackets(this.yamcs.instance!, options).then(page => {
+    return this.yamcs.yamcsClient.getPackets(this.yamcs.instance!, {
+      ...options,
+      fields: [ // Everything except the packet binary
+        'id',
+        'generationTime',
+        'earthReceptionTime',
+        'receptionTime',
+        'sequenceNumber',
+        'link',
+        'size',
+      ],
+    }).then(page => {
       this.continuationToken = page.continuationToken;
       return page.packet || [];
     });

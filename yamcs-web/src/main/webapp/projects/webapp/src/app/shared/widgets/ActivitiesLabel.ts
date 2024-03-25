@@ -6,7 +6,7 @@ import { AuthService } from '../../core/services/AuthService';
 @Component({
   selector: 'app-activities-label',
   templateUrl: './ActivitiesLabel.html',
-  styleUrls: ['./ActivitiesLabel.css'],
+  styleUrl: './ActivitiesLabel.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActivitiesLabel implements OnDestroy {

@@ -477,6 +477,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
                 TmPacketData packet = TmPacketData.newBuilder()
                         .setId(NamedObjectId.newBuilder().setName(result.getContainer().getQualifiedName()))
                         .setPacket(ByteString.copyFrom(result.getContainerContent()))
+                        .setSize(result.getContainerContent().length)
                         .setGenerationTime(TimeEncoding.toProtobufTimestamp(result.getGenerationTime()))
                         .setReceptionTime(TimeEncoding.toProtobufTimestamp(result.getAcquisitionTime()))
                         .build();
@@ -497,6 +498,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
                     long receptionTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN);
                     int seqNumber = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
                     TmPacketData tm = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(pktData))
+                            .setSize(pktData.length)
                             .setGenerationTime(TimeEncoding.toProtobufTimestamp(genTime))
                             .setReceptionTime(TimeEncoding.toProtobufTimestamp(receptionTime))
                             .setSequenceNumber(seqNumber)

@@ -20,7 +20,7 @@ const PALETTE = [
 @Component({
   selector: 'app-color-palette',
   templateUrl: './ColorPalette.html',
-  styleUrls: ['./ColorPalette.css'],
+  styleUrl: './ColorPalette.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ColorPalette {

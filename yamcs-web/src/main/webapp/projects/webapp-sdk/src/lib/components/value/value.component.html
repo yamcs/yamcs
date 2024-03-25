@@ -17,12 +17,18 @@
 
           <ng-container *ngIf="node.expanded">
             <ng-container *ngIf="node.value.type === 'ARRAY'">
-              <span class="value expandable">Array({{ node.value.arrayValue?.length || 0 }})</span>
+              <span class="value expandable"
+                    (click)="collapseNode(node)">Array({{ node.value.arrayValue?.length || 0 }})</span>
+            </ng-container>
+            <ng-container *ngIf="node.value.type === 'AGGREGATE'">
+              <span class="value expandable"
+                    (click)="collapseNode(node)">&#123;...&#125;</span>
             </ng-container>
           </ng-container>
-          <ng-container *ngIf="!node.expanded || node.value.type !== 'ARRAY'">
+          <ng-container *ngIf="!node.expanded || (node.value.type !== 'ARRAY' && node.value.type !== 'AGGREGATE')">
             <span class="value"
-                  [class.expandable]="node.children">{{ node.value | value }}</span>
+                  [class.expandable]="node.children"
+                  (click)="node.children ? expandNode(node) : false">{{ node.value | value }}</span>
           </ng-container>
         </td>
       </tr>

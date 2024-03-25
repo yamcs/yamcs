@@ -36,7 +36,7 @@ import org.yamcs.utils.YObjectLoader;
  * Options:
  * <ul>
  * <li>{@code incomingDir} - the directory where the files are read from.</li>
- * <li>{@code delteAfterImport} - if true (default), the files will be removed after being read.</li>
+ * <li>{@code deleteAfterImport} - if true (default), the files will be removed after being read.</li>
  * <li>{@code delayBetweenPackets} - if configured, it is the number of milliseconds to wait in between sending two
  * packets. By default it is -1 meaning the packets are sent as fast as possible.</li>
  * <li>{@code headerSize} - if configured, the input files have a header which will be skipped before reading the first
@@ -74,6 +74,8 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
         if (config.containsKey("incomingDir")) {
             incomingDir = Paths.get(config.getString("incomingDir"));
         } else {
+            log.warn("Deprecation warning: specify the incomingDir argument on the link " + name
+                    + ". This will become required in a later version");
             Path parent = YamcsServer.getServer().getIncomingDirectory();
             incomingDir = parent.resolve(yamcsInstance).resolve("tm");
         }

@@ -8,7 +8,7 @@ import { HexModel, Line } from './model';
 @Component({
   selector: 'app-hex',
   templateUrl: './Hex.html',
-  styleUrls: ['./Hex.css'],
+  styleUrl: './Hex.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Hex implements AfterViewInit, OnChanges, OnDestroy {
@@ -19,7 +19,7 @@ export class Hex implements AfterViewInit, OnChanges, OnDestroy {
   canvasEl: ElementRef;
 
   @Input()
-  base64String: string;
+  base64String?: string | null;
 
   @Input()
   fontSize = 10;
@@ -96,7 +96,7 @@ export class Hex implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges() {
-    const raw = window.atob(this.base64String);
+    const raw = window.atob(this.base64String ?? '');
     this.model = new HexModel(raw);
     this.highlight = undefined;
     this.selection = undefined;

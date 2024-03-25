@@ -5,7 +5,7 @@ import { BehaviorSubject } from 'rxjs';
 
 @Component({
   templateUrl: './SystemPage.html',
-  styleUrls: ['./SystemPage.css'],
+  styleUrl: './SystemPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SystemPage implements OnDestroy {

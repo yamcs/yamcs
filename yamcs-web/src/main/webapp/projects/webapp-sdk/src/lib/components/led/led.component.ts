@@ -13,7 +13,7 @@ export let SEQ = 0;
                         [style.height]="height + 'px'"
                         style="display: inline-block; line-height: 0">
         </div>`,
-  styleUrls: ['./led.component.css'],
+  styleUrl: './led.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LedComponent implements AfterViewInit, OnChanges {

@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, input } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
@@ -12,10 +12,12 @@ import { ScheduleCommandDialog } from './ScheduleCommandDialog';
 
 @Component({
   templateUrl: './ConfigureCommandPage.html',
-  styleUrls: ['./ConfigureCommandPage.css'],
+  styleUrl: './ConfigureCommandPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
+export class ConfigureCommandPage implements OnInit, AfterViewInit, OnDestroy {
+
+  qualifiedName = input.required<string>({ alias: 'command' });
 
   @ViewChild('commandForm')
   commandForm: CommandForm;
@@ -31,9 +33,9 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
   armControl = new UntypedFormControl();
 
   constructor(
-    route: ActivatedRoute,
+    private route: ActivatedRoute,
     private router: Router,
-    title: Title,
+    private title: Title,
     private messageService: MessageService,
     readonly yamcs: YamcsService,
     private location: Location,
@@ -43,16 +45,16 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
     private dialog: MatDialog,
   ) {
     this.config = configService.getConfig();
+  }
 
-    const qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
-
-    title.setTitle(`Send a command: ${qualifiedName}`);
+  ngOnInit(): void {
+    this.title.setTitle(`Send a command: ${this.qualifiedName()}`);
 
     const promises: Promise<any>[] = [
-      this.yamcs.yamcsClient.getCommand(this.yamcs.instance!, qualifiedName),
+      this.yamcs.yamcsClient.getCommand(this.yamcs.instance!, this.qualifiedName()),
     ];
 
-    const templateId = route.snapshot.queryParamMap.get('template');
+    const templateId = this.route.snapshot.queryParamMap.get('template');
     if (templateId) {
       const promise = this.yamcs.yamcsClient.getCommandHistoryEntry(this.yamcs.instance!, templateId);
       promises.push(promise);
@@ -72,7 +74,7 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
       }
 
       if (this.config.commandClearanceEnabled) {
-        this.connectionInfoSubscription = yamcs.clearance$.subscribe(clearance => {
+        this.connectionInfoSubscription = this.yamcs.clearance$.subscribe(clearance => {
           const significance = command.effectiveSignificance;
           this.cleared$.next(this.isCleared(clearance, significance?.consequenceLevel));
         });
@@ -110,14 +112,19 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
     const comment = this.commandForm.getComment();
     const extra = this.commandForm.getExtraOptions();
 
-    const qname = this.command$.value!.qualifiedName;
+    const qname = this.qualifiedName();
 
     this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, qname, {
       args,
       comment,
       extra,
     }).then(response => {
-      this.router.navigate(['/commanding/report', response.id], {
+      this.router.navigate([
+        '/commanding/send' + qname,
+        '-',
+        'report',
+        response.id,
+      ], {
         queryParams: {
           c: this.yamcs.context,
         }
@@ -140,7 +147,7 @@ export class ConfigureCommandPage implements AfterViewInit, OnDestroy {
       if (scheduleOptions) {
         this.armControl.setValue(false);
 
-        const qname = this.command$.value!.qualifiedName;
+        const qname = this.qualifiedName();
         const args = this.commandForm.getAssignments();
 
         const options: CreateTimelineItemRequest = {

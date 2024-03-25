@@ -15,7 +15,7 @@ import { RenameDisplayDialog } from './RenameDisplayDialog';
 
 @Component({
   templateUrl: './DisplayFolderPage.html',
-  styleUrls: ['./DisplayFolderPage.css'],
+  styleUrl: './DisplayFolderPage.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DisplayFolderPage implements OnDestroy {

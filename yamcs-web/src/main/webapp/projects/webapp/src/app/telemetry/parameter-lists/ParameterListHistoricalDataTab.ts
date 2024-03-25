@@ -21,7 +21,7 @@ const defaultInterval = 'PT1H';
 
 @Component({
   templateUrl: './ParameterListHistoricalDataTab.html',
-  styleUrls: ['./ParameterListHistoricalDataTab.css'],
+  styleUrl: './ParameterListHistoricalDataTab.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParameterListHistoricalDataTab {

@@ -71,7 +71,6 @@ import { ActionLogFormatPipe } from './pipes/action-log-format.pipe';
 import { AliasPipe } from './pipes/alias.pipe';
 import { ArrayContainsPipe } from './pipes/array-contains.pipe';
 import { BasenamePipe } from './pipes/basename.pipe';
-import { BinarySizePipe } from './pipes/binary-size.pipe';
 import { ClassNameHtmlPipe } from './pipes/class-name-html.pipe';
 import { DataRatePipe } from './pipes/data-rate.pipe';
 import { DateTimePipe } from './pipes/datetime.pipe';
@@ -91,6 +90,7 @@ import { NanosDurationPipe } from './pipes/nanos-duration.pipe';
 import { NvlPipe } from './pipes/nvl.pipe';
 import { OperatorPipe } from './pipes/operator.pipe';
 import { ParameterTypeForPathPipe } from './pipes/parameter-type-for-path.pipe';
+import { ParentsPipe } from './pipes/parents.pipe';
 import { PrintJsonPipe } from './pipes/print-json.pipe';
 import { ReversePipe } from './pipes/reverse.pipe';
 import { ShortNamePipe } from './pipes/short-name.pipe';
@@ -106,7 +106,6 @@ const pipes = [
   AliasPipe,
   ArrayContainsPipe,
   BasenamePipe,
-  BinarySizePipe,
   ClassNameHtmlPipe,
   DataRatePipe,
   DateTimePipe,
@@ -127,6 +126,7 @@ const pipes = [
   NvlPipe,
   OperatorPipe,
   ParameterTypeForPathPipe,
+  ParentsPipe,
   PrintJsonPipe,
   ReversePipe,
   ShortNamePipe,

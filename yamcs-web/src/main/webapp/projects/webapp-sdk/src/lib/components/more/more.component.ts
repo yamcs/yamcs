@@ -9,4 +9,7 @@ export class MoreComponent {
 
   @Input()
   icon = 'more_vert';
+
+  @Input()
+  padding = true;
 }

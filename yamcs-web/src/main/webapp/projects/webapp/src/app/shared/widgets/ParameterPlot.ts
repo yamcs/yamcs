@@ -14,7 +14,7 @@ import { DyLegendData, TimestampTrackerData, analyzeStaticValueRanges } from './
 @Component({
   selector: 'app-parameter-plot',
   templateUrl: './ParameterPlot.html',
-  styleUrls: ['./ParameterPlot.css'],
+  styleUrl: './ParameterPlot.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParameterPlot implements AfterViewInit, OnDestroy {

@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 @Component({
   selector: 'app-queued-commands-table',
   templateUrl: './QueuedCommandsTable.html',
-  styleUrls: ['./QueuedCommandsTable.css'],
+  styleUrl: './QueuedCommandsTable.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class QueuedCommandsTable implements AfterViewInit {

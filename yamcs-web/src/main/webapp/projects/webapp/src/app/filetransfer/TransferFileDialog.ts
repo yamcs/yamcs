@@ -10,7 +10,7 @@ import { RemoteFileSelector } from './RemoteFileSelector';
 @Component({
   selector: 'app-download-file-dialog',
   templateUrl: './TransferFileDialog.html',
-  styleUrls: ['./TransferFileDialog.css'],
+  styleUrl: './TransferFileDialog.css',
 })
 export class TransferFileDialog implements OnDestroy {
   public isDownloadEnabled = false;

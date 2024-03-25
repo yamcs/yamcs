@@ -128,6 +128,7 @@ public class YamcsServer {
     private byte[] secretKey;
     int maxOnlineInstances = 1000;
     int maxNumInstances = 20;
+    @Deprecated
     Path incomingDir;
     Path instanceDefDir;
 
@@ -915,6 +916,11 @@ public class YamcsServer {
         return options.dataDir;
     }
 
+    /**
+     * Path of the Yamcs incoming directory. This global option is deprecated. Links that need an incoming directory,
+     * should read this information directly from that link's configuration.
+     */
+    @Deprecated
     public Path getIncomingDirectory() {
         return incomingDir;
     }
@@ -1199,7 +1205,9 @@ public class YamcsServer {
                 .withSpec(bucketSpec);
         spec.addOption("dataDir", OptionType.STRING).withDefault("yamcs-data");
         spec.addOption("cacheDir", OptionType.STRING).withDefault("cache");
-        spec.addOption("incomingDir", OptionType.STRING).withDefault("yamcs-incoming");
+        spec.addOption("incomingDir", OptionType.STRING).withDefault("yamcs-incoming")
+                .withDeprecationMessage("remove \"incomingDir\" property from yamcs.yaml. "
+                        + "Links that were using this option, should instead provide a link-specific option");
         spec.addOption(CFG_SERVER_ID_KEY, OptionType.STRING);
         spec.addOption(CFG_SECRET_KEY, OptionType.STRING).withSecret(true);
         spec.addOption("disabledPlugins", OptionType.LIST).withElementType(OptionType.STRING)

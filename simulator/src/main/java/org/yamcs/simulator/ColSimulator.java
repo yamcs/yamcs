@@ -310,7 +310,7 @@ public class ColSimulator extends AbstractSimulator {
                     downloadFile(commandPacket);
                     break;
                 case 9:
-                    // this is used to demonstrate cascasding with BINARY_EMBEEDED command mapping
+                    // this is used to demonstrate cascading with BINARY_EMBEDDED command mapping
                     switchBatteryOnOff(commandPacket);
                     break;
                 case 10:

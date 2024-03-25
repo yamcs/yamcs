@@ -4,7 +4,7 @@ import { CommandHistoryRecord } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-transmission-constraints-icon',
   templateUrl: './TransmissionConstraintsIcon.html',
-  styleUrls: ['./TransmissionConstraintsIcon.css'],
+  styleUrl: './TransmissionConstraintsIcon.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TransmissionConstraintsIcon {

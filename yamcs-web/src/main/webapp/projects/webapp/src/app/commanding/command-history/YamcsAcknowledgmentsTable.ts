@@ -4,7 +4,7 @@ import { CommandHistoryRecord } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-yamcs-acknowledgments-table',
   templateUrl: './YamcsAcknowledgmentsTable.html',
-  styleUrls: ['./YamcsAcknowledgmentsTable.css'],
+  styleUrl: './YamcsAcknowledgmentsTable.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class YamcsAcknowledgmentsTable {

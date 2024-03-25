@@ -4,7 +4,7 @@ import { ParameterValue } from '../../client';
 @Component({
   selector: 'ya-expirable',
   templateUrl: './expirable.component.html',
-  styleUrls: ['./expirable.component.css'],
+  styleUrl: './expirable.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExpirableComponent {

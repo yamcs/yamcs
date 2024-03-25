@@ -28,9 +28,14 @@ table.detail td:not(:first-child) {
 
 .value.expandable {
   color: inherit;
+  cursor: pointer;
 }
 
 table {
   line-height: 1.1em;
   font-family: 'Roboto Mono', monospace;
+}
+
+td:first-child {
+  padding-left: 0 !important;
 }

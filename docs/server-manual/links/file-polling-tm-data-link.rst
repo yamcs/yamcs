@@ -16,7 +16,7 @@ stream (string)
     **Required.** The stream where data is emitted
 
 incomingDir (string)
-    The directory where the data will be read from. If not specified, the data will be read from :file:`{yamcs-incoming-dir}/{instance}/tm/` where ``yamcs-incoming-dir`` is the value of the ``incomingDir`` property in :file:`etc/yamcs.yaml`.
+    **Required.** The directory where the data will be read from.
 
 deleteAfterImport (boolean)
     Remove the file after importing all the data. By default set to true, can be set to false to import the same data again and again.

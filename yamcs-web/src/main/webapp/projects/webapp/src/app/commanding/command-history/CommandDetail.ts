@@ -5,7 +5,7 @@ import { CommandHistoryRecord, utils } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-command-detail2',
   templateUrl: './CommandDetail.html',
-  styleUrls: ['./CommandDetail.css'],
+  styleUrl: './CommandDetail.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommandDetail {
