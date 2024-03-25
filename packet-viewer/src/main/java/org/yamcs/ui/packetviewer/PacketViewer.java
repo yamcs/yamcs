@@ -88,8 +88,8 @@ import org.yamcs.client.YamcsClient;
 import org.yamcs.client.base.ServerURL;
 import org.yamcs.mdb.DatabaseLoadException;
 import org.yamcs.mdb.Mdb;
-import org.yamcs.mdb.ProcessingData;
 import org.yamcs.mdb.MdbFactory;
+import org.yamcs.mdb.ProcessingData;
 import org.yamcs.mdb.XtceTmProcessor;
 import org.yamcs.parameter.ContainerParameterValue;
 import org.yamcs.parameter.ParameterProcessor;
@@ -781,7 +781,7 @@ public class PacketViewer extends JFrame implements ActionListener,
 
         // apply style for highlighted parts
         for (Range bitRange : highlightBits) {
-            if (bitRange == null) {
+            if (bitRange == null || bitRange.size == 0) {
                 continue;
             }
             final int highlightStartNibble = bitRange.offset / 4;

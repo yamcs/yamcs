@@ -196,8 +196,8 @@ export class PacketPage implements OnInit {
 
 
       //  Nodes for array entries
-      const rawValues = rawValue.arrayValue || [];
-      const engValues = engValue.arrayValue || [];
+      const rawValues = rawValue?.arrayValue || [];
+      const engValues = engValue?.arrayValue || [];
       const entryType = parameter.type!.arrayInfo!.type;
       for (let i = 0; i < engValues.length; i++) {
         this.addValueNode(
@@ -282,8 +282,8 @@ export class PacketPage implements OnInit {
       nodes.push(node);
 
       //  Nodes for array entries
-      const rawValues = rawValue.arrayValue || [];
-      const engValues = engValue.arrayValue || [];
+      const rawValues = rawValue?.arrayValue || [];
+      const engValues = engValue?.arrayValue || [];
       for (let i = 0; i < engValues.length; i++) {
         this.addValueNode(
           node,
