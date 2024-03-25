@@ -17,7 +17,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.utils.YObjectLoader;
 
-public class TcpTcTmDataLink extends AbstractTcTmDataLink implements Runnable {
+public class TcpTcTmDataLink extends AbstractTcTmParamLink implements Runnable {
     protected Socket tmSocket;
     protected String host;
     protected int port;
@@ -133,7 +133,7 @@ public class TcpTcTmDataLink extends AbstractTcTmDataLink implements Runnable {
             try {
                 checkAndOpenSocket();
                 byte[] packet = packetInputStream.readPacket();
-                updateStats(packet.length);
+                dataIn(1, packet.length);
                 TmPacket pkt = new TmPacket(timeService.getMissionTime(), packet);
                 pkt.setEarthReceptionTime(timeService.getHresMissionTime());
                 pwt = packetPreprocessor.process(pkt);

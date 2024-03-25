@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -19,6 +20,7 @@ import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.DataRateMeter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.Parameter;
@@ -29,9 +31,9 @@ import com.google.common.util.concurrent.Service;
 import io.netty.channel.nio.NioEventLoopGroup;
 
 /**
- * Abstract link implementation as a {@link Service} handling the basic enable/disable getConfig operations
+ * Abstract link implementation as a {@link Service} handling the basic enable/disable getConfig operations and data
+ * in/out counts
  * 
- * @author nm
  *
  */
 public abstract class AbstractLink extends AbstractService
@@ -46,7 +48,11 @@ public abstract class AbstractLink extends AbstractService
     protected TimeService timeService;
     private Map<String, LinkAction> actions = new LinkedHashMap<>(); // Keep them in order of registration
     private AggregatedDataLink parent = null;
-    
+    protected AtomicLong dataOutCount = new AtomicLong();
+    protected AtomicLong dataInCount = new AtomicLong();
+    DataRateMeter dataInRateMeter = new DataRateMeter();
+    DataRateMeter dataOutRateMeter = new DataRateMeter();
+
     /**
      * singleton for netty worker group. In the future we may have an option to create different worker groups for
      * different links but for now we stick to one.
@@ -227,5 +233,42 @@ public abstract class AbstractLink extends AbstractService
     
     public String getYamcsInstance() {
         return yamcsInstance;
+    }
+
+    @Override
+    public long getDataOutCount() {
+        return dataOutCount.get();
+    }
+
+    @Override
+    public long getDataInCount() {
+        return dataOutCount.get();
+    }
+
+    @Override
+    public void resetCounters() {
+        dataInCount.set(0);
+        dataOutCount.set(0);
+    }
+
+    /**
+     * Update the dataOutCount with the given number of items sent
+     * <p>
+     * Should be called by the inheriting classes each time data is sent out
+     */
+    protected void dataOut(int outCount, long size) {
+        dataOutCount.addAndGet(outCount);
+        dataOutRateMeter.mark(size);
+    }
+
+    /**
+     * Update the dataInCount with the given number of items received
+     * <p>
+     * Should be called by the inheriting classes each time data is received
+     * 
+     */
+    protected void dataIn(int inCount, long size) {
+        dataInCount.addAndGet(inCount);
+        dataInRateMeter.mark(size);
     }
 }

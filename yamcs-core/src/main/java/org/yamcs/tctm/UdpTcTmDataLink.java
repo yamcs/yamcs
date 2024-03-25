@@ -22,7 +22,7 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
 /**
  * A UDP-based link that acts as a client: sending TC and receiving TM on the same socket pair.
  */
-public class UdpTcTmDataLink extends AbstractTcTmDataLink {
+public class UdpTcTmDataLink extends AbstractTcTmParamLink {
 
     protected String host;
     protected int port;

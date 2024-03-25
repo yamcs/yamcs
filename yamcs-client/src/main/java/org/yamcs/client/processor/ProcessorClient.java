@@ -421,10 +421,10 @@ public class ProcessorClient {
     }
 
     public static class CommandBuilder {
-
         private CommandsApiClient commandService;
         private IssueCommandRequest.Builder requestb;
         private Struct.Builder argsb;
+        private int sizeOfLastCommandIssued;
 
         CommandBuilder(ProcessorClient client, String command) {
             this(client.commandService, client.instance, client.processor, command);
@@ -490,6 +490,7 @@ public class ProcessorClient {
         public CompletableFuture<Command> issue() {
             var f = new CompletableFuture<IssueCommandResponse>();
             var request = requestb.setArgs(argsb).build();
+            sizeOfLastCommandIssued = request.getSerializedSize();
             commandService.issueCommand(null, request, new ResponseObserver<>(f));
             return f.thenApply(Command::new);
         }
@@ -510,6 +511,15 @@ public class ProcessorClient {
                     return null;
                 }
             }, executor);
+        }
+
+        /**
+         * Can be called just after issue() has been called to get the size of the last command issued
+         * <p>
+         * not thread safe
+         */
+        public int getSizeOfTheLastCommandIssued() {
+            return sizeOfLastCommandIssued;
         }
 
         @Override

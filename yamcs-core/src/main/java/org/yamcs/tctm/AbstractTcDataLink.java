@@ -2,8 +2,6 @@ package org.yamcs.tctm;
 
 import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
@@ -24,8 +22,6 @@ import org.yamcs.utils.YObjectLoader;
 public abstract class AbstractTcDataLink extends AbstractLink implements TcDataLink {
 
     protected CommandHistoryPublisher commandHistoryPublisher;
-
-    protected AtomicLong dataCount = new AtomicLong();
 
     protected CommandPostprocessor cmdPostProcessor;
     static final PreparedCommand SIGNAL_QUIT = new PreparedCommand(new byte[0]);
@@ -98,16 +94,6 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
     @Override
     public long getDataInCount() {
         return 0;
-    }
-
-    @Override
-    public long getDataOutCount() {
-        return dataCount.get();
-    }
-
-    @Override
-    public void resetCounters() {
-        dataCount.set(0);
     }
 
     /** Send to command history the failed command */

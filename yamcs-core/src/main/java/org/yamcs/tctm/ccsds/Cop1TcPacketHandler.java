@@ -235,7 +235,9 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
             qf.cf.complete(null);
         }
         frameFactory.encodeFrame(qf.tf);
-        dataCount.getAndIncrement();
+        // BC frames contain no command but we still count it as one item out
+        var count = qf.tf.commands == null ? 1 : qf.tf.commands.size();
+        dataOut(count, qf.tf.getData().length);
         return qf.tf;
     }
 
