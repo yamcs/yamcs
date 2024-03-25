@@ -1,3 +1,11 @@
+Version 5.9.3 released 25-March-2024
+- Added a yamcs parameter-archive purge operation to remove completely the parameter archive before rebuilding.
+  Sometimes the rebuild does not properly remove old data resulting in duplicates (this bug will be addressed in a future release) and the purge can be run to overcome the problem.
+- Added system parameters for reporting memory consumed by RocksDB
+- Improve accuracy of Archive Browser display
+- Improve visualization of arrays/aggregates in on-demand packet extraction result
+- Update to Angular 17 - this requires minimum node version 18
+
 Version 5.9.2 released 12-March-2024
 - Tweak activity-related UI
 - Fix issue with cancelling of activities
