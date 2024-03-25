@@ -52,7 +52,8 @@ public class ParameterIdDb {
 
     private ParameterGroupIdDb pgidMap;
 
-    ParameterIdDb(String yamcsInstance, Tablespace tablespace) throws RocksDBException, IOException {
+    ParameterIdDb(String yamcsInstance, Tablespace tablespace, boolean sparseGroups, double minGroupOverlap)
+            throws RocksDBException, IOException {
         this.tablespace = tablespace;
         this.yamcsInstance = yamcsInstance;
 
@@ -66,7 +67,7 @@ public class ParameterIdDb {
         threshold = (int) (LOAD_FACTOR * INITIAL_SIZE);
 
         readDb();
-        pgidMap = new ParameterGroupIdDb(yamcsInstance, tablespace);
+        pgidMap = new ParameterGroupIdDb(yamcsInstance, tablespace, sparseGroups, minGroupOverlap);
     }
 
     /**
@@ -483,7 +484,7 @@ public class ParameterIdDb {
     }
 
     /**
-     * Get the array components of aggregate/array parameter pid which are member of the group gid
+     * Get the array components of aggregate/array parameter pid which are members of the group gid
      * 
      * @param aggrayPid
      * @param gid

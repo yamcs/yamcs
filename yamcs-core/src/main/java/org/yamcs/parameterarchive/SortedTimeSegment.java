@@ -1,6 +1,7 @@
 package org.yamcs.parameterarchive;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import me.lemire.integercompression.FastPFOR128;
 import me.lemire.integercompression.IntWrapper;
@@ -51,7 +52,7 @@ public class SortedTimeSegment extends BaseSegment {
         }
 
         if (instant < segmentStart) {
-            tsarray.add((int) (segmentStart - instant));
+            tsarray.addToAll((int) (segmentStart - instant));
             segmentStart = instant;
         }
 
@@ -98,11 +99,15 @@ public class SortedTimeSegment extends BaseSegment {
         return segmentStart;
     }
 
+    @Override
+    public void writeTo(ByteBuffer bb) {
+        writeTo(tsarray, bb);
+    }
+
     /**
      * Encode the time array
      */
-    @Override
-    public void writeTo(ByteBuffer bb) {
+    public static void writeTo(SortedIntArray tsarray, ByteBuffer bb) {
         if (tsarray.size() == 0) {
             throw new IllegalStateException(" the time segment has no data");
         }
@@ -135,15 +140,13 @@ public class SortedTimeSegment extends BaseSegment {
         }
     }
 
+
     /**
      * Creates a TimeSegment by decoding the buffer
      * this is the reverse of the {@link #encode()} operation
      * 
-     * @param buf
-     * @return
-     * @throws DecodingException
      */
-    private void parse(ByteBuffer bb) throws DecodingException {
+    static SortedIntArray parse(ByteBuffer bb) throws DecodingException {
         byte subFormatId = bb.get();
         int n = VarIntUtil.readVarInt32(bb);
         int position = bb.position();
@@ -167,12 +170,12 @@ public class SortedTimeSegment extends BaseSegment {
             ddz[i] = VarIntUtil.readVarInt32(bb);
         }
 
-        tsarray = new SortedIntArray(VarIntUtil.decodeDeltaDeltaZigZag(ddz));
+        return new SortedIntArray(VarIntUtil.decodeDeltaDeltaZigZag(ddz));
     }
 
     public static SortedTimeSegment parseFrom(ByteBuffer bb, long segmentStart) throws DecodingException {
         SortedTimeSegment r = new SortedTimeSegment(segmentStart);
-        r.parse(bb);
+        r.tsarray = parse(bb);
         return r;
     }
 
@@ -202,6 +205,36 @@ public class SortedTimeSegment extends BaseSegment {
             }
         }
         return r;
+    }
+
+    /**
+     * Get the range between posStart and posStop skipping the positions that are in the gaps array
+     */
+    public long[] getRangeWithGaps(int posStart, int posStop, boolean ascending, SortedIntArray gaps) {
+        long[] r = new long[posStop - posStart];
+        int j = 0;
+        if (ascending) {
+            int k = 0;
+            for (int i = posStart; i < posStop; i++) {
+                while (k < gaps.size() && gaps.get(k) < i) {
+                    k++;
+                }
+                if (k >= gaps.size() || gaps.get(k) != i) {
+                    r[j++] = tsarray.get(i) + segmentStart;
+                }
+            }
+        } else {
+            int k = gaps.size() - 1;
+            for (int i = posStop; i > posStart; i--) {
+                while (k >= 0 && gaps.get(k) > i) {
+                    k--;
+                }
+                if (k < 0 || gaps.get(k) != i) {
+                    r[j++] = tsarray.get(i) + segmentStart;
+                }
+            }
+        }
+        return Arrays.copyOf(r, j);
     }
 
     public String toString() {

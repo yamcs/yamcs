@@ -46,18 +46,18 @@ class BackFillerTask extends AbstractArchiveFiller {
     protected void processParameters(long t, BasicParameterList pvList) {
 
         try {
-            int parameterGroupId = parameterGroupIdMap.createAndGet(pvList.getPids());
-
+            var pg = parameterGroupIdMap.getGroup(pvList.getPids());
+            var parameterGroupId = pg.id;
             PGSegment pgs = pgSegments.computeIfAbsent(parameterGroupId,
-                    id -> new PGSegment(parameterGroupId, t, pvList.getPids()));
+                    id -> new PGSegment(parameterGroupId, t, pg.pids.size()));
 
             if (getInterval(t) != pgs.getInterval()) {
                 writeToArchive(pgs);
-                pgs = new PGSegment(parameterGroupId, t, pvList.getPids());
+                pgs = new PGSegment(parameterGroupId, t, pg.pids.size());
                 pgSegments.put(parameterGroupId, pgs);
             }
 
-            pgs.addRecord(t, pvList.getValues());
+            pgs.addRecord(t, pvList);
             if (pgs.size() >= maxSegmentSize) {
                 writeToArchive(pgs);
                 pgSegments.remove(parameterGroupId);

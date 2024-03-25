@@ -89,25 +89,19 @@ public class AggrrayIterator implements ParameterIterator {
         ParameterStatus paramStatus = null;
         if (req.isRetrieveEngineeringValues()) {
             engBuilder.clear();
-            ValueSegment[] engv = currentSegment.engValueSegments;
-            for (int i = 0; i < engv.length; i++) {
-                engBuilder.setValue(members[i], engv[i].getValue(pos));
+            for (int i = 0; i < currentSegment.numParameters(); i++) {
+                Value v = currentSegment.getPvs(i).getEngValue(pos);
+                engBuilder.setValue(members[i], v);
             }
             engValue = engBuilder.build();
         }
         if (rawBuilder != null) {
             rawBuilder.clear();
-            ValueSegment[] rawv = currentSegment.rawValueSegments;
-            if (rawv[0] == null) {
-                // workaround if the aggregate/array numeric type was not stored in the database
-                // TODO: remove this case in the future
-                rawBuilder = null;
-            } else {
-                for (int i = 0; i < rawv.length; i++) {
-                    rawBuilder.setValue(members[i], rawv[i].getValue(pos));
-                }
-                rawValue = rawBuilder.build();
+            for (int i = 0; i < currentSegment.numParameters(); i++) {
+                Value v = currentSegment.getPvs(i).getRawValue(pos);
+                rawBuilder.setValue(members[i], v);
             }
+            rawValue = rawBuilder.build();
         }
 
         return new TimedValue(t, engValue, rawValue, paramStatus);

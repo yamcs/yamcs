@@ -6,17 +6,14 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 
 /**
  * Multidimensional value array. All the elements of the array have to have the same type.
- * 
+ * <p>
  * The number of dimensions and the size of each dimension are fixed in the constructor.
- * 
+ * <p>
  * The array is internally stored into a flat java array. The {@link #flatIndex(int[])} can be used to convert from the
  * multi dimensional index to the flat index.
  * 
- * @author nm
- *
  */
 public class ArrayValue extends Value {
-
     final Value[] elements;
     final int[] dim;
     final Type elementType;

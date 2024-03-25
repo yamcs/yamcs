@@ -126,9 +126,6 @@ public class SingleParameterRetrieval {
 
     private void sendValuesFromSegment(ParameterId pid, ParameterValueSegment pvs, ParameterRequest pvr,
             Consumer<ParameterValueArray> consumer) {
-        ValueSegment engValueSegment = pvs.engValueSegment;
-        ValueSegment rawValueSegment = pvs.rawValueSegment;
-        ParameterStatusSegment parameterStatusSegment = pvs.parameterStatusSegment;
         SortedTimeSegment timeSegment = pvs.timeSegment;
         int posStart, posStop;
         if (pvr.ascending) {
@@ -157,26 +154,8 @@ public class SingleParameterRetrieval {
             return;
         }
 
-        long[] timestamps = timeSegment.getRange(posStart, posStop, pvr.ascending);
-        ValueArray engValues = null;
-        if (engValueSegment != null) {
-            engValues = engValueSegment.getRange(posStart, posStop, pvr.ascending);
-        }
+        ParameterValueArray pva = pvs.getRange(posStart, posStop, pvr.ascending, pvr.isRetrieveParameterStatus());
 
-        ValueArray rawValues = null;
-        if (rawValueSegment != null) {
-            if (rawValueSegment == engValueSegment) {
-                rawValues = engValues;
-            } else {
-                rawValues = rawValueSegment.getRange(posStart, posStop, pvr.ascending);
-            }
-        }
-
-        ParameterStatus[] paramStatus = null;
-        if (pvr.isRetrieveParameterStatus()) {
-            paramStatus = parameterStatusSegment.getRangeArray(posStart, posStop, pvr.ascending);
-        }
-        ParameterValueArray pva = new ParameterValueArray(timestamps, engValues, rawValues, paramStatus);
         consumer.accept(pva);
     }
 

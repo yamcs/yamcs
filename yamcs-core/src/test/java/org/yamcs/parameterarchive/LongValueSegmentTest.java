@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 import org.yamcs.protobuf.Yamcs.Value.Type;
@@ -15,13 +14,15 @@ import org.yamcs.utils.ValueUtility;
 public class LongValueSegmentTest {
     @Test
     public void testUnsigned() throws IOException, DecodingException {
-        LongValueSegment fvs = LongValueSegment
-                .consolidate(Arrays.asList(ValueUtility.getUint64Value(1), ValueUtility.getUint64Value(2),
-                        ValueUtility.getUint64Value(3)), Type.UINT64);
-        assertEquals(28, fvs.getMaxSerializedSize());
+        LongValueSegment lvs = new LongValueSegment(Type.UINT64);
+
+        lvs.add(ValueUtility.getUint64Value(1));
+        lvs.add(ValueUtility.getUint64Value(2));
+        lvs.add(ValueUtility.getUint64Value(3));
+        assertEquals(28, lvs.getMaxSerializedSize());
 
         ByteBuffer bb = ByteBuffer.allocate(28);
-        fvs.writeTo(bb);
+        lvs.writeTo(bb);
 
         bb.rewind();
         LongValueSegment fvs1 = LongValueSegment.parseFrom(bb);
@@ -36,13 +37,18 @@ public class LongValueSegmentTest {
 
     @Test
     public void testSigned() throws IOException, DecodingException {
-        LongValueSegment fvs = LongValueSegment
-                .consolidate(Arrays.asList(ValueUtility.getSint64Value(1), ValueUtility.getSint64Value(2),
-                        ValueUtility.getSint64Value(3)), Type.SINT64);
-        assertEquals(28, fvs.getMaxSerializedSize());
+        LongValueSegment lvs = new LongValueSegment(Type.SINT64);
+
+        lvs.add(ValueUtility.getSint64Value(1));
+        lvs.add(ValueUtility.getSint64Value(2));
+
+        lvs.add(ValueUtility.getSint64Value(3));
+        lvs.consolidate();
+
+        assertEquals(28, lvs.getMaxSerializedSize());
 
         ByteBuffer bb = ByteBuffer.allocate(28);
-        fvs.writeTo(bb);
+        lvs.writeTo(bb);
 
         bb.rewind();
         LongValueSegment fvs1 = LongValueSegment.parseFrom(bb);
@@ -57,13 +63,16 @@ public class LongValueSegmentTest {
 
     @Test
     public void testTimestamp() throws IOException, DecodingException {
-        LongValueSegment fvs = LongValueSegment
-                .consolidate(Arrays.asList(ValueUtility.getTimestampValue(1), ValueUtility.getTimestampValue(2),
-                        ValueUtility.getTimestampValue(3)), Type.TIMESTAMP);
-        assertEquals(28, fvs.getMaxSerializedSize());
+        LongValueSegment lvs = new LongValueSegment(Type.TIMESTAMP);
+
+        lvs.add(ValueUtility.getTimestampValue(1));
+        lvs.add(ValueUtility.getTimestampValue(2));
+
+        lvs.add(ValueUtility.getTimestampValue(3));
+        assertEquals(28, lvs.getMaxSerializedSize());
 
         ByteBuffer bb = ByteBuffer.allocate(28);
-        fvs.writeTo(bb);
+        lvs.writeTo(bb);
 
         bb.rewind();
         LongValueSegment fvs1 = LongValueSegment.parseFrom(bb);

@@ -4,6 +4,7 @@ import static org.yamcs.parameterarchive.ParameterArchive.getIntervalEnd;
 import static org.yamcs.parameterarchive.ParameterArchive.getIntervalStart;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -13,12 +14,16 @@ import org.rocksdb.RocksIterator;
 import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.DecodingException;
+import org.yamcs.utils.SortedIntArray;
 import org.yamcs.yarch.rocksdb.AscendingRangeIterator;
 import org.yamcs.yarch.rocksdb.DbIterator;
 import org.yamcs.yarch.rocksdb.DescendingRangeIterator;
 
 /**
  * Same as {@link SegmentIterator} but provides segments for multiple parameters from the same group in one step.
+ * <p>
+ * Since Yamcs 5.9.4, with the introduction of the sparseGroup, some segments in the returned MultiParameterValueSegment
+ * may be null if they contain no data
  *
  */
 public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValueSegment> {
@@ -226,14 +231,7 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
                 throw new NoSuchElementException();
             }
 
-            MultiParameterValueSegment pvs = new MultiParameterValueSegment(currentTimeSegment);
-            pvs.engValueSegments = new ValueSegment[pids.length];
-            if (retrieveRawValues) {
-                pvs.rawValueSegments = new ValueSegment[pids.length];
-            }
-            if (retrieveParameterStatus) {
-                pvs.parameterStatusSegments = new ParameterStatusSegment[pids.length];
-            }
+            List<ParameterValueSegment> pvSegments = new ArrayList<>(pids.length);
 
             long segStart = currentKey.segmentStart;
             try (RocksIterator it = parchive.getIterator(partition)) {
@@ -245,6 +243,11 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
                         throw new DatabaseCorruptionException(
                                 "Cannot find any record for parameter id " + pid + " at start " + segStart);
                     }
+                    ValueSegment engValueSegment = null;
+                    ValueSegment rawValueSegment = null;
+                    ParameterStatusSegment parameterStatusSegment = null;
+                    SortedIntArray gaps = null;
+                    boolean found = false;
                     while (it.isValid()) {
                         key = SegmentKey.decode(it.key());
                         if (key.parameterId != pid || key.parameterGroupId != parameterGroupId) {
@@ -254,29 +257,51 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
                         if (key.segmentStart != segStart) {
                             break;
                         }
-                        if ((type == SegmentKey.TYPE_ENG_VALUE) && (retrieveEngValues || retrieveRawValues)) {
-                            pvs.engValueSegments[i] = (ValueSegment) segmentEncoder.decode(it.value(), segStart);
-                        }
-                        if ((type == SegmentKey.TYPE_RAW_VALUE) && retrieveRawValues) {
-                            pvs.rawValueSegments[i] = (ValueSegment) segmentEncoder.decode(it.value(), segStart);
-                        }
-                        if ((type == SegmentKey.TYPE_PARAMETER_STATUS) && retrieveParameterStatus) {
-                            pvs.parameterStatusSegments[i] = (ParameterStatusSegment) segmentEncoder.decode(it.value(),
-                                    segStart);
+                        found = true;
+                        switch (type) {
+                        case SegmentKey.TYPE_ENG_VALUE:
+                            if (retrieveEngValues || retrieveRawValues) {
+                                engValueSegment = (ValueSegment) segmentEncoder.decode(it.value(), segStart);
+                            }
+                            break;
+                        case SegmentKey.TYPE_RAW_VALUE:
+                            if (retrieveRawValues) {
+                                rawValueSegment = (ValueSegment) segmentEncoder.decode(it.value(), segStart);
+                            }
+                            break;
+                        case SegmentKey.TYPE_PARAMETER_STATUS:
+                            if (retrieveParameterStatus) {
+                                parameterStatusSegment = (ParameterStatusSegment) segmentEncoder.decode(it.value(),
+                                        segStart);
+                            }
+                            break;
+                        case SegmentKey.TYPE_GAPS:
+                            gaps = segmentEncoder.decodeGaps(it.value());
+                            break;
                         }
                         it.next();
                     }
-                    if (retrieveRawValues && pvs.rawValueSegments[i] == null) {
-                        pvs.rawValueSegments[i] = pvs.engValueSegments[i];
+                    if (retrieveRawValues && rawValueSegment == null) {
+                        rawValueSegment = engValueSegment;
+                    }
+                    if (!retrieveEngValues) {
+                        engValueSegment = null;
+                    }
+                    if (found) {
+                        pvSegments.add(
+                                new ParameterValueSegment(pid, currentTimeSegment, engValueSegment, rawValueSegment,
+                                        parameterStatusSegment, gaps));
+                    } else {
+                        pvSegments.add(null);
                     }
                 }
+                MultiParameterValueSegment pvs = new MultiParameterValueSegment(pids, currentTimeSegment, pvSegments);
+                return pvs;
             } catch (DecodingException e) {
                 throw new DatabaseCorruptionException(e);
             } catch (RocksDBException | IOException e) {
                 throw new ParameterArchiveException("Failded extracting data from the parameter archive", e);
             }
-
-            return pvs;
         }
 
         boolean isValid() {

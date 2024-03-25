@@ -2,8 +2,6 @@ package org.yamcs.parameterarchive;
 
 import java.util.NoSuchElementException;
 
-import org.yamcs.parameter.Value;
-import org.yamcs.protobuf.Pvalue.ParameterStatus;
 
 /**
  * For a given parameter id and group id, iterates over all parameters in the parameter archive (across all segments and
@@ -67,12 +65,8 @@ public class SimpleParameterIterator implements ParameterIterator {
         if (pvs == null) {
             throw new NoSuchElementException();
         }
-        long t = pvs.timeSegment.getTime(pos);
-        Value ev = (pvs.engValueSegment == null) ? null : pvs.engValueSegment.getValue(pos);
-        Value rv = (pvs.rawValueSegment == null) ? null : pvs.rawValueSegment.getValue(pos);
-        ParameterStatus ps = (pvs.parameterStatusSegment == null) ? null : pvs.parameterStatusSegment.get(pos);
+        return pvs.getTimedValue(pos);
 
-        return new TimedValue(t, ev, rv, ps);
     }
 
     @Override

@@ -102,6 +102,29 @@ public class IntArrayTest {
         assertEquals(-1, s1.binarySearch(-10));
     }
 
+    @Test
+    public void testIntersection1() {
+        IntArray s1 = IntArray.wrap(3, 5, 9);
+        IntArray s2 = IntArray.wrap(3, 20);
+        assertEquals(1, s1.intersectionSize(s2));
+    }
+
+    @Test
+    public void testIntersection2() {
+        IntArray s1 = IntArray.wrap(3, 3, 3, 5, 9);
+        IntArray s2 = IntArray.wrap(3, 3, 20);
+        assertEquals(2, s2.intersectionSize(s1));
+    }
+
+    @Test
+    public void testUnion() {
+        IntArray s1 = IntArray.wrap(3, 3, 3, 5, 9);
+        IntArray s2 = IntArray.wrap(3, 3, 20);
+        IntArray s3 = IntArray.union(s1, s2, 0);
+
+        assertEquals(IntArray.wrap(3, 3, 3, 5, 9, 20), s3);
+    }
+
     private void checkSortedAndEqual(IntArray a, List<Integer> l) {
         for (int i = 0; i < a.size(); i++) {
             assertEquals(a.get(i), (int) l.get(i));
