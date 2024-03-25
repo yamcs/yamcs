@@ -82,10 +82,11 @@ public class SequenceEntryProcessor {
             }
 
             cpc1.sequenceContainerProcessor.extract(subsribedContainer);
-            if (refContainer.getSizeInBits() < 0)
+            if (refContainer.getSizeInBits() < 0) {
                 buf.setPosition(buf.getPosition() + buf1.getPosition());
-            else
+            } else {
                 buf.setPosition(buf.getPosition() + refContainer.getSizeInBits());
+            }
         }
     }
 
@@ -103,6 +104,12 @@ public class SequenceEntryProcessor {
 
         Value rv = extract(ptype);
         if (rv == null) {
+            // A dynamically sized array could have zero length.
+            // Currently this is represented has having no value.
+            if (ptype instanceof ArrayParameterType) {
+                return null;
+            }
+
             pv.setAcquisitionStatus(AcquisitionStatus.INVALID);
         } else {
             pv.setRawValue(rv);
@@ -119,8 +126,10 @@ public class SequenceEntryProcessor {
 
     private void extractParameterEntry(ParameterEntry pe) {
         ContainerParameterValue pv = extractParameter(pe.getParameter());
-        pv.setSequenceEntry(pe);
-        pcontext.result.addTmParam(pv);
+        if (pv != null) {
+            pv.setSequenceEntry(pe);
+            pcontext.result.addTmParam(pv);
+        }
     }
 
     private void extractArrayParameterEntry(ArrayParameterEntry pe) {
@@ -207,8 +216,10 @@ public class SequenceEntryProcessor {
             }
         }
         ContainerParameterValue pv = extractParameter(p);
-        pv.setSequenceEntry(se);
-        pcontext.result.addTmParam(pv);
+        if (pv != null) {
+            pv.setSequenceEntry(se);
+            pcontext.result.addTmParam(pv);
+        }
     }
 
     private Value extract(ParameterType ptype) {

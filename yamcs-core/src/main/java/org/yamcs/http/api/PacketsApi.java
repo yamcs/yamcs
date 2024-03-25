@@ -398,14 +398,19 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
                         if (pval instanceof ContainerParameterValue) {
                             var containedPval = (ContainerParameterValue) pval;
                             var container = containedPval.getSequenceEntry().getSequenceContainer();
-                            responseb.addParameterValues(ExtractedParameterValue.newBuilder()
+                            var pvalb = ExtractedParameterValue.newBuilder()
                                     .setParameter(XtceToGpbAssembler.toParameterInfo(
                                             containedPval.getParameter(), DetailLevel.SUMMARY))
                                     .setEntryContainer(XtceToGpbAssembler.toContainerInfo(container, DetailLevel.LINK))
                                     .setLocation(containedPval.getAbsoluteBitOffset())
-                                    .setSize(containedPval.getBitSize())
-                                    .setRawValue(ValueUtility.toGbp(containedPval.getRawValue()))
-                                    .setEngValue(ValueUtility.toGbp(containedPval.getEngValue())));
+                                    .setSize(containedPval.getBitSize());
+                            if (containedPval.getRawValue() != null) {
+                                pvalb.setRawValue(ValueUtility.toGbp(containedPval.getRawValue()));
+                            }
+                            if (containedPval.getEngValue() != null) {
+                                pvalb.setEngValue(ValueUtility.toGbp(containedPval.getEngValue()));
+                            }
+                            responseb.addParameterValues(pvalb);
                         }
                     }
 

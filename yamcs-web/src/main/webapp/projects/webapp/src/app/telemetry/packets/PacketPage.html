@@ -155,7 +155,7 @@
               {{ node.parameter.type.engType }}
             </ng-container>
             <ng-container *ngIf="node.type === 'ARRAY_PARAMETER'">
-              {{ fillTypeWithValueDimension(node.parameter.type.engType, node.engValue.arrayValue) }}
+              {{ fillTypeWithValueDimension(node.parameter.type.engType, node.engValue?.arrayValue) }}
             </ng-container>
             <ng-container *ngIf="node.type === 'SIMPLE_VALUE'">
               {{ node.parameterType.engType }}
@@ -164,7 +164,7 @@
               {{ node.parameterType.engType }}
             </ng-container>
             <ng-container *ngIf="node.type === 'ARRAY_VALUE'">
-              {{ fillTypeWithValueDimension(node.parameterType.engType, node.engValue.arrayValue) }}
+              {{ fillTypeWithValueDimension(node.parameterType.engType, node.engValue?.arrayValue) }}
             </ng-container>
           </td>
         </ng-container>
