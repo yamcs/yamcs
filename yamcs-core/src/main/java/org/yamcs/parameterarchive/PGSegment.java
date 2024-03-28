@@ -39,12 +39,6 @@ public class PGSegment {
      * Add a new record
      * <p>
      * instant goes into the timeSegment the values goes each into a value segment
-     * 
-     * the sortedPvList list has to be already sorted according to the definition of the ParameterGroup
-     * 
-     * 
-     * @param instant
-     * @param sortedPvList
      */
     public void addRecord(long instant, IntArray pids, List<BasicParameterValue> values) {
         int idx1 = 0; // tracks the existing data
