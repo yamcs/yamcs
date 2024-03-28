@@ -133,6 +133,7 @@ public class RdbConfig {
 
             rtDataCfOptions.useFixedLengthPrefixExtractor(4);
             rtDataCfOptions.setCompressionType(CompressionType.LZ4_COMPRESSION);
+            rtDataCfOptions.setBottommostCompressionType(CompressionType.ZSTD_COMPRESSION);
             rtDataCfOptions.setMaxWriteBufferNumber(4);
             rtDataCfOptions.setTargetFileSizeMultiplier(2);
             rtDataCfOptions.setLevel0SlowdownWritesTrigger(50);
