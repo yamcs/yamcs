@@ -203,6 +203,7 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
         private byte[] currentRawValueSegment;
         private byte[] currentStatusSegment;
         private byte[] currentGaps;
+        long currentGapsSegmentStart;
         /**
          * The dbIterator iterates over all segment types (raw value, eng value, parameter status). The time values are
          * received using point loockups.
@@ -288,6 +289,9 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
                 }
                 break;
             case SegmentKey.TYPE_GAPS:
+                // we remember from which segment this gaps is otherwise we may inherit the gaps from the previous
+                // segment
+                currentGapsSegmentStart = currentKey.segmentStart;
                 currentGaps = dbIterator.value();
                 break;
             }
@@ -328,7 +332,8 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
                 ParameterStatusSegment parameterStatusSegment = currentStatusSegment == null ? null
                         : (ParameterStatusSegment) segmentEncoder.decode(currentStatusSegment,
                                 segStart);
-                SortedIntArray gaps = currentGaps == null ? null : segmentEncoder.decodeGaps(currentGaps);
+                SortedIntArray gaps = currentGaps == null || segStart != currentGapsSegmentStart ? null
+                        : segmentEncoder.decodeGaps(currentGaps);
 
                 ParameterValueSegment pvs = new ParameterValueSegment(parameterId.getPid(), timeSegment,
                         engValueSegment, rawValueSegment, parameterStatusSegment, gaps);

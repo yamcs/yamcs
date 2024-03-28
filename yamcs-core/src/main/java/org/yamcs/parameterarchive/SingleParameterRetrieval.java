@@ -16,8 +16,8 @@ import org.yamcs.protobuf.Pvalue.ParameterStatus;
  * Retrieves values for a single parameter from the parameter archive. The result is arrays of samples (see
  * {@link ParameterValueArray}) corresponding to the segments of the archive.
  * <p>
- * Because all values are of the same type, the memory consumed by those arrays is much smaller than what is provided
- * by an equivalent single parameter retrieval using {@link MultiParameterRetrieval}
+ * Because all values are of the same type, the memory consumed by those arrays is much smaller than what is provided by
+ * an equivalent single parameter retrieval using {@link MultiParameterRetrieval}
  * 
  * @author nm
  *
@@ -155,8 +155,9 @@ public class SingleParameterRetrieval {
         }
 
         ParameterValueArray pva = pvs.getRange(posStart, posStop, pvr.ascending, pvr.isRetrieveParameterStatus());
-
-        consumer.accept(pva);
+        if (pva != null) {
+            consumer.accept(pva);
+        }
     }
 
     /**

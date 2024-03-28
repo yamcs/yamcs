@@ -183,7 +183,6 @@ public class ParameterValueSegment {
         }
     }
 
-
     /**
      * <p>
      * Optimise for writing to archive
@@ -208,7 +207,6 @@ public class ParameterValueSegment {
 
     public ParameterValueArray getRange(int posStart, int posStop, boolean ascending, boolean retrieveParameterStatus) {
         long[] timestamps;
-
         if (gaps == null) {
             timestamps = timeSegment.getRange(posStart, posStop, ascending);
         } else {
@@ -220,6 +218,10 @@ public class ParameterValueSegment {
                 posStart = previousBeforeGap(posStart);
                 posStop = previousBeforeGap(posStop);
             }
+        }
+
+        if (posStart >= posStop) {// only gaps
+            return null;
         }
         ValueArray engValues = null;
 
@@ -238,7 +240,6 @@ public class ParameterValueSegment {
         if (retrieveParameterStatus) {
             paramStatus = parameterStatusSegment.getRangeArray(posStart, posStop, ascending);
         }
-
         return new ParameterValueArray(timestamps, engValues, rawValues, paramStatus);
     }
 
