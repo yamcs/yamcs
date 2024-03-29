@@ -11,7 +11,7 @@ public class TextStatement implements Statement {
     }
 
     @Override
-    public void render(StringBuilder buf, Map<String, Object> vars) {
+    public void render(StringBuilder buf, Map<String, Object> vars, Map<String, VariableFilter> filters) {
         buf.append(text);
     }
 }

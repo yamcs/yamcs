@@ -45,11 +45,11 @@
             </p>
             {% endif %}
 
-            <input type="hidden" name="client_id" value="{{ request.client_id }}">
-            <input type="hidden" name="redirect_uri" value="{{ request.redirect_uri }}">
+            <input type="hidden" name="client_id" value="{{ request.client_id | escape }}">
+            <input type="hidden" name="redirect_uri" value="{{ request.redirect_uri | escape }}">
           
             {% if request.state %}
-            <input type="hidden" name="state" value="{{ request.state }}">
+            <input type="hidden" name="state" value="{{ request.state | escape }}">
             {% endif %}
           
             <div style="text-align: right">

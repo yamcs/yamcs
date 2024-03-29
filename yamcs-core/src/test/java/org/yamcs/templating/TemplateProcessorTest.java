@@ -107,4 +107,24 @@ public class TemplateProcessorTest {
         Map<String, Object> args = ImmutableMap.of();
         assertEquals(template, TemplateProcessor.process(template, args));
     }
+
+    @Test
+    public void testEscapeFilter() throws ParseException {
+        String template = "Hello {{ a|escape }} and {{b | escape}}!";
+        Map<String, Object> args = ImmutableMap.of("a", "XX", "b", "YY");
+        assertEquals("Hello XX and YY!", TemplateProcessor.process(template, args));
+
+        args = ImmutableMap.of("a", "X<strong>X</strong>", "b", "Y&Y");
+        assertEquals("Hello X&lt;strong&gt;X&lt;/strong&gt; and Y&amp;Y!",
+                TemplateProcessor.process(template, args));
+    }
+
+    @Test
+    public void testUnknownFilter() throws ParseException {
+        String template = "Hello {{ a|foo }}!";
+        Map<String, Object> args = ImmutableMap.of("a", "XX");
+        assertThrows(IllegalArgumentException.class, () -> {
+            TemplateProcessor.process(template, args);
+        });
+    }
 }
