@@ -24,6 +24,7 @@ import org.yamcs.utils.DataRateMeter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.UnitType;
 
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.Service;
@@ -38,13 +39,15 @@ import io.netty.channel.nio.NioEventLoopGroup;
  */
 public abstract class AbstractLink extends AbstractService
         implements Link, SystemParametersProducer, LinkActionProvider {
+    public static String LINK_NAMESPACE = "links/";
+
     protected String yamcsInstance;
     protected String linkName;
     protected Log log;
     protected EventProducer eventProducer;
     protected YConfiguration config;
     protected AtomicBoolean disabled = new AtomicBoolean(false);
-    private Parameter spLinkStatus, spDataOutCount, spDataInCount;
+    private Parameter spLinkStatus, spDataOutCount, spDataInCount, spDataInRate, spDataOutRate;
     protected TimeService timeService;
     private Map<String, LinkAction> actions = new LinkedHashMap<>(); // Keep them in order of registration
     private AggregatedDataLink parent = null;
@@ -52,6 +55,7 @@ public abstract class AbstractLink extends AbstractService
     protected AtomicLong dataInCount = new AtomicLong();
     DataRateMeter dataInRateMeter = new DataRateMeter();
     DataRateMeter dataOutRateMeter = new DataRateMeter();
+
 
     /**
      * singleton for netty worker group. In the future we may have an option to create different worker groups for
@@ -159,8 +163,8 @@ public abstract class AbstractLink extends AbstractService
 
     @Override
     public void setupSystemParameters(SystemParametersService sysParamService) {
-        spLinkStatus = sysParamService.createEnumeratedSystemParameter(linkName + "/linkStatus", Status.class,
-                "The current status of this link");
+        spLinkStatus = sysParamService.createEnumeratedSystemParameter(LINK_NAMESPACE + linkName + "/linkStatus",
+                Status.class, "The current status of this link");
         EnumeratedParameterType spLinkStatusType = (EnumeratedParameterType) spLinkStatus.getParameterType();
         spLinkStatusType.enumValue(Status.OK.name())
                 .setDescription("This link is up and ready to receive (or send) data");
@@ -169,10 +173,18 @@ public abstract class AbstractLink extends AbstractService
         spLinkStatusType.enumValue(Status.FAILED.name())
                 .setDescription("An internal error occurred while processing data");
 
-        spDataOutCount = sysParamService.createSystemParameter(linkName + "/dataOutCount", Type.UINT64,
+        UnitType bps = new UnitType("Bps");
+        spDataOutCount = sysParamService.createSystemParameter(LINK_NAMESPACE + linkName + "/dataOutCount", Type.UINT64,
                 "The total number of items (e.g. telecommand packets) that have been sent through this link");
-        spDataInCount = sysParamService.createSystemParameter(linkName + "/dataInCount", Type.UINT64,
+        spDataInCount = sysParamService.createSystemParameter(LINK_NAMESPACE + linkName + "/dataInCount", Type.UINT64,
                 "The total number of items (e.g. telemetry packets) that have been received through this link");
+
+        spDataInRate = sysParamService.createSystemParameter(LINK_NAMESPACE + linkName + "/dataInRate", Type.DOUBLE,
+                bps, "The number of incoming bytes per second computed over a five second interval");
+
+        spDataOutRate = sysParamService.createSystemParameter(LINK_NAMESPACE + linkName + "/dataOutRate", Type.DOUBLE,
+                bps, "The number of outgoing bytes per second computed over a five second interval");
+
     }
 
     @Override
@@ -199,6 +211,8 @@ public abstract class AbstractLink extends AbstractService
         list.add(getPV(spLinkStatus, time, getLinkStatus()));
         list.add(getPV(spDataOutCount, time, getDataOutCount()));
         list.add(getPV(spDataInCount, time, getDataInCount()));
+        list.add(getPV(spDataOutRate, time, dataOutRateMeter.getFiveSecondsRate()));
+        list.add(getPV(spDataInRate, time, dataInRateMeter.getFiveSecondsRate()));
     }
 
     @Override

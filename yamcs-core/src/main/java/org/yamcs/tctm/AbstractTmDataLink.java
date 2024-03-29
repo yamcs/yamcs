@@ -21,13 +21,12 @@ import org.yamcs.xtce.UnitType;
 public abstract class AbstractTmDataLink extends AbstractLink implements TmPacketDataLink, SystemParametersProducer {
     protected AtomicLong packetCount = new AtomicLong(0);
     DataRateMeter packetRateMeter = new DataRateMeter();
-    DataRateMeter dataRateMeter = new DataRateMeter();
 
     String packetPreprocessorClassName;
     YConfiguration packetPreprocessorArgs;
     protected PacketPreprocessor packetPreprocessor;
 
-    private Parameter spDataRate, spPacketRate;
+    private Parameter spPacketRate;
 
     final static String CFG_PREPRO_CLASS = "packetPreprocessorClassName";
     private TmSink tmSink;
@@ -83,16 +82,13 @@ public abstract class AbstractTmDataLink extends AbstractLink implements TmPacke
     @Override
     public void setupSystemParameters(SystemParametersService sysParamService) {
         super.setupSystemParameters(sysParamService);
-        spDataRate = sysParamService.createSystemParameter(linkName + "/dataRate", Type.DOUBLE, new UnitType("Bps"),
-                "Number of bytes per second computed over a five second interval");
-        spPacketRate = sysParamService.createSystemParameter(linkName + "/packetRate", Type.DOUBLE,
+        spPacketRate = sysParamService.createSystemParameter(LINK_NAMESPACE + linkName + "/packetRate", Type.DOUBLE,
                 new UnitType("p/s"), "Number of packets per second computed over a five second interval");
     }
 
     @Override
     protected void collectSystemParameters(long time, List<ParameterValue> list) {
         super.collectSystemParameters(time, list);
-        list.add(SystemParametersService.getPV(spDataRate, time, dataRateMeter.getFiveSecondsRate()));
         list.add(SystemParametersService.getPV(spPacketRate, time, packetRateMeter.getFiveSecondsRate()));
     }
 
@@ -142,9 +138,9 @@ public abstract class AbstractTmDataLink extends AbstractLink implements TmPacke
      * @param packetSize
      */
     protected void updateStats(int packetSize) {
+        super.dataIn(1, packetSize);
         packetCount.getAndIncrement();
         packetRateMeter.mark(1);
-        dataRateMeter.mark(packetSize);
     }
 
     @Override
