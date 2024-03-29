@@ -27,9 +27,6 @@ import org.yamcs.utils.YObjectLoader;
 /**
  * Sends TC as TC frames (CCSDS 232.0-B-3) or TC frames embedded in CLTU (CCSDS 231.0-B-3).
  * 
- * 
- * @author nm
- *
  */
 public abstract class AbstractTcFrameLink extends AbstractLink implements AggregatedDataLink, TcDataLink {
     protected int frameCount;
@@ -161,21 +158,6 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
             return data;
         }
 
-    }
-
-    @Override
-    public long getDataInCount() {
-        return 0;
-    }
-
-    @Override
-    public long getDataOutCount() {
-        return frameCount;
-    }
-
-    @Override
-    public void resetCounters() {
-        frameCount = 0;
     }
 
     @Override

@@ -83,7 +83,7 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
                     log.trace("Received datagram of length {}: {}", datagram.getLength(), StringConverter
                             .arrayToHexString(datagram.getData(), datagram.getOffset(), datagram.getLength(), true));
                 }
-
+                dataIn(1, datagram.getLength());
                 handleFrame(timeService.getHresMissionTime(), datagram.getData(), datagram.getOffset(),
                         datagram.getLength());
 

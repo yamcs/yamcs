@@ -82,6 +82,7 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
                 DatagramPacket dtg = new DatagramPacket(data, data.length, address, port);
                 try {
                     socket.send(dtg);
+                    dataOut(1, data.length);
                 } catch (IOException e) {
                     log.warn("Error sending datagram", e);
                     notifyFailed(e);

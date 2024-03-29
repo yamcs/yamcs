@@ -256,7 +256,7 @@ public abstract class AbstractLink extends AbstractService
 
     @Override
     public long getDataInCount() {
-        return dataOutCount.get();
+        return dataInCount.get();
     }
 
     @Override

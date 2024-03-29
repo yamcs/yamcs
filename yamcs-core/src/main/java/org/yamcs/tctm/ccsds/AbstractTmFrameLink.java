@@ -124,21 +124,6 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
     }
 
     @Override
-    public long getDataInCount() {
-        return frameCount.get();
-    }
-
-    @Override
-    public long getDataOutCount() {
-        return 0;
-    }
-
-    @Override
-    public void resetCounters() {
-        frameCount.set(0);
-    }
-
-    @Override
     public List<Link> getSubLinks() {
         return subLinks;
     }
