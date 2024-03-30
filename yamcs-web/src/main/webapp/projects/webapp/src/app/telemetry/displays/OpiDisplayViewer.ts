@@ -2,10 +2,12 @@ import { APP_BASE_HREF } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, Inject, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlarmSeverity, Display, PV, PVProvider, Sample } from '@yamcs/opi';
+import { Widget } from '@yamcs/opi/dist/types/Widget';
 import { ConfigService, MessageService, NamedObjectId, ParameterSubscription, ParameterValue, StorageClient, SubscribedParameterInfo, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 import { OpiDisplayConsoleHandler } from './OpiDisplayConsoleHandler';
 import { OpiDisplayFontResolver } from './OpiDisplayFontResolver';
+import { OpiDisplayHistoricDataProvider } from './OpiDisplayHistoricDataProvider';
 import { OpiDisplayPathResolver } from './OpiDisplayPathResolver';
 import { Viewer } from './Viewer';
 import { YamcsScriptLibrary } from './YamcsScriptLibrary';
@@ -192,10 +194,11 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
 
     this.display.addEventListener('opendisplay', evt => {
       let url;
+      const qs = `?c=${this.yamcs.context}&range=${this.yamcs.getTimeRange()}`;
       if (evt.path.startsWith('/')) {
-        url = `/telemetry/displays/files${evt.path}?c=${this.yamcs.context}`;
+        url = `/telemetry/displays/files${evt.path}${qs}`;
       } else {
-        url = `/telemetry/displays/files/${currentFolder}${evt.path}?c=${this.yamcs.context}`;
+        url = `/telemetry/displays/files/${currentFolder}${evt.path}${qs}`;
       }
       if (evt.args) {
         for (const k in evt.args) {
@@ -273,6 +276,11 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
     this.subscriptionDirty = true;
   }
 
+  createHistoricalDataProvider(pvName: string, widget: Widget) {
+    const { yamcs, synchronizer } = this;
+    return new OpiDisplayHistoricDataProvider(pvName, widget, yamcs, synchronizer);
+  }
+
   isNavigable() {
     return true;
   }
@@ -312,5 +320,6 @@ export class OpiDisplayViewer implements Viewer, PVProvider, OnDestroy {
   ngOnDestroy() {
     this.syncSubscription?.unsubscribe();
     this.parameterSubscription?.cancel();
+    this.display.destroy();
   }
 }

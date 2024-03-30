@@ -22,8 +22,11 @@ export class YamcsService implements FrameLossListener, SessionListener {
 
   readonly clearance$ = new BehaviorSubject<Clearance | null>(null);
   private clearanceSubscription: ClearanceSubscription;
+
   readonly time$ = new BehaviorSubject<string | null>(null);
   private timeSubscription: TimeSubscription;
+
+  readonly range$ = new BehaviorSubject<string>('PT15M');
 
   readonly sessionEnded$ = new BehaviorSubject<boolean>(false);
 
@@ -173,12 +176,8 @@ export class YamcsService implements FrameLossListener, SessionListener {
     this.connectionInfo$.next(null);
     this.time$.next(null);
     this.clearance$.next(null);
-    if (this.timeSubscription) {
-      this.timeSubscription.cancel();
-    }
-    if (this.clearanceSubscription) {
-      this.clearanceSubscription.cancel();
-    }
+    this.timeSubscription?.cancel();
+    this.clearanceSubscription?.cancel();
   }
 
   /**
@@ -197,5 +196,12 @@ export class YamcsService implements FrameLossListener, SessionListener {
    */
   getMissionTime() {
     return new Date(Date.parse(this.time$.getValue()!));
+  }
+
+  /**
+   * Returns lookback period
+   */
+  getTimeRange() {
+    return this.range$.value;
   }
 }

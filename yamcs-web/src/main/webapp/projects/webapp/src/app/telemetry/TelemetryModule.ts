@@ -121,6 +121,7 @@ const routes: Routes = [{
       path: '**',
       component: DisplayFilePage,
       canDeactivate: [displayFilePageDirtyGuardFn],
+      data: { 'showRangeSelector': true },
     }]
   }, {
     path: 'packets',

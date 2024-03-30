@@ -41,10 +41,7 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
   filename: string;
   folderLink: string;
 
-  private prevFilename: string;
-
-  private routerSubscription: Subscription;
-  private syncSubscription: Subscription;
+  private subscriptions: Subscription[] = [];
 
   private folderPerInstance: boolean;
 
@@ -58,7 +55,8 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
     this.folderPerInstance = configService.getConfig().displayFolderPerInstance;
     const initialObject = this.getObjectNameFromUrl();
     this.loadFile(initialObject);
-    this.routerSubscription = router.events.pipe(
+
+    let sub = router.events.pipe(
       filter(evt => evt instanceof NavigationEnd)
     ).subscribe(() => {
       const newObjectName = this.getObjectNameFromUrl();
@@ -66,6 +64,22 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
         this.loadFile(newObjectName, true);
       }
     });
+    this.subscriptions.push(sub);
+
+    const preferredRange = route.snapshot.queryParamMap.get('range');
+    if (preferredRange) {
+      yamcs.range$.next(preferredRange);
+    }
+
+    sub = yamcs.range$.subscribe(range => {
+      router.navigate([], {
+        replaceUrl: true,
+        relativeTo: route,
+        queryParams: { range },
+        queryParamsHandling: 'merge',
+      });
+    });
+    this.subscriptions.push(sub);
 
     // Preload ACE editor (not done in ViewerHost, because ACE does not seem to work well
     // when inialized from an entry component)
@@ -168,7 +182,6 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.routerSubscription?.unsubscribe();
-    this.syncSubscription?.unsubscribe();
+    this.subscriptions.forEach(x => x.unsubscribe());
   }
 }

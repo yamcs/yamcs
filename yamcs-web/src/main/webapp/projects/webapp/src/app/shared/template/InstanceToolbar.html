@@ -23,6 +23,13 @@
             PLAY
           </button>
 
+          <ya-text-action *ngIf="showRange$ | async"
+                          class="range"
+                          matTooltip="Lookback period"
+                          [matMenuTriggerFor]="rangeMenu">
+            {{ range$ | async | duration }} ▾
+          </ya-text-action>
+
           <ya-text-action class="processor-time"
                           [class.paused]="processor.replayState === 'PAUSED'"
                           matTooltip="Processor time. Click for more actions"
@@ -48,6 +55,65 @@
       <button *ngIf="zenMode$ | async" mat-menu-item (click)="untoggleZenMode()">
         Untoggle zen mode
       </button>
+    </mat-menu>
+
+    <mat-menu #rangeMenu="matMenu"
+              class="ya-menu"
+              overlapTrigger="false"
+              xPosition="before"
+              yPosition="below">
+      <ng-container *ngIf="range$ | async as range">
+        <button mat-menu-item (click)="yamcs.range$.next('PT1M')">
+          <mat-icon [class.hide]="range !== 'PT1M'">check</mat-icon>
+          1 minute
+        </button>
+        <button mat-menu-item (click)="yamcs.range$.next('PT5M')">
+          <mat-icon [class.hide]="range !== 'PT5M'">check</mat-icon>
+          5 minutes
+        </button>
+        <button mat-menu-item (click)="yamcs.range$.next('PT15M')">
+          <mat-icon [class.hide]="range !== 'PT15M'">check</mat-icon>
+          15 minutes
+        </button>
+        <button mat-menu-item (click)="yamcs.range$.next('PT30M')">
+          <mat-icon [class.hide]="range !== 'PT30M'">check</mat-icon>
+          30 minutes
+        </button>
+        <mat-divider />
+        <button mat-menu-item (click)="yamcs.range$.next('PT1H')">
+          <mat-icon [class.hide]="range !== 'PT1H'">check</mat-icon>
+          1 hour
+        </button>
+        <button mat-menu-item (click)="yamcs.range$.next('PT6H')">
+          <mat-icon [class.hide]="range !== 'PT6H'">check</mat-icon>
+          6 hours
+        </button>
+        <button mat-menu-item (click)="yamcs.range$.next('PT12H')">
+          <mat-icon [class.hide]="range !== 'PT12H'">check</mat-icon>
+          12 hours
+        </button>
+        <mat-divider />
+        <button mat-menu-item (click)="yamcs.range$.next('P1D')">
+          <mat-icon [class.hide]="range !== 'P1D'">check</mat-icon>
+          1 day
+        </button>
+        <button mat-menu-item (click)="yamcs.range$.next('P2D')">
+          <mat-icon [class.hide]="range !== 'P2D'">check</mat-icon>
+          2 days
+        </button>
+        <button mat-menu-item (click)="yamcs.range$.next('P7D')">
+          <mat-icon [class.hide]="range !== 'P7D'">check</mat-icon>
+          7 days
+        </button>
+        <button mat-menu-item (click)="yamcs.range$.next('P14D')">
+          <mat-icon [class.hide]="range !== 'P14D'">check</mat-icon>
+          14 days
+        </button>
+        <button mat-menu-item (click)="yamcs.range$.next('P30D')">
+          <mat-icon [class.hide]="range !== 'P30D'">check</mat-icon>
+          30 days
+        </button>
+      </ng-container>
     </mat-menu>
 
     <mat-menu #processorMenu="matMenu" class="ya-menu" overlapTrigger="false" xPosition="before" yPosition="below">

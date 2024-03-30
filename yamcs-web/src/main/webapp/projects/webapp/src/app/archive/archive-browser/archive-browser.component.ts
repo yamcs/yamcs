@@ -490,6 +490,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
           this.timeline.removeChild(band);
         }
       }
+      completenessGroups.sort((a, b) => a.name.localeCompare(b.name));
       for (let i = 0; i < completenessGroups.length; i++) {
         if (i === 0) {
           new TitleBand(this.timeline, 'Completeness');
@@ -519,6 +520,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
         }
       }
 
+      parameterGroups.sort((a, b) => a.name.localeCompare(b.name));
       for (let i = 0; i < parameterGroups.length; i++) {
         if (i === 0) {
           new TitleBand(this.timeline, 'Parameter Groups');
@@ -531,6 +533,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
         band.loadData(group);
       }
 
+      commandGroups.sort((a, b) => a.name.localeCompare(b.name));
       for (let i = 0; i < commandGroups.length; i++) {
         if (i === 0) {
           new TitleBand(this.timeline, 'Commands');
@@ -543,6 +546,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
         band.loadData(group);
       }
 
+      eventGroups.sort((a, b) => a.name.localeCompare(b.name));
       for (let i = 0; i < eventGroups.length; i++) {
         if (i === 0) {
           new TitleBand(this.timeline, 'Events');

@@ -23,6 +23,7 @@ mat-toolbar-row {
   font-size: 12px;
 }
 
+.range,
 .processor-time {
   font-size: 12px;
   letter-spacing: 1.07143px;

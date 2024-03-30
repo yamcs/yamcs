@@ -321,7 +321,11 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         if (request.hasInstance()) {
             instance = InstancesApi.verifyInstance(request.getInstance());
             if (request.hasProcessor()) {
-                processor = verifyProcessor(request.getInstance(), request.getProcessor()).getName();
+                var processorObj = verifyProcessor(request.getInstance(), request.getProcessor());
+                processor = processorObj.getName();
+
+                // Emit current state, if a specific processor is requested
+                observer.next(ManagementGpbHelper.toProcessorInfo(processorObj));
             }
         }
 

@@ -12,6 +12,13 @@ import { CustomBarsValue, DySample, DySeries } from './dygraphs';
  */
 export class DyDataSource {
 
+  // If true, load more samples than needed
+  // (useful when horizontal scroll is allowed)
+  extendRequestedRange = true;
+
+  // How many samples to load at once
+  resolution = 6000;
+
   public loading$ = new BehaviorSubject<boolean>(false);
 
   data$ = new BehaviorSubject<PlotData>({
@@ -95,7 +102,7 @@ export class DyDataSource {
     this.loading$.next(true);
     // Load beyond the visible range to be able to show data
     // when panning.
-    const delta = stop.getTime() - start.getTime();
+    const delta = this.extendRequestedRange ? stop.getTime() - start.getTime() : 0;
     const loadStart = new Date(start.getTime() - delta);
     const loadStop = new Date(stop.getTime() + delta);
 
@@ -105,8 +112,9 @@ export class DyDataSource {
         this.yamcs.yamcsClient.getParameterSamples(this.yamcs.instance!, parameter.qualifiedName, {
           start: loadStart.toISOString(),
           stop: loadStop.toISOString(),
-          count: 6000,
+          count: this.resolution,
           fields: ['time', 'n', 'avg', 'min', 'max'],
+          gapTime: 300000,
         })
       );
     }
@@ -127,7 +135,7 @@ export class DyDataSource {
         for (let i = 0; i < results.length; i++) {
           dySeries[i] = this.processSamples(results[i]);
         }
-        let dySamples = this.mergeSeries(...dySeries);
+        const dySamples = this.mergeSeries(...dySeries);
         this.plotBuffer.setArchiveData(dySamples);
         this.plotBuffer.setValueRange(valueRange);
         this.lastLoadPromise = null;
@@ -205,12 +213,8 @@ export class DyDataSource {
   disconnect() {
     this.data$.complete();
     this.loading$.complete();
-    if (this.realtimeSubscription) {
-      this.realtimeSubscription.cancel();
-    }
-    if (this.syncSubscription) {
-      this.syncSubscription.unsubscribe();
-    }
+    this.realtimeSubscription?.cancel();
+    this.syncSubscription?.unsubscribe();
   }
 
   private processSamples(samples: Sample[]) {

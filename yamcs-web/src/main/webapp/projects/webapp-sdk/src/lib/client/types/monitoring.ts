@@ -241,6 +241,7 @@ export interface GetParameterSamplesOptions {
   start?: string;
   stop?: string;
   count?: number;
+  gapTime?: number;
   order?: 'asc' | 'desc';
   fields?: Array<keyof Sample>;
 }

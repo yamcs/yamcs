@@ -248,6 +248,14 @@ button.expandable {
   padding: 0 16px;
 }
 
+.mat-toolbar.top .mat-mdc-button.icon {
+  min-width: unset;
+}
+
+.mat-toolbar.top .mat-mdc-button.icon>mat-icon {
+  margin-right: 0;
+}
+
 .mat-mdc-tab-link:hover {
   background-color: rgba(0, 0, 0, 0.04);
 }

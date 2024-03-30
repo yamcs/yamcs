@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ConnectionInfo, MessageService, Processor, ProcessorSubscription, YamcsService } from '@yamcs/webapp-sdk';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription, map } from 'rxjs';
 import { AppearanceService } from '../../core/services/AppearanceService';
 import { AuthService } from '../../core/services/AuthService';
 import { SessionExpiredDialog } from '../dialogs/SessionExpiredDialog';
@@ -22,6 +23,9 @@ export class InstanceToolbar implements OnDestroy {
 
   time$: Observable<string | null>;
 
+  showRange$: Observable<boolean>;
+  range$: Observable<string>;
+
   connected$: Observable<boolean>;
   connectionInfo$: Observable<ConnectionInfo | null>;
   zenMode$: Observable<boolean>;
@@ -38,6 +42,8 @@ export class InstanceToolbar implements OnDestroy {
     private messageService: MessageService,
     private appearanceService: AppearanceService,
     authService: AuthService,
+    route: ActivatedRoute,
+    router: Router,
   ) {
     this.processor$.next(yamcs.getProcessor());
     if (yamcs.processor) {
@@ -49,8 +55,21 @@ export class InstanceToolbar implements OnDestroy {
       });
     }
 
+    this.showRange$ = router.events.pipe(
+      map(evt => {
+        let child = route;
+        while (child.firstChild) {
+          child = child.firstChild;
+        }
+
+        const data = child.snapshot.data;
+        return data && data['showRangeSelector'] === true;
+      }),
+    );
+
     this.connected$ = this.yamcs.yamcsClient.connected$;
     this.time$ = this.yamcs.time$;
+    this.range$ = this.yamcs.range$;
     this.zenMode$ = appearanceService.zenMode$;
 
     this.connectedSubscription = this.connected$.subscribe(connected => {
