@@ -43,8 +43,8 @@ public class ParameterGroupIdDb {
      **/
     final boolean sparseGroups;
     /**
-     * if sparseGroups = true: minimum amount of overlap between a parameter list and an existing group, for the list to be considered part of
-     * the same group
+     * if sparseGroups = true: minimum amount of overlap between a parameter list and an existing group, for the list to
+     * be considered part of the same group
      * <p>
      * value between 0.0 and 1.0
      */
@@ -55,7 +55,8 @@ public class ParameterGroupIdDb {
 
     // The list of all parameter groups.
     // The index in this list is the pgid
-    // May contain nulls (if a group is ever removed)
+    // May contain nulls if a group is ever removed, or if the archive comes from Yamcs prior to 5.9.5 - for some reason
+    // the group 0 was not used
     List<ParameterGroup> groups = new ArrayList<>();
 
     Map<IntArray, ParameterGroup> pg2groupCache = new HashMap<>();
@@ -90,6 +91,7 @@ public class ParameterGroupIdDb {
         }
         readDb();
     }
+
     private void readDb() throws RocksDBException {
         List<TablespaceRecord> trl = tablespace.filter(TablespaceRecord.Type.PARCHIVE_PGID2PG, yamcsInstance,
                 trb -> true);
@@ -208,7 +210,6 @@ public class ParameterGroupIdDb {
         }
     }
 
-
     private void writeToDb(ParameterGroup pg) throws RocksDBException {
         byte[] key = new byte[TBS_INDEX_SIZE + 4];
         ByteArrayUtils.encodeInt(tbsIndex, key, 0);
@@ -250,7 +251,7 @@ public class ParameterGroupIdDb {
         try {
             IntArray r = new IntArray();
             for (var pg : groups) {
-                if (pg.pids.binarySearch(pid) >= 0) {
+                if (pg != null && pg.pids.binarySearch(pid) >= 0) {
                     r.add(pg.id);
                 }
             }
