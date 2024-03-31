@@ -270,7 +270,7 @@ public abstract class AbstractLink extends AbstractService
      * <p>
      * Should be called by the inheriting classes each time data is sent out
      */
-    protected void dataOut(int outCount, long size) {
+    protected void dataOut(long outCount, long size) {
         dataOutCount.addAndGet(outCount);
         dataOutRateMeter.mark(size);
     }
@@ -281,7 +281,7 @@ public abstract class AbstractLink extends AbstractService
      * Should be called by the inheriting classes each time data is received
      * 
      */
-    protected void dataIn(int inCount, long size) {
+    protected void dataIn(long inCount, long size) {
         dataInCount.addAndGet(inCount);
         dataInRateMeter.mark(size);
     }
