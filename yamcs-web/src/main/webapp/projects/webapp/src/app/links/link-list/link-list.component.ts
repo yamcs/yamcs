@@ -1,7 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -61,7 +60,6 @@ export class LinkListComponent implements AfterViewInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private messageService: MessageService,
-    private dialog: MatDialog,
     private linkService: LinkService,
   ) {
     title.setTitle('Links');
@@ -191,10 +189,19 @@ export class LinkListComponent implements AfterViewInit, OnDestroy {
         this.detailLink$.next({ ...selectedItem });
       }
 
-      this.itemsByName[linkInfo.name].link = linkInfo;
+      if (linkInfo.name in this.itemsByName) {
+        this.itemsByName[linkInfo.name].link = linkInfo;
+      } else {
+        const linkItem = { link: linkInfo, hasChildren: false, expanded: false };
+        this.itemsByName[linkInfo.name] = linkItem;
+      }
+
       for (const item of Object.values(this.itemsByName)) {
         if (item.parentLink && item.parentLink.name === linkInfo.name) {
           item.parentLink = linkInfo;
+        }
+        if (linkInfo.parentName && linkInfo.parentName === item.link.name) {
+          item.hasChildren = true;
         }
       }
     }
