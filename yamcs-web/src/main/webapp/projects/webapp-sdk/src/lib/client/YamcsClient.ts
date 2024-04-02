@@ -10,7 +10,7 @@ import { AcknowledgeAlarmOptions, Alarm, AlarmSubscription, ClearAlarmOptions, G
 import { CommandSubscription, SubscribeCommandsRequest } from './types/commandHistory';
 import { Cop1Config, Cop1Status, Cop1Subscription, DisableCop1Request, InitiateCop1Request, SubscribeCop1Request } from './types/cop1';
 import { CreateEventRequest, DownloadEventsOptions, Event, EventSubscription, GetEventsOptions, SubscribeEventsRequest } from './types/events';
-import { CreateTransferRequest, ListFilesRequest, ListFilesResponse, RemoteFileListSubscription, ServicesPage, SubscribeTransfersRequest, Transfer, TransferSubscription, TransfersPage } from './types/filetransfer';
+import { CreateTransferRequest, ListFilesRequest, ListFilesResponse, RemoteFileListSubscription, RunFileActionRequest, ServicesPage, SubscribeTransfersRequest, Transfer, TransferSubscription, TransfersPage } from './types/filetransfer';
 import { AlarmsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstanceTemplatesWrapper, InstancesWrapper, LinksWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SessionsWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
 import { AlgorithmOverrides, AlgorithmStatus, AlgorithmTrace, AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParameterTypesOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParameterType, ParameterTypesPage, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
@@ -1448,6 +1448,13 @@ export default class YamcsClient implements HttpHandler {
       + (request.options ? "&options=" + JSON.stringify(request.options) : "");
     const response = await this.doFetch(url2);
     return await response.json() as ListFilesResponse;
+  }
+
+  async runFileAction(instance: string, service: string, request: RunFileActionRequest) {
+    return this.doFetch(`${this.apiUrl}/filetransfer/${instance}/${service}/files:runFileAction`, {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
   }
 
   async getApids(instance: string) {

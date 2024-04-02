@@ -25,3 +25,14 @@ table {
 .no-select {
   user-select: none;
 }
+
+td.status {
+  padding: 0;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.ya-data-table td.status+td,
+.ya-data-table th.status+th {
+  padding-left: 2px !important;
+}

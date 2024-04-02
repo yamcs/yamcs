@@ -1,9 +1,28 @@
 <table mat-table
        *ngIf="dataSource"
        [dataSource]="dataSource"
-       class="ya-data-table"
-       style="width: 100%"
-       [ngClass]="{'no-select': noSelect}">
+       class="ya-data-table expand no-frame"
+       [class.no-select]="noSelect">
+
+  <ng-container cdkColumnDef="actions">
+    <th mat-header-cell *cdkHeaderCellDef
+        class="status"
+        width="1"></th>
+    <td mat-cell *cdkCellDef="let item" class="status">
+      <ya-more [padding]="false">
+        <ng-container *ngFor="let action of fileActions">
+          <button mat-menu-item
+                  [disabled]="!action.enabled"
+                  (click)="runFileAction(item.name, action)">
+            <ng-container *ngIf="action.style === 'CHECK_BOX'">
+              <mat-icon [style.visibility]="action.checked ? 'visible' : 'hidden'">check</mat-icon>
+            </ng-container>
+            {{ action.label }}
+          </button>
+        </ng-container>
+      </ya-more>
+    </td>
+  </ng-container>
 
   <ng-container cdkColumnDef="name">
     <th mat-header-cell *cdkHeaderCellDef style="width: 400px">Name</th>

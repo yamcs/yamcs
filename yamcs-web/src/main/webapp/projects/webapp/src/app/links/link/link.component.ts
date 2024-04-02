@@ -2,12 +2,13 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { Cop1Config, Cop1Status, Cop1Subscription, InitiateCop1Request, Link, LinkSubscription, MessageService, YamcsService } from '@yamcs/webapp-sdk';
+import { ActionInfo, Cop1Config, Cop1Status, Cop1Subscription, InitiateCop1Request, Link, LinkSubscription, MessageService, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { SharedModule } from '../../shared/SharedModule';
 import { InitiateCop1DialogComponent } from '../initiate-cop1-dialog/initiate-cop1-dialog.component';
 import { LinkStatusComponent } from '../link-status/link-status.component';
+import { LinkService } from '../shared/link.service';
 
 @Component({
   standalone: true,
@@ -34,6 +35,7 @@ export class LinkComponent implements OnDestroy {
     private authService: AuthService,
     private messageService: MessageService,
     private dialog: MatDialog,
+    private linkService: LinkService,
   ) {
     route.paramMap.subscribe(params => {
       const linkName = params.get('link')!;
@@ -123,9 +125,8 @@ export class LinkComponent implements OnDestroy {
       .catch(err => this.messageService.showError(err));
   }
 
-  runAction(link: string, action: string) {
-    this.yamcs.yamcsClient.runLinkAction(this.yamcs.instance!, link, action)
-      .catch(err => this.messageService.showError(err));
+  runAction(link: string, action: ActionInfo) {
+    this.linkService.runAction(link, action);
   }
 
   getEntriesForValue(value: any) {

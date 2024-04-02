@@ -56,7 +56,6 @@ public abstract class AbstractLink extends AbstractService
     DataRateMeter dataInRateMeter = new DataRateMeter();
     DataRateMeter dataOutRateMeter = new DataRateMeter();
 
-
     /**
      * singleton for netty worker group. In the future we may have an option to create different worker groups for
      * different links but for now we stick to one.
@@ -156,7 +155,6 @@ public abstract class AbstractLink extends AbstractService
      */
     protected abstract Status connectionStatus();
 
-
     protected long getCurrentTime() {
         return TimeEncoding.getWallclockTime();
     }
@@ -215,8 +213,7 @@ public abstract class AbstractLink extends AbstractService
         list.add(getPV(spDataInRate, time, dataInRateMeter.getFiveSecondsRate()));
     }
 
-    @Override
-    public void addAction(LinkAction action) {
+    protected void addAction(LinkAction action) {
         if (actions.containsKey(action.getId())) {
             throw new IllegalArgumentException("Action '" + action.getId() + "' already registered");
         }
@@ -234,7 +231,7 @@ public abstract class AbstractLink extends AbstractService
     public LinkAction getAction(String actionId) {
         return actions.get(actionId);
     }
-    
+
     @Override
     public AggregatedDataLink getParent() {
         return parent;
@@ -244,7 +241,7 @@ public abstract class AbstractLink extends AbstractService
     public void setParent(AggregatedDataLink parent) {
         this.parent = parent;
     }
-    
+
     public String getYamcsInstance() {
         return yamcsInstance;
     }

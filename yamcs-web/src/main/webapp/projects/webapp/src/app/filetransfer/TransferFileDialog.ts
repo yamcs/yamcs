@@ -1,11 +1,12 @@
 import { Component, Inject, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
 import { Bucket, FileTransferOption, FileTransferService, MessageService, PreferenceStore, RemoteFileListSubscription, StorageClient, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { ObjectSelector } from '../shared/forms/ObjectSelector';
-import { RemoteFileSelector } from './RemoteFileSelector';
+import { FileActionRequest, RemoteFileSelector } from './RemoteFileSelector';
 
 @Component({
   selector: 'app-download-file-dialog',
@@ -61,6 +62,7 @@ export class TransferFileDialog implements OnDestroy {
     formBuilder: UntypedFormBuilder,
     private messageService: MessageService,
     private preferenceStore: PreferenceStore,
+    private snackBar: MatSnackBar,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.service = data.service;
@@ -415,6 +417,30 @@ export class TransferFileDialog implements OnDestroy {
     if (event.currentTarget === event.target) {
       selector.clearSelection();
     }
+  }
+
+  onActionRequest(request: FileActionRequest) {
+    this.snackBar.open(`Running '${request.action.label}' ...`, undefined, {
+      horizontalPosition: 'end',
+    });
+    const remoteEntity = this.form.value['remoteEntity'];
+    this.yamcs.yamcsClient.runFileAction(
+      this.yamcs.instance!, this.service.name, {
+      remoteEntity,
+      file: request.file,
+      action: request.action.id,
+    }).then(() => {
+      this.snackBar.open(`'${request.action.label}' successful`, undefined, {
+        duration: 3000,
+        horizontalPosition: 'end',
+      });
+    }).catch(err => {
+      this.messageService.showError(err);
+      this.snackBar.open(`'${request.action.label}' failed`, undefined, {
+        duration: 3000,
+        horizontalPosition: 'end',
+      });
+    });
   }
 
   toggleBucketSize() {

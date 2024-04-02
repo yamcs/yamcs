@@ -15,7 +15,7 @@
       </div>
 
       <div class="buckets-column table-wrapper">
-        <table mat-table [dataSource]="dataSource" class="ya-data-table">
+        <table mat-table [dataSource]="dataSource" class="ya-data-table no-frame">
           <ng-container cdkColumnDef="name">
             <td mat-cell *cdkCellDef="let bucket" [title]="(bucket.maxSize - bucket.size | formatBytes) + ' available'">
               <span><mat-icon style="vertical-align: middle">shopping_basket</mat-icon>&nbsp;
@@ -70,6 +70,7 @@
                                [isMultiSelect]="true"
                                [foldersOnly]="false"
                                [noSelect]="true"
+                               [noFrame]="true"
                                [allowFolderSelection]="true"
                                (prefixChange)="updateLocalBreadcrumb($event)" />
         </ng-container>
@@ -129,8 +130,9 @@
                                 [noSelect]="true"
                                 [allowFolderSelection]="true"
                                 [fileListExtraColumns]="service.capabilities.fileListExtraColumns || []"
-                                (prefixChange)="updateRemoteBreadcrumb($event)">
-          </remote-file-selector>
+                                [fileActions]="service.capabilities.fileActions || []"
+                                (prefixChange)="updateRemoteBreadcrumb($event)"
+                                (onAction)="onActionRequest($event)" />
         </ng-container>
       </div>
 

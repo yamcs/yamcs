@@ -23,6 +23,7 @@ import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
+import org.yamcs.actions.ActionHelper;
 import org.yamcs.client.utils.WellKnownTypes;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
@@ -35,12 +36,9 @@ import org.yamcs.memento.MementoDb;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.protobuf.links.LinkActionInfo;
 import org.yamcs.protobuf.links.LinkInfo;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.Link;
-import org.yamcs.tctm.LinkAction;
-import org.yamcs.tctm.LinkAction.ActionStyle;
 import org.yamcs.tctm.LinkActionProvider;
 import org.yamcs.tctm.LinkMemento;
 import org.yamcs.tctm.LinkState;
@@ -525,8 +523,8 @@ public class LinkManager {
                     }
                     if (link instanceof LinkActionProvider) {
                         lib.clearActions();
-                        for (LinkAction action : ((LinkActionProvider) link).getActions()) {
-                            lib.addActions(toLinkActionInfo(action));
+                        for (var action : ((LinkActionProvider) link).getActions()) {
+                            lib.addActions(ActionHelper.toActionInfo(action, false));
                         }
                     }
                     linkInfo = lib.build();
@@ -538,18 +536,6 @@ public class LinkManager {
                 log.error("Error checking link status for {}", link.getName(), e);
                 return false;
             }
-        }
-
-        private LinkActionInfo toLinkActionInfo(LinkAction linkAction) {
-            LinkActionInfo.Builder b = LinkActionInfo.newBuilder()
-                    .setId(linkAction.getId())
-                    .setLabel(linkAction.getLabel())
-                    .setStyle(linkAction.getStyle().name())
-                    .setEnabled(linkAction.isEnabled());
-            if (linkAction.getStyle() == ActionStyle.CHECK_BOX) {
-                b.setChecked(linkAction.isChecked());
-            }
-            return b.build();
         }
 
         public Link getLink() {

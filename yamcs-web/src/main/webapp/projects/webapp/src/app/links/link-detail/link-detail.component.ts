@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Link, LinkAction, MessageService, YamcsService } from '@yamcs/webapp-sdk';
+import { ActionInfo, Link, MessageService, YamcsService } from '@yamcs/webapp-sdk';
 import { AuthService } from '../../core/services/AuthService';
 import { SharedModule } from '../../shared/SharedModule';
 import { LinkStatusComponent } from '../link-status/link-status.component';
@@ -46,7 +46,7 @@ export class LinkDetailComponent {
       .catch(err => this.messageService.showError(err));
   }
 
-  runAction(action: LinkAction) {
+  runAction(action: ActionInfo) {
     this.linkService.runAction(this.link.name, action);
   }
 

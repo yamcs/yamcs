@@ -29,6 +29,9 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
   foldersOnly: boolean;
 
   @Input()
+  noFrame: boolean = false;
+
+  @Input()
   path: string;
 
   @Input()

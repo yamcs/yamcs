@@ -1,9 +1,9 @@
 <table mat-table
        *ngIf="dataSource"
        [dataSource]="dataSource"
-       class="ya-data-table"
-       style="width: 100%"
-       [ngClass]="{'no-select': noSelect}">
+       class="ya-data-table expand"
+       [class.no-frame]="noFrame"
+       [class.no-select]="noSelect">
 
   <ng-container cdkColumnDef="name">
     <th mat-header-cell *cdkHeaderCellDef style="width: 400px">Name</th>

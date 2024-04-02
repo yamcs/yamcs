@@ -4,7 +4,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ColumnInfo, LinkAction, LinkEvent, LinkSubscription, MessageService, YamcsService } from '@yamcs/webapp-sdk';
+import { ActionInfo, ColumnInfo, LinkEvent, LinkSubscription, MessageService, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { SharedModule } from '../../shared/SharedModule';
@@ -160,7 +160,7 @@ export class LinkListComponent implements AfterViewInit, OnDestroy {
       .catch(err => this.messageService.showError(err));
   }
 
-  runAction(link: string, action: LinkAction) {
+  runAction(link: string, action: ActionInfo) {
     this.linkService.runAction(link, action);
   }
 

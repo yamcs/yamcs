@@ -1,8 +1,13 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, forwardRef, Input, OnChanges, OnDestroy, Output } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { ColumnInfo, FileListExtraColumnInfo, ListFilesResponse } from '@yamcs/webapp-sdk';
+import { ActionInfo, ColumnInfo, FileListExtraColumnInfo, ListFilesResponse } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
+
+export interface FileActionRequest {
+  file: string;
+  action: ActionInfo;
+}
 
 @Component({
   selector: 'remote-file-selector',
@@ -37,8 +42,14 @@ export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDe
   @Input()
   fileListExtraColumns: FileListExtraColumnInfo[] = [];
 
+  @Input()
+  fileActions: ActionInfo[] = [];
+
   @Output()
   prefixChange = new EventEmitter<string | null>();
+
+  @Output()
+  onAction = new EventEmitter<FileActionRequest>();
 
   displayedColumns$ = new BehaviorSubject<string[]>(['name', 'size', 'modified']);
   extraColumns$ = new BehaviorSubject<ColumnInfo[]>([]);
@@ -61,7 +72,13 @@ export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDe
   ngOnChanges() {
     this.loadCurrentFolder();
 
-    const displayedColumns = ['name'];
+    const displayedColumns = [];
+
+    if (this.fileActions.length) {
+      displayedColumns.push('actions');
+    }
+
+    displayedColumns.push('name');
     for (const extraColumn of this.fileListExtraColumns) {
       displayedColumns.push(extraColumn.id);
     }
@@ -174,6 +191,10 @@ export class RemoteFileSelector implements ControlValueAccessor, OnChanges, OnDe
   // Update form
   private updateFileNames() {
     this.onChange(Array.from(this.selectedFileNames).join("|"));
+  }
+
+  runFileAction(file: string, action: ActionInfo) {
+    this.onAction.emit({ file, action });
   }
 
   isSelected(row: RemoteFileItem) {
