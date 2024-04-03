@@ -2,9 +2,9 @@ package org.yamcs.filetransfer;
 
 import org.yamcs.actions.Action;
 
-public abstract class FileAction extends Action<String> {
+public abstract class FileAction extends Action<FileActionIdentifier> {
 
-    public FileAction(String id, String label) {
+    protected FileAction(String id, String label) {
         super(id, label);
     }
 }

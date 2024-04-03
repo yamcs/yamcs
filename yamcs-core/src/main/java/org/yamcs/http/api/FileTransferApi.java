@@ -15,6 +15,7 @@ import org.yamcs.actions.ActionHelper;
 import org.yamcs.api.Observer;
 import org.yamcs.cfdp.CfdpFileTransfer;
 import org.yamcs.cfdp.CfdpTransactionId;
+import org.yamcs.filetransfer.FileActionIdentifier;
 import org.yamcs.filetransfer.FileActionProvider;
 import org.yamcs.filetransfer.FileTransfer;
 import org.yamcs.filetransfer.FileTransferService;
@@ -294,8 +295,8 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
         FileTransferService ftService = verifyService(request.getInstance(),
                 request.hasServiceName() ? request.getServiceName() : null);
-
-        Action<String> action = null;
+        
+        Action<FileActionIdentifier> action = null;
         if (ftService instanceof FileActionProvider) {
             action = ((FileActionProvider) ftService).getFileAction(request.getAction());
         }
@@ -303,7 +304,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
             throw new BadRequestException("Unknown action '" + request.getAction() + "'");
         }
 
-        ActionHelper.runAction(request.getFile(), action, request.getMessage(), observer);
+        ActionHelper.runAction(new FileActionIdentifier(request.getRemoteEntity(), request.getFile()), action, request.getMessage(), observer);
     }
 
     private static FileTransferServiceInfo toFileTransferServiceInfo(String name, FileTransferService service) {
