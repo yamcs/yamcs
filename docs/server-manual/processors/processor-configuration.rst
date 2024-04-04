@@ -26,6 +26,7 @@ Example of the ``realtime`` processor type configuration:
           subscribeAll: true
           recordInitialValues: true
           recordInitialValues: true
+          persistParameters: true
           maxTcSize: 4096
           
           alarm:
@@ -72,6 +73,11 @@ subscribeContainerArchivePartitions (boolean)
     If set to true (default) the containers declared to be used as archive partition are subscribed by default in the processor. Otherwise the containers are only subscribed when a user subscribes to them or to a parameter contained in them. If alarms are enabled, the subscription to the parameters that can trigger alarms will also cause some container subscriptions.
     The only reason to switch this option off is for improving the performance when doing a archive retrieval that only extracts a few parameters. It is thus advisable to only configure it for the ArchiveRetrieval processor type.
     Note: the statistics shown on the yamcs-web instance home page contain the containers subscribed inside the currently selected processor. If no container is subscribed, only the root containers will be shown.
+
+persistParameters (boolean)
+    If set to true, save the value of the parameters when the processor is closed and restore them when a processor with the same name starts. Only the parameters with the persistence flag set will be saved. By default in XTCE all parameters are set as persistent whereas in the spreadsheet the persistance has to be enabled by specifying the "p" flag.
+    This is typically set to true for the realtime processor such that the values of the parameters are saved when Yamcs is shut down and restored when Yamcs starts up again.
+    Default: false
 
     
 Alarm options 

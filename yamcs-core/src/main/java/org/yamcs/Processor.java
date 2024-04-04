@@ -165,25 +165,29 @@ public class Processor extends AbstractService {
         this.serviceList = serviceList;
 
         timeService = YamcsServer.getTimeService(yamcsInstance);
-        paramPersistence = new ParameterPersistence(yamcsInstance, name);
 
-        var it = paramPersistence.load();
         Map<Parameter, ParameterValue> persistedParams = new HashMap<>();
-        if (it != null) {
-            while (it.hasNext()) {
-                var pv = it.next();
-                var p = mdb.getParameter(pv.getParameterQualifiedName());
-                if (p != null) {
-                    if (p.isPersistent()) {
-                        pv.setParameter(p);
-                        persistedParams.put(p, pv);
+
+        if (config.persistParameters) {
+            paramPersistence = new ParameterPersistence(yamcsInstance, name);
+            var it = paramPersistence.load();
+
+            if (it != null) {
+                while (it.hasNext()) {
+                    var pv = it.next();
+                    var p = mdb.getParameter(pv.getParameterQualifiedName());
+                    if (p != null) {
+                        if (p.isPersistent()) {
+                            pv.setParameter(p);
+                            persistedParams.put(p, pv);
+                        } else {
+                            log.debug("Found persisted parameter without the persistance flag set {}",
+                                    pv.getParameterQualifiedName());
+                        }
                     } else {
-                        log.debug("Found persisted parameter without the persistance flag set {}",
+                        log.debug("No parameter found in the MDB for persisted parameter value {}",
                                 pv.getParameterQualifiedName());
                     }
-                } else {
-                    log.debug("No parameter found in the MDB for persisted parameter value {}",
-                            pv.getParameterQualifiedName());
                 }
             }
         }

@@ -26,3 +26,6 @@ Recognised column names are:
     Initial (default) value of this parameter. If present, this overrides any initial value set on the referenced ``data type``.
 
     .. include:: _includes/initial-value.rst
+
+``flags``
+   The only recognized flag is ``p`` which sets the parameter as persistent - that means its value will be saved and restored when the Yamcs restarts. For this to work, the realtime processor has to be configured (in processor.yaml) with ``persistParameters: true``
