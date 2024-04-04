@@ -174,8 +174,13 @@ public class Processor extends AbstractService {
                 var pv = it.next();
                 var p = mdb.getParameter(pv.getParameterQualifiedName());
                 if (p != null) {
-                    pv.setParameter(p);
-                    persistedParams.put(p, pv);
+                    if (p.isPersistent()) {
+                        pv.setParameter(p);
+                        persistedParams.put(p, pv);
+                    } else {
+                        log.debug("Found persisted parameter without the persistance flag set {}",
+                                pv.getParameterQualifiedName());
+                    }
                 } else {
                     log.debug("No parameter found in the MDB for persisted parameter value {}",
                             pv.getParameterQualifiedName());
