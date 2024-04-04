@@ -30,8 +30,6 @@ import org.yamcs.xtce.XtceDb;
  * 
  * Relies on {@link XtceTmExtractor} for extracting the parameters out of containers
  * 
- * @author nm
- * 
  */
 
 public class XtceTmProcessor extends AbstractProcessorService
@@ -59,7 +57,7 @@ public class XtceTmProcessor extends AbstractProcessorService
         this.processor = null;
         this.mdb = mdb;
         log = new Log(getClass());
-        tmExtractor = new XtceTmExtractor(mdb, new ProcessorData(null, "XTCEPROC", mdb, pconfig));
+        tmExtractor = new XtceTmExtractor(mdb, new ProcessorData("XTCEPROC", mdb, pconfig));
     }
 
     @Override

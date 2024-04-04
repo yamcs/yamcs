@@ -36,7 +36,7 @@ public class ArrayArgTest {
         mdb = MdbFactory
                 .createInstanceByConfig("ArrayArgCommandTest");
         metaCommandProcessor = new MetaCommandProcessor(
-                new ProcessorData("test", "test", mdb, new ProcessorConfig()));
+                new ProcessorData("test", mdb, new ProcessorConfig()));
     }
 
     @Test

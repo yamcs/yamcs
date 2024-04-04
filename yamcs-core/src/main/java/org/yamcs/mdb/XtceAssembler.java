@@ -371,13 +371,16 @@ public class XtceAssembler {
             if (parameter.getDataSource() != DataSource.TELEMETERED) {
                 doc.writeAttribute("dataSource", parameter.getDataSource().name().toLowerCase());
             }
+            if (!parameter.isPersistent()) {
+                doc.writeAttribute("persistence", "false");
+            }
             doc.writeEndElement();// ParameterProperties
         }
         doc.writeEndElement();// Parameter
     }
 
     boolean hasNonDefaultProperties(Parameter p) {
-        return p.getDataSource() != DataSource.TELEMETERED;
+        return p.getDataSource() != DataSource.TELEMETERED || !p.isPersistent();
     }
 
     private void writeParameterType(XMLStreamWriter doc, ParameterType ptype) throws XMLStreamException {

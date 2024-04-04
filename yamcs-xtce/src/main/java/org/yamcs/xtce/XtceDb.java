@@ -108,6 +108,9 @@ public class XtceDb implements Serializable {
         }
     }
 
+    /**
+     * returns the parameter with the given qualified name or null if it does not exist
+     */
     public Parameter getParameter(String qualifiedName) {
         rwLock.readLock().lock();
         try {

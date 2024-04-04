@@ -57,8 +57,6 @@ import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
 /**
  * This class reads the XTCE XML files. XML document is accessed with the use of the Stax Iterator API.
  * 
- * @author mu
- * 
  */
 public class XtceStaxReader extends AbstractStaxReader {
 
@@ -2064,6 +2062,10 @@ public class XtceStaxReader extends AbstractStaxReader {
         String value = readMandatoryAttribute(ATTR_NAME, element);
         parameter = new Parameter(value);
 
+        // by default in XTCE all parameters are persistent
+        // when reading the properties, the persistence may be disabled for a parameter
+        parameter.setPersistent(true);
+
         String initialValue = readAttribute(ATTR_INITIAL_VALUE, xmlEvent.asStartElement(), null);
 
         // parameterTypeRef
@@ -2125,6 +2127,8 @@ public class XtceStaxReader extends AbstractStaxReader {
             }
 
         }
+        boolean persistence = readBooleanAttribute("persistence", xmlEvent.asStartElement(), true);
+        p.setPersistent(persistence);
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();

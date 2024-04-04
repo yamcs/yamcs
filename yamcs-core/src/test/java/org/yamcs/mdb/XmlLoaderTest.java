@@ -251,6 +251,16 @@ public class XmlLoaderTest {
     }
 
     @Test
+    public void testPersistence() throws XMLStreamException, IOException {
+        Mdb mdb = MdbFactory.createInstanceByConfig("refxtce");
+        Parameter p1 = mdb.getParameter("/RefXtce/local_para1");
+        assertTrue(p1.isPersistent());
+
+        Parameter p2 = mdb.getParameter("/RefXtce/local_para2");
+        assertFalse(p2.isPersistent());
+    }
+
+    @Test
     public void testTransmissionConstraint() throws XMLStreamException, IOException {
         XtceDb db = MdbFactory.createInstanceByConfig("refxtce");
         MetaCommand mc = db.getMetaCommand("/RefXtce/cmd_with_constraint1");

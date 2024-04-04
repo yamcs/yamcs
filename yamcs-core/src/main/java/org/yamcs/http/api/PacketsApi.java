@@ -364,7 +364,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
                     var responseb = ExtractPacketResponse.newBuilder();
 
-                    var pdata = new ProcessorData(null, "XTCEPROC", mdb, new ProcessorConfig());
+                    var pdata = new ProcessorData("XTCEPROC", mdb, new ProcessorConfig());
 
                     var eventProducer = new AbstractEventProducer() {
                         @Override

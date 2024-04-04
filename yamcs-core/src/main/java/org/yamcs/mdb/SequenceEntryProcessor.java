@@ -25,7 +25,6 @@ import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
-import org.yamcs.xtce.XtceDb;
 
 public class SequenceEntryProcessor {
     static Logger log = LoggerFactory.getLogger(SequenceEntryProcessor.class.getName());
@@ -201,12 +200,12 @@ public class SequenceEntryProcessor {
             throw new XtceProcessingException("Cannot determine the value of " + pir
                     + " necessary to extract the indirect parameter ref entry");
         }
-        XtceDb db = pcontext.getXtceDb();
+        Mdb mdb = pcontext.getMdb();
         String nameSpace = se.getAliasNameSpace();
         String name = v.toString();
         log.trace("Looking up parameter with name/alias {} in namespace {}", name, nameSpace);
 
-        Parameter p = nameSpace == null ? db.getParameter(name) : db.getParameter(nameSpace, name);
+        Parameter p = nameSpace == null ? mdb.getParameter(name) : mdb.getParameter(nameSpace, name);
         if (p == null) {
             if (nameSpace == null) {
                 throw new XtceProcessingException("Cannot find a parameter with FQN" + name);

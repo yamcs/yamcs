@@ -162,8 +162,6 @@ import jxl.read.biff.BiffException;
  * The name of the duplicated types is &lt;type_name_from_DataTypes_sheet&gt;_&lt;parameter_name&gt; for parameters and
  * &lt;type_name_from_DataTypes_sheet&gt;_&lt;command_name&gt_&lt;argument_name&gt for command arguments.
  *
- * @author nm, ddw
- *
  */
 public class V7Loader extends V7LoaderBase {
     protected Map<String, Calibrator> calibrators = new HashMap<>();
@@ -188,9 +186,9 @@ public class V7Loader extends V7LoaderBase {
     final Pattern FIXED_VALUE_PATTERN = Pattern.compile("FixedValue\\((\\d+)\\)");
 
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
-    final static String FORMAT_VERSION = "7.1";
+    final static String FORMAT_VERSION = "7.3";
     // Explicitly support these versions (i.e. load without warning)
-    final static String[] FORMAT_VERSIONS_SUPPORTED = new String[] { FORMAT_VERSION, "7.0" };
+    final static String[] FORMAT_VERSIONS_SUPPORTED = new String[] { FORMAT_VERSION, "7.2", "7.1", "7.0" };
     String fileFormatVersion;
     final static String NAME_PATTERN = "[^./:\\[\\] ]+";
     final static Pattern REPEAT_PATTERN = Pattern.compile("(.*)[*](.*)");
@@ -811,6 +809,12 @@ public class V7Loader extends V7LoaderBase {
             }
             if (!description.isEmpty()) {
                 param.setShortDescription(description);
+            }
+            String flags = hasColumn(cells, CN_PARAM_FLAGS) ? getContent(cells, CN_PARAM_FLAGS)
+                    : "";
+
+            if (flags.contains("p")) {
+                param.setPersistent(true);
             }
 
             String longDescription = "";

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -55,7 +54,6 @@ public class ManagementService implements ProcessorListener {
 
     Set<CommandQueueListener> commandQueueListeners = new CopyOnWriteArraySet<>();
     Set<TableStreamListener> tableStreamListeners = new CopyOnWriteArraySet<>();
-    ScheduledThreadPoolExecutor timer;
 
     static public ManagementService getInstance() {
         return managementService;
@@ -63,8 +61,8 @@ public class ManagementService implements ProcessorListener {
 
     private InstanceStateListener instanceListener;
 
-    private ManagementService() {
-        this.timer = YamcsServer.getServer().getThreadPoolExecutor();
+    public void init() {
+        var timer = YamcsServer.getServer().getThreadPoolExecutor();
         Processor.addProcessorListener(this);
         timer.scheduleAtFixedRate(() -> updateStatistics(), 1, 1, TimeUnit.SECONDS);
         timer.scheduleAtFixedRate(() -> checkStreamUpdate(), 1, 1, TimeUnit.SECONDS);
@@ -282,6 +280,8 @@ public class ManagementService implements ProcessorListener {
     }
 
     public void registerStream(String instance, Stream stream) {
+        var timer = YamcsServer.getServer().getThreadPoolExecutor();
+
         timer.execute(() -> {
             StreamInfo.Builder streamb = StreamInfo.newBuilder()
                     .setName(stream.getName())
@@ -298,6 +298,8 @@ public class ManagementService implements ProcessorListener {
     }
 
     public void unregisterStream(String instance, String name) {
+        var timer = YamcsServer.getServer().getThreadPoolExecutor();
+
         tableStreamListeners.forEach(l -> l.streamUnregistered(instance, name));
         timer.execute(() -> {
             streams.removeIf(swi -> swi.instance.equals(instance) && swi.stream.getName().equals(name));

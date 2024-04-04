@@ -30,11 +30,9 @@ public class XtceTmExtractor {
 
     /**
      * Create a standalone TM extractor
-     * 
-     * @param mdb
      */
     public XtceTmExtractor(Mdb mdb) {
-        this(mdb, new ProcessorData(null, "XTCEPROC", mdb, new ProcessorConfig()));
+        this(mdb, new ProcessorData("XTCEPROC", mdb, new ProcessorConfig()));
     }
 
     /**

@@ -1,8 +1,10 @@
 package org.yamcs.parameter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -12,7 +14,7 @@ import org.yamcs.xtce.Parameter;
 /**
  * Cache for the last known value of each parameter.
  * <p>
- * Can also stored a number of n values for certain parameters (required by algorithms and match criterias)
+ * Can also stored a number of n values for certain parameters (required by algorithms and match criteria)
  * <p>
  * it uses a readwrite lock to synchronize access from multiple threads.
  *
@@ -205,6 +207,34 @@ public class LastValueCache {
         }
     }
 
+    /**
+     * returns a list of parameter values for all the parameters having the persistence flag set
+     * <p>
+     * The list may be empty if no parameter has the flag set
+     */
+    public List<ParameterValue> getValuesToBePersisted() {
+        List<ParameterValue> pvList = new ArrayList<>();
+        lock.readLock().lock();
+        try {
+            for (var entry : bufferedParams.entrySet()) {
+                if (entry.getKey().isPersistent()) {
+                    var pv = entry.getValue().end();
+                    if (pv != null) {
+                        pvList.add(pv);
+                    }
+                }
+            }
+            for (var entry : params.entrySet()) {
+                if (entry.getKey().isPersistent()) {
+                    pvList.add(entry.getValue());
+                }
+            }
+        } finally {
+            lock.readLock().unlock();
+        }
+        return pvList;
+    }
+
     // fixed size circular buffer
     static class ParamBuffer {
         final ParameterValue[] data;
@@ -285,4 +315,5 @@ public class LastValueCache {
             return sb.toString();
         }
     }
+
 }

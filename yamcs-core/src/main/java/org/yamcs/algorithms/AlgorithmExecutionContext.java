@@ -155,7 +155,7 @@ public class AlgorithmExecutionContext {
     }
 
     public XtceDb getXtceDb() {
-        return procData.getXtceDb();
+        return procData.getMdb();
     }
 
     public EventProducer getEventProducer() {

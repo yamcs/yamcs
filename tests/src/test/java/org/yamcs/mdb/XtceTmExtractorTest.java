@@ -257,7 +257,7 @@ public class XtceTmExtractorTest {
         RefMdbPacketGenerator tmGenerator = new RefMdbPacketGenerator();
         ProcessorConfig pconf = new ProcessorConfig();
         pconf.setSubscribeContainerArchivePartitions(false);
-        ProcessorData pdata = new ProcessorData(null, "XTCEPROC", mdb, pconf);
+        ProcessorData pdata = new ProcessorData("XTCEPROC", mdb, pconf);
 
         XtceTmExtractor tmExtractor = new XtceTmExtractor(mdb, pdata);
         tmExtractor.startProviding(mdb.getSequenceContainer("/REFMDB/SUBSYS1/PKT1"));
@@ -479,8 +479,6 @@ public class XtceTmExtractorTest {
         assertEquals(received.size(), 6);
 
     }
-
-
 
     @Test
     public void testPKT1_PKT1_AND_OR() {

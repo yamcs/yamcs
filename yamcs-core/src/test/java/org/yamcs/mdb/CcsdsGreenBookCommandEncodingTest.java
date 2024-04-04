@@ -28,7 +28,7 @@ public class CcsdsGreenBookCommandEncodingTest {
         YConfiguration.setupTest(null);
         mdb = MdbFactory.createInstanceByConfig("ccsds-green-book");
         metaCommandProcessor = new MetaCommandProcessor(
-                new ProcessorData("test", "test", mdb, new ProcessorConfig()));
+                new ProcessorData("test", mdb, new ProcessorConfig()));
     }
 
     @Test

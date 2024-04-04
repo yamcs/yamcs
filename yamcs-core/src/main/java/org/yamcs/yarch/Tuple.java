@@ -8,8 +8,6 @@ import java.util.List;
 /**
  * Contains the tuple value (as an array of Columns) together with a pointer to its definition
  * 
- * @author nm
- *
  */
 public class Tuple {
     private TupleDefinition definition;
@@ -55,7 +53,7 @@ public class Tuple {
         return definition;
     }
 
-    public List<Object> getColumns() {
+    public List<?> getColumns() {
         return columns;
     }
 
@@ -82,11 +80,12 @@ public class Tuple {
         }
         return (T) columns.get(i);
     }
-    
+
     /**
      * Get the value of column as long.
      * <p>
      * Throws exception if the column does not exist or is of different type
+     * 
      * @param colName
      * @return
      */
@@ -97,64 +96,67 @@ public class Tuple {
     public long getTimestampColumn(String colName) {
         return getColumn(colName);
     }
-    
-    
+
     /**
      * Get the value of column as boolean.
      * <p>
      * Throws exception if the column does not exist or is of different type
+     * 
      * @param colName
      * @return
      */
     public boolean getBooleanColumn(String colName) {
         return getColumn(colName);
     }
-    
+
     /**
      * Get the value of column as byte.
      * <p>
      * Throws exception if the column does not exist or is of different type
+     * 
      * @param colName
      * @return
      */
     public byte getByteColumn(String colName) {
         return getColumn(colName);
     }
+
     /**
      * Get the value of column as short.
      * <p>
      * Throws exception if the column does not exist or is of different type
+     * 
      * @param colName
      * @return
      */
     public short getShortColumn(String colName) {
         return getColumn(colName);
     }
-    
+
     /**
      * Get the value of column as int.
      * <p>
      * Throws exception if the column does not exist or is of different type
+     * 
      * @param colName
      * @return
      */
     public int getIntColumn(String colName) {
         return getColumn(colName);
     }
- 
-    
+
     /**
      * Get the value of column as double.
      * <p>
      * Throws exception if the column does not exist or is of different type
+     * 
      * @param colName
      * @return
      */
     public double getDoubleColumn(String colName) {
         return getColumn(colName);
     }
-    
-    
+
     public ColumnDefinition getColumnDefinition(String colName) {
         int i = definition.getColumnIndex(colName);
         if (i == -1) {
@@ -184,7 +186,7 @@ public class Tuple {
     public void addTimestampColumn(String colName, long colValue) {
         addColumn(colName, DataType.TIMESTAMP, colValue);
     }
-    
+
     /**
      * Add a INT column
      * 
@@ -224,6 +226,7 @@ public class Tuple {
     public void addColumn(String colName, String colValue) {
         addColumn(colName, DataType.STRING, colValue);
     }
+
     /**
      * Add an ENUM column
      * 
@@ -233,7 +236,7 @@ public class Tuple {
     public void addEnumColumn(String colName, String colValue) {
         addColumn(colName, DataType.ENUM, colValue);
     }
-    
+
     public void addColumn(String colName, DataType type, Object colValue) {
         definition.addColumn(colName, type);
         columns.add(colValue);
@@ -263,7 +266,5 @@ public class Tuple {
         sb.append(")");
         return sb.toString();
     }
-
-  
 
 }

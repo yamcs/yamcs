@@ -45,8 +45,6 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
  * It subscribes to all the streams configured with the "streams" config key or, if not present, to all TM streams
  * defined in the instance (streamConfig section of the instance configuration).
  * 
- * @author nm
- *
  */
 public class XtceTmRecorder extends AbstractYamcsService {
     public static final String REC_STREAM_NAME = "xtce_tm_recorder_stream";
@@ -303,7 +301,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
             String pname = deriveArchivePartition(cpr);
 
             try {
-                List<Object> c = t.getColumns();
+                List<?> c = t.getColumns();
                 List<Object> columns = new ArrayList<>(c.size() + 1);
                 columns.addAll(c);
 

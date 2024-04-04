@@ -74,10 +74,6 @@ import io.netty.util.ResourceLeakDetector;
 /**
  *
  * Yamcs server together with the global instances
- * 
- * 
- * @author nm
- *
  */
 public class YamcsServer {
 
@@ -268,10 +264,14 @@ public class YamcsServer {
                 swc.getService().awaitTerminated();
             }
         }
+        instances.clear();
+        YarchDatabase.removeInstance(GLOBAL_INSTANCE);
+
         // Shutdown database when we're sure no services are using it.
         RdbStorageEngine.getInstance().shutdown();
 
         long stopTime = System.nanoTime() - t0;
+
         LOG.info("Yamcs stopped in {}ms", NANOSECONDS.toMillis(stopTime));
         YamcsLogManager.shutdown();
         timer.shutdown();
@@ -1159,6 +1159,13 @@ public class YamcsServer {
     }
 
     public void prepareStart() throws ValidationException, IOException, InitException {
+        if (timer.isShutdown()) {// happening in unit tests
+            timer = new ScheduledThreadPoolExecutor(1,
+                    new ThreadFactoryBuilder().setNameFormat("YamcsServer-general-executor").build());
+        }
+
+        ManagementService.getInstance().init();
+
         pluginManager = new PluginManager();
         pluginManager.discoverPlugins();
 

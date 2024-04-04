@@ -89,7 +89,7 @@
 				<xtce:ParameterProperties dataSource="local" />
 			</xtce:Parameter>
 			<xtce:Parameter name="local_para2" parameterTypeRef="uint16">
-				<xtce:ParameterProperties dataSource="local" />
+				<xtce:ParameterProperties dataSource="local" persistence="false"/>
 			</xtce:Parameter>
 			<xtce:Parameter name="para_with_subsys_type" parameterTypeRef="subsys1/subsys_ptype1" />
 		</xtce:ParameterSet>

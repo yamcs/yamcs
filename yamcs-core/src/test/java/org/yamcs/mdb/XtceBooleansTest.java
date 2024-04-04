@@ -33,7 +33,7 @@ public class XtceBooleansTest {
     public static void beforeClass() throws ConfigurationException {
         YConfiguration.setupTest(null);
         mdb = MdbFactory.createInstanceByConfig("xtce-booleans");
-        pdata = new ProcessorData("test", "test", mdb, new ProcessorConfig());
+        pdata = new ProcessorData("test", mdb, new ProcessorConfig());
     }
 
     @BeforeEach

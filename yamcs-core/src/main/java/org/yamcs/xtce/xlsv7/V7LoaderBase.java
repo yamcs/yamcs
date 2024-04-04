@@ -143,6 +143,7 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
     static final String CN_PARAM_DTYPE = "data type";
     static final String CN_PARAM_INITVALUE = "initial value";
     static final String CN_PARAM_DESCRIPTION = "description";
+    static final String CN_PARAM_FLAGS = "flags";
     static final String CN_PARAM_LONG_DESCRIPTION = "long description";
 
     protected static final String SHEET_DATATYPES = "DataTypes";
