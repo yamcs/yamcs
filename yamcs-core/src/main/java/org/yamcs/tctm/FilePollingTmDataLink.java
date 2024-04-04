@@ -15,12 +15,16 @@ import java.util.zip.GZIPInputStream;
 import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.YarchDatabase;
 
 /**
  * TM packet data link which reads telemetry files from a specified directory. The files are split into packets
@@ -39,6 +43,8 @@ import org.yamcs.utils.YObjectLoader;
  * <li>{@code deleteAfterImport} - if true (default), the files will be removed after being read.</li>
  * <li>{@code delayBetweenPackets} - if configured, it is the number of milliseconds to wait in between sending two
  * packets. By default it is -1 meaning the packets are sent as fast as possible.</li>
+ * <li>{@code lastPacketStream} - If specified, emit the last packet to this stream. This is intended for batch imports,
+ * where the content of the last packet should also be observable by realtime clients</li>
  * <li>{@code headerSize} - if configured, the input files have a header which will be skipped before reading the first
  * packet.</li>
  * </ul>
@@ -50,6 +56,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
     boolean deleteAfterImport;
     long delayBetweenPackets = -1;
     long headerSize = -1l;
+    Stream lastPacketStream;
     Thread thread;
 
     String packetInputStreamClassName;
@@ -61,6 +68,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
         spec.addOption("incomingDir", OptionType.STRING);
         spec.addOption("deleteAfterImport", OptionType.BOOLEAN).withDefault(true);
         spec.addOption("delayBetweenPackets", OptionType.INTEGER);
+        spec.addOption("lastPacketStream", OptionType.STRING);
         spec.addOption("headerSize", OptionType.INTEGER);
         spec.addOption("packetInputStreamClassName", OptionType.STRING);
         spec.addOption("packetInputStreamArgs", OptionType.MAP).withSpec(Spec.ANY);
@@ -83,6 +91,15 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
         delayBetweenPackets = config.getLong("delayBetweenPackets", -1);
         headerSize = config.getLong("headerSize", -1);
         packetInputStreamArgs = YConfiguration.emptyConfig();
+
+        if (config.containsKey("lastPacketStream")) {
+            var ydb = YarchDatabase.getInstance(yamcsInstance);
+            var streamName = config.getString("lastPacketStream");
+            lastPacketStream = ydb.getStream(streamName);
+            if (lastPacketStream == null) {
+                throw new ConfigurationException("Cannot find stream '" + streamName + "'");
+            }
+        }
 
         if (config.containsKey("packetInputStreamClassName")) {
             packetInputStreamClassName = config.getString("packetInputStreamClassName");
@@ -131,17 +148,18 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
             long count = 0;
             long minTime = TimeEncoding.POSITIVE_INFINITY;
             long maxTime = TimeEncoding.NEGATIVE_INFINITY;
+            TmPacket tmPacket = null;
             try (PacketInputStream packetInputStream = getPacketInputStream(f.getAbsolutePath())) {
                 byte[] packet;
                 while ((packet = packetInputStream.readPacket()) != null) {
                     updateStats(packet.length);
-                    TmPacket tmPacket = new TmPacket(timeService.getMissionTime(), packet);
+                    tmPacket = new TmPacket(timeService.getMissionTime(), packet);
                     tmPacket.setEarthReceptionTime(erp);
-                    TmPacket tmpkt = packetPreprocessor.process(tmPacket);
-                    minTime = Math.min(minTime, tmpkt.getGenerationTime());
-                    maxTime = Math.max(maxTime, tmpkt.getGenerationTime());
+                    tmPacket = packetPreprocessor.process(tmPacket);
+                    minTime = Math.min(minTime, tmPacket.getGenerationTime());
+                    maxTime = Math.max(maxTime, tmPacket.getGenerationTime());
                     count++;
-                    processPacket(tmpkt);
+                    processPacket(tmPacket);
                     if (delayBetweenPackets > 0) {
                         Thread.sleep(delayBetweenPackets);
                     }
@@ -149,8 +167,13 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
             } catch (EOFException e) {
                 log.debug("{} finished", f);
             } catch (IOException | PacketTooLongException e) {
-                log.warn("Got IOException while reading from " + f + ": ", e);
+                log.warn("Exception while reading " + f, e);
             }
+
+            if (tmPacket != null && lastPacketStream != null) {
+                emitLastPacket(tmPacket);
+            }
+
             String msg = String.format("Ingested %s; pkt count: %d, time range: [%s, %s]", f, count,
                     TimeEncoding.toString(minTime), TimeEncoding.toString(maxTime));
             eventProducer.sendInfo("FILE_INGESTION", msg);
@@ -160,6 +183,30 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
                 }
             }
         }
+    }
+
+    private void emitLastPacket(TmPacket tmPacket) {
+        if (tmPacket.isInvalid()) {
+            return;
+        }
+
+        Instant ertime = tmPacket.getEarthReceptionTime();
+        Tuple t = null;
+        if (ertime == Instant.INVALID_INSTANT) {
+            ertime = null;
+        }
+        Long obt = tmPacket.getObt() == Long.MIN_VALUE ? null : tmPacket.getObt();
+        t = new Tuple(StandardTupleDefinitions.TM, new Object[] {
+                tmPacket.getGenerationTime(),
+                tmPacket.getSeqCount(),
+                tmPacket.getReceptionTime(),
+                tmPacket.getStatus(),
+                tmPacket.getPacket(),
+                ertime,
+                obt,
+                getName(),
+        });
+        lastPacketStream.emitTuple(t);
     }
 
     private PacketInputStream getPacketInputStream(String fileName) throws IOException {

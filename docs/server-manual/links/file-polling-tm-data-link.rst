@@ -29,3 +29,8 @@ packetPreprocessorClassName (string)
 
 packetPreprocessorArgs (map)
     Optional args of arbitrary complexity to pass to the PacketPreprocessor. Each PacketPreprocessor may support different options.
+
+lastPacketStream (string)
+    Optional stream name. If specified, the last packet in an imported file, is emitted to this stream, in addition to the regular stream defined with the ``stream`` option.
+
+    The intended use case, is to have ``stream: tm_dump`` and ``lastPacketStream: tm_realtime``. Then most data goes directly into the Archive, while only the last packet's data goes to realtime clients.
