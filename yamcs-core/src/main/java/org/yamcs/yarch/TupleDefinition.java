@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public class TupleDefinition {
-    private ArrayList<ColumnDefinition> columnDefinitions = new ArrayList<ColumnDefinition>();
-    private HashMap<String, Integer> columnNameIndex = new HashMap<String, Integer>();
+    private ArrayList<ColumnDefinition> columnDefinitions = new ArrayList<>();
+    private HashMap<String, Integer> columnNameIndex = new HashMap<>();
     public static final int MAX_COLS = 32000;
 
     public List<ColumnDefinition> getColumnDefinitions() {
@@ -24,6 +24,23 @@ public class TupleDefinition {
         }
         columnDefinitions.add(c);
         columnNameIndex.put(c.getName(), columnDefinitions.size() - 1);
+    }
+
+    public int removeColumn(String name) {
+        Integer idx = columnNameIndex.remove(name);
+        if (idx != null) {
+            columnDefinitions.remove((int) idx);
+
+            // Left-shift subsequent indexes
+            for (var entry : columnNameIndex.entrySet()) {
+                if (entry.getValue() > idx) {
+                    entry.setValue(entry.getValue() - 1);
+                }
+            }
+            return idx;
+        } else {
+            return -1;
+        }
     }
 
     /**
@@ -79,11 +96,8 @@ public class TupleDefinition {
         columnNameIndex.put(newName, idx);
     }
 
-  
-
     /**
-     * Returns a string "(col1 type, col2 type2, ....)"
-     * suitable to be used in create stream
+     * Returns a string "(col1 type, col2 type2, ....)" suitable to be used in create stream
      * 
      */
     public String getStringDefinition() {
@@ -93,8 +107,9 @@ public class TupleDefinition {
         for (ColumnDefinition cd : getColumnDefinitions()) {
             if (!first) {
                 sb.append(", ");
-            } else
+            } else {
                 first = false;
+            }
             sb.append(cd.getStringDefinition());
         }
         sb.append(")");
@@ -102,8 +117,7 @@ public class TupleDefinition {
     }
 
     /**
-     * Returns a string "col1 type, col2 type2, ...."
-     * (without parenthesis) suitable to be used in create table
+     * Returns a string "col1 type, col2 type2, ...." (without parenthesis) suitable to be used in create table
      * 
      */
     public String getStringDefinition1() {
@@ -112,8 +126,9 @@ public class TupleDefinition {
         for (ColumnDefinition cd : getColumnDefinitions()) {
             if (!first) {
                 sb.append(", ");
-            } else
+            } else {
                 first = false;
+            }
             sb.append(cd.getStringDefinition());
         }
         return sb.toString();
@@ -142,5 +157,4 @@ public class TupleDefinition {
     public String toString() {
         return getStringDefinition();
     }
-
 }

@@ -21,7 +21,7 @@ public class Tuple {
      */
     public Tuple() {
         this.definition = new TupleDefinition();
-        this.columns = new ArrayList<Object>();
+        this.columns = new ArrayList<>();
     }
 
     public Tuple(TupleDefinition definition, List<Object> columns) {
@@ -33,7 +33,7 @@ public class Tuple {
     }
 
     public Tuple(TupleDefinition definition, Object[] columns) {
-        this(definition, Arrays.asList(columns));
+        this(definition, new ArrayList<>(Arrays.asList(columns)));
     }
 
     /**
@@ -42,7 +42,7 @@ public class Tuple {
      * @param tdef
      */
     public Tuple(TupleDefinition tdef) {
-        columns = new ArrayList<Object>(Collections.nCopies(tdef.size(), null));
+        columns = new ArrayList<>(Collections.nCopies(tdef.size(), null));
     }
 
     public void setDefinition(TupleDefinition definition) {
@@ -69,10 +69,17 @@ public class Tuple {
         columns.set(getColumnIndex(colName), value);
     }
 
+    /**
+     * returns the index of the column with name or -1 if there is no such column
+     * 
+     * @param name
+     * @return the index of the column with name or -1 if there is no such column
+     */
     public int getColumnIndex(String colName) {
         return definition.getColumnIndex(colName);
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T getColumn(String colName) {
         int i = definition.getColumnIndex(colName);
         if (i == -1) {
@@ -240,6 +247,16 @@ public class Tuple {
     public void addColumn(String colName, DataType type, Object colValue) {
         definition.addColumn(colName, type);
         columns.add(colValue);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T removeColumn(String colName) {
+        int idx = definition.removeColumn(colName);
+        if (idx != -1) {
+            return (T) columns.remove(idx);
+        } else {
+            return null;
+        }
     }
 
     /**

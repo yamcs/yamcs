@@ -196,6 +196,9 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
             ertime = null;
         }
         Long obt = tmPacket.getObt() == Long.MIN_VALUE ? null : tmPacket.getObt();
+        String rootContainer = tmPacket.getRootContainer() != null
+                ? tmPacket.getRootContainer().getQualifiedName()
+                : null;
         t = new Tuple(StandardTupleDefinitions.TM, new Object[] {
                 tmPacket.getGenerationTime(),
                 tmPacket.getSeqCount(),
@@ -205,6 +208,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
                 ertime,
                 obt,
                 getName(),
+                rootContainer,
         });
         lastPacketStream.emitTuple(t);
     }

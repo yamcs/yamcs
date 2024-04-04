@@ -136,8 +136,12 @@ public class XtceTmProcessor extends AbstractProcessorService
             if (rectime == TimeEncoding.INVALID_INSTANT) {
                 rectime = TimeEncoding.getWallclockTime();
             }
+            SequenceContainer rootContainer = pkt.getRootContainer();
+            if (rootContainer == null) {
+                rootContainer = sc;
+            }
             ContainerProcessingResult result = tmExtractor.processPacket(pkt.getPacket(), pkt.getGenerationTime(),
-                    rectime, pkt.getSeqCount(), sc);
+                    rectime, pkt.getSeqCount(), rootContainer);
 
             ParameterValueList paramResult = result.getTmParams();
             List<ContainerExtractionResult> containerResult = result.containers;
@@ -150,7 +154,7 @@ public class XtceTmProcessor extends AbstractProcessorService
                 parameterProcessorManager.process(result);
             }
         } catch (Exception e) {
-            log.error("got exception in tmprocessor ", e);
+            log.error("Exception while processing packet", e);
         }
     }
 

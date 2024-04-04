@@ -259,9 +259,20 @@ public class LinkManager {
             ertime = null;
         }
         Long obt = tmPacket.getObt() == Long.MIN_VALUE ? null : tmPacket.getObt();
-        t = new Tuple(StandardTupleDefinitions.TM,
-                new Object[] { tmPacket.getGenerationTime(), tmPacket.getSeqCount(), tmPacket.getReceptionTime(),
-                        tmPacket.getStatus(), tmPacket.getPacket(), ertime, obt, tmLink.getName() });
+        String rootContainer = tmPacket.getRootContainer() != null
+                ? tmPacket.getRootContainer().getQualifiedName()
+                : null;
+        t = new Tuple(StandardTupleDefinitions.TM, new Object[] {
+                tmPacket.getGenerationTime(),
+                tmPacket.getSeqCount(),
+                tmPacket.getReceptionTime(),
+                tmPacket.getStatus(),
+                tmPacket.getPacket(),
+                ertime,
+                obt,
+                tmLink.getName(),
+                rootContainer,
+        });
         stream.emitTuple(t);
 
     }
