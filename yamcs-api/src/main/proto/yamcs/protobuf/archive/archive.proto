@@ -177,6 +177,13 @@ message GetParameterSamplesRequest {
   // Default is to use the engineering value 
   optional bool useRawValue = 9;
 
+  // Milliseconds before a sample is considered expired. This property is
+  // used as a fallback, when the underlying parameter values have no
+  // implicit expiration time.
+  //
+  // Default: ``120000``.
+  optional uint64 gapTime = 10;
+
   // The name of the processor from which to use the parameter cache.
   // Default: ``realtime``.
   optional string processor = 7;

@@ -130,7 +130,10 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         int sampleCount = request.hasCount() ? request.getCount() : 500;
         boolean useRawValue = request.hasUseRawValue() && request.getUseRawValue();
 
-        Downsampler sampler = new Downsampler(start, stop, sampleCount, useRawValue);
+        Downsampler sampler = new Downsampler(start, stop, sampleCount);
+        sampler.setUseRawValue(useRawValue);
+        sampler.setGapTime(request.hasGapTime() ? request.getGapTime() : 120000);
+
         ParameterArchive parchive = getParameterArchive(ysi);
 
         ParameterCache pcache = null;
@@ -431,8 +434,6 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         b.setCount(r.totalCount());
         b.setStart(TimeEncoding.toProtobufTimestamp(r.start));
         b.setStop(TimeEncoding.toProtobufTimestamp(r.stop));
-        b.setTimeStart(TimeEncoding.toString(r.start));
-        b.setTimeStop(TimeEncoding.toString(r.stop));
         for (int i = 0; i < r.valueCount(); i++) {
             b.addEngValues(ValueUtility.toGbp(r.getValue(i)));
             b.addCounts(r.getCount(i));
