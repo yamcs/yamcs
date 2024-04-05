@@ -121,6 +121,12 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             logTraceInput();
         }
         try {
+            for (int k = 0; k < numOutputs; k++) {
+                OutputValueBinding outvb = (OutputValueBinding) functionArgs[numInputs + k];
+                outvb.value = null;
+                outvb.rawValue = null;
+            }
+
             Object returnValue = invocable.invokeFunction(functionName, functionArgs);
 
             if (log.isTraceEnabled()) {

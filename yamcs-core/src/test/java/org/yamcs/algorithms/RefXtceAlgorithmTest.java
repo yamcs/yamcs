@@ -102,6 +102,33 @@ public class RefXtceAlgorithmTest {
         assertEquals(3.14, params.get(0).getEngValue().getFloatValue(), 1e-5);
     }
 
+    @Test
+    public void testFlipFlop() {
+        Parameter param11 = db.getParameter("/RefXtce/param11");
+        List<ParameterValue> params = subscribe(param11);
+
+        ByteBuffer buf = ByteBuffer.allocate(6);
+        buf.putFloat(-10f);
+        buf.putShort((short) 10);
+        mpp.injectPacket(buf.array(), "/RefXtce/packet2");
+
+        assertEquals(0, params.size());
+        buf.rewind();
+        buf.putFloat(10);
+        buf.putShort((short) 10);
+        mpp.injectPacket(buf.array(), "/RefXtce/packet2");
+        assertEquals(1, params.size());
+
+        assertEquals(true, params.get(0).getEngValue().getBooleanValue());
+        params.clear();
+
+        buf.rewind();
+        buf.putFloat(-10f);
+        buf.putShort((short) 10);
+        mpp.injectPacket(buf.array(), "/RefXtce/packet2");
+        assertEquals(0, params.size());
+    }
+
     List<ParameterValue> subscribe(Parameter... plist) {
         final ArrayList<ParameterValue> params = new ArrayList<>();
         prm.addRequest(Arrays.asList(plist), (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
