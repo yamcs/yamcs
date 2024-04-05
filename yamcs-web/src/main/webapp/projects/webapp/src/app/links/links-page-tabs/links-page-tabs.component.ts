@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { YamcsService } from '@yamcs/webapp-sdk';
-import { SharedModule } from '../../shared/SharedModule';
+import { WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -9,7 +8,7 @@ import { SharedModule } from '../../shared/SharedModule';
   styleUrl: './links-page-tabs.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class LinksPageTabsComponent {

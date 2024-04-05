@@ -2,9 +2,11 @@ import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Alarm, GetAlarmsOptions, MessageService, SelectComponent, SelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { Alarm, GetAlarmsOptions, MessageService, SelectComponent, SelectOption, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { addHours } from 'date-fns';
-import { SharedModule } from '../../shared/SharedModule';
+import { AlarmLevelComponent } from '../../shared/alarm-level/alarm-level.component';
+import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
+import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { AlarmsPageTabsComponent } from '../alarms-page-tabs/alarms-page-tabs.component';
 
 @Component({
@@ -12,8 +14,11 @@ import { AlarmsPageTabsComponent } from '../alarms-page-tabs/alarms-page-tabs.co
   templateUrl: './alarm-history.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AlarmLevelComponent,
     AlarmsPageTabsComponent,
-    SharedModule,
+    InstanceToolbarComponent,
+    InstancePageTemplateComponent,
+    WebappSdkModule,
   ],
 })
 export class AlarmHistoryComponent {

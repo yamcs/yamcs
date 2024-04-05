@@ -4,9 +4,9 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InstanceTemplate, MessageService, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { SharedModule } from '../../shared/SharedModule';
 import { CreateInstanceWizardStepComponent } from '../create-instance-wizard-step/create-instance-wizard-step.component';
 
+import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -15,7 +15,7 @@ import { CreateInstanceWizardStepComponent } from '../create-instance-wizard-ste
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CreateInstanceWizardStepComponent,
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class CreateInstancePage2Component {

@@ -268,9 +268,7 @@ public class ActivitiesApi extends AbstractActivitiesApi<Context> {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadActivities);
         var activityService = verifyService(request.getInstance());
         var logListener = (ActivityLogListener) (activity, log) -> {
-            if (request.hasActivity() && request.getActivity().equals(log.getActivityId().toString())) {
-                observer.next(toActivityLogInfo(log));
-            } else {
+            if (!request.hasActivity() || request.getActivity().equals(log.getActivityId().toString())) {
                 observer.next(toActivityLogInfo(log));
             }
         };

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { UntypedFormGroup } from '@angular/forms';
-import { SharedModule } from '../../../shared/SharedModule';
+import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -9,7 +9,7 @@ import { SharedModule } from '../../../shared/SharedModule';
   styleUrl: '../../shared/StyleTable.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class ItemStylesComponent {

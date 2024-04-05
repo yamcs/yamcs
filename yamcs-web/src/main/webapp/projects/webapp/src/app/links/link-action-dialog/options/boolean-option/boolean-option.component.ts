@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, forwardRef, input } from '@angular/core';
 import { ControlValueAccessor, FormControl, FormGroup, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator, ValidatorFn, Validators } from '@angular/forms';
-import { Option } from '@yamcs/webapp-sdk';
+import { Option, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
-import { SharedModule } from '../../../../shared/SharedModule';
 
 @Component({
   standalone: true,
@@ -11,7 +10,7 @@ import { SharedModule } from '../../../../shared/SharedModule';
   styleUrls: ['../options.css', './boolean-option.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
   providers: [{
     provide: NG_VALUE_ACCESSOR,

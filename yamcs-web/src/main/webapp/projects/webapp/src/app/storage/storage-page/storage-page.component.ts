@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { SharedModule } from '../../shared/SharedModule';
+import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -7,7 +7,7 @@ import { SharedModule } from '../../shared/SharedModule';
   styleUrl: './storage-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class StoragePageComponent {

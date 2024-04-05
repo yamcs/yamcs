@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { AlgorithmStatus, OFF_COLOR, ON_COLOR } from '@yamcs/webapp-sdk';
-import { SharedModule } from '../../shared/SharedModule';
+import { AlgorithmStatus, OFF_COLOR, ON_COLOR, WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -9,7 +8,7 @@ import { SharedModule } from '../../shared/SharedModule';
   styleUrl: './algorithm-status.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class AlgorithmStatusComponent {

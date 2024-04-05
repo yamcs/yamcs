@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { TimelineBand, TimelineBandsPage, YamcsService } from '@yamcs/webapp-sdk';
-import { SharedModule } from '../../../shared/SharedModule';
+import { TimelineBand, TimelineBandsPage, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -18,7 +17,7 @@ import { SharedModule } from '../../../shared/SharedModule';
     }
   ],
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class BandMultiSelectComponent implements ControlValueAccessor {

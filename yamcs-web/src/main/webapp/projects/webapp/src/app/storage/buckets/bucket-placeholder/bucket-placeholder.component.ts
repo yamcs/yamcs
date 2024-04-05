@@ -6,6 +6,7 @@ import { RouterOutlet } from '@angular/router';
  * angular router '**' wildcard, rather than being forced to use
  * query parameters.
  */
+
 @Component({
   standalone: true,
   selector: 'app-bucket-placeholder',

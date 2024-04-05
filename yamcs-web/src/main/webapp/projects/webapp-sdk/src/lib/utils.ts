@@ -1,4 +1,4 @@
-import { Value } from './client';
+import { Instance, Value } from './client';
 const PREVIEW_LENGTH = 3;
 
 export type ISOResolution = 'day' | 'hhmm' | 'hhmmss' | 'millis';
@@ -468,6 +468,22 @@ export function generateUnsignedJWT(claims: { [key: string]: any; }) {
 
 export function lpad(nr: number, n: number) {
   return Array(n - String(nr).length + 1).join('0') + nr;
+}
+
+export function getDefaultProcessor(instance: Instance): string | null {
+  if (!instance) {
+    return null;
+  }
+
+  // Try to find a 'default' processor for this instance.
+  // The alphabetic-first non-replay persistent processor
+  for (const processor of (instance.processors || [])) {
+    if (processor.persistent && !processor.replay) {
+      return processor.name;
+    }
+  }
+
+  return null;
 }
 
 export function unflattenIndex(flatIndex: number, dimensions: number[]) {

@@ -4000,6 +4000,7 @@ public class XtceStaxReader extends AbstractStaxReader {
         String name = readMandatoryAttribute(ATTR_NAME, startElement);
 
         CustomAlgorithm algo = new CustomAlgorithm(name);
+        algo.setShortDescription(readAttribute(ATTR_SHORT_DESCRIPTION, startElement, null));
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();

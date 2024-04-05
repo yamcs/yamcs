@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { AcknowledgeAlarmOptions, Alarm, YamcsService } from '@yamcs/webapp-sdk';
-import { SharedModule } from '../../shared/SharedModule';
+import { AcknowledgeAlarmOptions, Alarm, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -10,7 +9,7 @@ import { SharedModule } from '../../shared/SharedModule';
   templateUrl: './acknowledge-alarm-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class AcknowledgeAlarmDialogComponent {

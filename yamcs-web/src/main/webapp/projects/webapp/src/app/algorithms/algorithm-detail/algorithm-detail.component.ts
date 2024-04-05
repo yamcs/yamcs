@@ -4,11 +4,11 @@ import { javascript } from '@codemirror/lang-javascript';
 import { python } from '@codemirror/lang-python';
 import { EditorState, Extension } from '@codemirror/state';
 import { keymap } from '@codemirror/view';
-import { Algorithm, AlgorithmOverrides, AlgorithmStatus, MessageService, YamcsService } from '@yamcs/webapp-sdk';
+import { Algorithm, AlgorithmOverrides, AlgorithmStatus, MessageService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { EditorView, basicSetup } from 'codemirror';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
-import { SharedModule } from '../../shared/SharedModule';
+import { MarkdownComponent } from '../../shared/markdown/markdown.component';
 import { AlgorithmStatusComponent } from '../algorithm-status/algorithm-status.component';
 
 @Component({
@@ -19,7 +19,8 @@ import { AlgorithmStatusComponent } from '../algorithm-status/algorithm-status.c
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AlgorithmStatusComponent,
-    SharedModule,
+    MarkdownComponent,
+    WebappSdkModule,
   ],
 })
 export class AlgorithmDetailComponent implements AfterViewInit {

@@ -1,7 +1,8 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Alarm, YamcsService } from '@yamcs/webapp-sdk';
-import { SharedModule } from '../../shared/SharedModule';
+import { Alarm, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { AgoComponent } from '../../shared/ago/ago.component';
+import { AlarmLevelComponent } from '../../shared/alarm-level/alarm-level.component';
 import { AlarmStateIconComponent } from '../alarm-state-icon/alarm-state-icon.component';
 import { AlarmsDataSource } from '../alarms.datasource';
 
@@ -11,8 +12,10 @@ import { AlarmsDataSource } from '../alarms.datasource';
   templateUrl: './alarm-table.component.html',
   styleUrl: './alarm-table.component.css',
   imports: [
+    AgoComponent,
+    AlarmLevelComponent,
     AlarmStateIconComponent,
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class AlarmsTableComponent {

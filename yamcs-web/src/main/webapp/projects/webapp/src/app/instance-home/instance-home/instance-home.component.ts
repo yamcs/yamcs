@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { ConfigService, TMStatisticsSubscription, TmStatistics, User, WebsiteConfig, YamcsService } from '@yamcs/webapp-sdk';
+import { ConfigService, TMStatisticsSubscription, TmStatistics, User, WebappSdkModule, WebsiteConfig, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
-import { SharedModule } from '../../shared/SharedModule';
+import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
+import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { TmStatsTableComponent } from '../tm-stats-table/tm-stats-table.component';
 
 @Component({
@@ -11,7 +12,9 @@ import { TmStatsTableComponent } from '../tm-stats-table/tm-stats-table.componen
   templateUrl: './instance-home.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    InstanceToolbarComponent,
+    InstancePageTemplateComponent,
+    WebappSdkModule,
     TmStatsTableComponent,
   ],
 })

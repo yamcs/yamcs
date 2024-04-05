@@ -1,9 +1,11 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
-import { MessageService, PlaybackRequest, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { MessageService, PlaybackRequest, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { SharedModule } from '../../shared/SharedModule';
+import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
+import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
+import { AgoPipe } from '../../shared/pipes/ago.pipe';
 import { GapsPageTabsComponent } from '../gaps-page-tabs/gaps-page-tabs.component';
 
 @Component({
@@ -11,8 +13,11 @@ import { GapsPageTabsComponent } from '../gaps-page-tabs/gaps-page-tabs.componen
   templateUrl: './gap-request-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AgoPipe,
     GapsPageTabsComponent,
-    SharedModule,
+    InstanceToolbarComponent,
+    InstancePageTemplateComponent,
+    WebappSdkModule,
   ],
 })
 export class GapRequestListComponent {

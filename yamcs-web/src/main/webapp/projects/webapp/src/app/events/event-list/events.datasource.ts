@@ -3,11 +3,7 @@ import { Event, EventSubscription, GetEventsOptions, Synchronizer, YamcsService 
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { EventBuffer } from './EventBuffer';
 
-export interface AnimatableEvent extends Event {
-  animate?: boolean;
-}
-
-export class EventsDataSource extends DataSource<AnimatableEvent> {
+export class EventsDataSource extends DataSource<Event> {
 
   pageSize = 100;
   offscreenRecord: Event | null;
@@ -120,7 +116,6 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
     }, event => {
       this.addEventSource(event);
       if (!this.loading$.getValue() && this.matchesFilter(event)) {
-        (event as AnimatableEvent).animate = true;
         this.eventBuffer.addRealtimeEvent(event);
       }
     });

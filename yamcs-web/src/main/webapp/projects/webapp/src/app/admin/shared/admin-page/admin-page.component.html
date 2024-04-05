@@ -1,0 +1,109 @@
+<ya-message-bar #messageBar />
+
+<mat-sidenav-container class="mat-typography"
+                       [class.message-bar-visible]="messageBar.show$ | async">
+  <mat-sidenav mode="side" [opened]="true" [disableClose]="true">
+    <div class="sidenav-content">
+      <mat-toolbar class="top module-title">
+        <mat-toolbar-row>
+          <mat-icon class="icon32" style="margin-right: 16px">security</mat-icon>
+          Admin Area
+        </mat-toolbar-row>
+      </mat-toolbar>
+
+      <mat-nav-list dense>
+        <ya-sidebar-nav-item routerLink="/admin" [exact]="true">
+          <mat-icon class="item-icon">recent_actors</mat-icon>
+          Action log
+        </ya-sidebar-nav-item>
+        <ya-sidebar-nav-group *ngIf="showAccessControlItem()"
+                              label="Access control"
+                              icon="supervised_user_circle"
+                              [active]="userManagementActive"
+                              [expanded]="userManagementExpanded"
+                              (toggle)="toggleUserManagementGroup()">
+          <ya-sidebar-nav-item routerLink="/admin/iam/users" [subitem]="true">
+            Users
+          </ya-sidebar-nav-item>
+          <ya-sidebar-nav-item routerLink="/admin/iam/service-accounts" [subitem]="true">
+            Service accounts
+          </ya-sidebar-nav-item>
+          <ya-sidebar-nav-item routerLink="/admin/iam/groups" [subitem]="true">
+            Groups
+          </ya-sidebar-nav-item>
+          <ya-sidebar-nav-item routerLink="/admin/iam/roles" [subitem]="true">
+            Roles
+          </ya-sidebar-nav-item>
+        </ya-sidebar-nav-group>
+        <ya-sidebar-nav-item *ngIf="showAccessControlItem()"
+                             routerLink="/admin/sessions">
+          <mat-icon class="item-icon">devices</mat-icon>
+          Sessions
+        </ya-sidebar-nav-item>
+        <ya-sidebar-nav-item *ngIf="showServicesItem()"
+                             routerLink="/admin/services">
+          <mat-icon class="item-icon">attractions</mat-icon>
+          Services
+        </ya-sidebar-nav-item>
+        <ya-sidebar-nav-item *ngIf="showSystemInfo()"
+                             routerLink="/admin/processor-types">
+          <mat-icon class="item-icon">flip_camera_android</mat-icon>
+          Processor types
+        </ya-sidebar-nav-item>
+        <ya-sidebar-nav-item routerLink="/admin/databases">
+          <mat-icon class="item-icon">storage</mat-icon>
+          Databases
+        </ya-sidebar-nav-item>
+        <ya-sidebar-nav-item *ngIf="showSystemInfo()"
+                             routerLink="/admin/replication">
+          <mat-icon class="item-icon">share</mat-icon>
+          Replication
+        </ya-sidebar-nav-item>
+        <ya-sidebar-nav-group *ngIf="showRocksDbItem()"
+                              label="RocksDB"
+                              icon="dataset"
+                              [active]="rocksDbActive"
+                              [expanded]="rocksDbExpanded"
+                              (toggle)="toggleRocksDbGroup()">
+          <ya-sidebar-nav-item routerLink="/admin/rocksdb/databases" [subitem]="true">
+            Open databases
+          </ya-sidebar-nav-item>
+        </ya-sidebar-nav-group>
+        <ya-sidebar-nav-item *ngIf="showSystemInfo()"
+                             routerLink="/admin/http-traffic">
+          <mat-icon class="item-icon">traffic</mat-icon>
+          HTTP traffic
+        </ya-sidebar-nav-item>
+        <ya-sidebar-nav-item *ngIf="showSystemInfo()"
+                             routerLink="/admin/routes">
+          <mat-icon class="item-icon">api</mat-icon>
+          API routes
+        </ya-sidebar-nav-item>
+        <ya-sidebar-nav-item *ngIf="showSystemInfo()"
+                             routerLink="/admin/leap-seconds">
+          <mat-icon class="item-icon">access_time</mat-icon>
+          Leap seconds
+        </ya-sidebar-nav-item>
+        <ya-sidebar-nav-item *ngIf="showSystemInfo()"
+                             routerLink="/admin/threads">
+          <mat-icon class="item-icon">receipt</mat-icon>
+          Threads
+        </ya-sidebar-nav-item>
+        <ya-sidebar-nav-item *ngIf="showSystemInfo()"
+                             routerLink="/admin/system">
+          <mat-icon class="item-icon">memory</mat-icon>
+          System
+        </ya-sidebar-nav-item>
+      </mat-nav-list>
+
+      <div style="flex: 1 1 auto"></div>
+      <div class="navbar-logo" *ngIf="config.logo">
+        <img [src]="config.logo">
+      </div>
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <router-outlet />
+  </mat-sidenav-content>
+</mat-sidenav-container>

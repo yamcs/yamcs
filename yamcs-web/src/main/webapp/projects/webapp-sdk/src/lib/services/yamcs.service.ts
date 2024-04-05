@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { Clearance, ClearanceSubscription, ConnectionInfo, Processor, SessionListener, StorageClient, TimeSubscription, YamcsClient } from '../client';
 import { FrameLossListener } from '../client/FrameLossListener';
-import { DefaultProcessorPipe } from '../pipes/default-processor.pipe';
+import { getDefaultProcessor } from '../utils';
 import { ConfigService } from './config.service';
 import { MessageService } from './message.service';
 
@@ -33,7 +33,6 @@ export class YamcsService implements FrameLossListener, SessionListener {
   constructor(
     @Inject(APP_BASE_HREF) baseHref: string,
     private router: Router,
-    private defaultProcessorPipe: DefaultProcessorPipe,
     private messageService: MessageService,
     private configService: ConfigService,
   ) {
@@ -62,7 +61,7 @@ export class YamcsService implements FrameLossListener, SessionListener {
       newContext += '__' + processor;
     } else {
       const instanceDetail = await this.yamcsClient.getInstance(instance);
-      const defaultProcessor = this.defaultProcessorPipe.transform(instanceDetail);
+      const defaultProcessor = getDefaultProcessor(instanceDetail);
       if (defaultProcessor) {
         newContext += '__' + defaultProcessor;
       }

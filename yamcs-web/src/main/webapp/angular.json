@@ -34,12 +34,12 @@
               {
                 "glob": "**/*",
                 "input": "node_modules/@yamcs/opi/dist/images/",
-                "output": "/"
+                "output": "/media/"
               },
               {
                 "glob": "**/*",
                 "input": "node_modules/@yamcs/opi/dist/fonts/",
-                "output": "/"
+                "output": "/media/"
               },
               "projects/webapp/src/manifest.webmanifest"
             ],

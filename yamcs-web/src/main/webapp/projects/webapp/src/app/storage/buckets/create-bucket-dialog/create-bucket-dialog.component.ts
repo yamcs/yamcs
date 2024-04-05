@@ -1,15 +1,14 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { MessageService, StorageClient, YamcsService } from '@yamcs/webapp-sdk';
-import { SharedModule } from '../../../shared/SharedModule';
+import { MessageService, StorageClient, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
   selector: 'app-create-bucket-dialog',
   templateUrl: './create-bucket-dialog.component.html',
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class CreateBucketDialogComponent {

@@ -4,10 +4,11 @@ import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ActionInfo, ColumnInfo, LinkEvent, LinkSubscription, MessageService, YamcsService } from '@yamcs/webapp-sdk';
+import { ActionInfo, ColumnInfo, LinkEvent, LinkSubscription, MessageService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
-import { SharedModule } from '../../shared/SharedModule';
+import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
+import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { LinkDetailComponent } from '../link-detail/link-detail.component';
 import { LinkStatusComponent } from '../link-status/link-status.component';
 import { LinksPageTabsComponent } from '../links-page-tabs/links-page-tabs.component';
@@ -20,10 +21,12 @@ import { LinkItem } from './model';
   styleUrl: './link-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    InstanceToolbarComponent,
+    InstancePageTemplateComponent,
     LinkDetailComponent,
     LinkStatusComponent,
     LinksPageTabsComponent,
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class LinkListComponent implements AfterViewInit, OnDestroy {

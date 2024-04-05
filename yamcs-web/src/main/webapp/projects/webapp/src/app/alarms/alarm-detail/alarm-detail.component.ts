@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { Alarm, YamcsService } from '@yamcs/webapp-sdk';
-import { SharedModule } from '../../shared/SharedModule';
+import { Alarm, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { AlarmLevelComponent } from '../../shared/alarm-level/alarm-level.component';
 
 @Component({
   standalone: true,
@@ -9,7 +9,8 @@ import { SharedModule } from '../../shared/SharedModule';
   styleUrl: './alarm-detail.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    AlarmLevelComponent,
+    WebappSdkModule,
   ],
 })
 export class AlarmDetailComponent {

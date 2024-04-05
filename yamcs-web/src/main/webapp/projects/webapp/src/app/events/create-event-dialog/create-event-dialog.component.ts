@@ -1,15 +1,14 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { SelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
-import { SharedModule } from '../../shared/SharedModule';
+import { SelectOption, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
   templateUrl: './create-event-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class CreateEventDialogComponent {

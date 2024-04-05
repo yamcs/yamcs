@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { ActionInfo, Link, MessageService, YamcsService } from '@yamcs/webapp-sdk';
+import { ActionInfo, Link, MessageService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { AuthService } from '../../core/services/AuthService';
-import { SharedModule } from '../../shared/SharedModule';
 import { LinkStatusComponent } from '../link-status/link-status.component';
 import { LinkService } from '../shared/link.service';
 
@@ -12,7 +11,7 @@ import { LinkService } from '../shared/link.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     LinkStatusComponent,
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class LinkDetailComponent {

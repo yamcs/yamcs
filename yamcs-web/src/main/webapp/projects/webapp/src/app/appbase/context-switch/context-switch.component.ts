@@ -8,6 +8,7 @@ import { ActivatedRoute, Params, Router } from '@angular/router';
  * Without this code, each component from which the context can be changed,
  * would need listen to route events separately.
  */
+
 @Component({
   standalone: true,
   template: '',

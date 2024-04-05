@@ -6,10 +6,10 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ConfigService, DefaultProcessorPipe, Instance, InstancesSubscription, MessageService, YamcsService } from '@yamcs/webapp-sdk';
+import { ConfigService, Instance, InstancesSubscription, MessageService, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { AuthService } from '../../core/services/AuthService';
-import { SharedModule } from '../../shared/SharedModule';
 
+import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -17,7 +17,7 @@ import { SharedModule } from '../../shared/SharedModule';
   styleUrl: './home.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class HomeComponent implements AfterViewInit, OnDestroy {
@@ -56,7 +56,6 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private config: ConfigService,
-    private defaultProcessorPipe: DefaultProcessorPipe,
   ) {
     title.setTitle('Instances');
 
@@ -244,7 +243,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
       if (items.indexOf(item) !== -1 && item.state !== 'OFFLINE') {
         if (item.processors?.length) {
           this.router.navigate(['/instance'], {
-            queryParams: { c: item.name + '__' + this.defaultProcessorPipe.transform(item) }
+            queryParams: { c: item.name + '__' + utils.getDefaultProcessor(item) }
           });
         } else {
           this.router.navigate(['/instance'], {

@@ -2,9 +2,9 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { InstanceTemplate, YamcsService } from '@yamcs/webapp-sdk';
-import { SharedModule } from '../../shared/SharedModule';
 import { CreateInstanceWizardStepComponent } from '../create-instance-wizard-step/create-instance-wizard-step.component';
 
+import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -13,7 +13,7 @@ import { CreateInstanceWizardStepComponent } from '../create-instance-wizard-ste
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CreateInstanceWizardStepComponent,
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class CreateInstancePage1Component {

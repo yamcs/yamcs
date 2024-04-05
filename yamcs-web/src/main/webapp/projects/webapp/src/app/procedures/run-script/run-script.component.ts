@@ -3,10 +3,11 @@ import { FormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { ActivityDefinition, CreateTimelineItemRequest, MessageService, SelectOption, YamcsService } from '@yamcs/webapp-sdk';
+import { ActivityDefinition, CreateTimelineItemRequest, MessageService, SelectOption, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
-import { SharedModule } from '../../shared/SharedModule';
+import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
+import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { ScheduleScriptDialogComponent } from '../schedule-script-dialog/schedule-script-dialog.component';
 
 @Component({
@@ -14,7 +15,9 @@ import { ScheduleScriptDialogComponent } from '../schedule-script-dialog/schedul
   templateUrl: './run-script.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    InstanceToolbarComponent,
+    InstancePageTemplateComponent,
+    WebappSdkModule,
   ],
 })
 export class RunScriptComponent {

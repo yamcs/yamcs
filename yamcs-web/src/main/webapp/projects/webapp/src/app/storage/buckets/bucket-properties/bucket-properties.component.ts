@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { Bucket, StorageClient, YamcsService } from '@yamcs/webapp-sdk';
+import { Bucket, StorageClient, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { SharedModule } from '../../../shared/SharedModule';
 import { StoragePageTemplateComponent } from '../../storage-page-template/storage-page-template.component';
 import { StorageToolbarComponent } from '../../storage-toolbar/storage-toolbar.component';
 import { BucketPageTabsComponent } from '../bucket-page-tabs/bucket-page-tabs.component';
@@ -15,7 +14,7 @@ import { BucketPageTabsComponent } from '../bucket-page-tabs/bucket-page-tabs.co
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     BucketPageTabsComponent,
-    SharedModule,
+    WebappSdkModule,
     StoragePageTemplateComponent,
     StorageToolbarComponent,
   ],

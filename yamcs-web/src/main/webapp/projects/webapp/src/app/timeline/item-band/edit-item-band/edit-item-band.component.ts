@@ -1,8 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { TimelineBand, YamcsService } from '@yamcs/webapp-sdk';
+import { TimelineBand, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { SharedModule } from '../../../shared/SharedModule';
 import { resolveProperties } from '../../shared/properties';
 import { propertyInfo } from '../ItemBand';
 import { ItemBandStylesComponent } from '../item-band-styles/item-band-styles.component';
@@ -14,7 +13,7 @@ import { ItemBandStylesComponent } from '../item-band-styles/item-band-styles.co
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ItemBandStylesComponent,
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class EditItemBandComponent implements AfterViewInit {

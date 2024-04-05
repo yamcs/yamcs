@@ -4,9 +4,10 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
-import { GetAlgorithmsOptions, SelectOption, YamcsService } from '@yamcs/webapp-sdk';
+import { GetAlgorithmsOptions, SelectOption, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { SharedModule } from '../../shared/SharedModule';
+import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
+import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { AlgorithmsDataSource, ListItem } from './algorithms.datasource';
 
 @Component({
@@ -15,7 +16,9 @@ import { AlgorithmsDataSource, ListItem } from './algorithms.datasource';
   styleUrl: './algorithm-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    InstanceToolbarComponent,
+    InstancePageTemplateComponent,
+    WebappSdkModule,
   ],
 })
 export class AlgorithmListComponent implements AfterViewInit, OnDestroy {

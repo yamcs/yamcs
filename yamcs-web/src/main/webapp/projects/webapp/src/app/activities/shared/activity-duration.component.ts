@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges, OnDestroy, inject } from '@angular/core';
-import { Activity, Synchronizer } from '@yamcs/webapp-sdk';
+import { Activity, Synchronizer, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { SharedModule } from '../../shared/SharedModule';
 
 @Component({
   standalone: true,
@@ -9,7 +8,7 @@ import { SharedModule } from '../../shared/SharedModule';
   template: '{{ elapsed$ | async | duration }}',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class ActivityDurationComponent implements OnChanges, OnDestroy {

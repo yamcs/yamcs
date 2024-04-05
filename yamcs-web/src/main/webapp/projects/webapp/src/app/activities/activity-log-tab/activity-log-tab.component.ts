@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild, input } from '@angular/core';
-import { Activity, ActivityLog, ActivityLogSubscription, MessageService, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
+import { Activity, ActivityLog, ActivityLogSubscription, MessageService, Synchronizer, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { SharedModule } from '../../shared/SharedModule';
 import { ActivityService } from '../shared/activity.service';
 
 @Component({
@@ -10,7 +9,7 @@ import { ActivityService } from '../shared/activity.service';
   styleUrl: './activity-log-tab.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class ActivityLogTabComponent implements OnDestroy {

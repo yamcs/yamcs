@@ -7,11 +7,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { MouseTracker, TimeLocator, TimeRuler, Timeline, Tool } from '@fqqb/timeline';
-import { ArchiveRecord, DateTimePipe, EditReplayProcessorRequest, MessageService, Processor, ProcessorSubscription, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ArchiveRecord, DateTimePipe, EditReplayProcessorRequest, MessageService, Processor, ProcessorSubscription, Synchronizer, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { SharedModule } from '../../shared/SharedModule';
-import { StartReplayDialog } from '../../shared/template/StartReplayDialog';
+import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
+import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
+import { StartReplayDialogComponent } from '../../shared/start-replay-dialog/start-replay-dialog.component';
 import { DownloadDumpDialogComponent } from '../download-dump-dialog/download-dump-dialog.component';
 import { JumpToDialogComponent } from '../jump-to-dialog/jump-to-dialog.component';
 import { ArchiveRecordGroup } from '../model/ArchiveRecordGroup';
@@ -48,7 +49,9 @@ function makeGradient(rgb: RGB) {
   styleUrl: './archive-browser.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    InstanceToolbarComponent,
+    InstancePageTemplateComponent,
+    WebappSdkModule,
   ],
 })
 export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
@@ -363,7 +366,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
   }
 
   private startReplay(range: DateRange) {
-    this.dialog.open(StartReplayDialog, {
+    this.dialog.open(StartReplayDialogComponent, {
       width: '400px',
       data: {
         start: range.start,

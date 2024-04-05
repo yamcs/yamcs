@@ -4,10 +4,11 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Activity, ColumnInfo, GetActivitiesOptions, MessageService, SelectComponent, SelectOption, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { Activity, ColumnInfo, GetActivitiesOptions, MessageService, SelectComponent, SelectOption, Synchronizer, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, debounceTime } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
-import { SharedModule } from '../../shared/SharedModule';
+import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
+import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { SetFailedDialogComponent } from '../set-failed-dialog/set-failed-dialog.component';
 import { ActivityDurationComponent } from '../shared/activity-duration.component';
 import { ActivityIconComponent } from '../shared/activity-icon.component';
@@ -23,7 +24,9 @@ const defaultInterval = 'NO_LIMIT';
   imports: [
     ActivityDurationComponent,
     ActivityIconComponent,
-    SharedModule,
+    InstanceToolbarComponent,
+    InstancePageTemplateComponent,
+    WebappSdkModule,
   ],
 })
 export class ActivityListComponent {

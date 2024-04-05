@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { MessageService, TimelineBand, UpdateTimelineViewRequest, YamcsService } from '@yamcs/webapp-sdk';
+import { MessageService, TimelineBand, UpdateTimelineViewRequest, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { SharedModule } from '../../shared/SharedModule';
+import { BandMultiSelectComponent } from '../shared/band-multi-select/band-multi-select.component';
 
 @Component({
   standalone: true,
@@ -12,7 +12,8 @@ import { SharedModule } from '../../shared/SharedModule';
   styleUrl: './edit-view-dialog.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    BandMultiSelectComponent,
+    WebappSdkModule,
   ],
 })
 export class EditViewDialogComponent implements OnDestroy {

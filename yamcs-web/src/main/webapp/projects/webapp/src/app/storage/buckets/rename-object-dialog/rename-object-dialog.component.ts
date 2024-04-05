@@ -1,15 +1,14 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { FilenamePipe, StorageClient, YamcsService } from '@yamcs/webapp-sdk';
-import { SharedModule } from '../../../shared/SharedModule';
+import { FilenamePipe, StorageClient, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
   selector: 'app-rename-object-dialog',
   templateUrl: './rename-object-dialog.component.html',
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class RenameObjectDialogComponent {

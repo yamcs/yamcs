@@ -1,8 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { TimelineBand, YamcsService } from '@yamcs/webapp-sdk';
+import { TimelineBand, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { SharedModule } from '../../../shared/SharedModule';
 import { CreateBandWizardStepComponent } from '../../create-band-wizard-step/create-band-wizard-step.component';
 import { resolveProperties } from '../../shared/properties';
 import { propertyInfo } from '../Spacer';
@@ -15,7 +14,7 @@ import { SpacerStylesComponent } from '../spacer-styles/spacer-styles.component'
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CreateBandWizardStepComponent,
-    SharedModule,
+    WebappSdkModule,
     SpacerStylesComponent,
   ],
 })
