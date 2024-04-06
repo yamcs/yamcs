@@ -1,10 +1,9 @@
 import { ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { javascript } from '@codemirror/lang-javascript';
+import { python } from '@codemirror/lang-python';
+import { EditorState, Extension } from '@codemirror/state';
 import { Algorithm, YamcsService } from '@yamcs/webapp-sdk';
-import * as ace from 'brace';
-import 'brace/mode/javascript';
-import 'brace/mode/python';
-import 'brace/theme/eclipse';
-import 'brace/theme/twilight';
+import { EditorView, basicSetup } from 'codemirror';
 
 @Component({
   selector: 'app-algorithm-detail',
@@ -17,30 +16,42 @@ export class AlgorithmDetail {
   @Input()
   algorithm: Algorithm;
 
-  @Input()
-  readonly = false;
-
-  private editor: ace.Editor;
-
   constructor(readonly yamcs: YamcsService) {
   }
 
   @ViewChild('text')
-  set textContainer(textContainer: ElementRef) {
-    this.editor = ace.edit(textContainer.nativeElement);
-    this.editor.setReadOnly(this.readonly);
+  set textContainer(textContainer: ElementRef<HTMLDivElement>) {
+    const extensions: Extension[] = [
+      basicSetup,
+      EditorState.readOnly.of(true),
+      EditorView.theme({
+        '&': { height: '300px', fontSize: '12px' },
+        '.cm-scroller': {
+          overflow: 'auto',
+          fontFamily: "'Roboto Mono', monospace",
+        },
+      }, { dark: false }),
+    ];
 
     switch (this.algorithm.language.toLowerCase()) {
       case 'javascript':
-        this.editor.getSession().setMode('ace/mode/javascript');
+        extensions.push(javascript());
         break;
       case 'python':
-        this.editor.getSession().setMode('ace/mode/python');
+        extensions.push(python());
         break;
       default:
         console.warn(`Unexpected language ${this.algorithm.language}`);
     }
 
-    this.editor.setTheme('ace/theme/eclipse');
+    const state = EditorState.create({
+      doc: this.algorithm.text,
+      extensions,
+    });
+
+    new EditorView({
+      state,
+      parent: textContainer.nativeElement,
+    });
   }
 }

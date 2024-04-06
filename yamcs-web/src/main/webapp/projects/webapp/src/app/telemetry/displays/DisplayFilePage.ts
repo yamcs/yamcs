@@ -2,10 +2,6 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestro
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { ConfigService, YamcsService } from '@yamcs/webapp-sdk';
-import * as ace from 'brace';
-import 'brace/mode/javascript';
-import 'brace/theme/eclipse';
-import 'brace/theme/twilight';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { ImageViewer } from './ImageViewer';
@@ -80,12 +76,6 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
       });
     });
     this.subscriptions.push(sub);
-
-    // Preload ACE editor (not done in ViewerHost, because ACE does not seem to work well
-    // when inialized from an entry component)
-    if (!!ace) { // Just some code that hopefully does not get treeshaked
-      return;
-    }
   }
 
   private getObjectNameFromUrl() {

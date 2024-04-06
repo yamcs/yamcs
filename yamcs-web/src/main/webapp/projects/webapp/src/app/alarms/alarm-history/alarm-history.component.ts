@@ -3,8 +3,7 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Alarm, GetAlarmsOptions, MessageService, SelectComponent, SelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
-import * as dayjs from 'dayjs';
-import { Dayjs } from 'dayjs';
+import { addHours } from 'date-fns';
 import { SharedModule } from '../../shared/SharedModule';
 import { AlarmsPageTabsComponent } from '../alarms-page-tabs/alarms-page-tabs.component';
 
@@ -165,14 +164,14 @@ export class AlarmHistoryComponent {
     const startIso = alarm.triggerTime;
     const stopIso = alarm.updateTime || alarm.clearInfo?.clearTime;
 
-    let start: Dayjs;
-    let stop: Dayjs;
+    let start: string;
+    let stop: string;
     if (stopIso) {
-      start = dayjs.utc(startIso);
-      stop = dayjs.utc(stopIso);
+      start = startIso;
+      stop = stopIso;
     } else {
-      start = dayjs.utc(startIso);
-      stop = dayjs.utc(stopIso).add(1, 'hour');
+      start = startIso;
+      stop = addHours(utils.toDate(startIso), 1).toISOString();
     }
 
     this.router.navigate([
@@ -183,8 +182,8 @@ export class AlarmHistoryComponent {
       queryParams: {
         c: this.yamcs.context,
         interval: 'CUSTOM',
-        customStart: start.toISOString(),
-        customStop: stop.toISOString(),
+        customStart: start,
+        customStop: stop,
       },
     });
   }
@@ -193,14 +192,14 @@ export class AlarmHistoryComponent {
     const startIso = alarm.triggerTime;
     const stopIso = alarm.updateTime || alarm.clearInfo?.clearTime;
 
-    let start: Dayjs;
-    let stop: Dayjs;
+    let start: string;
+    let stop: string;
     if (stopIso) {
-      start = dayjs.utc(startIso);
-      stop = dayjs.utc(stopIso);
+      start = startIso;
+      stop = stopIso;
     } else {
-      start = dayjs.utc(startIso);
-      stop = dayjs.utc(stopIso).add(1, 'hour');
+      start = startIso;
+      stop = addHours(utils.toDate(startIso), 1).toISOString();
     }
 
     this.router.navigate([
@@ -211,8 +210,8 @@ export class AlarmHistoryComponent {
       queryParams: {
         c: this.yamcs.context,
         interval: 'CUSTOM',
-        customStart: start.toISOString(),
-        customStop: stop.toISOString(),
+        customStart: start,
+        customStop: stop,
       },
     });
   }

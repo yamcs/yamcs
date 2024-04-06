@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
-import { ConfigService, StorageClient, YamcsService } from '@yamcs/webapp-sdk';
-import * as ace from 'brace';
-import 'brace/mode/javascript';
-import 'brace/theme/eclipse';
-import 'brace/theme/twilight';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
+import { indentWithTab } from '@codemirror/commands';
+import { javascript } from '@codemirror/lang-javascript';
+import { EditorState, Extension } from '@codemirror/state';
+import { keymap } from '@codemirror/view';
+import { ConfigService, MessageService, StorageClient, YamcsService } from '@yamcs/webapp-sdk';
+import { EditorView, basicSetup } from 'codemirror';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { Viewer } from './Viewer';
@@ -15,19 +16,21 @@ import { Viewer } from './Viewer';
   `,
   styles: `
     .script-container {
+      width: 100%;
       height: 100%;
+      display: flex;
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ScriptViewer implements Viewer {
 
-  @ViewChild('scriptContainer', { static: true })
+  @ViewChild('scriptContainer')
   private scriptContainer: ElementRef<HTMLDivElement>;
 
   objectName: string;
 
-  private editor: ace.Editor;
+  private editorView: EditorView;
 
   private storageClient: StorageClient;
   private bucket: string;
@@ -36,8 +39,8 @@ export class ScriptViewer implements Viewer {
 
   constructor(
     yamcs: YamcsService,
-    private changeDetector: ChangeDetectorRef,
     configService: ConfigService,
+    private messageService: MessageService,
     private authService: AuthService,
   ) {
     this.storageClient = yamcs.createStorageClient();
@@ -46,27 +49,52 @@ export class ScriptViewer implements Viewer {
 
   public init(objectName: string) {
     this.objectName = objectName;
-    this.storageClient.getObject(this.bucket, objectName).then(response => {
-      response.text().then(text => {
-        this.editor = ace.edit(this.scriptContainer.nativeElement);
-        this.editor.$blockScrolling = Infinity; // Required to suppress a warning
-        this.editor.getSession().setMode('ace/mode/javascript');
-        this.changeDetector.detectChanges();
-
-        this.editor.setTheme('ace/theme/eclipse');
-        this.editor.setValue(text, -1);
-
-        if (this.mayManageDisplays()) {
-          this.editor.addEventListener('change', () => {
-            this.hasUnsavedChanges$.next(true);
-          });
-        } else {
-          this.editor.setReadOnly(true);
-        }
-      });
-    });
+    this.storageClient.getObject(this.bucket, objectName)
+      .then(response => response.text().then(text => this.initializeEditor(text)))
+      .catch(err => this.messageService.showError(err));
 
     return Promise.resolve();
+  }
+
+  private initializeEditor(text: string) {
+    const extensions: Extension[] = [
+      basicSetup,
+      keymap.of([indentWithTab]),
+      javascript(),
+    ];
+
+    if (this.mayManageDisplays()) {
+      extensions.push(EditorView.updateListener.of(update => {
+        if (update.docChanged) {
+          this.hasUnsavedChanges$.next(true);
+        }
+      }));
+    } else {
+      extensions.push(EditorState.readOnly.of(true));
+    }
+
+    const theme = EditorView.theme({
+      '&': {
+        width: '100%',
+        height: '100%',
+        fontSize: '12px',
+      },
+      '.cm-scroller': {
+        overflow: 'auto',
+        fontFamily: "'Roboto Mono', monospace",
+      },
+    }, { dark: false });
+    extensions.push(theme);
+
+    const state = EditorState.create({
+      doc: text,
+      extensions,
+    });
+
+    this.editorView = new EditorView({
+      state,
+      parent: this.scriptContainer.nativeElement,
+    });
   }
 
   private mayManageDisplays() {
@@ -80,7 +108,7 @@ export class ScriptViewer implements Viewer {
   }
 
   async save() {
-    const text = this.editor.getSession().getValue();
+    const text = this.editorView.state.doc.toString();
     const b = new Blob([text], { type: 'text/javascript' });
     return this.storageClient.uploadObject(this.bucket, this.objectName, b).then(() => {
       this.hasUnsavedChanges$.next(false);

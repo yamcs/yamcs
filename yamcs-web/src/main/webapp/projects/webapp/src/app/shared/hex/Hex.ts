@@ -42,7 +42,7 @@ export class Hex implements AfterViewInit, OnChanges, OnDestroy {
   private animationFrameRequest?: number;
 
   constructor(@Inject(APP_BASE_HREF) baseHref: string) {
-    const resourceUrl = `url(${baseHref}RobotoMono-Regular.woff2)`;
+    const resourceUrl = `url(${baseHref}media/RobotoMono-Regular.woff2)`;
     this.fontPreloaded$ = new Promise(resolve => {
       const robotoMono = new FontFace('Roboto Mono', resourceUrl);
       robotoMono.load().then(() => resolve(true)).catch(() => resolve(false));

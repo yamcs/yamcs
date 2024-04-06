@@ -1,5 +1,6 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, ViewChild } from '@angular/core';
-import * as showdown from 'showdown';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, SecurityContext, ViewChild } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
+import { marked } from 'marked';
 
 @Component({
   selector: 'app-markdown',
@@ -12,17 +13,24 @@ export class Markdown implements AfterViewInit, OnChanges {
   text: string;
 
   @ViewChild('md')
-  ref: ElementRef;
+  ref: ElementRef<HTMLDivElement>;
+
+  constructor(private sanitizer: DomSanitizer) {
+  }
 
   ngAfterViewInit() {
-    const html = this.text ? new showdown.Converter().makeHtml(this.text) : '';
-    this.ref.nativeElement.innerHTML = html;
+    this.updateContent();
   }
 
   ngOnChanges() {
     if (this.ref) {
-      const html = this.text ? new showdown.Converter().makeHtml(this.text) : '';
-      this.ref.nativeElement.innerHTML = html;
+      this.updateContent();
     }
+  }
+
+  private updateContent() {
+    let html = this.text ? marked.parse(this.text) : '';
+    html = this.sanitizer.sanitize(SecurityContext.HTML, html)!;
+    this.ref.nativeElement.innerHTML = html;
   }
 }

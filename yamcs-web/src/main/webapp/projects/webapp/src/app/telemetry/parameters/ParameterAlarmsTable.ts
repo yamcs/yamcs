@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import { Alarm, YamcsService, utils } from '@yamcs/webapp-sdk';
-import * as dayjs from 'dayjs';
-import { Dayjs } from 'dayjs';
+import { addHours } from 'date-fns';
 import { ParameterAlarmsDataSource } from './ParameterAlarmsDataSource';
 
 @Component({
@@ -41,14 +40,14 @@ export class ParameterAlarmsTable {
     const startIso = alarm.triggerTime;
     const stopIso = alarm.updateTime || alarm.clearInfo?.clearTime;
 
-    let start: Dayjs;
-    let stop: Dayjs;
+    let start: string;
+    let stop: string;
     if (stopIso) {
-      start = dayjs.utc(startIso);
-      stop = dayjs.utc(stopIso);
+      start = startIso;
+      stop = stopIso;
     } else {
-      start = dayjs.utc(startIso);
-      stop = dayjs.utc(stopIso).add(1, 'hour');
+      start = startIso;
+      stop = addHours(utils.toDate(startIso), 1).toISOString();
     }
 
     this.router.navigate([
@@ -59,8 +58,8 @@ export class ParameterAlarmsTable {
       queryParams: {
         c: this.yamcs.context,
         interval: 'CUSTOM',
-        customStart: start.toISOString(),
-        customStop: stop.toISOString(),
+        customStart: start,
+        customStop: stop,
       },
     });
   }
@@ -69,14 +68,14 @@ export class ParameterAlarmsTable {
     const startIso = alarm.triggerTime;
     const stopIso = alarm.updateTime || alarm.clearInfo?.clearTime;
 
-    let start: Dayjs;
-    let stop: Dayjs;
+    let start: string;
+    let stop: string;
     if (stopIso) {
-      start = dayjs.utc(startIso);
-      stop = dayjs.utc(stopIso);
+      start = startIso;
+      stop = stopIso;
     } else {
-      start = dayjs.utc(startIso);
-      stop = dayjs.utc(stopIso).add(1, 'hour');
+      start = startIso;
+      stop = addHours(utils.toDate(startIso), 1).toISOString();
     }
 
     this.router.navigate([
@@ -87,8 +86,8 @@ export class ParameterAlarmsTable {
       queryParams: {
         c: this.yamcs.context,
         interval: 'CUSTOM',
-        customStart: start.toISOString(),
-        customStop: stop.toISOString(),
+        customStart: start,
+        customStop: stop,
       },
     });
   }

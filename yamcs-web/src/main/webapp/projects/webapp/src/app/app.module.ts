@@ -5,9 +5,6 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { ConfigService } from '@yamcs/webapp-sdk';
-import * as dayjs from 'dayjs';
-import 'dayjs/locale/en';
-import * as utc from 'dayjs/plugin/utc';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ContextSwitchComponent } from './appbase/context-switch/context-switch.component';
@@ -23,8 +20,6 @@ import { ProfileComponent } from './appbase/profile/profile.component';
 import { ServerUnavailableComponent } from './appbase/server-unavailable/server-unavailable.component';
 import { SharedModule } from './shared/SharedModule';
 
-dayjs.extend(utc);
-dayjs.locale('en');
 
 export const matTooltipOptions: MatTooltipDefaultOptions = {
   ...MAT_TOOLTIP_DEFAULT_OPTIONS_FACTORY(),
