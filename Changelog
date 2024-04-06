@@ -1,3 +1,7 @@
+Version 5.9.5 released 
+- Implemented sparse groups in the parameter archive
+
+
 Version 5.9.3 released 25-March-2024
 - Added a yamcs parameter-archive purge operation to remove completely the parameter archive before rebuilding.
   Sometimes the rebuild does not properly remove old data resulting in duplicates (this bug will be addressed in a future release) and the purge can be run to overcome the problem.

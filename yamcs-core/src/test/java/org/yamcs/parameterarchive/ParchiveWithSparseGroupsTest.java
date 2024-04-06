@@ -1,30 +1,25 @@
 package org.yamcs.parameterarchive;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.yamcs.parameterarchive.TestUtils.checkEquals;
 
-import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
-import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 
 public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
@@ -58,36 +53,6 @@ public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
         instance = "ParchiveWithSparseGroupsTest";
     }
 
-    public void openDb(String partitioningSchema) throws Exception {
-        Path dbroot = Path.of(YarchDatabase.getDataDir(), instance);
-        FileUtils.deleteRecursivelyIfExists(dbroot);
-        FileUtils.deleteRecursivelyIfExists(Path.of(dbroot + ".rdb"));
-        FileUtils.deleteRecursivelyIfExists(Path.of(dbroot + ".tbs"));
-
-        RdbStorageEngine rse = RdbStorageEngine.getInstance();
-        if (rse.getTablespace(instance) != null) {
-            rse.dropTablespace(instance);
-        }
-        rse.createTablespace(instance);
-        Map<String, Object> conf = new HashMap<>();
-
-        if (partitioningSchema != null) {
-            conf.put("partitioningSchema", partitioningSchema);
-        }
-        Map<String, Object> bfc = new HashMap<>();
-        bfc.put("enabled", Boolean.FALSE);
-        conf.put("backFiller", bfc);
-        conf.put("sparseGroups", true);
-        conf.put("minimumGroupOverlap", 0.5);
-
-        parchive = new ParameterArchive();
-        YConfiguration config = parchive.getSpec().validate(YConfiguration.wrap(conf));
-        parchive.init(instance, "test", config);
-        pidMap = parchive.getParameterIdDb();
-        pgidMap = parchive.getParameterGroupIdDb();
-        assertNotNull(pidMap);
-        assertNotNull(pgidMap);
-    }
 
     @AfterEach
     public void closeDb() throws Exception {
@@ -97,7 +62,7 @@ public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
 
     @Test
     public void test1() throws Exception {
-        openDb("none");
+        openDb("none", true, 0.5);
         ParameterValue pv1_0 = getParameterValue(p1, 100, "pv1_0");
         ParameterValue pv2_0 = getParameterValue(p2, 100, "pv2_0");
         ParameterValue pv1_1 = getParameterValue(p1, 200, "pv1_1");
@@ -114,11 +79,11 @@ public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
 
         // ascending on empty db
         List<ParameterValueArray> l0a = retrieveSingleValueMultigroup(0, TimeEncoding.POSITIVE_INFINITY, p1id,
-                new int[] { pg1.id, pg2.id }, true);
+                new int[] { pg1.id }, true);
         assertEquals(0, l0a.size());
         // descending on empty db
         List<ParameterValueArray> l0d = retrieveSingleValueMultigroup(0, TimeEncoding.POSITIVE_INFINITY, p1id,
-                new int[] { pg1.id, pg2.id }, false);
+                new int[] { pg1.id }, false);
         assertEquals(0, l0d.size());
 
         PGSegment pgSegment1 = new PGSegment(pg1.id, 0);
@@ -245,8 +210,88 @@ public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
     }
 
     @Test
+    public void test2() throws Exception {
+        openDb("none", true, 1);
+        ParameterValue pv1_0 = getParameterValue(p1, 100, "pv1_0");
+        ParameterValue pv3_0 = getParameterValue(p3, 100, "pv1_2");
+
+        ParameterValue pv2_0 = getParameterValue(p2, 200, "pv2_0");
+        ParameterValue pv3_1 = getParameterValue(p3, 200, "pv3_1");
+
+        ParameterValue pv3_2 = getParameterValue(p3, 300, "pv3_2");
+
+        int p1id = parchive.getParameterIdDb().createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType());
+        int p2id = parchive.getParameterIdDb().createAndGet(p2.getQualifiedName(), pv2_0.getEngValue().getType());
+        int p3id = parchive.getParameterIdDb().createAndGet(p3.getQualifiedName(), pv3_0.getEngValue().getType());
+
+        var pg1 = parchive.getParameterGroupIdDb().getGroup(IntArray.wrap(p1id, p3id));
+        var pg2 = parchive.getParameterGroupIdDb().getGroup(IntArray.wrap(p2id, p3id));
+        var pg3 = parchive.getParameterGroupIdDb().getGroup(IntArray.wrap(p3id));
+
+        assertNotEquals(pg1.id, pg2.id);
+        assertEquals(pg1.id, pg3.id);
+
+        // ascending on empty db
+        List<ParameterValueArray> l0a = retrieveSingleValueMultigroup(0, TimeEncoding.POSITIVE_INFINITY, p1id,
+                new int[] { pg1.id, pg2.id }, true);
+        assertEquals(0, l0a.size());
+        // descending on empty db
+        List<ParameterValueArray> l0d = retrieveSingleValueMultigroup(0, TimeEncoding.POSITIVE_INFINITY, p1id,
+                new int[] { pg1.id, pg2.id }, false);
+        assertEquals(0, l0d.size());
+
+        PGSegment pgSegment1 = new PGSegment(pg1.id, 0);
+        PGSegment pgSegment2 = new PGSegment(pg2.id, 0);
+
+        pgSegment1.addRecord(100, IntArray.wrap(p1id, p3id), Arrays.asList(pv1_0, pv3_0));
+        pgSegment2.addRecord(200, IntArray.wrap(p2id, p3id), Arrays.asList(pv2_0, pv3_1));
+        pgSegment1.addRecord(300, IntArray.wrap(p3id), Arrays.asList(pv3_2));
+
+        parchive.writeToArchive(pgSegment1);
+        parchive.writeToArchive(pgSegment2);
+
+        List<ParameterValueArray> l1a = retrieveSingleValueMultigroup(0, TimeEncoding.POSITIVE_INFINITY, p3id,
+                new int[] { pg1.id, pg2.id }, true);
+
+        assertEquals(1, l1a.size());
+        checkEquals(l1a.get(0), pv3_0, pv3_1, pv3_2);
+
+        List<ParameterValueArray> l1d = retrieveSingleValueMultigroup(0, TimeEncoding.POSITIVE_INFINITY, p3id,
+                new int[] { pg1.id, pg2.id }, false);
+        assertEquals(1, l1d.size());
+        checkEquals(l1a.get(0), pv3_0, pv3_1, pv3_2);
+
+
+        List<ParameterValueArray> l2a = retrieveSingleValueMultigroup(0, TimeEncoding.POSITIVE_INFINITY, p1id,
+                new int[] { pg1.id }, true);
+        assertEquals(1, l2a.size());
+        checkEquals(l2a.get(0), pv1_0);
+
+        List<ParameterValueArray> l2d = retrieveSingleValueMultigroup(0, TimeEncoding.POSITIVE_INFINITY, p1id,
+                new int[] { pg1.id }, false);
+        assertEquals(1, l2d.size());
+        checkEquals(l2a.get(0), pv1_0);
+
+        System.out.println("multi retrieval");
+        List<ParameterIdValueList> l4a = retrieveMultipleParameters(0, TimeEncoding.POSITIVE_INFINITY,
+                new int[] { p1id, p2id, p3id, p3id }, new int[] { pg1.id, pg2.id, pg1.id, pg2.id }, true);
+        assertEquals(3, l4a.size());
+        checkEquals(l4a.get(0), 100, pv1_0, pv3_0);
+        checkEquals(l4a.get(1), 200, pv2_0, pv3_1);
+        checkEquals(l4a.get(2), 300, pv3_2);
+
+        List<ParameterIdValueList> l4d = retrieveMultipleParameters(0, TimeEncoding.POSITIVE_INFINITY,
+                new int[] { p1id, p2id, p3id, p3id }, new int[] { pg1.id, pg2.id, pg1.id, pg2.id }, false);
+        assertEquals(3, l4a.size());
+        checkEquals(l4d.get(0), 300, pv3_2);
+        checkEquals(l4d.get(1), 200, pv2_0, pv3_1);
+        checkEquals(l4d.get(2), 100, pv1_0, pv3_0);
+
+    }
+
+    @Test
     public void testArrays() throws Exception {
-        openDb("none");
+        openDb("none", true, 0.5);
 
         ParameterValue pva1_0 = getArrayValue(a1, 100, "a");
         ParameterValue pva1_1 = getArrayValue(a1, 100, "b", "c");

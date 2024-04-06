@@ -173,8 +173,6 @@ public class ParameterGroupIdDb {
     private ParameterGroup createOrModify(IntArray input) throws RocksDBException {
         ParameterGroup max = null;
         // go through all groups and find one which overlap most with the input (but at least the minimum required)
-        // if two groups have the same coverage, then prefer the one with less elements in order to have less sparse
-        // columns
         int maxOverlap = 0;
         for (var g : groups) {
             if (g == null) {
@@ -186,9 +184,11 @@ public class ParameterGroupIdDb {
             }
 
             if (overlap > maxOverlap) {
-                overlap = maxOverlap;
+                maxOverlap = overlap;
                 max = g;
             } else if (overlap == maxOverlap && (max == null || g.pids.size() < max.pids.size())) {
+                // If two groups have the same overlap value, give preference to the one with fewer elements.
+                // This strategy aims to minimise the sparsity of the columns.
                 g = max;
             }
         }

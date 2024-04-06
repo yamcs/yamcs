@@ -281,6 +281,10 @@ public class SortedIntArray implements Serializable {
 
     @Override
     public String toString() {
+        if (length == 0) {
+            return "[]";
+        }
+
         StringBuilder b = new StringBuilder();
         int n = length - 1;
 

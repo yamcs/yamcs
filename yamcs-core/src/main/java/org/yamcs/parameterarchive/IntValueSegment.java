@@ -165,10 +165,6 @@ public class IntValueSegment extends BaseSegment implements ValueSegment {
         values = IntArray.wrap(VarIntUtil.decodeDeltaDeltaZigZag(ddz));
     }
 
-    private void add(int v) {
-        values.add(v);
-    }
-
     @Override
     public int getMaxSerializedSize() {
         return 5 + 4 * values.size(); // 1+for format id + 4 for the size plus 4 for each element

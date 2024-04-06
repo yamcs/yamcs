@@ -34,6 +34,10 @@ public abstract class BaseParchiveTest {
     ParameterGroupIdDb pgidMap;
 
     public void openDb(String partitioningSchema) throws Exception {
+        openDb(partitioningSchema, false, 0);
+    }
+
+    public void openDb(String partitioningSchema, boolean sparseGroups, double minOverlap) throws Exception {
         Path dbroot = Path.of(YarchDatabase.getDataDir(), instance);
         FileUtils.deleteRecursivelyIfExists(dbroot);
         FileUtils.deleteRecursivelyIfExists(Path.of(dbroot + ".rdb"));
@@ -52,7 +56,8 @@ public abstract class BaseParchiveTest {
         Map<String, Object> bfc = new HashMap<>();
         bfc.put("enabled", Boolean.FALSE);
         conf.put("backFiller", bfc);
-        conf.put("sparseGroups", false);
+        conf.put("sparseGroups", sparseGroups);
+        conf.put("minimumGroupOverlap", minOverlap);
 
         parchive = new ParameterArchive();
         YConfiguration config = parchive.getSpec().validate(YConfiguration.wrap(conf));

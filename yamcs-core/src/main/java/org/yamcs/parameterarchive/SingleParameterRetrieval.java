@@ -19,8 +19,6 @@ import org.yamcs.protobuf.Pvalue.ParameterStatus;
  * Because all values are of the same type, the memory consumed by those arrays is much smaller than what is provided by
  * an equivalent single parameter retrieval using {@link MultiParameterRetrieval}
  * 
- * @author nm
- *
  */
 public class SingleParameterRetrieval {
     final private ParameterRequest req;
@@ -162,9 +160,6 @@ public class SingleParameterRetrieval {
 
     /**
      * Merges ParameterValueArray for same parameter and sends the result to the final consumer
-     * 
-     * @author nm
-     *
      */
     static class SegmentMerger implements Consumer<ParameterValueArray> {
         final Consumer<ParameterValueArray> finalConsumer;

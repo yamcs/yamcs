@@ -5,10 +5,13 @@ import org.yamcs.parameter.Value;
 import org.yamcs.parameter.ValueArray;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.utils.PeekingIterator;
 import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
 
 import static org.yamcs.parameterarchive.ParameterArchive.STORE_RAW_VALUES;
+
+import java.util.NoSuchElementException;
 
 /**
  * Stores parameter values for one parameter over a time range.
@@ -44,6 +47,7 @@ public class ParameterValueSegment {
         this.rawValueSegment = rawValueSegment;
         this.parameterStatusSegment = parameterStatusSegment;
         this.gaps = gaps;
+
     }
 
     /**
@@ -256,7 +260,8 @@ public class ParameterValueSegment {
     }
 
     public int numValues() {
-        return parameterStatusSegment.size();
+        int numGaps = gaps == null ? 0 : gaps.size();
+        return timeSegment.size() - numGaps;
     }
 
     public BaseSegment getConsolidatedEngValueSegment() {
@@ -328,6 +333,18 @@ public class ParameterValueSegment {
         return rawValueSegment.getValue(pos);
     }
 
+    public SortedIntArray getGaps() {
+        return gaps;
+    }
+
+    public PeekingIterator<TimedValue> newAscendingIterator(long t0) {
+        return new AscendingIterator(t0);
+    }
+
+    public PeekingIterator<TimedValue> newDescendingIterator(long t0) {
+        return new DescendingIterator(t0);
+    }
+
     @Override
     public String toString() {
         return "ParameterValueSegment[size: " + timeSegment.size() + ", start: "
@@ -335,7 +352,113 @@ public class ParameterValueSegment {
                 + ", end: " + TimeEncoding.toString(getSegmentEnd()) + "]";
     }
 
-    public SortedIntArray getGaps() {
-        return gaps;
+    class AscendingIterator implements PeekingIterator<TimedValue> {
+        private int idxT;
+        private int idxV;
+        private int idxG;
+        private TimedValue currentValue = null;
+
+        public AscendingIterator(long t0) {
+            idxT = timeSegment.search(t0);
+            if (idxT < 0) {
+                idxT = -(idxT + 1);
+            }
+            if (gaps == null) {
+                idxV = idxT;
+            } else {
+                idxG = gaps.search(idxT);
+                if (idxG < 0) {
+                    idxG = -(idxG + 1);
+                }
+                idxV = idxT - idxG;
+
+            }
+            next();
+        }
+
+        public boolean isValid() {
+            return currentValue != null;
+        }
+
+        public TimedValue value() {
+            if (!isValid()) {
+                throw new NoSuchElementException();
+            }
+            return currentValue;
+        }
+
+        public void next() {
+            while (gaps != null && idxG < gaps.size() && idxT == gaps.get(idxG)) {
+                idxT++;
+                idxG++;
+            }
+
+            if (idxV < numValues()) {
+                Value ev = (engValueSegment == null) ? null : engValueSegment.getValue(idxV);
+                Value rv = (rawValueSegment == null) ? null : rawValueSegment.getValue(idxV);
+                ParameterStatus ps = (parameterStatusSegment == null) ? null : parameterStatusSegment.get(idxV);
+
+                currentValue = new TimedValue(timeSegment.getTime(idxT), ev, rv, ps);
+                idxT++;
+                idxV++;
+            } else {
+                currentValue = null;
+            }
+        }
+    }
+
+    class DescendingIterator implements PeekingIterator<TimedValue> {
+        private int idxT;
+        private int idxV;
+        private int idxG;
+        private TimedValue currentValue = null;
+
+        public DescendingIterator(long t0) {
+            idxT = timeSegment.search(t0);
+            if (idxT < 0) {
+                idxT = -(idxT + 2);
+            }
+            if (gaps == null) {
+                idxV = idxT;
+            } else {
+                idxG = gaps.search(idxT);
+                if (idxG < 0) {
+                    idxG = -(idxG + 2);
+                }
+                idxV = idxT - idxG - 1;
+            }
+            next();
+        }
+
+        public boolean isValid() {
+            return currentValue != null;
+        }
+
+        public TimedValue value() {
+            if (!isValid()) {
+                throw new NoSuchElementException();
+            }
+            return currentValue;
+        }
+
+        public void next() {
+
+            while (gaps != null && idxG >= 0 && idxT == gaps.get(idxG)) {
+                idxT--;
+                idxG--;
+            }
+
+            if (idxT >= 0 && idxV >= 0) {
+                Value ev = (engValueSegment == null) ? null : engValueSegment.getValue(idxV);
+                Value rv = (rawValueSegment == null) ? null : rawValueSegment.getValue(idxV);
+                ParameterStatus ps = (parameterStatusSegment == null) ? null : parameterStatusSegment.get(idxV);
+
+                currentValue = new TimedValue(timeSegment.getTime(idxT), ev, rv, ps);
+                idxT--;
+                idxV--;
+            } else {
+                currentValue = null;
+            }
+        }
     }
 }
