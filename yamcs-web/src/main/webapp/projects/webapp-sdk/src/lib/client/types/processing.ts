@@ -79,6 +79,20 @@ export interface SubscribeProcessorsRequest {
   processor?: string;
 }
 
+export interface SubscribeBackfillingRequest {
+  instance: string;
+}
+
+export interface SubscribeBackfillingData {
+  finished?: BackfillFinished[];
+}
+
+export interface BackfillFinished {
+  start: string;
+  stop: string;
+  processedParameters: number;
+}
+
 export interface Processor {
   instance: string;
   name: string;
@@ -120,3 +134,5 @@ export type AlgorithmStatusSubscription = WebSocketCall<SubscribeAlgorithmStatus
 export type ParameterSubscription = WebSocketCall<SubscribeParametersRequest, SubscribeParametersData>;
 
 export type ProcessorSubscription = WebSocketCall<SubscribeProcessorsRequest, Processor>;
+
+export type BackfillingSubscription = WebSocketCall<SubscribeBackfillingRequest, SubscribeBackfillingData>;

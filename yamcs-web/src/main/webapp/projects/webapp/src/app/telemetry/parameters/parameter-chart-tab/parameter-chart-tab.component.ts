@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, ViewChild, input } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Parameter, Synchronizer, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { BackfillingSubscription, Parameter, Synchronizer, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { DyDataSource } from '../../../shared/parameter-plot/DyDataSource';
 import { ParameterPlotComponent } from '../../../shared/parameter-plot/parameter-plot.component';
@@ -31,6 +31,7 @@ export class ParameterChartTabComponent implements OnInit, OnDestroy {
   dataSource: DyDataSource;
   missionTime: Date;
   private timeSubscription: Subscription;
+  private backfillSubscription: BackfillingSubscription;
 
   range$ = new BehaviorSubject<string>('PT15M');
   customStart$ = new BehaviorSubject<Date | null>(null);
@@ -73,6 +74,14 @@ export class ParameterChartTabComponent implements OnInit, OnDestroy {
           const stop = this.yamcs.getMissionTime();
           const start = utils.subtractDuration(stop, this.range$.value);
           this.plot?.updateWindowOnly(start, stop);
+        }
+      });
+
+      this.backfillSubscription = this.yamcs.yamcsClient.createBackfillingSubscription({
+        instance: this.yamcs.instance!
+      }, update => {
+        if (update.finished) {
+          this.dataSource.reloadVisibleRange();
         }
       });
     });
@@ -166,6 +175,7 @@ export class ParameterChartTabComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.backfillSubscription?.cancel();
     this.timeSubscription?.unsubscribe();
     this.dataSource?.disconnect();
   }

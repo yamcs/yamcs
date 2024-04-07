@@ -97,6 +97,7 @@ public class ParameterArchive extends AbstractYamcsService {
     int maxSegmentSize;
     boolean sparseGroups;
     double minimumGroupOverlap;
+
     @Override
     public Spec getSpec() {
         Spec spec = new Spec();
@@ -603,6 +604,10 @@ public class ParameterArchive extends AbstractYamcsService {
 
     public RealtimeArchiveFiller getRealtimeFiller() {
         return realtimeFiller;
+    }
+
+    public BackFiller getBackFiller() {
+        return backFiller;
     }
 
     public void disableAutoCompaction(long start, long stop) {

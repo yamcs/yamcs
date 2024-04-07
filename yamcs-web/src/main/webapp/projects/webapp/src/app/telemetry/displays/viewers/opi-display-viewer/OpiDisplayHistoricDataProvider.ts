@@ -1,5 +1,5 @@
 import { HistoricalDataProvider, NullablePoint, Widget } from '@yamcs/opi';
-import { Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { BackfillingSubscription, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 import { DyDataSource } from '../../../../shared/parameter-plot/DyDataSource';
 import { PlotData } from '../../../../shared/parameter-plot/PlotBuffer';
@@ -10,6 +10,7 @@ export class OpiDisplayHistoricDataProvider implements HistoricalDataProvider {
   private dataSource: DyDataSource;
 
   private subscriptions: Subscription[] = [];
+  private backfillSubscription?: BackfillingSubscription;
 
   constructor(
     pvName: string,
@@ -52,6 +53,14 @@ export class OpiDisplayHistoricDataProvider implements HistoricalDataProvider {
       widget.requestRepaint();
     });
     this.subscriptions.push(sub);
+
+    this.backfillSubscription = yamcs.yamcsClient.createBackfillingSubscription({
+      instance: yamcs.instance!
+    }, update => {
+      if (update.finished) {
+        this.dataSource.reloadVisibleRange();
+      }
+    });
   }
 
   private processSamples(data: PlotData) {
@@ -103,6 +112,7 @@ export class OpiDisplayHistoricDataProvider implements HistoricalDataProvider {
   }
 
   disconnect(): void {
+    this.backfillSubscription?.cancel();
     this.subscriptions.forEach(x => x.unsubscribe());
     this.dataSource?.disconnect();
   }
