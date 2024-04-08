@@ -55,7 +55,7 @@ public class UdpTcTmDataLink extends AbstractTcTmParamLink {
             var address = (InetSocketAddress) channel.remoteAddress();
             var dgram = new DatagramPacket(Unpooled.wrappedBuffer(binary), address);
             channel.writeAndFlush(dgram);
-            dataOutCount.getAndIncrement();
+            dataOut(1, binary.length);
             ackCommand(preparedCommand.getCommandId());
         }
 
@@ -161,7 +161,7 @@ public class UdpTcTmDataLink extends AbstractTcTmParamLink {
             if (tmPacket != null) {
                 processPacket(tmPacket);
             }
-            packetCount.incrementAndGet();
+            dataIn(1, packet.length);
         }
     }
 

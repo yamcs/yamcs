@@ -278,7 +278,7 @@ public class LinksApi extends AbstractLinksApi<Context> {
             var systemParametersService = SystemParametersService.getInstance(yamcsInstance);
             if (systemParametersService != null) {
                 var mdb = MdbFactory.getInstance(yamcsInstance);
-                var spaceSystemName = systemParametersService.getNamespace() + "/" + link.getName();
+                var spaceSystemName = systemParametersService.getNamespace() + "/links/" + link.getName();
                 var spaceSystem = mdb.getSpaceSystem(spaceSystemName);
                 if (spaceSystem != null) {
                     spaceSystem.getParameters(true).stream()
