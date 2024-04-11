@@ -59,7 +59,7 @@ public class LocalParameterManager extends AbstractProcessorService
     @Override
     public void init(Processor proc, YConfiguration config, Object spec) {
         super.init(proc, config, spec);
-        init(proc.getXtceDb());
+        init(proc.getMdb());
         this.proc = proc;
         this.lvc = proc.getLastValueCache();
         this.executor = proc.getTimer();

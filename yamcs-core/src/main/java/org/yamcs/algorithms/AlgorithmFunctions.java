@@ -44,7 +44,7 @@ public class AlgorithmFunctions {
 
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance);
         eventProducer.setSource(DEFAULT_SOURCE);
-        this.xtcedb = processor.getXtceDb();
+        this.xtcedb = processor.getMdb();
         this.processorData = processor.getProcessorData();
         this.processor = processor;
         this.context = context;

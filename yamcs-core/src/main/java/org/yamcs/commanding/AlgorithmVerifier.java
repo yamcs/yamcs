@@ -31,7 +31,7 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
         alg = cv.getAlgorithm();
         algCtx = cvh.getAlgorithmExecutionContext();
         processor = cvh.getProcessor();
-        xtcedb = processor.getXtceDb();
+        xtcedb = processor.getMdb();
     }
 
     @Override

@@ -78,7 +78,7 @@ public class AlgorithmManagerJavaExprTest {
 
     @Test
     public void testJavaExprAlgoFailure1() throws InvalidIdentification {
-        CustomAlgorithm calg = (CustomAlgorithm) processor.getXtceDb().getAlgorithm("/REFMDB/SUBSYS1/float_addje");
+        CustomAlgorithm calg = (CustomAlgorithm) processor.getMdb().getAlgorithm("/REFMDB/SUBSYS1/float_addje");
         algoMgr.overrideAlgorithm(calg, "bum");
         assertTrue(algoMgr.algorithmsInError.containsKey(calg.getQualifiedName()));
     }
@@ -92,7 +92,7 @@ public class AlgorithmManagerJavaExprTest {
         prm.addRequest(p, (ParameterConsumer) (subscriptionId, items) -> {
             params.addAll(items);
         });
-        CustomAlgorithm calg = (CustomAlgorithm) processor.getXtceDb().getAlgorithm("/REFMDB/SUBSYS1/float_addje");
+        CustomAlgorithm calg = (CustomAlgorithm) processor.getMdb().getAlgorithm("/REFMDB/SUBSYS1/float_addje");
         algoMgr.overrideAlgorithm(calg, "AlgoFloatAdditionJe.setFloatValue((float)(5/0));");
 
         AlgorithmStatus status = algoMgr.getAlgorithmStatus(calg);

@@ -50,7 +50,7 @@ public class ActiveCommand implements CommandHistoryConsumer {
     }
 
     void initCmdParams() {
-        XtceDb mdb = processor.getXtceDb();
+        XtceDb mdb = processor.getMdb();
         for (CommandHistoryAttribute cha : preparedCommand.getAttributes()) {
             String fqn = XtceDb.YAMCS_CMD_SPACESYSTEM_NAME + "/" + cha.getName();
             if (mdb.getParameter(fqn) == null) {
@@ -139,7 +139,7 @@ public class ActiveCommand implements CommandHistoryConsumer {
             log.error("Got a command history update for a different command: {}", cmdId);
             return;
         }
-        XtceDb mdb = processor.getXtceDb();
+        XtceDb mdb = processor.getMdb();
         ProcessingData data = ProcessingData.createForCmdProcessing(processor.getLastValueCache(), getArguments(),
                 cmdParamCache);
 

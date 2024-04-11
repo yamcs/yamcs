@@ -574,7 +574,7 @@ public class Processor extends AbstractService {
         return yamcsInstance;
     }
 
-    public Mdb getXtceDb() {
+    public Mdb getMdb() {
         return mdb;
     }
 

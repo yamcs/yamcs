@@ -83,7 +83,7 @@ public class ProcessorData {
     private ProcessorConfig processorConfig;
 
     public ProcessorData(Processor proc, ProcessorConfig config, Map<Parameter, ParameterValue> persistedParams) {
-        this(proc.getInstance(), proc.getName(), proc.getXtceDb(), config, persistedParams);
+        this(proc.getInstance(), proc.getName(), proc.getMdb(), config, persistedParams);
 
         long genTime = TimeEncoding.getWallclockTime();
         // populate with /yamcs/processor variables (these never change)

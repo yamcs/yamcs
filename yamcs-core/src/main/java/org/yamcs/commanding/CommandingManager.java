@@ -127,7 +127,7 @@ public class CommandingManager extends AbstractService {
 
     @Override
     protected void doStart() {
-        XtceDb mdb = processor.getXtceDb();
+        XtceDb mdb = processor.getMdb();
 
         Set<Parameter> paramsToSubscribe = new HashSet<>();
         for (MetaCommand mc : mdb.getMetaCommands()) {

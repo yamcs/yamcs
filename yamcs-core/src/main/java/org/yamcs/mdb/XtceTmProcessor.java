@@ -42,7 +42,7 @@ public class XtceTmProcessor extends AbstractProcessorService
 
     public XtceTmProcessor(Processor processor) {
         this.processor = processor;
-        this.mdb = processor.getXtceDb();
+        this.mdb = processor.getMdb();
         log = new Log(getClass(), processor.getInstance());
         log.setContext(processor.getName());
         tmExtractor = new XtceTmExtractor(mdb, processor.getProcessorData());

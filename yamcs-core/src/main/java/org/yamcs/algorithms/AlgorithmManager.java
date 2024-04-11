@@ -158,7 +158,7 @@ public class AlgorithmManager extends AbstractProcessorService
         this.parameterProcessorManager.subscribeAll(this);
         this.maxErrCount = config.getInt("maxErrorsBeforeAutomaticDeactivation", 10);
 
-        xtcedb = processor.getXtceDb();
+        xtcedb = processor.getMdb();
         timer = processor.getTimer();
 
         globalCtx = new AlgorithmExecutionContext("global", processor.getProcessorData(), maxErrCount);

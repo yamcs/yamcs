@@ -33,7 +33,7 @@ public class ContainerRequestManagerTest {
         RefMdbPacketGenerator packetGenerator = new RefMdbPacketGenerator();
         Processor c = ProcessorFactory.create("refmdb", "ContainerRequestManagerTest", packetGenerator);
         ContainerRequestManager rm = c.getContainerRequestManager();
-        XtceDb xtceDb = c.getXtceDb();
+        XtceDb xtceDb = c.getMdb();
 
         RecordingPacketConsumer consumer1 = new RecordingPacketConsumer();
         RecordingPacketConsumer consumer2 = new RecordingPacketConsumer();

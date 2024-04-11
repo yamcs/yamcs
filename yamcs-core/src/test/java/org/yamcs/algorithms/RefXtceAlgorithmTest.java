@@ -50,7 +50,7 @@ public class RefXtceAlgorithmTest {
         AlgorithmManager am = new AlgorithmManager();
         proc = ProcessorFactory.create(instance, "XtceAlgorithmTest", mpp, am);
         prm = proc.getParameterRequestManager();
-        db = proc.getXtceDb();
+        db = proc.getMdb();
     }
 
     @Test
@@ -144,7 +144,7 @@ public class RefXtceAlgorithmTest {
         public void init(Processor processor, YConfiguration config, Object spec) {
             this.ppm = processor.getParameterProcessorManager();
             ppm.addParameterProvider(this);
-            mdb = processor.getXtceDb();
+            mdb = processor.getMdb();
             extractor = new XtceTmExtractor(mdb);
             extractor.provideAll();
         }

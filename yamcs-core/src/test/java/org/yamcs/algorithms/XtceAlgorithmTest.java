@@ -37,7 +37,7 @@ public class XtceAlgorithmTest {
         ppm = proc.getParameterProcessorManager();
         prm = ppm.getParameterRequestManager();
 
-        db = proc.getXtceDb();
+        db = proc.getMdb();
     }
 
     @Test
