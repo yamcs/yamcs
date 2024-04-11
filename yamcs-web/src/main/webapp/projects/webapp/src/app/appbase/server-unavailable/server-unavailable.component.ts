@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { SharedModule } from '../../shared/SharedModule';
+import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import { OopsComponent } from '../oops/oops.component';
 
 @Component({
@@ -9,7 +9,7 @@ import { OopsComponent } from '../oops/oops.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     OopsComponent,
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class ServerUnavailableComponent implements OnInit {

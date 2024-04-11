@@ -2,11 +2,14 @@ package org.yamcs.tctm;
 
 import java.nio.ByteOrder;
 
+import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.time.FixedSizeTimeDecoder;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.SequenceContainer;
 
 /**
  * Generic packet preprocessor.
@@ -53,13 +56,27 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
     // where from the packet to read the 4 bytes sequence count
     final int seqCountOffset;
 
+    // Optional. If unset Yamcs will attempt to determine it in other ways
+    SequenceContainer rootContainer;
+
     public GenericPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         super(yamcsInstance, config);
         timestampOffset = config.getInt("timestampOffset");
         seqCountOffset = config.getInt("seqCountOffset");
+
         if (timeDecoder == null) {
             this.timeDecoder = new FixedSizeTimeDecoder(byteOrder, 8, 1);
             this.timeEpoch = TimeEpochs.UNIX;
+        }
+
+        var rootContainerName = config.getString("rootContainer", null);
+        if (rootContainerName != null) {
+            var mdb = MdbFactory.getInstance(yamcsInstance);
+            rootContainer = mdb.getSequenceContainer(rootContainerName);
+            if (rootContainer == null) {
+                throw new ConfigurationException(
+                        "MDB does not have a sequence container named '" + rootContainerName + "'");
+            }
         }
     }
 
@@ -110,6 +127,7 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
 
         tmPacket.setSequenceCount(seqCount);
         tmPacket.setInvalid(corrupted);
+        tmPacket.setRootContainer(rootContainer);
         return tmPacket;
     }
 

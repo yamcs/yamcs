@@ -37,7 +37,7 @@
           <ng-container *ngFor="let action of link.actions">
             <button mat-menu-item
                     [disabled]="!action.enabled"
-                    (click)="runAction(link.name, action.id)">
+                    (click)="runAction(link.name, action)">
               <ng-container *ngIf="action.style === 'CHECK_BOX'">
                 <mat-icon [style.visibility]="action.checked ? 'visible' : 'hidden'">check</mat-icon>
               </ng-container>

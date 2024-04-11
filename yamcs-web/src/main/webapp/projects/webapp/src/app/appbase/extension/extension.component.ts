@@ -1,13 +1,16 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, ViewChild, inject } from '@angular/core';
-import { ExtensionService, YamcsService } from '@yamcs/webapp-sdk';
-import { SharedModule } from '../../shared/SharedModule';
+import { ExtensionService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
+import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 
 @Component({
   standalone: true,
   templateUrl: './extension.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    InstanceToolbarComponent,
+    InstancePageTemplateComponent,
+    WebappSdkModule,
   ],
 })
 export class ExtensionComponent implements AfterViewInit, OnChanges {

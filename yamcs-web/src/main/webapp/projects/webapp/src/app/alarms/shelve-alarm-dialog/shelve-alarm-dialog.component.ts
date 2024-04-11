@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Alarm, SelectOption, ShelveAlarmOptions, YamcsService, utils } from '@yamcs/webapp-sdk';
-import { SharedModule } from '../../shared/SharedModule';
+import { Alarm, SelectOption, ShelveAlarmOptions, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -10,7 +9,7 @@ import { SharedModule } from '../../shared/SharedModule';
   templateUrl: './shelve-alarm-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class ShelveAlarmDialogComponent {

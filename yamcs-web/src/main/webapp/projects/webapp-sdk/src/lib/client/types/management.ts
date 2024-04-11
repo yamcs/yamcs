@@ -30,12 +30,12 @@ export interface Link {
   status: LinkStatus;
   detailedStatus: string;
   parentName?: string;
-  actions?: LinkAction[];
+  actions?: ActionInfo[];
   extra?: { [key: string]: any; };
   parameters?: string[];
 }
 
-export interface LinkAction {
+export interface ActionInfo {
   id: string;
   label: string;
   style: 'CHECK_BOX' | 'PUSH_BUTTON';

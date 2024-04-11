@@ -1,15 +1,14 @@
 import { Component, Inject, OnDestroy } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { DownloadEventsOptions, SelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { DownloadEventsOptions, SelectOption, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { SharedModule } from '../../shared/SharedModule';
 
 @Component({
   standalone: true,
   templateUrl: './export-events-dialog.component.html',
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class ExportEventsDialogComponent implements OnDestroy {

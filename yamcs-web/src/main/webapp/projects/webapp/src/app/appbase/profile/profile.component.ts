@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { ConfigService, User, WebsiteConfig, YamcsService } from '@yamcs/webapp-sdk';
+import { ConfigService, User, WebappSdkModule, WebsiteConfig, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { SharedModule } from '../../shared/SharedModule';
+import { SignificanceLevelComponent } from '../../shared/significance-level/significance-level.component';
 
 @Component({
   standalone: true,
@@ -10,7 +10,8 @@ import { SharedModule } from '../../shared/SharedModule';
   styleUrl: './profile.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
+    SignificanceLevelComponent,
   ],
 })
 export class ProfileComponent {

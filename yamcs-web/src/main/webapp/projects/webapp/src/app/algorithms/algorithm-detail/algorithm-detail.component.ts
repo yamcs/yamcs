@@ -1,13 +1,14 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild } from '@angular/core';
-import { Algorithm, AlgorithmOverrides, AlgorithmStatus, MessageService, YamcsService } from '@yamcs/webapp-sdk';
-import * as ace from 'brace';
-import 'brace/mode/javascript';
-import 'brace/mode/python';
-import 'brace/theme/eclipse';
-import 'brace/theme/twilight';
+import { indentWithTab } from '@codemirror/commands';
+import { javascript } from '@codemirror/lang-javascript';
+import { python } from '@codemirror/lang-python';
+import { EditorState, Extension } from '@codemirror/state';
+import { keymap } from '@codemirror/view';
+import { Algorithm, AlgorithmOverrides, AlgorithmStatus, MessageService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { EditorView, basicSetup } from 'codemirror';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
-import { SharedModule } from '../../shared/SharedModule';
+import { MarkdownComponent } from '../../shared/markdown/markdown.component';
 import { AlgorithmStatusComponent } from '../algorithm-status/algorithm-status.component';
 
 @Component({
@@ -18,13 +19,14 @@ import { AlgorithmStatusComponent } from '../algorithm-status/algorithm-status.c
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AlgorithmStatusComponent,
-    SharedModule,
+    MarkdownComponent,
+    WebappSdkModule,
   ],
 })
 export class AlgorithmDetailComponent implements AfterViewInit {
 
-  @ViewChild('text', { static: false })
-  textContainer: ElementRef;
+  @ViewChild('text')
+  textContainer: ElementRef<HTMLDivElement>;
 
   @Input({ required: true })
   algorithm: Algorithm;
@@ -34,7 +36,7 @@ export class AlgorithmDetailComponent implements AfterViewInit {
 
   overrides$ = new BehaviorSubject<AlgorithmOverrides | null>(null);
 
-  private editor: ace.Editor;
+  private editorView: EditorView;
   dirty$ = new BehaviorSubject<boolean>(false);
 
   constructor(
@@ -56,29 +58,50 @@ export class AlgorithmDetailComponent implements AfterViewInit {
   }
 
   private initializeEditor() {
-    this.editor = ace.edit(this.textContainer.nativeElement);
-    this.editor.$blockScrolling = Infinity; // Required to suppress a warning
+    const extensions: Extension[] = [
+      basicSetup,
+      keymap.of([indentWithTab]),
+    ];
 
     if (this.isChangeMissionDatabaseEnabled()) {
-      this.editor.addEventListener('change', () => {
-        this.dirty$.next(true);
-      });
+      extensions.push(EditorView.updateListener.of(update => {
+        if (update.docChanged) {
+          this.dirty$.next(true);
+        }
+      }));
     } else {
-      this.editor.setReadOnly(true);
+      extensions.push(EditorState.readOnly.of(true));
     }
+
+    const theme = EditorView.theme({
+      '&': { height: '300px', fontSize: '12px' },
+      '.cm-scroller': {
+        overflow: 'auto',
+        fontFamily: "'Roboto Mono', monospace",
+      },
+    }, { dark: false });
+    extensions.push(theme);
 
     switch (this.algorithm.language.toLowerCase()) {
       case 'javascript':
-        this.editor.getSession().setMode('ace/mode/javascript');
+        extensions.push(javascript());
         break;
       case 'python':
-        this.editor.getSession().setMode('ace/mode/python');
+        extensions.push(python());
         break;
       default:
         console.warn(`Unexpected language ${this.algorithm.language}`);
     }
 
-    this.editor.setTheme('ace/theme/eclipse');
+    const state = EditorState.create({
+      doc: this.algorithm.text,
+      extensions,
+    });
+
+    this.editorView = new EditorView({
+      state,
+      parent: this.textContainer.nativeElement,
+    });
   }
 
   private refreshOverrides() {
@@ -96,12 +119,19 @@ export class AlgorithmDetailComponent implements AfterViewInit {
   }
 
   private updateEditorValue(text: string) {
-    this.editor.session.setValue(text);
+    this.editorView.dispatch({
+      changes: {
+        from: 0,
+        to: this.editorView.state.doc.length,
+        insert: text,
+      },
+    });
+
     this.dirty$.next(false);
   }
 
   saveTextChanges() {
-    const text = this.editor.getSession().getValue();
+    const text = this.editorView.state.doc.toString();
     const instance = this.yamcs.instance!;
     const processor = this.yamcs.processor!;
     this.yamcs.yamcsClient.updateAlgorithmText(instance, processor, this.algorithm.qualifiedName, text)

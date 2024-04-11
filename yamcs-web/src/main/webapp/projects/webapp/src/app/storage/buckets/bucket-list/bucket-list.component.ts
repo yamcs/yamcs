@@ -6,9 +6,8 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Bucket, MessageService, StorageClient, YamcsService } from '@yamcs/webapp-sdk';
+import { Bucket, MessageService, StorageClient, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { AuthService } from '../../../core/services/AuthService';
-import { SharedModule } from '../../../shared/SharedModule';
 import { StoragePageTemplateComponent } from '../../storage-page-template/storage-page-template.component';
 import { StorageToolbarComponent } from '../../storage-toolbar/storage-toolbar.component';
 import { CreateBucketDialogComponent } from '../create-bucket-dialog/create-bucket-dialog.component';
@@ -18,7 +17,7 @@ import { CreateBucketDialogComponent } from '../create-bucket-dialog/create-buck
   templateUrl: './bucket-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
     StoragePageTemplateComponent,
     StorageToolbarComponent,
   ],

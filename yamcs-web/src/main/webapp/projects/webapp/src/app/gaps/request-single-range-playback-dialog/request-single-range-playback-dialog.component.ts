@@ -1,15 +1,14 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Gap, PlaybackRange, SelectOption, YamcsService } from '@yamcs/webapp-sdk';
+import { Gap, PlaybackRange, SelectOption, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { SharedModule } from '../../shared/SharedModule';
 
 @Component({
   standalone: true,
   templateUrl: './request-single-range-playback-dialog.component.html',
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class RequestSingleRangePlaybackDialogComponent {

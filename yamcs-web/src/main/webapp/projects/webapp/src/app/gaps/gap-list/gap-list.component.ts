@@ -5,9 +5,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Gap, GetGapsOptions, MessageService, SelectComponent, SelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { Gap, GetGapsOptions, MessageService, SelectComponent, SelectOption, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { SharedModule } from '../../shared/SharedModule';
+import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
+import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { GapsPageTabsComponent } from '../gaps-page-tabs/gaps-page-tabs.component';
 import { RequestMultipleRangesPlaybackDialogComponent } from '../request-multiple-ranges-playback-dialog/request-multiple-ranges-playback-dialog.component';
 import { RequestSingleRangePlaybackDialogComponent } from '../request-single-range-playback-dialog/request-single-range-playback-dialog.component';
@@ -18,7 +19,9 @@ import { RequestSingleRangePlaybackDialogComponent } from '../request-single-ran
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     GapsPageTabsComponent,
-    SharedModule,
+    InstanceToolbarComponent,
+    InstancePageTemplateComponent,
+    WebappSdkModule,
   ],
 })
 export class GapListComponent {

@@ -10,9 +10,13 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ServiceWithConfig;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
+import org.yamcs.actions.Action;
+import org.yamcs.actions.ActionHelper;
 import org.yamcs.api.Observer;
 import org.yamcs.cfdp.CfdpFileTransfer;
 import org.yamcs.cfdp.CfdpTransactionId;
+import org.yamcs.filetransfer.FileActionIdentifier;
+import org.yamcs.filetransfer.FileActionProvider;
 import org.yamcs.filetransfer.FileTransfer;
 import org.yamcs.filetransfer.FileTransferService;
 import org.yamcs.filetransfer.InvalidRequestException;
@@ -38,6 +42,7 @@ import org.yamcs.protobuf.ListTransfersRequest;
 import org.yamcs.protobuf.ListTransfersResponse;
 import org.yamcs.protobuf.PauseTransferRequest;
 import org.yamcs.protobuf.ResumeTransferRequest;
+import org.yamcs.protobuf.RunFileActionRequest;
 import org.yamcs.protobuf.SubscribeTransfersRequest;
 import org.yamcs.protobuf.TransactionId;
 import org.yamcs.protobuf.TransferDirection;
@@ -49,6 +54,7 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.protobuf.Empty;
+import com.google.protobuf.Struct;
 
 public class FileTransferApi extends AbstractFileTransferApi<Context> {
 
@@ -282,6 +288,23 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
             response = ListFilesResponse.newBuilder().build();
         }
         observer.complete(response);
+    }
+
+    @Override
+    public void runFileAction(Context ctx, RunFileActionRequest request, Observer<Struct> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
+        FileTransferService ftService = verifyService(request.getInstance(),
+                request.hasServiceName() ? request.getServiceName() : null);
+        
+        Action<FileActionIdentifier> action = null;
+        if (ftService instanceof FileActionProvider) {
+            action = ((FileActionProvider) ftService).getFileAction(request.getAction());
+        }
+        if (action == null) {
+            throw new BadRequestException("Unknown action '" + request.getAction() + "'");
+        }
+
+        ActionHelper.runAction(new FileActionIdentifier(request.getRemoteEntity(), request.getFile()), action, request.getMessage(), observer);
     }
 
     private static FileTransferServiceInfo toFileTransferServiceInfo(String name, FileTransferService service) {

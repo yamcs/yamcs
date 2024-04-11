@@ -1,8 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { TimelineBand, YamcsService } from '@yamcs/webapp-sdk';
+import { TimelineBand, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { SharedModule } from '../../../shared/SharedModule';
 
 @Component({
   standalone: true,
@@ -10,7 +9,7 @@ import { SharedModule } from '../../../shared/SharedModule';
   templateUrl: './edit-time-ruler.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class EditTimeRulerComponent implements AfterViewInit {

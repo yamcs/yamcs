@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { MessageService, UpdateTimelineBandRequest, YamcsService } from '@yamcs/webapp-sdk';
+import { MessageService, UpdateTimelineBandRequest, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { SharedModule } from '../../shared/SharedModule';
 import { EditCommandBandComponent } from '../command-band/edit-command-band/edit-command-band.component';
 import { EditItemBandComponent } from '../item-band/edit-item-band/edit-item-band.component';
 import { EditSpacerComponent } from '../spacer/edit-spacer/edit-spacer.component';
@@ -19,7 +18,7 @@ import { EditTimeRulerComponent } from '../time-ruler/edit-time-ruler/edit-time-
     EditItemBandComponent,
     EditSpacerComponent,
     EditTimeRulerComponent,
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class EditBandDialogComponent implements OnDestroy {

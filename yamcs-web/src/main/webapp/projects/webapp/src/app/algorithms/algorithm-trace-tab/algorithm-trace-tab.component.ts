@@ -1,8 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, OnInit, input } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlgorithmStatus, AlgorithmTrace, MessageService, YamcsService } from '@yamcs/webapp-sdk';
+import { AlgorithmStatus, AlgorithmTrace, MessageService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { SharedModule } from '../../shared/SharedModule';
 
 @Component({
   standalone: true,
@@ -10,7 +9,7 @@ import { SharedModule } from '../../shared/SharedModule';
   styleUrl: './algorithm-trace-tab.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class AlgorithmTraceTabComponent implements OnInit, AfterViewInit {

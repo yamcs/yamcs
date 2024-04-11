@@ -3,9 +3,10 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MessageService, TimelineBand, UpdateTimelineBandRequest, YamcsService } from '@yamcs/webapp-sdk';
+import { MessageService, TimelineBand, UpdateTimelineBandRequest, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { SharedModule } from '../../shared/SharedModule';
+import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
+import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { EditCommandBandComponent } from '../command-band/edit-command-band/edit-command-band.component';
 import { EditItemBandComponent } from '../item-band/edit-item-band/edit-item-band.component';
 import { EditSpacerComponent } from '../spacer/edit-spacer/edit-spacer.component';
@@ -20,7 +21,9 @@ import { EditTimeRulerComponent } from '../time-ruler/edit-time-ruler/edit-time-
     EditItemBandComponent,
     EditSpacerComponent,
     EditTimeRulerComponent,
-    SharedModule,
+    InstanceToolbarComponent,
+    InstancePageTemplateComponent,
+    WebappSdkModule,
   ],
 })
 export class EditBandComponent implements OnDestroy {

@@ -1,14 +1,14 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ColumnInfo, LinkAction, LinkEvent, LinkSubscription, MessageService, YamcsService } from '@yamcs/webapp-sdk';
+import { ActionInfo, ColumnInfo, LinkEvent, LinkSubscription, MessageService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
-import { SharedModule } from '../../shared/SharedModule';
+import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
+import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { LinkDetailComponent } from '../link-detail/link-detail.component';
 import { LinkStatusComponent } from '../link-status/link-status.component';
 import { LinksPageTabsComponent } from '../links-page-tabs/links-page-tabs.component';
@@ -21,10 +21,12 @@ import { LinkItem } from './model';
   styleUrl: './link-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    InstanceToolbarComponent,
+    InstancePageTemplateComponent,
     LinkDetailComponent,
     LinkStatusComponent,
     LinksPageTabsComponent,
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class LinkListComponent implements AfterViewInit, OnDestroy {
@@ -61,7 +63,6 @@ export class LinkListComponent implements AfterViewInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private messageService: MessageService,
-    private dialog: MatDialog,
     private linkService: LinkService,
   ) {
     title.setTitle('Links');
@@ -162,7 +163,7 @@ export class LinkListComponent implements AfterViewInit, OnDestroy {
       .catch(err => this.messageService.showError(err));
   }
 
-  runAction(link: string, action: LinkAction) {
+  runAction(link: string, action: ActionInfo) {
     this.linkService.runAction(link, action);
   }
 
@@ -191,10 +192,19 @@ export class LinkListComponent implements AfterViewInit, OnDestroy {
         this.detailLink$.next({ ...selectedItem });
       }
 
-      this.itemsByName[linkInfo.name].link = linkInfo;
+      if (linkInfo.name in this.itemsByName) {
+        this.itemsByName[linkInfo.name].link = linkInfo;
+      } else {
+        const linkItem = { link: linkInfo, hasChildren: false, expanded: false };
+        this.itemsByName[linkInfo.name] = linkItem;
+      }
+
       for (const item of Object.values(this.itemsByName)) {
         if (item.parentLink && item.parentLink.name === linkInfo.name) {
           item.parentLink = linkInfo;
+        }
+        if (linkInfo.parentName && linkInfo.parentName === item.link.name) {
+          item.hasChildren = true;
         }
       }
     }

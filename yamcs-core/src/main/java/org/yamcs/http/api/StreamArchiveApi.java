@@ -181,8 +181,9 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         repl.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(id).build());
 
         int sampleCount = request.hasCount() ? request.getCount() : 500;
-        boolean useRawValue = request.hasUseRawValue() && request.getUseRawValue();
-        Downsampler sampler = new Downsampler(start, stop, sampleCount, useRawValue);
+        Downsampler sampler = new Downsampler(start, stop, sampleCount);
+        sampler.setUseRawValue(request.hasUseRawValue() && request.getUseRawValue());
+        sampler.setGapTime(request.hasGapTime() ? request.getGapTime() : 120000);
 
         ParameterReplayListener replayListener = new ParameterReplayListener() {
             @Override
@@ -414,7 +415,6 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
     public static TimeSeries.Sample toGPBSample(Sample sample) {
         TimeSeries.Sample.Builder b = TimeSeries.Sample.newBuilder();
-        b.setTimeString(TimeEncoding.toString(sample.t));
         b.setTime(TimeEncoding.toProtobufTimestamp(sample.t));
         b.setN(sample.n);
 

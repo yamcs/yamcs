@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { Activity } from '@yamcs/webapp-sdk';
-import { SharedModule } from '../../shared/SharedModule';
+import { Activity, WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -8,7 +7,7 @@ import { SharedModule } from '../../shared/SharedModule';
   templateUrl: './activity-icon.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class ActivityIconComponent {

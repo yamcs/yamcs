@@ -1,15 +1,14 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { EditReplayProcessorRequest, YamcsService, utils } from '@yamcs/webapp-sdk';
-import { SharedModule } from '../../shared/SharedModule';
+import { EditReplayProcessorRequest, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
   selector: 'app-modify-replay-dialog',
   templateUrl: './modify-replay-dialog.component.html',
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class ModifyReplayDialogComponent {

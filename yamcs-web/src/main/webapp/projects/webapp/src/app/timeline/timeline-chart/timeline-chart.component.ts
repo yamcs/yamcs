@@ -7,7 +7,8 @@ import { MessageService, Synchronizer, TimelineItem, TimelineView, YamcsService,
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AuthService } from '../../core/services/AuthService';
-import { SharedModule } from '../../shared/SharedModule';
+import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
+import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { CommandBand } from '../command-band/CommandBand';
 import { CreateItemDialogComponent } from '../create-item-dialog/create-item-dialog.component';
 import { EditBandDialogComponent } from '../edit-band-dialog/edit-band-dialog.component';
@@ -21,6 +22,7 @@ interface DateRange {
   stop: Date;
 }
 
+import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -28,7 +30,9 @@ interface DateRange {
   styleUrl: './timeline-chart.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    InstanceToolbarComponent,
+    InstancePageTemplateComponent,
+    WebappSdkModule,
   ],
 })
 export class TimelineChartComponent implements AfterViewInit, OnDestroy {

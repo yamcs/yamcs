@@ -108,13 +108,6 @@ message ParameterData {
 message TimeSeries {
     message Sample {
         // Start time of the sample interval.
-        //
-        // Use ``time`` instead. The ``timeString`` field
-        // is temporarily kept for binary compatibility with
-        // protobuf-based clients.
-        optional string timeString = 1 [deprecated=true];
-
-        // Start time of the sample interval.
         optional google.protobuf.Timestamp time = 6;
 
         // Average numeric value during the sample interval.
@@ -151,12 +144,6 @@ message Ranges {
         // the generation time of the last value plus the expiration time or the
         // ``maxGap``.
         optional google.protobuf.Timestamp stop = 8;
-
-        // Deprecated. Use ``start`` instead.
-        optional string timeStart = 1 [deprecated = true];
-
-        // Deprecated. Use ``stop`` instead.
-        optional string timeStop = 2 [deprecated = true];
 
         // Number of parameter values received in the interval.
         // This is the total count of parameters in the interval.

@@ -1,0 +1,38 @@
+table {
+  cursor: pointer;
+}
+
+.folder:hover {
+  text-decoration: underline;
+}
+
+::ng-deep .parent-row td {
+  font-size: 12px;
+  line-height: 16px;
+  color: rgba(0, 0, 0, .654);
+  padding: 7px 8px 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.hide {
+  display: none;
+}
+
+.disabled {
+  color: LightGrey;
+}
+
+.no-select {
+  user-select: none;
+}
+
+td.status {
+  padding: 0;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.ya-data-table td.status+td,
+.ya-data-table th.status+th {
+  padding-left: 2px !important;
+}

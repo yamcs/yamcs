@@ -1,15 +1,14 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { utils } from '@yamcs/webapp-sdk';
-import { SharedModule } from '../../shared/SharedModule';
+import { WebappSdkModule, utils } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
   selector: 'app-jump-to-dialog',
   templateUrl: './jump-to-dialog.component.html',
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class JumpToDialogComponent {

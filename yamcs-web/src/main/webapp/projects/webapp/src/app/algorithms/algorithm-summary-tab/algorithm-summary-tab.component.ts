@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, input } from '@angular/core';
-import { AlgorithmStatus, AlgorithmStatusSubscription, YamcsService } from '@yamcs/webapp-sdk';
+import { AlgorithmStatus, AlgorithmStatusSubscription, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { SharedModule } from '../../shared/SharedModule';
 import { AlgorithmDetailComponent } from '../algorithm-detail/algorithm-detail.component';
 
 @Component({
@@ -10,7 +9,7 @@ import { AlgorithmDetailComponent } from '../algorithm-detail/algorithm-detail.c
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AlgorithmDetailComponent,
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class AlgorithmSummaryTabComponent implements OnInit, OnDestroy {

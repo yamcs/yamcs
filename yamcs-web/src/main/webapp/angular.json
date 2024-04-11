@@ -11,11 +11,14 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/webapp",
+            "outputPath": {
+              "base": "dist/webapp",
+              "browser": ""
+            },
             "index": "projects/webapp/src/index.template.html",
-            "main": "projects/webapp/src/main.ts",
+            "browser": "projects/webapp/src/main.ts",
             "tsConfig": "projects/webapp/tsconfig.app.json",
             "polyfills": [
               "zone.js"
@@ -31,42 +34,29 @@
               {
                 "glob": "**/*",
                 "input": "node_modules/@yamcs/opi/dist/images/",
-                "output": "/"
+                "output": "/media/"
               },
               {
                 "glob": "**/*",
                 "input": "node_modules/@yamcs/opi/dist/fonts/",
-                "output": "/"
+                "output": "/media/"
               },
               "projects/webapp/src/manifest.webmanifest"
             ],
             "styles": [
               "projects/webapp-sdk/src/styles/index.scss"
             ],
-            "allowedCommonJsDependencies": [
-              "brace",
-              "brace/mode/javascript",
-              "dayjs",
-              "dayjs/locale/en",
-              "dayjs/plugin/utc",
-              "showdown"
-            ],
-            "serviceWorker": true,
-            "ngswConfigPath": "projects/webapp/ngsw-config.json"
+            "serviceWorker": "projects/webapp/ngsw-config.json"
           },
           "configurations": {
             "production": {
-              "buildOptimizer": true,
               "optimization": true,
-              "vendorChunk": false,
               "extractLicenses": true,
               "sourceMap": false,
               "namedChunks": false
             },
             "development": {
-              "buildOptimizer": false,
               "optimization": false,
-              "vendorChunk": true,
               "extractLicenses": false,
               "sourceMap": true,
               "namedChunks": false

@@ -1,15 +1,14 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
-import { ActivityDefinition, MessageService, YamcsService } from '@yamcs/webapp-sdk';
-import { SharedModule } from '../../shared/SharedModule';
+import { ActivityDefinition, MessageService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
   templateUrl: './start-manual-activity-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class StartManualActivityDialogComponent {

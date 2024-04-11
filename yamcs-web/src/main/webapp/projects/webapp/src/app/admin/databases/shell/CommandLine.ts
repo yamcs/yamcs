@@ -1,5 +1,5 @@
 import { HistoryItem } from './HistoryItem';
-import { Shell } from './Shell';
+import { ShellComponent } from './shell.component';
 
 export class CommandLine {
 
@@ -10,7 +10,7 @@ export class CommandLine {
 
   cursor = 0;
 
-  constructor(private shell: Shell) {
+  constructor(private shell: ShellComponent) {
     this.history.push(this.lastItem);
     this.pointer = 0;
   }

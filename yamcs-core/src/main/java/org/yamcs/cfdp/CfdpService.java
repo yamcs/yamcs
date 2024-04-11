@@ -22,7 +22,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
 import org.yamcs.Spec;
@@ -46,12 +45,12 @@ import org.yamcs.cfdp.pdu.ProxyTransmissionMode;
 import org.yamcs.cfdp.pdu.TLV;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.filetransfer.AbstractFileTransferService;
 import org.yamcs.filetransfer.BasicListingParser;
 import org.yamcs.filetransfer.FileListingParser;
 import org.yamcs.filetransfer.FileListingService;
 import org.yamcs.filetransfer.FileSaveHandler;
 import org.yamcs.filetransfer.FileTransfer;
-import org.yamcs.filetransfer.FileTransferService;
 import org.yamcs.filetransfer.InvalidRequestException;
 import org.yamcs.filetransfer.RemoteFileListMonitor;
 import org.yamcs.filetransfer.TransferMonitor;
@@ -89,8 +88,7 @@ import com.google.common.collect.Streams;
  * @author nm
  *
  */
-public class CfdpService extends AbstractYamcsService
-        implements FileTransferService, StreamSubscriber, TransferMonitor {
+public class CfdpService extends AbstractFileTransferService implements StreamSubscriber, TransferMonitor {
 
     static final String ETYPE_UNEXPECTED_CFDP_PDU = "UNEXPECTED_CFDP_PDU";
     static final String ETYPE_TRANSFER_STARTED = "TRANSFER_STARTED";
@@ -1258,15 +1256,12 @@ public class CfdpService extends AbstractYamcsService
     }
 
     @Override
-    public FileTransferCapabilities getCapabilities() {
-        return FileTransferCapabilities
-                .newBuilder()
-                .setDownload(hasDownloadCapability)
+    protected void addCapabilities(FileTransferCapabilities.Builder builder) {
+        builder.setDownload(hasDownloadCapability)
                 .setUpload(true)
                 .setRemotePath(true)
                 .setFileList(hasFileListingCapability)
-                .setHasTransferType(true)
-                .build();
+                .setHasTransferType(true);
     }
 
     ScheduledThreadPoolExecutor getExecutor() {

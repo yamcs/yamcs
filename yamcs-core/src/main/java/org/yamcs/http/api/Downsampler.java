@@ -27,29 +27,27 @@ public class Downsampler implements Consumer<ParameterValueArray> {
 
     private static final Log log = new Log(Downsampler.class);
     private static final int DEFAULT_SAMPLE_COUNT = 500;
-    private static long DEFAULT_GAP_TIME = 120000;
+    private static final long DEFAULT_GAP_TIME = 120000;
 
     private TreeMap<Long, Sample> samplesByTime = new TreeMap<>();
     private long start;
     private long stop;
     private boolean useRawValue;
     private long lastSampleTime;
+    private long gapTime;
 
     public Downsampler(long start, long stop) {
-        this(start, stop, DEFAULT_SAMPLE_COUNT, false);
+        this(start, stop, DEFAULT_SAMPLE_COUNT);
     }
 
     public Downsampler(long start, long stop, int sampleCount) {
-        this(start, stop, sampleCount, false);
-    }
-
-    public Downsampler(long start, long stop, int sampleCount, boolean useRawValue) {
         if (start > stop) {
             throw new IllegalArgumentException("start (" + start + ") should be smaller than stop (" + stop + ")");
         }
         this.start = start;
         this.stop = stop;
-        this.useRawValue = useRawValue;
+        this.useRawValue = false;
+        this.gapTime = DEFAULT_GAP_TIME;
 
         // Initialize intervals
         long step = (stop - start) / sampleCount;
@@ -61,33 +59,46 @@ public class Downsampler implements Consumer<ParameterValueArray> {
         }
     }
 
+    public void setUseRawValue(boolean useRawValue) {
+        this.useRawValue = useRawValue;
+    }
+
+    public void setGapTime(long gapTime) {
+        this.gapTime = gapTime;
+    }
+
     public void process(org.yamcs.parameter.ParameterValue pval) {
         Value value = useRawValue ? pval.getRawValue() : pval.getEngValue();
         if (value == null) {
             return;
         }
 
+        var gentime = pval.getGenerationTime();
+        var expireMillis = pval.getExpireMillis();
         switch (value.getType()) {
         case DOUBLE:
-            process(pval.getGenerationTime(), value.getDoubleValue(), pval.getExpireMills());
+            process(gentime, value.getDoubleValue(), expireMillis);
             break;
         case FLOAT:
-            process(pval.getGenerationTime(), value.getFloatValue(), pval.getExpireMills());
+            process(gentime, value.getFloatValue(), expireMillis);
             break;
         case SINT32:
-            process(pval.getGenerationTime(), value.getSint32Value(), pval.getExpireMills());
+            process(gentime, value.getSint32Value(), expireMillis);
             break;
         case SINT64:
-            process(pval.getGenerationTime(), value.getSint64Value(), pval.getExpireMills());
+            process(gentime, value.getSint64Value(), expireMillis);
             break;
         case UINT32:
-            process(pval.getGenerationTime(), value.getUint32Value() & 0xFFFFFFFFL, pval.getExpireMills());
+            process(gentime, value.getUint32Value() & 0xFFFFFFFFL, expireMillis);
             break;
         case UINT64:
-            process(pval.getGenerationTime(), value.getUint64Value(), pval.getExpireMills());
+            process(gentime, value.getUint64Value(), expireMillis);
+            break;
+        case ENUMERATED:
+            process(gentime, value.getSint64Value(), expireMillis);
             break;
         default:
-            process(pval.getGenerationTime(), Double.NaN, pval.getExpireMills());
+            process(gentime, Double.NaN, expireMillis);
         }
     }
 
@@ -170,7 +181,8 @@ public class Downsampler implements Consumer<ParameterValueArray> {
         lastSampleTime = entry.getKey();
         Sample sample = entry.getValue();
         if (sample == null) {
-            samplesByTime.put(entry.getKey(), new Sample(entry.getKey(), time, value, expireMillis));
+            var newSample = new Sample(entry.getKey(), time, value, expireMillis);
+            samplesByTime.put(entry.getKey(), newSample);
         } else {
             sample.process(time, value, expireMillis);
         }
@@ -187,7 +199,7 @@ public class Downsampler implements Consumer<ParameterValueArray> {
             if (s == null) {
                 long t = e.getKey();
                 if (prev != null) { // Maybe generate a gap
-                    long gapTime = (prev.expireMillis != -1) ? prev.expireMillis : DEFAULT_GAP_TIME;
+                    long gapTime = (prev.expireMillis != -1) ? prev.expireMillis : this.gapTime;
                     if (t - prev.t > gapTime) {
                         r.add(new Sample(t));
                     }
@@ -216,6 +228,7 @@ public class Downsampler implements Consumer<ParameterValueArray> {
         int n;
         long minTime;
         long maxTime;
+
         long expireMillis; // Matching the 'last' value for this sample.
 
         // construct a gap

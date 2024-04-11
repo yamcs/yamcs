@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { Clearance, ClearanceSubscription, ConnectionInfo, Processor, SessionListener, StorageClient, TimeSubscription, YamcsClient } from '../client';
 import { FrameLossListener } from '../client/FrameLossListener';
-import { DefaultProcessorPipe } from '../pipes/default-processor.pipe';
+import { getDefaultProcessor } from '../utils';
 import { ConfigService } from './config.service';
 import { MessageService } from './message.service';
 
@@ -22,15 +22,17 @@ export class YamcsService implements FrameLossListener, SessionListener {
 
   readonly clearance$ = new BehaviorSubject<Clearance | null>(null);
   private clearanceSubscription: ClearanceSubscription;
+
   readonly time$ = new BehaviorSubject<string | null>(null);
   private timeSubscription: TimeSubscription;
+
+  readonly range$ = new BehaviorSubject<string>('PT15M');
 
   readonly sessionEnded$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     @Inject(APP_BASE_HREF) baseHref: string,
     private router: Router,
-    private defaultProcessorPipe: DefaultProcessorPipe,
     private messageService: MessageService,
     private configService: ConfigService,
   ) {
@@ -59,7 +61,7 @@ export class YamcsService implements FrameLossListener, SessionListener {
       newContext += '__' + processor;
     } else {
       const instanceDetail = await this.yamcsClient.getInstance(instance);
-      const defaultProcessor = this.defaultProcessorPipe.transform(instanceDetail);
+      const defaultProcessor = getDefaultProcessor(instanceDetail);
       if (defaultProcessor) {
         newContext += '__' + defaultProcessor;
       }
@@ -173,12 +175,8 @@ export class YamcsService implements FrameLossListener, SessionListener {
     this.connectionInfo$.next(null);
     this.time$.next(null);
     this.clearance$.next(null);
-    if (this.timeSubscription) {
-      this.timeSubscription.cancel();
-    }
-    if (this.clearanceSubscription) {
-      this.clearanceSubscription.cancel();
-    }
+    this.timeSubscription?.cancel();
+    this.clearanceSubscription?.cancel();
   }
 
   /**
@@ -197,5 +195,12 @@ export class YamcsService implements FrameLossListener, SessionListener {
    */
   getMissionTime() {
     return new Date(Date.parse(this.time$.getValue()!));
+  }
+
+  /**
+   * Returns lookback period
+   */
+  getTimeRange() {
+    return this.range$.value;
   }
 }

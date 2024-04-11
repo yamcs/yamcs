@@ -1,15 +1,14 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Gap, PlaybackRange, SelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { Gap, PlaybackRange, SelectOption, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { SharedModule } from '../../shared/SharedModule';
 
 @Component({
   standalone: true,
   templateUrl: './request-multiple-ranges-playback-dialog.component.html',
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class RequestMultipleRangesPlaybackDialogComponent {

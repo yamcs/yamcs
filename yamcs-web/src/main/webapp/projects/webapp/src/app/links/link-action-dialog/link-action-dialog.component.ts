@@ -1,15 +1,14 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { LinkAction } from '@yamcs/webapp-sdk';
-import { SharedModule } from '../../shared/SharedModule';
+import { ActionInfo, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { BooleanOptionComponent } from './options/boolean-option/boolean-option.component';
 import { FloatOptionComponent } from './options/float-option/float-option.component';
 import { IntegerOptionComponent } from './options/integer-option/integer-option.component';
 import { StringOptionComponent } from './options/string-option/string-option.component';
 
 export interface LinkActionDialogData {
-  action: LinkAction;
+  action: ActionInfo;
 }
 
 @Component({
@@ -20,7 +19,7 @@ export interface LinkActionDialogData {
     BooleanOptionComponent,
     FloatOptionComponent,
     IntegerOptionComponent,
-    SharedModule,
+    WebappSdkModule,
     StringOptionComponent,
   ],
 })

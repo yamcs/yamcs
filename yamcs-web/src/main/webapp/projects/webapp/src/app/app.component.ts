@@ -1,19 +1,22 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostBinding, OnDestroy, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { AuthInfo, ConfigService, ConnectionInfo, ExtensionService, PreferenceStore, SiteLink, User, YamcsService } from '@yamcs/webapp-sdk';
+import { AuthInfo, ConfigService, ConnectionInfo, ExtensionService, PreferenceStore, SiteLink, User, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { AppearanceService } from './core/services/AppearanceService';
 import { AuthService } from './core/services/AuthService';
-import { SelectInstanceDialog } from './shared/dialogs/SelectInstanceDialog';
-
+import { SelectInstanceDialogComponent } from './shared/select-instance-dialog/select-instance-dialog.component';
 
 @Component({
+  standalone: true,
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    WebappSdkModule,
+  ],
 })
 export class AppComponent implements AfterViewInit, OnDestroy {
 
@@ -97,7 +100,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   }
 
   openInstanceDialog() {
-    this.dialog.open(SelectInstanceDialog, {
+    this.dialog.open(SelectInstanceDialogComponent, {
       width: '650px',
       panelClass: ['no-padding-dialog'],
     });

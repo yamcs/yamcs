@@ -1,8 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { InitiateCop1Request } from '@yamcs/webapp-sdk';
-import { SharedModule } from '../../shared/SharedModule';
+import { InitiateCop1Request, WebappSdkModule } from '@yamcs/webapp-sdk';
 
 const CombinedValidator: ValidatorFn = (form: UntypedFormGroup) => {
   const type = form.get('type')!.value;
@@ -23,7 +22,7 @@ const CombinedValidator: ValidatorFn = (form: UntypedFormGroup) => {
   selector: 'app-initiate-cop1-dialog',
   templateUrl: './initiate-cop1-dialog.component.html',
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class InitiateCop1DialogComponent {

@@ -1,14 +1,13 @@
 import { ChangeDetectionStrategy, Component, OnInit, input } from '@angular/core';
-import { Activity, MessageService, YamcsService } from '@yamcs/webapp-sdk';
+import { Activity, MessageService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { SharedModule } from '../../shared/SharedModule';
 
 @Component({
   standalone: true,
   templateUrl: './activity-details-tab.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class ActivityDetailsTabComponent implements OnInit {

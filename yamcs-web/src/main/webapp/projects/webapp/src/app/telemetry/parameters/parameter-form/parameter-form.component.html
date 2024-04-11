@@ -1,0 +1,107 @@
+<ng-container *ngIf="controlName$ | async as controlName"
+              [formGroup]="formGroup"
+              [ngSwitch]="parameter.type?.engType">
+
+  <label *ngSwitchCase="'enumeration'">
+    <div class="meta">
+      <div class="item">{{ parameter.type?.engType }}</div>
+    </div>
+    {{ parameter.name }}
+    <ya-errors [controlName]="controlName" />
+    <select [formControlName]="controlName">
+      <option hidden disabled selected value> -- select an option -- </option>
+      <option *ngFor="let enumValue of parameter.type?.enumValue" [value]="enumValue.label">
+        {{ enumValue.label }}</option>
+    </select>
+  </label>
+
+  <label *ngSwitchCase="'boolean'">
+    {{ parameter.name }}
+    <ya-errors [controlName]="controlName" />
+    <br>
+    <input type="radio" [formControlName]="controlName" value="true"> true<br>
+    <input type="radio" [formControlName]="controlName" value="false"> false
+  </label>
+
+  <label *ngSwitchCase="'time'">
+    {{ parameter.name }}
+    <ya-errors [controlName]="controlName" />
+    <ya-date-time-input [formControlName]="controlName" />
+  </label>
+
+  <label *ngSwitchCase="'binary'">
+    <div class="meta">
+      <div class="item" [class.error]="err.invalid$ | async">{{ parameter.type?.engType }}</div>
+    </div>
+    {{ parameter.name }}
+    <ya-errors #err [controlName]="controlName" />
+    <ya-binary-input [formControlName]="controlName" />
+  </label>
+
+  <label *ngSwitchCase="'aggregate'">
+    <div class="meta">
+      <div class="item">{{ parameter.type?.engType }}</div>
+    </div>
+    {{ parameter.name }}
+    <div class="members">
+      <ng-container *ngFor="let member of parameter.type?.member">
+        <app-parameter-form [parameter]="member" [formGroup]="formGroup"
+                            [parent]="parent ? (parent + '.' + parameter.name) : parameter.name" />
+        <br>
+      </ng-container>
+    </div>
+  </label>
+
+  <div class="label" *ngSwitchCase="'integer'">
+    <div class="meta" [class.error]="err.invalid$ | async">
+      <div class="item" *ngIf="parameter.type?.unitSet">
+        {{ parameter.type?.unitSet | units }}
+      </div>
+      <div class="item" *ngIf="parameter.type?.signed === false">unsigned</div>
+      <div class="item">{{ parameter.type?.engType }}</div>
+    </div>
+    {{ parameter.name }}
+    <ya-errors #err [controlName]="controlName" />
+    <input type="text" [formControlName]="controlName">
+  </div>
+
+  <ng-container *ngSwitchCase="'float[]'">
+    Setting array values via this website is not yet supported.
+  </ng-container>
+  <ng-container *ngSwitchCase="'double[]'">
+    Setting array values via this website is not yet supported.
+  </ng-container>
+  <ng-container *ngSwitchCase="'integer[]'">
+    Setting array values via this website is not yet supported.
+  </ng-container>
+  <ng-container *ngSwitchCase="'enumeration[]'">
+    Setting array values via this website is not yet supported.
+  </ng-container>
+  <ng-container *ngSwitchCase="'string[]'">
+    Setting array values via this website is not yet supported.
+  </ng-container>
+  <ng-container *ngSwitchCase="'boolean[]'">
+    Setting array values via this website is not yet supported.
+  </ng-container>
+  <ng-container *ngSwitchCase="'time[]'">
+    Setting array values via this website is not yet supported.
+  </ng-container>
+  <ng-container *ngSwitchCase="'binary[]'">
+    Setting array values via this website is not yet supported.
+  </ng-container>
+  <ng-container *ngSwitchCase="'aggregate[]'">
+    Setting array values via this website is not yet supported.
+  </ng-container>
+
+  <label *ngSwitchDefault>
+    <div class="meta" [class.error]="err.invalid$ | async">
+      <div class="item" *ngIf="parameter.type?.unitSet">
+        {{ parameter.type?.unitSet | units }}
+      </div>
+      <div class="item">{{ parameter.type?.engType }}</div>
+    </div>
+    {{ parameter.name }}
+    <ya-errors #err [controlName]="controlName" />
+    <input type="text" [formControlName]="controlName">
+  </label>
+</ng-container>

@@ -4,9 +4,11 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuditRecord, GetAuditRecordsOptions, MessageService, SelectComponent, SelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
-import { SharedModule } from '../../shared/SharedModule';
+import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
+import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { LinksPageTabsComponent } from '../links-page-tabs/links-page-tabs.component';
 
+import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -14,8 +16,10 @@ import { LinksPageTabsComponent } from '../links-page-tabs/links-page-tabs.compo
   templateUrl: './action-log-tab.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    InstanceToolbarComponent,
+    InstancePageTemplateComponent,
     LinksPageTabsComponent,
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class ActionLogTabComponent {

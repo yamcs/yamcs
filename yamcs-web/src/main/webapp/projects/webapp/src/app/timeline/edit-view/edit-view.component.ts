@@ -3,16 +3,21 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MessageService, TimelineBand, UpdateTimelineViewRequest, YamcsService } from '@yamcs/webapp-sdk';
+import { MessageService, TimelineBand, UpdateTimelineViewRequest, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { SharedModule } from '../../shared/SharedModule';
+import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
+import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
+import { BandMultiSelectComponent } from '../shared/band-multi-select/band-multi-select.component';
 
 @Component({
   standalone: true,
   templateUrl: './edit-view.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    BandMultiSelectComponent,
+    InstanceToolbarComponent,
+    InstancePageTemplateComponent,
+    WebappSdkModule,
   ],
 })
 export class EditViewComponent implements OnDestroy {

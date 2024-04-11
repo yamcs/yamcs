@@ -3,9 +3,10 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { FormGroup, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MessageService, SelectOption, TimelineItem, UpdateTimelineItemRequest, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { MessageService, SelectOption, TimelineItem, UpdateTimelineItemRequest, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { SharedModule } from '../../shared/SharedModule';
+import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
+import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { itemPropertyInfo } from '../item-band/ItemBand';
 import { ItemStylesComponent } from '../item-band/item-styles/item-styles.component';
 import { resolveProperties } from '../shared/properties';
@@ -17,8 +18,10 @@ const OVERRIDE_SUFFIX = '_overrideBand';
   templateUrl: './edit-item.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    InstanceToolbarComponent,
+    InstancePageTemplateComponent,
     ItemStylesComponent,
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class EditItemComponent implements OnDestroy {

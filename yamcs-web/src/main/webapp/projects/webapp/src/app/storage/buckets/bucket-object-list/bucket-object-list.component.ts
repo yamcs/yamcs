@@ -4,10 +4,9 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { HttpError, ListObjectsOptions, ListObjectsResponse, StorageClient, YamcsService } from '@yamcs/webapp-sdk';
+import { HttpError, ListObjectsOptions, ListObjectsResponse, StorageClient, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { SharedModule } from '../../../shared/SharedModule';
 import * as dnd from '../../../shared/dnd';
 import { StoragePageTemplateComponent } from '../../storage-page-template/storage-page-template.component';
 import { StorageToolbarComponent } from '../../storage-toolbar/storage-toolbar.component';
@@ -25,7 +24,7 @@ import { ViewObjectMetadataDialogComponent } from '../view-object-metadata-dialo
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     BucketPageTabsComponent,
-    SharedModule,
+    WebappSdkModule,
     StoragePageTemplateComponent,
     StorageToolbarComponent,
   ],

@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/core';
 import { FormGroup, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { CreateTimelineItemRequest, MessageService, SelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { CreateTimelineItemRequest, MessageService, SelectOption, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
-import { SharedModule } from '../../shared/SharedModule';
 import { itemPropertyInfo } from '../item-band/ItemBand';
 import { ItemStylesComponent } from '../item-band/item-styles/item-styles.component';
 import { resolveProperties } from '../shared/properties';
@@ -16,7 +15,7 @@ const OVERRIDE_SUFFIX = '_overrideBand';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ItemStylesComponent,
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class CreateItemDialogComponent implements OnDestroy {

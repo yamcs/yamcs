@@ -1,5 +1,5 @@
-.ya-data-table,
-.ya-data-table.mat-mdc-table {
+.ya-data-table:not(.no-frame),
+.ya-data-table.mat-mdc-table:not(.no-frame) {
   border-left: 1px solid rgba(0, 0, 0, 0.1);
   border-right: 1px solid rgba(0, 0, 0, 0.1);
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
@@ -169,6 +169,10 @@ a.ya-link:hover {
 .ya-data-table td:not(:first-child),
 .ya-data-table th:not(:first-child) {
   padding-left: 24px;
+}
+
+.ya-data-table.no-frame th.mat-mdc-header-cell {
+  border-top: none;
 }
 
 @media print {

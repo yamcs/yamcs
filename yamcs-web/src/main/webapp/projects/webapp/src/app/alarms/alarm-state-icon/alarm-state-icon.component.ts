@@ -1,14 +1,13 @@
 import { Component, Input, OnDestroy } from '@angular/core';
-import { Alarm, Synchronizer } from '@yamcs/webapp-sdk';
+import { Alarm, Synchronizer, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { SharedModule } from '../../shared/SharedModule';
 
 @Component({
   standalone: true,
   selector: 'app-alarm-state-icon',
   templateUrl: './alarm-state-icon.component.html',
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class AlarmStateIconComponent implements OnDestroy {

@@ -7,6 +7,7 @@ import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
+import org.yamcs.actions.ActionResult;
 import org.yamcs.commanding.PreparedCommand;
 
 import com.google.gson.JsonObject;
@@ -54,7 +55,7 @@ public class UdpTcTmDataLink extends AbstractTcTmParamLink {
             var address = (InetSocketAddress) channel.remoteAddress();
             var dgram = new DatagramPacket(Unpooled.wrappedBuffer(binary), address);
             channel.writeAndFlush(dgram);
-            dataOutCount.getAndIncrement();
+            dataOut(1, binary.length);
             ackCommand(preparedCommand.getCommandId());
         }
 
@@ -160,7 +161,7 @@ public class UdpTcTmDataLink extends AbstractTcTmParamLink {
             if (tmPacket != null) {
                 processPacket(tmPacket);
             }
-            packetCount.incrementAndGet();
+            dataIn(1, packet.length);
         }
     }
 
@@ -183,7 +184,7 @@ public class UdpTcTmDataLink extends AbstractTcTmParamLink {
         }
 
         @Override
-        public JsonObject execute(Link link, JsonObject request) {
+        public void execute(Link link, JsonObject request, ActionResult result) {
             host = request.get("host").getAsString();
             port = request.get("port").getAsInt();
             log.info("Changing destination to {}:{}", host, port);
@@ -192,11 +193,16 @@ public class UdpTcTmDataLink extends AbstractTcTmParamLink {
                 var ch = UdpTcTmDataLink.this.channel;
                 disable();
                 ch.close().addListener(f -> {
-                    enable();
+                    if (f.isSuccess()) {
+                        enable();
+                        result.complete();
+                    } else {
+                        result.completeExceptionally(f.cause());
+                    }
                 });
+            } else {
+                result.complete();
             }
-
-            return null;
         }
     }
 }

@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { StorageClient, YamcsService } from '@yamcs/webapp-sdk';
-import { SharedModule } from '../../../shared/SharedModule';
+import { StorageClient, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -10,7 +9,7 @@ import { SharedModule } from '../../../shared/SharedModule';
   templateUrl: './create-folder-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class CreateFolderDialogComponent {

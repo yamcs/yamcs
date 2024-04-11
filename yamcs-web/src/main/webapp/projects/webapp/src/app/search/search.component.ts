@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { MessageService, Parameter, YamcsService } from '@yamcs/webapp-sdk';
+import { MessageService, Parameter, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { SharedModule } from '../shared/SharedModule';
+import { InstancePageTemplateComponent } from '../shared/instance-page-template/instance-page-template.component';
+import { InstanceToolbarComponent } from '../shared/instance-toolbar/instance-toolbar.component';
 
 interface Result {
   resources: Resource[];
@@ -22,7 +23,9 @@ interface Resource {
   templateUrl: './search.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    InstanceToolbarComponent,
+    InstancePageTemplateComponent,
+    WebappSdkModule,
   ],
 })
 export class SearchComponent {

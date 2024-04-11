@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { YamcsService } from '@yamcs/webapp-sdk';
-import { SharedModule } from '../../shared/SharedModule';
+import { WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
+import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { CreateBandWizardStepComponent } from '../create-band-wizard-step/create-band-wizard-step.component';
 
 @Component({
@@ -11,7 +12,9 @@ import { CreateBandWizardStepComponent } from '../create-band-wizard-step/create
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CreateBandWizardStepComponent,
-    SharedModule,
+    InstanceToolbarComponent,
+    InstancePageTemplateComponent,
+    WebappSdkModule,
   ],
 })
 export class CreateBandComponent {

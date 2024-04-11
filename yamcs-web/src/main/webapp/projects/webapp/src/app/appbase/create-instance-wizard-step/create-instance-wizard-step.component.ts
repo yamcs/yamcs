@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { SharedModule } from '../../shared/SharedModule';
+import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -8,7 +8,7 @@ import { SharedModule } from '../../shared/SharedModule';
   styleUrl: './create-instance-wizard-step.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class CreateInstanceWizardStepComponent {

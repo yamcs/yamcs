@@ -1,8 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
 import { UntypedFormGroup } from '@angular/forms';
-import { TimelineBand, YamcsService } from '@yamcs/webapp-sdk';
+import { TimelineBand, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { SharedModule } from '../../../shared/SharedModule';
 
 @Component({
   standalone: true,
@@ -10,7 +9,7 @@ import { SharedModule } from '../../../shared/SharedModule';
   templateUrl: './edit-command-band.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class EditCommandBandComponent implements AfterViewInit {

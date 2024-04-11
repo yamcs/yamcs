@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { SharedModule } from '../../shared/SharedModule';
+import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -9,7 +9,7 @@ import { SharedModule } from '../../shared/SharedModule';
   templateUrl: './set-failed-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class SetFailedDialogComponent {

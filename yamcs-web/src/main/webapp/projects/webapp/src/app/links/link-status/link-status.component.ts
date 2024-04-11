@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges, OnDestroy } from '@angular/core';
-import { Link, OFF_COLOR, ON_COLOR, Synchronizer } from '@yamcs/webapp-sdk';
+import { Link, OFF_COLOR, ON_COLOR, Synchronizer, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { SharedModule } from '../../shared/SharedModule';
 
 const EXPIRY = 2000;
 
@@ -13,7 +12,7 @@ const EXPIRY = 2000;
   styleUrl: './link-status.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    SharedModule,
+    WebappSdkModule,
   ],
 })
 export class LinkStatusComponent implements OnChanges, OnDestroy {
