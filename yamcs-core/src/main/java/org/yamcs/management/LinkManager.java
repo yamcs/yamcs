@@ -162,7 +162,14 @@ public class LinkManager {
         configureDataLink(link, linkConfig);
     }
 
-    void configureDataLink(Link link, YConfiguration linkArgs) {
+    /**
+     * Connects the links to streams
+     * <p>
+     * Updates the mappings which are provided via API
+     * <p>
+     * Can be called dynamically for example when an aggregate link updates its sub-links
+     */
+    public void configureDataLink(Link link, YConfiguration linkArgs) {
         if (linkArgs == null) {
             linkArgs = YConfiguration.emptyConfig();
         }
