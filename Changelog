@@ -1,5 +1,10 @@
-Version 5.9.5 released 
-- Implemented sparse groups in the parameter archive
+Version 5.9.4 released 11-Apr-2024
+- Implemented sparse groups in the parameter archive. This allows faster retrieval and less memory consumed during builtup and retrieval, at the expense of sliglthy higher disk usage
+- Added a processor option to persist the latest parameter values, such that when Yamcs restarts, it remembers the values for all parameters with the persist flag set. In XTCE, all parameters have the flag set by default. For spreadsheets, they have to be marked specifically using the newly added 'p' flag.
+- For web-rendered OPI displays, show past values on plots, in addition to realtime values
+- Automatically update plots following completion of a backfill operation
+- For `FilePollingTmDataLink`, add a `lastPacketStream` option, so that the last packet on a dump stream could be emitted to the realtime stream (for updating display state of connected clients)
+- On `GenericPacketPreprocessor`, add a `rootContainer` option. Previously this could only be done by making a new stream.
 
 
 Version 5.9.3 released 25-March-2024
