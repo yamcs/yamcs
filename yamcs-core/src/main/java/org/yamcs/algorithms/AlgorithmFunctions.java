@@ -13,7 +13,7 @@ import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 /**
  * Library of functions available from within Algorithm scripts using this naming scheme:
@@ -24,7 +24,7 @@ public class AlgorithmFunctions {
     private final Log log;
     public static final String DEFAULT_SOURCE = "CustomAlgorithm";
 
-    private XtceDb xtcedb;
+    private Mdb mdb;
 
     @Deprecated // Moved to EventLogFunctions
     private EventProducer eventProducer;
@@ -44,7 +44,7 @@ public class AlgorithmFunctions {
 
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance);
         eventProducer.setSource(DEFAULT_SOURCE);
-        this.xtcedb = processor.getMdb();
+        this.mdb = processor.getMdb();
         this.processorData = processor.getProcessorData();
         this.processor = processor;
         this.context = context;
@@ -56,7 +56,7 @@ public class AlgorithmFunctions {
      * @return a Float or String object
      */
     public Object calibrate(int raw, String parameter) {
-        Parameter p = xtcedb.getParameter(parameter);
+        Parameter p = mdb.getParameter(parameter);
         if (p != null) {
             if (p.getParameterType() instanceof EnumeratedParameterType) {
                 EnumeratedParameterType ptype = (EnumeratedParameterType) p.getParameterType();

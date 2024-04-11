@@ -26,10 +26,10 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 public class LocalParameterManagerTest {
-    XtceDb xtceDb;
+    Mdb mdb;
     MyParamProcessor paraProc;
     LocalParameterManager localParamMgr;
     Parameter p1, p2, p4, p7, p9;
@@ -45,17 +45,17 @@ public class LocalParameterManagerTest {
     public void beforeTest() throws Exception {
         localParamMgr = new LocalParameterManager();
         localParamMgr.init("test");
-        xtceDb = MdbFactory.createInstanceByConfig("refmdb");
+        mdb = MdbFactory.createInstanceByConfig("refmdb");
         paraProc = new MyParamProcessor();
-        localParamMgr.init(xtceDb);
+        localParamMgr.init(mdb);
         localParamMgr.setParameterProcessor(paraProc);
 
-        p1 = xtceDb.getParameter("/REFMDB/SUBSYS1/LocalPara1");
+        p1 = mdb.getParameter("/REFMDB/SUBSYS1/LocalPara1");
         p2 = localParamMgr.getParameter(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/LocalPara2").build());
 
-        p4 = xtceDb.getParameter("/REFMDB/SUBSYS1/LocalParaWithInitialValue4");
-        p7 = xtceDb.getParameter("/REFMDB/SUBSYS1/LocalParaWithInitialValue7");
-        p9 = xtceDb.getParameter("/REFMDB/SUBSYS1/LocalParaTime9");
+        p4 = mdb.getParameter("/REFMDB/SUBSYS1/LocalParaWithInitialValue4");
+        p7 = mdb.getParameter("/REFMDB/SUBSYS1/LocalParaWithInitialValue7");
+        p9 = mdb.getParameter("/REFMDB/SUBSYS1/LocalParaTime9");
 
         assertNotNull(p1);
         assertNotNull(p2);

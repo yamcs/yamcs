@@ -49,7 +49,7 @@ import org.yamcs.tctm.TmPacketDataLink;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.ServiceUtil;
 import org.yamcs.utils.YObjectLoader;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -568,8 +568,8 @@ public class LinkManager {
 
         @Override
         public void onTuple(Stream s, Tuple tuple) {
-            XtceDb xtcedb = MdbFactory.getInstance(yamcsInstance);
-            PreparedCommand pc = PreparedCommand.fromTuple(tuple, xtcedb);
+            Mdb mdb = MdbFactory.getInstance(yamcsInstance);
+            PreparedCommand pc = PreparedCommand.fromTuple(tuple, mdb);
             boolean sent = false;
             String reason = "no link available";
             for (TcDataLink tcLink : tcLinks) {

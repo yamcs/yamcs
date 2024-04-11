@@ -3,8 +3,8 @@ package org.yamcs.archive;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.yamcs.mdb.Mdb;
 import org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.protobuf.Db.ProtoDataType;
@@ -19,9 +19,9 @@ import com.google.protobuf.MessageLite;
  */
 public class CommandHistoryReplayHandler implements ReplayHandler {
     private ReplayOptions repl;
-    private XtceDb mdb;
+    private Mdb mdb;
 
-    public CommandHistoryReplayHandler(String instance, XtceDb mdb) {
+    public CommandHistoryReplayHandler(String instance, Mdb mdb) {
         this.mdb = mdb;
     }
 

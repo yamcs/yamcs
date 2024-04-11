@@ -5,13 +5,13 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.CommandVerifier;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 abstract class Verifier {
     /**
      * Imaginary parameter for publishing an optional return value to cmdhist
      */
-    public static final String YAMCS_PARAMETER_RETURN_VALUE = XtceDb.YAMCS_CMD_SPACESYSTEM_NAME + "/returnValue";
+    public static final String YAMCS_PARAMETER_RETURN_VALUE = Mdb.YAMCS_CMD_SPACESYSTEM_NAME + "/returnValue";
 
     final protected Log log;
     final protected CommandVerifier cv;

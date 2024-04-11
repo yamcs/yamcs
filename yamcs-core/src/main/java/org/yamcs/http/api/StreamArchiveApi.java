@@ -43,7 +43,6 @@ import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
@@ -79,7 +78,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             Observer<ListParameterHistoryResponse> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
 
-        XtceDb mdb = MdbFactory.getInstance(instance);
+        Mdb mdb = MdbFactory.getInstance(instance);
         String pathName = request.getName();
 
         ParameterWithId p = MdbApi.verifyParameterWithId(ctx, mdb, pathName);
@@ -158,7 +157,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             Observer<TimeSeries> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
 
-        XtceDb mdb = MdbFactory.getInstance(instance);
+        Mdb mdb = MdbFactory.getInstance(instance);
         Parameter p = MdbApi.verifyParameter(ctx, mdb, request.getName());
 
         ParameterType ptype = p.getParameterType();
@@ -218,7 +217,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
         ReplayOptions repl = ReplayOptions.getAfapReplay();
         List<NamedObjectId> ids = new ArrayList<>();
-        XtceDb mdb = MdbFactory.getInstance(instance);
+        Mdb mdb = MdbFactory.getInstance(instance);
 
         if (request.hasStart()) {
             repl.setRangeStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));

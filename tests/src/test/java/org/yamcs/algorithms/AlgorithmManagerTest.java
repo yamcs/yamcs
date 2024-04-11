@@ -24,6 +24,7 @@ import org.yamcs.ProcessorService;
 import org.yamcs.ProcessorServiceWithConfig;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
@@ -38,7 +39,6 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.protobuf.Db.Event;
 
 public class AlgorithmManagerTest {
@@ -49,7 +49,7 @@ public class AlgorithmManagerTest {
         MdbFactory.reset();
     }
 
-    private XtceDb db;
+    private Mdb db;
     private Processor proc;
     private RefMdbPacketGenerator tmGenerator;
     private ParameterRequestManager prm;

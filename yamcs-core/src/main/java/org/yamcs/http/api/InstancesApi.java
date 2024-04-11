@@ -56,7 +56,7 @@ import org.yamcs.utils.parser.FilterParser;
 import org.yamcs.utils.parser.FilterParser.Result;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.utils.parser.TokenMgrError;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.google.protobuf.Empty;
@@ -422,7 +422,7 @@ public class InstancesApi extends AbstractInstancesApi<Context> {
         }
 
         if (yamcsInstance.hasMissionDatabase()) {
-            XtceDb mdb = yamcs.getInstance(yamcsInstance.getName()).getMdb();
+            Mdb mdb = yamcs.getInstance(yamcsInstance.getName()).getMdb();
             if (mdb != null) {
                 instanceb.setMissionDatabase(MdbApi.toMissionDatabase(yamcsInstance.getName(), mdb));
             }

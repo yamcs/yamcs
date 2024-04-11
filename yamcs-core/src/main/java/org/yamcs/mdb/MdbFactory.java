@@ -43,7 +43,6 @@ import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SystemParameter;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.util.ArgumentReference;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.NameReference.Type;
@@ -130,21 +129,21 @@ public class MdbFactory {
                 loadSerialized = false;
             }
         }
-        Mdb db = null;
+        Mdb mdb = null;
         if (loadSerialized) {
             try {
-                db = loadSerializedInstance(serializedFile);
+                mdb = loadSerializedInstance(serializedFile);
                 serializedLoaded = true;
             } catch (InvalidClassException e) {
                 log.debug("Cannot load serialized database: " + e.getMessage());
-                db = null;
+                mdb = null;
             } catch (Exception e) {
                 log.warn("Cannot load serialized database", e);
-                db = null;
+                mdb = null;
             }
         }
 
-        if (db == null) {
+        if (mdb == null) {
             // Construct a Space System with one branch from the config file and the other one /yamcs for system
             // variables
             LoadResult lr = loaderTree.load();
@@ -153,8 +152,8 @@ public class MdbFactory {
                 throw new IllegalStateException("root loader has to load exactly one subsystem");
             }
             SpaceSystem rootSs = lr.ssList.get(0);
-            SpaceSystem yamcsSs = new SpaceSystem(XtceDb.YAMCS_SPACESYSTEM_NAME.substring(1));
-            yamcsSs.setQualifiedName(XtceDb.YAMCS_SPACESYSTEM_NAME);
+            SpaceSystem yamcsSs = new SpaceSystem(Mdb.YAMCS_SPACESYSTEM_NAME.substring(1));
+            yamcsSs.setQualifiedName(Mdb.YAMCS_SPACESYSTEM_NAME);
 
             rootSs.addSpaceSystem(yamcsSs);
             ReferenceFinder refFinder = new ReferenceFinder(s -> log.warn(s));
@@ -169,7 +168,7 @@ public class MdbFactory {
             }
             setQualifiedNames(rootSs, "");
 
-            db = new Mdb(rootSs, lr.writers);
+            mdb = new Mdb(rootSs, lr.writers);
 
             addTmPartitions(rootSs);
 
@@ -177,24 +176,24 @@ public class MdbFactory {
             for (SpaceSystem ss : rootSs.getSubSystems()) {
                 SequenceContainer seqc = ss.getRootSequenceContainer();
                 if (seqc != null) {
-                    db.setRootSequenceContainer(seqc);
+                    mdb.setRootSequenceContainer(seqc);
                     break;
                 }
             }
 
-            db.buildIndexMaps();
+            mdb.buildIndexMaps();
         }
 
         if (saveSerialized && (!serializedLoaded)) {
             try {
-                saveSerializedInstance(loaderTree, db, serializedFile, consistencyFile);
+                saveSerializedInstance(loaderTree, mdb, serializedFile, consistencyFile);
                 log.info("Serialized database saved locally");
             } catch (Exception e) {
                 log.warn("Cannot save serialized MDB", e);
             }
         }
 
-        return db;
+        return mdb;
     }
 
     /* collects a description for all unresolved references into the StringBuffer to raise an error */
@@ -238,7 +237,7 @@ public class MdbFactory {
             } else {
                 FoundReference foundReference = refFinder.findReference(rootSs, nr, ss);
                 if (foundReference == null && nr.getType() == Type.PARAMETER
-                        && nr.getReference().startsWith(XtceDb.YAMCS_SPACESYSTEM_NAME)) {
+                        && nr.getReference().startsWith(Mdb.YAMCS_SPACESYSTEM_NAME)) {
                     // Special case for system parameters: they are created on the fly
                     SystemParameter sp = createSystemParameter(rootSs, nr);
                     foundReference = new FoundReference(sp);
@@ -464,11 +463,11 @@ public class MdbFactory {
         log.debug("Loading serialized XTCE DB from: {}", serializedFile);
 
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(serializedFile))) {
-            Mdb db = (Mdb) in.readObject();
+            Mdb mdb = (Mdb) in.readObject();
             log.info("Loaded XTCE DB from {} with {} containers, {} parameters and {} commands",
-                    serializedFile, db.getSequenceContainers().size(), db.getParameterNames().size(),
-                    db.getMetaCommands().size());
-            return db;
+                    serializedFile, mdb.getSequenceContainers().size(), mdb.getParameterNames().size(),
+                    mdb.getMetaCommands().size());
+            return mdb;
         }
     }
 
@@ -488,19 +487,19 @@ public class MdbFactory {
         return cacheDir.resolve(filename + ".consistency_date").toFile();
     }
 
-    private static void saveSerializedInstance(LoaderTree loaderTree, XtceDb db, File serializedFile,
+    private static void saveSerializedInstance(LoaderTree loaderTree, Mdb mdb, File serializedFile,
             File consistencyFile) throws IOException {
         serializedFile.getParentFile().mkdirs();
         try (OutputStream os = new FileOutputStream(serializedFile);
                 ObjectOutputStream out = new ObjectOutputStream(os);
                 FileWriter fw = new FileWriter(consistencyFile)) {
-            out.writeObject(db);
+            out.writeObject(mdb);
             loaderTree.writeConsistencyDate(fw);
         }
     }
 
     /**
-     * retrieves the XtceDb for the corresponding yamcsInstance. if yamcsInstance is null, then the first one in the
+     * retrieves the MDB for the corresponding yamcsInstance. if yamcsInstance is null, then the first one in the
      * mdb.yaml config file is loaded
      * 
      * @param yamcsInstance
@@ -531,10 +530,10 @@ public class MdbFactory {
 
     /**
      * 
-     * Removes the Xtcedb corresponding to yamcsInstance from memory
+     * Removes the MDB corresponding to yamcsInstance from memory
      */
     public static synchronized void remove(String yamcsInstance) {
-        log.info("Removing the XtceDB for instance {}", yamcsInstance);
+        log.info("Removing the MDB for instance {}", yamcsInstance);
         instance2DbConfigs.remove(yamcsInstance);
         instance2Db.remove(yamcsInstance);
     }

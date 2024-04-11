@@ -27,7 +27,7 @@ import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.SpaceSystem;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -57,7 +57,7 @@ public class TseDataLink extends AbstractLink {
     private volatile long inStartCount = 0; // Where to start counting from. Used after counter reset.
     private AtomicLong outCount = new AtomicLong();
 
-    private XtceDb xtcedb;
+    private Mdb mdb;
     private String host;
     private int port;
     private long initialDelay;
@@ -84,7 +84,7 @@ public class TseDataLink extends AbstractLink {
 
         cmdhistPublisher = new StreamCommandHistoryPublisher(yamcsInstance);
 
-        xtcedb = MdbFactory.getInstance(yamcsInstance);
+        mdb = MdbFactory.getInstance(yamcsInstance);
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
 
         host = config.getString("host");
@@ -99,7 +99,7 @@ public class TseDataLink extends AbstractLink {
         tcStream.addSubscriber(new StreamSubscriber() {
             @Override
             public void onTuple(Stream s, Tuple tuple) {
-                sendTc(PreparedCommand.fromTuple(tuple, xtcedb));
+                sendTc(PreparedCommand.fromTuple(tuple, mdb));
             }
 
             @Override
@@ -153,7 +153,7 @@ public class TseDataLink extends AbstractLink {
 
         MetaCommand mc = pc.getMetaCommand();
         String subsystemName = mc.getSubsystemName();
-        SpaceSystem subsystem = xtcedb.getSpaceSystem(subsystemName);
+        SpaceSystem subsystem = mdb.getSpaceSystem(subsystemName);
 
         TseCommand.Builder msgb = TseCommand.newBuilder()
                 .setId(pc.getCommandId())
@@ -256,7 +256,7 @@ public class TseDataLink extends AbstractLink {
                         pipeline.addLast(new ProtobufEncoder());
 
                         pipeline.addLast(new TseDataLinkInboundHandler(
-                                cmdhistPublisher, xtcedb, timeService, ppStream));
+                                cmdhistPublisher, mdb, timeService, ppStream));
                     }
                 });
 

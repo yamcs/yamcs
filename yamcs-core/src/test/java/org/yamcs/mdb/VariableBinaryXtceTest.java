@@ -11,7 +11,6 @@ import javax.xml.stream.XMLStreamException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
-import org.yamcs.mdb.MdbFactory;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentType;
@@ -20,7 +19,6 @@ import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.xml.XtceLoadException;
 
 /**
@@ -33,14 +31,14 @@ public class VariableBinaryXtceTest {
 
     private static final String COMMAND_QN = "/VariableBinaryTest/Command";
 
-    private XtceDb db;
+    private Mdb mdb;
 
     @BeforeEach
     public void setup() throws URISyntaxException, XtceLoadException,
             XMLStreamException, IOException {
 
         YConfiguration.setupTest(null);
-        db = MdbFactory.createInstanceByConfig("VariableBinaryTest");
+        mdb = MdbFactory.createInstanceByConfig("VariableBinaryTest");
 
         TimeEncoding.setUp();
     }
@@ -49,17 +47,17 @@ public class VariableBinaryXtceTest {
     public void testReadXtce() throws URISyntaxException, XtceLoadException,
             XMLStreamException, IOException {
 
-        Parameter dataParameter = db.getParameter(DATA_QN);
+        Parameter dataParameter = mdb.getParameter(DATA_QN);
         ParameterType parameterType = dataParameter.getParameterType();
         DataEncoding de = parameterType.getEncoding();
         assertTrue(de instanceof BinaryDataEncoding);
         BinaryDataEncoding bde = (BinaryDataEncoding) de;
         assertTrue(bde.isVariableSize());
 
-        Parameter sizeParameter = db.getParameter(SIZE_QN);
+        Parameter sizeParameter = mdb.getParameter(SIZE_QN);
         assertEquals(sizeParameter.getQualifiedName(), bde.getDynamicSize().getDynamicInstanceRef().getName());
 
-        Argument dataArgument = db.getMetaCommand(COMMAND_QN)
+        Argument dataArgument = mdb.getMetaCommand(COMMAND_QN)
                 .getArgument("data");
         ArgumentType argumentType = dataArgument.getArgumentType();
         assertTrue(argumentType instanceof BinaryArgumentType);
@@ -69,7 +67,7 @@ public class VariableBinaryXtceTest {
         bde = (BinaryDataEncoding) de;
         assertTrue(bde.isVariableSize());
 
-        Argument sizeArgument = db.getMetaCommand(COMMAND_QN)
+        Argument sizeArgument = mdb.getMetaCommand(COMMAND_QN)
                 .getArgument("size");
         assertEquals(sizeArgument.getName(), bde.getDynamicSize().getDynamicInstanceRef().getName());
     }

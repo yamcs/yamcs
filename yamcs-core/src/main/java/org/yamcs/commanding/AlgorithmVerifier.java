@@ -7,6 +7,7 @@ import org.yamcs.algorithms.ActiveAlgorithm;
 import org.yamcs.algorithms.AlgorithmExecListener;
 import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.algorithms.AlgorithmManager;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.ProcessingData;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.RawEngValue;
@@ -16,13 +17,12 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.CommandVerifier;
-import org.yamcs.xtce.XtceDb;
 
 public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener {
 
     final Algorithm alg;
     final AlgorithmExecutionContext algCtx;
-    final XtceDb xtcedb;
+    final Mdb mdb;
 
     final Processor processor;
 
@@ -31,7 +31,7 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
         alg = cv.getAlgorithm();
         algCtx = cvh.getAlgorithmExecutionContext();
         processor = cvh.getProcessor();
-        xtcedb = processor.getMdb();
+        mdb = processor.getMdb();
     }
 
     @Override

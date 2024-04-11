@@ -42,7 +42,7 @@ import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.NumericParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 import com.google.protobuf.Empty;
 
@@ -83,8 +83,8 @@ public class MdbOverrideApi extends AbstractMdbOverrideApi<Context> {
     public void getParameterOverride(Context ctx, GetParameterOverrideRequest request,
             Observer<ParameterOverride> observer) {
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
-        XtceDb xtcedb = MdbFactory.getInstance(processor.getInstance());
-        Parameter parameter = MdbApi.verifyParameter(ctx, xtcedb, request.getName());
+        Mdb mdb = MdbFactory.getInstance(processor.getInstance());
+        Parameter parameter = MdbApi.verifyParameter(ctx, mdb, request.getName());
 
         ProcessorData pdata = processor.getProcessorData();
 
@@ -117,8 +117,8 @@ public class MdbOverrideApi extends AbstractMdbOverrideApi<Context> {
     public void getAlgorithmOverrides(Context ctx, GetAlgorithmOverridesRequest request,
             Observer<GetAlgorithmOverridesResponse> observer) {
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
-        XtceDb xtcedb = MdbFactory.getInstance(processor.getInstance());
-        Algorithm algorithm = MdbApi.verifyAlgorithm(xtcedb, request.getName());
+        Mdb mdb = MdbFactory.getInstance(processor.getInstance());
+        Algorithm algorithm = MdbApi.verifyAlgorithm(mdb, request.getName());
 
         GetAlgorithmOverridesResponse.Builder responseb = GetAlgorithmOverridesResponse.newBuilder();
 
@@ -155,8 +155,8 @@ public class MdbOverrideApi extends AbstractMdbOverrideApi<Context> {
                     "Cannot patch algorithm when a processor has more than 1 AlgorithmManager services");
         }
         AlgorithmManager algMng = l.get(0);
-        XtceDb xtcedb = MdbFactory.getInstance(processor.getInstance());
-        Algorithm a = MdbApi.verifyAlgorithm(xtcedb, request.getName());
+        Mdb mdb = MdbFactory.getInstance(processor.getInstance());
+        Algorithm a = MdbApi.verifyAlgorithm(mdb, request.getName());
         if (!(a instanceof CustomAlgorithm)) {
             throw new BadRequestException("Can only patch CustomAlgorithm instances");
         }
@@ -193,8 +193,8 @@ public class MdbOverrideApi extends AbstractMdbOverrideApi<Context> {
         ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
 
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
-        XtceDb xtcedb = MdbFactory.getInstance(processor.getInstance());
-        Parameter p = MdbApi.verifyParameter(ctx, xtcedb, request.getName());
+        Mdb mdb = MdbFactory.getInstance(processor.getInstance());
+        Parameter p = MdbApi.verifyParameter(ctx, mdb, request.getName());
 
         ProcessorData pdata = processor.getProcessorData();
         ParameterType origParamType = p.getParameterType();
@@ -212,7 +212,7 @@ public class MdbOverrideApi extends AbstractMdbOverrideApi<Context> {
                 pdata.setDefaultCalibrator(p, toCalibrator(request.getDefaultCalibrator()));
             }
             pdata.setContextCalibratorList(p,
-                    toContextCalibratorList(xtcedb, p.getSubsystemName(), request.getContextCalibratorList()));
+                    toContextCalibratorList(mdb, p.getSubsystemName(), request.getContextCalibratorList()));
             break;
         case SET_DEFAULT_CALIBRATOR:
             verifyNumericParameter(p);
@@ -244,13 +244,13 @@ public class MdbOverrideApi extends AbstractMdbOverrideApi<Context> {
                     pdata.setDefaultNumericAlarm(p, toNumericAlarm(request.getDefaultAlarm()));
                 }
                 pdata.setNumericContextAlarm(p,
-                        toNumericContextAlarm(xtcedb, p.getSubsystemName(), request.getContextAlarmList()));
+                        toNumericContextAlarm(mdb, p.getSubsystemName(), request.getContextAlarmList()));
             } else if (origParamType instanceof EnumeratedParameterType) {
                 if (request.hasDefaultAlarm()) {
                     pdata.setDefaultEnumerationAlarm(p, toEnumerationAlarm(request.getDefaultAlarm()));
                 }
                 pdata.setEnumerationContextAlarm(p,
-                        toEnumerationContextAlarm(xtcedb, p.getSubsystemName(), request.getContextAlarmList()));
+                        toEnumerationContextAlarm(mdb, p.getSubsystemName(), request.getContextAlarmList()));
             } else {
                 throw new BadRequestException("Can only set alarms on numeric or enumerated parameters");
             }

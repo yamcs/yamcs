@@ -37,7 +37,7 @@ import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.SplinePoint;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.xtce.util.NameReference;
 
@@ -79,43 +79,43 @@ public class GbpToXtceAssembler {
 
     // spaceSystemName is the name of the space system used to lookup parameters which may be part of context
     // specification in string format
-    public static List<ContextCalibrator> toContextCalibratorList(XtceDb xtcedb, String spaceSystemName,
+    public static List<ContextCalibrator> toContextCalibratorList(Mdb mdb, String spaceSystemName,
             List<ContextCalibratorInfo> ccl) throws BadRequestException {
         List<ContextCalibrator> l = new ArrayList<>(ccl.size());
         for (ContextCalibratorInfo cci : ccl) {
-            l.add(toContextCalibrator(xtcedb, spaceSystemName, cci));
+            l.add(toContextCalibrator(mdb, spaceSystemName, cci));
         }
         return l;
     }
 
-    public static ContextCalibrator toContextCalibrator(XtceDb xtcedb, String spaceSystemName,
+    public static ContextCalibrator toContextCalibrator(Mdb mdb, String spaceSystemName,
             ContextCalibratorInfo cci) throws BadRequestException {
         MatchCriteria mc = null;
         if (cci.hasContext()) {
-            mc = toMatchCriteria(xtcedb, spaceSystemName, cci.getContext());
+            mc = toMatchCriteria(mdb, spaceSystemName, cci.getContext());
         } else if (cci.getComparisonCount() > 0) {
-            mc = toMatchCriteria(xtcedb, cci.getComparisonList());
+            mc = toMatchCriteria(mdb, cci.getComparisonList());
         } else {
             throw new BadRequestException("No context provided in the ContextAlarmInfo");
         }
         return new ContextCalibrator(mc, toCalibrator(cci.getCalibrator()));
     }
 
-    private static MatchCriteria toMatchCriteria(XtceDb xtcedb, List<ComparisonInfo> comparisonList)
+    private static MatchCriteria toMatchCriteria(Mdb mdb, List<ComparisonInfo> comparisonList)
             throws BadRequestException {
         int n = comparisonList.size();
         if (n == 1) {
-            return toComparison(xtcedb, comparisonList.get(0));
+            return toComparison(mdb, comparisonList.get(0));
         } else {
             ComparisonList cl = new ComparisonList();
             for (ComparisonInfo ci : comparisonList) {
-                cl.addComparison(toComparison(xtcedb, ci));
+                cl.addComparison(toComparison(mdb, ci));
             }
             return cl;
         }
     }
 
-    private static Comparison toComparison(XtceDb xtcedb, ComparisonInfo ci) throws BadRequestException {
+    private static Comparison toComparison(Mdb mdb, ComparisonInfo ci) throws BadRequestException {
         if (!ci.hasParameter()) {
             throw new BadRequestException("ComparisonInfo has no parameter set");
         }
@@ -123,7 +123,7 @@ public class GbpToXtceAssembler {
         if (!pi.hasQualifiedName()) {
             throw new BadRequestException("ComparisonInfo.ParameterInfo has no qualified name");
         }
-        Parameter p = xtcedb.getParameter(pi.getQualifiedName());
+        Parameter p = mdb.getParameter(pi.getQualifiedName());
         if (p == null) {
             throw new BadRequestException("Unknown parameter by name '" + pi.getQualifiedName());
         }
@@ -258,12 +258,12 @@ public class GbpToXtceAssembler {
         return new DoubleRange(min, max, minIncl, maxIncl);
     }
 
-    public static List<EnumerationContextAlarm> toEnumerationContextAlarm(XtceDb xtcedb,
+    public static List<EnumerationContextAlarm> toEnumerationContextAlarm(Mdb mdb,
             String spaceSystemName, List<ContextAlarmInfo> contextAlarmList) throws BadRequestException {
         List<EnumerationContextAlarm> l = new ArrayList<>(contextAlarmList.size());
         for (ContextAlarmInfo cai : contextAlarmList) {
             if (cai.hasContext()) {
-                l.add(toEnumerationContextAlarm(xtcedb, spaceSystemName, cai));
+                l.add(toEnumerationContextAlarm(mdb, spaceSystemName, cai));
             }
         }
         return l;
@@ -271,7 +271,7 @@ public class GbpToXtceAssembler {
 
     /**
      * 
-     * @param xtcedb
+     * @param mdb
      * @param spaceSystemName
      *            - the name of the space system used to lookup parameters reference by relative name in the context
      *            specification
@@ -279,14 +279,14 @@ public class GbpToXtceAssembler {
      * @return
      * @throws BadRequestException
      */
-    public static EnumerationContextAlarm toEnumerationContextAlarm(XtceDb xtcedb, String spaceSystemName,
+    public static EnumerationContextAlarm toEnumerationContextAlarm(Mdb mdb, String spaceSystemName,
             ContextAlarmInfo cai)
             throws BadRequestException {
         EnumerationContextAlarm eca = new EnumerationContextAlarm();
         if (cai.hasContext()) {
-            eca.setContextMatch(toMatchCriteria(xtcedb, spaceSystemName, cai.getContext()));
+            eca.setContextMatch(toMatchCriteria(mdb, spaceSystemName, cai.getContext()));
         } else if (cai.getComparisonCount() > 0) {
-            eca.setContextMatch(toMatchCriteria(xtcedb, cai.getComparisonList()));
+            eca.setContextMatch(toMatchCriteria(mdb, cai.getComparisonList()));
         } else {
             throw new BadRequestException("No context provided in the ContextAlarmInfo");
         }
@@ -302,22 +302,22 @@ public class GbpToXtceAssembler {
         return eca;
     }
 
-    public static List<NumericContextAlarm> toNumericContextAlarm(XtceDb xtcedb,
+    public static List<NumericContextAlarm> toNumericContextAlarm(Mdb mdb,
             String spaceSystemName, List<ContextAlarmInfo> contextAlarmList) throws BadRequestException {
         List<NumericContextAlarm> l = new ArrayList<>(contextAlarmList.size());
         for (ContextAlarmInfo cai : contextAlarmList) {
-            l.add(toNumericContextAlarm(xtcedb, spaceSystemName, cai));
+            l.add(toNumericContextAlarm(mdb, spaceSystemName, cai));
         }
         return l;
     }
 
-    public static NumericContextAlarm toNumericContextAlarm(XtceDb xtcedb, String spaceSystemName, ContextAlarmInfo cai)
+    public static NumericContextAlarm toNumericContextAlarm(Mdb mdb, String spaceSystemName, ContextAlarmInfo cai)
             throws BadRequestException {
         NumericContextAlarm nca = new NumericContextAlarm();
         if (cai.hasContext()) {
-            nca.setContextMatch(toMatchCriteria(xtcedb, spaceSystemName, cai.getContext()));
+            nca.setContextMatch(toMatchCriteria(mdb, spaceSystemName, cai.getContext()));
         } else if (cai.getComparisonCount() > 0) {
-            nca.setContextMatch(toMatchCriteria(xtcedb, cai.getComparisonList()));
+            nca.setContextMatch(toMatchCriteria(mdb, cai.getComparisonList()));
         } else {
             throw new BadRequestException("No context provided in the ContextAlarmInfo");
         }
@@ -333,16 +333,16 @@ public class GbpToXtceAssembler {
         return nca;
     }
 
-    private static MatchCriteria toMatchCriteria(XtceDb xtcedb, String spaceSystemName, String context)
+    private static MatchCriteria toMatchCriteria(Mdb mdb, String spaceSystemName, String context)
             throws BadRequestException {
         List<NameReference> unresolvedRefs = new ArrayList<>();
 
         ConditionParser condParser = new ConditionParser(pname -> {
             Parameter p = null;
             if (pname.startsWith("/")) {
-                p = xtcedb.getParameter(pname);
+                p = mdb.getParameter(pname);
             } else {
-                p = xtcedb.getParameter(spaceSystemName + "/" + pname);
+                p = mdb.getParameter(spaceSystemName + "/" + pname);
             }
             NameReference nr = new NameReference(pname, NameReference.Type.PARAMETER);
             if (p != null) {

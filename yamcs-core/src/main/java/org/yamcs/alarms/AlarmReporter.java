@@ -22,7 +22,7 @@ import org.yamcs.xtce.AlarmReportType;
 import org.yamcs.xtce.AlarmType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 /**
  * Generates alarm events for a processor, by subscribing to all relevant parameters.
@@ -50,8 +50,8 @@ public class AlarmReporter extends AbstractProcessorService implements Processor
         // Auto-subscribe to parameters with alarms
         Set<Parameter> requiredParameters = new HashSet<>();
         try {
-            XtceDb xtcedb = MdbFactory.getInstance(getYamcsInstance());
-            for (Parameter parameter : xtcedb.getParameters()) {
+            Mdb mdb = MdbFactory.getInstance(getYamcsInstance());
+            for (Parameter parameter : mdb.getParameters()) {
                 ParameterType ptype = parameter.getParameterType();
                 if (ptype != null && ptype.hasAlarm()) {
                     requiredParameters.add(parameter);

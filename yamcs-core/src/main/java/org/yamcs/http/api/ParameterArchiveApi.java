@@ -63,7 +63,7 @@ import org.yamcs.utils.MutableLong;
 import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 import com.google.protobuf.Empty;
 
@@ -157,7 +157,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
         YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
 
-        XtceDb mdb = MdbFactory.getInstance(ysi.getName());
+        Mdb mdb = MdbFactory.getInstance(ysi.getName());
 
         ParameterWithId pid = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
 
@@ -219,7 +219,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
     public void getParameterRanges(Context ctx, GetParameterRangesRequest request, Observer<Ranges> observer) {
         YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
 
-        XtceDb mdb = MdbFactory.getInstance(ysi.getName());
+        Mdb mdb = MdbFactory.getInstance(ysi.getName());
 
         ParameterWithId pid = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
 
@@ -274,7 +274,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         }
         YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
 
-        XtceDb mdb = MdbFactory.getInstance(ysi.getName());
+        Mdb mdb = MdbFactory.getInstance(ysi.getName());
         ParameterWithId requestedParamWithId = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
 
         int limit = request.hasLimit() ? request.getLimit() : 100;

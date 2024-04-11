@@ -55,7 +55,7 @@ import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -475,7 +475,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         String instance = InstancesApi.verifyInstance(request.getInstance());
 
         if (request.hasProcessor()) {
-            XtceDb mdb = MdbFactory.getInstance(instance);
+            Mdb mdb = MdbFactory.getInstance(instance);
             Processor processor = ProcessingApi.verifyProcessor(instance, request.getProcessor());
             ContainerRequestManager containerRequestManager = processor.getContainerRequestManager();
             ContainerConsumer containerConsumer = result -> {
@@ -526,7 +526,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
     @Override
     public void subscribeContainers(Context ctx, SubscribeContainersRequest request, Observer<ContainerData> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = MdbFactory.getInstance(instance);
+        Mdb mdb = MdbFactory.getInstance(instance);
         if (request.getNamesCount() == 0) {
             throw new BadRequestException("At least one container name must be specified");
         }
@@ -567,9 +567,9 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
      * Get packet names this user has appropriate privileges for.
      */
     private Collection<String> getTmPacketNames(String yamcsInstance, User user) {
-        XtceDb xtcedb = MdbFactory.getInstance(yamcsInstance);
+        Mdb mdb = MdbFactory.getInstance(yamcsInstance);
         ArrayList<String> tl = new ArrayList<>();
-        for (SequenceContainer sc : xtcedb.getSequenceContainers()) {
+        for (SequenceContainer sc : mdb.getSequenceContainers()) {
             if (user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, sc.getQualifiedName())) {
                 tl.add(sc.getQualifiedName());
             }

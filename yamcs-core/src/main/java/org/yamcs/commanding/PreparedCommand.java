@@ -27,7 +27,7 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Tuple;
@@ -237,15 +237,15 @@ public class PreparedCommand {
         return attributes;
     }
 
-    public ParameterValueList getAttributesAsParameters(XtceDb xtcedb) {
+    public ParameterValueList getAttributesAsParameters(Mdb mdb) {
         if (cmdParams != null) {
             return cmdParams;
         }
         ParameterValueList pvlist = new ParameterValueList();
 
         for (CommandHistoryAttribute cha : attributes) {
-            String fqn = XtceDb.YAMCS_CMD_SPACESYSTEM_NAME + "/" + cha.getName();
-            Parameter p = xtcedb.getParameter(fqn);
+            String fqn = Mdb.YAMCS_CMD_SPACESYSTEM_NAME + "/" + cha.getName();
+            Parameter p = mdb.getParameter(fqn);
 
             if (p == null) {
                 // if it was required in the algorithm, it would be already in the system parameter db
@@ -260,10 +260,10 @@ public class PreparedCommand {
         return cmdParams;
     }
 
-    public static PreparedCommand fromTuple(Tuple t, XtceDb xtcedb) {
+    public static PreparedCommand fromTuple(Tuple t, Mdb mdb) {
         CommandId cmdId = getCommandId(t);
         PreparedCommand pc = new PreparedCommand(cmdId);
-        pc.setMetaCommand(xtcedb.getMetaCommand(cmdId.getCommandName()));
+        pc.setMetaCommand(mdb.getMetaCommand(cmdId.getCommandName()));
 
         for (int i = 0; i < t.size(); i++) {
             ColumnDefinition cd = t.getColumnDefinition(i);

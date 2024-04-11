@@ -26,7 +26,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.tests.RefMdbPacketGenerator;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 /**
  * Just a small sanity check to verify python/jython still works. Uses algorithms in the spreadsheet that are
@@ -42,7 +42,7 @@ public class AlgorithmManagerPyTest {
     }
 
     static String instance = "refmdb";
-    private XtceDb db;
+    private Mdb mdb;
     private Processor processor;
     private RefMdbPacketGenerator tmGenerator;
     private ParameterRequestManager prm;
@@ -51,8 +51,8 @@ public class AlgorithmManagerPyTest {
     public void beforeEachTest() throws Exception {
         EventProducerFactory.setMockup(true);
 
-        db = MdbFactory.getInstance(instance);
-        assertNotNull(db.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2"));
+        mdb = MdbFactory.getInstance(instance);
+        assertNotNull(mdb.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2"));
 
         tmGenerator = new RefMdbPacketGenerator();
 

@@ -13,7 +13,7 @@ import org.yamcs.logging.Log;
 import org.yamcs.mdb.ContainerListener;
 import org.yamcs.mdb.XtceTmProcessor;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 /**
  * Keeps track of the subscribers to the containers of a processor.
@@ -107,7 +107,7 @@ public class ContainerRequestManager implements ContainerListener {
         return tmProcessor;
     }
 
-    public XtceDb getXtceDb() {
-        return tmProcessor.getXtceDb();
+    public Mdb getMdb() {
+        return tmProcessor.getMdb();
     }
 }

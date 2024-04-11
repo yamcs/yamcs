@@ -30,13 +30,12 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.XtceDb;
 
 import com.google.common.util.concurrent.AbstractService;
 
 public class RefXtceAlgorithmTest {
     static String instance = "refxtce";
-    private static XtceDb db;
+    private static Mdb mdb;
     private static Processor proc;
     private static ParameterRequestManager prm;
 
@@ -50,13 +49,13 @@ public class RefXtceAlgorithmTest {
         AlgorithmManager am = new AlgorithmManager();
         proc = ProcessorFactory.create(instance, "XtceAlgorithmTest", mpp, am);
         prm = proc.getParameterRequestManager();
-        db = proc.getMdb();
+        mdb = proc.getMdb();
     }
 
     @Test
     public void test1() {
-        Parameter param3 = db.getParameter("/RefXtce/param3");
-        Parameter param4 = db.getParameter("/RefXtce/param4");
+        Parameter param3 = mdb.getParameter("/RefXtce/param3");
+        Parameter param4 = mdb.getParameter("/RefXtce/param4");
         List<ParameterValue> params = subscribe(param3, param4);
 
         ByteBuffer buf = ByteBuffer.allocate(6);
@@ -71,7 +70,7 @@ public class RefXtceAlgorithmTest {
 
     @Test
     public void test2() {
-        List<ParameterValue> params = subscribe(db.getParameter("/RefXtce/param6"));
+        List<ParameterValue> params = subscribe(mdb.getParameter("/RefXtce/param6"));
         mpp.injectPacket(new byte[6], "/RefXtce/packet2");
         assertEquals(1, params.size());
         assertEquals(3.14, params.get(0).getEngValue().getFloatValue(), 1e-5);
@@ -79,7 +78,7 @@ public class RefXtceAlgorithmTest {
 
     @Test
     public void test3() {
-        List<ParameterValue> params = subscribe(db.getParameter("/RefXtce/param7"));
+        List<ParameterValue> params = subscribe(mdb.getParameter("/RefXtce/param7"));
         ByteBuffer buf = ByteBuffer.allocate(6);
         buf.putFloat(0.28f);
         buf.putShort((short) 6);
@@ -92,7 +91,7 @@ public class RefXtceAlgorithmTest {
 
     @Test
     public void testAvg4() {
-        List<ParameterValue> params = subscribe(db.getParameter("/RefXtce/avg4_result"));
+        List<ParameterValue> params = subscribe(mdb.getParameter("/RefXtce/avg4_result"));
         ByteBuffer buf = ByteBuffer.allocate(6);
         buf.putFloat(0.28f);
         buf.putShort((short) 6);
@@ -104,7 +103,7 @@ public class RefXtceAlgorithmTest {
 
     @Test
     public void testFlipFlop() {
-        Parameter param11 = db.getParameter("/RefXtce/param11");
+        Parameter param11 = mdb.getParameter("/RefXtce/param11");
         List<ParameterValue> params = subscribe(param11);
 
         ByteBuffer buf = ByteBuffer.allocate(6);

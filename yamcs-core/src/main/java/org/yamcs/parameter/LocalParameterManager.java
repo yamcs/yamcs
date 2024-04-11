@@ -25,7 +25,7 @@ import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.NamedDescriptionIndex;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 /**
  * Implements local parameters - these are parameters that can be set from the clients.
@@ -73,8 +73,8 @@ public class LocalParameterManager extends AbstractProcessorService
         }
     }
 
-    void init(XtceDb xtcedb) {
-        for (Parameter p : xtcedb.getParameters()) {
+    void init(Mdb mdb) {
+        for (Parameter p : mdb.getParameters()) {
             if (p.getDataSource() == DataSource.LOCAL) {
                 params.add(p);
             }

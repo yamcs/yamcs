@@ -16,7 +16,7 @@ import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
 
 /**
- * Wraps an {@link XtceDb} object.
+ * Wraps an {@link Mdb} object.
  * <p>
  * Offers persistence capabilities for selected subtrees.
  */
@@ -38,7 +38,7 @@ public class Mdb extends XtceDb {
     }
 
     /**
-     * Adds parameters to the XtceDb after which it persist the corresponding subtree to the file
+     * Adds parameters to the MDB after which it persist the corresponding subtree to the file
      * <p>
      * If any of spacesystems of the parameters are not writable, an IllegalArgumentException will be thrown and no
      * parameter will be added
@@ -54,7 +54,7 @@ public class Mdb extends XtceDb {
             WriterWithPath wwp = getWriter(p.getSubsystemName());
             writers.put(wwp.path, wwp.writer);
         }
-        // add the parameters to the XtceDB
+        // add the parameters to the MDB
         super.doAddParameters(parameters, createSpaceSystems, createSpaceSystems);
 
         for (var entry : writers.entrySet()) {
@@ -104,7 +104,7 @@ public class Mdb extends XtceDb {
             WriterWithPath wwp = getWriter(NameDescription.getSubsystemName(ptype.getQualifiedName()));
             writers.put(wwp.path, wwp.writer);
         }
-        // add the parameters to the XtceDB
+        // add the parameters to the MDB
         super.doAddParameterType(ptypeList, createSpaceSystem);
 
         for (var entry : writers.entrySet()) {

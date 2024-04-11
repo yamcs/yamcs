@@ -31,7 +31,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 public class AlgorithmManagerErrorTest {
     @BeforeAll
@@ -44,7 +44,7 @@ public class AlgorithmManagerErrorTest {
     }
 
     static String instance = "errmdb";
-    private XtceDb db;
+    private Mdb mdb;
     private Processor processor;
     private ParameterRequestManager prm;
     AlgorithmManager algMgr;
@@ -54,9 +54,9 @@ public class AlgorithmManagerErrorTest {
     public void beforeEachTest() throws InitException, ProcessorException, ConfigurationException, ValidationException {
         EventProducerFactory.setMockup(true);
 
-        db = MdbFactory.getInstance(instance);
-        p1 = db.getParameter("/ERRMDB/para1");
-        p2 = db.getParameter("/ERRMDB/para2");
+        mdb = MdbFactory.getInstance(instance);
+        p1 = mdb.getParameter("/ERRMDB/para1");
+        p2 = mdb.getParameter("/ERRMDB/para2");
 
         algMgr = new AlgorithmManager();
         processor = ProcessorFactory.create(instance, "AlgorithmManagerJavaTest", new MyParaProvider(), algMgr);
@@ -65,16 +65,16 @@ public class AlgorithmManagerErrorTest {
 
     @Test
     public void testAlgoError() throws InvalidIdentification {
-        Parameter algoErrPara1 = db.getParameter("/ERRMDB/AlgoError1");
-        Parameter algoErrPara2 = db.getParameter("/ERRMDB/AlgoError2");
+        Parameter algoErrPara1 = mdb.getParameter("/ERRMDB/AlgoError1");
+        Parameter algoErrPara2 = mdb.getParameter("/ERRMDB/AlgoError2");
 
         final ArrayList<ParameterValue> params = new ArrayList<>();
         prm.addRequest(Arrays.asList(algoErrPara1, algoErrPara2),
                 (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
 
         processor.start();
-        Algorithm errAlg1 = db.getAlgorithm("/ERRMDB/algo_producing_error1");
-        Algorithm errAlg2 = db.getAlgorithm("/ERRMDB/algo_producing_error2");
+        Algorithm errAlg1 = mdb.getAlgorithm("/ERRMDB/algo_producing_error1");
+        Algorithm errAlg2 = mdb.getAlgorithm("/ERRMDB/algo_producing_error2");
 
         AlgorithmStatus status1 = algMgr.getAlgorithmStatus(errAlg1);
         assertEquals(status1.getRunCount(), 0);

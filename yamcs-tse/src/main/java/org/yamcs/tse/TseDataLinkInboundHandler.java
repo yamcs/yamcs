@@ -15,7 +15,7 @@ import org.yamcs.time.TimeService;
 import org.yamcs.tse.api.TseCommandResponse;
 import org.yamcs.tse.api.TseCommanderMessage;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
@@ -30,15 +30,15 @@ public class TseDataLinkInboundHandler extends SimpleChannelInboundHandler<TseCo
 
     private final TimeService timeService;
     private final Stream stream;
-    private final XtceDb xtcedb;
+    private final Mdb mdb;
     private final CommandHistoryPublisher cmdhistPublisher;
 
-    public TseDataLinkInboundHandler(CommandHistoryPublisher cmdhistPublisher, XtceDb xtcedb, TimeService timeService,
+    public TseDataLinkInboundHandler(CommandHistoryPublisher cmdhistPublisher, Mdb mdb, TimeService timeService,
             Stream stream) {
         this.cmdhistPublisher = cmdhistPublisher;
         this.timeService = timeService;
         this.stream = stream;
-        this.xtcedb = xtcedb;
+        this.mdb = mdb;
     }
 
     @Override
@@ -71,7 +71,7 @@ public class TseDataLinkInboundHandler extends SimpleChannelInboundHandler<TseCo
         for (org.yamcs.protobuf.Pvalue.ParameterValue proto : pdata.getParameterList()) {
             String qualifiedName = proto.getId().getName();
             ParameterValue pv = BasicParameterValue.fromGpb(qualifiedName, proto);
-            Parameter p = xtcedb.getParameter(qualifiedName);
+            Parameter p = mdb.getParameter(qualifiedName);
             if (p == null) {
                 log.warn("Ignoring unknown parameter {}", qualifiedName);
                 continue;

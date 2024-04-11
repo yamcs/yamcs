@@ -69,7 +69,7 @@ import org.yamcs.protobuf.alarms.UnshelveAlarmRequest;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -562,7 +562,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             if (processor.hasAlarmServer()) {
                 AlarmServer<Parameter, ParameterValue> parameterAlarmServer = processor.getParameterProcessorManager()
                         .getAlarmServer();
-                XtceDb mdb = MdbFactory.getInstance(processor.getInstance());
+                Mdb mdb = MdbFactory.getInstance(processor.getInstance());
                 Parameter parameter = mdb.getParameter(alarmName);
                 if (parameter != null) {
                     ActiveAlarm<ParameterValue> activeAlarm = parameterAlarmServer.getActiveAlarm(parameter, id);

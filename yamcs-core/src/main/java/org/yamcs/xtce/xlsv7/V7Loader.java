@@ -1,8 +1,8 @@
 package org.yamcs.xtce.xlsv7;
 
-import static org.yamcs.xtce.XtceDb.YAMCS_CMDARG_SPACESYSTEM_NAME;
-import static org.yamcs.xtce.XtceDb.YAMCS_CMDHIST_SPACESYSTEM_NAME;
-import static org.yamcs.xtce.XtceDb.YAMCS_CMD_SPACESYSTEM_NAME;
+import static org.yamcs.mdb.Mdb.YAMCS_CMDARG_SPACESYSTEM_NAME;
+import static org.yamcs.mdb.Mdb.YAMCS_CMDHIST_SPACESYSTEM_NAME;
+import static org.yamcs.mdb.Mdb.YAMCS_CMD_SPACESYSTEM_NAME;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.yamcs.YConfiguration;
 import org.yamcs.mdb.ConditionParser;
 import org.yamcs.mdb.JavaExpressionCalibratorFactory;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.SpreadsheetLoadContext;
 import org.yamcs.mdb.SpreadsheetLoadException;
 import org.yamcs.utils.AggregateUtil;
@@ -126,7 +127,6 @@ import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumeration;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.util.ArgumentReference;
 import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.xtce.util.NameReference;
@@ -152,11 +152,11 @@ import jxl.read.biff.BiffException;
  * This class loads database from excel spreadsheets.
  * <p>
  * Note about handling of data types: before Yamcs 5, the parameter and argument types were created anonymous. They were
- * not stored into the {@link XtceDb} structures. An attempt to do so has failed because in XTCE the data types include
- * the alarms and command argument validity whereas in the XTCE they are not defined in the DataType sheets. In addition
- * in the spreadhseet we have one definition which can be shared between TC and TM.
+ * not stored into the {@link Mdb} structures. An attempt to do so has failed because in XTCE the data types include the
+ * alarms and command argument validity whereas in the XTCE they are not defined in the DataType sheets. In addition in
+ * the spreadhseet we have one definition which can be shared between TC and TM.
  * <p>
- * Starting with Yamcs 5, we do register the types in the XtceDb and we duplicate them for each parameter/command that
+ * Starting with Yamcs 5, we do register the types in the MDB and we duplicate them for each parameter/command that
  * defines alarms or validity ranges.
  * <p>
  * The name of the duplicated types is &lt;type_name_from_DataTypes_sheet&gt;_&lt;parameter_name&gt; for parameters and
@@ -1286,7 +1286,7 @@ public class V7Loader extends V7LoaderBase {
                 // the condition is parsed and used to create the container.restrictionCriteria
                 // 1) get the parent, from the same sheet
                 SequenceContainer sc = containers.get(parent);
-                // the parent is not in the same sheet, try to get from the Xtcedb
+                // the parent is not in the same sheet, try to get from the MDB
                 if (sc == null) {
                     sc = spaceSystem.getSequenceContainer(parent);
                 }
@@ -1593,7 +1593,7 @@ public class V7Loader extends V7LoaderBase {
                 // 1) get the parent, from the same sheet
                 MetaCommand parentCmd = commands.get(parent);
 
-                // the parent is not in the same sheet, try to get from the Xtcedb
+                // the parent is not in the same sheet, try to get from the MDB
                 if (parentCmd == null) {
                     parentCmd = spaceSystem.getMetaCommand(parent);
                 }

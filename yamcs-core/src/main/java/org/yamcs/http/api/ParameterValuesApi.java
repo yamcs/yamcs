@@ -15,7 +15,7 @@ import org.yamcs.tctm.StreamParameterSender;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.yarch.YarchDatabase;
 
 public class ParameterValuesApi extends AbstractParameterValuesApi<Context> {
@@ -28,7 +28,7 @@ public class ParameterValuesApi extends AbstractParameterValuesApi<Context> {
             int count = 0;
             long minGenerationTime = TimeEncoding.INVALID_INSTANT;
             long maxGenerationTime = TimeEncoding.INVALID_INSTANT;
-            XtceDb mdb;
+            Mdb mdb;
             TimeService timeService;
             StreamParameterSender sender;
 

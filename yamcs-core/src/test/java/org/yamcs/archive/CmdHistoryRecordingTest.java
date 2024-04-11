@@ -16,7 +16,7 @@ import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchTestCase;
@@ -24,9 +24,6 @@ import org.yamcs.yarch.YarchTestCase;
 /**
  * Generates and saves some some command history and then it performs a replay
  * 
- * 
- * @author nm
- *
  */
 public class CmdHistoryRecordingTest extends YarchTestCase {
 
@@ -60,8 +57,8 @@ public class CmdHistoryRecordingTest extends YarchTestCase {
         assertEquals(n, tlist.size());
         for (int i = 0; i < n; i++) {
             Tuple tuple = tlist.get(i);
-            XtceDb xtcedb = MdbFactory.getInstance(instance);
-            PreparedCommand pc = PreparedCommand.fromTuple(tuple, xtcedb);
+            Mdb mdb = MdbFactory.getInstance(instance);
+            PreparedCommand pc = PreparedCommand.fromTuple(tuple, mdb);
             assertEquals("test" + i, pc.getCmdName());
         }
 

@@ -13,13 +13,12 @@ import org.yamcs.YConfiguration;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.util.ReferenceFinder;
 import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
 
-public class MdFactoryTest {
+public class MdbFactoryTest {
 
     /*
      * This test constructs the following tree:
@@ -42,27 +41,27 @@ public class MdFactoryTest {
         m.put("spec", "mdb/refmdb.xls");
 
         List<YConfiguration> mdbConfigs = Arrays.asList(YConfiguration.wrap(m));
-        XtceDb db = MdbFactory.createInstance(mdbConfigs, true, true);
+        Mdb mdb = MdbFactory.createInstance(mdbConfigs, true, true);
 
-        SequenceContainer pkt1 = db.getSequenceContainer("/REFMDB/SUBSYS1/PKT1");
+        SequenceContainer pkt1 = mdb.getSequenceContainer("/REFMDB/SUBSYS1/PKT1");
         assertNotNull(pkt1);
         // assertEquals(pkt1, db.getSequenceContainer("/REFMDB", "SUBSYS1/PKT1")); // Not supported yet
-        assertEquals(pkt1, db.getSequenceContainer("/REFMDB/SUBSYS1", "PKT1"));
+        assertEquals(pkt1, mdb.getSequenceContainer("/REFMDB/SUBSYS1", "PKT1"));
 
-        Parameter p = db.getParameter("/REFMDB/SUBSYS1/IntegerPara1_1");
+        Parameter p = mdb.getParameter("/REFMDB/SUBSYS1/IntegerPara1_1");
         assertNotNull(p);
-        assertEquals(p, db.getParameter("/REFMDB/SUBSYS1", "IntegerPara1_1"));
+        assertEquals(p, mdb.getParameter("/REFMDB/SUBSYS1", "IntegerPara1_1"));
 
-        SpaceSystem ss = db.getSpaceSystem("/REFMDB/SUBSYS1");
+        SpaceSystem ss = mdb.getSpaceSystem("/REFMDB/SUBSYS1");
         assertNotNull(ss);
-        assertEquals(ss, db.getSpaceSystem("/REFMDB", "SUBSYS1"));
+        assertEquals(ss, mdb.getSpaceSystem("/REFMDB", "SUBSYS1"));
 
-        FoundReference rr = refFinder.findReference(db.getRootSpaceSystem(),
+        FoundReference rr = refFinder.findReference(mdb.getRootSpaceSystem(),
                 new NameReference("/REFMDB/SUBSYS1/IntegerPara1_1", Type.PARAMETER), ss);
         assertNotNull(rr);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1", rr.getNameDescription().getQualifiedName());
 
-        rr = refFinder.findReference(db.getRootSpaceSystem(),
+        rr = refFinder.findReference(mdb.getRootSpaceSystem(),
                 new NameReference("../SUBSYS1/IntegerPara1_1", Type.PARAMETER), ss);
         assertNotNull(rr);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1", rr.getNameDescription().getQualifiedName());

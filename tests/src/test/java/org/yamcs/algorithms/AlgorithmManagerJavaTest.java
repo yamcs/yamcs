@@ -33,7 +33,7 @@ import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.xtce.util.AggregateMemberNames;
 
 /**
@@ -48,7 +48,7 @@ public class AlgorithmManagerJavaTest {
     }
 
     static String instance = "refmdb";
-    private XtceDb db;
+    private Mdb db;
     private Processor processor;
     private RefMdbPacketGenerator tmGenerator;
     private ParameterRequestManager prm;
@@ -211,7 +211,7 @@ public class AlgorithmManagerJavaTest {
         public MyAlgo4(Algorithm algorithmDef, AlgorithmExecutionContext execCtx, Integer m1) {
             super(algorithmDef, execCtx);
             this.m1 = m1;
-            out = execCtx.getXtceDb().getParameter("/REFMDB/SUBSYS1/AlgoJavaAggr4");
+            out = execCtx.getMdb().getParameter("/REFMDB/SUBSYS1/AlgoJavaAggr4");
             ParameterType pt = out.getParameterType();
 
             this.aggrMbr = ((AggregateParameterType) pt).getMemberNames();

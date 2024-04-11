@@ -13,7 +13,6 @@ import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.protobuf.Db.ProtoDataType;
@@ -102,7 +101,7 @@ public class ParameterReplayHandler implements ReplayHandler {
             }
             Parameter p = mdb.getParameter(pv.getParameterQualifiedName());
             if (p == null) {
-                if (XtceDb.isSystemParameter(pv.getParameterQualifiedName())) {
+                if (Mdb.isSystemParameter(pv.getParameterQualifiedName())) {
                     p = SystemParametersService.createSystemParameter(mdb, pv.getParameterQualifiedName(),
                             pv.getEngValue());
                 } else {

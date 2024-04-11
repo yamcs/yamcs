@@ -6,14 +6,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 
-public class XtceDbTest extends AbstractCliTest {
+public class MdbTest extends AbstractCliTest {
     @BeforeEach
     public void resetConfig() {
         YConfiguration.setupTest(null);
     }
 
     @Test
-    public void testXtceDbPrintCli() throws Exception {
+    public void testMdbPrintCli() throws Exception {
         YamcsAdminCli yamcsCli = new YamcsAdminCli();
         yamcsCli.parse(new String[] { "mdb", "print", "refmdb" });
         yamcsCli.validate();
@@ -27,7 +27,7 @@ public class XtceDbTest extends AbstractCliTest {
     }
 
     @Test
-    public void testXtceDbVerifyCli() throws Exception {
+    public void testMdbVerifyCli() throws Exception {
         YConfiguration.setupTest("src/test/resources/");
 
         YamcsAdminCli yamcsCli = new YamcsAdminCli();

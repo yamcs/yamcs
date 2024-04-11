@@ -1,7 +1,7 @@
 package org.yamcs.parameter;
 
 import static org.yamcs.xtce.NameDescription.qualifiedName;
-import static org.yamcs.xtce.XtceDb.YAMCS_SPACESYSTEM_NAME;
+import static org.yamcs.mdb.Mdb.YAMCS_SPACESYSTEM_NAME;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -46,7 +46,6 @@ import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.UnitType;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
@@ -115,7 +114,7 @@ public class SystemParametersService extends AbstractYamcsService implements Run
         }
 
         serverId = YamcsServer.getServer().getServerId();
-        namespace = XtceDb.YAMCS_SPACESYSTEM_NAME + NameDescription.PATH_SEPARATOR + serverId;
+        namespace = Mdb.YAMCS_SPACESYSTEM_NAME + NameDescription.PATH_SEPARATOR + serverId;
 
         List<String> producers = config.containsKey("producers") ? producers = config.getList("producers")
                 : Collections.emptyList();
@@ -468,7 +467,7 @@ public class SystemParametersService extends AbstractYamcsService implements Run
             name = name + "_" + units.replaceAll("/", "_");
         }
 
-        String fqn = XtceDb.YAMCS_SPACESYSTEM_NAME + NameDescription.PATH_SEPARATOR + name;
+        String fqn = Mdb.YAMCS_SPACESYSTEM_NAME + NameDescription.PATH_SEPARATOR + name;
         ParameterType ptype = mdb.getParameterType(fqn);
         if (ptype != null) {
             return ptype;
@@ -597,7 +596,7 @@ public class SystemParametersService extends AbstractYamcsService implements Run
         return pv;
     }
 
-    public XtceDb getMdb() {
+    public Mdb getMdb() {
         return mdb;
     }
 

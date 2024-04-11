@@ -31,8 +31,6 @@ import org.yamcs.cmdhistory.CommandHistoryRequestManager;
 import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.CommandingManager;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.mdb.MetaCommandProcessor;
-import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.MetaCommandProcessor.CommandBuildResult;
 import org.yamcs.parameter.LocalParameterManager;
 import org.yamcs.parameter.ParameterValue;
@@ -44,13 +42,12 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.MetaCommand;
-import org.yamcs.xtce.XtceDb;
 
 /**
  * Tests command encoding with the ref-xtce.xml
  */
 public class RefXtceCommandingTest {
-    static XtceDb xtcedb;
+    static Mdb mdb;
     static User user;
 
     CommandingManager commandingManager;
@@ -65,7 +62,7 @@ public class RefXtceCommandingTest {
     @BeforeAll
     public static void beforeClass() throws Exception {
         YConfiguration.setupTest(null);
-        xtcedb = MdbFactory.getInstance("refxtce");
+        mdb = MdbFactory.getInstance("refxtce");
         user = new User("test", null);
     }
 
@@ -90,7 +87,7 @@ public class RefXtceCommandingTest {
     @Test
     public void testAbsTimeArg() throws ErrorInCommand {
         // encode command
-        MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command1");
+        MetaCommand mc = mdb.getMetaCommand("/RefXtce/command1");
 
         String tstring = "2020-01-01T00:00:00.123Z";
         long tlong = TimeEncoding.parse(tstring);
@@ -118,7 +115,7 @@ public class RefXtceCommandingTest {
 
     @Test
     public void testAggregateCmdArgIncompleteValue() {
-        MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command2");
+        MetaCommand mc = mdb.getMetaCommand("/RefXtce/command2");
         Map<String, Object> args = new HashMap<>();
         args.put("arg1", "{m1: 0}");
         assertThrows(ErrorInCommand.class, () -> {
@@ -128,7 +125,7 @@ public class RefXtceCommandingTest {
 
     @Test
     public void testAggregateCmdArg() throws Exception {
-        MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command2");
+        MetaCommand mc = mdb.getMetaCommand("/RefXtce/command2");
         Map<String, Object> args = new HashMap<>();
         args.put("arg1", "{m1: 42, m2: 23.4}");
         byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
@@ -140,7 +137,7 @@ public class RefXtceCommandingTest {
 
     @Test
     public void testAggregateCmdArgInitialValue() throws Exception {
-        MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command4");
+        MetaCommand mc = mdb.getMetaCommand("/RefXtce/command4");
         Map<String, Object> args = new HashMap<>();
         args.put("arg1", "{m1: 42}");
         byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
@@ -152,7 +149,7 @@ public class RefXtceCommandingTest {
 
     @Test
     public void testAggregateCmdArgInitialValue2() throws Exception {
-        MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command4");
+        MetaCommand mc = mdb.getMetaCommand("/RefXtce/command4");
         Map<String, Object> args = new HashMap<>();
         byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
         assertEquals(12, b.length);
@@ -163,7 +160,7 @@ public class RefXtceCommandingTest {
 
     @Test
     public void testAggregateCmdArgOutOfRange() throws Exception {
-        MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command2");
+        MetaCommand mc = mdb.getMetaCommand("/RefXtce/command2");
         Map<String, Object> args = new HashMap<>();
         args.put("arg1", "{m1: 42, m2: 123.4}");
         assertThrows(ErrorInCommand.class, () -> {
@@ -173,7 +170,7 @@ public class RefXtceCommandingTest {
 
     @Test
     public void testBinaryArgCmd() throws Exception {
-        MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command3");
+        MetaCommand mc = mdb.getMetaCommand("/RefXtce/command3");
         Map<String, Object> args = new HashMap<>();
         args.put("arg1", "010203AB");
         byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
@@ -184,7 +181,7 @@ public class RefXtceCommandingTest {
 
     @Test
     public void testBinaryArgCmdTooLong() throws Exception {
-        MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command3");
+        MetaCommand mc = mdb.getMetaCommand("/RefXtce/command3");
         Map<String, Object> args = new HashMap<>();
         // max allowed length for arg1 is 10, the value below has 11 bytes, it will throw an exception
         args.put("arg1", "0102030405060708090A0B");
@@ -195,7 +192,7 @@ public class RefXtceCommandingTest {
 
     @Test
     public void testBinaryArgCmdTooShort() throws Exception {
-        MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command3");
+        MetaCommand mc = mdb.getMetaCommand("/RefXtce/command3");
         Map<String, Object> args = new HashMap<>();
         // min allowed length for arg1 is 2, the value below has 1 byte, it will throw an exception
         args.put("arg1", "01");
@@ -206,7 +203,7 @@ public class RefXtceCommandingTest {
 
     @Test
     public void testCmdWithArg() throws Exception {
-        MetaCommand mc = xtcedb.getMetaCommand("/RefXtce/command_with_algo");
+        MetaCommand mc = mdb.getMetaCommand("/RefXtce/command_with_algo");
         Map<String, Object> args = new HashMap<>();
 
         args.put("arg1", "3.14");
@@ -220,7 +217,7 @@ public class RefXtceCommandingTest {
 
     @Test
     public void testTransmissionConstraint1Fail() throws Exception {
-        MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_constraint1");
+        MetaCommand cmd = mdb.getMetaCommand("/RefXtce/cmd_with_constraint1");
         Map<String, Object> args = new HashMap<>();
         args.put("arg1", "3");
         PreparedCommand pc = commandingManager.buildCommand(cmd, args, "localhost", 1, user);
@@ -235,11 +232,11 @@ public class RefXtceCommandingTest {
 
     @Test
     public void testTransmissionConstraint1OK() throws Exception {
-        MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_constraint1");
+        MetaCommand cmd = mdb.getMetaCommand("/RefXtce/cmd_with_constraint1");
         Map<String, Object> args = new HashMap<>();
         args.put("arg1", "3");
         PreparedCommand pc = commandingManager.buildCommand(cmd, args, "localhost", 1, user);
-        localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(42));
+        localParaMgr.updateParameter(mdb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(42));
 
         localParaMgr.sync();
 
@@ -253,7 +250,7 @@ public class RefXtceCommandingTest {
 
     @Test
     public void testTransmissionConstraint2OK() throws Exception {
-        MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_constraint2");
+        MetaCommand cmd = mdb.getMetaCommand("/RefXtce/cmd_with_constraint2");
         Map<String, Object> args = new HashMap<>();
         args.put("arg1", "15");
         PreparedCommand pc = commandingManager.buildCommand(cmd, args, "localhost", 1, user);
@@ -267,11 +264,10 @@ public class RefXtceCommandingTest {
 
     @Test
     public void testVerifier1Timeout() throws Exception {
-        MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_verifier1");
+        MetaCommand cmd = mdb.getMetaCommand("/RefXtce/cmd_with_verifier1");
         Map<String, Object> args = new HashMap<>();
         args.put("arg1", "3");
         PreparedCommand pc = commandingManager.buildCommand(cmd, args, "localhost", 1, user);
-        // localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(42));
 
         commandingManager.sendCommand(user, pc);
 
@@ -288,7 +284,7 @@ public class RefXtceCommandingTest {
 
     @Test
     public void testVerifier1OK() throws Exception {
-        MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_verifier1");
+        MetaCommand cmd = mdb.getMetaCommand("/RefXtce/cmd_with_verifier1");
         Map<String, Object> args = new HashMap<>();
         args.put("arg1", "3");
         PreparedCommand pc = commandingManager.buildCommand(cmd, args, "localhost", 1, user);
@@ -302,7 +298,7 @@ public class RefXtceCommandingTest {
         assertNotNull(cmdReleaser.getCmd(2000));
 
         verifyCmdHist("Verifier_Complete", "PENDING");
-        localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(47));
+        localParaMgr.updateParameter(mdb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(47));
 
         verifyCmdHist("Verifier_Complete", "OK");
     }
@@ -310,9 +306,9 @@ public class RefXtceCommandingTest {
     @Test
     public void testVerifier2Timeout() throws Exception {
         // set first a value
-        localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(30));
+        localParaMgr.updateParameter(mdb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(30));
 
-        MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_verifier2");
+        MetaCommand cmd = mdb.getMetaCommand("/RefXtce/cmd_with_verifier2");
 
         Map<String, Object> args = new HashMap<>();
         args.put("arg1", "3");
@@ -326,9 +322,9 @@ public class RefXtceCommandingTest {
                 AcknowledgeReleased_KEY, "OK");
         assertNotNull(cmdReleaser.getCmd(2000));
         // update the value
-        localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(31));
-        localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(32));
-        localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(33));
+        localParaMgr.updateParameter(mdb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(31));
+        localParaMgr.updateParameter(mdb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(32));
+        localParaMgr.updateParameter(mdb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(33));
 
         verifyCmdHist("Verifier_Complete", "TIMEOUT");
     }
@@ -336,10 +332,10 @@ public class RefXtceCommandingTest {
     @Test
     public void testVerifier2OK() throws Exception {
         // set first a value
-        localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(30));
-        localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para2"), ValueUtility.getUint32Value(13));
+        localParaMgr.updateParameter(mdb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(30));
+        localParaMgr.updateParameter(mdb.getParameter("/RefXtce/local_para2"), ValueUtility.getUint32Value(13));
 
-        MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_verifier2");
+        MetaCommand cmd = mdb.getMetaCommand("/RefXtce/cmd_with_verifier2");
 
         Map<String, Object> args = new HashMap<>();
         args.put("arg1", "3");
@@ -353,8 +349,8 @@ public class RefXtceCommandingTest {
                 AcknowledgeReleased_KEY, "OK");
         assertNotNull(cmdReleaser.getCmd(2000));
         // update the value
-        localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(47));
-        localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(32));
+        localParaMgr.updateParameter(mdb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(47));
+        localParaMgr.updateParameter(mdb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(32));
 
         verifyCmdHist("Verifier_Complete", "OK");
         CmdHistEntry che = cmdHistPublisher.getCmdHist(3000);
@@ -365,7 +361,7 @@ public class RefXtceCommandingTest {
 
     @Test
     public void testVerifier3OK() throws Exception {
-        MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_verifier3");
+        MetaCommand cmd = mdb.getMetaCommand("/RefXtce/cmd_with_verifier3");
 
         Map<String, Object> args = new HashMap<>();
         args.put("arg1", "101");
@@ -378,14 +374,14 @@ public class RefXtceCommandingTest {
                 "Verifier_Complete", "PENDING",
                 AcknowledgeReleased_KEY, "OK");
         assertNotNull(cmdReleaser.getCmd(2000));
-        localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(101));
+        localParaMgr.updateParameter(mdb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(101));
 
         verifyCmdHist("Verifier_Complete", "OK");
     }
 
     @Test
     public void testVerifier4OK() throws Exception {
-        MetaCommand cmd = xtcedb.getMetaCommand("/RefXtce/cmd_with_verifier4");
+        MetaCommand cmd = mdb.getMetaCommand("/RefXtce/cmd_with_verifier4");
 
         Map<String, Object> args = new HashMap<>();
         args.put("arg1", "101");
@@ -397,7 +393,7 @@ public class RefXtceCommandingTest {
                 "Verifier_Complete", "PENDING",
                 AcknowledgeReleased_KEY, "OK");
         assertNotNull(cmdReleaser.getCmd(2000));
-        localParaMgr.updateParameter(xtcedb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(101));
+        localParaMgr.updateParameter(mdb.getParameter("/RefXtce/local_para1"), ValueUtility.getUint32Value(101));
 
         verifyCmdHist("Verifier_Complete", "OK");
     }

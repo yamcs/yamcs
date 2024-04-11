@@ -19,23 +19,19 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
-import org.yamcs.xtce.XtceDb;
 
 /**
  * keeps track of the parameters and containers subscribed (because we only want to extract those)
  * 
- * 
- * @author nm
- *
  */
 public class Subscription {
     private final Map<SequenceContainer, SubscribedContainer> containers = new HashMap<>();
     final static Logger log = LoggerFactory.getLogger(Subscription.class);
 
-    XtceDb xtcedb;
+    Mdb mdb;
 
-    Subscription(XtceDb xtcedb) {
-        this.xtcedb = xtcedb;
+    Subscription(Mdb mdb) {
+        this.mdb = mdb;
     }
 
     public SubscribedContainer addSequenceContainer(SequenceContainer containerDef) {
@@ -65,7 +61,7 @@ public class Subscription {
         }
         // if this container is part of another containers through aggregation, then add those
 
-        List<ContainerEntry> entries = xtcedb.getContainerEntries(containerDef);
+        List<ContainerEntry> entries = mdb.getContainerEntries(containerDef);
         if (entries != null) {
             for (ContainerEntry ce : entries) {
                 addSequenceEntry(ce);
@@ -93,7 +89,7 @@ public class Subscription {
                 addAll(((ContainerEntry) se).getRefContainer());
             }
         }
-        List<SequenceContainer> inheriting = xtcedb.getInheritingContainers(seq);
+        List<SequenceContainer> inheriting = mdb.getInheritingContainers(seq);
         if (inheriting != null) {
             for (SequenceContainer sc : inheriting) {
                 addAll(sc);
@@ -144,7 +140,7 @@ public class Subscription {
      * @param parameter
      */
     public void addParameter(Parameter parameter) {
-        List<ParameterEntry> tpips = xtcedb.getParameterEntries(parameter);
+        List<ParameterEntry> tpips = mdb.getParameterEntries(parameter);
         if (tpips != null) {
             for (ParameterEntry pe : tpips) {
                 addSequenceEntry(pe);
@@ -152,7 +148,7 @@ public class Subscription {
         }
 
         for (String ns : parameter.getAliasSet().getNamespaces()) {
-            Collection<IndirectParameterRefEntry> c = xtcedb.getIndirectParameterRefEntries(ns);
+            Collection<IndirectParameterRefEntry> c = mdb.getIndirectParameterRefEntries(ns);
             if (c != null) {
                 for (IndirectParameterRefEntry ipre : c) {
                     addParameter(ipre.getParameterRef().getParameter());

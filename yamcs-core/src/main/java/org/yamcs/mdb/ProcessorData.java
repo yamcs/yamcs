@@ -42,7 +42,7 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.SplineCalibrator;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 /**
  * Holds information related and required for XTCE processing. It is separated from Processor because it has to be
@@ -170,7 +170,7 @@ public class ProcessorData {
 
     private ParameterValue getProcessorPV(Mdb mdb, long time, String name, String value, String description) {
         var serverId = YamcsServer.getServer().getServerId();
-        var namespace = XtceDb.YAMCS_SPACESYSTEM_NAME + NameDescription.PATH_SEPARATOR + serverId;
+        var namespace = Mdb.YAMCS_SPACESYSTEM_NAME + NameDescription.PATH_SEPARATOR + serverId;
         String fqn = NameDescription.qualifiedName(namespace, "processor", name);
         Parameter p = SystemParametersService.createSystemParameter(mdb, fqn, Yamcs.Value.Type.STRING, description);
 

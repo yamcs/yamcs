@@ -21,7 +21,6 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Container;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.XtceDb;
 
 /**
  * 
@@ -214,7 +213,7 @@ public class XtceTmProcessor extends AbstractProcessorService
         notifyStopped();
     }
 
-    public XtceDb getXtceDb() {
+    public Mdb getMdb() {
         return mdb;
     }
 }
