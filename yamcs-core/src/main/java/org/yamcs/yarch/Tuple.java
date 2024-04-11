@@ -72,7 +72,8 @@ public class Tuple {
     /**
      * returns the index of the column with name or -1 if there is no such column
      * 
-     * @param name
+     * @param colName
+     *            - the name of the column
      * @return the index of the column with name or -1 if there is no such column
      */
     public int getColumnIndex(String colName) {
