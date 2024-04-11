@@ -23,14 +23,14 @@ import org.yamcs.xtce.XtceDb;
 public class Mdb extends XtceDb {
 
     private static final long serialVersionUID = 1L;
-    final transient Map<String, SpaceSystemWriter> susbsystemWriters;
+    final transient Map<String, SpaceSystemWriter> subsystemWriters;
 
     public Mdb(SpaceSystem spaceSystem, Map<String, SpaceSystemWriter> susbsystemWriters) {
         super(spaceSystem);
         susbsystemWriters.put(YAMCS_SPACESYSTEM_NAME, (fqn, mdb) -> {
             // writer for the /yamcs doesn't write to disk
         });
-        this.susbsystemWriters = susbsystemWriters;
+        this.subsystemWriters = susbsystemWriters;
     }
 
     public void addParameter(Parameter p, boolean addSpaceSystem, boolean addParameterType) throws IOException {
@@ -69,14 +69,14 @@ public class Mdb extends XtceDb {
      */
     private WriterWithPath getWriter(String fqn) {
         String tmp = fqn;
-        SpaceSystemWriter w = susbsystemWriters.get(tmp);
+        SpaceSystemWriter w = subsystemWriters.get(tmp);
         while (w == null) {
             int index = tmp.lastIndexOf(PATH_SEPARATOR);
             if (index == -1) {
                 throw new IllegalArgumentException("'" + fqn + "' is not a writable SpaceSystem");
             }
             tmp = tmp.substring(0, index);
-            w = susbsystemWriters.get(tmp);
+            w = subsystemWriters.get(tmp);
         }
 
         return new WriterWithPath(tmp, w);
