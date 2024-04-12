@@ -20,7 +20,7 @@ import { ChangeDetectionStrategy, Component, HostBinding, ViewEncapsulation } fr
     }
 
     .ya-simple-table th {
-      background-color: #f7f7f7;
+      background-color: var(--y-background-color);
       text-align: left;
       font-weight: 500;
       color: black;

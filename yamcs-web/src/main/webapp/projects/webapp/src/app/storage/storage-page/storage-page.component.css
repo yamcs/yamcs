@@ -4,7 +4,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: #f7f7f7;
+  background-color: var(--y-background-color);
 }
 
 .storage-page-content.message-bar-visible {

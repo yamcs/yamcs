@@ -13,7 +13,7 @@ body {
 }
 
 body {
-  background-color: #f7f7f7;
+  background-color: var(--y-background-color);
   /* Without this FF font are too crispy */
   -moz-osx-font-smoothing: grayscale;
 }
@@ -96,7 +96,7 @@ body {
 }
 
 .form-content mat-toolbar {
-  background-color: #f7f7f7;
+  background-color: var(--y-background-color);
   font-size: 12px;
   padding: 0;
 }

@@ -25,10 +25,8 @@ const ARGS_PREFIX = 'args.';
   standalone: true,
   selector: 'app-opi-display-viewer',
   template: `
-    <div class="display-frame">
-      <div class="display-frame-inner">
-        <div #displayContainer style="display: inline-block"></div>
-      </div>
+    <div #frameInner class="frame-inner">
+      <div #displayContainer class="display-container"></div>
     </div>
   `,
   styleUrl: './opi-display-viewer.component.css',
@@ -45,8 +43,11 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
   // Parent element, used to calculate 100% bounds (excluding scroll size)
   private viewerContainerEl: HTMLDivElement;
 
+  @ViewChild('frameInner')
+  private frameInner: ElementRef<HTMLDivElement>;
+
   @ViewChild('displayContainer', { static: true })
-  private displayContainer: ElementRef;
+  private displayContainer: ElementRef<HTMLDivElement>;
 
   private display: Display;
 
@@ -257,6 +258,16 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
     }
     const promise = this.display.setSource(objectUrl, displayArgs);
     promise.then(() => {
+
+      // Apply display background to entire pane
+      let backgroundColor: string;
+      if (!this.display.transparent && this.display.instance) {
+        backgroundColor = this.display.instance.backgroundColor.hex();
+      } else {
+        backgroundColor = 'unset';
+      }
+      this.frameInner.nativeElement.style.backgroundColor = backgroundColor;
+
       this.syncSubscription = this.synchronizer.sync(() => this.updateSubscription());
     });
     return promise;

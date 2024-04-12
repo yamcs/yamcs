@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild, effect } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { MatSidenavContainer, MatSidenavContent } from '@angular/material/sidenav';
 import { NavigationEnd, Router } from '@angular/router';
-import { ConfigService, ConnectionInfo, ExtensionService, NavItem, Parameter, User, WebappSdkModule, WebsiteConfig, YamcsService } from '@yamcs/webapp-sdk';
+import { ConfigService, ConnectionInfo, ExtensionService, MessageService, NavItem, Parameter, User, WebappSdkModule, WebsiteConfig, YamcsService } from '@yamcs/webapp-sdk';
 import { Observable, Subscription, of } from 'rxjs';
 import { debounceTime, filter, map, switchMap } from 'rxjs/operators';
 import { AppearanceService } from '../../core/services/AppearanceService';
@@ -23,8 +24,14 @@ import { AlarmLabelComponent } from '../alarm-label/alarm-label.component';
 })
 export class InstancePageComponent implements OnInit, OnDestroy {
 
+  @ViewChild(MatSidenavContainer)
+  pageContainer: MatSidenavContainer;
+
+  @ViewChild(MatSidenavContent)
+  pageContent: MatSidenavContent;
+
   @ViewChild('searchInput')
-  searchInput: ElementRef;
+  searchInput: ElementRef<HTMLInputElement>;
 
   connectionInfo$: Observable<ConnectionInfo | null>;
 
@@ -53,6 +60,7 @@ export class InstancePageComponent implements OnInit, OnDestroy {
   mdbItems: NavItem[] = [];
   extraItems: NavItem[] = [];
 
+  fullScreenMode$: Observable<boolean>;
   zenMode$: Observable<boolean>;
 
   private routerSubscription: Subscription;
@@ -63,12 +71,21 @@ export class InstancePageComponent implements OnInit, OnDestroy {
     authService: AuthService,
     appearanceService: AppearanceService,
     extensionService: ExtensionService,
+    messageService: MessageService,
     private router: Router,
   ) {
     this.connectionInfo$ = this.yamcs.connectionInfo$;
+    this.fullScreenMode$ = appearanceService.fullScreenMode$;
     this.zenMode$ = appearanceService.zenMode$;
     this.config = configService.getConfig();
     this.user = authService.getUser()!;
+
+    effect(() => {
+      if (appearanceService.fullScreenRequested()) {
+        const el = this.pageContent.getElementRef().nativeElement;
+        el.requestFullscreen().catch(err => messageService.showError(err));
+      }
+    });
 
     if (this.config.tmArchive && this.user.hasAnyObjectPrivilegeOfType('ReadPacket')) {
       this.telemetryItems.push({ path: 'packets', label: 'Packets' });

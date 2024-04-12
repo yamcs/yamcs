@@ -1,6 +1,8 @@
 <ya-message-bar #messageBar />
 
-<mat-sidenav-container class="mat-typography"
+<mat-sidenav-container #pageContainer
+                       class="mat-typography"
+                       [class.fullscreen]="fullScreenMode$ | async"
                        [class.zen]="zenMode$ | async"
                        [class.message-bar-visible]="messageBar.show$ | async">
   <mat-sidenav mode="side" [opened]="!(zenMode$ | async)" [disableClose]="true">
@@ -175,7 +177,7 @@
     </div>
   </mat-sidenav>
 
-  <mat-sidenav-content>
+  <mat-sidenav-content #pageContent>
     <router-outlet />
   </mat-sidenav-content>
 </mat-sidenav-container>

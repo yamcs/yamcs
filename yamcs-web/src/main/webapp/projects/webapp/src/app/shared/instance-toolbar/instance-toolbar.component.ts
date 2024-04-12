@@ -31,6 +31,7 @@ export class InstanceToolbarComponent implements OnDestroy {
 
   connected$: Observable<boolean>;
   connectionInfo$: Observable<ConnectionInfo | null>;
+  fullScreenMode$: Observable<boolean>;
   zenMode$: Observable<boolean>;
 
   // For use in lazy dynamic population of Switch Processor menu.
@@ -73,6 +74,7 @@ export class InstanceToolbarComponent implements OnDestroy {
     this.connected$ = this.yamcs.yamcsClient.connected$;
     this.time$ = this.yamcs.time$;
     this.range$ = this.yamcs.range$;
+    this.fullScreenMode$ = appearanceService.fullScreenMode$;
     this.zenMode$ = appearanceService.zenMode$;
 
     this.connectedSubscription = this.connected$.subscribe(connected => {
@@ -141,12 +143,22 @@ export class InstanceToolbarComponent implements OnDestroy {
     });
   }
 
-  toggleZenMode() {
+  enterZenMode() {
     this.appearanceService.zenMode$.next(true);
   }
 
-  untoggleZenMode() {
+  exitZenMode() {
     this.appearanceService.zenMode$.next(false);
+  }
+
+  enterFullScreen() {
+    this.appearanceService.fullScreenRequested.set(true);
+    this.appearanceService.fullScreenMode$.next(true);
+  }
+
+  exitFullScreen() {
+    this.appearanceService.fullScreenRequested.set(false);
+    this.appearanceService.fullScreenMode$.next(false);
   }
 
   switchProcessor(processor: Processor) {

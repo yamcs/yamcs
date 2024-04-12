@@ -52,7 +52,7 @@
 }
 
 .ya-data-table th.mat-mdc-header-cell {
-  background-color: #f7f7f7;
+  background-color: var(--y-background-color);
   color: #707070;
   border-top: 1px solid rgba(0, 0, 0, 0.1);
 }

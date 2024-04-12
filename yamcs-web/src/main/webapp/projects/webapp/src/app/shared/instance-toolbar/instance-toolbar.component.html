@@ -38,7 +38,19 @@
             {{ (time$ | async) | datetime }} ▾
           </ya-text-action>
 
-          <ya-icon-action class="more-menu" icon="menu"
+          <ya-icon-action *ngIf="fullScreenMode$ | async"
+                          class="icon-action"
+                          icon="fullscreen_exit"
+                          (click)="exitFullScreen()"
+                          matTooltip="Exit full screen" />
+
+          <ya-icon-action *ngIf="!(fullScreenMode$ | async) && (zenMode$ | async)"
+                          class="icon-action"
+                          icon="fullscreen_exit"
+                          (click)="exitZenMode()"
+                          matTooltip="Exit zen mode" />
+
+          <ya-icon-action class="icon-action" icon="menu"
                           [matMenuTriggerFor]="moreMenu" />
 
           <button mat-icon-button *ngIf="false">
@@ -49,11 +61,27 @@
     </ng-container>
 
     <mat-menu #moreMenu="matMenu" class="ya-menu" overlapTrigger="false" xPosition="before" yPosition="below">
-      <button *ngIf="!(zenMode$ | async)" mat-menu-item (click)="toggleZenMode()">
-        Toggle zen mode
+      <button *ngIf="!(zenMode$ | async)"
+              mat-menu-item
+              [disabled]="fullScreenMode$ | async"
+              (click)="enterZenMode()">
+        Enter zen mode
       </button>
-      <button *ngIf="zenMode$ | async" mat-menu-item (click)="untoggleZenMode()">
-        Untoggle zen mode
+      <button *ngIf="zenMode$ | async"
+              mat-menu-item
+              [disabled]="fullScreenMode$ | async"
+              (click)="exitZenMode()">
+        Exit zen mode
+      </button>
+      <button *ngIf="!(fullScreenMode$ | async)"
+              mat-menu-item
+              (click)="enterFullScreen()">
+        Enter full screen
+      </button>
+      <button *ngIf="fullScreenMode$ | async"
+              mat-menu-item
+              (click)="exitFullScreen()">
+        Exit full screen
       </button>
     </mat-menu>
 

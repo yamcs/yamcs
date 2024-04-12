@@ -21,7 +21,7 @@ import { ChangeDetectionStrategy, Component, HostBinding, ViewEncapsulation } fr
     }
 
     .ya-table th {
-      background-color: #f7f7f7;
+      background-color: var(--y-background-color);
       font-weight: 400;
       text-align: left;
     }

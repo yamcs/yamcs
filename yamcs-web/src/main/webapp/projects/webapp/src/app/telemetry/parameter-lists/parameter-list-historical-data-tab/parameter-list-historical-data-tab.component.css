@@ -20,7 +20,7 @@
 }
 
 .table-status {
-  background-color: #f7f7f7;
+  background-color: var(--y-background-color);
   height: 24px;
   line-height: 24px;
   font-size: 12px;
@@ -37,7 +37,7 @@
 
 .table-container table th:first-child,
 .table-container table td:first-child {
-  background-color: #f7f7f7;
+  background-color: var(--y-background-color);
   border-left: 1px solid rgba(0, 0, 0, 0.1);
   border-right: 1px solid rgba(0, 0, 0, 0.1);
 }

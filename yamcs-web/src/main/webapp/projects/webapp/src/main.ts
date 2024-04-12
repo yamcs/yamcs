@@ -1,3 +1,4 @@
+import { FullscreenOverlayContainer, OverlayContainer } from '@angular/cdk/overlay';
 import { APP_BASE_HREF } from '@angular/common';
 import { APP_INITIALIZER, isDevMode } from '@angular/core';
 import { MAT_TOOLTIP_DEFAULT_OPTIONS, MAT_TOOLTIP_DEFAULT_OPTIONS_FACTORY, MatTooltipDefaultOptions } from '@angular/material/tooltip';
@@ -20,6 +21,9 @@ bootstrapApplication(AppComponent, {
   providers: [
     ConfigService,
     { provide: MAT_TOOLTIP_DEFAULT_OPTIONS, useValue: matTooltipOptions },
+    // The default OverlayContainer does not show overlays if
+    // requestFullscreen is used.
+    { provide: OverlayContainer, useClass: FullscreenOverlayContainer },
     {
       provide: APP_BASE_HREF,
       useFactory: () => {
