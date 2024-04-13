@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { FormGroup, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MessageService, SelectOption, TimelineItem, UpdateTimelineItemRequest, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { MessageService, TimelineItem, UpdateTimelineItemRequest, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
@@ -26,12 +26,12 @@ const OVERRIDE_SUFFIX = '_overrideBand';
 })
 export class EditItemComponent implements OnDestroy {
 
-  resolutionOptions: SelectOption[] = [
+  resolutionOptions: YaSelectOption[] = [
     { id: 'seconds', label: 'seconds' },
     { id: 'minutes', label: 'minutes' },
     { id: 'hours', label: 'hours' }
   ];
-  startConstraintOptions: SelectOption[] = [
+  startConstraintOptions: YaSelectOption[] = [
     { id: 'START_ON', label: 'Start on' },
   ];
 

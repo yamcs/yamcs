@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, input } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { GetAlarmsOptions, SelectOption, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { GetAlarmsOptions, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { ParameterAlarmsTableComponent } from '../parameter-alarms-table/parameter-alarms-table.component';
 import { ParameterAlarmsDataSource } from '../parameter-alarms-table/parameter-alarms.datasource';
 
@@ -20,7 +20,7 @@ export class ParameterAlarmsTabComponent implements OnInit, OnDestroy {
 
   qualifiedName = input.required<string>({ alias: 'parameter' });
 
-  intervalOptions: SelectOption[] = [
+  intervalOptions: YaSelectOption[] = [
     { id: 'P1M', label: 'Last Month' },
     { id: 'P1Y', label: 'Last Year' },
     { id: 'NO_LIMIT', label: 'No Limit' },

@@ -1,15 +1,21 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit, inject } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { PreferenceStore } from '../../services/preference-store.service';
 
 
 @Component({
+  standalone: true,
   selector: 'ya-table-toggle',
   templateUrl: './table-toggle.component.html',
   styleUrl: './table-toggle.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    MatSlideToggle,
+    ReactiveFormsModule,
+  ],
 })
-export class TableToggleComponent implements OnInit {
+export class YaTableToggle implements OnInit {
 
   @Input()
   preferenceKey: string;

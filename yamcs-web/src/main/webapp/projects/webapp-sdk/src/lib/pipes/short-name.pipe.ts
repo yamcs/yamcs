@@ -1,6 +1,9 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({ name: 'shortName' })
+@Pipe({
+  standalone: true,
+  name: 'shortName',
+})
 export class ShortNamePipe implements PipeTransform {
 
   transform(name: string | null | undefined): string | null {

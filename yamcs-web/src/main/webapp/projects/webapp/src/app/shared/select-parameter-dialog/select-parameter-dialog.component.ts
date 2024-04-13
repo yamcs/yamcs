@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Inject, OnInit } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { MemberPathPipe, Parameter, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { Parameter, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { Observable } from 'rxjs';
 import { debounceTime, map, switchMap } from 'rxjs/operators';
 
@@ -42,7 +42,6 @@ export class SelectParameterDialogComponent implements OnInit {
     private dialogRef: MatDialogRef<SelectParameterDialogComponent>,
     private yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) readonly data: SelectParameterOptions,
-    private memberPathPipe: MemberPathPipe,
   ) {
     this.label = data.label || 'Search parameter';
     this.okLabel = data.okLabel || 'SELECT';
@@ -63,7 +62,7 @@ export class SelectParameterDialogComponent implements OnInit {
       map(candidates => {
         return candidates.filter(candidate => {
           for (const excludedParameter of excludedParameters) {
-            const qualifiedName = this.memberPathPipe.transform(candidate);
+            const qualifiedName = utils.getMemberPath(candidate);
             if (excludedParameter === qualifiedName) {
               return false;
             }

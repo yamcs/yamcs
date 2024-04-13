@@ -1,21 +1,31 @@
+import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component, forwardRef } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR, UntypedFormControl } from '@angular/forms';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
+import { MatIcon } from '@angular/material/icon';
 import { BehaviorSubject } from 'rxjs';
+import { YaLabel } from '../label/label.component';
 
 @Component({
+  standalone: true,
   selector: 'ya-tag-select',
   templateUrl: './tag-select.component.html',
   styleUrl: './tag-select.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => TagSelectComponent),
-      multi: true
-    }
-  ]
+  providers: [{
+    provide: NG_VALUE_ACCESSOR,
+    useExisting: forwardRef(() => YaTagSelect),
+    multi: true
+  }],
+  imports: [
+    AsyncPipe,
+    MatIcon,
+    NgForOf,
+    NgIf,
+    ReactiveFormsModule,
+    YaLabel,
+  ],
 })
-export class TagSelectComponent implements ControlValueAccessor {
+export class YaTagSelect implements ControlValueAccessor {
 
   control = new UntypedFormControl(null);
 

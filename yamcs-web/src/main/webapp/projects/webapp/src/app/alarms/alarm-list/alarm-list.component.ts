@@ -3,13 +3,12 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Alarm, MessageService, SelectOption, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { Alarm, MessageService, TrackBySelectionModel, WebappSdkModule, YaSelectOption, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AuthService } from '../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
-import { TrackBySelectionModel } from '../../shared/table/TrackBySelectionModel';
 import { AcknowledgeAlarmDialogComponent } from '../acknowledge-alarm-dialog/acknowledge-alarm-dialog.component';
 import { AlarmDetailComponent } from '../alarm-detail/alarm-detail.component';
 import { AlarmsPageTabsComponent } from '../alarms-page-tabs/alarms-page-tabs.component';
@@ -46,7 +45,7 @@ export class AlarmListComponent implements OnDestroy {
     return `${alarm.triggerTime}__${alarm.id.namespace}__${alarm.id.name}__${alarm.seqNum}`;
   }, false, []);
 
-  viewOptions: SelectOption[] = [
+  viewOptions: YaSelectOption[] = [
     { id: 'standard', label: 'Standard view (ack & unack)' },
     { id: 'unacknowledged', label: 'Unacknowledged alarms' },
     { id: 'acknowledged', label: 'Acknowledged alarms' },

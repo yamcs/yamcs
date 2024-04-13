@@ -1,7 +1,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { OperatorType } from '../client';
 
-@Pipe({ name: 'operator' })
+@Pipe({
+  standalone: true,
+  name: 'operator',
+})
 export class OperatorPipe implements PipeTransform {
 
   transform(operator?: OperatorType): string | null {

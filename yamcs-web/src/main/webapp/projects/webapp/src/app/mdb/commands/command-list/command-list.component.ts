@@ -4,7 +4,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ColumnChooserComponent, ColumnInfo, Command, GetCommandsOptions, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { Command, GetCommandsOptions, WebappSdkModule, YaColumnChooser, YaColumnInfo, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
@@ -33,14 +33,14 @@ export class CommandListComponent implements AfterViewInit {
   @ViewChild(MatPaginator, { static: true })
   paginator: MatPaginator;
 
-  @ViewChild(ColumnChooserComponent)
-  columnChooser: ColumnChooserComponent;
+  @ViewChild(YaColumnChooser)
+  columnChooser: YaColumnChooser;
 
   filterControl = new UntypedFormControl();
 
   dataSource: CommandsDataSource;
 
-  columns: ColumnInfo[] = [
+  columns: YaColumnInfo[] = [
     { id: 'name', label: 'Name', alwaysVisible: true },
     { id: 'significance', label: 'Significance', visible: true },
     { id: 'abstract', label: 'Abstract', visible: true },
@@ -49,7 +49,7 @@ export class CommandListComponent implements AfterViewInit {
   ];
 
   // Added dynamically based on actual commands.
-  aliasColumns$ = new BehaviorSubject<ColumnInfo[]>([]);
+  aliasColumns$ = new BehaviorSubject<YaColumnInfo[]>([]);
 
   selection = new SelectionModel<Command>(false);
 

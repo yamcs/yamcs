@@ -8,7 +8,10 @@ interface HasAlias {
   aliases?: { [key: string]: string; };
 }
 
-@Pipe({ name: 'alias' })
+@Pipe({
+  standalone: true,
+  name: 'alias',
+})
 export class AliasPipe implements PipeTransform {
 
   transform(item: HasAlias | null, namespace: string): string | null {

@@ -4,12 +4,13 @@ import { PrintService } from './print.service';
 import { PrintableDirective } from './printable.directive';
 
 @Component({
+  standalone: true,
   selector: 'ya-print-zone',
   templateUrl: './print-zone.component.html',
   styleUrl: './print-zone.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PrintZoneComponent {
+export class YaPrintZone {
 
   /*
    * Implementation note:

@@ -1,33 +1,39 @@
+import { AsyncPipe, NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, forwardRef } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR, UntypedFormControl } from '@angular/forms';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
-import { SelectOption } from '../select/select.component';
+import { YaSelect, YaSelectOption } from '../select/select.component';
 import tznames from './tznames';
 
 @Component({
+  standalone: true,
   selector: 'ya-timezone-select',
   templateUrl: './timezone-select.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => TimezoneSelectComponent),
-      multi: true,
-    }
-  ]
+  providers: [{
+    provide: NG_VALUE_ACCESSOR,
+    useExisting: forwardRef(() => YaTimezoneSelect),
+    multi: true,
+  }],
+  imports: [
+    AsyncPipe,
+    NgIf,
+    ReactiveFormsModule,
+    YaSelect,
+  ],
 })
-export class TimezoneSelectComponent implements ControlValueAccessor {
+export class YaTimezoneSelect implements ControlValueAccessor {
 
-  areaOptions: SelectOption[] = [];
+  areaOptions: YaSelectOption[] = [];
   areaControl = new UntypedFormControl();
 
   locationControl = new UntypedFormControl();
-  locationOptionsByArea: { [key: string]: Array<SelectOption>; } = {};
-  locationOptions$ = new BehaviorSubject<SelectOption[]>([]);
+  locationOptionsByArea: { [key: string]: Array<YaSelectOption>; } = {};
+  locationOptions$ = new BehaviorSubject<YaSelectOption[]>([]);
 
   sublocationControl = new UntypedFormControl();
-  sublocationOptionsByLocation: { [key: string]: Array<SelectOption>; } = {};
-  sublocationOptions$ = new BehaviorSubject<SelectOption[]>([]);
+  sublocationOptionsByLocation: { [key: string]: Array<YaSelectOption>; } = {};
+  sublocationOptions$ = new BehaviorSubject<YaSelectOption[]>([]);
 
   private onChange = (_: string | null) => { };
 

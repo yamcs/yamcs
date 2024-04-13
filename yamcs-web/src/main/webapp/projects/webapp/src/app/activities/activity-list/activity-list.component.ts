@@ -4,7 +4,7 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Activity, ColumnInfo, GetActivitiesOptions, MessageService, SelectComponent, SelectOption, Synchronizer, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { Activity, GetActivitiesOptions, MessageService, Synchronizer, WebappSdkModule, YaColumnInfo, YaSelect, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, debounceTime } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
@@ -32,7 +32,7 @@ const defaultInterval = 'NO_LIMIT';
 export class ActivityListComponent {
 
   @ViewChild('intervalSelect')
-  intervalSelect: SelectComponent;
+  intervalSelect: YaSelect;
 
   validStart: Date | null;
   validStop: Date | null;
@@ -53,7 +53,7 @@ export class ActivityListComponent {
 
   dataSource: ActivitiesDataSource;
 
-  columns: ColumnInfo[] = [
+  columns: YaColumnInfo[] = [
     { id: 'select', label: '', alwaysVisible: true },
     { id: 'status', label: 'Status', alwaysVisible: true },
     { id: 'id', label: 'Id', alwaysVisible: true },
@@ -64,18 +64,18 @@ export class ActivityListComponent {
     { id: 'actions', label: '', alwaysVisible: true },
   ];
 
-  typeOptions$ = new BehaviorSubject<SelectOption[]>([
+  typeOptions$ = new BehaviorSubject<YaSelectOption[]>([
     { id: 'MANUAL', label: 'Manual', icon: 'emoji_people' },
   ]);
 
-  statusOptions$ = new BehaviorSubject<SelectOption[]>([
+  statusOptions$ = new BehaviorSubject<YaSelectOption[]>([
     { id: 'RUNNING', label: 'Running', icon: 'cached' },
     { id: 'SUCCESSFUL', label: 'Successful', icon: 'check_circle' },
     { id: 'CANCELLED', label: 'Cancelled', icon: 'stop_circle' },
     { id: 'FAILED', label: 'Failed', icon: 'highlight_off' },
   ]);
 
-  intervalOptions: SelectOption[] = [
+  intervalOptions: YaSelectOption[] = [
     { id: 'PT1H', label: 'Last hour' },
     { id: 'PT6H', label: 'Last 6 hours' },
     { id: 'P1D', label: 'Last 24 hours' },

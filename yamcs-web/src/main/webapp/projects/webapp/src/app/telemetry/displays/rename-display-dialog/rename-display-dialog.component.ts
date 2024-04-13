@@ -1,7 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { ConfigService, FilenamePipe, StorageClient, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { ConfigService, StorageClient, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -23,13 +23,12 @@ export class RenameDisplayDialogComponent {
     formBuilder: UntypedFormBuilder,
     yamcs: YamcsService,
     configService: ConfigService,
-    filenamePipe: FilenamePipe,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.storageClient = yamcs.createStorageClient();
     this.bucket = configService.getDisplayBucket();
 
-    const filename = filenamePipe.transform(this.data.name);
+    const filename = utils.getFilename(this.data.name);
     this.filenameForm = formBuilder.group({
       name: [filename, [Validators.required]],
     });

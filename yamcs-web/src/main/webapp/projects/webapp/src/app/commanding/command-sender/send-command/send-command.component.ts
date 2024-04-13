@@ -4,7 +4,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
-import { ColumnChooserComponent, ColumnInfo, ConnectionInfo, GetCommandsOptions, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { ConnectionInfo, GetCommandsOptions, WebappSdkModule, YaColumnChooser, YaColumnInfo, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
@@ -40,14 +40,14 @@ export class SendCommandComponent implements AfterViewInit, OnDestroy {
   @ViewChild(MatPaginator)
   paginator: MatPaginator;
 
-  @ViewChild(ColumnChooserComponent)
-  columnChooser: ColumnChooserComponent;
+  @ViewChild(YaColumnChooser)
+  columnChooser: YaColumnChooser;
 
   filterControl = new UntypedFormControl();
 
   dataSource: CommandsDataSource;
 
-  columns: ColumnInfo[] = [
+  columns: YaColumnInfo[] = [
     { id: 'name', label: 'Name', alwaysVisible: true },
     { id: 'significance', label: 'Significance', visible: true },
     { id: 'shortDescription', label: 'Description' },
@@ -55,7 +55,7 @@ export class SendCommandComponent implements AfterViewInit, OnDestroy {
   ];
 
   // Added dynamically based on actual commands.
-  aliasColumns$ = new BehaviorSubject<ColumnInfo[]>([]);
+  aliasColumns$ = new BehaviorSubject<YaColumnInfo[]>([]);
 
   private queryParamMapSubscription: Subscription;
 

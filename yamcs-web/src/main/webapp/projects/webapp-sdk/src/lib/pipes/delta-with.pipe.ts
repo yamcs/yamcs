@@ -1,7 +1,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import * as utils from '../utils';
 
-@Pipe({ name: 'deltaWith' })
+@Pipe({
+  standalone: true,
+  name: 'deltaWith',
+})
 export class DeltaWithPipe implements PipeTransform {
 
   transform(second: Date | string | undefined, first: Date | string, showSign = true): string | null {

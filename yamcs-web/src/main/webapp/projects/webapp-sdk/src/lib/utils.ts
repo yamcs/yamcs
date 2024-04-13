@@ -1,4 +1,4 @@
-import { Instance, Value } from './client';
+import { Instance, Member, Parameter, ParameterType, UnitInfo, Value } from './client';
 const PREVIEW_LENGTH = 3;
 
 export type ISOResolution = 'day' | 'hhmm' | 'hhmmss' | 'millis';
@@ -484,6 +484,154 @@ export function getDefaultProcessor(instance: Instance): string | null {
   }
 
   return null;
+}
+
+/**
+ * Prints a qualified name of a specific parameter member entry
+ */
+export function getMemberPath(parameter: Parameter): string | null {
+  if (!parameter) {
+    return null;
+  }
+  let result = parameter.qualifiedName;
+  if (parameter.path) {
+    for (let i = 0; i < parameter.path.length; i++) {
+      const el = parameter.path[i];
+      if (el.startsWith('[')) {
+        result += el;
+      } else {
+        result += '.' + el;
+      }
+    }
+  }
+  return result;
+}
+
+/**
+ * Outputs the basename of a path string (no extension).
+ */
+export function getBasename(path: string | null): string | null {
+  if (!path) {
+    return null;
+  }
+
+  const idx = path.lastIndexOf('.');
+  if (idx === -1) {
+    return path;
+  } else {
+    return path.substring(0, idx);
+  }
+}
+
+/**
+ * Outputs the filename of a path string. The path may end with a trailing slash which is preserved.
+ */
+export function getFilename(path: string): string | null {
+  if (!path) {
+    return null;
+  }
+  let idx = path.lastIndexOf('/');
+  if (path.endsWith('/')) {
+    idx = path.substring(0, path.length - 1).lastIndexOf('/');
+  }
+
+  if (idx === -1) {
+    return path;
+  } else {
+    return path.substring(idx + 1);
+  }
+}
+
+/**
+ * Outputs the extension of a filename.
+ */
+export function getExtension(filename: string | null): string | null {
+  if (!filename) {
+    return null;
+  }
+
+  let idx = filename.lastIndexOf('.');
+  if (idx === -1) {
+    return null;
+  } else {
+    return filename.substring(idx + 1);
+  }
+}
+
+export function getEntryForOffset(parameter: Parameter, offset: string): Parameter | Member | null {
+  const entry = parameter.name + offset;
+  const parts = entry.split('.');
+
+  let node: Parameter | Member = parameter;
+  for (let i = 1; i < parts.length; i++) {
+    let memberNode;
+    const members: Member[] = getParameterTypeForEntry(node)?.member || [];
+    for (const member of members) {
+      if (member.name === parts[i]) {
+        memberNode = member;
+        break;
+      }
+    }
+
+    if (!memberNode) {
+      return null;
+    } else {
+      node = memberNode;
+    }
+  }
+
+  return node || null;
+}
+
+function getParameterTypeForEntry(entry: Parameter | Member) {
+  const entryType = entry.type as ParameterType;
+  if (entryType.arrayInfo) {
+    return entryType.arrayInfo.type;
+  } else {
+    return entry.type;
+  }
+}
+
+export function getParameterTypeForPath(parameter: Parameter, pathString?: string): ParameterType | null | undefined {
+  if (!parameter) {
+    return null;
+  }
+  let path = parameter.path;
+
+  // Allow overriding the path (for when it is not contained
+  // in the parameter definition)
+  if (pathString !== undefined) {
+    path = pathString.split('.');
+  }
+
+  if (!path) {
+    return parameter.type;
+  }
+  let ptype = parameter.type!;
+  for (const segment of path) {
+    if (segment.startsWith('[')) {
+      ptype = ptype.arrayInfo!.type;
+    } else {
+      for (const member of (ptype.member || [])) {
+        if (member.name === segment) {
+          ptype = member.type as ParameterType;
+          break;
+        }
+      }
+    }
+  }
+  return ptype;
+}
+
+export function getUnits(unitSet?: UnitInfo[]): string | null {
+  if (!unitSet || unitSet.length === 0) {
+    return null;
+  }
+  let res = '';
+  for (const unitInfo of unitSet) {
+    res += unitInfo.unit + ' ';
+  }
+  return res;
 }
 
 export function unflattenIndex(flatIndex: number, dimensions: number[]) {

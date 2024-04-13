@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ColumnInfo, DownloadPacketsOptions, GetPacketsOptions, MessageService, Packet, SelectComponent, SelectOption, Synchronizer, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { DownloadPacketsOptions, GetPacketsOptions, MessageService, Packet, Synchronizer, WebappSdkModule, YaColumnInfo, YaSelect, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { HexComponent } from '../../../shared/hex/hex.component';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
@@ -28,7 +28,7 @@ const defaultInterval = 'PT1H';
 })
 export class PacketListComponent {
 
-  columns: ColumnInfo[] = [
+  columns: YaColumnInfo[] = [
     { id: 'packetName', label: 'Packet name', alwaysVisible: true },
     { id: 'generationTime', label: 'Generation time', alwaysVisible: true },
     { id: 'earthReceptionTime', label: 'Earth reception time', visible: false },
@@ -40,7 +40,7 @@ export class PacketListComponent {
   ];
 
   @ViewChild('intervalSelect')
-  intervalSelect: SelectComponent;
+  intervalSelect: YaSelect;
 
   validStart: Date | null;
   validStop: Date | null;
@@ -62,15 +62,15 @@ export class PacketListComponent {
 
   detailPacket$ = new BehaviorSubject<Packet | null>(null);
 
-  nameOptions$ = new BehaviorSubject<SelectOption[]>([
+  nameOptions$ = new BehaviorSubject<YaSelectOption[]>([
     { id: 'ANY', label: 'Any name' },
   ]);
 
-  linkOptions$ = new BehaviorSubject<SelectOption[]>([
+  linkOptions$ = new BehaviorSubject<YaSelectOption[]>([
     { id: 'ANY', label: 'Any link' },
   ]);
 
-  intervalOptions: SelectOption[] = [
+  intervalOptions: YaSelectOption[] = [
     { id: 'PT1H', label: 'Last hour' },
     { id: 'PT6H', label: 'Last 6 hours' },
     { id: 'P1D', label: 'Last 24 hours' },

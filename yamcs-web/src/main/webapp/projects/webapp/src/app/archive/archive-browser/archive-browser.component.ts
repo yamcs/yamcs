@@ -7,7 +7,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { MouseTracker, TimeLocator, TimeRuler, Timeline, Tool } from '@fqqb/timeline';
-import { ArchiveRecord, DateTimePipe, EditReplayProcessorRequest, MessageService, Processor, ProcessorSubscription, Synchronizer, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ArchiveRecord, EditReplayProcessorRequest, MessageService, Processor, ProcessorSubscription, Synchronizer, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
@@ -116,7 +116,6 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
     private overlay: Overlay,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private dateTimePipe: DateTimePipe,
     private messageService: MessageService,
     private synchronizer: Synchronizer,
   ) {
@@ -502,7 +501,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
         const band = new IndexGroupBand(this.timeline, group.name, COMPLETENESS_BG, COMPLETENESS_FG);
         band.borderWidth = i === completenessGroups.length - 1 ? 1 : 0;
         band.marginBottom = i === completenessGroups.length - 1 ? 20 : 0;
-        band.setupTooltip(this.tooltipInstance, this.dateTimePipe);
+        band.setupTooltip(this.tooltipInstance);
         band.loadData(group);
       }
 
@@ -515,7 +514,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
           const band = new IndexGroupBand(this.timeline, packetName, PACKETS_BG, PACKETS_FG);
           band.borderWidth = i === this.packetNames.length - 1 ? 1 : 0;
           band.marginBottom = i === this.packetNames.length - 1 ? 20 : 0;
-          band.setupTooltip(this.tooltipInstance, this.dateTimePipe);
+          band.setupTooltip(this.tooltipInstance);
           const group = tmGroups.find(candidate => candidate.name === packetName);
           if (group) {
             band.loadData(group);
@@ -532,7 +531,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
         const band = new IndexGroupBand(this.timeline, group.name, PARAMETERS_BG, PARAMETERS_FG);
         band.borderWidth = i === parameterGroups.length - 1 ? 1 : 0;
         band.marginBottom = i === parameterGroups.length - 1 ? 20 : 0;
-        band.setupTooltip(this.tooltipInstance, this.dateTimePipe);
+        band.setupTooltip(this.tooltipInstance);
         band.loadData(group);
       }
 
@@ -545,7 +544,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
         const band = new IndexGroupBand(this.timeline, group.name, COMMANDS_BG, COMMANDS_FG);
         band.borderWidth = i === commandGroups.length - 1 ? 1 : 0;
         band.marginBottom = i === commandGroups.length - 1 ? 30 : 0;
-        band.setupTooltip(this.tooltipInstance, this.dateTimePipe);
+        band.setupTooltip(this.tooltipInstance);
         band.loadData(group);
       }
 
@@ -558,7 +557,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
         const band = new IndexGroupBand(this.timeline, group.name, EVENTS_BG, EVENTS_FG);
         band.borderWidth = i === eventGroups.length - 1 ? 1 : 0;
         band.marginBottom = i === eventGroups.length - 1 ? 20 : 0;
-        band.setupTooltip(this.tooltipInstance, this.dateTimePipe);
+        band.setupTooltip(this.tooltipInstance);
         band.loadData(group);
       }
     });

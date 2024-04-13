@@ -1,5 +1,5 @@
 import { Item, ItemBand, Timeline } from '@fqqb/timeline';
-import { DateTimePipe, utils } from '@yamcs/webapp-sdk';
+import { utils } from '@yamcs/webapp-sdk';
 import { TimelineTooltipComponent } from '../timeline-tooltip/timeline-tooltip.component';
 import { ArchiveRecordGroup } from './ArchiveRecordGroup';
 import { RGB } from './RGB';
@@ -34,12 +34,12 @@ export class IndexGroupBand extends ItemBand {
     });
   }
 
-  setupTooltip(tooltipInstance: TimelineTooltipComponent, dateTimePipe: DateTimePipe) {
+  setupTooltip(tooltipInstance: TimelineTooltipComponent) {
     this.addItemMouseMoveListener(evt => {
       const { start, stop, data } = evt.item;
       let ttText = data.name + '\n';
-      ttText += `Start: ${dateTimePipe.transform(new Date(start))}\n`;
-      ttText += `Stop : ${dateTimePipe.transform(new Date(stop!))}\n`;
+      ttText += `Start: ${utils.printDateTime(new Date(start), true)}\n`;
+      ttText += `Stop : ${utils.printDateTime(new Date(stop!), true)}\n`;
       if (data.count >= 0) {
         const sec = (stop! - start) / 1000;
         ttText += `Count: ${data.count}`;

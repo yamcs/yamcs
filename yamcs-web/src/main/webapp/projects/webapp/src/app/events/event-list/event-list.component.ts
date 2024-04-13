@@ -3,7 +3,7 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ColumnInfo, ConfigService, ExtraColumnInfo, GetEventsOptions, SelectComponent, SelectOption, Synchronizer, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ConfigService, ExtraColumnInfo, GetEventsOptions, Synchronizer, WebappSdkModule, YaColumnInfo, YaSelect, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AuthService } from '../../core/services/AuthService';
@@ -34,7 +34,7 @@ const defaultInterval = 'PT1H';
 export class EventListComponent {
 
   @ViewChild('intervalSelect')
-  intervalSelect: SelectComponent;
+  intervalSelect: YaSelect;
 
   validStart: Date | null;
   validStop: Date | null;
@@ -55,7 +55,7 @@ export class EventListComponent {
 
   dataSource: EventsDataSource;
 
-  columns: ColumnInfo[] = [
+  columns: YaColumnInfo[] = [
     { id: 'severity', label: 'Severity', visible: true },
     { id: 'gentime', label: 'Generation time', alwaysVisible: true },
     { id: 'message', label: 'Message', alwaysVisible: true },
@@ -70,7 +70,7 @@ export class EventListComponent {
    */
   extraColumns: ExtraColumnInfo[] = [];
 
-  severityOptions: SelectOption[] = [
+  severityOptions: YaSelectOption[] = [
     { id: 'INFO', label: 'Info level' },
     { id: 'WATCH', label: 'Watch level' },
     { id: 'WARNING', label: 'Warning level' },
@@ -79,9 +79,9 @@ export class EventListComponent {
     { id: 'SEVERE', label: 'Severe level' },
   ];
 
-  sourceOptions$ = new BehaviorSubject<SelectOption[]>([]);
+  sourceOptions$ = new BehaviorSubject<YaSelectOption[]>([]);
 
-  intervalOptions: SelectOption[] = [
+  intervalOptions: YaSelectOption[] = [
     { id: 'PT1H', label: 'Last hour' },
     { id: 'PT6H', label: 'Last 6 hours' },
     { id: 'P1D', label: 'Last 24 hours' },

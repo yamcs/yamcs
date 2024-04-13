@@ -2,7 +2,7 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, Input, ViewChild } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
-import { ColumnChooserComponent, ColumnInfo, Command, GetCommandsOptions, SearchFilterComponent, SpaceSystem, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { Command, GetCommandsOptions, SpaceSystem, WebappSdkModule, YaColumnChooser, YaColumnInfo, YamcsService, YaSearchFilter } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { CommandsDataSource } from '../../commanding/command-sender/send-command/commands.datasource';
 import { SignificanceLevelComponent } from '../significance-level/significance-level.component';
@@ -39,17 +39,17 @@ export class CommandSelectorComponent implements ControlValueAccessor, AfterView
   @ViewChild(MatPaginator)
   paginator: MatPaginator;
 
-  @ViewChild(ColumnChooserComponent)
-  columnChooser: ColumnChooserComponent;
+  @ViewChild(YaColumnChooser)
+  columnChooser: YaColumnChooser;
 
   @ViewChild('searchFilter')
-  searchFilter: SearchFilterComponent;
+  searchFilter: YaSearchFilter;
 
   filterControl = new UntypedFormControl();
 
   dataSource: CommandsDataSource;
 
-  columns: ColumnInfo[] = [
+  columns: YaColumnInfo[] = [
     { id: 'name', label: 'Name', alwaysVisible: true },
     { id: 'significance', label: 'Significance', visible: true },
     { id: 'shortDescription', label: 'Description' },
@@ -57,7 +57,7 @@ export class CommandSelectorComponent implements ControlValueAccessor, AfterView
   ];
 
   // Added dynamically based on actual commands.
-  aliasColumns$ = new BehaviorSubject<ColumnInfo[]>([]);
+  aliasColumns$ = new BehaviorSubject<YaColumnInfo[]>([]);
 
   selection = new SelectionModel<ListItem>(false);
   selectedCommand$ = new BehaviorSubject<ListItem | null>(null);

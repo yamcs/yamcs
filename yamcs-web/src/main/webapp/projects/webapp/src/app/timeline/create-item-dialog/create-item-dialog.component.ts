@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/core';
 import { FormGroup, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { CreateTimelineItemRequest, MessageService, SelectOption, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { CreateTimelineItemRequest, MessageService, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 import { itemPropertyInfo } from '../item-band/ItemBand';
 import { ItemStylesComponent } from '../item-band/item-styles/item-styles.component';
@@ -20,7 +20,7 @@ const OVERRIDE_SUFFIX = '_overrideBand';
 })
 export class CreateItemDialogComponent implements OnDestroy {
 
-  startConstraintOptions: SelectOption[] = [
+  startConstraintOptions: YaSelectOption[] = [
     { id: 'START_ON', label: 'Start on' },
   ];
 

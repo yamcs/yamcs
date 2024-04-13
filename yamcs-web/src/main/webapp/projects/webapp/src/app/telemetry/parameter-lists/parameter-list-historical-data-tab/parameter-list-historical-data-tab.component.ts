@@ -3,7 +3,7 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ExportParameterValuesOptions, FilenamePipe, ParameterList, SelectOption, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ExportParameterValuesOptions, ParameterList, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { ExportArchiveDataDialogComponent } from '../../displays/export-archive-data-dialog/export-archive-data-dialog.component';
 
@@ -31,7 +31,7 @@ const defaultInterval = 'PT1H';
 export class ParameterListHistoricalDataTabComponent {
 
   plistId: string;
-  intervalOptions: SelectOption[] = [
+  intervalOptions: YaSelectOption[] = [
     { id: 'PT1H', label: 'Last Hour' },
     { id: 'PT6H', label: 'Last 6 Hours' },
     { id: 'P1D', label: 'Last 24 Hours' },
@@ -69,7 +69,6 @@ export class ParameterListHistoricalDataTabComponent {
     readonly route: ActivatedRoute,
     readonly yamcs: YamcsService,
     private dialog: MatDialog,
-    private filenamePipe: FilenamePipe,
   ) {
     this.plistId = route.snapshot.paramMap.get('list')!;
 
@@ -205,7 +204,7 @@ export class ParameterListHistoricalDataTabComponent {
     }
 
     const qualifiedNames = lines[0].split(/\t/).slice(1);
-    const headers: string[] = qualifiedNames.map(x => this.filenamePipe.transform(x)!);
+    const headers: string[] = qualifiedNames.map(x => utils.getFilename(x)!);
     const result: ValueExport = { headers, records };
     return result;
   }

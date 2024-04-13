@@ -1,9 +1,9 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, forwardRef, Input, ViewChild } from '@angular/core';
 import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator } from '@angular/forms';
-import { DateAdapter } from '@angular/material/core';
-import { MatDatepicker } from '@angular/material/datepicker';
+import { MatDatepicker, MatDatepickerInput } from '@angular/material/datepicker';
+import { MatIcon } from '@angular/material/icon';
+import { provideUtcNativeDateAdapter } from '../../providers';
 import * as utils from '../../utils';
-import { UtcDateAdapter } from './UtcDateAdapter';
 
 export interface FireChangeOptions {
   /**
@@ -17,26 +17,27 @@ const INVALID_ISOSTRING = 'invalid';
 const DAY_OF_YEAR_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 @Component({
+  standalone: true,
   selector: 'ya-date-time-input',
   templateUrl: './date-time-input.component.html',
   styleUrl: './date-time-input.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => DateTimeInputComponent),
-      multi: true,
-    }, {
-      provide: NG_VALIDATORS,
-      useExisting: forwardRef(() => DateTimeInputComponent),
-      multi: true,
-    }, {
-      provide: DateAdapter,
-      useClass: UtcDateAdapter,
-    }
-  ]
+  providers: [{
+    provide: NG_VALUE_ACCESSOR,
+    useExisting: forwardRef(() => YaDateTimeInput),
+    multi: true,
+  }, {
+    provide: NG_VALIDATORS,
+    useExisting: forwardRef(() => YaDateTimeInput),
+    multi: true,
+  }, provideUtcNativeDateAdapter()],
+  imports: [
+    MatDatepicker,
+    MatDatepickerInput,
+    MatIcon,
+  ],
 })
-export class DateTimeInputComponent implements AfterViewInit, ControlValueAccessor, Validator {
+export class YaDateTimeInput implements AfterViewInit, ControlValueAccessor, Validator {
 
   @Input()
   showMillis = false;

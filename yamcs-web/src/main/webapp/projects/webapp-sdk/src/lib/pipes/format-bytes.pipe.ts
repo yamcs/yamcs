@@ -2,7 +2,10 @@ import { Pipe, PipeTransform } from '@angular/core';
 
 const sizes = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 
-@Pipe({ name: 'formatBytes' })
+@Pipe({
+  standalone: true,
+  name: 'formatBytes',
+})
 export class FormatBytesPipe implements PipeTransform {
 
   transform(bytes: string | number | null, decimals = 2): string | null {

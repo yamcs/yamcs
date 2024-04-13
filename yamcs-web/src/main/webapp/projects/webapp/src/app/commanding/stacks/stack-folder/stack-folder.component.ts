@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { BasenamePipe, ConfigService, ListObjectsOptions, ListObjectsResponse, MessageService, StorageClient, YamcsService } from '@yamcs/webapp-sdk';
+import { ConfigService, ListObjectsOptions, ListObjectsResponse, MessageService, StorageClient, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/AuthService';
@@ -61,7 +61,6 @@ export class StackFolderComponent implements OnDestroy {
     private authService: AuthService,
     private messageService: MessageService,
     private configService: ConfigService,
-    private basenamePipe: BasenamePipe
   ) {
     title.setTitle('Command stacks');
     this.storageClient = yamcs.createStorageClient();
@@ -224,7 +223,7 @@ export class StackFolderComponent implements OnDestroy {
           const xmlParser = new DOMParser();
           const doc = xmlParser.parseFromString(await response.text(), 'text/xml') as XMLDocument;
           const entries = StackFileComponent.parseXML(doc.documentElement, this.configService.getCommandOptions());
-          StackFileComponent.convertToJSON(this.messageService, this.basenamePipe, this.storageClient, this.bucket, name, entries, {})
+          StackFileComponent.convertToJSON(this.messageService, this.storageClient, this.bucket, name, entries, {})
             .then(() => {
               this.loadCurrentFolder();
             });

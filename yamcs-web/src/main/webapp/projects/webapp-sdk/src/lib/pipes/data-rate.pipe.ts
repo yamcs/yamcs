@@ -2,7 +2,10 @@ import { Pipe, PipeTransform } from '@angular/core';
 
 const sizes = ['bps', 'kbps', 'Mbps', 'Gbps', 'Tbps'];
 
-@Pipe({ name: 'dataRate' })
+@Pipe({
+  standalone: true,
+  name: 'dataRate',
+})
 export class DataRatePipe implements PipeTransform {
 
   transform(bps: string | number | null, decimals = 1): string | null {

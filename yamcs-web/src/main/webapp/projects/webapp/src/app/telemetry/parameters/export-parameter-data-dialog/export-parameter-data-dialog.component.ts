@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/core';
 import { FormControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { DownloadParameterValuesOptions, SelectOption, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { DownloadParameterValuesOptions, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Component({
@@ -14,7 +14,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 })
 export class ExportParameterDataDialogComponent implements OnDestroy {
 
-  delimiterOptions: SelectOption[] = [
+  delimiterOptions: YaSelectOption[] = [
     { id: 'COMMA', label: 'Comma' },
     { id: 'SEMICOLON', label: 'Semicolon' },
     { id: 'TAB', label: 'Tab' },

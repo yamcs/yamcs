@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { UntypedFormGroup } from '@angular/forms';
-import { SelectOption, WebappSdkModule } from '@yamcs/webapp-sdk';
+import { WebappSdkModule, YaSelectOption } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -14,7 +14,7 @@ import { SelectOption, WebappSdkModule } from '@yamcs/webapp-sdk';
 })
 export class ItemBandStylesComponent {
 
-  itemTextOverflowOptions: SelectOption[] = [
+  itemTextOverflowOptions: YaSelectOption[] = [
     { id: 'show', label: 'Show' },
     { id: 'clip', label: 'Clip' },
     { id: 'hide', label: 'Hide' },

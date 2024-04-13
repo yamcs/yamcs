@@ -1,10 +1,11 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 
 @Component({
+  standalone: true,
   selector: 'ya-download-button',
   templateUrl: './download-button.component.html',
 })
-export class DownloadButtonComponent {
+export class YaDownloadButton {
 
   @Input()
   link: string;

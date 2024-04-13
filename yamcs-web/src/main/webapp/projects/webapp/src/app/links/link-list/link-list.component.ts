@@ -4,7 +4,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ActionInfo, ColumnInfo, LinkEvent, LinkSubscription, MessageService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { ActionInfo, LinkEvent, LinkSubscription, MessageService, WebappSdkModule, YaColumnInfo, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
@@ -36,7 +36,7 @@ export class LinkListComponent implements AfterViewInit, OnDestroy {
   // Link to show detail pane (only on single selection)
   detailLink$ = new BehaviorSubject<LinkItem | null>(null);
 
-  columns: ColumnInfo[] = [
+  columns: YaColumnInfo[] = [
     { id: 'select', label: '', alwaysVisible: true },
     { id: 'status', label: '', alwaysVisible: true },
     { id: 'name', label: 'Name', alwaysVisible: true },

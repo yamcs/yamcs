@@ -4,7 +4,7 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
-import { GetAlgorithmsOptions, SelectOption, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { GetAlgorithmsOptions, WebappSdkModule, YaSelectOption, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
@@ -51,7 +51,7 @@ export class AlgorithmListComponent implements AfterViewInit, OnDestroy {
     'actions',
   ];
 
-  scopeOptions: SelectOption[] = [
+  scopeOptions: YaSelectOption[] = [
     { id: 'ANY', label: 'Any scope' },
     { id: 'GLOBAL', label: 'Global' },
     { id: 'COMMAND_VERIFICATION', label: 'Command Verification' },

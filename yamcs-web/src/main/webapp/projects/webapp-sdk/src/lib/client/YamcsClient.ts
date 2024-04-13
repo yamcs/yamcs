@@ -1544,6 +1544,10 @@ export default class YamcsClient implements HttpHandler {
     }
   }
 
+  getWebSocketClient() {
+    return this.webSocketClient;
+  }
+
   closeWebSocketClient() {
     if (this.webSocketClient) {
       this.webSocketClient.close();
