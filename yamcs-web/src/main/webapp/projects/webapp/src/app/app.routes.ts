@@ -82,10 +82,6 @@ export const APP_ROUTES: Routes = [{
     loadChildren: () => import('projects/webapp/src/app/events/events.routes').then(m => m.ROUTES),
     canActivate: [authGuardFn],
   }, {
-    path: 'gaps',
-    loadChildren: () => import('projects/webapp/src/app/gaps/gaps.routes').then(m => m.ROUTES),
-    canActivate: [authGuardFn],
-  }, {
     path: 'instance',
     loadChildren: () => import('projects/webapp/src/app/instance-home/instance-home.routes').then(m => m.ROUTES),
     canActivate: [authGuardFn],

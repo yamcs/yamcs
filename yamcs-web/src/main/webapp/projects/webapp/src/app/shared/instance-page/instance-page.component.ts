@@ -165,11 +165,6 @@ export class InstancePageComponent implements OnInit, OnDestroy {
         this.extraItems.push(item);
       }
     }
-    if (!this.extraItems.length) { // Legacy, shall be removed soon
-      if (this.config.dass && this.user.hasSystemPrivilege('RequestPlayback')) {
-        this.extraItems.push({ path: 'gaps', label: 'Gaps' });
-      }
-    }
 
     this.routerSubscription = router.events.pipe(
       filter(evt => evt instanceof NavigationEnd)

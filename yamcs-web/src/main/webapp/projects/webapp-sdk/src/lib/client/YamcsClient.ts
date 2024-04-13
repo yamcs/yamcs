@@ -14,7 +14,7 @@ import { CreateTransferRequest, ListFilesRequest, ListFilesResponse, RemoteFileL
 import { AlarmsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstanceTemplatesWrapper, InstancesWrapper, LinksWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SessionsWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
 import { AlgorithmOverrides, AlgorithmStatus, AlgorithmTrace, AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParameterTypesOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParameterType, ParameterTypesPage, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
-import { ArchiveRecord, CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, ExecutorInfo, ExportParameterValuesOptions, GetCommandHistoryOptions, GetCompletenessIndexOptions, GetGapsOptions, GetPacketsOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListApidsResponse, ListGapsResponse, ListPacketsResponse, Packet, ParameterData, ParameterValue, PlaybackInfo, Range, RequestPlaybackRequest, Sample, StartProcedureOptions, StreamCommandIndexOptions, StreamCompletenessIndexOptions, StreamEventIndexOptions, StreamPacketIndexOptions, StreamParameterIndexOptions, Value } from './types/monitoring';
+import { ArchiveRecord, CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, ExecutorInfo, ExportParameterValuesOptions, GetCommandHistoryOptions, GetCompletenessIndexOptions, GetPacketsOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListPacketsResponse, Packet, ParameterData, ParameterValue, Range, Sample, StartProcedureOptions, StreamCommandIndexOptions, StreamCompletenessIndexOptions, StreamEventIndexOptions, StreamPacketIndexOptions, StreamParameterIndexOptions, Value } from './types/monitoring';
 import { CreateParameterListRequest, GetParameterListsResponse, ParameterList, UpdateParameterListRequest } from './types/plists';
 import { AlgorithmStatusSubscription, BackfillingSubscription, ExtractPacketResponse, PacketNamesResponse, ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeAlgorithmStatusRequest, SubscribeBackfillingData, SubscribeBackfillingRequest, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
 import { CommandQueue, CommandQueueEvent, QueueEventsSubscription, QueueStatisticsSubscription, SubscribeQueueEventsRequest, SubscribeQueueStatisticsRequest } from './types/queue';
@@ -1458,34 +1458,6 @@ export default class YamcsClient implements HttpHandler {
     return this.doFetch(`${this.apiUrl}/filetransfer/${instance}/${service}/files:runFileAction`, {
       method: 'POST',
       body: JSON.stringify(request),
-    });
-  }
-
-  async getApids(instance: string) {
-    const url = `${this.apiUrl}/dass/apids/${instance}`;
-    const response = await this.doFetch(url);
-    const wrapper = await response.json() as ListApidsResponse;
-    return wrapper.apids || [];
-  }
-
-  async getGaps(instance: string, options: GetGapsOptions) {
-    const url = `${this.apiUrl}/dass/gaps/${instance}`;
-    const response = await this.doFetch(url + this.queryString(options));
-    return await response.json() as ListGapsResponse;
-  }
-
-  async getPlaybackInfo(instance: string, link: string) {
-    const url = `${this.apiUrl}/dass/links/${instance}/${link}/playback`;
-    const response = await this.doFetch(url);
-    return await response.json() as PlaybackInfo;
-  }
-
-  async requestPlayback(instance: string, link: string, options: RequestPlaybackRequest) {
-    const url = `${this.apiUrl}/dass/links/${instance}/${link}:requestPlayback`;
-    const body = JSON.stringify(options);
-    return await this.doFetch(url, {
-      body,
-      method: 'POST',
     });
   }
 

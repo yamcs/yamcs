@@ -153,6 +153,7 @@ options:
     type: BOOLEAN
     default: false
     hidden: true
+    deprecationMessage: Remove this property. This functionality is now provided from a plugin.
 
   tc:
     title: Show Commanding Functionalities

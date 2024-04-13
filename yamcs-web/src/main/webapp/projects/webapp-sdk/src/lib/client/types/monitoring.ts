@@ -80,13 +80,6 @@ export interface Range {
   count: number;
 }
 
-export interface GetGapsOptions {
-  start?: string;
-  stop?: string;
-  apids?: number[];
-  limit?: number;
-}
-
 export interface IssueCommandOptions {
   args?: { [key: string]: any; };
   origin?: string;
@@ -348,49 +341,4 @@ export interface ArchiveRecord {
   first: string;
   last: string;
   num: number;
-}
-
-export interface Gap {
-  apid: number;
-  start: string;
-  stop: string;
-  startSequenceCount: number;
-  stopSequenceCount: number;
-  missingPacketCount: number;
-}
-
-export interface ListApidsResponse {
-  apids: number[];
-}
-
-export interface ListGapsResponse {
-  gaps: Gap[];
-  continuationToken?: string;
-}
-
-export interface PlaybackRange {
-  apid: number;
-  start: string;
-  stop: string;
-}
-
-export interface RequestPlaybackRequest {
-  ranges: PlaybackRange[];
-}
-
-export interface PlaybackInfo {
-  interval: string;
-  period: string;
-  requests: PlaybackRequest[];
-}
-
-export interface PlaybackRequest {
-  requestTime: string;
-  apid: number;
-  packetType: number;
-  privateHeaderSource: number;
-  start: string;
-  stop: string;
-  status: string;
-  tmCount: number;
 }
