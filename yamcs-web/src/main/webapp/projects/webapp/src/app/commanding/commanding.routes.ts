@@ -1,4 +1,5 @@
 import { Routes, UrlMatcher, UrlSegment } from '@angular/router';
+import { ExtensionComponent } from '../appbase/extension/extension.component';
 import { attachContextGuardFn } from '../core/guards/AttachContextGuard';
 import { authGuardChildFn, authGuardFn } from '../core/guards/AuthGuard';
 import { mayControlCommandQueueGuardFn } from '../core/guards/MayControlCommandQueueGuard';
@@ -119,6 +120,15 @@ export const ROUTES: Routes = [{
       path: '**',
       component: StackFileComponent,
       canDeactivate: [stackFilePageDirtyGuardFn],
+    }]
+  }, {
+    path: 'ext',
+    canActivate: [authGuardFn, attachContextGuardFn],
+    canActivateChild: [authGuardChildFn],
+    runGuardsAndResolvers: 'always',
+    children: [{
+      path: ':extension',
+      component: ExtensionComponent,
     }]
   }]
 }];
