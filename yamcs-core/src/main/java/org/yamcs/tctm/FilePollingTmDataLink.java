@@ -156,10 +156,12 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
                     tmPacket = new TmPacket(timeService.getMissionTime(), packet);
                     tmPacket.setEarthReceptionTime(erp);
                     tmPacket = packetPreprocessor.process(tmPacket);
-                    minTime = Math.min(minTime, tmPacket.getGenerationTime());
-                    maxTime = Math.max(maxTime, tmPacket.getGenerationTime());
-                    count++;
-                    processPacket(tmPacket);
+                    if (tmPacket != null) {
+                        minTime = Math.min(minTime, tmPacket.getGenerationTime());
+                        maxTime = Math.max(maxTime, tmPacket.getGenerationTime());
+                        count++;
+                        processPacket(tmPacket);
+                    }
                     if (delayBetweenPackets > 0) {
                         Thread.sleep(delayBetweenPackets);
                     }
