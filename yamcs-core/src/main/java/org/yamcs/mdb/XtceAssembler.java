@@ -1284,7 +1284,9 @@ public class XtceAssembler {
     private void writeSignificance(XMLStreamWriter doc, Significance significance, String elementName)
             throws XMLStreamException {
         doc.writeStartElement(elementName);
-        doc.writeAttribute("reasonForWarning", significance.getReasonForWarning());
+        if (significance.getReasonForWarning() != null) {
+            doc.writeAttribute("reasonForWarning", significance.getReasonForWarning());
+        }
         doc.writeAttribute("consequenceLevel", significance.getConsequenceLevel().xtceAlias());
         doc.writeEndElement();
     }
