@@ -1715,6 +1715,8 @@ public class XtceAssembler {
         return sb.toString();
     }
 
+    // converts the nd qualified name to a relative reference to the current subsystem
+    // if the reference is to the "/yamcs" then an absolute reference is provided instead
     private String getNameReference(NameDescription nd) {
         String ndqn = nd.getQualifiedName();
         if (ndqn == null) { // happens for arguments
@@ -1725,6 +1727,8 @@ public class XtceAssembler {
 
         if (ndqn.startsWith(ssname + "/")) {
             return ndqn.substring(ssname.length() + 1);
+        } else if (ndqn.startsWith(Mdb.YAMCS_SPACESYSTEM_NAME)) {
+            return ndqn;
         } else {
             String[] pe1 = currentSpaceSystem.getQualifiedName().split("/");
             String[] pe2 = nd.getSubsystemName().split("/");
