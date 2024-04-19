@@ -13,17 +13,17 @@ import org.yamcs.xtce.Parameter;
 public interface SoftwareParameterManager {
 
     /**
-     * Update a list of parameters.
-     * Note that the value can be of type {@link PartialParameterValue} meaning that it refers to an element of an array. 
+     * Called (usually via the external Yamcs API) to update a list of parameters.
+     * <p>
+     * Note that the value can be of type {@link PartialParameterValue} meaning that it refers to an element of an
+     * array.
      * 
-     * @param pvals
      */
     void updateParameters(List<ParameterValue> pvals);
 
     /**
-     * Update the engineering value of a parameter.
-     * @param p
-     * @param v
+     * Called (usually via the external Yamcs API) to pdate the engineering value of a parameter.
+     * 
      */
     void updateParameter(Parameter p, Value v);
 
