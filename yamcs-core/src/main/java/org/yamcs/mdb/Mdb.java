@@ -7,21 +7,31 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
+import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.xtce.AbsoluteTimeParameterType;
+import org.yamcs.xtce.BaseDataType;
+import org.yamcs.xtce.BinaryParameterType;
+import org.yamcs.xtce.BooleanParameterType;
+import org.yamcs.xtce.EnumeratedParameterType;
+import org.yamcs.xtce.FloatParameterType;
+import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SpaceSystem;
+import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtce.SystemParameter;
+import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.XtceDb;
 
 /**
- * Wraps an {@link Mdb} object.
+ * Wraps an {@link XtceDb} object.
  * <p>
  * Offers persistence capabilities for selected subtrees.
  */
 public class Mdb extends XtceDb {
-
     private static final long serialVersionUID = 1L;
     final transient Map<String, SpaceSystemWriter> subsystemWriters;
 
@@ -178,6 +188,83 @@ public class Mdb extends XtceDb {
             ptype = ptype1;
         }
         return ptype;
+    }
 
+    /**
+     * Creates if it does not exist and returns a basic type corresponding to the value.
+     * <p>
+     * The namespace has to be writable otherwise an IllegalArgumentException will be thrown
+     */
+    public ParameterType getOrCreateBasicType(String namespace, Type type, UnitType unit) throws IOException {
+
+        switch (type) {
+        case BINARY:
+            return getOrCreateType(namespace, "binary", unit,
+                    () -> new BinaryParameterType.Builder());
+        case BOOLEAN:
+            return getOrCreateType(namespace, "boolean", unit,
+                    () -> new BooleanParameterType.Builder());
+        case STRING:
+            return getOrCreateType(namespace, "string", unit,
+                    () -> new StringParameterType.Builder());
+        case FLOAT:
+            return getOrCreateType(namespace, "float32", unit,
+                    () -> new FloatParameterType.Builder().setSizeInBits(32));
+        case DOUBLE:
+            return getOrCreateType(namespace, "float64", unit,
+                    () -> new FloatParameterType.Builder().setSizeInBits(64));
+        case SINT32:
+            return getOrCreateType(namespace, "sint32", unit,
+                    () -> new IntegerParameterType.Builder().setSizeInBits(32).setSigned(true));
+        case SINT64:
+            return getOrCreateType(namespace, "sint64", unit,
+                    () -> new IntegerParameterType.Builder().setSizeInBits(64).setSigned(true));
+        case UINT32:
+            return getOrCreateType(namespace, "uint32", unit,
+                    () -> new IntegerParameterType.Builder().setSizeInBits(32).setSigned(false));
+        case UINT64:
+            return getOrCreateType(namespace, "uint64", unit,
+                    () -> new IntegerParameterType.Builder().setSizeInBits(64).setSigned(false));
+        case TIMESTAMP:
+            return getOrCreateType(namespace, "time", unit, () -> new AbsoluteTimeParameterType.Builder());
+        case ENUMERATED:
+            return getOrCreateType(namespace, "enum", unit, () -> new EnumeratedParameterType.Builder());
+        default:
+            throw new IllegalArgumentException(type + "is not a basic type");
+        }
+    }
+
+    private ParameterType getOrCreateType(String namespace, String name, UnitType unit,
+            Supplier<ParameterType.Builder<?>> supplier) throws IOException {
+
+        String units;
+        if (unit != null) {
+            units = unit.getUnit();
+            if (!"1".equals(unit.getFactor())) {
+                units = unit.getFactor() + "x" + units;
+            }
+            if (unit.getPower() != 1) {
+                units = units + "^" + unit.getPower();
+            }
+            name = name + "_" + units.replaceAll("/", "_");
+        }
+
+        String fqn = namespace + NameDescription.PATH_SEPARATOR + name;
+        ParameterType ptype = getParameterType(fqn);
+        if (ptype != null) {
+            return ptype;
+        }
+        ParameterType.Builder<?> typeb = supplier.get().setName(name);
+        if (unit != null) {
+            ((BaseDataType.Builder<?>) typeb).addUnit(unit);
+        }
+
+        ptype = typeb.build();
+        ((NameDescription) ptype).setQualifiedName(fqn);
+
+        var writer = getWriter(namespace);
+        doAddParameterType(Arrays.asList(ptype), true);
+        writer.writer.write(namespace, this);
+        return ptype;
     }
 }
