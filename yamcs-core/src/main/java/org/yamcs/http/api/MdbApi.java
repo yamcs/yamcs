@@ -322,9 +322,14 @@ public class MdbApi extends AbstractMdbApi<Context> {
         List<SpaceSystem> spaceSystems = new ArrayList<>();
         final List<Parameter> candidates = new ArrayList<>();
         if (request.hasSystem()) {
+            // Add trailing slash, to ignore siblings with similar name
+            var systemPrefix = request.getSystem().endsWith("/")
+                    ? request.getSystem()
+                    : request.getSystem() + "/";
+
             if (request.hasQ()) { // get candidates for deep search starting from the system
                 allParameters.forEach(parameter -> {
-                    if (parameter.getQualifiedName().startsWith(request.getSystem())) {
+                    if (parameter.getQualifiedName().startsWith(systemPrefix)) {
                         candidates.add(parameter);
                     }
                 });
@@ -335,7 +340,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
                     }
                     if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
                         spaceSystem.getParameters().stream().filter(hasPrivilege).forEach(candidates::add);
-                    } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
+                    } else if (spaceSystem.getQualifiedName().startsWith(systemPrefix)) {
                         if (spaceSystem.getQualifiedName().indexOf('/', request.getSystem().length() + 1) == -1) {
                             spaceSystems.add(spaceSystem);
                         }
@@ -618,9 +623,14 @@ public class MdbApi extends AbstractMdbApi<Context> {
         List<SpaceSystem> spaceSystems = new ArrayList<>();
         List<ParameterType> ptypes = new ArrayList<>();
         if (request.hasSystem()) {
+            // Add trailing slash, to ignore siblings with similar name
+            var systemPrefix = request.getSystem().endsWith("/")
+                    ? request.getSystem()
+                    : request.getSystem() + "/";
+
             if (request.hasQ()) { // get candidates for deep search starting from the system
                 for (ParameterType ptype : mdb.getParameterTypes()) {
-                    if (ptype.getQualifiedName().startsWith(request.getSystem())) {
+                    if (ptype.getQualifiedName().startsWith(systemPrefix)) {
                         ptypes.add(ptype);
                     }
                 }
@@ -631,7 +641,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
                 for (SpaceSystem spaceSystem : filteredSpaceSystems) {
                     if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
                         ptypes.addAll(spaceSystem.getParameterTypes());
-                    } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
+                    } else if (spaceSystem.getQualifiedName().startsWith(systemPrefix)) {
                         if (spaceSystem.getQualifiedName().indexOf('/', request.getSystem().length() + 1) == -1) {
                             spaceSystems.add(spaceSystem);
                         }
@@ -710,9 +720,14 @@ public class MdbApi extends AbstractMdbApi<Context> {
         List<SpaceSystem> spaceSystems = new ArrayList<>();
         List<SequenceContainer> containers = new ArrayList<>();
         if (request.hasSystem()) {
+            // Add trailing slash, to ignore siblings with similar name
+            var systemPrefix = request.getSystem().endsWith("/")
+                    ? request.getSystem()
+                    : request.getSystem() + "/";
+
             if (request.hasQ()) { // get candidates for deep search starting from the system
                 for (SequenceContainer container : mdb.getSequenceContainers()) {
-                    if (container.getQualifiedName().startsWith(request.getSystem())) {
+                    if (container.getQualifiedName().startsWith(systemPrefix)) {
                         containers.add(container);
                     }
                 }
@@ -723,7 +738,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
                 for (SpaceSystem spaceSystem : filteredSpaceSystems) {
                     if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
                         containers.addAll(spaceSystem.getSequenceContainers());
-                    } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
+                    } else if (spaceSystem.getQualifiedName().startsWith(systemPrefix)) {
                         if (spaceSystem.getQualifiedName().indexOf('/', request.getSystem().length() + 1) == -1) {
                             spaceSystems.add(spaceSystem);
                         }
@@ -828,9 +843,14 @@ public class MdbApi extends AbstractMdbApi<Context> {
         List<SpaceSystem> spaceSystems = new ArrayList<>();
         final List<MetaCommand> candidates = new ArrayList<>();
         if (request.hasSystem()) {
+            // Add trailing slash, to ignore siblings with similar name
+            var systemPrefix = request.getSystem().endsWith("/")
+                    ? request.getSystem()
+                    : request.getSystem() + "/";
+
             if (request.hasQ()) { // get candidates for deep search starting from the system
                 allCommands.forEach(command -> {
-                    if (command.getQualifiedName().startsWith(request.getSystem())) {
+                    if (command.getQualifiedName().startsWith(systemPrefix)) {
                         candidates.add(command);
                     }
                 });
@@ -841,7 +861,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
                     }
                     if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
                         spaceSystem.getMetaCommands().stream().filter(hasPrivilege).forEach(candidates::add);
-                    } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
+                    } else if (spaceSystem.getQualifiedName().startsWith(systemPrefix)) {
                         if (spaceSystem.getQualifiedName().indexOf('/', request.getSystem().length() + 1) == -1) {
                             spaceSystems.add(spaceSystem);
                         }
@@ -931,9 +951,14 @@ public class MdbApi extends AbstractMdbApi<Context> {
         List<SpaceSystem> spaceSystems = new ArrayList<>();
         final List<Algorithm> candidates = new ArrayList<>();
         if (request.hasSystem()) {
+            // Add trailing slash, to ignore siblings with similar name
+            var systemPrefix = request.getSystem().endsWith("/")
+                    ? request.getSystem()
+                    : request.getSystem() + "/";
+
             if (request.hasQ()) { // get candidates for deep search starting from the system
                 allAlgorithms.forEach(algorithm -> {
-                    if (algorithm.getQualifiedName().startsWith(request.getSystem())) {
+                    if (algorithm.getQualifiedName().startsWith(systemPrefix)) {
                         candidates.add(algorithm);
                     }
                 });
@@ -944,7 +969,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
                     }
                     if (spaceSystem.getQualifiedName().equals(request.getSystem())) {
                         spaceSystem.getAlgorithms().stream().filter(hasPrivilege).forEach(candidates::add);
-                    } else if (spaceSystem.getQualifiedName().startsWith(request.getSystem())) {
+                    } else if (spaceSystem.getQualifiedName().startsWith(systemPrefix)) {
                         if (spaceSystem.getQualifiedName().indexOf('/', request.getSystem().length() + 1) == -1) {
                             spaceSystems.add(spaceSystem);
                         }
