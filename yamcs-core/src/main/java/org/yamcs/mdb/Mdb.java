@@ -33,7 +33,7 @@ import org.yamcs.xtce.XtceDb;
  */
 public class Mdb extends XtceDb {
     private static final long serialVersionUID = 1L;
-    final transient Map<String, SpaceSystemWriter> subsystemWriters;
+    final Map<String, SpaceSystemWriter> subsystemWriters;
 
     public Mdb(SpaceSystem spaceSystem, Map<String, SpaceSystemWriter> susbsystemWriters) {
         super(spaceSystem);

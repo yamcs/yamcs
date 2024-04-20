@@ -16,6 +16,8 @@ import org.yamcs.xtce.NameDescription;
  *
  */
 public class XtceMdbWriter implements SpaceSystemWriter {
+    private static final long serialVersionUID = 1L;
+
     final static Log log = new Log(XtceMdbWriter.class);
     // subsystem name to xtceFileName
     // TODO: the subsystem name is relative because the XtceLoader which creates this writer does not know itself where
@@ -40,7 +42,7 @@ public class XtceMdbWriter implements SpaceSystemWriter {
         }
         var xtce = new XtceAssembler().toXtce(mdb, fqn, name -> true);
         File f = new File(filename);
-        log.debug("Writing spaceystem {} parametes to {}", fqn, filename);
+        log.debug("Writing spaceystem {} to {}", fqn, filename);
         try (FileWriter fw = new FileWriter(f)) {
             fw.write(xtce);
         }
