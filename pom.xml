@@ -4,7 +4,7 @@
 
 	<groupId>org.yamcs</groupId>
 	<artifactId>yamcs</artifactId>
-	<version>5.8.9-Pixxel.SNAPSHOT-2.3.2</version>
+	<version>5.8.9-Pixxel.SNAPSHOT-2.3.3</version>
 
 	<packaging>pom</packaging>
 
