@@ -1,7 +1,6 @@
 package org.yamcs.parameter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -15,16 +14,14 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.YConfiguration;
 import org.yamcs.logging.Log;
-import org.yamcs.mdb.DataTypeProcessor;
 import org.yamcs.mdb.Mdb;
+
 import org.yamcs.mdb.ProcessingData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.StreamParameterSender;
-import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterType;
 
 /**
  * Implements local parameters - these are parameters that can be set from the clients.
@@ -32,8 +29,6 @@ import org.yamcs.xtce.ParameterType;
  * <p>
  * All the parameters are sent from the executor thread.
  * 
- * @author nm
- *
  */
 public class LocalParameterManager extends AbstractProcessorService
         implements SoftwareParameterManager, ParameterProvider {
@@ -128,7 +123,7 @@ public class LocalParameterManager extends AbstractProcessorService
     public void updateParameters(final List<ParameterValue> pvList) {
         List<ParameterValue> pvl = new ArrayList<>(pvList.size());
         for (ParameterValue pv : pvList) {
-            pvl.add(transformValue(pv));
+            pvl.add(SoftwareParameterManager.transformValue(lvc, pv));
         }
         // then filter out the subscribed ones and send it to PRM
         executor.submit(() -> {
@@ -140,43 +135,6 @@ public class LocalParameterManager extends AbstractProcessorService
         });
     }
 
-    private ParameterValue transformValue(ParameterValue pv) {
-        Parameter p = pv.getParameter();
-        ParameterType ptype = p.getParameterType();
-        if (ptype == null) {
-            return pv;
-        }
-
-        ParameterValue r;
-
-        if (pv instanceof PartialParameterValue) {
-            ParameterValue oldValue = lvc.getValue(p);
-            if (oldValue == null) {
-                throw new IllegalArgumentException("Received request to partially update " + p.getQualifiedName()
-                        + " but has no value in the cache");
-            }
-            r = new ParameterValue(oldValue);
-            AggregateUtil.updateMember(r, (PartialParameterValue) pv);
-        } else {
-            Value v = DataTypeProcessor.convertEngValueForType(ptype, pv.getEngValue());
-            r = new ParameterValue(pv);
-            r.setEngValue(v);
-        }
-
-        return r;
-    }
-
-    /**
-     * Updates a parameter just with the engineering value
-     */
-    @Override
-    public void updateParameter(final Parameter p, final Value engValue) {
-        ParameterValue pv = new ParameterValue(p);
-        pv.setEngValue(engValue);
-
-        List<ParameterValue> pvlist = Arrays.asList(pv);
-        updateParameters(pvlist);
-    }
 
     @Override
     public void startProviding(final Parameter paramDef) {
