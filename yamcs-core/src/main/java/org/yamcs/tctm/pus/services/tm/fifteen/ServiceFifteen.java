@@ -6,6 +6,7 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSubService;
+import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -76,12 +77,13 @@ public class ServiceFifteen implements PusService {
     }
 
     @Override
-    public PreparedCommand addPusModifiers(PreparedCommand telecommand) {
-        return null;
+    public ArrayList<TmPacket> extractPusModifiers(TmPacket tmPacket) {
+        return pusSubServices.get(PusTmCcsdsPacket.getMessageSubType(tmPacket.getPacket())).process(tmPacket);
     }
 
     @Override
-    public ArrayList<TmPacket> extractPusModifiers(TmPacket tmPacket) {
-        return null;
+    public PreparedCommand addPusModifiers(PreparedCommand telecommand) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'addPusModifiers'");
     }
 }
