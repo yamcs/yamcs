@@ -151,7 +151,8 @@ public class RocksDbApi extends AbstractRocksDbApi<Context> {
         }
 
         try {
-            yrdb.compactRange(request.getCfname(), null, null);
+            String cfName = request.hasCfname() ? request.getCfname() : null;
+            yrdb.compactRange(cfName, null, null);
             observer.complete(Empty.getDefaultInstance());
         } catch (RocksDBException e) {
             log.error("Error when compacting database", e);
