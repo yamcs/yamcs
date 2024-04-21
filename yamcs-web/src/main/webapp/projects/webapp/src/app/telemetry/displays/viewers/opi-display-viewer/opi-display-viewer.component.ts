@@ -66,7 +66,7 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
     private synchronizer: Synchronizer,
     private messageService: MessageService,
     @Inject(APP_BASE_HREF) private baseHref: string,
-    configService: ConfigService,
+    private configService: ConfigService,
   ) {
     this.storageClient = yamcs.createStorageClient();
     this.bucket = configService.getDisplayBucket();
@@ -293,7 +293,9 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
 
   createHistoricalDataProvider(pvName: string, widget: Widget) {
     const { yamcs, synchronizer } = this;
-    return new OpiDisplayHistoricDataProvider(pvName, widget, yamcs, synchronizer);
+    if (this.configService.getConfig().tmArchive) {
+      return new OpiDisplayHistoricDataProvider(pvName, widget, yamcs, synchronizer);
+    }
   }
 
   isNavigable() {
