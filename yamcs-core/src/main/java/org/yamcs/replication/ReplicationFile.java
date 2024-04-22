@@ -47,7 +47,7 @@ import io.netty.util.internal.PlatformDependent;
  *  4 bytes m = number of transactions on page n
  *  4 bytes firstMetadataPos - position of the first metadata transaction
  *  (max_pages+1) x 4 bytes idx - transaction index 
- *      idx[i] (i=0..max_pages) - offset in the file where transaction with id id_first + i*m starts
+ *      idx[i] (i=0..max_pages) - offset in the file where transaction with id id_first + i*page_size starts
  *      idx[i] = 0 -> no such transaction. this means num_tx < i*m
  *      idx[max_pages] -> pointer to the end of the file.
  * </pre>
@@ -56,8 +56,8 @@ import io.netty.util.internal.PlatformDependent;
  * 
  * <pre>
  * 
- * 1 byte type
- * 3 bytes - size of the data that follows
+ * 1 byte type - the type can be DATA or STREAM_INFO with the constants defined in {@link Message}
+ * 3 bytes - size of the data that follows including the CRC (or alternatively including the first 4 bytes type+size but excluding the crc)
  * 4 bytes instance_id
  * 8 bytes transaction_id
  * n bytes data
@@ -78,8 +78,6 @@ import io.netty.util.internal.PlatformDependent;
  * <p>
  * TODO: add a checker and stop writing data if the disk usage is above a threshold.
  * 
- * @author nm
- *
  */
 public class ReplicationFile implements Closeable {
     static final String RPL_FILENAME_PREFIX = "RPL";
@@ -363,20 +361,6 @@ public class ReplicationFile implements Closeable {
      * @return
      */
     public long writeData(Transaction tx) {
-        return writeData(tx, false);
-    }
-
-    /**
-     * Write transaction to the file and returns the transaction id.
-     * <p>
-     * returns -1 if the transaction could not be written because the file is full.
-     * 
-     * @param tx
-     * @param sync
-     *            if true, forces the write to disk
-     * @return
-     */
-    public long writeData(Transaction tx, boolean sync) {
         if (readOnly) {
             throw new IllegalStateException("Read only file");
         } else if (!fc.isOpen()) {
@@ -385,10 +369,9 @@ public class ReplicationFile implements Closeable {
             return -1;
         }
 
+        final int txStartPos = buf.position();
         rwlock.writeLock().lock();
         try {
-            int txStartPos = buf.position();
-
             if (fileFull) {
                 return -1;
             } else if (hdr2.numFullPages == hdr1.maxPages) {
@@ -407,7 +390,7 @@ public class ReplicationFile implements Closeable {
             byte type = tx.getType();
 
             if (Transaction.isMetadata(type)) {
-                buf.putInt(0);// next meatadata position
+                buf.putInt(0);// next metadata position
             }
 
             try {
@@ -445,6 +428,10 @@ public class ReplicationFile implements Closeable {
                     size + 4);
             hdr2.incrNumTx();
             return txid;
+        } catch (Error e) {
+            buf.position(txStartPos);
+            log.error("Caught error when writing the replication file ", e);
+            throw e;
         } finally {
             rwlock.writeLock().unlock();
         }
@@ -586,10 +573,12 @@ public class ReplicationFile implements Closeable {
     }
 
     /**
-     * Get the position of the txNum th transaction in the file according to the index return -1 if the transaction is
-     * beyond the end of the file.
+     * Get the position of the txNum th transaction in the file according to the index
+     * <p>
+     * return -1 if the transaction is beyond the end of the file.
      */
     private int getPosition(int txNum) {
+        // number of full pages
         int nfp = txNum / hdr1.pageSize;
         int m1 = txNum - nfp * hdr1.pageSize;
 
@@ -615,7 +604,6 @@ public class ReplicationFile implements Closeable {
             throw new CorruptedFileException(path, "at offset " + pos + " expected txId " + expectedTxId
                     + " but found " + txId + " instead");
         }
-
         return pos + 4 + (typeSize & 0xFFFFFF);
     }
 
