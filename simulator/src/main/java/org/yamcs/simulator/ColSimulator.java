@@ -36,7 +36,7 @@ public class ColSimulator extends AbstractSimulator {
     // no more than 100 pending commands
     protected BlockingQueue<ColumbusCcsdsPacket> pendingCommands = new ArrayBlockingQueue<>(100);
 
-    static int MAX_PKT_LENGTH = 65542;
+    static int MAX_PKT_LENGTH = 1500;
 
     final File dataDir;
 
@@ -576,5 +576,10 @@ public class ColSimulator extends AbstractSimulator {
 
     public void setPerfPacketGenerator(PerfPacketGenerator ppg) {
         this.perfPacketGenerator = ppg;
+    }
+
+    @Override
+    public int maxTmDataSize() {
+        return MAX_PKT_LENGTH - 20;
     }
 }
