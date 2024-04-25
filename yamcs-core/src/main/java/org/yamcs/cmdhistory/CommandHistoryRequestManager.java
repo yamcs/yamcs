@@ -1,7 +1,9 @@
 package org.yamcs.cmdhistory;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
@@ -13,8 +15,8 @@ import org.yamcs.commanding.InvalidCommandId;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
-import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.parameter.Value;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.yarch.Stream;
 
@@ -65,13 +67,13 @@ public class CommandHistoryRequestManager extends AbstractService {
      * @return all the entries existing so far for the command
      * @throws InvalidCommandId
      */
-    public CommandHistoryEntry subscribeCommand(CommandId cmdId, CommandHistoryConsumer consumer)
-            throws InvalidCommandId {
+    public org.yamcs.protobuf.Commanding.CommandHistoryEntry subscribeCommand(CommandId cmdId,
+            CommandHistoryConsumer consumer) throws InvalidCommandId {
         CommandHistoryEntry che = activeCommands.get(cmdId);
         if (che != null) {
             cmdSubcriptions.putIfAbsent(cmdId, new ConcurrentLinkedQueue<CommandHistoryConsumer>());
             cmdSubcriptions.get(cmdId).add(consumer);
-            return che;
+            return che.toProto();
         }
         log.warn("Received subscribe command for a command not in my active list: ({})", cmdId);
         throw new InvalidCommandId("command " + cmdId + " is not in the list of active commands", cmdId);
@@ -137,7 +139,7 @@ public class CommandHistoryRequestManager extends AbstractService {
             return;
         }
         log.debug("addCommand cmdId={}", pc);
-        CommandHistoryEntry che = CommandHistoryEntry.newBuilder().setCommandId(pc.getCommandId()).build();
+        CommandHistoryEntry che = new CommandHistoryEntry(pc.getCommandId());
 
         // deliver to clients
         for (Iterator<CommandHistoryFilter> it = historySubcriptions.keySet().iterator(); it.hasNext();) {
@@ -163,17 +165,11 @@ public class CommandHistoryRequestManager extends AbstractService {
         if (che == null) {
             // If the commandId is valid, add the command in the active list, this case happens if an old command
             // history is updated.
-            che = CommandHistoryEntry.newBuilder().setCommandId(cmdId).build();
+            che = new CommandHistoryEntry(cmdId);
+            activeCommands.put(cmdId, che);
         }
+        che.updateCommand(attrs);
 
-        CommandHistoryEntry.Builder cheb = CommandHistoryEntry.newBuilder(che);
-
-        for(Attribute a: attrs) {
-            CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder().setName(a.getKey())
-                    .setValue(ValueUtility.toGbp(a.getValue())).build();
-            cheb.addAttr(cha).build();
-        }
-        activeCommands.put(cmdId, cheb.build());
 
         long changeDate = processor.getCurrentTime();
         for (Iterator<CommandHistoryFilter> it = historySubcriptions.keySet().iterator(); it.hasNext();) {
@@ -218,4 +214,33 @@ public class CommandHistoryRequestManager extends AbstractService {
         return instance;
     }
 
+    static class CommandHistoryEntry {
+        final CommandId cmdId;
+        Map<String, Value> attributes = new HashMap<>();
+
+        public CommandHistoryEntry(CommandId cmdId) {
+            this.cmdId = cmdId;
+        }
+
+        public synchronized void updateCommand(List<Attribute> attrs) {
+            for (var a : attrs) {
+                attributes.put(a.key, a.value);
+            }
+        }
+
+        public synchronized org.yamcs.protobuf.Commanding.CommandHistoryEntry toProto() {
+            var cheb = org.yamcs.protobuf.Commanding.CommandHistoryEntry.newBuilder().setCommandId(cmdId);
+
+            for (var me : attributes.entrySet()) {
+                CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder().setName(me.getKey())
+                        .setValue(ValueUtility.toGbp(me.getValue())).build();
+                cheb.addAttr(cha).build();
+            }
+            return cheb.build();
+        }
+
+        public CommandId getCommandId() {
+            return cmdId;
+        }
+    }
 }
