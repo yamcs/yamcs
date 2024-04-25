@@ -12,6 +12,7 @@ import java.util.Set;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.cmdhistory.protobuf.Cmdhistory.Assignment;
 import org.yamcs.cmdhistory.protobuf.Cmdhistory.AssignmentInfo;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.Value;
@@ -27,9 +28,9 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.mdb.Mdb;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 
@@ -40,6 +41,9 @@ public class PreparedCommand {
 
     private CommandId id;
     private MetaCommand metaCommand;
+
+    // Target stream (may be null, for autoselection)
+    private Stream tcStream;
 
     List<CommandHistoryAttribute> attributes = new ArrayList<>();
     private Map<Argument, ArgumentValue> argAssignment; // Ordered from top entry to bottom entry
@@ -114,6 +118,17 @@ public class PreparedCommand {
 
     public String getComment() {
         return getStringAttribute(CNAME_COMMENT);
+    }
+
+    /**
+     * Specify the target TC stream. If unset, a stream is automatically selected.
+     */
+    public void setTcStream(Stream tcStream) {
+        this.tcStream = tcStream;
+    }
+
+    public Stream getTcStream() {
+        return tcStream;
     }
 
     public String getCmdName() {

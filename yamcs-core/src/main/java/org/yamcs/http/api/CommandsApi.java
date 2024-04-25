@@ -35,6 +35,7 @@ import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.MediaType;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.protobuf.AbstractCommandsApi;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
@@ -56,7 +57,6 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Significance.Levels;
-import org.yamcs.mdb.Mdb;
 import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -140,6 +140,13 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
             if (request.hasDisableVerifiers()) {
                 ctx.checkSystemPrivilege(SystemPrivilege.CommandOptions);
                 preparedCommand.disableCommandVerifiers(request.getDisableVerifiers());
+            }
+
+            if (request.hasStream()) {
+                ctx.checkSystemPrivilege(SystemPrivilege.CommandOptions);
+                var ydb = YarchDatabase.getInstance(request.getInstance());
+                var tcStream = TableApi.verifyStream(ctx, ydb, request.getStream());
+                preparedCommand.setTcStream(tcStream);
             }
 
             if (request.hasDisableTransmissionConstraints()) {
