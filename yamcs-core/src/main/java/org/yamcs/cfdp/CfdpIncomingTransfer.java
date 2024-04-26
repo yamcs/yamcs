@@ -100,6 +100,11 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     long lastNakDataSize;
 
     /**
+     * used to limit the number of NAKs sent in one PDU
+     */
+    int maxPduDataSize;
+
+    /**
      * If true, send NAK before receiving the EOF
      */
     final boolean immediateNak;
@@ -134,6 +139,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         this.nakTimeout = config.getInt("nakTimeout", 5000);
         this.nakLimit = config.getInt("nakLimit", -1);
         this.immediateNak = config.getBoolean("immediateNak", true);
+        var maxPduSize = config.getInt("maxPduSize", 512);
 
         if (!acknowledged) {
             long checkAckTimeout = config.getLong("checkAckTimeout", 10000l);
@@ -153,6 +159,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
                 hdr.getDestinationId(),
                 hdr.getSequenceNumber());
 
+        this.maxPduDataSize = maxPduSize - directiveHeader.getLength();
         needsFinish = acknowledged;
         incomingDataFile = new DataFile(-1);
     }
@@ -206,6 +213,10 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             return false;
         }
 
+        var maxNumSeg = NakPacket.maxNumSegments(maxPduDataSize);
+        if (missingSegments.size() > maxNumSeg) {
+            missingSegments = missingSegments.subList(0, maxNumSeg);
+        }
         sendPacket(new NakPacket(
                 missingSegments.get(0).getSegmentStart(),
                 missingSegments.get(missingSegments.size() - 1).getSegmentEnd(),
@@ -215,8 +226,9 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     }
 
     private void doProcessPacket(CfdpPacket packet) {
-        if (log.isDebugEnabled()) {
-            log.debug("TXID{} received PDU: {}", cfdpTransactionId, packet);
+        log.debug("TXID{} received PDU: {}", cfdpTransactionId, packet);
+
+        if (log.isTraceEnabled()) {
             log.trace("{}", StringConverter.arrayToHexString(packet.toByteArray(), true));
         }
 
@@ -371,28 +383,28 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             log.debug("TXID{} ignoring packet {}", cfdpTransactionId, fdp);
             return;
         }
-        DataFileSegment dfs = new DataFileSegment(fdp.getOffset(), fdp.getData());
+
         long fileSize = incomingDataFile.getSize();
         if (fileSize > 0) {
-            if (dfs.getEndOffset() > fileSize) {
+            if (fdp.getEndOffset() > fileSize) {
                 String err = String.format("Received data file whose end offset %d is larger than the file size %d",
-                        dfs.getEndOffset(), fileSize);
+                        fdp.getEndOffset(), fileSize);
                 log.warn("TXID{} {}", cfdpTransactionId, err);
                 pushError(err);
                 handleFault(ConditionCode.FILE_SIZE_ERROR);
             }
         } else {
-            if (dfs.getEndOffset() > maxFileSize) {
+            if (fdp.getEndOffset() > maxFileSize) {
                 String err = String.format(
                         "Received data file whose end offset %d is larger than the maximum file size %d",
-                        dfs.getEndOffset(), maxFileSize);
+                        fdp.getEndOffset(), maxFileSize);
                 pushError(err);
                 log.warn("TXID{} {}", cfdpTransactionId, err);
                 handleFault(ConditionCode.FILE_SIZE_ERROR);
             }
         }
 
-        incomingDataFile.addSegment(dfs);
+        incomingDataFile.addSegment(fdp);
         monitor.stateChanged(this);
         checkFileComplete();
     }

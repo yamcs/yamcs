@@ -45,7 +45,7 @@ public class NakPacket extends CfdpPacket implements FileDirective {
     }
 
     /**
-     * returns the maximum number of segments which can be transmitted given the maximum data size
+     * returns the maximum number of segments which can be transmitted given the maximum data size of a PDU
      */
     public static int maxNumSegments(int maxDataSize) {
         return (maxDataSize - 9) / 8;

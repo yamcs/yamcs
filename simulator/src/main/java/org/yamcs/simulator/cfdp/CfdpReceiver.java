@@ -11,7 +11,6 @@ import com.csvreader.CsvWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.DataFile;
-import org.yamcs.cfdp.DataFileSegment;
 import org.yamcs.cfdp.FileDirective;
 import org.yamcs.cfdp.pdu.*;
 import org.yamcs.simulator.AbstractSimulator;
@@ -303,11 +302,11 @@ public class CfdpReceiver {
                 log.warn("Received and dropped (data loss simulation) {}", packet);
             } else {
                 log.info("Received {}", packet);
-                cfdpDataFile.addSegment(new DataFileSegment(packet.getOffset(), packet.getData()));
+                cfdpDataFile.addSegment(packet);
             }
         } else {
             // we're in resending mode, no more data loss
-            cfdpDataFile.addSegment(new DataFileSegment(packet.getOffset(), packet.getData()));
+            cfdpDataFile.addSegment(packet);
             missingSegments = cfdpDataFile.getMissingChunks();
             log.info("Received missing data: {} still missing: {}; "
                     + "recoveredSegments: {}, lastNumMissingSegmentsSent: {}",

@@ -32,7 +32,7 @@ public class FileDataPacket extends CfdpPacket {
         this.offset = CfdpUtils.getUnsignedInt(buffer);
         int fileDataSize = CfdpHeader.getDataLength(buffer) - OFFSET_SIZE;
 
-        if(header.withCrc()) {
+        if (header.withCrc()) {
             fileDataSize -= 2;
         }
         this.filedata = new byte[fileDataSize];
@@ -45,6 +45,14 @@ public class FileDataPacket extends CfdpPacket {
 
     public byte[] getData() {
         return this.filedata;
+    }
+
+    public long getEndOffset() {
+        return offset + filedata.length;
+    }
+
+    public int getLength() {
+        return this.filedata.length;
     }
 
     @Override
@@ -60,7 +68,7 @@ public class FileDataPacket extends CfdpPacket {
 
     @Override
     public String toString() {
-        return "FileDataPacket [offset=" + offset+", length="+filedata.length+"]";
+        return "FileDataPacket [offset=" + offset + ", length=" + filedata.length + "]";
     }
 
 }
