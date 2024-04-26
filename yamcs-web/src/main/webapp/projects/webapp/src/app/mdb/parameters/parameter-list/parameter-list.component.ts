@@ -4,7 +4,7 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ColumnChooserComponent, ColumnInfo, GetParametersOptions, Parameter, SelectOption, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { GetParametersOptions, Parameter, WebappSdkModule, YaColumnChooser, YaColumnInfo, YaSelectOption, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
@@ -36,12 +36,12 @@ export class ParameterListComponent implements AfterViewInit {
   @ViewChild(MatPaginator, { static: true })
   paginator: MatPaginator;
 
-  @ViewChild(ColumnChooserComponent)
-  columnChooser: ColumnChooserComponent;
+  @ViewChild(YaColumnChooser)
+  columnChooser: YaColumnChooser;
 
   dataSource: ParametersDataSource;
 
-  columns: ColumnInfo[] = [
+  columns: YaColumnInfo[] = [
     { id: 'name', label: 'Name', alwaysVisible: true },
     { id: 'type', label: 'Type', visible: true },
     { id: 'units', label: 'Units', visible: true },
@@ -51,9 +51,9 @@ export class ParameterListComponent implements AfterViewInit {
   ];
 
   // Added dynamically based on actual parameters.
-  aliasColumns$ = new BehaviorSubject<ColumnInfo[]>([]);
+  aliasColumns$ = new BehaviorSubject<YaColumnInfo[]>([]);
 
-  typeOptions: SelectOption[] = [
+  typeOptions: YaSelectOption[] = [
     { id: 'ANY', label: 'Any type' },
     { id: 'aggregate', label: 'aggregate' },
     { id: 'array', label: 'array' },
@@ -66,7 +66,7 @@ export class ParameterListComponent implements AfterViewInit {
     { id: 'time', label: 'time' },
   ];
 
-  sourceOptions: SelectOption[] = [
+  sourceOptions: YaSelectOption[] = [
     { id: 'ANY', label: 'Any source' },
     { id: 'COMMAND', label: 'Command' },
     { id: 'COMMAND_HISTORY', label: 'Command History' },

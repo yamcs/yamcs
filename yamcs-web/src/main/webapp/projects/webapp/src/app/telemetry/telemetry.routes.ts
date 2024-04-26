@@ -1,4 +1,5 @@
 import { Routes, UrlMatcher, UrlSegment } from '@angular/router';
+import { ExtensionComponent } from '../appbase/extension/extension.component';
 import { attachContextGuardFn } from '../core/guards/AttachContextGuard';
 import { authGuardChildFn, authGuardFn } from '../core/guards/AuthGuard';
 import { InstancePageComponent } from '../shared/instance-page/instance-page.component';
@@ -160,5 +161,14 @@ export const ROUTES: Routes = [{
     path: 'parameter-lists/:list/edit',
     pathMatch: 'full',
     component: EditParameterListComponent,
+  }, {
+    path: 'ext',
+    canActivate: [authGuardFn, attachContextGuardFn],
+    canActivateChild: [authGuardChildFn],
+    runGuardsAndResolvers: 'always',
+    children: [{
+      path: ':extension',
+      component: ExtensionComponent,
+    }]
   }]
 }];

@@ -1,6 +1,9 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({ name: 'spaceSystemName' })
+@Pipe({
+  standalone: true,
+  name: 'spaceSystemName',
+})
 export class SpaceSystemPipe implements PipeTransform {
 
   transform(name: string | null | undefined): string | null {

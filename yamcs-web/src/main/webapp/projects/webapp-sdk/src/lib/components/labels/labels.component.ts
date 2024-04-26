@@ -1,5 +1,7 @@
+import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { YaLabel } from '../label/label.component';
 
 interface Entry {
   key: string;
@@ -7,10 +9,17 @@ interface Entry {
 }
 
 @Component({
+  standalone: true,
   selector: 'ya-labels',
   templateUrl: './labels.component.html',
+  imports: [
+    AsyncPipe,
+    NgIf,
+    NgForOf,
+    YaLabel,
+  ],
 })
-export class LabelsComponent implements OnInit {
+export class YaLabels implements OnInit {
 
   @Input()
   dict: { [key: string]: string; };

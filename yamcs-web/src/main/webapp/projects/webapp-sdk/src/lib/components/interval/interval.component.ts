@@ -1,14 +1,19 @@
+import { AsyncPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 export type RangeForm = 'inside' | 'outside';
 
 @Component({
+  standalone: true,
   selector: 'ya-interval',
   templateUrl: './interval.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    AsyncPipe,
+  ],
 })
-export class IntervalComponent implements OnChanges {
+export class YaInterval implements OnChanges {
 
   @Input()
   left: number;

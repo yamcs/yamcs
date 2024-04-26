@@ -2,9 +2,7 @@ import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuditRecord, GetAuditRecordsOptions, MessageService, SelectComponent, SelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
-
-import { WebappSdkModule } from '@yamcs/webapp-sdk';
+import { AuditRecord, GetAuditRecordsOptions, MessageService, WebappSdkModule, YaSelect, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -18,7 +16,7 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
 export class QueuesActionLogTabComponent {
 
   @ViewChild('intervalSelect')
-  intervalSelect: SelectComponent;
+  intervalSelect: YaSelect;
 
   validStart: Date | null;
   validStop: Date | null;
@@ -42,7 +40,7 @@ export class QueuesActionLogTabComponent {
     'actions',
   ];
 
-  intervalOptions: SelectOption[] = [
+  intervalOptions: YaSelectOption[] = [
     { id: 'PT1H', label: 'Last hour' },
     { id: 'PT6H', label: 'Last 6 hours' },
     { id: 'P1D', label: 'Last 24 hours' },

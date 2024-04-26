@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AuthInfo, CommandOption, InstanceConfig } from '../client';
-import { ColumnInfo } from '../components/column-chooser/column-chooser.component';
+import { YaColumnInfo } from '../components/column-chooser/column-chooser.component';
 
 export interface WebsiteConfig {
   serverId: string;
@@ -44,7 +44,7 @@ export interface SiteLink {
   external: boolean;
 }
 
-export interface ExtraColumnInfo extends ColumnInfo {
+export interface ExtraColumnInfo extends YaColumnInfo {
   /**
    * id of another column after which to insert this column.
    * This only impacts the ordering in the column chooser dropdown.

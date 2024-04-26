@@ -1,10 +1,15 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { MatMenuItem } from '@angular/material/menu';
 
 @Component({
+  standalone: true,
   selector: 'ya-download-menu-item',
   templateUrl: './download-menu-item.component.html',
+  imports: [
+    MatMenuItem,
+  ],
 })
-export class DownloadMenuItemComponent {
+export class YaDownloadMenuItem {
 
   @Input()
   link: string;

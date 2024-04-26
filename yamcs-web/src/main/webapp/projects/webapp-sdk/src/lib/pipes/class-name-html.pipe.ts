@@ -1,6 +1,9 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({ name: 'classNameHtml' })
+@Pipe({
+  standalone: true,
+  name: 'classNameHtml',
+})
 export class ClassNameHtmlPipe implements PipeTransform {
 
   transform(qualifiedName: string): string | null {

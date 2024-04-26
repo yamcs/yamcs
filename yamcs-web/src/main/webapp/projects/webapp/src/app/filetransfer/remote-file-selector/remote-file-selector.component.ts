@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, forwardRef, Input, OnChanges, OnDestroy, Output } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { ActionInfo, ColumnInfo, FileListExtraColumnInfo, ListFilesResponse, WebappSdkModule } from '@yamcs/webapp-sdk';
+import { ActionInfo, FileListExtraColumnInfo, ListFilesResponse, WebappSdkModule, YaColumnInfo } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 export interface FileActionRequest {
@@ -54,7 +54,7 @@ export class RemoteFileSelectorComponent implements ControlValueAccessor, OnChan
   onAction = new EventEmitter<FileActionRequest>();
 
   displayedColumns$ = new BehaviorSubject<string[]>(['name', 'size', 'modified']);
-  extraColumns$ = new BehaviorSubject<ColumnInfo[]>([]);
+  extraColumns$ = new BehaviorSubject<YaColumnInfo[]>([]);
   dataSource = new MatTableDataSource<RemoteFileItem>([]);
 
   currentPrefix$ = new BehaviorSubject<string | null>(null);

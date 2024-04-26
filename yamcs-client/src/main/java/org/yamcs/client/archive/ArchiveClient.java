@@ -258,7 +258,7 @@ public class ArchiveClient {
     }
 
     public CompletableFuture<Void> streamParameterIndex(StreamReceiver<ArchiveRecord> consumer, Instant start,
-            Instant stop) {
+            Instant stop, StreamOption... options) {
         StreamParameterIndexRequest.Builder requestb = StreamParameterIndexRequest.newBuilder()
                 .setInstance(instance);
         if (start != null) {
@@ -266,6 +266,13 @@ public class ArchiveClient {
         }
         if (stop != null) {
             requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
+        }
+        for (StreamOption option : options) {
+            if (option instanceof MergeTimeOption) {
+                requestb.setMergeTime(((MergeTimeOption) option).mergeTime);
+            } else {
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
+            }
         }
         CompletableFuture<Void> f = new CompletableFuture<>();
         indexService.streamParameterIndex(null, requestb.build(), new Observer<ArchiveRecord>() {
@@ -289,7 +296,7 @@ public class ArchiveClient {
     }
 
     public CompletableFuture<Void> streamCommandIndex(StreamReceiver<ArchiveRecord> consumer, Instant start,
-            Instant stop) {
+            Instant stop, StreamOption... options) {
         StreamCommandIndexRequest.Builder requestb = StreamCommandIndexRequest.newBuilder()
                 .setInstance(instance);
         if (start != null) {
@@ -297,6 +304,13 @@ public class ArchiveClient {
         }
         if (stop != null) {
             requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
+        }
+        for (StreamOption option : options) {
+            if (option instanceof MergeTimeOption) {
+                requestb.setMergeTime(((MergeTimeOption) option).mergeTime);
+            } else {
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
+            }
         }
         CompletableFuture<Void> f = new CompletableFuture<>();
         indexService.streamCommandIndex(null, requestb.build(), new Observer<ArchiveRecord>() {
@@ -320,7 +334,7 @@ public class ArchiveClient {
     }
 
     public CompletableFuture<Void> streamEventIndex(StreamReceiver<ArchiveRecord> consumer, Instant start,
-            Instant stop) {
+            Instant stop, StreamOption... options) {
         StreamEventIndexRequest.Builder requestb = StreamEventIndexRequest.newBuilder()
                 .setInstance(instance);
         if (start != null) {
@@ -328,6 +342,13 @@ public class ArchiveClient {
         }
         if (stop != null) {
             requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
+        }
+        for (StreamOption option : options) {
+            if (option instanceof MergeTimeOption) {
+                requestb.setMergeTime(((MergeTimeOption) option).mergeTime);
+            } else {
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
+            }
         }
         CompletableFuture<Void> f = new CompletableFuture<>();
         indexService.streamEventIndex(null, requestb.build(), new Observer<ArchiveRecord>() {
@@ -351,7 +372,7 @@ public class ArchiveClient {
     }
 
     public CompletableFuture<Void> streamCompletenessIndex(StreamReceiver<ArchiveRecord> consumer, Instant start,
-            Instant stop) {
+            Instant stop, StreamOption... options) {
         StreamCompletenessIndexRequest.Builder requestb = StreamCompletenessIndexRequest.newBuilder()
                 .setInstance(instance);
         if (start != null) {
@@ -359,6 +380,13 @@ public class ArchiveClient {
         }
         if (stop != null) {
             requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
+        }
+        for (StreamOption option : options) {
+            if (option instanceof MergeTimeOption) {
+                requestb.setMergeTime(((MergeTimeOption) option).mergeTime);
+            } else {
+                throw new IllegalArgumentException("Unsupported option " + option.getClass());
+            }
         }
         CompletableFuture<Void> f = new CompletableFuture<>();
         indexService.streamCompletenessIndex(null, requestb.build(), new Observer<ArchiveRecord>() {

@@ -4,7 +4,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ColumnChooserComponent, ColumnInfo, Container, GetContainersOptions, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { Container, GetContainersOptions, WebappSdkModule, YaColumnChooser, YaColumnInfo, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
@@ -31,14 +31,14 @@ export class ContainerListComponent implements AfterViewInit {
   @ViewChild(MatPaginator, { static: true })
   paginator: MatPaginator;
 
-  @ViewChild(ColumnChooserComponent)
-  columnChooser: ColumnChooserComponent;
+  @ViewChild(YaColumnChooser)
+  columnChooser: YaColumnChooser;
 
   filterControl = new UntypedFormControl();
 
   dataSource: ContainersDataSource;
 
-  columns: ColumnInfo[] = [
+  columns: YaColumnInfo[] = [
     { id: 'name', label: 'Name', alwaysVisible: true },
     { id: 'maxInterval', label: 'Max Interval', visible: true },
     { id: 'sizeInBits', label: 'Size in bits', visible: true },
@@ -50,7 +50,7 @@ export class ContainerListComponent implements AfterViewInit {
   ];
 
   // Added dynamically based on actual containers.
-  aliasColumns$ = new BehaviorSubject<ColumnInfo[]>([]);
+  aliasColumns$ = new BehaviorSubject<YaColumnInfo[]>([]);
 
   selection = new SelectionModel<Container>(false);
 

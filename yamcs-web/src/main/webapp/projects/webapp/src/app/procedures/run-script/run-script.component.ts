@@ -3,7 +3,7 @@ import { FormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { ActivityDefinition, CreateTimelineItemRequest, MessageService, SelectOption, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { ActivityDefinition, CreateTimelineItemRequest, MessageService, WebappSdkModule, YaSelectOption, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
@@ -24,7 +24,7 @@ export class RunScriptComponent {
 
   form: FormGroup;
 
-  scriptOptions$ = new BehaviorSubject<SelectOption[]>([]);
+  scriptOptions$ = new BehaviorSubject<YaSelectOption[]>([]);
 
   constructor(
     title: Title,

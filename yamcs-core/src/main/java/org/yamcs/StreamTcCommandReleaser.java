@@ -1,5 +1,7 @@
 package org.yamcs;
 
+import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
+
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -10,14 +12,12 @@ import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.StreamConfig.TcStreamConfigEntry;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-
-import static org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
-import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
 
 /**
  * Sends commands to yamcs streams
@@ -28,7 +28,6 @@ import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
 public class StreamTcCommandReleaser extends AbstractProcessorService implements CommandReleaser {
     List<StreamWriter> writers = new ArrayList<>();
     private CommandHistoryPublisher commandHistoryPublisher;
-
 
     @Override
     public void init(Processor proc, YConfiguration config, Object spec) {
@@ -53,13 +52,13 @@ public class StreamTcCommandReleaser extends AbstractProcessorService implements
         }
         if (config.containsKey("stream")) {
             String streamName = config.getString("stream");
-            
+
             if (!streams.isEmpty()) {
                 log.warn(
                         "Configuration contains streams for processor {} both in instance config yamcs.{}.yaml (under streamConfig -> tc)"
-                        + " and processor.yaml. The stream {} from processor.yaml will only be used if no pattern matches "
-                        + " the streams ({}) specified in the instance config. To avoid confusion, please use just the instance config."
-                        , procName, yamcsInstance, streamName, streams);
+                                + " and processor.yaml. The stream {} from processor.yaml will only be used if no pattern matches "
+                                + " the streams ({}) specified in the instance config. To avoid confusion, please use just the instance config.",
+                        procName, yamcsInstance, streamName, streams);
             }
             streams.add(streamName);
         }
@@ -104,7 +103,7 @@ public class StreamTcCommandReleaser extends AbstractProcessorService implements
 
     @Override
     public void setCommandHistory(CommandHistoryPublisher commandHistoryPublisher) {
-        //not interested in publishing anything to the command history
+        // not interested in publishing anything to the command history
     }
 
     @Override
@@ -122,11 +121,13 @@ public class StreamTcCommandReleaser extends AbstractProcessorService implements
         }
 
         public boolean releaseCommand(PreparedCommand pc) {
-            if (tcPatterns == null
-                    || tcPatterns.stream().anyMatch(p -> p.matcher(pc.getCommandName()).matches())) {
-                log.trace("Releasing command {} on stream {}", pc.getLoggingId(), stream.getName());
-                stream.emitTuple(pc.toTuple());
-                return true;
+            if (pc.getTcStream() == null || pc.getTcStream() == stream) { // Stream matches
+                if (tcPatterns == null
+                        || tcPatterns.stream().anyMatch(p -> p.matcher(pc.getCommandName()).matches())) {
+                    log.trace("Releasing command {} on stream {}", pc.getLoggingId(), stream.getName());
+                    stream.emitTuple(pc.toTuple());
+                    return true;
+                }
             }
             return false;
         }

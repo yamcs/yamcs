@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuditRecord, GetAuditRecordsOptions, MessageService, SelectComponent, SelectOption, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { AuditRecord, GetAuditRecordsOptions, MessageService, WebappSdkModule, YaSelect, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { AlarmsPageTabsComponent } from '../alarms-page-tabs/alarms-page-tabs.component';
@@ -22,7 +22,7 @@ import { AlarmsPageTabsComponent } from '../alarms-page-tabs/alarms-page-tabs.co
 export class ActionLogTabComponent {
 
   @ViewChild('intervalSelect')
-  intervalSelect: SelectComponent;
+  intervalSelect: YaSelect;
 
   validStart: Date | null;
   validStop: Date | null;
@@ -46,7 +46,7 @@ export class ActionLogTabComponent {
     'actions',
   ];
 
-  intervalOptions: SelectOption[] = [
+  intervalOptions: YaSelectOption[] = [
     { id: 'PT1H', label: 'Last hour' },
     { id: 'PT6H', label: 'Last 6 hours' },
     { id: 'P1D', label: 'Last 24 hours' },

@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, input } from '@a
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GetParameterValuesOptions, SelectOption, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { GetParameterValuesOptions, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AlarmLevelComponent } from '../../../shared/alarm-level/alarm-level.component';
 import { HexComponent } from '../../../shared/hex/hex.component';
@@ -29,7 +29,7 @@ export class ParameterDataTabComponent implements OnInit, OnDestroy {
 
   qualifiedName = input.required<string>({ alias: 'parameter' });
 
-  intervalOptions: SelectOption[] = [
+  intervalOptions: YaSelectOption[] = [
     { id: 'PT1H', label: 'Last Hour' },
     { id: 'PT6H', label: 'Last 6 Hours' },
     { id: 'P1D', label: 'Last 24 Hours' },

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Alarm, SelectOption, ShelveAlarmOptions, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { Alarm, ShelveAlarmOptions, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -16,7 +16,7 @@ export class ShelveAlarmDialogComponent {
 
   formGroup: UntypedFormGroup;
 
-  durationOptions: SelectOption[] = [
+  durationOptions: YaSelectOption[] = [
     { id: 'PT15M', label: '15 minutes' },
     { id: 'PT30M', label: '30 minutes' },
     { id: 'PT1H', label: '1 hour' },

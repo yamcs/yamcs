@@ -37,7 +37,7 @@ export class AuthService implements OnDestroy {
     this.logoutRedirectUrl = configService.getConfig().logoutRedirectUrl;
 
     yamcsService.sessionEnded$.subscribe(ended => {
-      if (ended) {
+      if (ended && !this.authInfo.spnego) {
         this.logout(true);
       }
     });
@@ -187,7 +187,7 @@ export class AuthService implements OnDestroy {
       }
     }
 
-    this.logout(false);
+    this.logout(true);
     throw new Error('Could not login automatically');
   }
 
@@ -334,10 +334,26 @@ export class AuthService implements OnDestroy {
 
   private clearCookie(name: string) {
     const path = this.getCookiePath();
-    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}`;
-    // Remove also from root path, to avoid refresh loop when removing a previously
-    // used context root.
-    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+    if (path) {
+      this.clearCookieForPath(name, path);
+
+      // Remove also from root path, to avoid refresh loop when removing a previously
+      // used context root.
+      if (path !== '/') {
+        this.clearCookieForPath(name, '/');
+      }
+    }
+  }
+
+  private clearCookieForPath(name: string, path: string) {
+    let cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+    cookie += `; path=${path}`;
+    const cookieConfig = this.configService.getConfig().cookie;
+    cookie += `; SameSite=${cookieConfig.sameSite}`;
+    if (cookieConfig.secure) {
+      cookie += '; Secure';
+    };
+    document.cookie = cookie;
   }
 
   private getCookiePath() {
@@ -349,8 +365,6 @@ export class AuthService implements OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.syncSubscription) {
-      this.syncSubscription.unsubscribe();
-    }
+    this.syncSubscription?.unsubscribe();
   }
 }

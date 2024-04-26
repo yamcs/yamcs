@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewChil
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { BitRange, Container, ExtractPacketResponse, ExtractedParameter, MessageService, Packet, Parameter, ParameterType, SelectOption, Value, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { BitRange, Container, ExtractPacketResponse, ExtractedParameter, MessageService, Packet, Parameter, ParameterType, Value, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { HexComponent } from '../../../shared/hex/hex.component';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
@@ -123,7 +123,7 @@ export class PacketComponent implements OnInit {
     'actions',
   ];
 
-  typeOptions: SelectOption[] = [
+  typeOptions: YaSelectOption[] = [
     { id: 'ANY', label: 'Any type' },
     { id: 'aggregate', label: 'aggregate' },
     { id: 'array', label: 'array' },

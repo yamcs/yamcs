@@ -1,7 +1,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import * as utils from '../utils';
 
-@Pipe({ name: 'nanosDuration' })
+@Pipe({
+  standalone: true,
+  name: 'nanosDuration',
+})
 export class NanosDurationPipe implements PipeTransform {
 
   transform(nanos: number | null): string | null {

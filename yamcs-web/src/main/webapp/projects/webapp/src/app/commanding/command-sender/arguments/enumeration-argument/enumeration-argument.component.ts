@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
 import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator, ValidatorFn, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { ArgumentType, EnumValue, SelectOption, utils, WebappSdkModule } from '@yamcs/webapp-sdk';
+import { ArgumentType, EnumValue, utils, WebappSdkModule, YaSelectOption } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { SelectEnumerationDialogComponent } from '../../select-enumeration-dialog/select-enumeration-dialog.component';
 
@@ -45,7 +45,7 @@ export class EnumerationArgumentComponent implements ControlValueAccessor, OnIni
 
   controlName: string;
 
-  selectOptions$ = new BehaviorSubject<SelectOption[]>([]);
+  selectOptions$ = new BehaviorSubject<YaSelectOption[]>([]);
 
   private validators: ValidatorFn[] = [];
   private onChange = (_: string | null) => { };

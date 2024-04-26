@@ -3,13 +3,13 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestro
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
-import { ColumnChooserComponent, ColumnInfo, GetParametersOptions, MemberPathPipe, SelectOption, Synchronizer, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { GetParametersOptions, Synchronizer, WebappSdkModule, YaColumnChooser, YaColumnInfo, YaSelectOption, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { ListItem, ParametersDataSource } from './parameters.datasource';
 
-export const PLIST_COLUMNS: ColumnInfo[] = [
+export const PLIST_COLUMNS: YaColumnInfo[] = [
   { id: 'name', label: 'Name', alwaysVisible: true },
   { id: 'type', label: 'Type', visible: true },
   { id: 'dataSource', label: 'Data source', visible: true },
@@ -18,7 +18,7 @@ export const PLIST_COLUMNS: ColumnInfo[] = [
   { id: 'actions', label: '', alwaysVisible: true },
 ];
 
-export const PLIST_TYPE_OPTIONS: SelectOption[] = [
+export const PLIST_TYPE_OPTIONS: YaSelectOption[] = [
   { id: 'ANY', label: 'Any type' },
   { id: 'aggregate', label: 'aggregate' },
   { id: 'array', label: 'array' },
@@ -31,7 +31,7 @@ export const PLIST_TYPE_OPTIONS: SelectOption[] = [
   { id: 'time', label: 'time' },
 ];
 
-export const PLIST_SOURCE_OPTIONS: SelectOption[] = [
+export const PLIST_SOURCE_OPTIONS: YaSelectOption[] = [
   { id: 'ANY', label: 'Any source' },
   { id: 'COMMAND', label: 'Command' },
   { id: 'COMMAND_HISTORY', label: 'Command History' },
@@ -82,8 +82,8 @@ export class ParametersComponent implements AfterViewInit, OnDestroy {
   @ViewChild(MatPaginator, { static: true })
   paginator: MatPaginator;
 
-  @ViewChild(ColumnChooserComponent)
-  columnChooser: ColumnChooserComponent;
+  @ViewChild(YaColumnChooser)
+  columnChooser: YaColumnChooser;
 
   dataSource: ParametersDataSource;
 
@@ -92,7 +92,7 @@ export class ParametersComponent implements AfterViewInit, OnDestroy {
   sourceOptions = PLIST_SOURCE_OPTIONS;
 
   // Added dynamically based on actual commands.
-  aliasColumns$ = new BehaviorSubject<ColumnInfo[]>([]);
+  aliasColumns$ = new BehaviorSubject<YaColumnInfo[]>([]);
 
   private queryParamMapSubscription: Subscription;
 
@@ -109,9 +109,8 @@ export class ParametersComponent implements AfterViewInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private synchronizer: Synchronizer,
-    private memberPathPipe: MemberPathPipe,
   ) {
-    this.dataSource = new ParametersDataSource(this.yamcs, this.synchronizer, this.memberPathPipe);
+    this.dataSource = new ParametersDataSource(this.yamcs, this.synchronizer);
   }
 
   ngAfterViewInit() {

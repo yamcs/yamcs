@@ -1,7 +1,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { convertDurationToMillis } from '../utils';
 
-@Pipe({ name: 'duration' })
+@Pipe({
+  standalone: true,
+  name: 'duration',
+})
 export class DurationPipe implements PipeTransform {
 
   transform(millis?: number | string | null): string | null {

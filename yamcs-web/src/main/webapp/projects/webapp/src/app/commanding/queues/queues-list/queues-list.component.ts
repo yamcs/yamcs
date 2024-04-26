@@ -1,12 +1,11 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
-import { CommandQueue, ConnectionInfo, MessageService, QueueEventsSubscription, QueueStatisticsSubscription, Synchronizer, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { CommandQueue, ConnectionInfo, MessageService, QueueEventsSubscription, QueueStatisticsSubscription, Synchronizer, TrackBySelectionModel, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { SignificanceLevelComponent } from '../../../shared/significance-level/significance-level.component';
-import { TrackBySelectionModel } from '../../../shared/table/TrackBySelectionModel';
 
 @Component({
   standalone: true,

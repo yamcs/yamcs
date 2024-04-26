@@ -4,7 +4,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Algorithm, ColumnInfo, GetAlgorithmsOptions, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { Algorithm, GetAlgorithmsOptions, WebappSdkModule, YaColumnInfo, YamcsService } from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { AlgorithmsDataSource } from './algorithms.datasource';
@@ -34,7 +34,7 @@ export class AlgorithmListComponent implements AfterViewInit {
 
   dataSource: AlgorithmsDataSource;
 
-  columns: ColumnInfo[] = [
+  columns: YaColumnInfo[] = [
     { id: 'name', label: 'Name', alwaysVisible: true },
     { id: 'type', label: 'Type', visible: true },
     { id: 'language', label: 'Language', visible: true },

@@ -3,7 +3,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ColumnChooserComponent, ColumnInfo, CommandHistoryRecord, ConfigService, GetCommandHistoryOptions, MessageService, PrintService, SelectComponent, SelectOption, Synchronizer, User, WebappSdkModule, WebsiteConfig, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { CommandHistoryRecord, ConfigService, GetCommandHistoryOptions, MessageService, PrintService, Synchronizer, User, WebappSdkModule, WebsiteConfig, YaColumnChooser, YaColumnInfo, YaSelect, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/AuthService';
@@ -43,7 +43,7 @@ export class CommandHistoryListComponent implements AfterViewInit, OnDestroy {
   selectedRecord$ = new BehaviorSubject<CommandHistoryRecord | null>(null);
 
   @ViewChild('intervalSelect')
-  intervalSelect: SelectComponent;
+  intervalSelect: YaSelect;
 
   validStart: Date | null;
   validStop: Date | null;
@@ -63,7 +63,7 @@ export class CommandHistoryListComponent implements AfterViewInit, OnDestroy {
 
   dataSource: CommandHistoryDataSource;
 
-  columns: ColumnInfo[] = [
+  columns: YaColumnInfo[] = [
     { id: 'commandId', label: 'ID', alwaysVisible: true },
     { id: 'generationTime', label: 'Time', alwaysVisible: true },
     { id: 'comment', label: 'Comment', visible: true },
@@ -79,9 +79,9 @@ export class CommandHistoryListComponent implements AfterViewInit, OnDestroy {
   ];
 
   // Added dynamically based on actual commands.
-  aliasColumns$ = new BehaviorSubject<ColumnInfo[]>([]);
+  aliasColumns$ = new BehaviorSubject<YaColumnInfo[]>([]);
 
-  intervalOptions: SelectOption[] = [
+  intervalOptions: YaSelectOption[] = [
     { id: 'PT1H', label: 'Last hour' },
     { id: 'PT6H', label: 'Last 6 hours' },
     { id: 'P1D', label: 'Last 24 hours' },
@@ -89,10 +89,10 @@ export class CommandHistoryListComponent implements AfterViewInit, OnDestroy {
     { id: 'CUSTOM', label: 'Custom', group: true },
   ];
 
-  queueOptions: SelectOption[];
+  queueOptions: YaSelectOption[];
 
-  @ViewChild(ColumnChooserComponent)
-  columnChooser: ColumnChooserComponent;
+  @ViewChild(YaColumnChooser)
+  columnChooser: YaColumnChooser;
 
   // Would prefer to use formGroup, but when using valueChanges this
   // only is updated after the callback...

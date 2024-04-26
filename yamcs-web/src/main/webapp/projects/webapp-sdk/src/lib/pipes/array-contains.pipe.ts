@@ -1,6 +1,9 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({ name: 'arrayContains' })
+@Pipe({
+  standalone: true,
+  name: 'arrayContains',
+})
 export class ArrayContainsPipe implements PipeTransform {
 
   transform(haystack: any[] | null | undefined, needle: any): boolean {

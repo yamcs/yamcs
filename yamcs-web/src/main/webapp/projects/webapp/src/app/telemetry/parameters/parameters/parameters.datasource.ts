@@ -1,5 +1,5 @@
 import { DataSource } from '@angular/cdk/table';
-import { GetParametersOptions, MemberPathPipe, NamedObjectId, Parameter, ParameterSubscription, ParameterValue, SpaceSystem, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
+import { GetParametersOptions, NamedObjectId, Parameter, ParameterSubscription, ParameterValue, SpaceSystem, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 export class ListItem {
@@ -27,7 +27,6 @@ export class ParametersDataSource extends DataSource<ListItem> {
   constructor(
     private yamcs: YamcsService,
     private synchronizer: Synchronizer,
-    private memberPathPipe: MemberPathPipe,
   ) {
     super();
   }
@@ -55,7 +54,7 @@ export class ParametersDataSource extends DataSource<ListItem> {
       }
       for (const parameter of (page.parameters || [])) {
         items.push({
-          name: this.memberPathPipe.transform(parameter)!,
+          name: utils.getMemberPath(parameter)!,
           parameter: parameter,
         });
       }
@@ -76,7 +75,7 @@ export class ParametersDataSource extends DataSource<ListItem> {
 
   private startSubscription(parameters: Parameter[]) {
     const ids = parameters.map(p => {
-      const fullPath = this.memberPathPipe.transform(p)!;
+      const fullPath = utils.getMemberPath(p)!;
       return { name: fullPath };
     });
     if (ids.length) {

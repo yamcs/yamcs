@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { MemberPathPipe, Parameter, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { Parameter, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { Observable } from 'rxjs';
 import { debounceTime, map, switchMap } from 'rxjs/operators';
 import { ColorPaletteComponent } from '../color-palette/color-palette.component';
@@ -34,7 +34,6 @@ export class CompareParameterDialogComponent implements OnInit {
     private dialogRef: MatDialogRef<CompareParameterDialogComponent>,
     private yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
-    private memberPathPipe: MemberPathPipe,
   ) { }
 
   ngOnInit() {
@@ -50,7 +49,7 @@ export class CompareParameterDialogComponent implements OnInit {
       map(candidates => {
         return candidates.filter(candidate => {
           for (const excludedParameter of excludedParameters) {
-            const qualifiedName = this.memberPathPipe.transform(candidate);
+            const qualifiedName = utils.getMemberPath(candidate);
             if (excludedParameter.qualifiedName === qualifiedName) {
               return false;
             }

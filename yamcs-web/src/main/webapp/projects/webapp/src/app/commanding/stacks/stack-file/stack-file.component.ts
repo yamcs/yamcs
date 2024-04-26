@@ -5,7 +5,7 @@ import { FormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AcknowledgmentInfo, AdvancementParams, Argument, BasenamePipe, Command, CommandHistoryRecord, CommandSubscription, ConfigService, CreateTimelineItemRequest, ExtensionPipe, FilenamePipe, MessageService, SelectOption, StackEntry, StackFormatter, StorageClient, Value, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { AcknowledgmentInfo, AdvancementParams, Argument, Command, CommandHistoryRecord, CommandSubscription, ConfigService, CreateTimelineItemRequest, MessageService, StackEntry, StackFormatter, StorageClient, Value, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/AuthService';
@@ -91,7 +91,7 @@ export class StackFileComponent implements OnDestroy {
 
   stackOptionsForm: UntypedFormGroup;
   extraAcknowledgments: AcknowledgmentInfo[];
-  ackOptions: SelectOption[] = [
+  ackOptions: YaSelectOption[] = [
     { id: 'Acknowledge_Queued', label: 'Queued' },
     { id: 'Acknowledge_Released', label: 'Released' },
     { id: 'Acknowledge_Sent', label: 'Sent' },
@@ -114,10 +114,7 @@ export class StackFileComponent implements OnDestroy {
     private configService: ConfigService,
     private messageService: MessageService,
     private sanitizer: DomSanitizer,
-    private basenamePipe: BasenamePipe,
-    private filenamePipe: FilenamePipe,
-    private extensionPipe: ExtensionPipe,
-    private formBuilder: FormBuilder
+    formBuilder: FormBuilder
   ) {
     const config = configService.getConfig();
     this.bucket = configService.getStackBucket();
@@ -254,7 +251,7 @@ export class StackFileComponent implements OnDestroy {
 
     this.title.setTitle(this.filename);
 
-    const format = this.extensionPipe.transform(this.filenamePipe.transform(objectName))?.toLowerCase();
+    const format = utils.getExtension(utils.getFilename(objectName))?.toLowerCase();
     if (format === "ycs" || format === "xml") {
       this.format = format;
     } else {
@@ -928,7 +925,7 @@ export class StackFileComponent implements OnDestroy {
         await this.saveStack();
       }
 
-      StackFileComponent.convertToJSON(this.messageService, this.basenamePipe, this.storageClient, this.bucket, this.objectName, this.entries$.value, { advancement: this.advancement })
+      StackFileComponent.convertToJSON(this.messageService, this.storageClient, this.bucket, this.objectName, this.entries$.value, { advancement: this.advancement })
         .then((jsonObjectName) => {
           this.router.navigate([jsonObjectName + ".ycs"], { queryParamsHandling: 'preserve', relativeTo: this.route.parent })
             .then(() => this.initStackFile());
@@ -938,7 +935,6 @@ export class StackFileComponent implements OnDestroy {
 
   static async convertToJSON(
     messageService: MessageService,
-    basenamePipe: BasenamePipe,
     storageClient: StorageClient,
     bucket: string,
     objectName: string,
@@ -947,7 +943,7 @@ export class StackFileComponent implements OnDestroy {
   ) {
     const formatter = new StackFormatter(entries, stackOptions);
     const blob = new Blob([formatter.toJSON()], { type: 'application/json' });
-    const jsonObjectName = basenamePipe.transform(objectName);
+    const jsonObjectName = utils.getBasename(objectName);
 
     if (!jsonObjectName) {
       messageService.showError("Failed to convert command stack");

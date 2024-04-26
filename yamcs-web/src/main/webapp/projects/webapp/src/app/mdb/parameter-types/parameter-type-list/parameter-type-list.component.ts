@@ -4,7 +4,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ColumnChooserComponent, ColumnInfo, GetParameterTypesOptions, ParameterType, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { GetParameterTypesOptions, ParameterType, WebappSdkModule, YaColumnChooser, YaColumnInfo, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
@@ -31,14 +31,14 @@ export class ParameterTypesComponent implements AfterViewInit {
   @ViewChild(MatPaginator, { static: true })
   paginator: MatPaginator;
 
-  @ViewChild(ColumnChooserComponent)
-  columnChooser: ColumnChooserComponent;
+  @ViewChild(YaColumnChooser)
+  columnChooser: YaColumnChooser;
 
   filterControl = new UntypedFormControl();
 
   dataSource: ParameterTypesDataSource;
 
-  columns: ColumnInfo[] = [
+  columns: YaColumnInfo[] = [
     { id: 'name', label: 'Name', alwaysVisible: true },
     { id: 'type', label: 'Type', visible: true },
     { id: 'units', label: 'Units', visible: true },
@@ -47,7 +47,7 @@ export class ParameterTypesComponent implements AfterViewInit {
   ];
 
   // Added dynamically based on actual parameter types.
-  aliasColumns$ = new BehaviorSubject<ColumnInfo[]>([]);
+  aliasColumns$ = new BehaviorSubject<YaColumnInfo[]>([]);
 
   selection = new SelectionModel<ParameterType>(false);
 

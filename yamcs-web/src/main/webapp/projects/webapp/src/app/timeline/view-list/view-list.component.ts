@@ -2,10 +2,9 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@a
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
-import { MessageService, TimelineView, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { MessageService, TimelineView, TrackBySelectionModel, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
-import { TrackBySelectionModel } from '../../shared/table/TrackBySelectionModel';
 
 @Component({
   standalone: true,

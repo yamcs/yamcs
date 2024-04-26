@@ -3,7 +3,7 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SelectOption, Service, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { Service, WebappSdkModule, YaSelectOption, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
 import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
@@ -28,7 +28,7 @@ export class ServiceListComponent {
     instance: new UntypedFormControl('_global'),
   });
 
-  instanceOptions$ = new BehaviorSubject<SelectOption[]>([
+  instanceOptions$ = new BehaviorSubject<YaSelectOption[]>([
     { id: '_global', label: '_global' },
   ]);
 

@@ -1,6 +1,9 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({ name: 'millisDuration' })
+@Pipe({
+  standalone: true,
+  name: 'millisDuration',
+})
 export class MillisDurationPipe implements PipeTransform {
 
   transform(millis?: number | null): string | null {

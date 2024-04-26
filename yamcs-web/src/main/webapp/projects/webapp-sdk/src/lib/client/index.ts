@@ -4,6 +4,8 @@ export { HttpHandler } from './HttpHandler';
 export { HttpInterceptor } from './HttpInterceptor';
 export { SessionListener } from './SessionListener';
 export { StorageClient } from './StorageClient';
+export { WebSocketCall } from './WebSocketCall';
+export { WebSocketClient } from './WebSocketClient';
 export { default as YamcsClient } from './YamcsClient';
 export * from './types/activities';
 export * from './types/alarms';

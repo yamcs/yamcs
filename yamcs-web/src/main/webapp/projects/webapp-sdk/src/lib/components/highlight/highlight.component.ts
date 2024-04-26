@@ -1,12 +1,17 @@
+import { AsyncPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
+  standalone: true,
   selector: 'ya-highlight',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './highlight.component.html',
+  imports: [
+    AsyncPipe,
+  ],
 })
-export class HighlightComponent implements OnChanges {
+export class YaHighlight implements OnChanges {
 
   @Input()
   text: string;
