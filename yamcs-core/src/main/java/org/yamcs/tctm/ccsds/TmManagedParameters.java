@@ -52,13 +52,14 @@ public class TmManagedParameters extends DownlinkManagedParameters {
     }
 
     @Override
-    public Map<Integer, VcDownlinkHandler> createVcHandlers(String yamcsInstance, String linkName) {
+    public Map<Integer, VcDownlinkHandler> createVcHandlers(String yamcsInstance, String parentLinkName) {
         Map<Integer, VcDownlinkHandler> m = new HashMap<>();
         for (Map.Entry<Integer, TmVcManagedParameters> me : vcParams.entrySet()) {
             TmVcManagedParameters vmp = me.getValue();
+            String linkName = (vmp.linkName != null) ? (parentLinkName + "." + vmp.linkName) : (parentLinkName + ".vc" + vmp.vcId);
             switch (vmp.service) {
             case PACKET:
-                VcTmPacketHandler vcph = new VcTmPacketHandler(yamcsInstance, linkName + ".vc" + vmp.vcId, vmp);
+                VcTmPacketHandler vcph = new VcTmPacketHandler(yamcsInstance, linkName, vmp);
                 m.put(vmp.vcId, vcph);
                 break;
             case VCA:
@@ -72,6 +73,9 @@ public class TmManagedParameters extends DownlinkManagedParameters {
     static class TmVcManagedParameters extends VcDownlinkManagedParameters {
         ServiceType service;
 
+        // this is used to compose the link name, if not set it will be vc<x>
+        String linkName;
+
         public TmVcManagedParameters(YConfiguration config) {
             super(config);
 
@@ -79,6 +83,8 @@ public class TmManagedParameters extends DownlinkManagedParameters {
                 throw new ConfigurationException("Invalid vcId: " + vcId + ". Allowed values are from 0 to 7.");
             }
             service = config.getEnum("service", ServiceType.class);
+            linkName = config.getString("linkName", null);
+
             if (service == ServiceType.PACKET) {
                 parsePacketConfig();
             } else if (service == ServiceType.VCA) {

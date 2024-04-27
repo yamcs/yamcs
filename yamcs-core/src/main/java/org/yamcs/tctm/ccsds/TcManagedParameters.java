@@ -73,7 +73,7 @@ public class TcManagedParameters extends UplinkManagedParameters {
             ScheduledThreadPoolExecutor executor) {
         List<VcUplinkHandler> l = new ArrayList<>();
         for (TcVcManagedParameters vmp : vcParams) {
-            String linkName = parentLinkName + "." + vmp.linkName;
+            String linkName = (vmp.linkName != null) ? (parentLinkName + "." + vmp.linkName) : (parentLinkName + ".vc" + vmp.vcId);
             switch (vmp.service) {
             case PACKET:
                 VcUplinkHandler vcph;
