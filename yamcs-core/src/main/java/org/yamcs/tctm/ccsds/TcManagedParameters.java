@@ -6,6 +6,9 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.tctm.csp.CspFrameFactory;
+import org.yamcs.tctm.csp.AbstractCspTcFrameLink.CspManagedParameters;
+import org.yamcs.utils.StringConverter;
 
 /**
  * Configuration (managed parameters) used for generation of TC frames as per CCSDS 232.0-B-3
@@ -120,6 +123,11 @@ public class TcManagedParameters extends UplinkManagedParameters {
         int maxFrameLength = -1;
         public boolean multiplePacketsPerFrame;
         public boolean bdAbsolutePriority;
+
+        // initialise it to null
+        byte[] cspHeader = null;
+        private CspManagedParameters cspManagedParameters = null;
+
         // this is used to compose the link name, if not set it will be vc<x>
         String linkName;
 
@@ -147,10 +155,23 @@ public class TcManagedParameters extends UplinkManagedParameters {
             this.useCop1 = config.getBoolean("useCop1", false);
             this.linkName = config.getString("linkName", null);
             this.multiplePacketsPerFrame = config.getBoolean("multiplePacketsPerFrame", true);
+
+            if (config.containsKey("cspHeader")) {
+                this.cspHeader = StringConverter.hexStringToArray(config.getString("cspHeader"));
+                this.cspManagedParameters = new CspManagedParameters("NONE", maxFrameLength, multiplePacketsPerFrame, cspHeader);
+            }
         }
 
         public TcFrameFactory getFrameFactory() {
             return new TcFrameFactory(this);
+        }
+
+        public CspFrameFactory getCspFrameFactory() {
+            if (cspManagedParameters != null) {
+                return new CspFrameFactory(cspManagedParameters);
+            }
+
+            return null;
         }
 
         /**

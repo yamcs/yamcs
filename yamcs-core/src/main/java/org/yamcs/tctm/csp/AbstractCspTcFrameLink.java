@@ -168,12 +168,12 @@ public abstract class AbstractCspTcFrameLink extends AbstractTcDataLink implemen
             return null;
         }
 
-        byte[] cspFrame = frameFactory.makeFrame(dataLength);       // FIXME: What I dont understand is, if the postprocessed binary.length > pcLength, then it will be impossible to fit the PC into frame. What to do?
+        byte[] cspFrame = frameFactory.makeFrame(dataLength);
         byte[] pcBinary = postprocess(pc);
 
         int length = pcBinary.length;
 
-        int offset = cspManagedParameters.getRadioHeaderLength() + cspManagedParameters.getCspHeaderLength();
+        int offset = cspManagedParameters.getCspHeader().length;
         System.arraycopy(pcBinary, 0, cspFrame, offset, length);
 
         dataCount.getAndAdd(1);
@@ -181,7 +181,7 @@ public abstract class AbstractCspTcFrameLink extends AbstractTcDataLink implemen
     }
 
     public int getMaxFrameLength() {
-        return cspManagedParameters.maxFrameLength;
+        return cspManagedParameters.getMaxFrameLength();
     }
 
     @Override
@@ -240,15 +240,44 @@ public abstract class AbstractCspTcFrameLink extends AbstractTcDataLink implemen
 
     static public class CspManagedParameters {
         public enum FrameErrorDetection {
-            NONE, CRC16, CRC32
+            NONE("NONE"), CRC16("CRC16"), CRC32("CRC32");
+
+            private final String value;
+
+            FrameErrorDetection(String value) {
+                this.value = value;
+            }
+    
+            public String getValue() {
+                return value;
+            }
+
+            public static FrameErrorDetection fromValue(String value) {
+                for (FrameErrorDetection enumValue : FrameErrorDetection.values()) {
+                    if (enumValue.value == value) {
+                        return enumValue;
+                    }
+                }
+                throw new IllegalArgumentException("No enum constant with value " + value);
+            }
         };
 
-        boolean enforceFrameLength;
         boolean multiplePacketsPerFrame;
         int maxFrameLength;
-        int cspHeaderLength;
-        int radioHeaderLength;
+        byte[] cspHeader;
         FrameErrorDetection errorDetection;
+
+        public CspManagedParameters(String errorDetection, int maxFrameLength, boolean multiplePacketsPerFrame, byte[] cspHeader) {
+            this.multiplePacketsPerFrame = multiplePacketsPerFrame;
+
+            this.maxFrameLength = maxFrameLength;
+            if (maxFrameLength < 8 || maxFrameLength > 0xFFFF) {
+                throw new ConfigurationException("Invalid CSP frame length " + maxFrameLength);
+            }
+
+            this.errorDetection = FrameErrorDetection.fromValue(errorDetection);
+            this.cspHeader = cspHeader;
+        }
 
         public CspManagedParameters(YConfiguration config) {
             maxFrameLength = config.getInt("maxFrameLength");
@@ -256,13 +285,11 @@ public abstract class AbstractCspTcFrameLink extends AbstractTcDataLink implemen
                 throw new ConfigurationException("Invalid CSP frame length " + maxFrameLength);
             }
 
-            enforceFrameLength = config.getBoolean("enforceFrameLength", true);
             errorDetection = config.getEnum("errorDetection", FrameErrorDetection.class, FrameErrorDetection.NONE);
             multiplePacketsPerFrame = config.getBoolean("multiplePacketsPerFrame", false);
 
             try {
-                cspHeaderLength = Hex.decodeHex(config.getString("cspHeader", "00000000")).length;
-                radioHeaderLength = Hex.decodeHex(config.getString("radioHeader", "")).length;
+                this.cspHeader = Hex.decodeHex(config.getString("cspHeader"));
             } catch (DecoderException e) {
                 e.printStackTrace();
                 throw new ConfigurationException(e);
@@ -285,14 +312,8 @@ public abstract class AbstractCspTcFrameLink extends AbstractTcDataLink implemen
             return maxFrameLength;
         }
 
-        public int getCspHeaderLength() {
-            return cspHeaderLength;
+        public byte[] getCspHeader() {
+            return cspHeader;
         }
-
-        public int getRadioHeaderLength() {
-            return radioHeaderLength;
-        }
-
     }
-
 }

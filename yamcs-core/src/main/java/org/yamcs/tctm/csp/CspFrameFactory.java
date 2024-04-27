@@ -30,7 +30,7 @@ public class CspFrameFactory {
      * @return
      */
     public byte[] makeFrame(int dataLength) {
-        int length = dataLength + cspManagedParameters.getCspHeaderLength() + cspManagedParameters.getRadioHeaderLength();
+        int length = dataLength + getCspHeaderLength();
         if (crc != null) {
             length += 2;
         }
@@ -49,8 +49,16 @@ public class CspFrameFactory {
      * @return
      */
     public int getFramingLength() {
-        int length = cspManagedParameters.getCspHeaderLength() + cspManagedParameters.getRadioHeaderLength();
+        int length = getCspHeaderLength();
+        if (crc != null) {
+            length += 2;
+        }
+
         return length;
+    }
+
+    public int getCspHeaderLength() {
+        return cspManagedParameters.getCspHeader().length;
     }
 
     public byte[] encodeFrame(byte[] cspFrame) {
@@ -59,7 +67,9 @@ public class CspFrameFactory {
             ByteArrayUtils.encodeUnsignedShort(c, cspFrame, cspFrame.length - 2);
         }
 
+        byte[] cspHeader = cspManagedParameters.getCspHeader();
+        System.arraycopy(cspHeader, 0, cspFrame, 0, cspHeader.length);
+
         return cspFrame;
     }
-
 }

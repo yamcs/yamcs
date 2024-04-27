@@ -10,6 +10,8 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.tctm.AbstractTcDataLink;
 import org.yamcs.tctm.ccsds.TcManagedParameters.TcVcManagedParameters;
+import org.yamcs.tctm.csp.CspFrameFactory;
+import org.yamcs.tctm.csp.AbstractCspTcFrameLink.CspManagedParameters;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -22,6 +24,7 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
     protected BlockingQueue<PreparedCommand> commandQueue;
     final TcVcManagedParameters vmp;
     private TcFrameFactory frameFactory;
+    private CspFrameFactory cspFrameFactory;
     boolean blockSenderOnQueueFull;
     private Semaphore dataAvailableSemaphore;
 
@@ -30,6 +33,7 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
         super.init(yamcsInstance, linkName, vmp.config);
         this.vmp = vmp;
         this.frameFactory = vmp.getFrameFactory();
+        this.cspFrameFactory = vmp.getCspFrameFactory();
 
         int queueSize = vmp.config.getInt("tcQueueSize", 10);
         blockSenderOnQueueFull = vmp.config.getBoolean("blockSenderOnQueueFull", false);
@@ -39,13 +43,17 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
     @Override
     public boolean sendCommand(PreparedCommand preparedCommand) {
         int framingLength = frameFactory.getFramingLength(vmp.vcId);
+        if (cspFrameFactory != null) {
+            framingLength += cspFrameFactory.getFramingLength();
+        }
+
         int pcLength = cmdPostProcessor.getBinaryLength(preparedCommand);
         if (framingLength + pcLength > vmp.maxFrameLength) {
             log.warn("Command {} does not fit into frame ({} + {} > {})", preparedCommand.getLoggingId(), framingLength,
                     pcLength, vmp.maxFrameLength);
             failedCommand(preparedCommand.getCommandId(),
                     "Command too large to fit in a frame; cmd size: " + pcLength + "; max frame length: "
-                            + vmp.maxFrameLength + "; frame overhead: " + framingLength);
+                            + vmp.maxFrameLength + "; frame overhead: " + framingLength + "; cspHeader included: " + (cspFrameFactory != null? "Yes | " + cspFrameFactory.getCspHeaderLength() + " bytes" : "No"));
             return true;
         }
 
@@ -115,6 +123,26 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
         }
         dataCount.getAndAdd(l.size());
         frameFactory.encodeFrame(tf);
+
+        // Check if cspHeader needs to be added
+        int ccsdsDataStart = tf.getDataStart();
+        int ccsdsDataEnd = tf.getDataEnd();
+
+        if (cspFrameFactory != null) {
+            byte[] cspFrame = cspFrameFactory.makeFrame(data.length);
+
+            int cspOffset = cspFrameFactory.getCspHeaderLength();
+            System.arraycopy(data, 0, cspFrame, cspOffset, data.length);
+
+            // Add the cspHeader to the CCSDS Frame
+            cspFrameFactory.encodeFrame(cspFrame);
+            
+            // Set the cspFrame
+            tf.setData(cspFrame);
+            tf.setDataStart(cspOffset + ccsdsDataStart);
+            tf.setDataEnd(cspOffset + ccsdsDataEnd);
+        }
+
         return tf;
     }
 

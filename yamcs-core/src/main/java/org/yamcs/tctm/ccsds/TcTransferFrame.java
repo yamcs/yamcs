@@ -56,6 +56,10 @@ public class TcTransferFrame {
         return cmdControl ? 1 : 0;
     }
 
+    public void setData(byte[] data) {
+        this.data = data;
+    }
+
     public byte[] getData() {
         return data;
     }
@@ -78,6 +82,10 @@ public class TcTransferFrame {
 
     public void setDataEnd(int end) {
         this.dataEnd = end;
+    }
+
+    public int getDataEnd() {
+        return dataEnd;
     }
 
     public int getVirtualChannelId() {
