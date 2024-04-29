@@ -20,6 +20,8 @@ import java.util.logging.LogRecord;
  * JUL appender that emits to syslogd over UDP with messages formatted according to RFC 3164 (BSD syslog).
  */
 public class SyslogHandler extends Handler {
+    // limit the log message size. The whole message converted to bytes should be smaller than 65K max datagram size
+    public static final int MAX_LENGTH = 10000;
 
     private static final String TAG = "yamcs";
     private long pid;
@@ -116,6 +118,11 @@ public class SyslogHandler extends Handler {
                 buf.append(": ").append(record.getThrown().getMessage());
             }
             buf.append("]");
+        }
+        int length = buf.length();
+        if (length > MAX_LENGTH) {
+            buf.setLength(MAX_LENGTH);
+            buf.append(" (").append(length - MAX_LENGTH).append(" characters suppressed)");
         }
 
         byte[] b = buf.toString().getBytes();
