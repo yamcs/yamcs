@@ -14,11 +14,12 @@ import org.yamcs.utils.DecodingException;
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.MessageLite;
 
-
 /**
  * Defines all the message types that are exchanged between master and slave.
  * 
- * <p>Message format: 
+ * <p>
+ * Message format:
+ * 
  * <pre>
  * 1 byte type
  * 3 bytes message size (size of data to follow) = n+4
@@ -40,9 +41,8 @@ public class Message {
 
     final byte type;
     MessageLite protoMsg;
-   
 
-    static Message decode(ByteBuffer buf) throws DecodingException {
+    public static Message decode(ByteBuffer buf) throws DecodingException {
         verifyCrc(buf);
 
         int lengthtype = buf.getInt();
@@ -50,51 +50,59 @@ public class Message {
         byte type = (byte) (lengthtype >> 24);
 
         if (length != buf.remaining()) {// netty will split the messages based on this length so if this
-                                        // message has been received via netty, this error cannot really happen
+            // message has been received via netty, this error cannot really happen
             throw new DecodingException(
                     "Message length does not match. header length: " + length + " buffer length:" + buf.remaining());
         }
 
         Message msg;
-        
-        buf.limit(buf.limit()-4); //get rid of CRC
-        
-            switch (type) {
-            case DATA:
-                msg = new TransactionMessage(type, buf.getInt(), buf.getLong());
-                ((TransactionMessage) msg).buf = buf;
-                break;
-            case WAKEUP:
-                msg = new Message(type);
-                msg.protoMsg = decodeProto(buf, Wakeup.newBuilder()).build();
-                break;
-            case REQUEST:
-                msg = new Message(type);
-                msg.protoMsg = decodeProto(buf, Request.newBuilder()).build();
-                break;
-            case RESPONSE:
-                msg = new Message(type);
-                msg.protoMsg = decodeProto(buf, Response.newBuilder()).build();
-                break;
-            case STREAM_INFO:
-                msg = new TransactionMessage(type, buf.getInt(), buf.getLong());
-                buf.getInt();//pointer to next metadata
-                msg.protoMsg = decodeProto(buf, StreamInfo.newBuilder()).build();
-                break;
-            case TIME:
-                msg = new Message(type);
-                msg.protoMsg = decodeProto(buf, TimeMessage.newBuilder()).build();
-                break;
-            default:
-                throw new DecodingException("unknown message type " + type);
 
-            }
-       
+        buf.limit(buf.limit() - 4); // get rid of CRC
+
+        switch (type) {
+        case DATA:
+            msg = new TransactionMessage(type, buf.getInt(), buf.getLong());
+            ((TransactionMessage) msg).buf = buf;
+            break;
+        case WAKEUP:
+            msg = new Message(type);
+            msg.protoMsg = decodeProto(buf, Wakeup.newBuilder()).build();
+            break;
+        case REQUEST:
+            msg = new Message(type);
+            msg.protoMsg = decodeProto(buf, Request.newBuilder()).build();
+            break;
+        case RESPONSE:
+            msg = new Message(type);
+            msg.protoMsg = decodeProto(buf, Response.newBuilder()).build();
+            break;
+        case STREAM_INFO:
+            msg = new TransactionMessage(type, buf.getInt(), buf.getLong());
+            buf.getInt();// pointer to next metadata
+            msg.protoMsg = decodeProto(buf, StreamInfo.newBuilder()).build();
+            break;
+        case TIME:
+            msg = new Message(type);
+            msg.protoMsg = decodeProto(buf, TimeMessage.newBuilder()).build();
+            break;
+        default:
+            throw new DecodingException("unknown message type " + type);
+
+        }
+
         return msg;
     }
-    
+
     Message(byte type) {
         this.type = type;
+    }
+
+    public byte type() {
+        return type;
+    }
+
+    public MessageLite protoMsg() {
+        return protoMsg;
     }
 
     private static void verifyCrc(ByteBuffer buf) throws DecodingException {
@@ -146,6 +154,7 @@ public class Message {
         msg.protoMsg = resp;
         return msg;
     }
+
     public static Message get(Request req) {
         Message msg = new Message(REQUEST);
         msg.protoMsg = req;
@@ -169,21 +178,30 @@ public class Message {
         return buf;
     }
 
-}
+    // this is a message that comes from a replication file
+    public static class TransactionMessage extends Message {
+        long txId;
+        int instanceId;
+        ByteBuffer buf;
 
-//this is a message that comes from a replication file
-class TransactionMessage extends Message {
-    long txId;
-    int instanceId;
-    ByteBuffer buf;
-    
-    TransactionMessage(byte type, int instanceId, long txId) {
-        super(type);
-        this.instanceId = instanceId;
-        this.txId = txId;
+        TransactionMessage(byte type, int instanceId, long txId) {
+            super(type);
+            this.instanceId = instanceId;
+            this.txId = txId;
+        }
+
+        public ByteBuffer encode() {
+            throw new UnsupportedOperationException();
+        }
+
+        public long txId() {
+            return txId;
+        }
+
+        public ByteBuffer buf() {
+            return buf;
+        }
+
     }
-    
-    public ByteBuffer encode() {
-        throw new UnsupportedOperationException();
-    }
+
 }

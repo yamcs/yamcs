@@ -14,6 +14,7 @@ import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.zip.CRC32;
@@ -161,7 +162,7 @@ public class ReplicationFile implements Closeable {
         int lastPageNumTx; // number of transaction on the last page
         long lastMod; // last modification
 
-        public Header2(boolean newFile) {
+        Header2(boolean newFile) {
             if (newFile) {
                 this.numFullPages = 0;
                 this.lastPageNumTx = 0;
@@ -193,6 +194,9 @@ public class ReplicationFile implements Closeable {
             return buf.getInt(HDR_IDX_OFFSET - 4);
         }
 
+        /**
+         * returns the offset of the end of hdr2 - where data begins
+         */
         public int endOffset() {
             return HDR_IDX_OFFSET + 4 * (hdr1.maxPages + 1);
         }
@@ -428,9 +432,9 @@ public class ReplicationFile implements Closeable {
                     size + 4);
             hdr2.incrNumTx();
             return txid;
-        } catch (Error e) {
+        } catch (Throwable e) {
             buf.position(txStartPos);
-            log.error("Caught error when writing the replication file ", e);
+            log.error("Caught exception when writing the replication file ", e);
             throw e;
         } finally {
             rwlock.writeLock().unlock();
@@ -440,6 +444,7 @@ public class ReplicationFile implements Closeable {
     // starts from latest known transaction (according to the header) and checks for new ones
     private void recover() {
         int n = hdr2.numTx();
+
         int startTxPos = getPosition(n);
         buf.position(startTxPos);
         int k = 0;
@@ -613,11 +618,16 @@ public class ReplicationFile implements Closeable {
 
     /**
      * Iterate through the metadata
-     * 
-     * @return
      */
     public Iterator<ByteBuffer> metadataIterator() {
         return new MetadataIterator();
+    }
+
+    /**
+     * Iterate through the data
+     */
+    public Iterator<ByteBuffer> iterator() {
+        return new TxIterator();
     }
 
     public void close() {
@@ -658,6 +668,27 @@ public class ReplicationFile implements Closeable {
                 rwlock.readLock().unlock();
             }
         }
+    }
+
+    public static int headerSize(int pageSize, int maxPages) {
+        return Header2.HDR_IDX_OFFSET + 4 * (maxPages + 1);
+    }
+
+    public int numTx() {
+        return hdr2.numTx();
+    }
+
+    public boolean isSyncRequired() {
+        return syncRequired;
+    }
+
+    /**
+     * Set the sync required flag such that the file is synchronized by the ReplicationMaster
+     * 
+     * @param syncRequired
+     */
+    public void setSyncRequired(boolean syncRequired) {
+        this.syncRequired = syncRequired;
     }
 
     /**
@@ -711,24 +742,52 @@ public class ReplicationFile implements Closeable {
         }
     }
 
-    public static int headerSize(int pageSize, int maxPages) {
-        return Header2.HDR_IDX_OFFSET + 4 * (maxPages + 1);
+    class TxIterator implements Iterator<ByteBuffer> {
+        int nextPos;
+
+        TxIterator() {
+            nextPos = hdr2.endOffset();
+        }
+
+        @Override
+        public boolean hasNext() {
+            return nextPos > 0;
+        }
+
+        /**
+         * Returns a ByteBuffer with the position set to where the record begins and the limit sets to where it ends
+         * <p>
+         * The structure of the metadata is
+         * 
+         * <pre>
+         *  1 byte type
+         *  3 bytes size -size of data that follows( i.e. without the size itself) = n + 20
+         *  4 bytes serverId
+         *  8 bytes txId
+         *  4 bytes metadata next position (to be ignored, only relevant inside the file)
+         *   n bytes data
+         *  4 bytes crc
+         * </pre>
+         */
+        @Override
+        public ByteBuffer next() {
+            if (nextPos < 0) {
+                throw new NoSuchElementException();
+            }
+            ByteBuffer buf1 = buf.asReadOnlyBuffer();
+            buf1.position(nextPos);
+            int typesize = buf1.getInt(nextPos);
+
+            nextPos += 4 + (typesize & 0xFFFFFF);
+
+            if (nextPos >= buf.limit()) {
+                nextPos = -1;
+            } else {
+                buf1.limit(nextPos);
+            }
+
+            return buf1;
+        }
     }
 
-    public int numTx() {
-        return hdr2.numTx();
-    }
-
-    public boolean isSyncRequired() {
-        return syncRequired;
-    }
-
-    /**
-     * Set the sync required flag such that the file is synchronized by the ReplicationMaster
-     * 
-     * @param syncRequired
-     */
-    public void setSyncRequired(boolean syncRequired) {
-        this.syncRequired = syncRequired;
-    }
 }
