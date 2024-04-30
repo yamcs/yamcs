@@ -373,8 +373,9 @@ public class ReplicationFile implements Closeable {
             return -1;
         }
 
-        final int txStartPos = buf.position();
         rwlock.writeLock().lock();
+        final int txStartPos = buf.position();
+
         try {
             if (fileFull) {
                 return -1;
