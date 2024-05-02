@@ -39,10 +39,10 @@ public class PutRequest extends S13Request {
      * @param config
      * @return
      */
-    public S13TransactionId process(long remoteId, long transferId, YConfiguration config) {
-        S13TransactionId s13TransactionId = new S13TransactionId(remoteId, transferId, TransferDirection.UPLOAD);
+    public S13TransactionId process(long remoteId, long transferTransactionId, long largePacketTransactionId, YConfiguration config) {
+        S13TransactionId s13TransactionId = new S13TransactionId(remoteId, transferTransactionId, largePacketTransactionId, TransferDirection.UPLOAD);
 
-        String fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(ServiceThirteen.startDownlinkCmdName, transferId);
+        String fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(ServiceThirteen.startDownlinkCmdName, largePacketTransactionId);
         fdrPacket = new StartS13DownlinkPacket(s13TransactionId, fullyQualifiedCmdName);
         
         return s13TransactionId;

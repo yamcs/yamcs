@@ -53,7 +53,7 @@ public class StartS13UplinkPacket extends UplinkS13Packet {
         Map<String, Object> assignments = new LinkedHashMap<>();
 
         assignments.put("Pus_Acknowledgement_Flags", "Acceptance | Completion");
-        assignments.put("Large_Message_Trasaction_Identifier", transactionId.getLargePacketTransactionId());
+        assignments.put("Large_Message_Trasaction_Identifier", uniquenessId.getLargePacketTransactionId());
         assignments.put("Part_Sequence_Number", partSequenceNumber);
         assignments.put("File_Part", filePart);
 
@@ -72,5 +72,4 @@ public class StartS13UplinkPacket extends UplinkS13Packet {
     public long getPartSequenceNumber() {
         return partSequenceNumber;
     }
-
 }

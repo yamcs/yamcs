@@ -10,7 +10,7 @@ public abstract class UplinkS13Packet extends FileTransferPacket {
     protected String fullyQualifiedCmdName;
 
     UplinkS13Packet(S13TransactionId transactionId, String fullyQualifiedCmdName) {
-        super(transactionId);
+        super(transactionId.getUniquenessId());
         this.fullyQualifiedCmdName = fullyQualifiedCmdName;
     }
 
