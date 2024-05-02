@@ -317,8 +317,13 @@ public class ReplicationMaster extends AbstractYamcsService {
 
     }
 
+    /**
+     * returns the id of the last transaction
+     * <p>
+     * If there is no transaction, returns -1
+     */
     public long getTxId() {
-        return (currentFile) == null ? 0 : currentFile.getNextTxId();
+        return (currentFile) == null ? -1 : currentFile.getNextTxId() - 1;
     }
 
     private void writeToFile(Transaction tx) {

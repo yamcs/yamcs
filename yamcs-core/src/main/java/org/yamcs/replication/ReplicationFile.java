@@ -696,8 +696,6 @@ public class ReplicationFile implements Closeable {
      * Returns the last tx id from this file + 1.
      * <p>
      * If there is no transaction in this file, return 0.
-     * 
-     * @return
      */
     public long getNextTxId() {
         return hdr1.firstId + hdr2.numTx();
