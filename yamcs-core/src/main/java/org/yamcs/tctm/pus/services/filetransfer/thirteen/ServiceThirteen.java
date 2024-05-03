@@ -82,10 +82,6 @@ public class ServiceThirteen extends AbstractYamcsService
     static final String TABLE_NAME = "s13";
     static final String SEQUENCE_NAME = "s13";
 
-    // FileTransferOption name literals
-    private final String PACKET_DELAY_OPTION = "packetDelay";
-    private final String PACKET_SIZE_OPTION = "packetSize";
-
     private Stream dbStream;
     private Sequence transferInstanceId;
 
@@ -189,6 +185,7 @@ public class ServiceThirteen extends AbstractYamcsService
         spec.addOption("cmdhistStream", OptionType.STRING).withDefault("cmdhist_realtime");
         spec.addOption("dispatchTimeout", OptionType.INTEGER).withDefault(10);
         spec.addOption("cancelOnNoAck", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("filePartRetries", OptionType.INTEGER).withDefault(1);
 
         spec.addOption("hasFileListingCapability", OptionType.BOOLEAN).withDefault(false);
         return spec;
