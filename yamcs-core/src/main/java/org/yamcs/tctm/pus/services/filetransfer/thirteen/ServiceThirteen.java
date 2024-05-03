@@ -75,6 +75,8 @@ public class ServiceThirteen extends AbstractYamcsService
     static final String ETYPE_TRANSFER_SUSPENDED = "TRANSFER_SUSPENDED";
     static final String ETYPE_TRANSFER_RESUMED = "TRANSFER_RESUMED";
     static final String ETYPE_TRANSFER_PACKET_ERROR = "TRANSFER_PACKET_ERROR";
+    static final String ETYPE_TRANSFER_PACKET_ERROR_TIMEOUT = "TRANSFER_PACKET_ERROR_TIMEOUT";
+    static final String ETYPE_TRANSFER_PACKET_ERROR_NOK = "TRANSFER_PACKET_ERROR_NOK";
 
     static final String BUCKET_OPT = "bucket";
     static final String TABLE_NAME = "s13";
@@ -115,6 +117,7 @@ public class ServiceThirteen extends AbstractYamcsService
     Map<ConditionCode, FaultHandlingAction> senderFaultHandlers;
 
     Stream s13In;
+    Stream cmdhistRealtime;
 
     Bucket defaultIncomingBucket;
     EventProducer eventProducer;
@@ -182,6 +185,10 @@ public class ServiceThirteen extends AbstractYamcsService
         spec.addOption("firstPacketCmdName", OptionType.STRING).withDefault("FirstUplinkPart");
         spec.addOption("intermediatePacketCmdName", OptionType.STRING).withDefault("IntermediateUplinkPart");
         spec.addOption("lastPacketCmdName", OptionType.STRING).withDefault("LastUplinkPart");
+        spec.addOption("skipAcknowledgement", OptionType.BOOLEAN).withDefault(true);
+        spec.addOption("cmdhistStream", OptionType.STRING).withDefault("cmdhist_realtime");
+        spec.addOption("dispatchTimeout", OptionType.INTEGER).withDefault(10);
+        spec.addOption("cancelOnNoAck", OptionType.BOOLEAN).withDefault(false);
 
         spec.addOption("hasFileListingCapability", OptionType.BOOLEAN).withDefault(false);
         return spec;
@@ -197,6 +204,11 @@ public class ServiceThirteen extends AbstractYamcsService
         s13In = ydb.getStream(inStream);
         if (s13In == null) {
             throw new ConfigurationException("cannot find stream " + inStream);
+        }
+        String cmdhistStream = config.getString("cmdhistStream", "cmdhist_realtime");
+        cmdhistRealtime = ydb.getStream(cmdhistStream);
+        if (cmdhistRealtime == null) {
+            throw new ConfigurationException("cannot find stream " + cmdhistStream);
         }
 
         defaultIncomingBucket = getBucket(config.getString("incomingBucket"), true);
@@ -393,7 +405,7 @@ public class ServiceThirteen extends AbstractYamcsService
             log.error("Error executing query", e);
             return null;
         }
-    }                                                               
+    }
 
     @Override
     public List<FileTransfer> getTransfers() {
@@ -421,7 +433,7 @@ public class ServiceThirteen extends AbstractYamcsService
 
     private S13FileTransfer processPutRequest(long transferInstanceId, long largePacketTransactionId, long creationTime, PutRequest request, Bucket bucket, String transferType) {
         S13OutgoingTransfer transfer = new S13OutgoingTransfer(yamcsInstance, transferInstanceId, largePacketTransactionId, creationTime,
-                executor, request, config, bucket, null, null, eventProducer, this, transferType, senderFaultHandlers);
+                executor, cmdhistRealtime, request, config, bucket, null, null, eventProducer, this, transferType, senderFaultHandlers);
 
         dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
 

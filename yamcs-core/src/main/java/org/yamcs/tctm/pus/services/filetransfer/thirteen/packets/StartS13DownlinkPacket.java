@@ -14,7 +14,7 @@ import org.yamcs.tctm.pus.services.filetransfer.thirteen.S13TransactionId;
 public class StartS13DownlinkPacket extends UplinkS13Packet {
 
     public StartS13DownlinkPacket(S13TransactionId transactionId, String fullyQualifiedCmdName) {
-        super(transactionId, fullyQualifiedCmdName);
+        super(transactionId, fullyQualifiedCmdName, false);
     }
 
     @Override

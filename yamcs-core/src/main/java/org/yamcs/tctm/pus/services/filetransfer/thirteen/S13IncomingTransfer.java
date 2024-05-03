@@ -64,7 +64,7 @@ public class S13IncomingTransfer extends OngoingS13Transfer {
             YConfiguration config, S13TransactionId transactionId, String objectNamePrefix, FileSaveHandler fileSaveHandler,
             EventProducer eventProducer, TransferMonitor monitor, String transferType, String contentType,
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
-        super(yamcsInstance, creationTime, executor, config, transactionId, eventProducer, monitor, transferType, faultHandlerActions);
+        super(yamcsInstance, null, creationTime, executor, config, transactionId, eventProducer, monitor, transferType, faultHandlerActions);
 
         long checkAckTimeout = config.getLong("checkAckTimeout", 10000l);
         int checkAckLimit = config.getInt("checkAckLimit", 5);
