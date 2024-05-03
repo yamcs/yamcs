@@ -60,11 +60,11 @@ public class S13IncomingTransfer extends OngoingS13Transfer {
     List<DownlinkS13Packet> queuedPackets = new ArrayList<>();
     List<Long> partSequenceNumbers = new ArrayList<>();
 
-    public S13IncomingTransfer(String yamcsInstance, long transferId, long remoteId, long creationTime, ScheduledThreadPoolExecutor executor,
+    public S13IncomingTransfer(String yamcsInstance, long remoteId, long creationTime, ScheduledThreadPoolExecutor executor,
             YConfiguration config, S13TransactionId transactionId, String objectNamePrefix, FileSaveHandler fileSaveHandler,
             EventProducer eventProducer, TransferMonitor monitor, String transferType, String contentType,
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
-        super(yamcsInstance, transferId, creationTime, executor, config, transactionId, eventProducer, monitor, transferType, faultHandlerActions);
+        super(yamcsInstance, null, creationTime, executor, config, transactionId, eventProducer, monitor, transferType, faultHandlerActions);
 
         long checkAckTimeout = config.getLong("checkAckTimeout", 10000l);
         int checkAckLimit = config.getInt("checkAckLimit", 5);

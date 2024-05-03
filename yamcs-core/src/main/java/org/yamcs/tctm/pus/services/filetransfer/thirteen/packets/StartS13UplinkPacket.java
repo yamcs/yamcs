@@ -4,17 +4,13 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.yamcs.YamcsServer;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.InternalServerErrorException;
-import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
-import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.tctm.ccsds.Cop1TcPacketHandler;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.OngoingS13Transfer;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.S13OutgoingTransfer;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.S13TransactionId;
-import org.yamcs.yarch.Tuple;
 
 
 public class StartS13UplinkPacket extends UplinkS13Packet {
@@ -24,9 +20,8 @@ public class StartS13UplinkPacket extends UplinkS13Packet {
     private int filePartActualSize;
     private static final int filePartMDbSize = S13OutgoingTransfer.maxDataSize;
 
-    public StartS13UplinkPacket(S13TransactionId transactionId, long partSequenceNumber, String fullyQualifiedCmdName, byte[] filePart) {
-        super(transactionId, fullyQualifiedCmdName);
-
+    public StartS13UplinkPacket(S13TransactionId transactionId, long partSequenceNumber, String fullyQualifiedCmdName, byte[] filePart, boolean skipAcknowledgement) {
+        super(transactionId, fullyQualifiedCmdName, skipAcknowledgement);
         this.partSequenceNumber = partSequenceNumber;
 
         // DO NOT SWAP THE LINES
@@ -53,11 +48,12 @@ public class StartS13UplinkPacket extends UplinkS13Packet {
         Map<String, Object> assignments = new LinkedHashMap<>();
 
         assignments.put("Pus_Acknowledgement_Flags", "Acceptance | Completion");
-        assignments.put("Large_Message_Trasaction_Identifier", transactionId.getLargePacketTransactionId());
+        assignments.put("Large_Message_Trasaction_Identifier", uniquenessId.getLargePacketTransactionId());
         assignments.put("Part_Sequence_Number", partSequenceNumber);
         assignments.put("File_Part", filePart);
 
         PreparedCommand pc = trans.createS13Telecommand(fullyQualifiedCmdName, assignments, trans.getCommandReleaseUser());
+
         // Set extra options
         pc.setAttribute(Cop1TcPacketHandler.OPTION_BYPASS.getId(), S13OutgoingTransfer.cop1Bypass);
         pc.setAttribute("FilePartSize", filePartActualSize);
@@ -72,5 +68,4 @@ public class StartS13UplinkPacket extends UplinkS13Packet {
     public long getPartSequenceNumber() {
         return partSequenceNumber;
     }
-
 }

@@ -125,8 +125,8 @@ public class TcManagedParameters extends UplinkManagedParameters {
         public boolean bdAbsolutePriority;
 
         // initialise it to null
-        byte[] cspHeader = null;
-        private CspManagedParameters cspManagedParameters = null;
+        byte[] cspHeader;
+        private CspManagedParameters cspManagedParameters;
 
         // this is used to compose the link name, if not set it will be vc<x>
         String linkName;

@@ -1,6 +1,6 @@
 package org.yamcs.tctm.pus.services.filetransfer.thirteen.packets;
 
-import org.yamcs.tctm.pus.services.filetransfer.thirteen.S13TransactionId;
+import org.yamcs.tctm.pus.services.filetransfer.thirteen.S13TransactionId.S13UniqueId;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
@@ -51,8 +51,8 @@ public class DownlinkS13Packet extends FileTransferPacket {
     protected byte[] filePart;
     protected Integer failureCode;
 
-    DownlinkS13Packet(S13TransactionId transactionId, long partSequenceNumber, byte[] filePart, PacketType packetType, Integer failureCode) {
-        super(transactionId);
+    DownlinkS13Packet(S13UniqueId uniquenessId, long partSequenceNumber, byte[] filePart, PacketType packetType, Integer failureCode) {
+        super(uniquenessId);
         this.packetType = packetType;
         this.partSequenceNumber = partSequenceNumber;
         this.filePart = filePart;
@@ -67,7 +67,7 @@ public class DownlinkS13Packet extends FileTransferPacket {
         int failureCode = (Integer) t.getColumn(COL_FAILURE_REASON);
 
         // In the case of S13, largePacketTransactionId is the sourceId (i.e the remoteId)
-        return new DownlinkS13Packet(new S13TransactionId(largePacketTransactionId, largePacketTransactionId, TransferDirection.DOWNLOAD), partSequenceNumber, filePart, packetType, failureCode);
+        return new DownlinkS13Packet(new S13UniqueId(largePacketTransactionId, TransferDirection.DOWNLOAD), partSequenceNumber, filePart, packetType, failureCode);
     }
     
     public PacketType getPacketType() {

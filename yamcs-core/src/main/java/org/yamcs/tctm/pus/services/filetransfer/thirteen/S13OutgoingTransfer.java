@@ -67,21 +67,23 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
     private boolean suspended = false;
     private PutRequest request;
     private ScheduledFuture<?> packetSendingSchedule;
-    
+
     public static boolean cop1Bypass;
-    public static String firstPacketCmdName;
-    public static String intermediatePacketCmdName;
-    public static String lastPacketCmdName;
     public static int maxDataSize;
 
-    public S13OutgoingTransfer(String yamcsInstance, long transferId, long creationTime,
-            ScheduledThreadPoolExecutor executor,
+    public String firstPacketCmdName;
+    public String intermediatePacketCmdName;
+    public String lastPacketCmdName;
+    public boolean skipAcknowledgement;
+
+    public S13OutgoingTransfer(String yamcsInstance, long transferInstanceId, long largePacketTransactionId, long creationTime,
+            ScheduledThreadPoolExecutor executor, Stream cmdHistRealtime,
             PutRequest request, YConfiguration config, Bucket bucket,
             Integer customPacketSize, Integer customPacketDelay,
             EventProducer eventProducer, TransferMonitor monitor, String transferType,
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
 
-        super(yamcsInstance, transferId, creationTime, executor, config, makeTransactionId(request.getRemoteId(), transferId),
+        super(yamcsInstance, cmdHistRealtime, creationTime, executor, config, makeTransactionId(request.getRemoteId(), transferInstanceId, largePacketTransactionId), 
             eventProducer, monitor, transferType, faultHandlerActions);
         this.request = request;
         this.bucket = bucket;
@@ -98,10 +100,11 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
         firstPacketCmdName = config.getString("firstPacketCmdName", "FirstUplinkPart");
         intermediatePacketCmdName = config.getString("intermediatePacketCmdName", "IntermediateUplinkPart");
         lastPacketCmdName = config.getString("lastPacketCmdName", "LastUplinkPart");
+        skipAcknowledgement = config.getBoolean("skipAcknowledgement", true);
     }
 
-    private static S13TransactionId makeTransactionId(long remoteId, long transferId) {
-        return new S13TransactionId(remoteId, transferId, TransferDirection.UPLOAD);
+    private static S13TransactionId makeTransactionId(long remoteId, long transferInstanceId, long largePacketTransactionId) {
+        return new S13TransactionId(remoteId, transferInstanceId, largePacketTransactionId, TransferDirection.UPLOAD);
     }
 
     /**
@@ -131,24 +134,38 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
                     packet = request.getFileDownloadRequestPacket();
                     try {
                         sendPacket(packet);
+
                     } catch (CommandEncodingException e) {
                         pushError(e.toString());
-                        handleFault(ConditionCode.UNSUPPORTED_CHECKSUM_TYPE);
+                        handleFault(ConditionCode.INVALID_FILE_STRUCTURE);
+                        return;
+
+                    } catch (Exception e) {
+                        pushError(e.toString());
+                        handleFault(ConditionCode.NAK_LIMIT_REACHED);
                         return;
                     }
+
                     complete(ConditionCode.NO_ERROR);
 
                 } else {    // First Packet
                     fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(firstPacketCmdName, request.getRemoteId());
-                    packet = new StartS13UplinkPacket(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart());
+                    packet = new StartS13UplinkPacket(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart(), skipAcknowledgement);
                     sentPackets.add(packet);
                     try{
                         sendPacket(packet);
+
                     } catch (CommandEncodingException e) {
                         pushError(e.toString());
                         handleFault(ConditionCode.UNSUPPORTED_CHECKSUM_TYPE);
                         return;
+
+                    } catch (Exception e) {
+                        pushError(e.toString());
+                        handleFault(ConditionCode.NAK_LIMIT_REACHED);
+                        return;
                     }
+
 
                     transferred += (end - offset);
                     offset = end;
@@ -164,15 +181,22 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
                     partSequenceNumber++;
 
                     fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(lastPacketCmdName, request.getRemoteId());
-                    packet = new StartS13UplinkPacket(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart());
+                    packet = new StartS13UplinkPacket(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart(), skipAcknowledgement);
                     sentPackets.add(packet);
                     try {
                         sendPacket(packet);
+
                     } catch (CommandEncodingException e) {
                         pushError(e.toString());
                         handleFault(ConditionCode.UNSUPPORTED_CHECKSUM_TYPE);
                         return;
+
+                    } catch (Exception e) {
+                        pushError(e.toString());
+                        handleFault(ConditionCode.NAK_LIMIT_REACHED);
+                        return;
                     }
+
 
                     transferred += (end - offset);
                     offset = end;
@@ -184,13 +208,19 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
                     partSequenceNumber++;
 
                     fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(intermediatePacketCmdName, request.getRemoteId());
-                    packet = new StartS13UplinkPacket(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart());
+                    packet = new StartS13UplinkPacket(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart(), skipAcknowledgement);
                     sentPackets.add(packet);
                     try {
                         sendPacket(packet);
+
                     } catch (CommandEncodingException e) {
                         pushError(e.toString());
                         handleFault(ConditionCode.UNSUPPORTED_CHECKSUM_TYPE);
+                        return;
+
+                    } catch (Exception e) {
+                        pushError(e.toString());
+                        handleFault(ConditionCode.NAK_LIMIT_REACHED);
                         return;
                     }
                     transferred += (end - offset);

@@ -2,10 +2,13 @@ package org.yamcs.tctm.pus.services.filetransfer.thirteen;
 
 import static org.yamcs.tctm.pus.services.filetransfer.thirteen.ServiceThirteen.ETYPE_TRANSFER_FINISHED;
 import static org.yamcs.tctm.pus.services.filetransfer.thirteen.ServiceThirteen.ETYPE_TRANSFER_PACKET_ERROR;
+import static org.yamcs.tctm.pus.services.filetransfer.thirteen.ServiceThirteen.ETYPE_TRANSFER_PACKET_ERROR_NOK;
+import static org.yamcs.tctm.pus.services.filetransfer.thirteen.ServiceThirteen.ETYPE_TRANSFER_PACKET_ERROR_TIMEOUT;
 
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -14,6 +17,7 @@ import org.yamcs.Processor;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
+import org.yamcs.archive.CcsdsTmIndex;
 import org.yamcs.cfdp.pdu.ConditionCode;
 import org.yamcs.commanding.CommandingManager;
 import org.yamcs.commanding.PreparedCommand;
@@ -23,6 +27,7 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.logging.Log;
 import org.yamcs.mdb.CommandEncodingException;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.security.Directory;
 import org.yamcs.security.SecurityStore;
@@ -34,7 +39,9 @@ import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.UplinkS13Packet
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
+import java.util.concurrent.TimeoutException;
 
 
 public abstract class OngoingS13Transfer implements S13FileTransfer {
@@ -47,6 +54,7 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
     protected final long startTime;
     protected final long wallclockStartTime;
     protected final long creationTime;
+    protected final String yamcsInstance;
 
     protected String transferType;
 
@@ -63,6 +71,9 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
 
     // accumulate the errors
     List<String> errors = new ArrayList<>();
+    Stream cmdHistStream;
+    boolean cancelOnNoAck;
+    int dispatchTimeout;
     
     public enum FaultHandlingAction {
         SUSPEND, CANCEL, ABANDON;
@@ -84,18 +95,20 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
 
     final Map<ConditionCode, FaultHandlingAction> faultHandlerActions;
 
-    public OngoingS13Transfer(String yamcsInstance, long id, long creationTime, ScheduledThreadPoolExecutor executor,
+    public OngoingS13Transfer(String yamcsInstance, Stream cmdHistStream, long creationTime, ScheduledThreadPoolExecutor executor,
             YConfiguration config, S13TransactionId s13TransactionId,
             EventProducer eventProducer, TransferMonitor monitor, String transferType,
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
+        this.yamcsInstance = yamcsInstance;
         this.s13TransactionId = s13TransactionId;
+        this.cmdHistStream = cmdHistStream;
         this.state = TransferState.RUNNING;
         this.executor = executor;
         this.eventProducer = eventProducer;
         this.startTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
         this.wallclockStartTime = System.currentTimeMillis();
         this.log = new Log(this.getClass(), yamcsInstance);
-        this.id = id;
+        this.id = s13TransactionId.getTransferId();
         this.creationTime = creationTime;
         if (monitor == null) {
             throw new NullPointerException("the monitor cannot be null");
@@ -103,6 +116,10 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
         this.transferType = transferType;
         this.monitor = monitor;
         this.inactivityTimeout = config.getLong("inactivityTimeout", 10000);
+
+        this.dispatchTimeout = config.getInt("dispatchTimeout", 10);
+        this.cancelOnNoAck = config.getBoolean("cancelOnNoAck", false);
+
         this.faultHandlerActions = faultHandlerActions;
         this.origin = "0.0.0.0";    // FIXME: Is this alright?
     }
@@ -135,11 +152,47 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
         return ServiceThirteen.getUserDirectory().getUser(ServiceThirteen.commandReleaseUser);
     }
 
-    protected void sendPacket(UplinkS13Packet packet) {
-        try {
-            PreparedCommand pc = packet.generatePreparedCommand(this);
-            ServiceThirteen.getCommandingManager().sendCommand(getCommandReleaseUser(), pc);
+    protected void sendPacket(UplinkS13Packet packet) throws Exception {
+        boolean ack = true;
+        String ackError = "";
 
+        try {
+            final Thread commandDispatcher = Thread.currentThread();
+            PreparedCommand pc = packet.generatePreparedCommand(this);
+
+            // Create streamSubscriber and add to the cmdhist stream
+            StreamSubscriber sc = new StreamSubscriber() {
+                @Override
+                public void streamClosed(Stream stream) {
+                    return;
+                }
+    
+                @Override
+                public void onTuple(Stream stream, Tuple tuple) {
+                    XtceDb xtcedb = MdbFactory.getInstance(yamcsInstance);
+                    PreparedCommand pc1 = PreparedCommand.fromTuple(tuple, xtcedb);
+
+                    if (pc1.getCommandId().equals(pc.getCommandId())) {
+                        String attr = pc1.getStringAttribute("CommandComplete_Status");
+                        if (attr != null && attr == "OK") {
+                            synchronized (commandDispatcher) {
+                                commandDispatcher.notify();
+                            }
+                        }
+                        if (attr != null && attr == "NOK") {
+                            synchronized (commandDispatcher) {
+                                commandDispatcher.interrupt();
+                            }
+                        }
+                    }
+                }
+            };
+            if (!packet.getSkipAcknowledgement()) {
+                cmdHistStream.addSubscriber(sc);
+            }
+
+            // Send the command
+            ServiceThirteen.getCommandingManager().sendCommand(getCommandReleaseUser(), pc);
             if (log.isDebugEnabled()) {
                 if (packet instanceof StartS13UplinkPacket){
                     StartS13UplinkPacket pkt = (StartS13UplinkPacket) packet;
@@ -152,8 +205,37 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
                             s13TransactionId, pkt.getFullyQualifiedName());
                 }
             }
-        } catch (BadRequestException | InternalServerErrorException e) {
 
+            if (!packet.getSkipAcknowledgement()) {
+                StartS13UplinkPacket pkt = (StartS13UplinkPacket) packet;
+                try {
+                    long startTime = System.currentTimeMillis();
+
+                    // Wait for dispatchTimeout seconds
+                    synchronized (this) {
+                        wait(dispatchTimeout * 1000);
+                    }
+                    if ((System.currentTimeMillis() - startTime) > dispatchTimeout * 1000) {
+                        ackError = "LargePacketUplink | Timeout | Transaction ID: " + s13TransactionId
+                                    + " | CommandName: " + pkt.getFullyQualifiedName() + "Part Sequence Number: "
+                                    + pkt.getPartSequenceNumber() + " was not acknowledged";
+                        sendWarnEvent(ETYPE_TRANSFER_PACKET_ERROR_TIMEOUT, ackError);
+                        ack = false;
+                    }
+
+                } catch (InterruptedException e) {
+                    ackError = "LargePacketUplink | NOK | Transaction ID: " + s13TransactionId
+                                    + " | CommandName: " + pkt.getFullyQualifiedName() + "Part Sequence Number: "
+                                    + pkt.getPartSequenceNumber() + " was not acknowledged";
+                    sendWarnEvent(ETYPE_TRANSFER_PACKET_ERROR_NOK, ackError);
+                    ack = false;
+
+                } finally {
+                    cmdHistStream.removeSubscriber(sc);
+                }
+            }
+
+        } catch (BadRequestException | InternalServerErrorException e) {
             if (packet instanceof StartS13UplinkPacket){
                 StartS13UplinkPacket pkt = (StartS13UplinkPacket) packet;
                 log.error("TXID{} could not send StartUplinkS13 Packet: Qualified Name: {} | Part Sequence Number: {} | ERROR: {}",
@@ -173,6 +255,13 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
             }
 
             throw new CommandEncodingException(e.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        if (cancelOnNoAck && !ack) {
+            throw new Exception(ackError);
         }
     }
 

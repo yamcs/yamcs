@@ -121,7 +121,7 @@ public class CompletedTransfer implements S13FileTransfer {
 
     @Override
     public S13TransactionId getTransactionId() {
-        return new S13TransactionId(tuple.getLongColumn(COL_REMOTE_ID), tuple.getLongColumn(COL_LARGE_PACKET_TRANSACTION_ID), getDirection());
+        return new S13TransactionId(tuple.getLongColumn(COL_REMOTE_ID), tuple.getLongColumn(COL_ID), tuple.getLongColumn(COL_LARGE_PACKET_TRANSACTION_ID), getDirection());
     }
 
     @Override
@@ -184,7 +184,6 @@ public class CompletedTransfer implements S13FileTransfer {
 
         t.addColumn(COL_FAILURE_REASON, transfer.getFailuredReason());
         if (transfer.getDirection() == TransferDirection.DOWNLOAD) {
-            // the object name is updated when saved in a bucket
             t.addColumn(COL_OBJECT_NAME, transfer.getObjectName());
         }
 
