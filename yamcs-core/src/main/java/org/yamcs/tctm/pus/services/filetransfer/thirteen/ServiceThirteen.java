@@ -75,7 +75,6 @@ public class ServiceThirteen extends AbstractYamcsService
     static final String ETYPE_TRANSFER_SUSPENDED = "TRANSFER_SUSPENDED";
     static final String ETYPE_TRANSFER_RESUMED = "TRANSFER_RESUMED";
     static final String ETYPE_TRANSFER_PACKET_ERROR = "TRANSFER_PACKET_ERROR";
-    static final String ETYPE_TRANSFER_PACKET_ERROR_TIMEOUT = "TRANSFER_PACKET_ERROR_TIMEOUT";
     static final String ETYPE_TRANSFER_PACKET_ERROR_NOK = "TRANSFER_PACKET_ERROR_NOK";
 
     static final String BUCKET_OPT = "bucket";
@@ -183,7 +182,6 @@ public class ServiceThirteen extends AbstractYamcsService
         spec.addOption("lastPacketCmdName", OptionType.STRING).withDefault("LastUplinkPart");
         spec.addOption("skipAcknowledgement", OptionType.BOOLEAN).withDefault(true);
         spec.addOption("cmdhistStream", OptionType.STRING).withDefault("cmdhist_realtime");
-        spec.addOption("dispatchTimeout", OptionType.INTEGER).withDefault(10);
         spec.addOption("cancelOnNoAck", OptionType.BOOLEAN).withDefault(false);
         spec.addOption("filePartRetries", OptionType.INTEGER).withDefault(1);
 
