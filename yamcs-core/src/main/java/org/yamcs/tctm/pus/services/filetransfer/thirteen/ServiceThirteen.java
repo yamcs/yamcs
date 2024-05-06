@@ -107,7 +107,7 @@ public class ServiceThirteen extends AbstractYamcsService
     Map<S13TransactionId.S13UniqueId, OngoingS13Transfer> pendingTransfers = new ConcurrentHashMap<>();
     FileDownloadRequests fileDownloadRequests = new FileDownloadRequests();
 
-    ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+    ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(6);  // FIXME: Careful with this number, not sure how it would affect perfomance
     Map<ConditionCode, FaultHandlingAction> receiverFaultHandlers;
     Map<ConditionCode, FaultHandlingAction> senderFaultHandlers;
 
