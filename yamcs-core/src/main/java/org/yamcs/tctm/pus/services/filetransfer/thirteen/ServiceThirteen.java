@@ -133,9 +133,6 @@ public class ServiceThirteen extends AbstractYamcsService
 
     boolean allowConcurrentFileOverwrites;
 
-    private boolean hasDownloadCapability;
-    private boolean hasFileListingCapability;
-
     private static Processor processor;
     private static Directory directory;
     private static CommandingManager commandingManager;
@@ -164,7 +161,6 @@ public class ServiceThirteen extends AbstractYamcsService
         spec.addOption("senderFaultHandlers", OptionType.MAP).withSpec(Spec.ANY);
         spec.addOption("allowConcurrentFileOverwrites", OptionType.BOOLEAN).withDefault(false);
         spec.addOption("pendingAfterCompletion", OptionType.INTEGER).withDefault(600000);
-        spec.addOption("hasDownloadCapability", OptionType.BOOLEAN).withDefault(true);
         spec.addOption("spaceSystem", OptionType.STRING).withDefault("FF");
         spec.addOption("commandReleaseUser", OptionType.STRING).withDefault("administrator");
         spec.addOption("startDownlinkCmdName", OptionType.STRING).withDefault("StartLargePacketDownload");
@@ -184,7 +180,6 @@ public class ServiceThirteen extends AbstractYamcsService
         spec.addOption("cancelOnNoAck", OptionType.BOOLEAN).withDefault(false);
         spec.addOption("filePartRetries", OptionType.INTEGER).withDefault(1);
 
-        spec.addOption("hasFileListingCapability", OptionType.BOOLEAN).withDefault(false);
         return spec;
     }
 
@@ -209,8 +204,6 @@ public class ServiceThirteen extends AbstractYamcsService
         archiveRetrievalLimit = config.getInt("archiveRetrievalLimit", 100);
         pendingAfterCompletion = config.getInt("pendingAfterCompletion", 600000);
         allowConcurrentFileOverwrites = config.getBoolean("allowConcurrentFileOverwrites");
-        hasDownloadCapability = config.getBoolean("hasDownloadCapability");
-        hasFileListingCapability = config.getBoolean("hasFileListingCapability", false);
         spaceSystem = config.getString("spaceSystem");
         maxExistingFileRenames = config.getInt("maxExistingFileRenames", 1000);
         commandReleaseUser = config.getString("commandReleaseUser", "admin");
@@ -635,11 +628,11 @@ public class ServiceThirteen extends AbstractYamcsService
     public FileTransferCapabilities getCapabilities() {
         return FileTransferCapabilities
                 .newBuilder()
-                .setDownload(hasDownloadCapability)
+                .setDownload(false)
                 .setUpload(true)
                 .setReliability(false) // Reliability DEPRECATED: use FileTransferOption
                 .setRemotePath(false)
-                .setFileList(hasFileListingCapability)
+                .setFileList(false)
                 .setHasTransferType(false)
                 .build();
     }
@@ -688,9 +681,7 @@ public class ServiceThirteen extends AbstractYamcsService
     @Override
     public FileTransfer startDownload(String sourceEntity, String sourcePath, String destinationEntity, Bucket bucket,
             String objectName, TransferOptions options) throws IOException, InvalidRequestException {
-        if(!hasDownloadCapability) {
-            throw new InvalidRequestException("Downloading is not enabled on this CFDP service");
-        }
+        throw new InvalidRequestException("Downloading is not enabled on this CFDP service");
     }
 
     @Override
