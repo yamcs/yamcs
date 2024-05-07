@@ -53,7 +53,6 @@ import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.DownlinkS13Pack
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.CancelRequest;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.FilePutRequest;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.PauseRequest;
-import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.PutRequest;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.ResumeRequest;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.Bucket;
@@ -75,7 +74,6 @@ public class ServiceThirteen extends AbstractYamcsService
     static final String ETYPE_TRANSFER_SUSPENDED = "TRANSFER_SUSPENDED";
     static final String ETYPE_TRANSFER_RESUMED = "TRANSFER_RESUMED";
     static final String ETYPE_TRANSFER_PACKET_ERROR = "TRANSFER_PACKET_ERROR";
-    static final String ETYPE_TRANSFER_PACKET_ERROR_TIMEOUT = "TRANSFER_PACKET_ERROR_TIMEOUT";
     static final String ETYPE_TRANSFER_PACKET_ERROR_NOK = "TRANSFER_PACKET_ERROR_NOK";
 
     static final String BUCKET_OPT = "bucket";
@@ -108,7 +106,7 @@ public class ServiceThirteen extends AbstractYamcsService
     Map<S13TransactionId.S13UniqueId, OngoingS13Transfer> pendingTransfers = new ConcurrentHashMap<>();
     FileDownloadRequests fileDownloadRequests = new FileDownloadRequests();
 
-    ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+    ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(6);  // FIXME: Careful with this number, not sure how it would affect perfomance
     Map<ConditionCode, FaultHandlingAction> receiverFaultHandlers;
     Map<ConditionCode, FaultHandlingAction> senderFaultHandlers;
 
@@ -183,7 +181,6 @@ public class ServiceThirteen extends AbstractYamcsService
         spec.addOption("lastPacketCmdName", OptionType.STRING).withDefault("LastUplinkPart");
         spec.addOption("skipAcknowledgement", OptionType.BOOLEAN).withDefault(true);
         spec.addOption("cmdhistStream", OptionType.STRING).withDefault("cmdhist_realtime");
-        spec.addOption("dispatchTimeout", OptionType.INTEGER).withDefault(10);
         spec.addOption("cancelOnNoAck", OptionType.BOOLEAN).withDefault(false);
         spec.addOption("filePartRetries", OptionType.INTEGER).withDefault(1);
 
@@ -428,7 +425,7 @@ public class ServiceThirteen extends AbstractYamcsService
         }
     }
 
-    private S13FileTransfer processPutRequest(long transferInstanceId, long largePacketTransactionId, long creationTime, PutRequest request, Bucket bucket, String transferType) {
+    private S13FileTransfer processPutRequest(long transferInstanceId, long largePacketTransactionId, long creationTime, FilePutRequest request, Bucket bucket, String transferType) {
         S13OutgoingTransfer transfer = new S13OutgoingTransfer(yamcsInstance, transferInstanceId, largePacketTransactionId, creationTime,
                 executor, cmdhistRealtime, request, config, bucket, null, null, eventProducer, this, transferType, senderFaultHandlers);
 
@@ -694,25 +691,6 @@ public class ServiceThirteen extends AbstractYamcsService
         if(!hasDownloadCapability) {
             throw new InvalidRequestException("Downloading is not enabled on this CFDP service");
         }
-
-        long remoteId = getEntityFromName(sourceEntity, remoteEntities).getId();
-
-        long transferId = transferInstanceId.next();
-        PutRequest request = new PutRequest(remoteId);
-        S13TransactionId transactionId = request.process(remoteId, transferId, remoteId, config);
-
-        if (getOngoingUploadFileTransfer(transactionId.getLargePacketTransactionId()) != null) {
-            throw new InvalidRequestException("Downloading and Uploading from the same largePacketTransactionId: " + transactionId.getLargePacketTransactionId() + " is not allowed");
-        }
-
-        if (getOngoingDownloadFileTransfer(transactionId.getLargePacketTransactionId()) != null) {
-            throw new InvalidRequestException("Downloading for the largePacketTransactionId: " + transactionId.getLargePacketTransactionId() + " is already underway. Simultaneous downloads of the same largePacketTransactionId not permitted");
-        }
-
-        long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
-
-        fileDownloadRequests.addTransfer(transactionId, bucket.getName());
-        return processPutRequest(transferId, transactionId.getLargePacketTransactionId(), creationTime, request, bucket, PredefinedTransferTypes.DOWNLOAD_REQUEST.toString());
     }
 
     @Override

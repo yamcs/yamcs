@@ -2,7 +2,6 @@ package org.yamcs.tctm.pus.services.filetransfer.thirteen;
 
 import static org.yamcs.tctm.pus.services.filetransfer.thirteen.ServiceThirteen.ETYPE_TRANSFER_PACKET_ERROR;
 import static org.yamcs.tctm.pus.services.filetransfer.thirteen.ServiceThirteen.ETYPE_TRANSFER_PACKET_ERROR_NOK;
-import static org.yamcs.tctm.pus.services.filetransfer.thirteen.ServiceThirteen.ETYPE_TRANSFER_PACKET_ERROR_TIMEOUT;
 
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
@@ -27,8 +26,6 @@ import org.yamcs.mdb.MdbFactory;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.security.User;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.FileTransferPacket;
-import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.StartS13DownlinkPacket;
-import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.StartS13UplinkPacket;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.UplinkS13Packet;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
@@ -66,7 +63,6 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
     List<String> errors = new ArrayList<>();
     Stream cmdHistStream;
     boolean cancelOnNoAck;
-    int dispatchTimeout;
     int retries;
     
     public enum FaultHandlingAction {
@@ -111,7 +107,6 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
         this.monitor = monitor;
         this.inactivityTimeout = config.getLong("inactivityTimeout", 10000);
 
-        this.dispatchTimeout = config.getInt("dispatchTimeout", 10);
         this.cancelOnNoAck = config.getBoolean("cancelOnNoAck", false);
         this.retries = config.getInt("filePartRetries", 1);
 
@@ -171,16 +166,19 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
                         XtceDb xtcedb = MdbFactory.getInstance(yamcsInstance);
                         PreparedCommand pc1 = PreparedCommand.fromTuple(tuple, xtcedb);
 
-                        if (pc1.getCommandId().equals(pc.getCommandId())) {
-                            String attr = pc1.getStringAttribute("CommandComplete_Status");
-                            if (attr != null && attr == "OK") {
-                                synchronized (commandDispatcher) {
-                                    commandDispatcher.notify();
-                                }
-                            }
-                            if (attr != null && attr == "NOK") {
-                                synchronized (commandDispatcher) {
-                                    commandDispatcher.interrupt();
+                        synchronized (commandDispatcher) {
+                            if (pc1.getCommandId().equals(pc.getCommandId())) {
+                                String attr = pc1.getStringAttribute("CommandComplete_Status");
+                                if (attr != null) {
+                                    switch(attr) {
+                                        case "OK":
+                                            commandDispatcher.notify();
+                                            break;
+                                        case "NOK":
+                                            commandDispatcher.interrupt();
+                                            break;
+                                        default:
+                                    }
                                 }
                             }
                         }
@@ -193,65 +191,36 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
                 // Send the command
                 ServiceThirteen.getCommandingManager().sendCommand(getCommandReleaseUser(), pc);
                 if (log.isDebugEnabled()) {
-                    if (packet instanceof StartS13UplinkPacket){
-                        StartS13UplinkPacket pkt = (StartS13UplinkPacket) packet;
-                        log.debug("TXID{} sending StartUplinkS13 Packet | Qualified Name: {} | Part Sequence Number: {}",
-                                s13TransactionId, pkt.getFullyQualifiedName(), pkt.getPartSequenceNumber());
-
-                    } else if (packet instanceof StartS13DownlinkPacket) {
-                        StartS13DownlinkPacket pkt = (StartS13DownlinkPacket) packet;
-                        log.debug("TXID{} sending StartDownlinkS13 Packet: {} | Qualified Name: {}",
-                                s13TransactionId, pkt.getFullyQualifiedName());
-                    }
+                    log.debug("TXID{} sending StartUplinkS13 Packet | Qualified Name: {} | Part Sequence Number: {}",
+                            s13TransactionId, packet.getFullyQualifiedName(), packet.getPartSequenceNumber());
                 }
 
                 if (!packet.getSkipAcknowledgement()) {
-                    StartS13UplinkPacket pkt = (StartS13UplinkPacket) packet;
-                    try {
-                        long startTime = System.currentTimeMillis();
-
-                        // Wait for dispatchTimeout seconds
-                        synchronized (this) {
-                            wait(dispatchTimeout * 1000);
-                        }
-                        if ((System.currentTimeMillis() - startTime) >= dispatchTimeout * 1000) {
-                            ackError = "LargePacketUplink | Timeout | Transaction ID: " + s13TransactionId
-                                        + " | CommandName: " + pkt.getFullyQualifiedName() + "Part Sequence Number: "
-                                        + pkt.getPartSequenceNumber() + " was not acknowledged";
-                            sendWarnEvent(ETYPE_TRANSFER_PACKET_ERROR_TIMEOUT, ackError);
+                    synchronized (commandDispatcher) {
+                        try {
+                            commandDispatcher.wait();
+    
+                        } catch (InterruptedException e) {
+                            ackError = "LargePacketUplink | NOK | Transaction ID: " + s13TransactionId
+                                            + " | CommandName: " + packet.getFullyQualifiedName() + "Part Sequence Number: "
+                                            + packet.getPartSequenceNumber() + " was not acknowledged";
+                            sendWarnEvent(ETYPE_TRANSFER_PACKET_ERROR_NOK, ackError);
                             ack = false;
+    
+                        } finally {
+                            cmdHistStream.removeSubscriber(sc);
                         }
-
-                    } catch (InterruptedException e) {
-                        ackError = "LargePacketUplink | NOK | Transaction ID: " + s13TransactionId
-                                        + " | CommandName: " + pkt.getFullyQualifiedName() + "Part Sequence Number: "
-                                        + pkt.getPartSequenceNumber() + " was not acknowledged";
-                        sendWarnEvent(ETYPE_TRANSFER_PACKET_ERROR_NOK, ackError);
-                        ack = false;
-
-                    } finally {
-                        cmdHistStream.removeSubscriber(sc);
                     }
                 }
 
             } catch (BadRequestException | InternalServerErrorException e) {
-                if (packet instanceof StartS13UplinkPacket){
-                    StartS13UplinkPacket pkt = (StartS13UplinkPacket) packet;
-                    log.error("TXID{} could not send StartUplinkS13 Packet: Qualified Name: {} | Part Sequence Number: {} | ERROR: {}",
-                            s13TransactionId, pkt.getFullyQualifiedName(), pkt.getPartSequenceNumber(), e.toString());
-                    sendWarnEvent(ETYPE_TRANSFER_PACKET_ERROR,
-                            "Unable to construct the StartUplinkS13 Command | Transaction ID: " + s13TransactionId
-                                    + " | CommandName: " + pkt.getFullyQualifiedName() + " Part Sequence Number: "
-                                    + pkt.getPartSequenceNumber());
+                log.error("TXID{} could not send StartUplinkS13 Packet: Qualified Name: {} | Part Sequence Number: {} | ERROR: {}",
+                        s13TransactionId, packet.getFullyQualifiedName(), packet.getPartSequenceNumber(), e.toString());
 
-                } else if (packet instanceof StartS13DownlinkPacket) {
-                    StartS13DownlinkPacket pkt = (StartS13DownlinkPacket) packet;
-                    log.error("TXID{} could not send StartDownlinkS13 Packet: Qualified Name: {} | ERROR: {}",
-                            s13TransactionId, pkt.getFullyQualifiedName(), e.toString());
-                    sendWarnEvent(ETYPE_TRANSFER_PACKET_ERROR,
-                            "Unable to construct the StartDownlinkS13 Command | Transaction ID: " + s13TransactionId
-                                    + " | CommandName: " + pkt.getFullyQualifiedName());
-                }
+                sendWarnEvent(ETYPE_TRANSFER_PACKET_ERROR,
+                        "Unable to construct the StartUplinkS13 Command | Transaction ID: " + s13TransactionId
+                                + " | CommandName: " + packet.getFullyQualifiedName() + " Part Sequence Number: "
+                                + packet.getPartSequenceNumber());
 
                 throw new CommandEncodingException(e.toString());
             }

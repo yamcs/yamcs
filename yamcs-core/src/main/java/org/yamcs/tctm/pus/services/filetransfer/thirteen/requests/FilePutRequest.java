@@ -10,34 +10,56 @@ import org.yamcs.yarch.Bucket;
  *
  */
 
-public class FilePutRequest extends PutRequest {
+public class FilePutRequest extends S13Request {
     private long sourceId;
     private byte[] fileData;
     private Bucket bucket;
 
-    public FilePutRequest(long sourceId, long destinationId, String sourceFileName,
-            String destinationFileName, Bucket b, byte[] data) {
-        super(destinationId, sourceFileName, destinationFileName);
+    // Required fields
+    private final long destinationId;
+
+    // Optional fields
+    private String sourceFileName;
+    private String destinationFileName;
+
+    public FilePutRequest(long sourceId, long destinationId, String sourceFileName, String destinationFileName, Bucket bucket, byte[] data) {
+        super(S13RequestType.PUT);
+
         this.sourceId = sourceId;
-        this.bucket = b;
+        this.destinationId = destinationId;
+
+        this.bucket = bucket;
         this.fileData = data;
+
+        this.sourceFileName = sourceFileName;
+        this.destinationFileName = destinationFileName;
     }
 
     public long getSourceId() {
         return this.sourceId;
     }
 
-    @Override
     public int getFileLength() {
         return fileData.length;
     }
 
-    @Override
     public byte[] getFileData() {
         return fileData;
     }
 
     public Bucket getBucket() {
         return bucket;
+    }
+
+    public long getRemoteId() {
+        return destinationId;
+    }
+
+    public String getSourceFileName() {
+        return sourceFileName;
+    }
+
+    public String getDestinationFileName() {
+        return destinationFileName;
     }
 }
