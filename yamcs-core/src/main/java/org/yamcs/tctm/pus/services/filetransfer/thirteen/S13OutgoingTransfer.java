@@ -24,8 +24,6 @@ import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.FilePutRequest
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
 
-import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse.File;
-
 public class S13OutgoingTransfer extends OngoingS13Transfer{
     
     private enum OutTxState {
@@ -111,7 +109,7 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
      * Start the transfer
      */
     public void start() {
-        packetSendingSchedule = executor.scheduleAtFixedRate(this::sendS13Packet, 0, sleepBetweenPackets, TimeUnit.MILLISECONDS);
+        packetSendingSchedule = executor.scheduleWithFixedDelay(this::sendS13Packet, 0, sleepBetweenPackets, TimeUnit.MILLISECONDS);
     }
 
     public byte[] getFilePart() {
