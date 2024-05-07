@@ -1,14 +1,18 @@
 package org.yamcs.http;
 
+import static org.yamcs.http.WebSocketFramePriority.HIGH;
+import static org.yamcs.http.WebSocketFramePriority.LOW;
+import static org.yamcs.http.WebSocketFramePriority.NORMAL;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.api.Observer;
-import org.yamcs.http.WebSocketServerMessageHandler.InternalServerMessage;
-import org.yamcs.http.WebSocketServerMessageHandler.Priority;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.Reply;
+import org.yamcs.protobuf.ServerMessage;
 
+import com.google.protobuf.Any;
 import com.google.protobuf.Message;
 
 public class WebSocketObserver implements Observer<Message> {
@@ -38,7 +42,7 @@ public class WebSocketObserver implements Observer<Message> {
     void sendReply(Reply reply) {
         synchronized (this) { // Guard 'replied' and 'pendingMessages'
             try {
-                sendMessage("reply", reply, Priority.HIGH);
+                sendMessage("reply", reply, HIGH);
             } finally {
                 replied = true;
             }
@@ -66,12 +70,19 @@ public class WebSocketObserver implements Observer<Message> {
             return;
         }
 
-        sendMessage(ctx.getTopic().getName(), message, lowPriority ? Priority.LOW : Priority.NORMAL);
+        sendMessage(ctx.getTopic().getName(), message, lowPriority ? LOW : NORMAL);
     }
 
-    private void sendMessage(String type, Message data, Priority priority) {
-        ctx.nettyContext.channel()
-                .writeAndFlush(new InternalServerMessage(type, ctx.getId(), messageCount, data, priority));
+    private void sendMessage(String type, Message data, WebSocketFramePriority priority) {
+        ServerMessage serverMessage = ServerMessage.newBuilder()
+                .setType(type)
+                .setCall(ctx.getId())
+                .setSeq(messageCount)
+                .setData(Any.pack(data, HttpServer.TYPE_URL_PREFIX))
+                .build();
+
+        ctx.nettyContext.channel().attr(WebSocketFramePriority.ATTR).set(priority);
+        ctx.nettyContext.channel().writeAndFlush(serverMessage);
     }
 
     void cancelCall(String reason) {

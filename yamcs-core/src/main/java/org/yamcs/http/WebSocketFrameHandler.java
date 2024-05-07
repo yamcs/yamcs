@@ -1,5 +1,7 @@
 package org.yamcs.http;
 
+import static org.yamcs.http.WebSocketFramePriority.HIGH;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -9,16 +11,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.yamcs.api.Observer;
-import org.yamcs.http.WebSocketServerMessageHandler.InternalServerMessage;
 import org.yamcs.logging.Log;
 import org.yamcs.protobuf.CancelOptions;
 import org.yamcs.protobuf.ClientMessage;
 import org.yamcs.protobuf.Reply;
+import org.yamcs.protobuf.ServerMessage;
 import org.yamcs.protobuf.State;
 import org.yamcs.security.User;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.protobuf.Any;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
@@ -81,8 +84,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             // After upgrade, no further HTTP messages will be received
             nettyContext.pipeline().remove(HttpRequestHandler.class);
 
-            nettyContext.pipeline()
-                    .addLast(new WebSocketServerMessageHandler(httpServer, protobuf, writeBufferWaterMark.high()));
+            nettyContext.pipeline().addLast(new WebSocketServerMessageHandler(httpServer, protobuf));
         } else if (evt instanceof IdleStateEvent) {
             nettyContext.writeAndFlush(new PingWebSocketFrame());
         } else {
@@ -243,15 +245,16 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
     /**
      * Sends the message to the netty channel.
-     * <p>
-     * Depending on the priority the message may not be sent.
-     * <p>
-     * return true if the message has been sent
-     * 
      */
-    void writeMessage(ChannelHandlerContext nettyContext, String type, Message data)
-            throws IOException {
-        nettyContext.channel().writeAndFlush(new InternalServerMessage(type, data));
+    private void writeMessage(ChannelHandlerContext nettyContext, String type, Message data) {
+        ServerMessage serverMessage = ServerMessage.newBuilder()
+                .setType(type)
+                .setCall(0)
+                .setSeq(0)
+                .setData(Any.pack(data, HttpServer.TYPE_URL_PREFIX))
+                .build();
+        nettyContext.channel().attr(WebSocketFramePriority.ATTR).set(HIGH);
+        nettyContext.channel().writeAndFlush(serverMessage);
     }
 
     /**
