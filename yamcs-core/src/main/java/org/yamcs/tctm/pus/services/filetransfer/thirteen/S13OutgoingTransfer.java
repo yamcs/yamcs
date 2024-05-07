@@ -19,12 +19,12 @@ import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.tctm.pus.PusTcManager;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.FileTransferPacket;
-import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.StartS13DownlinkPacket;
-import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.StartS13UplinkPacket;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.UplinkS13Packet;
-import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.PutRequest;
+import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.FilePutRequest;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
+
+import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse.File;
 
 public class S13OutgoingTransfer extends OngoingS13Transfer{
     
@@ -65,7 +65,7 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
     private long partSequenceNumber = 1;        // Start from 1, not 0
 
     private boolean suspended = false;
-    private PutRequest request;
+    private FilePutRequest request;
     private ScheduledFuture<?> packetSendingSchedule;
 
     public static boolean cop1Bypass;
@@ -78,7 +78,7 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
 
     public S13OutgoingTransfer(String yamcsInstance, long transferInstanceId, long largePacketTransactionId, long creationTime,
             ScheduledThreadPoolExecutor executor, Stream cmdHistRealtime,
-            PutRequest request, YConfiguration config, Bucket bucket,
+            FilePutRequest request, YConfiguration config, Bucket bucket,
             Integer customPacketSize, Integer customPacketDelay,
             EventProducer eventProducer, TransferMonitor monitor, String transferType,
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
@@ -130,48 +130,30 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
                 offset = 0; // first file data packet starts at the start of the data
                 end = Math.min(maxDataSize, request.getFileLength());
 
-                if (request.getFileDownloadRequestPacket() != null) {
-                    packet = request.getFileDownloadRequestPacket();
-                    try {
-                        sendPacket(packet);
+                // First Packet
+                fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(firstPacketCmdName, request.getRemoteId());
+                packet = new UplinkS13Packet(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart(), skipAcknowledgement);
+                sentPackets.add(packet);
+                try{
+                    sendPacket(packet);
 
-                    } catch (CommandEncodingException e) {
-                        pushError(e.toString());
-                        handleFault(ConditionCode.INVALID_FILE_STRUCTURE);
-                        return;
+                } catch (CommandEncodingException e) {
+                    pushError(e.toString());
+                    handleFault(ConditionCode.UNSUPPORTED_CHECKSUM_TYPE);
+                    return;
 
-                    } catch (Exception e) {
-                        pushError(e.toString());
-                        handleFault(ConditionCode.NAK_LIMIT_REACHED);
-                        return;
-                    }
-
-                    complete(ConditionCode.NO_ERROR);
-
-                } else {    // First Packet
-                    fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(firstPacketCmdName, request.getRemoteId());
-                    packet = new StartS13UplinkPacket(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart(), skipAcknowledgement);
-                    sentPackets.add(packet);
-                    try{
-                        sendPacket(packet);
-
-                    } catch (CommandEncodingException e) {
-                        pushError(e.toString());
-                        handleFault(ConditionCode.UNSUPPORTED_CHECKSUM_TYPE);
-                        return;
-
-                    } catch (Exception e) {
-                        pushError(e.toString());
-                        handleFault(ConditionCode.NAK_LIMIT_REACHED);
-                        return;
-                    }
-
-
-                    transferred += (end - offset);
-                    offset = end;
-
-                    this.outTxState = OutTxState.SENDING_DATA;
+                } catch (Exception e) {
+                    pushError(e.toString());
+                    handleFault(ConditionCode.NAK_LIMIT_REACHED);
+                    return;
                 }
+
+
+                transferred += (end - offset);
+                offset = end;
+
+                this.outTxState = OutTxState.SENDING_DATA;
+
                 monitor.stateChanged(this);
                 break;
 
@@ -181,7 +163,7 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
                     partSequenceNumber++;
 
                     fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(lastPacketCmdName, request.getRemoteId());
-                    packet = new StartS13UplinkPacket(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart(), skipAcknowledgement);
+                    packet = new UplinkS13Packet(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart(), skipAcknowledgement);
                     sentPackets.add(packet);
                     try {
                         sendPacket(packet);
@@ -208,7 +190,7 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
                     partSequenceNumber++;
 
                     fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(intermediatePacketCmdName, request.getRemoteId());
-                    packet = new StartS13UplinkPacket(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart(), skipAcknowledgement);
+                    packet = new UplinkS13Packet(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart(), skipAcknowledgement);
                     sentPackets.add(packet);
                     try {
                         sendPacket(packet);
@@ -248,6 +230,7 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
         String eventMessageSuffix;
         if (request.getFileLength() > 0) {
             eventMessageSuffix = request.getSourceFileName() + " -> " + request.getDestinationFileName();
+
         } else {
             String remoteEntityName = ServiceThirteen.getEntityFromId(s13TransactionId.getLargePacketTransactionId(), ServiceThirteen.remoteEntities).getName();
             eventMessageSuffix = "Fileless transfer: \n" 

@@ -53,7 +53,6 @@ import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.DownlinkS13Pack
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.CancelRequest;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.FilePutRequest;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.PauseRequest;
-import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.PutRequest;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.ResumeRequest;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.Bucket;
@@ -426,7 +425,7 @@ public class ServiceThirteen extends AbstractYamcsService
         }
     }
 
-    private S13FileTransfer processPutRequest(long transferInstanceId, long largePacketTransactionId, long creationTime, PutRequest request, Bucket bucket, String transferType) {
+    private S13FileTransfer processPutRequest(long transferInstanceId, long largePacketTransactionId, long creationTime, FilePutRequest request, Bucket bucket, String transferType) {
         S13OutgoingTransfer transfer = new S13OutgoingTransfer(yamcsInstance, transferInstanceId, largePacketTransactionId, creationTime,
                 executor, cmdhistRealtime, request, config, bucket, null, null, eventProducer, this, transferType, senderFaultHandlers);
 
@@ -692,25 +691,6 @@ public class ServiceThirteen extends AbstractYamcsService
         if(!hasDownloadCapability) {
             throw new InvalidRequestException("Downloading is not enabled on this CFDP service");
         }
-
-        long remoteId = getEntityFromName(sourceEntity, remoteEntities).getId();
-
-        long transferId = transferInstanceId.next();
-        PutRequest request = new PutRequest(remoteId);
-        S13TransactionId transactionId = request.process(remoteId, transferId, remoteId, config);
-
-        if (getOngoingUploadFileTransfer(transactionId.getLargePacketTransactionId()) != null) {
-            throw new InvalidRequestException("Downloading and Uploading from the same largePacketTransactionId: " + transactionId.getLargePacketTransactionId() + " is not allowed");
-        }
-
-        if (getOngoingDownloadFileTransfer(transactionId.getLargePacketTransactionId()) != null) {
-            throw new InvalidRequestException("Downloading for the largePacketTransactionId: " + transactionId.getLargePacketTransactionId() + " is already underway. Simultaneous downloads of the same largePacketTransactionId not permitted");
-        }
-
-        long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
-
-        fileDownloadRequests.addTransfer(transactionId, bucket.getName());
-        return processPutRequest(transferId, transactionId.getLargePacketTransactionId(), creationTime, request, bucket, PredefinedTransferTypes.DOWNLOAD_REQUEST.toString());
     }
 
     @Override
