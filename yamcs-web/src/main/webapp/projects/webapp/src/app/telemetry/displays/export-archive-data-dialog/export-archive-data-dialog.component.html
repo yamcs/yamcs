@@ -2,25 +2,39 @@
 
 <mat-dialog-content class="mat-typography ya-form">
   <form [formGroup]="form">
-    <label>
-      Start
-      <ya-date-time-input formControlName="start" />
-    </label>
-    <br>
-    <label>
-      Stop
-      <ya-date-time-input formControlName="stop" />
-    </label>
-    <br>
-    <label>
-      CSV column delimiter<br>
-      <ya-select formControlName="delimiter" [options]="delimiterOptions" />
-    </label>
-    <br>
-    <label>
-      Interval (ms) <span class="hint">(optional)</span><br>
-      <input formControlName="interval" class="ya-input" type="text">
-    </label>
+    <mat-tab-group class="small-tabs" [mat-stretch-tabs]="false">
+      <mat-tab label="Content">
+        <div style="margin-top: 1em">
+          <div class="label">
+            Start
+            <ya-date-time-input cdkFocusRegionstart formControlName="start" />
+          </div>
+          <hr class="half-break">
+          <div class="label">
+            Stop
+            <ya-date-time-input formControlName="stop" />
+          </div>
+          <hr class="half-break">
+          <div class="label">
+            Interval (ms) <span class="hint">(optional)</span><br>
+            <input formControlName="interval" class="ya-input" type="text">
+          </div>
+        </div>
+      </mat-tab>
+      <mat-tab label="Format">
+        <div style="margin-top: 1em">
+          <div class="label">
+            CSV column delimiter<br>
+            <ya-select formControlName="delimiter" [options]="delimiterOptions" />
+          </div>
+          <hr class="half-break">
+          <div class="label">
+            Header<br>
+            <ya-select formControlName="header" [options]="headerOptions" />
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
   </form>
 </mat-dialog-content>
 

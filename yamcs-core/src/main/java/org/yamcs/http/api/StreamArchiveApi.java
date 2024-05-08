@@ -38,6 +38,7 @@ import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.utils.ParameterFormatter;
+import org.yamcs.utils.ParameterFormatter.Header;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.IntegerParameterType;
@@ -386,6 +387,23 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             }
         }
 
+        var header = Header.QUALIFIED_NAME;
+        if (request.hasHeader()) {
+            switch (request.getHeader()) {
+            case "QUALIFIED_NAME":
+                header = Header.QUALIFIED_NAME;
+                break;
+            case "SHORT_NAME":
+                header = Header.SHORT_NAME;
+                break;
+            case "NONE":
+                header = Header.NONE;
+                break;
+            default:
+                throw new BadRequestException("Unexpected value for header option");
+            }
+        }
+
         var preserveLastValue = request.hasPreserveLastValue() ? request.getPreserveLastValue() : false;
 
         long pos = -1;
@@ -398,7 +416,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             limit = request.getLimit();
         }
         var listener = new CsvParameterStreamer(observer, pos, limit, filename, ids, addRaw, addMonitoring,
-                preserveLastValue, interval, columnDelimiter);
+                preserveLastValue, interval, columnDelimiter, header);
 
         observer.setCancelHandler(listener::requestReplayAbortion);
         ReplayFactory.replay(instance, ctx.user, repl, listener);
@@ -434,12 +452,13 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         ParameterFormatter formatter;
 
         CsvParameterStreamer(Observer<HttpBody> observer, long pos, int limit, String filename, List<NamedObjectId> ids,
-                boolean addRaw, boolean addMonitoring, boolean preserveLastValue, int interval, char columnDelimiter) {
+                boolean addRaw, boolean addMonitoring, boolean preserveLastValue, int interval, char columnDelimiter,
+                Header header) {
             super(pos, limit);
             this.observer = observer;
 
             formatter = new ParameterFormatter(null, ids, columnDelimiter);
-            formatter.setWriteHeader(true);
+            formatter.setWriteHeader(header);
             formatter.setPrintRaw(addRaw);
             formatter.setPrintMonitoring(addMonitoring);
             formatter.setKeepValues(preserveLastValue);

@@ -253,4 +253,9 @@ message ExportParameterValuesRequest {
   // Preferred filename, this is returned in a Content-Disposition HTTP header.
   // If unset, Yamcs will determine a name. 
   optional string filename = 13;
+
+  // Header row to include in the response.
+  // One of ``QUALIFIED_NAME``, ``SHORT_NAME`` or ``NONE``.
+  // Default: ``QUALIFIED_NAME``.
+  optional string header = 15;
 }
