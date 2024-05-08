@@ -251,10 +251,10 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         if (keepAlive) {
             response.headers().set(CONNECTION, KEEP_ALIVE);
-            return ctx.writeAndFlush(response);
+            return ctx.channel().writeAndFlush(response);
         } else {
             response.headers().set(CONNECTION, CLOSE);
-            ChannelFuture writeFuture = ctx.writeAndFlush(response);
+            ChannelFuture writeFuture = ctx.channel().writeAndFlush(response);
             return writeFuture.addListener(ChannelFutureListener.CLOSE);
         }
     }
