@@ -289,6 +289,14 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
     }).catch(err => this.messageService.showError(err));
   }
 
+  fitSelection() {
+    var range = this.rangeSelection$.value;
+    if (range) {
+      this.timeline.setViewRange(range.start.getTime(), range.stop.getTime());
+      this.timeline.clearSelection();
+    }
+  }
+
   jumpToToday() {
     const dt = this.yamcs.getMissionTime();
     dt.setUTCHours(0, 0, 0, 0);
