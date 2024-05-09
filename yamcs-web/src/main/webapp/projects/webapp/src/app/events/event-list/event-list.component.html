@@ -43,6 +43,13 @@
         <ya-column-chooser #columnChooser
                            [columns]="columns"
                            preferenceKey="events" />
+
+        <div style="flex: 1 1 auto"></div>
+
+        <button class="ya-button primary" style="margin-right: 0" (click)="exportEvents()">
+          <mat-icon>download</mat-icon>
+          Export CSV
+        </button>
       </div>
       <div class="filter-bar">
         <ya-select [options]="severityOptions" formControlName="severity" />
@@ -72,13 +79,6 @@
           Listening for events
           <ya-dots fontSize="16px" color="#1b61b9" />
         </div>
-
-        <div style="flex: 1 1 auto"></div>
-
-        <button class="ya-button primary" style="margin-right: 0" (click)="exportEvents()">
-          <mat-icon>download</mat-icon>
-          Export CSV
-        </button>
       </div>
     </form>
 

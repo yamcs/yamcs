@@ -34,7 +34,7 @@
 <dl class="dl-horizontal">
   <dt>Max Interval</dt>
   <dd>
-    <span *ngIf="container.maxInterval">{{ container.maxInterval }} ms</span>
+    <span *ngIf="container.maxInterval">{{ container.maxInterval | duration }}</span>
     <span *ngIf="!container.maxInterval">-</span>
   </dd>
 

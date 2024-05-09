@@ -127,6 +127,19 @@ export interface ReplaySpeed {
   param: number;
 }
 
+export interface DownloadCommandsOptions {
+  /**
+   * Inclusive lower bound
+   */
+  start?: string;
+  /**
+   * Exclusive upper bound
+   */
+  stop?: string;
+
+  delimiter?: 'COMMA' | 'SEMICOLON' | 'TAB';
+}
+
 export type TMStatisticsSubscription = WebSocketCall<SubscribeTMStatisticsRequest, Statistics>;
 
 export type AlgorithmStatusSubscription = WebSocketCall<SubscribeAlgorithmStatusRequest, AlgorithmStatus>;

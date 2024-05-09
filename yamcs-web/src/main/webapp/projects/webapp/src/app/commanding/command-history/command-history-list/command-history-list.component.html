@@ -2,21 +2,6 @@
   <app-instance-toolbar>
     Command history
     &nbsp;&nbsp;&nbsp;
-    <mat-menu #exportMenu="matMenu" class="ya-menu">
-      <button mat-menu-item (click)="printReport()">
-        <mat-icon>print</mat-icon>
-        Print report
-      </button>
-    </mat-menu>
-
-    <button mat-button
-            [matMenuTriggerFor]="exportMenu"
-            color="primary"
-            *ngIf="showCommandExports()"
-            [disabled]="!((dataSource.records$ | async)?.length)">
-      <mat-icon>save_alt</mat-icon>
-      Export
-    </button>
 
     <button *ngIf="!(dataSource.streaming$ | async)"
             mat-button
@@ -81,6 +66,31 @@
           <ya-column-chooser #columnChooser
                              [columns]="columns"
                              preferenceKey="cmdhist" />
+
+          <div style="flex: 1 1 auto"></div>
+
+          <button *ngIf="showCommandExports()"
+                  class="ya-button primary" style="margin-right: 0"
+                  [matMenuTriggerFor]="exportMenu"
+                  [disabled]="!((dataSource.records$ | async)?.length)">
+            <mat-icon>download</mat-icon>
+            Export ▾
+          </button>
+
+          <mat-menu #exportMenu="matMenu" class="ya-menu" overlapTrigger="false" xPosition="before">
+            <button mat-menu-item
+                    matTooltip="Print preview with one page per command"
+                    matTooltipPosition="right"
+                    (click)="printReport()">
+              Printer-friendly
+            </button>
+            <button mat-menu-item
+                    matTooltip="Command table, one row per command"
+                    matTooltipPosition="right"
+                    (click)="exportCsv()">
+              CSV format
+            </button>
+          </mat-menu>
         </div>
         <div class="filter-bar">
           <ya-select [options]="queueOptions" formControlName="queue" />
