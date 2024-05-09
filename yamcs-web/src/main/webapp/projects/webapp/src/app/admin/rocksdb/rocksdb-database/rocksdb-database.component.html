@@ -7,10 +7,33 @@
     &nbsp;&nbsp;&nbsp;
     <button mat-button
             color="primary"
-            (click)="compact()">
+            [matMenuTriggerFor]="compactMenu">
       <mat-icon>fullscreen_exit</mat-icon>
-      Compact
+      Compact ▾
     </button>
+
+    <mat-menu #compactMenu="matMenu" class="ya-menu">
+      <button mat-menu-item (click)="compact('_metadata_')"
+              matTooltip="Information about tables and partitions"
+              matTooltipPosition="right">
+        _metadata_
+      </button>
+      <button mat-menu-item (click)="compact('rt_data')"
+              matTooltip="TM, PP and events"
+              matTooltipPosition="right">
+        rt_data
+      </button>
+      <button mat-menu-item (click)="compact('parameter_archive')"
+              matTooltip="Parameter Archive"
+              matTooltipPosition="right">
+        parameter_archive
+      </button>
+      <button mat-menu-item (click)="compact('default')"
+              matTooltip="Command history, alarms completeness, timeline, activities, users, buckets, ..."
+              matTooltipPosition="right">
+        default
+      </button>
+    </mat-menu>
   </app-admin-toolbar>
 
   <div class="panel-content">

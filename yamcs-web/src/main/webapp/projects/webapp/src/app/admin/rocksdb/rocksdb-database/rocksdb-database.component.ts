@@ -41,11 +41,13 @@ export class RocksDbDatabaseComponent {
     this.properties$ = yamcs.yamcsClient.getRocksDbDatabaseProperties(this.tablespace, this.dbPath);
   }
 
-  compact() {
+  compact(cfname: string) {
     this.snackBar.open(`Compacting ${this.tablespace}://${this.dbPath}...`, undefined, {
       horizontalPosition: 'end',
     });
-    this.yamcs.yamcsClient.compactRocksDbDatabase(this.tablespace, this.dbPath).then(() => {
+    this.yamcs.yamcsClient.compactRocksDbDatabase(this.tablespace, this.dbPath, {
+      cfname,
+    }).then(() => {
       this.snackBar.open(`Compaction of ${this.tablespace}://${this.dbPath} successful`, undefined, {
         duration: 3000,
         horizontalPosition: 'end',

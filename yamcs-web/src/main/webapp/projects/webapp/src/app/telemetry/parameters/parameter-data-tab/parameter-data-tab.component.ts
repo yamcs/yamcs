@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, input } from '@a
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GetParameterValuesOptions, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { GetParameterValuesOptions, MessageService, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AlarmLevelComponent } from '../../../shared/alarm-level/alarm-level.component';
 import { HexComponent } from '../../../shared/hex/hex.component';
@@ -60,6 +60,7 @@ export class ParameterDataTabComponent implements OnInit, OnDestroy {
     readonly yamcs: YamcsService,
     private dialog: MatDialog,
     private clipboard: Clipboard,
+    private messageService: MessageService,
   ) { }
 
   ngOnInit() {
@@ -156,7 +157,8 @@ export class ParameterDataTabComponent implements OnInit, OnDestroy {
       options.stop = this.validStop.toISOString();
     }
 
-    this.dataSource.loadParameterValues(options);
+    this.dataSource.loadParameterValues(options)
+      .catch(err => this.messageService.showError(err));
   }
 
   /**
@@ -174,7 +176,8 @@ export class ParameterDataTabComponent implements OnInit, OnDestroy {
       start.setUTCMilliseconds(this.validStart.getUTCMilliseconds() - 1);
       options.start = start.toISOString();
     }
-    this.dataSource.loadMoreData(options);
+    this.dataSource.loadMoreData(options)
+      .catch(err => this.messageService.showError(err));
   }
 
   copyHex(base64: string) {
