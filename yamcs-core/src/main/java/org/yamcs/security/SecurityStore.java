@@ -207,7 +207,6 @@ public class SecurityStore {
         systemPrivileges.add(SystemPrivilege.ReadLinks);
         systemPrivileges.add(SystemPrivilege.ReadSystemInfo);
         systemPrivileges.add(SystemPrivilege.ReadTables);
-        systemPrivileges.add(SystemPrivilege.ReadTasks);
         systemPrivileges.add(SystemPrivilege.ReadTimeline);
         systemPrivileges.add(SystemPrivilege.WriteEvents);
         systemPrivileges.add(SystemPrivilege.WriteTables);

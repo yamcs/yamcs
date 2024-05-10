@@ -128,7 +128,7 @@ export class InstancePageComponent implements OnInit, OnDestroy {
       }
     }
 
-    if (this.user.hasAnyObjectPrivilegeOfType('ControlActivities')) {
+    if (this.user.hasSystemPrivilege('ControlActivities')) {
       this.proceduresItems.push({ path: 'script', label: 'Run a script' });
     }
     for (const item of extensionService.getExtraNavItems('procedures')) {

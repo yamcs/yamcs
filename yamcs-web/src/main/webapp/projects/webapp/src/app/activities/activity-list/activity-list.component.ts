@@ -114,7 +114,7 @@ export class ActivityListComponent {
           },
         ]);
       }
-    });
+    }).catch(err => this.messageService.showError(err));
 
     this.dataSource = new ActivitiesDataSource(yamcs, synchronizer);
     this.dataSource.startStreaming();
@@ -242,7 +242,8 @@ export class ActivityListComponent {
       options.type = this.type;
     }
 
-    this.dataSource.loadActivities(options);
+    this.dataSource.loadActivities(options)
+      .catch(err => this.messageService.showError(err));
   }
 
   loadMoreData() {

@@ -843,8 +843,9 @@ export class StackFileComponent implements OnDestroy {
 
   showSchedule() {
     const capabilities = this.yamcs.connectionInfo$.value?.instance?.capabilities || [];
-    return capabilities.indexOf('activities') !== -1
-      && this.authService.getUser()!.hasSystemPrivilege('ControlActivities');
+    return capabilities.indexOf('timeline') !== -1
+      && capabilities.indexOf('activities') !== -1
+      && this.authService.getUser()!.hasSystemPrivilege('ControlTimeline');
   }
 
   openScheduleStackDialog() {

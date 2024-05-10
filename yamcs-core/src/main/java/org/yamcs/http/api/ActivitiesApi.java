@@ -59,7 +59,7 @@ public class ActivitiesApi extends AbstractActivitiesApi<Context> {
 
     @Override
     public void listExecutors(Context ctx, ListExecutorsRequest request, Observer<ListExecutorsResponse> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ReadActivities);
+        ctx.checkAnyOfSystemPrivileges(SystemPrivilege.ReadActivities, SystemPrivilege.ControlActivities);
         var activityService = verifyService(request.getInstance());
 
         var responseb = ListExecutorsResponse.newBuilder();
@@ -278,7 +278,7 @@ public class ActivitiesApi extends AbstractActivitiesApi<Context> {
 
     @Override
     public void listScripts(Context ctx, ListScriptsRequest request, Observer<ListScriptsResponse> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ReadActivities);
+        ctx.checkAnyOfSystemPrivileges(SystemPrivilege.ReadActivities, SystemPrivilege.ControlActivities);
         var activityService = verifyService(request.getInstance());
         var scriptExecutor = (ScriptExecutor) activityService.getExecutor("SCRIPT");
         try {

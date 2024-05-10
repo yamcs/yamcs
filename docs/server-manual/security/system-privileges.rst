@@ -19,7 +19,7 @@ ControlCommandQueue
     Allows to manage command queues.
 
 CommandOptions
-    Allows specifying command options (extra attributes in the command history, disable/modify verifiers).
+    Allows specifying command options (extra attributes in the command history, disable/modify verifiers, stream selection).
 
 GetMissionDatabase
     Allows to read Mission Database definitions.
@@ -33,6 +33,12 @@ ReadAlarms
 ControlAlarms
     Allows to manage alarms.
 
+ReadActivities
+    Allows to read activities.
+
+ControlActivities
+    Allows to manage activities.
+
 ControlArchiving
     Allows to manage archiving properties of Yamcs.
 
@@ -44,6 +50,9 @@ ControlLinks
 
 ControlServices
     Allows to manage the lifecycle of services.
+
+ManageParameterLists
+    Allows to manage the definition of parameter lists.
 
 ManageAnyBucket
     Provides full control over any :doc:`bucket <../data-management/buckets>` (including user buckets).
@@ -61,16 +70,22 @@ WriteTables
 
 ReadTables
     Allows to read tables.
+
 ReadTimeline
     Allows to view the timeline.
+
 ControlTimeline
     Allows to modify the timeline.
+
 ControlAccess
     Allows to control access (users, groups, roles, ...)
+
 ReadSystemInfo
     Allows to view system information (:abbr:`OS ( Operating System)`, :abbr:`JVM (Java Virtual Machine)`, threads, replication, ...)
+
 ControlFileTransfers
     Allows to create file transfers.
+
 ReadFileTransfers
     Allows read access to file transfer information.
 

@@ -3,7 +3,7 @@ import { FormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { ActivityDefinition, CreateTimelineItemRequest, MessageService, WebappSdkModule, YaSelectOption, YamcsService } from '@yamcs/webapp-sdk';
+import { ActivityDefinition, CreateTimelineItemRequest, MessageService, WebappSdkModule, YaHelpDialog, YaSelectOption, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
@@ -56,14 +56,34 @@ export class RunScriptComponent {
   runScript() {
     const options = this.createActivityDefinition();
     this.yamcs.yamcsClient.startActivity(this.yamcs.instance!, options)
-      .then(activity => this.router.navigateByUrl(`/activities/${activity.id}?c=${this.yamcs.context}`))
+      .then(activity => {
+        if (this.authService.getUser()!.hasSystemPrivilege('ReadActivities')) {
+          this.router.navigateByUrl(`/activities/${activity.id}?c=${this.yamcs.context}`);
+        } else {
+          this.dialog.open(YaHelpDialog, {
+            width: '500px',
+            data: {
+              icon: 'done',
+              closeText: 'OK',
+              content: `
+                <p>The procedure has started executing.</p>
+                <p>
+                  Note that you do not have sufficient privileges
+                  to follow up on submitted procedures.
+                </p>
+              `,
+            },
+          }).afterClosed().subscribe(() => this.form.reset());
+        }
+      })
       .catch(err => this.messageService.showError(err));
   }
 
   showSchedule() {
     const capabilities = this.yamcs.connectionInfo$.value?.instance?.capabilities || [];
-    return capabilities.indexOf('activities') !== -1
-      && this.authService.getUser()!.hasSystemPrivilege('ControlActivities');
+    return capabilities.indexOf('timeline') !== -1
+      && capabilities.indexOf('activities') !== -1
+      && this.authService.getUser()!.hasSystemPrivilege('ControlTimeline');
   }
 
   openScheduleScriptDialog() {
