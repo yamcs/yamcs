@@ -130,7 +130,7 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
 
                 // First Packet
                 fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(firstPacketCmdName, request.getRemoteId());
-                packet = new UplinkS13Packet(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart(), skipAcknowledgement);
+                packet = new UplinkS13Packet(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart(), skipAcknowledgement, false);
                 sentPackets.add(packet);
                 try{
                     sendPacket(packet);
@@ -161,7 +161,7 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
                     partSequenceNumber++;
 
                     fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(lastPacketCmdName, request.getRemoteId());
-                    packet = new UplinkS13Packet(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart(), skipAcknowledgement);
+                    packet = new UplinkS13Packet(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart(), skipAcknowledgement, true);
                     sentPackets.add(packet);
                     try {
                         sendPacket(packet);
@@ -188,7 +188,7 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
                     partSequenceNumber++;
 
                     fullyQualifiedCmdName = ServiceThirteen.constructFullyQualifiedCmdName(intermediatePacketCmdName, request.getRemoteId());
-                    packet = new UplinkS13Packet(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart(), skipAcknowledgement);
+                    packet = new UplinkS13Packet(s13TransactionId, partSequenceNumber, fullyQualifiedCmdName, getFilePart(), skipAcknowledgement, false);
                     sentPackets.add(packet);
                     try {
                         sendPacket(packet);

@@ -17,15 +17,17 @@ public class UplinkS13Packet extends FileTransferPacket {
     protected byte[] filePart;
     protected String fullyQualifiedCmdName;
     protected boolean skipAcknowledgement;
+    protected boolean addFilePartSize;
 
     private int filePartActualSize;
     private static final int filePartMDbSize = S13OutgoingTransfer.maxDataSize;
 
-    public UplinkS13Packet(S13TransactionId transactionId, long partSequenceNumber, String fullyQualifiedCmdName, byte[] filePart, boolean skipAcknowledgement) {
+    public UplinkS13Packet(S13TransactionId transactionId, long partSequenceNumber, String fullyQualifiedCmdName, byte[] filePart, boolean skipAcknowledgement, boolean addFilePartSize) {
         super(transactionId.getUniquenessId());
         this.fullyQualifiedCmdName = fullyQualifiedCmdName;
         this.skipAcknowledgement = skipAcknowledgement;
         this.partSequenceNumber = partSequenceNumber;
+        this.addFilePartSize = addFilePartSize;
 
         // DO NOT SWAP THE LINES
         this.filePartActualSize = filePart.length;
@@ -61,6 +63,9 @@ public class UplinkS13Packet extends FileTransferPacket {
         assignments.put("Large_Message_Trasaction_Identifier", uniquenessId.getLargePacketTransactionId());
         assignments.put("Part_Sequence_Number", partSequenceNumber);
         assignments.put("File_Part", filePart);
+
+        if (addFilePartSize)
+            assignments.put("File_Part_Size", filePartActualSize);
 
         PreparedCommand pc = trans.createS13Telecommand(fullyQualifiedCmdName, assignments, trans.getCommandReleaseUser());
 
