@@ -3,18 +3,15 @@ package org.yamcs.tctm.pus.services.tc.six;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.mdb.CommandEncodingException;
 import org.yamcs.tctm.pus.PusTcManager;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tc.PusTcCcsdsPacket;
 import org.yamcs.utils.ByteArrayUtils;
-import org.yamcs.utils.StringConverter;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class SubServiceOne implements PusSubService {
     String yamcsInstance;

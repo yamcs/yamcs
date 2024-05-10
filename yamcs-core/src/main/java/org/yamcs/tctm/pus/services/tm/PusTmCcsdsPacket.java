@@ -45,14 +45,12 @@ public class PusTmCcsdsPacket extends CcsdsPacket {
     }
 
     public byte[] getSpareField() {
-        byte[] b = bb.duplicate().array();
         byte[] secondaryHeader = getSecondaryHeader();
 
         return Arrays.copyOfRange(secondaryHeader, PusTmManager.PUS_HEADER_LENGTH, secondaryHeader.length);
     }
 
     public byte[] getPusHeaderField() {
-        byte[] b = bb.duplicate().array();
         byte[] secondaryHeader = getSecondaryHeader();
 
         return Arrays.copyOfRange(secondaryHeader, 0, PusTmManager.PUS_HEADER_LENGTH);

@@ -3,7 +3,6 @@ package org.yamcs.tctm.pus.services.tc.six;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.mdb.CommandEncodingException;
 import org.yamcs.tctm.pus.PusTcManager;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tc.PusTcCcsdsPacket;

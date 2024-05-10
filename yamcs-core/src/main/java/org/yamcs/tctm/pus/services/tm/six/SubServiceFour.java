@@ -5,7 +5,6 @@ import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
-import org.yamcs.tctm.pus.services.tm.fourteen.ServiceFourteen;
 import org.yamcs.utils.ByteArrayUtils;
 
 import java.nio.ByteBuffer;

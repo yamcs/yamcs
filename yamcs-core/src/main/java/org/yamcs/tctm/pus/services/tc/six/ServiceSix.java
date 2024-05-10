@@ -60,16 +60,23 @@ public class ServiceSix implements PusService {
 
                     List<Pair<Integer, Integer>> offsets = new ArrayList<>();
                     for (YConfiguration offsetConfig: baseConfig.getConfigList("offsets")) {
-                        offsets.add(new Pair<>(
+                        if (offsetConfig.isList("value")) {
+                            List<Integer> values = offsetConfig.getList("value");
+                            for (int v: values)
+                                offsets.add(new Pair<>(
+                                    v, offsetConfig.getInt("length")
+                                ));
+                        } else
+                            offsets.add(new Pair<>(
                                 offsetConfig.getInt("value"), offsetConfig.getInt("length")
-                        ));
+                            ));
                     }
                     baseIds.put(baseIdValue, offsets);
-                 }
+                }
 
-                 memoryIds.put(new Pair<>(
-                         memoryIdMap.getInt("apid"), memoryIdMap.getInt("value")
-                 ), baseIds);
+                memoryIds.put(new Pair<>(
+                        memoryIdMap.getInt("apid"), memoryIdMap.getInt("value")
+                ), baseIds);
 
             } else {
                 throw new ConfigurationException("Provided memoryId: " + memoryId + " does not exist in the config");
