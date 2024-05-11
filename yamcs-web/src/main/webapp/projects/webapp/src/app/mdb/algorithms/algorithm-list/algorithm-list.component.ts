@@ -4,7 +4,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Algorithm, GetAlgorithmsOptions, WebappSdkModule, YaColumnInfo, YamcsService } from '@yamcs/webapp-sdk';
+import { Algorithm, GetAlgorithmsOptions, MessageService, WebappSdkModule, YaColumnInfo, YamcsService } from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { AlgorithmsDataSource } from './algorithms.datasource';
@@ -50,6 +50,7 @@ export class AlgorithmListComponent implements AfterViewInit {
     title: Title,
     private route: ActivatedRoute,
     private router: Router,
+    private messageService: MessageService,
   ) {
     title.setTitle('Algorithms');
     this.dataSource = new AlgorithmsDataSource(yamcs);
@@ -86,7 +87,7 @@ export class AlgorithmListComponent implements AfterViewInit {
     }
     this.dataSource.loadAlgorithms(options).then(() => {
       this.selection.clear();
-    });
+    }).catch(err => this.messageService.showError(err));
   }
 
   private updateURL() {

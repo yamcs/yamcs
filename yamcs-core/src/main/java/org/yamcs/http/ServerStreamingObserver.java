@@ -171,7 +171,7 @@ public class ServerStreamingObserver implements Observer<Message> {
             }
         }
 
-        ctx.nettyContext.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+        ctx.nettyContext.channel().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
                 .addListener(l -> {
                     if (l.isSuccess()) {
                         ctx.requestFuture.complete(null);
@@ -202,7 +202,7 @@ public class ServerStreamingObserver implements Observer<Message> {
         if (filename != null) {
             response.headers().set(CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
         }
-        ctx.nettyContext.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
+        ctx.nettyContext.channel().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
     }
 
     private void writeChunk(ByteBuf buf) throws IOException {
@@ -210,7 +210,7 @@ public class ServerStreamingObserver implements Observer<Message> {
         if (!ch.isOpen()) {
             throw new ClosedChannelException();
         }
-        ChannelFuture writeFuture = ctx.nettyContext.writeAndFlush(new DefaultHttpContent(buf));
+        ChannelFuture writeFuture = ctx.nettyContext.channel().writeAndFlush(new DefaultHttpContent(buf));
         try {
             if (!ch.isWritable()) {
                 boolean writeCompleted = writeFuture.await(10, TimeUnit.SECONDS);

@@ -20,6 +20,12 @@ export class ExportArchiveDataDialogComponent implements OnDestroy {
     { id: 'TAB', label: 'Tab' },
   ];
 
+  headerOptions: YaSelectOption[] = [
+    { id: 'QUALIFIED_NAME', label: 'Qualified names' },
+    { id: 'SHORT_NAME', label: 'Short names' },
+    { id: 'NONE', label: 'None' },
+  ];
+
   private formChangeSubscription: Subscription;
 
   downloadURL$ = new BehaviorSubject<string | null>(null);
@@ -29,6 +35,7 @@ export class ExportArchiveDataDialogComponent implements OnDestroy {
     stop: new UntypedFormControl(null),
     delimiter: new UntypedFormControl(null, Validators.required),
     interval: new FormControl<number | null>(null),
+    header: new UntypedFormControl(null, Validators.required),
   });
 
   constructor(
@@ -47,6 +54,7 @@ export class ExportArchiveDataDialogComponent implements OnDestroy {
       start: utils.toISOString(start),
       stop: utils.toISOString(stop),
       delimiter: 'TAB',
+      header: 'QUALIFIED_NAME',
       interval: '',
     });
 
@@ -65,6 +73,7 @@ export class ExportArchiveDataDialogComponent implements OnDestroy {
     if (this.form.valid) {
       const dlOptions: DownloadParameterValuesOptions = {
         delimiter: this.form.value['delimiter'],
+        header: this.form.value['header'],
       };
       if (this.data.parameterIds) {
         dlOptions.parameters = this.data.parameterIds;

@@ -77,11 +77,6 @@ public class SystemPrivilege {
     public static final SystemPrivilege ReadAlarms = new SystemPrivilege("ReadAlarms");
 
     /**
-     * Allows to read tasks
-     */
-    public static final SystemPrivilege ReadTasks = new SystemPrivilege("ReadTasks");
-
-    /**
      * Allows to manage alarms
      */
     public static final SystemPrivilege ControlAlarms = new SystemPrivilege("ControlAlarms");

@@ -61,7 +61,7 @@ service EventsApi {
 }
 
 message ListEventsRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
       
   // The zero-based row number at which to start outputting results. Default: ``0``
@@ -112,7 +112,7 @@ message SubscribeEventsRequest {
 }
 
 message CreateEventRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
   // Description of the type of the event. Useful for quick classification or filtering.
@@ -143,26 +143,39 @@ message CreateEventRequest {
 }
 
 message StreamEventsRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
+
+  // Filter the lower bound of the event's generation time. Specify a date
+  // string in ISO 8601 format.
   optional google.protobuf.Timestamp start = 2;
+
+  // Filter the upper bound of the event's generation time. Specify a date
+  // string in ISO 8601 format.
   optional google.protobuf.Timestamp stop = 3;
+
+  // Event sources to include. Leave unset, to include all.
   repeated string source = 4;
+
+  // Filter on minimum severity level
   optional string severity = 5;
+
+  // Search by text
   optional string q = 6;
 }
 
 message ListEventSourcesRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1; 
 }
 
 message ListEventSourcesResponse {
+  // Known event sources
   repeated string source = 1;
 }
 
 message ExportEventsRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
   // Filter the lower bound of the event's generation time.

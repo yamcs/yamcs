@@ -27,6 +27,13 @@ import com.csvreader.CsvWriter;
  *
  */
 public class ParameterFormatter implements Closeable {
+
+    public enum Header {
+        QUALIFIED_NAME,
+        SHORT_NAME,
+        NONE;
+    }
+
     protected Writer writer;
     protected boolean printTime = true;
     protected boolean printRaw = false;
@@ -34,7 +41,7 @@ public class ParameterFormatter implements Closeable {
     protected boolean printUnique = false;
     protected boolean keepValues = false; // if set to true print the latest known value of a parameter even for
                                           // parameters not retrieved in a packet
-    protected boolean writeHeader = true;
+    protected Header header = Header.NONE;
     protected boolean allParametersPresent = false; // true = print only those lines that contain all parameters' values
     protected int timewindow = -1; // [ms], -1 = no window at all
 
@@ -87,8 +94,8 @@ public class ParameterFormatter implements Closeable {
         this.printUnique = printUnique;
     }
 
-    public void setWriteHeader(boolean writeHeader) {
-        this.writeHeader = writeHeader;
+    public void setWriteHeader(Header header) {
+        this.header = header;
     }
 
     public void setAllParametersPresent(boolean allParametersPresent) {
@@ -108,18 +115,24 @@ public class ParameterFormatter implements Closeable {
     }
 
     private void writeHeader() throws IOException {
-        // print header line with ops names
         List<String> h = new ArrayList<>();
         if (printTime) {
             h.add("Time");
         }
         for (NamedObjectId noid : subscribedParameters.keySet()) {
-            h.add(noid.getName());
+            String name = noid.getName();
+            if (header == Header.SHORT_NAME) {
+                var idx = name.lastIndexOf('/');
+                if (idx != -1) {
+                    name = name.substring(idx + 1);
+                }
+            }
+            h.add(name);
             if (printRaw) {
-                h.add(noid.getName() + "_RAW");
+                h.add(name + "_RAW");
             }
             if (printMonitoring) {
-                h.add(noid.getName() + "_MONITORING");
+                h.add(name + "_MONITORING");
             }
         }
         csvWriter.writeRecord(h.toArray(new String[0]));
@@ -154,7 +167,7 @@ public class ParameterFormatter implements Closeable {
 
     protected void writeParameters() throws IOException {
         if (first) {
-            if (writeHeader) {
+            if (header != Header.NONE) {
                 writeHeader();
             }
             first = false;

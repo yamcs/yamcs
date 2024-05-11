@@ -402,6 +402,10 @@ export interface RocksDbDatabase {
   dataDir: string;
 }
 
+export interface CompactRocksDbDatabaseRequest {
+  cfname?: string;
+}
+
 export interface SystemInfo {
   yamcsVersion: string;
   revision: string;

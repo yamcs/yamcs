@@ -1,6 +1,7 @@
 import { Clipboard } from '@angular/cdk/clipboard';
 import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommandHistoryRecord, ConfigService, GetCommandHistoryOptions, MessageService, PrintService, Synchronizer, User, WebappSdkModule, WebsiteConfig, YaColumnChooser, YaColumnInfo, YaSelect, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
@@ -14,6 +15,7 @@ import { AcknowledgmentIconComponent } from '../acknowledgment-icon/acknowledgme
 import { CommandArgumentsComponent } from '../command-arguments/command-arguments.component';
 import { CommandDetailComponent } from '../command-detail/command-detail.component';
 import { CommandHistoryPrintableComponent } from '../command-history-printable/command-history-printable.component';
+import { ExportCommandsDialogComponent } from '../export-commands-dialog/export-commands-dialog.component';
 import { CommandDownloadLinkPipe } from '../shared/command-download-link.pipe';
 import { TransmissionConstraintsIconComponent } from '../transmission-constraints-icon/transmission-constraints-icon.component';
 import { CommandHistoryDataSource } from './command-history.datasource';
@@ -115,6 +117,7 @@ export class CommandHistoryListComponent implements AfterViewInit, OnDestroy {
     title: Title,
     synchronizer: Synchronizer,
     private clipboard: Clipboard,
+    private dialog: MatDialog,
   ) {
     this.config = configService.getConfig();
     this.user = authService.getUser()!;
@@ -329,6 +332,17 @@ export class CommandHistoryListComponent implements AfterViewInit, OnDestroy {
   printReport() {
     const data = this.dataSource.records$.value.slice().reverse();
     this.printService.printComponent(CommandHistoryPrintableComponent, 'Command Report', data);
+  }
+
+  exportCsv() {
+    this.dialog.open(ExportCommandsDialogComponent, {
+      width: '400px',
+      data: {
+        start: this.validStart,
+        stop: this.validStop,
+        q: this.filter,
+      },
+    });
   }
 
   ngOnDestroy() {

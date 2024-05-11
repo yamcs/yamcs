@@ -1,15 +1,24 @@
 package org.yamcs.http.api;
 
+import static org.yamcs.cmdhistory.CommandHistoryPublisher.SUFFIX_RETURN;
+import static org.yamcs.cmdhistory.CommandHistoryPublisher.SUFFIX_STATUS;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.yamcs.ErrorInCommand;
 import org.yamcs.NoPermissionException;
@@ -23,7 +32,9 @@ import org.yamcs.archive.GPBHelper;
 import org.yamcs.cmdhistory.Attribute;
 import org.yamcs.cmdhistory.CommandHistoryConsumer;
 import org.yamcs.cmdhistory.CommandHistoryFilter;
+import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
+import org.yamcs.cmdhistory.protobuf.Cmdhistory.AssignmentInfo;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueManager;
 import org.yamcs.commanding.CommandingManager;
@@ -42,6 +53,7 @@ import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.ExportCommandRequest;
+import org.yamcs.protobuf.ExportCommandsRequest;
 import org.yamcs.protobuf.GetCommandRequest;
 import org.yamcs.protobuf.IssueCommandRequest;
 import org.yamcs.protobuf.IssueCommandRequest.Assignment;
@@ -53,6 +65,7 @@ import org.yamcs.protobuf.SubscribeCommandsRequest;
 import org.yamcs.protobuf.UpdateCommandHistoryRequest;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.MetaCommand;
@@ -65,9 +78,11 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yaml.snakeyaml.util.UriEncoder;
 
+import com.csvreader.CsvWriter;
 import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
+import com.google.protobuf.util.Timestamps;
 
 public class CommandsApi extends AbstractCommandsApi<Context> {
 
@@ -572,6 +587,50 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
         });
     }
 
+    @Override
+    public void exportCommands(Context ctx, ExportCommandsRequest request, Observer<HttpBody> observer) {
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        Mdb mdb = MdbFactory.getInstance(instance);
+
+        // Quick-check in case the user is specific
+        ctx.checkObjectPrivileges(ObjectPrivilegeType.CommandHistory, request.getNameList());
+
+        SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME);
+
+        if (request.hasStart()) {
+            sqlb.whereColAfterOrEqual("gentime", request.getStart());
+        }
+        if (request.hasStop()) {
+            sqlb.whereColBefore("gentime", request.getStop());
+        }
+
+        if (request.getNameCount() > 0) {
+            sqlb.whereColIn("cmdName", request.getNameList());
+        }
+
+        String sql = sqlb.toString();
+
+        char delimiter = '\t';
+        if (request.hasDelimiter()) {
+            switch (request.getDelimiter()) {
+            case "TAB":
+                delimiter = '\t';
+                break;
+            case "SEMICOLON":
+                delimiter = ';';
+                break;
+            case "COMMA":
+                delimiter = ',';
+                break;
+            default:
+                throw new BadRequestException("Unexpected column delimiter");
+            }
+        }
+
+        CsvCommandStreamer streamer = new CsvCommandStreamer(ctx, observer, delimiter, mdb);
+        StreamFactory.stream(instance, sql, sqlb.getQueryArguments(), streamer);
+    }
+
     private static CommandId fromStringIdentifier(String commandName, String id) {
         CommandId.Builder b = CommandId.newBuilder();
         b.setCommandName(commandName);
@@ -622,6 +681,127 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
         String encodeAsString() {
             String json = new Gson().toJson(this);
             return Base64.getUrlEncoder().withoutPadding().encodeToString(json.getBytes());
+        }
+    }
+
+    private static class CsvCommandStreamer implements StreamSubscriber {
+
+        Context ctx;
+        Observer<HttpBody> observer;
+        char columnDelimiter;
+        Mdb mdb;
+
+        CsvCommandStreamer(Context ctx, Observer<HttpBody> observer, char columnDelimiter, Mdb mdb) {
+            this.ctx = ctx;
+            this.observer = observer;
+            this.columnDelimiter = columnDelimiter;
+            this.mdb = mdb;
+
+            String[] rec = new String[13];
+            int i = 0;
+            rec[i++] = "Generation Time";
+            rec[i++] = "Command Name";
+            rec[i++] = "Arguments";
+            rec[i++] = "Origin";
+            rec[i++] = "Sequence Number";
+            rec[i++] = "Username";
+            rec[i++] = "Queue";
+            rec[i++] = "Binary";
+            rec[i++] = CommandHistoryPublisher.AcknowledgeQueued_KEY;
+            rec[i++] = CommandHistoryPublisher.AcknowledgeReleased_KEY;
+            rec[i++] = CommandHistoryPublisher.AcknowledgeSent_KEY;
+            rec[i++] = "Completion";
+            rec[i++] = "Return Value";
+
+            String dateString = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
+            String filename = "command_export_" + dateString + ".csv";
+
+            HttpBody metadata = HttpBody.newBuilder()
+                    .setContentType(MediaType.CSV.toString())
+                    .setFilename(filename)
+                    .setData(toByteString(rec))
+                    .build();
+
+            observer.next(metadata);
+        }
+
+        @Override
+        public void onTuple(Stream stream, Tuple tuple) {
+            if (observer.isCancelled()) {
+                stream.close();
+                return;
+            }
+
+            var command = GPBHelper.tupleToCommandHistoryEntry(tuple, mdb);
+            if (!ctx.user.hasObjectPrivilege(ObjectPrivilegeType.CommandHistory, command.getCommandName())) {
+                return;
+            }
+
+            String[] rec = new String[13];
+            int i = 0;
+            rec[i++] = Timestamps.toString(command.getGenerationTime());
+            rec[i++] = printAttribute(tuple, PreparedCommand.CNAME_CMDNAME);
+            rec[i++] = printArguments(tuple);
+            rec[i++] = printAttribute(tuple, PreparedCommand.CNAME_ORIGIN);
+            rec[i++] = printAttribute(tuple, PreparedCommand.CNAME_SEQNUM);
+            rec[i++] = printAttribute(tuple, PreparedCommand.CNAME_USERNAME);
+            rec[i++] = printAttribute(tuple, "queue");
+            rec[i++] = printAttribute(tuple, PreparedCommand.CNAME_BINARY);
+            rec[i++] = printAttribute(tuple, CommandHistoryPublisher.AcknowledgeQueued_KEY + SUFFIX_STATUS);
+            rec[i++] = printAttribute(tuple, CommandHistoryPublisher.AcknowledgeReleased_KEY + SUFFIX_STATUS);
+            rec[i++] = printAttribute(tuple, CommandHistoryPublisher.AcknowledgeSent_KEY + SUFFIX_STATUS);
+            rec[i++] = printAttribute(tuple, CommandHistoryPublisher.CommandComplete_KEY + SUFFIX_STATUS);
+            rec[i++] = printAttribute(tuple, CommandHistoryPublisher.CommandComplete_KEY + SUFFIX_RETURN);
+
+            HttpBody body = HttpBody.newBuilder()
+                    .setData(toByteString(rec))
+                    .build();
+            observer.next(body);
+        }
+
+        private String printAttribute(Tuple tuple, String attributeName) {
+            if (tuple.hasColumn(attributeName)) {
+                var value = tuple.getColumn(attributeName);
+                if (value instanceof byte[]) {
+                    return StringConverter.arrayToHexString((byte[]) value);
+                } else {
+                    return "" + value;
+                }
+            } else {
+                return "";
+            }
+        }
+
+        private String printArguments(Tuple tuple) {
+            if (tuple.hasColumn(PreparedCommand.CNAME_ASSIGNMENTS)) {
+                AssignmentInfo assignmentProto = tuple.getColumn(PreparedCommand.CNAME_ASSIGNMENTS);
+                return assignmentProto.getAssignmentList().stream()
+                        .filter(assignment -> assignment.getUserInput())
+                        .map(assignment -> assignment.getName() + ": "
+                                + StringConverter.toString(assignment.getValue()))
+                        .collect(Collectors.joining(", "));
+            } else {
+                return "";
+            }
+        }
+
+        private ByteString toByteString(String[] rec) {
+            ByteString.Output bout = ByteString.newOutput();
+            CsvWriter writer = new CsvWriter(bout, columnDelimiter, StandardCharsets.UTF_8);
+            try {
+                writer.writeRecord(rec);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            } finally {
+                writer.close();
+            }
+
+            return bout.toByteString();
+        }
+
+        @Override
+        public void streamClosed(Stream stream) {
+            observer.complete();
         }
     }
 }

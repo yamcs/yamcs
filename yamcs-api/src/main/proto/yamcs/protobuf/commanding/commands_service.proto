@@ -71,10 +71,17 @@ service CommandsApi {
       get: "/api/archive/{instance}/commands/{id}:export"
     };
   }
+
+  // Export commands in CSV format
+  rpc ExportCommands(ExportCommandsRequest) returns (stream yamcs.api.HttpBody) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}:exportCommands"
+    };
+  }
 }
 
 message ListCommandsRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
   // The zero-based row number at which to start outputting results.
@@ -118,13 +125,13 @@ message IssueCommandRequest {
     optional string value = 2;
   }
   
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 6;
   
-  // Processor name.
+  // Processor name
   optional string processor = 7;
   
-  // Command name.
+  // Command name
   optional string name = 8;
 
   // The name/value assignments for this command.
@@ -178,9 +185,16 @@ message IssueCommandRequest {
 }
 
 message IssueCommandResponse {
+  // Command ID
   optional string id = 5;
+
+  // Command generation time
   optional google.protobuf.Timestamp generationTime = 6;
+
+  // The origin of the command. Typically a hostname.
   optional string origin = 7;
+
+  // The sequence number for the origin
   optional int32 sequenceNumber = 8;
 
   // Qualified name
@@ -190,23 +204,39 @@ message IssueCommandResponse {
   // (as currently present in Mission Database)
   map<string, string> aliases = 14;
 
+  // The name/value assignments for this command
   repeated CommandAssignment assignments = 12;
+
+  // Generated binary, before any link post-processing
   optional bytes unprocessedBinary = 13;
+
+  // Generated binary, after link post-processing.
+  //
+  // The differences compared to ``unprocessedBinary``,
+  // can be anything. Typical manipulations include
+  // sequence numbers or checksum calculations.
   optional bytes binary = 4;
+
+  // Command issuer
   optional string username = 11;
+
+  // Queue that was selected for this command
   optional string queue = 10;
 }
 
 message UpdateCommandHistoryRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
   
-  // Command name.
+  // Command name
   optional string name = 3;
+
+  // Command ID
   optional string id = 4;
+
   repeated commanding.CommandHistoryAttribute attributes = 5;
 }
 
@@ -220,24 +250,68 @@ message ListCommandsResponse {
 }
 
 message GetCommandRequest {
+  // Yamcs instance name
   optional string instance = 1;
+
+  // Command ID
   optional string id = 2;
 }
 
 message ExportCommandRequest {
+  // Yamcs instance name
   optional string instance = 1;
+
+  // Command ID
   optional string id = 2;
 }
 
 message StreamCommandsRequest {
+  // Yamcs instance name
   optional string instance = 1;
+
+  // Filter the lower bound of the command's generation time. Specify a date
+  // string in ISO 8601 format.
   optional google.protobuf.Timestamp start = 2;
+
+  // Filter the upper bound of the command's generation time. Specify a date
+  // string in ISO 8601 format.
   optional google.protobuf.Timestamp stop = 3;
+
+  // Command names to include. Leave unset, to include all.
   repeated string name = 4;
 }
 
 message SubscribeCommandsRequest {
+  // Yamcs instance name
   optional string instance = 1;
+
+  // Processor name
   optional string processor = 2;
+
+  // If true, send only updates for commands that
+  // were issued after the subscription start.
+  //
+  // For clients that piece together command updates, this
+  // can help avoid partially received commands. 
   optional bool ignorePastCommands = 3;
+}
+
+message ExportCommandsRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Filter the lower bound of the command's generation time.
+  // Specify a date string in ISO 8601 format. This bound is inclusive.
+  optional google.protobuf.Timestamp start = 2;
+
+  // Filter the upper bound of the command's generation time. Specify a date
+  // string in ISO 8601 format. This bound is exclusive.
+  optional google.protobuf.Timestamp stop = 3;
+
+  // Command names to include. Leave unset, to include all.
+  repeated string name = 4;
+
+  // Column delimiter. One of ``TAB``, ``COMMA`` or ``SEMICOLON``.
+  // Default: ``TAB``.
+  optional string delimiter = 5;
 }

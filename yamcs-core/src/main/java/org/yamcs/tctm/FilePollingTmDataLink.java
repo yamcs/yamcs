@@ -6,8 +6,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.zip.GZIPInputStream;
@@ -80,13 +80,20 @@ public class FilePollingTmDataLink extends AbstractTmDataLink implements Runnabl
         super.init(yamcsInstance, name, config);
 
         if (config.containsKey("incomingDir")) {
-            incomingDir = Paths.get(config.getString("incomingDir"));
+            incomingDir = Path.of(config.getString("incomingDir"));
         } else {
             log.warn("Deprecation warning: specify the incomingDir argument on the link " + name
                     + ". This will become required in a later version");
             Path parent = YamcsServer.getServer().getIncomingDirectory();
             incomingDir = parent.resolve(yamcsInstance).resolve("tm");
         }
+
+        try {
+            Files.createDirectories(incomingDir);
+        } catch (IOException e) {
+            log.warn("Failed to create directory: " + incomingDir);
+        }
+
         deleteAfterImport = config.getBoolean("deleteAfterImport");
         delayBetweenPackets = config.getLong("delayBetweenPackets", -1);
         headerSize = config.getLong("headerSize", -1);

@@ -4,7 +4,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GetParameterTypesOptions, ParameterType, WebappSdkModule, YaColumnChooser, YaColumnInfo, YamcsService } from '@yamcs/webapp-sdk';
+import { GetParameterTypesOptions, MessageService, ParameterType, WebappSdkModule, YaColumnChooser, YaColumnInfo, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
@@ -56,6 +56,7 @@ export class ParameterTypesComponent implements AfterViewInit {
     title: Title,
     private route: ActivatedRoute,
     private router: Router,
+    private messageService: MessageService,
   ) {
     title.setTitle('Parameter types');
     this.dataSource = new ParameterTypesDataSource(yamcs);
@@ -109,7 +110,7 @@ export class ParameterTypesComponent implements AfterViewInit {
       this.columns.splice(1, 0, ...aliasColumns); // Insert after name column
       this.aliasColumns$.next(aliasColumns);
       this.columnChooser.recalculate(this.columns);
-    });
+    }).catch(err => this.messageService.showError(err));
   }
 
   private updateURL() {

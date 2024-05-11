@@ -58,9 +58,17 @@
         <mat-icon>east</mat-icon>
       </button>
       &nbsp;
-      <button class="ya-button" (click)="fitAll()">
+      <button class="ya-button" (click)="fitAll()"
+              matTooltip="Show all archive data">
         <mat-icon>fit_screen</mat-icon>
         Fit all
+      </button>
+      <button class="ya-button" (click)="fitSelection()"
+              *ngIf="(tool$ | async) === 'range-select'"
+              [disabled]="!(rangeSelection$ | async)"
+              matTooltip="Zoom to selected range">
+        <mat-icon>fit_screen</mat-icon>
+        Fit selection
       </button>
       <button class="ya-button" (click)="jumpToToday()">
         <mat-icon>today</mat-icon>

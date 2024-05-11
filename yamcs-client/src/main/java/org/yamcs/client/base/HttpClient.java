@@ -460,6 +460,7 @@ public class HttpClient {
         request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
         request.headers().set(HttpHeaderNames.CONTENT_TYPE, sendMediaType);
         request.headers().set(HttpHeaderNames.ACCEPT, acceptMediaType);
+        request.headers().set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
         if (userAgent != null) {
             request.headers().set(HttpHeaderNames.USER_AGENT, userAgent);
         }

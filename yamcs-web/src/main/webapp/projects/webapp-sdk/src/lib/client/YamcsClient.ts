@@ -16,10 +16,10 @@ import { CreateInstanceRequest, InstancesSubscription, Link, LinkEvent, LinkSubs
 import { AlgorithmOverrides, AlgorithmStatus, AlgorithmTrace, AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParameterTypesOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParameterType, ParameterTypesPage, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
 import { ArchiveRecord, CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, ExecutorInfo, ExportParameterValuesOptions, GetCommandHistoryOptions, GetCompletenessIndexOptions, GetPacketsOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListPacketsResponse, Packet, ParameterData, ParameterValue, Range, Sample, StartProcedureOptions, StreamCommandIndexOptions, StreamCompletenessIndexOptions, StreamEventIndexOptions, StreamPacketIndexOptions, StreamParameterIndexOptions, Value } from './types/monitoring';
 import { CreateParameterListRequest, GetParameterListsResponse, ParameterList, UpdateParameterListRequest } from './types/plists';
-import { AlgorithmStatusSubscription, BackfillingSubscription, ExtractPacketResponse, PacketNamesResponse, ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeAlgorithmStatusRequest, SubscribeBackfillingData, SubscribeBackfillingRequest, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
+import { AlgorithmStatusSubscription, BackfillingSubscription, DownloadCommandsOptions, ExtractPacketResponse, PacketNamesResponse, ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeAlgorithmStatusRequest, SubscribeBackfillingData, SubscribeBackfillingRequest, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
 import { CommandQueue, CommandQueueEvent, QueueEventsSubscription, QueueStatisticsSubscription, SubscribeQueueEventsRequest, SubscribeQueueStatisticsRequest } from './types/queue';
 import { SessionEvent, SessionSubscription } from './types/session';
-import { AuditRecordsPage, AuthInfo, Clearance, ClearanceSubscription, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, Database, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GetAuditRecordsOptions, GroupInfo, HttpTraffic, Instance, InstanceConfig, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListDatabasesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListThreadsResponse, ListTopicsResponse, ReplicationInfo, ReplicationInfoSubscription, ResultSet, RoleInfo, Service, ServiceAccount, SystemInfo, SystemInfoSubscription, ThreadInfo, TokenResponse, UserInfo } from './types/system';
+import { AuditRecordsPage, AuthInfo, Clearance, ClearanceSubscription, CompactRocksDbDatabaseRequest, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, Database, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GetAuditRecordsOptions, GroupInfo, HttpTraffic, Instance, InstanceConfig, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListDatabasesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListThreadsResponse, ListTopicsResponse, ReplicationInfo, ReplicationInfoSubscription, ResultSet, RoleInfo, Service, ServiceAccount, SystemInfo, SystemInfoSubscription, ThreadInfo, TokenResponse, UserInfo } from './types/system';
 import { Record, Stream, StreamData, StreamEvent, StreamStatisticsSubscription, StreamSubscription, SubscribeStreamRequest, SubscribeStreamStatisticsRequest, Table } from './types/table';
 import { SubscribeTimeRequest, Time, TimeSubscription } from './types/time';
 import { CreateTimelineBandRequest, CreateTimelineItemRequest, CreateTimelineViewRequest, GetTimelineItemsOptions, TimelineBand, TimelineBandsPage, TimelineItem, TimelineItemsPage, TimelineTagsPage, TimelineView, TimelineViewsPage, UpdateTimelineBandRequest, UpdateTimelineItemRequest, UpdateTimelineViewRequest } from './types/timeline';
@@ -725,9 +725,11 @@ export default class YamcsClient implements HttpHandler {
     return await response.text();
   }
 
-  async compactRocksDbDatabase(tablespace: string, dbPath = '') {
+  async compactRocksDbDatabase(tablespace: string, dbPath = '', options: CompactRocksDbDatabaseRequest) {
+    const body = JSON.stringify(options);
     const url = `${this.apiUrl}/archive/rocksdb/${tablespace}/${dbPath}:compact`;
     return await this.doFetch(url, {
+      body,
       method: 'POST',
     });
   }
@@ -780,6 +782,11 @@ export default class YamcsClient implements HttpHandler {
       method: 'POST',
     });
     return await response.json() as Event;
+  }
+
+  getCommandsDownloadURL(instance: string, options: DownloadCommandsOptions = {}) {
+    const url = `${this.apiUrl}/archive/${instance}:exportCommands`;
+    return url + this.queryString(options);
   }
 
   async editReplayProcessor(instance: string, processor: string, options: EditReplayProcessorRequest) {
