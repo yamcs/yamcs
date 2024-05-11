@@ -1,3 +1,8 @@
+Version 5.9.5 released 11-May-2024
+- Add CSV export for commands
+- Small tweaks and fixes related to CFDP, Parameter Archive, Permissions, replication
+
+
 Version 5.9.4 released 11-Apr-2024
 - Implemented sparse groups in the parameter archive. This allows faster retrieval and less memory consumed during builtup and retrieval, at the expense of sliglthy higher disk usage
 - Added a processor option to persist the latest parameter values, such that when Yamcs restarts, it remembers the values for all parameters with the persist flag set. In XTCE, all parameters have the flag set by default. For spreadsheets, they have to be marked specifically using the newly added 'p' flag.
