@@ -435,7 +435,7 @@ public class V7Loader extends V7LoaderBase {
                     cells = jumpToRow(sheet, j);
                     if (CALIB_TYPE_ENUMERATION.equalsIgnoreCase(type)) {
                         try {
-                            long raw = Integer.decode(getContent(cells, CN_CALIB_CALIB1));
+                            long raw = Long.decode(getContent(cells, CN_CALIB_CALIB1));
                             ValueEnumeration ve = new ValueEnumeration(raw, getContent(cells, CN_CALIB_CALIB2));
                             ve.setDescription(getContent(cells, CN_CALIB_DESCRIPTION, null));
                             enumeration.values.add(ve);
