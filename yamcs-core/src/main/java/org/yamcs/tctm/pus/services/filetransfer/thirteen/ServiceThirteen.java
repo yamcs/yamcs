@@ -473,7 +473,7 @@ public class ServiceThirteen extends AbstractYamcsService
             FileTransfer filetransfer = getOngoingUploadFileTransfer(packet.getUniquenessId().getLargePacketTransactionId());
             if (filetransfer != null) {
                 S13OutgoingTransfer outgoingTransfer = (S13OutgoingTransfer) filetransfer;
-                outgoingTransfer.cancel(ConditionCode.readConditionCode((byte) packet.getFailureCode().byteValue()));
+                outgoingTransfer.cancel(ConditionCode.reaConditionCodeAsIs((byte) packet.getFailureCode().byteValue()));
 
             } else {
                 log.warn("Erroneous Uplink abortion request received");

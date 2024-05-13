@@ -22,7 +22,6 @@ public class SubServiceSixteen implements PusSubService {
 
     @Override
     public PreparedCommand process(PreparedCommand pusTelecommand) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'process'");
     }
 
@@ -32,7 +31,7 @@ public class SubServiceSixteen implements PusSubService {
 
         byte[] dataField = pkt.getDataField();
         
-        int largePacketTransactionId = (int) ByteArrayUtils.decodeCustomInteger(dataField, 0, ServiceThirteen.largePacketTransactionIdSize);
+        long largePacketTransactionId = ByteArrayUtils.decodeCustomInteger(dataField, 0, ServiceThirteen.largePacketTransactionIdSize);
         int failureReason = (int) ByteArrayUtils.decodeCustomInteger(dataField, ServiceThirteen.largePacketTransactionIdSize, ServiceThirteen.failureReasonSize);
 
         TupleDefinition td = S13_TM.copy();
@@ -40,7 +39,7 @@ public class SubServiceSixteen implements PusSubService {
             largePacketTransactionId,
             null,
             null,
-            null,
+            "ABORTION",
             failureReason
         }));
 

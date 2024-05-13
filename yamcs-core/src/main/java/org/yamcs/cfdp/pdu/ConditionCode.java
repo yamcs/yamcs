@@ -46,6 +46,10 @@ public enum ConditionCode {
         }
     }
 
+    public static ConditionCode reaConditionCodeAsIs(byte b) {
+        return ConditionCode.fromCode(b);
+    }
+
     public static ConditionCode readConditionCode(byte b) {
         return ConditionCode.fromCode((byte) ((b >> 4)&0x0F));
     }

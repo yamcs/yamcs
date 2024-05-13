@@ -61,13 +61,11 @@ public class DownlinkS13Packet extends FileTransferPacket {
 
     public static DownlinkS13Packet fromTuple(Tuple t) {
         long largePacketTransactionId = (Long) t.getLongColumn(COL_LARGE_PACKET_TRANSACTION_ID);
-        long partSequenceNumber = (Long) t.getLongColumn(COL_PART_SEQUENCE_NUMBER);
-        byte[] filePart = (byte[]) t.getColumn(COL_FILE_PART);
         PacketType packetType = PacketType.fromString((String) t.getColumn(COL_PACKET_TYPE));
         int failureCode = (Integer) t.getColumn(COL_FAILURE_REASON);
 
         // In the case of S13, largePacketTransactionId is the sourceId (i.e the remoteId)
-        return new DownlinkS13Packet(new S13UniqueId(largePacketTransactionId, TransferDirection.DOWNLOAD), partSequenceNumber, filePart, packetType, failureCode);
+        return new DownlinkS13Packet(new S13UniqueId(largePacketTransactionId, TransferDirection.DOWNLOAD), -1, null, packetType, failureCode);
     }
     
     public PacketType getPacketType() {
