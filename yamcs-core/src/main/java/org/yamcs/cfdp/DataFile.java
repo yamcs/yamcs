@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
 import org.yamcs.cfdp.pdu.FileDataPacket;
 import org.yamcs.cfdp.pdu.SegmentRequest;
 
@@ -135,7 +134,7 @@ public class DataFile {
      * @return
      */
     public List<SegmentRequest> getMissingChunks(boolean includeEnd) {
-        List<SegmentRequest> toReturn = new ArrayList<SegmentRequest>();
+        List<SegmentRequest> toReturn = Collections.synchronizedList(new ArrayList<>());
         long startOffset = 0;
         long endOffset = 0;
         if (includeEnd && size < 0) {
