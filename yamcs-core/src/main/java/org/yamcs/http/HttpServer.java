@@ -329,6 +329,11 @@ public class HttpServer extends AbstractYamcsService {
             addRoute(path, () -> faviconHandler);
         }
 
+        var robotsTxtHandler = new RobotsTxtHandler();
+        for (var path : RobotsTxtHandler.HANDLED_PATHS) {
+            addRoute(path, () -> robotsTxtHandler);
+        }
+
         var staticFileHandler = new StaticFileHandler("/static", staticRoots);
         staticFileHandler.setZeroCopyEnabled(zeroCopyEnabled);
         addRoute("static", () -> staticFileHandler);
