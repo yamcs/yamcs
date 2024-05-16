@@ -86,6 +86,7 @@ public class BackFiller implements StreamSubscriber {
         Spec schedSpec = new Spec();
         schedSpec.addOption("startSegment", OptionType.INTEGER);
         schedSpec.addOption("numSegments", OptionType.INTEGER);
+        schedSpec.addOption("interval", OptionType.INTEGER);
 
         spec.addOption("schedule", OptionType.LIST).withElementType(OptionType.MAP).withSpec(schedSpec);
         spec.addOption("compactFrequency", OptionType.INTEGER).withDefault(5);

@@ -57,7 +57,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
     private YamcsServer yamcsServer;
 
     // Maximum time to wait for new data before flushing to archive
-    int flushInterval = 10*60; // seconds
+    int flushInterval; // seconds
 
     // max allowed time for old data
     long sortingThreshold;
@@ -71,7 +71,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
         super(parameterArchive);
         this.yamcsInstance = parameterArchive.getYamcsInstance();
 
-        // flushInterval = config.getInt("flushInterval", 300);
+        flushInterval = config.getInt("flushInterval", 300);
         processorName = config.getString("processorName", processorName);
         sortingThreshold = config.getInt("sortingThreshold");
         numThreads = config.getInt("numThreads", getDefaultNumThreads());
@@ -81,6 +81,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
     static Spec getSpec() {
         Spec spec = new Spec();
 
+        spec.addOption("flushInterval", OptionType.INTEGER).withDefault(300);
         spec.addOption("enabled", OptionType.BOOLEAN);
         spec.addOption("processorName", OptionType.STRING).withDefault("realtime");
         spec.addOption("sortingThreshold", OptionType.INTEGER).withDefault(1000);
