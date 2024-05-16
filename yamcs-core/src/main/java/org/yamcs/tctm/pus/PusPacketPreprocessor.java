@@ -1,13 +1,9 @@
 package org.yamcs.tctm.pus;
 
 import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
-import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.tctm.CcsdsPacket;
 import org.yamcs.tctm.CcsdsPacketPreprocessor;
 import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
@@ -19,7 +15,7 @@ import static org.yamcs.tctm.pus.Constants.*;
 
 /**
  * Implementation for ECSS PUS (ECSS-E-ST-70-41C) packets.
- * 
+ *
  * The header structure is:
  *
  * <p>
@@ -48,7 +44,7 @@ import static org.yamcs.tctm.pus.Constants.*;
  * <p>
  * The time packets have no secondary header and the apid set to 0. The data part consists of the current onboard time
  * in the same encoding like in the normal packets.
- * 
+ *
  * <p>
  * In this class we read
  * <ul>
@@ -141,7 +137,7 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
         setRealtimePacketTime(tmPacket, pktTimeOffset);
 
         if (log.isTraceEnabled()) {
-            log.trace("Recevied packet length: {}, apid: {}, seqcount: {}, gentime: {}, status: {}", packet.length,
+            log.trace("Received packet length: {}, apid: {}, seqcount: {}, gentime: {}, status: {}", packet.length,
                     CcsdsPacket.getAPID(packet), CcsdsPacket.getSequenceCount(packet),
                     TimeEncoding.toString(tmPacket.getGenerationTime()),
                     Integer.toHexString(tmPacket.getStatus()));
