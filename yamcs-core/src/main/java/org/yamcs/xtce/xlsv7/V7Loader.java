@@ -132,6 +132,7 @@ import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.util.ParameterReference;
+import org.yamcs.xtce.xlsv7.parser.AggrMember;
 import org.yamcs.xtce.xml.XtceAliasSet;
 
 import com.google.common.primitives.UnsignedLongs;
@@ -733,16 +734,23 @@ public class V7Loader extends V7LoaderBase {
                 : new AggregateArgumentType.Builder();
         atype.setName(name);
 
-        List<AggrMember> l = parseAggregateExpr(engtype);
-        for (AggrMember m : l) {
-            validateNameType(m.name);
-            DataTypeRecord dtr = dataTypesDefs.get(m.dataType);
+        List<AggrMember> memberList;
+        try {
+            memberList = parseAggregateExpr(engtype);
+        } catch (org.yamcs.utils.parser.ParseException e) {
+            throw new SpreadsheetLoadException(ctx,
+                    "Cannot parse aggregate type '" + engtype+"'");
+        }
+        for (AggrMember m : memberList) {
+            validateNameType(m.name());
+            DataTypeRecord dtr = dataTypesDefs.get(m.dataType());
             if (dtr == null) {
                 throw new SpreadsheetLoadException(ctx,
-                        "Aggregate " + name + " makes reference to unknown type '" + m.dataType);
+                        "Aggregate " + name + " makes reference to unknown type '" + m.dataType());
             }
             DataType dtype = getOrCreateDataType(spaceSystem, dtr, param);
-            Member member = new Member(m.name);
+            Member member = new Member(m.name());
+            member.setShortDescription(m.description());
             member.setDataType(dtype);
             atype.addMember(member);
         }

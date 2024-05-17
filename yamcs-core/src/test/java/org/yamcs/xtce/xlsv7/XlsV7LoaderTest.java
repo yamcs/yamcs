@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
+import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.FloatDataEncoding;
@@ -141,5 +142,12 @@ public class XlsV7LoaderTest {
         assertEquals(4, a.length);
 
         assertEquals(2.2, ((Double) a[1]).floatValue(), 1e-5);
+    }
+    
+    @Test
+    public void testAggregateMemberDescription() throws Exception {
+        AggregateParameterType p = (AggregateParameterType) mdb.getParameterType("/REFMDB/SUBSYS1/aggregate2");
+        assertNotNull(p);
+        assertEquals("a description for member 2", p.getMember("member2").getShortDescription());         
     }
 }
