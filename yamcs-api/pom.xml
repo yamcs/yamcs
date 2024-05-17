@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>5.8.9-Pixxel.SNAPSHOT-2.7.3</version>
+    <version>5.8.9-Pixxel.SNAPSHOT-2.7.4</version>
   </parent>
 
   <artifactId>yamcs-api</artifactId>
