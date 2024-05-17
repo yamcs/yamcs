@@ -48,10 +48,10 @@ public class SubServiceOne implements PusSubService {
 
                 if (offsetValue == argOffsetValue) {
                     // Calculate CRC16 checksum
-                    int dataToBeLoaded = (int) ByteArrayUtils.decodeCustomInteger(
-                            Arrays.copyOfRange(cmdLoadData, ServiceSix.offsetArgumentSize, ServiceSix.offsetArgumentSize + dataLength), 0, dataLength);
+                    byte[] dataToBeLoaded = Arrays.copyOfRange(cmdLoadData, ServiceSix.offsetArgumentSize, ServiceSix.offsetArgumentSize + dataLength);
+
                     ByteBuffer bbN = ByteBuffer.wrap(new byte[dataLength]);
-                    bbN.put(ByteArrayUtils.encodeCustomInteger(dataToBeLoaded, dataLength));
+                    bbN.put(dataToBeLoaded);
 
                     int checksum = ServiceSix.crc.compute(bbN.array(), 0, dataLength);
 
@@ -59,7 +59,7 @@ public class SubServiceOne implements PusSubService {
                     ByteBuffer bb = ByteBuffer.wrap(new byte[ServiceSix.offsetSize + ServiceSix.lengthSize + dataLength + ServiceSix.checksumSize]);
                     bb.put(ByteArrayUtils.encodeCustomInteger(offsetValue, ServiceSix.offsetSize));
                     bb.put(ByteArrayUtils.encodeCustomInteger(dataLength, ServiceSix.lengthSize));
-                    bb.put(ByteArrayUtils.encodeCustomInteger(dataToBeLoaded, dataLength));
+                    bb.put(dataToBeLoaded);
                     bb.put(ByteArrayUtils.encodeCustomInteger(checksum, ServiceSix.checksumSize));
                     
                     loadData.add(bb.array());
