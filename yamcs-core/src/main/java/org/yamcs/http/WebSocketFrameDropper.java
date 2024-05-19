@@ -35,6 +35,9 @@ public class WebSocketFrameDropper extends ChannelOutboundHandlerAdapter {
             var frame = ((WebSocketFrame) msg);
             var prioAttr = ctx.channel().attr(WebSocketFramePriority.ATTR);
             var priority = prioAttr.get();
+            if (priority == null) { // Could be a ping frame
+                priority = NORMAL;
+            }
 
             Channel nettyChannel = ctx.channel();
             long frameLength = frame.content().readableBytes();
