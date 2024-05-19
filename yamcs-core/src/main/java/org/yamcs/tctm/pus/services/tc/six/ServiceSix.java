@@ -75,7 +75,7 @@ public class ServiceSix implements PusService {
                 }
 
                 memoryIds.put(new Pair<>(
-                        memoryIdMap.getInt("apid"), memoryIdMap.getInt("value")
+                    memoryIdMap.getInt("apid"), memoryIdMap.getInt("value")
                 ), baseIds);
 
             } else {

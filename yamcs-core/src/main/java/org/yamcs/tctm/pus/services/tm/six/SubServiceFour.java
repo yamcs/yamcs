@@ -13,6 +13,7 @@ import java.util.*;
 public class SubServiceFour implements PusSubService {
     String yamcsInstance;
     YConfiguration config;
+    int defaultGroupIdSize = 1;
 
     SubServiceFour(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
@@ -30,6 +31,7 @@ public class SubServiceFour implements PusSubService {
         PusTmCcsdsPacket pPkt = new PusTmCcsdsPacket(tmPacket.getPacket());
         byte[] dataField = pPkt.getDataField();
 
+        int apid = pPkt.getAPID();
         int memoryId = (int) ByteArrayUtils.decodeCustomInteger(dataField, 0, ServiceSix.memoryIdSize);
         int baseId = (int) ByteArrayUtils.decodeCustomInteger(dataField, ServiceSix.memoryIdSize, ServiceSix.baseIdSize);
         int nFields = (int) ByteArrayUtils.decodeCustomInteger(dataField, ServiceSix.memoryIdSize + ServiceSix.baseIdSize, ServiceSix.nfieldsSize);
@@ -39,12 +41,22 @@ public class SubServiceFour implements PusSubService {
 
         HashMap<Integer, byte[]> dumpObject = new HashMap<>();
         int totalLength = 0;
+
+        Integer groupId = null;
+        Map<Integer, Integer> offsetGroupMap = null;
+        Map<Integer, Map<Integer, Integer>> baseIdMap = ServiceSix.memoryIds.get(new org.yamcs.tctm.pus.services.tc.six.ServiceSix.Pair<>(apid, memoryId));
+        if (baseIdMap != null)
+            offsetGroupMap = baseIdMap.get(baseId);
+
         while (nFields > 0) {
             int offset = (int) ByteArrayUtils.decodeCustomInteger(dumpData, 0, ServiceSix.offsetSize);
             int length = (int) ByteArrayUtils.decodeCustomInteger(dumpData, ServiceSix.offsetSize, ServiceSix.lengthSize);
             int data = (int) ByteArrayUtils.decodeCustomInteger(dumpData, ServiceSix.offsetSize + ServiceSix.lengthSize, length);
-            int checksum = (int) ByteArrayUtils.decodeCustomInteger(dumpData, ServiceSix.offsetSize + ServiceSix.lengthSize + length, ServiceSix.checksumSize);
 
+            if (offsetGroupMap != null)
+                groupId = offsetGroupMap.get(offset);
+
+            int checksum = (int) ByteArrayUtils.decodeCustomInteger(dumpData, ServiceSix.offsetSize + ServiceSix.lengthSize + length, ServiceSix.checksumSize);
             /*
              * FIXME: Verify the checksum | But how?
              *  In case of checksum verification failure for an offset, the MDb unfortunately still expects all the N fields to be filled, in the correct order
@@ -64,15 +76,20 @@ public class SubServiceFour implements PusSubService {
         byte[] primaryHeader = pPkt.getPrimaryHeader();
         byte[] secondaryHeader = pPkt.getSecondaryHeader();
 
-        ByteBuffer bb = ByteBuffer.wrap(new byte[primaryHeader.length + secondaryHeader.length + ServiceSix.memoryIdSize + ServiceSix.baseIdSize + ServiceSix.nfieldsSize + totalLength]);
+        ByteBuffer bb;
+        if (groupId != null)
+            bb = ByteBuffer.wrap(new byte[primaryHeader.length + secondaryHeader.length + ServiceSix.memoryIdSize + ServiceSix.baseIdSize + ServiceSix.nfieldsSize + totalLength + defaultGroupIdSize]);
+        else
+            bb = ByteBuffer.wrap(new byte[primaryHeader.length + secondaryHeader.length + ServiceSix.memoryIdSize + ServiceSix.baseIdSize + ServiceSix.nfieldsSize + totalLength]);
+
         bb.put(primaryHeader);
         bb.put(secondaryHeader);
         bb.put(ByteArrayUtils.encodeCustomInteger(memoryId, ServiceSix.memoryIdSize));
         bb.put(ByteArrayUtils.encodeCustomInteger(baseId, ServiceSix.baseIdSize));
         bb.put(ByteArrayUtils.encodeCustomInteger(nFieldsToBeFilled, ServiceSix.nfieldsSize));
+        if (groupId != null)
+            bb.put(ByteArrayUtils.encodeCustomInteger(groupId.intValue(), defaultGroupIdSize));
         sortedDumpObject.forEach((key, value) -> bb.put(value));
-
-        byte[] newbb = bb.array();
 
         // Construct new TmPacket
         TmPacket newPkt = new TmPacket(tmPacket.getReceptionTime(), tmPacket.getGenerationTime(),

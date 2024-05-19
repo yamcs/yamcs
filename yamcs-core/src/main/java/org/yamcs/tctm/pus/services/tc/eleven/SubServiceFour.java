@@ -57,7 +57,6 @@ public class SubServiceFour implements PusSubService {
             ServiceEleven.pusVersionNumber |
             (acknowledgementFlags & 0x0F) 
         );
-        System.out.println("PusVersion: " + pusVersionAcknowledgementFlags);
         byte[] secondaryHeader = new byte[PusTcManager.secondaryHeaderLength];
 
         ByteBuffer bb = ByteBuffer.wrap(secondaryHeader);

@@ -9,6 +9,7 @@ import org.yamcs.logging.Log;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSubService;
+import org.yamcs.tctm.pus.services.tc.six.ServiceSix.Pair;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
 
 public class ServiceSix implements PusService {
@@ -16,6 +17,8 @@ public class ServiceSix implements PusService {
     Map<Integer, PusSubService> subServices = new HashMap<>();
     String yamcsInstance;
     YConfiguration config;
+
+    protected static Map<Pair<Integer, Integer>, Map<Integer, Map<Integer, Integer>>> memoryIds = new HashMap<>();
 
     protected static int DEFAULT_MEMORY_ID_SIZE = 1;
     protected static int DEFAULT_BASE_ID_SIZE = 1;
@@ -41,6 +44,31 @@ public class ServiceSix implements PusService {
         nfieldsSize = config.getInt("nfieldsSize", DEFAULT_NFIELDS_SIZE);
         offsetSize = config.getInt("offsetSize", DEFAULT_OFFSET_SIZE);
         lengthSize = config.getInt("lengthSize", DEFAULT_LENGTH_SIZE);
+
+        // Load Group<>Offset mapping
+        List<String> memoryIdStr = config.getList("memoryId");
+        YConfiguration memoryIdConfig = YConfiguration.getConfiguration("pus.six");
+        
+        for (String memoryId: memoryIdStr) {
+            if (memoryIdConfig.containsKey(memoryId)) {
+                YConfiguration memoryIdMap = memoryIdConfig.getConfig(memoryId);
+
+                Map<Integer, Map<Integer, Integer>> baseIds = new HashMap<>();
+                for (YConfiguration baseConfig: memoryIdMap.getConfigList("baseId")) {
+                    int baseIdValue = baseConfig.getInt("value");
+
+                    Map<Integer, Integer> offsets = new HashMap<>();
+                    for (YConfiguration offsetConfig: baseConfig.getConfigList("offsets")) {
+                        offsets.put(offsetConfig.getInt("value"), offsetConfig.getInt("group"));
+                    }
+                    baseIds.put(baseIdValue, offsets);
+                }
+
+                memoryIds.put(new Pair<> (
+                    memoryIdMap.getInt("apid"), memoryIdMap.getInt("value")
+                ), baseIds);
+            }
+        }
 
         initializeSubServices();
     }
