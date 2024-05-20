@@ -9,7 +9,7 @@ import org.yamcs.cfdp.pdu.FileDataPacket;
 import org.yamcs.cfdp.pdu.SegmentRequest;
 
 public class DataFile {
-    private List<Segment> dataFileSegments = new ArrayList<Segment>();
+    List<Segment> dataFileSegments = new ArrayList<Segment>();
     // -1 means size unknown or unbounded
     private int size = -1;
     byte[] data;
@@ -32,7 +32,7 @@ public class DataFile {
         }
     }
 
-    public void addSegment(FileDataPacket fdp) {
+    public synchronized void addSegment(FileDataPacket fdp) {
         if (size != -1 && fdp.getEndOffset() > size) {
             throw new IllegalArgumentException("Segment falls beyond the end of the file");
         }
@@ -121,7 +121,7 @@ public class DataFile {
         System.arraycopy(fdp.getData(), 0, data, (int) fdp.getOffset(), fdp.getLength());
     }
 
-    public List<SegmentRequest> getMissingChunks() {
+    public synchronized List<SegmentRequest> getMissingChunks() {
         return getMissingChunks(true);
     }
 
@@ -134,7 +134,7 @@ public class DataFile {
      * @param includeEnd
      * @return
      */
-    public List<SegmentRequest> getMissingChunks(boolean includeEnd) {
+    public synchronized List<SegmentRequest> getMissingChunks(boolean includeEnd) {
         List<SegmentRequest> toReturn = new ArrayList<SegmentRequest>();
         long startOffset = 0;
         long endOffset = 0;
@@ -156,11 +156,11 @@ public class DataFile {
 
     // returns the amount of bytes received of this Data Files.
     // Missing intermediate chunks are not yet received and are therefore not counted
-    public long getReceivedSize() {
+    public synchronized long getReceivedSize() {
         return this.dataFileSegments.stream().mapToLong(Segment::length).sum();
     }
 
-    public byte[] getData() {
+    public synchronized byte[] getData() {
         if (size == -1) {
             throw new IllegalStateException("Size unknown");
         }
@@ -171,15 +171,11 @@ public class DataFile {
         }
     }
 
-    int numSegments() {
-        return dataFileSegments.size();
-    }
-
     /**
      * 
      * @return true if all the data has been received. If size is not known return false.
      */
-    public boolean isComplete() {
+    public synchronized boolean isComplete() {
         if (size < 0) {
             return false;
         }
@@ -190,7 +186,7 @@ public class DataFile {
         return seg0.start == 0 && seg0.end == size;
     }
 
-    public long getChecksum() {
+    public synchronized long getChecksum() {
         long checksum = 0;
         for (Segment segment : this.dataFileSegments) {
             checksum += ChecksumCalculator.calculateChecksum(data, segment.start, segment.length());
@@ -203,7 +199,7 @@ public class DataFile {
      *
      * @return
      */
-    public long endOfFileOffset() {
+    public synchronized long endOfFileOffset() {
         if (!dataFileSegments.isEmpty()) {
             Segment seg = dataFileSegments.get(dataFileSegments.size() - 1);
             return seg.end;
@@ -212,7 +208,7 @@ public class DataFile {
         }
     }
 
-    public void setSize(long size) {
+    public synchronized void setSize(long size) {
         long eof = endOfFileOffset();
         if (size < 0 || size < eof) {
             throw new IllegalArgumentException("Invalid size");
@@ -220,7 +216,7 @@ public class DataFile {
         this.size = checkMaxSize(size);
     }
 
-    public long getSize() {
+    public synchronized long getSize() {
         return size;
     }
 
@@ -230,10 +226,6 @@ public class DataFile {
                     "file transfers larger than " + Integer.MAX_VALUE + " not supported");
         }
         return (int) size;
-    }
-
-    List<Segment> getSegments() {
-        return dataFileSegments;
     }
 
     static class Segment {
