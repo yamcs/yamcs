@@ -149,7 +149,7 @@ public class ArgumentTypeProcessor {
         if (encoding instanceof IntegerDataEncoding) {
             CalibratorProc calibrator = pcontext.pdata.getDecalibrator(encoding);
             if (calibrator == null) {
-                return DataEncodingUtils.getRawIntegerValue((IntegerDataEncoding) encoding, (long) v.getDoubleValue());
+                return DataEncodingUtils.getRawIntegerValue((IntegerDataEncoding) encoding, (long) v.toDouble());
             } else {
                 long calibValue = Math.round(calibrator.calibrate(v.toDouble()));
                 return DataEncodingUtils.getRawIntegerValue((IntegerDataEncoding) encoding, (long) calibValue);
