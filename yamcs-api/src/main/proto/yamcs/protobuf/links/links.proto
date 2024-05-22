@@ -156,7 +156,9 @@ message LinkEvent {
     UNREGISTERED = 2;
     // A link was updated in one of its attributes, for example the dataCount has increased,
     // or the status has changed.
-    UPDATED = 3;
+    // removed as of Yamcs 5.9.6
+    // UPDATED = 3;
+    
     // Replace entire model with the link information
     // provided in the `links` field.
     UPDATE_ALL = 4;

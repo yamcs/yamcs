@@ -96,16 +96,6 @@ public class LinksApi extends AbstractLinksApi<Context> {
             public void linkUnregistered(LinkInfo linkInfo) {
                 // NOP
             }
-
-            @Override
-            public void linkChanged(LinkInfo linkInfo) {
-                if (instance.equals(linkInfo.getInstance())) {
-                    observer.next(LinkEvent.newBuilder()
-                            .setType(LinkEvent.Type.UPDATED)
-                            .setLinkInfo(linkInfo)
-                            .build());
-                }
-            }
         };
 
         var exec = YamcsServer.getServer().getThreadPoolExecutor();

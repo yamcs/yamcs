@@ -183,6 +183,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
                 ServiceUtil.awaitServiceTerminated(swc.service, YamcsServer.SERVICE_STOP_GRACE_TIME, log);
             }));
         }
+        linkManager = null;
 
         serviceStoppers.shutdown();
         Futures.addCallback(Futures.allAsList(stopFutures), new FutureCallback<Object>() {

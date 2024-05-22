@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.yamcs.ConfigurationException;
@@ -109,9 +108,6 @@ public class LinkManager {
         } else {
             log.info("No link created because the section dataLinks was not found");
         }
-
-        YamcsServer.getServer().getThreadPoolExecutor().scheduleAtFixedRate(() -> checkLinkUpdate(), 1, 1,
-                TimeUnit.SECONDS);
     }
 
     private void createDataLink(YConfiguration linkConfig, LinkMemento memento) throws ValidationException {
@@ -345,16 +341,6 @@ public class LinkManager {
 
     public void notifyChanged(Link link) {
         linksWithChanges.add(link);
-    }
-
-    private void checkLinkUpdate() {
-        // see if any link has changed
-        for (LinkWithInfo lwi : links) {
-            if (lwi.hasChanged()) {
-                LinkInfo li = lwi.linkInfo;
-                linkListeners.forEach(l -> l.linkChanged(li));
-            }
-        }
     }
 
     private void registerLink(String linkName, String spec, Link link) {
