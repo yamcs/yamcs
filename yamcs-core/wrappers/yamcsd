@@ -8,8 +8,6 @@
 # JMX           Set to 1 to allow remote JMX connections (jconsole).
 #
 # JAVA_OPTS     Java runtime options
-#
-# CLASSPATH     Custom classpath additions
 
 # resolve links - $0 may be a softlink
 PRG="$0"
@@ -34,6 +32,10 @@ cd "$YAMCS_HOME"
 # Remove user classpath, but allow custom classpath additions via setenv.sh
 CLASSPATH=
 LIBPATH=
+
+# Prevent native memory OOM.
+# If unset, glibc defaults to "8 x cores" pools.
+export MALLOC_ARENA_MAX=4
 
 if [ -r bin/setenv.sh ]; then
   . bin/setenv.sh
