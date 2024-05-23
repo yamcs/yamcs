@@ -121,6 +121,7 @@ public class RdbConfig {
         public TablespaceConfig() {
             dboptions = new DBOptions();
             dboptions.setCreateIfMissing(true);
+            dboptions.setKeepLogFileNum(10);
             dboptions.setMaxOpenFiles(DEFAULT_MAX_OPEN_FILES);
             int halfNumProc = Runtime.getRuntime().availableProcessors() / 2;
             if (halfNumProc > 1) {
