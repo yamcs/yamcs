@@ -619,6 +619,15 @@ public class Tablespace {
                 db.getDb().deleteRange(dbKey(tbsIndex), dbKey(tbsIndex + 1));
                 removeTbsIndex(Type.TABLE_PARTITION, tbsIndex);
             }
+
+            // remove the histogram data (if any)
+            for (TablespaceRecord tr : filter(Type.HISTOGRAM, table.yamcsInstance,
+                    tr -> tr.getTableName().equals(tblDef.getName()))) {
+                int tbsIndex = tr.getTbsIndex();
+                log.debug("Removing histogram data {}", tr);
+                removeTbsIndex(Type.HISTOGRAM, tbsIndex);
+            }
+
             // remove table definition and data from main db
             removeTbsIndex(Type.TABLE_DEFINITION, table.tbsIndex);
         }
