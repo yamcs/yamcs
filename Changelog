@@ -1,3 +1,7 @@
+Version 5.9.6 released 24-May-2024
+- Allow descriptions for aggregate members defined in the spreadsheet
+- Small tweaks and fixes
+
 Version 5.9.5 released 11-May-2024
 - Add CSV export for commands
 - Small tweaks and fixes related to CFDP, Parameter Archive, Permissions, replication

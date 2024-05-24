@@ -1,3 +1,5 @@
+dataPartitioningByTime: YYYY/MM
+
 services:
   - class: org.yamcs.archive.XtceTmRecorder
   - class: org.yamcs.archive.ParameterRecorder
