@@ -25,6 +25,10 @@ mat-toolbar-row {
 .logo-wrapper {
   padding-left: 16px;
   padding-right: 16px;
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
 }
 
 .logo-wrapper.nosidebar {
@@ -46,6 +50,7 @@ mat-toolbar-row {
   font-size: 14px;
   white-space: nowrap;
   overflow: hidden;
+  color: #fff;
 }
 
 .selected-instance.mat-mdc-button {

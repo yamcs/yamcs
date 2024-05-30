@@ -1,6 +1,6 @@
 <h2 mat-dialog-title>{{ data.action.label }}</h2>
 
-<mat-dialog-content class="mat-typography">
+<mat-dialog-content>
   <form [formGroup]="form" class="ya-form">
     <ng-container *ngFor="let option of options; let first = first">
       <hr class="half-break" *ngIf="!first">

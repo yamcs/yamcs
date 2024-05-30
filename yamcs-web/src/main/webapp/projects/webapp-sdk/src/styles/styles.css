@@ -4,10 +4,10 @@ body {
   padding: 0;
   height: 100%;
   position: relative;
+  font-family: Roboto, sans-serif;
 }
 
 /* Disable dashed border in menus etc. Only FF does this */
-
 ::-moz-focus-inner {
   border: 0;
 }
@@ -144,6 +144,7 @@ a.ya-link.ya-header-link {
 
 .ya-menu.mat-mdc-menu-panel {
   min-height: 24px;
+  box-shadow: 0 5px 5px -3px #0003, 0 8px 10px 1px #00000024, 0 3px 14px 2px #0000001f;
 }
 
 .ng-invalid:not(.ng-pristine)>.date-time-input>input,
@@ -202,16 +203,6 @@ input.ng-invalid:not(.ng-pristine),
   border-radius: 50%;
   padding: 4px 5px;
   font-family: "Roboto";
-}
-
-/*
- * Fix for scrollbar being invisible on Safari.
- * https://github.com/ajaxorg/ace/issues/2872
- */
-
-.ace_scrollbar-inner {
-  background-color: white;
-  opacity: 0.01;
 }
 
 button.expandable {
@@ -303,11 +294,6 @@ button.ya-button.primary {
   border-color: rgba(0, 0, 0, 0.1);
 }
 
-.mat-mdc-tab-nav-bar,
-.mat-mdc-tab-group .mat-mdc-tab-header {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-}
-
 .mat-mdc-tab-nav-bar.secondary .mat-mdc-tab-link,
 .mat-mdc-tab-group.secondary .mat-mdc-tab {
   height: 36px;
@@ -329,10 +315,6 @@ input[type="radio"] {
 
 .action-bar {
   padding-top: 16px;
-}
-
-.mat-mdc-dialog-actions {
-  padding: 24px !important;
 }
 
 .mat-mdc-dialog-content .hint {

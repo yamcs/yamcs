@@ -12,6 +12,7 @@
 
 .ya-data-table tr.mat-mdc-row {
   height: auto;
+  background: #fff;
 }
 
 .ya-data-table:not(.nohover) tr.mat-mdc-row:hover td {

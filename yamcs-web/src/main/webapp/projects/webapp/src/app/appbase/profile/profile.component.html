@@ -3,7 +3,7 @@
     Profile
   </mat-toolbar-row>
 </mat-toolbar>
-<div class="form-content mat-typography" *ngIf="user$ | async as user">
+<div class="form-content" *ngIf="user$ | async as user">
   <dl class="dl-horizontal no-lead">
     <dt>Username</dt>
     <dd>{{ user.getName() }}</dd>

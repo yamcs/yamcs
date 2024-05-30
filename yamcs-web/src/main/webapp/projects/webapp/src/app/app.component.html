@@ -7,11 +7,9 @@
     <div *ngIf="tag" class="tag">
       {{ tag }}
     </div>
-    <div class="logo-wrapper">
-      <a routerLink="/">
-        <img src="yamcs.png" style="margin-top: 12px">
-      </a>
-    </div>
+    <a class="logo-wrapper" routerLink="/">
+      <img src="yamcs.png">
+    </a>
     <ng-container *ngIf="connectionInfo$ | async as connectionInfo">
       <button mat-button (click)="openInstanceDialog()">
         {{ connectionInfo.instance?.name }} ▾

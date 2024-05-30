@@ -1,5 +1,5 @@
 <ng-container *ngIf="!(selectedCommand$ | async)">
-  <div class="wrapper mat-typography">
+  <div class="wrapper">
     <form [formGroup]="selectCommandForm" class="ya-form">
       <h2>Select command</h2>
       <div class="command-table-wrapper">
@@ -7,7 +7,7 @@
       </div>
     </form>
   </div>
-  <div class="footer mat-typography">
+  <div class="footer">
     <mat-toolbar>
       <mat-toolbar-row>
         <button class="ya-button" mat-dialog-close>CANCEL</button>
@@ -17,7 +17,7 @@
 </ng-container>
 
 <ng-container *ngIf="selectedCommand$ | async as command">
-  <div class="wrapper mat-typography">
+  <div class="wrapper">
     <div class="command-detail">
       <div class="names">
         <div>
@@ -74,7 +74,7 @@
       </ng-container>
     </div>
   </div>
-  <div class="footer mat-typography">
+  <div class="footer">
     <mat-toolbar>
       <mat-toolbar-row>
         <button class="ya-button" mat-dialog-close>CANCEL</button>&nbsp;&nbsp;

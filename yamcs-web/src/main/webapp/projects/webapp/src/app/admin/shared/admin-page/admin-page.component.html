@@ -1,7 +1,6 @@
 <ya-message-bar #messageBar />
 
-<mat-sidenav-container class="mat-typography"
-                       [class.message-bar-visible]="messageBar.show$ | async">
+<mat-sidenav-container [class.message-bar-visible]="messageBar.show$ | async">
   <mat-sidenav mode="side" [opened]="true" [disableClose]="true">
     <div class="sidenav-content">
       <mat-toolbar class="top module-title">

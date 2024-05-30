@@ -1,4 +1,4 @@
-<mat-dialog-content class="mat-typography ya-form">
+<mat-dialog-content class="ya-form">
   <label>
     Search parameter for comparison
     <input type="text"
@@ -12,11 +12,11 @@
   </label>
 
   <br>
-  <label class="mat-typography">Color</label>
+  <label>Color</label>
   <app-color-palette #palette />
 
   <br>
-  <label class="mat-typography">Thickness</label>
+  <label>Thickness</label>
   <app-thickness #thickness [color]="palette.selectedColor" />
 </mat-dialog-content>
 

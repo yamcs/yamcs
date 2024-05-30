@@ -1,7 +1,6 @@
 <ya-message-bar #messageBar />
 
 <mat-sidenav-container #pageContainer
-                       class="mat-typography"
                        [class.fullscreen]="fullScreenMode$ | async"
                        [class.zen]="zenMode$ | async"
                        [class.message-bar-visible]="messageBar.show$ | async">

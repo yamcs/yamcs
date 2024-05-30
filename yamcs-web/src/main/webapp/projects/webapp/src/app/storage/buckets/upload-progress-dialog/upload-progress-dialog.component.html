@@ -5,7 +5,7 @@
   Uploads
 </h3>
 
-<mat-dialog-content class="mat-typography">
+<mat-dialog-content>
   <div #tableWrapper class="table-wrapper">
     <table style="font-size: small; width: 100%">
       <tr *ngFor="let upload of uploads$ | async" [class.failed]="upload.err">
