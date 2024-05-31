@@ -4,10 +4,11 @@
 
   <dt>System</dt>
   <dd>
-    <ng-container *ngIf="(command.qualifiedName | spaceSystemName) as spaceSystemName">
-      <a routerLink="/mdb/commands"
-         [queryParams]="{c: yamcs.context, filter: spaceSystemName}"
-         class="ya-link">
+    <ng-container *ngIf="command.qualifiedName | spaceSystemName as spaceSystemName">
+      <a
+        routerLink="/mdb/commands"
+        [queryParams]="{ c: yamcs.context, filter: spaceSystemName }"
+        class="ya-link">
         {{ spaceSystemName }}
       </a>
     </ng-container>
@@ -19,7 +20,7 @@
   </ng-container>
 
   <dt>Short description</dt>
-  <dd>{{ command.shortDescription || '-' }}</dd>
+  <dd>{{ command.shortDescription || "-" }}</dd>
 
   <dt>Long Description</dt>
   <dd>
@@ -34,9 +35,10 @@
 <dl class="dl-horizontal">
   <dt>Base command</dt>
   <dd *ngIf="command.baseCommand">
-    <a [routerLink]="['/mdb/commands/', command.baseCommand.qualifiedName]"
-       [queryParams]="{c: yamcs.context}"
-       class="ya-link">
+    <a
+      [routerLink]="['/mdb/commands/', command.baseCommand.qualifiedName]"
+      [queryParams]="{ c: yamcs.context }"
+      class="ya-link">
       {{ command.baseCommand.qualifiedName }}
     </a>
   </dd>
@@ -55,7 +57,7 @@
   <dt>Argument assignments</dt>
   <dd *ngIf="command.argumentAssignment">
     <ng-container *ngFor="let assignment of command.argumentAssignment">
-      {{ assignment.name}} = {{ assignment.value }}<br>
+      {{ assignment.name }} = {{ assignment.value }}<br />
     </ng-container>
   </dd>
   <dd *ngIf="!command.argumentAssignment">-</dd>
@@ -75,28 +77,30 @@
         <th>Initial value</th>
       </tr>
       <tr *ngFor="let argument of command.argument">
-        <td>{{ argument.name || '-' }}</td>
-        <td>{{ argument.description || '-' }}</td>
+        <td>{{ argument.name || "-" }}</td>
+        <td>{{ argument.description || "-" }}</td>
         <td>
           <ng-container *ngIf="argument.type?.engType === 'enumeration'">
-            <span (click)="showEnum(argument)" matTooltip="Show enum states"
-                  class="enum">{{ argument.type?.engType }}</span>
+            <span (click)="showEnum(argument)" matTooltip="Show enum states" class="enum">{{
+              argument.type?.engType
+            }}</span>
           </ng-container>
           <ng-container *ngIf="argument.type?.engType !== 'enumeration'">
-            {{ argument.type?.engType || '-' }}
+            {{ argument.type?.engType || "-" }}
           </ng-container>
         </td>
-        <td>{{ argument.type?.signed ?? '-' }}</td>
-        <td>{{ argument.type?.dataEncoding?.encoding || '-' }}</td>
-        <td>{{ argument.type?.dataEncoding?.sizeInBits | nvl:'-' }}</td>
-        <td>{{ argument.type?.dataEncoding?.littleEndian ? 'Little Endian' : 'Big Endian' }}</td>
+        <td>{{ argument.type?.signed ?? "-" }}</td>
+        <td>{{ argument.type?.dataEncoding?.encoding || "-" }}</td>
+        <td>{{ argument.type?.dataEncoding?.sizeInBits | nvl: "-" }}</td>
+        <td>{{ argument.type?.dataEncoding?.littleEndian ? "Little Endian" : "Big Endian" }}</td>
         <td>
-          <ya-interval *ngIf="(argument.type?.rangeMin || argument.type?.rangeMax); else empty"
-                       [left]="argument.type?.rangeMin"
-                       [right]="argument.type?.rangeMax" />
+          <ya-interval
+            *ngIf="argument.type?.rangeMin || argument.type?.rangeMax; else empty"
+            [left]="argument.type?.rangeMin"
+            [right]="argument.type?.rangeMax" />
           <ng-template #empty>-</ng-template>
         </td>
-        <td>{{ argument.initialValue || '-'}}</td>
+        <td>{{ argument.initialValue || "-" }}</td>
       </tr>
     </table>
   </dd>
@@ -115,7 +119,7 @@
       </tr>
       <tr *ngFor="let constraint of command.constraint">
         <td>{{ constraint.expression }}</td>
-        <td>{{ constraint.timeout || '-' }}</td>
+        <td>{{ constraint.timeout || "-" }}</td>
       </tr>
     </table>
   </dd>
@@ -147,24 +151,32 @@
         </td>
         <td>
           <ng-container *ngIf="verifier.algorithm">
-            <a [routerLink]="['/mdb/algorithms/', verifier.algorithm.qualifiedName]"
-               [queryParams]="{c: yamcs.context}">{{ verifier.algorithm.qualifiedName }}</a>
+            <a
+              [routerLink]="['/mdb/algorithms/', verifier.algorithm.qualifiedName]"
+              [queryParams]="{ c: yamcs.context }"
+              >{{ verifier.algorithm.qualifiedName }}</a
+            >
           </ng-container>
           <ng-container *ngIf="verifier.container">
-            <a [routerLink]="['/mdb/containers/', verifier.container.qualifiedName]"
-               [queryParams]="{c: yamcs.context}">{{ verifier.container.qualifiedName }}</a>
+            <a
+              [routerLink]="['/mdb/containers/', verifier.container.qualifiedName]"
+              [queryParams]="{ c: yamcs.context }"
+              >{{ verifier.container.qualifiedName }}</a
+            >
           </ng-container>
           <ng-container *ngIf="verifier.expression">
             {{ verifier.expression }}
           </ng-container>
         </td>
         <td>
-          [{{ verifier.checkWindow.timeToStartChecking || '0' }},{{ verifier.checkWindow.timeToStopChecking || '0' }}]
+          [{{ verifier.checkWindow.timeToStartChecking || "0" }},{{
+            verifier.checkWindow.timeToStopChecking || "0"
+          }}]
         </td>
         <td>{{ verifier.checkWindow.relativeTo }}</td>
-        <td>{{ verifier.onSuccess || '-' }}</td>
-        <td>{{ verifier.onFail || '-' }}</td>
-        <td>{{ verifier.onTimeout || '-' }}</td>
+        <td>{{ verifier.onSuccess || "-" }}</td>
+        <td>{{ verifier.onFail || "-" }}</td>
+        <td>{{ verifier.onTimeout || "-" }}</td>
       </tr>
     </table>
     <ng-container *ngIf="!command.verifier?.length">-</ng-container>
@@ -193,10 +205,13 @@
         <ng-container *ngIf="entry.parameter">
           <td>Parameter</td>
           <td>
-            <a [routerLink]="['/mdb/parameters/', entry.parameter.qualifiedName]"
-               [queryParams]="{c: yamcs.context}">{{ entry.parameter.qualifiedName }}</a>
+            <a
+              [routerLink]="['/mdb/parameters/', entry.parameter.qualifiedName]"
+              [queryParams]="{ c: yamcs.context }"
+              >{{ entry.parameter.qualifiedName }}</a
+            >
           </td>
-          <td>{{ entry.parameter.type.dataEncoding?.sizeInBits ?? '-' }}</td>
+          <td>{{ entry.parameter.type.dataEncoding?.sizeInBits ?? "-" }}</td>
         </ng-container>
         <ng-container *ngIf="entry.fixedValue">
           <td>Fixed value</td>

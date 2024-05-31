@@ -1,5 +1,2 @@
-<app-queued-commands-table *ngIf="hasEntries$ | async; else empty"
-                           [cqueues$]="cqueues$" />
-<ng-template #empty>
-  All queues are empty.
-</ng-template>
+<app-queued-commands-table *ngIf="hasEntries$ | async; else empty" [cqueues$]="cqueues$" />
+<ng-template #empty> All queues are empty. </ng-template>

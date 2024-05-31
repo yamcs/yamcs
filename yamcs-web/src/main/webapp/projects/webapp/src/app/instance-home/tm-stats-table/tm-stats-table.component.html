@@ -1,18 +1,19 @@
-<table mat-table
-       *ngIf="dataSource"
-       [dataSource]="dataSource"
-       class="ya-data-table expand"
-       matSort
-       matSortActive="packetName"
-       matSortDirection="asc"
-       matSortDisableClear>
-
+<table
+  mat-table
+  *ngIf="dataSource"
+  [dataSource]="dataSource"
+  class="ya-data-table expand"
+  matSort
+  matSortActive="packetName"
+  matSortDirection="asc"
+  matSortDisableClear>
   <ng-container matColumnDef="packetName">
     <th mat-header-cell *matHeaderCellDef mat-sort-header>Packet</th>
     <td mat-cell *matCellDef="let tmstats">
-      <a *ngIf="config.tmArchive"
-         routerLink="/telemetry/packets"
-         [queryParams]="{c: yamcs.context, name: tmstats.packetName}">
+      <a
+        *ngIf="config.tmArchive"
+        routerLink="/telemetry/packets"
+        [queryParams]="{ c: yamcs.context, name: tmstats.packetName }">
         {{ tmstats.packetName }}
       </a>
       <ng-container *ngIf="!config.tmArchive">{{ tmstats.packetName }}</ng-container>
@@ -23,7 +24,7 @@
   <ng-container matColumnDef="lastReceived">
     <th mat-header-cell *matHeaderCellDef>Received</th>
     <td mat-cell *matCellDef="let tmstats" style="text-align: right">
-      {{ (tmstats.lastReceived | deltaWith:tmstats.lastPacketTime) || '-' }}
+      {{ (tmstats.lastReceived | deltaWith: tmstats.lastPacketTime) || "-" }}
     </td>
     <td mat-footer-cell *matFooterCellDef></td>
   </ng-container>
@@ -31,7 +32,7 @@
   <ng-container matColumnDef="lastPacketTime">
     <th mat-header-cell *matHeaderCellDef mat-sort-header>Packet time</th>
     <td mat-cell *matCellDef="let tmstats">
-      {{ (tmstats.lastPacketTime | datetime) || '-' }}
+      {{ (tmstats.lastPacketTime | datetime) || "-" }}
     </td>
     <td mat-footer-cell *matFooterCellDef></td>
   </ng-container>
@@ -47,13 +48,12 @@
   </ng-container>
 
   <ng-container matColumnDef="dataRate">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header>Data rate
-    </th>
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Data rate</th>
     <td mat-cell *matCellDef="let tmstats" style="text-align: right">
       {{ tmstats.dataRate | dataRate }}
     </td>
     <td mat-footer-cell *matFooterCellDef style="text-align: right">
-      {{ (totalDataRate$ | async) | dataRate }}
+      {{ totalDataRate$ | async | dataRate }}
     </td>
   </ng-container>
 
@@ -64,6 +64,6 @@
   </ng-container>
 
   <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
   <tr mat-footer-row *matFooterRowDef="displayedColumns"></tr>
 </table>

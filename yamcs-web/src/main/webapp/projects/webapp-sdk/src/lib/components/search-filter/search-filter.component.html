@@ -1,9 +1,10 @@
 <div class="search-input" [style.width]="width">
-  <input #input
-         class="ya-input"
-         type="text"
-         [placeholder]="placeholder"
-         (keydown)="onKeydown($event)">
+  <input
+    #input
+    class="ya-input"
+    type="text"
+    [placeholder]="placeholder"
+    (keydown)="onKeydown($event)" />
   <div class="filter">
     <mat-icon class="icon16">{{ icon }}</mat-icon>
   </div>

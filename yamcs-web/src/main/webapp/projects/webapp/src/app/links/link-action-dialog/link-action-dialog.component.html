@@ -3,16 +3,24 @@
 <mat-dialog-content>
   <form [formGroup]="form" class="ya-form">
     <ng-container *ngFor="let option of options; let first = first">
-      <hr class="half-break" *ngIf="!first">
+      <hr class="half-break" *ngIf="!first" />
       <ng-container [ngSwitch]="option.type">
-        <app-boolean-option *ngSwitchCase="'BOOLEAN'"
-                            [formControlName]="option.name" [option]="option" />
-        <app-float-option *ngSwitchCase="'FLOAT'"
-                          [formControlName]="option.name" [option]="option" />
-        <app-integer-option *ngSwitchCase="'INTEGER'"
-                            [formControlName]="option.name" [option]="option" />
-        <app-string-option *ngSwitchCase="'STRING'"
-                           [formControlName]="option.name" [option]="option" />
+        <app-boolean-option
+          *ngSwitchCase="'BOOLEAN'"
+          [formControlName]="option.name"
+          [option]="option" />
+        <app-float-option
+          *ngSwitchCase="'FLOAT'"
+          [formControlName]="option.name"
+          [option]="option" />
+        <app-integer-option
+          *ngSwitchCase="'INTEGER'"
+          [formControlName]="option.name"
+          [option]="option" />
+        <app-string-option
+          *ngSwitchCase="'STRING'"
+          [formControlName]="option.name"
+          [option]="option" />
       </ng-container>
     </ng-container>
   </form>

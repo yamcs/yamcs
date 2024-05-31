@@ -4,10 +4,11 @@
 
   <dt>System</dt>
   <dd>
-    <ng-container *ngIf="(container.qualifiedName | spaceSystemName) as spaceSystemName">
-      <a routerLink="/mdb/containers"
-         [queryParams]="{c: yamcs.context, filter: spaceSystemName}"
-         class="ya-link">
+    <ng-container *ngIf="container.qualifiedName | spaceSystemName as spaceSystemName">
+      <a
+        routerLink="/mdb/containers"
+        [queryParams]="{ c: yamcs.context, filter: spaceSystemName }"
+        class="ya-link">
         {{ spaceSystemName }}
       </a>
     </ng-container>
@@ -19,7 +20,7 @@
   </ng-container>
 
   <dt>Short Description</dt>
-  <dd>{{ container.shortDescription || '-' }}</dd>
+  <dd>{{ container.shortDescription || "-" }}</dd>
 
   <dt>Long Description</dt>
   <dd>
@@ -40,26 +41,29 @@
 
   <dt>Base Container</dt>
   <dd>
-    <a *ngIf="container.baseContainer"
-       [routerLink]="['/mdb/containers/', container.baseContainer.qualifiedName]"
-       [queryParams]="{c: yamcs.context}"
-       class="ya-link">
-      {{ container.baseContainer.qualifiedName || '-' }}
+    <a
+      *ngIf="container.baseContainer"
+      [routerLink]="['/mdb/containers/', container.baseContainer.qualifiedName]"
+      [queryParams]="{ c: yamcs.context }"
+      class="ya-link">
+      {{ container.baseContainer.qualifiedName || "-" }}
     </a>
     <span *ngIf="!container.baseContainer">-</span>
   </dd>
 
   <dt>Restriction Criteria</dt>
   <dd>
-    {{ container.restrictionCriteriaExpression || '-' }}
+    {{ container.restrictionCriteriaExpression || "-" }}
   </dd>
 
   <dt>Archive Partition</dt>
   <dd>
-    <mat-icon *ngIf="container.archivePartition"
-              class="icon14" style="vertical-align: middle">check</mat-icon>
-    <mat-icon *ngIf="!container.archivePartition"
-              class="icon14" style="vertical-align: middle">close</mat-icon>
+    <mat-icon *ngIf="container.archivePartition" class="icon14" style="vertical-align: middle"
+      >check</mat-icon
+    >
+    <mat-icon *ngIf="!container.archivePartition" class="icon14" style="vertical-align: middle"
+      >close</mat-icon
+    >
   </dd>
 </dl>
 
@@ -80,18 +84,19 @@
         <ng-container *ngIf="entry.parameter">
           <td>Parameter</td>
           <td>
-            <a [routerLink]="['/mdb/parameters/', entry.parameter!.qualifiedName]"
-               [queryParams]="{c: yamcs.context}"
-               class="ya-link">
+            <a
+              [routerLink]="['/mdb/parameters/', entry.parameter!.qualifiedName]"
+              [queryParams]="{ c: yamcs.context }"
+              class="ya-link">
               {{ entry.parameter.qualifiedName }}
             </a>
           </td>
-          <td>{{ entry.parameter.type.dataEncoding?.sizeInBits ?? '-' }}</td>
+          <td>{{ entry.parameter.type.dataEncoding?.sizeInBits ?? "-" }}</td>
         </ng-container>
         <ng-container *ngIf="entry.container">
           <td>Container</td>
           <td>{{ entry.container.qualifiedName }}</td>
-          <td>{{ entry.container.sizeInBits ?? '-' }}</td>
+          <td>{{ entry.container.sizeInBits ?? "-" }}</td>
         </ng-container>
         <td>{{ entry.locationInBits }}</td>
         <td>{{ entry.referenceLocation }}</td>

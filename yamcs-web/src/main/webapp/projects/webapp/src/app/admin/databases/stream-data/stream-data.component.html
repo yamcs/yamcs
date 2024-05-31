@@ -2,7 +2,7 @@
   <div class="block-title">{{ column.name }}</div>
   <div class="block">
     <ng-container *ngIf="column.value.type !== 'BINARY'">
-      {{ (streamData.column[i].value | value) || '-' }}
+      {{ (streamData.column[i].value | value) || "-" }}
     </ng-container>
     <ng-container *ngIf="column.value.type === 'BINARY'">
       <app-hex [base64String]="streamData.column[i].value.binaryValue" />

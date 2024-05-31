@@ -6,13 +6,13 @@
       <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
         <ya-date-time-input formControlName="customStart" />
         <ya-date-time-input formControlName="customStop" />
-        <button class="ya-button" (click)="applyCustomDates()" [disabled]="filterForm.invalid">Apply</button>
+        <button class="ya-button" (click)="applyCustomDates()" [disabled]="filterForm.invalid">
+          Apply
+        </button>
       </ng-container>
 
       <ng-container *ngIf="filterForm.value['interval'] !== 'CUSTOM'">
-        <button class="ya-button" (click)="jumpToNow()">
-          Jump to now
-        </button>
+        <button class="ya-button" (click)="jumpToNow()">Jump to now</button>
       </ng-container>
 
       <div style="flex: 1 1 auto"></div>
@@ -29,19 +29,21 @@
       <!--ya-table-toggle #preserveLast preferenceKey="tmParameters.preserveLast">Preserve last value</ya-table-toggle-->
     </div>
     <span *ngSwitchCase="'PT1H'">
-      Showing data from <b>the last hour</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
+      Showing data from <b>the last hour</b> ending at <b>{{ validStop | datetime }}</b> (Mission
+      Time)
     </span>
     <span *ngSwitchCase="'PT6H'">
-      Showing data from <b>the last 6 hours</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
+      Showing data from <b>the last 6 hours</b> ending at <b>{{ validStop | datetime }}</b> (Mission
+      Time)
     </span>
     <span *ngSwitchCase="'P1D'">
-      Showing data from <b>the last 24 hours</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
+      Showing data from <b>the last 24 hours</b> ending at
+      <b>{{ validStop | datetime }}</b> (Mission Time)
     </span>
-    <span *ngSwitchCase="'NO_LIMIT'">
-      Showing data from <b>all time</b>
-    </span>
+    <span *ngSwitchCase="'NO_LIMIT'"> Showing data from <b>all time</b> </span>
     <span *ngSwitchCase="'CUSTOM'">
-      Showing data from <b>{{ validStart | datetime }}</b> to <b>{{ validStop | datetime }}</b> (Mission Time)
+      Showing data from <b>{{ validStart | datetime }}</b> to
+      <b>{{ validStop | datetime }}</b> (Mission Time)
     </span>
   </div>
 
@@ -55,9 +57,9 @@
       </ng-container>
 
       <ng-container *ngFor="let header of exportData.headers; index as i" [cdkColumnDef]="header">
-        <th mat-header-cell *cdkHeaderCellDef>{{ header}}</th>
+        <th mat-header-cell *cdkHeaderCellDef>{{ header }}</th>
         <td mat-cell *cdkCellDef="let row">
-          {{ row.values[i] ?? '-' }}
+          {{ row.values[i] ?? "-" }}
         </td>
       </ng-container>
 
@@ -67,7 +69,7 @@
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns$ | async; sticky: true"></tr>
-      <tr mat-row *cdkRowDef="let row; columns: (displayedColumns$ | async);"></tr>
+      <tr mat-row *cdkRowDef="let row; columns: displayedColumns$ | async"></tr>
     </table>
   </div>
 </div>

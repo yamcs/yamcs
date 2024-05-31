@@ -6,10 +6,11 @@
     </ya-label>
     <ng-container *ngIf="tags.length">&nbsp;</ng-container>
   </ng-container>
-  <input type="text"
-         [formControl]="control"
-         (keydown.enter)="addTag(); $event.preventDefault()"
-         placeholder="my-tag"
-         style="width: 120px">
+  <input
+    type="text"
+    [formControl]="control"
+    (keydown.enter)="addTag(); $event.preventDefault()"
+    placeholder="my-tag"
+    style="width: 120px" />
   <button class="ya-button" (click)="addTag()" [disabled]="!control.value">Add</button>
 </div>

@@ -1,5 +1,9 @@
-<table yaDataTable
-       *ngIf="ptype?.dataEncoding?.defaultCalibrator || ptype?.dataEncoding?.contextCalibrator; else noCalibrator">
+<table
+  yaDataTable
+  *ngIf="
+    ptype?.dataEncoding?.defaultCalibrator || ptype?.dataEncoding?.contextCalibrator;
+    else noCalibrator
+  ">
   <tr>
     <th width="200">Calibrator</th>
     <th width="100">Type</th>
@@ -9,8 +13,9 @@
     <td>default</td>
     <td>{{ defaultCalibrator.type }}</td>
     <td [ngSwitch]="defaultCalibrator.type">
-      <span *ngSwitchCase="'POLYNOMIAL'"
-            [innerHTML]="defaultCalibrator.polynomialCalibrator.coefficient | polynomial">
+      <span
+        *ngSwitchCase="'POLYNOMIAL'"
+        [innerHTML]="defaultCalibrator.polynomialCalibrator.coefficient | polynomial">
       </span>
       <span *ngSwitchCase="'SPLINE'">
         {{ defaultCalibrator.splineCalibrator.point.length }} points
@@ -25,16 +30,20 @@
     <tr *ngFor="let contextCalibrator of contextCalibrators">
       <td>
         <ng-container *ngFor="let comparison of contextCalibrator.comparison">
-          <a [routerLink]="['/mdb/parameters/', comparison.parameter.qualifiedName]"
-             [queryParams]="{c: yamcs.context}">{{ comparison.parameter.qualifiedName }}</a>
+          <a
+            [routerLink]="['/mdb/parameters/', comparison.parameter.qualifiedName]"
+            [queryParams]="{ c: yamcs.context }"
+            >{{ comparison.parameter.qualifiedName }}</a
+          >
           {{ comparison.operator | operator }}
           {{ comparison.value }}
         </ng-container>
       </td>
       <td>{{ contextCalibrator.calibrator.type }}</td>
       <td [ngSwitch]="contextCalibrator.calibrator.type">
-        <span *ngSwitchCase="'POLYNOMIAL'"
-              [innerHTML]="contextCalibrator.calibrator.polynomialCalibrator.coefficient | polynomial">
+        <span
+          *ngSwitchCase="'POLYNOMIAL'"
+          [innerHTML]="contextCalibrator.calibrator.polynomialCalibrator.coefficient | polynomial">
         </span>
         <span *ngSwitchCase="'SPLINE'">
           {{ contextCalibrator.calibrator.splineCalibrator.point.length }} points

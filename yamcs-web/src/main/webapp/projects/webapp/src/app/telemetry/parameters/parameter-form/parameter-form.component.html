@@ -1,7 +1,7 @@
-<ng-container *ngIf="controlName$ | async as controlName"
-              [formGroup]="formGroup"
-              [ngSwitch]="parameter.type?.engType">
-
+<ng-container
+  *ngIf="controlName$ | async as controlName"
+  [formGroup]="formGroup"
+  [ngSwitch]="parameter.type?.engType">
   <label *ngSwitchCase="'enumeration'">
     <div class="meta">
       <div class="item">{{ parameter.type?.engType }}</div>
@@ -9,18 +9,19 @@
     {{ parameter.name }}
     <ya-errors [controlName]="controlName" />
     <select [formControlName]="controlName">
-      <option hidden disabled selected value> -- select an option -- </option>
+      <option hidden disabled selected value>-- select an option --</option>
       <option *ngFor="let enumValue of parameter.type?.enumValue" [value]="enumValue.label">
-        {{ enumValue.label }}</option>
+        {{ enumValue.label }}
+      </option>
     </select>
   </label>
 
   <label *ngSwitchCase="'boolean'">
     {{ parameter.name }}
     <ya-errors [controlName]="controlName" />
-    <br>
-    <input type="radio" [formControlName]="controlName" value="true"> true<br>
-    <input type="radio" [formControlName]="controlName" value="false"> false
+    <br />
+    <input type="radio" [formControlName]="controlName" value="true" /> true<br />
+    <input type="radio" [formControlName]="controlName" value="false" /> false
   </label>
 
   <label *ngSwitchCase="'time'">
@@ -45,9 +46,11 @@
     {{ parameter.name }}
     <div class="members">
       <ng-container *ngFor="let member of parameter.type?.member">
-        <app-parameter-form [parameter]="member" [formGroup]="formGroup"
-                            [parent]="parent ? (parent + '.' + parameter.name) : parameter.name" />
-        <br>
+        <app-parameter-form
+          [parameter]="member"
+          [formGroup]="formGroup"
+          [parent]="parent ? parent + '.' + parameter.name : parameter.name" />
+        <br />
       </ng-container>
     </div>
   </label>
@@ -62,7 +65,7 @@
     </div>
     {{ parameter.name }}
     <ya-errors #err [controlName]="controlName" />
-    <input type="text" [formControlName]="controlName">
+    <input type="text" [formControlName]="controlName" />
   </div>
 
   <ng-container *ngSwitchCase="'float[]'">
@@ -102,6 +105,6 @@
     </div>
     {{ parameter.name }}
     <ya-errors #err [controlName]="controlName" />
-    <input type="text" [formControlName]="controlName">
+    <input type="text" [formControlName]="controlName" />
   </label>
 </ng-container>

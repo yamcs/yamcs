@@ -1,7 +1,8 @@
-<mat-list-item class="nav-item-group"
-               [class.active]="active"
-               [class.expanded]="expanded"
-               (click)="toggle.emit(!expanded)">
+<mat-list-item
+  class="nav-item-group"
+  [class.active]="active"
+  [class.expanded]="expanded"
+  (click)="toggle.emit(!expanded)">
   <mat-icon *ngIf="!expanded" class="arrow icon16">arrow_right</mat-icon>
   <mat-icon *ngIf="expanded" class="arrow icon16">arrow_drop_down</mat-icon>
   <mat-icon class="item-icon" [class.svg-icon]="!!svgIcon" [svgIcon]="svgIcon">{{ icon }}</mat-icon>

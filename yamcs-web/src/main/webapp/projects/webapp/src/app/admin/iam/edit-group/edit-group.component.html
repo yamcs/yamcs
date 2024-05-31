@@ -1,15 +1,13 @@
 <app-admin-page *ngIf="group$ | async as group">
-  <app-admin-toolbar>
-    Edit Group: {{ group.name }}
-  </app-admin-toolbar>
+  <app-admin-toolbar> Edit Group: {{ group.name }} </app-admin-toolbar>
 
   <div class="form-content ya-form">
     <form [formGroup]="form" novalidate autocomplete="off">
       <label>
-        Name<br>
-        <input formControlName="name" type="text">
+        Name<br />
+        <input formControlName="name" type="text" />
       </label>
-      <br>
+      <br />
       <label>
         Description
         <textarea formControlName="description" rows="5"></textarea>
@@ -45,9 +43,13 @@
     <p>&nbsp;</p>
     <div class="action-bar">
       <button class="ya-button" (click)="location.back()">Cancel</button>
-      <button type="submit" (click)="onConfirm()"
-              class="ya-button primary"
-              [disabled]="!(dirty$ | async) || !form.valid">SAVE CHANGES</button>
+      <button
+        type="submit"
+        (click)="onConfirm()"
+        class="ya-button primary"
+        [disabled]="!(dirty$ | async) || !form.valid">
+        SAVE CHANGES
+      </button>
     </div>
   </div>
 </app-admin-page>

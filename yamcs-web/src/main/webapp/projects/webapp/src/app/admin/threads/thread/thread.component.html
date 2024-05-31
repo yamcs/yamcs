@@ -2,7 +2,8 @@
   <app-admin-toolbar>
     <a mat-icon-button routerLink=".." color="primary">
       <mat-icon>arrow_back</mat-icon>
-    </a> {{ thread.name }}
+    </a>
+    {{ thread.name }}
   </app-admin-toolbar>
 
   <div class="panel-content ya-link">
@@ -26,7 +27,7 @@
       </dd>
 
       <dt>Group</dt>
-      <dd>{{ thread.group?.name || '-' }}</dd>
+      <dd>{{ thread.group?.name || "-" }}</dd>
     </dl>
 
     <div class="section-divider">

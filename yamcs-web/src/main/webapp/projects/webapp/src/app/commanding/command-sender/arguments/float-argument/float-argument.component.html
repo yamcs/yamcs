@@ -1,9 +1,7 @@
 <div class="label">
   <div class="meta" [class.error]="err.invalid$ | async">
-    <div class="item"
-         *ngIf="type.rangeMin !== undefined || type.rangeMax !== undefined">
-      <ya-interval [left]="type.rangeMin"
-                   [right]="type.rangeMax" />
+    <div class="item" *ngIf="type.rangeMin !== undefined || type.rangeMax !== undefined">
+      <ya-interval [left]="type.rangeMin" [right]="type.rangeMax" />
     </div>
     <div class="item" *ngIf="type.unitSet">
       {{ type.unitSet | units }}
@@ -19,7 +17,5 @@
 
   <ya-errors #err [controlName]="controlName" />
 
-  <input [formControl]="formControl"
-         type="text"
-         autocomplete="off">
+  <input [formControl]="formControl" type="text" autocomplete="off" />
 </div>

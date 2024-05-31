@@ -10,8 +10,7 @@
 <mat-menu #selMenu="matMenu" yPosition="below" class="ya-menu" [overlapTrigger]="false">
   <ng-container *ngFor="let option of options$ | async">
     <mat-divider *ngIf="option.group" />
-    <button mat-menu-item
-            (click)="writeValue(option.id)">
+    <button mat-menu-item (click)="writeValue(option.id)">
       <mat-icon [style.visibility]="isSelected(option.id) ? 'visible' : 'hidden'">check</mat-icon>
       {{ option.label }}
     </button>

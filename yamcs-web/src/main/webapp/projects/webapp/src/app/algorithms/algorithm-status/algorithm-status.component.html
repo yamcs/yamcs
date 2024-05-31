@@ -1,10 +1,7 @@
-<ya-led *ngIf="!status.errorMessage"
-        [color]="onColor"
-        [fade]="false"
-        [width]="size"
-        [height]="size" />
-<ya-led *ngIf="status.errorMessage"
-        color="red"
-        [fade]="false"
-        [width]="size"
-        [height]="size" />
+<ya-led
+  *ngIf="!status.errorMessage"
+  [color]="onColor"
+  [fade]="false"
+  [width]="size"
+  [height]="size" />
+<ya-led *ngIf="status.errorMessage" color="red" [fade]="false" [width]="size" [height]="size" />

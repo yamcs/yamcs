@@ -4,10 +4,11 @@
 
   <dt>System</dt>
   <dd>
-    <ng-container *ngIf="(algorithm.qualifiedName | spaceSystemName) as spaceSystemName">
-      <a routerLink="/mdb/algorithms"
-         [queryParams]="{c: yamcs.context, filter: spaceSystemName}"
-         class="ya-link">
+    <ng-container *ngIf="algorithm.qualifiedName | spaceSystemName as spaceSystemName">
+      <a
+        routerLink="/mdb/algorithms"
+        [queryParams]="{ c: yamcs.context, filter: spaceSystemName }"
+        class="ya-link">
         {{ spaceSystemName }}
       </a>
     </ng-container>
@@ -19,7 +20,7 @@
   </ng-container>
 
   <dt>Short Description</dt>
-  <dd>{{ algorithm.shortDescription || '-' }}</dd>
+  <dd>{{ algorithm.shortDescription || "-" }}</dd>
 
   <dt>Long Description</dt>
   <dd>
@@ -33,13 +34,13 @@
 
 <dl class="dl-horizontal">
   <dt>Scope</dt>
-  <dd>{{ algorithm.scope || '-' }}</dd>
+  <dd>{{ algorithm.scope || "-" }}</dd>
 
   <dt>Type</dt>
-  <dd>{{ algorithm.type || '-' }}</dd>
+  <dd>{{ algorithm.type || "-" }}</dd>
 
   <dt>Language</dt>
-  <dd>{{ algorithm.language || '-' }}</dd>
+  <dd>{{ algorithm.language || "-" }}</dd>
 </dl>
 
 <ng-container *ngIf="algorithm.text">
@@ -78,9 +79,12 @@
           <ng-container *ngSwitchCase="'PARAMETER'">
             <td>Operand</td>
             <td>
-              <a [routerLink]="['/mdb/parameters/', el.parameter.qualifiedName]"
-                 [queryParams]="{c: yamcs.context}"
-                 class="ya-link">{{ el.parameter.qualifiedName }}</a>
+              <a
+                [routerLink]="['/mdb/parameters/', el.parameter.qualifiedName]"
+                [queryParams]="{ c: yamcs.context }"
+                class="ya-link"
+                >{{ el.parameter.qualifiedName }}</a
+              >
             </td>
           </ng-container>
         </tr>
@@ -102,10 +106,11 @@
         <th>Mandatory</th>
       </tr>
       <tr *ngFor="let inputParameter of algorithm.inputParameter">
-        <td>{{ inputParameter.inputName || '-' }}</td>
+        <td>{{ inputParameter.inputName || "-" }}</td>
         <td>
-          <a [routerLink]="['/mdb/parameters/', inputParameter.parameter.qualifiedName]"
-             [queryParams]="{c: yamcs.context}">
+          <a
+            [routerLink]="['/mdb/parameters/', inputParameter.parameter.qualifiedName]"
+            [queryParams]="{ c: yamcs.context }">
             {{ inputParameter.parameter.qualifiedName }}
           </a>
         </td>
@@ -133,10 +138,11 @@
         <th>Parameter</th>
       </tr>
       <tr *ngFor="let outputParameter of algorithm.outputParameter">
-        <td>{{ outputParameter.outputName || '-' }}</td>
+        <td>{{ outputParameter.outputName || "-" }}</td>
         <td>
-          <a [routerLink]="['/mdb/parameters/', outputParameter.parameter.qualifiedName]"
-             [queryParams]="{c: yamcs.context}">
+          <a
+            [routerLink]="['/mdb/parameters/', outputParameter.parameter.qualifiedName]"
+            [queryParams]="{ c: yamcs.context }">
             {{ outputParameter.parameter.qualifiedName }}
           </a>
         </td>
@@ -159,8 +165,9 @@
       <tr *ngFor="let trigger of algorithm.onParameterUpdate">
         <td>OnParameterUpdate</td>
         <td>
-          <a [routerLink]="['/mdb/parameters/', trigger.qualifiedName]"
-             [queryParams]="{c: yamcs.context}">
+          <a
+            [routerLink]="['/mdb/parameters/', trigger.qualifiedName]"
+            [queryParams]="{ c: yamcs.context }">
             {{ trigger.qualifiedName }}
           </a>
         </td>

@@ -10,13 +10,9 @@
   </ya-help>
 
   <ya-errors #err [controlName]="option.name" />
-  <br>
+  <br />
   <ng-container [formGroup]="formGroup">
-    <input type="radio"
-           formControlName="enabled"
-           value="true"> True
-    <input type="radio"
-           formControlName="enabled"
-           value="false"> False
+    <input type="radio" formControlName="enabled" value="true" /> True
+    <input type="radio" formControlName="enabled" value="false" /> False
   </ng-container>
 </div>

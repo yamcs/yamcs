@@ -1,15 +1,13 @@
 <app-instance-page *ngIf="plist$ | async as plist">
-  <app-instance-toolbar>
-    Edit list: {{ plist.name}}
-  </app-instance-toolbar>
+  <app-instance-toolbar> Edit list: {{ plist.name }} </app-instance-toolbar>
 
   <div class="form-content ya-form">
     <form [formGroup]="form" novalidate>
       <label>
-        Name<br>
-        <input formControlName="name" type="text">
+        Name<br />
+        <input formControlName="name" type="text" />
       </label>
-      <br>
+      <br />
       <label>
         Description
         <textarea formControlName="description" rows="5" style="resize: none"></textarea>
@@ -33,10 +31,10 @@
       <tr *ngFor="let pattern of patterns; index as i">
         <td>{{ pattern }}</td>
         <td style="text-align: right">
-          <ya-icon-action (click)="moveDown(i); $event.stopPropagation()"
-                          icon="keyboard_arrow_down" />
-          <ya-icon-action (click)="moveUp(i); $event.stopPropagation()"
-                          icon="keyboard_arrow_up" />
+          <ya-icon-action
+            (click)="moveDown(i); $event.stopPropagation()"
+            icon="keyboard_arrow_down" />
+          <ya-icon-action (click)="moveUp(i); $event.stopPropagation()" icon="keyboard_arrow_up" />
           <ya-text-action icon="delete" (click)="deletePattern(i)">DELETE</ya-text-action>
         </td>
       </tr>
@@ -45,8 +43,13 @@
     <p>&nbsp;</p>
     <div class="action-bar">
       <button class="ya-button" (click)="location.back()">Cancel</button>
-      <button class="ya-button primary" type="submit" (click)="onConfirm()"
-              [disabled]="!(dirty$ | async) || !form.valid">SAVE CHANGES</button>
+      <button
+        class="ya-button primary"
+        type="submit"
+        (click)="onConfirm()"
+        [disabled]="!(dirty$ | async) || !form.valid">
+        SAVE CHANGES
+      </button>
     </div>
   </div>
 </app-instance-page>

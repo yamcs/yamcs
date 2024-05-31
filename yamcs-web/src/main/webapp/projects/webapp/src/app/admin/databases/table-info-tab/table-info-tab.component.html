@@ -11,14 +11,16 @@
       <td>{{ column.name }}</td>
       <td>
         <ng-container *ngIf="column.type === 'ENUM'">
-          <span (click)="showEnum(column)" matTooltip="Show enum states" class="enum">{{ column.type }}</span>
+          <span (click)="showEnum(column)" matTooltip="Show enum states" class="enum">{{
+            column.type
+          }}</span>
         </ng-container>
         <ng-container *ngIf="column.type !== 'ENUM'">
           {{ column.type }}
         </ng-container>
       </td>
       <td>
-        {{ column.autoIncrement ? 'auto_increment' : '-' }}
+        {{ column.autoIncrement ? "auto_increment" : "-" }}
       </td>
       <td></td>
     </tr>
@@ -38,14 +40,16 @@
       <td>{{ column.name }}</td>
       <td>
         <ng-container *ngIf="column.type === 'ENUM'">
-          <span (click)="showEnum(column)" matTooltip="Show enum states" class="enum">{{ column.type }}</span>
+          <span (click)="showEnum(column)" matTooltip="Show enum states" class="enum">{{
+            column.type
+          }}</span>
         </ng-container>
         <ng-container *ngIf="column.type !== 'ENUM'">
           {{ column.type }}
         </ng-container>
       </td>
       <td>
-        {{ column.autoIncrement ? 'auto_increment' : '-' }}
+        {{ column.autoIncrement ? "auto_increment" : "-" }}
       </td>
       <td></td>
     </tr>
@@ -60,9 +64,9 @@
     <dt>Storage engine</dt>
     <dd>{{ table.storageEngine }}</dd>
     <dt>Tablespace</dt>
-    <dd>{{ table.tablespace || '-' }}</dd>
+    <dd>{{ table.tablespace || "-" }}</dd>
     <dt>Compressed</dt>
-    <dd>{{ table.compressed ? 'yes' : 'no' }}</dd>
+    <dd>{{ table.compressed ? "yes" : "no" }}</dd>
     <dt>Histogram</dt>
     <dd>
       <ng-container *ngIf="table.histogramColumn">
@@ -73,11 +77,13 @@
       <ng-container *ngIf="!table.histogramColumn">-</ng-container>
     </dd>
     <dt>Partition by</dt>
-    <dd>{{ (table.partitioningInfo?.type | lowercase) || '-' }}</dd>
+    <dd>{{ (table.partitioningInfo?.type | lowercase) || "-" }}</dd>
     <ng-container *ngIf="table.partitioningInfo?.timeColumn">
       <dt>Time partition column</dt>
       <dd>
-        {{ table.partitioningInfo?.timeColumn }}('{{ table.partitioningInfo?.timePartitionSchema }}')
+        {{ table.partitioningInfo?.timeColumn }}('{{
+          table.partitioningInfo?.timePartitionSchema
+        }}')
       </dd>
     </ng-container>
     <ng-container *ngIf="table.partitioningInfo?.valueColumn">

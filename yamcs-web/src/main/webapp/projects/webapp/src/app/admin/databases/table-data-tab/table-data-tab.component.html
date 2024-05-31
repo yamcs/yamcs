@@ -1,18 +1,13 @@
 <ng-container *ngIf="table$ | async as table">
   <ya-detail-pane>
     <ng-container *ngIf="selectedRecord$ | async as selectedRecord; else noSelection">
-      <ya-detail-toolbar>
-        Record
-      </ya-detail-toolbar>
+      <ya-detail-toolbar> Record </ya-detail-toolbar>
       <div style="padding: 0 16px">
-        <app-record [table]="table"
-                    [record]="selectedRecord" />
+        <app-record [table]="table" [record]="selectedRecord" />
       </div>
     </ng-container>
     <ng-template #noSelection>
-      <ya-detail-toolbar>
-        Select a record
-      </ya-detail-toolbar>
+      <ya-detail-toolbar> Select a record </ya-detail-toolbar>
     </ng-template>
   </ya-detail-pane>
   <div class="data-table-wrapper">
@@ -23,15 +18,15 @@
             <th *ngFor="let column of table.keyColumn">{{ column.name }}</th>
             <th *ngFor="let column of table.valueColumn">{{ column.name }}</th>
           </tr>
-          <tr *ngFor="let record of records"
-              [ngClass]="{selected: (record === (selectedRecord$ | async))}"
-              (click)="selectRecord(record)">
+          <tr
+            *ngFor="let record of records"
+            [ngClass]="{ selected: record === (selectedRecord$ | async) }"
+            (click)="selectRecord(record)">
             <td *ngFor="let column of table.keyColumn">
-              {{ (record.column | columnValue:column.name | value) || '-' }}
+              {{ (record.column | columnValue: column.name | value) || "-" }}
             </td>
-            <td *ngFor="let column of table.valueColumn"
-                [class.mono]="column.type === 'BINARY'">
-              {{ (record.column | columnValue:column.name | value) || '-' }}
+            <td *ngFor="let column of table.valueColumn" [class.mono]="column.type === 'BINARY'">
+              {{ (record.column | columnValue: column.name | value) || "-" }}
             </td>
           </tr>
         </table>
@@ -41,7 +36,5 @@
 </ng-container>
 
 <ng-template #nodata>
-  <ya-empty-message>
-    Empty table.
-  </ya-empty-message>
+  <ya-empty-message> Empty table. </ya-empty-message>
 </ng-template>

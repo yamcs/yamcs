@@ -44,6 +44,7 @@
     "@angular/cli": "^18.0.2",
     "@angular/compiler-cli": "^18.0.1",
     "ng-packagr": "^18.0.0",
+    "prettier": "^3.2.5",
     "typescript": "~5.4.5"
   }
 }

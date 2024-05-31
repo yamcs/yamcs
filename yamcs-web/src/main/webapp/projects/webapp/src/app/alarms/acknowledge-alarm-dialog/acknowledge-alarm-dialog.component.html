@@ -3,8 +3,8 @@
 <mat-dialog-content>
   <p>
     <ng-container *ngIf="data.alarms.length === 1">
-      {{ data.alarms[0].id.namespace }}<ng-container *ngIf="data.alarms[0].id.name">/{{ data.alarms[0].id.name }}
-      </ng-container>
+      {{ data.alarms[0].id.namespace
+      }}<ng-container *ngIf="data.alarms[0].id.name">/{{ data.alarms[0].id.name }} </ng-container>
     </ng-container>
     <ng-container *ngIf="data.alarms.length !== 1">
       {{ data.alarms.length }} selected alarms.
@@ -20,7 +20,7 @@
 
 <mat-dialog-actions align="end">
   <button class="ya-button" mat-dialog-close>CANCEL</button>
-  <button class="ya-button primary"
-          (click)="acknowledge()"
-          [disabled]="!formGroup.valid">OK</button>
+  <button class="ya-button primary" (click)="acknowledge()" [disabled]="!formGroup.valid">
+    OK
+  </button>
 </mat-dialog-actions>

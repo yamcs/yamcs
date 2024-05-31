@@ -7,15 +7,17 @@
           <button class="ya-button" (click)="refreshData()">Refresh</button>&nbsp;
           <ng-container *ngIf="section$ | async as section">
             <span class="separator" style="margin-left: 10px; margin-right: 10px"></span>
-            <ya-text-action icon="directions_run"
-                            [active]="section === 'runs'"
-                            (click)="switchToSection('runs')">
+            <ya-text-action
+              icon="directions_run"
+              [active]="section === 'runs'"
+              (click)="switchToSection('runs')">
               Runs
             </ya-text-action>
             &nbsp;&nbsp;
-            <ya-text-action icon="menu_book"
-                            [active]="section === 'logs'"
-                            (click)="switchToSection('logs')">
+            <ya-text-action
+              icon="menu_book"
+              [active]="section === 'logs'"
+              (click)="switchToSection('logs')">
               Logs
             </ya-text-action>
           </ng-container>
@@ -42,31 +44,35 @@
                 <td style="width: 200px">{{ run.time | datetime }}</td>
 
                 <td style="width: 400px">
-                  <ng-container *ngFor="let input of (run.inputs || []); last as last">
-                    <a [routerLink]="'/telemetry/parameters' + input.id.name"
-                       [queryParams]="{c: yamcs.context}"
-                       class="secundary">
-                      {{ input.id.name }}</a>:
+                  <ng-container *ngFor="let input of run.inputs || []; last as last">
+                    <a
+                      [routerLink]="'/telemetry/parameters' + input.id.name"
+                      [queryParams]="{ c: yamcs.context }"
+                      class="secundary">
+                      {{ input.id.name }}</a
+                    >:
                     <ya-value [value]="input.engValue" />
-                    <br *ngIf="!last">
+                    <br *ngIf="!last" />
                   </ng-container>
                   <ng-container *ngIf="!run.inputs?.length">-</ng-container>
                 </td>
 
                 <td style="width: 400px">
-                  <ng-container *ngFor="let output of (run.outputs || []); last as last">
-                    <a [routerLink]="'/telemetry/parameters' + output.id.name"
-                       [queryParams]="{c: yamcs.context}"
-                       class="secundary">
-                      {{ output.id.name }}</a>:
+                  <ng-container *ngFor="let output of run.outputs || []; last as last">
+                    <a
+                      [routerLink]="'/telemetry/parameters' + output.id.name"
+                      [queryParams]="{ c: yamcs.context }"
+                      class="secundary">
+                      {{ output.id.name }}</a
+                    >:
                     <ya-value [value]="output.engValue" />
-                    <br *ngIf="!last">
+                    <br *ngIf="!last" />
                   </ng-container>
                   <ng-container *ngIf="!run.outputs?.length">-</ng-container>
                 </td>
 
-                <td style="width: 200px">{{ run.returnValue | nvl:'-' }}</td>
-                <td style="width: 200px">{{ run.error || '-' }}</td>
+                <td style="width: 200px">{{ run.returnValue | nvl: "-" }}</td>
+                <td style="width: 200px">{{ run.error || "-" }}</td>
                 <td></td>
               </tr>
             </table>
@@ -76,7 +82,9 @@
           <ng-container *ngIf="trace$ | async as trace; else empty">
             <table class="logs mono" *ngIf="trace.logs?.length; else empty" style="width: 100%">
               <tr *ngFor="let log of trace.logs">
-                <td class="time" style="white-space: nowrap" width="1">[{{ log.time | datetime }}]</td>
+                <td class="time" style="white-space: nowrap" width="1">
+                  [{{ log.time | datetime }}]
+                </td>
                 <td class="msg" style="white-space: pre">{{ log.msg }}</td>
               </tr>
             </table>
@@ -89,9 +97,7 @@
 
 <ng-template #notrace>
   <ya-empty-message headerTitle="Trace">
-    <p>
-      The trace tool captures runs, inputs, outputs and log messages of this algorithm.
-    </p>
+    <p>The trace tool captures runs, inputs, outputs and log messages of this algorithm.</p>
     <p>
       <button class="ya-button primary" (click)="startTrace()">Start trace</button>
     </p>
@@ -100,15 +106,9 @@
 
 <ng-template #empty>
   <ya-empty-message>
-    <p>
-      Tracing has started.
-    </p>
-    <p>
-      This page does <strong>not</strong> update automatically.
-    </p>
-    <p>
-      Hit refresh, or check back at a later time when you think there should be trace entries.
-    </p>
+    <p>Tracing has started.</p>
+    <p>This page does <strong>not</strong> update automatically.</p>
+    <p>Hit refresh, or check back at a later time when you think there should be trace entries.</p>
     <p>
       <button class="ya-button primary" (click)="refreshData()">Refresh</button>
     </p>

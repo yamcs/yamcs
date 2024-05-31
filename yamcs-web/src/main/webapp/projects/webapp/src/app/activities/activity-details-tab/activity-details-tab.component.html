@@ -11,9 +11,9 @@
 
     <dt>Finished</dt>
     <dd>
-      {{ (activity.stop | datetime) ?? '-' }}
+      {{ (activity.stop | datetime) ?? "-" }}
       <ng-container *ngIf="activity.stop">
-        ({{ activity.stop | deltaWith:activity.start }})
+        ({{ activity.stop | deltaWith: activity.start }})
       </ng-container>
     </dd>
 

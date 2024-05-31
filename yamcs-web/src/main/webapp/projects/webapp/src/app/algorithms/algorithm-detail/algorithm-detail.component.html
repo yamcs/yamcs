@@ -4,10 +4,11 @@
 
   <dt>System</dt>
   <dd>
-    <ng-container *ngIf="(algorithm.qualifiedName | spaceSystemName) as spaceSystemName">
-      <a routerLink="/algorithms"
-         [queryParams]="{c: yamcs.context, system: spaceSystemName}"
-         class="ya-link">
+    <ng-container *ngIf="algorithm.qualifiedName | spaceSystemName as spaceSystemName">
+      <a
+        routerLink="/algorithms"
+        [queryParams]="{ c: yamcs.context, system: spaceSystemName }"
+        class="ya-link">
         {{ spaceSystemName }}
       </a>
     </ng-container>
@@ -27,7 +28,7 @@
   <ng-container *ngIf="!algorithm.longDescription">
     <dt>Description</dt>
     <dd>
-      {{ algorithm.shortDescription || '-' }}
+      {{ algorithm.shortDescription || "-" }}
     </dd>
   </ng-container>
 </dl>
@@ -36,13 +37,13 @@
 
 <dl class="dl-horizontal">
   <dt>Scope</dt>
-  <dd>{{ algorithm.scope || '-' }}</dd>
+  <dd>{{ algorithm.scope || "-" }}</dd>
 
   <dt>Type</dt>
-  <dd>{{ algorithm.type || '-' }}</dd>
+  <dd>{{ algorithm.type || "-" }}</dd>
 
   <dt>Language</dt>
-  <dd>{{ algorithm.language || '-' }}</dd>
+  <dd>{{ algorithm.language || "-" }}</dd>
 </dl>
 
 <ng-container *ngIf="status && algorithm.scope === 'GLOBAL'">
@@ -57,23 +58,23 @@
     </dd>
 
     <dt>Run count</dt>
-    <dd>{{ (status.runCount | number) || '-' }}</dd>
+    <dd>{{ (status.runCount | number) || "-" }}</dd>
 
     <dt>Total run time</dt>
     <dd>
-      {{ (status.execTimeNs | nanosDuration) || '-' }}
+      {{ (status.execTimeNs | nanosDuration) || "-" }}
     </dd>
 
     <dt>Average run time</dt>
     <dd>
       <span *ngIf="status.runCount">
-        {{ (status.execTimeNs / status.runCount) | nanosDuration }}
+        {{ status.execTimeNs / status.runCount | nanosDuration }}
       </span>
       <span *ngIf="!status.runCount">-</span>
     </dd>
 
     <dt>Last run</dt>
-    <dd>{{ (status.lastRun | datetime) || '-' }}</dd>
+    <dd>{{ (status.lastRun | datetime) || "-" }}</dd>
   </dl>
 </ng-container>
 
@@ -83,25 +84,27 @@
     <dt>
       Text
       <ya-help *ngIf="isChangeMissionDatabaseEnabled()">
-        You may override the MDB algorithm text. Such a change is scoped to the
-        current processor only and will not persist across server restarts.
-      </ya-help><br>
+        You may override the MDB algorithm text. Such a change is scoped to the current processor
+        only and will not persist across server restarts. </ya-help
+      ><br />
       <span class="override-annotation" *ngIf="(overrides$ | async)?.textOverride">
         MDB Override
       </span>
     </dt>
     <dd>
       <div *ngIf="isChangeMissionDatabaseEnabled()" style="padding-bottom: 5px">
-        <button class="ya-button"
-                style="margin-right: 5px"
-                [disabled]="!(dirty$ | async)"
-                (click)="saveTextChanges()">
+        <button
+          class="ya-button"
+          style="margin-right: 5px"
+          [disabled]="!(dirty$ | async)"
+          (click)="saveTextChanges()">
           <mat-icon>save</mat-icon>
           Save
         </button>
-        <button class="ya-button"
-                [disabled]="!((overrides$ | async)?.textOverride)"
-                (click)="revertText()">
+        <button
+          class="ya-button"
+          [disabled]="!(overrides$ | async)?.textOverride"
+          (click)="revertText()">
           <mat-icon>undo</mat-icon>
           Restore MDB text
         </button>
@@ -137,9 +140,12 @@
           <ng-container *ngSwitchCase="'PARAMETER'">
             <td>Operand</td>
             <td>
-              <a [routerLink]="['/mdb/parameters/', el.parameter.qualifiedName]"
-                 [queryParams]="{c: yamcs.context}"
-                 class="ya-link">{{ el.parameter.qualifiedName }}</a>
+              <a
+                [routerLink]="['/mdb/parameters/', el.parameter.qualifiedName]"
+                [queryParams]="{ c: yamcs.context }"
+                class="ya-link"
+                >{{ el.parameter.qualifiedName }}</a
+              >
             </td>
           </ng-container>
         </tr>
@@ -161,10 +167,11 @@
         <th>Mandatory</th>
       </tr>
       <tr *ngFor="let inputParameter of algorithm.inputParameter">
-        <td>{{ inputParameter.inputName || '-' }}</td>
+        <td>{{ inputParameter.inputName || "-" }}</td>
         <td>
-          <a [routerLink]="'/telemetry/parameters' + inputParameter.parameter.qualifiedName"
-             [queryParams]="{c: yamcs.context}">
+          <a
+            [routerLink]="'/telemetry/parameters' + inputParameter.parameter.qualifiedName"
+            [queryParams]="{ c: yamcs.context }">
             {{ inputParameter.parameter.qualifiedName }}
           </a>
         </td>
@@ -192,10 +199,11 @@
         <th>Parameter</th>
       </tr>
       <tr *ngFor="let outputParameter of algorithm.outputParameter">
-        <td>{{ outputParameter.outputName || '-' }}</td>
+        <td>{{ outputParameter.outputName || "-" }}</td>
         <td>
-          <a [routerLink]="'/telemetry/parameters' + outputParameter.parameter.qualifiedName"
-             [queryParams]="{c: yamcs.context}">
+          <a
+            [routerLink]="'/telemetry/parameters' + outputParameter.parameter.qualifiedName"
+            [queryParams]="{ c: yamcs.context }">
             {{ outputParameter.parameter.qualifiedName }}
           </a>
         </td>
@@ -218,8 +226,9 @@
       <tr *ngFor="let trigger of algorithm.onParameterUpdate">
         <td>OnParameterUpdate</td>
         <td>
-          <a [routerLink]="'/telemetry/parameters' + trigger.qualifiedName"
-             [queryParams]="{c: yamcs.context}">
+          <a
+            [routerLink]="'/telemetry/parameters' + trigger.qualifiedName"
+            [queryParams]="{ c: yamcs.context }">
             {{ trigger.qualifiedName }}
           </a>
         </td>

@@ -5,8 +5,7 @@
         Comparison
       </ya-text-action>
       <span class="separator"></span>
-      <ya-text-action (click)="chooseRange()" icon="date_range"
-                      [active]="range === 'CUSTOM'">
+      <ya-text-action (click)="chooseRange()" icon="date_range" [active]="range === 'CUSTOM'">
         <span *ngIf="range !== 'CUSTOM'">Date Range</span>
         <ng-container *ngIf="customStart$ | async as customStart">
           <ng-container *ngIf="customStop$ | async as customStop">
@@ -16,68 +15,56 @@
           </ng-container>
         </ng-container>
       </ya-text-action>
-      <ya-text-action (click)="loadLatest('PT1M')"
-                      [active]="range === 'PT1M'">
+      <ya-text-action (click)="loadLatest('PT1M')" [active]="range === 'PT1M'">
         1 minute
       </ya-text-action>
-      <ya-text-action (click)="loadLatest('PT5M')"
-                      [active]="range === 'PT5M'">
+      <ya-text-action (click)="loadLatest('PT5M')" [active]="range === 'PT5M'">
         5 minutes
       </ya-text-action>
-      <ya-text-action (click)="loadLatest('PT15M')"
-                      [active]="range === 'PT15M'">
+      <ya-text-action (click)="loadLatest('PT15M')" [active]="range === 'PT15M'">
         15 minutes
       </ya-text-action>
-      <ya-text-action (click)="loadLatest('PT30M')"
-                      [active]="range === 'PT30M'">
+      <ya-text-action (click)="loadLatest('PT30M')" [active]="range === 'PT30M'">
         30 minutes
       </ya-text-action>
-      <ya-text-action (click)="loadLatest('PT1H')"
-                      [active]="range === 'PT1H'">
+      <ya-text-action (click)="loadLatest('PT1H')" [active]="range === 'PT1H'">
         1 hour
       </ya-text-action>
-      <ya-text-action (click)="loadLatest('PT6H')"
-                      [active]="range === 'PT6H'">
+      <ya-text-action (click)="loadLatest('PT6H')" [active]="range === 'PT6H'">
         6 hours
       </ya-text-action>
-      <ya-text-action (click)="loadLatest('PT12H')"
-                      [active]="range === 'PT12H'">
+      <ya-text-action (click)="loadLatest('PT12H')" [active]="range === 'PT12H'">
         12 hours
       </ya-text-action>
-      <ya-text-action (click)="loadLatest('P1D')"
-                      [active]="range === 'P1D'">
+      <ya-text-action (click)="loadLatest('P1D')" [active]="range === 'P1D'">
         1 day
       </ya-text-action>
-      <ya-text-action (click)="loadLatest('P2D')"
-                      [active]="range === 'P2D'">
+      <ya-text-action (click)="loadLatest('P2D')" [active]="range === 'P2D'">
         2 days
       </ya-text-action>
-      <ya-text-action (click)="loadLatest('P1W')"
-                      [active]="range === 'P1W'">
+      <ya-text-action (click)="loadLatest('P1W')" [active]="range === 'P1W'">
         7 days
       </ya-text-action>
-      <ya-text-action (click)="loadLatest('P2W')"
-                      [active]="range === 'P2W'">
+      <ya-text-action (click)="loadLatest('P2W')" [active]="range === 'P2W'">
         14 days
       </ya-text-action>
-      <ya-text-action (click)="loadLatest('P1M')"
-                      [active]="range === 'P1M'">
+      <ya-text-action (click)="loadLatest('P1M')" [active]="range === 'P1M'">
         30 days
       </ya-text-action>
     </div>
   </div>
   <div class="plot-container">
-    <app-parameter-plot #plot
-                        [xGrid]="true"
-                        [xAxisHeight]="24"
-                        duration=""
-                        [dataSource]="dataSource"
-                        [stop]="missionTime"
-                        [removableSeries]="true"
-                        (onVisibleRange)="onVisibleRange($event)"
-                        (onManualRangeChange)="onManualRangeChange()">
-      <app-parameter-series [parameter]="parameter.qualifiedName"
-                            [grid]="true" />
+    <app-parameter-plot
+      #plot
+      [xGrid]="true"
+      [xAxisHeight]="24"
+      duration=""
+      [dataSource]="dataSource"
+      [stop]="missionTime"
+      [removableSeries]="true"
+      (onVisibleRange)="onVisibleRange($event)"
+      (onManualRangeChange)="onManualRangeChange()">
+      <app-parameter-series [parameter]="parameter.qualifiedName" [grid]="true" />
     </app-parameter-plot>
     <div class="zoom-actions">
       <div class="zoom-actions-inner mat-elevation-z1">
@@ -93,7 +80,7 @@
     <ng-container *ngIf="dataSource.data$ | async as data">
       <ng-container *ngIf="!(dataSource.loading$ | async)">
         <div class="no-data-message" *ngIf="data.samples.length === 0">
-          <span class="mat-caption" *ngIf="range$ | async as range" style="color: #777;">
+          <span class="mat-caption" *ngIf="range$ | async as range" style="color: #777">
             There is no data for this chart in
             <ng-container [ngSwitch]="range">
               <span *ngSwitchCase="'PT1M'">the last minute</span>

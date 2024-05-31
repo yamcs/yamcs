@@ -4,10 +4,11 @@
 
   <dt>System</dt>
   <dd>
-    <ng-container *ngIf="(parameterType.qualifiedName | spaceSystemName) as spaceSystemName">
-      <a routerLink="/mdb/parameter-types"
-         [queryParams]="{c: yamcs.context, filter: spaceSystemName}"
-         class="ya-link">
+    <ng-container *ngIf="parameterType.qualifiedName | spaceSystemName as spaceSystemName">
+      <a
+        routerLink="/mdb/parameter-types"
+        [queryParams]="{ c: yamcs.context, filter: spaceSystemName }"
+        class="ya-link">
         {{ spaceSystemName }}
       </a>
     </ng-container>
@@ -33,7 +34,7 @@
   </ng-container>
 
   <dt>Short Description</dt>
-  <dd>{{ parameterType.shortDescription || '-' }}</dd>
+  <dd>{{ parameterType.shortDescription || "-" }}</dd>
 
   <dt>Long Description</dt>
   <dd>
@@ -57,8 +58,9 @@
     <tr *ngFor="let parameter of parameterType.usedBy">
       <td>Parameter</td>
       <td>
-        <a [routerLink]="['/mdb/parameters/', parameter.qualifiedName]"
-           [queryParams]="{c: yamcs.context}">
+        <a
+          [routerLink]="['/mdb/parameters/', parameter.qualifiedName]"
+          [queryParams]="{ c: yamcs.context }">
           {{ parameter.qualifiedName }}
         </a>
       </td>
@@ -75,20 +77,18 @@
   <h4>Data Encoding</h4>
   <dl class="dl-horizontal no-trail">
     <dt>Size in bits</dt>
-    <dd>{{ dataEncoding?.sizeInBits | nvl:'-' }}</dd>
+    <dd>{{ dataEncoding?.sizeInBits | nvl: "-" }}</dd>
     <ng-container *ngIf="dataEncoding?.littleEndian !== undefined">
       <dt>Byte order</dt>
       <dd>
         <ng-container *ngIf="dataEncoding?.littleEndian !== undefined">
-          {{ dataEncoding?.littleEndian ? 'Little Endian' : 'Big Endian' }}
+          {{ dataEncoding?.littleEndian ? "Little Endian" : "Big Endian" }}
         </ng-container>
-        <ng-container *ngIf="dataEncoding?.littleEndian === undefined">
-          -
-        </ng-container>
+        <ng-container *ngIf="dataEncoding?.littleEndian === undefined"> - </ng-container>
       </dd>
     </ng-container>
     <dt>Encoding</dt>
-    <dd>{{ dataEncoding?.encoding || '-' }}</dd>
+    <dd>{{ dataEncoding?.encoding || "-" }}</dd>
   </dl>
 </ng-container>
 
@@ -117,9 +117,10 @@
       <th *ngFor="let context of parameterType.contextAlarm">
         <ng-container *ngFor="let comparison of context.comparison; let first = first">
           <ng-container *ngIf="!first">, </ng-container>
-          <a [routerLink]="['/mdb/parameters/', comparison.parameter.qualifiedName]"
-             [queryParams]="{c: yamcs.context}"
-             class="secundary">
+          <a
+            [routerLink]="['/mdb/parameters/', comparison.parameter.qualifiedName]"
+            [queryParams]="{ c: yamcs.context }"
+            class="secundary">
             {{ comparison.parameter.name }}
           </a>
           {{ comparison.operator | operator }}
@@ -130,7 +131,7 @@
     <tr *ngFor="let enumValue of parameterType.enumValue">
       <td style="white-space: nowrap">{{ enumValue.value }}</td>
       <td style="white-space: nowrap">{{ enumValue.label }}</td>
-      <td>{{ enumValue.description || '-' }}</td>
+      <td>{{ enumValue.description || "-" }}</td>
       <td>
         <ng-container *ngIf="getDefaultAlarmLevel(parameterType, enumValue) as level">
           <app-alarm-level [level]="level" [grayscale]="true" />
@@ -160,7 +161,7 @@
     <ng-container *ngIf="parameterType.defaultAlarm as alarm">
       <dl class="dl-horizontal">
         <dt>Min. violations</dt>
-        <dd>{{ alarm.minViolations ?? '-' }}</dd>
+        <dd>{{ alarm.minViolations ?? "-" }}</dd>
       </dl>
       <table yaDataTable>
         <tr>
@@ -173,26 +174,32 @@
             {{ range.level }}
           </td>
           <td>
-            <ya-interval *ngIf="(range.minInclusive !== undefined
-                          || range.minExclusive !== undefined
-                          || range.maxInclusive !== undefined
-                          || range.maxExclusive !== undefined); else dash"
-                         [left]="range.minInclusive | nvl:range.minExclusive"
-                         [right]="range.maxInclusive | nvl:range.maxExclusive"
-                         [leftInclusive]="range.minInclusive !== undefined"
-                         [rightInclusive]="range.maxInclusive !== undefined"
-                         [outside]="true" />
+            <ya-interval
+              *ngIf="
+                range.minInclusive !== undefined ||
+                  range.minExclusive !== undefined ||
+                  range.maxInclusive !== undefined ||
+                  range.maxExclusive !== undefined;
+                else dash
+              "
+              [left]="range.minInclusive | nvl: range.minExclusive"
+              [right]="range.maxInclusive | nvl: range.maxExclusive"
+              [leftInclusive]="range.minInclusive !== undefined"
+              [rightInclusive]="range.maxInclusive !== undefined"
+              [outside]="true" />
             <ng-template #dash>-</ng-template>
           </td>
         </tr>
       </table>
     </ng-container>
-    <ng-container *ngFor="let contextAlarm of parameterType.contextAlarm; let first=first">
+    <ng-container *ngFor="let contextAlarm of parameterType.contextAlarm; let first = first">
       <p *ngIf="!first">&nbsp;</p>
-      <h5>Context: <code>{{ contextAlarm.context }}</code></h5>
+      <h5>
+        Context: <code>{{ contextAlarm.context }}</code>
+      </h5>
       <dl class="dl-horizontal">
         <dt>Min. violations</dt>
-        <dd>{{ contextAlarm.minViolations ?? '-' }}</dd>
+        <dd>{{ contextAlarm.minViolations ?? "-" }}</dd>
       </dl>
       <table yaDataTable>
         <tr>
@@ -205,15 +212,19 @@
             {{ range.level }}
           </td>
           <td>
-            <ya-interval *ngIf="(range.minInclusive !== undefined
-                            || range.minExclusive !== undefined
-                            || range.maxInclusive !== undefined
-                            || range.maxExclusive !== undefined); else dash"
-                         [left]="range.minInclusive | nvl:range.minExclusive"
-                         [right]="range.maxInclusive | nvl:range.maxExclusive"
-                         [leftInclusive]="range.minInclusive !== undefined"
-                         [rightInclusive]="range.maxInclusive !== undefined"
-                         [outside]="true" />
+            <ya-interval
+              *ngIf="
+                range.minInclusive !== undefined ||
+                  range.minExclusive !== undefined ||
+                  range.maxInclusive !== undefined ||
+                  range.maxExclusive !== undefined;
+                else dash
+              "
+              [left]="range.minInclusive | nvl: range.minExclusive"
+              [right]="range.maxInclusive | nvl: range.maxExclusive"
+              [leftInclusive]="range.minInclusive !== undefined"
+              [rightInclusive]="range.maxInclusive !== undefined"
+              [outside]="true" />
             <ng-template #dash>-</ng-template>
           </td>
         </tr>

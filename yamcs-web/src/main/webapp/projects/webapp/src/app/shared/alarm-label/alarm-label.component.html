@@ -1,6 +1,5 @@
 <ng-container *ngIf="context$ | async as context">
-  <ya-sidebar-nav-item routerLink="/alarms"
-                       [queryParams]="{c: yamcs.context}">
+  <ya-sidebar-nav-item routerLink="/alarms" [queryParams]="{ c: yamcs.context }">
     <mat-icon class="item-icon">notifications_none</mat-icon>
     Alarms
     <ng-container *ngIf="status$ | async as status">

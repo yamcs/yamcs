@@ -12,7 +12,7 @@
         <span *ngSwitchCase="'SCHEDULED'">-</span>
         <span *ngSwitchCase="'PENDING'">-</span>
         <span *ngSwitchDefault [matTooltip]="ack.time">
-          {{ ack.time | deltaWith:command.generationTime }}
+          {{ ack.time | deltaWith: command.generationTime }}
         </span>
       </ng-container>
     </td>

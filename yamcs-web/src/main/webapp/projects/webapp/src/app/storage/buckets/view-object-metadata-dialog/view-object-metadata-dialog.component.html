@@ -8,7 +8,7 @@
     </tr>
     <tr *ngFor="let entry of data.metadata | keyvalue">
       <td>{{ entry.key }}</td>
-      <td>{{ entry.value ?? '-' }}</td>
+      <td>{{ entry.value ?? "-" }}</td>
     </tr>
   </table>
 </mat-dialog-content>

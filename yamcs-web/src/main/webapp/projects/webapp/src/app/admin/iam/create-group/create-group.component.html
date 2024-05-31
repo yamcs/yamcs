@@ -2,16 +2,17 @@
   <app-admin-toolbar>
     <a mat-icon-button routerLink=".." color="primary">
       <mat-icon>arrow_back</mat-icon>
-    </a> Create group
+    </a>
+    Create group
   </app-admin-toolbar>
 
   <div class="form-content ya-form">
     <form [formGroup]="form" novalidate>
       <label>
-        Group name<br>
-        <input formControlName="name" type="text">
+        Group name<br />
+        <input formControlName="name" type="text" />
       </label>
-      <br>
+      <br />
       <label>
         Description
         <textarea formControlName="description" rows="5"></textarea>
@@ -47,8 +48,13 @@
     <p>&nbsp;</p>
     <div class="action-bar">
       <button class="ya-button" (click)="location.back()">Cancel</button>
-      <button class="ya-button primary" type="submit" (click)="onConfirm()"
-              [disabled]="!form.valid">CREATE</button>
+      <button
+        class="ya-button primary"
+        type="submit"
+        (click)="onConfirm()"
+        [disabled]="!form.valid">
+        CREATE
+      </button>
     </div>
   </div>
 </app-admin-page>

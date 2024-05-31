@@ -2,9 +2,7 @@
   <app-admin-toolbar>
     {{ group.name }}
     &nbsp;&nbsp;&nbsp;
-    <a mat-button
-       color="primary"
-       routerLink="edit">
+    <a mat-button color="primary" routerLink="edit">
       <mat-icon>edit</mat-icon>
       Edit group
     </a>
@@ -16,10 +14,10 @@
         <mat-divider />
       </div>
       <h4>Description</h4>
-      <div style="white-space: pre-wrap">{{ group.description || '-' }}</div>
+      <div style="white-space: pre-wrap">{{ group.description || "-" }}</div>
     </ng-container>
 
-    <br>
+    <br />
     <div class="section-divider">
       <mat-divider />
     </div>

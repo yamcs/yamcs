@@ -1,42 +1,46 @@
 <app-admin-page *ngIf="user$ | async as user">
-  <app-admin-toolbar>
-    Edit User: {{ user.displayName || user.name }}
-  </app-admin-toolbar>
+  <app-admin-toolbar> Edit User: {{ user.displayName || user.name }} </app-admin-toolbar>
 
   <div class="form-content ya-form">
     <form [formGroup]="form" novalidate autocomplete="off">
       <div class="label">
-        Username<br>
-        <input disabled type="text" [value]="user.name">
+        Username<br />
+        <input disabled type="text" [value]="user.name" />
       </div>
-      <br>
+      <br />
       <div class="label">
-        Display name<br>
-        <input formControlName="displayName" type="text">
+        Display name<br />
+        <input formControlName="displayName" type="text" />
         <span *ngIf="user.identities && user.identities.length > 0" class="hint">
-          This user has an external identity. Changes to this field may get overwritten on next login.
+          This user has an external identity. Changes to this field may get overwritten on next
+          login.
         </span>
       </div>
-      <br>
+      <br />
       <div class="label">
-        Email<br>
-        <input formControlName="email" type="text">
+        Email<br />
+        <input formControlName="email" type="text" />
         <span *ngIf="user.identities && user.identities.length > 0" class="hint">
-          This user has an external identity. Changes to this field may get overwritten on next login.
+          This user has an external identity. Changes to this field may get overwritten on next
+          login.
         </span>
       </div>
-      <br>
+      <br />
       <div class="label">
-        Active<br>
-        <mat-slide-toggle formControlName="active" /><br>
-        <span class="hint">Inactive users are considered "blocked". They are not or no longer able to login.</span>
+        Active<br />
+        <mat-slide-toggle formControlName="active" /><br />
+        <span class="hint"
+          >Inactive users are considered "blocked". They are not or no longer able to login.</span
+        >
       </div>
-      <br>
+      <br />
       <div class="label">
-        Superuser<br>
-        <mat-slide-toggle formControlName="superuser" /><br>
-        <span class="hint">Superusers bypass any permission checks. This attribute is intended for system administrators
-          only.</span>
+        Superuser<br />
+        <mat-slide-toggle formControlName="superuser" /><br />
+        <span class="hint"
+          >Superusers bypass any permission checks. This attribute is intended for system
+          administrators only.</span
+        >
       </div>
 
       <p>&nbsp;</p>
@@ -66,8 +70,13 @@
     <p>&nbsp;</p>
     <div class="action-bar">
       <button class="ya-button" (click)="location.back()">Cancel</button>
-      <button class="ya-button primary" type="submit" (click)="onConfirm()"
-              [disabled]="!(dirty$ | async) || !form.valid">SAVE CHANGES</button>
+      <button
+        class="ya-button primary"
+        type="submit"
+        (click)="onConfirm()"
+        [disabled]="!(dirty$ | async) || !form.valid">
+        SAVE CHANGES
+      </button>
     </div>
   </div>
 </app-admin-page>

@@ -2,18 +2,18 @@
   <app-admin-toolbar>
     <a mat-icon-button routerLink=".." color="primary">
       <mat-icon>arrow_back</mat-icon>
-    </a> {{ user.displayName || user.name }}
+    </a>
+    {{ user.displayName || user.name }}
     &nbsp;&nbsp;&nbsp;
-    <a mat-button
-       color="primary"
-       routerLink="edit">
+    <a mat-button color="primary" routerLink="edit">
       <mat-icon>edit</mat-icon>
       Edit user
     </a>
-    <a mat-button
-       color="primary"
-       [disabled]="user.identities?.length"
-       (click)="showChangeUserPasswordDialog()">
+    <a
+      mat-button
+      color="primary"
+      [disabled]="user.identities?.length"
+      (click)="showChangeUserPasswordDialog()">
       <mat-icon>account_box</mat-icon>
       Change password
     </a>
@@ -25,19 +25,19 @@
       <dd>{{ user.name }}</dd>
 
       <dt>Display name</dt>
-      <dd>{{ user.displayName || '-' }}</dd>
+      <dd>{{ user.displayName || "-" }}</dd>
 
       <dt>Email</dt>
-      <dd>{{ user.email || '-' }}</dd>
+      <dd>{{ user.email || "-" }}</dd>
 
       <dt>Joined</dt>
       <dd>{{ user.creationTime | datetime }}</dd>
 
       <dt>Confirmed at</dt>
-      <dd>{{ (user.confirmationTime | datetime) || 'never' }}</dd>
+      <dd>{{ (user.confirmationTime | datetime) || "never" }}</dd>
 
       <dt>Last login</dt>
-      <dd>{{ (user.lastLoginTime | datetime) || 'never' }}</dd>
+      <dd>{{ (user.lastLoginTime | datetime) || "never" }}</dd>
 
       <dt>Active</dt>
       <dd>{{ user.active }}</dd>
@@ -47,8 +47,9 @@
 
       <dt>Created by</dt>
       <dd>
-        <a *ngIf="user.createdBy"
-           [routerLink]="['../' + user.createdBy.name]">{{ user.createdBy.name || '-' }}</a>
+        <a *ngIf="user.createdBy" [routerLink]="['../' + user.createdBy.name]">{{
+          user.createdBy.name || "-"
+        }}</a>
         <ng-container *ngIf="!user.createdBy">-</ng-container>
       </dd>
     </dl>
@@ -56,10 +57,8 @@
     <div class="section-divider">
       <mat-divider />
     </div>
-    <h4>{{ user.roles?.length || '0' }} assigned roles</h4>
-    <ng-container *ngFor="let role of user.roles">
-      {{ role.name }}<br>
-    </ng-container>
+    <h4>{{ user.roles?.length || "0" }} assigned roles</h4>
+    <ng-container *ngFor="let role of user.roles"> {{ role.name }}<br /> </ng-container>
 
     <ng-container *ngIf="user.identities">
       <div class="section-divider">

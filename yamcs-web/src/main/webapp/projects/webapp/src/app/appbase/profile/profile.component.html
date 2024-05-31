@@ -1,7 +1,5 @@
 <mat-toolbar class="top">
-  <mat-toolbar-row>
-    Profile
-  </mat-toolbar-row>
+  <mat-toolbar-row> Profile </mat-toolbar-row>
 </mat-toolbar>
 <div class="form-content" *ngIf="user$ | async as user">
   <dl class="dl-horizontal no-lead">
@@ -9,16 +7,14 @@
     <dd>{{ user.getName() }}</dd>
 
     <dt>Display name</dt>
-    <dd>{{ user.getDisplayName() || '-' }}</dd>
+    <dd>{{ user.getDisplayName() || "-" }}</dd>
 
     <dt>Email</dt>
-    <dd>{{ user.getEmail() || '-' }}</dd>
+    <dd>{{ user.getEmail() || "-" }}</dd>
 
     <ng-container *ngIf="user.isSuperuser()">
       <dt>Attributes</dt>
-      <dd>
-        ⚡️ superuser
-      </dd>
+      <dd>⚡️ superuser</dd>
     </ng-container>
 
     <ng-container *ngIf="config.commandClearanceEnabled">
@@ -34,7 +30,7 @@
     <dt>Roles</dt>
     <dd>
       <ng-container *ngIf="user.getRoles().length">
-        <ng-container *ngFor="let role of user.getRoles(); let last=last">
+        <ng-container *ngFor="let role of user.getRoles(); let last = last">
           {{ role.name }}<span *ngIf="!last">,</span>
         </ng-container>
       </ng-container>
@@ -78,9 +74,7 @@
             <th class="lcolumn">{{ p.type }}</th>
             <td>
               <ng-container *ngIf="p.object; else dash">
-                <ng-container *ngFor="let object of p.object">
-                  {{ object }}<br>
-                </ng-container>
+                <ng-container *ngFor="let object of p.object"> {{ object }}<br /> </ng-container>
               </ng-container>
             </td>
           </tr>

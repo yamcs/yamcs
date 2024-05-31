@@ -1,8 +1,4 @@
-<table mat-table
-       *ngIf="dataSource"
-       class="ya-data-table expand"
-       [dataSource]="dataSource">
-
+<table mat-table *ngIf="dataSource" class="ya-data-table expand" [dataSource]="dataSource">
   <ng-container matColumnDef="severity">
     <th mat-header-cell *matHeaderCellDef>Severity</th>
     <td mat-cell *matCellDef="let alarm">
@@ -12,13 +8,13 @@
 
   <ng-container matColumnDef="start">
     <th mat-header-cell *matHeaderCellDef>Start</th>
-    <td mat-cell *matCellDef="let alarm">{{ (alarm.triggerTime | datetime) || '-' }}</td>
+    <td mat-cell *matCellDef="let alarm">{{ (alarm.triggerTime | datetime) || "-" }}</td>
   </ng-container>
 
   <ng-container matColumnDef="stop">
     <th mat-header-cell *matHeaderCellDef>Stop</th>
     <td mat-cell *matCellDef="let alarm">
-      {{ (alarm.updateTime | datetime) || '-' }}
+      {{ (alarm.updateTime | datetime) || "-" }}
     </td>
   </ng-container>
 
@@ -37,12 +33,13 @@
     <th mat-header-cell *matHeaderCellDef>Duration</th>
     <td mat-cell *matCellDef="let alarm">
       <ng-container *ngIf="alarm.updateTime">
-        {{ (durationFor(alarm) | duration) || '-' }}
+        {{ (durationFor(alarm) | duration) || "-" }}
       </ng-container>
       <ng-container *ngIf="alarm.clearInfo?.clearedBy">
         (cleared by {{ alarm.clearInfo?.clearedBy }})
-        <mat-icon *ngIf="alarm.clearInfo?.clearMessage"
-                  [matTooltip]="alarm.clearInfo?.clearMessage">comment</mat-icon>
+        <mat-icon *ngIf="alarm.clearInfo?.clearMessage" [matTooltip]="alarm.clearInfo?.clearMessage"
+          >comment</mat-icon
+        >
       </ng-container>
     </td>
   </ng-container>
@@ -52,7 +49,7 @@
     <td mat-cell *matCellDef="let alarm" style="text-align: right">
       <ng-container *ngIf="alarm.violations; else dash">
         {{ alarm.violations | number }}
-        ({{ ((alarm.violations / alarm.count) * 100) | number: '1.2-2' }}%)
+        ({{ (alarm.violations / alarm.count) * 100 | number: "1.2-2" }}%)
       </ng-container>
     </td>
   </ng-container>
@@ -60,19 +57,13 @@
   <ng-container matColumnDef="actions">
     <th mat-header-cell *matHeaderCellDef class="expand"></th>
     <td mat-cell *matCellDef="let row">
-      <ya-text-action icon="show_chart"
-                      (click)="showChart(row)">
-        SHOW CHART
-      </ya-text-action>
-      <ya-text-action icon="view_headline"
-                      (click)="showData(row)">
-        SHOW DATA
-      </ya-text-action>
+      <ya-text-action icon="show_chart" (click)="showChart(row)"> SHOW CHART </ya-text-action>
+      <ya-text-action icon="view_headline" (click)="showData(row)"> SHOW DATA </ya-text-action>
     </td>
   </ng-container>
 
   <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 </table>
 
 <ng-template #dash>-</ng-template>

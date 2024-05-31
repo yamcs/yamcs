@@ -1,11 +1,11 @@
 <div class="block-title" style="padding-top: 0">Command</div>
 <div class="block">
-  {{ (entry.command?.qualifiedName | shortName) || '-' }}
+  {{ (entry.command?.qualifiedName | shortName) || "-" }}
 </div>
 
 <div class="block-title">System</div>
 <div class="block">
-  {{ (entry.command?.qualifiedName| spaceSystemName) || '-' }}
+  {{ (entry.command?.qualifiedName | spaceSystemName) || "-" }}
 </div>
 
 <ng-container *ngFor="let alias of entry.command?.alias">
@@ -21,7 +21,7 @@
     <app-markdown [text]="entry.command?.longDescription" />
   </ng-container>
   <ng-container *ngIf="!entry.command?.longDescription">
-    {{ entry.command?.shortDescription || '-' }}
+    {{ entry.command?.shortDescription || "-" }}
   </ng-container>
 </div>
 
@@ -48,17 +48,16 @@
       </tr>
       <tr *ngFor="let constraint of constraints">
         <td>{{ constraint.expression }}</td>
-        <td>{{ constraint.timeout || '-' }}</td>
+        <td>{{ constraint.timeout || "-" }}</td>
         <td>
-          <span class="evaluation valid" *ngIf="(expr.result$ | async) === true">
-            satisfied
-          </span>
+          <span class="evaluation valid" *ngIf="(expr.result$ | async) === true"> satisfied </span>
           <span class="evaluation invalid" *ngIf="(expr.result$ | async) === false">
             not satisfied
           </span>
-          <app-live-expression #expr
-                               [expression]="constraint.expression"
-                               [style.display]="'none'" />
+          <app-live-expression
+            #expr
+            [expression]="constraint.expression"
+            [style.display]="'none'" />
         </td>
       </tr>
     </table>
@@ -66,6 +65,4 @@
   <ng-container *ngIf="!entry.command?.constraint">-</ng-container>
 </div>
 
-<ng-template #dash>
-  -
-</ng-template>
+<ng-template #dash> - </ng-template>

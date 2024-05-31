@@ -6,10 +6,10 @@
       </div>
     </td>
     <td style="width: 150px">Queued</td>
-    <td style="width: 70px">{{ command.queued?.status || '-' }}</td>
+    <td style="width: 70px">{{ command.queued?.status || "-" }}</td>
     <td>
       <span [matTooltip]="command.queued?.time">
-        {{ (command.queued?.time | deltaWith:command.generationTime) || '-' }}
+        {{ (command.queued?.time | deltaWith: command.generationTime) || "-" }}
       </span>
     </td>
   </tr>
@@ -22,11 +22,11 @@
     </td>
     <td>Released</td>
     <td>
-      {{ command.released?.status || command.transmissionConstraints?.status || '-' }}
+      {{ command.released?.status || command.transmissionConstraints?.status || "-" }}
     </td>
     <td>
       <span [matTooltip]="command.released?.time">
-        {{ (command.released?.time | deltaWith:command.generationTime) || '-' }}
+        {{ (command.released?.time | deltaWith: command.generationTime) || "-" }}
       </span>
     </td>
   </tr>
@@ -37,10 +37,10 @@
       </div>
     </td>
     <td>Sent</td>
-    <td>{{ command.sent?.status || '-' }}</td>
+    <td>{{ command.sent?.status || "-" }}</td>
     <td>
       <span [matTooltip]="command.sent?.time">
-        {{ (command.sent?.time | deltaWith:command.generationTime) || '-' }}
+        {{ (command.sent?.time | deltaWith: command.generationTime) || "-" }}
       </span>
     </td>
   </tr>

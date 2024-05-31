@@ -1,12 +1,12 @@
-<table mat-table
-       *ngIf="dataSource"
-       [dataSource]="dataSource"
-       class="ya-data-table expand"
-       matSort
-       matSortActive="generationTime"
-       matSortDirection="asc"
-       matSortDisableClear>
-
+<table
+  mat-table
+  *ngIf="dataSource"
+  [dataSource]="dataSource"
+  class="ya-data-table expand"
+  matSort
+  matSortActive="generationTime"
+  matSortDirection="asc"
+  matSortDisableClear>
   <ng-container matColumnDef="generationTime">
     <th mat-header-cell *matHeaderCellDef mat-sort-header>Time</th>
     <td mat-cell *matCellDef="let entry">
@@ -27,14 +27,14 @@
   <ng-container matColumnDef="commandName">
     <th mat-header-cell *matHeaderCellDef mat-sort-header>Command</th>
     <td mat-cell *matCellDef="let entry">
-      {{ entry.commandName || '-' }}
+      {{ entry.commandName || "-" }}
     </td>
   </ng-container>
 
   <ng-container matColumnDef="queueName">
     <th mat-header-cell *matHeaderCellDef mat-sort-header>Queue</th>
     <td mat-cell *matCellDef="let entry">
-      {{ entry.queueName || '-' }}
+      {{ entry.queueName || "-" }}
     </td>
   </ng-container>
 
@@ -48,7 +48,7 @@
   <ng-container matColumnDef="origin">
     <th mat-header-cell *matHeaderCellDef mat-sort-header>Source</th>
     <td mat-cell *matCellDef="let entry">
-      {{ entry.origin || '-' }}
+      {{ entry.origin || "-" }}
     </td>
   </ng-container>
 
@@ -73,20 +73,26 @@
     <th mat-header-cell *matHeaderCellDef class="expand">Actions</th>
     <td mat-cell *matCellDef="let entry">
       <span style="color: #999" *ngIf="entry.pendingTransmissionConstraints">
-        <mat-icon class="icon16 spin" style="vertical-align: middle;">cached</mat-icon>
+        <mat-icon class="icon16 spin" style="vertical-align: middle">cached</mat-icon>
         Checking transmission constraints
       </span>
       <ng-container *ngIf="!entry.pendingTransmissionConstraints">
-        <ya-text-action icon="check"
-                        (click)="acceptEntry(entry)"
-                        [disabled]="entry.pendingTransmissionConstraints">ACCEPT</ya-text-action>
-        <ya-text-action icon="close"
-                        (click)="rejectEntry(entry)"
-                        [disabled]="entry.pendingTransmissionConstraints">REJECT</ya-text-action>
+        <ya-text-action
+          icon="check"
+          (click)="acceptEntry(entry)"
+          [disabled]="entry.pendingTransmissionConstraints"
+          >ACCEPT</ya-text-action
+        >
+        <ya-text-action
+          icon="close"
+          (click)="rejectEntry(entry)"
+          [disabled]="entry.pendingTransmissionConstraints"
+          >REJECT</ya-text-action
+        >
       </ng-container>
     </td>
   </ng-container>
 
   <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 </table>

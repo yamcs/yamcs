@@ -1,18 +1,19 @@
-<table mat-table
-       *ngIf="dataSource.data.length"
-       [dataSource]="dataSource"
-       class="ya-data-table expand"
-       [class.paused]="paused">
-
+<table
+  mat-table
+  *ngIf="dataSource.data.length"
+  [dataSource]="dataSource"
+  class="ya-data-table expand"
+  [class.paused]="paused">
   <ng-container cdkColumnDef="generationTime">
     <th mat-header-cell *cdkHeaderCellDef>Generation time</th>
-    <td mat-cell *cdkCellDef="let row">{{ (row.generationTime | datetime) || '-' }}</td>
+    <td mat-cell *cdkCellDef="let row">{{ (row.generationTime | datetime) || "-" }}</td>
   </ng-container>
 
-  <ng-container *ngFor="let parameter of model.parameters; let i = index" [cdkColumnDef]="parameter">
+  <ng-container
+    *ngFor="let parameter of model.parameters; let i = index"
+    [cdkColumnDef]="parameter">
     <th mat-header-cell *cdkHeaderCellDef>
-      <a [routerLink]="'/telemetry/parameters' + parameter"
-         [queryParams]="{c: yamcs.context}">
+      <a [routerLink]="'/telemetry/parameters' + parameter" [queryParams]="{ c: yamcs.context }">
         {{ parameter }}
       </a>
       <ya-more *ngIf="showActions">
@@ -25,7 +26,7 @@
     <td mat-cell *cdkCellDef="let row">
       <ng-container *ngIf="row.pvals[parameter] as pval">
         <ya-expirable *ngIf="pval" [pval]="pval">
-          {{ (pval.engValue | value) || '-' }}
+          {{ (pval.engValue | value) || "-" }}
           <span *ngIf="pval.rangeCondition === 'LOW'">&#8595;</span>
           <span *ngIf="pval.rangeCondition === 'HIGH'">&#8593;</span>
         </ya-expirable>
@@ -40,7 +41,7 @@
   </ng-container>
 
   <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
-  <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"></tr>
+  <tr mat-row *cdkRowDef="let row; columns: displayedColumns"></tr>
 </table>
 
 <ng-container *ngIf="showActions">

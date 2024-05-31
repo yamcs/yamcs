@@ -1,9 +1,7 @@
 <div class="label">
   <div class="meta" [class.error]="err.invalid$ | async">
-    <div class="item"
-         *ngIf="type.rangeMin !== undefined || type.rangeMax !== undefined">
-      <ya-interval [left]="type.rangeMin"
-                   [right]="type.rangeMax" />
+    <div class="item" *ngIf="type.rangeMin !== undefined || type.rangeMax !== undefined">
+      <ya-interval [left]="type.rangeMin" [right]="type.rangeMax" />
     </div>
     <div class="item" *ngIf="type.unitSet">
       {{ type.unitSet | units }}
@@ -21,10 +19,14 @@
         Decimal input
       </button>
     </mat-menu>
-    <div class="item menu" matTooltip="Input options"
-         [matMenuTriggerFor]="argMenu"
-         (click)="$event.stopPropagation()"
-         *ngIf="type.signed === false">&#x2630;</div>
+    <div
+      class="item menu"
+      matTooltip="Input options"
+      [matMenuTriggerFor]="argMenu"
+      (click)="$event.stopPropagation()"
+      *ngIf="type.signed === false">
+      &#x2630;
+    </div>
   </div>
 
   {{ label }}
@@ -34,10 +36,6 @@
 
   <ya-errors #err [controlName]="controlName" />
 
-  <input *ngIf="!(hexToggle$ | async)"
-         [formControl]="formControl"
-         type="text"
-         autocomplete="off">
-  <ya-hex-integer-input *ngIf="hexToggle$ | async"
-                        [formControl]="formControl" />
+  <input *ngIf="!(hexToggle$ | async)" [formControl]="formControl" type="text" autocomplete="off" />
+  <ya-hex-integer-input *ngIf="hexToggle$ | async" [formControl]="formControl" />
 </div>

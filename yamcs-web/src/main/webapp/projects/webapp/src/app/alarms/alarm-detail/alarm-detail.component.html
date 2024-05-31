@@ -1,9 +1,10 @@
 <ng-container *ngIf="alarm.type === 'PARAMETER'">
   <div class="block-title">Parameter</div>
   <div class="block">
-    <a [routerLink]="'/telemetry/parameters/' + alarm.id.namespace! + '/' + alarm.id.name"
-       [queryParams]="{c: yamcs.context}"
-       class="ya-link">
+    <a
+      [routerLink]="'/telemetry/parameters/' + alarm.id.namespace! + '/' + alarm.id.name"
+      [queryParams]="{ c: yamcs.context }"
+      class="ya-link">
       {{ alarm.id.namespace }}/{{ alarm.id.name }}
     </a>
   </div>
@@ -33,7 +34,7 @@
 </div>
 
 <ng-container *ngIf="alarm.parameterDetail as parameterDetail">
-  <br>
+  <br />
   <mat-divider />
 
   <div class="block-title">Trigger value</div>
@@ -44,7 +45,7 @@
     <span *ngIf="parameterDetail.triggerValue.rangeCondition === 'HIGH'">&#8593;</span>
   </div>
 
-  <br>
+  <br />
   <mat-divider />
 
   <div class="block-title">Live value</div>
@@ -59,7 +60,7 @@
 </ng-container>
 
 <ng-container *ngIf="alarm.eventDetail as eventDetail">
-  <br>
+  <br />
   <mat-divider />
 
   <div class="block-title">Trigger event</div>
@@ -69,7 +70,7 @@
 </ng-container>
 
 <ng-container *ngIf="alarm.acknowledgeInfo">
-  <br>
+  <br />
   <mat-divider />
 
   <div class="block-title">Acknowledged by {{ alarm.acknowledgeInfo.acknowledgedBy }}</div>
@@ -84,7 +85,7 @@
 </ng-container>
 
 <ng-container *ngIf="alarm.shelveInfo">
-  <br>
+  <br />
   <mat-divider />
 
   <div class="block-title">Shelved by {{ alarm.shelveInfo.shelvedBy }}</div>
@@ -106,26 +107,22 @@
 </ng-container>
 
 <div class="action-bar" *ngIf="mayControl">
-  <button class="ya-button"
-          (click)="acknowledgeAlarm.emit(alarm)"
-          *ngIf="!alarm.shelveInfo && !alarm.acknowledged">
+  <button
+    class="ya-button"
+    (click)="acknowledgeAlarm.emit(alarm)"
+    *ngIf="!alarm.shelveInfo && !alarm.acknowledged">
     <mat-icon>notifications_off</mat-icon>
     ACKNOWLEDGE
   </button>
-  <button class="ya-button"
-          (click)="shelveAlarm.emit(alarm)"
-          *ngIf="!alarm.shelveInfo">
+  <button class="ya-button" (click)="shelveAlarm.emit(alarm)" *ngIf="!alarm.shelveInfo">
     <mat-icon>timer</mat-icon>
     SHELVE
   </button>
-  <button class="ya-button"
-          (click)="unshelveAlarm.emit(alarm)"
-          *ngIf="alarm.shelveInfo">
+  <button class="ya-button" (click)="unshelveAlarm.emit(alarm)" *ngIf="alarm.shelveInfo">
     <mat-icon>timer_off</mat-icon>
     UNSHELVE
   </button>
-  <button class="ya-button"
-          (click)="clearAlarm.emit(alarm)">
+  <button class="ya-button" (click)="clearAlarm.emit(alarm)">
     <mat-icon>clear_all</mat-icon>
     CLEAR
   </button>

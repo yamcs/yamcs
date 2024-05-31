@@ -1,30 +1,16 @@
 <ng-container [ngSwitch]="severity">
-  <div *ngSwitchCase="'INFO'"
-        class="info"
-        [class.grayscale]="grayscale"></div>
+  <div *ngSwitchCase="'INFO'" class="info" [class.grayscale]="grayscale"></div>
 
-  <div *ngSwitchCase="'WATCH'"
-        class="watch"
-        [class.grayscale]="grayscale"></div>
+  <div *ngSwitchCase="'WATCH'" class="watch" [class.grayscale]="grayscale"></div>
 
-  <div *ngSwitchCase="'WARNING'"
-        class="warning"
-        [class.grayscale]="grayscale"></div>
+  <div *ngSwitchCase="'WARNING'" class="warning" [class.grayscale]="grayscale"></div>
 
-  <div *ngSwitchCase="'DISTRESS'"
-        class="distress"
-        [class.grayscale]="grayscale"></div>
+  <div *ngSwitchCase="'DISTRESS'" class="distress" [class.grayscale]="grayscale"></div>
 
-  <div *ngSwitchCase="'CRITICAL'"
-        class="critical"
-        [class.grayscale]="grayscale"></div>
+  <div *ngSwitchCase="'CRITICAL'" class="critical" [class.grayscale]="grayscale"></div>
 
-  <div *ngSwitchCase="'SEVERE'"
-        class="severe"
-        [class.grayscale]="grayscale"></div>
+  <div *ngSwitchCase="'SEVERE'" class="severe" [class.grayscale]="grayscale"></div>
 
   <!-- Old state. Remove in future -->
-  <div *ngSwitchCase="'ERROR'"
-        class="error"
-        [class.grayscale]="grayscale"></div>
+  <div *ngSwitchCase="'ERROR'" class="error" [class.grayscale]="grayscale"></div>
 </ng-container>

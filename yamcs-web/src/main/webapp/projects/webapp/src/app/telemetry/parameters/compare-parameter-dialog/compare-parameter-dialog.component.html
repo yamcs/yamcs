@@ -1,9 +1,7 @@
 <mat-dialog-content class="ya-form">
   <label>
     Search parameter for comparison
-    <input type="text"
-           [formControl]="parameter"
-           [matAutocomplete]="auto">
+    <input type="text" [formControl]="parameter" [matAutocomplete]="auto" />
     <mat-autocomplete class="ya-autocomplete" #auto>
       <mat-option *ngFor="let option of filteredOptions | async" [value]="option | memberPath">
         {{ option | memberPath }}
@@ -11,11 +9,11 @@
     </mat-autocomplete>
   </label>
 
-  <br>
+  <br />
   <label>Color</label>
   <app-color-palette #palette />
 
-  <br>
+  <br />
   <label>Thickness</label>
   <app-thickness #thickness [color]="palette.selectedColor" />
 </mat-dialog-content>
