@@ -6,10 +6,12 @@
       <th>Value</th>
       <th>Label</th>
     </tr>
-    <tr *ngFor="let enumValue of data.column.enumValue">
-      <td>{{ enumValue.value }}</td>
-      <td>{{ enumValue.label }}</td>
-    </tr>
+    @for (enumValue of data.column.enumValue; track enumValue) {
+      <tr>
+        <td>{{ enumValue.value }}</td>
+        <td>{{ enumValue.label }}</td>
+      </tr>
+    }
   </table>
 </mat-dialog-content>
 

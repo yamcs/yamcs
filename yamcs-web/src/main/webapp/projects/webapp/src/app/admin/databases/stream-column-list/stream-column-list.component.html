@@ -1,24 +1,28 @@
-<div class="panel-content" *ngIf="stream$ | async as stream">
-  <h3>Columns</h3>
-  <table yaDataTable class="expand">
-    <tr>
-      <th width="200">Column</th>
-      <th>Type</th>
-      <th class="expand"></th>
-    </tr>
-    <tr *ngFor="let column of stream.columns">
-      <td>{{ column.name }}</td>
-      <td>{{ column.type }}</td>
-      <td></td>
-    </tr>
-  </table>
-
-  <p>&nbsp;</p>
-
-  <h3>Subscribers</h3>
-  <table yaDataTable class="expand">
-    <tr *ngFor="let subscriber of stream.subscribers">
-      <td class="expand">{{ subscriber }}</td>
-    </tr>
-  </table>
-</div>
+@if (stream$ | async; as stream) {
+  <div class="panel-content">
+    <h3>Columns</h3>
+    <table yaDataTable class="expand">
+      <tr>
+        <th width="200">Column</th>
+        <th>Type</th>
+        <th class="expand"></th>
+      </tr>
+      @for (column of stream.columns; track column) {
+        <tr>
+          <td>{{ column.name }}</td>
+          <td>{{ column.type }}</td>
+          <td></td>
+        </tr>
+      }
+    </table>
+    <p>&nbsp;</p>
+    <h3>Subscribers</h3>
+    <table yaDataTable class="expand">
+      @for (subscriber of stream.subscribers; track subscriber) {
+        <tr>
+          <td class="expand">{{ subscriber }}</td>
+        </tr>
+      }
+    </table>
+  </div>
+}

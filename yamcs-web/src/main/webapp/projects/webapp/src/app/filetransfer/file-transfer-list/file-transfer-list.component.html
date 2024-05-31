@@ -2,23 +2,23 @@
   <app-instance-toolbar>
     File transfer &nbsp;&nbsp;&nbsp;&nbsp;
 
-    <ng-container *ngIf="services$ | async as services">
+    @if (services$ | async; as services) {
       <button mat-button [matMenuTriggerFor]="serviceMenu">
         {{ (service$ | async)?.name || "select service" }} ▾
       </button>
       <mat-menu #serviceMenu="matMenu" class="ya-menu">
-        <button mat-menu-item *ngFor="let service of services" (click)="switchService(service)">
-          {{ service.name }}
-        </button>
+        @for (service of services; track service) {
+          <button mat-menu-item (click)="switchService(service)">
+            {{ service.name }}
+          </button>
+        }
       </mat-menu>
-    </ng-container>
+    }
 
-    <ng-container *ngIf="service$ | async as service">
-      <ng-container
-        *ngIf="
-          mayControlFileTransfers() &&
-          (service.capabilities.download || service.capabilities.upload)
-        ">
+    @if (service$ | async; as service) {
+      @if (
+        mayControlFileTransfers() && (service.capabilities.download || service.capabilities.upload)
+      ) {
         <button mat-button color="primary" (click)="downloadFile(service)">
           <mat-icon>{{
             service.capabilities.download && service.capabilities.upload
@@ -36,11 +36,11 @@
                 : "download"
           }}
         </button>
-      </ng-container>
-    </ng-container>
+      }
+    }
   </app-instance-toolbar>
 
-  <ng-container *ngIf="service$ | async as service">
+  @if (service$ | async; as service) {
     <nav mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
       <a
         mat-tab-link
@@ -51,9 +51,10 @@
         [active]="rla.isActive"
         [state]="{ hasTransferType: service.capabilities.hasTransferType }">
         ONGOING
-        <ng-container *ngIf="ongoingCount$ | async as count">({{ count }})</ng-container>
+        @if (ongoingCount$ | async; as count) {
+          ({{ count }})
+        }
       </a>
-
       <a
         mat-tab-link
         routerLink="./failed-transfers"
@@ -63,9 +64,10 @@
         [active]="rlb.isActive"
         [state]="{ hasTransferType: service.capabilities.hasTransferType }">
         FAILED
-        <ng-container *ngIf="failedCount$ | async as count">({{ count }})</ng-container>
+        @if (failedCount$ | async; as count) {
+          ({{ count }})
+        }
       </a>
-
       <a
         mat-tab-link
         routerLink="./successful-transfers"
@@ -75,17 +77,20 @@
         [active]="rlc.isActive"
         [state]="{ hasTransferType: service.capabilities.hasTransferType }">
         SUCCESSFUL
-        <ng-container *ngIf="successfulCount$ | async as count">({{ count }})</ng-container>
+        @if (successfulCount$ | async; as count) {
+          ({{ count }})
+        }
       </a>
     </nav>
-
     <div class="outlet-wrapper">
       <mat-tab-nav-panel #tabPanel>
         <router-outlet />
       </mat-tab-nav-panel>
     </div>
-  </ng-container>
-  <ya-empty-message *ngIf="!(services$ | async)!.length" headerTitle="File Transfer">
-    <p>This instance has no file transfer services configured.</p>
-  </ya-empty-message>
+  }
+  @if (!(services$ | async)!.length) {
+    <ya-empty-message headerTitle="File Transfer">
+      <p>This instance has no file transfer services configured.</p>
+    </ya-empty-message>
+  }
 </app-instance-page>

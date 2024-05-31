@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import { OopsComponent } from '../oops/oops.component';
 
@@ -12,14 +11,9 @@ import { OopsComponent } from '../oops/oops.component';
     WebappSdkModule,
   ],
 })
-export class ServerUnavailableComponent implements OnInit {
+export class ServerUnavailableComponent {
 
-  next: string | null;
-
-  constructor(private route: ActivatedRoute) {
-  }
-
-  ngOnInit() {
-    this.next = this.route.snapshot.queryParamMap.get('next');
+  reload() {
+    window.location.reload();
   }
 }

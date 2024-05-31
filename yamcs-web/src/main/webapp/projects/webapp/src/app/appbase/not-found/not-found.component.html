@@ -6,12 +6,13 @@
         <h2>404: Not Found</h2>
         <p>
           It looks like
-          <ng-container *ngIf="page">
+          @if (page) {
             the page
             <a [href]="page" class="ya-link">{{ page }}</a>
-          </ng-container>
-          <ng-container *ngIf="!page">this page</ng-container>
-          doesn't exist yet.
+          } @else {
+            this page
+          }
+          doesn't exist.
         </p>
         <a routerLink="/" class="ya-link">Go to homepage</a>
       </td>

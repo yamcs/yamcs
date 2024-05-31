@@ -103,7 +103,7 @@ export class ArrayArgumentComponent implements OnInit, OnDestroy {
     parent.addControl(this.name, this.formArray);
     this.updateOwnDimensions();
 
-    let parameters = this.type.dimensions
+    let parameters = this.type.dimensions!
       .filter(dimension => dimension.parameter !== undefined)
       .map(dimension => dimension.parameter.qualifiedName);
     parameters = [...new Set(parameters)];
@@ -139,7 +139,7 @@ export class ArrayArgumentComponent implements OnInit, OnDestroy {
     this.formArray.addValidators(() => {
       for (let i = 0; i < this.ownDimensions.length; i++) {
         const dimension = this.ownDimensions[i];
-        const dimensionType = this.type.dimensions[i];
+        const dimensionType = this.type.dimensions![i];
         if (dimension !== undefined && dimension < 0) {
           return {
             'invalidDimension': {
@@ -181,10 +181,10 @@ export class ArrayArgumentComponent implements OnInit, OnDestroy {
       ).subscribe(arrayLength => {
         this.formArray.clear();
         for (let i = 0; i < arrayLength; i++) {
-          if (!this.type.elementType.engType.endsWith('[]') && this.type.elementType.engType !== 'aggregate') {
+          if (!this.type.elementType!.engType.endsWith('[]') && this.type.elementType!.engType !== 'aggregate') {
             const initialValue = first ? (this.entryInitialValues[i] ?? '') : '';
             this.formArray.setControl(i, new FormControl(initialValue));
-          } else if (this.type.elementType.engType === 'aggregate') {
+          } else if (this.type.elementType!.engType === 'aggregate') {
             this.formArray.setControl(i, new UntypedFormGroup({}));
           } else {
             this.formArray.setControl(i, new UntypedFormArray([]));
@@ -206,7 +206,7 @@ export class ArrayArgumentComponent implements OnInit, OnDestroy {
   }
 
   private updateEngType() {
-    let result = this.type.elementType.engType;
+    let result = this.type.elementType!.engType;
 
     // Array within array, avoid index confusion
     if (result.endsWith('[]')) {

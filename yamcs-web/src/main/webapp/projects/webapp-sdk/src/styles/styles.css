@@ -4,7 +4,7 @@ body {
   padding: 0;
   height: 100%;
   position: relative;
-  font-family: Roboto, sans-serif;
+  letter-spacing: .0178571429em;
 }
 
 /* Disable dashed border in menus etc. Only FF does this */
@@ -68,6 +68,10 @@ body {
 
 .mat-mdc-slide-toggle {
   line-height: 24px !important;
+}
+
+.dialog-full-size {
+  max-width: none !important;
 }
 
 .dialog-full-size .mat-mdc-dialog-surface {
@@ -144,7 +148,6 @@ a.ya-link.ya-header-link {
 
 .ya-menu.mat-mdc-menu-panel {
   min-height: 24px;
-  box-shadow: 0 5px 5px -3px #0003, 0 8px 10px 1px #00000024, 0 3px 14px 2px #0000001f;
 }
 
 .ng-invalid:not(.ng-pristine)>.date-time-input>input,
@@ -366,6 +369,34 @@ input[type="radio"] {
 hr.half-break {
   visibility: hidden;
   line-height: 0.5em;
+}
+
+h2 {
+  font: 500 20px / 32px Roboto, sans-serif;
+  letter-spacing: .0125em;
+  margin: 0 0 16px;
+}
+
+h3 {
+  font: 400 16px / 28px Roboto, sans-serif;
+  letter-spacing: .009375em;
+  margin: 0 0 16px;
+}
+
+h4 {
+  font: 400 16px / 24px Roboto, sans-serif;
+  letter-spacing: .03125em;
+  margin: 0 0 16px;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 12px;
+  letter-spacing: .0178571429em;
+}
+
+.elevation-z1 {
+  box-shadow: 0 2px 1px -1px #0003, 0 1px 1px #00000024, 0 1px 3px #0000001f;
 }
 
 /*

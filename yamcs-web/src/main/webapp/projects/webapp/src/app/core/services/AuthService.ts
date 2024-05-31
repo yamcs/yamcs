@@ -63,7 +63,7 @@ export class AuthService implements OnDestroy {
         }
       } catch (err: any) {
         if (err.name === 'TypeError') { // TypeError is how Fetch API reports network or CORS failure
-          this.router.navigate(['/down'], { queryParams: { next: '/' } });
+          this.router.navigate(['/down'], { skipLocationChange: true });
         } else {
           this.logout(true);
         }

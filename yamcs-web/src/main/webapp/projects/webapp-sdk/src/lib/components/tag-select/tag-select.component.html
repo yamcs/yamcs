@@ -1,11 +1,15 @@
 <div class="tag-select">
-  <ng-container *ngIf="tags$ | async as tags">
-    <ya-label *ngFor="let tag of tags">
-      {{ tag }}
-      <mat-icon class="tag-icon" (click)="removeTag(tag)">close</mat-icon>
-    </ya-label>
-    <ng-container *ngIf="tags.length">&nbsp;</ng-container>
-  </ng-container>
+  @if (tags$ | async; as tags) {
+    @for (tag of tags; track tag) {
+      <ya-label>
+        {{ tag }}
+        <mat-icon class="tag-icon" (click)="removeTag(tag)">close</mat-icon>
+      </ya-label>
+    }
+    @if (tags.length) {
+      &nbsp;
+    }
+  }
   <input
     type="text"
     [formControl]="control"

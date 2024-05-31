@@ -4,6 +4,7 @@
 .progress {
   display: inline-block;
   min-width: 100px;
+  min-height: 16px;
   position: relative;
   text-align: center;
   margin-right: 5px;

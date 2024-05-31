@@ -379,7 +379,7 @@ export class BucketObjectListComponent implements OnDestroy {
       },
       hasBackdrop: false,
       autoFocus: false,
-      panelClass: ['progress-dialog', 'mat-elevation-z2'],
+      panelClass: ['progress-dialog', 'elevation-z1'],
     });
     this.dialogRef.afterOpened().subscribe(() => this.progressDialogOpen = true);
     this.dialogRef.afterClosed().subscribe(() => {

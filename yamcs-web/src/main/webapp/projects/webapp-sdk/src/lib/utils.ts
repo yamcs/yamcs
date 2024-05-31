@@ -1,4 +1,4 @@
-import { Instance, Member, Parameter, ParameterType, UnitInfo, Value } from './client';
+import { Instance, Parameter, ParameterMember, ParameterType, UnitInfo, Value } from './client';
 const PREVIEW_LENGTH = 3;
 
 export type ISOResolution = 'day' | 'hhmm' | 'hhmmss' | 'millis';
@@ -558,14 +558,14 @@ export function getExtension(filename: string | null): string | null {
   }
 }
 
-export function getEntryForOffset(parameter: Parameter, offset: string): Parameter | Member | null {
+export function getEntryForOffset(parameter: Parameter, offset: string): Parameter | ParameterMember | null {
   const entry = parameter.name + offset;
   const parts = entry.split('.');
 
-  let node: Parameter | Member = parameter;
+  let node: Parameter | ParameterMember = parameter;
   for (let i = 1; i < parts.length; i++) {
     let memberNode;
-    const members: Member[] = getParameterTypeForEntry(node)?.member || [];
+    const members: ParameterMember[] = getParameterTypeForEntry(node)?.member || [];
     for (const member of members) {
       if (member.name === parts[i]) {
         memberNode = member;
@@ -583,7 +583,7 @@ export function getEntryForOffset(parameter: Parameter, offset: string): Paramet
   return node || null;
 }
 
-function getParameterTypeForEntry(entry: Parameter | Member) {
+function getParameterTypeForEntry(entry: Parameter | ParameterMember) {
   const entryType = entry.type as ParameterType;
   if (entryType.arrayInfo) {
     return entryType.arrayInfo.type;

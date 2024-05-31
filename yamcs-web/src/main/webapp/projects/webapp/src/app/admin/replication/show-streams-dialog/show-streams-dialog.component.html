@@ -2,9 +2,11 @@
 
 <mat-dialog-content>
   <table yaDataTable style="width: 100%">
-    <tr *ngFor="let stream of data.streams">
-      <td>{{ stream }}</td>
-    </tr>
+    @for (stream of data.streams; track stream) {
+      <tr>
+        <td>{{ stream }}</td>
+      </tr>
+    }
   </table>
 </mat-dialog-content>
 

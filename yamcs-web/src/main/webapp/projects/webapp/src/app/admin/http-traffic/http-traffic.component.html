@@ -2,7 +2,7 @@
   <app-admin-toolbar> HTTP traffic </app-admin-toolbar>
 
   <div class="panel-content">
-    <ng-container *ngIf="traffic$ | async as traffic">
+    @if (traffic$ | async; as traffic) {
       <dl class="dl-horizontal no-lead">
         <dt>Cumulative read</dt>
         <dd>{{ traffic.readBytes | formatBytes }}</dd>
@@ -13,7 +13,7 @@
         <dt>Tx</dt>
         <dd>{{ traffic.writeThroughput * 8 | dataRate }}</dd>
       </dl>
-    </ng-container>
+    }
 
     <div class="section-divider">
       <mat-divider />

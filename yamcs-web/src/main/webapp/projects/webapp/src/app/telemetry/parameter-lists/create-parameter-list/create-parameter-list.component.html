@@ -25,25 +25,33 @@
     </button>
 
     <p>&nbsp;</p>
-    <table yaDataTable style="width: 100%" *ngIf="patterns$ | async as patterns">
-      <tr>
-        <th>Pattern</th>
-        <th></th>
-      </tr>
-      <tr *ngIf="!patterns.length">
-        <td colspan="3">No rows to display</td>
-      </tr>
-      <tr *ngFor="let pattern of patterns; index as i">
-        <td>{{ pattern }}</td>
-        <td style="text-align: right">
-          <ya-icon-action
-            (click)="moveDown(i); $event.stopPropagation()"
-            icon="keyboard_arrow_down" />
-          <ya-icon-action (click)="moveUp(i); $event.stopPropagation()" icon="keyboard_arrow_up" />
-          <ya-text-action icon="delete" (click)="deletePattern(i)">DELETE</ya-text-action>
-        </td>
-      </tr>
-    </table>
+    @if (patterns$ | async; as patterns) {
+      <table yaDataTable style="width: 100%">
+        <tr>
+          <th>Pattern</th>
+          <th></th>
+        </tr>
+        @if (!patterns.length) {
+          <tr>
+            <td colspan="3">No rows to display</td>
+          </tr>
+        }
+        @for (pattern of patterns; track pattern; let i = $index) {
+          <tr>
+            <td>{{ pattern }}</td>
+            <td style="text-align: right">
+              <ya-icon-action
+                (click)="moveDown(i); $event.stopPropagation()"
+                icon="keyboard_arrow_down" />
+              <ya-icon-action
+                (click)="moveUp(i); $event.stopPropagation()"
+                icon="keyboard_arrow_up" />
+              <ya-text-action icon="delete" (click)="deletePattern(i)">DELETE</ya-text-action>
+            </td>
+          </tr>
+        }
+      </table>
+    }
 
     <p>&nbsp;</p>
     <div class="action-bar">

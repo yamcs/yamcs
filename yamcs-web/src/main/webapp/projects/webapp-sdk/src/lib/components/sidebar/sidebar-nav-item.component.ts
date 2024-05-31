@@ -1,4 +1,4 @@
-import { NgIf } from '@angular/common';
+
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MatListItem } from '@angular/material/list';
 import { RouterLink, RouterLinkActive } from '@angular/router';
@@ -11,10 +11,9 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatListItem,
-    NgIf,
     RouterLink,
-    RouterLinkActive,
-  ],
+    RouterLinkActive
+],
 })
 export class YaSidebarNavItem {
 

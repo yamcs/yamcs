@@ -8,7 +8,9 @@
   <div class="filter">
     <mat-icon class="icon16">{{ icon }}</mat-icon>
   </div>
-  <div class="clear" *ngIf="showClear$ | async" (click)="clearInput()">
-    <mat-icon class="icon16">close</mat-icon>
-  </div>
+  @if (showClear$ | async) {
+    <div class="clear" (click)="clearInput()">
+      <mat-icon class="icon16">close</mat-icon>
+    </div>
+  }
 </div>

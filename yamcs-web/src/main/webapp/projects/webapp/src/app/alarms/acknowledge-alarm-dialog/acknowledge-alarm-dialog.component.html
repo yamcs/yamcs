@@ -2,13 +2,15 @@
 
 <mat-dialog-content>
   <p>
-    <ng-container *ngIf="data.alarms.length === 1">
-      {{ data.alarms[0].id.namespace
-      }}<ng-container *ngIf="data.alarms[0].id.name">/{{ data.alarms[0].id.name }} </ng-container>
-    </ng-container>
-    <ng-container *ngIf="data.alarms.length !== 1">
+    @if (data.alarms.length === 1) {
+      {{ data.alarms[0].id.namespace }}
+      @if (data.alarms[0].id.name) {
+        /{{ data.alarms[0].id.name }}
+      }
+    }
+    @if (data.alarms.length !== 1) {
       {{ data.alarms.length }} selected alarms.
-    </ng-container>
+    }
   </p>
   <form [formGroup]="formGroup" class="ya-form">
     <label>

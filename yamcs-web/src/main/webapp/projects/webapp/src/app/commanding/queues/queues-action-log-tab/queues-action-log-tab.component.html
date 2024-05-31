@@ -5,16 +5,16 @@
       [options]="intervalOptions"
       icon="access_time"
       formControlName="interval" />
-    <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
+    @if (filterForm.value["interval"] === "CUSTOM") {
       <ya-date-time-input formControlName="customStart" />
       <ya-date-time-input formControlName="customStop" />
       <button (click)="applyCustomDates()" class="ya-button" [disabled]="filterForm.invalid">
         Apply
       </button>
-    </ng-container>
-    <ng-container *ngIf="filterForm.value['interval'] !== 'CUSTOM'">
+    }
+    @if (filterForm.value["interval"] !== "CUSTOM") {
       <button class="ya-button" (click)="jumpToNow()">Jump to now</button>
-    </ng-container>
+    }
   </div>
 </form>
 <table mat-table [dataSource]="dataSource" class="ya-data-table expand">

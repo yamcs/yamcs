@@ -6,10 +6,12 @@
         <h2>403: Forbidden</h2>
         <p>
           You do not have sufficient privileges to access
-          <ng-container *ngIf="page">
+          @if (page) {
             <a [href]="page" class="ya-link">{{ page }}</a>
-          </ng-container>
-          <ng-container *ngIf="!page">this page</ng-container>
+          }
+          @if (!page) {
+            this page
+          }
         </p>
         <a routerLink="/" class="ya-link">Go to homepage</a>
       </td>

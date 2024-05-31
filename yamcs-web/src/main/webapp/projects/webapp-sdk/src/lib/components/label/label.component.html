@@ -3,6 +3,8 @@
   [style.backgroundColor]="backgroundColor"
   [style.borderColor]="borderColor"
   [style.color]="color">
-  <mat-icon *ngIf="icon">{{ icon }}</mat-icon>
+  @if (icon) {
+    <mat-icon>{{ icon }}</mat-icon>
+  }
   <ng-content />
 </span>

@@ -8,6 +8,8 @@
   [queryParams]="queryParams"
   [class.subitem]="subitem"
   [style.color]="color ? color + ' !important' : undefined">
-  <div *ngIf="subitem" style="display: inline-block; width: 60px"></div>
+  @if (subitem) {
+    <div style="display: inline-block; width: 60px"></div>
+  }
   <ng-content />
 </a>

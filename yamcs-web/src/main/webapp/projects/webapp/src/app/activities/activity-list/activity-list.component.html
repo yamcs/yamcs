@@ -2,15 +2,16 @@
   <app-instance-toolbar>
     Activities &nbsp;&nbsp;&nbsp;
 
-    <button
-      mat-button
-      color="primary"
-      *ngIf="mayControlActivities()"
-      [disabled]="!isGroupCancelEnabled()"
-      (click)="cancelSelectedActivities()">
-      <mat-icon>cancel</mat-icon>
-      Cancel
-    </button>
+    @if (mayControlActivities()) {
+      <button
+        mat-button
+        color="primary"
+        [disabled]="!isGroupCancelEnabled()"
+        (click)="cancelSelectedActivities()">
+        <mat-icon>cancel</mat-icon>
+        Cancel
+      </button>
+    }
   </app-instance-toolbar>
 
   <div class="panel-content">
@@ -33,39 +34,68 @@
           [options]="intervalOptions"
           icon="access_time"
           formControlName="interval" />
-        <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
+        @if (filterForm.value["interval"] === "CUSTOM") {
           <ya-date-time-input formControlName="customStart" />
           <ya-date-time-input formControlName="customStop" />
           <button (click)="applyCustomDates()" class="ya-button" [disabled]="filterForm.invalid">
             Apply
           </button>
-        </ng-container>
-        <ng-container *ngIf="filterForm.value['interval'] !== 'CUSTOM'">
+        }
+        @if (filterForm.value["interval"] !== "CUSTOM") {
           <button class="ya-button" (click)="jumpToNow()">Jump to now</button>
-        </ng-container>
+        }
 
-        <ya-dots *ngIf="dataSource.loading$ | async" />
+        @if (dataSource.loading$ | async) {
+          <ya-dots />
+        }
       </div>
     </form>
 
-    <div class="table-status" [ngSwitch]="appliedInterval">
-      <span *ngSwitchCase="'PT1H'">
-        Showing activities from <b>the last hour</b> ending at
-        <b>{{ validStop | datetime }}</b> (Mission Time)
-      </span>
-      <span *ngSwitchCase="'PT6H'">
-        Showing activities from <b>the last 6 hours</b> ending at
-        <b>{{ validStop | datetime }}</b> (Mission Time)
-      </span>
-      <span *ngSwitchCase="'P1D'">
-        Showing activities from <b>the last 24 hours</b> ending at
-        <b>{{ validStop | datetime }}</b> (Mission Time)
-      </span>
-      <span *ngSwitchCase="'NO_LIMIT'"> Showing activities from <b>all time</b> </span>
-      <span *ngSwitchCase="'CUSTOM'">
-        Showing activities from <b>{{ validStart | datetime }}</b> to
-        <b>{{ validStop | datetime }}</b> (Mission Time)
-      </span>
+    <div class="table-status">
+      @switch (appliedInterval) {
+        @case ("PT1H") {
+          <span>
+            Showing activities from
+            <b>the last hour</b>
+            ending at
+            <b>{{ validStop | datetime }}</b>
+            (Mission Time)
+          </span>
+        }
+        @case ("PT6H") {
+          <span>
+            Showing activities from
+            <b>the last 6 hours</b>
+            ending at
+            <b>{{ validStop | datetime }}</b>
+            (Mission Time)
+          </span>
+        }
+        @case ("P1D") {
+          <span>
+            Showing activities from
+            <b>the last 24 hours</b>
+            ending at
+            <b>{{ validStop | datetime }}</b>
+            (Mission Time)
+          </span>
+        }
+        @case ("NO_LIMIT") {
+          <span>
+            Showing activities from
+            <b>all time</b>
+          </span>
+        }
+        @case ("CUSTOM") {
+          <span>
+            Showing activities from
+            <b>{{ validStart | datetime }}</b>
+            to
+            <b>{{ validStop | datetime }}</b>
+            (Mission Time)
+          </span>
+        }
+      }
     </div>
 
     <table
@@ -129,27 +159,33 @@
       <ng-container cdkColumnDef="duration">
         <th mat-header-cell *cdkHeaderCellDef>Duration</th>
         <td mat-cell *cdkCellDef="let item">
-          <app-activity-duration *ngIf="item.start" [activity]="item" />
-          <ng-container *ngIf="!item.start">-</ng-container>
+          @if (item.start) {
+            <app-activity-duration [activity]="item" />
+          } @else {
+            -
+          }
         </td>
       </ng-container>
 
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef class="expand"></th>
         <td mat-cell *matCellDef="let row">
-          <ya-more *ngIf="mayControlActivities()">
-            <button
-              mat-menu-item
-              (click)="cancelActivity(row)"
-              [disabled]="row.stop !== undefined || !mayControlActivities()">
-              Cancel
-            </button>
-          </ya-more>
-          <span class="alert" *ngIf="row.failureReason as failureReason">
-            {{ failureReason }}
-          </span>
-          <ng-container
-            *ngIf="row.type === 'MANUAL' && row.status === 'RUNNING' && mayControlActivities()">
+          @if (mayControlActivities()) {
+            <ya-more>
+              <button
+                mat-menu-item
+                (click)="cancelActivity(row)"
+                [disabled]="row.stop !== undefined || !mayControlActivities()">
+                Cancel
+              </button>
+            </ya-more>
+          }
+          @if (row.failureReason; as failureReason) {
+            <span class="alert">
+              {{ failureReason }}
+            </span>
+          }
+          @if (row.type === "MANUAL" && row.status === "RUNNING" && mayControlActivities()) {
             <button class="ya-button" (click)="setSuccessful(row)">
               <mat-icon>thumb_up</mat-icon>
               Set successful
@@ -159,7 +195,7 @@
               <mat-icon>thumb_down</mat-icon>
               Set failed
             </button>
-          </ng-container>
+          }
         </td>
       </ng-container>
 

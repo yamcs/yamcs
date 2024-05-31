@@ -1,4 +1,4 @@
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
@@ -18,9 +18,8 @@ import { MessageService, SiteMessage } from '../../services/message.service';
     MatIcon,
     MatIconButton,
     MatToolbar,
-    MatToolbarRow,
-    NgIf,
-  ],
+    MatToolbarRow
+],
 })
 export class YaMessageBar {
 

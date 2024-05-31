@@ -1,4 +1,4 @@
-import { NgForOf, NgIf } from '@angular/common';
+
 import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { MatMenu, MatMenuContent, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
@@ -23,10 +23,8 @@ export interface YaColumnInfo {
     MatMenuContent,
     MatMenuItem,
     MatIcon,
-    MatMenuTrigger,
-    NgIf,
-    NgForOf,
-  ],
+    MatMenuTrigger
+],
 })
 export class YaColumnChooser implements OnInit {
 

@@ -27,24 +27,28 @@
       </td>
     </tr>
   </table>
-  <ng-container *ngIf="verifiers.length">
+  @if (verifiers.length) {
     <p>&nbsp;</p>
     <p>Verifiers:</p>
     <table yaSimpleTable style="width: 100%">
-      <tr *ngFor="let ack of verifiers">
-        <th>{{ ack.name }}</th>
-        <td>{{ ack.description || "-" }}</td>
-      </tr>
+      @for (ack of verifiers; track ack) {
+        <tr>
+          <th>{{ ack.name }}</th>
+          <td>{{ ack.description || "-" }}</td>
+        </tr>
+      }
     </table>
-  </ng-container>
-  <ng-container *ngIf="extra.length">
+  }
+  @if (extra.length) {
     <p>&nbsp;</p>
     <p>Extra acknowledgments:</p>
     <table yaSimpleTable style="width: 100%">
-      <tr *ngFor="let ack of extra">
-        <th>{{ ack.name.replace("Acknowledge_", "") }}</th>
-        <td>{{ ack.description || "-" }}</td>
-      </tr>
+      @for (ack of extra; track ack) {
+        <tr>
+          <th>{{ ack.name.replace("Acknowledge_", "") }}</th>
+          <td>{{ ack.description || "-" }}</td>
+        </tr>
+      }
     </table>
-  </ng-container>
+  }
 </ya-help>

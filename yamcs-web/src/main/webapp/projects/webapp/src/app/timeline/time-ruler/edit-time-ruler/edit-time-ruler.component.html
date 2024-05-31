@@ -1,4 +1,4 @@
-<ng-container *ngIf="formConfigured$ | async">
+@if (formConfigured$ | async) {
   <form [formGroup]="form">
     <label>
       Label <span class="hint">(required)</span><br />
@@ -17,4 +17,4 @@
       </label>
     </ng-container>
   </form>
-</ng-container>
+}

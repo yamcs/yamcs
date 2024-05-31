@@ -1,19 +1,27 @@
-<ng-container *ngIf="link">
+@if (link) {
   <a class="ya-link" [routerLink]="link" [queryParams]="queryParams">
-    <mat-icon *ngIf="icon" class="icon12 item" [class.with-label]="label">
-      {{ icon }}
-    </mat-icon>
-    <ng-container *ngIf="label">{{ label }}</ng-container>
+    @if (icon) {
+      <mat-icon class="icon12 item" [class.with-label]="label">
+        {{ icon }}
+      </mat-icon>
+    }
+    @if (label) {
+      {{ label }}
+    }
   </a>
   <mat-icon class="icon12 sep">navigate_next</mat-icon>
-</ng-container>
-<ng-container *ngIf="!link && action">
+} @else if (action) {
   <a class="ya-link action">
-    <mat-icon *ngIf="icon" class="icon12 item" [class.with-label]="label">
-      {{ icon }}
-    </mat-icon>
-    <ng-container *ngIf="label">{{ label }}</ng-container>
+    @if (icon) {
+      <mat-icon class="icon12 item" [class.with-label]="label">
+        {{ icon }}
+      </mat-icon>
+    }
+    @if (label) {
+      {{ label }}
+    }
   </a>
   <mat-icon class="icon12 sep">navigate_next</mat-icon>
-</ng-container>
-<ng-container *ngIf="!link && !action">{{ label }}</ng-container>
+} @else {
+  {{ label }}
+}

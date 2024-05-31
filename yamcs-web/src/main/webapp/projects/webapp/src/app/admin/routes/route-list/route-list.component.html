@@ -7,15 +7,14 @@
   </app-admin-toolbar>
 
   <ya-detail-pane>
-    <ng-container *ngIf="selectedRoute$ | async as selectedItem; else noSelection">
+    @if (selectedRoute$ | async; as selectedItem) {
       <ya-detail-toolbar> Route Detail </ya-detail-toolbar>
       <div style="padding: 0 16px">
         <app-route-detail [route]="selectedItem" />
       </div>
-    </ng-container>
-    <ng-template #noSelection>
+    } @else {
       <ya-detail-toolbar> Select a route </ya-detail-toolbar>
-    </ng-template>
+    }
   </ya-detail-pane>
 
   <div class="table-wrapper">

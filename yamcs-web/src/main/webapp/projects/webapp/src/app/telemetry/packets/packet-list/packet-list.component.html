@@ -18,7 +18,7 @@
   </app-instance-toolbar>
 
   <ya-detail-pane>
-    <ng-container *ngIf="detailPacket$ | async as detailPacket; else noSelection">
+    @if (detailPacket$ | async; as detailPacket) {
       <ya-detail-toolbar> Packet Detail </ya-detail-toolbar>
       <div style="padding: 0 16px">
         <div class="block-title">Packet name</div>
@@ -32,9 +32,9 @@
         <div class="block-title">Earth reception time</div>
         <div class="block">
           {{ (detailPacket.earthReceptionTime | datetime) || "-" }}
-          <ng-container *ngIf="detailPacket.earthReceptionTime">
+          @if (detailPacket.earthReceptionTime) {
             ({{ detailPacket.earthReceptionTime | deltaWith: detailPacket.generationTime }})
-          </ng-container>
+          }
         </div>
         <div class="block-title">Reception time</div>
         <div class="block">
@@ -64,10 +64,9 @@
           <app-hex #hexdump [base64String]="detailPacket.packet" />
         </div>
       </div>
-    </ng-container>
-    <ng-template #noSelection>
+    } @else {
       <ya-detail-toolbar> Select a packet </ya-detail-toolbar>
-    </ng-template>
+    }
   </ya-detail-pane>
   <div class="table-wrapper">
     <div class="panel-content">
@@ -80,19 +79,21 @@
             [options]="intervalOptions"
             icon="access_time"
             formControlName="interval" />
-          <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
+          @if (filterForm.value["interval"] === "CUSTOM") {
             <ya-date-time-input formControlName="customStart" />
             <ya-date-time-input formControlName="customStop" />
             <button (click)="applyCustomDates()" class="ya-button" [disabled]="filterForm.invalid">
               Apply
             </button>
-          </ng-container>
-          <ng-container *ngIf="filterForm.value['interval'] !== 'CUSTOM'">
+          }
+          @if (filterForm.value["interval"] !== "CUSTOM") {
             <button class="ya-button" (click)="jumpToNow()">Jump to now</button>
-          </ng-container>
+          }
           <ya-column-chooser #columnChooser [columns]="columns" preferenceKey="tmPackets" />
 
-          <ya-dots *ngIf="dataSource.loading$ | async" />
+          @if (dataSource.loading$ | async) {
+            <ya-dots />
+          }
         </div>
       </form>
       <table mat-table [dataSource]="dataSource" class="ya-data-table expand">

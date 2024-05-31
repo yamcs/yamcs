@@ -1,7 +1,6 @@
 .meter-size-constrainer {
   display: inline-block;
   width: 160px;
-  /* about as large as the timestamp */
   position: relative;
 }
 
@@ -16,11 +15,6 @@ span.pval {
   bottom: -5px;
   color: rgba(0, 0, 0, .987);
   font-weight: 400;
-}
-
-.subtext {
-  font-size: smaller;
-  white-space: nowrap;
 }
 
 .pval-frame {

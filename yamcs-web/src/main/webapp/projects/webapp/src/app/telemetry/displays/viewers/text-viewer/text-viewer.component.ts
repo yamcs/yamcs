@@ -6,8 +6,10 @@ import { Viewer } from '../Viewer';
   standalone: true,
   selector: 'app-text-viewer',
   template: `
-    <pre *ngIf="text">{{ text }}</pre>
-  `,
+    @if (text) {
+      <pre>{{ text }}</pre>
+    }
+    `,
   styles: `
     pre {
       margin: 1em;

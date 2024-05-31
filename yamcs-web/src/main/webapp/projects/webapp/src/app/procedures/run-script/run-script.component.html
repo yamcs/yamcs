@@ -23,7 +23,7 @@
         [disabled]="!form.valid">
         Run
       </button>
-      <ng-container *ngIf="showSchedule()">
+      @if (showSchedule()) {
         &nbsp;
         <ya-icon-action
           [matMenuTriggerFor]="!form.valid ? null : sendMenu"
@@ -35,7 +35,7 @@
           <button mat-menu-item (click)="runScript()">Run now</button>
           <button mat-menu-item (click)="openScheduleScriptDialog()">Run later...</button>
         </mat-menu>
-      </ng-container>
+      }
     </mat-toolbar>
   </div>
 </app-instance-page>

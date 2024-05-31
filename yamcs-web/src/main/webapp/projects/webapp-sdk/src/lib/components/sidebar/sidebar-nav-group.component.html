@@ -3,11 +3,16 @@
   [class.active]="active"
   [class.expanded]="expanded"
   (click)="toggle.emit(!expanded)">
-  <mat-icon *ngIf="!expanded" class="arrow icon16">arrow_right</mat-icon>
-  <mat-icon *ngIf="expanded" class="arrow icon16">arrow_drop_down</mat-icon>
+  @if (expanded) {
+    <mat-icon class="arrow icon16">arrow_drop_down</mat-icon>
+  } @else {
+    <mat-icon class="arrow icon16">arrow_right</mat-icon>
+  }
   <mat-icon class="item-icon" [class.svg-icon]="!!svgIcon" [svgIcon]="svgIcon">{{ icon }}</mat-icon>
   {{ label }}
 </mat-list-item>
-<div *ngIf="expanded" class="nav-item-group-items">
-  <ng-content />
-</div>
+@if (expanded) {
+  <div class="nav-item-group-items">
+    <ng-content />
+  </div>
+}

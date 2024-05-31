@@ -1,6 +1,5 @@
-<ng-container *ngIf="initialized$ | async">
+@if (initialized$ | async) {
   <button mat-button color="primary" [matMenuTriggerFor]="viewMenu">View ▾</button>
-
   <mat-menu
     #viewMenu="matMenu"
     class="ya-menu"
@@ -24,4 +23,4 @@
       Zoom out
     </button>
   </mat-menu>
-</ng-container>
+}

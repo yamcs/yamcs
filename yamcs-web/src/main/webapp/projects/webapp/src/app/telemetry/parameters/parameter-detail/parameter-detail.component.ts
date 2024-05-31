@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
-import { ContextAlarmInfo, EnumValue, Member, Parameter, ParameterType, ParameterValue, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ContextAlarmInfo, EnumValue, Member, Parameter, ParameterMember, ParameterType, ParameterValue, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AlarmLevelComponent } from '../../../shared/alarm-level/alarm-level.component';
 import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
@@ -27,11 +27,11 @@ export class ParameterDetailComponent implements OnChanges {
   offset: string;
 
   @Input()
-  pval: ParameterValue;
+  pval?: ParameterValue;
 
   // A Parameter or a Member depending on whether the user is visiting
   // nested entries of an aggregate or array.
-  entry$ = new BehaviorSubject<Parameter | Member | null>(null);
+  entry$ = new BehaviorSubject<Parameter | ParameterMember | null>(null);
   ptype$ = new BehaviorSubject<ParameterType | null>(null);
 
   constructor(readonly yamcs: YamcsService) {

@@ -29,11 +29,11 @@
       <ng-container matColumnDef="members">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Members</th>
         <td mat-cell *matCellDef="let group">
-          <ng-container *ngFor="let user of group.users">
+          @for (user of group.users; track user) {
             <mat-icon class="icon16" style="vertical-align: middle">person</mat-icon>
             {{ user.displayName || user.name }}
             <br />
-          </ng-container>
+          }
         </td>
       </ng-container>
 
@@ -50,6 +50,8 @@
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
-    <ya-empty-message *ngIf="!dataSource.data.length"> No rows to display </ya-empty-message>
+    @if (!dataSource.data.length) {
+      <ya-empty-message> No rows to display </ya-empty-message>
+    }
   </div>
 </app-admin-page>

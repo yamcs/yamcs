@@ -1,15 +1,12 @@
 <app-instance-page>
   <app-instance-toolbar>
     Parameter lists &nbsp;&nbsp;&nbsp;
-    <a
-      mat-button
-      color="primary"
-      routerLink="create"
-      [queryParams]="{ c: yamcs.context }"
-      *ngIf="mayManageParameterLists()">
-      <mat-icon>add_circle_outline</mat-icon>
-      Create list
-    </a>
+    @if (mayManageParameterLists()) {
+      <a mat-button color="primary" routerLink="create" [queryParams]="{ c: yamcs.context }">
+        <mat-icon>add_circle_outline</mat-icon>
+        Create list
+      </a>
+    }
   </app-instance-toolbar>
 
   <div class="panel-content">
@@ -46,6 +43,8 @@
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
-    <ya-empty-message *ngIf="!dataSource.data.length"> No rows to display </ya-empty-message>
+    @if (!dataSource.data.length) {
+      <ya-empty-message> No rows to display </ya-empty-message>
+    }
   </div>
 </app-instance-page>

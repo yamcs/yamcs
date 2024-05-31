@@ -19,9 +19,15 @@ $ya-theme: mat.define-theme((
   --mat-app-background-color: #ffffff;
   --mat-sidenav-container-shape: 0;
   --mat-list-active-indicator-shape: 0;
+
+  --mat-table-background-color: #ffffff;
   --mat-table-row-item-outline-color: rgba(0, 0, 0, 0.12);
+
   --mat-divider-color: rgba(0, 0, 0, 0.12);
 
+  --mdc-text-button-label-text-size: 14px;
+  --mdc-text-button-label-text-weight: 400;
+  --mdc-text-button-label-text-tracking: .0892857143em;
   --mat-text-button-state-layer-color: #009e87;
   --mdc-text-button-label-text-color: #009e87;
   --mdc-icon-button-icon-color: #009e87;
@@ -45,7 +51,9 @@ $ya-theme: mat.define-theme((
   --mat-tab-header-inactive-label-text-color: rgba(0, 0, 0, 0.6);
   --mat-tab-header-inactive-focus-label-text-color: rgba(0, 0, 0, 0.6);
   --mat-tab-header-inactive-hover-label-text-color: rgba(0, 0, 0, 0.6);
+  --mat-tab-header-label-text-tracking: .0892857143em;
 
+  --mdc-dialog-container-color: #fff;
   --mdc-dialog-container-shape: 10px;
   --mat-dialog-container-elevation-shadow: 0px 11px 15px -7px rgba(0, 0, 0, .2), 0px 24px 38px 3px rgba(0, 0, 0, .14), 0px 9px 46px 8px rgba(0, 0, 0, .12);
   --mat-dialog-actions-padding: 16px 24px;
@@ -53,7 +61,51 @@ $ya-theme: mat.define-theme((
   --mat-dialog-with-actions-content-padding: 20px 24px 0;
   --mat-dialog-headline-padding: 6px 24px 13px;
   --mdc-dialog-subhead-line-height: 1rem;
-  --mdc-dialog-subhead-size: 1rem;
+  --mdc-dialog-subhead-size: 14px;
+
+  --mdc-switch-track-height: 14px;
+  --mdc-switch-track-width: 30px;
+  --mdc-switch-selected-icon-size: 16px;
+  --mdc-switch-unselected-icon-size: 16px;
+  --mat-switch-track-outline-width: 0;
+  --mat-switch-selected-track-outline-width: 0px;
+  --mat-switch-unselected-with-icon-handle-horizontal-margin: 0;
+  --mat-switch-unselected-pressed-handle-horizontal-margin: 0;
+  --mdc-switch-selected-focus-state-layer-color: #009e97;
+  --mdc-switch-selected-handle-color: #009e97;
+  --mdc-switch-selected-hover-state-layer-color: #009e97;
+  --mdc-switch-selected-pressed-state-layer-color: #009e97;
+  --mdc-switch-selected-focus-track-color: #009e975f;
+  --mdc-switch-selected-hover-track-color: #009e975f;
+  --mdc-switch-selected-pressed-track-color: #009e975f;
+  --mdc-switch-selected-track-color: #009e975f;
+  --mat-switch-with-icon-handle-size: 16px;
+  --mat-switch-pressed-handle-size: 16px;
+  --mdc-switch-state-layer-size: 16px;
+  --mdc-switch-selected-focus-handle-color: #009e97;
+  --mdc-switch-selected-hover-handle-color: #009e97;
+  --mdc-switch-selected-pressed-handle-color: #009e97;
+  --mat-switch-selected-with-icon-handle-horizontal-margin: 0 16px;
+  --mat-switch-selected-pressed-handle-horizontal-margin: 0 16px;
+  --mdc-switch-selected-icon-color: #e0e2ec;
+
+  --mdc-dialog-subhead-color: #fff;
+  --mat-dialog-headline-padding: 0 12px 0;
+  --mdc-dialog-subhead-line-height: 48px;
+  --mat-dialog-with-actions-content-padding: 20px 12px 0;
+  --mat-dialog-actions-padding: 12px;
+
+  --mat-paginator-container-size: 24px;
+
+  --mat-datepicker-calendar-date-selected-state-background-color: #009e97;
+  --mat-datepicker-calendar-date-today-selected-state-outline-color: #009e97;
+  --mat-datepicker-calendar-date-today-outline-color: #009e97;
+  --mat-datepicker-calendar-container-background-color: #fff;
+  --mat-datepicker-calendar-container-elevation-shadow: 0px 2px 4px -1px rgba(0, 0, 0, .2), 0px 4px 5px 0px rgba(0, 0, 0, .14), 0px 1px 10px 0px rgba(0, 0, 0, .12);
+
+  --mat-toolbar-container-background-color: whitesmoke;
+  --mat-toolbar-title-text-size: 20px;
+  --mat-toolbar-title-text-tracking: .0125em;
 }
 
 // Comment out the line below if you want to use the pre-defined typography utility classes.
@@ -61,4 +113,29 @@ $ya-theme: mat.define-theme((
 // @include mat.typography-hierarchy($ya-theme);
 
 // Comment out the line below if you want to use the deprecated `color` inputs.
-@include mat.color-variants-backwards-compatibility($ya-theme);
+//@include mat.color-variants-backwards-compatibility($ya-theme);
+
+.mat-mdc-menu-panel {
+  box-shadow: 0 5px 5px -3px #0003, 0 8px 10px 1px #00000024, 0 3px 14px 2px #0000001f;
+}
+
+.mat-mdc-dialog-title {
+  background-color: var(--y-app-bar-background-color);
+}
+
+.mat-mdc-dialog-title::before {
+  display: none !important;
+}
+
+.mat-mdc-dialog-container .mat-mdc-dialog-title+.mat-mdc-dialog-content {
+  padding-top: 12px !important;
+}
+
+.mat-mdc-dialog-container .mat-mdc-dialog-actions {
+  margin-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.mat-mdc-dialog-container .mat-mdc-dialog-content {
+  overflow: hidden;
+}
