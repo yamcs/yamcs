@@ -3,16 +3,41 @@ Telemetry
 
 The Telemetry group within the Yamcs web interface provides access to monitoring-related pages.
 
+Packets
+-------
+
+This page lists all received packets. The list needs to be manually refreshed with the `circular arrow` icon. Details appear when clicking on a packet. 
+Packets can be extracted into their parameters by clicking `Extract`. 
+Packet Hex or Binary can be copied, or raw telemetry can be downloaded by clicking on the `3-dots` icon.
+
+
 Parameters
 ----------
 
-This page lists all parameters. Each parameter can be accessed individually to see the latest or archived values. Numeric parameters can also be charted.
+This page shows all parameters. 
+Each parameter can be accessed individually to see the latest value (`Summary` tab), archived values (`Historical Data` tab) or the alarms related to this parameter (`Alarm History tab`). 
+Numeric parameters can be charted (`Chart` tab). 
+Historical data for the selected parameter can be downloaded by clicking `Export CSV` on the Historical Data tab, and picking a range, delimiter and interval.
+
+
+Parameter Lists
+---------------
+
+This page allows users to group parameters together into lists. New lists can be created with the `Create List` button. 
+The list  name for the list, a description and add the parameters by parameter names or with glob patterns.
+Parameter lists can be selected to show latest value (`Realtime` tab) or archived values (`Historical Data` tab).
+Historical data for the selected list can be downloaded by clicking `Export CSV` on the Historical Data tab, and picking a range, delimiter and interval. 
 
 
 Displays
 --------
 
-Shows the displays or display resources that are known by Yamcs Server for the selected instance. The displays in this view are presented in a file browser with the usual operations to rename, move or create. Clicking on a display file opens the display. If there is incoming telemetry this will be received by the opened display file.
+This page shows the list of displays or display resources that are known by Yamcs Server for the selected instance. 
+Displays are stored within the "displays" storage bucket. 
+Yamcs Studio displays (`.opi`) can be visualized in the Yamcs web interface. They can be uploaded with the `Upload Files` button. 
+Additionally, Parameter Tables (`.par`) can be created, by clicking the `Create Display` button, entering a name and adding parameters.
+Items in the Displays page list can be renamed, downloaded or deleted. Clicking on a display file opens the display. 
+If there is incoming telemetry, it will be received by the opened display file and the display will update accordingly.
 
 Note that only some display types are supported by the Yamcs web interface. The following provides an overview of the current state:
 

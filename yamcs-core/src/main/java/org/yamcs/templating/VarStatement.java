@@ -1,18 +1,28 @@
 package org.yamcs.templating;
 
+import java.util.List;
 import java.util.Map;
 
 public class VarStatement implements Statement {
 
     private String identifier;
+    private List<String> filterIdentifiers;
 
-    public VarStatement(String identifier) {
+    public VarStatement(String identifier, List<String> filterIdentifiers) {
         this.identifier = identifier;
+        this.filterIdentifiers = filterIdentifiers;
     }
 
     @Override
-    public void render(StringBuilder buf, Map<String, Object> vars) {
+    public void render(StringBuilder buf, Map<String, Object> vars, Map<String, VariableFilter> filters) {
         var value = getValue(identifier, vars);
+        for (var filterIdentifier : filterIdentifiers) {
+            var filter = filters.get(filterIdentifier);
+            if (filter == null) {
+                throw new IllegalArgumentException(String.format("Unknown filter '%s'", filterIdentifier));
+            }
+            value = filter.applyFilter(value);
+        }
         if (value == null) {
             throw new IllegalArgumentException(String.format("Variable '%s' is not set", identifier));
         }

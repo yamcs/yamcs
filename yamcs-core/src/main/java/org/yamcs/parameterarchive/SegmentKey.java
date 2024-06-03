@@ -6,8 +6,6 @@ import org.yamcs.utils.StringConverter;
 
 /**
  * Holder, encoder and decoder for the segment keys (in the sense of key,value storage used for RocksDb)
- *   
- * @author nm
  *
  */
 public class SegmentKey {
@@ -18,6 +16,7 @@ public class SegmentKey {
     public static final byte TYPE_ENG_VALUE = 0;
     public static final byte TYPE_RAW_VALUE = 1;
     public static final byte TYPE_PARAMETER_STATUS = 2;
+    public static final byte TYPE_GAPS = 3;
     
     public SegmentKey(int parameterId, int parameterGroupId, long segmentStart, byte type) {
         this.parameterId = parameterId;

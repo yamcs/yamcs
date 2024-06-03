@@ -1,0 +1,92 @@
+<table mat-table
+       *ngIf="dataSource"
+       [dataSource]="dataSource"
+       class="ya-data-table expand"
+       matSort
+       matSortActive="generationTime"
+       matSortDirection="asc"
+       matSortDisableClear>
+
+  <ng-container matColumnDef="generationTime">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Time</th>
+    <td mat-cell *matCellDef="let entry">
+      {{ entry.generationTime | datetime }}
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="comment">
+    <th mat-header-cell *matHeaderCellDef style="text-align: center">
+      <mat-icon matTooltip="Comment">comment</mat-icon>
+    </th>
+    <td mat-cell *matCellDef="let item" style="text-align: center">
+      <mat-icon *ngIf="item.comment" [matTooltip]="item.comment">comment</mat-icon>
+      <ng-container *ngIf="!item.comment">-</ng-container>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="commandName">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Command</th>
+    <td mat-cell *matCellDef="let entry">
+      {{ entry.commandName || '-' }}
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="queueName">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Queue</th>
+    <td mat-cell *matCellDef="let entry">
+      {{ entry.queueName || '-' }}
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="issuer">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Issuer</th>
+    <td mat-cell *matCellDef="let entry">
+      {{ entry.username }}<span *ngIf="entry.origin">&#64;{{ entry.origin }}</span>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="origin">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Source</th>
+    <td mat-cell *matCellDef="let entry">
+      {{ entry.origin || '-' }}
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="source">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 350px">Command</th>
+    <td mat-cell *matCellDef="let entry">
+      {{ entry.commandName }}
+      <table class="args">
+        <ng-container *ngFor="let arg of entry.assignments">
+          <ng-container *ngIf="arg.userInput">
+            <tr>
+              <td class="key" width="1">{{ arg.name }}</td>
+              <td class="value">{{ arg.value | value }}</td>
+            </tr>
+          </ng-container>
+        </ng-container>
+      </table>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="actions">
+    <th mat-header-cell *matHeaderCellDef class="expand">Actions</th>
+    <td mat-cell *matCellDef="let entry">
+      <span style="color: #999" *ngIf="entry.pendingTransmissionConstraints">
+        <mat-icon class="icon16 spin" style="vertical-align: middle;">cached</mat-icon>
+        Checking transmission constraints
+      </span>
+      <ng-container *ngIf="!entry.pendingTransmissionConstraints">
+        <ya-text-action icon="check"
+                        (click)="acceptEntry(entry)"
+                        [disabled]="entry.pendingTransmissionConstraints">ACCEPT</ya-text-action>
+        <ya-text-action icon="close"
+                        (click)="rejectEntry(entry)"
+                        [disabled]="entry.pendingTransmissionConstraints">REJECT</ya-text-action>
+      </ng-container>
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+</table>

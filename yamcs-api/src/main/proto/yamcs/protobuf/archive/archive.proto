@@ -47,13 +47,17 @@ service StreamArchiveApi {
   rpc ExportParameterValues(ExportParameterValuesRequest) returns (stream yamcs.api.HttpBody) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}:exportParameterValues"
+      additional_bindings {
+        post: "/api/archive/{instance}:exportParameterValues"
+        body: "*"
+      }
     };
   }
 }
 
 // Retrieves parameters by performing a replay
 message StreamParameterValuesRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   optional google.protobuf.Timestamp start = 2;
   optional google.protobuf.Timestamp stop = 3;
@@ -82,15 +86,15 @@ message ParameterGroupInfo {
 }
 
 message ListParameterGroupsRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 }
 
 message ListParameterHistoryRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Parameter name.
+  // Parameter name
   optional string name = 2;
   
   // The zero-based row number at which to start outputting results. Default: ``0``.
@@ -149,10 +153,10 @@ message ListParameterHistoryResponse {
 }
 
 message GetParameterSamplesRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Parameter name.
+  // Parameter name
   optional string name = 2;
   
   // Filter the lower bound of the parameter's generation time. Specify a date
@@ -173,6 +177,13 @@ message GetParameterSamplesRequest {
   // Default is to use the engineering value 
   optional bool useRawValue = 9;
 
+  // Milliseconds before a sample is considered expired. This property is
+  // used as a fallback, when the underlying parameter values have no
+  // implicit expiration time.
+  //
+  // Default: ``120000``.
+  optional uint64 gapTime = 10;
+
   // The name of the processor from which to use the parameter cache.
   // Default: ``realtime``.
   optional string processor = 7;
@@ -187,7 +198,7 @@ message GetParameterSamplesRequest {
 }
 
 message ExportParameterValuesRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
   // Filter the lower bound of the parameter's generation time.
@@ -200,6 +211,12 @@ message ExportParameterValuesRequest {
   
   // The parameters to add to the export.
   repeated string parameters = 4;
+
+  // Identifier of a Parameter List, describing the parameters to
+  // export.
+  //
+  // This may be used as an alternative to the ``parameters`` field.
+  optional string list = 14;
   
   // Namespace used to display parameter names in csv header.
   // Only used when no parameter ids were specified.
@@ -218,4 +235,27 @@ message ExportParameterValuesRequest {
   // When specified, only one value each for each interval is returned.
   // The value is in milliseconds.
   optional int32 interval = 8;
+
+  // If true, repeat the the previous value, if there is no value for
+  // the current timestamp. Default: ``false``.
+  optional bool preserveLastValue = 9;
+
+  // The zero-based row number at which to start outputting results. Default: ``0``.
+  optional int64 pos = 10;
+
+  // The maximum number of returned records. Default: unlimited.
+  optional int32 limit = 11;
+
+  // The order of the returned results. Can be either ``asc`` or ``desc``.
+  // Default: ``asc``.
+  optional string order = 12;
+
+  // Preferred filename, this is returned in a Content-Disposition HTTP header.
+  // If unset, Yamcs will determine a name. 
+  optional string filename = 13;
+
+  // Header row to include in the response.
+  // One of ``QUALIFIED_NAME``, ``SHORT_NAME`` or ``NONE``.
+  // Default: ``QUALIFIED_NAME``.
+  optional string header = 15;
 }

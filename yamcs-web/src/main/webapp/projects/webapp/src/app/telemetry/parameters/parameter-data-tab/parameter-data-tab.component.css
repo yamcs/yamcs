@@ -1,0 +1,31 @@
+.detail {
+  background-color: #fcfcfc;
+  float: right;
+  height: 100%;
+  width: 450px;
+  overflow: auto;
+  border-left: 1px solid #d3d3d3;
+  box-sizing: border-box;
+}
+
+.table-wrapper {
+  position: relative;
+  overflow: auto;
+  height: 100%;
+}
+
+.table-status {
+  background-color: var(--y-background-color);
+  height: 24px;
+  line-height: 24px;
+  font-size: 12px;
+  padding-left: 6px;
+}
+
+.table-status .message-zone {
+  float: right;
+  height: 24px;
+  line-height: 24px;
+  font-size: 12px;
+  padding-right: 6px;
+}

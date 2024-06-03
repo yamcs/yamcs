@@ -44,7 +44,7 @@ import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.TriggerSetType;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 import com.google.common.collect.Lists;
 import com.google.protobuf.util.Timestamps;
@@ -70,7 +70,7 @@ public class AlgorithmManager extends AbstractProcessorService
     static final String KEY_ALGO_NAME = "algoName";
     static final String JDK_BUILTIN_NASHORN_ENGINE_NAME = "Oracle Nashorn";
 
-    XtceDb xtcedb;
+    Mdb mdb;
 
     // Index of all available out params
     NamedDescriptionIndex<Parameter> outParamIndex = new NamedDescriptionIndex<>();
@@ -102,6 +102,7 @@ public class AlgorithmManager extends AbstractProcessorService
     static {
         registerScriptEngines();
         registerAlgorithmEngine("Java", jae);
+        registerAlgorithmEngine("java", jae);
         registerAlgorithmEngine("java-expression", jae);
     }
 
@@ -157,13 +158,13 @@ public class AlgorithmManager extends AbstractProcessorService
         this.parameterProcessorManager.subscribeAll(this);
         this.maxErrCount = config.getInt("maxErrorsBeforeAutomaticDeactivation", 10);
 
-        xtcedb = processor.getXtceDb();
+        mdb = processor.getMdb();
         timer = processor.getTimer();
 
         globalCtx = new AlgorithmExecutionContext("global", processor.getProcessorData(), maxErrCount);
         contexts.add(globalCtx);
 
-        for (Algorithm algo : xtcedb.getAlgorithms()) {
+        for (Algorithm algo : mdb.getAlgorithms()) {
             if (algo.getScope() == Algorithm.Scope.GLOBAL) {
                 loadAlgorithm(algo, globalCtx);
             }
@@ -214,7 +215,7 @@ public class AlgorithmManager extends AbstractProcessorService
             return;
         }
 
-        for (Algorithm algo : xtcedb.getAlgorithms()) {
+        for (Algorithm algo : mdb.getAlgorithms()) {
             for (OutputParameter oParam : algo.getOutputSet()) {
                 if (oParam.getParameter() == paramDef) {
                     activateAndInit(algo, globalCtx);
@@ -310,7 +311,7 @@ public class AlgorithmManager extends AbstractProcessorService
                 requiredInParams.add(param);
                 // Recursively activate other algorithms on which this algorithm depends
                 if (canProvide(param)) {
-                    for (Algorithm algo : xtcedb.getAlgorithms()) {
+                    for (Algorithm algo : mdb.getAlgorithms()) {
                         if (activeAlgo.getAlgorithm() != algo) {
                             for (OutputParameter oParam : algo.getOutputSet()) {
                                 if (oParam.getParameter() == param) {

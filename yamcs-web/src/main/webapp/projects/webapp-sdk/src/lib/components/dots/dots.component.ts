@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 @Component({
+  standalone: true,
   selector: 'ya-dots',
   templateUrl: './dots.component.html',
-  styleUrls: ['./dots.component.css'],
+  styleUrl: './dots.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DotsComponent {
+export class YaDots {
 
   @Input()
   color: string;

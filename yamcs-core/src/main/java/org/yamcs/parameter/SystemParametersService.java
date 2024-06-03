@@ -1,11 +1,12 @@
 package org.yamcs.parameter;
 
 import static org.yamcs.xtce.NameDescription.qualifiedName;
-import static org.yamcs.xtce.XtceDb.YAMCS_SPACESYSTEM_NAME;
+import static org.yamcs.mdb.Mdb.YAMCS_SPACESYSTEM_NAME;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,13 +46,13 @@ import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.UnitType;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 
 import com.google.common.io.Files;
 
@@ -90,8 +91,14 @@ public class SystemParametersService extends AbstractYamcsService implements Run
     @Override
     public Spec getSpec() {
         Spec spec = new Spec();
-        spec.addOption("provideJvmVariables", OptionType.BOOLEAN).withDefault(false);
-        spec.addOption("provideFsVariables", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("provideJvmVariables", OptionType.BOOLEAN).withDefault(false)
+                .withDeprecationMessage("This option is obsolete, please add 'jvm' to the list of producers");
+        spec.addOption("provideFsVariables", OptionType.BOOLEAN).withDefault(false)
+                .withDeprecationMessage("This option is obsolete, please add 'fs' to the list of producers");
+        spec.addOption("producers", OptionType.LIST)
+                .withRequired(false)
+                .withElementType(OptionType.STRING)
+                .withDescription("Current providers are: jvm, fs and diskstats. Diskstats only works on Linux");
         return spec;
     }
 
@@ -107,19 +114,39 @@ public class SystemParametersService extends AbstractYamcsService implements Run
         }
 
         serverId = YamcsServer.getServer().getServerId();
-        namespace = XtceDb.YAMCS_SPACESYSTEM_NAME + NameDescription.PATH_SEPARATOR + serverId;
+        namespace = Mdb.YAMCS_SPACESYSTEM_NAME + NameDescription.PATH_SEPARATOR + serverId;
+
+        List<String> producers = config.containsKey("producers") ? producers = config.getList("producers")
+                : Collections.emptyList();
 
         log.debug("Using {} as serverId, and {} as namespace for system parameters", serverId, namespace);
-        if (config.getBoolean("provideJvmVariables")) {
+        if (config.getBoolean("provideJvmVariables") || producers.contains("jvm")) {
             providers.add(new SysVarProducer(new JvmParameterProducer(this)));
         }
 
-        if (config.getBoolean("provideFsVariables")) {
+        if (config.getBoolean("provideFsVariables") || producers.contains("fs")) {
             try {
                 providers.add(new SysVarProducer(new FileStoreParameterProducer(this)));
             } catch (IOException e) {
                 throw new InitException(e);
             }
+        }
+
+        if (producers.contains("diskstats")) {
+            try {
+                if (DiskstatsParameterProducer.hasDisksStats()) {
+                    providers.add(new SysVarProducer(new DiskstatsParameterProducer(this)));
+                } else {
+                    log.info("No /proc/diskstats present, cannot produce diskstats parameters (only works on Linux)");
+                }
+            } catch (IOException e) {
+                throw new InitException(e);
+            }
+        }
+
+        if (producers.contains("rocksdb")) {
+            var producer = RdbStorageEngine.getInstance().newRdbParameterProducer(yamcsInstance, this);
+            providers.add(new SysVarProducer(producer));
         }
 
         synchronized (instances) {
@@ -440,7 +467,7 @@ public class SystemParametersService extends AbstractYamcsService implements Run
             name = name + "_" + units.replaceAll("/", "_");
         }
 
-        String fqn = XtceDb.YAMCS_SPACESYSTEM_NAME + NameDescription.PATH_SEPARATOR + name;
+        String fqn = Mdb.YAMCS_SPACESYSTEM_NAME + NameDescription.PATH_SEPARATOR + name;
         ParameterType ptype = mdb.getParameterType(fqn);
         if (ptype != null) {
             return ptype;
@@ -569,7 +596,7 @@ public class SystemParametersService extends AbstractYamcsService implements Run
         return pv;
     }
 
-    public XtceDb getMdb() {
+    public Mdb getMdb() {
         return mdb;
     }
 

@@ -1,9 +1,14 @@
 import { Component } from '@angular/core';
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
+  standalone: true,
   selector: 'ya-warning-message',
   templateUrl: './warning-message.component.html',
-  styleUrls: ['./warning-message.component.css'],
+  styleUrl: './warning-message.component.css',
+  imports: [
+    MatIcon,
+  ],
 })
-export class WarningMessageComponent {
+export class YaWarningMessage {
 }

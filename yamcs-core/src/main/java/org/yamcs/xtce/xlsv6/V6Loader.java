@@ -101,7 +101,7 @@ import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumeration;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.NameReference.Type;
@@ -1136,7 +1136,7 @@ public class V6Loader extends V6LoaderBase {
                 // the condition is parsed and used to create the container.restrictionCriteria
                 // 1) get the parent, from the same sheet
                 SequenceContainer sc = containers.get(parent);
-                // the parent is not in the same sheet, try to get from the Xtcedb
+                // the parent is not in the same sheet, try to get from the MDB
                 if (sc == null) {
                     sc = spaceSystem.getSequenceContainer(parent);
                 }
@@ -1337,7 +1337,7 @@ public class V6Loader extends V6LoaderBase {
                 // 1) get the parent, from the same sheet
                 MetaCommand parentCmd = commands.get(parent);
 
-                // the parent is not in the same sheet, try to get from the Xtcedb
+                // the parent is not in the same sheet, try to get from the MDB
                 if (parentCmd == null) {
                     parentCmd = spaceSystem.getMetaCommand(parent);
                 }
@@ -1972,8 +1972,8 @@ public class V6Loader extends V6LoaderBase {
                     throw new SpreadsheetLoadException(ctx, "You must specify in/out attribute for this parameter");
                 }
                 if ("in".equalsIgnoreCase(paraInout)) {
-                    if (paraRefName.startsWith(XtceDb.YAMCS_CMD_SPACESYSTEM_NAME)
-                            || paraRefName.startsWith(XtceDb.YAMCS_CMDHIST_SPACESYSTEM_NAME)) {
+                    if (paraRefName.startsWith(Mdb.YAMCS_CMD_SPACESYSTEM_NAME)
+                            || paraRefName.startsWith(Mdb.YAMCS_CMDHIST_SPACESYSTEM_NAME)) {
                         algorithm.setScope(Algorithm.Scope.COMMAND_VERIFICATION);
                     }
                     inputParameterRefs.add(paraRefName);

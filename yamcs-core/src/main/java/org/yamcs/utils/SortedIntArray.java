@@ -259,17 +259,32 @@ public class SortedIntArray implements Serializable {
 
     /**
      * Change the elements of the array by adding x to each element
-     * 
-     * @param x
      */
-    public void add(int x) {
+    public void addToAll(int x) {
         for (int i = 0; i < length; i++) {
             a[i] += x;
         }
     }
 
+    /**
+     * Add x to the elements of the array whose value is greater than v
+     */
+    public void addIfGreaterThan(int v, int x) {
+        for (int i = length - 1; i >= 0; i--) {
+            if (a[i] > v) {
+                a[i] += x;
+            } else {
+                break;
+            }
+        }
+    }
+
     @Override
     public String toString() {
+        if (length == 0) {
+            return "[]";
+        }
+
         StringBuilder b = new StringBuilder();
         int n = length - 1;
 
@@ -296,5 +311,6 @@ public class SortedIntArray implements Serializable {
         }
         return h;
     }
+
 
 }

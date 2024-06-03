@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -17,8 +16,14 @@ import org.yamcs.utils.ValueUtility;
 public class FloatValueSegmentTest {
     @Test
     public void test() throws IOException, DecodingException {
-        FloatValueSegment fvs = FloatValueSegment.consolidate(Arrays.asList(ValueUtility.getFloatValue(1.2f),
-                ValueUtility.getFloatValue(2.3f), ValueUtility.getFloatValue((float) 3)));
+        
+        FloatValueSegment fvs = new FloatValueSegment();
+        fvs.add(ValueUtility.getFloatValue(1.2f));
+        
+        fvs.add(ValueUtility.getFloatValue(2.3f));
+        fvs.add(ValueUtility.getFloatValue((float) 3));
+        fvs.consolidate();
+
         assertEquals(18, fvs.getMaxSerializedSize());
 
         ByteBuffer bb = ByteBuffer.allocate(24);
@@ -37,11 +42,14 @@ public class FloatValueSegmentTest {
 
     @Test
     public void test2() throws IOException, DecodingException {
+        FloatValueSegment fvs = new FloatValueSegment();
         List<Value> values = new ArrayList<>(200);
         for (int i = 0; i < 200; i++) {
-            values.add(ValueUtility.getFloatValue(1.2f));
+            Value v = ValueUtility.getFloatValue(1.2f);
+            values.add(v);
+            fvs.add(v);
         }
-        FloatValueSegment fvs = FloatValueSegment.consolidate(values);
+        fvs.consolidate();
 
         ByteBuffer bb = ByteBuffer.allocate(fvs.getMaxSerializedSize());
         fvs.writeTo(bb);

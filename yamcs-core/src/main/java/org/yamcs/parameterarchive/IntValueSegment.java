@@ -2,7 +2,6 @@ package org.yamcs.parameterarchive;
 
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
-import java.util.List;
 
 import org.yamcs.parameter.Value;
 import org.yamcs.parameter.ValueArray;
@@ -16,8 +15,7 @@ import me.lemire.integercompression.FastPFOR128;
 import me.lemire.integercompression.IntWrapper;
 
 /**
- * 32 bit integers
- * encoded as deltas of deltas (good if the values are relatively constant or in increasing order)
+ * 32 bit integers encoded as deltas of deltas (good if the values are relatively constant or in increasing order)
  * 
  * @author nm
  *
@@ -39,6 +37,18 @@ public class IntValueSegment extends BaseSegment implements ValueSegment {
 
     private IntValueSegment() {
         super(FORMAT_ID_IntValueSegment);
+    }
+
+    @Override
+    public void insert(int pos, Value value) {
+        var v = signed ? value.getSint32Value() : value.getUint32Value();
+        values.add(pos, v);
+    }
+
+    @Override
+    public void add(Value value) {
+        var v = signed ? value.getSint32Value() : value.getUint32Value();
+        values.add(v);
     }
 
     @Override
@@ -155,27 +165,6 @@ public class IntValueSegment extends BaseSegment implements ValueSegment {
         values = IntArray.wrap(VarIntUtil.decodeDeltaDeltaZigZag(ddz));
     }
 
-    public static IntValueSegment consolidate(List<Value> values, boolean signed) {
-        IntValueSegment segment = new IntValueSegment(signed);
-        int n = values.size();
-
-        segment.signed = signed;
-        if (signed) {
-            for (int i = 0; i < n; i++) {
-                segment.add(values.get(i).getSint32Value());
-            }
-        } else {
-            for (int i = 0; i < n; i++) {
-                segment.add(values.get(i).getUint32Value());
-            }
-        }
-        return segment;
-    }
-
-    private void add(int v) {
-        values.add(v);
-    }
-
     @Override
     public int getMaxSerializedSize() {
         return 5 + 4 * values.size(); // 1+for format id + 4 for the size plus 4 for each element
@@ -213,20 +202,6 @@ public class IntValueSegment extends BaseSegment implements ValueSegment {
     @Override
     public int size() {
         return values.size();
-    }
-
-    @Override
-    public void add(int pos, Value v) {
-        if (signed) {
-            values.add(pos, v.getSint32Value());
-        } else {
-            values.add(pos, v.getUint32Value());
-        }
-    }
-
-    @Override
-    public IntValueSegment consolidate() {
-        return this;
     }
 
     @Override

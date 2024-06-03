@@ -1,12 +1,21 @@
+import { NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { MatIcon } from '@angular/material/icon';
+import { RouterLink } from '@angular/router';
 
 @Component({
+  standalone: true,
   selector: 'ya-breadcrumb',
   templateUrl: './breadcrumb.component.html',
-  styleUrls: ['./breadcrumb.component.css'],
+  styleUrl: './breadcrumb.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    MatIcon,
+    NgIf,
+    RouterLink,
+  ],
 })
-export class BreadcrumbComponent {
+export class YaBreadcrumb {
 
   @Input()
   icon: string;

@@ -25,7 +25,6 @@ import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
-import org.yamcs.xtce.XtceDb;
 
 public class SequenceEntryProcessor {
     static Logger log = LoggerFactory.getLogger(SequenceEntryProcessor.class.getName());
@@ -82,10 +81,11 @@ public class SequenceEntryProcessor {
             }
 
             cpc1.sequenceContainerProcessor.extract(subsribedContainer);
-            if (refContainer.getSizeInBits() < 0)
+            if (refContainer.getSizeInBits() < 0) {
                 buf.setPosition(buf.getPosition() + buf1.getPosition());
-            else
+            } else {
                 buf.setPosition(buf.getPosition() + refContainer.getSizeInBits());
+            }
         }
     }
 
@@ -103,6 +103,12 @@ public class SequenceEntryProcessor {
 
         Value rv = extract(ptype);
         if (rv == null) {
+            // A dynamically sized array could have zero length.
+            // Currently this is represented has having no value.
+            if (ptype instanceof ArrayParameterType) {
+                return null;
+            }
+
             pv.setAcquisitionStatus(AcquisitionStatus.INVALID);
         } else {
             pv.setRawValue(rv);
@@ -119,8 +125,10 @@ public class SequenceEntryProcessor {
 
     private void extractParameterEntry(ParameterEntry pe) {
         ContainerParameterValue pv = extractParameter(pe.getParameter());
-        pv.setSequenceEntry(pe);
-        pcontext.result.addTmParam(pv);
+        if (pv != null) {
+            pv.setSequenceEntry(pe);
+            pcontext.result.addTmParam(pv);
+        }
     }
 
     private void extractArrayParameterEntry(ArrayParameterEntry pe) {
@@ -192,12 +200,12 @@ public class SequenceEntryProcessor {
             throw new XtceProcessingException("Cannot determine the value of " + pir
                     + " necessary to extract the indirect parameter ref entry");
         }
-        XtceDb db = pcontext.getXtceDb();
+        Mdb mdb = pcontext.getMdb();
         String nameSpace = se.getAliasNameSpace();
         String name = v.toString();
         log.trace("Looking up parameter with name/alias {} in namespace {}", name, nameSpace);
 
-        Parameter p = nameSpace == null ? db.getParameter(name) : db.getParameter(nameSpace, name);
+        Parameter p = nameSpace == null ? mdb.getParameter(name) : mdb.getParameter(nameSpace, name);
         if (p == null) {
             if (nameSpace == null) {
                 throw new XtceProcessingException("Cannot find a parameter with FQN" + name);
@@ -207,8 +215,10 @@ public class SequenceEntryProcessor {
             }
         }
         ContainerParameterValue pv = extractParameter(p);
-        pv.setSequenceEntry(se);
-        pcontext.result.addTmParam(pv);
+        if (pv != null) {
+            pv.setSequenceEntry(se);
+            pcontext.result.addTmParam(pv);
+        }
     }
 
     private Value extract(ParameterType ptype) {

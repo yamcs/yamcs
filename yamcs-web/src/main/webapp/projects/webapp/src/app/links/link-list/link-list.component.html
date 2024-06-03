@@ -1,0 +1,217 @@
+<app-instance-page>
+  <app-instance-toolbar>
+    Links
+    &nbsp;&nbsp;&nbsp;
+    <button mat-button
+            color="primary"
+            *ngIf="mayControlLinks()"
+            (click)="enableSelectedLinks()"
+            [disabled]="!allowGroupEnable()">
+      <mat-icon>link</mat-icon>
+      Enable
+    </button>
+    <button mat-button
+            color="primary"
+            *ngIf="mayControlLinks()"
+            (click)="disableSelectedLinks()"
+            [disabled]="!allowGroupDisable()">
+      <mat-icon>link_off</mat-icon>
+      Disable
+    </button>
+
+    <button mat-button
+            color="primary"
+            *ngIf="mayControlLinks()"
+            [disabled]="selection.isEmpty()"
+            [matMenuTriggerFor]="moreActions">
+      More ▾
+    </button>
+    <mat-menu #moreActions class="ya-menu" yPosition="below" [overlapTrigger]="false">
+      <ng-template matMenuContent>
+        <button mat-menu-item
+                (click)="resetCountersForSelectedLinks()">
+          Reset counters
+        </button>
+        <ng-container *ngIf="detailLink$ | async as selectedItem">
+          <ng-container *ngIf="selectedItem.link.actions">
+            <mat-divider />
+            <ng-container *ngFor="let action of selectedItem.link.actions">
+              <button mat-menu-item
+                      [disabled]="!action.enabled"
+                      (click)="runAction(selectedItem.link.name, action)">
+                <ng-container *ngIf="action.style === 'CHECK_BOX'">
+                  <mat-icon [style.visibility]="action.checked ? 'visible' : 'hidden'">check</mat-icon>
+                </ng-container>
+                {{ action.label }}<ng-container *ngIf="action.spec">...</ng-container>
+              </button>
+            </ng-container>
+          </ng-container>
+        </ng-container>
+      </ng-template>
+    </mat-menu>
+  </app-instance-toolbar>
+
+  <ya-detail-pane>
+    <ng-container *ngIf="detailLink$ | async as selectedItem; else noSelection">
+      <ya-detail-toolbar>
+        Link Detail
+      </ya-detail-toolbar>
+      <div style="padding: 0 16px">
+        <app-link-detail [link]="selectedItem.link" />
+      </div>
+    </ng-container>
+    <ng-template #noSelection>
+      <ya-detail-toolbar>
+        Select a link
+      </ya-detail-toolbar>
+      <div style="padding: 0 16px;" *ngIf="selection.hasValue()">
+        {{ selection.selected.length }} links selected
+      </div>
+    </ng-template>
+  </ya-detail-pane>
+
+  <div class="table-wrapper">
+    <div class="panel-content">
+      <app-links-page-tabs />
+      <div class="filter-bar" style="margin-top: 16px">
+        <ya-search-filter [formControl]="filterControl"
+                          placeholder="Filter links"
+                          (onArrowDown)="selectNext()"
+                          (onArrowUp)="selectPrevious()"
+                          (onEnter)="applySelection()" />
+        <ya-column-chooser #columnChooser
+                           [columns]="columns"
+                           preferenceKey="links" />
+      </div>
+      <table mat-table
+             [dataSource]="dataSource"
+             [trackBy]="tableTrackerFn"
+             class="ya-data-table expand">
+
+        <ng-container cdkColumnDef="select">
+          <th mat-header-cell *cdkHeaderCellDef class="checkbox">
+            <input type="checkbox" (change)="$event ? masterToggle() : null"
+                   [checked]="selection.hasValue() && isAllSelected()">
+          </th>
+          <td mat-cell *cdkCellDef="let row" class="checkbox">
+            <input type="checkbox" (click)="$event.stopPropagation()"
+                   (change)="$event ? selection.toggle(row) : null"
+                   [checked]="selection.isSelected(row)">
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let row" style="white-space: nowrap">
+            <div style="display: inline-block; margin-right: 10px;"
+                 *ngIf="row.link.parentName">
+              <app-link-status [link]="row.link"
+                               [parentLink]="row.parentLink" />
+            </div>
+            <a [routerLink]="['/links', row.link.name]"
+               [queryParams]="{c: yamcs.context}">
+              <ya-highlight [text]="row.link.name"
+                            [term]="filterControl.value" />
+            </a>
+            <ng-container *ngIf="row.hasChildren">
+              <ya-icon-action [icon]="row.expanded ? 'expand_more' : 'chevron_right'"
+                              (click)="expandItem($event, row)" />
+            </ng-container>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="className">
+          <th mat-header-cell *matHeaderCellDef>Class</th>
+          <td mat-cell *matCellDef="let row">
+            <ya-highlight [text]="row.link.type"
+                          [term]="filterControl.value" />
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef class="status"></th>
+          <td mat-cell *matCellDef="let row" class="status" style="line-height: 0">
+            <app-link-status *ngIf="!row.link.parentName" [link]="row.link" />
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="detailedStatus">
+          <th mat-header-cell *matHeaderCellDef>Detail</th>
+          <td mat-cell *matCellDef="let row">
+            {{ row.link.detailedStatus || '-' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="in">
+          <th mat-header-cell *matHeaderCellDef style="text-align: center">In</th>
+          <td mat-cell *matCellDef="let row" style="text-align: center">
+            {{ row.link.dataInCount | number }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="out">
+          <th mat-header-cell *matHeaderCellDef style="text-align: center">Out</th>
+          <td mat-cell *matCellDef="let row" style="text-align: center">
+            {{ row.link.dataOutCount | number }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="expand"></th>
+          <td mat-cell *matCellDef="let row">
+            <ya-more *ngIf="mayControlLinks()">
+              <button mat-menu-item
+                      (click)="enableLink(row.link.name)"
+                      [disabled]="row.link.status !== 'DISABLED'">
+                Enable link
+              </button>
+              <button mat-menu-item
+                      (click)="disableLink(row.link.name)"
+                      [disabled]="row.link.status === 'DISABLED'">
+                Disable link
+              </button>
+              <mat-divider />
+              <button mat-menu-item
+                      (click)="resetCounters(row.link.name)">
+                Reset counters
+              </button>
+              <ng-container *ngIf="row.link.actions">
+                <mat-divider />
+                <button *ngFor="let action of (row.link.actions || [])"
+                        mat-menu-item
+                        (click)="runAction(row.link.name, action)"
+                        [disabled]="!action.enabled">
+                  <ng-container *ngIf="action.style === 'CHECK_BOX'">
+                    <mat-icon [style.visibility]="action.checked ? 'visible': 'hidden'">check</mat-icon>
+                  </ng-container>
+                  {{ action.label }}<ng-container *ngIf="action.spec">...</ng-container>
+                </button>
+              </ng-container>
+            </ya-more>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
+        <tr mat-row *matRowDef="let row; columns: (columnChooser.displayedColumns$ | async);"
+            (click)="toggleOne(row)"
+            [class.selected]="selection.isSelected(row)"
+            [class.disabled]="row.link.status === 'DISABLED'"></tr>
+      </table>
+
+      <div class="legend">
+        <div class="legend-item">
+          <ya-led color="rgba(0, 100, 0)" [fade]="false" /> OK
+        </div>
+        <div class="legend-item">
+          <ya-led color="rgba(0, 255, 0)" [fade]="false" /> OK, activity
+        </div>
+        <div class="legend-item">
+          <ya-led color="red" [fade]="false" /> Error
+        </div>
+        <div class="legend-item">
+          <ya-led color="#aaa" [fade]="false" /> Disabled
+        </div>
+      </div>
+    </div>
+  </div>
+</app-instance-page>

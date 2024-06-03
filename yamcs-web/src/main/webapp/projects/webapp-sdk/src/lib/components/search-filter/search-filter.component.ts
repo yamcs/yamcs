@@ -1,22 +1,28 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, forwardRef, Input, OnDestroy, Output, ViewChild } from '@angular/core';
+import { AsyncPipe, NgIf } from '@angular/common';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, Output, ViewChild, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { fromEvent, merge, Subject, Subscription } from 'rxjs';
+import { MatIcon } from '@angular/material/icon';
+import { Subject, Subscription, fromEvent, merge } from 'rxjs';
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 
 @Component({
+  standalone: true,
   selector: 'ya-search-filter',
   templateUrl: './search-filter.component.html',
-  styleUrls: ['./search-filter.component.css'],
+  styleUrl: './search-filter.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => SearchFilterComponent),
-      multi: true,
-    }
-  ]
+  providers: [{
+    provide: NG_VALUE_ACCESSOR,
+    useExisting: forwardRef(() => YaSearchFilter),
+    multi: true,
+  }],
+  imports: [
+    AsyncPipe,
+    MatIcon,
+    NgIf,
+  ],
 })
-export class SearchFilterComponent implements ControlValueAccessor, AfterViewInit, OnDestroy {
+export class YaSearchFilter implements ControlValueAccessor, AfterViewInit, OnDestroy {
 
   @ViewChild('input', { static: true })
   filter: ElementRef;

@@ -13,6 +13,7 @@ import org.rocksdb.RocksIterator;
 import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.DecodingException;
+import org.yamcs.utils.SortedIntArray;
 import org.yamcs.yarch.rocksdb.AscendingRangeIterator;
 import org.yamcs.yarch.rocksdb.DbIterator;
 import org.yamcs.yarch.rocksdb.DescendingRangeIterator;
@@ -24,8 +25,8 @@ import org.yamcs.yarch.rocksdb.DescendingRangeIterator;
  * Provides objects of type {@link ParameterValueSegment} which contain multiple values of one parameter - suitable to
  * be used for bulk processing (e.g. downsampling or averaging).
  * <p>
- * The {@link ParameterIterator} can be used to iterate over parameters value by value (at the expense of
- * consuming more memory)
+ * The {@link ParameterIterator} can be used to iterate over parameters value by value (at the expense of consuming more
+ * memory)
  * <p>
  * This iterator works like a Rocks iterator (with isValid(), next(), and value()) not like a java one. The advantage is
  * that one can look at the current value multiple times. This property is used when merging the iterators using a
@@ -35,8 +36,8 @@ import org.yamcs.yarch.rocksdb.DescendingRangeIterator;
  * The iterator has to be closed if it is not used until the end, otherwise a rocks iterator may be left hanging
  * 
  * <p>
- * Note about the raw values retrieval: the retrieval assumes that if raw values are requested, the parameter has
- * raw values (this can be known from the type associated to the parameter id).
+ * Note about the raw values retrieval: the retrieval assumes that if raw values are requested, the parameter has raw
+ * values (this can be known from the type associated to the parameter id).
  * <p>
  * Thus, if the raw values are requested and not found in the archive, the engineering values are returned as raw
  * values. This is an optimisation done in case the two are equal.
@@ -201,6 +202,8 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
         private byte[] currentEngValueSegment;
         private byte[] currentRawValueSegment;
         private byte[] currentStatusSegment;
+        private byte[] currentGaps;
+        long currentGapsSegmentStart;
         /**
          * The dbIterator iterates over all segment types (raw value, eng value, parameter status). The time values are
          * received using point loockups.
@@ -269,14 +272,28 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
         }
 
         private void loadSegment(byte type) {
-            if ((type == SegmentKey.TYPE_ENG_VALUE) && (retrieveEngValues || retrieveRawValues)) {
-                currentEngValueSegment = dbIterator.value();
-            }
-            if ((type == SegmentKey.TYPE_RAW_VALUE) && retrieveRawValues) {
-                currentRawValueSegment = dbIterator.value();
-            }
-            if ((type == SegmentKey.TYPE_PARAMETER_STATUS) && retrieveParameterStatus) {
-                currentStatusSegment = dbIterator.value();
+            switch (type) {
+            case SegmentKey.TYPE_ENG_VALUE:
+                if (retrieveEngValues || retrieveRawValues) {
+                    currentEngValueSegment = dbIterator.value();
+                }
+                break;
+            case SegmentKey.TYPE_RAW_VALUE:
+                if (retrieveRawValues) {
+                    currentRawValueSegment = dbIterator.value();
+                }
+                break;
+            case SegmentKey.TYPE_PARAMETER_STATUS:
+                if (retrieveParameterStatus) {
+                    currentStatusSegment = dbIterator.value();
+                }
+                break;
+            case SegmentKey.TYPE_GAPS:
+                // we remember from which segment this gaps is otherwise we may inherit the gaps from the previous
+                // segment
+                currentGapsSegmentStart = currentKey.segmentStart;
+                currentGaps = dbIterator.value();
+                break;
             }
         }
 
@@ -289,42 +306,46 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
                 throw new NoSuchElementException();
             }
 
-            ParameterValueSegment pvs = new ParameterValueSegment(null);
             long segStart = currentKey.segmentStart;
             try {
-                pvs.timeSegment = parchive.getTimeSegment(partition, segStart, parameterGroupId);
-                if (pvs.timeSegment == null) {
+                var timeSegment = parchive.getTimeSegment(partition, segStart, parameterGroupId);
+                if (timeSegment == null) {
                     String msg = "Cannot find a time segment for parameterGroupId=" + parameterGroupId
                             + " segmentStart = " + segStart + " despite having a value segment for parameterId: "
                             + parameterId;
                     throw new DatabaseCorruptionException(msg);
                 }
 
-                ValueSegment engValueSegment = null;
+                ValueSegment _engValueSegment = null;
                 if (currentEngValueSegment != null) {
-                    engValueSegment = (ValueSegment) segmentEncoder.decode(currentEngValueSegment, segStart);
-                }
-                if (retrieveEngValues) {
-                    pvs.engValueSegment = engValueSegment;
+                    _engValueSegment = (ValueSegment) segmentEncoder.decode(currentEngValueSegment, segStart);
                 }
 
+                ValueSegment engValueSegment = retrieveEngValues ? _engValueSegment : null;
+
+                ValueSegment rawValueSegment = null;
                 if (currentRawValueSegment != null) {
-                    pvs.rawValueSegment = (ValueSegment) segmentEncoder.decode(currentRawValueSegment, segStart);
+                    rawValueSegment = (ValueSegment) segmentEncoder.decode(currentRawValueSegment, segStart);
                 } else if (retrieveRawValues) {
-                    pvs.rawValueSegment = engValueSegment;
+                    rawValueSegment = _engValueSegment;
                 }
+                ParameterStatusSegment parameterStatusSegment = currentStatusSegment == null ? null
+                        : (ParameterStatusSegment) segmentEncoder.decode(currentStatusSegment,
+                                segStart);
+                SortedIntArray gaps = currentGaps == null || segStart != currentGapsSegmentStart ? null
+                        : segmentEncoder.decodeGaps(currentGaps);
 
-                if (currentStatusSegment != null) {
-                    pvs.parameterStatusSegment = (ParameterStatusSegment) segmentEncoder.decode(currentStatusSegment,
-                            segStart);
-                }
+                ParameterValueSegment pvs = new ParameterValueSegment(parameterId.getPid(), timeSegment,
+                        engValueSegment, rawValueSegment, parameterStatusSegment, gaps);
+                return pvs;
+            } catch (
 
-            } catch (DecodingException e) {
+            DecodingException e) {
                 throw new DatabaseCorruptionException(e);
             } catch (RocksDBException | IOException e) {
                 throw new ParameterArchiveException("Failded extracting data from the parameter archive", e);
             }
-            return pvs;
+
         }
 
         boolean isValid() {

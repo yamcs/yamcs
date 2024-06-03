@@ -39,7 +39,6 @@ public abstract class YarchTestCase {
         } else {
             littleEndian = false;
         }
-        // org.yamcs.LoggingUtils.enableLogging();
     }
 
     @BeforeEach
@@ -74,6 +73,7 @@ public abstract class YarchTestCase {
     public void setDown() {
         context.close();
     }
+
     /**
      * Reloads the database from disk (without removing the data)
      */

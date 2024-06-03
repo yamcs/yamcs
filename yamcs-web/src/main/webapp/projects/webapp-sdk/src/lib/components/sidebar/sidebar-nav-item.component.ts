@@ -1,12 +1,22 @@
+import { NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { MatListItem } from '@angular/material/list';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
+  standalone: true,
   selector: 'ya-sidebar-nav-item',
   templateUrl: './sidebar-nav-item.component.html',
-  styleUrls: ['./sidebar-nav-item.component.css'],
+  styleUrl: './sidebar-nav-item.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    MatListItem,
+    NgIf,
+    RouterLink,
+    RouterLinkActive,
+  ],
 })
-export class SidebarNavItemComponent {
+export class YaSidebarNavItem {
 
   @Input()
   routerLink: string;

@@ -17,7 +17,7 @@ import org.yamcs.container.ContainerRequestManager;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 public class ContainerRequestManagerTest {
 
@@ -33,7 +33,7 @@ public class ContainerRequestManagerTest {
         RefMdbPacketGenerator packetGenerator = new RefMdbPacketGenerator();
         Processor c = ProcessorFactory.create("refmdb", "ContainerRequestManagerTest", packetGenerator);
         ContainerRequestManager rm = c.getContainerRequestManager();
-        XtceDb xtceDb = c.getXtceDb();
+        Mdb xtceDb = c.getMdb();
 
         RecordingPacketConsumer consumer1 = new RecordingPacketConsumer();
         RecordingPacketConsumer consumer2 = new RecordingPacketConsumer();

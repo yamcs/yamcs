@@ -149,7 +149,7 @@ public class ArgumentTypeProcessor {
         if (encoding instanceof IntegerDataEncoding) {
             CalibratorProc calibrator = pcontext.pdata.getDecalibrator(encoding);
             if (calibrator == null) {
-                return DataEncodingUtils.getRawIntegerValue((IntegerDataEncoding) encoding, (long) v.getDoubleValue());
+                return DataEncodingUtils.getRawIntegerValue((IntegerDataEncoding) encoding, (long) v.toDouble());
             } else {
                 long calibValue = Math.round(calibrator.calibrate(v.toDouble()));
                 return DataEncodingUtils.getRawIntegerValue((IntegerDataEncoding) encoding, (long) calibValue);
@@ -290,9 +290,9 @@ public class ArgumentTypeProcessor {
             IntegerValidRange vr = ((IntegerArgumentType) type).getValidRange();
             if (vr != null) {
                 if (intType.isSigned() && !ValidRangeChecker.checkIntegerRange(vr, l)) {
-                    throw new ErrorInCommand("Value " + l + " is not in the range required for the type " + type);
+                    throw new ErrorInCommand("Value " + l + " is not in the range " + vr);
                 } else if (!intType.isSigned() && !ValidRangeChecker.checkUnsignedIntegerRange(vr, l)) {
-                    throw new ErrorInCommand("Value " + l + " is not in the range required for the type " + type);
+                    throw new ErrorInCommand("Value " + l + " is not in the range " + vr);
                 }
             }
         } else if (type instanceof FloatArgumentType) {
@@ -300,7 +300,7 @@ public class ArgumentTypeProcessor {
             FloatValidRange vr = ((FloatArgumentType) type).getValidRange();
             if (vr != null) {
                 if (!ValidRangeChecker.checkFloatRange(vr, d)) {
-                    throw new ErrorInCommand("Value " + d + " is not in the range required for the type " + type);
+                    throw new ErrorInCommand("Value " + d + " is not in the range " + vr);
                 }
             }
         } else if (type instanceof StringArgumentType) {

@@ -48,7 +48,7 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
 
     private static final Log log = new Log(BucketsApi.class);
 
-    static final Pattern BUCKET_NAME_REGEXP = Pattern.compile("\\w+");
+    static final Pattern BUCKET_NAME_REGEXP = Pattern.compile("\\w[\\w\\-]+");
     static final Pattern OBJ_NAME_REGEXP = Pattern.compile("[ \\w\\s\\-\\./]+");
 
     @Override
@@ -100,7 +100,7 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
     }
 
     @Override
-    public void createBucket(Context ctx, CreateBucketRequest request, Observer<Empty> observer) {
+    public void createBucket(Context ctx, CreateBucketRequest request, Observer<BucketInfo> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ManageAnyBucket);
 
         verifyBucketName(request.getName());
@@ -110,11 +110,11 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
             if (yarch.getBucket(request.getName()) != null) {
                 throw new BadRequestException("A bucket with the name '" + request.getName() + "' already exist");
             }
-            yarch.createBucket(request.getName());
+            var b = yarch.createBucket(request.getName());
+            observer.complete(toBucketInfo(b));
         } catch (IOException e) {
             throw new InternalServerErrorException("Error when creating bucket: " + e.getMessage(), e);
         }
-        observer.complete(Empty.getDefaultInstance());
     }
 
     @Override

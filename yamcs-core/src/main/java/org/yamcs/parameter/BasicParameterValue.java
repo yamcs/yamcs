@@ -27,24 +27,31 @@ public class BasicParameterValue extends RawEngValue {
 
     public BasicParameterValue() {
     }
-    
+
     // copy constructor - copies all the fields in a shallow mode
     public BasicParameterValue(BasicParameterValue pv) {
         super(pv);
         this.status = pv.status;
     }
 
-
-
     public void setExpireMillis(long em) {
         changeNominalStatus();
         status.setExpireMillis(em);
     }
 
-    public long getExpireMills() {
+    public long getExpireMillis() {
         return status.getExpireMills();
     }
 
+    /**
+     * @deprecated Use {@link #getExpireMillis()} instead.
+     */
+    @Deprecated
+    public long getExpireMills() {
+        return getExpireMillis();
+    }
+
+    @Override
     public void setEngValue(Value engValue) {
         this.engValue = engValue;
     }

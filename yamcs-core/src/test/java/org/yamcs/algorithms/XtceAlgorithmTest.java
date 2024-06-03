@@ -18,11 +18,11 @@ import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 public class XtceAlgorithmTest {
     static String instance = "BogusSAT";
-    static XtceDb db;
+    static Mdb mdb;
     private static Processor proc;
     private static ParameterRequestManager prm;
     private static ParameterProcessorManager ppm;
@@ -37,13 +37,13 @@ public class XtceAlgorithmTest {
         ppm = proc.getParameterProcessorManager();
         prm = ppm.getParameterRequestManager();
 
-        db = proc.getXtceDb();
+        mdb = proc.getMdb();
     }
 
     @Test
     public void test1() throws Exception {
-        Parameter bv = db.getParameter("/BogusSAT/SC001/BusElectronics/Battery_Voltage");
-        Parameter bsoc = db.getParameter("/BogusSAT/SC001/BusElectronics/Battery_State_Of_Charge");
+        Parameter bv = mdb.getParameter("/BogusSAT/SC001/BusElectronics/Battery_Voltage");
+        Parameter bsoc = mdb.getParameter("/BogusSAT/SC001/BusElectronics/Battery_State_Of_Charge");
         final ArrayList<ParameterValue> params = new ArrayList<>();
 
         prm.addRequest(bsoc, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
@@ -57,8 +57,8 @@ public class XtceAlgorithmTest {
 
     @Test
     public void test2() {
-        Parameter bv = db.getParameter("/BogusSAT/SC001/BusElectronics/Battery_Voltage");
-        Parameter bscc = db.getParameter("/BogusSAT/SC001/BusElectronics/Battery_State_Of_Charge_Custom");
+        Parameter bv = mdb.getParameter("/BogusSAT/SC001/BusElectronics/Battery_Voltage");
+        Parameter bscc = mdb.getParameter("/BogusSAT/SC001/BusElectronics/Battery_State_Of_Charge_Custom");
         final ArrayList<ParameterValue> params = new ArrayList<>();
 
         prm.addRequest(bscc, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));

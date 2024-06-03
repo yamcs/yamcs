@@ -106,7 +106,7 @@ public class ParameterProcessorManager extends AbstractService implements Parame
                 prov.startProvidingAll();
             }
         } else if (parameterAlarmServer != null) { // at least get all that have alarms
-            for (Parameter p : processor.getXtceDb().getParameters()) {
+            for (Parameter p : processor.getMdb().getParameters()) {
                 if (p.getParameterType() != null && p.getParameterType().hasAlarm()) {
                     try {
                         subscribeToProviders(p);

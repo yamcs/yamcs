@@ -10,6 +10,12 @@ html {
   --y-border-color: rgba(var(--y-contrast-rgb), 0.1);
 
   --y-scrollbar-thumb: #606060;
+  --y-horizontal-scrollbar-height: 16px;
+  --y-horizontal-scrollbar-border: 4px;
+  --y-vertical-scrollbar-width: 16px;
+  --y-vertical-scrollbar-border: 4px;
+
+  --y-background-color: #f7f7f7;
 }
 
 html.dark {

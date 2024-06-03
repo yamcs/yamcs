@@ -27,7 +27,7 @@ public class XtceStringEncodingTest {
         YConfiguration.setupTest(null);
         mdb = MdbFactory.createInstanceByConfig("xtce-strings-cmd");
         metaCommandProcessor = new MetaCommandProcessor(
-                new ProcessorData("test", "test", mdb, new ProcessorConfig()));
+                new ProcessorData("test", mdb, new ProcessorConfig()));
     }
 
     @BeforeEach

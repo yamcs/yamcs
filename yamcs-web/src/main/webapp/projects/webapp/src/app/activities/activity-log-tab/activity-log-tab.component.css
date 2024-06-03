@@ -1,0 +1,62 @@
+.log-container {
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  position: absolute;
+  top: 48px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+  padding-left: 12px;
+}
+
+.log-actions {
+  height: 24px;
+  margin: 12px;
+  display: flex;
+}
+
+.log-actions .ya-button {
+  margin-right: 7px;
+}
+
+.extra-bar-container {
+  padding: 12px;
+  border-bottom: 1.1px solid rgba(0, 0, 0, 0.08);
+}
+
+.extra-bar {
+  height: 24px;
+  line-height: 24px;
+}
+
+.separator {
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+table.logs {
+  line-height: 12px;
+}
+
+table.logs td {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.654);
+  vertical-align: top;
+}
+
+table.logs td.time {
+  opacity: 0.8;
+}
+
+table.logs tr.service td {
+  font-weight: bold;
+}
+
+table.logs td.message {
+  white-space: pre-wrap;
+}
+
+.top,
+.bottom {
+  visibility: hidden;
+  line-height: 0;
+}

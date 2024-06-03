@@ -2,6 +2,7 @@ package org.yamcs.algorithms;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +12,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.RawEngValue;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.Algorithm.Scope;
 import org.yamcs.xtce.ArgumentInstanceRef;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.OnParameterUpdateTrigger;
@@ -84,8 +86,26 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
         // But run it only, if this satisfies an onParameterUpdate trigger
         boolean triggered = false;
         TriggerSetType triggerSet = algorithmDef.getTriggerSet();
-        if (triggerSet == null) {
-            triggered = true;
+        if (triggerSet == null || triggerSet.isEmpty()) {
+            // In XTCE, verifier algorithms don't have explicit triggers
+            if (algorithmDef.getScope() == Scope.COMMAND_VERIFICATION) {
+                var parameterInputs = algorithmDef.getInputList().stream()
+                        .filter(input -> input.getParameterInstance() != null)
+                        .map(input -> input.getParameterInstance().getParameter())
+                        .collect(Collectors.toList());
+                if (!parameterInputs.isEmpty()) {
+                    for (var p : parameterInputs) {
+                        if (processingData.containsUpdate(p)) {
+                            triggered = true;
+                            break;
+                        }
+                    }
+                } else {
+                    triggered = true;
+                }
+            } else {
+                triggered = true;
+            }
         } else {
             for (OnParameterUpdateTrigger trigger : triggerSet.getOnParameterUpdateTriggers()) {
                 if (processingData.containsUpdate(trigger.getParameter())) {

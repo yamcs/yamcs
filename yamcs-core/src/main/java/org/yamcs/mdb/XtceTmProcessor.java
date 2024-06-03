@@ -22,7 +22,6 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Container;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.XtceDb;
 
 /**
  * 
@@ -30,8 +29,6 @@ import org.yamcs.xtce.XtceDb;
  * manager for the distribution to the requesters.
  * 
  * Relies on {@link XtceTmExtractor} for extracting the parameters out of containers
- * 
- * @author nm
  * 
  */
 
@@ -45,22 +42,22 @@ public class XtceTmProcessor extends AbstractProcessorService
 
     public XtceTmProcessor(Processor processor) {
         this.processor = processor;
-        this.mdb = processor.getXtceDb();
+        this.mdb = processor.getMdb();
         log = new Log(getClass(), processor.getInstance());
         log.setContext(processor.getName());
         tmExtractor = new XtceTmExtractor(mdb, processor.getProcessorData());
     }
 
     /**
-     * Creates a TmProcessor to be used in "standalone" mode, outside of any processor
-     * It still uses the processor config for configuration parameters relevant to container processing
+     * Creates a TmProcessor to be used in "standalone" mode, outside of any processor It still uses the processor
+     * config for configuration parameters relevant to container processing
      * 
      */
     public XtceTmProcessor(Mdb mdb, ProcessorConfig pconfig) {
         this.processor = null;
         this.mdb = mdb;
         log = new Log(getClass());
-        tmExtractor = new XtceTmExtractor(mdb, new ProcessorData(null, "XTCEPROC", mdb, pconfig));
+        tmExtractor = new XtceTmExtractor(mdb, new ProcessorData("XTCEPROC", mdb, pconfig));
     }
 
     @Override
@@ -132,7 +129,6 @@ public class XtceTmProcessor extends AbstractProcessorService
      * Process telemetry packets
      *
      */
-
     @Override
     public void processPacket(TmPacket pkt, SequenceContainer sc) {
         try {
@@ -140,22 +136,25 @@ public class XtceTmProcessor extends AbstractProcessorService
             if (rectime == TimeEncoding.INVALID_INSTANT) {
                 rectime = TimeEncoding.getWallclockTime();
             }
+            SequenceContainer rootContainer = pkt.getRootContainer();
+            if (rootContainer == null) {
+                rootContainer = sc;
+            }
             ContainerProcessingResult result = tmExtractor.processPacket(pkt.getPacket(), pkt.getGenerationTime(),
-                    rectime, pkt.getSeqCount(), sc);
+                    rectime, pkt.getSeqCount(), rootContainer);
 
             ParameterValueList paramResult = result.getTmParams();
             List<ContainerExtractionResult> containerResult = result.containers;
-
-            if ((parameterProcessorManager != null) && (paramResult.size() > 0)) {
-                parameterProcessorManager.process(result);
-            }
 
             if ((containerRequestManager != null) && (containerResult.size() > 0)) {
                 containerRequestManager.update(containerResult);
             }
 
+            if ((parameterProcessorManager != null) && (paramResult.size() > 0)) {
+                parameterProcessorManager.process(result);
+            }
         } catch (Exception e) {
-            log.error("got exception in tmprocessor ", e);
+            log.error("Exception while processing packet", e);
         }
     }
 
@@ -215,7 +214,7 @@ public class XtceTmProcessor extends AbstractProcessorService
         notifyStopped();
     }
 
-    public XtceDb getXtceDb() {
+    public Mdb getMdb() {
         return mdb;
     }
 }

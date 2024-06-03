@@ -33,6 +33,7 @@ Each mission has specific ways to encode information in the header but there are
 
 * :abbr:`PUS (Packet Utilisation Standard)` from :abbr:`ESA (European Space Agency)`: implemented in :javadoc:`~org.yamcs.tctm.pus.PusPacketPreprocessor`.
 * :abbr:`NASA (National Aeronautics and Space Administration)` cFS: implemented in  :javadoc:`~org.yamcs.tctm.cfs.CfsPacketPreprocessor`.
+* :abbr:`CSP (CubeSat Space Protocol)`: implemented in  :javadoc:`~org.yamcs.tctm.csp.CspPacketPreprocessor`.
 
 
 .. rubric:: Generation Time

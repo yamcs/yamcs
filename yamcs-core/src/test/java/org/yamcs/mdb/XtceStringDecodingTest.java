@@ -100,7 +100,7 @@ public class XtceStringDecodingTest {
     }
 
     @Test
-    // prefixed size string in buffer whose size is given by another parameter
+    // prefixed size string in buffer whose size is given by another parameter and a prefix-size encoding
     public void testFixedSizeString4() {
         byte[] buf = new byte[] {
                 0x00, 0x06, // buffer size
@@ -142,6 +142,24 @@ public class XtceStringDecodingTest {
         ParameterValueList pvl = cpr.getParameterResult();
         assertEquals(0, pvl.size());
         assertNotNull(cpr.exception);
+    }
+
+    @Test
+    // prefixed size string in buffer whose size is given by another parameter which occupies the entire buffer
+    public void testFixedSizeString6() {
+        byte[] buf = new byte[] {
+                0x00, 0x06, // buffer size
+                'a', 'b', 'c', 'd', 'e', 'f', // the entire 6 byte buffer is the string
+                0x01, 0x02 // uint16_param1 coming after the string
+        };
+        ContainerProcessingResult cpr = processPacket(buf, mdb.getSequenceContainer("/StringsTm/packet6"));
+
+        ParameterValueList pvl = cpr.getParameterResult();
+        assertEquals(3, pvl.size());
+        ParameterValue pv = pvl.getFirstInserted(param("string6"));
+        assertEquals("abcdef", pv.getEngValue().getStringValue());
+        pv = pvl.getFirstInserted(param("uint16_param1"));
+        assertEquals(0x0102, pv.getEngValue().getUint32Value());
     }
 
     private Parameter param(String name) {

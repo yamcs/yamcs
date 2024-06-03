@@ -93,10 +93,15 @@ public class CompletedTransfer implements CfdpFileTransfer {
     @Override
     public TransferDirection getDirection() {
         String str = tuple.getColumn(COL_DIRECTION);
+        if (str == null) {
+            log.warn("No transfer direction retrieved from the archive");
+            return null;
+        }
+
         try {
             return TransferDirection.valueOf(str);
         } catch (IllegalArgumentException e) {
-            log.warn("Unknown transfer direction {} retrieved from archive", str);
+            log.warn("Unknown transfer direction {} retrieved from the archive", str);
         }
         return null;
     }
@@ -121,8 +126,8 @@ public class CompletedTransfer implements CfdpFileTransfer {
     @Override
     public CfdpTransactionId getTransactionId() {
         if (tuple.hasColumn(COL_SEQUENCE_NUMBER)) {
-        return new CfdpTransactionId(tuple.getLongColumn(COL_SOURCE_ID),
-                tuple.getIntColumn(COL_SEQUENCE_NUMBER));
+            return new CfdpTransactionId(tuple.getLongColumn(COL_SOURCE_ID),
+                    tuple.getIntColumn(COL_SEQUENCE_NUMBER));
         } else {
             return null;
         }

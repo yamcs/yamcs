@@ -21,6 +21,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
@@ -141,7 +142,6 @@ import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumeration;
 import org.yamcs.xtce.ValueEnumerationRange;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.xtce.xml.XtceStaxReader;
 
@@ -164,7 +164,7 @@ public class XtceAssembler {
     private SpaceSystem currentSpaceSystem;
     final DatatypeFactory dataTypeFactory;
 
-    XtceDb xtceDb;
+    Mdb mdb;
 
     public XtceAssembler() {
         try {
@@ -174,8 +174,8 @@ public class XtceAssembler {
         }
     }
 
-    public final String toXtce(XtceDb xtceDb) {
-        return toXtce(xtceDb, "/", fqn -> true);
+    public final String toXtce(Mdb mdb) {
+        return toXtce(mdb, "/", fqn -> true);
     }
 
     /**
@@ -189,22 +189,22 @@ public class XtceAssembler {
      * the export.
      * 
      * 
-     * @param xtceDb
+     * @param mdb
      * @param topSpaceSystem
      *            the fully qualified name of the space system where the export should start from. If the space system
      *            does not exist, a {@link IllegalArgumentException} will be thrown.
      * @param filter
      * @return
      */
-    public final String toXtce(XtceDb xtceDb, String topSpaceSystem, Predicate<String> filter) {
-        this.xtceDb = xtceDb;
+    public final String toXtce(Mdb mdb, String topSpaceSystem, Predicate<String> filter) {
+        this.mdb = mdb;
         try {
             String unindentedXML;
             try (Writer writer = new StringWriter()) {
                 XMLOutputFactory factory = XMLOutputFactory.newInstance();
                 XMLStreamWriter xmlWriter = factory.createXMLStreamWriter(writer);
                 xmlWriter.writeStartDocument();
-                SpaceSystem top = xtceDb.getSpaceSystem(topSpaceSystem);
+                SpaceSystem top = mdb.getSpaceSystem(topSpaceSystem);
                 if (top == null) {
                     throw new IllegalArgumentException("Unknown space system '" + topSpaceSystem + "'");
                 }
@@ -320,7 +320,7 @@ public class XtceAssembler {
         }
 
         for (SpaceSystem sub : spaceSystem.getSubSystems()) {
-            if (!emitYamcsNamespace && XtceDb.YAMCS_SPACESYSTEM_NAME.equals(sub.getQualifiedName())) {
+            if (!emitYamcsNamespace && Mdb.YAMCS_SPACESYSTEM_NAME.equals(sub.getQualifiedName())) {
                 continue;
             }
             writeSpaceSystem(doc, sub, false, filter);
@@ -370,13 +370,16 @@ public class XtceAssembler {
             if (parameter.getDataSource() != DataSource.TELEMETERED) {
                 doc.writeAttribute("dataSource", parameter.getDataSource().name().toLowerCase());
             }
+            if (!parameter.isPersistent()) {
+                doc.writeAttribute("persistence", "false");
+            }
             doc.writeEndElement();// ParameterProperties
         }
         doc.writeEndElement();// Parameter
     }
 
     boolean hasNonDefaultProperties(Parameter p) {
-        return p.getDataSource() != DataSource.TELEMETERED;
+        return p.getDataSource() != DataSource.TELEMETERED || !p.isPersistent();
     }
 
     private void writeParameterType(XMLStreamWriter doc, ParameterType ptype) throws XMLStreamException {
@@ -940,7 +943,7 @@ public class XtceAssembler {
     private void writeParameterInstanceRef(XMLStreamWriter doc, String elementName, ArgumentInstanceRef pref)
             throws XMLStreamException {
         doc.writeStartElement(elementName);
-        doc.writeAttribute(ATTR_PARAMETER_REF, XtceDb.YAMCS_CMDARG_SPACESYSTEM_NAME + "/" + pref.getName());
+        doc.writeAttribute(ATTR_PARAMETER_REF, Mdb.YAMCS_CMDARG_SPACESYSTEM_NAME + "/" + pref.getName());
         if (!pref.useCalibratedValue()) {
             doc.writeAttribute("useCalibratedValue", "false");
         }
@@ -1281,7 +1284,9 @@ public class XtceAssembler {
     private void writeSignificance(XMLStreamWriter doc, Significance significance, String elementName)
             throws XMLStreamException {
         doc.writeStartElement(elementName);
-        doc.writeAttribute("reasonForWarning", significance.getReasonForWarning());
+        if (significance.getReasonForWarning() != null) {
+            doc.writeAttribute("reasonForWarning", significance.getReasonForWarning());
+        }
         doc.writeAttribute("consequenceLevel", significance.getConsequenceLevel().xtceAlias());
         doc.writeEndElement();
     }
@@ -1367,7 +1372,7 @@ public class XtceAssembler {
                 } else {// TODO - this should be written as part of an InputArgumentInstanceRef but only such a section
                         // is valid in XTCE
                     ArgumentInstanceRef aref = inp.getArgumentRef();
-                    doc.writeAttribute(ATTR_PARAMETER_REF, XtceDb.YAMCS_CMDARG_SPACESYSTEM_NAME + "/" + aref.getName());
+                    doc.writeAttribute(ATTR_PARAMETER_REF, Mdb.YAMCS_CMDARG_SPACESYSTEM_NAME + "/" + aref.getName());
                 }
                 if (inp.getInputName() != null) {
                     doc.writeAttribute("inputName", inp.getInputName());
@@ -1525,7 +1530,7 @@ public class XtceAssembler {
                 doc.writeAttribute("instance", Integer.toString(pref.getInstance()));
             }
         } else {
-            doc.writeAttribute(ATTR_PARAMETER_REF, XtceDb.YAMCS_CMDARG_SPACESYSTEM_NAME + "/" + ref.getName());
+            doc.writeAttribute(ATTR_PARAMETER_REF, Mdb.YAMCS_CMDARG_SPACESYSTEM_NAME + "/" + ref.getName());
         }
 
         boolean ucv = comparison.getRef().useCalibratedValue();
@@ -1634,6 +1639,16 @@ public class XtceAssembler {
             return;
         }
         doc.writeStartElement(verifier.getStage() + "Verifier");
+
+        var ancillaryData = new ArrayList<AncillaryData>();
+        ancillaryData.add(new AncillaryData("yamcs.onSuccess",
+                verifier.getOnSuccess() != null ? verifier.getOnSuccess().name() : null));
+        ancillaryData.add(new AncillaryData("yamcs.onFail",
+                verifier.getOnFail() != null ? verifier.getOnFail().name() : null));
+        ancillaryData.add(new AncillaryData("yamcs.onTimeout",
+                verifier.getOnTimeout() != null ? verifier.getOnTimeout().name() : null));
+        writeAncillaryData(doc, ancillaryData);
+
         switch (verifier.getType()) {
         case MATCH_CRITERIA:
             writeMatchCriteria(doc, verifier.getMatchCriteria());

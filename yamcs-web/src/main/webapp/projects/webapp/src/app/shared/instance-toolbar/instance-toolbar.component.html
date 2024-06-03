@@ -1,0 +1,189 @@
+<mat-toolbar class="top">
+  <mat-toolbar-row>
+    <ng-content />
+
+    <span style="flex: 1 1 auto"></span>
+
+    <ng-container *ngIf="processor$ | async as processor">
+      <ng-container *ngIf="connected$ | async">
+        <ng-container *ngIf="connectionInfo$ | async as connectionInfo">
+          <button mat-button *ngIf="processor.replay && processor.replayState === 'RUNNING'"
+                  (menuOpened)="switchProcessorMenuOpened()"
+                  color="primary"
+                  (click)="pauseReplay()">
+            <mat-icon>pause</mat-icon>
+            PAUSE REPLAY
+          </button>
+
+          <button mat-button *ngIf="processor.replay && (processor.replayState !== 'RUNNING')"
+                  (menuOpened)="switchProcessorMenuOpened()"
+                  color="primary"
+                  (click)="resumeReplay()">
+            <mat-icon>play_arrow</mat-icon>
+            PLAY
+          </button>
+
+          <ya-text-action *ngIf="showRange$ | async"
+                          class="range"
+                          matTooltip="Lookback period"
+                          [matMenuTriggerFor]="rangeMenu">
+            {{ range$ | async | duration }} ▾
+          </ya-text-action>
+
+          <ya-text-action class="processor-time"
+                          [class.paused]="processor.replayState === 'PAUSED'"
+                          matTooltip="Processor time. Click for more actions"
+                          [matMenuTriggerFor]="processorMenu"
+                          (menuOpened)="switchProcessorMenuOpened()">
+            {{ (time$ | async) | datetime }} ▾
+          </ya-text-action>
+
+          <ya-icon-action *ngIf="fullScreenMode$ | async"
+                          class="icon-action"
+                          icon="fullscreen_exit"
+                          (click)="exitFullScreen()"
+                          matTooltip="Exit full screen" />
+
+          <ya-icon-action *ngIf="!(fullScreenMode$ | async) && (zenMode$ | async)"
+                          class="icon-action"
+                          icon="fullscreen_exit"
+                          (click)="exitZenMode()"
+                          matTooltip="Exit zen mode" />
+
+          <ya-icon-action class="icon-action" icon="menu"
+                          [matMenuTriggerFor]="moreMenu" />
+
+          <button mat-icon-button *ngIf="false">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+
+    <mat-menu #moreMenu="matMenu" class="ya-menu" overlapTrigger="false" xPosition="before" yPosition="below">
+      <button *ngIf="!(zenMode$ | async)"
+              mat-menu-item
+              [disabled]="fullScreenMode$ | async"
+              (click)="enterZenMode()">
+        Enter zen mode
+      </button>
+      <button *ngIf="zenMode$ | async"
+              mat-menu-item
+              [disabled]="fullScreenMode$ | async"
+              (click)="exitZenMode()">
+        Exit zen mode
+      </button>
+      <button *ngIf="!(fullScreenMode$ | async)"
+              mat-menu-item
+              (click)="enterFullScreen()">
+        Enter full screen
+      </button>
+      <button *ngIf="fullScreenMode$ | async"
+              mat-menu-item
+              (click)="exitFullScreen()">
+        Exit full screen
+      </button>
+    </mat-menu>
+
+    <mat-menu #rangeMenu="matMenu"
+              class="ya-menu"
+              overlapTrigger="false"
+              xPosition="before"
+              yPosition="below">
+      <ng-container *ngIf="range$ | async as range">
+        <button mat-menu-item (click)="yamcs.range$.next('PT1M')">
+          <mat-icon [class.hide]="range !== 'PT1M'">check</mat-icon>
+          1 minute
+        </button>
+        <button mat-menu-item (click)="yamcs.range$.next('PT5M')">
+          <mat-icon [class.hide]="range !== 'PT5M'">check</mat-icon>
+          5 minutes
+        </button>
+        <button mat-menu-item (click)="yamcs.range$.next('PT15M')">
+          <mat-icon [class.hide]="range !== 'PT15M'">check</mat-icon>
+          15 minutes
+        </button>
+        <button mat-menu-item (click)="yamcs.range$.next('PT30M')">
+          <mat-icon [class.hide]="range !== 'PT30M'">check</mat-icon>
+          30 minutes
+        </button>
+        <mat-divider />
+        <button mat-menu-item (click)="yamcs.range$.next('PT1H')">
+          <mat-icon [class.hide]="range !== 'PT1H'">check</mat-icon>
+          1 hour
+        </button>
+        <button mat-menu-item (click)="yamcs.range$.next('PT6H')">
+          <mat-icon [class.hide]="range !== 'PT6H'">check</mat-icon>
+          6 hours
+        </button>
+        <button mat-menu-item (click)="yamcs.range$.next('PT12H')">
+          <mat-icon [class.hide]="range !== 'PT12H'">check</mat-icon>
+          12 hours
+        </button>
+        <mat-divider />
+        <button mat-menu-item (click)="yamcs.range$.next('P1D')">
+          <mat-icon [class.hide]="range !== 'P1D'">check</mat-icon>
+          1 day
+        </button>
+        <button mat-menu-item (click)="yamcs.range$.next('P2D')">
+          <mat-icon [class.hide]="range !== 'P2D'">check</mat-icon>
+          2 days
+        </button>
+        <button mat-menu-item (click)="yamcs.range$.next('P7D')">
+          <mat-icon [class.hide]="range !== 'P7D'">check</mat-icon>
+          7 days
+        </button>
+        <button mat-menu-item (click)="yamcs.range$.next('P14D')">
+          <mat-icon [class.hide]="range !== 'P14D'">check</mat-icon>
+          14 days
+        </button>
+        <button mat-menu-item (click)="yamcs.range$.next('P30D')">
+          <mat-icon [class.hide]="range !== 'P30D'">check</mat-icon>
+          30 days
+        </button>
+      </ng-container>
+    </mat-menu>
+
+    <mat-menu #processorMenu="matMenu" class="ya-menu" overlapTrigger="false" xPosition="before" yPosition="below">
+      <ng-container *ngIf="processor$ | async as processor">
+        <button mat-menu-item (click)="startReplay()" *ngIf="!processor.replay">
+          <mat-icon>replay</mat-icon>
+          Replay from date
+        </button>
+        <ng-container *ngIf="processor.replay">
+          <button mat-menu-item (click)="changeSpeed('1x')">
+            <mat-icon [class.hide]="processor.replayRequest?.speed.param !== 1">check</mat-icon> 1x (original speed)
+          </button>
+          <button mat-menu-item (click)="changeSpeed('2x')">
+            <mat-icon [class.hide]="processor.replayRequest?.speed.param !== 2">check</mat-icon> 2x
+          </button>
+          <button mat-menu-item (click)="changeSpeed('4x')">
+            <mat-icon [class.hide]="processor.replayRequest?.speed.param !== 4">check</mat-icon> 4x
+          </button>
+          <button mat-menu-item (click)="changeSpeed('8x')">
+            <mat-icon [class.hide]="processor.replayRequest?.speed.param !== 8">check</mat-icon> 8x
+          </button>
+          <button mat-menu-item (click)="changeSpeed('16x')">
+            <mat-icon [class.hide]="processor.replayRequest?.speed.param !== 16">check</mat-icon> 16x
+          </button>
+          <button mat-menu-item (click)="changeSpeed('afap')">
+            <mat-icon [class.hide]="processor.replayRequest?.speed.type !== 'AFAP'">check</mat-icon> As fast as possible
+          </button>
+        </ng-container>
+        <mat-divider />
+        <button mat-menu-item *ngFor="let otherProcessor of allProcessors$ | async"
+                (click)="switchProcessor(otherProcessor)">
+          <mat-icon [class.hide]="processor.name !== otherProcessor.name">check</mat-icon>
+          {{ otherProcessor.name }}
+        </button>
+        <ng-container *ngIf="processor.replay">
+          <mat-divider />
+          <button mat-menu-item (click)="leaveAndCloseReplay()" [disabled]="processor.protected">
+            <mat-icon>exit_to_app</mat-icon>
+            Leave &amp; close replay
+          </button>
+        </ng-container>
+      </ng-container>
+    </mat-menu>
+  </mat-toolbar-row>
+</mat-toolbar>

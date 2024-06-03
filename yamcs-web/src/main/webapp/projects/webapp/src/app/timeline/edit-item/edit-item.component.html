@@ -1,0 +1,50 @@
+<app-instance-page *ngIf="item$ | async as item">
+  <app-instance-toolbar>Edit item</app-instance-toolbar>
+
+  <div class="form-content ya-form">
+    <form [formGroup]="form" novalidate autocomplete="off">
+      <div class="label">
+        Name <span class="hint">(required)</span><br>
+        <input type="text" formControlName="name">
+      </div>
+      <br>
+      <div class="label">
+        Tags
+        <ya-help dialogTitle="Tags">
+          Tags allow to categorise items per band. Bands only show items for which one of the tags is matching.
+        </ya-help>
+        <br>
+        <ya-tag-select formControlName="tags" />
+      </div>
+      <br>
+      <div class="label">
+        Duration
+        <ya-duration-input formControlName="duration" />
+      </div>
+      <br>
+      <div class="section-divider">
+        <mat-divider />
+      </div>
+      <br>
+      <div class="label">
+        Start<br>
+        <ya-date-time-input formControlName="start" />
+      </div>
+      <br>
+      <div class="section-divider">
+        <mat-divider />
+      </div>
+
+      <h4>Styles</h4>
+      <app-item-styles [form]="form" />
+      <br>
+    </form>
+    <p>&nbsp;</p>
+    <div class="action-bar">
+      <button class="ya-button" (click)="location.back()">Cancel</button>
+      <button class="ya-button primary" type="submit"
+              (click)="doOnConfirm()"
+              [disabled]="!(dirty$ | async) || !form.valid">SAVE CHANGES</button>
+    </div>
+  </div>
+</app-instance-page>

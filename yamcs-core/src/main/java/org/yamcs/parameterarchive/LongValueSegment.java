@@ -1,7 +1,6 @@
 package org.yamcs.parameterarchive;
 
 import java.nio.ByteBuffer;
-import java.util.List;
 
 import org.yamcs.parameter.Value;
 import org.yamcs.parameter.ValueArray;
@@ -26,6 +25,34 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
         this.numericType = getNumericType(type);
     }
 
+    private LongValueSegment() {
+        super(FORMAT_ID_IntValueSegment);
+    }
+
+    @Override
+    public void insert(int pos, Value value) {
+        Type type = value.getType();
+        if (type == Type.UINT64) {
+            values.add(pos, value.getUint64Value());
+        } else if (type == Type.SINT64) {
+            values.add(pos, value.getSint64Value());
+        } else {
+            values.add(pos, value.getTimestampValue());
+        }
+    }
+
+    @Override
+    public void add(Value value) {
+        Type type = value.getType();
+        if (type == Type.UINT64) {
+            values.add(value.getUint64Value());
+        } else if (type == Type.SINT64) {
+            values.add(value.getSint64Value());
+        } else {
+            values.add(value.getTimestampValue());
+        }
+    }
+
     private int getNumericType(Type type) {
         for (int i = 0; i < types.length; i++) {
             if (types[i] == type) {
@@ -33,10 +60,6 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
             }
         }
         throw new IllegalStateException();
-    }
-
-    private LongValueSegment() {
-        super(FORMAT_ID_IntValueSegment);
     }
 
     @Override
@@ -50,8 +73,8 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
     }
 
     // write header:
-    // 1st byte: spare   type   subformatid
-    //           2 bits  2 bits 4 bits    
+    // 1st byte: spare type subformatid
+    // 2 bits 2 bits 4 bits
     private void writeHeader(int subFormatId, ByteBuffer bb) {
         int x = (numericType << 4) | subFormatId;
         bb.put((byte) x);
@@ -62,7 +85,7 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
         int subFormatId = x & 0xF;
         if (subFormatId != SUBFORMAT_ID_RAW)
             throw new DecodingException("Unknown subformatId " + subFormatId + " for LongValueSegment");
-        
+
         numericType = (x >> 4) & 3;
 
         int n = VarIntUtil.readVarInt32(bb);
@@ -81,30 +104,6 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
         LongValueSegment r = new LongValueSegment();
         r.parse(bb);
         return r;
-    }
-
-    public static LongValueSegment consolidate(List<Value> values, Type type) {
-        LongValueSegment segment = new LongValueSegment(type);
-        int n = values.size();
-
-        if (type==Type.SINT64) {
-            for (int i = 0; i < n; i++) {
-                segment.add(values.get(i).getSint64Value());
-            }
-        } else if(type==Type.UINT64) {
-            for (int i = 0; i < n; i++) {
-                segment.add(values.get(i).getUint64Value());
-            }
-        } else {
-            for (int i = 0; i < n; i++) {
-                segment.add(values.get(i).getTimestampValue());
-            }
-        }
-        return segment;
-    }
-
-    private void add(long x) {
-        values.add(x);
     }
 
     @Override
@@ -129,9 +128,9 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
 
     @Override
     public Value getValue(int index) {
-        if (numericType==0) {
+        if (numericType == 0) {
             return ValueUtility.getUint64Value(values.get(index));
-        } else if (numericType==1){
+        } else if (numericType == 1) {
             return ValueUtility.getSint64Value(values.get(index));
         } else {
             return ValueUtility.getTimestampValue(values.get(index));
@@ -141,23 +140,6 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
     @Override
     public int size() {
         return values.size();
-    }
-
-    @Override
-    public void add(int pos, Value v) {
-        Type type = v.getType();
-        if (type == Type.UINT64) {
-            values.add(pos, v.getUint64Value());
-        } else if (type == Type.SINT64) {
-            values.add(pos, v.getSint64Value());
-        } else {
-            values.add(pos, v.getTimestampValue());
-        }
-    }
-
-    @Override
-    public LongValueSegment consolidate() {
-        return this;
     }
 
 }

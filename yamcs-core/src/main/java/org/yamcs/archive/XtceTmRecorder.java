@@ -1,5 +1,7 @@
 package org.yamcs.archive;
 
+import static org.yamcs.StandardTupleDefinitions.TM_ROOT_CONTAINER_COLUMN;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,17 +16,16 @@ import org.yamcs.Spec.OptionType;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.TmStreamConfigEntry;
+import org.yamcs.TmPacket;
+import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.mdb.ContainerProcessingResult;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.XtceTmExtractor;
-import org.yamcs.TmPacket;
-import org.yamcs.YConfiguration;
-import org.yamcs.YamcsServer;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -44,27 +45,26 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
  * 
  * <p>
  * It subscribes to all the streams configured with the "streams" config key or, if not present, to all TM streams
- * defined
- * in the instance (streamConfig section of the instance configuration).
+ * defined in the instance (streamConfig section of the instance configuration).
  * 
- * @author nm
- *
  */
 public class XtceTmRecorder extends AbstractYamcsService {
     public static final String REC_STREAM_NAME = "xtce_tm_recorder_stream";
     public static final String TABLE_NAME = "tm";
     public static final String PNAME_COLUMN = "pname";
+    public static final String CF_NAME = "rt_data";
 
     public static final TupleDefinition RECORDED_TM_TUPLE_DEFINITION;
     static {
         RECORDED_TM_TUPLE_DEFINITION = StandardTupleDefinitions.TM.copy();
+        RECORDED_TM_TUPLE_DEFINITION.removeColumn(TM_ROOT_CONTAINER_COLUMN);
         RECORDED_TM_TUPLE_DEFINITION.addColumn(PNAME_COLUMN, DataType.ENUM); // container name (XTCE qualified name)
     }
 
     private long totalNumPackets;
 
     final Tuple END_MARK = new Tuple(StandardTupleDefinitions.TM,
-            new Object[] { null, null, null, null, null, null, null, null });
+            new Object[] { null, null, null, null, null, null, null, null, null });
 
     Mdb mdb;
 
@@ -84,10 +84,15 @@ public class XtceTmRecorder extends AbstractYamcsService {
         super.init(yamcsInstance, serviceName, config);
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+        var timePart = ydb.getTimePartitioningSchema(config);
+
+        var partitionBy = timePart == null ? "partition by value(pname)"
+                : "partition by time_and_value(gentime('" + timePart.getName() + "'), pname)";
         try {
             if (ydb.getTable(TABLE_NAME) == null) {
                 String query = "create table " + TABLE_NAME + "(" + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition1()
-                        + ", primary key(gentime, seqNum, pname)) histogram(pname) partition by value(pname) table_format=compressed";
+                        + ", primary key(gentime, seqNum, pname)) histogram(pname) " + partitionBy
+                        + " table_format=compressed,column_family:" + CF_NAME;
                 ydb.execute(query);
             }
             ydb.execute("create stream " + REC_STREAM_NAME + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition());
@@ -125,7 +130,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
         }
         if (rootsc == null) {
             throw new ConfigurationException(
-                    "XtceDb does not have a root sequence container and no container was specified for decoding packets from "
+                    "MDB does not have a root sequence container and no container was specified for decoding packets from "
                             + streamConf.getName() + " stream");
         }
 
@@ -297,7 +302,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
             String pname = deriveArchivePartition(cpr);
 
             try {
-                List<Object> c = t.getColumns();
+                List<?> c = t.getColumns();
                 List<Object> columns = new ArrayList<>(c.size() + 1);
                 columns.addAll(c);
 
@@ -306,6 +311,14 @@ public class XtceTmRecorder extends AbstractYamcsService {
                 tdef.addColumn(PNAME_COLUMN, DataType.ENUM);
 
                 Tuple tp = new Tuple(tdef, columns);
+
+                // If provided on the tuple (set by a preprocessor), this has more priority
+                // in determining the pname.
+                String rootContainer = tp.removeColumn(TM_ROOT_CONTAINER_COLUMN);
+                if (rootContainer != null) {
+                    tp.setColumn(PNAME_COLUMN, rootContainer);
+                }
+
                 outputStream.emitTuple(tp);
             } catch (Exception e) {
                 log.error("got exception when saving packet ", e);
@@ -338,4 +351,5 @@ public class XtceTmRecorder extends AbstractYamcsService {
 
         return pname;
     }
+
 }

@@ -61,7 +61,6 @@ public class ByteArrayUtils {
         return 0;
     }
 
-
     /**
      * write an long into a byte array at offset and returns the array
      */
@@ -118,7 +117,7 @@ public class ByteArrayUtils {
     }
 
     /**
-     * write a long in to a byte array of 8 bytes
+     * write a long into a byte array of 8 bytes
      * 
      * @param x
      * @return
@@ -126,6 +125,14 @@ public class ByteArrayUtils {
     public static byte[] encodeLong(long x) {
         byte[] toReturn = new byte[8];
         return encodeLong(x, toReturn, 0);
+    }
+
+    /**
+     * write a long into a byte array of 8 bytes, in little endian
+     */
+    public static byte[] encodeLongLE(long x) {
+        byte[] toReturn = new byte[8];
+        return encodeLongLE(x, toReturn, 0);
     }
 
     // ----------------- 8 bytes(long) encoding/decoding
@@ -242,7 +249,7 @@ public class ByteArrayUtils {
                 ((a[offset + 4] & 0xFFl));
     }
 
-    // ----------------- 4 bytes(int) encoding/decoding
+    // ----------------- 4 bytes(int) encoding/decoding (int32/uint32)
     /**
      * write an int into a byte array at offset and returns the array
      */
@@ -255,9 +262,32 @@ public class ByteArrayUtils {
         return a;
     }
 
+    public static byte[] encodeIntLE(int x, byte[] a, int offset) {
+        a[offset + 3] = (byte) (x >> 24);
+        a[offset + 2] = (byte) (x >> 16);
+        a[offset + 1] = (byte) (x >> 8);
+        a[offset] = (byte) (x);
+
+        return a;
+    }
+
+    public static byte[] encodeUnsignedIntLE(long x, byte[] a, int offset) {
+        a[offset + 3] = (byte) (x >> 24);
+        a[offset + 2] = (byte) (x >> 16);
+        a[offset + 1] = (byte) (x >> 8);
+        a[offset] = (byte) (x);
+
+        return a;
+    }
+
     public static byte[] encodeInt(int x) {
         byte[] toReturn = new byte[4];
         return encodeInt(x, toReturn, 0);
+    }
+
+    public static byte[] encodeIntLE(int x) {
+        byte[] toReturn = new byte[4];
+        return encodeIntLE(x, toReturn, 0);
     }
 
     public static int decodeInt(byte[] a, int offset) {
@@ -269,6 +299,13 @@ public class ByteArrayUtils {
 
     public static int decodeIntLE(byte[] a, int offset) {
         return ((a[offset + 3] & 0xFF) << 24) +
+                ((a[offset + 2] & 0xFF) << 16) +
+                ((a[offset + 1] & 0xFF) << 8) +
+                ((a[offset] & 0xFF));
+    }
+
+    public static long decodeUnsignedIntLE(byte[] a, int offset) {
+        return ((long) (a[offset + 3] & 0xFF) << 24) +
                 ((a[offset + 2] & 0xFF) << 16) +
                 ((a[offset + 1] & 0xFF) << 8) +
                 ((a[offset] & 0xFF));
@@ -295,7 +332,7 @@ public class ByteArrayUtils {
                 ((a[offset] & 0xFF));
     }
 
-    // ----------------- 2 bytes(short) encoding/decoding
+    // ----------------- 2 bytes(short) encoding/decoding (int16/uint16)
     public static byte[] encodeUnsignedShort(int x, byte[] a, int offset) {
         a[offset] = (byte) (x >> 8);
         a[offset + 1] = (byte) (x);
@@ -303,9 +340,31 @@ public class ByteArrayUtils {
         return a;
     }
 
+    public static byte[] encodeUnsignedShort(int x) {
+        byte[] toReturn = new byte[2];
+        return encodeUnsignedShort(x, toReturn, 0);
+    }
+
+    public static byte[] encodeUnsignedShortLE(int x, byte[] a, int offset) {
+        a[offset + 1] = (byte) (x >> 8);
+        a[offset] = (byte) (x);
+        return a;
+    }
+
+    public static byte[] encodeUnsignedShortLE(int x) {
+        byte[] toReturn = new byte[2];
+        return encodeUnsignedShortLE(x, toReturn, 0);
+    }
+
     public static short decodeShort(byte[] a, int offset) {
         int x = ((a[offset] & 0xFF) << 8) +
                 ((a[offset + 1] & 0xFF));
+        return (short) x;
+    }
+
+    public static short decodeShortLE(byte[] a, int offset) {
+        int x = ((a[offset + 1] & 0xFF) << 8) +
+                (a[offset] & 0xFF);
         return (short) x;
     }
 
@@ -325,5 +384,24 @@ public class ByteArrayUtils {
     public static int decodeUnsignedShortLE(byte[] a, int offset) {
         return ((a[offset + 1] & 0xFF) << 8) +
                 ((a[offset] & 0xFF));
+    }
+
+    // ----------------- Single byte encoding/decoding (int8/uint8)
+    public static byte[] encodeUnsignedByte(short x, byte[] a, int offset) {
+        return encodeByte(x, a, offset);
+    }
+
+    public static byte[] encodeByte(short x, byte[] a, int offset) {
+        a[offset] = (byte) x;
+
+        return a;
+    }
+
+    public static short decodeUnsignedByte(byte[] a, int offset) {
+        return (short) (a[offset] & 0xFF);
+    }
+
+    public static byte decodeByte(byte[] a, int offset) {
+        return a[offset];
     }
 }

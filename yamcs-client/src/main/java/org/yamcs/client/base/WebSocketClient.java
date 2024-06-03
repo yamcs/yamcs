@@ -53,6 +53,7 @@ import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
+import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
@@ -76,6 +77,7 @@ public class WebSocketClient {
     private EventLoopGroup group = new NioEventLoopGroup(1);
     private Channel nettyChannel;
     private String userAgent;
+    private boolean allowCompression = true;
     private Integer timeoutMs;
 
     private boolean tcpKeepAlive;
@@ -105,6 +107,14 @@ public class WebSocketClient {
 
     public void setConnectionTimeoutMs(int timeoutMs) {
         this.timeoutMs = timeoutMs;
+    }
+
+    public boolean isAllowCompression() {
+        return allowCompression;
+    }
+
+    public void setAllowCompression(boolean allowCompression) {
+        this.allowCompression = allowCompression;
     }
 
     /**
@@ -141,8 +151,13 @@ public class WebSocketClient {
             throw new RuntimeException(e);
         }
 
-        WebSocketClientHandshaker handshaker = WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13,
-                "protobuf", false, header, maxFramePayloadLength);
+        WebSocketClientHandshaker handshaker = WebSocketClientHandshakerFactory.newHandshaker(
+                uri,
+                WebSocketVersion.V13,
+                "protobuf",
+                true,
+                header,
+                maxFramePayloadLength);
         WebSocketClientHandler webSocketHandler = new WebSocketClientHandler(handshaker, this, callback);
 
         Bootstrap bootstrap = new Bootstrap()
@@ -163,10 +178,12 @@ public class WebSocketClient {
                 if (sslCtx != null) {
                     p.addLast(sslCtx.newHandler(ch.alloc()));
                 }
-                p.addLast(new HttpClientCodec(),
-                        new HttpObjectAggregator(8192),
-                        // new WebSocketClientCompressionHandler(),
-                        webSocketHandler);
+                p.addLast(new HttpClientCodec());
+                p.addLast(new HttpObjectAggregator(8192));
+                if (allowCompression) {
+                    p.addLast(WebSocketClientCompressionHandler.INSTANCE);
+                }
+                p.addLast(webSocketHandler);
             }
         });
 

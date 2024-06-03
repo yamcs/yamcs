@@ -1,0 +1,132 @@
+<ng-container *ngIf="alarm.type === 'PARAMETER'">
+  <div class="block-title">Parameter</div>
+  <div class="block">
+    <a [routerLink]="'/telemetry/parameters/' + alarm.id.namespace! + '/' + alarm.id.name"
+       [queryParams]="{c: yamcs.context}"
+       class="ya-link">
+      {{ alarm.id.namespace }}/{{ alarm.id.name }}
+    </a>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="alarm.type === 'EVENT'">
+  <div class="block-title">Event</div>
+  <div class="block">
+    <ng-container *ngIf="alarm.id.name">
+      {{ alarm.id.namespace }}/{{ alarm.id.name }}
+    </ng-container>
+    <ng-container *ngIf="!alarm.id.name">
+      {{ alarm.id.namespace }}
+    </ng-container>
+  </div>
+</ng-container>
+
+<div class="block-title">Severity</div>
+<div class="block">
+  <app-alarm-level [level]="alarm.severity" />
+  {{ alarm.severity }}
+</div>
+
+<div class="block-title">Violations</div>
+<div class="block">
+  {{ alarm.violations | number }}
+</div>
+
+<ng-container *ngIf="alarm.parameterDetail as parameterDetail">
+  <br>
+  <mat-divider />
+
+  <div class="block-title">Trigger value</div>
+  <div class="block">
+    <app-alarm-level [level]="alarm.severity" [grayscale]="true" />
+    &nbsp;{{ parameterDetail.triggerValue.engValue | value }}
+    <span *ngIf="parameterDetail.triggerValue.rangeCondition === 'LOW'">&#8595;</span>
+    <span *ngIf="parameterDetail.triggerValue.rangeCondition === 'HIGH'">&#8593;</span>
+  </div>
+
+  <br>
+  <mat-divider />
+
+  <div class="block-title">Live value</div>
+  <div class="block">
+    <ya-expirable [pval]="parameterDetail.currentValue">
+      <app-alarm-level [level]="parameterDetail.currentValue.monitoringResult" [grayscale]="true" />
+      &nbsp;{{ parameterDetail.currentValue.engValue | value }}
+      <span *ngIf="parameterDetail.currentValue.rangeCondition === 'LOW'">&#8595;</span>
+      <span *ngIf="parameterDetail.currentValue.rangeCondition === 'HIGH'">&#8593;</span>
+    </ya-expirable>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="alarm.eventDetail as eventDetail">
+  <br>
+  <mat-divider />
+
+  <div class="block-title">Trigger event</div>
+  <div class="block">
+    {{ eventDetail.triggerEvent.message }}
+  </div>
+</ng-container>
+
+<ng-container *ngIf="alarm.acknowledgeInfo">
+  <br>
+  <mat-divider />
+
+  <div class="block-title">Acknowledged by {{ alarm.acknowledgeInfo.acknowledgedBy }}</div>
+  <div class="block">
+    On {{ alarm.acknowledgeInfo.acknowledgeTime | datetime }}
+    <ng-container *ngIf="alarm.acknowledgeInfo.acknowledgeMessage">
+      <blockquote style="border-left: 4px solid #eee; padding-left: 1em; font-style: italic">
+        {{ alarm.acknowledgeInfo.acknowledgeMessage }}
+      </blockquote>
+    </ng-container>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="alarm.shelveInfo">
+  <br>
+  <mat-divider />
+
+  <div class="block-title">Shelved by {{ alarm.shelveInfo.shelvedBy }}</div>
+  <div class="block">
+    On {{ alarm.shelveInfo.shelveTime | datetime }}
+    <ng-container *ngIf="alarm.shelveInfo.shelveMessage">
+      <blockquote style="border-left: 4px solid #eee; padding-left: 1em; font-style: italic">
+        {{ alarm.shelveInfo.shelveMessage }}
+      </blockquote>
+    </ng-container>
+  </div>
+
+  <ng-container *ngIf="alarm.shelveInfo.shelveExpiration">
+    <div class="block-title">Shelve Expiration</div>
+    <div class="block">
+      {{ alarm.shelveInfo.shelveExpiration | datetime }}
+    </div>
+  </ng-container>
+</ng-container>
+
+<div class="action-bar" *ngIf="mayControl">
+  <button class="ya-button"
+          (click)="acknowledgeAlarm.emit(alarm)"
+          *ngIf="!alarm.shelveInfo && !alarm.acknowledged">
+    <mat-icon>notifications_off</mat-icon>
+    ACKNOWLEDGE
+  </button>
+  <button class="ya-button"
+          (click)="shelveAlarm.emit(alarm)"
+          *ngIf="!alarm.shelveInfo">
+    <mat-icon>timer</mat-icon>
+    SHELVE
+  </button>
+  <button class="ya-button"
+          (click)="unshelveAlarm.emit(alarm)"
+          *ngIf="alarm.shelveInfo">
+    <mat-icon>timer_off</mat-icon>
+    UNSHELVE
+  </button>
+  <button class="ya-button"
+          (click)="clearAlarm.emit(alarm)">
+    <mat-icon>clear_all</mat-icon>
+    CLEAR
+  </button>
+</div>

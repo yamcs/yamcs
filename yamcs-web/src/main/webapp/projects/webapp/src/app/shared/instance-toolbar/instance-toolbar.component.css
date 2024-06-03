@@ -1,0 +1,39 @@
+mat-toolbar {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: var(--y-background-color);
+  box-sizing: content-box;
+}
+
+mat-toolbar-row {
+  padding-left: 24px;
+  align-items: center;
+}
+
+.drop-down {
+  border-left: 1px solid #d3d3d3;
+  min-width: 0;
+  padding: 0 8px;
+}
+
+.hide {
+  visibility: hidden;
+}
+
+.toolbar-text {
+  font-size: 12px;
+}
+
+.range,
+.processor-time {
+  font-size: 12px;
+  letter-spacing: 1.07143px;
+}
+
+.processor-time.paused {
+  font-style: italic;
+}
+
+.icon-action {
+  display: flex;
+  align-items: center;
+}

@@ -3,12 +3,11 @@ package org.yamcs.mdb;
 import java.io.IOException;
 
 /**
- * This is the analogous to the {@link SpaceSystemLoader} and is used for writing Mdb information to files
- * (or to other media such as databases)
+ * This is the analogous to the {@link SpaceSystemLoader} and is used for writing Mdb information to files (or to other
+ * media such as databases)
  * <p>
  * To mirror the loader, one writer may be responsible for multiple space systems loaded in parallel (including all
  * their subsystems).
- * <p>
  *
  */
 public interface SpaceSystemWriter {

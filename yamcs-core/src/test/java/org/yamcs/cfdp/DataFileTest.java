@@ -10,6 +10,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.python.bouncycastle.util.Arrays;
+import org.yamcs.cfdp.pdu.FileDataPacket;
 import org.yamcs.cfdp.pdu.SegmentRequest;
 
 public class DataFileTest {
@@ -57,6 +58,8 @@ public class DataFileTest {
         DataFile df = new DataFile(n);
         df.addSegment(getSegment(0, 3));
         df.addSegment(getSegment(1, 3));
+        assertEquals(1, df.dataFileSegments.size());
+        
         List<SegmentRequest> lmissing = df.getMissingChunks();
         assertEquals(1, lmissing.size());
         verifyEquals(4, n, lmissing.get(0));
@@ -139,8 +142,8 @@ public class DataFileTest {
         verify(df);
     }
 
-    private DataFileSegment getSegment(int offset, int length) {
-        return new DataFileSegment(offset, Arrays.copyOfRange(data, offset, offset + length));
+    private FileDataPacket getSegment(int offset, int length) {
+        return new FileDataPacket(Arrays.copyOfRange(data, offset, offset + length), offset, null);
     }
 
     private void verifyEquals(long expectedStart, long expectedEnd, SegmentRequest sr) {
@@ -149,9 +152,11 @@ public class DataFileTest {
     }
 
     private void verify(DataFile df) {
-        for (DataFileSegment dfs : df.getSegments()) {
-            for (int i = 0; i < dfs.getLength(); i++) {
-                assertEquals(data[(int) (dfs.getOffset() + i)], dfs.getData()[i]);
+        byte[] data1 = df.getData();
+
+        for (DataFile.Segment dfs : df.dataFileSegments) {
+            for (int i = (int) dfs.start; i < dfs.end; i++) {
+                assertEquals(data[i], data1[i]);
             }
         }
     }

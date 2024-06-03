@@ -1,58 +1,75 @@
-import { ChangeDetectionStrategy, Component, ElementRef, forwardRef, Input, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, forwardRef, Input, ViewChild } from '@angular/core';
 import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator } from '@angular/forms';
-import { DateAdapter } from '@angular/material/core';
-import { MatDatepicker } from '@angular/material/datepicker';
+import { MatDatepicker, MatDatepickerInput } from '@angular/material/datepicker';
+import { MatIcon } from '@angular/material/icon';
+import { provideUtcNativeDateAdapter } from '../../providers';
 import * as utils from '../../utils';
-import { UtcDateAdapter } from './UtcDateAdapter';
+
+export interface FireChangeOptions {
+  /**
+   * Update the HTML input element to show for example '07' instead of '7'
+   */
+  standardizeInputs?: boolean;
+}
 
 // Used as a signal to show validation results
 const INVALID_ISOSTRING = 'invalid';
 const DAY_OF_YEAR_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 @Component({
+  standalone: true,
   selector: 'ya-date-time-input',
   templateUrl: './date-time-input.component.html',
-  styleUrls: ['./date-time-input.component.css'],
+  styleUrl: './date-time-input.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => DateTimeInputComponent),
-      multi: true,
-    }, {
-      provide: NG_VALIDATORS,
-      useExisting: forwardRef(() => DateTimeInputComponent),
-      multi: true,
-    }, {
-      provide: DateAdapter,
-      useClass: UtcDateAdapter,
-    }
-  ]
+  providers: [{
+    provide: NG_VALUE_ACCESSOR,
+    useExisting: forwardRef(() => YaDateTimeInput),
+    multi: true,
+  }, {
+    provide: NG_VALIDATORS,
+    useExisting: forwardRef(() => YaDateTimeInput),
+    multi: true,
+  }, provideUtcNativeDateAdapter()],
+  imports: [
+    MatDatepicker,
+    MatDatepickerInput,
+    MatIcon,
+  ],
 })
-export class DateTimeInputComponent implements ControlValueAccessor, Validator {
+export class YaDateTimeInput implements AfterViewInit, ControlValueAccessor, Validator {
 
   @Input()
   showMillis = false;
 
   @ViewChild('dayInput', { static: true })
-  private dayInputComponent: ElementRef;
+  private dayInputComponent: ElementRef<HTMLInputElement>;
 
   @ViewChild('hourInput', { static: true })
-  private hourInputComponent: ElementRef;
+  private hourInputComponent: ElementRef<HTMLInputElement>;
 
   @ViewChild('minuteInput', { static: true })
-  private minuteInputComponent: ElementRef;
+  private minuteInputComponent: ElementRef<HTMLInputElement>;
 
   @ViewChild('secondInput', { static: true })
-  private secondInputComponent: ElementRef;
+  private secondInputComponent: ElementRef<HTMLInputElement>;
 
   @ViewChild('millisInput', { static: true })
-  private millisInputComponent: ElementRef;
+  private millisInputComponent: ElementRef<HTMLInputElement>;
 
   @ViewChild('picker', { static: true })
   private picker: MatDatepicker<Date>;
 
   private onChange = (_: string | null) => { };
+
+  ngAfterViewInit(): void {
+    this.picker.closedStream.subscribe(() => {
+      if (this.dayInputComponent.nativeElement.value) {
+        this.hourInputComponent.nativeElement.focus();
+        this.hourInputComponent.nativeElement.select();
+      }
+    });
+  }
 
   // Called for initial values, assuming ISO strings
   writeValue(value: any) {
@@ -70,13 +87,12 @@ export class DateTimeInputComponent implements ControlValueAccessor, Validator {
         const millis = iso.length >= 22 ? iso.substring(20, 23) : '000';
         this.millisInputComponent.nativeElement.value = millis;
       }
-      this.fireChange();
     }
   }
 
-  fireChange() {
+  fireChange(options: FireChangeOptions = {}) {
     try {
-      const dt = this.createDateOrThrow();
+      const dt = this.createDateOrThrow(options.standardizeInputs ?? true);
       this.onChange(dt?.toISOString() || null);
     } catch {
       // Trigger a validation error
@@ -115,7 +131,7 @@ export class DateTimeInputComponent implements ControlValueAccessor, Validator {
     }
   }
 
-  private createDateOrThrow() {
+  private createDateOrThrow(standardizeInputs: boolean) {
     const dayInput = this.dayInputComponent.nativeElement.value;
     const hourInput = this.hourInputComponent.nativeElement.value;
     const minuteInput = this.minuteInputComponent.nativeElement.value;
@@ -152,6 +168,32 @@ export class DateTimeInputComponent implements ControlValueAccessor, Validator {
     const millis = millisInput ? Number(millisInput) : 0;
     if (!Number.isInteger(millis)) {
       throw new Error('Milliseconds must be an integer');
+    }
+
+    if (standardizeInputs) {
+      const { nativeElement: hourEl } = this.hourInputComponent;
+      if (hours < 10) {
+        hourEl.value = '0' + hours;
+      }
+
+      const { nativeElement: minuteEl } = this.minuteInputComponent;
+      if (minutes < 10) {
+        minuteEl.value = '0' + minutes;
+      }
+
+      const { nativeElement: secondEl } = this.secondInputComponent;
+      if (seconds < 10) {
+        secondEl.value = '0' + seconds;
+      }
+
+      if (this.showMillis) {
+        const { nativeElement: millisEl } = this.millisInputComponent;
+        if (millis < 10) {
+          millisEl.value = '00' + millis;
+        } else if (millis < 100) {
+          millisEl.value = '0' + millis;
+        }
+      }
     }
 
     return new Date(Date.UTC(year, month, day, hours, minutes, seconds, millis));

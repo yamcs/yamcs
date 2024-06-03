@@ -21,6 +21,9 @@ realtime:
        - class: org.yamcs.parameter.LocalParameterManager
     config:
         subscribeAll: true
+        # save the value of the parameters when the processor is closed and restore them when a processor with the same name starts
+        # only the parameters with the persistence flag set will be saved
+        persistParameters: true
         #check alarms and also enable the alarm server (that keeps track of unacknowledged alarms)
         alarm:
             parameterCheck: true

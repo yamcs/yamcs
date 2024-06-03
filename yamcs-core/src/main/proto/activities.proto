@@ -1,0 +1,16 @@
+syntax = "proto2";
+
+option java_package = "org.yamcs.activities.protobuf";
+option java_outer_classname = "ActivitiesProto";
+option java_multiple_files = true;
+
+import "google/protobuf/struct.proto";
+
+message ActivityDefinition {
+  // Activity type
+  optional string type = 1;
+
+  // Activity arguments. The expected arguments
+  // are different for each activity type
+  optional google.protobuf.Struct args = 2;
+}

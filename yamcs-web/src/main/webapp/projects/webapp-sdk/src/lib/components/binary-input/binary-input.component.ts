@@ -3,23 +3,22 @@ import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormCont
 import { requireHex } from '../../validators';
 
 @Component({
+  standalone: true,
   selector: 'ya-binary-input',
   templateUrl: './binary-input.component.html',
-  styleUrls: ['./binary-input.component.css'],
+  styleUrl: './binary-input.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => BinaryInputComponent),
-      multi: true,
-    }, {
-      provide: NG_VALIDATORS,
-      useExisting: forwardRef(() => BinaryInputComponent),
-      multi: true,
-    },
-  ]
+  providers: [{
+    provide: NG_VALUE_ACCESSOR,
+    useExisting: forwardRef(() => YaBinaryInput),
+    multi: true,
+  }, {
+    provide: NG_VALIDATORS,
+    useExisting: forwardRef(() => YaBinaryInput),
+    multi: true,
+  }],
 })
-export class BinaryInputComponent implements ControlValueAccessor, Validator {
+export class YaBinaryInput implements ControlValueAccessor, Validator {
 
   @ViewChild('input', { static: true })
   private inputComponent: ElementRef;

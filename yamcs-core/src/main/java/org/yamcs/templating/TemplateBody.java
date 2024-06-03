@@ -12,10 +12,10 @@ public class TemplateBody {
         statements.add(statement);
     }
 
-    public String render(Map<String, Object> vars) {
+    public String render(Map<String, Object> vars, Map<String, VariableFilter> filters) {
         var buf = new StringBuilder();
         for (var statement : statements) {
-            statement.render(buf, vars);
+            statement.render(buf, vars, filters);
         }
         return buf.toString();
     }

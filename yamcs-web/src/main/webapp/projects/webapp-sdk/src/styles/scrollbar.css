@@ -1,13 +1,16 @@
 /* Works on Chrome, Edge, and Safari */
 *::-webkit-scrollbar {
-  width: 16px;
+  width: var(--y-vertical-scrollbar-width);
+  height: var(--y-horizontal-scrollbar-height);
 }
 
 *::-webkit-scrollbar-thumb {
   height: 56px;
   background-color: var(--y-scrollbar-thumb);
   border-radius: 0;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
+  border-left: var(--y-vertical-scrollbar-border) solid transparent;
+  border-right: var(--y-vertical-scrollbar-border) solid transparent;
+  border-top: var(--y-horizontal-scrollbar-border) solid transparent;
+  border-bottom: var(--y-horizontal-scrollbar-border) solid transparent;
   background-clip: content-box;
 }

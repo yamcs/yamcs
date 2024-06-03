@@ -14,6 +14,7 @@ import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.zip.CRC32;
@@ -47,7 +48,7 @@ import io.netty.util.internal.PlatformDependent;
  *  4 bytes m = number of transactions on page n
  *  4 bytes firstMetadataPos - position of the first metadata transaction
  *  (max_pages+1) x 4 bytes idx - transaction index 
- *      idx[i] (i=0..max_pages) - offset in the file where transaction with id id_first + i*m starts
+ *      idx[i] (i=0..max_pages) - offset in the file where transaction with id id_first + i*page_size starts
  *      idx[i] = 0 -> no such transaction. this means num_tx < i*m
  *      idx[max_pages] -> pointer to the end of the file.
  * </pre>
@@ -56,8 +57,8 @@ import io.netty.util.internal.PlatformDependent;
  * 
  * <pre>
  * 
- * 1 byte type
- * 3 bytes - size of the data that follows
+ * 1 byte type - the type can be DATA or STREAM_INFO with the constants defined in {@link Message}
+ * 3 bytes - size of the data that follows including the CRC (or alternatively including the first 4 bytes type+size but excluding the crc)
  * 4 bytes instance_id
  * 8 bytes transaction_id
  * n bytes data
@@ -78,8 +79,6 @@ import io.netty.util.internal.PlatformDependent;
  * <p>
  * TODO: add a checker and stop writing data if the disk usage is above a threshold.
  * 
- * @author nm
- *
  */
 public class ReplicationFile implements Closeable {
     static final String RPL_FILENAME_PREFIX = "RPL";
@@ -163,7 +162,7 @@ public class ReplicationFile implements Closeable {
         int lastPageNumTx; // number of transaction on the last page
         long lastMod; // last modification
 
-        public Header2(boolean newFile) {
+        Header2(boolean newFile) {
             if (newFile) {
                 this.numFullPages = 0;
                 this.lastPageNumTx = 0;
@@ -195,6 +194,9 @@ public class ReplicationFile implements Closeable {
             return buf.getInt(HDR_IDX_OFFSET - 4);
         }
 
+        /**
+         * returns the offset of the end of hdr2 - where data begins
+         */
         public int endOffset() {
             return HDR_IDX_OFFSET + 4 * (hdr1.maxPages + 1);
         }
@@ -363,20 +365,6 @@ public class ReplicationFile implements Closeable {
      * @return
      */
     public long writeData(Transaction tx) {
-        return writeData(tx, false);
-    }
-
-    /**
-     * Write transaction to the file and returns the transaction id.
-     * <p>
-     * returns -1 if the transaction could not be written because the file is full.
-     * 
-     * @param tx
-     * @param sync
-     *            if true, forces the write to disk
-     * @return
-     */
-    public long writeData(Transaction tx, boolean sync) {
         if (readOnly) {
             throw new IllegalStateException("Read only file");
         } else if (!fc.isOpen()) {
@@ -386,9 +374,9 @@ public class ReplicationFile implements Closeable {
         }
 
         rwlock.writeLock().lock();
-        try {
-            int txStartPos = buf.position();
+        final int txStartPos = buf.position();
 
+        try {
             if (fileFull) {
                 return -1;
             } else if (hdr2.numFullPages == hdr1.maxPages) {
@@ -407,7 +395,7 @@ public class ReplicationFile implements Closeable {
             byte type = tx.getType();
 
             if (Transaction.isMetadata(type)) {
-                buf.putInt(0);// next meatadata position
+                buf.putInt(0);// next metadata position
             }
 
             try {
@@ -445,6 +433,10 @@ public class ReplicationFile implements Closeable {
                     size + 4);
             hdr2.incrNumTx();
             return txid;
+        } catch (Throwable e) {
+            buf.position(txStartPos);
+            log.error("Caught exception when writing the replication file ", e);
+            throw e;
         } finally {
             rwlock.writeLock().unlock();
         }
@@ -453,6 +445,7 @@ public class ReplicationFile implements Closeable {
     // starts from latest known transaction (according to the header) and checks for new ones
     private void recover() {
         int n = hdr2.numTx();
+
         int startTxPos = getPosition(n);
         buf.position(startTxPos);
         int k = 0;
@@ -586,10 +579,12 @@ public class ReplicationFile implements Closeable {
     }
 
     /**
-     * Get the position of the txNum th transaction in the file according to the index return -1 if the transaction is
-     * beyond the end of the file.
+     * Get the position of the txNum th transaction in the file according to the index
+     * <p>
+     * return -1 if the transaction is beyond the end of the file.
      */
     private int getPosition(int txNum) {
+        // number of full pages
         int nfp = txNum / hdr1.pageSize;
         int m1 = txNum - nfp * hdr1.pageSize;
 
@@ -615,7 +610,6 @@ public class ReplicationFile implements Closeable {
             throw new CorruptedFileException(path, "at offset " + pos + " expected txId " + expectedTxId
                     + " but found " + txId + " instead");
         }
-
         return pos + 4 + (typeSize & 0xFFFFFF);
     }
 
@@ -625,11 +619,16 @@ public class ReplicationFile implements Closeable {
 
     /**
      * Iterate through the metadata
-     * 
-     * @return
      */
     public Iterator<ByteBuffer> metadataIterator() {
         return new MetadataIterator();
+    }
+
+    /**
+     * Iterate through the data
+     */
+    public Iterator<ByteBuffer> iterator() {
+        return new TxIterator();
     }
 
     public void close() {
@@ -672,12 +671,31 @@ public class ReplicationFile implements Closeable {
         }
     }
 
+    public static int headerSize(int pageSize, int maxPages) {
+        return Header2.HDR_IDX_OFFSET + 4 * (maxPages + 1);
+    }
+
+    public int numTx() {
+        return hdr2.numTx();
+    }
+
+    public boolean isSyncRequired() {
+        return syncRequired;
+    }
+
+    /**
+     * Set the sync required flag such that the file is synchronized by the ReplicationMaster
+     * 
+     * @param syncRequired
+     */
+    public void setSyncRequired(boolean syncRequired) {
+        this.syncRequired = syncRequired;
+    }
+
     /**
      * Returns the last tx id from this file + 1.
      * <p>
      * If there is no transaction in this file, return 0.
-     * 
-     * @return
      */
     public long getNextTxId() {
         return hdr1.firstId + hdr2.numTx();
@@ -723,24 +741,52 @@ public class ReplicationFile implements Closeable {
         }
     }
 
-    public static int headerSize(int pageSize, int maxPages) {
-        return Header2.HDR_IDX_OFFSET + 4 * (maxPages + 1);
+    class TxIterator implements Iterator<ByteBuffer> {
+        int nextPos;
+
+        TxIterator() {
+            nextPos = hdr2.endOffset();
+        }
+
+        @Override
+        public boolean hasNext() {
+            return nextPos > 0;
+        }
+
+        /**
+         * Returns a ByteBuffer with the position set to where the record begins and the limit sets to where it ends
+         * <p>
+         * The structure of the metadata is
+         * 
+         * <pre>
+         *  1 byte type
+         *  3 bytes size -size of data that follows( i.e. without the size itself) = n + 20
+         *  4 bytes serverId
+         *  8 bytes txId
+         *  4 bytes metadata next position (to be ignored, only relevant inside the file)
+         *   n bytes data
+         *  4 bytes crc
+         * </pre>
+         */
+        @Override
+        public ByteBuffer next() {
+            if (nextPos < 0) {
+                throw new NoSuchElementException();
+            }
+            ByteBuffer buf1 = buf.asReadOnlyBuffer();
+            buf1.position(nextPos);
+            int typesize = buf1.getInt(nextPos);
+
+            nextPos += 4 + (typesize & 0xFFFFFF);
+
+            if (nextPos >= buf.limit()) {
+                nextPos = -1;
+            } else {
+                buf1.limit(nextPos);
+            }
+
+            return buf1;
+        }
     }
 
-    public int numTx() {
-        return hdr2.numTx();
-    }
-
-    public boolean isSyncRequired() {
-        return syncRequired;
-    }
-
-    /**
-     * Set the sync required flag such that the file is synchronized by the ReplicationMaster
-     * 
-     * @param syncRequired
-     */
-    public void setSyncRequired(boolean syncRequired) {
-        this.syncRequired = syncRequired;
-    }
 }

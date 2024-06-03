@@ -11,12 +11,14 @@ import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.rocksdb.BackupEngine;
 import org.rocksdb.BackupEngineOptions;
 import org.rocksdb.Env;
 import org.rocksdb.FlushOptions;
 import org.rocksdb.RestoreOptions;
+import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -217,6 +219,23 @@ public class RDBFactory implements Runnable {
     }
 
     /**
+     * Get the list of all open databases increasing the reference count but optionally not updating the last access
+     * time
+     */
+    public synchronized List<YRDB> getOpenDbs(boolean updateAccessTime) {
+        List<YRDB> l = new ArrayList<>();
+        var now = System.currentTimeMillis();
+        for (YRDB db : databases.values()) {
+            db.refcount++;
+            if (updateAccessTime) {
+                db.lastAccessTime = now;
+            }
+            l.add(db);
+        }
+        return l;
+    }
+
+    /**
      * immediately closes the database
      * 
      * @param yrdb
@@ -319,6 +338,10 @@ public class RDBFactory implements Runnable {
         return cf;
     }
 
+    public List<RocksDB> getOpenRdbs() {
+        return databases.values().stream().map(yrdb -> yrdb.getDb()).collect(Collectors.toList());
+    }
+
     /**
      * Called from Unit tests to cleanup before the next test
      */
@@ -328,4 +351,5 @@ public class RDBFactory implements Runnable {
         }
         instances.clear();
     }
+
 }

@@ -20,7 +20,7 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 /**
  * A command which is just being sent (maybe in the queue) or that has been sent and command verifiers are pending.
@@ -50,9 +50,9 @@ public class ActiveCommand implements CommandHistoryConsumer {
     }
 
     void initCmdParams() {
-        XtceDb mdb = processor.getXtceDb();
+        Mdb mdb = processor.getMdb();
         for (CommandHistoryAttribute cha : preparedCommand.getAttributes()) {
-            String fqn = XtceDb.YAMCS_CMD_SPACESYSTEM_NAME + "/" + cha.getName();
+            String fqn = Mdb.YAMCS_CMD_SPACESYSTEM_NAME + "/" + cha.getName();
             if (mdb.getParameter(fqn) == null) {
                 // if it was required in the algorithm, it would be already in the system parameter db
                 continue;
@@ -139,19 +139,19 @@ public class ActiveCommand implements CommandHistoryConsumer {
             log.error("Got a command history update for a different command: {}", cmdId);
             return;
         }
-        XtceDb mdb = processor.getXtceDb();
+        Mdb mdb = processor.getMdb();
         ProcessingData data = ProcessingData.createForCmdProcessing(processor.getLastValueCache(), getArguments(),
                 cmdParamCache);
 
         ParameterValueList cmdParams = data.getCmdParams();
 
         for (Attribute attr : attrs) {
-            String fqn = XtceDb.YAMCS_CMDHIST_SPACESYSTEM_NAME + "/" + attr.getKey();
+            String fqn = Mdb.YAMCS_CMDHIST_SPACESYSTEM_NAME + "/" + attr.getKey();
             Parameter p = mdb.getParameter(fqn);
 
             if (p == null) {
-                // if it was required in the algorithm, it would be in the XtceDb
-                log.trace("Not adding {} to the context parameter list because it is not defined in the XtceDb", fqn);
+                // if it was required in the algorithm, it would be in the MDB
+                log.trace("Not adding {} to the context parameter list because it is not defined in the MDB", fqn);
             } else {
                 ParameterValue pv = new ParameterValue(p);
                 pv.setEngValue(attr.getValue());

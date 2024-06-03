@@ -21,6 +21,7 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
 import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -109,13 +110,15 @@ public class ApiHandler extends HttpHandler {
      *            context for this channel handler
      */
     private void prepareChannelForWebSocketUpgrade(ChannelHandlerContext nettyContext, HttpRequest req, User user) {
-        var pipeline = nettyContext.pipeline();
-        pipeline.addLast(new HttpObjectAggregator(65536));
-
         int maxFrameLength = wsConfig.getInt("maxFrameLength");
         int lo = wsConfig.getConfig("writeBufferWaterMark").getInt("low");
         int hi = wsConfig.getConfig("writeBufferWaterMark").getInt("high");
         var waterMark = new WriteBufferWaterMark(lo, hi);
+
+        var pipeline = nettyContext.pipeline();
+        pipeline.addLast(new HttpObjectAggregator(65536));
+        pipeline.addLast(new WebSocketFrameDropper(waterMark.high()));
+        pipeline.addLast(new WebSocketServerCompressionHandler());
 
         // Add websocket-specific handlers to channel pipeline
         String webSocketPath = req.uri();

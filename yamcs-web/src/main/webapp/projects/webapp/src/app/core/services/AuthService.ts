@@ -36,6 +36,12 @@ export class AuthService implements OnDestroy {
     this.authInfo = configService.getAuthInfo();
     this.logoutRedirectUrl = configService.getConfig().logoutRedirectUrl;
 
+    yamcsService.sessionEnded$.subscribe(ended => {
+      if (ended && !this.authInfo.spnego) {
+        this.logout(true);
+      }
+    });
+
     /*
      * Attempts to prevent 401 exceptions by checking if locally available
      * tokens should (still) work. If not, then the user is navigated
@@ -181,7 +187,7 @@ export class AuthService implements OnDestroy {
       }
     }
 
-    this.logout(false);
+    this.logout(true);
     throw new Error('Could not login automatically');
   }
 
@@ -238,13 +244,22 @@ export class AuthService implements OnDestroy {
     cookieExpiration.setTime(cookieExpiration.getTime() + expireMillis);
     let cookie = `access_token=${encodeURIComponent(tokenResponse.access_token)}`;
     cookie += `; expires=${cookieExpiration.toUTCString()}`;
-    cookie += '; path=/; SameSite=Strict; Secure';
+    cookie += `; path=${this.getCookiePath()}`;
+    const cookieConfig = this.configService.getConfig().cookie;
+    cookie += `; SameSite=${cookieConfig.sameSite}`;
+    if (cookieConfig.secure) {
+      cookie += '; Secure';
+    }
     document.cookie = cookie;
 
     // Store refresh token in a Session Cookie (bound to browser, not tab)
     if (tokenResponse.refresh_token) {
       cookie = `refresh_token=${encodeURIComponent(tokenResponse.refresh_token)}`;
-      cookie += '; path=/; SameSite=Strict; Secure';
+      cookie += `; path=${this.getCookiePath()}`;
+      cookie += `; SameSite=${cookieConfig.sameSite}`;
+      if (cookieConfig.secure) {
+        cookie += '; Secure';
+      }
       document.cookie = cookie;
     }
 
@@ -318,12 +333,38 @@ export class AuthService implements OnDestroy {
   }
 
   private clearCookie(name: string) {
-    document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+    const path = this.getCookiePath();
+    if (path) {
+      this.clearCookieForPath(name, path);
+
+      // Remove also from root path, to avoid refresh loop when removing a previously
+      // used context root.
+      if (path !== '/') {
+        this.clearCookieForPath(name, '/');
+      }
+    }
+  }
+
+  private clearCookieForPath(name: string, path: string) {
+    let cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+    cookie += `; path=${path}`;
+    const cookieConfig = this.configService.getConfig().cookie;
+    cookie += `; SameSite=${cookieConfig.sameSite}`;
+    if (cookieConfig.secure) {
+      cookie += '; Secure';
+    };
+    document.cookie = cookie;
+  }
+
+  private getCookiePath() {
+    if (this.baseHref === '/') {
+      return '/';
+    } else if (this.baseHref.endsWith('/')) {
+      return this.baseHref.substring(0, this.baseHref.length - 1);
+    }
   }
 
   ngOnDestroy() {
-    if (this.syncSubscription) {
-      this.syncSubscription.unsubscribe();
-    }
+    this.syncSubscription?.unsubscribe();
   }
 }

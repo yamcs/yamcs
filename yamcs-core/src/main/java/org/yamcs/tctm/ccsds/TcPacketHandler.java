@@ -15,7 +15,7 @@ import org.yamcs.tctm.csp.AbstractCspTcFrameLink.CspManagedParameters;
 import org.yamcs.utils.TimeEncoding;
 
 /**
- * Assembles command packets into TC frames as per CCSDS 232.0-B-3.
+ * Assembles command packets into TC frames as per CCSDS 232.0-B-4.
  * <p>
  * All frames have the bypass flag set (i.e. they are BD frames).
  * 
@@ -121,7 +121,7 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
             System.arraycopy(binary, 0, data, offset, length);
             offset += length;
         }
-        dataCount.getAndAdd(l.size());
+
         frameFactory.encodeFrame(tf);
 
         // Check if cspHeader needs to be added
@@ -142,6 +142,10 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
             tf.setDataStart(cspOffset + ccsdsDataStart);
             tf.setDataEnd(cspOffset + ccsdsDataEnd);
         }
+
+        // BC frames contain no command but we still count it as one item out
+        var count = tf.commands == null ? 1 : tf.commands.size();
+        dataOut(count, tf.getData().length);
 
         return tf;
     }

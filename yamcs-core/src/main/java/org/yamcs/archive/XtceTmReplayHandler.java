@@ -12,7 +12,7 @@ import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YamcsException;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.protobuf.Db.ProtoDataType;
@@ -25,12 +25,12 @@ import org.yamcs.yarch.protobuf.Db.ProtoDataType;
  */
 public class XtceTmReplayHandler implements ReplayHandler {
     Set<String> partitions;
-    final XtceDb xtcedb;
+    final Mdb mdb;
     static Logger log = LoggerFactory.getLogger(XtceTmReplayHandler.class);
     ReplayOptions request;
 
-    public XtceTmReplayHandler(XtceDb xtcedb) {
-        this.xtcedb = xtcedb;
+    public XtceTmReplayHandler(Mdb mdb) {
+        this.mdb = mdb;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class XtceTmReplayHandler implements ReplayHandler {
 
     private void addPartitions(List<NamedObjectId> pnois) throws YamcsException {
         for (NamedObjectId pnoi : pnois) {
-            SequenceContainer sc = xtcedb.getSequenceContainer(pnoi);
+            SequenceContainer sc = mdb.getSequenceContainer(pnoi);
             if (sc == null) {
                 throw new YamcsException("Cannot find any sequence container for " + pnoi);
             }

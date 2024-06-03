@@ -1,0 +1,28 @@
+<app-instance-page>
+  <app-instance-toolbar>
+    Send a command
+  </app-instance-toolbar>
+
+  <app-send-command-wizard-step step="3" />
+
+  <div class="panel-content" *ngIf="command$ | async as command">
+    <app-command-detail2 [command]="command" />
+
+    <ng-container>
+      <br>
+      <mat-divider />
+      <br>
+      <button class="ya-button"
+              routerLink="/commanding/send"
+              [queryParams]="{c: yamcs.context}">
+        Send another command
+      </button>
+      &nbsp;&nbsp;
+      <button class="ya-button"
+              [routerLink]="'/commanding/send' + command.commandName"
+              [queryParams]="{c: yamcs.context, template: command.id}">
+        Resend this command
+      </button>
+    </ng-container>
+  </div>
+</app-instance-page>

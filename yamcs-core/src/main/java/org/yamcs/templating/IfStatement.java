@@ -20,21 +20,21 @@ public class IfStatement implements Statement {
     }
 
     @Override
-    public void render(StringBuilder buf, Map<String, Object> vars) {
+    public void render(StringBuilder buf, Map<String, Object> vars, Map<String, VariableFilter> filters) {
         var value = getValue(identifier, vars);
         if (isTruthy(value)) {
-            buf.append(ifBody.render(vars));
+            buf.append(ifBody.render(vars, filters));
             return;
         }
         for (var entry : elifConditions.entrySet()) {
             value = getValue(entry.getKey(), vars);
             if (isTruthy(value)) {
-                buf.append(entry.getValue().render(vars));
+                buf.append(entry.getValue().render(vars, filters));
                 return;
             }
         }
         if (elseBody != null) {
-            buf.append(elseBody.render(vars));
+            buf.append(elseBody.render(vars, filters));
         }
     }
 

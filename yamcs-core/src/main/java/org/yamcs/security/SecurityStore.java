@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -75,6 +77,11 @@ public class SecurityStore {
     private Set<SystemPrivilege> systemPrivileges = new CopyOnWriteArraySet<>();
     private Set<ObjectPrivilegeType> objectPrivilegeTypes = new CopyOnWriteArraySet<>();
 
+    /**
+     * In-memory API keys. These are experimental, and used to provide authorization to calling programs.
+     */
+    private Map<String, String> apiKey2username = new ConcurrentHashMap<>();
+
     // Perform login procedures from a single thread
     private ExecutorService loginExecutor = Executors.newSingleThreadExecutor();
 
@@ -108,20 +115,17 @@ public class SecurityStore {
         if (config.containsKey("authModules")) {
             for (YConfiguration moduleConfig : config.getConfigList("authModules")) {
                 AuthModule authModule = loadAuthModule(moduleConfig);
-
-                // TODO temp to not crash while built-in modules are manually added
-                // could become an exception in init() of those modules
-                if (authModule instanceof DirectoryAuthModule) {
-                    log.warn("Remove DirectoryAuthModule from security configuration. It is automatically added.");
-                    continue;
-                }
-
                 authModules.add(authModule);
+
+                if (authModule instanceof SessionListener) {
+                    sessionManager.addSessionListener((SessionListener) authModule);
+                }
             }
         }
 
         // Add last, so external modules have a chance to redefine the user named 'admin'.
         authModules.add(new DirectoryAuthModule());
+        authModules.add(new ApiKeyAuthModule());
     }
 
     /**
@@ -179,6 +183,7 @@ public class SecurityStore {
         systemPrivileges.add(SystemPrivilege.ChangeMissionDatabase);
         systemPrivileges.add(SystemPrivilege.CommandOptions);
         systemPrivileges.add(SystemPrivilege.ControlAccess);
+        systemPrivileges.add(SystemPrivilege.ControlActivities);
         systemPrivileges.add(SystemPrivilege.ControlAlarms);
         systemPrivileges.add(SystemPrivilege.ControlArchiving);
         systemPrivileges.add(SystemPrivilege.ControlCommandClearances);
@@ -192,7 +197,9 @@ public class SecurityStore {
         systemPrivileges.add(SystemPrivilege.CreateInstances);
         systemPrivileges.add(SystemPrivilege.GetMissionDatabase);
         systemPrivileges.add(SystemPrivilege.ManageAnyBucket);
+        systemPrivileges.add(SystemPrivilege.ManageParameterLists);
         systemPrivileges.add(SystemPrivilege.ModifyCommandHistory);
+        systemPrivileges.add(SystemPrivilege.ReadActivities);
         systemPrivileges.add(SystemPrivilege.ReadAlarms);
         systemPrivileges.add(SystemPrivilege.ReadCommandHistory);
         systemPrivileges.add(SystemPrivilege.ReadFileTransfers);
@@ -391,6 +398,20 @@ public class SecurityStore {
                 }
             }
 
+            // Access that can not be tied to a specific user
+            if (authenticationInfo instanceof SystemUserAuthenticationInfo) {
+                userCache.putUserInCache(systemUser);
+                f.complete(authenticationInfo);
+                return;
+            }
+
+            // Disallow using the username of built-in users
+            if (isReservedUsername(authenticationInfo.getUsername())) {
+                log.warn("Denying access to {}. Username is reserved.", authenticationInfo.getUsername());
+                f.completeExceptionally(new AuthenticationException("Access denied"));
+                return;
+            }
+
             User user = directory.getUser(authenticationInfo.getUsername());
             if (user == null) {
                 User createdBy = systemUser;
@@ -469,6 +490,15 @@ public class SecurityStore {
         return userCache.getUserFromCache(username);
     }
 
+    private boolean isReservedUsername(String username) {
+        if (systemUser.getName().equals(username)) {
+            return true;
+        } else if (guestUser.getName().equals(username)) {
+            return true;
+        }
+        return false;
+    }
+
     public boolean verifyValidity(AuthenticationInfo authenticationInfo) {
         for (AuthModule authModule : authModules) {
             if (authenticationInfo != null && authModule.equals(authenticationInfo.getAuthenticator())) {
@@ -476,5 +506,19 @@ public class SecurityStore {
             }
         }
         return true;
+    }
+
+    public String getUsernameForApiKey(String apiKey) {
+        return apiKey2username.get(apiKey);
+    }
+
+    public String generateApiKey(String username) {
+        var apiKey = UUID.randomUUID().toString();
+        apiKey2username.put(apiKey, username);
+        return apiKey;
+    }
+
+    public void removeApiKey(String apiKey) {
+        apiKey2username.remove(apiKey);
     }
 }

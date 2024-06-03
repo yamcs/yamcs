@@ -1,0 +1,130 @@
+<app-instance-page>
+  <app-instance-toolbar>
+    Send a command
+  </app-instance-toolbar>
+  <span #top></span>
+
+  <app-send-command-wizard-step step="1" />
+
+  <div class="panel-content" *ngIf="connectionInfo$ | async as connectionInfo">
+    <div [class.noDisplay]="!connectionInfo.processor?.hasCommanding">
+      <ng-container *ngIf="breadcrumb$ | async as breadcrumb">
+        <div class="filter-bar" *ngIf="breadcrumb.length">
+          <ya-breadcrumb-trail>
+            <ya-breadcrumb link="/commanding/send"
+                           [queryParams]="{c: yamcs.context}"
+                           icon="account_tree" />
+            <ya-breadcrumb *ngFor="let item of breadcrumb"
+                           [link]="item.route"
+                           [queryParams]="item.queryParams"
+                           [label]="item.name" />
+          </ya-breadcrumb-trail>
+        </div>
+      </ng-container>
+      <div class="filter-bar">
+        <ya-search-filter [formControl]="filterControl"
+                          placeholder="Search by name"
+                          icon="search"
+                          (onArrowDown)="selectNext()"
+                          (onArrowUp)="selectPrevious()"
+                          (onEnter)="applySelection()" />
+        <ya-column-chooser #columnChooser
+                           [columns]="columns"
+                           preferenceKey="sendCommand" />
+      </div>
+      <table mat-table
+             *ngIf="dataSource"
+             class="ya-data-table expand"
+             [dataSource]="dataSource">
+
+        <ng-container matColumnDef="significance">
+          <th mat-header-cell *matHeaderCellDef>Significance</th>
+          <td mat-cell *matCellDef="let item">
+            <ng-container *ngIf="item.command?.effectiveSignificance as significance; else dash">
+              <app-significance-level [level]="significance.consequenceLevel" />
+            </ng-container>
+          </td>
+        </ng-container>
+
+        <ng-container cdkColumnDef="name">
+          <th mat-header-cell *cdkHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let item" class="primary-td">
+            <ng-container *ngIf="item.system">
+              <mat-icon class="icon12" style="vertical-align: middle">folder</mat-icon>
+              <a routerLink="/commanding/send"
+                 [queryParams]="{c: yamcs.context, system: item.name}">{{ item.name | filename }}/
+              </a>
+            </ng-container>
+            <ng-container *ngIf="item.command">
+              <mat-icon class="icon12" style="vertical-align: middle">rss_feed</mat-icon>
+              <a [routerLink]="'/commanding/send' + item.command.qualifiedName"
+                 [queryParams]="{c: yamcs.context}">
+                <ya-highlight *ngIf="!system"
+                              [text]="item.command.qualifiedName"
+                              [term]="filterControl.value" />
+                <ya-highlight *ngIf="system"
+                              [text]="item.command.qualifiedName | slice:(system!.length + 1)"
+                              [term]="filterControl.value" />
+              </a>
+            </ng-container>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="shortDescription">
+          <th mat-header-cell *matHeaderCellDef>Description</th>
+          <td mat-cell *matCellDef="let item" class="wrap400">
+            <ng-container *ngIf="item.system">
+              {{ item.system.shortDescription || '-' }}
+            </ng-container>
+            <ng-container *ngIf="item.command">
+              <ng-container *ngIf="(item.command?.shortDescription) as desc; else dash">
+                <ya-highlight [text]="desc" [term]="filterControl.value" />
+              </ng-container>
+            </ng-container>
+          </td>
+        </ng-container>
+
+        <ng-container *ngFor="let aliasColumn of aliasColumns$ | async"
+                      [matColumnDef]="aliasColumn.id">
+          <th mat-header-cell *matHeaderCellDef>
+            {{ aliasColumn.label }}
+          </th>
+          <td mat-cell *matCellDef="let item">
+            <ng-container *ngIf="(item.command | alias:aliasColumn.id) as name; else dash">
+              <ya-highlight [text]="name" [term]="filterControl.value" />
+            </ng-container>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="expand"></th>
+          <td mat-cell *matCellDef="let row"></td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
+        <tr mat-row *matRowDef="let row; columns: (columnChooser.displayedColumns$ | async);"
+            [class.selected]="selection.isSelected(row)"></tr>
+      </table>
+
+      <mat-paginator [pageSize]="pageSize"
+                     [hidePageSize]="true"
+                     [showFirstLastButtons]="true"
+                     [length]="dataSource.totalSize$ | async" />
+    </div>
+    <ya-empty-message *ngIf="!connectionInfo.processor?.hasCommanding"
+                      headerTitle="Send a command">
+      <p>
+        You are connected to the
+        <ng-container *ngIf="connectionInfo.processor?.replay">replay</ng-container>
+        processor <strong>{{ connectionInfo.processor?.name }}</strong>.
+      </p>
+      <p>
+        This processor does not support commanding.
+      </p>
+    </ya-empty-message>
+  </div>
+</app-instance-page>
+
+<ng-template #dash>
+  -
+</ng-template>

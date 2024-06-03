@@ -25,7 +25,7 @@ public class RefXtceDecodingTest {
     public static void beforeClass() throws ConfigurationException {
         YConfiguration.setupTest(null);
         mdb = MdbFactory.createInstanceByConfig("refxtce");
-        metaCommandProcessor = new MetaCommandProcessor(new ProcessorData("test", "test", mdb, new ProcessorConfig()));
+        metaCommandProcessor = new MetaCommandProcessor(new ProcessorData("test", mdb, new ProcessorConfig()));
     }
 
     @BeforeEach

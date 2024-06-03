@@ -1,0 +1,52 @@
+.table-container {
+  position: absolute;
+  top: calc(36px + 24px + 12px + 24px);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+  margin-top: 24px;
+}
+
+.table-container table {
+  padding-left: 24px;
+  padding-right: 24px;
+  background-color: inherit;
+  border-bottom: none;
+}
+
+.table-container table td {
+  background-color: #ffffff;
+}
+
+.table-status {
+  background-color: var(--y-background-color);
+  height: 24px;
+  line-height: 24px;
+  font-size: 12px;
+  padding-left: 6px;
+}
+
+.table-status .toggles {
+  float: right;
+  height: 24px;
+  line-height: 24px;
+  font-size: 12px;
+  padding-right: 6px;
+}
+
+.table-container table th:first-child,
+.table-container table td:first-child {
+  background-color: var(--y-background-color);
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.table-container table th:last-child,
+.table-container table td:last-child {
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.table-container table tr:last-child td {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}

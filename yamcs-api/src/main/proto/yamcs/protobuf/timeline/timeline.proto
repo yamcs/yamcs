@@ -6,6 +6,7 @@ option java_outer_classname = "TimelineProto";
 option java_multiple_files = true;
 
 import "yamcs/api/annotations.proto";
+import "yamcs/protobuf/activities/activities.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 
@@ -167,44 +168,42 @@ service TimelineApi {
 }
 
 message RelativeTime {
-	// Identifier of the item that this time is relative to.
-	optional string relto = 1;
-	
-	optional google.protobuf.Duration relativeStart = 2;
+  // Identifier of the item that this time is relative to.
+  optional string relto = 1;
+
+  optional google.protobuf.Duration relativeStart = 2;
 }
 
 enum TimelineItemType {
-    //events are the most generic timeline items.
-	EVENT = 1;
-	
-	//unlike events, activities have an execution status
-	//manual activity's execution status is controlled by an operator
-	MANUAL_ACTIVITY = 2;
-	
-	//activity which is automatically executed on the server (the status changes automatically)
-	AUTO_ACTIVITY = 3;
+  // Events are the most generic timeline item.
+  EVENT = 1;
 
-	//a grouping of other items (events and/or activities)
-	ITEM_GROUP = 4;
-	
-	//a grouping of activities - unlike the ITEM_GROUP, this group in itself is an automated activity
-	ACTIVITY_GROUP = 5;
+  // Unlike events, activities have an execution status
+  ACTIVITY = 2;
+
+  // A grouping of other items (events and/or activities)
+  ITEM_GROUP = 4;
+
+  // A grouping of activities. The group is itself an activity
+  ACTIVITY_GROUP = 5;
 }
 
-//execution status of activities
+// Execution status of an activity
 enum ExecutionStatus {
-    PLANNED = 1;
-    IN_PROGRESS = 2;
-    COMPLETED = 3;
-    ABORTED = 4;
-    FAILED = 5;
+  PLANNED = 1;
+  IN_PROGRESS = 2;
+  COMPLETED = 3;
+  ABORTED = 4;
+  FAILED = 5;
 }
 
 message TimelineItem {
   // Item identifier.
+  //
   // The identifier is set and recognized by the source.
   // It is possible but unlikely that two items coming from two different sources will have the same id.
-  // The rdb source sets the id to an uuid
+  //
+  // The rdb source sets the id to a UUID. 
   // The commands source sets the id to the command id
   optional string id = 1;
   
@@ -216,7 +215,7 @@ message TimelineItem {
   optional google.protobuf.Duration duration = 5;
   repeated string tags = 6;
 
-  //if this item is part of a group, this is the group identifier
+  // If this item is part of a group, this is the group identifier
   optional string groupId = 7;
     
   //if this item time specification is relative to another item, relativeTime contains a reference
@@ -224,15 +223,26 @@ message TimelineItem {
   //note that start of the item will be computed by the server based on the relativeTime before sending the item to the client
   optional RelativeTime relativeTime = 8;
 
-  //item description
+  // Item description
   optional string description = 9;
 
-  //for activities: execution status
+  // Additional properties used by yamcs-web to render this item
+  map<string, string> properties = 14;
+
+  // For activities: execution status
   optional ExecutionStatus status = 10;
 
-  //for activities: if the status is FAILED or ABORTED, this may indicate the reason
-  //some information may also be available in the item log 
+  // For activities: if the status is FAILED or ABORTED, this may indicate the reason
+  // some information may also be available in the item log 
   optional string failureReason = 11;
+
+  // Activity definition associated to this item.
+  // Set if ``type`` is ACTIVITY.
+  optional yamcs.protobuf.activities.ActivityDefinitionInfo activityDefinition = 13;
+
+  // Identifiers of activity runs matching this item.
+  // Set if ``type`` is ACTIVITY.
+  repeated string runs = 15;
 }
 
 message LogEntry {
@@ -259,13 +269,13 @@ message TimelineBand {
   // Yamcs instance name
   optional string instance = 1;
 
-  // Band identifier. This is a UUID
+  // Band identifier (UUID)
   optional string id = 2;
 
   // Band name
   optional string name = 3;
 
-  //user who has created the band
+  // User who has created the band
   optional string username = 4;
 
   //if true, all users have access to this band, otherwise only the user who has created it
@@ -310,7 +320,6 @@ message TimelineView {
   repeated TimelineBand bands = 5;
 }
 
-/******************* Items ***********************/
 message CreateItemRequest {
   // Yamcs instance name
   optional string instance = 1;
@@ -321,27 +330,37 @@ message CreateItemRequest {
   // Item name
   optional string name = 3;
   
-  // Type of item
+  // Item type
   optional TimelineItemType type = 4;
 
-  //item start. The start and the relativeTime (below) are mutually exclusive
+  // Item start. The fields ``start`` and ``relativeTime``
+  // are mutually exclusive
   optional google.protobuf.Timestamp start = 5;
   
-  //item duration. Applies also if the relativeTime is specified
+  // Item duration. Applies also if ``relativeTime`` is specified
   optional google.protobuf.Duration duration = 6;
   
-  //tags
+  // Tags
   repeated string tags = 7;
 
-  //if this item is part of a group, this is the group identifier
+  // If this item is part of a group, this is the group identifier
   optional string groupId = 8;
-    
-  //if this item time specification is relative to another item, relativeTime contains a reference
-  // to that item as well as the relative start (the duration is the same as given by the duration above)
+
+  // If the item time specification is relative to another item,
+  // ``relativeTime`` contains a reference to that item, as well
+  // as the relative start (the duration is the same as given by the
+  // duration above).
   optional RelativeTime relativeTime = 9;
 
-  //item description
+  // Item description
   optional string description = 10;
+
+  // Additional properties used by yamcs-web to render this item
+  map<string, string> properties = 11;
+
+  // Activity definition associated to this item.
+  // Required if ``type`` is ACTIVITY.
+  optional yamcs.protobuf.activities.ActivityDefinitionInfo activityDefinition = 12;
 }
 
 message GetItemRequest {
@@ -377,7 +396,7 @@ message UpdateItemRequest {
   //new tags
   repeated string tags = 7;
 
-  //set this to true to remove completely all the tags
+  // Set this to true to remove completely all the tags
   // (required because in the protobuf we cannot distinguish between an empty tags list and a non existent list)
   optional bool clearTags = 8;
 
@@ -396,6 +415,12 @@ message UpdateItemRequest {
 
   //failure reason (valid for activities)
   optional string failureReason = 12;
+
+  // Additional properties used by yamcs-web to render this item
+  map<string, string> properties = 13;
+
+  // Set this to true to remove completely all properties
+  optional bool clearProperties = 14;
 }
 
 message ListItemsRequest {
@@ -513,10 +538,7 @@ message ListTimelineTagsRequest {
 message ListTimelineTagsResponse {
   repeated string tags = 1;
 }
-/******************* End Items ***********************/
 
-
-/******************* Bands ***********************/
 message AddBandRequest {
   // Yamcs instance name
   optional string instance = 1;
@@ -600,9 +622,7 @@ message DeleteBandRequest {
 message ListBandsResponse {
   repeated TimelineBand bands = 1;
 }
-/******************* End Bands ***********************/
 
-/******************* Views ***********************/
 message AddViewRequest {
   // Yamcs instance name
   optional string instance = 1;
@@ -658,8 +678,6 @@ message DeleteViewRequest {
 message ListViewsResponse {
   repeated TimelineView views = 1;
 }
-/******************* End Views ***********************/
-
 
 //an item matches the filter if it matches any of the criteria from the list.
 //if the list is empty, the filter will not match

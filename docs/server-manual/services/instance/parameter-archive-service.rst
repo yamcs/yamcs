@@ -66,6 +66,18 @@ maxSegmentSize (integer)
 
      Default: ``5000``
 
+sparseGroups (boolean)
+    If set to true Parameter Archive will allow gaps in the parameter groups. This reduces the memory consumption and increases the retrieval speed at the expense of storing a gap list with some parameters.
+    
+    Default: ``true``
+    
+minimumGroupOverlap (double)
+    The term "minimum overlap" falling between 0 and 1 refers to the threshold used when determining if a parameter list belongs to an existing group. Overlap between a parameter list and an existing group (which is also formed from a parameter list) is calculated by dividing the number of the common elements in both lists by the length of the smaller list. If one list is entirely contained within another, the overlap value is 1.
+    
+    Default: ``0.5``
+    
+    
+    
 
 Backfiller Options
 ------------------

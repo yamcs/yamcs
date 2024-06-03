@@ -251,7 +251,12 @@ message SubscribeParametersRequest {
 
 message SubscribeParametersData {
   // Mapping between numeric and subscribed identifier.
+  // This information is provided only once, following a subscription.
   map<uint32, NamedObjectId> mapping = 1;
+
+  // Mapping between numeric identifier, and matching parameter.
+  // This information is provided only once, following a subscription.
+  map<uint32, SubscribedParameterInfo> info = 4;
 
   // Parameter identifiers that were subscribed to, but that
   // cannot be matched against the Mission Database.
@@ -259,6 +264,15 @@ message SubscribeParametersData {
 
   // Values of updated parameters.
   repeated pvalue.ParameterValue values = 3;
+}
+
+// Static information for a subscribed parameter.
+message SubscribedParameterInfo {
+  // Qualified parameter name
+  optional string parameter = 1;
+
+  // Engineering units
+  optional string units =  2;
 }
 
 // Request message for `GetProcessor`.

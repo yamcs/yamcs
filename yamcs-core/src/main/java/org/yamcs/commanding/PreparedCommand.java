@@ -12,6 +12,7 @@ import java.util.Set;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.cmdhistory.protobuf.Cmdhistory.Assignment;
 import org.yamcs.cmdhistory.protobuf.Cmdhistory.AssignmentInfo;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.Value;
@@ -28,9 +29,9 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 
@@ -41,6 +42,9 @@ public class PreparedCommand {
 
     private CommandId id;
     private MetaCommand metaCommand;
+
+    // Target stream (may be null, for autoselection)
+    private Stream tcStream;
 
     List<CommandHistoryAttribute> attributes = new ArrayList<>();
     private Map<Argument, ArgumentValue> argAssignment; // Ordered from top entry to bottom entry
@@ -117,6 +121,17 @@ public class PreparedCommand {
 
     public String getComment() {
         return getStringAttribute(CNAME_COMMENT);
+    }
+
+    /**
+     * Specify the target TC stream. If unset, a stream is automatically selected.
+     */
+    public void setTcStream(Stream tcStream) {
+        this.tcStream = tcStream;
+    }
+
+    public Stream getTcStream() {
+        return tcStream;
     }
 
     public String getCmdName() {
@@ -276,15 +291,15 @@ public class PreparedCommand {
         return attributes;
     }
 
-    public ParameterValueList getAttributesAsParameters(XtceDb xtcedb) {
+    public ParameterValueList getAttributesAsParameters(Mdb mdb) {
         if (cmdParams != null) {
             return cmdParams;
         }
         ParameterValueList pvlist = new ParameterValueList();
 
         for (CommandHistoryAttribute cha : attributes) {
-            String fqn = XtceDb.YAMCS_CMD_SPACESYSTEM_NAME + "/" + cha.getName();
-            Parameter p = xtcedb.getParameter(fqn);
+            String fqn = Mdb.YAMCS_CMD_SPACESYSTEM_NAME + "/" + cha.getName();
+            Parameter p = mdb.getParameter(fqn);
 
             if (p == null) {
                 // if it was required in the algorithm, it would be already in the system parameter db
@@ -299,10 +314,10 @@ public class PreparedCommand {
         return cmdParams;
     }
 
-    public static PreparedCommand fromTuple(Tuple t, XtceDb xtcedb) {
+    public static PreparedCommand fromTuple(Tuple t, Mdb mdb) {
         CommandId cmdId = getCommandId(t);
         PreparedCommand pc = new PreparedCommand(cmdId);
-        pc.setMetaCommand(xtcedb.getMetaCommand(cmdId.getCommandName()));
+        pc.setMetaCommand(mdb.getMetaCommand(cmdId.getCommandName()));
 
         for (int i = 0; i < t.size(); i++) {
             ColumnDefinition cd = t.getColumnDefinition(i);

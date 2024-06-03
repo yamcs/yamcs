@@ -4,9 +4,10 @@ import { ChangeDetectionStrategy, Component, HostBinding, ViewEncapsulation } fr
  * Applies styling to the attributed table host
  */
 @Component({
+  standalone: true,
   selector: 'table[yaSimpleTable]',
   template: '<ng-content />',
-  styles: [`
+  styles: `
     table.ya-simple-table {
       width: 100%;
       overflow: auto;
@@ -20,14 +21,14 @@ import { ChangeDetectionStrategy, Component, HostBinding, ViewEncapsulation } fr
     }
 
     .ya-simple-table th {
-      background-color: #f7f7f7;
+      background-color: var(--y-background-color);
       text-align: left;
       font-weight: 500;
       color: black;
       width: 150px;
       vertical-align: top;
     }
-  `],
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })

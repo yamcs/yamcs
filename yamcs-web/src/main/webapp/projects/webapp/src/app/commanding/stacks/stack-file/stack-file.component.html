@@ -1,0 +1,244 @@
+<app-instance-page>
+  <app-instance-toolbar>
+    <a mat-icon-button
+       [routerLink]="folderLink"
+       [queryParams]="{c: yamcs.context}"
+       color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </a> {{ filename | basename }}
+    &nbsp;&nbsp;&nbsp;
+    <button mat-button color="primary" matTooltip="Save stack"
+            (click)="saveStack()"
+            [disabled]="!format || !(dirty$ | async)">
+      <mat-icon>save</mat-icon>
+      Save
+    </button>
+    <mat-divider vertical style="height: 100%" />
+    <button mat-icon-button color="primary" matTooltip="Add a command below"
+            [disabled]="!format || (running$ | async)"
+            (click)="addCommand()">
+      <mat-icon>add_circle_outline</mat-icon>
+    </button>
+    <button mat-icon-button color="primary" matTooltip="Edit the selected command"
+            [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
+            (click)="editSelectedCommand()">
+      <mat-icon>edit</mat-icon>
+    </button>
+    <button mat-icon-button color="primary" matTooltip="Cut the selected command"
+            [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
+            (click)="cutSelectedCommand()">
+      <mat-icon>content_cut</mat-icon>
+    </button>
+    <button mat-icon-button color="primary" matTooltip="Copy the selected command"
+            [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
+            (click)="copySelectedCommand()">
+      <mat-icon>content_copy</mat-icon>
+    </button>
+    <button mat-icon-button color="primary" matTooltip="Paste command from the clipboard"
+            [disabled]="!format || (running$ | async) || !(clipboardEntry$ | async)"
+            (click)="pasteCommand()">
+      <mat-icon>content_paste</mat-icon>
+    </button>
+    <mat-divider vertical style="height: 100%" />
+    <button mat-icon-button color="primary" matTooltip="Run the selected command"
+            [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
+            (click)="runSelection()">
+      <mat-icon>play_arrow</mat-icon>
+    </button>
+    <button mat-icon-button color="primary" matTooltip="Stop current execution"
+            [disabled]="!format || !(running$ | async)"
+            (click)="stopRun()">
+      <mat-icon>stop</mat-icon>
+    </button>
+    <button mat-icon-button color="primary" matTooltip="Clear all outputs"
+            [disabled]="!format || (running$ | async) || !(hasOutputs$ | async)"
+            (click)="clearOutputs()">
+      <mat-icon>refresh</mat-icon>
+    </button>
+    <button mat-icon-button color="primary" matTooltip="Run all from selected command"
+            [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
+            (click)="runFromSelection()">
+      <mat-icon>playlist_play</mat-icon>
+    </button>
+    <mat-divider vertical style="height: 100%" />
+    <button mat-button color="primary" matTooltip="Run command stack at a later time"
+            (click)="openScheduleStackDialog()"
+            *ngIf="showSchedule()"
+            [disabled]="!loaded || (format !== 'ycs') || !entries$.value.length">
+      <mat-icon>schedule</mat-icon>
+      Schedule
+    </button>
+    <mat-divider vertical style="height: 100%" />
+    <button mat-button color="primary" matTooltip="Export command stack" [matMenuTriggerFor]="exportMenu"
+            [disabled]="!format"
+            (click)="setExportURLs()">
+      <mat-icon>open_in_new</mat-icon>
+      Export
+    </button>
+    <ng-container *ngIf="format === 'xml'">
+      <mat-divider vertical style="height: 100%" />
+      <button mat-button color="warn" matTooltip="Convert to the newer format"
+              [disabled]="!format || converting"
+              (click)="convertToJSON()">
+        <mat-icon>auto_awesome</mat-icon>
+        Convert to *.ycs file
+      </button>
+    </ng-container>
+    <mat-menu class="ya-menu" #exportMenu="matMenu">
+      <a mat-menu-item [href]="JSONblobURL" [download]="(filename | basename) + '.ycs'">
+        <mat-icon>data_object</mat-icon>
+        YCS FILE
+      </a>
+      <a mat-menu-item [href]="XMLblobURL" [download]="(filename | basename) + '.xml'"
+         title="Certain features are not implemented for XML, the format will be phased out gradually">
+        <mat-icon>code</mat-icon>
+        <span style="vertical-align: middle;">
+          XML FILE
+          <span style="color: #CC0000">(legacy)</span>
+        </span>
+      </a>
+    </mat-menu>
+  </app-instance-toolbar>
+
+  <ya-detail-pane>
+    <ng-container *ngIf="selectedEntry$ | async as selectedEntry; else noSelection">
+      <ya-detail-toolbar>
+        Command Info
+      </ya-detail-toolbar>
+      <div style="padding: 0 16px">
+        <app-stacked-command-detail [entry]="selectedEntry" />
+        <p>&nbsp;</p>
+      </div>
+    </ng-container>
+    <ng-template #noSelection>
+      <ya-detail-toolbar>
+        Select an entry
+      </ya-detail-toolbar>
+    </ng-template>
+  </ya-detail-pane>
+
+  <div class="panel-wrapper">
+    <ng-container *ngIf="format === 'ycs'">
+      <form [formGroup]="stackOptionsForm" class="ya-form panel-content stack-options"
+            [ngClass]="this.stackOptionsForm.disabled && 'disabled'">
+        <div class="label">
+          Advance when
+          <app-advance-ack-help [extra]="extraAcknowledgments" />
+          <br>
+          <div style="display: flex; align-items: flex-start;">
+            <ya-select #ackSelect
+                       [options]="ackOptions"
+                       icon="check_circle_outline"
+                       formControlName="advancementAckDropDown" />
+            <input type="text" formControlName="advancementAckCustom"
+                   *ngIf="stackOptionsForm.get('advancementAckDropDown')?.value === 'custom'"
+                   style="width: 200px; margin-left: -1px">
+          </div>
+        </div>
+        <div class="label">
+          Wait (ms)
+          <ya-help dialogTitle="Wait time">
+            <p>
+              Wait time before advancing to the next command in the stack.
+            </p>
+            <p>
+              This triggers after successful acknowledgment.
+            </p>
+          </ya-help>
+          <br>
+          <input type="number" formControlName="advancementWait" placeholder="0"
+                 step="1000" min="0" style="width: 120px">
+        </div>
+        <div style="flex: 1 1 auto"></div>
+        <ya-dots *ngIf="running$ | async" />
+      </form>
+      <mat-divider horizontal />
+    </ng-container>
+
+    <ya-empty-message *ngIf="loaded && !format">
+      <mat-icon style="vertical-align: bottom; margin-right: 10px;">link_off</mat-icon>
+      Unsupported command stack format
+    </ya-empty-message>
+    <ya-empty-message *ngIf="loaded && format && !entries$.value.length">
+      Empty command stack<br>
+      Click <mat-icon inline style="vertical-align: bottom;">add_circle_outline</mat-icon> to start adding commands
+    </ya-empty-message>
+
+    <div #entryParent class="panel-content" cdkDropList (cdkDropListDropped)="handleDrop($event)">
+      <div id="drag-boundary">
+        <div cdkDrag cdkDragBoundary="#drag-boundary"
+             class="entry"
+             *ngFor="let entry of entries$ | async"
+             [class.selected]="entry === (selectedEntry$ | async)"
+             (click)="selectEntry(entry)"
+             (dblclick)="editCommand(entry)">
+
+          <div class="in">
+            <div cdkDragHandle class="seq">
+              <ng-container *ngIf="entry.executing">
+                [*]:
+              </ng-container>
+              <ng-container *ngIf="!entry.executing && (entry.executionNumber === 0 || entry.executionNumber)">
+                [{{ entry.executionNumber }}]:
+              </ng-container>
+              <ng-container *ngIf="!entry.executing && entry.executionNumber !== 0 && !entry.executionNumber">
+                [ ]:
+              </ng-container>
+            </div>
+            <div class="body">
+              {{ entry.name }}
+              <mat-icon *ngIf="entry.comment"
+                        [matTooltip]="entry.comment"
+                        class="icon14"
+                        style="vertical-align: middle;">
+                comment
+              </mat-icon>
+              <span *ngFor="let item of entry.extra | keyvalue">
+                [{{ item.key }}: {{ item.value | value }}]
+              </span>
+              <table class="args">
+                <tr *ngFor="let arg of entry.args | keyvalue: insertionOrder">
+                  <td class="key" width="1">
+                    {{ arg.key }}
+                  </td>
+                  <td class="value">
+                    <ya-value [value]="arg.value | tovalue" />
+                  </td>
+                </tr>
+              </table>
+              <div *ngIf="entry.advancement" class="advance-on">
+                <mat-icon>reply</mat-icon>
+                <span *ngIf="entry.advancement.acknowledgment">
+                  Advance when {{ entry.advancement.acknowledgment | acknowledgmentName }}
+                  {{ entry.advancement.wait != null ? "+ " + entry.advancement.wait + " ms" : null }}
+                </span>
+                <span *ngIf="!entry.advancement.acknowledgment && entry.advancement.wait != null">
+                  Advance after {{ entry.advancement.wait }} ms
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="out" *ngIf="entry.executionNumber === 0 || entry.executionNumber">
+            <div class="seq" (click)="selectEntry(entry)"></div>
+            <div class="body" [class.err]="entry.err">
+              <ng-container *ngIf="entry.err">
+                {{ entry.err }}
+              </ng-container>
+              <ng-container *ngIf="!entry.err">
+                <app-yamcs-acknowledgments-table [command]="entry.record"
+                                                 [inline]="true" />
+
+                <ng-container *ngIf="entry.record?.extra.length">
+                  <div class="block">
+                    <app-extra-acknowledgments-table [command]="entry.record"
+                                                     [inline]="true" />
+                  </div>
+                </ng-container>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</app-instance-page>

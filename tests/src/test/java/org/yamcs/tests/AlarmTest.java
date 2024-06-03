@@ -29,7 +29,7 @@ import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.yarch.protobuf.Db.Event;
 
 public class AlarmTest {
@@ -40,7 +40,7 @@ public class AlarmTest {
         MdbFactory.reset();
     }
 
-    private XtceDb db;
+    private Mdb db;
     private Processor processor;
     private RefMdbPacketGenerator tmGenerator;
     private ParameterRequestManager prm;

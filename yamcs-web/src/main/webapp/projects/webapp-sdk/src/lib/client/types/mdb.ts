@@ -186,6 +186,7 @@ export interface Verifier {
   stage: string;
   container?: Container;
   algorithm?: Algorithm;
+  expression?: string;
   onSuccess: TerminationActionType;
   onFail: TerminationActionType;
   onTimeout: TerminationActionType;
@@ -334,7 +335,8 @@ export interface Container extends NameDescription {
   maxInterval: number;
   sizeInBits: number;
   baseContainer: Container;
-  restrictionCriteria: ComparisonInfo[];
+  archivePartition: boolean;
+  restrictionCriteriaExpression: string;
   entry: SequenceEntry[];
 }
 
@@ -396,14 +398,14 @@ export interface GetParameterTypesOptions {
 }
 
 export interface ParametersPage {
-  spaceSystems?: string[];
+  systems?: SpaceSystem[];
   parameters?: Parameter[];
   continuationToken?: string;
   totalSize: number;
 }
 
 export interface ParameterTypesPage {
-  spaceSystems?: string[];
+  systems?: SpaceSystem[];
   parameterTypes?: ParameterType[];
   continuationToken?: string;
   totalSize: number;
@@ -418,7 +420,7 @@ export interface GetAlgorithmsOptions {
 }
 
 export interface AlgorithmsPage {
-  spaceSystems?: string[];
+  systems?: SpaceSystem[];
   algorithms?: Algorithm[];
   continuationToken?: string;
   totalSize: number;
@@ -432,7 +434,7 @@ export interface GetContainersOptions {
 }
 
 export interface ContainersPage {
-  spaceSystems?: string[];
+  systems?: SpaceSystem[];
   containers?: Container[];
   continuationToken?: string;
   totalSize: number;
@@ -449,7 +451,7 @@ export interface GetCommandsOptions {
 }
 
 export interface CommandsPage {
-  spaceSystems?: string[];
+  systems?: SpaceSystem[];
   commands?: Command[];
   continuationToken?: string;
   totalSize: number;

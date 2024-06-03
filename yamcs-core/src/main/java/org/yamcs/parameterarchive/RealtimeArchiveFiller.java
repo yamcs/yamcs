@@ -20,8 +20,9 @@ import org.yamcs.Processor;
 import org.yamcs.Spec;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.Spec.OptionType;
 import org.yamcs.parameter.BasicParameterValue;
+import org.yamcs.Spec.OptionType;
+import org.yamcs.parameterarchive.ParameterGroupIdDb.ParameterGroup;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.TimeEncoding;
 
@@ -43,8 +44,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * <p>
  * If the group reaches its max size, it is archived and a new one opened.
  * 
- * @author nm
- *
  */
 public class RealtimeArchiveFiller extends AbstractArchiveFiller {
 
@@ -172,16 +171,16 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
 
     @Override
     protected void processParameters(long t, BasicParameterList pvList) {
-        int parameterGroupId;
+        ParameterGroup pg;
         try {
-            parameterGroupId = parameterGroupIdMap.createAndGet(pvList.getPids());
+            pg = parameterGroupIdMap.getGroup(pvList.getPids());
         } catch (RocksDBException e) {
             log.error("Error creating parameter group id", e);
             return;
         }
 
-        SegmentQueue segQueue = queues.computeIfAbsent(parameterGroupId,
-                id -> new SegmentQueue(parameterGroupId, pvList.getPids(), maxSegmentSize));
+        SegmentQueue segQueue = queues.computeIfAbsent(pg.id,
+                id -> new SegmentQueue(pg.id, maxSegmentSize));
 
         synchronized (segQueue) {
             if (!segQueue.isEmpty()) {
@@ -202,7 +201,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                 }
             }
 
-            if (!segQueue.addRecord(t, pvList.getValues())) {
+            if (!segQueue.addRecord(t, pvList.getPids(), pvList.getValues())) {
                 log.warn("Realtime parameter archive queue full."
                         + "Consider increasing the writerThreads (if CPUs are available) or using a back filler");
             }
@@ -305,14 +304,12 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
         int tail = 0;
 
         final int parameterGroupId;
-        final IntArray parameterIds;
         final int maxSegmentSize;
 
         private long latestUpdateTime;
 
-        public SegmentQueue(int parameterGroupId, IntArray parameterIds, int maxSegmentSize) {
+        public SegmentQueue(int parameterGroupId, int maxSegmentSize) {
             this.parameterGroupId = parameterGroupId;
-            this.parameterIds = parameterIds;
             this.maxSegmentSize = maxSegmentSize;
         }
 
@@ -333,7 +330,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
          * <p>
          * Returns true if the record has been added or false if the queue was full.
          */
-        public synchronized boolean addRecord(long t, List<BasicParameterValue> values) {
+        public synchronized boolean addRecord(long t, IntArray pids, List<BasicParameterValue> pvList) {
             latestUpdateTime = System.currentTimeMillis();
 
             boolean added = false;
@@ -353,7 +350,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                     // when the first condition is met only (i.e. new data coming in the middle of a full segment)
                     // the segment will become bigger than the maxSegmentSize
                     // FIXME: split the interval in two if this happens
-                    seg.addRecord(t, values);
+                    seg.addRecord(t, pids, pvList);
                     added = true;
                     break;
                 }
@@ -367,8 +364,8 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                     return false;
                 }
 
-                PGSegment seg = new PGSegment(parameterGroupId, t, parameterIds);
-                seg.addRecord(t, values);
+                PGSegment seg = new PGSegment(parameterGroupId, t, pids.size());
+                seg.addRecord(t, pids, pvList);
 
                 // shift everything between k and tail to the right
                 for (int i = k; i != tail; i = inc(i)) {

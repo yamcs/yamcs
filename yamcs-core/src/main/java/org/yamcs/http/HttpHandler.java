@@ -121,7 +121,7 @@ public abstract class HttpHandler {
         throw new UnauthorizedException("Missing authentication");
     }
 
-    private String getAccessTokenFromCookie(HttpRequest req) {
+    public static String getAccessTokenFromCookie(HttpRequest req) {
         HttpHeaders headers = req.headers();
         if (headers.contains(COOKIE)) {
             Set<Cookie> cookies = ServerCookieDecoder.STRICT.decode(headers.get(COOKIE));

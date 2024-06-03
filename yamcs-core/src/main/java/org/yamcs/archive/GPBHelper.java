@@ -4,6 +4,7 @@ import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.cmdhistory.protobuf.Cmdhistory.Assignment;
 import org.yamcs.cmdhistory.protobuf.Cmdhistory.AssignmentInfo;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.protobuf.Commanding.CommandAssignment;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
@@ -12,7 +13,6 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.Tuple;
 
@@ -32,6 +32,7 @@ public final class GPBHelper {
         var b = TmPacketData.newBuilder()
                 .setReceptionTime(TimeEncoding.toProtobufTimestamp(recTime))
                 .setPacket(ByteString.copyFrom(pbody))
+                .setSize(pbody.length)
                 .setGenerationTime(TimeEncoding.toProtobufTimestamp(genTime))
                 .setSequenceNumber(seqNum)
                 .setId(NamedObjectId.newBuilder().setName(pname).build());
@@ -45,7 +46,7 @@ public final class GPBHelper {
         return b.build();
     }
 
-    public static CommandHistoryEntry tupleToCommandHistoryEntry(Tuple tuple, XtceDb mdb) {
+    public static CommandHistoryEntry tupleToCommandHistoryEntry(Tuple tuple, Mdb mdb) {
         long gentime = (Long) tuple.getColumn(PreparedCommand.CNAME_GENTIME);
         String origin = (String) tuple.getColumn(PreparedCommand.CNAME_ORIGIN);
         int sequenceNumber = (Integer) tuple.getColumn(PreparedCommand.CNAME_SEQNUM);

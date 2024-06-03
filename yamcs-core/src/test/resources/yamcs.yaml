@@ -1,12 +1,8 @@
-
 #the instance list is empty here but YarchTestCase creates anyway an instance based on the UnitTest class name
 instances:
-   - testinst
+  - testinst
 
-#the location of the data and the incoming files
-# inside there should be a different directory for each instance and for each data type (e.g. /storage/yamcs-data/testinst/tm)
 dataDir: ${java.io.tmpdir}/yamcs-data
-incomingDir: ${java.io.tmpdir}/yamcs-incoming
 
 archive:
   #max length of the data of type binary(e.g. tm packets)
@@ -15,18 +11,19 @@ archive:
 storageEngines: [rocksdb2]
 
 rdbConfig:
-  tableConfig:
-    - tableNamePattern: .*
+  tablespaceConfig:
+    - tablespaceNamePattern: .*
       maxOpenFiles: 100
-      columnFamilyOptions: 
-        targetFileSizeBase: 10240 #in KB
-        targetFileSizeMultiplier: 10
-        maxBytesForLevelBase: 102400  #in KB
-        maxBytesForLevelMultiplier: 10
-        writeBufferSize: 50240        #in KB
-        maxWriteBufferNumber: 2
-      tableFormatConfig:
-        blockSize: 256 #KB
-        blockCacheSize: 50000 #KB
+      columnFamilyConfig:
+        - columnFamilyPattern: rt_data
+          targetFileSizeBase: 10240 #in KB
+          targetFileSizeMultiplier: 10
+          maxBytesForLevelBase: 102400 #in KB
+          maxBytesForLevelMultiplier: 10
+          writeBufferSize: 50240 #in KB
+          maxWriteBufferNumber: 2
+          tableFormatConfig:
+            blockSize: 256 #KB
+            blockCacheSize: 50000 #KB
 
 secretKey: testtest

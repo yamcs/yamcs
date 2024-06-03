@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.yamcs.ConfigurationException;
@@ -23,6 +22,7 @@ import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
+import org.yamcs.actions.ActionHelper;
 import org.yamcs.client.utils.WellKnownTypes;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
@@ -35,12 +35,9 @@ import org.yamcs.memento.MementoDb;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.protobuf.links.LinkActionInfo;
 import org.yamcs.protobuf.links.LinkInfo;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.Link;
-import org.yamcs.tctm.LinkAction;
-import org.yamcs.tctm.LinkAction.ActionStyle;
 import org.yamcs.tctm.LinkActionProvider;
 import org.yamcs.tctm.LinkMemento;
 import org.yamcs.tctm.LinkState;
@@ -51,7 +48,7 @@ import org.yamcs.tctm.TmPacketDataLink;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.ServiceUtil;
 import org.yamcs.utils.YObjectLoader;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -111,9 +108,6 @@ public class LinkManager {
         } else {
             log.info("No link created because the section dataLinks was not found");
         }
-
-        YamcsServer.getServer().getThreadPoolExecutor().scheduleAtFixedRate(() -> checkLinkUpdate(), 1, 1,
-                TimeUnit.SECONDS);
     }
 
     private void createDataLink(YConfiguration linkConfig, LinkMemento memento) throws ValidationException {
@@ -164,7 +158,14 @@ public class LinkManager {
         configureDataLink(link, linkConfig);
     }
 
-    void configureDataLink(Link link, YConfiguration linkArgs) {
+    /**
+     * Connects the links to streams
+     * <p>
+     * Updates the mappings which are provided via API
+     * <p>
+     * Can be called dynamically for example when an aggregate link updates its sub-links
+     */
+    public void configureDataLink(Link link, YConfiguration linkArgs) {
         if (linkArgs == null) {
             linkArgs = YConfiguration.emptyConfig();
         }
@@ -178,34 +179,41 @@ public class LinkManager {
         Stream ppStream = getStream(linkArgs, "ppStream");
 
         if (link instanceof TmPacketDataLink) {
-            Stream streamf = tmStream == null ? singleStream : tmStream;
-            if (streamf != null) {
-                TmPacketDataLink tmLink = (TmPacketDataLink) link;
-                InvalidPacketAction ipa = getInvalidPacketAction(link.getName(), linkArgs);
-                tmLink.setTmSink(tmPacket -> processTmPacket(tmLink, tmPacket, streamf, ipa));
+            TmPacketDataLink tmLink = (TmPacketDataLink) link;
+            if (tmLink.isTmPacketDataLinkImplemented()) {
+                Stream streamf = tmStream == null ? singleStream : tmStream;
+                if (streamf != null) {
+                    InvalidPacketAction ipa = getInvalidPacketAction(link.getName(), linkArgs);
+                    tmLink.setTmSink(tmPacket -> processTmPacket(tmLink, tmPacket, streamf, ipa));
+                }
             }
         }
 
         if (link instanceof TcDataLink) {
             TcDataLink tcLink = (TcDataLink) link;
-            Stream stream = tcStream == null ? singleStream : tcStream;
+            if (tcLink.isTcDataLinkImplemented()) {
+                Stream stream = tcStream == null ? singleStream : tcStream;
 
-            if (stream != null) {
-                TcStreamSubscriber tcs = tcStreamSubscribers.get(stream);
-                if (tcs == null) {
-                    tcs = new TcStreamSubscriber(true);
-                    tcStreamSubscribers.put(stream, tcs);
-                    stream.addSubscriber(tcs);
+                if (stream != null) {
+                    TcStreamSubscriber tcs = tcStreamSubscribers.get(stream);
+                    if (tcs == null) {
+                        tcs = new TcStreamSubscriber(true);
+                        tcStreamSubscribers.put(stream, tcs);
+                        stream.addSubscriber(tcs);
+                    }
+                    tcs.addLink(tcLink);
                 }
-                tcs.addLink(tcLink);
+                tcLink.setCommandHistoryPublisher(cmdHistPublisher);
             }
-            tcLink.setCommandHistoryPublisher(cmdHistPublisher);
         }
 
         if (link instanceof ParameterDataLink) {
-            Stream stream = ppStream == null ? singleStream : ppStream;
-            if (stream != null) {
-                ((ParameterDataLink) link).setParameterSink(new StreamPbParameterSender(yamcsInstance, stream));
+            ParameterDataLink ppLink = (ParameterDataLink) link;
+            if (ppLink.isParameterDataLinkImplemented()) {
+                Stream stream = ppStream == null ? singleStream : ppStream;
+                if (stream != null) {
+                    ppLink.setParameterSink(new StreamPbParameterSender(yamcsInstance, stream));
+                }
             }
         }
 
@@ -254,13 +262,20 @@ public class LinkManager {
             ertime = null;
         }
         Long obt = tmPacket.getObt() == Long.MIN_VALUE ? null : tmPacket.getObt();
-
-        t = new Tuple(StandardTupleDefinitions.TM,
-                new Object[] {
-                    tmPacket.getGenerationTime(), tmPacket.getSeqCount(), tmPacket.getReceptionTime(), tmPacket.getStatus(), tmPacket.getPacket(), ertime, obt, tmLink.getName()
-                }
-            );
-
+        String rootContainer = tmPacket.getRootContainer() != null
+                ? tmPacket.getRootContainer().getQualifiedName()
+                : null;
+        t = new Tuple(StandardTupleDefinitions.TM, new Object[] {
+                tmPacket.getGenerationTime(),
+                tmPacket.getSeqCount(),
+                tmPacket.getReceptionTime(),
+                tmPacket.getStatus(),
+                tmPacket.getPacket(),
+                ertime,
+                obt,
+                tmLink.getName(),
+                rootContainer,
+        });
         stream.emitTuple(t);
     }
 
@@ -325,16 +340,6 @@ public class LinkManager {
 
     public void notifyChanged(Link link) {
         linksWithChanges.add(link);
-    }
-
-    private void checkLinkUpdate() {
-        // see if any link has changed
-        for (LinkWithInfo lwi : links) {
-            if (lwi.hasChanged()) {
-                LinkInfo li = lwi.linkInfo;
-                linkListeners.forEach(l -> l.linkChanged(li));
-            }
-        }
     }
 
     private void registerLink(String linkName, String spec, Link link) {
@@ -521,8 +526,8 @@ public class LinkManager {
                     }
                     if (link instanceof LinkActionProvider) {
                         lib.clearActions();
-                        for (LinkAction action : ((LinkActionProvider) link).getActions()) {
-                            lib.addActions(toLinkActionInfo(action));
+                        for (var action : ((LinkActionProvider) link).getActions()) {
+                            lib.addActions(ActionHelper.toActionInfo(action, false));
                         }
                     }
                     linkInfo = lib.build();
@@ -534,18 +539,6 @@ public class LinkManager {
                 log.error("Error checking link status for {}", link.getName(), e);
                 return false;
             }
-        }
-
-        private LinkActionInfo toLinkActionInfo(LinkAction linkAction) {
-            LinkActionInfo.Builder b = LinkActionInfo.newBuilder()
-                    .setId(linkAction.getId())
-                    .setLabel(linkAction.getLabel())
-                    .setStyle(linkAction.getStyle().name())
-                    .setEnabled(linkAction.isEnabled());
-            if (linkAction.getStyle() == ActionStyle.CHECK_BOX) {
-                b.setChecked(linkAction.isChecked());
-            }
-            return b.build();
         }
 
         public Link getLink() {
@@ -567,8 +560,8 @@ public class LinkManager {
 
         @Override
         public void onTuple(Stream s, Tuple tuple) {
-            XtceDb xtcedb = MdbFactory.getInstance(yamcsInstance);
-            PreparedCommand pc = PreparedCommand.fromTuple(tuple, xtcedb);
+            Mdb mdb = MdbFactory.getInstance(yamcsInstance);
+            PreparedCommand pc = PreparedCommand.fromTuple(tuple, mdb);
             boolean sent = false;
             String reason = "no link available";
             for (TcDataLink tcLink : tcLinks) {

@@ -115,13 +115,58 @@ service ParameterArchiveApi {
     };
   }
 
-  //For a given group id, get the list of parameters which are part of the group
+  // For a given group id, get the list of parameters which are part of the group
   rpc GetArchivedParameterGroup(GetArchivedParameterGroupRequest) returns (ArchivedParameterGroupResponse) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}/parameterArchive/info/groups/{gid*}"
     };
   }
 
+  // Removes all the parameter archive data and related metadata. All the filling operations are stopped before
+  // and started after the purge.
+  //
+  // The rebuild operation has to be called to rebuild the past segments of the archive.
+  //
+  // Starting with Yamcs 5.9.0 the Parameter Archive is stored into a different column family ``parameter_archive``.
+  // Storing data into a separate column family gives better performance and the Parameter Archive rebuild operations
+  // are less disturbing for the other data (TM, TC, Events...). If the archive is from a previous version of Yamcs,
+  // the purge/rebuild can be used to move the parameter archive from the default column family to the separate column family.
+  rpc Purge(PurgeRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/archive/{instance}/parameterArchive:purge"
+      body: "*"
+    };
+  }
+
+  // Receive backfill notifications
+  rpc SubscribeBackfilling(SubscribeBackfillingRequest) returns (stream SubscribeBackfillingData) {
+    option (yamcs.api.websocket) = {
+      topic: "backfilling"
+    };
+  }
+}
+
+message SubscribeBackfillingRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+}
+
+message SubscribeBackfillingData {
+
+  // Notification message when a backfill finished
+  message BackfillFinishedInfo {
+    // Range start
+    optional google.protobuf.Timestamp start = 1;
+
+    // Range stop
+    optional google.protobuf.Timestamp stop = 2;
+
+    // Number of processed parameters
+    optional uint64 processedParameters = 3;
+  }
+
+  // Recently finished backfills (bundled over a 5 second interval)
+  repeated BackfillFinishedInfo finished = 1;
 }
 
 // Note that the archive is built in segments of approximatively 70 minutes,
@@ -136,6 +181,11 @@ message RebuildRangeRequest {
   
   // Rebuild until here. Specify a date string in ISO 8601 format.
   optional google.protobuf.Timestamp stop = 3;
+}
+
+message PurgeRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
 }
 
 message GetParameterRangesRequest {

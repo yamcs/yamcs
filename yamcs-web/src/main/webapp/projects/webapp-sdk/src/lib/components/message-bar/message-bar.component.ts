@@ -1,25 +1,28 @@
-import { animate, state, style, transition, trigger } from '@angular/animations';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatToolbar, MatToolbarRow } from '@angular/material/toolbar';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { MessageService, SiteMessage } from '../../services/message.service';
 
 @Component({
+  standalone: true,
   selector: 'ya-message-bar',
   templateUrl: './message-bar.component.html',
-  styleUrls: ['./message-bar.component.css'],
+  styleUrl: './message-bar.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  animations: [
-    trigger('openClose', [
-      state('in', style({ transform: 'translateY(0)' })),
-      transition(':enter', [
-        style({ transform: 'translateY(-100%)' }),
-        animate('0.35s ease')
-      ]),
-    ]),
+  imports: [
+    AsyncPipe,
+    MatIcon,
+    MatIconButton,
+    MatToolbar,
+    MatToolbarRow,
+    NgIf,
   ],
 })
-export class MessageBarComponent {
+export class YaMessageBar {
 
   siteMessage$: Observable<SiteMessage | null>;
   show$: Observable<boolean>;

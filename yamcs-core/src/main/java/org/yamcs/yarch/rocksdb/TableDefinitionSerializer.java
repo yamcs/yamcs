@@ -53,6 +53,9 @@ class TableDefinitionSerializer {
         if (scndIdx != null) {
             infob.addSecondaryIndex(SecondaryIndex.newBuilder().addAllColumnName(scndIdx).build());
         }
+        if (def.getCfName() != null) {
+            infob.setCfName(def.getCfName());
+        }
         return infob.build();
     }
 
@@ -165,6 +168,10 @@ class TableDefinitionSerializer {
         tdef.setCompressed(protodef.getCompressed());
         tdef.setStorageEngineName(protodef.getStorageEngine());
 
+        if (protodef.hasCfName()) {
+            tdef.setCfName(protodef.getCfName());
+        }
+
         return tdef;
 
     }
@@ -172,11 +179,12 @@ class TableDefinitionSerializer {
     private static PartitioningSpec fromProtobuf(PartitioningInfo pinfo) {
         switch (pinfo.getType()) {
         case TIME:
-            return PartitioningSpec.timeSpec(pinfo.getTimeColumn());
+            return PartitioningSpec.timeSpec(pinfo.getTimeColumn(), pinfo.getTimePartitionSchema());
         case VALUE:
             return PartitioningSpec.valueSpec(pinfo.getValueColumn());
         case TIME_AND_VALUE:
-            return PartitioningSpec.timeAndValueSpec(pinfo.getTimeColumn(), pinfo.getValueColumn());
+            return PartitioningSpec.timeAndValueSpec(pinfo.getTimeColumn(), pinfo.getValueColumn(),
+                    pinfo.getTimePartitionSchema());
         default:
             throw new IllegalStateException("Unexpected partitioning type " + pinfo.getType());
         }

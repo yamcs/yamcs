@@ -114,7 +114,7 @@ public class BackupCliTest extends AbstractCliTest {
         mconsole.reset();
         runMain("--debug", "backup", "purge", "--backup-dir", backupDir, "--keep", "1");
 
-        assertTrue(mconsole.output().contains("Purged operation successfull"));
+        assertTrue(mconsole.output().contains("Purged operation successful"));
         verifyBackupList(backupDir, 3);
     }
 

@@ -14,14 +14,14 @@ public class StringValueSegmentTest {
         for (int i = 0; i < 1000; i++) {
             svs.addValue(ValueUtility.getStringValue("random " + i + " value"));
         }
-        svs = svs.consolidate();
+        svs.consolidate();
         assertTrue(svs.rawSize < svs.enumRawSize);
 
         svs = new StringValueSegment(true);
         for (int i = 0; i < 1000; i++) {
             svs.addValue(ValueUtility.getStringValue("not so random " + (i % 10) + " value"));
         }
-        svs = svs.consolidate();
+        svs.consolidate();
         assertTrue(svs.rawSize > svs.enumRawSize);
     }
 }

@@ -1,6 +1,6 @@
 package org.yamcs.cmdhistory;
 
-import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
+import org.yamcs.cmdhistory.CommandHistoryRequestManager.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 
 public class CommandHistoryFilter {

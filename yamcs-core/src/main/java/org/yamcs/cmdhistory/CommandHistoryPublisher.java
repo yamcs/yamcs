@@ -76,13 +76,13 @@ public interface CommandHistoryPublisher {
     /**
      * Publish an acknowledgement status to the command history.
      * <p>
-     * Three entries (corresponding to command history columns) are created:
+     * Entries (corresponding to command history columns) are created:
      * <ul>
      * <li>key_Time</li>
      * <li>key_Status</li>
      * <li>key_Message</li>
+     * <li>key_Return</li>
      * </ul>
-     * 
      */
     default void publishAck(CommandId cmdId, String key, long time, AckStatus state,
             String message, ParameterValue returnPv) {

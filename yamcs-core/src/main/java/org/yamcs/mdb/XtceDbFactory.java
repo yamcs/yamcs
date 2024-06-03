@@ -1,7 +1,6 @@
 package org.yamcs.mdb;
 
 import org.yamcs.ConfigurationException;
-import org.yamcs.xtce.XtceDb;
 
 /**
  * Use {@link MdbFactory} instead.
@@ -9,7 +8,7 @@ import org.yamcs.xtce.XtceDb;
 @Deprecated
 public class XtceDbFactory {
 
-    public static XtceDb getInstance(String yamcsInstance) throws ConfigurationException {
+    public static Mdb getInstance(String yamcsInstance) throws ConfigurationException {
         return MdbFactory.getInstance(yamcsInstance);
     }
 

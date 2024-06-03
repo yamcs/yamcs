@@ -49,9 +49,7 @@ public class Command implements Comparable<Command> {
             SUFFIX_STATUS,
     };
 
-    private static final char[] HEXCHARS = "0123456789abcdef".toCharArray();
-
-    // Entires that come from a cascading server are prefixed with one or more
+    // Entries that come from a cascading server are prefixed with one or more
     // patterns of the kind: yamcs<SERVER>_
     private static final Pattern CASCADED_PREFIX = Pattern.compile("^(yamcs<[^>]+>_)+(.+)");
 

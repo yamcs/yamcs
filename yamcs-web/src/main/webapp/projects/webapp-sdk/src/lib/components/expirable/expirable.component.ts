@@ -1,13 +1,22 @@
+import { NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { MatIcon } from '@angular/material/icon';
+import { MatTooltip } from '@angular/material/tooltip';
 import { ParameterValue } from '../../client';
 
 @Component({
+  standalone: true,
   selector: 'ya-expirable',
   templateUrl: './expirable.component.html',
-  styleUrls: ['./expirable.component.css'],
+  styleUrl: './expirable.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    MatIcon,
+    MatTooltip,
+    NgIf,
+  ],
 })
-export class ExpirableComponent {
+export class YaExpirable {
 
   @Input()
   pval: ParameterValue;

@@ -1,21 +1,16 @@
 import { Pipe, PipeTransform } from '@angular/core';
+import { getBasename } from '../utils';
 
 /**
  * Outputs the basename of a path string (no extension).
  */
-@Pipe({ name: 'basename' })
+@Pipe({
+  standalone: true,
+  name: 'basename',
+})
 export class BasenamePipe implements PipeTransform {
 
   transform(path: string | null): string | null {
-    if (!path) {
-      return null;
-    }
-
-    const idx = path.lastIndexOf('.');
-    if (idx === -1) {
-      return path;
-    } else {
-      return path.substring(0, idx);
-    }
+    return getBasename(path);
   }
 }

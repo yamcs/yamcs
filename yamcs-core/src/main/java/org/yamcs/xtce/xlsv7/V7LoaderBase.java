@@ -1,7 +1,7 @@
 package org.yamcs.xtce.xlsv7;
 
+import java.io.StringReader;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -12,9 +12,12 @@ import java.util.stream.Collectors;
 import org.yamcs.mdb.BaseSpreadsheetLoader;
 import org.yamcs.mdb.SpreadsheetLoadContext;
 import org.yamcs.mdb.SpreadsheetLoadException;
+import org.yamcs.utils.parser.ParseException;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.SpaceSystem;
+import org.yamcs.xtce.xlsv7.parser.AggrMember;
+import org.yamcs.xtce.xlsv7.parser.AggregateTypeParser;
 
 import jxl.Cell;
 import jxl.Sheet;
@@ -143,6 +146,7 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
     static final String CN_PARAM_DTYPE = "data type";
     static final String CN_PARAM_INITVALUE = "initial value";
     static final String CN_PARAM_DESCRIPTION = "description";
+    static final String CN_PARAM_FLAGS = "flags";
     static final String CN_PARAM_LONG_DESCRIPTION = "long description";
 
     protected static final String SHEET_DATATYPES = "DataTypes";
@@ -386,31 +390,13 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
      * </pre>
      *
      * into a map mapping names to types
+     * @throws ParseException 
      */
-    protected List<AggrMember> parseAggregateExpr(String engType) {
-        String s = engType.substring(1, engType.length() - 1).replace("\n\r", "").trim();
-        String[] a = s.split(";");
-        List<AggrMember> l = new ArrayList<>();
-        for (String b : a) {
-            String[] c = b.trim().split("\\s", 3);
-            if (c.length != 2) {
-                throw new SpreadsheetLoadException(ctx, "Cannot parse member type '" + s + "', expression '" + b + "'");
-            }
-            l.add(new AggrMember(c[1], c[0]));
-        }
-        return l;
+    protected List<AggrMember> parseAggregateExpr(String engType) throws ParseException {
+        AggregateTypeParser parser = new AggregateTypeParser(new StringReader(engType));        
+        return parser.parse();        
     }
 
-    static class AggrMember {
-        final String name;
-        final String dataType;
-
-        AggrMember(String name, String dataType) {
-            this.name = name;
-            this.dataType = dataType;
-        }
-
-    }
 
     static String getInvalidPositionMsg(String pos) {
         return "Invalid position '" + pos + "' specified. "

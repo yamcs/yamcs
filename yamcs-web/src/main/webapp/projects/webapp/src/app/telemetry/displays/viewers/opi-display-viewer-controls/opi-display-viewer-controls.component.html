@@ -1,0 +1,30 @@
+<ng-container *ngIf="initialized$ | async">
+  <button mat-button
+          color="primary"
+          [matMenuTriggerFor]="viewMenu">
+    View ▾
+  </button>
+
+  <mat-menu #viewMenu="matMenu"
+            class="ya-menu"
+            overlapTrigger="false"
+            xPosition="after"
+            yPosition="below">
+    <button mat-menu-item (click)="resetZoom()">
+      <mat-icon>aspect_ratio</mat-icon>
+      Actual size
+    </button>
+    <button mat-menu-item (click)="fitZoom()">
+      <mat-icon>fit_screen</mat-icon>
+      Zoom to fit
+    </button>
+    <button mat-menu-item (click)="zoomIn()">
+      <mat-icon>add_circle_outline</mat-icon>
+      Zoom in
+    </button>
+    <button mat-menu-item (click)="zoomOut()">
+      <mat-icon>remove_circle_outline</mat-icon>
+      Zoom out
+    </button>
+  </mat-menu>
+</ng-container>

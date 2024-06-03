@@ -18,6 +18,7 @@ public class CreateTableQueryBuilder implements QueryBuilder {
     private String table;
     private List<ColumnInfo> columns = new ArrayList<>();
     private String[] primaryKey;
+    private String[] secondaryKey;
 
     public CreateTableQueryBuilder(String table) {
         this.table = table;
@@ -39,8 +40,13 @@ public class CreateTableQueryBuilder implements QueryBuilder {
         return this;
     }
 
+    public CreateTableQueryBuilder index(String... columns) {
+        secondaryKey = columns;
+        return this;
+    }
+
     @Override
-    public StreamSqlStatement toStatement() throws ParseException, StreamSqlException {
+    public String toSQL() {
         var buf = new StringBuilder("CREATE TABLE ").append(table).append("(");
 
         var first = true;
@@ -69,10 +75,20 @@ public class CreateTableQueryBuilder implements QueryBuilder {
             buf.append(String.join("\", \"", primaryKey));
             buf.append("\")");
         }
+        if (secondaryKey != null) {
+            buf.append(", INDEX(\"");
+            buf.append(String.join("\", \"", secondaryKey));
+            buf.append("\")");
+        }
 
         buf.append(")");
 
-        var query = buf.toString();
+        return buf.toString();
+    }
+
+    @Override
+    public StreamSqlStatement toStatement() throws ParseException, StreamSqlException {
+        var query = toSQL();
 
         var parser = new StreamSqlParser(new StringReader(query));
         try {
@@ -91,7 +107,7 @@ public class CreateTableQueryBuilder implements QueryBuilder {
         }
     }
 
-    private static class ColumnInfo {
+    static class ColumnInfo {
         String name;
         DataType dataType;
         boolean autoIncrement;

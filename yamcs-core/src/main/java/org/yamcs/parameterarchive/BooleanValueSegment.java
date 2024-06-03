@@ -25,6 +25,16 @@ public class BooleanValueSegment extends BaseSegment implements ValueSegment {
         ba = new BooleanArray();
     }
 
+    @Override
+    public void insert(int pos, Value value) {
+        ba.add(pos, value.getBooleanValue());
+    }
+
+    @Override
+    public void add(Value value) {
+        ba.add(value.getBooleanValue());
+    }
+
     /**
      * write the segment to buffer
      * 
@@ -104,15 +114,5 @@ public class BooleanValueSegment extends BaseSegment implements ValueSegment {
     @Override
     public int size() {
         return ba.size();
-    }
-
-    @Override
-    public void add(int pos, Value engValue) {
-        ba.add(pos, engValue.getBooleanValue());
-    }
-
-    @Override
-    public BaseSegment consolidate() {
-        return this;
     }
 }

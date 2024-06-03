@@ -16,6 +16,7 @@ import org.yamcs.Processor;
 import org.yamcs.YConfiguration;
 import org.yamcs.logging.Log;
 import org.yamcs.mdb.DataTypeProcessor;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.ProcessingData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.StreamParameterSender;
@@ -25,7 +26,6 @@ import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.NamedDescriptionIndex;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtce.XtceDb;
 
 /**
  * Implements local parameters - these are parameters that can be set from the clients.
@@ -59,7 +59,7 @@ public class LocalParameterManager extends AbstractProcessorService
     @Override
     public void init(Processor proc, YConfiguration config, Object spec) {
         super.init(proc, config, spec);
-        init(proc.getXtceDb());
+        init(proc.getMdb());
         this.proc = proc;
         this.lvc = proc.getLastValueCache();
         this.executor = proc.getTimer();
@@ -73,8 +73,8 @@ public class LocalParameterManager extends AbstractProcessorService
         }
     }
 
-    void init(XtceDb xtcedb) {
-        for (Parameter p : xtcedb.getParameters()) {
+    void init(Mdb mdb) {
+        for (Parameter p : mdb.getParameters()) {
             if (p.getDataSource() == DataSource.LOCAL) {
                 params.add(p);
             }
@@ -137,7 +137,13 @@ public class LocalParameterManager extends AbstractProcessorService
             pvl.add(transformValue(pv));
         }
         // then filter out the subscribed ones and send it to PRM
-        executor.submit(() -> doUpdate(pvl));
+        executor.submit(() -> {
+            try {
+                doUpdate(pvl);
+            } catch (Exception e) {
+                log.error("Error while updating parameter values", e);
+            }
+        });
     }
 
     private ParameterValue transformValue(ParameterValue pv) {

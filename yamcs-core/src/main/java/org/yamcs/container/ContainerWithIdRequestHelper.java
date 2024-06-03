@@ -8,7 +8,7 @@ import org.yamcs.ContainerExtractionResult;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 
 /**
@@ -34,8 +34,8 @@ public class ContainerWithIdRequestHelper implements ContainerConsumer {
     }
 
     public void subscribe(NamedObjectId id) throws InvalidIdentification {
-        XtceDb xtcedb = crm.getXtceDb();
-        SequenceContainer sc = xtcedb.getSequenceContainer(id);
+        Mdb mdb = crm.getMdb();
+        SequenceContainer sc = mdb.getSequenceContainer(id);
         if(sc==null) {
             throw new InvalidIdentification(id);
         }

@@ -2,18 +2,14 @@ package org.yamcs.tctm;
 
 import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsServer;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 
 /**
@@ -27,13 +23,11 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
 
     protected CommandHistoryPublisher commandHistoryPublisher;
 
-    protected AtomicLong dataCount = new AtomicLong();
-
     protected CommandPostprocessor cmdPostProcessor;
     static final PreparedCommand SIGNAL_QUIT = new PreparedCommand(new byte[0]);
 
     protected long housekeepingInterval = 10000;
-    private AggregatedDataLink parent = null;
+    
 
     @Override
     public Spec getDefaultSpec() {
@@ -46,18 +40,8 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
     @Override
     public void init(String yamcsInstance, String linkName, YConfiguration config) throws ConfigurationException {
         super.init(yamcsInstance, linkName, config);
-        timeService = YamcsServer.getTimeService(yamcsInstance);
 
         initPostprocessor(yamcsInstance, config);
-    }
-
-    @Override
-    protected long getCurrentTime() {
-        if (timeService != null) {
-            return timeService.getMissionTime();
-        } else {
-            return TimeEncoding.getWallclockTime();
-        }
     }
 
     protected void initPostprocessor(String instance, YConfiguration config) {
@@ -112,26 +96,6 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
         return 0;
     }
 
-    @Override
-    public long getDataOutCount() {
-        return dataCount.get();
-    }
-
-    @Override
-    public void resetCounters() {
-        dataCount.set(0);
-    }
-
-    @Override
-    public AggregatedDataLink getParent() {
-        return parent;
-    }
-
-    @Override
-    public void setParent(AggregatedDataLink parent) {
-        this.parent = parent;
-    }
-
     /** Send to command history the failed command */
     protected void failedCommand(CommandId commandId, String reason) {
         log.debug("Failing command {}: {}", commandId, reason);
@@ -149,9 +113,5 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
     protected void ackCommand(CommandId commandId) {
         commandHistoryPublisher.publishAck(commandId, AcknowledgeSent_KEY, getCurrentTime(),
                 AckStatus.OK);
-    }
-
-    public String getYamcsInstance() {
-        return yamcsInstance;
     }
 }

@@ -183,6 +183,7 @@ public class XtceToGpbAssembler {
                     cb.putAncillaryData(data.getName(), toAncillaryDataInfo(data));
                 }
             }
+            cb.setArchivePartition(c.useAsArchivePartition());
             if (c.getRateInStream() != null) {
                 cb.setMaxInterval(c.getRateInStream().getMaxInterval());
             }
@@ -197,6 +198,7 @@ public class XtceToGpbAssembler {
                 }
             }
             if (c.getRestrictionCriteria() != null) {
+                cb.setRestrictionCriteriaExpression(toExpressionString(c.getRestrictionCriteria()));
                 if (c.getRestrictionCriteria() instanceof ComparisonList) {
                     ComparisonList xtceList = (ComparisonList) c.getRestrictionCriteria();
                     for (Comparison comparison : xtceList.getComparisonList()) {
@@ -492,6 +494,9 @@ public class XtceToGpbAssembler {
         }
         if (xtceVerifier.getContainerRef() != null) {
             b.setContainer(toContainerInfo(xtceVerifier.getContainerRef(), DetailLevel.SUMMARY));
+        }
+        if (xtceVerifier.getMatchCriteria() != null) {
+            b.setExpression(toExpressionString(xtceVerifier.getMatchCriteria()));
         }
         return b.build();
     }
@@ -1410,7 +1415,7 @@ public class XtceToGpbAssembler {
         return resultb.build();
     }
 
-    public static SpaceSystemInfo toSpaceSystemInfo(SpaceSystem ss) {
+    public static SpaceSystemInfo toSpaceSystemInfo(SpaceSystem ss, DetailLevel detail) {
         SpaceSystemInfo.Builder b = SpaceSystemInfo.newBuilder();
         b.setName(ss.getName());
         b.setQualifiedName(ss.getQualifiedName());
@@ -1431,34 +1436,37 @@ public class XtceToGpbAssembler {
                 b.putAncillaryData(data.getName(), toAncillaryDataInfo(data));
             }
         }
-        Header h = ss.getHeader();
-        if (h != null) {
-            if (h.getVersion() != null) {
-                b.setVersion(h.getVersion());
+
+        if (detail == DetailLevel.FULL) {
+            Header h = ss.getHeader();
+            if (h != null) {
+                if (h.getVersion() != null) {
+                    b.setVersion(h.getVersion());
+                }
+
+                History[] sortedHistory = h.getHistoryList().toArray(new History[] {});
+                Arrays.sort(sortedHistory);
+                for (History history : sortedHistory) {
+                    HistoryInfo.Builder historyb = HistoryInfo.newBuilder();
+                    if (history.getVersion() != null) {
+                        historyb.setVersion(history.getVersion());
+                    }
+                    if (history.getDate() != null) {
+                        historyb.setDate(history.getDate());
+                    }
+                    if (history.getMessage() != null) {
+                        historyb.setMessage(history.getMessage());
+                    }
+                    if (history.getAuthor() != null) {
+                        historyb.setAuthor(history.getAuthor());
+                    }
+                    b.addHistory(historyb);
+                }
             }
 
-            History[] sortedHistory = h.getHistoryList().toArray(new History[] {});
-            Arrays.sort(sortedHistory);
-            for (History history : sortedHistory) {
-                HistoryInfo.Builder historyb = HistoryInfo.newBuilder();
-                if (history.getVersion() != null) {
-                    historyb.setVersion(history.getVersion());
-                }
-                if (history.getDate() != null) {
-                    historyb.setDate(history.getDate());
-                }
-                if (history.getMessage() != null) {
-                    historyb.setMessage(history.getMessage());
-                }
-                if (history.getAuthor() != null) {
-                    historyb.setAuthor(history.getAuthor());
-                }
-                b.addHistory(historyb);
+            for (SpaceSystem sub : ss.getSubSystems()) {
+                b.addSub(toSpaceSystemInfo(sub, DetailLevel.FULL));
             }
-        }
-
-        for (SpaceSystem sub : ss.getSubSystems()) {
-            b.addSub(toSpaceSystemInfo(sub));
         }
         return b.build();
     }

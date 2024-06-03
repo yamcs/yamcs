@@ -1,0 +1,13 @@
+.count {
+  display: block-inline;
+  border-radius: 2px;
+  background-color: rgba(0, 0, 0, 0.1);
+  color: #000;
+  margin-left: 1em;
+  padding: 0 5px;
+}
+
+.count.unacked {
+  background-color: #c00;
+  color: #fff;
+}

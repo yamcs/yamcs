@@ -4,11 +4,12 @@ import java.util.concurrent.TimeUnit;
 
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
+import org.yamcs.actions.Action;
+import org.yamcs.actions.ActionHelper;
 import org.yamcs.api.Observer;
 import org.yamcs.client.utils.WellKnownTypes;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
-import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.audit.AuditLog;
 import org.yamcs.management.LinkListener;
@@ -21,7 +22,6 @@ import org.yamcs.protobuf.links.DisableLinkRequest;
 import org.yamcs.protobuf.links.EditLinkRequest;
 import org.yamcs.protobuf.links.EnableLinkRequest;
 import org.yamcs.protobuf.links.GetLinkRequest;
-import org.yamcs.protobuf.links.LinkActionInfo;
 import org.yamcs.protobuf.links.LinkEvent;
 import org.yamcs.protobuf.links.LinkInfo;
 import org.yamcs.protobuf.links.ListLinksRequest;
@@ -31,17 +31,10 @@ import org.yamcs.protobuf.links.RunActionRequest;
 import org.yamcs.protobuf.links.SubscribeLinksRequest;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.tctm.Link;
-import org.yamcs.tctm.LinkAction;
-import org.yamcs.tctm.LinkAction.ActionStyle;
 import org.yamcs.tctm.LinkActionProvider;
 import org.yamcs.xtce.Parameter;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Struct;
-import com.google.protobuf.util.JsonFormat;
 
 public class LinksApi extends AbstractLinksApi<Context> {
 
@@ -102,16 +95,6 @@ public class LinksApi extends AbstractLinksApi<Context> {
             @Override
             public void linkUnregistered(LinkInfo linkInfo) {
                 // NOP
-            }
-
-            @Override
-            public void linkChanged(LinkInfo linkInfo) {
-                if (instance.equals(linkInfo.getInstance())) {
-                    observer.next(LinkEvent.newBuilder()
-                            .setType(LinkEvent.Type.UPDATED)
-                            .setLinkInfo(linkInfo)
-                            .build());
-                }
             }
         };
 
@@ -230,44 +213,18 @@ public class LinksApi extends AbstractLinksApi<Context> {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlLinks);
         verifyLink(request.getInstance(), request.getLink());
 
-        Gson gson = new Gson();
-        JsonObject actionMessage = null;
-        try {
-            String json = JsonFormat.printer().print(request.getMessage());
-            actionMessage = gson.fromJson(json, JsonElement.class).getAsJsonObject();
-        } catch (InvalidProtocolBufferException e) {
-            // Should not happen, it's already been converted from JSON through transcoding
-            throw new InternalServerErrorException(e);
-        }
-
         var linkManager = InstancesApi.verifyInstanceObj(request.getInstance()).getLinkManager();
         var link = linkManager.getLink(request.getLink());
 
+        Action<Link> action = null;
         if (link instanceof LinkActionProvider) {
-            var action = ((LinkActionProvider) link).getAction(request.getAction());
-            if (action != null) {
-                if (!action.isEnabled()) {
-                    throw new BadRequestException("Action '" + request.getAction() + "' is not enabled");
-                }
-
-                JsonElement response = action.execute(link, actionMessage);
-                if (response == null) {
-                    observer.next(Struct.getDefaultInstance());
-                } else {
-                    var json = response.toString();
-                    var responseb = Struct.newBuilder();
-                    try {
-                        JsonFormat.parser().merge(json, responseb);
-                    } catch (InvalidProtocolBufferException e) {
-                        throw new InternalServerErrorException(e);
-                    }
-                    observer.next(responseb.build());
-                }
-                return;
-            }
+            action = ((LinkActionProvider) link).getAction(request.getAction());
+        }
+        if (action == null) {
+            throw new BadRequestException("Unknown action '" + request.getAction() + "'");
         }
 
-        throw new BadRequestException("Unknown action '" + request.getAction() + "'");
+        ActionHelper.runAction(link, action, request.getMessage(), observer);
     }
 
     public static Link verifyLink(String instance, String linkName) {
@@ -304,14 +261,14 @@ public class LinksApi extends AbstractLinksApi<Context> {
         if (link instanceof LinkActionProvider) {
             b.clearActions();
             for (var action : ((LinkActionProvider) link).getActions()) {
-                b.addActions(toLinkActionInfo(action));
+                b.addActions(ActionHelper.toActionInfo(action));
             }
         }
         if (link instanceof SystemParametersProducer) {
             var systemParametersService = SystemParametersService.getInstance(yamcsInstance);
             if (systemParametersService != null) {
                 var mdb = MdbFactory.getInstance(yamcsInstance);
-                var spaceSystemName = systemParametersService.getNamespace() + "/" + link.getName();
+                var spaceSystemName = systemParametersService.getNamespace() + "/links/" + link.getName();
                 var spaceSystem = mdb.getSpaceSystem(spaceSystemName);
                 if (spaceSystem != null) {
                     spaceSystem.getParameters(true).stream()
@@ -322,18 +279,6 @@ public class LinksApi extends AbstractLinksApi<Context> {
             }
         }
 
-        return b.build();
-    }
-
-    private static LinkActionInfo toLinkActionInfo(LinkAction linkAction) {
-        var b = LinkActionInfo.newBuilder()
-                .setId(linkAction.getId())
-                .setLabel(linkAction.getLabel())
-                .setStyle(linkAction.getStyle().name())
-                .setEnabled(linkAction.isEnabled());
-        if (linkAction.getStyle() == ActionStyle.CHECK_BOX) {
-            b.setChecked(linkAction.isChecked());
-        }
         return b.build();
     }
 }

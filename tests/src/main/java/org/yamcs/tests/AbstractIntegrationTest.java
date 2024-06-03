@@ -32,7 +32,7 @@ import org.yamcs.tctm.TmSink;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 public abstract class AbstractIntegrationTest {
 
@@ -252,7 +252,7 @@ public abstract class AbstractIntegrationTest {
         long generationTime;
 
         static volatile ParameterProvider[] instance = new ParameterProvider[2];
-        XtceDb xtcedb;
+        Mdb xtcedb;
         YConfiguration config;
 
         String name;

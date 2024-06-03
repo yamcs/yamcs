@@ -12,3 +12,8 @@ property5: ${foo:false}
 property6: ${foo:20}
 property7: "${foo}/${bar}"
 property8: ["${foo}", "${bar}"]
+property9: "${foo: a value with spaces }"
+property10: ${foo:}
+property11: ${foo:${bar}}
+property12: ${foo:${bar:defaultValue}}
+property13: ${foo:${bar:${baz}}}

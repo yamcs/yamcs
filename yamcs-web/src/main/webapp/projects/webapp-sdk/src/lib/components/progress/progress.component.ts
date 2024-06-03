@@ -1,13 +1,20 @@
+import { AsyncPipe, NgIf, PercentPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
+  standalone: true,
   selector: 'ya-progress',
   templateUrl: './progress.component.html',
-  styleUrls: ['./progress.component.css'],
+  styleUrl: './progress.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    AsyncPipe,
+    NgIf,
+    PercentPipe,
+  ],
 })
-export class ProgressComponent implements OnChanges {
+export class YaProgress implements OnChanges {
 
   @Input()
   value: number;

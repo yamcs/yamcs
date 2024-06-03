@@ -1,0 +1,16 @@
+.ya-tooltip {
+  position: absolute;
+  display: none;
+  white-space: pre;
+  color: #fff;
+  border-radius: 2px;
+  max-width: 250px;
+  padding-left: 8px;
+  padding-right: 8px;
+  margin-top: 14px;
+  background: rgba(97, 97, 97, 0.9);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}

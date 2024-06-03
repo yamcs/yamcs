@@ -9,8 +9,12 @@ public class Utils {
         pattern = pattern.replace(".", "\\.");
         pattern = pattern.replace("?", ".");
         pattern = pattern.replace("%", ".*");
-        str = str.toLowerCase();
-        Matcher m = Pattern.compile(pattern, Pattern.DOTALL).matcher(str);
-        return m.matches();
+        if (str != null) { // Avoid NPE on null values
+            str = str.toLowerCase();
+            Matcher m = Pattern.compile(pattern, Pattern.DOTALL).matcher(str);
+            return m.matches();
+        } else {
+            return false;
+        }
     }
 }

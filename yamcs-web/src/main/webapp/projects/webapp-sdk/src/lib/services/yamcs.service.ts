@@ -2,9 +2,9 @@ import { APP_BASE_HREF } from '@angular/common';
 import { Inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { Clearance, ClearanceSubscription, ConnectionInfo, Processor, StorageClient, TimeSubscription, YamcsClient } from '../client';
+import { Clearance, ClearanceSubscription, ConnectionInfo, Processor, SessionListener, StorageClient, TimeSubscription, YamcsClient } from '../client';
 import { FrameLossListener } from '../client/FrameLossListener';
-import { DefaultProcessorPipe } from '../pipes/default-processor.pipe';
+import { getDefaultProcessor } from '../utils';
 import { ConfigService } from './config.service';
 import { MessageService } from './message.service';
 
@@ -14,7 +14,7 @@ import { MessageService } from './message.service';
 @Injectable({
   providedIn: 'root',
 })
-export class YamcsService implements FrameLossListener {
+export class YamcsService implements FrameLossListener, SessionListener {
 
   readonly yamcsClient: YamcsClient;
 
@@ -22,21 +22,29 @@ export class YamcsService implements FrameLossListener {
 
   readonly clearance$ = new BehaviorSubject<Clearance | null>(null);
   private clearanceSubscription: ClearanceSubscription;
+
   readonly time$ = new BehaviorSubject<string | null>(null);
   private timeSubscription: TimeSubscription;
+
+  readonly range$ = new BehaviorSubject<string>('PT15M');
+
+  readonly sessionEnded$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     @Inject(APP_BASE_HREF) baseHref: string,
     private router: Router,
-    private defaultProcessorPipe: DefaultProcessorPipe,
     private messageService: MessageService,
     private configService: ConfigService,
   ) {
-    this.yamcsClient = new YamcsClient(baseHref, this);
+    this.yamcsClient = new YamcsClient(baseHref, this, this);
   }
 
   onFrameLoss() {
     this.messageService.showWarning('A gap was detected in one of the data feeds. Typically this occurs when data is fastly updating.');
+  }
+
+  onSessionEnd(message: string): void {
+    this.sessionEnded$.next(true);
   }
 
   setContext(instanceId: string, processorId?: string) {
@@ -53,7 +61,7 @@ export class YamcsService implements FrameLossListener {
       newContext += '__' + processor;
     } else {
       const instanceDetail = await this.yamcsClient.getInstance(instance);
-      const defaultProcessor = this.defaultProcessorPipe.transform(instanceDetail);
+      const defaultProcessor = getDefaultProcessor(instanceDetail);
       if (defaultProcessor) {
         newContext += '__' + defaultProcessor;
       }
@@ -167,12 +175,8 @@ export class YamcsService implements FrameLossListener {
     this.connectionInfo$.next(null);
     this.time$.next(null);
     this.clearance$.next(null);
-    if (this.timeSubscription) {
-      this.timeSubscription.cancel();
-    }
-    if (this.clearanceSubscription) {
-      this.clearanceSubscription.cancel();
-    }
+    this.timeSubscription?.cancel();
+    this.clearanceSubscription?.cancel();
   }
 
   /**
@@ -191,5 +195,12 @@ export class YamcsService implements FrameLossListener {
    */
   getMissionTime() {
     return new Date(Date.parse(this.time$.getValue()!));
+  }
+
+  /**
+   * Returns lookback period
+   */
+  getTimeRange() {
+    return this.range$.value;
   }
 }

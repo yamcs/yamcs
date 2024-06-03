@@ -7,19 +7,16 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import com.csvreader.CsvReader;
 import com.csvreader.CsvWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.DataFile;
-import org.yamcs.cfdp.DataFileSegment;
 import org.yamcs.cfdp.FileDirective;
 import org.yamcs.cfdp.pdu.*;
 import org.yamcs.simulator.AbstractSimulator;
 import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
 import org.yamcs.cfdp.pdu.AckPacket.TransactionStatus;
 import org.yamcs.cfdp.pdu.FinishedPacket.FileStatus;
-import org.yamcs.simulator.ColSimulator;
 import org.yamcs.utils.StringConverter;
 
 /**
@@ -37,6 +34,7 @@ public class CfdpReceiver {
     private DataFile cfdpDataFile = null;
     List<SegmentRequest> missingSegments;
     MetadataPacket metadata;
+    private SegmentRequest lastRequestedSegment;
 
     public CfdpReceiver(AbstractSimulator simulator, File dataDir) {
         this.simulator = simulator;
@@ -97,18 +95,19 @@ public class CfdpReceiver {
         ProxyTransmissionMode proxyTransmissionMode = null;
         ProxyClosureRequest proxyClosureRequest = null;
 
-        if(metadata.getOptions() != null) {
+        if (metadata.getOptions() != null) {
             for (TLV option : metadata.getOptions()) {
                 if (option instanceof ProxyPutRequest && proxyPutRequest == null) {
                     proxyPutRequest = (ProxyPutRequest) option;
-                } else if (option instanceof ProxyTransmissionMode  && proxyTransmissionMode == null) {
+                } else if (option instanceof ProxyTransmissionMode && proxyTransmissionMode == null) {
                     proxyTransmissionMode = (ProxyTransmissionMode) option;
-                } else if (option instanceof ProxyClosureRequest &&  proxyClosureRequest == null) {
+                } else if (option instanceof ProxyClosureRequest && proxyClosureRequest == null) {
                     proxyClosureRequest = (ProxyClosureRequest) option;
                 } else if (option instanceof DirectoryListingRequest) {
                     sendDirectoryListingResponse(packet.getHeader(), (DirectoryListingRequest) option);
                 } else if (option instanceof ReservedMessageToUser) {
-                    log.warn("Ignoring reserved message to user " + ((ReservedMessageToUser) option).getMessageType() + ":" + StringConverter.arrayToHexString(((ReservedMessageToUser) option).getContent()));
+                    log.warn("Ignoring reserved message to user " + ((ReservedMessageToUser) option).getMessageType()
+                            + ":" + StringConverter.arrayToHexString(((ReservedMessageToUser) option).getContent()));
                 } else {
                     log.warn("Ignoring metadata option TLV: " + StringConverter.arrayToHexString(option.getValue()));
                 }
@@ -118,8 +117,10 @@ public class CfdpReceiver {
         if (proxyPutRequest != null) {
             executeProxyPutRequest(packet.getHeader(), proxyPutRequest, proxyTransmissionMode, proxyClosureRequest);
         } else {
-            if(proxyTransmissionMode != null) log.warn("Ignoring Proxy Transmission Mode, no Proxy Put Request specified");
-            if(proxyClosureRequest != null) log.warn("Ignoring Proxy Closure Request, no Proxy Put Request specified");
+            if (proxyTransmissionMode != null)
+                log.warn("Ignoring Proxy Transmission Mode, no Proxy Put Request specified");
+            if (proxyClosureRequest != null)
+                log.warn("Ignoring Proxy Closure Request, no Proxy Put Request specified");
         }
     }
 
@@ -142,8 +143,10 @@ public class CfdpReceiver {
             writer.close();
 
             log.info("Sending DirectoryListingResponse following request: " + request);
-            CfdpSender sender = new CfdpSender(simulator, (int) header.getSourceId(), directoryListing, request.getDirectoryFileName(),
-                    List.of(new DirectoryListingResponse(DirectoryListingResponse.ListingResponseCode.SUCCESSFUL, request.getDirectoryName(), request.getDirectoryFileName()),
+            CfdpSender sender = new CfdpSender(simulator, (int) header.getSourceId(), directoryListing,
+                    request.getDirectoryFileName(),
+                    List.of(new DirectoryListingResponse(DirectoryListingResponse.ListingResponseCode.SUCCESSFUL,
+                            request.getDirectoryName(), request.getDirectoryFileName()),
                             new OriginatingTransactionId(header.getSourceId(), header.getSequenceNumber())),
                     new int[0]);
             simulator.setCfdpSender(sender);
@@ -158,10 +161,12 @@ public class CfdpReceiver {
 
     private void executeProxyPutRequest(CfdpHeader header, ProxyPutRequest proxyPutRequest,
             ProxyTransmissionMode proxyTransmissionMode, ProxyClosureRequest proxyClosureRequest) {
-        if(proxyTransmissionMode != null && proxyTransmissionMode.getTransmissionMode() == CfdpPacket.TransmissionMode.UNACKNOWLEDGED) {
-            log.warn("Unacknowledged transmission requested but not implemented in simulator, defaulting to acknowledged");
+        if (proxyTransmissionMode != null
+                && proxyTransmissionMode.getTransmissionMode() == CfdpPacket.TransmissionMode.UNACKNOWLEDGED) {
+            log.warn(
+                    "Unacknowledged transmission requested but not implemented in simulator, defaulting to acknowledged");
         }
-        if(proxyClosureRequest != null && proxyClosureRequest.isClosureRequested()) {
+        if (proxyClosureRequest != null && proxyClosureRequest.isClosureRequested()) {
             log.warn("Closure requested but not implemented in simulator, defaulting to acknowledged transmission");
         }
 
@@ -216,7 +221,7 @@ public class CfdpReceiver {
         // checking the file completeness;
         missingSegments = cfdpDataFile.getMissingChunks();
         if (missingSegments.isEmpty()) {
-            if(metadata.getFileLength() > 0 || header.isLargeFile()) {
+            if (metadata.getFileLength() > 0 || header.isLargeFile()) {
                 saveFile();
             }
 
@@ -240,26 +245,37 @@ public class CfdpReceiver {
 
             transmitCfdp(finished);
         } else {
-            header = new CfdpHeader(
-                    true, // file directive
-                    true, // towards sender
-                    false, // not acknowledged
-                    false, // no CRC
-                    packet.getHeader().getEntityIdLength(),
-                    packet.getHeader().getSequenceNumberLength(),
-                    packet.getHeader().getSourceId(),
-                    packet.getHeader().getDestinationId(),
-                    packet.getHeader().getSequenceNumber());
-
-            NakPacket nak = new NakPacket(
-                    missingSegments.get(0).getSegmentStart(),
-                    missingSegments.get(missingSegments.size() - 1).getSegmentEnd(),
-                    missingSegments,
-                    header);
-
-            log.info("File not complete ({} segments missing), sending NAK", missingSegments.size());
-            transmitCfdp(nak);
+            sendMissingSegments(packet.getHeader(), missingSegments);
         }
+    }
+
+    private void sendMissingSegments(CfdpHeader headerTemplate, List<SegmentRequest> missingSegments) {
+        CfdpHeader header = new CfdpHeader(
+                true, // file directive
+                true, // towards sender
+                false, // not acknowledged
+                false, // no CRC
+                headerTemplate.getEntityIdLength(),
+                headerTemplate.getSequenceNumberLength(),
+                headerTemplate.getSourceId(),
+                headerTemplate.getDestinationId(),
+                headerTemplate.getSequenceNumber());
+
+        int maxNumSeg = NakPacket.maxNumSegments(simulator.maxTmDataSize() - header.getLength());
+        if (missingSegments.size() > maxNumSeg) {
+            missingSegments = missingSegments.subList(0, maxNumSeg);
+        }
+
+        NakPacket nak = new NakPacket(
+                missingSegments.get(0).getSegmentStart(),
+                missingSegments.get(missingSegments.size() - 1).getSegmentEnd(),
+                missingSegments,
+                header);
+        lastRequestedSegment = missingSegments.get(missingSegments.size() - 1);
+
+        log.info("File not complete, sending NAK for {} segments covering {} - {} ", missingSegments.size(),
+                nak.getScopeStart(), nak.getScopeEnd());
+        transmitCfdp(nak);
     }
 
     private void saveFile() {
@@ -273,7 +289,7 @@ public class CfdpReceiver {
             e.printStackTrace();
         }
     }
-    
+
     String sanitize(String filename) {
         return filename.replace("/", "_");
     }
@@ -286,13 +302,16 @@ public class CfdpReceiver {
                 log.warn("Received and dropped (data loss simulation) {}", packet);
             } else {
                 log.info("Received {}", packet);
-                cfdpDataFile.addSegment(new DataFileSegment(packet.getOffset(), packet.getData()));
+                cfdpDataFile.addSegment(packet);
             }
         } else {
             // we're in resending mode, no more data loss
-            cfdpDataFile.addSegment(new DataFileSegment(packet.getOffset(), packet.getData()));
+            cfdpDataFile.addSegment(packet);
             missingSegments = cfdpDataFile.getMissingChunks();
-            log.info("Received missing data: {} still missing: {}", packet, missingSegments.size());
+            log.info("Received missing data: {} still missing: {}; "
+                    + "recoveredSegments: {}, lastNumMissingSegmentsSent: {}",
+                    packet, missingSegments.size());
+
             if (missingSegments.isEmpty()) {
                 saveFile();
 
@@ -315,6 +334,8 @@ public class CfdpReceiver {
                         header);
 
                 transmitCfdp(finished);
+            } else if (packet.getOffset() >= lastRequestedSegment.getSegmentStart()) {
+                sendMissingSegments(packet.getHeader(), missingSegments);
             }
         }
 

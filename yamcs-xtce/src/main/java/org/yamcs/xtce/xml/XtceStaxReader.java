@@ -57,8 +57,6 @@ import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
 /**
  * This class reads the XTCE XML files. XML document is accessed with the use of the Stax Iterator API.
  * 
- * @author mu
- * 
  */
 public class XtceStaxReader extends AbstractStaxReader {
 
@@ -203,8 +201,10 @@ public class XtceStaxReader extends AbstractStaxReader {
     private SpaceSystem readSpaceSystem() throws XMLStreamException {
         checkStartElementPreconditions();
 
-        String value = readMandatoryAttribute(ATTR_NAME, xmlEvent.asStartElement());
+        var startElement = xmlEvent.asStartElement();
+        String value = readMandatoryAttribute(ATTR_NAME, startElement);
         SpaceSystem spaceSystem = new SpaceSystem(value);
+        spaceSystem.setShortDescription(readAttribute(ATTR_SHORT_DESCRIPTION, startElement, null));
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -313,26 +313,26 @@ public class XtceStaxReader extends AbstractStaxReader {
         String name = readMandatoryAttribute(ATTR_NAME, element);
         String mimeType = readAttribute("mimeType", element, null);
         String href = readAttribute("href", element, null);
+        String text = null;
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-
             if (xmlEvent.isCharacters()) {
-                String value = xmlEvent.asCharacters().getData().trim();
-                AncillaryData ad = new AncillaryData(name, value);
-                if (mimeType != null) {
-                    ad.setMimeType(mimeType);
-                }
-                if (href != null) {
-                    ad.setHref(URI.create(href));
-                }
-                ancillaryData.add(ad);
+                text = xmlEvent.asCharacters().getData().trim();
                 break;
             } else if (isEndElementWithName(ELEM_ANCILLARY_DATA)) {
-                return;
+                break;
             }
         }
 
+        AncillaryData ad = new AncillaryData(name, text);
+        if (mimeType != null) {
+            ad.setMimeType(mimeType);
+        }
+        if (href != null) {
+            ad.setHref(URI.create(href));
+        }
+        ancillaryData.add(ad);
     }
 
     /**
@@ -1108,8 +1108,9 @@ public class XtceStaxReader extends AbstractStaxReader {
                 typeBuilder.setEncoding(readBinaryDataEncoding(spaceSystem));
             } else if (isStartElementWithName(ELEM_STRING_DATA_ENCODING)) {
                 typeBuilder.setEncoding(readStringDataEncoding(spaceSystem));
-            } else if (isStartElementWithName(ELEM_INTEGER_DATA_ENCODING)
-                    || isStartElementWithName(ELEM_FLOAT_DATA_ENCODING)) {
+            } else if (isStartElementWithName(ELEM_INTEGER_DATA_ENCODING)) {
+                typeBuilder.setEncoding(readIntegerDataEncoding(spaceSystem));
+            } else if (isStartElementWithName(ELEM_FLOAT_DATA_ENCODING)) {
                 throw new XMLStreamException("Encoding " + xmlEvent.asStartElement().getName().getLocalPart()
                         + " not supported for binary parameter", xmlEvent.getLocation());
             } else if (isEndElementWithName(ELEM_BINARY_PARAMETER_TYPE)) {
@@ -1237,7 +1238,7 @@ public class XtceStaxReader extends AbstractStaxReader {
             } else if (isEndElementWithName(ELEM_STRING_DATA_ENCODING)) {
                 if (stringDataEncoding.getSizeType() == null) {
                     throw new XMLStreamException(
-                            ELEM_SIZE_IN_BITS + "or " + ELEM_VARIABLE + " not specified for the StringDataEncoding",
+                            ELEM_SIZE_IN_BITS + " or " + ELEM_VARIABLE + " not specified for the StringDataEncoding",
                             xmlEvent.getLocation());
                 }
                 return stringDataEncoding;
@@ -1287,6 +1288,7 @@ public class XtceStaxReader extends AbstractStaxReader {
             if (isStartElementWithName(ELEM_DYNAMIC_VALUE)) {
                 DynamicIntegerValue div = readDynamicValue(spaceSystem);
                 if (div != IGNORED_DYNAMIC_VALUE) {
+                    stringDataEncoding.setSizeType(SizeType.FIXED);
                     stringDataEncoding.setDynamicBufferSize(div);
                 }
             } else if (isStartElementWithName(ELEM_TERMINATION_CHAR)) {
@@ -1896,8 +1898,14 @@ public class XtceStaxReader extends AbstractStaxReader {
         String tag = xmlEvent.asStartElement().getName().getLocalPart();
         EnumerationAlarm alarm = new EnumerationAlarm();
 
-        // initialValue attribute
         alarm.setMinViolations(readIntAttribute("minViolations", xmlEvent.asStartElement(), 1));
+
+        var defaultAlarmLevel = AlarmLevels.NORMAL;
+        var defaultAlarmLevelString = readAttribute("defaultAlarmLevel", xmlEvent.asStartElement(), null);
+        if (defaultAlarmLevelString != null) {
+            defaultAlarmLevel = getAlarmLevel(defaultAlarmLevelString);
+        }
+        alarm.setDefaultAlarmLevel(defaultAlarmLevel);
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -2054,6 +2062,10 @@ public class XtceStaxReader extends AbstractStaxReader {
         String value = readMandatoryAttribute(ATTR_NAME, element);
         parameter = new Parameter(value);
 
+        // by default in XTCE all parameters are persistent
+        // when reading the properties, the persistence may be disabled for a parameter
+        parameter.setPersistent(true);
+
         String initialValue = readAttribute(ATTR_INITIAL_VALUE, xmlEvent.asStartElement(), null);
 
         // parameterTypeRef
@@ -2115,6 +2127,8 @@ public class XtceStaxReader extends AbstractStaxReader {
             }
 
         }
+        boolean persistence = readBooleanAttribute("persistence", xmlEvent.asStartElement(), true);
+        p.setPersistent(persistence);
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -3688,6 +3702,7 @@ public class XtceStaxReader extends AbstractStaxReader {
         if (stage == null) {
             stage = type;
         }
+        List<AncillaryData> ancillaryData = Collections.emptyList();
         CommandVerifier cmdVerifier = null;
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -3721,7 +3736,8 @@ public class XtceStaxReader extends AbstractStaxReader {
                 }
                 CheckWindow cw = readCheckWindow(spaceSystem);
                 cmdVerifier.setCheckWindow(cw);
-
+            } else if (isStartElementWithName(ELEM_ANCILLARY_DATA_SET)) {
+                ancillaryData = readAncillaryDataSet();
             } else if (isStartElementWithName(ELEM_RETURN_PARAM_REF)) {
                 if (cmdVerifier == null) {
                     throw new XMLStreamException("ReturnParmRef specified before the verifier.",
@@ -3738,14 +3754,45 @@ public class XtceStaxReader extends AbstractStaxReader {
                         throw new XMLStreamException("No CheckWindow specified for command verifier",
                                 xmlEvent.getLocation());
                     }
+                    TerminationAction onSuccess = null;
+                    TerminationAction onFail = null;
+                    TerminationAction onTimeout = null;
                     if ("Failed".equals(type)) {
-                        cmdVerifier.setOnSuccess(TerminationAction.FAIL);
+                        onSuccess = TerminationAction.FAIL;
                     } else if ("Complete".equals(type)) {
-                        cmdVerifier.setOnSuccess(TerminationAction.SUCCESS);
-                        cmdVerifier.setOnFail(TerminationAction.FAIL);
+                        onSuccess = TerminationAction.SUCCESS;
+                        onFail = TerminationAction.FAIL;
                     } else {
-                        cmdVerifier.setOnFail(TerminationAction.FAIL);
+                        onFail = TerminationAction.FAIL;
                     }
+
+                    // Allow overriding the default behaviour through
+                    // ancillary data elements
+                    for (var item : ancillaryData) {
+                        if (item.getName().equals("yamcs.onSuccess")) {
+                            if (item.getValue() != null) {
+                                onSuccess = TerminationAction.valueOf(item.getValue());
+                            } else {
+                                onSuccess = null;
+                            }
+                        } else if (item.getName().equals("yamcs.onFail")) {
+                            if (item.getValue() != null) {
+                                onFail = TerminationAction.valueOf(item.getValue());
+                            } else {
+                                onFail = null;
+                            }
+                        } else if (item.getName().equals("yamcs.onTimeout")) {
+                            if (item.getValue() != null) {
+                                onTimeout = TerminationAction.valueOf(item.getValue());
+                            } else {
+                                onTimeout = null;
+                            }
+                        }
+                    }
+
+                    cmdVerifier.setOnSuccess(onSuccess);
+                    cmdVerifier.setOnFail(onFail);
+                    cmdVerifier.setOnTimeout(onTimeout);
                 }
                 return cmdVerifier;
             } else {
@@ -3953,6 +4000,7 @@ public class XtceStaxReader extends AbstractStaxReader {
         String name = readMandatoryAttribute(ATTR_NAME, startElement);
 
         CustomAlgorithm algo = new CustomAlgorithm(name);
+        algo.setShortDescription(readAttribute(ATTR_SHORT_DESCRIPTION, startElement, null));
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();

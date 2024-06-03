@@ -1,5 +1,5 @@
-MDB
-===
+Mission database
+================
 
 The MDB module within the Yamcs web interface provides a set of views on the Mission Database.
 

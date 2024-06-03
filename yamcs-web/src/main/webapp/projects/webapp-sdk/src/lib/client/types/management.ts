@@ -1,4 +1,5 @@
 import { WebSocketCall } from '../WebSocketCall';
+import { Spec } from './config';
 import { Instance } from './system';
 
 export interface ListInstancesOptions {
@@ -29,17 +30,18 @@ export interface Link {
   status: LinkStatus;
   detailedStatus: string;
   parentName?: string;
-  actions?: LinkAction[];
+  actions?: ActionInfo[];
   extra?: { [key: string]: any; };
   parameters?: string[];
 }
 
-export interface LinkAction {
+export interface ActionInfo {
   id: string;
   label: string;
   style: 'CHECK_BOX' | 'PUSH_BUTTON';
   enabled: boolean;
   checked: boolean;
+  spec?: Spec;
 }
 
 export interface SubscribeLinksRequest {

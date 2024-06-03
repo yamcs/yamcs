@@ -1,0 +1,78 @@
+mat-sidenav-container {
+  --top-height: 48px;
+  --message-bar-height: 48px;
+
+  position: absolute;
+  top: var(--top-height);
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--y-background-color);
+}
+
+mat-sidenav-container.zen {
+  --top-height: 0;
+}
+
+mat-sidenav-container.message-bar-visible {
+  top: calc(var(--top-height) + var(--message-bar-height));
+}
+
+mat-sidenav {
+  width: 250px;
+  background-color: #181818;
+  border-right: 0 !important;
+}
+
+.sidenav-content {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
+
+mat-toolbar {
+  background-color: #181818;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-sizing: content-box;
+  color: #d3d3d3;
+  font-weight: 300;
+  font-size: 14px;
+}
+
+.mat-toolbar .mat-icon {
+  padding-right: 16px;
+}
+
+.search-input {
+  font: inherit;
+  line-height: 18px;
+  background: transparent;
+  color: currentColor;
+  border: none;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
+  vertical-align: bottom;
+  text-align: inherit;
+}
+
+.search-input:focus {
+  color: #009e87;
+}
+
+.mat-divider.extra {
+  border-top-color: rgba(255, 255, 255, 0.1);
+  margin-top: 1em;
+  margin-top: 2em;
+}
+
+.navbar-logo {
+  text-align: center;
+  line-height: 0;
+}
+
+.navbar-logo img {
+  max-width: 100%;
+}

@@ -1,0 +1,71 @@
+<div class="block-title" style="padding-top: 0">Command</div>
+<div class="block">
+  {{ (entry.command?.qualifiedName | shortName) || '-' }}
+</div>
+
+<div class="block-title">System</div>
+<div class="block">
+  {{ (entry.command?.qualifiedName| spaceSystemName) || '-' }}
+</div>
+
+<ng-container *ngFor="let alias of entry.command?.alias">
+  <div class="block-title">{{ alias.namespace }}</div>
+  <div class="block">
+    {{ alias.name }}
+  </div>
+</ng-container>
+
+<div class="block-title">Description</div>
+<div class="block">
+  <ng-container *ngIf="entry.command?.longDescription">
+    <app-markdown [text]="entry.command?.longDescription" />
+  </ng-container>
+  <ng-container *ngIf="!entry.command?.longDescription">
+    {{ entry.command?.shortDescription || '-' }}
+  </ng-container>
+</div>
+
+<mat-divider style="margin-top: 1em; margin-bottom: 1em" />
+
+<div class="block-title">Significance</div>
+<div class="block">
+  <ng-container *ngIf="entry.command?.effectiveSignificance as significance; else dash">
+    <app-significance-level [level]="significance.consequenceLevel" />
+    {{ significance.reasonForWarning }}
+  </ng-container>
+</div>
+
+<mat-divider style="margin-top: 1em; margin-bottom: 1em" />
+
+<div class="block-title" style="padding-top: 0">Constraints</div>
+<div class="block">
+  <ng-container *ngIf="entry.command?.constraint as constraints">
+    <table yaDataTable>
+      <tr>
+        <th>Constraint</th>
+        <th>Timeout</th>
+        <th>Live Evaluation</th>
+      </tr>
+      <tr *ngFor="let constraint of constraints">
+        <td>{{ constraint.expression }}</td>
+        <td>{{ constraint.timeout || '-' }}</td>
+        <td>
+          <span class="evaluation valid" *ngIf="(expr.result$ | async) === true">
+            satisfied
+          </span>
+          <span class="evaluation invalid" *ngIf="(expr.result$ | async) === false">
+            not satisfied
+          </span>
+          <app-live-expression #expr
+                               [expression]="constraint.expression"
+                               [style.display]="'none'" />
+        </td>
+      </tr>
+    </table>
+  </ng-container>
+  <ng-container *ngIf="!entry.command?.constraint">-</ng-container>
+</div>
+
+<ng-template #dash>
+  -
+</ng-template>

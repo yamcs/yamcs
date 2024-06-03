@@ -24,10 +24,14 @@ import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.protobuf.SubscribeParametersData;
 import org.yamcs.protobuf.SubscribeParametersRequest;
 import org.yamcs.protobuf.SubscribeParametersRequest.Action;
+import org.yamcs.protobuf.SubscribedParameterInfo;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.security.User;
 import org.yamcs.utils.StringConverter;
+import org.yamcs.xtce.BaseDataType;
+import org.yamcs.xtce.DataType;
+import org.yamcs.xtce.util.DataTypeUtil;
 
 public class SubscribeParameterObserver implements Observer<SubscribeParametersRequest> {
 
@@ -121,6 +125,9 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
                 int numericId = numericIdGenerator.incrementAndGet();
                 mappingUpdate.put(id, numericId);
                 datab.putMapping(numericId, id);
+
+                var info = generateInfo(id);
+                datab.putInfo(numericId, info);
             }
             if (subscriptionId != -1 && (!request.hasSendFromCache() || request.getSendFromCache())) {
                 for (ParameterValueWithId rec : pidrm.getValuesFromCache(subscriptionId)) {
@@ -145,6 +152,34 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
             log.warn("No permission for parameters: {}", e.getMessage());
             responseObserver.completeExceptionally(e);
         }
+    }
+
+    private SubscribedParameterInfo generateInfo(NamedObjectId id) {
+        var infob = SubscribedParameterInfo.newBuilder();
+        try {
+            var parameterWithId = ParameterWithIdRequestHelper.checkName(pidrm.getPrm(), id);
+            var parameter = parameterWithId.getParameter();
+
+            infob.setParameter(parameter.getQualifiedName());
+
+            if (parameter.getParameterType() != null) {
+                DataType dtype = parameter.getParameterType();
+                if (parameterWithId.getPath() != null) {
+                    dtype = DataTypeUtil.getMemberType(dtype, parameterWithId.getPath());
+                }
+
+                if (dtype instanceof BaseDataType) {
+                    var unitSet = ((BaseDataType) dtype).getUnitSet();
+                    if (!unitSet.isEmpty()) {
+                        var units = unitSet.get(0).getUnit();
+                        infob.setUnits(units);
+                    }
+                }
+            }
+        } catch (InvalidIdentification e) {
+            // Ignore
+        }
+        return infob.build();
     }
 
     private void updateSubscription(Action action, List<NamedObjectId> idList, boolean updateOnExpiration)

@@ -49,10 +49,11 @@ public class LongWebsocketFrameTest {
         }
     }
 
-    private void runIt(int frameSize) throws Exception {
+    private void runIt(int maxFrameSize) throws Exception {
         MyConnectionListener connectionListener = new MyConnectionListener();
         YamcsClient client = YamcsClient.newBuilder("localhost", 9191).build();
-        client.getWebSocketClient().setMaxFramePayloadLength(frameSize);
+        client.getWebSocketClient().setMaxFramePayloadLength(maxFrameSize);
+        client.getWebSocketClient().setAllowCompression(false);
         client.addConnectionListener(connectionListener);
 
         try {

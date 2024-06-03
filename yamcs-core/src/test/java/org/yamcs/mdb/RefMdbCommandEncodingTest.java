@@ -36,7 +36,7 @@ public class RefMdbCommandEncodingTest {
         YConfiguration.setupTest(null);
         mdb = MdbFactory.createInstanceByConfig("refmdb");
         metaCommandProcessor = new MetaCommandProcessor(
-                new ProcessorData("test", "test", mdb, new ProcessorConfig()));
+                new ProcessorData("test", mdb, new ProcessorConfig()));
     }
 
     @Test

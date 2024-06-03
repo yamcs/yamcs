@@ -1,3 +1,4 @@
+import { AsyncPipe, NgIf } from '@angular/common';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { AbstractControl, ControlContainer, FormArray, FormArrayName, FormGroupDirective, FormGroupName } from '@angular/forms';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -26,11 +27,16 @@ const defaultErrors: { [key: string]: any; } = {
 };
 
 @Component({
+  standalone: true,
   selector: 'ya-errors',
   templateUrl: './errors.component.html',
-  styleUrls: ['./errors.component.css'],
+  styleUrl: './errors.component.css',
+  imports: [
+    AsyncPipe,
+    NgIf,
+  ],
 })
-export class ErrorsComponent implements OnInit, OnDestroy {
+export class YaErrors implements OnInit, OnDestroy {
 
   @Input()
   controlName: string;

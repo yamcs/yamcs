@@ -25,6 +25,6 @@ public class RdbPartition extends Partition {
     @Override
     public String toString() {
         return "Partition [start=" + TimeEncoding.toString(start) + ", end=" + TimeEncoding.toString(end) +
-                ", value=" + value + ", tbsIndex = " + tbsIndex + "]";
+                ", value=" + value + ", tbsIndex = " + tbsIndex + ", dir = " + dir + "]";
     }
 }

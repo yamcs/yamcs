@@ -1,0 +1,10 @@
+.page-content {
+  position: absolute;
+  top: 49px;
+  /* toolbar + its border */
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: auto;
+  background-color: var(--y-background-color);
+}

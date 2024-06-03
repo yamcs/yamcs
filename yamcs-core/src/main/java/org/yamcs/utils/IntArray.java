@@ -8,9 +8,6 @@ import java.util.stream.IntStream;
 /**
  * expandable array of ints
  * 
- * 
- * @author nm
- *
  */
 public class IntArray {
     public static final int DEFAULT_CAPACITY = 10;
@@ -55,9 +52,10 @@ public class IntArray {
      * add value to the array
      * 
      * @param x
-     *            - value to be added
+     *            * - value to be added
      */
     public void add(int x) {
+        hash = 0;
         ensureCapacity(length + 1);
         a[length] = x;
         length++;
@@ -67,6 +65,7 @@ public class IntArray {
         if (pos > length) {
             throw new IndexOutOfBoundsException("Index: " + pos + " length: " + length);
         }
+        hash = 0;
         ensureCapacity(length + 1);
         System.arraycopy(a, pos, a, pos + 1, length - pos);
         a[pos] = x;
@@ -93,6 +92,7 @@ public class IntArray {
      */
     public int remove(int pos) {
         rangeCheck(pos);
+        hash = 0;
         int r = a[pos];
 
         System.arraycopy(a, pos + 1, a, pos, length - pos - 1);
@@ -136,6 +136,7 @@ public class IntArray {
 
     public void set(int pos, int x) {
         rangeCheck(pos);
+        hash = 0;
         a[pos] = x;
     }
 
@@ -146,14 +147,14 @@ public class IntArray {
     }
 
     /**
-     * Returns the index of the first occurrence of the specified element in the
-     * array, or -1 if the array does not contain the element.
+     * Returns the index of the first occurrence of the specified element in the array, or -1 if the array does not
+     * contain the element.
      * 
      * @param x
      *            element which is searched for
      * 
-     * @return the index of the first occurrence of the specified element in
-     *         this list, or -1 if this list does not contain the element.
+     * @return the index of the first occurrence of the specified element in this list, or -1 if this list does not
+     *         contain the element.
      */
     public int indexOf(int x) {
         for (int i = 0; i < length; i++) {
@@ -172,8 +173,6 @@ public class IntArray {
         return a;
     }
 
-
-
     /**
      * Assuming that the array is sorted, performs a binary search and returns the position of the found element.
      * 
@@ -189,13 +188,73 @@ public class IntArray {
         return Arrays.binarySearch(a, 0, length, x);
     }
 
-    public void sort() {
-        Arrays.sort(a, 0, length);
+    /**
+     * return the number of elements of the intersection of the two arrays
+     * <p>
+     * both this and input have to be sorted
+     */
+    public int intersectionSize(IntArray input) {
+        int count = 0;
+        int idx1 = 0;
+        int idx2 = 0;
+
+        while (idx1 < this.length && idx2 < input.length) {
+            if (this.a[idx1] < input.a[idx2]) {
+                idx1++;
+            } else if (this.a[idx1] > input.a[idx2]) {
+                idx2++;
+            } else {
+                count++;
+                idx1++;
+                idx2++;
+            }
+        }
+
+        return count;
     }
 
     /**
-     * Sort the array concurrently swapping the elements in the list such that the
-     * correspondence is kept.
+     * Assuming that a1 and a2 are sorted, returns a new array storing the union.
+     * <p>
+     * sizeHint is the expected size of the returned array
+     */
+    public static IntArray union(IntArray a1, IntArray a2, int sizeHint) {
+        IntArray union = new IntArray(sizeHint);
+        int idx1 = 0;
+        int idx2 = 0;
+
+        while (idx1 < a1.length && idx2 < a2.length) {
+            if (a1.a[idx1] < a2.a[idx2]) {
+                union.add(a1.a[idx1]);
+                idx1++;
+            } else if (a1.a[idx1] > a2.a[idx2]) {
+                union.add(a2.a[idx2]);
+                idx2++;
+            } else {
+                union.add(a1.a[idx1]);
+                idx1++;
+                idx2++;
+            }
+        }
+        while (idx1 < a1.length) {
+            union.add(a1.a[idx1]);
+            idx1++;
+        }
+
+        while (idx2 < a2.length) {
+            union.add(a2.a[idx2]);
+            idx2++;
+        }
+        return union;
+    }
+
+    public void sort() {
+        Arrays.sort(a, 0, length);
+        hash = 0;
+    }
+
+    /**
+     * Sort the array concurrently swapping the elements in the list such that the correspondence is kept.
      * 
      * The list has to contain the same number of elements as the array
      * 
@@ -216,7 +275,7 @@ public class IntArray {
         if (lo < pi - 1) {
             quickSort(lo, pi - 1, list);
         }
-        if(pi<hi) {
+        if (pi < hi) {
             quickSort(pi, hi, list);
         }
     }
@@ -248,6 +307,7 @@ public class IntArray {
         a[i] = a[j];
         a[j] = tmp;
         Collections.swap(list, i, j);
+        hash = 0;
     }
 
     @Override

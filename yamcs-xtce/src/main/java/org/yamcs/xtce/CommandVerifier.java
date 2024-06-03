@@ -5,8 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * XTCE:
- * A command verifier is used to check that the command has been successfully executed.
+ * XTCE: A command verifier is used to check that the command has been successfully executed.
  * <p>
  * Command Verifiers may be either a Custom Algorithm or a Boolean Check or the presence of a Container for a relative
  * change in the value of a Parameter.
@@ -33,8 +32,8 @@ public class CommandVerifier implements Serializable {
     private final Type type;
 
     /**
-     * what can happen when the verification finishes
-     * XTCE does not specify very well, just that each verifier returns true or false.
+     * what can happen when the verification finishes XTCE does not specify very well, just that each verifier returns
+     * true or false.
      * 
      * We acknowledge the fact that the verifier can also timeout and define three TerminationAction for the three
      * outcomes: true, false or timeout.
@@ -198,6 +197,7 @@ public class CommandVerifier implements Serializable {
         return plist;
     }
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("{stage: ").append(stage);
@@ -213,6 +213,4 @@ public class CommandVerifier implements Serializable {
         sb.append(", checkWindow: ").append(checkWindow.toString()).append("}");
         return sb.toString();
     }
-
-
 }

@@ -594,17 +594,36 @@ message VerifierInfo {
     FAIL = 2;
   }
   optional string stage = 1;
+
+  // Container update that is checked
   optional ContainerInfo container = 2;
   optional AlgorithmInfo algorithm = 3;
+
+  // What action to take when a check succeeds
   optional TerminationActionType onSuccess = 4;
+
+  // What action to take when a check fails
   optional TerminationActionType onFail = 5;
+
+  // What action to take when a check times out
   optional TerminationActionType onTimeout = 6;
+
+  // Time window during which a check is executed
   optional CheckWindowInfo checkWindow = 7;
+
+  // Expression used to check this verifier
+  optional string expression = 8;
 }
 
 message CheckWindowInfo {
+
+  // Delay in milliseconds before starting to check
   optional int64 timeToStartChecking = 1;
+
+  // Duration in milliseconds of the check window
   optional int64 timeToStopChecking = 2;
+
+  // Reference time for starting the check window
   optional string relativeTo = 3;
 }
 
@@ -659,10 +678,12 @@ message ContainerInfo {
   optional int64 maxInterval = 6;
   optional int32 sizeInBits = 7;
   optional ContainerInfo baseContainer = 8;
-  repeated ComparisonInfo restrictionCriteria = 9;
+  repeated ComparisonInfo restrictionCriteria = 9 [deprecated=true];
+  optional string restrictionCriteriaExpression = 13;
   repeated SequenceEntryInfo entry = 10;
   optional UsedByInfo usedBy = 11;
   map<string, AncillaryDataInfo> ancillaryData = 12;
+  optional bool archivePartition = 14;
 }
 
 message InputParameterInfo {
@@ -933,7 +954,13 @@ message ListParametersRequest {
 }
 
 message ListParametersResponse {
-  repeated string spaceSystems = 4;
+  // Matching subsystems when the ``system`` option was specified
+  repeated SpaceSystemInfo systems = 5;
+
+  // Deprecated. Use ``systems`` instead
+  repeated string spaceSystems = 4 [deprecated=true];
+
+  // Matching parameters
   repeated ParameterInfo parameters = 1;
   
   // Token indicating the response is only partial. More results can then
@@ -959,7 +986,13 @@ message BatchGetParametersResponse {
 }
 
 message ListContainersResponse {
-  repeated string spaceSystems = 4;
+  // Matching subsystems when the ``system`` option was specified
+  repeated SpaceSystemInfo systems = 5;
+
+  // Deprecated. Use ``systems`` instead
+  repeated string spaceSystems = 4 [deprecated=true];
+
+  // Matching containers
   repeated ContainerInfo containers = 1;
   
   // Token indicating the response is only partial. More results can then
@@ -972,7 +1005,13 @@ message ListContainersResponse {
 }
 
 message ListParameterTypesResponse {
-  repeated string spaceSystems = 4;
+  // Matching subsystems when the ``system`` option was specified
+  repeated SpaceSystemInfo systems = 5;
+
+  // Deprecated. Use ``systems`` instead
+  repeated string spaceSystems = 4 [deprecated=true];
+
+  // Matching parameter types
   repeated ParameterTypeInfo parameterTypes = 1;
 
   // Token indicating the response is only partial. More results can then
@@ -985,7 +1024,13 @@ message ListParameterTypesResponse {
 }
 
 message ListCommandsResponse {
-  repeated string spaceSystems = 4;
+  // Matching subsystems when the ``system`` option was specified
+  repeated SpaceSystemInfo systems = 5;
+
+  // Deprecated. Use ``systems`` instead
+  repeated string spaceSystems = 4 [deprecated=true];
+
+  // Matching commands
   repeated CommandInfo commands = 1;
   
   // Token indicating the response is only partial. More results can then
@@ -998,7 +1043,13 @@ message ListCommandsResponse {
 }
 
 message ListAlgorithmsResponse {
-  repeated string spaceSystems = 4;
+  // Matching subsystems when the ``system`` option was specified
+  repeated SpaceSystemInfo systems = 5;
+
+  // Deprecated. Use ``systems`` instead
+  repeated string spaceSystems = 4 [deprecated=true];
+
+  // Matching algorithms
   repeated AlgorithmInfo algorithms = 1;
   
   // Token indicating the response is only partial. More results can then
@@ -1146,6 +1197,7 @@ message MissionDatabaseItem {
 }
 
 message ListSpaceSystemsResponse {
+  // Matching space systems
   repeated SpaceSystemInfo spaceSystems = 1;
   
   // Token indicating the response is only partial. More results can then

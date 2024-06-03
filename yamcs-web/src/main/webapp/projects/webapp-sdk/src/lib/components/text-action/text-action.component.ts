@@ -1,12 +1,19 @@
+import { NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular/core';
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
+  standalone: true,
   selector: 'ya-text-action',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './text-action.component.html',
-  styleUrls: ['./text-action.component.css'],
+  styleUrl: './text-action.component.css',
+  imports: [
+    MatIcon,
+    NgIf,
+  ],
 })
-export class TextActionComponent {
+export class YaTextAction {
 
   @Input()
   icon: string;

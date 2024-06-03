@@ -265,8 +265,10 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
             qf.tf.setDataStart(cspOffset + ccsdsDataStart);
             qf.tf.setDataEnd(cspOffset + ccsdsDataEnd);
         }
+        // BC frames contain no command but we still count it as one item out
+        var count = qf.tf.commands == null ? 1 : qf.tf.commands.size();
+        dataOut(count, qf.tf.getData().length);
 
-        dataCount.getAndIncrement();
         return qf.tf;
     }
 
@@ -1241,7 +1243,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
                 .addMember(new Member("nnR", sysParamsService.getBasicType(Type.UINT32)))
                 .build();
 
-        spCop1Status = sysParamsService.createSystemParameter(linkName + "/cop1Status", aggrType,
+        spCop1Status = sysParamsService.createSystemParameter(LINK_NAMESPACE + linkName + "/cop1Status", aggrType,
                 "Status of the COP1 protocol");
 
         addMonitor(new Cop1Monitor() {

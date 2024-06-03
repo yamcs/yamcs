@@ -1,7 +1,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { Instance } from '../client';
 
-@Pipe({ name: 'defaultProcessor' })
+@Pipe({
+  standalone: true,
+  name: 'defaultProcessor',
+})
 export class DefaultProcessorPipe implements PipeTransform {
 
   transform(instance: Instance): string | null {

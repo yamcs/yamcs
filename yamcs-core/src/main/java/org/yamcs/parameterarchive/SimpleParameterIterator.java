@@ -2,8 +2,7 @@ package org.yamcs.parameterarchive;
 
 import java.util.NoSuchElementException;
 
-import org.yamcs.parameter.Value;
-import org.yamcs.protobuf.Pvalue.ParameterStatus;
+import org.yamcs.utils.PeekingIterator;
 
 /**
  * For a given parameter id and group id, iterates over all parameters in the parameter archive (across all segments and
@@ -14,101 +13,73 @@ import org.yamcs.protobuf.Pvalue.ParameterStatus;
  * It embeds an {@link SegmentIterator} object.
  */
 public class SimpleParameterIterator implements ParameterIterator {
-    final SegmentIterator it;
+    final SegmentIterator segIt;
     final ParameterRequest req;
     final ParameterId parameterId;
-    ParameterValueSegment pvs;
-    int pos;
+
+    PeekingIterator<TimedValue> pvsIt;
+    TimedValue currentValue = null;
 
     public SimpleParameterIterator(ParameterArchive parchive, ParameterId parameterId, int parameterGroupId,
             ParameterRequest req) {
-        this.it = new SegmentIterator(parchive, parameterId, parameterGroupId, req);
         this.req = req;
         this.parameterId = parameterId;
-        init();
-    }
-
-    private void init() {
-        while (it.isValid()) {
-            pvs = it.value();
-            SortedTimeSegment timeSegment = pvs.timeSegment;
-
-            if (req.isAscending()) {
-                pos = timeSegment.search(req.getStart());
-                if (pos < 0) {
-                    pos = -pos - 1;
-                }
-
-            } else {
-                pos = timeSegment.search(req.getStop());
-                if (pos < 0) {
-                    pos = -pos - 2;
-                }
-            }
-            if (valid(pvs.timeSegment, pos)) {
-                break;
-            } else {
-                it.next();
-            }
-        }
-        if (!it.isValid()) {
-            pvs = null;
-            it.close();
-        }
+        this.segIt = new SegmentIterator(parchive, parameterId, parameterGroupId, req);
+        next();
     }
 
     @Override
     public boolean isValid() {
-        return pvs != null;
+        return currentValue != null;
     }
 
     @Override
     public TimedValue value() {
-        if (pvs == null) {
+        if (currentValue == null) {
             throw new NoSuchElementException();
         }
-        long t = pvs.timeSegment.getTime(pos);
-        Value ev = (pvs.engValueSegment == null) ? null : pvs.engValueSegment.getValue(pos);
-        Value rv = (pvs.rawValueSegment == null) ? null : pvs.rawValueSegment.getValue(pos);
-        ParameterStatus ps = (pvs.parameterStatusSegment == null) ? null : pvs.parameterStatusSegment.get(pos);
-
-        return new TimedValue(t, ev, rv, ps);
+        return currentValue;
     }
 
     @Override
     public void next() {
-        if (pvs == null) {
-            throw new NoSuchElementException();
-        }
-        if (req.isAscending()) {
-            pos++;
-        } else {
-            pos--;
+        currentValue = null;
+
+        if (pvsIt == null || !pvsIt.isValid()) {
+            nextPvsIt();
+
+            if (pvsIt == null || !pvsIt.isValid()) {
+                return;
+            }
         }
 
-        if (!valid(pvs.timeSegment, pos)) {
-            it.next();
-            if (it.isValid()) {
-                pvs = it.value();
-                pos = req.isAscending() ? 0 : pvs.timeSegment.size() - 1;
-            } else {
-                it.close();
-                pvs = null;
-            }
+        currentValue = pvsIt.value();
+        pvsIt.next();
+        if ((req.ascending && currentValue.instant >= req.stop) ||
+                (!req.ascending && currentValue.instant <= req.start)) {
+            currentValue = null;
+            pvsIt = null;
+            close();
+            return;
         }
     }
 
-    private boolean valid(SortedTimeSegment timeSegment, int pos) {
-        if (req.isAscending()) {
-            return pos < timeSegment.size() && timeSegment.getTime(pos) < req.getStop();
-        } else {
-            return pos >= 0 && timeSegment.getTime(pos) > req.getStart();
+    private void nextPvsIt() {
+        while (segIt.isValid()) {
+            var pvs = segIt.value();
+            segIt.next();
+
+            pvsIt = req.ascending ? pvs.newAscendingIterator(req.getStart())
+                    : pvs.newDescendingIterator(req.getStop());
+            if (pvsIt.isValid()) {
+                break;
+            }
         }
     }
 
     @Override
     public void close() {
-        it.close();
+        segIt.close();
     }
 
     public ParameterId getParameterId() {
@@ -116,7 +87,6 @@ public class SimpleParameterIterator implements ParameterIterator {
     }
 
     public int getParameterGroupId() {
-        return it.getParameterGroupId();
+        return segIt.getParameterGroupId();
     }
-
 }

@@ -1,26 +1,23 @@
 package org.yamcs.cfdp;
 
-import org.yamcs.YConfiguration;
-import org.yamcs.cfdp.pdu.*;
-import org.yamcs.cfdp.OngoingCfdpTransfer.FaultHandlingAction;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.yamcs.YConfiguration;
+import org.yamcs.cfdp.OngoingCfdpTransfer.FaultHandlingAction;
+import org.yamcs.cfdp.pdu.CfdpHeader;
+import org.yamcs.cfdp.pdu.CfdpPacket;
+import org.yamcs.cfdp.pdu.ConditionCode;
+import org.yamcs.cfdp.pdu.FileStoreRequest;
+import org.yamcs.cfdp.pdu.MessageToUser;
+import org.yamcs.cfdp.pdu.MetadataPacket;
+
 /**
- * Put.request (destination CFDP entity ID,
- * [source file name],
- * [destination file name],
- * [segmentation control],
- * [fault handler overrides],
- * [flow label],
- * [transmission mode],
- * [closure requested],
- * [messages to user],
- * [filestore requests])
+ * Put.request (destination CFDP entity ID, [source file name], [destination file name], [segmentation control], [fault
+ * handler overrides], [flow label], [transmission mode], [closure requested], [messages to user], [filestore requests])
  */
-public class PutRequest extends CfdpRequest{
+public class PutRequest extends CfdpRequest {
 
     // Required fields
     private final long destinationCfdpEntityId;
@@ -29,7 +26,8 @@ public class PutRequest extends CfdpRequest{
     private String sourceFileName;
     private String destinationFileName;
     private SegmentationControl segmentationControl; // NOT IMPLEMENTED
-    private Map<ConditionCode, FaultHandlingAction> faultHandlerOverride; // [[condition code, handler code],...] NOT IMPLEMENTED
+    private Map<ConditionCode, FaultHandlingAction> faultHandlerOverride; // [[condition code, handler code],...] NOT
+                                                                          // IMPLEMENTED
     private String flowLabel; // NOT IMPLEMENTED
     private CfdpPacket.TransmissionMode transmissionMode;
     private boolean closureRequested = false;
@@ -78,15 +76,16 @@ public class PutRequest extends CfdpRequest{
     }
 
     // Constructor for messages to user
-    protected PutRequest(long destinationCfdpEntityId, CfdpPacket.TransmissionMode transmissionMode, List<MessageToUser> messagesToUser) {
+    protected PutRequest(long destinationCfdpEntityId, CfdpPacket.TransmissionMode transmissionMode,
+            List<MessageToUser> messagesToUser) {
         this(destinationCfdpEntityId);
         this.transmissionMode = transmissionMode;
         this.messagesToUser = messagesToUser;
     }
 
     /**
-     * Generate relevant header and metadata the put request
-     * (Only implemented for Messages To User currently)
+     * Generate relevant header and metadata the put request (Only implemented for Messages To User currently)
+     *
      * @param initiatorEntityId
      * @param sequenceNumber
      * @param checksumType
@@ -97,11 +96,11 @@ public class PutRequest extends CfdpRequest{
             YConfiguration config) {
         CfdpTransactionId transactionId = new CfdpTransactionId(initiatorEntityId, sequenceNumber);
         // Copy File Procedure
-            // fault handlers from PR
-            // messages to user  & file store requests from PR
-            // no source/destination = only metadata
-            // transmission mode from PR if specified (Management Information Base otherwise)
-            // closure requested from PR if specified (Management Information Base otherwise)
+        // fault handlers from PR
+        // messages to user & file store requests from PR
+        // no source/destination = only metadata
+        // transmission mode from PR if specified (Management Information Base otherwise)
+        // closure requested from PR if specified (Management Information Base otherwise)
 
         // TODO: Generalise, only implemented for Messages To User only transaction at the moment
         header = new CfdpHeader(
@@ -113,8 +112,7 @@ public class PutRequest extends CfdpRequest{
                 config.getInt("sequenceNrLength"),
                 initiatorEntityId,
                 destinationCfdpEntityId,
-                sequenceNumber
-        );
+                sequenceNumber);
 
         metadata = new MetadataPacket(
                 closureRequested,
@@ -123,8 +121,7 @@ public class PutRequest extends CfdpRequest{
                 "",
                 "",
                 new ArrayList<>(messagesToUser),
-                header
-        );
+                header);
 
         return transactionId;
     }
@@ -173,7 +170,6 @@ public class PutRequest extends CfdpRequest{
         return fileStoreRequests;
     }
 
-    // ========== Extra getters ==========
     public CfdpHeader getHeader() {
         return header;
     }
@@ -193,6 +189,4 @@ public class PutRequest extends CfdpRequest{
     public long getChecksum() {
         return 0;
     }
-    // ===================================
-
 }

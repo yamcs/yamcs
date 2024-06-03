@@ -29,21 +29,20 @@ import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtce.TimeEpoch;
 import org.yamcs.xtce.ValueEnumeration;
-import org.yamcs.xtce.XtceDb;
 
 public class SpreadsheetLoaderTest {
-    XtceDb db;
+    Mdb mdb;
 
     @BeforeEach
-    public void setupXtceDb() {
+    public void setupMdb() {
         YConfiguration.setupTest("refmdb");
         MdbFactory.reset();
-        db = MdbFactory.getInstance("refmdb");
+        mdb = MdbFactory.getInstance("refmdb");
     }
 
     @Test
     public void testParameterAliases() throws Exception {
-        Parameter p = db.getParameter("/REFMDB/SUBSYS1/IntegerPara1_1");
+        Parameter p = mdb.getParameter("/REFMDB/SUBSYS1/IntegerPara1_1");
         assertNotNull(p);
         String aliasPathname = p.getAlias("MDB:Pathname");
         assertEquals("/ccsds-default/PKT1/IntegerPara1_1", aliasPathname);
@@ -54,12 +53,12 @@ public class SpreadsheetLoaderTest {
 
     @Test
     public void testCommandAliases() throws Exception {
-        MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/ONE_INT_ARG_TC");
+        MetaCommand cmd1 = mdb.getMetaCommand("/REFMDB/SUBSYS1/ONE_INT_ARG_TC");
         assertNotNull(cmd1);
         String alias = cmd1.getAlias("MDB:Alias1");
         assertEquals("AlternativeName1", alias);
 
-        MetaCommand cmd2 = db.getMetaCommand("/REFMDB/SUBSYS1/FIXED_VALUE_TC");
+        MetaCommand cmd2 = mdb.getMetaCommand("/REFMDB/SUBSYS1/FIXED_VALUE_TC");
         assertNotNull(cmd1);
         alias = cmd2.getAlias("MDB:Alias1");
         assertEquals("AlternativeName2", alias);
@@ -67,7 +66,7 @@ public class SpreadsheetLoaderTest {
 
     @Test
     public void testCommandVerifiers() throws Exception {
-        MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/CONT_VERIF_TC");
+        MetaCommand cmd1 = mdb.getMetaCommand("/REFMDB/SUBSYS1/CONT_VERIF_TC");
         assertNotNull(cmd1);
         assertTrue(cmd1.hasCommandVerifiers());
         List<CommandVerifier> verifiers = cmd1.getCommandVerifiers();
@@ -76,12 +75,12 @@ public class SpreadsheetLoaderTest {
 
     @Test
     public void testAlgorithmAliases() throws Exception {
-        Algorithm algo = db.getAlgorithm("/REFMDB/SUBSYS1/sliding_window");
+        Algorithm algo = mdb.getAlgorithm("/REFMDB/SUBSYS1/sliding_window");
         assertNotNull(algo);
         String alias = algo.getAlias("namespace1");
         assertEquals("/alternative/name1", alias);
 
-        algo = db.getAlgorithm("/REFMDB/SUBSYS1/float_ypr");
+        algo = mdb.getAlgorithm("/REFMDB/SUBSYS1/float_ypr");
         assertNotNull(algo);
         alias = algo.getAlias("namespace1");
         assertEquals("another alternative name", alias);
@@ -89,7 +88,7 @@ public class SpreadsheetLoaderTest {
 
     @Test
     public void testContainerAliases() throws Exception {
-        SequenceContainer container = db.getSequenceContainer("/REFMDB/SUBSYS1/PKT1_2");
+        SequenceContainer container = mdb.getSequenceContainer("/REFMDB/SUBSYS1/PKT1_2");
         assertNotNull(container);
         String alias = container.getAlias("MDB:Pathname");
         assertEquals("REFMDB\\ACQ\\PKTS\\PKT12", alias);
@@ -97,7 +96,7 @@ public class SpreadsheetLoaderTest {
 
     @Test
     public void testReferenceAliases() throws Exception {
-        Algorithm a = db.getAlgorithm("/REFMDB/SUBSYS1/algo_ext_spacesys");
+        Algorithm a = mdb.getAlgorithm("/REFMDB/SUBSYS1/algo_ext_spacesys");
         assertNotNull(a);
         List<InputParameter> lin = a.getInputSet();
         assertEquals(1, lin.size());
@@ -109,17 +108,17 @@ public class SpreadsheetLoaderTest {
 
     @Test
     public void testTimeParam() throws Exception {
-        Parameter p = db.getParameter("/REFMDB/SUBSYS1/TimePara6_1");
+        Parameter p = mdb.getParameter("/REFMDB/SUBSYS1/TimePara6_1");
         assertEquals(TimeEpoch.CommonEpochs.GPS,
                 ((AbsoluteTimeParameterType) p.getParameterType()).getReferenceTime().getEpoch().getCommonEpoch());
 
-        p = db.getParameter("/REFMDB/SUBSYS1/TimePara6_2");
+        p = mdb.getParameter("/REFMDB/SUBSYS1/TimePara6_2");
         assertEquals(0.0039062500, ((AbsoluteTimeParameterType) p.getParameterType()).getScale(), 1e-5);
     }
 
     @Test
     public void testContextCalib() throws Exception {
-        Parameter p = db.getParameter("/REFMDB/SUBSYS1/FloatPara1_10_3");
+        Parameter p = mdb.getParameter("/REFMDB/SUBSYS1/FloatPara1_10_3");
         FloatParameterType ptype = (FloatParameterType) p.getParameterType();
         FloatDataEncoding encoding = (FloatDataEncoding) ptype.getEncoding();
 
@@ -128,7 +127,7 @@ public class SpreadsheetLoaderTest {
 
     @Test
     public void testAggregates() throws Exception {
-        Parameter p = db.getParameter("/REFMDB/SUBSYS1/aggregate_para1");
+        Parameter p = mdb.getParameter("/REFMDB/SUBSYS1/aggregate_para1");
         AggregateParameterType ptype = (AggregateParameterType) p.getParameterType();
         IntegerParameterType mtype = (IntegerParameterType) ptype.getMember("member1").getType();
         IntegerDataEncoding enc = (IntegerDataEncoding) mtype.getEncoding();
@@ -140,7 +139,7 @@ public class SpreadsheetLoaderTest {
 
     @Test
     public void testArrays() throws Exception {
-        Parameter p = db.getParameter("/REFMDB/SUBSYS1/array_para1");
+        Parameter p = mdb.getParameter("/REFMDB/SUBSYS1/array_para1");
         ArrayParameterType ptype = (ArrayParameterType) p.getParameterType();
         AggregateParameterType mtype = (AggregateParameterType) ptype.getElementType();
         IntegerDataType itype = (IntegerDataType) mtype.getMember("member1").getType();
@@ -150,17 +149,17 @@ public class SpreadsheetLoaderTest {
 
     @Test
     public void testIndirectRefEntry() throws Exception {
-        SequenceContainer se = db.getSequenceContainer("/REFMDB/SUBSYS1/PKT9");
+        SequenceContainer se = mdb.getSequenceContainer("/REFMDB/SUBSYS1/PKT9");
         List<SequenceEntry> l = se.getEntryList();
         assertEquals(2, l.size());
         IndirectParameterRefEntry ipre = (IndirectParameterRefEntry) l.get(1);
         assertEquals("OB_ID", ipre.getAliasNameSpace());
-        assertEquals(db.getParameter("/REFMDB/SUBSYS1/pkt9_pid"), ipre.getParameterRef().getParameter());
+        assertEquals(mdb.getParameter("/REFMDB/SUBSYS1/pkt9_pid"), ipre.getParameterRef().getParameter());
     }
 
     @Test
     public void testEnumerationDescription() throws Exception {
-        EnumeratedParameterType ept = (EnumeratedParameterType) db.getParameterType("/REFMDB/SUBSYS1/enum1");
+        EnumeratedParameterType ept = (EnumeratedParameterType) mdb.getParameterType("/REFMDB/SUBSYS1/enum1");
         ValueEnumeration ve = ept.enumValue("one_why not");
         assertEquals("testing the description of the enumeration label", ve.getDescription());
     }

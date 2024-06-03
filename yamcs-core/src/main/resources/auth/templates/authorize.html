@@ -7,6 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Yamcs Mission Control">
   <meta name="application-name" content="Yamcs">
+  <meta name="robots" content="noindex,nofollow">
   <link rel="apple-touch-icon" sizes="180x180" href="{{ contextPath }}/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="{{ contextPath }}/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="{{ contextPath }}/favicon-16x16.png">
@@ -45,11 +46,11 @@
             </p>
             {% endif %}
 
-            <input type="hidden" name="client_id" value="{{ request.client_id }}">
-            <input type="hidden" name="redirect_uri" value="{{ request.redirect_uri }}">
+            <input type="hidden" name="client_id" value="{{ request.client_id | escape }}">
+            <input type="hidden" name="redirect_uri" value="{{ request.redirect_uri | escape }}">
           
             {% if request.state %}
-            <input type="hidden" name="state" value="{{ request.state }}">
+            <input type="hidden" name="state" value="{{ request.state | escape }}">
             {% endif %}
           
             <div style="text-align: right">

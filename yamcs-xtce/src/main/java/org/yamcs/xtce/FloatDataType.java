@@ -81,10 +81,15 @@ public abstract class FloatDataType extends NumericDataType {
     public Double convertType(Object value) {
         if (value instanceof String) {
             String stringValue = (String) value;
-            if (sizeInBits == 32) {
-                return (double) Float.parseFloat(stringValue);
-            } else {
-                return Double.parseDouble(stringValue);
+            try {
+                if (sizeInBits == 32) {
+                    return (double) Float.parseFloat(stringValue);
+                } else {
+                    return Double.parseDouble(stringValue);
+                }
+            } catch (NumberFormatException e) {
+                // Customize the message for better user experience
+                throw new NumberFormatException("Not a valid float");
             }
         } else if (value instanceof Number) {
             return ((Number) value).doubleValue();

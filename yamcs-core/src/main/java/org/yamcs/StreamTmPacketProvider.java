@@ -8,9 +8,9 @@ import java.util.Set;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.StreamConfig.TmStreamConfigEntry;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -28,6 +28,7 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 public class StreamTmPacketProvider extends AbstractProcessorService implements TmPacketProvider {
     Stream stream;
     TmProcessor tmProcessor;
+    Mdb mdb;
     volatile boolean disabled = false;
     volatile long lastPacketTime;
 
@@ -37,6 +38,7 @@ public class StreamTmPacketProvider extends AbstractProcessorService implements 
     public void init(Processor proc, YConfiguration config, Object spec) {
         super.init(proc, config, spec);
         this.tmProcessor = proc.getTmProcessor();
+        this.mdb = MdbFactory.getInstance(proc.getInstance());
         readStreamConfig(proc.getName());
         proc.setPacketProvider(this);
     }
@@ -48,7 +50,6 @@ public class StreamTmPacketProvider extends AbstractProcessorService implements 
     private void readStreamConfig(String procName) {
         String yamcsInstance = getYamcsInstance();
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-        XtceDb xtcedb = MdbFactory.getInstance(yamcsInstance);
 
         StreamConfig streamConfig = StreamConfig.getInstance(yamcsInstance);
 
@@ -68,11 +69,11 @@ public class StreamTmPacketProvider extends AbstractProcessorService implements 
             SequenceContainer rootContainer;
             rootContainer = sce.getRootContainer();
             if (rootContainer == null) {
-                rootContainer = xtcedb.getRootSequenceContainer();
+                rootContainer = mdb.getRootSequenceContainer();
             }
             if (rootContainer == null) {
                 throw new ConfigurationException(
-                        "XtceDb does not have a root sequence container and none was defined under streamConfig -> tm");
+                        "MDB does not have a root sequence container and none was defined under streamConfig -> tm");
             }
 
             log.debug("Processing packets from stream {} starting with root container {}", streamName,
@@ -130,6 +131,13 @@ public class StreamTmPacketProvider extends AbstractProcessorService implements 
             byte[] packet = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
             TmPacket pwrt = new TmPacket(rectime, gentime, seqCount, packet);
             lastPacketTime = gentime;
+
+            String preferredRootContainerName = tuple.getColumn(StandardTupleDefinitions.TM_ROOT_CONTAINER_COLUMN);
+            if (preferredRootContainerName != null) {
+                var preferredRootContainer = mdb.getSequenceContainer(preferredRootContainerName);
+                pwrt.setRootContainer(preferredRootContainer);
+            }
+
             tmProcessor.processPacket(pwrt, rootContainer);
         }
 

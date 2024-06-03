@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -14,13 +15,13 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
-import org.yamcs.archive.ReplayOptions;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.Spec.OptionType;
+import org.yamcs.archive.ReplayOptions;
 import org.yamcs.logging.Log;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
@@ -65,13 +66,16 @@ public class BackFiller implements StreamSubscriber {
 
     int compactCount = 0;
 
+    private List<BackFillerListener> listeners = new CopyOnWriteArrayList<>();
+
     BackFiller(ParameterArchive parchive, YConfiguration config) {
         this.parchive = parchive;
         this.log = new Log(BackFiller.class, parchive.getYamcsInstance());
         parseConfig(config);
         timeService = YamcsServer.getTimeService(parchive.getYamcsInstance());
         executor = new ScheduledThreadPoolExecutor(1,
-                new ThreadFactoryBuilder().setNameFormat("ParameterArchive-BackFiller-"+parchive.getYamcsInstance()).build());
+                new ThreadFactoryBuilder().setNameFormat("ParameterArchive-BackFiller-" + parchive.getYamcsInstance())
+                        .build());
 
     }
 
@@ -94,6 +98,7 @@ public class BackFiller implements StreamSubscriber {
         return spec;
 
     }
+
     void start() {
         if (schedules != null && !schedules.isEmpty()) {
             int c = 0;
@@ -195,6 +200,9 @@ public class BackFiller implements StreamSubscriber {
                 long t1 = System.nanoTime();
                 log.debug("Parameter archive fillup for interval {} finished, processed {} samples in {} millisec",
                         timePeriod, bft.getNumProcessedParameters(), (t1 - t0) / 1_000_000);
+                for (BackFillerListener listener : listeners) {
+                    listener.onBackfillFinished(start, stop, bft.getNumProcessedParameters());
+                }
             }
             if (compactFrequency != -1 && ++compactCount >= compactFrequency) {
                 compactCount = 0;
@@ -293,5 +301,13 @@ public class BackFiller implements StreamSubscriber {
     @Override
     public void streamClosed(Stream stream) {
         log.debug("Stream {} closed", stream.getName());
+    }
+
+    public void addListener(BackFillerListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(BackFillerListener listener) {
+        listeners.remove(listener);
     }
 }

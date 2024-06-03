@@ -2,7 +2,10 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { Value } from '../client';
 import * as utils from '../utils';
 
-@Pipe({ name: 'value' })
+@Pipe({
+  standalone: true,
+  name: 'value',
+})
 export class ValuePipe implements PipeTransform {
 
   transform(value: Value | null | undefined, options?: utils.PrintValueOptions): string | null {

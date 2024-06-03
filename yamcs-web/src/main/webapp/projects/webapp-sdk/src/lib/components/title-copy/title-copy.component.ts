@@ -1,17 +1,25 @@
 import { Clipboard } from '@angular/cdk/clipboard';
+import { AsyncPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input, ViewChild } from '@angular/core';
+import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { BehaviorSubject } from 'rxjs';
 
 const defaultText = "Copy to clipboard";
 
 @Component({
+  standalone: true,
   selector: 'ya-title-copy',
   templateUrl: './title-copy.component.html',
-  styleUrls: ['./title-copy.component.css'],
+  styleUrl: './title-copy.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    AsyncPipe,
+    MatIcon,
+    MatTooltip,
+  ],
 })
-export class TitleCopyComponent {
+export class YaTitleCopy {
 
   @Input()
   text: string;

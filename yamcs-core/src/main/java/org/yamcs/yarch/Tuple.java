@@ -8,8 +8,6 @@ import java.util.List;
 /**
  * Contains the tuple value (as an array of Columns) together with a pointer to its definition
  * 
- * @author nm
- *
  */
 public class Tuple {
     private TupleDefinition definition;
@@ -23,7 +21,7 @@ public class Tuple {
      */
     public Tuple() {
         this.definition = new TupleDefinition();
-        this.columns = new ArrayList<Object>();
+        this.columns = new ArrayList<>();
     }
 
     public Tuple(TupleDefinition definition, List<Object> columns) {
@@ -35,7 +33,7 @@ public class Tuple {
     }
 
     public Tuple(TupleDefinition definition, Object[] columns) {
-        this(definition, Arrays.asList(columns));
+        this(definition, new ArrayList<>(Arrays.asList(columns)));
     }
 
     /**
@@ -44,7 +42,7 @@ public class Tuple {
      * @param tdef
      */
     public Tuple(TupleDefinition tdef) {
-        columns = new ArrayList<Object>(Collections.nCopies(tdef.size(), null));
+        columns = new ArrayList<>(Collections.nCopies(tdef.size(), null));
     }
 
     public void setDefinition(TupleDefinition definition) {
@@ -55,7 +53,7 @@ public class Tuple {
         return definition;
     }
 
-    public List<Object> getColumns() {
+    public List<?> getColumns() {
         return columns;
     }
 
@@ -71,10 +69,18 @@ public class Tuple {
         columns.set(getColumnIndex(colName), value);
     }
 
+    /**
+     * returns the index of the column with name or -1 if there is no such column
+     * 
+     * @param colName
+     *            - the name of the column
+     * @return the index of the column with name or -1 if there is no such column
+     */
     public int getColumnIndex(String colName) {
         return definition.getColumnIndex(colName);
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T getColumn(String colName) {
         int i = definition.getColumnIndex(colName);
         if (i == -1) {
@@ -82,11 +88,12 @@ public class Tuple {
         }
         return (T) columns.get(i);
     }
-    
+
     /**
      * Get the value of column as long.
      * <p>
      * Throws exception if the column does not exist or is of different type
+     * 
      * @param colName
      * @return
      */
@@ -97,64 +104,67 @@ public class Tuple {
     public long getTimestampColumn(String colName) {
         return getColumn(colName);
     }
-    
-    
+
     /**
      * Get the value of column as boolean.
      * <p>
      * Throws exception if the column does not exist or is of different type
+     * 
      * @param colName
      * @return
      */
     public boolean getBooleanColumn(String colName) {
         return getColumn(colName);
     }
-    
+
     /**
      * Get the value of column as byte.
      * <p>
      * Throws exception if the column does not exist or is of different type
+     * 
      * @param colName
      * @return
      */
     public byte getByteColumn(String colName) {
         return getColumn(colName);
     }
+
     /**
      * Get the value of column as short.
      * <p>
      * Throws exception if the column does not exist or is of different type
+     * 
      * @param colName
      * @return
      */
     public short getShortColumn(String colName) {
         return getColumn(colName);
     }
-    
+
     /**
      * Get the value of column as int.
      * <p>
      * Throws exception if the column does not exist or is of different type
+     * 
      * @param colName
      * @return
      */
     public int getIntColumn(String colName) {
         return getColumn(colName);
     }
- 
-    
+
     /**
      * Get the value of column as double.
      * <p>
      * Throws exception if the column does not exist or is of different type
+     * 
      * @param colName
      * @return
      */
     public double getDoubleColumn(String colName) {
         return getColumn(colName);
     }
-    
-    
+
     public ColumnDefinition getColumnDefinition(String colName) {
         int i = definition.getColumnIndex(colName);
         if (i == -1) {
@@ -184,7 +194,7 @@ public class Tuple {
     public void addTimestampColumn(String colName, long colValue) {
         addColumn(colName, DataType.TIMESTAMP, colValue);
     }
-    
+
     /**
      * Add a INT column
      * 
@@ -224,6 +234,7 @@ public class Tuple {
     public void addColumn(String colName, String colValue) {
         addColumn(colName, DataType.STRING, colValue);
     }
+
     /**
      * Add an ENUM column
      * 
@@ -233,10 +244,20 @@ public class Tuple {
     public void addEnumColumn(String colName, String colValue) {
         addColumn(colName, DataType.ENUM, colValue);
     }
-    
+
     public void addColumn(String colName, DataType type, Object colValue) {
         definition.addColumn(colName, type);
         columns.add(colValue);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T removeColumn(String colName) {
+        int idx = definition.removeColumn(colName);
+        if (idx != -1) {
+            return (T) columns.remove(idx);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -263,7 +284,5 @@ public class Tuple {
         sb.append(")");
         return sb.toString();
     }
-
-  
 
 }

@@ -3,6 +3,8 @@
   color: #fff !important;
   overflow: hidden;
   position: relative;
+  /* CDK overlay is at 1000, we want to be above it */
+  z-index: 2000;
 }
 
 .message-bar.warning {

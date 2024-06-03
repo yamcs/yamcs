@@ -3,19 +3,23 @@ import { FrameLossListener } from './FrameLossListener';
 import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
+import { SessionListener } from './SessionListener';
 import { WebSocketClient } from './WebSocketClient';
+import { ActivitiesPage, Activity, ActivityLog, ActivityLogSubscription, ActivityScriptsPage, ActivitySubscription, CompleteManualActivityOptions, ExecutorsWrapper, GetActivitiesOptions, GetActivityLogResponse, GlobalActivityStatus, GlobalActivityStatusSubscription, StartActivityOptions, SubscribeActivitiesRequest, SubscribeActivityLogRequest, SubscribeGlobalActivityStatusRequest } from './types/activities';
 import { AcknowledgeAlarmOptions, Alarm, AlarmSubscription, ClearAlarmOptions, GetAlarmsOptions, GlobalAlarmStatus, GlobalAlarmStatusSubscription, ShelveAlarmOptions, SubscribeAlarmsRequest, SubscribeGlobalAlarmStatusRequest } from './types/alarms';
 import { CommandSubscription, SubscribeCommandsRequest } from './types/commandHistory';
 import { Cop1Config, Cop1Status, Cop1Subscription, DisableCop1Request, InitiateCop1Request, SubscribeCop1Request } from './types/cop1';
 import { CreateEventRequest, DownloadEventsOptions, Event, EventSubscription, GetEventsOptions, SubscribeEventsRequest } from './types/events';
-import { CreateTransferRequest, ListFilesRequest, ListFilesResponse, RemoteFileListSubscription, ServicesPage, SubscribeTransfersRequest, Transfer, TransferSubscription, TransfersPage } from './types/filetransfer';
+import { CreateTransferRequest, ListFilesRequest, ListFilesResponse, RemoteFileListSubscription, RunFileActionRequest, ServicesPage, SubscribeTransfersRequest, Transfer, TransferSubscription, TransfersPage } from './types/filetransfer';
 import { AlarmsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstanceTemplatesWrapper, InstancesWrapper, LinksWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SessionsWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
 import { AlgorithmOverrides, AlgorithmStatus, AlgorithmTrace, AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParameterTypesOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParameterType, ParameterTypesPage, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
-import { CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, ExecutorInfo, GetCommandHistoryOptions, GetCommandIndexOptions, GetCompletenessIndexOptions, GetEventIndexOptions, GetGapsOptions, GetPacketIndexOptions, GetPacketsOptions, GetParameterIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListApidsResponse, ListGapsResponse, ListPacketsResponse, Packet, ParameterData, ParameterValue, PlaybackInfo, Range, RequestPlaybackRequest, Sample, StartProcedureOptions, Value } from './types/monitoring';
-import { AlgorithmStatusSubscription, ExtractPacketResponse, PacketNamesResponse, ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeAlgorithmStatusRequest, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
+import { ArchiveRecord, CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, ExecutorInfo, ExportParameterValuesOptions, GetCommandHistoryOptions, GetCompletenessIndexOptions, GetPacketsOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListPacketsResponse, Packet, ParameterData, ParameterValue, Range, Sample, StartProcedureOptions, StreamCommandIndexOptions, StreamCompletenessIndexOptions, StreamEventIndexOptions, StreamPacketIndexOptions, StreamParameterIndexOptions, Value } from './types/monitoring';
+import { CreateParameterListRequest, GetParameterListsResponse, ParameterList, UpdateParameterListRequest } from './types/plists';
+import { AlgorithmStatusSubscription, BackfillingSubscription, DownloadCommandsOptions, ExtractPacketResponse, PacketNamesResponse, ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeAlgorithmStatusRequest, SubscribeBackfillingData, SubscribeBackfillingRequest, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
 import { CommandQueue, CommandQueueEvent, QueueEventsSubscription, QueueStatisticsSubscription, SubscribeQueueEventsRequest, SubscribeQueueStatisticsRequest } from './types/queue';
-import { AuditRecordsPage, AuthInfo, Clearance, ClearanceSubscription, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, Database, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GetAuditRecordsOptions, GroupInfo, HttpTraffic, Instance, InstanceConfig, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListDatabasesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListThreadsResponse, ListTopicsResponse, ReplicationInfo, ReplicationInfoSubscription, ResultSet, RoleInfo, Service, ServiceAccount, SystemInfo, SystemInfoSubscription, ThreadInfo, TokenResponse, UserInfo } from './types/system';
+import { SessionEvent, SessionSubscription } from './types/session';
+import { AuditRecordsPage, AuthInfo, Clearance, ClearanceSubscription, CompactRocksDbDatabaseRequest, CreateGroupRequest, CreateServiceAccountRequest, CreateServiceAccountResponse, CreateUserRequest, Database, EditClearanceRequest, EditGroupRequest, EditUserRequest, GeneralInfo, GetAuditRecordsOptions, GroupInfo, HttpTraffic, Instance, InstanceConfig, InstanceTemplate, LeapSecondsTable, ListClearancesResponse, ListDatabasesResponse, ListProcessorTypesResponse, ListRoutesResponse, ListServiceAccountsResponse, ListThreadsResponse, ListTopicsResponse, ReplicationInfo, ReplicationInfoSubscription, ResultSet, RoleInfo, Service, ServiceAccount, SystemInfo, SystemInfoSubscription, ThreadInfo, TokenResponse, UserInfo } from './types/system';
 import { Record, Stream, StreamData, StreamEvent, StreamStatisticsSubscription, StreamSubscription, SubscribeStreamRequest, SubscribeStreamStatisticsRequest, Table } from './types/table';
 import { SubscribeTimeRequest, Time, TimeSubscription } from './types/time';
 import { CreateTimelineBandRequest, CreateTimelineItemRequest, CreateTimelineViewRequest, GetTimelineItemsOptions, TimelineBand, TimelineBandsPage, TimelineItem, TimelineItemsPage, TimelineTagsPage, TimelineView, TimelineViewsPage, UpdateTimelineBandRequest, UpdateTimelineItemRequest, UpdateTimelineViewRequest } from './types/timeline';
@@ -33,7 +37,11 @@ export default class YamcsClient implements HttpHandler {
   readonly connected$ = new BehaviorSubject<boolean>(false);
   private webSocketClient?: WebSocketClient;
 
-  constructor(readonly baseHref = '/', private frameLossListener: FrameLossListener) {
+  constructor(
+    readonly baseHref = '/',
+    private frameLossListener: FrameLossListener,
+    private sessionListener: SessionListener,
+  ) {
     this.apiUrl = `${this.baseHref}api`;
     this.authUrl = `${this.baseHref}auth`;
   }
@@ -450,6 +458,42 @@ export default class YamcsClient implements HttpHandler {
     });
   }
 
+  async getParameterLists(instance: string) {
+    const url = `${this.apiUrl}/parameter-lists/${instance}/lists`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as GetParameterListsResponse;
+    return wrapper.lists || [];
+  }
+
+  async getParameterList(instance: string, id: string) {
+    const url = `${this.apiUrl}/parameter-lists/${instance}/lists/${id}`;
+    const response = await this.doFetch(url);
+    return await response.json() as ParameterList;
+  }
+
+  async createParameterList(instance: string, options: CreateParameterListRequest) {
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(`${this.apiUrl}/parameter-lists/${instance}/lists`, {
+      body,
+      method: 'POST',
+    });
+    return await response.json() as ParameterList;
+  }
+
+  async updateParameterList(instance: string, id: string, options: UpdateParameterListRequest) {
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(`${this.apiUrl}/parameter-lists/${instance}/lists/${id}`, {
+      body,
+      method: 'PATCH',
+    });
+    return await response.json() as ParameterList;
+  }
+
+  async deleteParameterList(instance: string, id: string) {
+    const url = `${this.apiUrl}/parameter-lists/${instance}/lists/${id}`;
+    return await this.doFetch(url, { method: 'DELETE' });
+  }
+
   async getUsers() {
     const url = `${this.apiUrl}/users`;
     const response = await this.doFetch(url);
@@ -560,6 +604,10 @@ export default class YamcsClient implements HttpHandler {
     return await this.doFetch(url, { method: 'DELETE' });
   }
 
+  createSessionSubscription(observer: (sessionEvent: SessionEvent) => void): SessionSubscription {
+    return this.webSocketClient!.createSubscription('session', {}, observer);
+  }
+
   createTimeSubscription(options: SubscribeTimeRequest, observer: (time: Time) => void): TimeSubscription {
     return this.webSocketClient!.createSubscription('time', options, observer);
   }
@@ -580,12 +628,20 @@ export default class YamcsClient implements HttpHandler {
     return this.webSocketClient!.createSubscription('processors', options, observer);
   }
 
+  createBackfillingSubscription(options: SubscribeBackfillingRequest, observer: (data: SubscribeBackfillingData) => void): BackfillingSubscription {
+    return this.webSocketClient!.createSubscription('backfilling', options, observer);
+  }
+
   createCop1Subscription(options: SubscribeCop1Request, observer: (cop1Status: Cop1Status) => void): Cop1Subscription {
     return this.webSocketClient!.createSubscription('cop1', options, observer);
   }
 
   createGlobalAlarmStatusSubscription(options: SubscribeGlobalAlarmStatusRequest, observer: (status: GlobalAlarmStatus) => void): GlobalAlarmStatusSubscription {
     return this.webSocketClient!.createSubscription('global-alarm-status', options, observer);
+  }
+
+  createGlobalActivityStatusSubscription(options: SubscribeGlobalActivityStatusRequest, observer: (status: GlobalActivityStatus) => void): GlobalActivityStatusSubscription {
+    return this.webSocketClient!.createSubscription('global-activity-status', options, observer);
   }
 
   createTMStatisticsSubscription(options: SubscribeTMStatisticsRequest, observer: (time: Statistics) => void): TMStatisticsSubscription {
@@ -602,6 +658,14 @@ export default class YamcsClient implements HttpHandler {
 
   createLinkSubscription(options: SubscribeLinksRequest, observer: (linkEvent: LinkEvent) => void): LinkSubscription {
     return this.webSocketClient!.createSubscription('links', options, observer);
+  }
+
+  createActivitySubscription(options: SubscribeActivitiesRequest, observer: (update: Activity) => void): ActivitySubscription {
+    return this.webSocketClient!.createSubscription('activities', options, observer);
+  }
+
+  createActivityLogSubscription(options: SubscribeActivityLogRequest, observer: (update: ActivityLog) => void): ActivityLogSubscription {
+    return this.webSocketClient!.createSubscription('activity-log', options, observer);
   }
 
   createTransferSubscription(options: SubscribeTransfersRequest, observer: (transfer: Transfer) => void): TransferSubscription {
@@ -661,9 +725,11 @@ export default class YamcsClient implements HttpHandler {
     return await response.text();
   }
 
-  async compactRocksDbDatabase(tablespace: string, dbPath = '') {
+  async compactRocksDbDatabase(tablespace: string, dbPath = '', options: CompactRocksDbDatabaseRequest) {
+    const body = JSON.stringify(options);
     const url = `${this.apiUrl}/archive/rocksdb/${tablespace}/${dbPath}:compact`;
     return await this.doFetch(url, {
+      body,
       method: 'POST',
     });
   }
@@ -718,6 +784,11 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as Event;
   }
 
+  getCommandsDownloadURL(instance: string, options: DownloadCommandsOptions = {}) {
+    const url = `${this.apiUrl}/archive/${instance}:exportCommands`;
+    return url + this.queryString(options);
+  }
+
   async editReplayProcessor(instance: string, processor: string, options: EditReplayProcessorRequest) {
     const body = JSON.stringify(options);
     const url = `${this.apiUrl}/processors/${instance}/${processor}`;
@@ -765,9 +836,10 @@ export default class YamcsClient implements HttpHandler {
     });
   }
 
-  async runLinkAction(instance: string, link: string, action: string) {
+  async runLinkAction(instance: string, link: string, action: string, message?: { [key: string]: any; }) {
     return this.doFetch(`${this.apiUrl}/links/${instance}/${link}/actions/${action}`, {
       method: 'POST',
+      body: JSON.stringify(message || {}),
     });
   }
 
@@ -981,32 +1053,52 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as PacketNamesResponse;
   }
 
-  async getPacketIndex(instance: string, options: GetPacketIndexOptions): Promise<IndexGroup[]> {
-    const url = `${this.apiUrl}/archive/${instance}/packet-index`;
-    const response = await this.doFetch(url + this.queryString(options));
-    const wrapper = await response.json() as IndexResult;
-    return wrapper.group || [];
+  async streamPacketIndex(instance: string, options: StreamPacketIndexOptions): Promise<ArchiveRecord[]> {
+    const url = `${this.apiUrl}/archive/${instance}:streamPacketIndex`;
+    const response = await this.doFetch(url, {
+      body: JSON.stringify(options),
+      method: 'POST',
+    });
+    // In-memory, we expect the stream to be limited by using an appropriate mergeTime
+    const text = await response.text();
+    const sanitized = '[' + text.replace(/}{/g, '},{') + ']';
+    return JSON.parse(sanitized);
   }
 
-  async getParameterIndex(instance: string, options: GetParameterIndexOptions): Promise<IndexGroup[]> {
-    const url = `${this.apiUrl}/archive/${instance}/parameter-index`;
-    const response = await this.doFetch(url + this.queryString(options));
-    const wrapper = await response.json() as IndexResult;
-    return wrapper.group || [];
+  async streamParameterIndex(instance: string, options: StreamParameterIndexOptions): Promise<ArchiveRecord[]> {
+    const url = `${this.apiUrl}/archive/${instance}:streamParameterIndex`;
+    const response = await this.doFetch(url, {
+      body: JSON.stringify(options),
+      method: 'POST',
+    });
+    // In-memory, we expect the stream to be limited by using an appropriate mergeTime
+    const text = await response.text();
+    const sanitized = '[' + text.replace(/}{/g, '},{') + ']';
+    return JSON.parse(sanitized);
   }
 
-  async getCommandIndex(instance: string, options: GetCommandIndexOptions): Promise<IndexGroup[]> {
-    const url = `${this.apiUrl}/archive/${instance}/command-index`;
-    const response = await this.doFetch(url + this.queryString(options));
-    const wrapper = await response.json() as IndexResult;
-    return wrapper.group || [];
+  async streamCommandIndex(instance: string, options: StreamCommandIndexOptions): Promise<ArchiveRecord[]> {
+    const url = `${this.apiUrl}/archive/${instance}:streamCommandIndex`;
+    const response = await this.doFetch(url, {
+      body: JSON.stringify(options),
+      method: 'POST',
+    });
+    // In-memory, we expect the stream to be limited by using an appropriate mergeTime
+    const text = await response.text();
+    const sanitized = '[' + text.replace(/}{/g, '},{') + ']';
+    return JSON.parse(sanitized);
   }
 
-  async getEventIndex(instance: string, options: GetEventIndexOptions): Promise<IndexGroup[]> {
-    const url = `${this.apiUrl}/archive/${instance}/event-index`;
-    const response = await this.doFetch(url + this.queryString(options));
-    const wrapper = await response.json() as IndexResult;
-    return wrapper.group || [];
+  async streamEventIndex(instance: string, options: StreamEventIndexOptions): Promise<ArchiveRecord[]> {
+    const url = `${this.apiUrl}/archive/${instance}:streamEventIndex`;
+    const response = await this.doFetch(url, {
+      body: JSON.stringify(options),
+      method: 'POST',
+    });
+    // In-memory, we expect the stream to be limited by using an appropriate mergeTime
+    const text = await response.text();
+    const sanitized = '[' + text.replace(/}{/g, '},{') + ']';
+    return JSON.parse(sanitized);
   }
 
   async getCompletenessIndex(instance: string, options: GetCompletenessIndexOptions): Promise<IndexGroup[]> {
@@ -1016,23 +1108,38 @@ export default class YamcsClient implements HttpHandler {
     return wrapper.group || [];
   }
 
+  async streamCompletenessIndex(instance: string, options: StreamCompletenessIndexOptions): Promise<ArchiveRecord[]> {
+    const url = `${this.apiUrl}/archive/${instance}:streamCompletenessIndex`;
+    const response = await this.doFetch(url, {
+      body: JSON.stringify(options),
+      method: 'POST',
+    });
+    // In-memory, we expect the stream to be limited by using an appropriate mergeTime
+    const text = await response.text();
+    const sanitized = '[' + text.replace(/}{/g, '},{') + ']';
+    return JSON.parse(sanitized);
+  }
+
   getPacketsDownloadURL(instance: string, options: DownloadPacketsOptions = {}) {
     const url = `${this.apiUrl}/archive/${instance}:exportPackets`;
     return url + this.queryString(options);
   }
 
-  getPacketDownloadURL(instance: string, gentime: string, seqnum: number) {
-    return `${this.apiUrl}/archive/${instance}/packets/${gentime}/${seqnum}:export`;
+  getPacketDownloadURL(instance: string, pname: string, gentime: string, seqnum: number) {
+    const encodedName = encodeURIComponent(pname);
+    return `${this.apiUrl}/archive/${instance}/packets/${encodedName}/${gentime}/${seqnum}:export`;
   }
 
-  async getPacket(instance: string, generationTime: string, sequenceNumber: number) {
-    const url = `${this.apiUrl}/archive/${instance}/packets/${generationTime}/${sequenceNumber}`;
+  async getPacket(instance: string, pname: string, generationTime: string, sequenceNumber: number) {
+    const encodedName = encodeURIComponent(pname);
+    const url = `${this.apiUrl}/archive/${instance}/packets/${encodedName}/${generationTime}/${sequenceNumber}`;
     const response = await this.doFetch(url);
     return await response.json() as Packet;
   }
 
-  async extractPacket(instance: string, generationTime: string, sequenceNumber: number): Promise<ExtractPacketResponse> {
-    const url = `${this.apiUrl}/archive/${instance}/packets/${generationTime}/${sequenceNumber}:extract`;
+  async extractPacket(instance: string, pname: string, generationTime: string, sequenceNumber: number): Promise<ExtractPacketResponse> {
+    const encodedName = encodeURIComponent(pname);
+    const url = `${this.apiUrl}/archive/${instance}/packets/${encodedName}/${generationTime}/${sequenceNumber}:extract`;
     const response = await this.doFetch(url);
     return await response.json() as ExtractPacketResponse;
   }
@@ -1109,6 +1216,15 @@ export default class YamcsClient implements HttpHandler {
   getParameterValuesDownloadURL(instance: string, options: DownloadParameterValuesOptions = {}) {
     const url = `${this.apiUrl}/archive/${instance}:exportParameterValues`;
     return url + this.queryString(options);
+  }
+
+  async exportParameterValues(instance: string, options: ExportParameterValuesOptions) {
+    const url = `${this.apiUrl}/archive/${instance}:exportParameterValues`;
+    const response = await this.doFetch(url, {
+      method: 'POST',
+      body: JSON.stringify(options),
+    });
+    return await response.text();
   }
 
   async setParameterValue(instance: string, processorName: string, qualifiedName: string, value: Value) {
@@ -1218,6 +1334,66 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as Container;
   }
 
+  async getActivities(instance: string, options: GetActivitiesOptions = {}) {
+    const url = `${this.apiUrl}/activities/${instance}/activities`;
+    const response = await this.doFetch(url + this.queryString(options));
+    return await response.json() as ActivitiesPage;
+  }
+
+  async getActivity(instance: string, activityId: string) {
+    const url = `${this.apiUrl}/activities/${instance}/activities/${activityId}`;
+    const response = await this.doFetch(url);
+    return await response.json() as Activity;
+  }
+
+  async getActivityLog(instance: string, activityId: string) {
+    const url = `${this.apiUrl}/activities/${instance}/activities/${activityId}/log`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as GetActivityLogResponse;
+    return wrapper.logs || [];
+  }
+
+  async startActivity(instance: string, options: StartActivityOptions) {
+    const url = `${this.apiUrl}/activities/${instance}/activities`;
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(url, {
+      body,
+      method: 'POST',
+    });
+    return await response.json() as Activity;
+  }
+
+  async cancelActivity(instance: string, activity: string) {
+    const url = `${this.apiUrl}/activities/${instance}/activities/${activity}:cancel`;
+    const response = await this.doFetch(url, {
+      method: 'POST',
+    });
+    return await response.json() as Activity;
+  }
+
+  async completeManualActivity(instance: string, activity: string, options: CompleteManualActivityOptions = {}) {
+    const url = `${this.apiUrl}/activities/${instance}/activities/${activity}:complete`;
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(url, {
+      body,
+      method: 'POST',
+    });
+    return await response.json() as Activity;
+  }
+
+  async getExecutors(instance: string) {
+    const url = `${this.apiUrl}/activities/${instance}/executors`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as ExecutorsWrapper;
+    return wrapper.executors || [];
+  }
+
+  async getActivityScripts(instance: string) {
+    const url = `${this.apiUrl}/activities/${instance}/scripts`;
+    const response = await this.doFetch(url);
+    return await response.json() as ActivityScriptsPage;
+  }
+
   async getAlgorithms(instance: string, options: GetAlgorithmsOptions = {}) {
     const url = `${this.apiUrl}/mdb/${instance}/algorithms`;
     const response = await this.doFetch(url + this.queryString(options));
@@ -1285,31 +1461,10 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as ListFilesResponse;
   }
 
-  async getApids(instance: string) {
-    const url = `${this.apiUrl}/dass/apids/${instance}`;
-    const response = await this.doFetch(url);
-    const wrapper = await response.json() as ListApidsResponse;
-    return wrapper.apids || [];
-  }
-
-  async getGaps(instance: string, options: GetGapsOptions) {
-    const url = `${this.apiUrl}/dass/gaps/${instance}`;
-    const response = await this.doFetch(url + this.queryString(options));
-    return await response.json() as ListGapsResponse;
-  }
-
-  async getPlaybackInfo(instance: string, link: string) {
-    const url = `${this.apiUrl}/dass/links/${instance}/${link}/playback`;
-    const response = await this.doFetch(url);
-    return await response.json() as PlaybackInfo;
-  }
-
-  async requestPlayback(instance: string, link: string, options: RequestPlaybackRequest) {
-    const url = `${this.apiUrl}/dass/links/${instance}/${link}:requestPlayback`;
-    const body = JSON.stringify(options);
-    return await this.doFetch(url, {
-      body,
+  async runFileAction(instance: string, service: string, request: RunFileActionRequest) {
+    return this.doFetch(`${this.apiUrl}/filetransfer/${instance}/${service}/files:runFileAction`, {
       method: 'POST',
+      body: JSON.stringify(request),
     });
   }
 
@@ -1386,9 +1541,18 @@ export default class YamcsClient implements HttpHandler {
       // WebSocket was not yet set up (for example because auth is still
       // required).
       this.webSocketClient.connected$.subscribe(connected => {
+        if (connected) {
+          this.createSessionSubscription(evt => {
+            this.sessionListener.onSessionEnd(evt.endReason);
+          });
+        }
         this.connected$.next(connected);
       });
     }
+  }
+
+  getWebSocketClient() {
+    return this.webSocketClient;
   }
 
   closeWebSocketClient() {
@@ -1400,6 +1564,7 @@ export default class YamcsClient implements HttpHandler {
 
   queryString(options: { [key: string]: any; }) {
     const qs = Object.keys(options)
+      .filter(k => options[k] !== undefined)
       .map(k => `${k}=${options[k]}`)
       .join('&');
     return qs === '' ? qs : '?' + qs;

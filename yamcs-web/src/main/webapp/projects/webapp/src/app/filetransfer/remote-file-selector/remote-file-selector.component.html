@@ -1,0 +1,81 @@
+<table mat-table
+       *ngIf="dataSource"
+       [dataSource]="dataSource"
+       class="ya-data-table expand no-frame"
+       [class.no-select]="noSelect">
+
+  <ng-container cdkColumnDef="actions">
+    <th mat-header-cell *cdkHeaderCellDef
+        class="status"
+        width="1"></th>
+    <td mat-cell *cdkCellDef="let item" class="status">
+      <ya-more [padding]="false">
+        <ng-container *ngFor="let action of fileActions">
+          <button mat-menu-item
+                  [disabled]="!action.enabled"
+                  (click)="runFileAction(item.name, action)">
+            <ng-container *ngIf="action.style === 'CHECK_BOX'">
+              <mat-icon [style.visibility]="action.checked ? 'visible' : 'hidden'">check</mat-icon>
+            </ng-container>
+            {{ action.label }}
+          </button>
+        </ng-container>
+      </ya-more>
+    </td>
+  </ng-container>
+
+  <ng-container cdkColumnDef="name">
+    <th mat-header-cell *cdkHeaderCellDef style="width: 400px">Name</th>
+    <td mat-cell *cdkCellDef="let item">
+      <ng-container *ngIf="item.folder">
+        <mat-icon class="icon12" style="vertical-align: middle">folder</mat-icon>
+        {{ item.displayName ?? (item.name | filename) }}/
+      </ng-container>
+      <ng-container *ngIf="!item.folder">
+        <mat-icon class="icon12" style="vertical-align: middle">description</mat-icon>
+        <span [ngClass]="foldersOnly ? 'disabled' : ''">{{ item.displayName ?? (item.name | filename) }}</span>
+      </ng-container>
+    </td>
+  </ng-container>
+
+  <ng-container cdkColumnDef="modified">
+    <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Date modified</th>
+    <td mat-cell *cdkCellDef="let item">
+      <span [ngClass]="(!item.folder && foldersOnly) ? 'disabled' : ''">{{ (item.modified | datetime) || '-' }}</span>
+    </td>
+  </ng-container>
+
+  <ng-container cdkColumnDef="size">
+    <th mat-header-cell *cdkHeaderCellDef style="width: 70px">Size</th>
+    <td mat-cell *cdkCellDef="let item">
+      <span [ngClass]="(!item.folder && foldersOnly) ? 'disabled' : ''">{{ (item.size | formatBytes) || '-' }}</span>
+    </td>
+  </ng-container>
+
+  <ng-container cdkColumnDef="parent">
+    <td mat-header-cell *cdkHeaderCellDef
+        [attr.colspan]="(displayedColumns$ | async)?.length">
+      <mat-icon class="icon12" style="vertical-align: middle; visibility: hidden">description</mat-icon>
+      ..
+    </td>
+  </ng-container>
+
+  <ng-container *ngFor="let extraColumn of extraColumns$ | async" [cdkColumnDef]="extraColumn.id">
+    <th mat-header-cell *cdkHeaderCellDef width="1">{{ extraColumn.label }}</th>
+    <td mat-cell *cdkCellDef="let item">
+      <ng-container *ngIf="item.extra">
+        {{ item.extra[extraColumn.id] ?? '-' }}
+      </ng-container>
+      <ng-container *ngIf="!item.extra">-</ng-container>
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *cdkHeaderRowDef="displayedColumns$ | async" (click)="clearSelection()"></tr>
+  <tr mat-row *cdkHeaderRowDef="['parent']"
+      class="parent-row"
+      [class.hide]="!(currentPrefix$ | async)"
+      (click)="selectParent()"></tr>
+  <tr mat-row *cdkRowDef="let row; columns: displayedColumns$ | async;"
+      [class.selected]="isSelected(row)"
+      (click)="selectFile($event, row)"></tr>
+</table>

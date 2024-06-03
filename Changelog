@@ -1,4 +1,60 @@
-Version 5.8.8 released 29-Sep-2023
+Version 5.9.6 released 24-May-2024
+- Allow descriptions for aggregate members defined in the spreadsheet
+- Small tweaks and fixes
+
+Version 5.9.5 released 11-May-2024
+- Add CSV export for commands
+- Small tweaks and fixes related to CFDP, Parameter Archive, Permissions, replication
+
+
+Version 5.9.4 released 11-Apr-2024
+- Implemented sparse groups in the parameter archive. This allows faster retrieval and less memory consumed during builtup and retrieval, at the expense of sliglthy higher disk usage
+- Added a processor option to persist the latest parameter values, such that when Yamcs restarts, it remembers the values for all parameters with the persist flag set. In XTCE, all parameters have the flag set by default. For spreadsheets, they have to be marked specifically using the newly added 'p' flag.
+- For web-rendered OPI displays, show past values on plots, in addition to realtime values
+- Automatically update plots following completion of a backfill operation
+- For `FilePollingTmDataLink`, add a `lastPacketStream` option, so that the last packet on a dump stream could be emitted to the realtime stream (for updating display state of connected clients)
+- On `GenericPacketPreprocessor`, add a `rootContainer` option. Previously this could only be done by making a new stream.
+
+
+Version 5.9.3 released 25-March-2024
+- Added a yamcs parameter-archive purge operation to remove completely the parameter archive before rebuilding.
+  Sometimes the rebuild does not properly remove old data resulting in duplicates (this bug will be addressed in a future release) and the purge can be run to overcome the problem.
+- Added system parameters for reporting memory consumed by RocksDB
+- Improve accuracy of Archive Browser display
+- Improve visualization of arrays/aggregates in on-demand packet extraction result
+- Update to Angular 17 - this requires minimum node version 18
+
+Version 5.9.2 released 12-March-2024
+- Tweak activity-related UI
+- Fix issue with cancelling of activities
+- Fix issue with verification of commands with non-parameter inputs
+- Fix yamcs-web packaging issue
+- Added a option dataPartitioningByTime to allow partitioning the tm, pp, events, alarms, cmdhistory tables and the parameter archive by time.
+
+
+Version 5.9.1 released 6-March-2024
+- Fixed a bug whereas Yamcs won't remember after the first restart that it stored the tm,pp and events table in a different RocksDB column family (option introduced in 5.9.0)
+
+
+Version 5.9.0 released 5-March-2024
+- Added activities and procedures services and improved the timeline service
+- Reorganized the archive for improving performance:
+   - Parameter Archive is stored on a separate column family "parameter-archive". The parameter-archive suffers frequent rebuilds and storing data in a different cf will leave other data undisturbed when the parameter archive rebuilds.
+   - The tm,pp and events tables are stored on a separate column family "rt_data" - these tables are mostly append only and require "realtimeish" performance.
+- Fix on-demand packet extraction in case of multiple on same timestamp
+- Add CSP 1.x pre/post processors
+- Add UdpTcTmDataLink for both TM and TC on a single socket pair
+- Improve application properties: dashes allowed, nesting allowed, spaces allowed in fallback value
+- Allow mapping verifier onSuccess/onFail/onTimeout from and to XTCE
+- Improve support for returning values from a verifier
+- Refresh OIDC tokens granted by external identity provider
+- Add opt-in OIDC back-channel logout support
+- Redirect to login following invalidation of the auth session
+- Allow seeing arguments inline, directly on command history page
+- Add ParameterListService for storing, and exporting lists of parameters
+- Rework server-side algorithm API to better allow for both system logging, as well as publishing events.
+
+Version 5.8.8 released 3-Nov-2023
 - Add API call to stream MDB items
 - Add API calls to add parameters/parameter types
 - Add API call to load large amounts of parameter values

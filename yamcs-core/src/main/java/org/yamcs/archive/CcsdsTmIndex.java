@@ -3,7 +3,6 @@ package org.yamcs.archive;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -56,8 +55,6 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
  * based indexer didn't use the sequence count as part of the key but allowed multiple records with the same key. To
  * replicate this in RocksDB, one would need to have the RocksDB entries composed of all records with the same startime
  *
- * @author nm
- *
  */
 @ThreadSafe
 public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService {
@@ -90,6 +87,7 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
         } catch (RocksDBException e) {
             throw new InitException("Failed to open rocksdb", e);
         }
+        log.debug("Listening to streams {}", streamNames);
     }
 
     @Override
@@ -130,23 +128,31 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
             // add a record at the beginning and at the end to make sure the cursor doesn't run out
             YRDB db = tablespace.getRdb();
             byte[] v = new byte[Record.VAL_SIZE];
-            db.put(Record.key(tbr.getTbsIndex(), (short) 0, (long) 0, (short) 0), v);
-            db.put(Record.key(tbr.getTbsIndex(), Short.MAX_VALUE, Long.MAX_VALUE, Short.MAX_VALUE), v);
-
+            db.put(firstKey(tbr.getTbsIndex()), v);
+            db.put(lastKey(tbr.getTbsIndex()), v);
         } else {
             tbr = l.get(0);
         }
         tbsIndex = tbr.getTbsIndex();
     }
 
+    private static byte[] firstKey(int tbsIndex) {
+        return Record.key(tbsIndex, (short) 0, (long) 0, (short) 0);
+    }
+
+    private static byte[] lastKey(int tbsIndex) {
+        return Record.key(tbsIndex, Short.MAX_VALUE, Long.MAX_VALUE, Short.MAX_VALUE);
+    }
+
     @Override
     public void onTuple(Stream stream, Tuple tuple) {
+
         byte[] packet = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
-        long time = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
         if (packet.length < 7) {
             log.warn("Short packet (size : {}) received by the CcsdsTmIndex Ignored.", packet.length);
             return;
         }
+        long time = getTime(tuple);
         short apid = CcsdsPacket.getAPID(packet);
         short seq = (short) CcsdsPacket.getSequenceCount(packet);
         try {
@@ -154,6 +160,16 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
         } catch (RocksDBException e) {
             log.error("got exception while saving the packet into index", e);
         }
+    }
+
+    /**
+     * Get the generation time for use in the index key.
+     * <p>
+     * The default implementations returns the value of the <code>gentime</code> column from the tuple (set by the data
+     * link preprocessor).
+     */
+    protected long getTime(Tuple tuple) {
+        return (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
     }
 
     synchronized void addPacket(short apid, long instant, short seq) throws RocksDBException {
@@ -289,78 +305,6 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
         } catch (RocksDBException e) {
             log.error("Error when deleting records from the ccsdstmindex", e);
         }
-    }
-
-    public void printApidDb() throws RocksDBException {
-        printApidDb((short) -1, -1L, -1L);
-    }
-
-    private void printApidDb(short apid, long start, long stop, RocksIterator cur) {
-        String format = "%-10d  %-30s - %-30s  %12d - %12d";
-        Record ar;
-        if (start != -1) {
-            cur.seek(Record.key(tbsIndex, apid, start, (short) 0));
-            cur.prev();
-            ar = new Record(cur.key(), cur.value());
-            if ((ar.apid() != apid) || (ar.lastTime() < start)) {
-                cur.next();
-            }
-        } else {
-            cur.seek(Record.key(tbsIndex, apid, 0L, (short) 0));
-        }
-
-        while (true) {
-            ar = new Record(cur.key(), cur.value());
-            if (ar.apid() != apid) {
-                break;
-            }
-            if ((stop != -1) && (ar.firstTime() > stop)) {
-                break;
-            }
-            System.out.println(String.format(format, ar.apid(), TimeEncoding.toOrdinalDateTime(ar.firstTime()),
-                    TimeEncoding.toOrdinalDateTime(ar.lastTime()), ar.firstSeq(), ar.lastSeq()));
-            cur.next();
-        }
-    }
-
-    public void printApidDb(short apid, long start, long stop) throws RocksDBException {
-        String formatt = "%-10s  %-30s - %-30s  %12s - %12s";
-        System.out.println(String.format(formatt, "apid", "start", "stop", "startseq", "stopseq"));
-        try (RocksIterator cur = tablespace.getRdb().newIterator()) {
-            Record ar;
-            if (apid != -1) {
-                printApidDb(apid, start, stop, cur);
-            } else {
-                apid = 0;
-                while (true) {// loop through apids
-                    cur.seek(Record.key(tbsIndex, apid, Long.MAX_VALUE, Short.MAX_VALUE));
-                    ar = new Record(cur.key(), cur.value());
-                    apid = ar.apid();
-                    if (apid == Short.MAX_VALUE) {
-                        break;
-                    }
-                    printApidDb(ar.apid(), start, stop, cur);
-                }
-            }
-        }
-    }
-
-    public List<Short> getApids() throws RocksDBException {
-        List<Short> apids = new ArrayList<>();
-        try (RocksIterator cur = tablespace.getRdb().newIterator()) {
-            Record ar;
-            short apid = 0;
-            while (true) {
-                cur.seek(Record.key(tbsIndex, apid, Long.MAX_VALUE, Short.MAX_VALUE));
-                ar = new Record(cur.key(), cur.value());
-                apid = ar.apid();
-                if (apid == Short.MAX_VALUE) {
-                    break;
-                }
-                apids.add(apid);
-            }
-        }
-        return apids;
     }
 
     class CcsdsIndexIteratorAdapter implements IndexIterator {
@@ -511,20 +455,29 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
     }
 
     public synchronized CompletableFuture<Void> rebuild(TimeInterval interval) throws YarchException {
-        if (interval.hasStart() || interval.hasEnd()) {
-            log.info("{}: Rebuilding ccsds tm index for time interval: {}", yamcsInstance, interval.toStringEncoded());
-        } else {
-            log.info("{} Rebuilding ccsds tm index", yamcsInstance);
-        }
-
         CompletableFuture<Void> cf = new CompletableFuture<>();
 
-        try {
-            deleteRecords(interval);
-        } catch (Exception e) {
-            log.error("Error when removing existing histograms", e);
-            cf.completeExceptionally(e);
-            return cf;
+        if (interval.hasStart() || interval.hasEnd()) {
+            log.info("{}: Rebuilding the CCSDS tm index for time interval: {}", yamcsInstance,
+                    interval.toStringEncoded());
+            try {
+                deleteRecords(interval);
+            } catch (Exception e) {
+                log.error("Error when removing the existing CCSDS tm index", e);
+                cf.completeExceptionally(e);
+                return cf;
+            }
+
+        } else {
+            log.info("{} Rebuilding the CCSDS tm index from scratch", yamcsInstance);
+            try {
+                tablespace.removeTbsIndex(Type.TM_INDEX, tbsIndex);
+                openDb();
+            } catch (Exception e) {
+                log.error("Error when removing existing tm index", e);
+                cf.completeExceptionally(e);
+                return cf;
+            }
         }
 
         String timeColumnName = StandardTupleDefinitions.GENTIME_COLUMN;
@@ -557,7 +510,7 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
     private synchronized void deleteRecords(TimeInterval interval) throws RocksDBException {
         YRDB db = tablespace.getRdb();
         try (RocksIterator it = db.newIterator()) {
-            it.seekToFirst(); // header
+            it.seek(firstKey(tbsIndex)); // header
             it.next();
             while (it.isValid()) {
                 Record r = new Record(it.key(), it.value());

@@ -16,11 +16,12 @@ public class AggrrayIterator implements ParameterIterator {
     final ParameterRequest req;
     final ParameterId parameterId;
     MultiParameterValueSegment currentSegment;
+    int pos;
+
     AggrrayBuilder engBuilder;
     AggrrayBuilder rawBuilder;
     ParameterId[] members;
-
-    int pos;
+    TimedValue currentValue;
 
     public AggrrayIterator(ParameterArchive parchive, ParameterId parameterId, int parameterGroupId,
             ParameterRequest req) {
@@ -36,35 +37,38 @@ public class AggrrayIterator implements ParameterIterator {
         if (req.isRetrieveRawValues() && parameterId.hasRawValue()) {
             rawBuilder = new AggrrayBuilder(members);
         }
-        init();
+
+        if (it.isValid()) {
+            init();
+        }
     }
 
     private void init() {
-        while (it.isValid()) {
-            currentSegment = it.value();
-            SortedTimeSegment timeSegment = currentSegment.timeSegment;
+        currentSegment = it.value();
+        SortedTimeSegment timeSegment = currentSegment.timeSegment;
 
-            if (req.isAscending()) {
-                pos = timeSegment.search(req.getStart());
-                if (pos < 0) {
-                    pos = -pos - 1;
-                }
-
-            } else {
-                pos = timeSegment.search(req.getStop());
-                if (pos < 0) {
-                    pos = -pos - 2;
-                }
+        if (req.isAscending()) {
+            pos = timeSegment.search(req.getStart());
+            if (pos < 0) {
+                pos = -pos - 1;
             }
-            if (valid(timeSegment, pos)) {
-                break;
-            } else {
-                it.next();
+        } else {
+            pos = timeSegment.search(req.getStop());
+            if (pos < 0) {
+                pos = -pos - 2;
             }
         }
-        if (!it.isValid()) {
-            currentSegment = null;
-            it.close();
+        if (valid(timeSegment, pos) || advancePos()) {
+            while (true) {
+                if (readCurrentValue()) {
+                    break;
+                }
+                if (!advancePos()) {
+                    break;
+                }
+            }
+        } else {
+            finished();
         }
     }
 
@@ -75,42 +79,112 @@ public class AggrrayIterator implements ParameterIterator {
 
     @Override
     public boolean isValid() {
-        return currentSegment != null;
+        return currentValue != null;
     }
 
     @Override
     public TimedValue value() {
-        if (currentSegment == null) {
+        if (currentValue == null) {
             throw new NoSuchElementException();
         }
+        return currentValue;
+    }
+
+    // this must be called when the currentSegment and pos are valid (i.e. currentSegment!=null and pos is inside the
+    // segment)
+    // it builds the currentValue if there is at least a value for any component and returns true
+    // otherwise (i.e. the values at the current position are all null, may happen because the parameter archive has
+    // gaps) it returns false
+    private boolean readCurrentValue() {
         long t = currentSegment.timeSegment.getTime(pos);
-        Value engValue = null;
-        Value rawValue = null;
+
         ParameterStatus paramStatus = null;
-        if (req.isRetrieveEngineeringValues()) {
+        boolean foundOne = false;
+        if (engBuilder != null) {
             engBuilder.clear();
-            ValueSegment[] engv = currentSegment.engValueSegments;
-            for (int i = 0; i < engv.length; i++) {
-                engBuilder.setValue(members[i], engv[i].getValue(pos));
-            }
-            engValue = engBuilder.build();
         }
         if (rawBuilder != null) {
             rawBuilder.clear();
-            ValueSegment[] rawv = currentSegment.rawValueSegments;
-            if (rawv[0] == null) {
-                // workaround if the aggregate/array numeric type was not stored in the database
-                // TODO: remove this case in the future
-                rawBuilder = null;
-            } else {
-                for (int i = 0; i < rawv.length; i++) {
-                    rawBuilder.setValue(members[i], rawv[i].getValue(pos));
-                }
-                rawValue = rawBuilder.build();
-            }
         }
 
-        return new TimedValue(t, engValue, rawValue, paramStatus);
+        for (int i = 0; i < currentSegment.numParameters(); i++) {
+            var pvs = currentSegment.getPvs(i);
+            if (pvs != null) {
+                if (engBuilder != null) {
+                    Value v = pvs.getEngValue(pos);
+                    if (v != null) {
+                        foundOne = true;
+                        engBuilder.setValue(members[i], v);
+                    }
+                }
+                if (rawBuilder != null) {
+                    Value v = pvs.getRawValue(pos);
+                    if (v != null) {
+                        foundOne = true;
+                        rawBuilder.setValue(members[i], v);
+                    }
+                }
+            }
+        }
+        if (foundOne) {
+            Value engValue = null;
+            Value rawValue = null;
+
+            if (engBuilder != null) {
+                engValue = engBuilder.build();
+            }
+            if (rawBuilder != null) {
+                rawValue = rawBuilder.build();
+            }
+            currentValue = new TimedValue(t, engValue, rawValue, paramStatus);
+        }
+        return foundOne;
+    }
+
+    // advance the pos/it and return true if the position is valid
+    private boolean advancePos() {
+        boolean validPosition = false;
+        var timeSegment = currentSegment.timeSegment;
+        if (req.isAscending()) {
+            pos++;
+            if (pos >= timeSegment.size()) {
+                it.next();
+                if (it.isValid()) {
+                    currentSegment = it.value();
+                    pos = 0;
+                    validPosition = true;
+                } else {
+                    finished();
+                }
+            } else if (timeSegment.getTime(pos) >= req.getStop()) {
+                finished();
+            } else {
+                validPosition = true;
+            }
+        } else {
+            pos--;
+            if (pos < 0) {
+                it.next();
+                if (it.isValid()) {
+                    currentSegment = it.value();
+                    pos = currentSegment.timeSegment.size() - 1;
+                    validPosition = true;
+                } else {
+                    finished();
+                }
+            } else if (timeSegment.getTime(pos) <= req.getStart()) {
+                finished();
+            } else {
+                validPosition = true;
+            }
+        }
+        return validPosition;
+    }
+
+    private void finished() {
+        it.close();
+        currentSegment = null;
+        currentValue = null;
     }
 
     @Override
@@ -118,20 +192,12 @@ public class AggrrayIterator implements ParameterIterator {
         if (currentSegment == null) {
             throw new NoSuchElementException();
         }
-        if (req.isAscending()) {
-            pos++;
-        } else {
-            pos--;
-        }
-
-        if (!valid(currentSegment.timeSegment, pos)) {
-            it.next();
-            if (it.isValid()) {
-                currentSegment = it.value();
-                pos = req.isAscending() ? 0 : currentSegment.timeSegment.size() - 1;
-            } else {
-                it.close();
-                currentSegment = null;
+        while (true) {
+            if (!advancePos()) {
+                break;
+            }
+            if (readCurrentValue()) {
+                break;
             }
         }
     }

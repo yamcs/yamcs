@@ -1,0 +1,52 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "extensions": {
+    "recommendations": [
+      "angular.ng-template"
+    ]
+  },
+  "settings": {
+    "css.format.enable": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    },
+    "editor.detectIndentation": false,
+    "editor.tabSize": 2,
+    "files.insertFinalNewline": true,
+    "files.trimTrailingWhitespace": true,
+    "html.format.enable": true,
+    "html.format.wrapAttributes": "preserve-aligned",
+    "javascript.format.enable": true,
+    "javascript.format.semicolons": "insert",
+    "javascript.preferences.importModuleSpecifier": "relative",
+    "javascript.preferences.quoteStyle": "single",
+    "json.format.enable": true,
+    "search.exclude": {
+      "**/dist": true,
+      "**/node_modules": true
+    },
+    "typescript.format.enable": true,
+    "typescript.format.semicolons": "insert",
+    "typescript.preferences.importModuleSpecifier": "relative",
+    "typescript.preferences.quoteStyle": "single",
+    "[css]": {
+      "editor.defaultFormatter": "vscode.css-language-features"
+    },
+    "[html]": {
+      "editor.defaultFormatter": "vscode.html-language-features"
+    },
+    "[json]": {
+      "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[jsonc]": {
+      "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[typescript]": {
+      "editor.defaultFormatter": "vscode.typescript-language-features"
+    }
+  }
+}

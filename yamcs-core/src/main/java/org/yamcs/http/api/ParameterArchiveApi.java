@@ -3,10 +3,13 @@ package org.yamcs.http.api;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import org.rocksdb.RocksDBException;
 import org.yamcs.Processor;
+import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
@@ -22,6 +25,7 @@ import org.yamcs.parameter.ParameterCache;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;
+import org.yamcs.parameterarchive.BackFillerListener;
 import org.yamcs.parameterarchive.ConsumerAbortException;
 import org.yamcs.parameterarchive.MultiParameterRetrieval;
 import org.yamcs.parameterarchive.MultipleParameterRequest;
@@ -44,9 +48,13 @@ import org.yamcs.protobuf.GetArchivedParameterGroupRequest;
 import org.yamcs.protobuf.GetArchivedParameterSegmentsRequest;
 import org.yamcs.protobuf.GetArchivedParametersInfoRequest;
 import org.yamcs.protobuf.GetParameterRangesRequest;
+import org.yamcs.protobuf.PurgeRequest;
 import org.yamcs.protobuf.Pvalue.Ranges;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.RebuildRangeRequest;
+import org.yamcs.protobuf.SubscribeBackfillingData;
+import org.yamcs.protobuf.SubscribeBackfillingData.BackfillFinishedInfo;
+import org.yamcs.protobuf.SubscribeBackfillingRequest;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.DecodingException;
@@ -55,7 +63,7 @@ import org.yamcs.utils.MutableLong;
 import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 import com.google.protobuf.Empty;
 
@@ -92,6 +100,54 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
     }
 
     @Override
+    public void subscribeBackfilling(Context ctx, SubscribeBackfillingRequest request,
+            Observer<SubscribeBackfillingData> observer) {
+        var ysi = InstancesApi.verifyInstanceObj(request.getInstance());
+        var parchives = ysi.getServices(ParameterArchive.class);
+        if (parchives.isEmpty()) {
+            // Ignore quietely
+            return;
+        }
+
+        var parchive = parchives.get(0);
+        var backFiller = parchive.getBackFiller();
+        if (backFiller == null) {
+            // Ignore quietely
+            return;
+        }
+
+        var pendingNotifications = new ConcurrentLinkedQueue<BackfillFinishedInfo>();
+
+        var listener = (BackFillerListener) (start, stop, processedParameters) -> {
+            pendingNotifications.add(BackfillFinishedInfo.newBuilder()
+                    .setStart(TimeEncoding.toProtobufTimestamp(start))
+                    .setStop(TimeEncoding.toProtobufTimestamp(stop))
+                    .setProcessedParameters(processedParameters)
+                    .build());
+        };
+
+        var exec = YamcsServer.getServer().getThreadPoolExecutor();
+        var execFuture = exec.scheduleAtFixedRate(() -> {
+            if (!pendingNotifications.isEmpty()) {
+                var b = SubscribeBackfillingData.newBuilder();
+
+                BackfillFinishedInfo item;
+                while ((item = pendingNotifications.poll()) != null) {
+                    b.addFinished(item);
+                }
+
+                observer.next(b.build());
+            }
+        }, 0, 5, TimeUnit.SECONDS);
+
+        observer.setCancelHandler(() -> {
+            backFiller.removeListener(listener);
+            execFuture.cancel(false);
+        });
+        backFiller.addListener(listener);
+    }
+
+    @Override
     public void getParameterSamples(Context ctx, GetParameterSamplesRequest request,
             Observer<TimeSeries> observer) {
         if (request.hasSource() && isReplayAsked(request.getSource())) {
@@ -101,7 +157,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
         YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
 
-        XtceDb mdb = MdbFactory.getInstance(ysi.getName());
+        Mdb mdb = MdbFactory.getInstance(ysi.getName());
 
         ParameterWithId pid = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
 
@@ -129,7 +185,10 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         int sampleCount = request.hasCount() ? request.getCount() : 500;
         boolean useRawValue = request.hasUseRawValue() && request.getUseRawValue();
 
-        Downsampler sampler = new Downsampler(start, stop, sampleCount, useRawValue);
+        Downsampler sampler = new Downsampler(start, stop, sampleCount);
+        sampler.setUseRawValue(useRawValue);
+        sampler.setGapTime(request.hasGapTime() ? request.getGapTime() : 120000);
+
         ParameterArchive parchive = getParameterArchive(ysi);
 
         ParameterCache pcache = null;
@@ -160,7 +219,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
     public void getParameterRanges(Context ctx, GetParameterRangesRequest request, Observer<Ranges> observer) {
         YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
 
-        XtceDb mdb = MdbFactory.getInstance(ysi.getName());
+        Mdb mdb = MdbFactory.getInstance(ysi.getName());
 
         ParameterWithId pid = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
 
@@ -215,7 +274,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         }
         YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
 
-        XtceDb mdb = MdbFactory.getInstance(ysi.getName());
+        Mdb mdb = MdbFactory.getInstance(ysi.getName());
         ParameterWithId requestedParamWithId = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
 
         int limit = request.hasLimit() ? request.getLimit() : 100;
@@ -430,8 +489,6 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         b.setCount(r.totalCount());
         b.setStart(TimeEncoding.toProtobufTimestamp(r.start));
         b.setStop(TimeEncoding.toProtobufTimestamp(r.stop));
-        b.setTimeStart(TimeEncoding.toString(r.start));
-        b.setTimeStop(TimeEncoding.toString(r.stop));
         for (int i = 0; i < r.valueCount(); i++) {
             b.addEngValues(ValueUtility.toGbp(r.getValue(i)));
             b.addCounts(r.getCount(i));
@@ -570,4 +627,22 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         });
         observer.complete(resp.build());
     }
+
+    @Override
+    public void purge(Context ctx, PurgeRequest request, Observer<Empty> observer) {
+        YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
+
+        ParameterArchive parchive = getParameterArchive(ysi);
+        try {
+            parchive.purge();
+        } catch (RocksDBException | InterruptedException | IOException e) {
+            log.error("Error purging parameter archive", e);
+            throw new InternalServerErrorException(e.toString());
+        }
+
+        observer.complete(Empty.getDefaultInstance());
+
+    }
+
 }

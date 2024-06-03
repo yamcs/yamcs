@@ -6,7 +6,9 @@ options {
 PARSER_BEGIN(TemplateParser)
 package org.yamcs.templating;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 public class TemplateParser {
 }
@@ -50,8 +52,13 @@ PARSER_END(TemplateParser)
     < VAR: (["a"-"z","A"-"Z","0"-"9","_","."])+ > 
 }
 
+<IN_VAR> SKIP: {
+    " "
+}
+
 <IN_VAR> TOKEN: {
-    < CLOSE_VAR: (" ")? "}}" > : DEFAULT
+    < PIPE: "|" >
+ |  < CLOSE_VAR: "}}" > : DEFAULT
 }
 
 <IN_CONDITION> TOKEN: {
@@ -101,10 +108,12 @@ Statement stmt;
 VarStatement varStatement():
 {
 String id;
+String filter;
+List filters = new ArrayList();
 }
 {
-    <OPEN_VAR> id=identifier() <CLOSE_VAR> {
-        return new VarStatement(id);
+    <OPEN_VAR> id=identifier() ( <PIPE> filter=identifier() { filters.add(filter); } )* <CLOSE_VAR> {
+        return new VarStatement(id, filters);
     }
 }
 

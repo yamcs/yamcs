@@ -43,7 +43,7 @@ class MyParaProvider extends AbstractService implements ParameterProvider {
 
     @Override
     public Parameter getParameter(NamedObjectId paraId) throws InvalidIdentification {
-        return XtceAlgorithmTest.db.getParameter(paraId.getName());
+        return XtceAlgorithmTest.mdb.getParameter(paraId.getName());
     }
 
     @Override

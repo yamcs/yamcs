@@ -1,0 +1,116 @@
+<table mat-table
+       [dataSource]="dataSource"
+       class="ya-data-table expand"
+       multiTemplateDataRows>
+
+  <ng-container matColumnDef="startTime">
+    <th mat-header-cell *matHeaderCellDef style="width: 200px">Started</th>
+    <td mat-cell *matCellDef="let item">
+      {{ item.transfer.startTime | datetime }}
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="localEntity">
+    <th mat-header-cell *matHeaderCellDef>Local entity</th>
+    <td mat-cell *matCellDef="let item">
+      {{ item.transfer.localEntity?.name ?? item.transfer.localEntity?.id ?? '-' }}
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="localFile">
+    <th mat-header-cell *matHeaderCellDef style="width: 200px">Local file</th>
+    <td mat-cell *matCellDef="let item">
+      <span
+            *ngIf="(item.transfer.direction === 'DOWNLOAD' && item.transfer.state !== 'COMPLETED') || !item.objectUrl; else clickable">{{
+        (item.transfer.objectName | storageUrl:item.transfer.bucket) || '-'}}</span>
+      <ng-template #clickable>
+        <a [href]="item.objectUrl"
+           download>{{ (item.transfer.objectName | storageUrl:item.transfer.bucket) || '-' }}</a>
+      </ng-template>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="direction">
+    <th mat-header-cell *matHeaderCellDef width="1">Direction</th>
+    <td mat-cell *matCellDef="let item" style="text-align: center">
+      <ng-container *ngIf="item.transfer.direction === 'DOWNLOAD'">⟵</ng-container>
+      <ng-container *ngIf="item.transfer.direction === 'UPLOAD'">⟶</ng-container>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="remoteEntity">
+    <th mat-header-cell *matHeaderCellDef>Remote entity</th>
+    <td mat-cell *matCellDef="let item">
+      {{ item.transfer.remoteEntity?.name ?? item.transfer.remoteEntity?.id ?? '-' }}
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="remoteFile">
+    <th mat-header-cell *matHeaderCellDef style="width: 200px">Remote file</th>
+    <td mat-cell *matCellDef="let item">{{ item.transfer.remotePath || '-' }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="size">
+    <th mat-header-cell *matHeaderCellDef style="width: 70px">Size</th>
+    <td mat-cell *matCellDef="let item">{{ (item.transfer.totalSize | formatBytes) ?? '-' }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="status">
+    <th mat-header-cell *matHeaderCellDef style="width: 100px">Status</th>
+    <td mat-cell *matCellDef="let item">
+      <ng-container *ngIf="item.state$ | async as state">
+        {{ (state | titlecase) || '-' }}
+      </ng-container>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="transferred">
+    <th mat-header-cell *matHeaderCellDef style="width: 70px">Transferred</th>
+    <td mat-cell *matCellDef="let item">{{ (item.transfer.sizeTransferred | formatBytes) ?? '-' }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="transferType">
+    <th mat-header-cell *matHeaderCellDef style="width: 100px">Transfer type</th>
+    <td mat-cell *matCellDef="let item">{{ (item.transfer.transferType) || '-' }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="actions">
+    <th mat-header-cell *matHeaderCellDef class="expand"></th>
+    <td mat-cell *matCellDef="let item">
+      <ng-container *ngIf="showActions">
+        <ng-container *ngIf="item.state$ | async as state">
+          <ya-text-action *ngIf="state === 'RUNNING'" icon="pause_circle_outline"
+                          (click)="pauseTransfer(item)">PAUSE</ya-text-action>
+          <ya-text-action *ngIf="state === 'PAUSED'" icon="play_circle_outline"
+                          (click)="resumeTransfer(item)">RESUME</ya-text-action>
+          <ya-text-action icon="not_interested" (click)="cancelTransfer(item)">CANCEL</ya-text-action>
+        </ng-container>
+      </ng-container>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="detail">
+    <td mat-cell *matCellDef="let item"
+        [attr.colspan]="(displayedColumns$ | async)!.length">
+      <div *ngIf="item.transfer$ | async as transfer" class="detail-layout">
+        <ya-progress *ngIf="transfer.state === 'RUNNING' || transfer.state === 'PAUSED' || transfer.state === 'CANCELLING'"
+                     width="200px"
+                     [value]="transferPercent(transfer)"
+                     [total]="1" />
+        <span>{{ transfer.sizeTransferred | formatBytes }}</span>
+        <span class="error" *ngIf="transfer.failureReason">
+          {{ transfer.failureReason }}
+        </span>
+      </div>
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns$ | async"></tr>
+  <tr mat-row *matRowDef="let row; columns: (displayedColumns$ | async);"
+      class="item-row"
+      [class.nodetail]="row.transfer.state === 'COMPLETED'"></tr>
+  <tr mat-row
+      class="item-detail"
+      *matRowDef="let row; columns: ['detail']; when: isIncomplete;">
+  </tr>
+</table>

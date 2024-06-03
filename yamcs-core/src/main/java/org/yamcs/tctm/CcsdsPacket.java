@@ -110,16 +110,33 @@ public class CcsdsPacket {
     }
 
     /* returns the length written in the ccsds header */
+    @Deprecated
     public static int getCccsdsPacketLength(ByteBuffer bb) {
+        return getCcsdsPacketLength(bb);
+    }
+
+    /* returns the length written in the ccsds header */
+    public static int getCcsdsPacketLength(ByteBuffer bb) {
         return bb.getShort(4) & 0xFFFF;
     }
 
     /* returns the length written in the ccsds header */
+    @Deprecated
     public int getCccsdsPacketLength() {
-        return getCccsdsPacketLength(bb);
+        return getCcsdsPacketLength();
     }
 
+    /* returns the length written in the ccsds header */
+    public int getCcsdsPacketLength() {
+        return getCcsdsPacketLength(bb);
+    }
+
+    @Deprecated
     public void setCccsdsPacketLength(short length) {
+        setCcsdsPacketLength(length);
+    }
+
+    public void setCcsdsPacketLength(short length) {
         // return bb.getShort(4)&0xFFFF;
         bb.putShort(4, length);
     }
@@ -169,8 +186,13 @@ public class CcsdsPacket {
         return (short) (ByteArrayUtils.decodeUnsignedShort(packet, 0) & 0x07FF);
     }
 
+    @Deprecated
     public static int getCccsdsPacketLength(byte[] buf) {
-        return getCccsdsPacketLength(ByteBuffer.wrap(buf));
+        return getCcsdsPacketLength(buf);
+    }
+
+    public static int getCcsdsPacketLength(byte[] buf) {
+        return getCcsdsPacketLength(ByteBuffer.wrap(buf));
     }
 
     @Override

@@ -1,17 +1,39 @@
 package org.yamcs.cfdp;
 
-import static org.yamcs.cfdp.CfdpService.*;
+import static org.yamcs.cfdp.CfdpService.ETYPE_FIN_LIMIT_REACHED;
+import static org.yamcs.cfdp.CfdpService.ETYPE_TRANSFER_COMPLETED;
+import static org.yamcs.cfdp.CfdpService.ETYPE_TRANSFER_FINISHED;
+import static org.yamcs.cfdp.CfdpService.ETYPE_TRANSFER_META;
+import static org.yamcs.cfdp.CfdpService.ETYPE_TRANSFER_RESUMED;
+import static org.yamcs.cfdp.CfdpService.ETYPE_TRANSFER_SUSPENDED;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.yamcs.YConfiguration;
-import org.yamcs.cfdp.pdu.*;
+import org.yamcs.cfdp.pdu.AckPacket;
 import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
 import org.yamcs.cfdp.pdu.AckPacket.TransactionStatus;
+import org.yamcs.cfdp.pdu.CfdpHeader;
+import org.yamcs.cfdp.pdu.CfdpPacket;
+import org.yamcs.cfdp.pdu.ConditionCode;
+import org.yamcs.cfdp.pdu.DirectoryListingResponse;
+import org.yamcs.cfdp.pdu.EofPacket;
+import org.yamcs.cfdp.pdu.FileDataPacket;
+import org.yamcs.cfdp.pdu.FileDirectiveCode;
+import org.yamcs.cfdp.pdu.FinishedPacket;
 import org.yamcs.cfdp.pdu.FinishedPacket.FileStatus;
+import org.yamcs.cfdp.pdu.MetadataPacket;
+import org.yamcs.cfdp.pdu.NakPacket;
+import org.yamcs.cfdp.pdu.OriginatingTransactionId;
+import org.yamcs.cfdp.pdu.SegmentRequest;
+import org.yamcs.cfdp.pdu.TLV;
 import org.yamcs.events.EventProducer;
 import org.yamcs.filetransfer.FileSaveHandler;
 import org.yamcs.filetransfer.TransferMonitor;
@@ -78,6 +100,11 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     long lastNakDataSize;
 
     /**
+     * used to limit the number of NAKs sent in one PDU
+     */
+    int maxPduDataSize;
+
+    /**
      * If true, send NAK before receiving the EOF
      */
     final boolean immediateNak;
@@ -112,6 +139,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         this.nakTimeout = config.getInt("nakTimeout", 5000);
         this.nakLimit = config.getInt("nakLimit", -1);
         this.immediateNak = config.getBoolean("immediateNak", true);
+        var maxPduSize = config.getInt("maxPduSize", 512);
 
         if (!acknowledged) {
             long checkAckTimeout = config.getLong("checkAckTimeout", 10000l);
@@ -131,6 +159,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
                 hdr.getDestinationId(),
                 hdr.getSequenceNumber());
 
+        this.maxPduDataSize = maxPduSize - directiveHeader.getLength();
         needsFinish = acknowledged;
         incomingDataFile = new DataFile(-1);
     }
@@ -184,6 +213,10 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             return false;
         }
 
+        var maxNumSeg = NakPacket.maxNumSegments(maxPduDataSize);
+        if (missingSegments.size() > maxNumSeg) {
+            missingSegments = missingSegments.subList(0, maxNumSeg);
+        }
         sendPacket(new NakPacket(
                 missingSegments.get(0).getSegmentStart(),
                 missingSegments.get(missingSegments.size() - 1).getSegmentEnd(),
@@ -193,8 +226,9 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     }
 
     private void doProcessPacket(CfdpPacket packet) {
-        if (log.isDebugEnabled()) {
-            log.debug("TXID{} received PDU: {}", cfdpTransactionId, packet);
+        log.debug("TXID{} received PDU: {}", cfdpTransactionId, packet);
+
+        if (log.isTraceEnabled()) {
             log.trace("{}", StringConverter.arrayToHexString(packet.toByteArray(), true));
         }
 
@@ -249,9 +283,9 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
         transferType = getTransferType(metadataPacket);
 
-        if(metadataPacket.getOptions() != null) {
-            for(TLV option : metadataPacket.getOptions()) {
-                if(option instanceof OriginatingTransactionId) {
+        if (metadataPacket.getOptions() != null) {
+            for (TLV option : metadataPacket.getOptions()) {
+                if (option instanceof OriginatingTransactionId) {
                     this.originatingTransactionId = ((OriginatingTransactionId) option).toCfdpTransactionId();
                 } else if (option instanceof DirectoryListingResponse) {
                     this.directoryListingResponse = (DirectoryListingResponse) option;
@@ -264,19 +298,21 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         incomingDataFile.setSize(fileSize);
 
         this.acknowledged = packet.getHeader().isAcknowledged();
-        originalObjectName = !packet.getDestinationFilename().isEmpty() ? packet.getDestinationFilename() : packet.getSourceFilename();
+        originalObjectName = !packet.getDestinationFilename().isEmpty() ? packet.getDestinationFilename()
+                : packet.getSourceFilename();
 
-        sendInfoEvent(ETYPE_TRANSFER_META, "Received metadata: "+toEventMsg(packet));
+        sendInfoEvent(ETYPE_TRANSFER_META, "Received metadata: " + toEventMsg(packet));
 
         try {
-            if(originatingTransactionId != null) {
+            if (originatingTransactionId != null) {
                 fileSaveHandler.processOriginatingTransactionId(originatingTransactionId);
             }
             fileSaveHandler.setObjectName(directoryListingResponse == null ? originalObjectName : null);
 
             Tablespace.BucketProperties props = fileSaveHandler.getBucket().getProperties();
-            if(props.getMaxSize() - props.getSize() < fileSize) {
-                throw new IOException("File too big for bucket '" + getBucketName() + "' (" + fileSize + " bytes for " + (props.getMaxSize() - props.getSize()) + " available)");
+            if (props.getMaxSize() - props.getSize() < fileSize) {
+                throw new IOException("File too big for bucket '" + getBucketName() + "' (" + fileSize + " bytes for "
+                        + (props.getMaxSize() - props.getSize()) + " available)");
             }
 
             checkFileComplete();
@@ -347,28 +383,28 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             log.debug("TXID{} ignoring packet {}", cfdpTransactionId, fdp);
             return;
         }
-        DataFileSegment dfs = new DataFileSegment(fdp.getOffset(), fdp.getData());
+
         long fileSize = incomingDataFile.getSize();
         if (fileSize > 0) {
-            if (dfs.getEndOffset() > fileSize) {
+            if (fdp.getEndOffset() > fileSize) {
                 String err = String.format("Received data file whose end offset %d is larger than the file size %d",
-                        dfs.getEndOffset(), fileSize);
+                        fdp.getEndOffset(), fileSize);
                 log.warn("TXID{} {}", cfdpTransactionId, err);
                 pushError(err);
                 handleFault(ConditionCode.FILE_SIZE_ERROR);
             }
         } else {
-            if (dfs.getEndOffset() > maxFileSize) {
+            if (fdp.getEndOffset() > maxFileSize) {
                 String err = String.format(
                         "Received data file whose end offset %d is larger than the maximum file size %d",
-                        dfs.getEndOffset(), maxFileSize);
+                        fdp.getEndOffset(), maxFileSize);
                 pushError(err);
                 log.warn("TXID{} {}", cfdpTransactionId, err);
                 handleFault(ConditionCode.FILE_SIZE_ERROR);
             }
         }
 
-        incomingDataFile.addSegment(dfs);
+        incomingDataFile.addSegment(fdp);
         monitor.stateChanged(this);
         checkFileComplete();
     }
@@ -419,7 +455,8 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
         finTimer.start(() -> sendPacket(finPacket),
                 () -> {
-                    sendWarnEvent(ETYPE_FIN_LIMIT_REACHED, "resend attempts (" + finTimer.maxNumAttempts + ") of Finished PDU reached");
+                    sendWarnEvent(ETYPE_FIN_LIMIT_REACHED,
+                            "resend attempts (" + finTimer.maxNumAttempts + ") of Finished PDU reached");
                     if (finPacket.getConditionCode() == ConditionCode.NO_ERROR) {
                         pushError("File was received OK but the Finished PDU has not been acknowledged");
                         complete(ConditionCode.ACK_LIMIT_REACHED);
@@ -440,7 +477,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             changeState(TransferState.COMPLETED);
             sendInfoEvent(ETYPE_TRANSFER_COMPLETED, " transfer completed (ack received from remote) successfully");
         } else {
-            if(errors.isEmpty()) {
+            if (errors.isEmpty()) {
                 pushError(conditionCode.toString());
             }
             sendWarnEvent(ETYPE_TRANSFER_COMPLETED, " transfer completed unsuccessfully: " + getFailuredReason());
@@ -472,6 +509,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         }
     }
 
+    @Override
     protected void onInactivityTimerExpiration() {
         log.warn("TXID{} inactivity timer expired, state: {}", cfdpTransactionId, inTxState);
 
@@ -537,7 +575,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     }
 
     private void saveFile(boolean checksumError, List<SegmentRequest> missingSegments) {
-        if(directoryListingResponse != null) {
+        if (directoryListingResponse != null) {
             log.debug("TXID{} Ignoring save action for Directory Listing Response", cfdpTransactionId);
             return;
         }
@@ -610,7 +648,9 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
     @Override
     public String getObjectName() {
-        return fileSaveHandler.getObjectName() != null || directoryListingResponse != null ? fileSaveHandler.getObjectName() : originalObjectName;
+        return fileSaveHandler.getObjectName() != null || directoryListingResponse != null
+                ? fileSaveHandler.getObjectName()
+                : originalObjectName;
     }
 
     public String getOriginalObjectName() {

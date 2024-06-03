@@ -13,7 +13,7 @@ import org.yamcs.utils.TimeEncoding;
 
 /**
  * Implementation for ECSS PUS (ECSS-E-ST-70-41C) packets.
- * 
+ *
  * The header structure is:
  *
  * <p>
@@ -42,7 +42,7 @@ import org.yamcs.utils.TimeEncoding;
  * <p>
  * The time packets have no secondary header and the apid set to 0. The data part consists of the current onboard time
  * in the same encoding like in the normal packets.
- * 
+ *
  * <p>
  * In this class we read
  * <ul>
@@ -149,7 +149,7 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
         setRealtimePacketTime(tmPacket, pktTimeOffset);
 
         if (log.isTraceEnabled()) {
-            log.trace("Recevied packet length: {}, apid: {}, seqcount: {}, gentime: {}, status: {}", packet.length,
+            log.trace("Received packet length: {}, apid: {}, seqcount: {}, gentime: {}, status: {}", packet.length,
                     CcsdsPacket.getAPID(packet), CcsdsPacket.getSequenceCount(packet),
                     TimeEncoding.toString(tmPacket.getGenerationTime()),
                     Integer.toHexString(tmPacket.getStatus()));

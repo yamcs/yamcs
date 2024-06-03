@@ -1,0 +1,9 @@
+mat-toolbar {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: var(--y-background-color);
+  box-sizing: content-box;
+}
+
+mat-toolbar-row {
+  padding-left: 24px;
+}

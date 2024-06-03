@@ -1,7 +1,6 @@
 package org.yamcs.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.text.ParseException;
@@ -245,56 +244,6 @@ public class TimeEncodingTest {
         assertTrue(sMax.equals(sRMax));
 
         // Assert that TimeEncoding fails to encode/decode with MAX_INSTANT + 1
-        sMax = TimeEncoding.toString(TimeEncoding.MAX_INSTANT + 1);
-        decodedMax = TimeEncoding.parse(sMax);
-        sRMax = TimeEncoding.toString(decodedMax);
-        assertFalse(sMax.equals(sRMax));
-
-    }
-
-    @Test
-    public void findMaxInstantValue() {
-        // The algorithm below determines the TimeEncoding.MAX_INSTANT
-        // that the TimeEncoding object can encode and decode properlly
-        TimeEncoding.setUp();
-        boolean foundOverflow = false;
-        boolean foundMax = false;
-        long offset = 1;
-        long base = new Date().getTime();
-        while (true) {
-            while (!foundOverflow) {
-                offset *= 2;
-                String sMax = TimeEncoding.toString(base + offset);
-                long decodedMax = TimeEncoding.parse(sMax);
-                String sRMax = TimeEncoding.toString(decodedMax);
-
-                if (!sMax.equals(sRMax)) {
-                    foundOverflow = true;
-                }
-            }
-            // System.out.println("overflow, offset = " + offset);
-            if (offset <= 2) {
-                break;
-            }
-            base = base + offset / 2;
-            offset = 1;
-            foundOverflow = false;
-
-            // System.out.println("current max = " + base);
-            // System.out.println(TimeEncoding.toString(base));
-        }
-
-        while (!foundMax) {
-            base++;
-            String sMax = TimeEncoding.toString(base);
-            long decodedMax = TimeEncoding.parse(sMax);
-            String sRMax = TimeEncoding.toString(decodedMax);
-
-            if (!sMax.equals(sRMax)) {
-                base--;
-                foundMax = true;
-            }
-        }
-        assertEquals(base, TimeEncoding.MAX_INSTANT);
+        assertEquals("+inf", TimeEncoding.toString(TimeEncoding.MAX_INSTANT + 1));
     }
 }

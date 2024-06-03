@@ -6,6 +6,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.yamcs.archive.XtceTmRecorder;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.SequenceContainer;
 
 /**
  * Packet with acquisition time, generation time and sequence count.
@@ -47,6 +48,9 @@ public class TmPacket {
     private int seqCount;
     private byte[] pkt;
     private int status;
+
+    // Preferred root container
+    private SequenceContainer rootContainer;
 
     public TmPacket(long rectime, byte[] pkt) {
         this.rectime = rectime;
@@ -151,6 +155,14 @@ public class TmPacket {
     @Deprecated
     public void setEarthRceptionTime(Instant ertime) {
         setEarthReceptionTime(ertime);
+    }
+
+    public SequenceContainer getRootContainer() {
+        return rootContainer;
+    }
+
+    public void setRootContainer(SequenceContainer rootContainer) {
+        this.rootContainer = rootContainer;
     }
 
     /**

@@ -371,6 +371,7 @@ TableColumnDefinition TableColumnDefinition() throws StreamSqlException: {
 void TableOption(CreateTableStatement cts) throws StreamSqlException: {
    String columnName, tablespace, engine;
    PartitioningSpec pspec;
+   CreateTableStatement.TableFormatOption tfo;
 } {
    <K_HISTOGRAM> "(" columnName=ObjectName() {cts.addHistogramColumn(columnName);} ("," columnName=ObjectName(){cts.addHistogramColumn(columnName);})* ")"
    |
@@ -380,30 +381,53 @@ void TableOption(CreateTableStatement cts) throws StreamSqlException: {
    |
    <K_TABLESPACE> tablespace=ObjectName() {cts.setTablespace(tablespace);}
    |
-   <K_TABLE_FORMAT> "=" "COMPRESSED" {cts.setCompressed(true);}
+   <K_TABLE_FORMAT> "="  tfo=TableFormatOption() {cts.addTableFormatOption(tfo);} 
+                         ("," tfo=TableFormatOption(){cts.addTableFormatOption(tfo);})*
 
 }
+
 
 PartitioningSpec PartitioningSpec() throws StreamSqlException: {
     PartitioningSpec pspec;
     String cname1, cname2;
-    Token timePartSchema = null;
+    Token t;
+    String timePartSchema = null;
 } {
-  ( <K_TIME> "(" cname1=ObjectName() [ "(" timePartSchema = <S_STRING> ")" ] ")" {pspec = PartitioningSpec.timeSpec(cname1);} 
+  ( <K_TIME> "(" 
+                 cname1=ObjectName() 
+                 [ "(" t = <S_STRING> ")" {timePartSchema = getNonEscapedString(t.image);} ] 
+             ")" {
+  		         pspec = PartitioningSpec.timeSpec(cname1, timePartSchema);
+  	         } 
     |
-	<K_VALUE> "(" cname1=ObjectName() ")" {pspec = PartitioningSpec.valueSpec(cname1);} 
+	<K_VALUE> "(" cname1=ObjectName() ")" {
+	   pspec = PartitioningSpec.valueSpec(cname1);
+	 } 
     |
-	<K_TIME_AND_VALUE> "(" cname1=ObjectName() [ "(" timePartSchema = <S_STRING> ")" ] "," cname2=ObjectName() ")" { pspec = PartitioningSpec.timeAndValueSpec(cname1, cname2);} 
-  ) {  if(timePartSchema!=null) {
-          try {
-          	 pspec.setTimePartitioningSchema(getNonEscapedString(timePartSchema.image));
-           } catch (IllegalArgumentException e) {
-               throw new ParseException(e.getMessage());
-           }
-       }
+	<K_TIME_AND_VALUE> "(" 
+	            cname1=ObjectName() 
+	            [ "(" t = <S_STRING> ")" {timePartSchema =  getNonEscapedString(t.image);} ]
+	            "," cname2=ObjectName() 
+	   ")" {
+	        pspec = PartitioningSpec.timeAndValueSpec(cname1, cname2, timePartSchema);
+	    } 
+  ) { 
        return pspec;
     }
 }
+
+CreateTableStatement.TableFormatOption TableFormatOption() throws StreamSqlException: {
+     CreateTableStatement.TableFormatOption tfo;
+     String cfName;
+} {
+	("COMPRESSED" {tfo = new CreateTableStatement.TableFormatOption("COMPRESSED");}
+       |
+    "COLUMN_FAMILY" ":" cfName=ObjectName() {tfo = new CreateTableStatement.TableFormatOption("COLUMN_FAMILY", cfName);}
+    ) {
+    	return tfo;
+    }
+}
+
 
 CreateStreamStatement CreateStreamStatement() throws StreamSqlException: {
     String name;

@@ -11,6 +11,7 @@ import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.yamcs.YamcsServer;
 import org.yamcs.logging.Log;
+import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.BucketDatabase;
@@ -329,10 +330,16 @@ public class RdbStorageEngine implements StorageEngine {
         return getTablespace(ydb).getSequencesInfo();
     }
 
-    static final byte[] dbKey(int tbsIndex) {
+    /**
+     * returns a byte array containing the encoded tbsIndex
+     */
+    public static final byte[] dbKey(int tbsIndex) {
         return ByteArrayUtils.encodeInt(tbsIndex, new byte[TBS_INDEX_SIZE], 0);
     }
 
+    /**
+     * returns a byte array containing the encoded tbsIndex followed by the given key
+     */
     static final byte[] dbKey(int tbsIndex, byte[] key) {
         byte[] dbKey = ByteArrayUtils.encodeInt(tbsIndex, new byte[key.length + 4], 0);
         System.arraycopy(key, 0, dbKey, 4, key.length);
@@ -341,6 +348,18 @@ public class RdbStorageEngine implements StorageEngine {
 
     static final int tbsIndex(byte[] dbKey) {
         return ByteArrayUtils.decodeInt(dbKey, 0);
+    }
+
+    /**
+     * 
+     * returns a system parameter producer for the databases used by the yamcsInstance
+     * <p>
+     * the producer will provide statistics with the memory usage
+     */
+    public RocksdbSysParamProducer newRdbParameterProducer(String yamcsInstance, SystemParametersService sps) {
+        var tablespace = getTablespace(YarchDatabase.getInstance(yamcsInstance));
+
+        return new RocksdbSysParamProducer(tablespace, sps);
     }
 
 }

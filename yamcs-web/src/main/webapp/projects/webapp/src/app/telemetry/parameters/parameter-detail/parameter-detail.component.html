@@ -1,0 +1,246 @@
+<dl *ngIf="offset" class="dl-horizontal no-lead no-trail">
+  <dt>Entry</dt>
+  <dd>
+    {{ parameter.qualifiedName | shortName }}{{ offset }}
+  </dd>
+
+  <dt>System</dt>
+  <dd>
+    <ng-container *ngIf="(parameter.qualifiedName | spaceSystemName) as spaceSystemName">
+      <a routerLink="/telemetry/parameters"
+         [queryParams]="{c: yamcs.context, system: spaceSystemName}"
+         class="ya-link">
+        {{ spaceSystemName }}
+      </a>
+    </ng-container>
+  </dd>
+
+  <ng-container *ngFor="let alias of (entry$ | async)?.alias">
+    <dt>{{ alias.namespace }}</dt>
+    <dd>{{ alias.name }}</dd>
+  </ng-container>
+
+  <dt>Type</dt>
+  <dd>
+    <span class="mono" *ngIf="(ptype$ | async)?.engType as engType; else dash">
+      {{ engType }}
+    </span>
+  </dd>
+
+  <ng-container *ngIf="ptype$ | async as ptype">
+    <ng-container *ngIf="ptype.signed !== undefined">
+      <dt>Signed</dt>
+      <dd>{{ ptype.signed ?? '-' }}</dd>
+    </ng-container>
+  </ng-container>
+
+  <dt>Source</dt>
+  <dd>{{ (parameter.dataSource | titlecase) || '-' }}</dd>
+
+  <ng-container *ngIf="entry$ | async as entry; else dash">
+    <ng-container *ngIf="entry.longDescription">
+      <dt>Description</dt>
+      <dd>
+        <app-markdown [text]="entry.longDescription" />
+      </dd>
+    </ng-container>
+    <ng-container *ngIf="!entry.longDescription">
+      <dt>Description</dt>
+      <dd>
+        {{ entry.shortDescription || '-' }}
+      </dd>
+    </ng-container>
+  </ng-container>
+</dl>
+
+<dl class="dl-horizontal no-trail" [class.no-lead]="!offset">
+  <ng-container *ngIf="offset">
+    <dt>Host Parameter</dt>
+    <dd>
+      <a [routerLink]="'/telemetry/parameters' + parameter.qualifiedName"
+         [queryParams]="{c: yamcs.context}"
+         class="ya-link">
+        {{ parameter.qualifiedName | shortName }}
+      </a>
+    </dd>
+  </ng-container>
+
+  <ng-container *ngIf="!offset">
+    <dt>Parameter</dt>
+    <dd>{{ parameter.qualifiedName | shortName }}</dd>
+  </ng-container>
+
+  <ng-container *ngIf="!offset">
+    <dt>System</dt>
+    <dd>
+      <ng-container *ngIf="(parameter.qualifiedName | spaceSystemName) as spaceSystemName">
+        <a routerLink="/telemetry/parameters"
+           [queryParams]="{c: yamcs.context, system: spaceSystemName}"
+           class="ya-link">
+          {{ spaceSystemName }}
+        </a>
+      </ng-container>
+    </dd>
+  </ng-container>
+
+  <ng-container *ngFor="let alias of parameter.alias">
+    <dt>{{ alias.namespace }}</dt>
+    <dd>{{ alias.name }}</dd>
+  </ng-container>
+
+  <dt>Type</dt>
+  <dd>
+    <span class="mono" *ngIf="parameter.type?.engType as engType; else dash">
+      {{ engType }}
+    </span>
+  </dd>
+
+  <ng-container *ngIf="parameter.type?.signed !== undefined">
+    <dt>Signed</dt>
+    <dd>{{ parameter.type?.signed }}</dd>
+  </ng-container>
+
+  <ng-container *ngIf="!offset">
+    <dt>Source</dt>
+    <dd>{{ (parameter.dataSource | titlecase) || '-' }}</dd>
+  </ng-container>
+
+  <ng-container *ngIf="parameter.longDescription">
+    <dt>Description</dt>
+    <dd>
+      <app-markdown [text]="parameter.longDescription" />
+    </dd>
+  </ng-container>
+  <ng-container *ngIf="!parameter.longDescription">
+    <dt>Description</dt>
+    <dd>
+      {{ parameter.shortDescription || '-' }}
+    </dd>
+  </ng-container>
+</dl>
+
+<div class="section-divider">
+  <mat-divider />
+</div>
+<h4>Current value</h4>
+<ng-container *ngIf="pval?.engValue as value">
+  <ng-container [ngSwitch]="value.type">
+    <table *ngSwitchCase="'AGGREGATE'" yaDataTable>
+      <tr>
+        <th>Member</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Value</th>
+      </tr>
+      <tr *ngFor="let name of value.aggregateValue!.name; index as i">
+        <ng-container *ngIf="((offset || '') + '.' + name) as memberOffset">
+          <td>
+            <a [routerLink]="'/telemetry/parameters' + parameter.qualifiedName + memberOffset"
+               [queryParams]="{c: yamcs.context}">{{ name }}</a>
+          </td>
+          <td>
+            <span class="mono" *ngIf="(parameter | entryForOffset:memberOffset)?.type?.engType as engType; else dash">
+              {{ engType }}
+            </span>
+          </td>
+          <td>{{ (parameter | entryForOffset:memberOffset)?.shortDescription || '-' }}</td>
+          <td>
+            <ya-expirable [pval]="pval">
+              {{ value.aggregateValue!.value[i] | value }}
+              <ng-container *ngIf="(parameter | entryForOffset:memberOffset)?.type?.unitSet as unitSet">
+                {{ unitSet | units }}
+              </ng-container>
+            </ya-expirable>
+          </td>
+        </ng-container>
+      </tr>
+    </table>
+    <table *ngSwitchCase="'ARRAY'" yaDataTable>
+      <tr>
+        <th>Index</th>
+        <th>Value</th>
+      </tr>
+      <tr *ngFor="let element of (value.arrayValue || []); index as i">
+        <td>
+          <a [routerLink]="'/telemetry/parameters' + parameter.qualifiedName + (offset || '') + '[' + i + ']'"
+             [queryParams]="{c: yamcs.context}">{{ i }}</a>
+        </td>
+        <td>{{ element | value }}</td>
+      </tr>
+    </table>
+    <span class="pval" *ngSwitchDefault>
+      <ya-expirable [pval]="pval" style="white-space: nowrap">
+        <ng-container *ngIf="pval.monitoringResult">
+          <app-alarm-level [level]="pval.monitoringResult" />&nbsp;
+        </ng-container>
+        {{ value | value }}
+        <ng-container *ngIf="(parameter | parameterTypeForPath)?.unitSet as unitSet">
+          {{ unitSet | units }}
+        </ng-container>
+      </ya-expirable>
+    </span>
+    <br>
+    <div class="meter-size-constrainer">
+      <ng-container *ngIf="pval.alarmRange">
+        <app-severity-meter [pval]="pval" />
+      </ng-container>
+      <br>
+      <span class="subtext">
+        Generation time: {{ pval.generationTime | datetime }}<br>
+        Raw value: {{ (pval.rawValue | value) ?? '-' }}<br>
+      </span>
+    </div>
+  </ng-container>
+</ng-container>
+<span *ngIf="!(pval?.engValue)" style="white-space: nowrap">---</span>
+
+<ng-container *ngIf="entry$ | async as entry">
+  <ng-container *ngIf="entry.type?.engType === 'enumeration'">
+    <div class="section-divider">
+      <mat-divider />
+    </div>
+
+    <h4>Enumeration</h4>
+    <table yaDataTable>
+      <tr>
+        <th style="width: 50px">Value</th>
+        <th style="width: 100px">Label</th>
+        <th style="width: 300px">Description</th>
+        <th>Alarm Level (default)</th>
+        <th *ngFor="let context of entry.type?.contextAlarm">
+          <ng-container *ngFor="let comparison of context.comparison; let first = first">
+            <ng-container *ngIf="!first">, </ng-container>
+            <a [routerLink]="['/mdb/parameters/', comparison.parameter.qualifiedName]"
+               [queryParams]="{c: yamcs.context}"
+               class="secundary">
+              {{ comparison.parameter.name }}
+            </a>
+            {{ comparison.operator | operator }}
+            {{ comparison.value }}
+          </ng-container>
+        </th>
+      </tr>
+      <tr *ngFor="let enumValue of entry.type?.enumValue">
+        <td style="white-space: nowrap">{{ enumValue.value }}</td>
+        <td style="white-space: nowrap">{{ enumValue.label }}</td>
+        <td>{{ enumValue.description || '-' }}</td>
+        <td>
+          <ng-container *ngIf="getDefaultAlarmLevel(entry.type, enumValue) as level">
+            <app-alarm-level [level]="level" [grayscale]="true" />
+            {{ level }}
+          </ng-container>
+          <span *ngIf="!getDefaultAlarmLevel(entry.type, enumValue)">-</span>
+        </td>
+        <td *ngFor="let context of entry.type.contextAlarm">
+          <ng-container *ngIf="getEnumerationAlarmLevel(context, enumValue) as level">
+            <app-alarm-level [level]="level" [grayscale]="true" />
+            {{ level }}
+          </ng-container>
+          <span *ngIf="!getEnumerationAlarmLevel(context, enumValue)">-</span>
+        </td>
+      </tr>
+    </table>
+  </ng-container>
+</ng-container>
+
+<ng-template #dash>-</ng-template>

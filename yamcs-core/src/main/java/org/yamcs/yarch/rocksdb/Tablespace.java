@@ -18,6 +18,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.rocksdb.ColumnFamilyHandle;
+import org.rocksdb.MemoryUsageType;
+import org.rocksdb.MemoryUtil;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
@@ -60,8 +62,13 @@ import com.google.protobuf.TextFormat;
  * Tablespaces can also have time based partitions in different RocksDB databases in sub-directories such as
  * &lt;tablespace-name&gt;.rdb/YYYY/
  * <p>
- * There are two column families in the main database: - the _metadata_ column family - contains metadata. - the default
- * column family - contains data.
+ * There are four column families in the main database:
+ * <ul>
+ * <li>_metadata_ - contains metadata - tables definition, tbsIndices,...</li>
+ * <li>rt_data - stores data for tm, pp and events tables.</li>
+ * <li>parameter_archive - stores data for parameter archive</li>
+ * <li>the default column family - contains other data (alarms, activities, timeline...)</li>
+ * </ul>
  * <p>
  * The data is partitioned by the first 4 bytes of the key which we call tbsIndex.
  * <p>
@@ -96,7 +103,7 @@ public class Tablespace {
     private final String name;
 
     private String customDataDir;
-    private static final String CF_METADATA = "_metadata_";
+    public static final String CF_METADATA = "_metadata_";
     private static final byte PREV_METADATA_VERSION = 1;
     private static final byte METADATA_VERSION = 2;
 
@@ -107,7 +114,7 @@ public class Tablespace {
 
     static final byte METADATA_FB_SEQ = 3;// first byte of metadata records keys that contain sequences
 
-    YRDB db;
+    YRDB mainDb;
     ColumnFamilyHandle cfMetadata;
     long maxTbsIndex;
 
@@ -139,14 +146,14 @@ public class Tablespace {
         try {
             if (f.exists()) {
                 log.debug("Opening existing database {}", dbDir);
-                db = rdbFactory.getRdb(readonly);
-                cfMetadata = db.getColumnFamilyHandle(CF_METADATA);
+                mainDb = rdbFactory.getRdb(readonly);
+                cfMetadata = mainDb.getColumnFamilyHandle(CF_METADATA);
                 if (cfMetadata == null) {
                     throw new IOException("Existing tablespace database '" + dbDir
                             + "' does not contain a column family named '" + CF_METADATA);
                 }
 
-                byte[] value = db.get(cfMetadata, METADATA_KEY_MAX_TBS_VERSION);
+                byte[] value = mainDb.get(cfMetadata, METADATA_KEY_MAX_TBS_VERSION);
                 if (value == null) {
                     throw new DatabaseCorruptionException(
                             "No (version, maxTbsIndex) record found in the metadata");
@@ -160,14 +167,14 @@ public class Tablespace {
                 maxTbsIndex = Integer.toUnsignedLong(decodeInt(value, 1));
                 log.info("Opened tablespace database {}", dbDir);
                 log.info("Records: ~{}, metadata records: ~{}, maxTbsIndex: {}",
-                        db.getApproxNumRecords(), db.getApproxNumRecords(cfMetadata), maxTbsIndex);
+                        mainDb.getApproxNumRecords(), mainDb.getApproxNumRecords(cfMetadata), maxTbsIndex);
             } else {
                 if (readonly) {
                     throw new IllegalStateException("Cannot create a new db when readonly is set to true");
                 }
                 log.info("Creating database at {}", dbDir);
-                db = rdbFactory.getRdb(readonly);
-                cfMetadata = db.createColumnFamily(CF_METADATA);
+                mainDb = rdbFactory.getRdb(readonly);
+                cfMetadata = mainDb.createColumnFamily(CF_METADATA);
                 initMaxTbsIndex();
             }
         } catch (RocksDBException e) {
@@ -211,7 +218,7 @@ public class Tablespace {
         List<TablespaceRecord> rlist = new ArrayList<>();
         byte[] rangeStart = new byte[] { METADATA_FB_TR, (byte) type.getNumber() };
 
-        try (AscendingRangeIterator arit = new AscendingRangeIterator(db.newIterator(cfMetadata), rangeStart,
+        try (AscendingRangeIterator arit = new AscendingRangeIterator(mainDb.newIterator(cfMetadata), rangeStart,
                 rangeStart)) {
             while (arit.isValid()) {
 
@@ -262,7 +269,7 @@ public class Tablespace {
 
         TablespaceRecord tr = trb.build();
         log.debug("Adding new metadata record {}", tr);
-        db.put(cfMetadata, getMetadataKey(tr.getType(), tbsIndex), tr.toByteArray());
+        mainDb.put(cfMetadata, getMetadataKey(tr.getType(), tbsIndex), tr.toByteArray());
         return tr;
     }
 
@@ -281,7 +288,7 @@ public class Tablespace {
 
         TablespaceRecord tr = trb.build();
         log.debug("Updating metadata record {}", TextFormat.shortDebugString(tr));
-        db.put(cfMetadata, getMetadataKey(tr.getType(), tr.getTbsIndex()), tr.toByteArray());
+        mainDb.put(cfMetadata, getMetadataKey(tr.getType(), tr.getTbsIndex()), tr.toByteArray());
 
         return tr;
     }
@@ -327,7 +334,7 @@ public class Tablespace {
         byte[] v = new byte[5];
         v[0] = METADATA_VERSION;
         encodeInt((int) maxTbsIndex, v, 1);
-        db.put(cfMetadata, METADATA_KEY_MAX_TBS_VERSION, v);
+        mainDb.put(cfMetadata, METADATA_KEY_MAX_TBS_VERSION, v);
     }
 
     /**
@@ -339,7 +346,7 @@ public class Tablespace {
      */
     public YRDB getRdb(String partitionDir, boolean readOnly) {
         if (partitionDir == null) {
-            return db;
+            return mainDb;
         } else {
             try {
                 return rdbFactory.getRdb(partitionDir, readOnly);
@@ -357,11 +364,11 @@ public class Tablespace {
      * Get the main database of the tablespace
      */
     public YRDB getRdb() {
-        return db;
+        return mainDb;
     }
 
     public void dispose(YRDB rdb) {
-        if (db == rdb) {
+        if (mainDb == rdb) {
             return;
         } else {
             rdbFactory.dispose(rdb);
@@ -397,7 +404,7 @@ public class Tablespace {
             ByteArrayUtils.encodeInt(tbsIndex, beginKey, 0);
             ByteArrayUtils.encodeInt(tbsIndex + 1, endKey, 0);
             wb.deleteRange(beginKey, endKey);
-            db.getDb().write(wo, wb);
+            mainDb.getDb().write(wo, wb);
         }
     }
 
@@ -415,14 +422,24 @@ public class Tablespace {
             for (int i = 0; i < tbsIndexArray.size(); i++) {
                 int tbsIndex = tbsIndexArray.get(i);
                 wb.delete(cfMetadata, getMetadataKey(type, tbsIndexArray.get(i)));
-                byte[] beginKey = new byte[TBS_INDEX_SIZE];
-                byte[] endKey = new byte[TBS_INDEX_SIZE];
-                ByteArrayUtils.encodeInt(tbsIndex, beginKey, 0);
-                ByteArrayUtils.encodeInt(tbsIndex + 1, endKey, 0);
+                byte[] beginKey = dbKey(tbsIndex);
+                byte[] endKey = dbKey(tbsIndex + 1);
                 wb.deleteRange(beginKey, endKey);
             }
-            db.getDb().write(wo, wb);
+            mainDb.getDb().write(wo, wb);
         }
+    }
+
+    /**
+     * Removes all metadata records of a given type
+     * 
+     * @param type
+     * @throws RocksDBException
+     */
+    public void removeMetadataRecords(Type type) throws RocksDBException {
+        byte[] beginKey = new byte[] { METADATA_FB_TR, (byte) type.getNumber() };
+        byte[] endKey = new byte[] { METADATA_FB_TR, (byte) (type.getNumber() + 1) };
+        mainDb.getDb().deleteRange(cfMetadata, beginKey, endKey);
     }
 
     /**
@@ -453,16 +470,16 @@ public class Tablespace {
      */
     public void putData(byte[] key, byte[] value) throws RocksDBException {
         checkKey(key);
-        db.put(key, value);
+        mainDb.put(key, value);
     }
 
     public byte[] getData(byte[] key) throws RocksDBException {
-        return db.get(key);
+        return mainDb.get(key);
     }
 
     public void remove(byte[] key) throws RocksDBException {
         checkKey(key);
-        db.getDb().delete(key);
+        mainDb.getDb().delete(key);
     }
 
     private void checkKey(byte[] key) {
@@ -489,8 +506,8 @@ public class Tablespace {
                 trbsidx.setTableName(tblDef.getName());
                 createMetadataRecord(yamcsInstance, trbsidx);
             }
-
-            RdbTable table = new RdbTable(yamcsInstance, this, tblDef, trb.getTbsIndex());
+            String cfName = tblDef.getCfName() == null ? YRDB.DEFAULT_CF : tblDef.getCfName();
+            RdbTable table = new RdbTable(yamcsInstance, this, tblDef, trb.getTbsIndex(), cfName);
 
             tables.put(tblDef, table);
 
@@ -584,6 +601,15 @@ public class Tablespace {
                 throw new IllegalArgumentException("Unknown table " + tblDef.getName());
             }
 
+            // remove the secondary index definition and data (if any)
+            for (TablespaceRecord tr : filter(Type.SECONDARY_INDEX, table.yamcsInstance,
+                    tr -> tr.getTableName().equals(tblDef.getName()))) {
+                int tbsIndex = tr.getTbsIndex();
+                log.debug("Removing secondary index {}", tr);
+                removeTbsIndex(Type.SECONDARY_INDEX, tbsIndex);
+            }
+
+            // remove data from partitions
             for (Partition p : table.partitionManager.getPartitions()) {
                 RdbPartition rdbp = (RdbPartition) p;
 
@@ -593,6 +619,16 @@ public class Tablespace {
                 db.getDb().deleteRange(dbKey(tbsIndex), dbKey(tbsIndex + 1));
                 removeTbsIndex(Type.TABLE_PARTITION, tbsIndex);
             }
+
+            // remove the histogram data (if any)
+            for (TablespaceRecord tr : filter(Type.HISTOGRAM, table.yamcsInstance,
+                    tr -> tr.getTableName().equals(tblDef.getName()))) {
+                int tbsIndex = tr.getTbsIndex();
+                log.debug("Removing histogram data {}", tr);
+                removeTbsIndex(Type.HISTOGRAM, tbsIndex);
+            }
+
+            // remove table definition and data from main db
             removeTbsIndex(Type.TABLE_DEFINITION, table.tbsIndex);
         }
     }
@@ -624,7 +660,9 @@ public class Tablespace {
             TableDefinition tblDef = TableDefinitionSerializer.fromProtobuf(tr.getTableDefinition());
             tblDef.setName(tr.getTableName());
 
-            RdbTable table = new RdbTable(yamcsInstance, this, tblDef, tr.getTbsIndex());
+            String cfName = tblDef.getCfName() == null ? YRDB.DEFAULT_CF : tblDef.getCfName();
+
+            RdbTable table = new RdbTable(yamcsInstance, this, tblDef, tr.getTbsIndex(), cfName);
             tables.put(tblDef, table);
             table.readPartitions();
 
@@ -691,8 +729,8 @@ public class Tablespace {
     public Sequence getSequence(String name, boolean create) throws YarchException, RocksDBException {
         synchronized (sequences) {
             RdbSequence seq = sequences.get(name);
-            if (seq == null && (create || db.get(cfMetadata, RdbSequence.getDbKey(name)) != null)) {
-                seq = new RdbSequence(name, db, cfMetadata);
+            if (seq == null && (create || mainDb.get(cfMetadata, RdbSequence.getDbKey(name)) != null)) {
+                seq = new RdbSequence(name, mainDb, cfMetadata);
                 sequences.put(name, seq);
             }
             return seq;
@@ -715,7 +753,7 @@ public class Tablespace {
                 for (TablespaceRecord tr : trList) {
                     wb.put(cfMetadata, getMetadataKey(tr.getType(), tr.getTbsIndex()), tr.toByteArray());
                 }
-                db.write(wo, wb);
+                mainDb.write(wo, wb);
             }
             tblDef.setName(newName);
         }
@@ -761,7 +799,7 @@ public class Tablespace {
         }
         // then the not open ones
         byte[] prefix = new byte[] { METADATA_FB_SEQ };
-        try (AscendingRangeIterator it = new AscendingRangeIterator(db.newIterator(cfMetadata), prefix, prefix)) {
+        try (AscendingRangeIterator it = new AscendingRangeIterator(mainDb.newIterator(cfMetadata), prefix, prefix)) {
             while (it.isValid()) {
                 String name = RdbSequence.getName(it.key());
                 if (!seqlist.stream().anyMatch(s -> name.equals(s.getName()))) {
@@ -774,4 +812,34 @@ public class Tablespace {
         }
         return seqlist;
     }
+
+    RocksdbMemoryUsage getApproximateMemoryUsage() {
+        var lruCache = RdbConfig.getInstance().getTablespaceConfig(name).getTableCache();
+        List<YRDB> dbList = rdbFactory.getOpenDbs(false);
+        var mbt = MemoryUtil.getApproximateMemoryUsageByType(rdbFactory.getOpenRdbs(), null);
+        dbList.forEach(yrdb -> rdbFactory.dispose(yrdb));
+        RocksdbMemoryUsage memUsage = new RocksdbMemoryUsage();
+
+        memUsage.blockCacheMemoryUsage = lruCache.getUsage();
+        memUsage.indexMemoryUsage = mbt.get(MemoryUsageType.kTableReadersTotal);
+        memUsage.memtableMemoryUsage = mbt.get(MemoryUsageType.kMemTableTotal);
+        memUsage.pinnedBlocksMemoryUsage = lruCache.getPinnedUsage();
+
+        return memUsage;
+    }
+
+    static class RocksdbMemoryUsage {
+        long blockCacheMemoryUsage;
+        long indexMemoryUsage;
+        long memtableMemoryUsage;
+        long pinnedBlocksMemoryUsage;
+
+        @Override
+        public String toString() {
+            return "RocksdbMemoryUsage [blockCacheMemoryUsage=" + blockCacheMemoryUsage + ", indexMemoryUsage="
+                    + indexMemoryUsage + ", memtableMemoryUsage=" + memtableMemoryUsage + ", pinnedBlocksMemoryUsage="
+                    + pinnedBlocksMemoryUsage + "]";
+        }
+    }
+
 }

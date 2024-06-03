@@ -80,13 +80,6 @@ export interface Range {
   count: number;
 }
 
-export interface GetGapsOptions {
-  start?: string;
-  stop?: string;
-  apids?: number[];
-  limit?: number;
-}
-
 export interface IssueCommandOptions {
   args?: { [key: string]: any; };
   origin?: string;
@@ -184,6 +177,7 @@ export interface GetPacketsOptions {
   next?: string;
   limit?: number;
   order?: 'asc' | 'desc';
+  fields?: Array<keyof Packet>;
 }
 
 export interface ListPacketsResponse {
@@ -194,9 +188,12 @@ export interface ListPacketsResponse {
 export interface Packet {
   id: NamedObjectId;
   receptionTime: string;
+  earthReceptionTime: string;
   generationTime: string;
   sequenceNumber: number;
   packet: string;
+  size: number;
+  link: string;
 }
 
 export interface GetParameterValuesOptions {
@@ -211,17 +208,34 @@ export interface GetParameterValuesOptions {
 
 export interface DownloadParameterValuesOptions {
   parameters?: string | string[];
+  list?: string;
   start?: string;
   stop?: string;
   norepeat?: boolean;
   delimiter?: 'TAB' | 'COMMA' | 'SEMICOLON';
+  header?: 'QUALIFIED_NAME' | 'SHORT_NAME' | 'NONE';
   interval?: number;
+  filename?: string;
+}
+
+export interface ExportParameterValuesOptions {
+  start?: string;
+  stop?: string;
+  parameters?: string[];
+  list?: string;
+  namespace?: string;
+  delimiter?: 'TAB' | 'COMMA' | 'SEMICOLON';
+  preserveLastValue?: boolean;
+  interval?: number;
+  limit?: number;
+  order?: 'asc' | 'desc';
 }
 
 export interface GetParameterSamplesOptions {
   start?: string;
   stop?: string;
   count?: number;
+  gapTime?: number;
   order?: 'asc' | 'desc';
   fields?: Array<keyof Sample>;
 }
@@ -236,8 +250,14 @@ export interface GetParameterRangesOptions {
 export interface GetPacketIndexOptions {
   start?: string;
   stop?: string;
-  mergeTime?: number;
   limit?: number;
+  mergeTime?: number;
+}
+
+export interface StreamPacketIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
 }
 
 export interface GetParameterIndexOptions {
@@ -247,11 +267,23 @@ export interface GetParameterIndexOptions {
   limit?: number;
 }
 
+export interface StreamParameterIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
+}
+
 export interface GetCommandIndexOptions {
   start?: string;
   stop?: string;
   mergeTime?: number;
   limit?: number;
+}
+
+export interface StreamCommandIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
 }
 
 export interface GetEventIndexOptions {
@@ -261,10 +293,22 @@ export interface GetEventIndexOptions {
   limit?: number;
 }
 
+export interface StreamEventIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
+}
+
 export interface GetCompletenessIndexOptions {
   start?: string;
   stop?: string;
   limit?: number;
+}
+
+export interface StreamCompletenessIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
 }
 
 export interface DownloadPacketsOptions {
@@ -293,47 +337,9 @@ export interface IndexEntry {
   count: number;
 }
 
-export interface Gap {
-  apid: number;
-  start: string;
-  stop: string;
-  startSequenceCount: number;
-  stopSequenceCount: number;
-  missingPacketCount: number;
-}
-
-export interface ListApidsResponse {
-  apids: number[];
-}
-
-export interface ListGapsResponse {
-  gaps: Gap[];
-  continuationToken?: string;
-}
-
-export interface PlaybackRange {
-  apid: number;
-  start: string;
-  stop: string;
-}
-
-export interface RequestPlaybackRequest {
-  ranges: PlaybackRange[];
-}
-
-export interface PlaybackInfo {
-  interval: string;
-  period: string;
-  requests: PlaybackRequest[];
-}
-
-export interface PlaybackRequest {
-  requestTime: string;
-  apid: number;
-  packetType: number;
-  privateHeaderSource: number;
-  start: string;
-  stop: string;
-  status: string;
-  tmCount: number;
+export interface ArchiveRecord {
+  id: NamedObjectId;
+  first: string;
+  last: string;
+  num: number;
 }

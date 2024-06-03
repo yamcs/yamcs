@@ -11,6 +11,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/struct.proto";
 
 import "yamcs/api/annotations.proto";
+import "yamcs/protobuf/actions/actions.proto";
 
 // This API deals with transmission (upload and download) of file to and from spacecraft.
 // The API can be used to interface any implementation of the FileTransferService.
@@ -22,6 +23,13 @@ service FileTransferApi {
   rpc ListFileTransferServices(ListFileTransferServicesRequest) returns (ListFileTransferServicesResponse) {
     option (yamcs.api.route) = {
       get: "/api/filetransfer/{instance}/services"
+    };
+  }
+
+  // Get a file transfer service
+  rpc GetFileTransferService(GetFileTransferServiceRequest) returns (FileTransferServiceInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/filetransfer/{instance}/services/{serviceName}"
     };
   }
 
@@ -71,14 +79,14 @@ service FileTransferApi {
     };
   }
   
-  // Receive transfer updates
+  // Subscribe to transfer updates
   rpc SubscribeTransfers(SubscribeTransfersRequest) returns (stream TransferInfo) {
     option (yamcs.api.websocket) = {
       topic: "file-transfers"
     };
   }
 
-  // Receive remote file lists
+  // Subscribe to remote file list updates
   rpc SubscribeRemoteFileList(SubscribeTransfersRequest) returns (stream ListFilesResponse) {
     option (yamcs.api.websocket) = {
       topic: "remote-file-list"
@@ -100,6 +108,16 @@ service FileTransferApi {
       field_mask_root: "files"
     };
   }
+
+  // Run a file-specific action.
+  //
+  // Available actions are specific to the File Transfer implementation.
+  rpc RunFileAction(RunFileActionRequest) returns (google.protobuf.Struct) {
+    option (yamcs.api.route) = {
+      post: "/api/filetransfer/{instance}/{serviceName}/files:runFileAction"
+      body: "*"
+    };
+  }
 }
 
 enum TransferDirection {
@@ -117,42 +135,61 @@ enum TransferState {
 }
 
 message TransactionId {
-    optional uint32 sequenceNumber = 1;
-    optional uint64 initiatorEntity = 2;
+  optional uint32 sequenceNumber = 1;
+  optional uint64 initiatorEntity = 2;
 }
 
 message ListFileTransferServicesRequest {
+  // Yamcs instance name
   optional string instance = 1;
+}
+
+message GetFileTransferServiceRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // File transfer service name
+  optional string serviceName = 2;
 }
 
 message ListFileTransferServicesResponse {
   repeated FileTransferServiceInfo services = 1;
 }
 
-//This message is used to configure the yacms-web
 message FileTransferCapabilities {
-  //if true, yamcs-web shows a button for initiating an upload
+  // Whether the transfer service supports uploads
   optional bool upload = 1;
 
-  //if true, yamcs-web shows a button for initiating a download
+  // Whether the transfer service supports downloads
   optional bool download = 2;
 
-  // DEPRECATED: use a FileTransferOption in FileTransferServiceInfo to get a reliability toggle
-  optional bool reliability = 3 [deprecated=true];
-
-  //if true, yamcs-web will show the section with the destination file/folder name (upload only)
+  // Whether the transfer service supports specifying an upload path
   optional bool remotePath = 4;
 
-  // true = service supports remote file list
+  // Whether the transfer service supports remote file listings
   optional bool fileList = 5;
 
-  // if true, yamcs-web will show the "Transfer Type" string column
+  // Whether transfers contain a column describing the Transfer Type
   optional bool hasTransferType = 6;
+
+  // Additional columns to show in a file listing, where id
+  // is a key of ``RemoteFile.extra``
+  repeated ExtraColumnInfo fileListExtraColumns = 7;
+
+  // Additional actions that may be executed on remote files
+  repeated yamcs.protobuf.actions.ActionInfo fileActions = 8;
 }
 
+message ExtraColumnInfo {
+  optional string id = 1;
+  optional string label = 2;
+}
 
 message FileTransferServiceInfo {
+  // Yamcs instance name
   optional string instance = 1;
+
+  // File transfer service name
   optional string name = 2;
  
   repeated EntityInfo localEntities = 3;
@@ -166,7 +203,6 @@ message EntityInfo {
   optional uint64 id = 2;
 }
 
-//message sent as reponse to the info and also when starting a new transfer
 message TransferInfo {
   //unique identifier assigned by the file transfer service
   optional uint64 id = 1;
@@ -200,56 +236,19 @@ message TransferInfo {
 
   // depending on the implementation, can mean normal file transfer, directory listing request, file download request, etc.
   optional string transferType = 14;
+
+  // Local entity, may be empty if there is only one such entity.
+  optional EntityInfo localEntity = 15;
+
+  // Remote entity, may be empty if there is only one such entity.
+  optional EntityInfo remoteEntity = 16;
 }
 
 message CreateTransferRequest {
-  // Deprecated: use 'options' instead
-  message UploadOptions {
-    // Deprecated: use 'options' instead (name: overwrite)
-    // Set to ``True`` if an already existing destination should be overwritten.
-    // Default: ``True``.
-    optional bool overwrite = 1 [deprecated=true];
-
-    // Deprecated: use 'options' instead (name: createPath)
-    // Set to ``True`` if the destination path should be created if it does not exist.
-    // Default: ``True``.
-    optional bool createPath = 2 [deprecated=true];
-
-    // Deprecated: use 'options' instead (name: reliable)
-    // Set to ``True`` if reliable (class 2) CFDP transfer should be used,
-    // otherwise unreliable (class 1). Default: ``False``.
-    optional bool reliable = 3 [deprecated=true];
-
-    // Deprecated: use 'options' instead (name: closureRequested)
-    // Introduced in Issue 5 of the CFDP standard for non reliable (class 1) transfers
-    // Requests the receiver to send a Finished PDU at the end of the transfer
-    optional bool closureRequested = 4 [deprecated=true];
-  }
-  // Deprecated: use 'options' instead
-  message DownloadOptions {
-    // Deprecated: use 'options' instead (name: overwrite)
-    // Set to ``True`` if an already existing destination should be overwritten.
-    // Default: ``True``.
-    optional bool overwrite = 1 [deprecated=true];
-
-    // Deprecated: use 'options' instead (name: createPath)
-    // Set to ``True`` if the destination path should be created if it does not exist.
-    // Default: ``True``.
-    optional bool createPath = 2 [deprecated=true];
-
-    // Deprecated: use 'options' instead (name: reliable)
-    // Set to ``True`` if reliable (class 2) CFDP transfer should be used,
-    // otherwise unreliable (class 1). Default: ``False``.
-    optional bool reliable = 3 [deprecated=true];
-
-    // Deprecated: use 'options' instead (name: closureRequested)
-    // Introduced in Issue 5 of the CFDP standard for non reliable (class 1) transfers
-    // Requests the receiver to send a Finished PDU at the end of the transfer
-    optional bool closureRequested = 4 [deprecated=true];
-  }
-
+  // Yamcs instance name
   optional string instance = 1;
-  //service name
+
+  // File transfer service name
   optional string serviceName = 8;
 
   // **Required** One of ``UPLOAD`` or ``DOWNLOAD``.
@@ -266,14 +265,6 @@ message CreateTransferRequest {
   
   // **Required** The path at the remote entity. Example: ``a/local/path/some_filename``.
   optional string remotePath = 5;
-
-  // Deprecated: use 'options' instead
-  // Configuration options specific to ``DOWNLOAD`` transfers.
-  optional DownloadOptions downloadOptions = 6 [deprecated=true];
-
-  // Deprecated: use 'options' instead
-  // Configuration options specific to ``UPLOAD`` transfers.
-  optional UploadOptions uploadOptions = 7 [deprecated=true];
   
   //used to derive the source entity id
   optional string source = 9;
@@ -286,44 +277,53 @@ message CreateTransferRequest {
 }
 
 message PauseTransferRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
-  //service name
+
+  // File transfer service name
   optional string serviceName = 3;
+
   // Transfer identifier (assigned by Yamcs)
   optional int64 id = 2;
 }
 
 message CancelTransferRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
-  // service name
+
+  // File transfer service name
   optional string serviceName = 3;
+
   // Transfer identifier (assigned by Yamcs)
   optional int64 id = 2;
 }
 
 message ResumeTransferRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
-  // service name
+
+  // File transfer service name
   optional string serviceName = 3;
+
   // Transfer identifier (assigned by Yamcs)
   optional int64 id = 2;
 }
 
 message ListTransfersRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
-  // service name
+
+  // File transfer service name
   optional string serviceName = 2;
 }
 
 message GetTransferRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
-  // service name
+
+  // File transfer service name
   optional string serviceName = 3;
+
   // Transfer identifier (assigned by Yamcs)
   optional int64 id = 2;
 }
@@ -333,32 +333,56 @@ message ListTransfersResponse {
 }
 
 message SubscribeTransfersRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
-  // service name
+
+  // File transfer service name
   optional string serviceName = 2;
 }
 
 message ListFilesRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
-  // service name
+
+  // File transfer service name
   optional string serviceName = 2;
+
   // Entity from which to get the file list
   optional string source = 3;
+
   // Entity from which to get the file list
   optional string destination = 4;
+
   // Path of folder to list files from
   optional string remotePath = 5;
+
   // Options for the transfer
   optional google.protobuf.Struct options = 6;
 }
 
 message RemoteFile {
+
+  // File identifier
+  //
+  // Typically, a remote file path, or a filename
+  // in case of a flat file table.
   optional string name = 1;
+
+  // Optional display name. Can be used when the ``name``
+  // field contains information that should be hidden from the user.
+  optional string displayName = 5;
+
+  // True if the path represents a directory
   optional bool isDirectory = 2;
+
+  // File size
   optional uint64 size = 3;
+
+  // Modification time
   optional google.protobuf.Timestamp modified = 4;
+
+  // Implementation-specific fields
+  optional google.protobuf.Struct extra = 6;
 }
 
 message ListFilesResponse {
@@ -366,6 +390,27 @@ message ListFilesResponse {
   optional string destination = 2;
   optional string remotePath = 3;
   optional google.protobuf.Timestamp listTime = 4;
+  optional string state = 5;
+}
+
+message RunFileActionRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // File transfer service name
+  optional string serviceName = 2;
+
+  // Remote entity
+  optional string remoteEntity = 3;
+
+  // File identifier
+  optional string file = 4;
+
+  // Action name
+  optional string action = 5;
+
+  // Action message
+  optional google.protobuf.Struct message = 6;
 }
 
 /*

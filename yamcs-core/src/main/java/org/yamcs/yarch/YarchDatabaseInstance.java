@@ -16,8 +16,10 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.Spec;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.management.ManagementService;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.utils.parser.ParseException;
@@ -46,7 +48,7 @@ import org.yaml.snakeyaml.Yaml;
  *
  */
 public class YarchDatabaseInstance {
-
+    public static String PART_CONF_KEY = "dataPartitioningByTime";
     private static final Logger log = LoggerFactory.getLogger(YarchDatabaseInstance.class.getName());
 
     Map<String, TableDefinition> tables = new HashMap<>();
@@ -59,7 +61,7 @@ public class YarchDatabaseInstance {
     private FileSystemBucketDatabase fileSystemBucketDatabase;
 
     final ManagementService managementService;
-
+    TimePartitionSchema timePartitioningSchema;
     // yamcs instance name
     private String instanceName;
 
@@ -80,6 +82,12 @@ public class YarchDatabaseInstance {
             if (yconf.containsKey("bucketDatabase")) {
                 YConfiguration dbConfig = yconf.getConfig("bucketDatabase");
                 loadBucketDatabase(dbConfig);
+            }
+            if (yconf.containsKey(PART_CONF_KEY)) {
+                String schema = yconf.getString(PART_CONF_KEY);
+                if (!"none".equalsIgnoreCase(schema)) {
+                    timePartitioningSchema = TimePartitionSchema.getInstance(schema);
+                }
             }
         } else {
             yconf = YConfiguration.getConfiguration("yamcs");
@@ -136,7 +144,7 @@ public class YarchDatabaseInstance {
                     bucket = getBucket(name);
                     if (bucket == null) {
                         log.info("Creating bucket {}", name);
-                        createBucket(name);
+                        bucket = createBucket(name);
                     }
                 }
                 if (config.containsKey("maxSize")) {
@@ -459,7 +467,18 @@ public class YarchDatabaseInstance {
     }
 
     /**
-     * Same as {@link #executeUnchecked(String, Object...)} but it embeds any exception into a {@link YarchException}
+     * Same as {@link #execute(StreamSqlStatement)} but it embeds any exception into a {@link YarchException}
+     */
+    public StreamSqlResult executeUnchecked(StreamSqlStatement stmt) {
+        try {
+            return execute(stmt);
+        } catch (StreamSqlException e) {
+            throw new YarchException(e);
+        }
+    }
+
+    /**
+     * Same as {@link #execute(String, Object...)} but it embeds any exception into a {@link YarchException}
      * 
      * @param query
      * @param args
@@ -506,8 +525,14 @@ public class YarchDatabaseInstance {
         return YarchDatabase.getDefaultStorageEngine().getProtobufDatabase(this);
     }
 
+    /**
+     * 
+     * Return the time partitioning schema configured (dataPartitioningByTime) if any.
+     * <p>
+     * If not configured, return null.
+     */
     public TimePartitionSchema getDefaultPartitioningSchema() {
-        return TimePartitionSchema.getInstance("YYYY");
+        return timePartitioningSchema;
     }
 
     public Bucket getBucket(String bucketName) throws IOException {
@@ -567,6 +592,37 @@ public class YarchDatabaseInstance {
     public List<SequenceInfo> getSequencesInfo() {
         return YarchDatabase.getDefaultStorageEngine().getSequencesInfo(this);
 
+    }
+
+    public static void addSpec(Spec spec) {
+        spec.addOption(YarchDatabaseInstance.PART_CONF_KEY, OptionType.STRING)
+                .withChoices("none", "YYYY", "YYYY/MM", "YYYY/DOY")
+                .withDefault("none").withDescription(
+                        "Parition the tm, pp, events, alarms, cmdhistory tables and the parameter archive by time - "
+                                + "that means store the data corresponding to the time interval in a different RocksdDB database");
+
+        spec.addOption("tablespace", OptionType.STRING);
+
+    }
+
+    /**
+     * Get the time partitioning schema configured in the passed config, or the instance schema
+     * 
+     * <p>
+     * returns null of "none" is configured in the config or if there is no configuration in the config or at instance
+     * level
+     */
+    public TimePartitionSchema getTimePartitioningSchema(YConfiguration config) {
+
+        if (config.containsKey(YarchDatabaseInstance.PART_CONF_KEY)) {
+            String schema = config.getString(YarchDatabaseInstance.PART_CONF_KEY);
+            if (!"none".equalsIgnoreCase(schema)) {
+                return TimePartitionSchema.getInstance(schema);
+            } else {
+                return null;
+            }
+        }
+        return timePartitioningSchema;
     }
 
 }

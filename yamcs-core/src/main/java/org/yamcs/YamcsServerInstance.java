@@ -25,7 +25,6 @@ import org.yamcs.utils.ExceptionUtil;
 import org.yamcs.utils.ServiceUtil;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Header;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
@@ -40,11 +39,8 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
 /**
  * Represents a Yamcs instance together with the instance specific services and the processors
  * 
- * @author nm
- *
  */
 public class YamcsServerInstance extends YamcsInstanceService {
-
     private String name;
     Log log;
     TimeService timeService;
@@ -85,10 +81,9 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
         Spec spec = new Spec();
         spec.addOption("services", OptionType.LIST).withElementType(OptionType.MAP).withSpec(serviceSpec);
-        spec.addOption("tablespace", OptionType.STRING);
 
         // Detailed validation on these is done
-        // in LinkManager, XtceDbFactory, and StreamInitializer
+        // in LinkManager, MdbFactory, and StreamInitializer
         spec.addOption("dataLinks", OptionType.LIST).withElementType(OptionType.MAP).withSpec(Spec.ANY);
         spec.addOption("streamConfig", OptionType.MAP).withSpec(Spec.ANY);
 
@@ -99,6 +94,8 @@ public class YamcsServerInstance extends YamcsInstanceService {
         spec.addOption("timeService", OptionType.ANY);
         spec.addOption("tmIndexer", OptionType.ANY);
         spec.addOption("eventDecoders", OptionType.ANY);
+
+        YarchDatabaseInstance.addSpec(spec);
 
         // "anchors" is used to allow yaml anchors (reuse of blocks)
         spec.addOption("anchors", OptionType.ANY);
@@ -135,7 +132,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
             loadTimeService();
             loadCrashHandler();
 
-            // first load the XtceDB (if there is an error in it, we don't want to load any other service)
+            // first load the MDB (if there is an error in it, we don't want to load any other service)
             mdb = MdbFactory.getInstance(name);
             StreamInitializer.createStreams(name);
 
@@ -186,6 +183,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
                 ServiceUtil.awaitServiceTerminated(swc.service, YamcsServer.SERVICE_STOP_GRACE_TIME, log);
             }));
         }
+        linkManager = null;
 
         serviceStoppers.shutdown();
         Futures.addCallback(Futures.allAsList(stopFutures), new FutureCallback<Object>() {
@@ -352,24 +350,23 @@ public class YamcsServerInstance extends YamcsInstanceService {
         }
         if (config != null) { // Can be null for an offline instance
             try {
-                MissionDatabase.Builder mdb = MissionDatabase.newBuilder();
+                MissionDatabase.Builder mdbproto = MissionDatabase.newBuilder();
                 if (config.containsKey("mdbSpec")) {
                     String configName = config.getString("mdbSpec");
-                    mdb.setConfigName(configName);
+                    mdbproto.setConfigName(configName);
                 } else if (!config.isList("mdb")) {
                     String configName = config.getString("mdb");
-                    mdb.setConfigName(configName);
+                    mdbproto.setConfigName(configName);
                 }
-                XtceDb xtcedb = getMdb();
-                if (xtcedb != null) { // if the instance is in a failed state, it could be that it doesn't have a XtceDB
-                                      // (the failure might be due to the load of the XtceDb)
-                    mdb.setName(xtcedb.getRootSpaceSystem().getName());
-                    Header h = xtcedb.getRootSpaceSystem().getHeader();
+                if (mdb != null) { // if the instance is in a failed state, it could be that it doesn't have a MDB
+                                      // (the failure might be due to the load of the MDB)
+                    mdbproto.setName(mdb.getRootSpaceSystem().getName());
+                    Header h = mdb.getRootSpaceSystem().getHeader();
                     if (h != null && h.getVersion() != null) {
-                        mdb.setVersion(h.getVersion());
+                        mdbproto.setVersion(h.getVersion());
                     }
                 }
-                aib.setMissionDatabase(mdb.build());
+                aib.setMissionDatabase(mdbproto.build());
             } catch (ConfigurationException | DatabaseLoadException e) {
                 log.warn("Got error when finding the mission database for instance {}", name, e);
             }

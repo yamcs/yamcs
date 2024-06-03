@@ -29,6 +29,7 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.logging.Log;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
+import org.yamcs.plists.ParameterListService;
 import org.yamcs.protobuf.AbstractInstancesApi;
 import org.yamcs.protobuf.CreateInstanceRequest;
 import org.yamcs.protobuf.GetInstanceRequest;
@@ -55,7 +56,7 @@ import org.yamcs.utils.parser.FilterParser;
 import org.yamcs.utils.parser.FilterParser.Result;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.utils.parser.TokenMgrError;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.google.protobuf.Empty;
@@ -421,7 +422,7 @@ public class InstancesApi extends AbstractInstancesApi<Context> {
         }
 
         if (yamcsInstance.hasMissionDatabase()) {
-            XtceDb mdb = yamcs.getInstance(yamcsInstance.getName()).getMdb();
+            Mdb mdb = yamcs.getInstance(yamcsInstance.getName()).getMdb();
             if (mdb != null) {
                 instanceb.setMissionDatabase(MdbApi.toMissionDatabase(yamcsInstance.getName(), mdb));
             }
@@ -463,6 +464,10 @@ public class InstancesApi extends AbstractInstancesApi<Context> {
         }
         if (!ysi.getServicesWithConfig(TimelineService.class).isEmpty()) {
             instanceb.addCapabilities("timeline");
+            instanceb.addCapabilities("activities");
+        }
+        if (!ysi.getServicesWithConfig(ParameterListService.class).isEmpty()) {
+            instanceb.addCapabilities("parameter-lists");
         }
         return instanceb.build();
     }

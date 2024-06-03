@@ -5,15 +5,20 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.CommandVerifier;
+import org.yamcs.mdb.Mdb;
 
 abstract class Verifier {
+    /**
+     * Imaginary parameter for publishing an optional return value to cmdhist
+     */
+    public static final String YAMCS_PARAMETER_RETURN_VALUE = Mdb.YAMCS_CMD_SPACESYSTEM_NAME + "/returnValue";
+
     final protected Log log;
     final protected CommandVerifier cv;
     final protected CommandVerificationHandler cvh;
     final ActiveCommand activeCommand;
     final ScheduledThreadPoolExecutor timer;
     protected ParameterValue returnPv;
-
 
     enum State {
         NEW, RUNNING, OK, NOK, TIMEOUT, DISABLED, CANCELLED
@@ -54,7 +59,7 @@ abstract class Verifier {
         cvh.onVerifierFinished(this);
     }
 
-    void finished(boolean result, String message) {
+    void finished(boolean success, String message) {
         if (state != State.RUNNING) {
             return;
         }
@@ -67,12 +72,12 @@ abstract class Verifier {
             returnPv = cvh.getProcessor().getLastValueCache()
                     .getValue(cv.getReturnParameter());
         }
-        state = result ? State.OK : State.NOK;
+        state = success ? State.OK : State.NOK;
         cvh.onVerifierFinished(this, message, returnPv);
     }
 
-    void finished(boolean result) {
-        finished(result, null);
+    void finished(boolean success) {
+        finished(success, null);
     }
 
     void finishOK() {

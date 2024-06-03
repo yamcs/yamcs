@@ -1,37 +1,51 @@
-import { ChangeDetectionStrategy, Component, forwardRef, Input, OnChanges } from '@angular/core';
+import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { MatDivider } from '@angular/material/divider';
+import { MatIcon } from '@angular/material/icon';
+import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { BehaviorSubject } from 'rxjs';
 
-export interface SelectOption {
+export interface YaSelectOption {
   id: string;
   label: string;
   group?: boolean;
+  icon?: string;
 }
 
 @Component({
+  standalone: true,
   selector: 'ya-select',
   templateUrl: './select.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => SelectComponent),
-      multi: true,
-    }
-  ]
+  providers: [{
+    provide: NG_VALUE_ACCESSOR,
+    useExisting: forwardRef(() => YaSelect),
+    multi: true,
+  }],
+  imports: [
+    AsyncPipe,
+    MatDivider,
+    MatIcon,
+    MatMenu,
+    MatMenuItem,
+    MatMenuTrigger,
+    NgForOf,
+    NgIf,
+  ],
 })
-export class SelectComponent implements OnChanges, ControlValueAccessor {
+export class YaSelect implements OnChanges, ControlValueAccessor {
 
   @Input()
   emptyOption: string = '-- select an option --';
 
   @Input()
-  options: SelectOption[] = [];
+  options: YaSelectOption[] = [];
 
   @Input()
   icon: string;
 
-  options$ = new BehaviorSubject<SelectOption[]>([]);
+  options$ = new BehaviorSubject<YaSelectOption[]>([]);
   selected$ = new BehaviorSubject<string | null>(null);
 
   private onChange = (_: string | null) => { };

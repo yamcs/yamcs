@@ -23,7 +23,7 @@ public class ProcessorDataTest {
     public void testInitialValue() {
         Mdb mdb = MdbFactory.createInstanceByConfig("refmdb");
 
-        ProcessorData pdata = new ProcessorData("test", "test", mdb, new ProcessorConfig());
+        ProcessorData pdata = new ProcessorData("test", mdb, new ProcessorConfig());
         LastValueCache lvc = pdata.getLastValueCache();
 
         ParameterValue pv = lvc.getValue(mdb.getParameter("/REFMDB/SUBSYS1/LocalParaWithInitialValue1"));

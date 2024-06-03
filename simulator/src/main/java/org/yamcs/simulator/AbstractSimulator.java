@@ -20,4 +20,6 @@ public abstract class AbstractSimulator extends AbstractService {
         throw new UnsupportedOperationException("CfdpSender is not settable for " + this);
     }
 
+    public abstract int maxTmDataSize();
+
 }

@@ -1,6 +1,6 @@
 {
   "name": "@yamcs/webapp-sdk",
-  "version": "1.0.0",
+  "version": "1.1.2",
   "description": "SDK for Yamcs Web Components",
   "author": "Yamcs Team <yamcs@spaceapplications.com>",
   "license": "AGPL-3.0",
@@ -10,11 +10,11 @@
     "directory": "yamcs-web/src/main/webapp"
   },
   "peerDependencies": {
-    "@angular/common": "^16.0.0",
-    "@angular/core": "^16.0.0"
+    "@angular/common": "^17.0.0",
+    "@angular/core": "^17.0.0"
   },
   "dependencies": {
-    "tslib": "^2.3.0"
+    "tslib": "^2.4.0"
   },
   "sideEffects": false
 }

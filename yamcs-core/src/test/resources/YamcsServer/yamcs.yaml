@@ -1,8 +1,7 @@
 instances:
- - instance0
- - instance1
+  - instance0
+  - instance1
 
-incomingDir: ${java.io.tmpdir}/yamcs-incoming
 dataDir: ${java.io.tmpdir}/yamcs-data
 
 secretKey: testtest

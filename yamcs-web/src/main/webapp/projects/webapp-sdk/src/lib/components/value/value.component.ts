@@ -1,6 +1,8 @@
+import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { AggregateValue, Value } from '../../client';
+import { ValuePipe } from '../../pipes/value.pipe';
 
 const indent = 20;
 
@@ -14,15 +16,25 @@ interface ValueNode {
 }
 
 @Component({
+  standalone: true,
   selector: 'ya-value',
   templateUrl: './value.component.html',
-  styleUrls: ['./value.component.css'],
+  styleUrl: './value.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    AsyncPipe,
+    NgForOf,
+    NgIf,
+    ValuePipe,
+  ],
 })
-export class ValueComponent implements OnChanges {
+export class YaValue implements OnChanges {
 
   @Input()
   value?: Value;
+
+  @Input()
+  alwaysExpand = false;
 
   nodes$ = new BehaviorSubject<ValueNode[]>([]);
 
@@ -38,7 +50,7 @@ export class ValueComponent implements OnChanges {
     // Flattened list of nodes, which could be either
     // leafs or have (flattened) children.
     const nodes: ValueNode[] = [];
-    this.processValue(value, false, nodes);
+    this.processValue(value, this.alwaysExpand, nodes);
     this.nodes$.next(nodes);
   }
 

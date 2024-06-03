@@ -29,7 +29,6 @@ import org.yamcs.tctm.ParameterSink;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SpaceSystem;
-import org.yamcs.xtce.XtceDb;
 
 /**
  * 

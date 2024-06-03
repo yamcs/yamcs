@@ -38,6 +38,8 @@
 			<xtce:FloatParameterType sizeInBits="32" name="float32">
 				<xtce:FloatDataEncoding encoding="IEEE754_1985" sizeInBits="32" />
 			</xtce:FloatParameterType>
+			
+			<xtce:BooleanParameterType name="boolean"/>
 			<xtce:BinaryParameterType name="binary_param_type">
 				<xtce:BinaryDataEncoding>
 					<xtce:SizeInBits>
@@ -81,6 +83,7 @@
 			<xtce:Parameter name="param7" parameterTypeRef="float32" />
 			<xtce:Parameter name="param9" parameterTypeRef="int_encoded_as_string" />
 			<xtce:Parameter name="param10" parameterTypeRef="float_encoded_as_string" />
+			<xtce:Parameter name="param11" parameterTypeRef="boolean" />
 			<xtce:Parameter name="avg4_result" parameterTypeRef="float32" />
 			<xtce:Parameter name="param8" parameterTypeRef="array_param_type" />
 			<xtce:Parameter name="uint16_param1" parameterTypeRef="uint16" />
@@ -89,7 +92,7 @@
 				<xtce:ParameterProperties dataSource="local" />
 			</xtce:Parameter>
 			<xtce:Parameter name="local_para2" parameterTypeRef="uint16">
-				<xtce:ParameterProperties dataSource="local" />
+				<xtce:ParameterProperties dataSource="local" persistence="false"/>
 			</xtce:Parameter>
 			<xtce:Parameter name="para_with_subsys_type" parameterTypeRef="subsys1/subsys_ptype1" />
 		</xtce:ParameterSet>
@@ -180,6 +183,17 @@
 					</xtce:TriggerSet>
 				</xtce:MathOperation>
 			</xtce:MathAlgorithm>
+			<xtce:CustomAlgorithm name="flipflop">
+				<xtce:AlgorithmText language="JavaScript">
+                    if (m1.value >0) { param11.value = true}
+                </xtce:AlgorithmText>
+				<xtce:InputSet>
+					<xtce:InputParameterInstanceRef parameterRef="param2/m1" inputName="m1" />
+				</xtce:InputSet>
+				<xtce:OutputSet>
+					<xtce:OutputParameterRef parameterRef="param11" />
+				</xtce:OutputSet>
+			</xtce:CustomAlgorithm>
 		</xtce:AlgorithmSet>
 	</xtce:TelemetryMetaData>
 	<xtce:CommandMetaData>

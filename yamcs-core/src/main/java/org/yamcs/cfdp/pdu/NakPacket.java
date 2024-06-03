@@ -31,8 +31,6 @@ public class NakPacket extends CfdpPacket implements FileDirective {
         }
     }
 
-   
-
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
         buffer.put(getFileDirectiveCode().getCode());
@@ -46,6 +44,13 @@ public class NakPacket extends CfdpPacket implements FileDirective {
         return 9 + 8 * segmentRequests.size();
     }
 
+    /**
+     * returns the maximum number of segments which can be transmitted given the maximum data size of a PDU
+     */
+    public static int maxNumSegments(int maxDataSize) {
+        return (maxDataSize - 9) / 8;
+    }
+
     @Override
     public FileDirectiveCode getFileDirectiveCode() {
         return FileDirectiveCode.NAK;
@@ -54,7 +59,15 @@ public class NakPacket extends CfdpPacket implements FileDirective {
     public List<SegmentRequest> getSegmentRequests() {
         return this.segmentRequests;
     }
-    
+
+    public long getScopeStart() {
+        return scopeStart;
+    }
+
+    public long getScopeEnd() {
+        return scopeEnd;
+    }
+
     @Override
     public String toString() {
         return "NakPacket [scopeStart=" + scopeStart + ", scopeEnd=" + scopeEnd + ", segmentRequests=" + segmentRequests

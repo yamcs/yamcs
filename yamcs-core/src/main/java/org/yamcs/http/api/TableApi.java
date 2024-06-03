@@ -679,7 +679,8 @@ public class TableApi extends AbstractTableApi<Context> {
         StreamInfo.Builder infob = StreamInfo.newBuilder();
         infob.setName(stream.getName());
         infob.setDataCount(stream.getDataCount());
-        infob.setScript("create stream " + stream.getName() + stream.getDefinition().getStringDefinition());
+        var def = stream.getDefinition();
+        infob.setScript("create stream " + stream.getName() + def == null ? "" : def.getStringDefinition());
         for (var cdef : stream.getDefinition().getColumnDefinitions()) {
             infob.addColumn(toColumnInfo(cdef, null));
             infob.addColumns(toColumnInfo(cdef, null));

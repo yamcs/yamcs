@@ -23,7 +23,8 @@ public class EventRecorder extends AbstractYamcsService {
 
     public static final String TABLE_NAME = "events";
     public static final String REALTIME_EVENT_STREAM_NAME = "events_realtime";
-
+    public static final String CF_NAME = XtceTmRecorder.CF_NAME;
+    
     @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         super.init(yamcsInstance, serviceName, config);
@@ -32,10 +33,15 @@ public class EventRecorder extends AbstractYamcsService {
 
         try {
             if (ydb.getTable(TABLE_NAME) == null) {
+                var timePart = ydb.getTimePartitioningSchema(config);
+
+                var partitionBy = timePart == null ? ""
+                        : "partition by time(gentime('" + timePart.getName() + "'))";
+
                 ydb.execute("create table " + TABLE_NAME
                         + "(gentime timestamp, source enum, seqNum int, body PROTOBUF('" + Event.class.getName()
-                        + "'), primary key(gentime, source, seqNum)) histogram(source)"
-                        + " table_format=compressed");
+                        + "'), primary key(gentime, source, seqNum)) histogram(source) " + partitionBy
+                        + " table_format=compressed,column_family:"+CF_NAME);
             }
 
             StreamConfig sc = StreamConfig.getInstance(yamcsInstance);

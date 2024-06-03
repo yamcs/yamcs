@@ -115,6 +115,33 @@ options:
         redirected to the built-in login page.
     type: STRING
 
+  cookie:
+    title: Cookie
+    description:
+      - Configure cookies planted by Yamcs Web.
+      - These values should be configured when hardening your deployment.
+    type: MAP
+    applySpecDefaults: true
+    suboptions:
+      secure:
+        title: Secure attribute
+        description:
+          - Add a secure attribute
+          - This should be set to true when Yamcs is served over HTTPS
+        type: BOOLEAN
+        default: false
+      sameSite:
+        title: SameSite attribute
+        description:
+          - Configure the SameSite attribute
+          - This should be set to `strict` when Yamcs is served over HTTPS
+        type: STRING
+        choices:
+          - lax
+          - strict
+          - none
+        default: lax
+
   dass:
     title: Show DaSS Functionalities
     description:
@@ -126,6 +153,7 @@ options:
     type: BOOLEAN
     default: false
     hidden: true
+    deprecationMessage: Remove this property. This functionality is now provided from a plugin.
 
   tc:
     title: Show Commanding Functionalities

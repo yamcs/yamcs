@@ -1,17 +1,14 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { UnitInfo } from '../client';
+import { getUnits } from '../utils';
 
-@Pipe({ name: 'units' })
+@Pipe({
+  standalone: true,
+  name: 'units',
+})
 export class UnitsPipe implements PipeTransform {
 
   transform(unitSet?: UnitInfo[]): string | null {
-    if (!unitSet || unitSet.length === 0) {
-      return null;
-    }
-    let res = '';
-    for (const unitInfo of unitSet) {
-      res += unitInfo.unit + ' ';
-    }
-    return res;
+    return getUnits(unitSet);
   }
 }

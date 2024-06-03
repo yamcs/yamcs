@@ -30,6 +30,7 @@ import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameterarchive.RealtimeArchiveFiller.SegmentQueue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
+import org.yamcs.utils.IntArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yaml.snakeyaml.Yaml;
@@ -68,12 +69,13 @@ public class RealtimeArchiveFillerTest {
     private ParameterRequestManager parameterRequestManager;
 
     @BeforeEach
-    public void setup() {
+    public void setup() throws RocksDBException {
         MockitoAnnotations.openMocks(this);
         when(processor.getParameterRequestManager()).thenReturn(parameterRequestManager);
         when(parameterArchive.getYamcsInstance()).thenReturn("realtime");
         when(parameterArchive.getParameterIdDb()).thenReturn(parameterIdDb);
         when(parameterArchive.getParameterGroupIdDb()).thenReturn(parameterGroupIdDb);
+        when(parameterGroupIdDb.getGroup(IntArray.wrap(0))).thenReturn(new ParameterGroupIdDb.ParameterGroup(0, null));
 
         // TimeEncoding is used when logging messages by RealtimeArchiveFiller.
         TimeEncoding.setUp();

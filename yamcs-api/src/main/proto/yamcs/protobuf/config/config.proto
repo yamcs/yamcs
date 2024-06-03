@@ -1,0 +1,109 @@
+syntax="proto2";
+
+package yamcs.protobuf.config;
+
+option java_package = "org.yamcs.protobuf.config";
+option java_outer_classname = "ConfigProto";
+option java_multiple_files = true;
+
+import "google/protobuf/struct.proto";
+
+enum OptionType {
+  ANY = 1;
+  BOOLEAN = 2;
+  INTEGER = 3;
+  FLOAT = 4;
+  LIST = 5;
+  LIST_OR_ELEMENT = 6;
+  MAP = 7;
+  STRING = 8;
+}
+
+// Specifies the valid structure of a configuration map
+message SpecInfo {
+  // Options for this specification  
+  repeated OptionInfo options = 1;
+
+  // If true, any option is allowed
+  optional bool allowUnknownKeys = 2;
+
+  // Constraints on a groups of options. For each group at least one
+  // of the keys must be specified.
+  repeated OptionGroupInfo requiredOneOf = 3;
+
+  // Constraints on a group of options. For each group, all keys must
+  // be specified, or none at all.
+  repeated OptionGroupInfo requireTogether = 4;
+
+  // Conditional constraints on a group of options
+  repeated WhenConditionInfo whenConditions = 5;
+}
+
+message OptionGroupInfo {
+  // Option keys
+  repeated string keys = 1;
+}
+
+message WhenConditionInfo {
+  // Option key for checking the condition
+  optional string key = 1;
+
+  // Value to compare with
+  optional google.protobuf.Value value = 2;
+
+  // Option keys that must be specified, if the condition is satisfied
+  repeated string requiredKeys = 3;
+}
+
+message OptionInfo {
+  // Name of this option, unique within a spec
+  optional string name = 1;
+
+  // Type of this option
+  optional OptionType type = 2;
+
+  // UI-friendly label for this option
+  optional string title = 3;
+
+  // Default value when the option is not specified
+  optional google.protobuf.Value default = 4;
+
+  // Whether this options must be specified
+  optional bool required = 5;
+
+  // Hint that this option should be excluded from any
+  // document generation
+  optional bool hidden = 6;
+
+  // Hint that value for this option should not be
+  // logged
+  optional bool secret = 7;
+
+  // Which version of this software this option was added.
+  // Can be the Yamcs version, or the version of a plugin.  
+  optional string versionAdded = 8;
+
+  // Deprecation message for this option
+  optional string deprecationMessage = 9;
+
+  // Description, each list entry represents a paragraph
+  repeated string description = 10;
+
+  // When the type is ``LIST`` or ``LIST_OR_ELEMENT``, this indicates the type
+  // of each element of that list
+  optional OptionType elementType = 11;
+
+  // When the type or elementType is ``MAP``, this specifies
+  // the options with that map
+  optional SpecInfo spec = 12;
+
+  // Allowed values for this option
+  repeated google.protobuf.Value choices = 13;
+
+  // When the type is ``MAP``, this property determines whether default values
+  // are generated even when a value for that option was not provided.
+  optional bool applySpecDefaults = 14;
+
+  // Additional names that can be used for this option
+  repeated string aliases = 15;
+}

@@ -35,7 +35,7 @@ public class VariableBinaryCommandEncodingTest {
 
         YConfiguration.setupTest(null);
         mdb = MdbFactory.createInstanceByConfig("VariableBinaryTest");
-        metaCommandProcessor = new MetaCommandProcessor(new ProcessorData("test", "test", mdb, new ProcessorConfig()));
+        metaCommandProcessor = new MetaCommandProcessor(new ProcessorData("test", mdb, new ProcessorConfig()));
     }
 
     @Test

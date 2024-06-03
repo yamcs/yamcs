@@ -20,7 +20,7 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.HistogramIterator;
@@ -90,13 +90,13 @@ public class IndexRequestProcessor implements Runnable {
 
         if (req.isSendAllTm() || req.getTmPackets().size() > 0) {
             sendTms = true;
-            XtceDb db = MdbFactory.getInstance(yamcsInstance);
+            Mdb mdb = MdbFactory.getInstance(yamcsInstance);
 
             if (req.isSendAllTm()) {
                 if (req.getDefaultNamespace() != null) {
                     String defaultns = req.getDefaultNamespace();
                     tmpackets = new HashMap<>();
-                    for (SequenceContainer sc : db.getSequenceContainers()) {
+                    for (SequenceContainer sc : mdb.getSequenceContainers()) {
                         if (sc.getAlias(defaultns) != null) {
                             tmpackets.put(sc.getQualifiedName(), NamedObjectId.newBuilder()
                                     .setName(sc.getAlias(defaultns)).setNamespace(defaultns).build());
@@ -106,7 +106,7 @@ public class IndexRequestProcessor implements Runnable {
             } else {
                 tmpackets = new HashMap<>();
                 for (NamedObjectId id : req.getTmPackets()) {
-                    SequenceContainer sc = db.getSequenceContainer(id);
+                    SequenceContainer sc = mdb.getSequenceContainer(id);
                     if (sc != null) {
                         tmpackets.put(sc.getQualifiedName(), id);
                     }
@@ -364,7 +364,7 @@ public class IndexRequestProcessor implements Runnable {
                 res.put(ar.getId(), ar);
                 return null;
             }
-            long tdelta = Durations.toMillis(Timestamps.between(ar.getFirst(), ar.getLast()));
+            long tdelta = Durations.toMillis(Timestamps.between(ar1.getFirst(), ar.getLast()));
             if (tdelta < mergeTime) {
                 ArchiveRecord ar2 = ArchiveRecord.newBuilder().setFirst(ar1.getFirst())
                         .setLast(ar.getLast()).setNum(ar1.getNum() + ar.getNum())

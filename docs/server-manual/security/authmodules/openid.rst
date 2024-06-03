@@ -5,6 +5,10 @@ This AuthModule supports federated identity by redirecting web application users
 
 This AuthModule is used for authentication only. It does not directly support importing roles. But you could do so by extending this module.
 
+If the token endpoint of the OpenID server provides a refresh token, then Yamcs will refresh the access token whenever it has expired.
+
+If the token endpoint of the OpenID server does not provide a refresh token, Yamcs will only interact once with the OpenID server (for the initial auth), and afterwards no longer.
+
 
 Class Name
 ----------
@@ -18,8 +22,12 @@ Configuration Options
 authorizationEndpoint (string)
     **Required.** The URL of the OpenID server page where to redirect users for authorization and/or consent.
 
+    This URL must be accessible by clients.
+
 tokenEndpoint (string)
     **Required.** The URL of the OpenID server page where OAuth2 tokens can be retrieved.
+
+    This URL must be accessible by Yamcs itself.
 
 clientId (string)
     **Required.** An identifier that identifies your Yamcs server installation as a client against the Open ID server. This should be set up using the configuration tools of the Open ID server.
@@ -32,6 +40,9 @@ scope (string)
 
 attributes (map)
     Configure how claims are mapped to Yamcs attributes. If unset, Yamcs uses defaults that work out of the box against some common OpenID Connect providers.
+
+verifyTls (boolean)
+    If false, disable TLS and hostname verification when Yamcs uses the token endpoint. Default: true.
 
 
 Attributes sub-configuration
@@ -47,7 +58,14 @@ displayName (string or string[])
     The claim that matches with the display name. If multiples are defined, they are tried in order. Default: ``name``.
 
 
-.. rubric:: Note to third-party developers
+Back-channel Logout
+-------------------
+
+This AuthModule adds an endpoint ``/openid/backchannel-logout`` to Yamcs that may be called by the OpenID server when a user is to be logged out. This is called back-channel because the communication is directly from the Open ID server to Yamcs, rather than via the user agent. If not used, a logout on the Open ID server is only detected when the next token refresh is attempted.
+
+
+Note to third-party developers
+------------------------------
 
 This AuthModule implements the conventions for server-side web applications. In other words: the ``id_token`` is retrieved and decoded on Yamcs server only. Before Yamcs can obtain the ``id_token`` it expects to be given some information by the integrating application.
 

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
@@ -49,6 +50,7 @@ public class YamcsTcLink extends AbstractTcDataLink {
     private ArrayList<CommandMapData> commandMapDataList = new ArrayList<>();
     Map<String, PreparedCommand> sentCommands = new ConcurrentHashMap<>();
     Map<String, CommandInfo> upstreamCmdCache = new ConcurrentHashMap<>();
+    private AtomicInteger tcCount = new AtomicInteger();
 
     public YamcsTcLink(YamcsLink parentLink) {
         this.parentLink = parentLink;
@@ -113,7 +115,7 @@ public class YamcsTcLink extends AbstractTcDataLink {
         }
         CommandBuilder cb = procClient.prepareCommand(data.getUpstreamPath());
         cb.withOrigin(cmdOrigin);
-        long count = dataCount.getAndIncrement();
+        long count = tcCount.getAndIncrement();
         cb.withSequenceNumber((int) count);
 
         sentCommands.put(cmdOrigin + "-" + count, pc);
@@ -142,11 +144,14 @@ public class YamcsTcLink extends AbstractTcDataLink {
         // we take the time now because after the command is issued, the current time will be after the upstream
         // Queued/Released timestamps
         long time = getCurrentTime();
-        cb.issue().whenComplete((c, t) -> {
+        var cf = cb.issue();
+        var size = cb.getSizeOfTheLastCommandIssued();
+        cf.whenComplete((c, t) -> {
             if (t != null) {
                 log.warn("Error sending command ", t);
                 failedCommand(pc.getCommandId(), t.getMessage());
             } else {
+                dataOut(1, size);
                 commandHistoryPublisher.publishAck(pc.getCommandId(), AcknowledgeSent_KEY, time, AckStatus.OK);
             }
         });
@@ -180,7 +185,7 @@ public class YamcsTcLink extends AbstractTcDataLink {
 
         CommandBuilder cb = procClient.prepareCommand(pc.getCmdName());
         cb.withOrigin(cmdOrigin);
-        long count = dataCount.getAndIncrement();
+        long count = tcCount.getAndIncrement();
         cb.withSequenceNumber((int) count);
 
         sentCommands.put(cmdOrigin + "-" + count, pc);

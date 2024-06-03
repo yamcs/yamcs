@@ -12,6 +12,8 @@ import org.yamcs.utils.IntArray;
 import org.yamcs.xtce.PathElement;
 import org.yamcs.xtce.util.AggregateMemberNames;
 
+import org.yamcs.protobuf.Yamcs.Value.Type;
+
 /**
  * builds aggregate or array values out of members extracted from the parameter archive.
  *
@@ -125,7 +127,6 @@ public class AggrrayBuilder {
 
     // creates and returns the element idx verifying also that it is an aggregate
     private AggregateValueBuilder createOrVerifyArrayElement(ArrayValueBuilder arrb, IntArray idx) {
-
         ValueBuilder builder = arrb.getElement(idx);
         if (builder == null) {
             AggregateValueBuilder aggb = new AggregateValueBuilder();
@@ -241,17 +242,26 @@ public class AggrrayBuilder {
             if (dim == null) {
                 dim = new int[numDim];
             }
-            for (int i = 0; i < numDim; i++) {
-                int k = i;
-                dim[i] = elements.keySet().stream().mapToInt(a -> a.get(k)).max().getAsInt() + 1;
-            }
-            ArrayValue av = null;
+
+            Map<IntArray, Value> values = new HashMap<>();
+            Type valueType = null;
+            
             for (Map.Entry<IntArray, ValueBuilder> me : elements.entrySet()) {
                 Value v = me.getValue().build();
-                if (av == null) {
-                    av = new ArrayValue(dim, v.getType());
+                if (v != null) {
+                    values.put(me.getKey(), v);
+                    valueType = v.getType();
                 }
-                av.setElementValue(me.getKey().array(), v);
+            }
+            
+            for (int i = 0; i < numDim; i++) {
+                int k = i;
+                dim[i] = values.keySet().stream().mapToInt(a -> a.get(k)).max().getAsInt() + 1;
+            }
+
+            ArrayValue av = new ArrayValue(dim, valueType);
+            for (var me : values.entrySet()) {
+                av.setElementValue(me.getKey().array(), me.getValue());
             }
             return av;
         }

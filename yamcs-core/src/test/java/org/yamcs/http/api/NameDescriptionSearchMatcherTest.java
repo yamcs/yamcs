@@ -8,7 +8,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 public class NameDescriptionSearchMatcherTest {
 
@@ -20,13 +20,13 @@ public class NameDescriptionSearchMatcherTest {
 
     @Test
     public void testSearchMatch() throws ConfigurationException {
-        XtceDb mdb = MdbFactory.createInstanceByConfig("refmdb");
+        Mdb mdb = MdbFactory.createInstanceByConfig("refmdb");
         assertTrue(match("/REFMDB/CcSdS-APID", mdb));
         assertTrue(match("REFMDB_ccsds-apid", mdb));
         assertTrue(match("ap ReFmDB_CC", mdb));
     }
 
-    private boolean match(String searchTerm, XtceDb mdb) {
+    private boolean match(String searchTerm, Mdb mdb) {
         NameDescriptionSearchMatcher matcher = new NameDescriptionSearchMatcher(searchTerm);
         for (Parameter p : mdb.getParameters()) {
             if (matcher.matches(p)) {

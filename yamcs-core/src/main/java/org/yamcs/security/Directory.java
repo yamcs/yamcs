@@ -26,6 +26,10 @@ import org.yamcs.yarch.YarchException;
  */
 public class Directory {
 
+    // Reserve first few ids for potential future use
+    // (also not to overlap with system and guest users which are not currently in the directory)
+    public static final long ID_START = 5;
+
     // MIGRATION NOTICE:
     //
     // Users and groups used to be stored in "ProtobufDatabase", but we're slowly phasing that
@@ -45,9 +49,9 @@ public class Directory {
     // Reserve first few ids for potential future use
     // (also not to overlap with system and guest users which are not currently in the directory)
     @Deprecated
-    private AtomicInteger accountIdSequence = new AtomicInteger(5);
+    private AtomicInteger accountIdSequence = new AtomicInteger((int) ID_START);
     @Deprecated
-    private AtomicInteger groupIdSequence = new AtomicInteger(5);
+    private AtomicInteger groupIdSequence = new AtomicInteger((int) ID_START);
 
     @Deprecated
     private Map<String, User> users = new ConcurrentHashMap<>();
@@ -129,6 +133,7 @@ public class Directory {
     }
 
     public synchronized void addUser(User user) throws IOException {
+        verifyDirectoryUser(user);
         String username = user.getName();
         if (db.findAccountByName(username) != null) {
             throw new IllegalArgumentException("Name '" + username + "' is already taken");
@@ -151,6 +156,9 @@ public class Directory {
     }
 
     public synchronized void updateUserProperties(User user) {
+        if (user.isBuiltIn()) {
+            throw new UnsupportedOperationException();
+        }
         setUserPrivileges(user);
         users.put(user.getName(), user);
         mirrorToProtobufDatabase();
@@ -173,6 +181,7 @@ public class Directory {
     }
 
     public synchronized void deleteUser(User user) throws IOException {
+        verifyDirectoryUser(user);
         log.info("Removing user {}", user);
         var groups = db.listGroups();
         for (var group : groups) {
@@ -261,6 +270,12 @@ public class Directory {
         serviceAccounts.put(service.getName(), service);
         mirrorToProtobufDatabase();
         db.updateAccount(service);
+    }
+
+    private void verifyDirectoryUser(User user) {
+        if (user.isBuiltIn()) {
+            throw new IllegalArgumentException("Not a directory user");
+        }
     }
 
     @SuppressWarnings("unchecked")

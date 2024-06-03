@@ -29,8 +29,8 @@ import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.MediaType;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
-import org.yamcs.mdb.ProcessorData;
 import org.yamcs.mdb.MdbFactory;
+import org.yamcs.mdb.ProcessorData;
 import org.yamcs.mdb.XtceTmExtractor;
 import org.yamcs.parameter.ContainerParameterValue;
 import org.yamcs.protobuf.AbstractPacketsApi;
@@ -55,7 +55,7 @@ import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -202,9 +202,12 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         long gentime = TimeEncoding.fromProtobufTimestamp(request.getGentime());
         int seqNum = request.getSeqnum();
 
-        SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME)
-                .where("gentime = ?", gentime)
-                .where("seqNum = ?", seqNum);
+        var sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
+        if (request.hasPname()) { // Optional due to deprecated API where name is not provided
+            sqlb = sqlb.where("pname = ?", request.getPname());
+        }
+        sqlb = sqlb.where("gentime = ?", gentime);
+        sqlb = sqlb.where("seqNum = ?", seqNum);
 
         List<TmPacketData> packets = new ArrayList<>();
         StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
@@ -271,9 +274,12 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         long gentime = TimeEncoding.fromProtobufTimestamp(request.getGentime());
         int seqNum = request.getSeqnum();
 
-        SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME)
-                .where("gentime = ?", gentime)
-                .where("seqNum = ?", seqNum);
+        var sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
+        if (request.hasPname()) { // Optional due to deprecated API where name is not provided
+            sqlb = sqlb.where("pname = ?", request.getPname());
+        }
+        sqlb = sqlb.where("gentime = ?", gentime);
+        sqlb = sqlb.where("seqNum = ?", seqNum);
 
         List<TmPacketData> packets = new ArrayList<>();
         StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
@@ -314,9 +320,12 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         long gentime = TimeEncoding.fromProtobufTimestamp(request.getGentime());
         int seqNum = request.getSeqnum();
 
-        SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME)
-                .where("gentime = ?", gentime)
-                .where("seqNum = ?", seqNum);
+        var sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
+        if (request.hasPname()) { // Optional due to deprecated API where name is not provided
+            sqlb = sqlb.where("pname = ?", request.getPname());
+        }
+        sqlb = sqlb.where("gentime = ?", gentime);
+        sqlb = sqlb.where("seqNum = ?", seqNum);
 
         List<TmPacketData> packets = new ArrayList<>();
         StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
@@ -355,7 +364,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
                     var responseb = ExtractPacketResponse.newBuilder();
 
-                    var pdata = new ProcessorData(null, "XTCEPROC", mdb, new ProcessorConfig());
+                    var pdata = new ProcessorData("XTCEPROC", mdb, new ProcessorConfig());
 
                     var eventProducer = new AbstractEventProducer() {
                         @Override
@@ -389,14 +398,19 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
                         if (pval instanceof ContainerParameterValue) {
                             var containedPval = (ContainerParameterValue) pval;
                             var container = containedPval.getSequenceEntry().getSequenceContainer();
-                            responseb.addParameterValues(ExtractedParameterValue.newBuilder()
+                            var pvalb = ExtractedParameterValue.newBuilder()
                                     .setParameter(XtceToGpbAssembler.toParameterInfo(
                                             containedPval.getParameter(), DetailLevel.SUMMARY))
                                     .setEntryContainer(XtceToGpbAssembler.toContainerInfo(container, DetailLevel.LINK))
                                     .setLocation(containedPval.getAbsoluteBitOffset())
-                                    .setSize(containedPval.getBitSize())
-                                    .setRawValue(ValueUtility.toGbp(containedPval.getRawValue()))
-                                    .setEngValue(ValueUtility.toGbp(containedPval.getEngValue())));
+                                    .setSize(containedPval.getBitSize());
+                            if (containedPval.getRawValue() != null) {
+                                pvalb.setRawValue(ValueUtility.toGbp(containedPval.getRawValue()));
+                            }
+                            if (containedPval.getEngValue() != null) {
+                                pvalb.setEngValue(ValueUtility.toGbp(containedPval.getEngValue()));
+                            }
+                            responseb.addParameterValues(pvalb);
                         }
                     }
 
@@ -461,13 +475,14 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         String instance = InstancesApi.verifyInstance(request.getInstance());
 
         if (request.hasProcessor()) {
-            XtceDb mdb = MdbFactory.getInstance(instance);
+            Mdb mdb = MdbFactory.getInstance(instance);
             Processor processor = ProcessingApi.verifyProcessor(instance, request.getProcessor());
             ContainerRequestManager containerRequestManager = processor.getContainerRequestManager();
             ContainerConsumer containerConsumer = result -> {
                 TmPacketData packet = TmPacketData.newBuilder()
                         .setId(NamedObjectId.newBuilder().setName(result.getContainer().getQualifiedName()))
                         .setPacket(ByteString.copyFrom(result.getContainerContent()))
+                        .setSize(result.getContainerContent().length)
                         .setGenerationTime(TimeEncoding.toProtobufTimestamp(result.getGenerationTime()))
                         .setReceptionTime(TimeEncoding.toProtobufTimestamp(result.getAcquisitionTime()))
                         .build();
@@ -488,6 +503,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
                     long receptionTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN);
                     int seqNumber = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
                     TmPacketData tm = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(pktData))
+                            .setSize(pktData.length)
                             .setGenerationTime(TimeEncoding.toProtobufTimestamp(genTime))
                             .setReceptionTime(TimeEncoding.toProtobufTimestamp(receptionTime))
                             .setSequenceNumber(seqNumber)
@@ -510,7 +526,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
     @Override
     public void subscribeContainers(Context ctx, SubscribeContainersRequest request, Observer<ContainerData> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
-        XtceDb mdb = MdbFactory.getInstance(instance);
+        Mdb mdb = MdbFactory.getInstance(instance);
         if (request.getNamesCount() == 0) {
             throw new BadRequestException("At least one container name must be specified");
         }
@@ -551,9 +567,9 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
      * Get packet names this user has appropriate privileges for.
      */
     private Collection<String> getTmPacketNames(String yamcsInstance, User user) {
-        XtceDb xtcedb = MdbFactory.getInstance(yamcsInstance);
+        Mdb mdb = MdbFactory.getInstance(yamcsInstance);
         ArrayList<String> tl = new ArrayList<>();
-        for (SequenceContainer sc : xtcedb.getSequenceContainers()) {
+        for (SequenceContainer sc : mdb.getSequenceContainers()) {
             if (user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, sc.getQualifiedName())) {
                 tl.add(sc.getQualifiedName());
             }

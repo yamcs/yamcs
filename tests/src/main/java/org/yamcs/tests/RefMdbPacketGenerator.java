@@ -136,7 +136,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public void init(Processor proc, YConfiguration config, Object spec) {
         this.tmProcessor = proc.getTmProcessor();
         proc.setPacketProvider(this);
-        rootSc = proc.getXtceDb().getRootSequenceContainer();
+        rootSc = proc.getMdb().getRootSequenceContainer();
         if (rootSc == null) {
             throw new ConfigurationException("Cannot find the root sequence container");
         }

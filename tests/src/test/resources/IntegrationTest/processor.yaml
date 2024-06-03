@@ -19,6 +19,7 @@ realtime:
                       - mdb/algolib.py
         - class: org.yamcs.parameter.LocalParameterManager
     config:
+        persistParameters: true
         subscribeAll: true
         #check parameter and event alarms and also enable the alarm servers (that keeps track of unacknowledged alarms)
         alarm:

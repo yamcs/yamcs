@@ -2,35 +2,35 @@ package org.yamcs.tctm;
 
 import java.nio.ByteOrder;
 
+import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.time.FixedSizeTimeDecoder;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.SequenceContainer;
 
 /**
  * Generic packet preprocessor.
- * <br>
+ * <p>
  * Reads the timestamp (8 bytes) and the sequence count (4 bytes) from a user defined offset.
- * <br>
+ * <p>
  * Optionally allows to specify also a checksum algorithm to be used. The checksum is at the end of the packet.
- * <br>
+ * 
  * <table>
  * <tr>
  * <td>timestampOffset</td>
  * <td>Offset in the packet where to read the 8 bytes timestamp from. If negative, do not read the timestmap from within
  * the packet but use the local wallclock time instead. The way to translate the timestamp to Yamcs time is configured
- * by the {@code timeEncoding} property.
- * 
- * </td>
+ * by the {@code timeEncoding} property.</td>
  * </tr>
  * <tr>
  * <td>seqCountOffset</td>
  * <td>Offset in the packet where to read the sequence count from. If negative, do not read the sequence count from
  * within the packet and set it to 0 instead.
  * <p>
- * Note: this class does not check for sequence count continuity.
- * </td>
+ * Note: this class does not check for sequence count continuity.</td>
  * </tr>
  * <tr>
  * <td>errorDetection</td>
@@ -47,8 +47,6 @@ import org.yamcs.utils.TimeEncoding;
  * <td>Can be used to configure the way the timestamp is translated to Yamcs time. See the
  * {@link AbstractPacketPreprocessor} for details. If this option is not specified, the default epoch used is UNIX.
  * </table>
- * 
- *
  */
 public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
 
@@ -58,13 +56,27 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
     // where from the packet to read the 4 bytes sequence count
     final int seqCountOffset;
 
+    // Optional. If unset Yamcs will attempt to determine it in other ways
+    SequenceContainer rootContainer;
+
     public GenericPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         super(yamcsInstance, config);
         timestampOffset = config.getInt("timestampOffset");
         seqCountOffset = config.getInt("seqCountOffset");
+
         if (timeDecoder == null) {
-            this.timeDecoder = new FixedSizeTimeDecoder(8, 1);
+            this.timeDecoder = new FixedSizeTimeDecoder(byteOrder, 8, 1);
             this.timeEpoch = TimeEpochs.UNIX;
+        }
+
+        var rootContainerName = config.getString("rootContainer", null);
+        if (rootContainerName != null) {
+            var mdb = MdbFactory.getInstance(yamcsInstance);
+            rootContainer = mdb.getSequenceContainer(rootContainerName);
+            if (rootContainer == null) {
+                throw new ConfigurationException(
+                        "MDB does not have a sequence container named '" + rootContainerName + "'");
+            }
         }
     }
 
@@ -78,7 +90,8 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
             try {
                 int n = packet.length;
                 computedCheckword = errorDetectionCalculator.compute(packet, 0, n - 2);
-                int packetCheckword = byteOrder == ByteOrder.BIG_ENDIAN ? ByteArrayUtils.decodeUnsignedShort(packet, n - 2)
+                int packetCheckword = (byteOrder == ByteOrder.BIG_ENDIAN)
+                        ? ByteArrayUtils.decodeUnsignedShort(packet, n - 2)
                         : ByteArrayUtils.decodeUnsignedShortLE(packet, n - 2);
 
                 if (packetCheckword != computedCheckword) {
@@ -106,16 +119,19 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
                 seqCount = -1;
                 corrupted = true;
             } else {
-                seqCount = byteOrder == ByteOrder.BIG_ENDIAN ? ByteArrayUtils.decodeInt(packet, seqCountOffset)
+                seqCount = (byteOrder == ByteOrder.BIG_ENDIAN)
+                        ? ByteArrayUtils.decodeInt(packet, seqCountOffset)
                         : ByteArrayUtils.decodeIntLE(packet, seqCountOffset);
             }
         }
 
         tmPacket.setSequenceCount(seqCount);
         tmPacket.setInvalid(corrupted);
+        tmPacket.setRootContainer(rootContainer);
         return tmPacket;
     }
 
+    @Override
     protected TimeDecoderType getDefaultDecoderType() {
         return TimeDecoderType.FIXED;
     }

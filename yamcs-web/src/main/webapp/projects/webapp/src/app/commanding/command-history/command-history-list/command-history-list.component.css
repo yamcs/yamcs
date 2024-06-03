@@ -1,0 +1,60 @@
+.table-wrapper {
+  position: relative;
+  overflow: auto;
+  height: 100%;
+}
+
+.table-status {
+  background-color: var(--y-background-color);
+  height: 24px;
+  line-height: 24px;
+  font-size: 12px;
+  padding-left: 6px;
+}
+
+.table-status .toggles {
+  float: right;
+  height: 24px;
+  line-height: 24px;
+  font-size: 12px;
+  padding-right: 6px;
+}
+
+.mat-mdc-row {
+  cursor: pointer;
+}
+
+tr.failed td,
+tr.failed td a {
+  color: red;
+}
+
+tr.success td.completion {
+  background-color: #e6ffed;
+  color: #00c752;
+}
+
+tr.failed td.completion {
+  background-color: #ffeef0;
+  color: red;
+}
+
+th.dense,
+td.dense {
+  width: 1px;
+  white-space: nowrap;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+tr.item-row.expanded td {
+  border-bottom: none;
+}
+
+tr.item-detail td {
+  padding-left: 40px !important;
+}
+
+tr.item-detail:not(.expanded) {
+  display: none;
+}

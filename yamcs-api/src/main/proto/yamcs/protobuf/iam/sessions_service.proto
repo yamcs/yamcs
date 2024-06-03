@@ -20,6 +20,13 @@ service SessionsApi {
       get: "/api/sessions"
     };
   }
+
+  // Receive notification when own session ends
+  rpc SubscribeSession(google.protobuf.Empty) returns (stream SessionEventInfo) {
+    option (yamcs.api.websocket) = {
+      topic: "session"
+    };
+  }
 }
 
 message ListSessionsResponse {
@@ -36,4 +43,8 @@ message SessionInfo {
   optional google.protobuf.Timestamp lastAccessTime = 6;
   optional google.protobuf.Timestamp expirationTime = 7;
   repeated string clients = 8;
+}
+
+message SessionEventInfo {
+  optional string endReason = 1;
 }

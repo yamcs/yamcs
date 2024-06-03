@@ -23,6 +23,7 @@ import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.Spec.OptionType;
+import org.yamcs.replication.Message.TransactionMessage;
 import org.yamcs.replication.protobuf.ColumnInfo;
 import org.yamcs.replication.protobuf.Request;
 import org.yamcs.replication.protobuf.Response;

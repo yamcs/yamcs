@@ -18,6 +18,7 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.MediaType;
 import org.yamcs.http.api.Downsampler.Sample;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;
@@ -37,12 +38,12 @@ import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.utils.ParameterFormatter;
+import org.yamcs.utils.ParameterFormatter.Header;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
@@ -78,7 +79,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             Observer<ListParameterHistoryResponse> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
 
-        XtceDb mdb = MdbFactory.getInstance(instance);
+        Mdb mdb = MdbFactory.getInstance(instance);
         String pathName = request.getName();
 
         ParameterWithId p = MdbApi.verifyParameterWithId(ctx, mdb, pathName);
@@ -157,7 +158,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             Observer<TimeSeries> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
 
-        XtceDb mdb = MdbFactory.getInstance(instance);
+        Mdb mdb = MdbFactory.getInstance(instance);
         Parameter p = MdbApi.verifyParameter(ctx, mdb, request.getName());
 
         ParameterType ptype = p.getParameterType();
@@ -180,8 +181,9 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         repl.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(id).build());
 
         int sampleCount = request.hasCount() ? request.getCount() : 500;
-        boolean useRawValue = request.hasUseRawValue() && request.getUseRawValue();
-        Downsampler sampler = new Downsampler(start, stop, sampleCount, useRawValue);
+        Downsampler sampler = new Downsampler(start, stop, sampleCount);
+        sampler.setUseRawValue(request.hasUseRawValue() && request.getUseRawValue());
+        sampler.setGapTime(request.hasGapTime() ? request.getGapTime() : 120000);
 
         ParameterReplayListener replayListener = new ParameterReplayListener() {
             @Override
@@ -216,7 +218,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
         ReplayOptions repl = ReplayOptions.getAfapReplay();
         List<NamedObjectId> ids = new ArrayList<>();
-        XtceDb mdb = MdbFactory.getInstance(instance);
+        Mdb mdb = MdbFactory.getInstance(instance);
 
         if (request.hasStart()) {
             repl.setRangeStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
@@ -241,13 +243,17 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                 }
             }
         }
-        repl.setParameterRequest(ParameterReplayRequest.newBuilder().addAllNameFilter(ids).build());
+        repl.setParameterRequest(ParameterReplayRequest.newBuilder()
+                .addAllNameFilter(ids)
+                .build());
 
         if (request.getTmLinksCount() > 0) {
-            repl.setPacketRequest(PacketReplayRequest.newBuilder().addAllTmLinks(request.getTmLinksList()).build());
+            repl.setPacketRequest(PacketReplayRequest.newBuilder()
+                    .addAllTmLinks(request.getTmLinksList())
+                    .build());
         }
 
-        ParameterReplayListener replayListener = new ParameterReplayListener() {
+        var replayListener = new ParameterReplayListener() {
 
             @Override
             protected void onParameterData(List<ParameterValueWithId> params) {
@@ -278,19 +284,21 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
     public void exportParameterValues(Context ctx, ExportParameterValuesRequest request, Observer<HttpBody> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
 
-        ReplayOptions repl = ReplayOptions.getAfapReplay();
-
         List<NamedObjectId> ids = new ArrayList<>();
-        XtceDb mdb = MdbFactory.getInstance(instance);
+        Mdb mdb = MdbFactory.getInstance(instance);
         String namespace = null;
         int interval = -1;
+        boolean ascending = !request.getOrder().equals("desc");
 
+        long start = TimeEncoding.INVALID_INSTANT;
         if (request.hasStart()) {
-            repl.setRangeStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
+            start = TimeEncoding.fromProtobufTimestamp(request.getStart());
         }
+        long stop = TimeEncoding.INVALID_INSTANT;
         if (request.hasStop()) {
-            repl.setRangeStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
+            stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
         }
+
         for (String id : request.getParametersList()) {
             ParameterWithId paramWithId = MdbApi.verifyParameterWithId(ctx, mdb, id);
             ids.add(paramWithId.getId());
@@ -302,7 +310,23 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             interval = request.getInterval();
         }
 
-        if (ids.isEmpty()) {
+        if (request.hasList()) {
+            var plistService = ParameterListsApi.verifyService(instance);
+            var plist = ParameterListsApi.verifyParameterList(plistService, request.getList());
+            for (Parameter p : ParameterListsApi.resolveParameters(ctx, mdb, plist)) {
+                if (!ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
+                    continue;
+                }
+                if (namespace != null) {
+                    String alias = p.getAlias(namespace);
+                    if (alias != null) {
+                        ids.add(NamedObjectId.newBuilder().setNamespace(namespace).setName(alias).build());
+                    }
+                } else {
+                    ids.add(NamedObjectId.newBuilder().setName(p.getQualifiedName()).build());
+                }
+            }
+        } else if (ids.isEmpty()) {
             for (Parameter p : mdb.getParameters()) {
                 if (!ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
                     continue;
@@ -317,16 +341,21 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                 }
             }
         }
+        ReplayOptions repl = ReplayOptions.getAfapReplay(start, stop, !ascending);
         repl.setParameterRequest(ParameterReplayRequest.newBuilder().addAllNameFilter(ids).build());
 
         String filename;
-        String dateString = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
-        if (ids.size() == 1) {
-            NamedObjectId id = ids.get(0);
-            String parameterName = id.hasNamespace() ? id.getName() : id.getName().substring(1);
-            filename = parameterName.replace('/', '_') + "_export_" + dateString + ".csv";
+        if (request.hasFilename()) {
+            filename = request.getFilename();
         } else {
-            filename = "parameter_export_" + dateString + ".csv";
+            String dateString = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
+            if (ids.size() == 1) {
+                NamedObjectId id = ids.get(0);
+                String parameterName = id.hasNamespace() ? id.getName() : id.getName().substring(1);
+                filename = parameterName.replace('/', '_') + "_export_" + dateString + ".csv";
+            } else {
+                filename = "parameter_export_" + dateString + ".csv";
+            }
         }
 
         boolean addRaw = false;
@@ -341,22 +370,54 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             }
         }
 
-        var listener = new CsvParameterStreamer(observer, filename, ids, addRaw, addMonitoring, interval);
+        char columnDelimiter = '\t';
         if (request.hasDelimiter()) {
             switch (request.getDelimiter()) {
             case "TAB":
-                listener.columnDelimiter = '\t';
+                columnDelimiter = '\t';
                 break;
             case "SEMICOLON":
-                listener.columnDelimiter = ';';
+                columnDelimiter = ';';
                 break;
             case "COMMA":
-                listener.columnDelimiter = ',';
+                columnDelimiter = ',';
                 break;
             default:
                 throw new BadRequestException("Unexpected column delimiter");
             }
         }
+
+        var header = Header.QUALIFIED_NAME;
+        if (request.hasHeader()) {
+            switch (request.getHeader()) {
+            case "QUALIFIED_NAME":
+                header = Header.QUALIFIED_NAME;
+                break;
+            case "SHORT_NAME":
+                header = Header.SHORT_NAME;
+                break;
+            case "NONE":
+                header = Header.NONE;
+                break;
+            default:
+                throw new BadRequestException("Unexpected value for header option");
+            }
+        }
+
+        var preserveLastValue = request.hasPreserveLastValue() ? request.getPreserveLastValue() : false;
+
+        long pos = -1;
+        int limit = -1;
+        if (request.hasPos()) {
+            pos = request.getPos();
+        }
+        if (request.hasLimit()) {
+            pos = Math.max(0, pos);
+            limit = request.getLimit();
+        }
+        var listener = new CsvParameterStreamer(observer, pos, limit, filename, ids, addRaw, addMonitoring,
+                preserveLastValue, interval, columnDelimiter, header);
+
         observer.setCancelHandler(listener::requestReplayAbortion);
         ReplayFactory.replay(instance, ctx.user, repl, listener);
     }
@@ -371,7 +432,6 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
     public static TimeSeries.Sample toGPBSample(Sample sample) {
         TimeSeries.Sample.Builder b = TimeSeries.Sample.newBuilder();
-        b.setTimeString(TimeEncoding.toString(sample.t));
         b.setTime(TimeEncoding.toProtobufTimestamp(sample.t));
         b.setN(sample.n);
 
@@ -389,17 +449,19 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
     private static class CsvParameterStreamer extends ParameterReplayListener {
 
         Observer<HttpBody> observer;
-        char columnDelimiter = '\t';
         ParameterFormatter formatter;
 
-        CsvParameterStreamer(Observer<HttpBody> observer, String filename, List<NamedObjectId> ids,
-                boolean addRaw, boolean addMonitoring, int interval) {
+        CsvParameterStreamer(Observer<HttpBody> observer, long pos, int limit, String filename, List<NamedObjectId> ids,
+                boolean addRaw, boolean addMonitoring, boolean preserveLastValue, int interval, char columnDelimiter,
+                Header header) {
+            super(pos, limit);
             this.observer = observer;
 
             formatter = new ParameterFormatter(null, ids, columnDelimiter);
-            formatter.setWriteHeader(true);
+            formatter.setWriteHeader(header);
             formatter.setPrintRaw(addRaw);
             formatter.setPrintMonitoring(addMonitoring);
+            formatter.setKeepValues(preserveLastValue);
             formatter.setTimeWindow(interval);
 
             HttpBody metadata = HttpBody.newBuilder()

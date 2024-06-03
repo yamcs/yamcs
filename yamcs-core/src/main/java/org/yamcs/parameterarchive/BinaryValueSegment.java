@@ -8,40 +8,29 @@ import org.yamcs.parameter.ValueArray;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.ValueUtility;
 
-
-public class BinaryValueSegment extends ObjectSegment<byte[]> implements ValueSegment {  
+public class BinaryValueSegment extends ObjectSegment<byte[]> implements ValueSegment {
     static BinarySerializer serializer = new BinarySerializer();
-    
+
     BinaryValueSegment(boolean buildForSerialisation) {
         super(serializer, buildForSerialisation);
     }
 
-
-    public static final int MAX_UTF8_CHAR_LENGTH = 3; //I've seen this in protobuf somwhere
+    public static final int MAX_UTF8_CHAR_LENGTH = 3; // I've seen this in protobuf somwhere
     protected List<String> values;
-    
 
-    
     @Override
     public Value getValue(int index) {
         return ValueUtility.getBinaryValue(get(index));
     }
 
-    public BinaryValueSegment consolidate() {
-        return (BinaryValueSegment) super.consolidate();
+    @Override
+    public void insert(int pos, Value value) {
+        add(pos, value.getBinaryValue());
     }
 
     @Override
-    public void add(int pos, Value v) {
-       add(pos, v.getBinaryValue());
-    }
-    
-    public static BinaryValueSegment consolidate(List<Value> values) {
-        BinaryValueSegment bvs = new BinaryValueSegment(true);
-        for(Value v: values) {
-            bvs.add(v.getBinaryValue());
-        }
-        return bvs.consolidate();
+    public void add(Value v) {
+        add(v.getBinaryValue());
     }
 
     public static BinaryValueSegment parseFrom(ByteBuffer bb) throws DecodingException {
@@ -49,8 +38,8 @@ public class BinaryValueSegment extends ObjectSegment<byte[]> implements ValueSe
         r.parse(bb);
         return r;
     }
-    
-    static class BinarySerializer implements ObjectSerializer<byte[]>  {
+
+    static class BinarySerializer implements ObjectSerializer<byte[]> {
         @Override
         public byte getFormatId() {
             return BaseSegment.FORMAT_ID_BinaryValueSegment;

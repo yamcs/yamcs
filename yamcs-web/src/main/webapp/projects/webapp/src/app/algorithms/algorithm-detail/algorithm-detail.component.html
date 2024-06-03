@@ -1,0 +1,233 @@
+<dl class="dl-horizontal no-lead">
+  <dt>Algorithm</dt>
+  <dd>{{ algorithm.qualifiedName | shortName }}</dd>
+
+  <dt>System</dt>
+  <dd>
+    <ng-container *ngIf="(algorithm.qualifiedName | spaceSystemName) as spaceSystemName">
+      <a routerLink="/algorithms"
+         [queryParams]="{c: yamcs.context, system: spaceSystemName}"
+         class="ya-link">
+        {{ spaceSystemName }}
+      </a>
+    </ng-container>
+  </dd>
+
+  <ng-container *ngFor="let alias of algorithm.alias">
+    <dt>{{ alias.namespace }}</dt>
+    <dd>{{ alias.name }}</dd>
+  </ng-container>
+
+  <ng-container *ngIf="algorithm.longDescription">
+    <dt>Description</dt>
+    <dd>
+      <app-markdown [text]="algorithm.longDescription" />
+    </dd>
+  </ng-container>
+  <ng-container *ngIf="!algorithm.longDescription">
+    <dt>Description</dt>
+    <dd>
+      {{ algorithm.shortDescription || '-' }}
+    </dd>
+  </ng-container>
+</dl>
+
+<mat-divider />
+
+<dl class="dl-horizontal">
+  <dt>Scope</dt>
+  <dd>{{ algorithm.scope || '-' }}</dd>
+
+  <dt>Type</dt>
+  <dd>{{ algorithm.type || '-' }}</dd>
+
+  <dt>Language</dt>
+  <dd>{{ algorithm.language || '-' }}</dd>
+</dl>
+
+<ng-container *ngIf="status && algorithm.scope === 'GLOBAL'">
+  <mat-divider />
+
+  <dl class="dl-horizontal">
+    <dt>Status</dt>
+    <dd style="display: flex; align-items: center">
+      <app-algorithm-status [status]="status" />&nbsp;
+      <ng-container *ngIf="!status.errorMessage">OK</ng-container>
+      <ng-container *ngIf="status.errorMessage">{{ status.errorMessage }}</ng-container>
+    </dd>
+
+    <dt>Run count</dt>
+    <dd>{{ (status.runCount | number) || '-' }}</dd>
+
+    <dt>Total run time</dt>
+    <dd>
+      {{ (status.execTimeNs | nanosDuration) || '-' }}
+    </dd>
+
+    <dt>Average run time</dt>
+    <dd>
+      <span *ngIf="status.runCount">
+        {{ (status.execTimeNs / status.runCount) | nanosDuration }}
+      </span>
+      <span *ngIf="!status.runCount">-</span>
+    </dd>
+
+    <dt>Last run</dt>
+    <dd>{{ (status.lastRun | datetime) || '-' }}</dd>
+  </dl>
+</ng-container>
+
+<ng-container *ngIf="algorithm.text">
+  <mat-divider />
+  <dl class="dl-horizontal">
+    <dt>
+      Text
+      <ya-help *ngIf="isChangeMissionDatabaseEnabled()">
+        You may override the MDB algorithm text. Such a change is scoped to the
+        current processor only and will not persist across server restarts.
+      </ya-help><br>
+      <span class="override-annotation" *ngIf="(overrides$ | async)?.textOverride">
+        MDB Override
+      </span>
+    </dt>
+    <dd>
+      <div *ngIf="isChangeMissionDatabaseEnabled()" style="padding-bottom: 5px">
+        <button class="ya-button"
+                style="margin-right: 5px"
+                [disabled]="!(dirty$ | async)"
+                (click)="saveTextChanges()">
+          <mat-icon>save</mat-icon>
+          Save
+        </button>
+        <button class="ya-button"
+                [disabled]="!((overrides$ | async)?.textOverride)"
+                (click)="revertText()">
+          <mat-icon>undo</mat-icon>
+          Restore MDB text
+        </button>
+      </div>
+      <div #text class="algorithm-text"></div>
+    </dd>
+  </dl>
+</ng-container>
+
+<ng-container *ngIf="algorithm.mathElements">
+  <mat-divider />
+  <dl class="dl-horizontal">
+    <dt>Postfix Expression</dt>
+    <dd>
+      <table yaDataTable>
+        <tr>
+          <th>Type</th>
+          <th>Value</th>
+        </tr>
+        <tr *ngFor="let el of algorithm.mathElements" [ngSwitch]="el.type">
+          <ng-container *ngSwitchCase="'VALUE_OPERAND'">
+            <td>Operand</td>
+            <td>{{ el.value }}</td>
+          </ng-container>
+          <ng-container *ngSwitchCase="'OPERATOR'">
+            <td>Operator</td>
+            <td>{{ el.operator }}</td>
+          </ng-container>
+          <ng-container *ngSwitchCase="'THIS_PARAMETER_OPERAND'">
+            <td>Operand</td>
+            <td>this</td>
+          </ng-container>
+          <ng-container *ngSwitchCase="'PARAMETER'">
+            <td>Operand</td>
+            <td>
+              <a [routerLink]="['/mdb/parameters/', el.parameter.qualifiedName]"
+                 [queryParams]="{c: yamcs.context}"
+                 class="ya-link">{{ el.parameter.qualifiedName }}</a>
+            </td>
+          </ng-container>
+        </tr>
+      </table>
+    </dd>
+  </dl>
+</ng-container>
+
+<mat-divider />
+
+<dl class="dl-horizontal">
+  <dt>Input parameters</dt>
+  <dd>
+    <table yaDataTable *ngIf="algorithm.inputParameter">
+      <tr>
+        <th>Input name</th>
+        <th>Parameter</th>
+        <th>Instance</th>
+        <th>Mandatory</th>
+      </tr>
+      <tr *ngFor="let inputParameter of algorithm.inputParameter">
+        <td>{{ inputParameter.inputName || '-' }}</td>
+        <td>
+          <a [routerLink]="'/telemetry/parameters' + inputParameter.parameter.qualifiedName"
+             [queryParams]="{c: yamcs.context}">
+            {{ inputParameter.parameter.qualifiedName }}
+          </a>
+        </td>
+        <td style="text-align: center">
+          {{ inputParameter.parameterInstance }}
+        </td>
+        <td style="text-align: center">
+          <mat-icon *ngIf="inputParameter.mandatory">check</mat-icon>
+          <mat-icon *ngIf="!inputParameter.mandatory">close</mat-icon>
+        </td>
+      </tr>
+    </table>
+    <span *ngIf="!algorithm.inputParameter">-</span>
+  </dd>
+</dl>
+
+<mat-divider />
+
+<dl class="dl-horizontal">
+  <dt>Output parameters</dt>
+  <dd>
+    <table yaDataTable *ngIf="algorithm.outputParameter">
+      <tr>
+        <th>Output name</th>
+        <th>Parameter</th>
+      </tr>
+      <tr *ngFor="let outputParameter of algorithm.outputParameter">
+        <td>{{ outputParameter.outputName || '-' }}</td>
+        <td>
+          <a [routerLink]="'/telemetry/parameters' + outputParameter.parameter.qualifiedName"
+             [queryParams]="{c: yamcs.context}">
+            {{ outputParameter.parameter.qualifiedName }}
+          </a>
+        </td>
+      </tr>
+    </table>
+    <span *ngIf="!algorithm.outputParameter">-</span>
+  </dd>
+</dl>
+
+<mat-divider />
+
+<dl class="dl-horizontal">
+  <dt>Triggers</dt>
+  <dd>
+    <table yaDataTable>
+      <tr>
+        <th>Type</th>
+        <th>Value</th>
+      </tr>
+      <tr *ngFor="let trigger of algorithm.onParameterUpdate">
+        <td>OnParameterUpdate</td>
+        <td>
+          <a [routerLink]="'/telemetry/parameters' + trigger.qualifiedName"
+             [queryParams]="{c: yamcs.context}">
+            {{ trigger.qualifiedName }}
+          </a>
+        </td>
+      </tr>
+      <tr *ngIf="algorithm.onPeriodicRate">
+        <td>OnPeriodicRate</td>
+        <td>{{ algorithm.onPeriodicRate }} ms</td>
+      </tr>
+    </table>
+  </dd>
+</dl>

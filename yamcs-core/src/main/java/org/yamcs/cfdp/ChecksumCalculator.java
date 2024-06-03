@@ -39,8 +39,4 @@ public class ChecksumCalculator {
 
         return checksum & 0xFFFFFFFFl;
     }
-
-    public static long calculateChecksum(DataFileSegment segment) {
-        return calculateChecksum(segment.getData(), segment.getOffset(), segment.getLength());
-    }
 }

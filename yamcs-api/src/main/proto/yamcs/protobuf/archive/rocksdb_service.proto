@@ -40,6 +40,7 @@ service RocksDbApi {
   rpc CompactDatabase(CompactDatabaseRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       post: "/api/archive/rocksdb/{tablespace}/{dbpath**}:compact"
+      body: "*"
       offloaded: true
       log: "Compaction triggered on tablespace {tablespace}"
     };
@@ -101,6 +102,21 @@ message BackupDatabaseRequest {
 message CompactDatabaseRequest {
   optional string tablespace = 1;
   optional string dbpath = 2;
+
+  // Column family
+  //
+  // Starting with Yamcs 5.9.0 the following column families are used:
+  //
+  // _metadata_
+  //     Stores information about tables, partitions
+  // rt_data
+  //     Stores the tm, pp and events tables
+  // parameter_archive
+  //     Stores the parameter archive
+  // default
+  //     Stores everything else: cmdhistory, alarms, completeness indices,
+  //     timeline, activities, users, buckets, ...
+  optional string cfname = 3;
 }
 
 message DescribeDatabaseRequest {

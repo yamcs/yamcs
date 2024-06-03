@@ -103,6 +103,9 @@ export class CommandHistoryRecord {
         } else if (attrName.endsWith('_Status')) {
           const ackName = attrName.substring(0, attrName.length - '_Status'.length);
           this.saveAckStatus(ackName, attr.value.stringValue!);
+        } else if (attrName.endsWith('_Return')) {
+          const ackName = attrName.substring(0, attrName.length - '_Return'.length);
+          this.saveAckReturnValue(ackName, attr.value);
         } else {
           this.extra.push({ name: attrName, value: attr.value });
         }
@@ -205,5 +208,20 @@ export class CommandHistoryRecord {
       this.acksByName[name] = ack;
     }
     ack.message = message;
+  }
+
+  private saveAckReturnValue(name: string, returnValue: Value) {
+    let ack: Acknowledgment | null = null;
+    for (const key in this.acksByName) {
+      if (key === name) {
+        ack = this.acksByName[key];
+        break;
+      }
+    }
+    if (!ack) {
+      ack = { name };
+      this.acksByName[name] = ack;
+    }
+    ack.returnValue = returnValue;
   }
 }

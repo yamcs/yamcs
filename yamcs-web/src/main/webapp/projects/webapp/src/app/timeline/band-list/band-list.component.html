@@ -1,0 +1,87 @@
+<app-instance-page>
+  <app-instance-toolbar>
+    Bands
+    &nbsp;&nbsp;&nbsp;
+    <a mat-button
+       color="primary"
+       routerLink="create"
+       [queryParams]="{c: yamcs.context}">
+      <mat-icon>add_circle_outline</mat-icon>
+      Create band
+    </a>
+    <button mat-button
+            color="primary"
+            [disabled]="!isGroupDeleteEnabled()"
+            (click)="deleteSelectedBands()">
+      <mat-icon>close</mat-icon>
+      Delete
+    </button>
+  </app-instance-toolbar>
+
+  <div class="panel-content">
+    <table mat-table
+           *ngIf="dataSource"
+           class="ya-data-table expand"
+           [dataSource]="dataSource"
+           [trackBy]="tableTrackerFn"
+           matSort
+           matSortActive="name"
+           matSortDirection="asc"
+           matSortDisableClear>
+
+      <ng-container cdkColumnDef="select">
+        <th mat-header-cell *cdkHeaderCellDef class="checkbox">
+          <input type="checkbox" (change)="$event ? masterToggle() : null"
+                 [checked]="selection.hasValue() && isAllSelected()">
+        </th>
+        <td mat-cell *cdkCellDef="let row" class="checkbox">
+          <input type="checkbox" (click)="$event.stopPropagation()"
+                 (change)="$event ? selection.toggle(row) : null"
+                 [checked]="selection.isSelected(row)">
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Label</th>
+        <td mat-cell *matCellDef="let band">
+          <a [routerLink]="band.id" [queryParams]="{c: yamcs.context}">
+            <ng-container *ngIf="band.name">{{ band.name }}</ng-container>
+            <i *ngIf="!band.name">(none)</i>
+          </a>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="description">
+        <th mat-header-cell *matHeaderCellDef class="wrap200">Description</th>
+        <td mat-cell *matCellDef="let band">
+          {{ band.description || '-' }}
+        </td>
+      </ng-container>
+
+      <ng-container cdkColumnDef="tags">
+        <th mat-header-cell *cdkHeaderCellDef>Tags</th>
+        <td mat-cell *cdkCellDef="let row">
+          <ya-label *ngFor="let tag of (row.tags || [])">{{ tag }}</ya-label>
+          <ng-container *ngIf="!row.tags">-</ng-container>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="type">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
+        <td mat-cell *matCellDef="let band">
+          {{ band.type }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef class="expand"></th>
+        <td mat-cell *matCellDef="let band"></td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+          [class.selected]="selection.isSelected(row)"
+          (click)="toggleOne(row)"></tr>
+    </table>
+  </div>
+</app-instance-page>

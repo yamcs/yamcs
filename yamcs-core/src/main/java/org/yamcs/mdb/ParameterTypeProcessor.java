@@ -1,11 +1,13 @@
 package org.yamcs.mdb;
 
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ArrayValue;
+import org.yamcs.parameter.BinaryValue;
 import org.yamcs.parameter.BooleanValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
@@ -203,7 +205,18 @@ public class ParameterTypeProcessor {
     }
 
     private static Value calibrateBinary(BinaryParameterType bpt, Value rawValue) {
-        return rawValue;
+        switch (rawValue.getType()) {
+        case SINT32:
+            return new BinaryValue(BigInteger.valueOf(rawValue.getSint32Value()).toByteArray());
+        case UINT32:
+            return new BinaryValue(BigInteger.valueOf(rawValue.getUint32Value() & 0xFFFF_FFFFL).toByteArray());
+        case SINT64:
+            return new BinaryValue(BigInteger.valueOf(rawValue.getSint64Value()).toByteArray());
+        case UINT64:
+            return new BinaryValue(BigInteger.valueOf(rawValue.getUint64Value()).toByteArray());
+        default:
+            return rawValue;
+        }
     }
 
     private Value calibrateInteger(ProcessingData processingData, IntegerParameterType ipt, Value rawValue) {
@@ -256,15 +269,17 @@ public class ParameterTypeProcessor {
         long longCalValue = (calibrator == null) ? longValue : (long) calibrator.calibrate(longValue);
 
         if (ipt.getSizeInBits() <= 32) {
-            if (ipt.isSigned())
+            if (ipt.isSigned()) {
                 return ValueUtility.getSint32Value((int) longCalValue);
-            else
+            } else {
                 return ValueUtility.getUint32Value((int) longCalValue);
+            }
         } else {
-            if (ipt.isSigned())
+            if (ipt.isSigned()) {
                 return ValueUtility.getSint64Value(longCalValue);
-            else
+            } else {
                 return ValueUtility.getUint64Value(longCalValue);
+            }
         }
     }
 

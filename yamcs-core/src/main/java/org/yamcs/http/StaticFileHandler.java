@@ -40,6 +40,7 @@ import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpChunkedInput;
 import io.netty.handler.codec.http.HttpContentCompressor;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -83,6 +84,12 @@ public class StaticFileHandler extends HttpHandler {
 
     @Override
     public void handle(HandlerContext ctx) {
+        // Avoid warnings for *.map requests with browser devtools
+        if (ctx.getNettyHttpRequest().method() == HttpMethod.OPTIONS) {
+            ctx.sendAllow(HttpMethod.GET);
+            return;
+        }
+
         ctx.requireGET();
         var filePath = getFilePath(ctx);
         handleStaticFileRequest(ctx.getNettyChannelHandlerContext(),

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
 
 public class HistogramStreamTest extends YarchTestCase {
@@ -57,6 +58,9 @@ public class HistogramStreamTest extends YarchTestCase {
         verifyEquals("histotest0", 40000, 59000, 20, tuples.get(1));
         verifyEquals("histotest1m", 100000000, 100000000, 1, tuples.get(2));
         execute("drop table test0");
+        var tblsp = RdbStorageEngine.getInstance().getTablespace(instance);
+        var l = tblsp.getTableHistograms(instance, "test0");
+        assertEquals(0, l.size());
     }
 
     @Test

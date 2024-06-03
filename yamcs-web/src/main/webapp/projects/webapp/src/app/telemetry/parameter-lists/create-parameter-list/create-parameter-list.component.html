@@ -1,0 +1,57 @@
+<app-instance-page>
+  <app-instance-toolbar>
+    <a mat-icon-button
+       routerLink=".."
+       [queryParams]="{c: yamcs.context}"
+       color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </a> Create parameter list
+  </app-instance-toolbar>
+
+  <div class="form-content ya-form">
+    <form [formGroup]="form" novalidate>
+      <label>
+        Name<br>
+        <input formControlName="name" type="text">
+      </label>
+      <br>
+      <label>
+        Description
+        <textarea formControlName="description" rows="5" style="resize: none"></textarea>
+      </label>
+    </form>
+    <p>&nbsp;</p>
+    <button class="ya-button" (click)="showAddPatternDialog()">
+      <mat-icon>add_circle_outline</mat-icon>
+      Add parameter or pattern
+    </button>
+
+    <p>&nbsp;</p>
+    <table yaDataTable style="width: 100%" *ngIf="patterns$ | async as patterns">
+      <tr>
+        <th>Pattern</th>
+        <th></th>
+      </tr>
+      <tr *ngIf="!patterns.length">
+        <td colspan="3">No rows to display</td>
+      </tr>
+      <tr *ngFor="let pattern of patterns; index as i">
+        <td>{{ pattern }}</td>
+        <td style="text-align: right">
+          <ya-icon-action (click)="moveDown(i); $event.stopPropagation()"
+                          icon="keyboard_arrow_down" />
+          <ya-icon-action (click)="moveUp(i); $event.stopPropagation()"
+                          icon="keyboard_arrow_up" />
+          <ya-text-action icon="delete" (click)="deletePattern(i)">DELETE</ya-text-action>
+        </td>
+      </tr>
+    </table>
+
+    <p>&nbsp;</p>
+    <div class="action-bar">
+      <button class="ya-button" (click)="location.back()">Cancel</button>
+      <button class="ya-button primary" type="submit" (click)="onConfirm()"
+              [disabled]="!form.valid">CREATE</button>
+    </div>
+  </div>
+</app-instance-page>

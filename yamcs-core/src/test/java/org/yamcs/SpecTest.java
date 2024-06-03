@@ -465,6 +465,25 @@ public class SpecTest {
         assertEquals(12345678901L, result.get("foo"));
     }
 
+    /**
+     * Tolerate doubles representing whole numbers. It happens when dealing with GPB Structs.
+     */
+    @Test
+    public void testIntegerFloats() throws ValidationException {
+        var spec = new Spec();
+        spec.addOption("foo", OptionType.INTEGER);
+
+        var result = spec.validate(of("foo", 123.0f));
+        assertEquals(123, result.get("foo"));
+
+        result = spec.validate(of("foo", 123.0d));
+        assertEquals(123, result.get("foo"));
+
+        assertThrows(ValidationException.class, () -> {
+            spec.validate(of("foo", 123.1));
+        });
+    }
+
     @Test
     public void testFloatStrings() throws ValidationException {
         var spec = new Spec();

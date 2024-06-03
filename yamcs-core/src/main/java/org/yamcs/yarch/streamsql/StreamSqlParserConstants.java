@@ -404,6 +404,7 @@ public interface StreamSqlParserConstants {
     "\"[]\"",
     "\",\"",
     "\"=\"",
+    "\":\"",
     "\"**\"",
     "\"+\"",
     "\"-\"",

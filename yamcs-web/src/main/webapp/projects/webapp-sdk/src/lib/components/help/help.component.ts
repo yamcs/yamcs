@@ -1,14 +1,21 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { MatIcon } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
-import { HelpDialog } from './help.dialog';
+import { YaTextAction } from '../text-action/text-action.component';
+import { YaHelpDialog } from './help.dialog';
 
 @Component({
+  standalone: true,
   selector: 'ya-help',
   templateUrl: './help.component.html',
-  styleUrls: ['./help.component.css'],
+  styleUrl: './help.component.css',
+  imports: [
+    MatIcon,
+    YaTextAction,
+  ],
 })
-export class HelpComponent {
+export class YaHelp {
 
   @Input()
   dialogTitle: string;
@@ -24,7 +31,7 @@ export class HelpComponent {
 
   showHelp() {
     const html = this.dialogContent.nativeElement.innerHTML;
-    this.dialog.open(HelpDialog, {
+    this.dialog.open(YaHelpDialog, {
       width: this.dialogWidth,
       data: {
         title: this.dialogTitle,

@@ -6,15 +6,12 @@ import org.yamcs.AbstractYamcsService;
 import org.yamcs.YamcsException;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
-import org.yamcs.xtce.XtceDb;
 
 /**
  * Yarch replay server
  *
  * A note about terminology: we call this replay because it provides capability to speed control/pause/resume. However,
  * it is not replay in terms of reprocessing the data - the data is sent as recorded in the streams.
- *
- * @author nm
  *
  */
 public class ReplayServer extends AbstractYamcsService {

@@ -1,0 +1,7 @@
+.table-status {
+  background-color: var(--y-background-color);
+  height: 24px;
+  line-height: 24px;
+  font-size: 12px;
+  padding-left: 6px;
+}

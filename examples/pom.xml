@@ -97,7 +97,26 @@
                   <goal>bundle</goal>
                 </goals>
                 <configuration>
+                  <classifier>bundle</classifier>
                   <attach>false</attach>
+                  <includeDefaultWrappers>true</includeDefaultWrappers>
+                  <scope>compile</scope>
+                  <formats>
+                    <format>tar.gz</format>
+                  </formats>
+                </configuration>
+              </execution>
+              <execution>
+                <id>bundle-dropin</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>bundle</goal>
+                </goals>
+                <configuration>
+                  <classifier>dropin</classifier>
+                  <attach>false</attach>
+                  <includeDefaultWrappers>false</includeDefaultWrappers>
+                  <scope>runtime</scope>
                   <formats>
                     <format>tar.gz</format>
                   </formats>

@@ -2,7 +2,9 @@ package org.yamcs;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -26,8 +28,10 @@ import org.yamcs.mdb.XtceTmProcessor;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterCache;
 import org.yamcs.parameter.ParameterCacheConfig;
+import org.yamcs.parameter.ParameterPersistence;
 import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.ServiceState;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
@@ -37,6 +41,7 @@ import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.tctm.ArchiveTmPacketProvider;
 import org.yamcs.tctm.StreamParameterSender;
 import org.yamcs.time.TimeService;
+import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
@@ -50,7 +55,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * 
  * This class helps keeping track of the different objects used in a Yamcs Processor - i.e. all the objects required to
  * have a TM/TC processing chain (either realtime or playback).
- *
  *
  */
 public class Processor extends AbstractService {
@@ -110,6 +114,8 @@ public class Processor extends AbstractService {
     // Globally available acknowledgments (in addition to Q, R, S)
     private Set<Acknowledgment> acknowledgments = new CopyOnWriteArraySet<>();
 
+    private ParameterPersistence paramPersistence;
+
     public Processor(String yamcsInstance, String name, String type, String creator) throws ProcessorException {
         if ((name == null) || "".equals(name)) {
             throw new ProcessorException("The processor name must not be empty");
@@ -156,12 +162,40 @@ public class Processor extends AbstractService {
 
         this.config = config;
 
-        processorData = new ProcessorData(this, config);
         this.serviceList = serviceList;
 
         timeService = YamcsServer.getTimeService(yamcsInstance);
 
+        Map<Parameter, ParameterValue> persistedParams = new HashMap<>();
+
+        if (config.persistParameters) {
+            paramPersistence = new ParameterPersistence(yamcsInstance, name);
+            var it = paramPersistence.load();
+
+            if (it != null) {
+                while (it.hasNext()) {
+                    var pv = it.next();
+                    var p = mdb.getParameter(pv.getParameterQualifiedName());
+                    if (p != null) {
+                        if (p.isPersistent()) {
+                            pv.setParameter(p);
+                            persistedParams.put(p, pv);
+                        } else {
+                            log.debug("Found persisted parameter without the persistance flag set {}",
+                                    pv.getParameterQualifiedName());
+                        }
+                    } else {
+                        log.debug("No parameter found in the MDB for persisted parameter value {}",
+                                pv.getParameterQualifiedName());
+                    }
+                }
+            }
+        }
+
+        processorData = new ProcessorData(this, config, persistedParams);
+
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+
         Stream pps = ydb.getStream(PROC_PARAMETERS_STREAM);
         if (pps != null) {
             streamParameterSender = new StreamParameterSender(yamcsInstance, pps);
@@ -443,6 +477,11 @@ public class Processor extends AbstractService {
         if (ysi != null) {
             ysi.removeProcessor(name);
         }
+
+        if (paramPersistence != null) {
+            paramPersistence.save(processorData.getValuesToBePersisted().iterator());
+        }
+
         if (getState() == ServiceState.RUNNING || getState() == ServiceState.STOPPING) {
             notifyStopped();
         }
@@ -535,7 +574,7 @@ public class Processor extends AbstractService {
         return yamcsInstance;
     }
 
-    public Mdb getXtceDb() {
+    public Mdb getMdb() {
         return mdb;
     }
 

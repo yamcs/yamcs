@@ -19,6 +19,7 @@ import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterValue;
@@ -26,11 +27,10 @@ import org.yamcs.tests.RefMdbPacketGenerator;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.XtceDb;
 
 public class AlgorithmWithContextTest {
 
-    private XtceDb db;
+    private Mdb db;
     private Processor proc;
     private RefMdbPacketGenerator tmGenerator;
     private ParameterProcessorManager ppm;

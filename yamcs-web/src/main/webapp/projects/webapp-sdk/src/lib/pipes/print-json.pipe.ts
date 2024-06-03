@@ -1,17 +1,20 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({ name: 'printJson' })
+@Pipe({
+  standalone: true,
+  name: 'printJson',
+})
 export class PrintJsonPipe implements PipeTransform {
 
   transform(json: string): string | null {
     if (!json) {
       return json;
     }
-    const obj = JSON.parse(json) as { [key: string]: any };
+    const obj = JSON.parse(json) as { [key: string]: any; };
     return this.doPrint(obj);
   }
 
-  private doPrint(obj: { [key: string]: any }, indent = ''): string {
+  private doPrint(obj: { [key: string]: any; }, indent = ''): string {
     const props = [];
     for (const key in obj) {
       if (obj.hasOwnProperty(key)) {

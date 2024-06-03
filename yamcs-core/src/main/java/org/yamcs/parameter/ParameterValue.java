@@ -10,7 +10,7 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
 
 public class ParameterValue extends BasicParameterValue {
-    // the definition of the parameter may be null if we do not have a reference to an XtceDB object
+    // the definition of the parameter may be null if we do not have a reference to an MDB object
     // this could happen if the ParameterValue is extracted from the ParameterArchive
     private Parameter def;
     private final String paramFqn;

@@ -1,0 +1,83 @@
+options {
+  STATIC = false;
+  DEBUG_PARSER = false;
+}
+
+PARSER_BEGIN(AggregateTypeParser)
+package org.yamcs.xtce.xlsv7.parser;
+
+import java.util.List;
+import java.util.ArrayList;
+
+import org.yamcs.utils.parser.Token;
+import org.yamcs.utils.parser.SimpleCharStream;
+import org.yamcs.utils.parser.ParseException;
+
+
+public class AggregateTypeParser {
+	private String getNonEscapedString(String s) {
+	    return s.substring(1,s.length()-1).replace("''","'"); //remove the quote (') from beginning and from end and then replace double quote with single quote
+    }
+}
+PARSER_END(AggregateTypeParser)
+
+SKIP : {
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+TOKEN : {
+  < AT : "@" >
+| < LPAREN : "(" >
+| < RPAREN : ")" >
+| < LBRACE : "{" >
+| < RBRACE : "}" >
+| < SCOLON : ";" >
+| < DESCRIPTION : "description" >
+}
+
+TOKEN :
+{
+   < NAME : (["A"-"Z","a"-"z","0"-"9", ":", "_"])+ >
+  |  <QUOTED_STRING:    ("\"" | "\u201C" | "\u201D")
+    (
+       "\\" ~[]     //any escaped character
+    |  ~["\"","\\"]  //any character except quote or backslash
+    )* 
+    ("\"" | "\u201C" | "\u201D") > 
+}
+List<AggrMember> parse() : {
+	List<AggrMember> memberList = new ArrayList<AggrMember>();
+	AggrMember member;
+} {
+  <LBRACE> 
+     member = AggrMember() {memberList.add(member);}
+     (LOOKAHEAD(2) <SCOLON>  member = AggrMember() {memberList.add(member);})* 
+     [<SCOLON>]
+  <RBRACE> <EOF>
+  {
+  	return memberList;
+  }
+}
+
+AggrMember AggrMember() : {
+	String memberType;
+	String memberName;
+	String description = null;
+} {
+   (description = Description())? memberType = <NAME>.image memberName = <NAME>.image
+   {
+   		return new AggrMember(memberName, memberType, description);
+   }
+}
+
+String Description() : {
+	Token description;
+} {
+  <AT> <DESCRIPTION> <LPAREN> description = <QUOTED_STRING> <RPAREN>
+  {
+  	return getNonEscapedString(description.image);
+  }
+}

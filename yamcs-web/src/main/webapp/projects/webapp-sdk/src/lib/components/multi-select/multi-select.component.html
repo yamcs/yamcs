@@ -3,7 +3,7 @@
   <ng-container *ngIf="selected$ | async as selected">
     {{ getLabel(selected) }}
   </ng-container>
-  <span *ngIf="!(selected$ | async)!.length" style="color: grey">{{ emptyOption }}</span>
+  <span *ngIf="!(selected$ | async)!.length">{{ emptyOption }}</span>
   <mat-icon class="icon12">arrow_drop_down</mat-icon>
 </button>
 
@@ -12,10 +12,12 @@
     <mat-divider *ngIf="option.group" />
     <button *ngIf="isSelected(option.id)" mat-menu-item (click)="disableOption($event, option.id)">
       <mat-icon>check_box_outline</mat-icon>
+      <mat-icon *ngIf="option.icon">{{ option.icon }}</mat-icon>
       {{ option.label }}
     </button>
     <button *ngIf="!isSelected(option.id)" mat-menu-item (click)="enableOption($event, option.id)">
       <mat-icon>check_box_outline_blank</mat-icon>
+      <mat-icon *ngIf="option.icon">{{ option.icon }}</mat-icon>
       {{ option.label }}
     </button>
   </ng-container>

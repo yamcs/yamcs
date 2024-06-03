@@ -91,7 +91,7 @@ public class DirectoryDb {
         try {
             var stmt = Query.deleteFromTable(ACCOUNT_TABLE_NAME).toStatement();
             ydb.execute(stmt);
-        } catch (StreamSqlException | ParseException e) {
+        } catch (StreamSqlException e) {
             throw new RuntimeException(e);
         } finally {
             rwlock.writeLock().unlock();
@@ -113,7 +113,7 @@ public class DirectoryDb {
             });
             result.close();
             return accounts;
-        } catch (StreamSqlException | ParseException e) {
+        } catch (StreamSqlException e) {
             throw new RuntimeException(e);
         } finally {
             rwlock.readLock().unlock();
@@ -143,7 +143,7 @@ public class DirectoryDb {
             } else {
                 return null;
             }
-        } catch (StreamSqlException | ParseException e) {
+        } catch (StreamSqlException e) {
             throw new RuntimeException(e);
         } finally {
             rwlock.readLock().unlock();
@@ -173,7 +173,7 @@ public class DirectoryDb {
             } else {
                 return null;
             }
-        } catch (StreamSqlException | ParseException e) {
+        } catch (StreamSqlException e) {
             throw new RuntimeException(e);
         } finally {
             rwlock.readLock().unlock();
@@ -197,7 +197,7 @@ public class DirectoryDb {
             } else {
                 return null;
             }
-        } catch (StreamSqlException | ParseException e) {
+        } catch (StreamSqlException e) {
             throw new RuntimeException(e);
         } finally {
             rwlock.readLock().unlock();
@@ -238,7 +238,7 @@ public class DirectoryDb {
             var q = Query.deleteFromTable(ACCOUNT_TABLE_NAME)
                     .where(ACCOUNT_CNAME_ID, account.getId());
             ydb.execute(q.toStatement());
-        } catch (StreamSqlException | ParseException e) {
+        } catch (StreamSqlException e) {
             throw new RuntimeException(e);
         } finally {
             rwlock.writeLock().unlock();
@@ -250,7 +250,7 @@ public class DirectoryDb {
         try {
             var stmt = Query.deleteFromTable(GROUP_TABLE_NAME).toStatement();
             ydb.execute(stmt);
-        } catch (StreamSqlException | ParseException e) {
+        } catch (StreamSqlException e) {
             throw new RuntimeException(e);
         } finally {
             rwlock.writeLock().unlock();
@@ -266,7 +266,7 @@ public class DirectoryDb {
             result.forEachRemaining(tuple -> groups.add(new Group(tuple)));
             result.close();
             return groups;
-        } catch (StreamSqlException | ParseException e) {
+        } catch (StreamSqlException e) {
             throw new RuntimeException(e);
         } finally {
             rwlock.readLock().unlock();
@@ -290,7 +290,7 @@ public class DirectoryDb {
             } else {
                 return null;
             }
-        } catch (StreamSqlException | ParseException e) {
+        } catch (StreamSqlException e) {
             throw new RuntimeException(e);
         } finally {
             rwlock.readLock().unlock();
@@ -331,7 +331,7 @@ public class DirectoryDb {
             var q = Query.deleteFromTable(GROUP_TABLE_NAME)
                     .where(GROUP_CNAME_ID, group.getId());
             ydb.execute(q.toStatement());
-        } catch (StreamSqlException | ParseException e) {
+        } catch (StreamSqlException e) {
             throw new RuntimeException(e);
         } finally {
             rwlock.writeLock().unlock();

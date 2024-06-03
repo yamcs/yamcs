@@ -1,6 +1,10 @@
 package org.yamcs.cfdp;
 
-import static org.yamcs.cfdp.CfdpService.*;
+import static org.yamcs.cfdp.CfdpService.ETYPE_EOF_LIMIT_REACHED;
+import static org.yamcs.cfdp.CfdpService.ETYPE_TRANSFER_FINISHED;
+import static org.yamcs.cfdp.CfdpService.ETYPE_TRANSFER_META;
+import static org.yamcs.cfdp.CfdpService.ETYPE_TRANSFER_RESUMED;
+import static org.yamcs.cfdp.CfdpService.ETYPE_TRANSFER_SUSPENDED;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,23 +45,19 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
 
     private enum OutTxState {
         /**
-         * Initial state.
-         * Going to SENDING_DATA in the first sendPdu step.
+         * Initial state. Going to SENDING_DATA in the first sendPdu step.
          */
         START,
         /**
-         * Sending data and EOF.
-         * Going to FINISHED as soon as the Finished PDU is received.
+         * Sending data and EOF. Going to FINISHED as soon as the Finished PDU is received.
          */
         SENDING_DATA,
         /**
-         * Sending CANCEL EOF
-         * Going to COMPLETED as soon as the CANCEL EOF ACK is received
+         * Sending CANCEL EOF Going to COMPLETED as soon as the CANCEL EOF ACK is received
          */
         CANCELING,
         /**
-         * End state.
-         * Still sending FINISHED ACK in return of Finished PDUs.
+         * End state. Still sending FINISHED ACK in return of Finished PDUs.
          */
         COMPLETED,
     }
@@ -101,35 +101,35 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
      * The transfer has to be started with the {@link #start()} method.
      *
      * @param yamcsInstance
-     *         - yamcsInstance where this transfer is running. It is used for log configuration and to get the time
-     *         service.
+     *            - yamcsInstance where this transfer is running. It is used for log configuration and to get the time
+     *            service.
      * @param initiatorEntityId
      * @param id
-     *         - unique identifier. The least significant number of bits (according to the CFDP sequence length) of this
-     *         id will be used to make the CFDP transaction id.
+     *            - unique identifier. The least significant number of bits (according to the CFDP sequence length) of
+     *            this id will be used to make the CFDP transaction id.
      * @param creationTime
-     *         - time when the transaction has been created
+     *            - time when the transaction has been created
      * @param executor
-     *         - the CFDP state machine is serialized in this executor. It is also used to schedule timeouts.
+     *            - the CFDP state machine is serialized in this executor. It is also used to schedule timeouts.
      * @param request
-     *         - the request containing the file to be sent.
+     *            - the request containing the file to be sent.
      * @param cfdpOut
-     *         - the stream where the outgoing PDUs are placed.
+     *            - the stream where the outgoing PDUs are placed.
      * @param config
-     *         - the configuration of various settings (see yamcs manual)
+     *            - the configuration of various settings (see yamcs manual)
      * @param bucket
-     *         - bucket from/to which the file should be
+     *            - bucket from/to which the file should be
      * @param customPduSize
-     *         - if not null, size to overwrite the config maxPduSize
+     *            - if not null, size to overwrite the config maxPduSize
      * @param customPduDelay
-     *         - if not null, delay to overwrite the config sleepBetweenPdus
+     *            - if not null, delay to overwrite the config sleepBetweenPdus
      * @param eventProducer
-     *         - used to send events when important things happen
+     *            - used to send events when important things happen
      * @param monitor
-     *         - will be notified when transaction status changes
+     *            - will be notified when transaction status changes
      * @param faultHandlerActions
-     *         - can be used to change behaviour in case of timeouts or failures. Can be null, in which case the default
-     *         behaviour to cancel the transaction will be used.
+     *            - can be used to change behaviour in case of timeouts or failures. Can be null, in which case the
+     *            default behaviour to cancel the transaction will be used.
      */
     public CfdpOutgoingTransfer(String yamcsInstance, long initiatorEntityId, long id, long creationTime,
             ScheduledThreadPoolExecutor executor,
@@ -156,9 +156,9 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         acknowledged = request.isAcknowledged();
 
         outTxState = OutTxState.START;
-        this.sleepBetweenPdus = customPduDelay != null && customPduDelay > 0 ? customPduDelay : config.getInt("sleepBetweenPdus", 500);
+        this.sleepBetweenPdus = customPduDelay != null && customPduDelay > 0 ? customPduDelay
+                : config.getInt("sleepBetweenPdus", 500);
         this.closureRequested = request.isClosureRequested();
-
 
         if (request.getHeader() != null) {
             directiveHeader = request.getHeader().copy(true);
@@ -210,7 +210,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
 
         switch (outTxState) {
         case START:
-            if(metadata == null) {
+            if (metadata == null) {
                 metadata = getMetadataPacket();
                 transferType = getTransferType(metadata);
             }
@@ -313,7 +313,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
             }
         } else if (packet instanceof KeepAlivePacket) {
             log.info("TXID{} Ignoring Keep Alive PDU: {}", cfdpTransactionId, packet); // Handling not implemented
-        } else  {
+        } else {
             log.warn("TXID{} unexpected packet {} ", cfdpTransactionId, packet);
         }
     }
@@ -433,7 +433,8 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         if (metadata.getFileLength() > 0 || directiveHeader.isLargeFile()) {
             eventMessageSuffix = request.getSourceFileName() + " -> " + request.getDestinationFileName();
         } else {
-            eventMessageSuffix = "Fileless transfer (metadata options: \n" + metadata.getOptions().stream().map(TLV::toString).collect(Collectors.joining(",\n")) + "\n)";
+            eventMessageSuffix = "Fileless transfer (metadata options: \n"
+                    + metadata.getOptions().stream().map(TLV::toString).collect(Collectors.joining(",\n")) + "\n)";
         }
 
         if (conditionCode == ConditionCode.NO_ERROR) {
@@ -490,12 +491,6 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
     @Override
     public TransferDirection getDirection() {
         return TransferDirection.UPLOAD;
-    }
-
-
-    @Override
-    public long getInitiatorEntityId() {
-        return getInitiatorId();
     }
 
     @Override

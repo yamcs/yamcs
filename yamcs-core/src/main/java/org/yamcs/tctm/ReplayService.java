@@ -53,7 +53,7 @@ import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.yarch.protobuf.Db.Event;
 import org.yamcs.yarch.protobuf.Db.ProtoDataType;
 
@@ -73,7 +73,7 @@ public class ReplayService extends AbstractProcessorService
     private HashSet<Parameter> subscribedParameters = new HashSet<>();
     private ParameterProcessorManager parameterProcessorManager;
     TmProcessor tmProcessor;
-    XtceDb xtceDb;
+    Mdb mdb;
 
     YarchReplay yarchReplay;
     // the originalReplayRequest contains possibly only parameters.
@@ -90,7 +90,7 @@ public class ReplayService extends AbstractProcessorService
     @Override
     public void init(Processor proc, YConfiguration args, Object spec) {
         super.init(proc, args, spec);
-        xtceDb = MdbFactory.getInstance(getYamcsInstance());
+        mdb = MdbFactory.getInstance(getYamcsInstance());
         securityStore = YamcsServer.getServer().getSecurityStore();
         if (args.containsKey("excludeParameterGroups")) {
             excludeParameterGroups = args.getList("excludeParameterGroups");
@@ -134,7 +134,7 @@ public class ReplayService extends AbstractProcessorService
         case TM_PACKET:
             ReplayPacket rp = (ReplayPacket) data;
             String qn = rp.getQualifiedName();
-            SequenceContainer container = xtceDb.getSequenceContainer(qn);
+            SequenceContainer container = mdb.getSequenceContainer(qn);
             if (container == null) {
                 log.warn("Unknown sequence container '" + qn + "' found when replaying", qn);
             } else {
@@ -368,11 +368,11 @@ public class ReplayService extends AbstractProcessorService
     @Override
     public boolean canProvide(NamedObjectId id) {
         boolean result = false;
-        Parameter p = xtceDb.getParameter(id);
+        Parameter p = mdb.getParameter(id);
         if (p != null) {
             result = canProvide(p);
         } else { // check if it's system parameter
-            if (XtceDb.isSystemParameter(id)) {
+            if (Mdb.isSystemParameter(id)) {
                 result = true;
             }
         }
@@ -382,7 +382,7 @@ public class ReplayService extends AbstractProcessorService
     @Override
     public boolean canProvide(Parameter p) {
         boolean result;
-        if (xtceDb.getParameterEntries(p) != null) {
+        if (mdb.getParameterEntries(p) != null) {
             result = false;
         } else {
             result = true;
@@ -392,7 +392,7 @@ public class ReplayService extends AbstractProcessorService
 
     @Override
     public Parameter getParameter(NamedObjectId id) throws InvalidIdentification {
-        Parameter p = xtceDb.getParameter(id);
+        Parameter p = mdb.getParameter(id);
         if (p == null) {
             throw new InvalidIdentification();
         } else {

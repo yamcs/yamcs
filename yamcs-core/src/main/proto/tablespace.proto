@@ -6,6 +6,7 @@ message TimeBasedPartition {
   optional string partitionDir = 1;
   optional int64 partitionStart = 2;
   optional int64 partitionEnd = 3;
+  optional string partitionCf = 4;
 }
 
 /**
@@ -78,7 +79,7 @@ message TablespaceRecord {
   	// used for TABLE_PARTITION: if partitioned by value - the value
   	optional bytes partitionValue = 6;
 
- 	 // used for TABLE_PARTITION, HISTOGRAM: if partition by time 
+ 	 // used for TABLE_PARTITION, HISTOGRAM and PARCHIVE: if partition by time 
   	//  - partitionDir is subdirectory name (usually something like 2017/11)
   	//  - partitionStart/End are the times representing partition start(inclusive) and end (exclusive)
   	optional TimeBasedPartition partition = 7;
@@ -90,7 +91,7 @@ message TablespaceRecord {
   	optional string parameterFqn = 8;
   	optional uint32 parameterType = 9;
 
-  	//partitioning schema used currently for parameter archive (for tables is stored in the .def file)
+  	//partitioning schema used currently for parameter archive
   	optional string partitioningSchema = 10;
   
   	//bucketProperties
@@ -110,6 +111,12 @@ message TablespaceRecord {
 
     //used for PARCHIVE_AGGARR_INFO to store the numeric type (engType, rawType) of the parameter
     optional uint32 numericType = 16;
+    
+    //if partitioning is not used, this indicates that parameter archive data is stored in separate column family
+    //if partitioning is used, each partition has the property partitionCf indicating the name of the column family
+    // if this is not set, the parameter archive is not stored in separate column family  (databases created 
+    //  with Yamcs versions prior to 5.8.1) 
+    optional string parchiveCf = 17;
 }
 
 //associated to each bucket
@@ -175,5 +182,6 @@ message ProtoTableDefinition {
   	optional bool compressed = 9;
   	optional PartitioningInfo partitioningInfo = 10;
   	repeated SecondaryIndex secondaryIndex = 11;
+  	optional string cfName = 12;
 }
 

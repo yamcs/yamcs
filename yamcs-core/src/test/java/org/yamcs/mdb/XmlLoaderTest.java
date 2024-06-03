@@ -51,23 +51,22 @@ import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtce.TimeEpoch;
 import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.UnitType;
-import org.yamcs.xtce.XtceDb;
 
 public class XmlLoaderTest {
 
     @Test
     public void test1() throws Exception {
-        XtceDb db = MdbFactory.createInstanceByConfig("ccsds-green-book");
-        Parameter pmt = db.getParameter("/SpaceVehicle/MissionTime");
+        Mdb mdb = MdbFactory.createInstanceByConfig("ccsds-green-book");
+        Parameter pmt = mdb.getParameter("/SpaceVehicle/MissionTime");
         assertTrue(pmt.getParameterType() instanceof AbsoluteTimeParameterType);
 
-        Parameter cst = db.getParameter("/SpaceVehicle/CheckSum");
+        Parameter cst = mdb.getParameter("/SpaceVehicle/CheckSum");
         assertTrue(cst.getParameterType() instanceof IntegerParameterType);
         IntegerParameterType ipt = (IntegerParameterType) cst.getParameterType();
         assertEquals(8, ipt.getEncoding().getSizeInBits());
         assertEquals(DataSource.DERIVED, cst.getDataSource());
 
-        Parameter pms = db.getParameter("/SpaceVehicle/Seconds");
+        Parameter pms = mdb.getParameter("/SpaceVehicle/Seconds");
         assertTrue(pms.getParameterType() instanceof AbsoluteTimeParameterType);
         AbsoluteTimeParameterType ptype = (AbsoluteTimeParameterType) pms.getParameterType();
         ReferenceTime rtime = ptype.getReferenceTime();
@@ -77,7 +76,7 @@ public class XmlLoaderTest {
         assertTrue(encoding instanceof IntegerDataEncoding);
         assertEquals(32, ((IntegerDataEncoding) encoding).getSizeInBits());
 
-        MetaCommand cmd1 = db.getMetaCommand("/SpaceVehicle/PWHTMR");
+        MetaCommand cmd1 = mdb.getMetaCommand("/SpaceVehicle/PWHTMR");
         CommandContainer cc = cmd1.getCommandContainer();
         List<SequenceEntry> sel = cc.getEntryList();
         assertEquals(3, sel.size());
@@ -88,9 +87,9 @@ public class XmlLoaderTest {
 
     @Test
     public void testBogusSat() throws XMLStreamException, IOException {
-        XtceDb db = MdbFactory.createInstanceByConfig("BogusSAT");
+        Mdb mdb = MdbFactory.createInstanceByConfig("BogusSAT");
 
-        SpaceSystem sc001 = db.getSpaceSystem("/BogusSAT/SC001");
+        SpaceSystem sc001 = mdb.getSpaceSystem("/BogusSAT/SC001");
         assertNotNull(sc001);
 
         SpaceSystem busElectronics = sc001.getSubsystem("BusElectronics");
@@ -177,15 +176,15 @@ public class XmlLoaderTest {
         assertEquals(SizeType.FIXED, sencoding.getSizeType());
         assertEquals(128, bencoding.getSizeInBits());
 
-        IntegerParameterType ptype2 = (IntegerParameterType) db.getParameterType("/BogusSAT/CCSDSPacketLengthType");
+        IntegerParameterType ptype2 = (IntegerParameterType) mdb.getParameterType("/BogusSAT/CCSDSPacketLengthType");
         List<UnitType> unitl = ptype2.getUnitSet();
         assertEquals(1, unitl.size());
     }
 
     @Test
     public void testMathOpCal() throws XMLStreamException, IOException {
-        XtceDb db = MdbFactory.createInstanceByConfig("BogusSAT");
-        SpaceSystem busElectronics = db.getSpaceSystem("/BogusSAT/SC001/BusElectronics");
+        Mdb mdb = MdbFactory.createInstanceByConfig("BogusSAT");
+        SpaceSystem busElectronics = mdb.getSpaceSystem("/BogusSAT/SC001/BusElectronics");
 
         FloatParameterType ptype = (FloatParameterType) busElectronics.getParameterType("Float_MathOpCal_2_Type");
         FloatDataEncoding encoding = (FloatDataEncoding) ptype.getEncoding();
@@ -223,37 +222,47 @@ public class XmlLoaderTest {
 
     @Test
     public void testBogusSat2() throws XMLStreamException, IOException {
-        XtceDb db = MdbFactory.createInstanceByConfig("BogusSAT2");
+        Mdb mdb = MdbFactory.createInstanceByConfig("BogusSAT2");
 
-        ParameterType ptype = db.getParameterType("/BogusSAT/CCSDSAPIDType");
+        ParameterType ptype = mdb.getParameterType("/BogusSAT/CCSDSAPIDType");
         assertEquals(2047, ((Long) ptype.getInitialValue()).intValue());
 
-        ptype = db.getParameterType("/BogusSAT/TM_CHECKSUMType");
+        ptype = mdb.getParameterType("/BogusSAT/TM_CHECKSUMType");
         assertEquals("CRC", (String) ptype.getInitialValue());
 
-        Parameter p = db.getParameter("/BogusSAT/LOG_MSGS/RECORDFLAG");
+        Parameter p = mdb.getParameter("/BogusSAT/LOG_MSGS/RECORDFLAG");
 
         assertEquals(3735928559L, ((Long) p.getInitialValue()).longValue());
-        IntegerParameterType itype = (IntegerParameterType) db.getParameterType("/BogusSAT/LittleEndianInteger1");
+        IntegerParameterType itype = (IntegerParameterType) mdb.getParameterType("/BogusSAT/LittleEndianInteger1");
         assertEquals(ByteOrder.LITTLE_ENDIAN, itype.getEncoding().getByteOrder());
 
-        FloatParameterType ftype = (FloatParameterType) db.getParameterType("/BogusSAT/LittleEndianFloat1");
+        FloatParameterType ftype = (FloatParameterType) mdb.getParameterType("/BogusSAT/LittleEndianFloat1");
         assertEquals(ByteOrder.LITTLE_ENDIAN, ftype.getEncoding().getByteOrder());
     }
 
     @Test
     public void testXtceCommandSignificance() throws XMLStreamException, IOException {
-        XtceDb db = MdbFactory.createInstanceByConfig("refxtce");
-        MetaCommand mc = db.getMetaCommand("/RefXtce/vital_command");
+        Mdb mdb = MdbFactory.createInstanceByConfig("refxtce");
+        MetaCommand mc = mdb.getMetaCommand("/RefXtce/vital_command");
         Significance significance = mc.getDefaultSignificance();
         assertEquals("no particular reason", significance.getReasonForWarning());
         assertEquals(Levels.DISTRESS, significance.getConsequenceLevel());
     }
 
     @Test
+    public void testPersistence() throws XMLStreamException, IOException {
+        Mdb mdb = MdbFactory.createInstanceByConfig("refxtce");
+        Parameter p1 = mdb.getParameter("/RefXtce/local_para1");
+        assertTrue(p1.isPersistent());
+
+        Parameter p2 = mdb.getParameter("/RefXtce/local_para2");
+        assertFalse(p2.isPersistent());
+    }
+
+    @Test
     public void testTransmissionConstraint() throws XMLStreamException, IOException {
-        XtceDb db = MdbFactory.createInstanceByConfig("refxtce");
-        MetaCommand mc = db.getMetaCommand("/RefXtce/cmd_with_constraint1");
+        Mdb mdb = MdbFactory.createInstanceByConfig("refxtce");
+        MetaCommand mc = mdb.getMetaCommand("/RefXtce/cmd_with_constraint1");
         List<TransmissionConstraint> tcList = mc.getTransmissionConstraintList();
         assertEquals(1, tcList.size());
         TransmissionConstraint tc0 = tcList.get(0);
@@ -261,13 +270,13 @@ public class XmlLoaderTest {
         ComparisonList matchCriteria = (ComparisonList) tc0.getMatchCriteria();
         assertEquals(1, matchCriteria.getComparisonList().size());
         Comparison c0 = matchCriteria.getComparisonList().get(0);
-        assertEquals(db.getParameter("/RefXtce/local_para1"), ((ParameterInstanceRef) c0.getRef()).getParameter());
+        assertEquals(mdb.getParameter("/RefXtce/local_para1"), ((ParameterInstanceRef) c0.getRef()).getParameter());
     }
 
     @Test
     public void testCommandVerification() throws XMLStreamException, IOException {
-        XtceDb db = MdbFactory.createInstanceByConfig("refxtce");
-        MetaCommand mc = db.getMetaCommand("/RefXtce/cmd_with_verifier1");
+        Mdb mdb = MdbFactory.createInstanceByConfig("refxtce");
+        MetaCommand mc = mdb.getMetaCommand("/RefXtce/cmd_with_verifier1");
         List<CommandVerifier> cvList = mc.getCommandVerifiers();
         assertEquals(1, cvList.size());
         CommandVerifier cv0 = cvList.get(0);
@@ -275,21 +284,21 @@ public class XmlLoaderTest {
         assertEquals(1000, cv0.getCheckWindow().getTimeToStopChecking());
 
         Comparison c0 = (Comparison) cv0.getMatchCriteria();
-        assertEquals(db.getParameter("/RefXtce/local_para1"), ((ParameterInstanceRef) c0.getRef()).getParameter());
+        assertEquals(mdb.getParameter("/RefXtce/local_para1"), ((ParameterInstanceRef) c0.getRef()).getParameter());
     }
 
     @Test
     public void testAutoPart() throws XMLStreamException, IOException {
-        XtceDb db = MdbFactory.createInstanceByConfig("BogusSAT2");
-        assertTrue(db.getSequenceContainer("/BogusSAT/CCSDSPUSTelemetryPacket").useAsArchivePartition());
-        assertFalse(db.getSequenceContainer("/BogusSAT/SC001/ECSS_Service_1_Subservice_1").useAsArchivePartition());
+        Mdb mdb = MdbFactory.createInstanceByConfig("BogusSAT2");
+        assertTrue(mdb.getSequenceContainer("/BogusSAT/CCSDSPUSTelemetryPacket").useAsArchivePartition());
+        assertFalse(mdb.getSequenceContainer("/BogusSAT/SC001/ECSS_Service_1_Subservice_1").useAsArchivePartition());
     }
 
     @Test
     public void testNoAutoPart() throws XMLStreamException, IOException {
-        XtceDb db = MdbFactory.createInstanceByConfig("BogusSAT2-noautopart");
+        Mdb mdb = MdbFactory.createInstanceByConfig("BogusSAT2-noautopart");
         assertFalse(
-                db.getSequenceContainer("/BogusSAT/SC001/BusElectronics/SensorHistoryRecord").useAsArchivePartition());
-        assertTrue(db.getSequenceContainer("/BogusSAT/CCSDSPUSTelemetryPacket").useAsArchivePartition());
+                mdb.getSequenceContainer("/BogusSAT/SC001/BusElectronics/SensorHistoryRecord").useAsArchivePartition());
+        assertTrue(mdb.getSequenceContainer("/BogusSAT/CCSDSPUSTelemetryPacket").useAsArchivePartition());
     }
 }

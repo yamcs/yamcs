@@ -1,5 +1,4 @@
 import { WebSocketCall } from '../WebSocketCall';
-import { Event } from './events';
 import { AlgorithmStatus, Container, NamedObjectId, Parameter } from './mdb';
 import { ParameterValue, Value } from './monitoring';
 import { Service, ServiceState } from './system';
@@ -23,8 +22,9 @@ export interface Statistics {
 }
 
 export interface ExtractPacketResponse {
+  packetName: string;
   parameterValues: ExtractedParameter[];
-  events: Event[];
+  messages?: string[];
 }
 
 export interface ExtractedParameter {
@@ -64,13 +64,33 @@ export interface SubscribeParametersRequest {
 
 export interface SubscribeParametersData {
   mapping: { [key: number]: NamedObjectId; };
+  info: { [key: number]: SubscribedParameterInfo; };
   invalid: NamedObjectId[];
   values: ParameterValue[];
+}
+
+export interface SubscribedParameterInfo {
+  parameter: string;
+  units?: string;
 }
 
 export interface SubscribeProcessorsRequest {
   instance?: string;
   processor?: string;
+}
+
+export interface SubscribeBackfillingRequest {
+  instance: string;
+}
+
+export interface SubscribeBackfillingData {
+  finished?: BackfillFinished[];
+}
+
+export interface BackfillFinished {
+  start: string;
+  stop: string;
+  processedParameters: number;
 }
 
 export interface Processor {
@@ -107,6 +127,19 @@ export interface ReplaySpeed {
   param: number;
 }
 
+export interface DownloadCommandsOptions {
+  /**
+   * Inclusive lower bound
+   */
+  start?: string;
+  /**
+   * Exclusive upper bound
+   */
+  stop?: string;
+
+  delimiter?: 'COMMA' | 'SEMICOLON' | 'TAB';
+}
+
 export type TMStatisticsSubscription = WebSocketCall<SubscribeTMStatisticsRequest, Statistics>;
 
 export type AlgorithmStatusSubscription = WebSocketCall<SubscribeAlgorithmStatusRequest, AlgorithmStatus>;
@@ -114,3 +147,5 @@ export type AlgorithmStatusSubscription = WebSocketCall<SubscribeAlgorithmStatus
 export type ParameterSubscription = WebSocketCall<SubscribeParametersRequest, SubscribeParametersData>;
 
 export type ProcessorSubscription = WebSocketCall<SubscribeProcessorsRequest, Processor>;
+
+export type BackfillingSubscription = WebSocketCall<SubscribeBackfillingRequest, SubscribeBackfillingData>;

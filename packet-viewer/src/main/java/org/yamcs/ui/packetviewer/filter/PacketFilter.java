@@ -12,15 +12,15 @@ import org.yamcs.ui.packetviewer.filter.ast.Comparison;
 import org.yamcs.ui.packetviewer.filter.ast.OrExpression;
 import org.yamcs.ui.packetviewer.filter.ast.UnaryExpression;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 public class PacketFilter {
 
     private final FilterParser parser;
     private final OrExpression expression;
-    private XtceDb mdb;
+    private Mdb mdb;
 
-    public PacketFilter(String expression, XtceDb mdb) throws ParseException {
+    public PacketFilter(String expression, Mdb mdb) throws ParseException {
         parser = new FilterParser(new StringReader(expression));
         this.expression = parser.compileExpression();
         this.mdb = mdb;

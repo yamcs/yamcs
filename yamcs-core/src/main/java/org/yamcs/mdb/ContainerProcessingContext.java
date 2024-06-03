@@ -9,7 +9,6 @@ import org.yamcs.xtce.FixedIntegerValue;
 import org.yamcs.xtce.IntegerValue;
 import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.SequenceEntry;
-import org.yamcs.xtce.XtceDb;
 
 /**
  * Keeps track of where we are when processing a packet.
@@ -81,8 +80,8 @@ public class ContainerProcessingContext {
         throw new UnsupportedOperationException("values of type " + iv + " not implemented");
     }
 
-    public XtceDb getXtceDb() {
-        return proccessorData.getXtceDb();
+    public Mdb getMdb() {
+        return proccessorData.getMdb();
     }
 
     public ProcessorData getProcessorData() {

@@ -27,15 +27,14 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtce.SpaceSystem;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.xml.XtceAliasSet;
 
 public class XtceAssemblerTest {
     String name;
     Field field;
 
-    static void writeXtceDb(XtceDb db, String filename, String topSS, Predicate<String> filter) throws IOException {
-        String xml = new XtceAssembler().toXtce(db, topSS, filter);
+    static void writeMdb(Mdb mdb, String filename, String topSS, Predicate<String> filter) throws IOException {
+        String xml = new XtceAssembler().toXtce(mdb, topSS, filter);
         File f = new File(filename);
 
         try (FileWriter fw = new FileWriter(f)) {
@@ -59,9 +58,9 @@ public class XtceAssemblerTest {
         m1.put("spec", filename);
 
         List<YConfiguration> mdbConfigs1 = Arrays.asList(YConfiguration.wrap(m1));
-        XtceDb db1 = MdbFactory.createInstance(mdbConfigs1, false, false);
+        Mdb mdb1 = MdbFactory.createInstance(mdbConfigs1, false, false);
 
-        String xml = new XtceAssembler().toXtce(db1);
+        String xml = new XtceAssembler().toXtce(mdb1);
         File f = File.createTempFile("test1", ".xml");
 
         try (FileWriter fw = new FileWriter(f, StandardCharsets.UTF_8)) {
@@ -72,18 +71,18 @@ public class XtceAssemblerTest {
         m2.put("type", "xtce");
         m2.put("spec", f.getAbsolutePath());
         List<YConfiguration> mdbConfigs2 = Arrays.asList(YConfiguration.wrap(m2));
-        XtceDb db2 = MdbFactory.createInstance(mdbConfigs2, false, false);
+        Mdb mdb2 = MdbFactory.createInstance(mdbConfigs2, false, false);
         f.delete();
 
-        compareDatabases(db1, db2);
+        compareDatabases(mdb1, mdb2);
     }
 
-    private void compareDatabases(XtceDb db1, XtceDb db2) throws Exception {
-        for (SpaceSystem ss1 : db1.getSpaceSystems()) {
-            if (ss1.getName().startsWith(XtceDb.YAMCS_SPACESYSTEM_NAME)) {
+    private void compareDatabases(Mdb mdb1, Mdb mdb2) throws Exception {
+        for (SpaceSystem ss1 : mdb1.getSpaceSystems()) {
+            if (ss1.getName().startsWith(Mdb.YAMCS_SPACESYSTEM_NAME)) {
                 continue;
             }
-            SpaceSystem ss2 = db2.getSpaceSystem(ss1.getQualifiedName());
+            SpaceSystem ss2 = mdb2.getSpaceSystem(ss1.getQualifiedName());
             assertNotNull(ss2, "Cannot find " + ss1.getQualifiedName() + " in db2");
             compareSpaceSystems(ss1, ss2);
         }

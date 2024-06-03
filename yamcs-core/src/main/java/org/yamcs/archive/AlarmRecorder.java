@@ -31,10 +31,17 @@ public class AlarmRecorder extends AbstractYamcsService {
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         try {
+            var timePart = ydb.getTimePartitioningSchema(config);
+
+            var partitionBy = timePart == null ? ""
+                    : "partition by time(" + CNAME_TRIGGER_TIME + "('" + timePart.getName() + "'))";
+
             if (ydb.getTable(PARAMETER_ALARM_TABLE_NAME) == null) {
+
                 String cols = StandardTupleDefinitions.PARAMETER_ALARM.getStringDefinition1();
                 String query = "create table " + PARAMETER_ALARM_TABLE_NAME + "(" + cols
-                        + ", primary key("+CNAME_TRIGGER_TIME+", parameter, seqNum)) table_format=compressed";
+                        + ", primary key(" + CNAME_TRIGGER_TIME + ", parameter, seqNum)) " + partitionBy
+                        + " table_format=compressed";
                 ydb.execute(query);
             }
             setupRecording(yamcsInstance, PARAMETER_ALARM_TABLE_NAME, StandardStreamType.PARAMETER_ALARM);
@@ -42,7 +49,8 @@ public class AlarmRecorder extends AbstractYamcsService {
             if (ydb.getTable(EVENT_ALARM_TABLE_NAME) == null) {
                 String cols = StandardTupleDefinitions.EVENT_ALARM.getStringDefinition1();
                 String query = "create table " + EVENT_ALARM_TABLE_NAME + "(" + cols
-                        + ", primary key("+CNAME_TRIGGER_TIME+", eventSource, seqNum)) table_format=compressed";
+                        + ", primary key(" + CNAME_TRIGGER_TIME + ", eventSource, seqNum)) " + partitionBy
+                        + " table_format=compressed";
                 ydb.execute(query);
             }
 

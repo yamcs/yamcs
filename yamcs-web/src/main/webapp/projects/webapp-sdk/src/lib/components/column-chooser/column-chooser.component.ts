@@ -1,8 +1,11 @@
+import { NgForOf, NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { MatIcon } from '@angular/material/icon';
+import { MatMenu, MatMenuContent, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { BehaviorSubject } from 'rxjs';
 import { PreferenceStore } from '../../services/preference-store.service';
 
-export interface ColumnInfo {
+export interface YaColumnInfo {
   id: string;
   label: string;
   visible?: boolean;
@@ -11,14 +14,24 @@ export interface ColumnInfo {
 }
 
 @Component({
+  standalone: true,
   selector: 'ya-column-chooser',
   templateUrl: './column-chooser.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    MatMenu,
+    MatMenuContent,
+    MatMenuItem,
+    MatIcon,
+    MatMenuTrigger,
+    NgIf,
+    NgForOf,
+  ],
 })
-export class ColumnChooserComponent implements OnInit {
+export class YaColumnChooser implements OnInit {
 
   @Input()
-  columns: ColumnInfo[];
+  columns: YaColumnInfo[];
 
   @Input()
   preferenceKey: string;
@@ -32,7 +45,7 @@ export class ColumnChooserComponent implements OnInit {
     this.recalculate(this.columns);
   }
 
-  recalculate(columns: ColumnInfo[]) {
+  recalculate(columns: YaColumnInfo[]) {
     this.columns = columns;
 
     let preferredColumns: string[] = [];
@@ -59,7 +72,7 @@ export class ColumnChooserComponent implements OnInit {
     this.displayedColumns$.next(displayedColumns);
   }
 
-  isVisible(column: ColumnInfo) {
+  isVisible(column: YaColumnInfo) {
     const displayedColumns = this.displayedColumns$.value;
     return displayedColumns && displayedColumns.indexOf(column.id) >= 0;
   }
@@ -71,7 +84,7 @@ export class ColumnChooserComponent implements OnInit {
     this.displayedColumns$.next(value);
   }
 
-  toggleColumn(column: ColumnInfo) {
+  toggleColumn(column: YaColumnInfo) {
     const newDisplayedColumns = [];
     for (const c of this.columns) {
       if (column.id === c.id && !this.isVisible(c)) {

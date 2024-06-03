@@ -31,9 +31,11 @@ public interface TemplateParserConstants {
   /** RegularExpression Id. */
   int VAR = 13;
   /** RegularExpression Id. */
-  int CLOSE_VAR = 14;
+  int PIPE = 15;
   /** RegularExpression Id. */
-  int CLOSE_IF_ELIF_TAG = 15;
+  int CLOSE_VAR = 16;
+  /** RegularExpression Id. */
+  int CLOSE_IF_ELIF_TAG = 17;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -60,7 +62,9 @@ public interface TemplateParserConstants {
     "\"{% endcomment %}\"",
     "<token of kind 12>",
     "<VAR>",
-    "<CLOSE_VAR>",
+    "\" \"",
+    "\"|\"",
+    "\"}}\"",
     "<CLOSE_IF_ELIF_TAG>",
   };
 

@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
 
+import org.yamcs.Spec.OptionType;
 import org.yamcs.logging.Log;
 import org.yaml.snakeyaml.Yaml;
 
@@ -36,24 +37,23 @@ public class PluginManager {
 
             var discoveredSpecs = discoverPluginOptions(plugin.getClass());
 
-            // Allow plugins to manually define a spec, but default to
+            // Plugins may programmatically define a spec, but default to
             // autodiscovery based on a resource descriptor.
-
             var spec = plugin.getSpec();
-            if (spec != null) {
-                yamcs.addConfigurationSection(ConfigScope.YAMCS, pluginMetadata.getName(), spec);
-            } else if (discoveredSpecs.globalSpec != null) {
-                yamcs.addConfigurationSection(ConfigScope.YAMCS,
-                        pluginMetadata.getName(), discoveredSpecs.globalSpec);
+            if (spec == null) {
+                spec = discoveredSpecs.globalSpec;
             }
+
+            // Allow to disable any plugin
+            spec.addOption("enabled", OptionType.BOOLEAN).withDefault(true);
+
+            yamcs.addConfigurationSection(ConfigScope.YAMCS, pluginMetadata.getName(), spec);
 
             spec = plugin.getInstanceSpec();
-            if (spec != null) {
-                yamcs.addConfigurationSection(ConfigScope.YAMCS_INSTANCE, pluginMetadata.getName(), spec);
-            } else if (discoveredSpecs.instanceSpec != null) {
-                yamcs.addConfigurationSection(ConfigScope.YAMCS_INSTANCE,
-                        pluginMetadata.getName(), discoveredSpecs.instanceSpec);
+            if (spec == null) {
+                spec = discoveredSpecs.instanceSpec;
             }
+            yamcs.addConfigurationSection(ConfigScope.YAMCS_INSTANCE, pluginMetadata.getName(), spec);
         }
     }
 
@@ -116,7 +116,12 @@ public class PluginManager {
             if (disabledPlugins.contains(meta.getName())) {
                 log.debug("Ignoring plugin {} (disabled by user config)", meta.getName());
             } else {
-                plugins.put(plugin.getClass(), plugin);
+                var pluginConfig = yconf.getConfigOrEmpty(meta.getName());
+                if (pluginConfig.getBoolean("enabled", true)) {
+                    plugins.put(plugin.getClass(), plugin);
+                } else {
+                    log.debug("Ignoring plugin {} (disabled by user config)", meta.getName());
+                }
             }
         }
     }
@@ -127,10 +132,7 @@ public class PluginManager {
             var meta = metadata.get(plugin.getClass());
             log.debug("Loading plugin {} {}", meta.getName(), meta.getVersion());
             try {
-                var config = YConfiguration.emptyConfig();
-                if (yamcsConfig.containsKey(meta.getName())) {
-                    config = yamcsConfig.getConfig(meta.getName());
-                }
+                var config = yamcsConfig.getConfigOrEmpty(meta.getName());
                 plugin.onLoad(config);
             } catch (PluginException e) {
                 log.error("Could not load plugin {} {}", meta.getName(), meta.getVersion());
@@ -140,7 +142,7 @@ public class PluginManager {
     }
 
     private static class PluginSpecs {
-        Spec globalSpec;
-        Spec instanceSpec;
+        Spec globalSpec = new Spec();
+        Spec instanceSpec = new Spec();
     }
 }

@@ -1,12 +1,17 @@
 import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular/core';
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
+  standalone: true,
   selector: 'ya-icon-action',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './icon-action.component.html',
-  styleUrls: ['./icon-action.component.css'],
+  styleUrl: './icon-action.component.css',
+  imports: [
+    MatIcon,
+  ],
 })
-export class IconActionComponent {
+export class YaIconAction {
 
   @Input()
   icon: string;

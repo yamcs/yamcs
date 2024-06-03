@@ -1,23 +1,25 @@
 package org.yamcs.parameterarchive;
 
+import java.util.List;
+
 /**
- * Like {@link ParameterValueSegment} but stores segments of multiple parameters from the same group.
+ * A collection of ParameterValueSegment with a common timeSegment.
  * <p>
- * There is only one timeSegment common to all
- *
+ * Some of the segments may be null in case they contained no data (i.e. only gaps)
  */
 public class MultiParameterValueSegment {
+    ParameterId[] pids;
     SortedTimeSegment timeSegment;
-    ValueSegment[] engValueSegments;
-    ValueSegment[] rawValueSegments;
-    ParameterStatusSegment[] parameterStatusSegments;
+    List<ParameterValueSegment> pvSegments;
 
-    public MultiParameterValueSegment(SortedTimeSegment timeSegment, ValueSegment[] engValueSegments,
-            ValueSegment[] rawValueSegments, ParameterStatusSegment[] parameterStatuses) {
+    public MultiParameterValueSegment(ParameterId[] pids, SortedTimeSegment timeSegment,
+            List<ParameterValueSegment> pvSegments) {
+        if (pids.length != pvSegments.size()) {
+            throw new IllegalArgumentException("number of segments " + pvSegments.size()
+                    + " does not correspond to the number of parameters " + pids.length);
+        }
         this.timeSegment = timeSegment;
-        this.engValueSegments = engValueSegments;
-        this.rawValueSegments = rawValueSegments;
-        this.parameterStatusSegments = parameterStatuses;
+        this.pvSegments = pvSegments;
     }
 
     public MultiParameterValueSegment(SortedTimeSegment timeSegment) {
@@ -39,5 +41,13 @@ public class MultiParameterValueSegment {
 
     public int size() {
         return timeSegment.size();
+    }
+
+    public ParameterValueSegment getPvs(int idx) {
+        return pvSegments.get(idx);
+    }
+
+    public int numParameters() {
+        return pvSegments.size();
     }
 }

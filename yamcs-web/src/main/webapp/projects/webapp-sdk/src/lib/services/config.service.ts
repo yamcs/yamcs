@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AuthInfo, CommandOption, InstanceConfig } from '../client';
-import { ColumnInfo } from '../components/column-chooser/column-chooser.component';
+import { YaColumnInfo } from '../components/column-chooser/column-chooser.component';
 
 export interface WebsiteConfig {
   serverId: string;
@@ -19,6 +19,7 @@ export interface WebsiteConfig {
   hasTemplates: boolean;
   disableLoginForm: boolean;
   logoutRedirectUrl: string;
+  cookie: CookieConfig;
   dass: boolean;
   tc: boolean;
   tmArchive: boolean;
@@ -32,13 +33,18 @@ export interface EventsConfig {
   extraColumns?: ExtraColumnInfo[];
 }
 
+export interface CookieConfig {
+  secure: boolean;
+  sameSite: string;
+}
+
 export interface SiteLink {
   label: string;
   url: string;
   external: boolean;
 }
 
-export interface ExtraColumnInfo extends ColumnInfo {
+export interface ExtraColumnInfo extends YaColumnInfo {
   /**
    * id of another column after which to insert this column.
    * This only impacts the ordering in the column chooser dropdown.

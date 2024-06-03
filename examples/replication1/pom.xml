@@ -16,7 +16,6 @@
     Example demonstrating the use of replication
   </description>
 
-
   <dependencies>
     <dependency>
       <groupId>org.yamcs</groupId>
@@ -27,11 +26,13 @@
       <groupId>org.yamcs</groupId>
       <artifactId>yamcs-core</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.yamcs</groupId>
       <artifactId>yamcs-web</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 </project>

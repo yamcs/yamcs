@@ -20,6 +20,7 @@ public class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
     public ParameterStatusSegment(boolean buildForSerialisation) {
         super(serializer, buildForSerialisation);
     }
+
     static public final ParameterStatus getStatus(BasicParameterValue pv, ParameterStatus prevStatus) {
         AcquisitionStatus acq = pv.getAcquisitionStatus();
         MonitoringResult mr = pv.getMonitoringResult();
@@ -28,18 +29,16 @@ public class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
             return cache.get(pv.getExpireMills());
         }
 
-        ParameterStatus newStatus =  pv.getStatus().toProtoBuf();
-        
-        if(newStatus.equals(prevStatus)) {
+        ParameterStatus newStatus = pv.getStatus().toProtoBuf();
+
+        if (newStatus.equals(prevStatus)) {
             return prevStatus;
         }
         return newStatus;
 
     }
 
-    
-
-    public void addParameterValue(int pos, BasicParameterValue pv) {
+    public void insertParameterValue(int pos, BasicParameterValue pv) {
         ParameterStatus prevStatus = null;
         if (pos > 0) {
             prevStatus = get(pos - 1);
@@ -54,10 +53,6 @@ public class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
             prevStatus = get(size - 1);
         }
         add(getStatus(pv, prevStatus));
-    }
-
-    ParameterStatusSegment consolidate() {
-        return (ParameterStatusSegment) super.consolidate();
     }
 
     public static ParameterStatusSegment parseFrom(ByteBuffer bb) throws DecodingException {
@@ -89,8 +84,7 @@ public class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
 
     /**
      * cache to avoid creating unnecessary ParameterStatus objects for parameters that have no status other than
-     * acquired and expiration time
-     * (likely 95% of all parameter values).
+     * acquired and expiration time (likely 95% of all parameter values).
      *
      */
     static class AcquiredCache {
@@ -145,5 +139,10 @@ public class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
                 this.status = status;
             }
         }
+    }
+
+    public void insertGap(int pos) {
+        // TODO Auto-generated method stub
+
     }
 }

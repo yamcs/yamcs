@@ -1,30 +1,33 @@
 import { ChangeDetectionStrategy, Component, ElementRef, forwardRef, ViewChild } from '@angular/core';
-import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator, Validators } from '@angular/forms';
-import { SelectOption } from '../select/select.component';
+import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule, UntypedFormControl, ValidationErrors, Validator, Validators } from '@angular/forms';
+import { YaSelect, YaSelectOption } from '../select/select.component';
 
 // Used as a signal to show validation results
 const INVALID_PROTOSTRING = 'invalid';
 
 @Component({
+  standalone: true,
   selector: 'ya-duration-input',
   templateUrl: './duration-input.component.html',
-  styleUrls: ['./duration-input.component.css'],
+  styleUrl: './duration-input.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => DurationInputComponent),
-      multi: true,
-    }, {
-      provide: NG_VALIDATORS,
-      useExisting: forwardRef(() => DurationInputComponent),
-      multi: true,
-    },
-  ]
+  providers: [{
+    provide: NG_VALUE_ACCESSOR,
+    useExisting: forwardRef(() => YaDurationInput),
+    multi: true,
+  }, {
+    provide: NG_VALIDATORS,
+    useExisting: forwardRef(() => YaDurationInput),
+    multi: true,
+  }],
+  imports: [
+    ReactiveFormsModule,
+    YaSelect,
+  ],
 })
-export class DurationInputComponent implements ControlValueAccessor, Validator {
+export class YaDurationInput implements ControlValueAccessor, Validator {
 
-  resolutionOptions: SelectOption[] = [
+  resolutionOptions: YaSelectOption[] = [
     { id: 'seconds', label: 'seconds' },
     { id: 'minutes', label: 'minutes' },
     { id: 'hours', label: 'hours' }
@@ -37,8 +40,7 @@ export class DurationInputComponent implements ControlValueAccessor, Validator {
 
   resolutionControl: UntypedFormControl;
 
-  constructor(
-  ) {
+  constructor() {
     this.resolutionControl = new UntypedFormControl('seconds', Validators.required);
     this.resolutionControl.valueChanges.subscribe(() => this.fireChange());
   }

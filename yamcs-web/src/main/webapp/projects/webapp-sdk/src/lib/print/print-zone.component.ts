@@ -1,15 +1,21 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, Type, ViewChild } from '@angular/core';
 import { Printable } from './Printable';
 import { PrintService } from './print.service';
 import { PrintableDirective } from './printable.directive';
 
 @Component({
+  standalone: true,
   selector: 'ya-print-zone',
   templateUrl: './print-zone.component.html',
-  styleUrls: ['./print-zone.component.css'],
+  styleUrl: './print-zone.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    NgTemplateOutlet,
+    PrintableDirective,
+  ],
 })
-export class PrintZoneComponent {
+export class YaPrintZone {
 
   /*
    * Implementation note:

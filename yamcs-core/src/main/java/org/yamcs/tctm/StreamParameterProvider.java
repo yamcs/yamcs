@@ -25,7 +25,6 @@ import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -90,7 +89,7 @@ public class StreamParameterProvider extends AbstractProcessorService implements
     }
 
     /**
-     * Make sure all parameters are defined in the XtceDB, otherwise the PRM will choke
+     * Make sure all parameters are defined in the MDB, otherwise the PRM will choke
      */
     @Override
     public void onTuple(Stream s, Tuple tuple) {// the definition of the tuple is in PpProviderAdapter
@@ -114,7 +113,7 @@ public class StreamParameterProvider extends AbstractProcessorService implements
                     String fqn = pv.getParameterQualifiedName();
                     Parameter ppdef = mdb.getParameter(fqn);
                     if (ppdef == null) {
-                        if (XtceDb.isSystemParameter(fqn)) {
+                        if (Mdb.isSystemParameter(fqn)) {
                             Value engValue = pv.getEngValue();
                             ppdef = SystemParametersService.createSystemParameter(mdb, fqn, engValue);
                         } else {

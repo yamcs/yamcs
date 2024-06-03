@@ -44,8 +44,14 @@ public class CommandHistoryRecorder extends AbstractYamcsService {
         String keycols = StandardTupleDefinitions.TC.getStringDefinition1();
         try {
             if (ydb.getTable(TABLE_NAME) == null) {
+                var timePart = ydb.getTimePartitioningSchema(config);
+
+                var partitionBy = timePart == null ? ""
+                        : "partition by time(gentime('" + timePart.getName() + "'))";
+
                 String q = "create table "+TABLE_NAME+" (" + keycols
-                        + ", PRIMARY KEY(gentime, origin, seqNum)) histogram(cmdName) table_format=compressed";
+                        + ", PRIMARY KEY(gentime, origin, seqNum)) histogram(cmdName) " + partitionBy
+                        + " table_format=compressed";
                 ydb.execute(q);
             }
             if (config.containsKey("streams")) {

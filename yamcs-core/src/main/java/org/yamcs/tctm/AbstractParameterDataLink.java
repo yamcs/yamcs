@@ -29,8 +29,9 @@ public abstract class AbstractParameterDataLink extends AbstractLink implements 
     @Override
     public void setupSystemParameters(SystemParametersService sysParamService) {
         super.setupSystemParameters(sysParamService);
-        parameterRateParameter = sysParamService.createSystemParameter(linkName + "/parameterRate", Type.DOUBLE,
-                new UnitType("p/s"), "Number of parameters per second computed over a five second interval");
+        parameterRateParameter = sysParamService.createSystemParameter(LINK_NAMESPACE + linkName + "/parameterRate",
+                Type.DOUBLE, new UnitType("p/s"),
+                "Number of parameters per second computed over a five second interval");
     }
 
     @Override

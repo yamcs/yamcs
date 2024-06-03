@@ -1,4 +1,5 @@
 import { WebSocketCall } from '../WebSocketCall';
+import { ActionInfo } from './management';
 
 export interface FileTransferService {
   instance: string;
@@ -25,8 +26,15 @@ export interface FileTransferCapabilities {
   download: boolean;
   reliability: boolean;
   remotePath: boolean;
-  fileList: boolean;
   hasTransferType: boolean;
+  fileList: boolean;
+  fileListExtraColumns?: FileListExtraColumnInfo[];
+  fileActions?: ActionInfo[];
+}
+
+export interface FileListExtraColumnInfo {
+  id: string;
+  label: string;
 }
 
 export interface Entity {
@@ -72,9 +80,11 @@ export interface ListFilesRequest {
 
 export interface RemoteFile {
   name: string;
+  displayName: string;
   isDirectory: boolean;
   size: number;
   modified: string;
+  extra?: { [key: string]: any; };
 }
 
 export interface ListFilesResponse {
@@ -82,6 +92,14 @@ export interface ListFilesResponse {
   destination: string;
   remotePath: string;
   listTime: string;
+  state?: string;
+}
+
+export interface RunFileActionRequest {
+  remoteEntity: string;
+  file: string;
+  action: string;
+  message?: { [key: string]: any; };
 }
 
 export interface ServicesPage {

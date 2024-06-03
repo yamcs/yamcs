@@ -16,11 +16,9 @@ import org.yamcs.protobuf.Pvalue.ParameterStatus;
  * Retrieves values for a single parameter from the parameter archive. The result is arrays of samples (see
  * {@link ParameterValueArray}) corresponding to the segments of the archive.
  * <p>
- * Because all values are of the same type, the memory consumed by those arrays is much smaller than what is provided
- * by an equivalent single parameter retrieval using {@link MultiParameterRetrieval}
+ * Because all values are of the same type, the memory consumed by those arrays is much smaller than what is provided by
+ * an equivalent single parameter retrieval using {@link MultiParameterRetrieval}
  * 
- * @author nm
- *
  */
 public class SingleParameterRetrieval {
     final private ParameterRequest req;
@@ -126,9 +124,6 @@ public class SingleParameterRetrieval {
 
     private void sendValuesFromSegment(ParameterId pid, ParameterValueSegment pvs, ParameterRequest pvr,
             Consumer<ParameterValueArray> consumer) {
-        ValueSegment engValueSegment = pvs.engValueSegment;
-        ValueSegment rawValueSegment = pvs.rawValueSegment;
-        ParameterStatusSegment parameterStatusSegment = pvs.parameterStatusSegment;
         SortedTimeSegment timeSegment = pvs.timeSegment;
         int posStart, posStop;
         if (pvr.ascending) {
@@ -157,34 +152,14 @@ public class SingleParameterRetrieval {
             return;
         }
 
-        long[] timestamps = timeSegment.getRange(posStart, posStop, pvr.ascending);
-        ValueArray engValues = null;
-        if (engValueSegment != null) {
-            engValues = engValueSegment.getRange(posStart, posStop, pvr.ascending);
+        ParameterValueArray pva = pvs.getRange(posStart, posStop, pvr.ascending, pvr.isRetrieveParameterStatus());
+        if (pva != null) {
+            consumer.accept(pva);
         }
-
-        ValueArray rawValues = null;
-        if (rawValueSegment != null) {
-            if (rawValueSegment == engValueSegment) {
-                rawValues = engValues;
-            } else {
-                rawValues = rawValueSegment.getRange(posStart, posStop, pvr.ascending);
-            }
-        }
-
-        ParameterStatus[] paramStatus = null;
-        if (pvr.isRetrieveParameterStatus()) {
-            paramStatus = parameterStatusSegment.getRangeArray(posStart, posStop, pvr.ascending);
-        }
-        ParameterValueArray pva = new ParameterValueArray(timestamps, engValues, rawValues, paramStatus);
-        consumer.accept(pva);
     }
 
     /**
      * Merges ParameterValueArray for same parameter and sends the result to the final consumer
-     * 
-     * @author nm
-     *
      */
     static class SegmentMerger implements Consumer<ParameterValueArray> {
         final Consumer<ParameterValueArray> finalConsumer;

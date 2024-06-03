@@ -1,0 +1,45 @@
+<app-instance-page>
+  <app-instance-toolbar>
+    Run a script
+  </app-instance-toolbar>
+
+  <div class="form-content ya-form">
+    <form [formGroup]="form" novalidate autocomplete="off">
+      <div class="label">
+        Script <span class="hint">(required)</span><br>
+        <ya-select formControlName="script" [options]="scriptOptions$ | async" />
+      </div>
+      <br>
+      <div class="label">
+        Script arguments
+        <input type="text" formControlName="args">
+      </div>
+    </form>
+    <p>&nbsp;</p>
+    <mat-toolbar>
+      <span style="flex: 1 1 auto"></span>
+      <button class="ya-button primary" type="submit" (click)="runScript()"
+              [disabled]="!form.valid">
+        Run
+      </button>
+      <ng-container *ngIf="showSchedule()">
+        &nbsp;
+        <ya-icon-action [matMenuTriggerFor]="(!form.valid)?null:sendMenu"
+                        icon="arrow_drop_down"
+                        [padding]="false"
+                        [disabled]="!form.valid"
+                        style="line-height: 12px" />
+        <mat-menu #sendMenu="matMenu"
+                  class="ya-menu"
+                  [overlapTrigger]="false">
+          <button mat-menu-item (click)="runScript()">
+            Run now
+          </button>
+          <button mat-menu-item (click)="openScheduleScriptDialog()">
+            Run later...
+          </button>
+        </mat-menu>
+      </ng-container>
+    </mat-toolbar>
+  </div>
+</app-instance-page>

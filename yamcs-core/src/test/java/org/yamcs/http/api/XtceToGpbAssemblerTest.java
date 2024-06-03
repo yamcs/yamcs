@@ -9,7 +9,7 @@ import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.xtce.MetaCommand;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 public class XtceToGpbAssemblerTest {
 
@@ -18,8 +18,8 @@ public class XtceToGpbAssemblerTest {
         // Arrange
         YConfiguration.setupTest("refmdb");
         MdbFactory.reset();
-        XtceDb db = MdbFactory.getInstance("refmdb");
-        MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC");
+        Mdb mdb = MdbFactory.getInstance("refmdb");
+        MetaCommand cmd1 = mdb.getMetaCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC");
 
         // Act
         CommandInfo commandInfo = XtceToGpbAssembler.toCommandInfo(cmd1, DetailLevel.FULL);
@@ -37,8 +37,8 @@ public class XtceToGpbAssemblerTest {
         // Arrange
         YConfiguration.setupTest("refmdb");
         MdbFactory.reset();
-        XtceDb db = MdbFactory.getInstance("refmdb");
-        MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/CCSDS_TC");
+        Mdb mdb = MdbFactory.getInstance("refmdb");
+        MetaCommand cmd1 = mdb.getMetaCommand("/REFMDB/SUBSYS1/CCSDS_TC");
 
         // Act
         CommandInfo commandInfo = XtceToGpbAssembler.toCommandInfo(cmd1, DetailLevel.FULL);
@@ -56,8 +56,8 @@ public class XtceToGpbAssemblerTest {
         // Arrange
         YConfiguration.setupTest("refmdb");
         MdbFactory.reset();
-        XtceDb db = MdbFactory.getInstance("refmdb");
-        MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/CALIB_TC");
+        Mdb mdb = MdbFactory.getInstance("refmdb");
+        MetaCommand cmd1 = mdb.getMetaCommand("/REFMDB/SUBSYS1/CALIB_TC");
 
         // Act
         CommandInfo commandInfo = XtceToGpbAssembler.toCommandInfo(cmd1, DetailLevel.FULL);

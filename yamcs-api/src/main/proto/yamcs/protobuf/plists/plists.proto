@@ -1,0 +1,32 @@
+syntax="proto2";
+
+package yamcs.protobuf.plists;
+
+option java_package = "org.yamcs.protobuf.plists";
+option java_outer_classname = "ParameterListsProto";
+option java_multiple_files = true;
+
+import "yamcs/protobuf/mdb/mdb.proto";
+
+message ParameterListInfo {
+
+  // List identifier
+  optional string id = 1;
+
+  // List name
+  optional string name = 2;
+
+  // List description
+  optional string description = 3;
+
+  // Name patterns (glob)
+  repeated string patterns = 4;
+
+  // Parameters matching any of the name patterns.
+  //
+  // This property is only returned on a specific
+  // parameter list request.
+  //
+  // Only basic parameter fields are populated.
+  repeated yamcs.protobuf.mdb.ParameterInfo match = 5;
+}

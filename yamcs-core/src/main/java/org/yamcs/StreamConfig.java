@@ -11,16 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 /**
  * Stores the value of the streamConfiguration parameter from yamcs.instance.yaml Used to create the streams at Yamcs
  * startup and by various other services (recording, processor, ...)
  * 
- * 
- * 
- * @author nm
- *
  */
 public class StreamConfig {
     public enum StandardStreamType {
@@ -44,9 +40,13 @@ public class StreamConfig {
         return instances.computeIfAbsent(yamcsInstance, StreamConfig::new);
     }
 
+    public static synchronized void removeInstance(String instanceName) {
+        instances.remove(instanceName);
+    }
+
     @SuppressWarnings("unchecked")
     private StreamConfig(String yamcsInstance) {
-        XtceDb xtceDb = MdbFactory.getInstance(yamcsInstance);
+        Mdb mdb = MdbFactory.getInstance(yamcsInstance);
         YamcsServerInstance instance = YamcsServer.getServer().getInstance(yamcsInstance);
         YConfiguration instanceConfig = instance.getConfig();
         if (!instanceConfig.containsKey("streamConfig")) {
@@ -79,7 +79,7 @@ public class StreamConfig {
                         addEntry(type, (String) o1);
                     } else if (o1 instanceof Map) {
                         YConfiguration streamConf = streamConfigAll.getConfigListIdx(streamType, i);
-                        addEntry(xtceDb, type, streamConf);
+                        addEntry(mdb, type, streamConf);
                     }
                 }
             } else {
@@ -101,7 +101,7 @@ public class StreamConfig {
         entries.add(entry);
     }
 
-    private void addEntry(XtceDb xtceDb, StandardStreamType type, YConfiguration streamConf) {
+    private void addEntry(Mdb mdb, StandardStreamType type, YConfiguration streamConf) {
         StreamConfigEntry entry;
         String streamName = streamConf.getString("name");
         boolean async = streamConf.getBoolean("async", false);
@@ -113,7 +113,7 @@ public class StreamConfig {
         if (type == StandardStreamType.TM) {
             if (streamConf.containsKey("rootContainer")) {
                 String containerName = streamConf.getString("rootContainer");
-                rootContainer = xtceDb.getSequenceContainer(containerName);
+                rootContainer = mdb.getSequenceContainer(containerName);
                 if (rootContainer == null) {
                     throw new ConfigurationException("Unknown sequence container: " + containerName);
                 }

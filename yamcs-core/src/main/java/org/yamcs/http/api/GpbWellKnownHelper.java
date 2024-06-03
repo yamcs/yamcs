@@ -1,6 +1,6 @@
 package org.yamcs.http.api;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,7 +18,7 @@ public class GpbWellKnownHelper {
      * Converts a Protobuf struct to Java Map where all elements are converted to equivalent Java types.
      */
     public static Map<String, Object> toJava(Struct struct) {
-        Map<String, Object> map = new HashMap<>(struct.getFieldsCount());
+        var map = new LinkedHashMap<String, Object>(struct.getFieldsCount());
         struct.getFieldsMap().forEach((k, v) -> map.put(k, toJava(v)));
         return map;
     }

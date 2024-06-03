@@ -13,14 +13,19 @@ import "yamcs/protobuf/yamcs.proto";
 
 message TmPacketData {
   // Raw packet binary
-  required bytes packet = 2;
+  optional bytes packet = 2;
+
+  // Storage discriminator in case of distinct packets
+  // with the same name and generation time
   optional int32 sequenceNumber = 4;
+
+  // Packet name
   optional NamedObjectId id = 5;
 
   // When the packet was generated
   optional google.protobuf.Timestamp generationTime = 9;
 
-  // When the signal has been received on the groun
+  // When the signal has been received on ground
   optional google.protobuf.Timestamp earthReceptionTime = 10;
 
   // When the packet was received by Yamcs
@@ -28,4 +33,7 @@ message TmPacketData {
 
   // Name of the Yamcs link where this packet was received from
   optional string link = 11;
+
+  // Packet size in bytes
+  optional int32 size = 12;
 }

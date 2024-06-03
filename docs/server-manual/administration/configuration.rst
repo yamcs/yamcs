@@ -20,8 +20,6 @@ The number of configuration options in :file:`etc/yamcs.yaml` are relatively lim
         - simulator
 
     dataDir: /storage/yamcs-data
-    
-    incomingDir: /storage/yamcs-incoming
 
     secretKey: "changeme"
 
@@ -39,9 +37,6 @@ instances (list)
 dataDir (string)
     A directory which will be the root of the Yamcs archive. The directory must exist and it shall be possible for the user who runs Yamcs to write into it. More information about the Yamcs archive can be found in :doc:`../data-management/index`.
     In addition to the directories used for the archive, there are two directories named :file:`instance-def` and :file:`instance-templates` which are used for the dynamic creation of instances.
-
-incomingDir (string)
-    A directory used by the :javadoc:`~org.yamcs.tctm.FilePollingTmDataLink` to load incoming telemetry files. This is a relic from when Yamcs was used only for that; the option should be specified in the link configuration instead (it is left here because some users are quite accustomed to it).
 
 cacheDir (string)
     A directory that Yamcs can use to cache files. Defaults to a directory called :file:`cache` relative to the directory where Yamcs is running from.
@@ -89,6 +84,9 @@ The instance configuration file :file:`etc/yamcs.{instance}.yaml` contains most 
 
     timeService:
         class: org.yamcs.time.SimulationTimeService
+    
+    dataPartitioningByTime: YYYY/MM
+
 
 
 The following options are supported
@@ -101,13 +99,16 @@ dataLinks (list)
     
 mdb (list)
     The configuration of the Mission Database (MDB). The configuration is hierarchical, each loader having the possibility to load sub-loaders which become child Space Systems. More information about the MDB can be found in :doc:`../mdb/index`
-
     
 streamConfig(map)
     This configures the list of streams created when Yamcs starts. The map contains an entry for each standard stream type (``tm``, ``cmdHist``, ``event``, etc) and additionally a key ``sqlFile`` can be used to load a StreamSQL file where user defined streams can be created. More information can be found in :doc:`../data-management/streams`
     
 timeService(map)
     This configures the source of the "mission time". By default the RealtimeTimeService uses the local computer clock as the time source. The :javadoc:`org.yamcs.time.SimulationTimeService` can be used to simulate a mission time in the past or the future. If configured, the time can be controlled using the :apidoc:`HTTP API <time/set-time>`. The ``updateSimulationTime: true`` option on a telemetry data link can also be used to manipulate the simulation time - in this case the time will be set to be the generation time of the packet.
+    
+dataPartitioningByTime(String)
+    One of "none", "YYYY", "YYYY/MM" or "YYYY/DOY"
+    If specified, partition the tm, pp, events, alarms, cmdhistory tables and the parameter archive by time. For example, specifying YYYY/MM will store the data of each month into a different RocksdDB database. This option is useful when the archive is expected to grow very large: the new data will not disturb the old data (otherwise RocksDB always merges new files with old ones) and data can be spread over multiple filesystems. 
 
 
 Configuration Properties
@@ -149,3 +150,12 @@ YAML configuration values may use properties names in the following notations:
 
 ``${env.foo:bar}``
     Same as ``${env.foo}``, but defaults to the value ``bar`` when the environment variable is not set.
+
+``${foo:${bar}}``
+    Same as ``${foo}``, but defaults to the value of the ``bar`` property.
+
+.. note::
+    When properties are defined, the configuration file must remain valid YAML. This may sometimes require surrounding the YAML value with explicit string quotes. The following two notations are identical:
+
+    * ``host: ${simulator.port}``
+    * ``host: "${simulator.port}"``

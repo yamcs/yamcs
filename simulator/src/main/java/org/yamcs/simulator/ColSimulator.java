@@ -36,7 +36,7 @@ public class ColSimulator extends AbstractSimulator {
     // no more than 100 pending commands
     protected BlockingQueue<ColumbusCcsdsPacket> pendingCommands = new ArrayBlockingQueue<>(100);
 
-    static int MAX_PKT_LENGTH = 65542;
+    static int MAX_PKT_LENGTH = 1500;
 
     final File dataDir;
 
@@ -69,6 +69,8 @@ public class ColSimulator extends AbstractSimulator {
     CfdpReceiver cfdpReceiver;
 
     private CfdpSender cfdpSender;
+
+    private PerfPacketGenerator perfPacketGenerator;
 
     @Override
     public void setCfdpSender(CfdpSender cfdpSender) {
@@ -308,8 +310,11 @@ public class ColSimulator extends AbstractSimulator {
                     downloadFile(commandPacket);
                     break;
                 case 9:
-                    // this is used to demonstrate cascasding with BINARY_EMBEEDED command mapping
+                    // this is used to demonstrate cascading with BINARY_EMBEDDED command mapping
                     switchBatteryOnOff(commandPacket);
+                    break;
+                case 10:
+                    perfTestOnOff(commandPacket);
                     break;
                 default:
                     log.error("Invalid command packet id: {}", commandPacket.getPacketId());
@@ -416,6 +421,24 @@ public class ColSimulator extends AbstractSimulator {
                 transmitRealtimeTM(ackPacket(commandPacket, 2, 1));
             }
         }
+    }
+
+    private void perfTestOnOff(ColumbusCcsdsPacket commandPacket) {
+        transmitRealtimeTM(ackPacket(commandPacket, 1, 0));
+        if (perfPacketGenerator == null) {
+            log.warn("Received command for the perf packet generator but it is not enabled");
+            transmitRealtimeTM(ackPacket(commandPacket, 2, 1));
+        } else {
+            int pause = commandPacket.getUserDataBuffer().get(0);
+
+            if (pause == 1) {
+                perfPacketGenerator.pause();
+            } else {
+                perfPacketGenerator.resume();
+            }
+            transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
+        }
+
     }
 
     private boolean checkFile(String fileName) {
@@ -549,5 +572,14 @@ public class ColSimulator extends AbstractSimulator {
         ByteBuffer buffer = pkt.getUserDataBuffer();
         packet.writeToBuffer(buffer);
         transmitRealtimeTM(pkt);
+    }
+
+    public void setPerfPacketGenerator(PerfPacketGenerator ppg) {
+        this.perfPacketGenerator = ppg;
+    }
+
+    @Override
+    public int maxTmDataSize() {
+        return MAX_PKT_LENGTH - 20;
     }
 }

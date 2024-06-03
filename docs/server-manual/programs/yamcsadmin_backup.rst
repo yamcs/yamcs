@@ -9,7 +9,7 @@ Synopsis
 .. rst-class:: synopsis
 
     | **yamcsadmin backup** create --backup-dir <*DIR*> [--data-dir <*DIR*>]
-                             [--pid <*PID*>] [--url <*HOST:PORT*>] <*TABLESPACE*>
+                             [--pid <*PID*>] [--host <*HOST:PORT*>] <*TABLESPACE*>
     | **yamcsadmin backup** delete --backup-dir <*DIR*> <*ID*>...
     | **yamcsadmin backup** list --backup-dir <*DIR*>
     | **yamcsadmin backup** purge --backup-dir <*DIR*> --keep <*N*>

@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.codehaus.janino.SimpleCompiler;
 import org.slf4j.Logger;
@@ -158,14 +157,12 @@ public abstract class Expression {
 
     public abstract void fillCode_getValueReturn(StringBuilder code) throws StreamSqlException;
 
-    private static AtomicInteger counter = new AtomicInteger();
-
     // TODO: when adding support for PreparedStatements we should remember the result of the compilation
     // and create new instances of that class with different arguments
     // (currently the arguments are passed from the parser.)
     // additional code should be added to verify that the arguments match the expected type
     public CompiledExpression compile() throws StreamSqlException {
-        String className = "Expression" + counter.incrementAndGet();
+        String className = "Expression_generated";
         StringBuilder source = new StringBuilder();
         source.append("package org.yamcs.yarch;\n")
                 .append("import org.yamcs.parameter.ParameterValue;\n")
@@ -206,6 +203,7 @@ public abstract class Expression {
         try {
             SimpleCompiler compiler = new SimpleCompiler();
             compiler.cook(new StringReader(source.toString()));
+
             @SuppressWarnings("unchecked")
             Class<CompiledExpression> cexprClass = (Class<CompiledExpression>) compiler.getClassLoader()
                     .loadClass("org.yamcs.yarch." + className);

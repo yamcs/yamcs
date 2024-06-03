@@ -160,7 +160,7 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
     public void testActivity1() throws Exception {
         verifyEmpty();
         TimelineItem item1a = TimelineItem.newBuilder()
-                .setType(TimelineItemType.MANUAL_ACTIVITY)
+                .setType(TimelineItemType.ACTIVITY)
                 .setStart(toTimestamp(Instant.parse("2022-07-29T00:00:00Z")))
                 .setDuration(Durations.fromMillis(1001))
                 .addTags("tag1")
@@ -255,7 +255,7 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
         event = timelineClient.addItem(event).get();
         // create activity
         TimelineItem activity = TimelineItem.newBuilder()
-                .setType(TimelineItemType.MANUAL_ACTIVITY)
+                .setType(TimelineItemType.ACTIVITY)
                 .setStart(toTimestamp(Instant.parse("2020-01-21T00:00:00Z")))
                 .setDuration(Durations.fromMillis(1001))
                 .build();

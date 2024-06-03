@@ -16,21 +16,21 @@ import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
 
 /**
- * Wraps an {@link XtceDb} object.
+ * Wraps an {@link Mdb} object.
  * <p>
  * Offers persistence capabilities for selected subtrees.
  */
 public class Mdb extends XtceDb {
 
     private static final long serialVersionUID = 1L;
-    final transient Map<String, SpaceSystemWriter> susbsystemWriters;
+    final transient Map<String, SpaceSystemWriter> subsystemWriters;
 
     public Mdb(SpaceSystem spaceSystem, Map<String, SpaceSystemWriter> susbsystemWriters) {
         super(spaceSystem);
         susbsystemWriters.put(YAMCS_SPACESYSTEM_NAME, (fqn, mdb) -> {
             // writer for the /yamcs doesn't write to disk
         });
-        this.susbsystemWriters = susbsystemWriters;
+        this.subsystemWriters = susbsystemWriters;
     }
 
     public void addParameter(Parameter p, boolean addSpaceSystem, boolean addParameterType) throws IOException {
@@ -38,7 +38,7 @@ public class Mdb extends XtceDb {
     }
 
     /**
-     * Adds parameters to the XtceDb after which it persist the corresponding subtree to the file
+     * Adds parameters to the MDB after which it persist the corresponding subtree to the file
      * <p>
      * If any of spacesystems of the parameters are not writable, an IllegalArgumentException will be thrown and no
      * parameter will be added
@@ -54,7 +54,7 @@ public class Mdb extends XtceDb {
             WriterWithPath wwp = getWriter(p.getSubsystemName());
             writers.put(wwp.path, wwp.writer);
         }
-        // add the parameters to the XtceDB
+        // add the parameters to the MDB
         super.doAddParameters(parameters, createSpaceSystems, createSpaceSystems);
 
         for (var entry : writers.entrySet()) {
@@ -69,14 +69,14 @@ public class Mdb extends XtceDb {
      */
     private WriterWithPath getWriter(String fqn) {
         String tmp = fqn;
-        SpaceSystemWriter w = susbsystemWriters.get(tmp);
+        SpaceSystemWriter w = subsystemWriters.get(tmp);
         while (w == null) {
             int index = tmp.lastIndexOf(PATH_SEPARATOR);
             if (index == -1) {
                 throw new IllegalArgumentException("'" + fqn + "' is not a writable SpaceSystem");
             }
             tmp = tmp.substring(0, index);
-            w = susbsystemWriters.get(tmp);
+            w = subsystemWriters.get(tmp);
         }
 
         return new WriterWithPath(tmp, w);
@@ -104,7 +104,7 @@ public class Mdb extends XtceDb {
             WriterWithPath wwp = getWriter(NameDescription.getSubsystemName(ptype.getQualifiedName()));
             writers.put(wwp.path, wwp.writer);
         }
-        // add the parameters to the XtceDB
+        // add the parameters to the MDB
         super.doAddParameterType(ptypeList, createSpaceSystem);
 
         for (var entry : writers.entrySet()) {

@@ -144,7 +144,10 @@ public class UdpParameterDataLink extends AbstractParameterDataLink implements R
             try {
                 udpSocket.receive(datagram);
                 validDatagramCount++;
-                return decodeDatagram(datagram.getData(), datagram.getOffset(), datagram.getLength());
+                ParameterData pd = decodeDatagram(datagram.getData(), datagram.getOffset(), datagram.getLength());
+                dataIn(pd.getParameterCount(), datagram.getLength());
+
+                return pd;
             } catch (IOException e) {
                 // Shutdown or disable will close the socket. That generates an exception
                 // which we ignore here.
@@ -152,6 +155,7 @@ public class UdpParameterDataLink extends AbstractParameterDataLink implements R
                     return null;
                 }
                 log.warn("Exception when receiving parameter data: {}'", e.toString());
+                dataIn(0, datagram.getLength());
                 invalidDatagramCount++;
             }
         }

@@ -1,0 +1,157 @@
+services:
+  - class: org.yamcs.archive.XtceTmRecorder
+  - class: org.yamcs.archive.ParameterRecorder
+  - class: org.yamcs.archive.AlarmRecorder
+  - class: org.yamcs.archive.EventRecorder
+  - class: org.yamcs.archive.ReplayServer
+  - class: org.yamcs.archive.CcsdsTmIndex
+    args:
+      streams:
+        - tm_realtime
+        - tm_dump
+  - class: org.yamcs.parameter.SystemParametersService
+    args:
+      producers: ['jvm', 'fs']
+  - class: org.yamcs.ProcessorCreatorService
+    args: 
+      name: "realtime"
+      type: "realtime" 
+  - class: org.yamcs.archive.CommandHistoryRecorder
+  - class: org.yamcs.parameterarchive.ParameterArchive
+    args:
+      maxSegmentSize: 1000
+      realtimeFiller: 
+        enabled: true
+      backFiller:
+        enabled: false
+  - class: org.yamcs.simulator.SimulatorCommander
+    args:
+      telnet:
+        port: 10023
+      tctm:
+        tmPort: 10015
+        tcPort: 10025
+        losPort: 10115
+        tm2Port: 10016
+      # Simulator can send some packets to test the performance of Yamcs. 
+      # Make sure the yamcs.simulator.yaml, mdb section contains a database generator for these packets, such that they are processed by Yamcs
+      # if numPackets is greater than 0, the simulator will send <numPackets> packets of size <packetSize> at each <interval> (in ms)
+      perfTest: 
+        numPackets: 100
+        packetSize: 1476 #length of the performance testing packets
+        interval: 100 #how many milliseconds to wait in between sending each batch of numPackets packets
+        changePercent: 10 #percentange (0-100) of data changed between two subsequent versions of the same packet
+
+dataLinks:
+  - name: tm_realtime
+    class: org.yamcs.tctm.TcpTmDataLink
+    stream: tm_realtime
+    host: localhost
+    port: 10015
+    # Give the embedded simulator some time to boot up
+    initialDelay: 2000      
+  - name: tm2_realtime
+    class: org.yamcs.tctm.TcpTmDataLink
+    stream: tm2_realtime
+    host: localhost
+    port: 10016
+    # Give the embedded simulator some time to boot up
+    initialDelay: 2000
+    # the packet input stream is responsible for chunking the stream into packets (this is not required for UDP links where one datagram = one packet)
+    # for historical reasons the default packet input stream (used for the tm_realtime link above) is CcsdsPacketInputStream which chunks the packets based on 
+    # CCSDS Space Packet definition (i.e. the packet length is in the 5th and 6th bytes of the primary header)
+    # the GenericPacketInputStream can be used to read any kind of packet where the length is encoded in big endian somewhere at the beginning of the packet
+    packetInputStreamClassName: org.yamcs.tctm.GenericPacketInputStream
+    packetInputStreamArgs: 
+        maxPacketLength: 1000  #max size of the packet 
+        lengthFieldOffset: 0   # where to read the length from 
+        lengthFieldLength: 2   # the number of the bytes that contain the packet length
+        # adjust the length read from the offset defined above by this number of bytes. 
+        # we use 2 here because the simulator sets the length of the packet without the lenght itself
+        lengthAdjustment: 2
+        initialBytesToStrip: 0 # number of bytes to remove from the beginning
+
+      # the packet preprocessor gets the packets read by the packet input stream defined above and extracts a timestamp and a sequence count from it
+      # for historical reasons the default packet preprocessor (used for the tm_realtime link above) is the IssPacketPreprocessor that reads packets 
+      # according to the ISS (International Space Station) definition
+      # The generic packet preprocessor reads a timestamp in number of milliseconds since 1970 as well as a 4 bytes sequence count 
+    packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
+    packetPreprocessorArgs:
+        timestampOffset: 2 #where to read the 8 bytes timestamp offset from
+        seqCountOffset: 10 #where to read the 4 bytes sequence count from
+        errorDetection: #last two bytes are used for the error detection
+          type: "CRC-16-CCIIT" 
+  - name: tm_dump
+    class: org.yamcs.tctm.TcpTmDataLink
+    stream: tm_dump
+    host: localhost
+    port: 10115
+    # Give the embedded simulator some time to boot up
+    initialDelay: 2000
+  - name: tc_sim
+    class: org.yamcs.tctm.TcpTcDataLink
+    stream: tc_sim
+    host: localhost
+    port: 10025
+    # Give the embedded simulator smoe time to boot up
+    initialDelay: 2000
+    commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
+    commandPostprocessorArgs:
+        errorDetection:
+          type: 16-SUM
+        enforceEvenNumberOfBytes: true
+        
+  - name: TSE
+    class: org.yamcs.tse.TseDataLink
+    host: localhost
+    port: 8135
+    # Give the embedded simulator some time to boot up
+    initialDelay: 2000
+
+mdb:
+  # Configuration of the active loaders
+  # Valid loaders are: sheet, xtce or fully qualified name of the class
+  - type: "sheet"
+    spec: "mdb/simulator-ccsds.xls"
+    subLoaders:
+      - type: "sheet"
+        spec: "mdb/landing.xls"
+  - type: "org.yamcs.tse.TseLoader"
+    subLoaders:
+      - type: "sheet"
+        spec: "mdb/tse/simulator.xls"
+  #Loads the performance testing mission database
+  - type: "org.yamcs.simulator.PerfMdbLoader"
+    args:
+      numPackets: 100
+      packetSize: 1476
+      
+
+#Configuration for streams created at server startup
+streamConfig:
+  tm:
+    - name: "tm_realtime"
+      processor: "realtime"
+    - name: "tm2_realtime"
+      rootContainer: "/YSS/SIMULATOR/tm2_container"
+      processor: "realtime"
+    - name: "tm_dump"
+  invalidTm: "invalid_tm_stream"
+  cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
+  event: ["events_realtime", "events_dump"]
+  param: ["pp_realtime", "pp_tse", "sys_param", "proc_param"]
+  parameterAlarm: ["alarms_realtime"]
+  eventAlarm: ["event_alarms_realtime"]
+  tc: 
+     - name: tc_sim
+       processor: realtime
+       tcPatterns: ["/YSS/SIMULATOR/.*"]
+     - name: tc_tse
+       processor: realtime
+
+      
+  sqlFile: "etc/extra_streams.sql"
+
+#store data (tm, pp, events, alarms, cmdhistory, parameter archive) in partitions year/day_of_year
+dataPartitioningByTime: YYYY/MM
+

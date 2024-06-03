@@ -1,5 +1,6 @@
 package org.yamcs.mdb;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +42,7 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.SplineCalibrator;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.mdb.Mdb;
 
 /**
  * Holds information related and required for XTCE processing. It is separated from Processor because it has to be
@@ -81,8 +82,8 @@ public class ProcessorData {
 
     private ProcessorConfig processorConfig;
 
-    public ProcessorData(Processor proc, ProcessorConfig config) {
-        this(proc.getInstance(), proc.getName(), proc.getXtceDb(), config);
+    public ProcessorData(Processor proc, ProcessorConfig config, Map<Parameter, ParameterValue> persistedParams) {
+        this(proc.getInstance(), proc.getName(), proc.getMdb(), config, persistedParams);
 
         long genTime = TimeEncoding.getWallclockTime();
         // populate with /yamcs/processor variables (these never change)
@@ -94,6 +95,11 @@ public class ProcessorData {
         ParameterValue procModePv = getProcessorPV(mdb, genTime, "mode", mode,
                 "The mode of the current processor (either replay or realtime)");
         lastValueCache.add(procModePv);
+
+    }
+
+    public ProcessorData(String procName, Mdb mdb, ProcessorConfig config) {
+        this(null, procName, mdb, config, Collections.emptyMap());
     }
 
     /**
@@ -101,7 +107,8 @@ public class ProcessorData {
      * @param config
      *            - generate events in case of errors when processing data
      */
-    public ProcessorData(String instance, String procName, Mdb mdb, ProcessorConfig config) {
+    public ProcessorData(String instance, String procName, Mdb mdb, ProcessorConfig config,
+            Map<Parameter, ParameterValue> persistedParams) {
         this.yamcsInstance = instance;
         this.mdb = mdb;
         this.processorConfig = config;
@@ -131,17 +138,19 @@ public class ProcessorData {
         lastValueCache = new LastValueCache(constants);
 
         mdb.getParameters().stream()
-                .filter(p -> p.getParameterType() != null && p.getDataSource() != DataSource.CONSTANT)
-                .map(p -> getInitialValue(genTime, p))
+                .filter(p -> p.getDataSource() != DataSource.CONSTANT)
+                .map(p -> persistedParams.containsKey(p) ? persistedParams.get(p) : getInitialValue(genTime, p))
                 .filter(pv -> pv != null)
                 .forEach(pv -> lastValueCache.add(pv));
 
         log.debug("Initialized lastValueCache with {} entries", lastValueCache.size());
-
     }
 
     private ParameterValue getInitialValue(long genTime, Parameter p) {
         ParameterType ptype = p.getParameterType();
+        if (ptype == null) {
+            return null;
+        }
 
         Object o = p.getInitialValue();
 
@@ -161,7 +170,7 @@ public class ProcessorData {
 
     private ParameterValue getProcessorPV(Mdb mdb, long time, String name, String value, String description) {
         var serverId = YamcsServer.getServer().getServerId();
-        var namespace = XtceDb.YAMCS_SPACESYSTEM_NAME + NameDescription.PATH_SEPARATOR + serverId;
+        var namespace = Mdb.YAMCS_SPACESYSTEM_NAME + NameDescription.PATH_SEPARATOR + serverId;
         String fqn = NameDescription.qualifiedName(namespace, "processor", name);
         Parameter p = SystemParametersService.createSystemParameter(mdb, fqn, Yamcs.Value.Type.STRING, description);
 
@@ -281,8 +290,15 @@ public class ProcessorData {
         return enc;
     }
 
-    public XtceDb getXtceDb() {
+    public Mdb getMdb() {
         return mdb;
+    }
+
+    /**
+     * returns the parameter values for all the parameters having the persistence flag set
+     */
+    public List<ParameterValue> getValuesToBePersisted() {
+        return lastValueCache.getValuesToBePersisted();
     }
 
     /**
@@ -451,4 +467,5 @@ public class ProcessorData {
     private void notifyTypeUpdate(Parameter parameter) {
         typeListeners.forEach(l -> l.parameterTypeUpdated(parameter, getParameterType(parameter)));
     }
+
 }

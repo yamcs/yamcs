@@ -1,0 +1,15 @@
+<div class="tag-select">
+  <ng-container *ngIf="tags$ | async as tags">
+    <ya-label *ngFor="let tag of tags">
+      {{ tag }}
+      <mat-icon class="tag-icon" (click)="removeTag(tag)">close</mat-icon>
+    </ya-label>
+    <ng-container *ngIf="tags.length">&nbsp;</ng-container>
+  </ng-container>
+  <input type="text"
+         [formControl]="control"
+         (keydown.enter)="addTag(); $event.preventDefault()"
+         placeholder="my-tag"
+         style="width: 120px">
+  <button class="ya-button" (click)="addTag()" [disabled]="!control.value">Add</button>
+</div>

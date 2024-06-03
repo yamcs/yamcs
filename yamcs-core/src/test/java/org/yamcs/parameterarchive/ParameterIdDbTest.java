@@ -3,11 +3,13 @@ package org.yamcs.parameterarchive;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.rocksdb.RocksDBException;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.IntArray;
@@ -32,10 +34,14 @@ public class ParameterIdDbTest {
         tablespace.close();
     }
 
+    ParameterIdDb pdb(String name) throws RocksDBException, IOException {
+        return new ParameterIdDb(name, tablespace, false, 0);
+    }
+
     @Test
     public void test1() throws Exception {
 
-        ParameterIdDb pidDb = new ParameterIdDb("test1", tablespace);
+        ParameterIdDb pidDb = pdb("test1");
         assertEquals(0, pidDb.size());
 
         int p1 = pidDb.createAndGet("/test1/bla", Value.Type.BOOLEAN);
@@ -50,7 +56,7 @@ public class ParameterIdDbTest {
         tablespace.close();
         tablespace.loadDb(false);
 
-        pidDb = new ParameterIdDb("test1", tablespace);
+        pidDb = pdb("test1");
         int p4 = pidDb.createAndGet("/test1/bla", Value.Type.BOOLEAN);
         assertEquals(p1, p4);
         int p5 = pidDb.createAndGet("/test1/bla", Value.Type.DOUBLE);
@@ -67,7 +73,7 @@ public class ParameterIdDbTest {
     @Test
     public void test2() throws Exception {
         Value.Type vt = Value.Type.AGGREGATE;
-        ParameterIdDb pidDb = new ParameterIdDb("test2", tablespace);
+        ParameterIdDb pidDb = pdb("test2");
         int p1 = pidDb.createAndGet("/test2/bp1", Value.Type.BOOLEAN);
         int p2 = pidDb.createAndGet("/test2/bp2", Value.Type.BOOLEAN);
 
@@ -80,7 +86,7 @@ public class ParameterIdDbTest {
 
         tablespace.close();
         tablespace.loadDb(false);
-        pidDb = new ParameterIdDb("test2", tablespace);
+        pidDb = pdb("test2");
 
         int p4 = pidDb.createAndGet("/test2/bp4", Value.Type.BOOLEAN);
         int aggp3 = pidDb.createAndGetAggrray("/test2/aggregate1", vt, vt, IntArray.wrap(p1, p4));
@@ -93,7 +99,7 @@ public class ParameterIdDbTest {
 
     @Test
     public void test3() throws Exception {
-        ParameterIdDb pidDb = new ParameterIdDb("test3", tablespace);
+        ParameterIdDb pidDb = pdb("test3");
         int n = 1000;
         int[] pid = new int[n];
         for (int i = 0; i < n; i++) {
@@ -102,7 +108,7 @@ public class ParameterIdDbTest {
 
         tablespace.close();
         tablespace.loadDb(false);
-        pidDb = new ParameterIdDb("test3", tablespace);
+        pidDb = pdb("test3");
 
         for (int i = 0; i < n; i++) {
             String fqn = "/test3/bp[" + i + "]";
@@ -120,7 +126,7 @@ public class ParameterIdDbTest {
 
     @Test
     public void test4() throws Exception {
-        ParameterIdDb pidDb = new ParameterIdDb("test4", tablespace);
+        ParameterIdDb pidDb = pdb("test4");
         int p1 = pidDb.createAndGet("/test4/p", Value.Type.BOOLEAN);
         int p2 = pidDb.createAndGet("/test4/p", Value.Type.UINT32);
         ParameterId[] pids = pidDb.get("/test4/p");

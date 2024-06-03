@@ -27,6 +27,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.api.Api;
 import org.yamcs.api.HttpRoute;
 import org.yamcs.api.WebSocketTopic;
+import org.yamcs.http.api.ActivitiesApi;
 import org.yamcs.http.api.AlarmsApi;
 import org.yamcs.http.api.AuditApi;
 import org.yamcs.http.api.BucketsApi;
@@ -44,6 +45,7 @@ import org.yamcs.http.api.MdbApi;
 import org.yamcs.http.api.MdbOverrideApi;
 import org.yamcs.http.api.PacketsApi;
 import org.yamcs.http.api.ParameterArchiveApi;
+import org.yamcs.http.api.ParameterListsApi;
 import org.yamcs.http.api.ParameterValuesApi;
 import org.yamcs.http.api.ProcessingApi;
 import org.yamcs.http.api.QueuesApi;
@@ -192,6 +194,8 @@ public class HttpServer extends AbstractYamcsService {
         spec.addOption("tlsKey", OptionType.STRING);
         spec.addOption("contextPath", OptionType.STRING).withDefault("" /* NOT null */);
         spec.addOption("zeroCopyEnabled", OptionType.BOOLEAN).withDefault(true);
+        spec.addOption("maxInitialLineLength", OptionType.INTEGER).withDefault(8192);
+        spec.addOption("maxHeaderSize", OptionType.INTEGER).withDefault(8192);
         spec.addOption("maxContentLength", OptionType.INTEGER).withDefault(65536);
         spec.addOption("cors", OptionType.MAP).withSpec(corsSpec);
         spec.addOption("webSocket", OptionType.MAP).withSpec(websocketSpec).withApplySpecDefaults(true);
@@ -281,6 +285,7 @@ public class HttpServer extends AbstractYamcsService {
         }
         nThreads = config.getInt("nThreads");
 
+        addApi(new ActivitiesApi());
         addApi(new AlarmsApi(auditLog));
         addApi(new AuditApi(auditLog));
         addApi(new BucketsApi());
@@ -298,6 +303,7 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new MdbOverrideApi());
         addApi(new PacketsApi());
         addApi(new ParameterArchiveApi());
+        addApi(new ParameterListsApi());
         addApi(new ParameterValuesApi());
         addApi(new ProcessingApi());
         addApi(new QueuesApi(auditLog));
@@ -321,6 +327,11 @@ public class HttpServer extends AbstractYamcsService {
         var faviconHandler = new FaviconHandler();
         for (var path : FaviconHandler.HANDLED_PATHS) {
             addRoute(path, () -> faviconHandler);
+        }
+
+        var robotsTxtHandler = new RobotsTxtHandler();
+        for (var path : RobotsTxtHandler.HANDLED_PATHS) {
+            addRoute(path, () -> robotsTxtHandler);
         }
 
         var staticFileHandler = new StaticFileHandler("/static", staticRoots);
@@ -536,9 +547,9 @@ public class HttpServer extends AbstractYamcsService {
             return true; // Force use of Callable interface, instead of Runnable
         });
         closers.shutdown();
-        Futures.addCallback(Futures.allAsList(future1, future2, future3), new FutureCallback<Object>() {
+        Futures.addCallback(Futures.allAsList(future1, future2, future3), new FutureCallback<>() {
             @Override
-            public void onSuccess(Object result) {
+            public void onSuccess(List<Object> result) {
                 notifyStopped();
             }
 

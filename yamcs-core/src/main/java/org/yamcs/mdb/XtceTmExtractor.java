@@ -11,7 +11,6 @@ import org.yamcs.xtce.IndirectParameterRefEntry;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.xtce.XtceDb;
 
 /**
  *
@@ -23,18 +22,16 @@ public class XtceTmExtractor {
     protected final Subscription subscription;
     private ProcessingStatistics stats = new ProcessingStatistics();
 
-    public final XtceDb mdb;
+    public final Mdb mdb;
     final SequenceContainer rootContainer;
     ContainerProcessingOptions options;
     final ProcessorData pdata;
 
     /**
      * Create a standalone TM extractor
-     * 
-     * @param mdb
      */
     public XtceTmExtractor(Mdb mdb) {
-        this(mdb, new ProcessorData(null, "XTCEPROC", mdb, new ProcessorConfig()));
+        this(mdb, new ProcessorData("XTCEPROC", mdb, new ProcessorConfig()));
     }
 
     /**

@@ -13,6 +13,7 @@ import org.yamcs.ValidationException;
 import org.yamcs.YamcsException;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
 import org.yamcs.management.ManagementService;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MetaCommandProcessor;
 import org.yamcs.mdb.MetaCommandProcessor.CommandBuildResult;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
@@ -24,7 +25,6 @@ import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.TransmissionConstraint;
-import org.yamcs.xtce.XtceDb;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -127,7 +127,7 @@ public class CommandingManager extends AbstractService {
 
     @Override
     protected void doStart() {
-        XtceDb mdb = processor.getXtceDb();
+        Mdb mdb = processor.getMdb();
 
         Set<Parameter> paramsToSubscribe = new HashSet<>();
         for (MetaCommand mc : mdb.getMetaCommands()) {

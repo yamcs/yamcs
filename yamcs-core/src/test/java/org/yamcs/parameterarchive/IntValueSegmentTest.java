@@ -18,12 +18,15 @@ public class IntValueSegmentTest {
     public void testShortNonRandom() throws IOException, DecodingException {
         int n = 3;
         List<Value> l = new ArrayList<>(n);
+        IntValueSegment ivs = new IntValueSegment(true);
         for (int i = 0; i < n; i++) {
-            l.add(ValueUtility.getSint32Value(100000 + i));
+            Value v = ValueUtility.getSint32Value(100000 + i);
+            l.add(v);
+            ivs.add(v);
         }
-        IntValueSegment fvs = IntValueSegment.consolidate(l, true);
-        ByteBuffer bb = ByteBuffer.allocate(fvs.getMaxSerializedSize());
-        fvs.writeTo(bb);
+        ivs.consolidate();
+        ByteBuffer bb = ByteBuffer.allocate(ivs.getMaxSerializedSize());
+        ivs.writeTo(bb);
 
         assertEquals(IntValueSegment.SUBFORMAT_ID_DELTAZG_VB, bb.get(0) & 0xF);
         bb.limit(bb.position());
@@ -40,12 +43,15 @@ public class IntValueSegmentTest {
     public void testLongNonRandom() throws IOException, DecodingException {
         int n = 1000;
         List<Value> l = new ArrayList<>(n);
+        IntValueSegment ivs = new IntValueSegment(false);
         for (int i = 0; i < n; i++) {
-            l.add(ValueUtility.getUint32Value(100000 + i));
+            Value v = ValueUtility.getUint32Value(100000 + i);
+            l.add(v);
+            ivs.add(v);
         }
-        IntValueSegment fvs = IntValueSegment.consolidate(l, false);
-        ByteBuffer bb = ByteBuffer.allocate(fvs.getMaxSerializedSize());
-        fvs.writeTo(bb);
+        ivs.consolidate();
+        ByteBuffer bb = ByteBuffer.allocate(ivs.getMaxSerializedSize());
+        ivs.writeTo(bb);
         assertEquals(IntValueSegment.SUBFORMAT_ID_DELTAZG_FPF128_VB, bb.get(0) & 0xF);
 
         bb.limit(bb.position());
@@ -62,12 +68,16 @@ public class IntValueSegmentTest {
         int n = 10;
         Random rand = new Random(0);
         List<Value> l = new ArrayList<>(n);
+        IntValueSegment ivs = new IntValueSegment(false);
+        
         for (int i = 0; i < n; i++) {
-            l.add(ValueUtility.getUint32Value(rand.nextInt()));
+            Value v = ValueUtility.getUint32Value(rand.nextInt());
+            l.add(v);
+            ivs.add(v);
         }
-        IntValueSegment fvs = IntValueSegment.consolidate(l, false);
-        ByteBuffer bb = ByteBuffer.allocate(fvs.getMaxSerializedSize());
-        fvs.writeTo(bb);
+        ivs.consolidate();
+        ByteBuffer bb = ByteBuffer.allocate(ivs.getMaxSerializedSize());
+        ivs.writeTo(bb);
         assertEquals(IntValueSegment.SUBFORMAT_ID_RAW, bb.get(0) & 0xF);
 
         // assertEquals(5, bb.position());

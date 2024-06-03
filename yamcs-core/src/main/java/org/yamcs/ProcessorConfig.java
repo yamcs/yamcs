@@ -8,9 +8,6 @@ import org.yamcs.parameter.ParameterCacheConfig;
 
 /**
  * Configuration options for a processor
- * 
- * @author nm
- *
  */
 public class ProcessorConfig {
 
@@ -26,6 +23,7 @@ public class ProcessorConfig {
     private static final String CONFIG_KEY_CHECK_COMMAND_CLEARANCE = "checkCommandClearance";
     private static final String CONFIG_KEY_CHECK_PARAMETER_VALIDITY_RANGES = "checkParameterValidityRanges";
     private static final String CONFIG_KEY_SUBSCRIBE_CONTAINER_ARCHPART = "subscribeContainerArchivePartitions";
+    private static final String CONFIG_KEY_PERSIST_PARAMETERS = "persistParameters";
 
     boolean checkParameterAlarms = true;
     boolean parameterAlarmServerEnabled = false;
@@ -38,6 +36,7 @@ public class ProcessorConfig {
     boolean generateEvents = false;
     boolean checkCommandClearance = false;
     boolean checkParameterValidityRanges = true;
+    boolean persistParameters = false;
 
     // if set to true, subscribe by default to all containers that have the useAsArchivePartiton flag set
     // used to have nice statistics showing the number of each packet received for the realtime and replay processors
@@ -88,6 +87,8 @@ public class ProcessorConfig {
                     checkParameterValidityRanges = config.getBoolean(key);
                 } else if (CONFIG_KEY_SUBSCRIBE_CONTAINER_ARCHPART.equals(key)) {
                     subscribeContainerArchivePartitions = config.getBoolean(key);
+                } else if (CONFIG_KEY_PERSIST_PARAMETERS.equals(key)) {
+                    persistParameters = config.getBoolean(key);
                 } else {
                     log.warn("Ignoring unknown config key '{}'", key);
                 }
@@ -112,7 +113,7 @@ public class ProcessorConfig {
         spec.addOption(CONFIG_KEY_CHECK_COMMAND_CLEARANCE, OptionType.BOOLEAN).withDefault(false);
         spec.addOption(CONFIG_KEY_CHECK_PARAMETER_VALIDITY_RANGES, OptionType.ANY);
         spec.addOption(CONFIG_KEY_SUBSCRIBE_CONTAINER_ARCHPART, OptionType.BOOLEAN).withDefault(true);
-
+        spec.addOption(CONFIG_KEY_PERSIST_PARAMETERS, OptionType.BOOLEAN).withDefault(false);
         return spec;
     }
 
@@ -180,6 +181,10 @@ public class ProcessorConfig {
 
     public void setSubscribeContainerArchivePartitions(boolean b) {
         this.subscribeContainerArchivePartitions = b;
+    }
+
+    public boolean persistParameters() {
+        return persistParameters;
     }
 
     @Override

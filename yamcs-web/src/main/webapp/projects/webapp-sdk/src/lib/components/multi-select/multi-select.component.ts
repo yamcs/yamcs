@@ -1,32 +1,45 @@
-import { ChangeDetectionStrategy, Component, forwardRef, Input, OnChanges } from '@angular/core';
+import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { MatDivider } from '@angular/material/divider';
+import { MatIcon } from '@angular/material/icon';
+import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { BehaviorSubject } from 'rxjs';
-import { SelectOption } from '../select/select.component';
+import { YaSelectOption } from '../select/select.component';
 
 @Component({
+  standalone: true,
   selector: 'ya-multi-select',
   templateUrl: './multi-select.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => MultiSelectComponent),
-      multi: true,
-    }
-  ]
+  providers: [{
+    provide: NG_VALUE_ACCESSOR,
+    useExisting: forwardRef(() => YaMultiSelect),
+    multi: true,
+  }],
+  imports: [
+    AsyncPipe,
+    MatDivider,
+    MatIcon,
+    MatMenu,
+    MatMenuItem,
+    MatMenuTrigger,
+    NgIf,
+    NgForOf
+  ],
 })
-export class MultiSelectComponent implements OnChanges, ControlValueAccessor {
+export class YaMultiSelect implements OnChanges, ControlValueAccessor {
 
   @Input()
   emptyOption: string = '-- select an option --';
 
   @Input()
-  options: SelectOption[] = [];
+  options: YaSelectOption[] = [];
 
   @Input()
   icon: string;
 
-  options$ = new BehaviorSubject<SelectOption[]>([]);
+  options$ = new BehaviorSubject<YaSelectOption[]>([]);
   selected$ = new BehaviorSubject<string[]>([]);
 
   private onChange = (_: string[]) => { };

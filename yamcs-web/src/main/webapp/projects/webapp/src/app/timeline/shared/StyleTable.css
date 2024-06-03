@@ -1,0 +1,13 @@
+.style-table .property {
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  line-height: 12px;
+  color: black;
+  width: 150px;
+}
+
+.style-table .disabled .property {
+  font-style: italic;
+  color: grey;
+}

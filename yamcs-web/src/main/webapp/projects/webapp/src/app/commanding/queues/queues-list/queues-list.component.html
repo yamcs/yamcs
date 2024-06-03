@@ -1,0 +1,216 @@
+<app-instance-page>
+  <app-instance-toolbar>
+    Queues
+    <ya-help>
+      <p>
+        A queue is a temporary holding location for issued commands that are waiting to enter the next stage of
+        processing.
+      </p>
+      <p>
+        Queues are an ordered list. Issued commands are offered to the first matching queue.
+      </p>
+      <p>
+        A queue can perform these actions:
+      </p>
+      <table yaSimpleTable style="width: 100%">
+        <tr>
+          <th width="1">
+            ACCEPT
+          </th>
+          <td>The queue accepts and releases commands.</td>
+        </tr>
+        <tr>
+          <th>
+            HOLD
+          </th>
+          <td>The queue accepts commands but does not release them. These commands may be
+            released manually, or automatically as soon as the queue action changes to ACCEPT.</td>
+        </tr>
+        <tr>
+          <th>
+            REJECT
+          </th>
+          <td>The queue does not accept commands. Matching commands fail immediately.</td>
+        </tr>
+      </table>
+    </ya-help>
+    &nbsp;&nbsp;&nbsp;
+    <button mat-button
+            color="primary"
+            [matMenuTriggerFor]="actionMenu"
+            [disabled]="selection.isEmpty()">
+      Change action ▾
+    </button>
+    <mat-menu #actionMenu="matMenu" class="ya-menu">
+      <button mat-menu-item (click)="enableSelectedQueues()">
+        <mat-icon>check</mat-icon>
+        ACCEPT
+      </button>
+      <button mat-menu-item (click)="blockSelectedQueues()">
+        <mat-icon>pause</mat-icon>
+        HOLD
+      </button>
+      <button mat-menu-item (click)="disableSelectedQueues()">
+        <mat-icon>close</mat-icon>
+        REJECT
+      </button>
+    </mat-menu>
+  </app-instance-toolbar>
+
+  <div class="panel-content">
+    <ng-container *ngIf="(connectionInfo$ | async)?.processor?.hasCommanding; else noCommanding">
+      <table mat-table
+             *ngIf="dataSource"
+             [dataSource]="dataSource"
+             [trackBy]="tableTrackerFn"
+             class="ya-data-table expand">
+
+        <ng-container cdkColumnDef="select">
+          <th mat-header-cell *cdkHeaderCellDef class="checkbox">
+            <input type="checkbox" (change)="$event ? masterToggle() : null"
+                   [checked]="selection.hasValue() && isAllSelected()">
+          </th>
+          <td mat-cell *cdkCellDef="let row" class="checkbox">
+            <input type="checkbox" (click)="$event.stopPropagation()"
+                   (change)="$event ? selection.toggle(row) : null"
+                   [checked]="selection.isSelected(row)">
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="order">
+          <th mat-header-cell *matHeaderCellDef>#</th>
+          <td mat-cell *matCellDef="let queue">
+            {{ queue.order }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Queue</th>
+          <td mat-cell *matCellDef="let queue">
+            {{ queue.name }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="issuer">
+          <th mat-header-cell *matHeaderCellDef>Issuer</th>
+          <td mat-cell *matCellDef="let queue">
+            <ya-label *ngFor="let group of queue.groups" icon="people">{{ group }}</ya-label>
+            <ya-label *ngFor="let user of queue.users" icon="person">{{ user }}</ya-label>
+            <ng-container *ngIf="!queue.groups && !queue.users">any</ng-container>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="level">
+          <th mat-header-cell *matHeaderCellDef>Min.&nbsp;level</th>
+          <td mat-cell *matCellDef="let queue">
+            <app-significance-level [level]="queue.minLevel" [grayscale]="true" />
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="patterns">
+          <th mat-header-cell *matHeaderCellDef>Name&nbsp;patterns</th>
+          <td mat-cell *matCellDef="let queue">
+            <ng-container *ngIf="!queue.tcPatterns">any</ng-container>
+            <ng-container *ngFor="let tcPattern of queue.tcPatterns">
+              {{ tcPattern }}<br>
+            </ng-container>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef>Action</th>
+          <td mat-cell *matCellDef="let queue">
+            <span *ngIf="queue.state === 'ENABLED'">
+              ACCEPT
+            </span>
+            <span *ngIf="queue.state === 'BLOCKED'" [style.visibility]="(visibility$ | async) ? 'visible' : 'hidden'">
+              HOLD
+            </span>
+            <span *ngIf="queue.state === 'DISABLED'">
+              REJECT
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="pending">
+          <th mat-header-cell *matHeaderCellDef>Pending</th>
+          <td mat-cell *matCellDef="let queue" style="text-align: center">
+            {{ (queue.entries?.length || 0) | number }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="expand"></th>
+          <td mat-cell *matCellDef="let queue">
+            <ya-more>
+              <button mat-menu-item
+                      (click)="enableQueue(queue)">
+                <mat-icon>check</mat-icon>
+                Accept mode
+              </button>
+              <button mat-menu-item
+                      (click)="blockQueue(queue)">
+                <mat-icon>pause</mat-icon>
+                Hold mode
+              </button>
+              <button mat-menu-item
+                      (click)="disableQueue(queue)">
+                <mat-icon>close</mat-icon>
+                Reject mode
+              </button>
+              <mat-divider />
+              <a mat-menu-item
+                 routerLink="/commanding/history"
+                 [queryParams]="{c: yamcs.context, queue: queue.name}">
+                View command history
+              </a>
+            </ya-more>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+            (click)="toggleOne(row)"
+            [class.selected]="selection.isSelected(row)"></tr>
+      </table>
+
+      <p>&nbsp;</p>
+      <nav mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
+        <a mat-tab-link
+           routerLink="/commanding/queues/pending"
+           routerLinkActive #rla="routerLinkActive"
+           [active]="rla.isActive"
+           [queryParams]="{c: yamcs.context}">
+          Pending
+        </a>
+        <a mat-tab-link
+           routerLink="/commanding/queues/log"
+           routerLinkActive #rlb="routerLinkActive"
+           [active]="rlb.isActive"
+           [queryParams]="{c: yamcs.context}">
+          Action log
+        </a>
+      </nav>
+
+      <div style="margin-top: 16px">
+        <mat-tab-nav-panel #tabPanel>
+          <router-outlet />
+        </mat-tab-nav-panel>
+      </div>
+    </ng-container>
+
+    <ng-template #noCommanding>
+      <ya-empty-message headerTitle="Queues" *ngIf="connectionInfo$ | async as connectionInfo">
+        <p>
+          You are connected to the
+          <ng-container *ngIf="connectionInfo.processor?.replay">replay</ng-container>
+          processor <strong>{{ connectionInfo.processor?.name }}</strong>.
+        </p>
+        <p>
+          This processor does not support commanding.
+        </p>
+      </ya-empty-message>
+    </ng-template>
+  </div>
+
+</app-instance-page>

@@ -62,7 +62,7 @@ public class TcpTmTcLink extends AbstractExecutionThreadService {
                 continue;
             }
             try {
-                byte[] p = queue.poll(1, TimeUnit.SECONDS);
+                byte[] p = queue.poll(250, TimeUnit.MILLISECONDS);
 
                 if (p != null) {
                     socket.getOutputStream().write(p);
@@ -74,7 +74,7 @@ public class TcpTmTcLink extends AbstractExecutionThreadService {
             }
 
             try {
-                if (socket.getInputStream().available() > 0) {
+                while (socket.getInputStream().available() > 0) {
                     SimulatorCcsdsPacket tc = readPacket(inputStream);
                     if (tc != null) {
                         simulator.processTc(tc);

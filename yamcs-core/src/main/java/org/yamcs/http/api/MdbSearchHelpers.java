@@ -47,10 +47,22 @@ public class MdbSearchHelpers {
 
         private SearchTerm(String term) {
             this.term = term.toLowerCase();
-            try {
-                this.searchPath = AggregateUtil.parseReference(this.term);
-            } catch (IllegalArgumentException e) {
-                // Ignore
+
+            var aggSep = AggregateUtil.findSeparator(this.term);
+            if (aggSep >= 0) {
+                var pname = this.term.substring(0, aggSep);
+                try {
+                    var memberSegments = AggregateUtil.parseReference(this.term.substring(aggSep));
+                    this.searchPath = new PathElement[1 + memberSegments.length];
+                    this.searchPath[0] = new PathElement(pname, null);
+                    for (int i = 0; i < memberSegments.length; i++) {
+                        this.searchPath[i + 1] = memberSegments[i];
+                    }
+                } catch (IllegalArgumentException e) {
+                    // Ignore
+                }
+            } else {
+                this.searchPath = new PathElement[] { new PathElement(this.term, null) };
             }
         }
     }
@@ -143,7 +155,23 @@ public class MdbSearchHelpers {
             if (match) {
                 String result = buf.toString();
                 if (!result.contains("[-1]")) { // Ignore deeper array offsets if the term did not pin them
-                    path = AggregateUtil.parseReference(result);
+                    var aggSep = AggregateUtil.findSeparator(result);
+                    if (aggSep >= 0) {
+                        var pname = result.substring(0, aggSep);
+                        try {
+                            var memberSegments = AggregateUtil.parseReference(result.substring(aggSep));
+                            path = new PathElement[1 + memberSegments.length];
+                            path[0] = new PathElement(pname, null);
+                            for (int i = 0; i < memberSegments.length; i++) {
+                                path[i + 1] = memberSegments[i];
+                            }
+                        } catch (IllegalArgumentException e) {
+                            // Ignore
+                        }
+                    } else {
+                        path = new PathElement[] { new PathElement(result, null) };
+                    }
+
                     return true;
                 }
             }

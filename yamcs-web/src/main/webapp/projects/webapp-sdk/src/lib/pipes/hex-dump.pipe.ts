@@ -1,7 +1,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import * as utils from '../utils';
 
-@Pipe({ name: 'hexDump' })
+@Pipe({
+  standalone: true,
+  name: 'hexDump',
+})
 export class HexDumpPipe implements PipeTransform {
 
   transform(value: string | null): string | null {
