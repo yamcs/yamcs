@@ -1,5 +1,5 @@
 <app-instance-page>
-  <app-instance-toolbar> Parameters </app-instance-toolbar>
+  <app-instance-toolbar>Parameters</app-instance-toolbar>
   <span #top></span>
 
   <div class="panel-content">
@@ -47,8 +47,8 @@
             <mat-icon class="icon12" style="vertical-align: middle">folder</mat-icon>
             <a
               routerLink="/telemetry/parameters"
-              [queryParams]="{ c: yamcs.context, system: item.name }"
-              >{{ item.name | filename }}/
+              [queryParams]="{ c: yamcs.context, system: item.name }">
+              {{ item.name | filename }}/
             </a>
           }
           @if (!item.system) {
@@ -173,7 +173,9 @@
   </div>
   <ng-template #empty>
     <div class="panel-content">
-      The Mission Database for <i>{{ yamcs.instance }}</i> does not define any parameters.
+      The Mission Database for
+      <i>{{ yamcs.instance }}</i>
+      does not define any parameters.
     </div>
   </ng-template>
 </app-instance-page>

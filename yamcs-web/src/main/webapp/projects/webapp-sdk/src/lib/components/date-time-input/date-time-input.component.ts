@@ -2,7 +2,9 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, forwardR
 import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator } from '@angular/forms';
 import { MatDatepicker, MatDatepickerInput } from '@angular/material/datepicker';
 import { MatIcon } from '@angular/material/icon';
+import { formatInTimeZone } from 'date-fns-tz';
 import { provideUtcNativeDateAdapter } from '../../providers';
+import { Formatter } from '../../services/formatter.service';
 import * as utils from '../../utils';
 
 export interface FireChangeOptions {
@@ -62,6 +64,9 @@ export class YaDateTimeInput implements AfterViewInit, ControlValueAccessor, Val
 
   private onChange = (_: string | null) => { };
 
+  constructor(private formatter: Formatter) {
+  }
+
   ngAfterViewInit(): void {
     this.picker.closedStream.subscribe(() => {
       if (this.dayInputComponent.nativeElement.value) {
@@ -74,9 +79,11 @@ export class YaDateTimeInput implements AfterViewInit, ControlValueAccessor, Val
   // Called for initial values, assuming ISO strings
   writeValue(value: any) {
     if (value) {
-      const iso = value as string;
+      let iso = value as string;
+      iso = formatInTimeZone(iso, this.formatter.getTimezone(), 'yyyy-MM-dd\'T\'HH:mm:ss.SSS');
+
       this.dayInputComponent.nativeElement.value = iso.substring(0, 10);
-      this.picker.select(utils.toDate(value));
+      this.picker.select(utils.toDate(iso));
       const hours = iso.substring(11, 13);
       const minutes = iso.substring(14, 16);
       const seconds = iso.length >= 18 ? iso.substring(17, 19) : '00';

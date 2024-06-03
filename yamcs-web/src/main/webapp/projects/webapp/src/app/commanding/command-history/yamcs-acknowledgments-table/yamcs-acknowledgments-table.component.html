@@ -11,7 +11,7 @@
       <td style="width: 150px">Queued</td>
       <td style="width: 70px">{{ command.queued?.status || "-" }}</td>
       <td>
-        <span [matTooltip]="command.queued?.time">
+        <span [matTooltip]="command.queued?.time | datetime">
           {{ (command.queued?.time | deltaWith: command.generationTime) || "-" }}
         </span>
       </td>
@@ -34,7 +34,7 @@
         {{ command.released?.status || command.transmissionConstraints?.status || "-" }}
       </td>
       <td>
-        <span [matTooltip]="command.released?.time">
+        <span [matTooltip]="command.released?.time | datetime">
           {{ (command.released?.time | deltaWith: command.generationTime) || "-" }}
         </span>
       </td>
@@ -50,7 +50,7 @@
       <td>Sent</td>
       <td>{{ command.sent?.status || "-" }}</td>
       <td>
-        <span [matTooltip]="command.sent?.time">
+        <span [matTooltip]="command.sent?.time | datetime">
           {{ (command.sent?.time | deltaWith: command.generationTime) || "-" }}
         </span>
       </td>

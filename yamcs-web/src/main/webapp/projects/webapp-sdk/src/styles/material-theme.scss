@@ -103,7 +103,7 @@ $ya-theme: mat.define-theme((
   --mat-datepicker-calendar-container-background-color: #fff;
   --mat-datepicker-calendar-container-elevation-shadow: 0px 2px 4px -1px rgba(0, 0, 0, .2), 0px 4px 5px 0px rgba(0, 0, 0, .14), 0px 1px 10px 0px rgba(0, 0, 0, .12);
 
-  --mat-toolbar-container-background-color: whitesmoke;
+  --mat-toolbar-container-background-color: var(--y-background-color);
   --mat-toolbar-title-text-size: 20px;
   --mat-toolbar-title-text-tracking: .0125em;
 }

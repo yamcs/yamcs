@@ -1,5 +1,5 @@
 import { Item, ItemBand, Timeline } from '@fqqb/timeline';
-import { utils } from '@yamcs/webapp-sdk';
+import { Formatter, utils } from '@yamcs/webapp-sdk';
 import { TimelineTooltipComponent } from '../timeline-tooltip/timeline-tooltip.component';
 import { ArchiveRecordGroup } from './ArchiveRecordGroup';
 import { RGB } from './RGB';
@@ -8,8 +8,9 @@ export class IndexGroupBand extends ItemBand {
 
   private backgroundRGB: RGB;
   private foregroundRGB: RGB;
+  private formatter: Formatter;
 
-  constructor(timeline: Timeline, label: string, backgroundColor: RGB, foregroundColor: RGB) {
+  constructor(timeline: Timeline, label: string, backgroundColor: RGB, foregroundColor: RGB, formatter: Formatter) {
     super(timeline);
     this.label = label;
     this.borderWidth = 0;
@@ -23,6 +24,7 @@ export class IndexGroupBand extends ItemBand {
     this.itemBackground = this.backgroundRGB.toCssString();
     this.foregroundRGB = foregroundColor;
     this.itemTextColor = this.foregroundRGB.toCssString();
+    this.formatter = formatter;
 
     this.addItemClickListener(clickEvent => {
       const { start, stop } = clickEvent.item;
@@ -38,8 +40,8 @@ export class IndexGroupBand extends ItemBand {
     this.addItemMouseMoveListener(evt => {
       const { start, stop, data } = evt.item;
       let ttText = data.name + '\n';
-      ttText += `Start: ${utils.printDateTime(new Date(start), true)}\n`;
-      ttText += `Stop : ${utils.printDateTime(new Date(stop!), true)}\n`;
+      ttText += `Start: ${this.formatter.formatDateTime(start, true)}\n`;
+      ttText += `Stop : ${this.formatter.formatDateTime(stop!, true)}\n`;
       if (data.count >= 0) {
         const sec = (stop! - start) / 1000;
         ttText += `Count: ${data.count}`;

@@ -19,7 +19,7 @@
             <span>-</span>
           }
           @default {
-            <span [matTooltip]="ack.time">
+            <span [matTooltip]="ack.time | datetime">
               {{ ack.time | deltaWith: command.generationTime }}
             </span>
           }

@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import * as utils from '../utils';
+import { Formatter } from '../services/formatter.service';
 
 @Pipe({
   standalone: true,
@@ -7,10 +7,13 @@ import * as utils from '../utils';
 })
 export class HexDumpPipe implements PipeTransform {
 
+  constructor(private formatter: Formatter) {
+  }
+
   transform(value: string | null): string | null {
     if (!value) {
       return null;
     }
-    return utils.printHexDump(value);
+    return this.formatter.formatHexDump(value);
   }
 }
