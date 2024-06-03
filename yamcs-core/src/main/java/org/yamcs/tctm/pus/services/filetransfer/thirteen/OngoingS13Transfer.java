@@ -28,10 +28,10 @@ import org.yamcs.security.User;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.FileTransferPacket;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.packets.UplinkS13Packet;
 import org.yamcs.xtce.MetaCommand;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
+import org.yamcs.mdb.Mdb;
 
 
 public abstract class OngoingS13Transfer implements S13FileTransfer {
@@ -119,7 +119,7 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
     public PreparedCommand createS13Telecommand(String fullyQualifiedCmdName, Map<String, Object> assignments, User user) throws BadRequestException, 
             InternalServerErrorException {
         Processor processor = ServiceThirteen.getProcessor();
-        MetaCommand cmd = processor.getXtceDb().getMetaCommand(fullyQualifiedCmdName);
+        MetaCommand cmd = processor.getMdb().getMetaCommand(fullyQualifiedCmdName);
 
         PreparedCommand pc = null;
         try {
@@ -163,7 +163,7 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
         
                     @Override
                     public void onTuple(Stream stream, Tuple tuple) {
-                        XtceDb xtcedb = MdbFactory.getInstance(yamcsInstance);
+                        Mdb xtcedb = MdbFactory.getInstance(yamcsInstance);
                         PreparedCommand pc1 = PreparedCommand.fromTuple(tuple, xtcedb);
 
                         synchronized (commandDispatcher) {
@@ -345,6 +345,16 @@ public abstract class OngoingS13Transfer implements S13FileTransfer {
 
     public long getCreationTime() {
         return creationTime;
+    }
+
+    @Override
+    public long getInitiatorEntityId() {
+        return s13TransactionId.getLargePacketTransactionId();
+    }
+
+    @Override
+    public long getDestinationId() {
+        return s13TransactionId.getLargePacketTransactionId();
     }
 
 }

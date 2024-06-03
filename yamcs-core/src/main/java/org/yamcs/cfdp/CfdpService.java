@@ -673,10 +673,10 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
             return null;
         }
 
-        EntityConf remoteEntity = getRemoteEntity(txId.getInitiatorEntityId());
+        EntityConf remoteEntity = getRemoteEntity(txId.getInitiatorEntity());
         if (remoteEntity == null) {
             eventProducer.sendWarning(ETYPE_UNEXPECTED_CFDP_PDU,
-                    "Received a transaction start for an unknown remote entity Id " + txId.getInitiatorEntityId());
+                    "Received a transaction start for an unknown remote entity Id " + txId.getInitiatorEntity());
             return null;
         }
 

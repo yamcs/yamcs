@@ -1,6 +1,7 @@
 package org.yamcs.tctm.pus.services.filetransfer.thirteen;
 
 import org.yamcs.filetransfer.FileTransfer;
+import org.yamcs.protobuf.TransferDirection;
 
 public interface S13FileTransfer extends FileTransfer {
     enum PredefinedTransferTypes {
@@ -25,4 +26,26 @@ public interface S13FileTransfer extends FileTransfer {
     long getRemoteId();
 
     String getOrigin();
+
+    long getInitiatorEntityId();
+
+    long getDestinationId();
+
+    @Override
+    default Long getLocalEntityId() {
+        if (getDirection() == TransferDirection.UPLOAD) {
+            return getInitiatorEntityId();
+        } else {
+            return getDestinationId();
+        }
+    }
+
+    @Override
+    default Long getRemoteEntityId() {
+        if (getDirection() == TransferDirection.UPLOAD) {
+            return getDestinationId();
+        } else {
+            return getInitiatorEntityId();
+        }
+    }
 }

@@ -31,10 +31,10 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.filetransfer.AbstractFileTransferService;
 import org.yamcs.filetransfer.FileDownloadRequests;
 import org.yamcs.filetransfer.FileSaveHandler;
 import org.yamcs.filetransfer.FileTransfer;
-import org.yamcs.filetransfer.FileTransferService;
 import org.yamcs.filetransfer.InvalidRequestException;
 import org.yamcs.filetransfer.RemoteFileListMonitor;
 import org.yamcs.filetransfer.TransferMonitor;
@@ -66,8 +66,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 
 
-public class ServiceThirteen extends AbstractYamcsService
-        implements FileTransferService, StreamSubscriber, TransferMonitor {
+public class ServiceThirteen extends AbstractFileTransferService implements StreamSubscriber, TransferMonitor {
     static final String ETYPE_UNEXPECTED_S13_PACKET = "UNEXPECTED_S13_PACKET";
     static final String ETYPE_TRANSFER_STARTED = "TRANSFER_STARTED";
     static final String ETYPE_TRANSFER_FINISHED = "TRANSFER_FINISHED";
@@ -611,32 +610,18 @@ public class ServiceThirteen extends AbstractYamcsService
 
     @Override
     public List<FileTransferOption> getFileTransferOptions() {
-        var options = new ArrayList<FileTransferOption>();
-        options.add(FileTransferOption.newBuilder()
-                .setName("reliable")
-                .setType(FileTransferOption.Type.BOOLEAN)
-                .setTitle("Reliability")
-                .setDescription("Acknowledged or unacknowledged transmission mode")
-                .setAssociatedText("Reliable")
-                .setDefault("false")
-                .build());
-
-        return options;
+        return new ArrayList<FileTransferOption>();
     }
 
     @Override
-    public FileTransferCapabilities getCapabilities() {
-        return FileTransferCapabilities
-                .newBuilder()
-                .setDownload(false)
+    protected void addCapabilities(FileTransferCapabilities.Builder builder) {
+        builder.setDownload(false)
                 .setUpload(true)
-                .setReliability(false) // Reliability DEPRECATED: use FileTransferOption
-                .setRemotePath(false)
+                .setRemotePath(true)
                 .setFileList(false)
-                .setHasTransferType(false)
-                .build();
+                .setHasTransferType(true);
     }
-    
+
     private String getAbsoluteDestinationPath(String destinationPath, String localObjectName) {
         if (localObjectName == null) {
             throw new NullPointerException("local object name cannot be null");

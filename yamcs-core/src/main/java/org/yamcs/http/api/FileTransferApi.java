@@ -415,7 +415,7 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
     }
 
     private static TransactionId toTransactionId(FileTransferId id) {
-        return TransactionId.newBuilder().setInitiatorEntity(id.getInitiatorEntityId())
+        return TransactionId.newBuilder().setInitiatorEntity(id.getInitiatorEntity())
                 .setSequenceNumber((int) id.getTransferId()).build();
     }
 

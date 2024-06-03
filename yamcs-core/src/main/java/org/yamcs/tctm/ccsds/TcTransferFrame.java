@@ -126,10 +126,6 @@ public class TcTransferFrame {
         this.dataEnd = end;
     }
 
-    public int getDataEnd() {
-        return dataEnd;
-    }
-
     public int getVirtualChannelId() {
         return virtualChannelId;
     }

@@ -201,6 +201,16 @@ public class CompletedTransfer implements S13FileTransfer {
     }
 
     @Override
+    public long getInitiatorEntityId() {
+        return tuple.getLongColumn(COL_LARGE_PACKET_TRANSACTION_ID);
+    }
+
+    @Override
+    public long getDestinationId() {
+        return tuple.getLongColumn(COL_LARGE_PACKET_TRANSACTION_ID);
+    }
+
+    @Override
     public String toString() {
         return tuple.toString();
     }

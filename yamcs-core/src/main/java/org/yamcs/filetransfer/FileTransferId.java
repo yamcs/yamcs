@@ -9,7 +9,7 @@ public abstract class FileTransferId {
         this.transferId = transferId;
     }
 
-    public long getInitiatorEntityId() {
+    public long getInitiatorEntity() {
         return initiatorEntityId;
     }
 

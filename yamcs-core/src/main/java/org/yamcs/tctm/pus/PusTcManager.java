@@ -32,7 +32,6 @@ import org.yamcs.tctm.pus.services.tc.fourteen.ServiceFourteen;
 import org.yamcs.tctm.pus.services.tc.six.ServiceSix;
 import org.yamcs.tctm.pus.services.tc.two.ServiceTwo;
 import org.yamcs.time.TimeService;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -45,6 +44,7 @@ import org.yamcs.tctm.pus.services.tc.seventeen.ServiceSeventeen;
 import org.yamcs.tctm.pus.services.tc.thirteen.ServiceThirteen;
 import org.yamcs.tctm.pus.services.tc.three.ServiceThree;
 import org.yamcs.tctm.pus.services.tc.twenty.ServiceTwenty;
+import org.yamcs.mdb.Mdb;
 
 
 public class PusTcManager extends AbstractYamcsService implements StreamSubscriber  {
@@ -74,7 +74,7 @@ public class PusTcManager extends AbstractYamcsService implements StreamSubscrib
     HashMap<Stream, Stream> streamMatrix = new HashMap<>();
     YarchDatabaseInstance ydb;
     PusSink tcSink;
-    XtceDb xtcedb;
+    Mdb xtcedb;
     TimeService timeService;
     static TimetagResolution timetagResolution;
 

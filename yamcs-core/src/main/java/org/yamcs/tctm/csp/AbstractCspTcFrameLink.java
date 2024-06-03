@@ -176,7 +176,7 @@ public abstract class AbstractCspTcFrameLink extends AbstractTcDataLink implemen
         int offset = cspManagedParameters.getCspHeader().length;
         System.arraycopy(pcBinary, 0, cspFrame, offset, length);
 
-        dataCount.getAndAdd(1);
+        dataOut(1, cspFrame.length);
         return frameFactory.encodeFrame(cspFrame);
     }
 
