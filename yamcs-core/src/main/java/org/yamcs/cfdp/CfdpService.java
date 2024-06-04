@@ -123,7 +123,7 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
     FileDownloadRequests fileDownloadRequests = new FileDownloadRequests();
     Map<CfdpTransactionId, List<String>> directoryListingRequests = new ConcurrentHashMap<>();
 
-    ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+    ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(6);
     Map<ConditionCode, FaultHandlingAction> receiverFaultHandlers;
     Map<ConditionCode, FaultHandlingAction> senderFaultHandlers;
     Stream cfdpIn;
