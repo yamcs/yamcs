@@ -220,18 +220,40 @@ export class CommandFormComponent implements OnChanges {
     return this.form.value['comment'] || undefined;
   }
 
-  getExtraOptions() {
+  getExtraOptions(struct = false) {
     const extra: { [key: string]: Value; } = {};
     for (const id in this.form.controls) {
       if (id.startsWith('extra__')) {
         const control = this.form.controls[id];
         if (control.value !== null) {
           const optionId = id.replace('extra__', '');
-          extra[optionId] = this.toYamcsValue(optionId, control.value);
+
+          if (struct) {
+            extra[optionId] = this.toStructValue(optionId, control.value);
+          } else {
+            extra[optionId] = this.toYamcsValue(optionId, control.value);
+          }
         }
       }
     }
     return extra;
+  }
+
+  private toStructValue(optionId: string, controlValue: any): any {
+    let option: CommandOption;
+    for (const candidate of this.commandOptions) {
+      if (candidate.id === optionId) {
+        option = candidate;
+      }
+    }
+    switch (option!.type) {
+      case "BOOLEAN":
+        return controlValue === 'true';
+      case "NUMBER":
+        return Number(controlValue);
+      default:
+        return String(controlValue);
+    }
   }
 
   private toYamcsValue(optionId: string, controlValue: any): Value {
