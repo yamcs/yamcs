@@ -106,11 +106,17 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
             public void emitTmTuple(TmPacket tmPacket, Stream stream, String tmLinkName) {
                 Long obt = tmPacket.getObt() == Long.MIN_VALUE ? null : tmPacket.getObt();
 
-                Tuple t = new Tuple(StandardTupleDefinitions.TM,
-                    new Object[] {
-                        tmPacket.getGenerationTime(), tmPacket.getSeqCount(), tmPacket.getReceptionTime(), tmPacket.getStatus(), tmPacket.getPacket(), tmPacket.getEarthReceptionTime(), obt, tmLinkName
-                    }
-                );
+                Tuple t = new Tuple(StandardTupleDefinitions.TM, new Object[] {
+                    tmPacket.getGenerationTime(),
+                    tmPacket.getSeqCount(),
+                    tmPacket.getReceptionTime(),
+                    tmPacket.getStatus(),
+                    tmPacket.getPacket(),
+                    tmPacket.getEarthReceptionTime(),
+                    obt,
+                    tmLinkName,
+                    null
+                });
                 stream.emitTuple(t);
             }
             @Override
