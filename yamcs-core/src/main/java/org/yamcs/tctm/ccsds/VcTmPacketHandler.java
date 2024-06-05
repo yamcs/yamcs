@@ -12,6 +12,7 @@ import org.yamcs.tctm.PacketPreprocessor;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.TmPacketDataLink;
 import org.yamcs.tctm.TmSink;
+import org.yamcs.tctm.ccsds.VcDownlinkManagedParameters.TMDecoder;
 import org.yamcs.time.Instant;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.StringConverter;
@@ -33,6 +34,7 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
     private final Log log;
     PacketDecoder packetDecoder;
     PixxelPacketDecoder pPacketDecoder;
+    PixxelPacketMultipleDecoder pMultipleDecoder;
     long idleFrameCount = 0;
     PacketPreprocessor packetPreprocessor;
     final String name;
@@ -53,6 +55,7 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
 
         // Temporary Packet Decoder
         pPacketDecoder = new PixxelPacketDecoder(vmp.maxPacketLength, p -> handlePacket(p));
+        pMultipleDecoder = new PixxelPacketMultipleDecoder(vmp.maxPacketLength, p -> handlePacket(p));
 
         packetDecoder = new PacketDecoder(vmp.maxPacketLength, p -> handlePacket(p));
         packetDecoder.stripEncapsulationHeader(vmp.stripEncapsulationHeader);
@@ -97,7 +100,7 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
         int dataEnd = frame.getDataEnd();
         byte[] data = frame.getData();
 
-        if (!vmp.usePixxelDecoder) {
+        if (vmp.tmDecoder == TMDecoder.CCSDS) {     // Multiple packets from frame | With Segmentation
             try {
                 int frameLoss = frame.lostFramesCount(lastFrameSeq);
                 lastFrameSeq = frame.getVcFrameSeq();
@@ -127,8 +130,8 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
                 eventProducer.sendWarning(e.toString());
             }
 
-        } else {
-            try {
+        } else if (vmp.tmDecoder == TMDecoder.SINGLE) {     // Single packet per frame | No Segmentation
+            try {   
                 int frameLoss = frame.lostFramesCount(lastFrameSeq);
                 lastFrameSeq = frame.getVcFrameSeq();
 
@@ -145,6 +148,31 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
                 eventProducer.sendWarning(e.toString());
             } catch (ArrayIndexOutOfBoundsException e) {
                 pPacketDecoder.reset();
+                log.warn(e.toString() + "\n"
+                        + "     Full Frame: " + StringConverter.arrayToHexString(data, true) + "\n"
+                        + "     Packet Start: " + packetStart + "\n"
+                        + "     Data (i.e Frame) End: " + dataEnd + "\n"
+                );
+                eventProducer.sendWarning(e.toString());
+            }
+        } else {    // Multiple packets per frame | No segmentation
+            try {
+                int frameLoss = frame.lostFramesCount(lastFrameSeq);
+                lastFrameSeq = frame.getVcFrameSeq();
+
+                if (frameLoss != 0) {
+                    log.warn("Frame has been dropped, sigh");
+                }
+
+                if (packetStart != -1) {
+                    pMultipleDecoder.process(data, packetStart, dataEnd - packetStart);
+                    pMultipleDecoder.reset();
+                }   
+            } catch (TcTmException e) {
+                pMultipleDecoder.reset();
+                eventProducer.sendWarning(e.toString());
+            } catch (ArrayIndexOutOfBoundsException e) {
+                pMultipleDecoder.reset();
                 log.warn(e.toString() + "\n"
                         + "     Full Frame: " + StringConverter.arrayToHexString(data, true) + "\n"
                         + "     Packet Start: " + packetStart + "\n"

@@ -9,10 +9,16 @@ import org.yamcs.YConfiguration;
  *
  */
 public class VcDownlinkManagedParameters {
+    protected enum TMDecoder {
+        CCSDS,
+        SINGLE,
+        MULTIPLE;
+    }
+
     protected int vcId;
     //if set to true, the encapsulation packets sent to the preprocessor will be without the encapsulation header(CCSDS 133.1-B-2)
     boolean stripEncapsulationHeader;
-    boolean usePixxelDecoder;
+    TMDecoder tmDecoder;
 
     // if service = M_PDU
     int maxPacketLength;
@@ -24,13 +30,13 @@ public class VcDownlinkManagedParameters {
     public VcDownlinkManagedParameters(int vcId) {
         this.vcId = vcId;
         this.config = null;
-        usePixxelDecoder = false;
+        tmDecoder = TMDecoder.CCSDS;
     }
     
     public VcDownlinkManagedParameters(YConfiguration config) {
         this.config = config;
         this.vcId = config.getInt("vcId");
-        usePixxelDecoder = config.getBoolean("usePixxelDecoder", false);
+        tmDecoder = config.getEnum("tmDecoder", TMDecoder.class, TMDecoder.MULTIPLE);
     }
     
     
