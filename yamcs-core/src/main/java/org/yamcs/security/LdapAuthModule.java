@@ -273,7 +273,14 @@ public class LdapAuthModule implements AuthModule {
     }
 
     private void bindUser(String dn, char[] password) throws AuthenticationException {
-        Hashtable<String, String> env = new Hashtable<>();
+        // Never bind with empty password, because on many LDAP servers
+        // this would make a successful "unauthenticated" simple bind.
+        // https://datatracker.ietf.org/doc/html/rfc4513#section-5.1.2
+        if (password.length == 0) {
+            throw new AuthenticationException("Invalid password (empty)");
+        }
+
+        var env = new Hashtable<String, String>();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
         env.put(Context.PROVIDER_URL, providerUrl);
         env.put("com.sun.jndi.ldap.connect.pool", "true");
