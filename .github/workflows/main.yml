@@ -16,11 +16,11 @@ jobs:
         experimental: [false]
         include:
           - platform: macos-latest
-            java: "11"
+            java: "17"
             mvn_opts: "-Dsurefire.useFile=false"
             experimental: true
           - platform: windows-latest
-            java: "11"
+            java: "17"
             mvn_opts: '"-Dsurefire.useFile=false"'
             experimental: true
     steps:
