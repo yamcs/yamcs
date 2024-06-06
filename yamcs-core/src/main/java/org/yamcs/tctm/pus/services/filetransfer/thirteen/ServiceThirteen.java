@@ -122,8 +122,8 @@ public class ServiceThirteen extends AbstractFileTransferService implements Stre
 
     private final Set<TransferMonitor> transferListeners = new CopyOnWriteArraySet<>();
     
-    protected static Map<String, EntityConf> localEntities = new LinkedHashMap<>();
-    protected static Map<String, EntityConf> remoteEntities = new LinkedHashMap<>();
+    protected Map<String, EntityConf> localEntities = new LinkedHashMap<>();
+    protected Map<String, EntityConf> remoteEntities = new LinkedHashMap<>();
 
     private int maxExistingFileRenames;
 
