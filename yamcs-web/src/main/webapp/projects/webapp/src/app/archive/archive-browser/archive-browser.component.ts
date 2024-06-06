@@ -444,10 +444,10 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
   refreshData() {
     // Load beyond the edges (for pan purposes)
     const viewportRange = this.timeline.stop - this.timeline.start;
-    const start = new Date(this.timeline.start - viewportRange).toISOString();
-    const stop = new Date(this.timeline.stop + viewportRange).toISOString();
+    const start = utils.clampDate(this.timeline.start - viewportRange).toISOString();
+    const stop = utils.clampDate(this.timeline.stop + viewportRange).toISOString();
 
-    const mergeTime = Math.floor(viewportRange / 1000);
+    const mergeTime = Math.min(Math.floor(viewportRange / 1000), 0x7FFFFFFF);
 
     let completenessPromise: Promise<ArchiveRecordGroup[]> = Promise.resolve([]);
     if (this.filterForm.value['completeness']) {

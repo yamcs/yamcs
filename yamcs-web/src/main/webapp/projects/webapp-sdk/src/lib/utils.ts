@@ -1,6 +1,29 @@
 import { Instance, Parameter, ParameterMember, ParameterType, UnitInfo, Value } from './client';
 
 /**
+ * Minimum valid date for a proto Timestamp
+ */
+export const MIN_DATE = new Date("0001-01-01T00:00:00Z");
+
+/**
+ * Maximum valid date for a proto Timestamp
+ */
+export const MAX_DATE = new Date("9999-12-31T23:59:59.999999999Z");
+
+/**
+ * Return a new date, clamped to the range {@link MIN_DATE} - {@link MAX_DATE}
+ */
+export function clampDate(date: Date | number | string): Date {
+  const copy = new Date(date);
+  if (copy.getTime() < MIN_DATE.getTime()) {
+    copy.setTime(MIN_DATE.getTime());
+  } else if (copy.getTime() > MAX_DATE.getTime()) {
+    copy.setTime(MAX_DATE.getTime());
+  }
+  return copy;
+}
+
+/**
  * Deep clones an object.
  * https://github.com/whatwg/html/issues/793
  */
