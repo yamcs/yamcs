@@ -95,9 +95,11 @@ public class ParameterValueSegment {
     public void insertGap(int pos) {
         if (gaps == null) {
             gaps = new SortedIntArray();
+        } else {
+            // the position of all the indices following the pos have to increase by 1
+            gaps.addIfGreaterOrEqualThan(pos, 1);
         }
         gaps.insert(pos);
-        gaps.addIfGreaterThan(pos, 1);
     }
 
     public void insert(int pos, BasicParameterValue pv) {
@@ -123,6 +125,7 @@ public class ParameterValueSegment {
                 int pos1;
 
                 var idx = gaps.search(pos);
+
                 if (idx < 0) {
                     pos1 = pos + idx + 1;
                 } else {
@@ -135,7 +138,7 @@ public class ParameterValueSegment {
                 if (rawValueSegment != null) {
                     rawValueSegment.insert(pos1, pv.getRawValue());
                 }
-                gaps.addIfGreaterThan(pos, 1);
+                gaps.addIfGreaterOrEqualThan(pos, 1);
             }
         }
     }
