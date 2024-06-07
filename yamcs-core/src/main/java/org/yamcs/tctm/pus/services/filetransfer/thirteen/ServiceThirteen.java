@@ -426,18 +426,9 @@ public class ServiceThirteen extends AbstractFileTransferService implements Stre
         stateChanged(transfer);
         pendingTransfers.put(transfer.getTransactionId().getUniquenessId(), transfer);
 
-        if(request.getFileLength() > 0) {
-            eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
-                    "Starting new S13 upload TXID[" + transfer.getTransactionId() + "] " + transfer.getObjectName()
-                            + " -> " + transfer.getRemotePath());
-        } else {
-            String remoteEntityName = getEntityFromId(largePacketTransactionId, remoteEntities).getName();
-            eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
-                    "Starting new S13 upload TXID[" + transfer.getTransactionId() + "] \n"
-                            + "Fileless transfer: \n"
-                            + "     Remote Source Entity Line: " + remoteEntityName + "\n"
-                            + "     Large Packet Transaction ID: " + largePacketTransactionId + "\n");
-        }
+        eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
+            "Starting new S13 upload TXID[" + transfer.getTransactionId() + "] " + transfer.getObjectName()
+                    + " -> " + transfer.getRemotePath());
 
         transfer.start();
         return transfer;

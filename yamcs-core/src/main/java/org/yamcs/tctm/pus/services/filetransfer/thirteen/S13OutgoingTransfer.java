@@ -225,16 +225,8 @@ public class S13OutgoingTransfer extends OngoingS13Transfer{
         outTxState = OutTxState.COMPLETED;
         long duration = (System.currentTimeMillis() - wallclockStartTime) / 1000;
 
-        String eventMessageSuffix;
-        if (request.getFileLength() > 0) {
-            eventMessageSuffix = request.getSourceFileName() + " -> " + request.getDestinationFileName();
+        String eventMessageSuffix = request.getSourceFileName() + " -> " + request.getDestinationFileName();
 
-        } else {
-            String remoteEntityName = ServiceThirteen.getEntityFromId(s13TransactionId.getLargePacketTransactionId(), ServiceThirteen.remoteEntities).getName();
-            eventMessageSuffix = "Fileless transfer: \n" 
-                                    + "     Large Packet Transaction ID: " + s13TransactionId.getLargePacketTransactionId() + "\n"
-                                    + "     Remote Source entity name: " + remoteEntityName + "\n";
-        }
         if (conditionCode == ConditionCode.NO_ERROR) {
             changeState(TransferState.COMPLETED);
             sendInfoEvent(ETYPE_TRANSFER_FINISHED,
