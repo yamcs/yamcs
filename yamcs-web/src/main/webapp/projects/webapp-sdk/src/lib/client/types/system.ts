@@ -352,6 +352,8 @@ export type ReplicationInfoSubscription = WebSocketCall<void, ReplicationInfo>;
 
 export type SystemInfoSubscription = WebSocketCall<void, SystemInfo>;
 
+export type HttpTrafficSubscription = WebSocketCall<void, HttpTraffic>;
+
 export interface Service {
   instance: string;
   name: string;

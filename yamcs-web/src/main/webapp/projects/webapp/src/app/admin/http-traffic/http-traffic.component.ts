@@ -3,8 +3,8 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
-import { ClientConnectionInfo, HttpTraffic, Synchronizer, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { ClientConnectionInfo, HttpTraffic, HttpTrafficSubscription, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { BehaviorSubject } from 'rxjs';
 import { AdminPageTemplateComponent } from '../shared/admin-page-template/admin-page-template.component';
 import { AdminToolbarComponent } from '../shared/admin-toolbar/admin-toolbar.component';
 import { UserAgentPipe } from './user-agent.pipe';
@@ -46,17 +46,17 @@ export class HttpTrafficComponent implements AfterViewInit, OnDestroy {
   traffic$ = new BehaviorSubject<HttpTraffic | null>(null);
   dataSource = new MatTableDataSource<ClientConnectionInfo>();
 
-  private syncSubscription: Subscription;
+  private httpTrafficSubscription: HttpTrafficSubscription;
 
   constructor(
-    private yamcs: YamcsService,
+    yamcs: YamcsService,
     title: Title,
-    synchronizer: Synchronizer,
   ) {
     title.setTitle('HTTP traffic');
-
-    this.refresh();
-    this.syncSubscription = synchronizer.syncSlow(() => this.refresh());
+    this.httpTrafficSubscription = yamcs.yamcsClient.createHttpTrafficSubscription(traffic => {
+      this.traffic$.next(traffic);
+      this.dataSource.data = traffic.connections;
+    });
   }
 
   ngAfterViewInit() {
@@ -64,14 +64,7 @@ export class HttpTrafficComponent implements AfterViewInit, OnDestroy {
     this.dataSource.paginator = this.paginator;
   }
 
-  private refresh() {
-    this.yamcs.yamcsClient.getHttpTraffic().then(traffic => {
-      this.traffic$.next(traffic);
-      this.dataSource.data = traffic.connections || [];
-    });
-  }
-
   ngOnDestroy() {
-    this.syncSubscription?.unsubscribe();
+    this.httpTrafficSubscription?.cancel();
   }
 }
