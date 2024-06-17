@@ -1,6 +1,5 @@
 instances:
   - instance1
-  - instance2
 
 services:
   - class: org.yamcs.http.HttpServer

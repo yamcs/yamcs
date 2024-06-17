@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>5.9.9-SNAPSHOT</version>
+    <version>5.10.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>yamcs-core</artifactId>
@@ -78,8 +78,8 @@
       <artifactId>nashorn-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.rocksdb</groupId>
-      <artifactId>rocksdbjni</artifactId>
+      <groupId>org.yamcs</groupId>
+      <artifactId>yamcs-rocksdb</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

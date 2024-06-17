@@ -101,6 +101,6 @@ public class InstancesIntegrationTest extends AbstractIntegrationTest {
         lir = yamcsClient.listInstances(filter).get();
         assertEquals(2, lir.getInstancesCount());
         yi = lir.getInstances(0);
-        assertEquals("IntegrationTest", yi.getName());
+        assertEquals("instance1", yi.getName());
     }
 }

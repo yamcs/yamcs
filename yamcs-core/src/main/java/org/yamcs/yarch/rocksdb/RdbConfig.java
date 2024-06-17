@@ -16,6 +16,7 @@ import org.rocksdb.CompressionType;
 import org.rocksdb.DBOptions;
 import org.rocksdb.IndexType;
 import org.rocksdb.LRUCache;
+import org.rocksdb.YamcsParchiveMergeOperator;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.archive.XtceTmRecorder;
@@ -37,7 +38,6 @@ public class RdbConfig {
     public static final String KEY_TABLESPACE_NAME_PATTERN = "tablespaceNamePattern";
     public static final String KEY_CF_PATTERN = "columnFamilyPattern";
     public static final String KEY_TF_CONFIG = "tableFormatConfig";
-
 
     public static final int DEFAULT_MAX_OPEN_FILES = 10000;
 
@@ -129,8 +129,10 @@ public class RdbConfig {
             }
 
             metadataDbCfOptions.optimizeForSmallDb();
+            metadataDbCfOptions.setCompressionType(CompressionType.LZ4_COMPRESSION);
 
             defaultCfOptions.useFixedLengthPrefixExtractor(4);
+            defaultCfOptions.setCompressionType(CompressionType.LZ4_COMPRESSION);
 
             rtDataCfOptions.useFixedLengthPrefixExtractor(4);
             rtDataCfOptions.setCompressionType(CompressionType.LZ4_COMPRESSION);
@@ -147,6 +149,7 @@ public class RdbConfig {
             parchiveCfOptions.setLevel0FileNumCompactionTrigger(20);
             parchiveCfOptions.setLevel0SlowdownWritesTrigger(50);
             parchiveCfOptions.setLevel0StopWritesTrigger(100);
+            parchiveCfOptions.setMergeOperator(new YamcsParchiveMergeOperator());
 
             tableFormatConfig = new BlockBasedTableConfig();
             tableFormatConfig.setBlockSize(256l * 1024);
@@ -165,6 +168,8 @@ public class RdbConfig {
             cfConfigList.add(new CfConfig(lruCache, Pattern.compile(ParameterArchive.CF_NAME), parchiveCfOptions));
             cfConfigList.add(new CfConfig(lruCache, Pattern.compile(XtceTmRecorder.CF_NAME), rtDataCfOptions));
             cfConfigList.add(new CfConfig(lruCache, Pattern.compile(Tablespace.CF_METADATA), metadataDbCfOptions));
+            cfConfigList.add(new CfConfig(lruCache, Pattern.compile(YRDB.DEFAULT_CF), defaultCfOptions));
+
         }
 
         TablespaceConfig(YConfiguration tblspConfig) throws ConfigurationException {

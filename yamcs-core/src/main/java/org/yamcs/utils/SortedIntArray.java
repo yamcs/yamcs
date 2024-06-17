@@ -165,7 +165,7 @@ public class SortedIntArray implements Serializable {
     }
 
     public boolean isEmpty() {
-        return a.length == 0;
+        return length == 0;
     }
 
     public int[] getArray() {

@@ -32,7 +32,7 @@ public class ParameterValueSegment {
 
     // engValueSegment should not be null during buildup but maybe null during retrieval (if the retrieving of
     // engineering values is skipped)
-    private ValueSegment engValueSegment;
+    ValueSegment engValueSegment;
     private ValueSegment rawValueSegment;
     private ParameterStatusSegment parameterStatusSegment;
 
@@ -231,7 +231,6 @@ public class ParameterValueSegment {
             return null;
         }
         ValueArray engValues = null;
-
         if (engValueSegment != null) {
             engValues = engValueSegment.getRange(posStart, posStop, ascending);
         }
@@ -346,6 +345,19 @@ public class ParameterValueSegment {
 
     public PeekingIterator<TimedValue> newDescendingIterator(long t0) {
         return new DescendingIterator(t0);
+    }
+
+    /**
+     * In rare circumstances, a segment read from the archive has to be modified.
+     * <p>
+     * This method updates the object such that it can be modified
+     */
+    public void makeWritable() {
+        parameterStatusSegment.makeWritable();
+        engValueSegment.makeWritable();
+        if (rawValueSegment != null) {
+            rawValueSegment.makeWritable();
+        }
     }
 
     @Override
