@@ -63,7 +63,7 @@ public class IntValueSegment extends BaseSegment implements ValueSegment {
         }
     }
 
-    public void writeCompressed(ByteBuffer bb) {
+    private void writeCompressed(ByteBuffer bb) {
         int[] ddz = VarIntUtil.encodeDeltaDeltaZigZag(values);
 
         FastPFOR128 fastpfor = FastPFORFactory.get();
