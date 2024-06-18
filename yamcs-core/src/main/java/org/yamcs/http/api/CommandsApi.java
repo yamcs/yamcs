@@ -294,11 +294,11 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
             return;
         }
 
-        long pos = request.hasPos() ? request.getPos() : 0;
+        Long pos = request.hasPos() ? request.getPos() : null;
         int limit = request.hasLimit() ? request.getLimit() : 100;
         boolean desc = !request.getOrder().equals("asc");
 
-        if (request.hasPos()) {
+        if (pos != null) {
             log.warn("DEPRECATION WARNING: Do not use pos, use continuationToken instead");
         }
 
@@ -338,8 +338,9 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
 
         sqlb.descend(desc);
 
-        // TODO: remove, not correct with permission filter below
-        sqlb.limit(pos, limit + 1l); // one more to detect hasMore
+        if (pos != null) {
+            sqlb.limit(pos, limit + 1l); // one more to detect hasMore
+        }
 
         var finalMatcher = matcher;
         ListCommandsResponse.Builder responseb = ListCommandsResponse.newBuilder();

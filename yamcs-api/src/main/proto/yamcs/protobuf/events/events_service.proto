@@ -64,8 +64,12 @@ message ListEventsRequest {
   // Yamcs instance name
   optional string instance = 1;
       
-  // The zero-based row number at which to start outputting results. Default: ``0``
-  optional int64 pos = 2;
+  // The zero-based row number at which to start outputting results.
+  // Default: ``0``
+  //
+  // This option is deprecated and will be removed in a later version.
+  // Use the returned continuationToken instead.
+  optional int64 pos = 2 [deprecated = true];
   
   // The maximum number of returned records per page. Choose this value too high
   //  and you risk hitting the maximum response size limit enforced by the server.
