@@ -20,7 +20,7 @@ export interface Cop1Status {
   link: string;
   cop1Active: boolean;
   setBypassAll: boolean;
-  clcw: Clcw;
+  clcw?: Clcw;
   state: Cop1State;
   vS: number;
   nnR: number;

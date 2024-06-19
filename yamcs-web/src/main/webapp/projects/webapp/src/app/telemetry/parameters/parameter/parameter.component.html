@@ -1,69 +1,85 @@
-<app-instance-page *ngIf="parameter$ | async as parameter">
-  <app-instance-toolbar>
-    <ng-container *ngFor="let parent of parameter.qualifiedName | parents; first as isFirst">
-      <a *ngIf="!isFirst"
-         routerLink="/telemetry/parameters"
-         class="ya-link ya-header-link"
-         [queryParams]="{c: yamcs.context, system: parent.path}">{{ parent.name }}</a>/
-    </ng-container>
-    <span>{{ parameter.qualifiedName | shortName }}{{ offset$ | async}}</span>
-    <ya-title-copy [text]="parameter.qualifiedName + ((offset$ | async) || '')" />
-
-    &nbsp;&nbsp;&nbsp;
-    <button *ngIf="isWritable() && maySetParameter() && !(offset$ | async)"
-            mat-button
-            color="primary"
-            (click)="setParameter()">
-      <mat-icon>edit</mat-icon>
-      Set value
-    </button>
-    <a mat-button
-       color="primary"
-       [routerLink]="['/mdb/parameters', parameter.qualifiedName]"
-       [queryParams]="{c: yamcs.context}"
-       *ngIf="mayReadMissionDatabase()">
-      <mat-icon>auto_stories</mat-icon>
-      View in MDB
-    </a>
-  </app-instance-toolbar>
-
-  <nav #tabs mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
-    <a mat-tab-link
-       routerLink="-/summary"
-       routerLinkActive #rla="routerLinkActive"
-       [active]="rla.isActive"
-       [queryParams]="{c: yamcs.context}">
-      Summary
-    </a>
-    <a mat-tab-link
-       routerLink="-/chart"
-       routerLinkActive #rlb="routerLinkActive"
-       [active]="rlb.isActive"
-       [queryParams]="{c: yamcs.context}"
-       *ngIf="config.tmArchive">
-      Chart
-    </a>
-    <a mat-tab-link
-       routerLink="-/alarms"
-       routerLinkActive #rlc="routerLinkActive"
-       [active]="rlc.isActive"
-       [queryParams]="{c: yamcs.context}"
-       *ngIf="mayReadAlarms()">
-      Alarm History
-    </a>
-    <a mat-tab-link
-       routerLink="-/data"
-       routerLinkActive #rld="routerLinkActive"
-       [active]="rld.isActive"
-       [queryParams]="{c: yamcs.context}"
-       *ngIf="config.tmArchive">
-      Historical Data
-    </a>
-  </nav>
-
-  <div class="tab-content-wrapper" [class.noscroll]="tabs.selectedIndex === 1">
-    <mat-tab-nav-panel #tabPanel>
-      <router-outlet />
-    </mat-tab-nav-panel>
-  </div>
-</app-instance-page>
+@if (parameter$ | async; as parameter) {
+  <app-instance-page>
+    <app-instance-toolbar>
+      @for (parent of parameter.qualifiedName | parents; track parent; let isFirst = $first) {
+        @if (!isFirst) {
+          <a
+            routerLink="/telemetry/parameters"
+            class="ya-link ya-header-link"
+            [queryParams]="{ c: yamcs.context, system: parent.path }"
+            >{{ parent.name }}</a
+          >
+        }
+        /
+      }
+      <span>{{ parameter.qualifiedName | shortName }}{{ offset$ | async }}</span>
+      <ya-title-copy [text]="parameter.qualifiedName + ((offset$ | async) || '')" />
+      &nbsp;&nbsp;&nbsp;
+      @if (isWritable() && maySetParameter() && !(offset$ | async)) {
+        <button mat-button color="primary" (click)="setParameter()">
+          <mat-icon>edit</mat-icon>
+          Set value
+        </button>
+      }
+      @if (mayReadMissionDatabase()) {
+        <a
+          mat-button
+          color="primary"
+          [routerLink]="['/mdb/parameters', parameter.qualifiedName]"
+          [queryParams]="{ c: yamcs.context }">
+          <mat-icon>auto_stories</mat-icon>
+          View in MDB
+        </a>
+      }
+    </app-instance-toolbar>
+    <nav #tabs mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
+      <a
+        mat-tab-link
+        routerLink="-/summary"
+        routerLinkActive
+        #rla="routerLinkActive"
+        [active]="rla.isActive"
+        [queryParams]="{ c: yamcs.context }">
+        Summary
+      </a>
+      @if (config.tmArchive) {
+        <a
+          mat-tab-link
+          routerLink="-/chart"
+          routerLinkActive
+          #rlb="routerLinkActive"
+          [active]="rlb.isActive"
+          [queryParams]="{ c: yamcs.context }">
+          Chart
+        </a>
+      }
+      @if (mayReadAlarms()) {
+        <a
+          mat-tab-link
+          routerLink="-/alarms"
+          routerLinkActive
+          #rlc="routerLinkActive"
+          [active]="rlc.isActive"
+          [queryParams]="{ c: yamcs.context }">
+          Alarm History
+        </a>
+      }
+      @if (config.tmArchive) {
+        <a
+          mat-tab-link
+          routerLink="-/data"
+          routerLinkActive
+          #rld="routerLinkActive"
+          [active]="rld.isActive"
+          [queryParams]="{ c: yamcs.context }">
+          Historical Data
+        </a>
+      }
+    </nav>
+    <div class="tab-content-wrapper" [class.noscroll]="tabs.selectedIndex === 1">
+      <mat-tab-nav-panel #tabPanel>
+        <router-outlet />
+      </mat-tab-nav-panel>
+    </div>
+  </app-instance-page>
+}

@@ -4,68 +4,81 @@
   </div>
 
   {{ label }}
-  <ya-help *ngIf="description">
-    {{ description }}
-  </ya-help>
+  @if (description) {
+    <ya-help>
+      {{ description }}
+    </ya-help>
+  }
 
   <div class="members" [formGroupName]="controlName">
-    <div *ngFor="let member of type.member; index as i; first as isFirst"
-         [ngSwitch]="member.type.engType"
-         [style.paddingTop.px]="isFirst ? 0 : 5">
-
-      <app-aggregate-argument *ngSwitchCase="'aggregate'"
-                              [name]="member.name"
-                              [type]="member.type"
-                              [description]="member.shortDescription"
-                              [initialValue]="memberInitialValues[i]" />
-
-      <app-binary-argument *ngSwitchCase="'binary'"
-                           [name]="member.name"
-                           [type]="member.type"
-                           [description]="member.shortDescription"
-                           [formControlName]="member.name" />
-
-      <app-boolean-argument *ngSwitchCase="'boolean'"
-                            [name]="member.name"
-                            [type]="member.type"
-                            [description]="member.shortDescription"
-                            [formControlName]="member.name" />
-
-      <app-enumeration-argument *ngSwitchCase="'enumeration'"
-                                [name]="member.name"
-                                [type]="member.type"
-                                [description]="member.shortDescription"
-                                [formControlName]="member.name" />
-
-      <app-float-argument *ngSwitchCase="'float'"
-                          [name]="member.name"
-                          [type]="member.type"
-                          [description]="member.shortDescription"
-                          [formControlName]="member.name" />
-
-      <app-integer-argument *ngSwitchCase="'integer'"
-                            [name]="member.name"
-                            [type]="member.type"
-                            [description]="member.shortDescription"
-                            [formControlName]="member.name" />
-
-      <app-string-argument *ngSwitchCase="'string'"
-                           [name]="member.name"
-                           [type]="member.type"
-                           [description]="member.shortDescription"
-                           [formControlName]="member.name" />
-
-      <app-time-argument *ngSwitchCase="'time'"
-                         [name]="member.name"
-                         [type]="member.type"
-                         [description]="member.shortDescription"
-                         [formControlName]="member.name" />
-
-      <app-array-argument *ngSwitchCase="member.type.engType.endsWith('[]') ? member.type.engType : ''"
-                          [name]="member.name"
-                          [type]="member.type"
-                          [description]="member.shortDescription"
-                          [initialValue]="memberInitialValues[i]" />
-    </div>
+    @for (member of type.member; track member; let i = $index; let isFirst = $first) {
+      <div [style.paddingTop.px]="isFirst ? 0 : 5">
+        @switch (member.type.engType) {
+          @case ("aggregate") {
+            <app-aggregate-argument
+              [name]="member.name"
+              [type]="member.type"
+              [description]="member.shortDescription"
+              [initialValue]="memberInitialValues[i]" />
+          }
+          @case ("binary") {
+            <app-binary-argument
+              [name]="member.name"
+              [type]="member.type"
+              [description]="member.shortDescription"
+              [formControlName]="member.name" />
+          }
+          @case ("boolean") {
+            <app-boolean-argument
+              [name]="member.name"
+              [type]="member.type"
+              [description]="member.shortDescription"
+              [formControlName]="member.name" />
+          }
+          @case ("enumeration") {
+            <app-enumeration-argument
+              [name]="member.name"
+              [type]="member.type"
+              [description]="member.shortDescription"
+              [formControlName]="member.name" />
+          }
+          @case ("float") {
+            <app-float-argument
+              [name]="member.name"
+              [type]="member.type"
+              [description]="member.shortDescription"
+              [formControlName]="member.name" />
+          }
+          @case ("integer") {
+            <app-integer-argument
+              [name]="member.name"
+              [type]="member.type"
+              [description]="member.shortDescription"
+              [formControlName]="member.name" />
+          }
+          @case ("string") {
+            <app-string-argument
+              [name]="member.name"
+              [type]="member.type"
+              [description]="member.shortDescription"
+              [formControlName]="member.name" />
+          }
+          @case ("time") {
+            <app-time-argument
+              [name]="member.name"
+              [type]="member.type"
+              [description]="member.shortDescription"
+              [formControlName]="member.name" />
+          }
+          @case (member.type.engType.endsWith("[]") ? member.type.engType : "") {
+            <app-array-argument
+              [name]="member.name"
+              [type]="member.type"
+              [description]="member.shortDescription"
+              [initialValue]="memberInitialValues[i]" />
+          }
+        }
+      </div>
+    }
   </div>
 </div>

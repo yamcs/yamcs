@@ -78,6 +78,13 @@ service ServerApi {
       get: "/api/http-traffic"
     };
   }
+
+  // Receive HTTP traffic updates
+  rpc SubscribeHttpTraffic(google.protobuf.Empty) returns (stream HttpTraffic) {
+    option (yamcs.api.websocket) = {
+      topic: "http-traffic"
+    };
+  }
 }
 
 message GetThreadRequest {

@@ -1,4 +1,5 @@
 import { WebSocketCall } from '../WebSocketCall';
+import { Event } from './events';
 import { NamedObjectId, Parameter } from './mdb';
 import { ParameterValue } from './monitoring';
 
@@ -53,7 +54,7 @@ export interface Alarm {
   triggerTime: string;
   violations: number;
   count: number;
-  acknowledgeInfo: AcknowledgeInfo;
+  acknowledgeInfo: AlarmAcknowledgeInfo;
   shelveInfo: ShelveInfo;
   clearInfo: ClearInfo;
   severity: AlarmSeverity;
@@ -80,7 +81,7 @@ export interface EventAlarmData {
   currentEvent: Event;
 }
 
-export interface AcknowledgeInfo {
+export interface AlarmAcknowledgeInfo {
   acknowledgedBy: string;
   acknowledgeMessage: string;
   acknowledgeTime: string;

@@ -1,12 +1,12 @@
-<table mat-table
-       [dataSource]="dataSource"
-       class="ya-data-table expand"
-       matSort
-       matSortActive="name"
-       matSortDirection="asc"
-       matSortDisableClear
-       multiTemplateDataRows>
-
+<table
+  mat-table
+  [dataSource]="dataSource"
+  class="ya-data-table expand"
+  matSort
+  matSortActive="name"
+  matSortDirection="asc"
+  matSortDisableClear
+  multiTemplateDataRows>
   <ng-container matColumnDef="name">
     <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
     <td mat-cell *matCellDef="let service">{{ service.name }}</td>
@@ -27,46 +27,51 @@
   <ng-container matColumnDef="failureMessage">
     <th mat-header-cell *matHeaderCellDef mat-sort-header>Failure</th>
     <td mat-cell *matCellDef="let service">
-      {{ service.failureMessage || '-' }}
-      <ng-container *ngIf="service.failureCause">
-        <ya-icon-action *ngIf="!service.expanded"
-                        icon="expand_more"
-                        (click)="service.expanded=true" />
-        <ya-icon-action *ngIf="service.expanded"
-                        icon="expand_less"
-                        (click)="service.expanded=false" />
-      </ng-container>
+      {{ service.failureMessage || "-" }}
+      @if (service.failureCause) {
+        @if (service.expanded) {
+          <ya-icon-action icon="expand_less" (click)="service.expanded = false" />
+        } @else {
+          <ya-icon-action icon="expand_more" (click)="service.expanded = true" />
+        }
+      }
     </td>
   </ng-container>
 
   <ng-container matColumnDef="detail">
     <td mat-cell *matCellDef="let service" [attr.colspan]="displayedColumns.length">
-      <pre>{{ service.failureCause || '-' }}</pre>
+      <pre>{{ service.failureCause || "-" }}</pre>
     </td>
   </ng-container>
 
   <ng-container matColumnDef="actions">
     <th mat-header-cell *matHeaderCellDef class="expand"></th>
     <td mat-cell *matCellDef="let service">
-      <ya-more *ngIf="!readonly">
-        <button mat-menu-item
-                (click)="startService.emit(service.name)"
-                [disabled]="service.state !== 'TERMINATED' && service.state !== 'NEW'">
-          Start service
-        </button>
-        <button mat-menu-item
-                (click)="stopService.emit(service.name)"
-                [disabled]="service.state !== 'RUNNING'">
-          Stop service
-        </button>
-      </ya-more>
+      @if (!readonly) {
+        <ya-more>
+          <button
+            mat-menu-item
+            (click)="startService.emit(service.name)"
+            [disabled]="service.state !== 'TERMINATED' && service.state !== 'NEW'">
+            Start service
+          </button>
+          <button
+            mat-menu-item
+            (click)="stopService.emit(service.name)"
+            [disabled]="service.state !== 'RUNNING'">
+            Stop service
+          </button>
+        </ya-more>
+      }
     </td>
   </ng-container>
 
   <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-  <tr mat-row *matRowDef="let row; columns: ['detail'];"
-      class="item-detail"
-      [class.expanded]="row.expanded"
-      (click)="row.expanded = !row.expanded"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+  <tr
+    mat-row
+    *matRowDef="let row; columns: ['detail']"
+    class="item-detail"
+    [class.expanded]="row.expanded"
+    (click)="row.expanded = !row.expanded"></tr>
 </table>

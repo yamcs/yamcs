@@ -1,89 +1,91 @@
 <app-instance-page [noscroll]="true">
   <app-instance-toolbar>
-    Timeline Chart
-    &nbsp;&nbsp;&nbsp;
+    Timeline Chart &nbsp;&nbsp;&nbsp;
 
-    <ng-container *ngIf="views$ | async as views">
-      <button *ngIf="(view$ | async) && mayControlTimeline()"
-              mat-button
-              [matMenuTriggerFor]="viewMenu">
-        {{ (view$ | async)?.name || 'select view' }} ▾
-      </button>
+    @if (views$ | async; as views) {
+      @if ((view$ | async) && mayControlTimeline()) {
+        <button mat-button [matMenuTriggerFor]="viewMenu">
+          {{ (view$ | async)?.name || "select view" }} ▾
+        </button>
+      }
       <mat-menu #viewMenu="matMenu" class="ya-menu">
-        <button mat-menu-item *ngFor="let view of views"
-                (click)="switchView(view)">{{ view.name }}</button>
+        @for (view of views; track view) {
+          <button mat-menu-item (click)="switchView(view)">
+            {{ view.name }}
+          </button>
+        }
         <mat-divider />
-        <a mat-menu-item routerLink="/timeline/views/create"
-           [queryParams]="{c: yamcs.context}">
+        <a mat-menu-item routerLink="/timeline/views/create" [queryParams]="{ c: yamcs.context }">
           <mat-icon>add_circle_outline</mat-icon>
           Create view
         </a>
       </mat-menu>
-    </ng-container>
+    }
 
-    <ng-container *ngIf="mayControlTimeline()">
-      <a mat-button
-         color="primary"
-         routerLink="/timeline/views/create"
-         [queryParams]="{c: yamcs.context}"
-         *ngIf="!(view$ | async)">
-        <mat-icon>add_circle_outline</mat-icon>
-        Create view
-      </a>
-      <button *ngIf="view$ | async as view"
-              mat-button
-              color="primary"
-              (click)="openEditViewDialog(view)">
-        <mat-icon>settings</mat-icon>
-        Edit view
-      </button>
-      <button mat-button
-              color="primary"
-              [matMenuTriggerFor]="itemMenu"
-              *ngIf="view$ | async">
-        <mat-icon>add_circle_outline</mat-icon>
-        Add item
-      </button>
-      <mat-menu #itemMenu="matMenu"
-                class="ya-menu"
-                [overlapTrigger]="false">
-        <button mat-menu-item
-                (click)="openCreateItemDialog('EVENT')"
-                matTooltipShowDelay="1000"
-                matTooltip="Events are items that simply appear on the timeline">
+    @if (mayControlTimeline()) {
+      @if (!(view$ | async)) {
+        <a
+          mat-button
+          color="primary"
+          routerLink="/timeline/views/create"
+          [queryParams]="{ c: yamcs.context }">
+          <mat-icon>add_circle_outline</mat-icon>
+          Create view
+        </a>
+      }
+      @if (view$ | async; as view) {
+        <button mat-button color="primary" (click)="openEditViewDialog(view)">
+          <mat-icon>settings</mat-icon>
+          Edit view
+        </button>
+      }
+      @if (view$ | async) {
+        <button mat-button color="primary" [matMenuTriggerFor]="itemMenu">
+          <mat-icon>add_circle_outline</mat-icon>
+          Add item
+        </button>
+      }
+      <mat-menu #itemMenu="matMenu" class="ya-menu" [overlapTrigger]="false">
+        <button
+          mat-menu-item
+          (click)="openCreateItemDialog('EVENT')"
+          matTooltipShowDelay="1000"
+          matTooltip="Events are items that simply appear on the timeline">
           Event item
         </button>
-        <button mat-menu-item
-                (click)="openCreateItemDialog('ACTIVITY')"
-                matTooltipShowDelay="1000"
-                matTooltip="Activities are like events, but in addition have an execution status">
+        <button
+          mat-menu-item
+          (click)="openCreateItemDialog('ACTIVITY')"
+          matTooltipShowDelay="1000"
+          matTooltip="Activities are like events, but in addition have an execution status">
           Activity item
         </button>
       </mat-menu>
-      <button mat-button
-              color="primary"
-              (click)="saveSnapshot()"
-              *ngIf="view$ | async">
-        <mat-icon>photo_camera</mat-icon>
-        Save snapshot
-      </button>
-    </ng-container>
+      @if (view$ | async) {
+        <button mat-button color="primary" (click)="saveSnapshot()">
+          <mat-icon>photo_camera</mat-icon>
+          Save snapshot
+        </button>
+      }
+    }
   </app-instance-toolbar>
 
   <div style="height: 24px; margin: 6px">
     <button class="ya-button" (click)="pageLeft()">
       <mat-icon>west</mat-icon>
     </button>
-    <button class="ya-button"
-            (mousedown)="toggleMove(-50)"
-            (mouseup)="untoggleMove()"
-            (mouseleave)="untoggleMove()">
+    <button
+      class="ya-button"
+      (mousedown)="toggleMove(-50)"
+      (mouseup)="untoggleMove()"
+      (mouseleave)="untoggleMove()">
       <mat-icon>chevron_left</mat-icon>
     </button>
-    <button class="ya-button"
-            (mousedown)="toggleMove(50)"
-            (mouseup)="untoggleMove()"
-            (mouseleave)="untoggleMove()">
+    <button
+      class="ya-button"
+      (mousedown)="toggleMove(50)"
+      (mouseup)="untoggleMove()"
+      (mouseleave)="untoggleMove()">
       <mat-icon>chevron_right</mat-icon>
     </button>
     <button class="ya-button" (click)="pageRight()">
@@ -110,12 +112,13 @@
     </button>
   </div>
 
-  <div #container class="timeline-container">
-  </div>
+  <div #container class="timeline-container"></div>
 
   <div class="info">
-    <span *ngIf="viewportRange$ | async as viewportRange">
-      {{ viewportRange?.start | datetime:false }} &ndash; {{ viewportRange?.stop | datetime }}
-    </span>
+    @if (viewportRange$ | async; as viewportRange) {
+      <span>
+        {{ viewportRange?.start | datetime: false }} &ndash; {{ viewportRange?.stop | datetime }}
+      </span>
+    }
   </div>
 </app-instance-page>

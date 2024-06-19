@@ -1,54 +1,51 @@
 <app-instance-page>
-  <app-instance-toolbar>
-    Send a command
-  </app-instance-toolbar>
+  <app-instance-toolbar> Send a command </app-instance-toolbar>
 
   <app-send-command-wizard-step step="2" />
 
   <div class="form-content">
+    @if (command$ | async; as command) {
+      <dl class="dl-horizontal no-lead no-trail">
+        <dt>Command</dt>
+        <dd>{{ command.qualifiedName | shortName }}</dd>
+        <dt>System</dt>
+        <dd>{{ (command.qualifiedName | spaceSystemName) || "-" }}</dd>
+        @for (alias of command.alias; track alias) {
+          <dt>{{ alias.namespace }}</dt>
+          <dd>{{ alias.name }}</dd>
+        }
+        @if (command.longDescription || command.shortDescription) {
+          @if (command.longDescription) {
+            <dt>Description</dt>
+            <dd>
+              <app-markdown [text]="command.longDescription" />
+            </dd>
+          }
+          @if (!command.longDescription) {
+            <dt>Description</dt>
+            <dd>
+              {{ command.shortDescription || "-" }}
+            </dd>
+          }
+        }
+        <dt>Significance</dt>
+        <dd>
+          @if (command?.effectiveSignificance; as significance) {
+            <app-significance-level [level]="significance.consequenceLevel" />
+            &nbsp;&nbsp;{{ significance.reasonForWarning }}
+          } @else {
+            -
+          }
+        </dd>
+      </dl>
+    }
 
-    <dl class="dl-horizontal no-lead no-trail" *ngIf="command$ | async as command">
-      <dt>Command</dt>
-      <dd>{{ command.qualifiedName | shortName }}</dd>
+    @if (!(cleared$ | async)) {
+      <ya-warning-message> You're not cleared to send this command </ya-warning-message>
+    }
 
-      <dt>System</dt>
-      <dd>{{ (command.qualifiedName | spaceSystemName) || '-' }}</dd>
-
-      <ng-container *ngFor="let alias of command.alias">
-        <dt>{{ alias.namespace }}</dt>
-        <dd>{{ alias.name }}</dd>
-      </ng-container>
-
-      <ng-container *ngIf="command.longDescription || command.shortDescription">
-        <ng-container *ngIf="command.longDescription">
-          <dt>Description</dt>
-          <dd>
-            <app-markdown [text]="command.longDescription" />
-          </dd>
-        </ng-container>
-        <ng-container *ngIf="!command.longDescription">
-          <dt>Description</dt>
-          <dd>
-            {{ command.shortDescription || '-' }}
-          </dd>
-        </ng-container>
-      </ng-container>
-
-      <dt>Significance</dt>
-      <dd>
-        <ng-container *ngIf="command?.effectiveSignificance as significance; else dash">
-          <app-significance-level [level]="significance.consequenceLevel" />
-          &nbsp;&nbsp;{{ significance.reasonForWarning }}
-        </ng-container>
-      </dd>
-    </dl>
-
-    <ya-warning-message *ngIf="!(cleared$ | async)">
-      You're not cleared to send this command
-    </ya-warning-message>
-
-    <ng-container *ngIf="command$ | async as command">
-      <ng-container *ngIf="command.constraint">
+    @if (command$ | async; as command) {
+      @if (command.constraint) {
         <p>&nbsp;</p>
         <h3>Constraints</h3>
         <table yaDataTable>
@@ -57,71 +54,78 @@
             <th>Timeout</th>
             <th>Live Evaluation</th>
           </tr>
-          <tr *ngFor="let constraint of command.constraint">
-            <td>{{ constraint.expression }}</td>
-            <td>{{ constraint.timeout || '-' }}</td>
-            <td>
-              <span class="evaluation valid" *ngIf="(expr.result$ | async) === true">
-                satisfied
-              </span>
-              <span class="evaluation invalid" *ngIf="(expr.result$ | async) === false">
-                not satisfied
-              </span>
-              <app-live-expression #expr
-                                   [expression]="constraint.expression"
-                                   [style.display]="'none'" />
-            </td>
-          </tr>
+          @for (constraint of command.constraint; track constraint) {
+            <tr>
+              <td>{{ constraint.expression }}</td>
+              <td>{{ constraint.timeout || "-" }}</td>
+              <td>
+                @if ((expr.result$ | async) === true) {
+                  <span class="evaluation valid"> satisfied </span>
+                }
+                @if ((expr.result$ | async) === false) {
+                  <span class="evaluation invalid"> not satisfied </span>
+                }
+                <app-live-expression
+                  #expr
+                  [expression]="constraint.expression"
+                  [style.display]="'none'" />
+              </td>
+            </tr>
+          }
         </table>
-      </ng-container>
-    </ng-container>
+      }
+    }
 
-    <ng-container *ngIf="commandForm.hasArguments$ | async">
+    @if (commandForm.hasArguments$ | async) {
       <p>&nbsp;</p>
       <h3>Arguments</h3>
-    </ng-container>
-    <app-command-form #commandForm [command]="command$ | async"
-                      [templateProvider]="templateProvider$ | async" />
+    }
+    <app-command-form
+      #commandForm
+      [command]="command$ | async"
+      [templateProvider]="templateProvider$ | async" />
     <p>&nbsp;</p>
     <mat-toolbar>
-      <button class="ya-button"
-              (click)="goBack()">
-        Cancel
-      </button>
+      <button class="ya-button" (click)="goBack()">Cancel</button>
       <span style="flex: 1 1 auto"></span>
-      <mat-slide-toggle *ngIf="config.twoStageCommanding"
-                        [formControl]="armControl" color="primary">
-        Arm
-      </mat-slide-toggle>
+      @if (config.twoStageCommanding) {
+        <mat-slide-toggle [formControl]="armControl" color="primary"> Arm </mat-slide-toggle>
+      }
       &nbsp;&nbsp;&nbsp;&nbsp;
-      <button class="ya-button primary"
-              [disabled]="(config.twoStageCommanding && !armControl.value) || !(cleared$ | async) || !commandForm.form.valid"
-              (click)="sendCommand()">
+      <button
+        class="ya-button primary"
+        [disabled]="
+          (config.twoStageCommanding && !armControl.value) ||
+          !(cleared$ | async) ||
+          !commandForm.form.valid
+        "
+        (click)="sendCommand()">
         <mat-icon>send</mat-icon>
         Send
       </button>
-      <ng-container *ngIf="showSchedule()">
+      @if (showSchedule()) {
         &nbsp;
-        <ya-icon-action [matMenuTriggerFor]="((config.twoStageCommanding && !armControl.value) || !(cleared$ | async) || !commandForm.form.valid)?null:sendMenu"
-                        icon="arrow_drop_down"
-                        [padding]="false"
-                        [disabled]="(config.twoStageCommanding && !armControl.value) || !(cleared$ | async) || !commandForm.form.valid"
-                        style="line-height: 12px" />
-        <mat-menu #sendMenu="matMenu"
-                  class="ya-menu"
-                  [overlapTrigger]="false">
-          <button mat-menu-item (click)="sendCommand()">
-            Send now
-          </button>
-          <button mat-menu-item (click)="openScheduleCommandDialog()">
-            Send later...
-          </button>
+        <ya-icon-action
+          [matMenuTriggerFor]="
+            (config.twoStageCommanding && !armControl.value) ||
+            !(cleared$ | async) ||
+            !commandForm.form.valid
+              ? null
+              : sendMenu
+          "
+          icon="arrow_drop_down"
+          [padding]="false"
+          [disabled]="
+            (config.twoStageCommanding && !armControl.value) ||
+            !(cleared$ | async) ||
+            !commandForm.form.valid
+          "
+          style="line-height: 12px" />
+        <mat-menu #sendMenu="matMenu" class="ya-menu" [overlapTrigger]="false">
+          <button mat-menu-item (click)="sendCommand()">Send now</button>
+          <button mat-menu-item (click)="openScheduleCommandDialog()">Send later...</button>
         </mat-menu>
-      </ng-container>
+      }
     </mat-toolbar>
   </div>
 </app-instance-page>
-
-<ng-template #dash>
-  -
-</ng-template>

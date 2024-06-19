@@ -1,35 +1,33 @@
 <app-admin-page>
-  <app-admin-toolbar>
-    HTTP traffic
-  </app-admin-toolbar>
+  <app-admin-toolbar> HTTP traffic </app-admin-toolbar>
 
   <div class="panel-content">
-    <ng-container *ngIf="traffic$ | async as traffic">
+    @if (traffic$ | async; as traffic) {
       <dl class="dl-horizontal no-lead">
         <dt>Cumulative read</dt>
         <dd>{{ traffic.readBytes | formatBytes }}</dd>
         <dt>Cumulative written</dt>
         <dd>{{ traffic.writtenBytes | formatBytes }}</dd>
         <dt>Rx</dt>
-        <dd>{{ (traffic.readThroughput * 8) | dataRate }}</dd>
+        <dd>{{ traffic.readThroughput * 8 | dataRate }}</dd>
         <dt>Tx</dt>
-        <dd>{{ (traffic.writeThroughput * 8) | dataRate }}</dd>
+        <dd>{{ traffic.writeThroughput * 8 | dataRate }}</dd>
       </dl>
-    </ng-container>
+    }
 
     <div class="section-divider">
       <mat-divider />
     </div>
     <h4>Current connections</h4>
-    <table mat-table
-           [dataSource]="dataSource"
-           [trackBy]="tableTrackerFn"
-           class="ya-data-table expand"
-           matSort
-           matSortActive="id"
-           matSortDirection="asc"
-           matSortDisableClear>
-
+    <table
+      mat-table
+      [dataSource]="dataSource"
+      [trackBy]="tableTrackerFn"
+      class="ya-data-table expand"
+      matSort
+      matSortActive="id"
+      matSortDirection="asc"
+      matSortDisableClear>
       <ng-container matColumnDef="id">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Id</th>
         <td mat-cell *matCellDef="let conn">{{ conn.id }}</td>
@@ -37,37 +35,39 @@
 
       <ng-container matColumnDef="userAgent">
         <th mat-header-cell *matHeaderCellDef mat-sort-header class="expand">User agent</th>
-        <td mat-cell *matCellDef="let conn">{{ (conn.httpRequest?.userAgent | userAgent) || '-' }}</td>
+        <td mat-cell *matCellDef="let conn">
+          {{ (conn.httpRequest?.userAgent | userAgent) || "-" }}
+        </td>
       </ng-container>
 
       <ng-container matColumnDef="protocol">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Protocol</th>
-        <td mat-cell *matCellDef="let conn">{{ conn.httpRequest?.protocol || '-' }}</td>
+        <td mat-cell *matCellDef="let conn">{{ conn.httpRequest?.protocol || "-" }}</td>
       </ng-container>
 
       <ng-container matColumnDef="remoteAddress">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Remote address</th>
-        <td mat-cell *matCellDef="let conn">{{ conn.remoteAddress || '-' }}</td>
+        <td mat-cell *matCellDef="let conn">{{ conn.remoteAddress || "-" }}</td>
       </ng-container>
 
       <ng-container matColumnDef="readBytes">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Read</th>
-        <td mat-cell *matCellDef="let conn">{{ (conn.readBytes | formatBytes) || '-' }}</td>
+        <td mat-cell *matCellDef="let conn">{{ (conn.readBytes | formatBytes) || "-" }}</td>
       </ng-container>
 
       <ng-container matColumnDef="writtenBytes">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Written</th>
-        <td mat-cell *matCellDef="let conn">{{ (conn.writtenBytes | formatBytes) || '-' }}</td>
+        <td mat-cell *matCellDef="let conn">{{ (conn.writtenBytes | formatBytes) || "-" }}</td>
       </ng-container>
 
       <ng-container matColumnDef="readThroughput">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Rx</th>
-        <td mat-cell *matCellDef="let conn">{{ (conn.readThroughput * 8) | dataRate }}</td>
+        <td mat-cell *matCellDef="let conn">{{ conn.readThroughput * 8 | dataRate }}</td>
       </ng-container>
 
       <ng-container matColumnDef="writeThroughput">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Tx</th>
-        <td mat-cell *matCellDef="let conn">{{ (conn.writeThroughput * 8) | dataRate }}</td>
+        <td mat-cell *matCellDef="let conn">{{ conn.writeThroughput * 8 | dataRate }}</td>
       </ng-container>
 
       <ng-container matColumnDef="request">
@@ -81,15 +81,13 @@
       <ng-container matColumnDef="authorization">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Authorization</th>
         <td mat-cell *matCellDef="let conn">
-          {{ conn.username || '-' }}
+          {{ conn.username || "-" }}
         </td>
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
-    <mat-paginator [pageSize]="100"
-                   [hidePageSize]="true"
-                   [showFirstLastButtons]="true" />
+    <mat-paginator [pageSize]="100" [hidePageSize]="true" [showFirstLastButtons]="true" />
   </div>
 </app-admin-page>

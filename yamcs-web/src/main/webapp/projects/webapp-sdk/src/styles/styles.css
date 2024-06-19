@@ -4,10 +4,10 @@ body {
   padding: 0;
   height: 100%;
   position: relative;
+  letter-spacing: .0178571429em;
 }
 
 /* Disable dashed border in menus etc. Only FF does this */
-
 ::-moz-focus-inner {
   border: 0;
 }
@@ -68,6 +68,10 @@ body {
 
 .mat-mdc-slide-toggle {
   line-height: 24px !important;
+}
+
+.dialog-full-size {
+  max-width: none !important;
 }
 
 .dialog-full-size .mat-mdc-dialog-surface {
@@ -204,16 +208,6 @@ input.ng-invalid:not(.ng-pristine),
   font-family: "Roboto";
 }
 
-/*
- * Fix for scrollbar being invisible on Safari.
- * https://github.com/ajaxorg/ace/issues/2872
- */
-
-.ace_scrollbar-inner {
-  background-color: white;
-  opacity: 0.01;
-}
-
 button.expandable {
   margin-left: 0.5em;
   padding: 0 8px;
@@ -303,11 +297,6 @@ button.ya-button.primary {
   border-color: rgba(0, 0, 0, 0.1);
 }
 
-.mat-mdc-tab-nav-bar,
-.mat-mdc-tab-group .mat-mdc-tab-header {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-}
-
 .mat-mdc-tab-nav-bar.secondary .mat-mdc-tab-link,
 .mat-mdc-tab-group.secondary .mat-mdc-tab {
   height: 36px;
@@ -329,10 +318,6 @@ input[type="radio"] {
 
 .action-bar {
   padding-top: 16px;
-}
-
-.mat-mdc-dialog-actions {
-  padding: 24px !important;
 }
 
 .mat-mdc-dialog-content .hint {
@@ -384,6 +369,34 @@ input[type="radio"] {
 hr.half-break {
   visibility: hidden;
   line-height: 0.5em;
+}
+
+h2 {
+  font: 500 20px / 32px Roboto, sans-serif;
+  letter-spacing: .0125em;
+  margin: 0 0 16px;
+}
+
+h3 {
+  font: 400 16px / 28px Roboto, sans-serif;
+  letter-spacing: .009375em;
+  margin: 0 0 16px;
+}
+
+h4 {
+  font: 400 16px / 24px Roboto, sans-serif;
+  letter-spacing: .03125em;
+  margin: 0 0 16px;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 12px;
+  letter-spacing: .0178571429em;
+}
+
+.elevation-z1 {
+  box-shadow: 0 2px 1px -1px #0003, 0 1px 1px #00000024, 0 1px 3px #0000001f;
 }
 
 /*

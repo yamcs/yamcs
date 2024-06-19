@@ -115,6 +115,14 @@ options:
         redirected to the built-in login page.
     type: STRING
 
+  utc:
+    title: UTC
+    description:
+      - Format time in UTC. If false, format in browser local time.
+      - This setting also affects time inputs.
+    type: BOOLEAN
+    default: true
+
   cookie:
     title: Cookie
     description:

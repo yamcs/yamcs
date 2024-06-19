@@ -85,6 +85,9 @@ export class PacketsDataSource extends DataSource<Packet> {
       limit: this.pageSize,
     }).then(packets => {
       this.buffer.addArchiveData(packets);
+
+      // Quick emit, don't wait on sync tick
+      this.emitPackets();
     });
   }
 

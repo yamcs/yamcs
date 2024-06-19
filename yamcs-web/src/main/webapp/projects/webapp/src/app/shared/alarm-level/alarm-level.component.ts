@@ -1,4 +1,4 @@
-import { NgSwitch, NgSwitchCase } from '@angular/common';
+
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 @Component({
@@ -7,10 +7,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
   templateUrl: './alarm-level.component.html',
   styleUrl: './alarm-level.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    NgSwitch,
-    NgSwitchCase,
-  ],
+  imports: [],
 })
 export class AlarmLevelComponent {
 

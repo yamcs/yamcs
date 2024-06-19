@@ -1,5 +1,10 @@
-<ng-container *ngIf="sortedLabels$ | async as labels">
-  <ya-label class="label" *ngFor="let label of labels">
-    {{ label.key }}<ng-container *ngIf="label.value">:&nbsp;{{ label.value }}</ng-container>
-  </ya-label>
-</ng-container>
+@if (sortedLabels$ | async; as labels) {
+  @for (label of labels; track label) {
+    <ya-label class="label">
+      {{ label.key }}
+      @if (label.value) {
+        :&nbsp;{{ label.value }}
+      }
+    </ya-label>
+  }
+}

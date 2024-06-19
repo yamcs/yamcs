@@ -1,182 +1,259 @@
-<div class="transfer-files mat-typography">
+<div class="transfer-files">
   <form [formGroup]="form" class="ya-form">
     <h2>
       <button class="close-button mat-button" mat-dialog-close><mat-icon>close</mat-icon></button>
-      New {{service.capabilities.download && service.capabilities.upload ? "Transfer" :
-      service.capabilities.upload ? "Upload": "Download" }}
+      New
+      {{
+        service.capabilities.download && service.capabilities.upload
+          ? "Transfer"
+          : service.capabilities.upload
+            ? "Upload"
+            : "Download"
+      }}
     </h2>
 
     <div class="grid-container">
       <!-- BUCKETS COLUMN -->
       <div class="buckets-column header">
-        <label class="table-caption">Buckets
-          <a (click)="toggleBucketSize()">{{ !(showBucketSize$.value) ? "show" : "hide" }} size</a>
+        <label class="table-caption"
+          >Buckets
+          <a (click)="toggleBucketSize()">{{ !showBucketSize$.value ? "show" : "hide" }} size</a>
         </label>
       </div>
 
       <div class="buckets-column table-wrapper">
         <table mat-table [dataSource]="dataSource" class="ya-data-table no-frame">
           <ng-container cdkColumnDef="name">
-            <td mat-cell *cdkCellDef="let bucket" [title]="(bucket.maxSize - bucket.size | formatBytes) + ' available'">
-              <span><mat-icon style="vertical-align: middle">shopping_basket</mat-icon>&nbsp;
-                {{ bucket.name }}</span>
-              <span *ngIf="showBucketSize$.value">
-                {{ bucket.size | formatBytes }}/{{ bucket.maxSize | formatBytes}}
-              </span>
-              <ya-progress *ngIf="showBucketSize$.value" [value]="bucket.size"
-                           [total]="bucket.maxSize" />
+            <td
+              mat-cell
+              *cdkCellDef="let bucket"
+              [title]="(bucket.maxSize - bucket.size | formatBytes) + ' available'">
+              <span
+                ><mat-icon style="vertical-align: middle">shopping_basket</mat-icon>&nbsp;
+                {{ bucket.name }}</span
+              >
+              @if (showBucketSize$.value) {
+                <span> {{ bucket.size | formatBytes }}/{{ bucket.maxSize | formatBytes }} </span>
+              }
+              @if (showBucketSize$.value) {
+                <ya-progress [value]="bucket.size" [total]="bucket.maxSize" />
+              }
             </td>
           </ng-container>
 
-          <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"
-              [ngClass]="{selected: (row === (selectedBucket$ | async))}"
-              (click)="selectBucket(row)"></tr>
+          <tr
+            mat-row
+            *cdkRowDef="let row; columns: displayedColumns"
+            [ngClass]="{ selected: row === (selectedBucket$ | async) }"
+            (click)="selectBucket(row)"></tr>
         </table>
       </div>
 
-      <div class="buckets-column footer" *ngIf="selectedBucket$ | async as bucket">
-        <div>
-          <label>Target bucket</label>
-          {{ bucket.name }}
+      @if (selectedBucket$ | async; as bucket) {
+        <div class="buckets-column footer">
+          <div>
+            <label>Target bucket</label>
+            {{ bucket.name }}
+          </div>
         </div>
-      </div>
+      }
 
       <!-- LOCAL COLUMN -->
       <div class="local-column header">
-        <label class="table-caption">Local {{service.localEntities && service.localEntities.length ? "Entity" : ""}}
-          <select formControlName="localEntity"
-                  [ngStyle]="!(service.localEntities && service.localEntities.length) && {'visibility': 'hidden'}">
-            <option *ngFor="let entity of service.localEntities"
-                    [value]="entity.name">{{ entity.name }} [id={{ entity.id }}]</option>
+        <label class="table-caption"
+          >Local {{ service.localEntities && service.localEntities.length ? "Entity" : "" }}
+          <select
+            formControlName="localEntity"
+            [ngStyle]="
+              !(service.localEntities && service.localEntities.length) && { visibility: 'hidden' }
+            ">
+            @for (entity of service.localEntities; track entity) {
+              <option [value]="entity.name">{{ entity.name }} [id={{ entity.id }}]</option>
+            }
           </select>
         </label>
 
-        <ya-breadcrumb-trail [showMargin]="false" *ngIf="breadcrumb$ | async as breadcrumb">
-          <ya-breadcrumb icon="account_tree" [action]="true"
-                         (click)="changeLocalPrefix('')" />
-          <ya-breadcrumb *ngFor="let item of breadcrumb"
-                         [label]="item.name"
-                         [action]="true"
-                         (click)="changeLocalPrefix(item.prefix)" />
-        </ya-breadcrumb-trail>
+        @if (breadcrumb$ | async; as breadcrumb) {
+          <ya-breadcrumb-trail [showMargin]="false">
+            <ya-breadcrumb icon="account_tree" [action]="true" (click)="changeLocalPrefix('')" />
+            @for (item of breadcrumb; track item) {
+              <ya-breadcrumb
+                [label]="item.name"
+                [action]="true"
+                (click)="changeLocalPrefix(item.prefix)" />
+            }
+          </ya-breadcrumb-trail>
+        }
       </div>
 
-      <div class="local-column table-wrapper" [ngClass]="{'no-filelist': !service.capabilities.fileList}"
-           (click)="clearSelection($event, objectSelector)">
-        <ng-container *ngIf="selectedBucket$ | async as bucket">
-          <app-object-selector #objectSelector
-                               formControlName="localFilenames"
-                               [bucket]="bucket"
-                               [isMultiSelect]="true"
-                               [foldersOnly]="false"
-                               [noSelect]="true"
-                               [noFrame]="true"
-                               [allowFolderSelection]="true"
-                               (prefixChange)="updateLocalBreadcrumb($event)" />
-        </ng-container>
+      <div
+        class="local-column table-wrapper"
+        [ngClass]="{ 'no-filelist': !service.capabilities.fileList }"
+        (click)="clearSelection($event, objectSelector)">
+        @if (selectedBucket$ | async; as bucket) {
+          <app-object-selector
+            #objectSelector
+            formControlName="localFilenames"
+            [bucket]="bucket"
+            [isMultiSelect]="true"
+            [foldersOnly]="false"
+            [noSelect]="true"
+            [noFrame]="true"
+            [allowFolderSelection]="true"
+            (prefixChange)="updateLocalBreadcrumb($event)" />
+        }
       </div>
 
       <div class="local-column footer">
-        <div *ngIf="service.localEntities && service.localEntities.length">
-          <label>Local entity</label>
-          {{ form.get("localEntity")?.value || '-' }}
-        </div>
+        @if (service.localEntities && service.localEntities.length) {
+          <div>
+            <label>Local entity</label>
+            {{ form.get("localEntity")?.value || "-" }}
+          </div>
+        }
 
-        <input type="text" formControlName="localFilenames" placeholder="Local filename"
-               [value]="form.get('localFilenames')?.value">
+        <input
+          type="text"
+          formControlName="localFilenames"
+          placeholder="Local filename"
+          [value]="form.get('localFilenames')?.value" />
 
-        <button class="ya-button primary"
-                *ngIf="service.capabilities.upload"
-                [disabled]="!isUploadEnabled"
-                (click)="startUpload()">UPLOAD <mat-icon>chevron_right</mat-icon></button>
+        @if (service.capabilities.upload) {
+          <button class="ya-button primary" [disabled]="!isUploadEnabled" (click)="startUpload()">
+            UPLOAD <mat-icon>chevron_right</mat-icon>
+          </button>
+        }
       </div>
 
       <!-- REMOTE COLUMN -->
-      <div class="remote-column header"
-           *ngIf="(service.remoteEntities && service.remoteEntities.length) || service.capabilities.fileList"
-           [ngClass]="{'no-filelist': !service.capabilities.fileList}">
-        <label class="table-caption">Remote {{service.remoteEntities && service.remoteEntities.length ? "Entity" : ""}}
-          <select formControlName="remoteEntity"
-                  [ngStyle]="!(service.remoteEntities && service.remoteEntities.length) && {'visibility': 'hidden'}">
-            <option *ngFor="let entity of service.remoteEntities"
-                    [value]="entity.name">{{ entity.name }} [id={{ entity.id }}]</option>
-          </select>
-        </label>
+      @if (
+        (service.remoteEntities && service.remoteEntities.length) || service.capabilities.fileList
+      ) {
+        <div
+          class="remote-column header"
+          [ngClass]="{ 'no-filelist': !service.capabilities.fileList }">
+          <label class="table-caption"
+            >Remote {{ service.remoteEntities && service.remoteEntities.length ? "Entity" : "" }}
+            <select
+              formControlName="remoteEntity"
+              [ngStyle]="
+                !(service.remoteEntities && service.remoteEntities.length) && {
+                  visibility: 'hidden'
+                }
+              ">
+              @for (entity of service.remoteEntities; track entity) {
+                <option [value]="entity.name">{{ entity.name }} [id={{ entity.id }}]</option>
+              }
+            </select>
+          </label>
+          @if (remoteBreadcrumb$ | async; as breadcrumb) {
+            <ya-breadcrumb-trail [showMargin]="false">
+              <ya-breadcrumb icon="account_tree" [action]="true" (click)="changeRemotePrefix('')" />
+              @for (item of breadcrumb; track item) {
+                <ya-breadcrumb
+                  [label]="item.name"
+                  [action]="true"
+                  (click)="changeRemotePrefix(item.prefix)" />
+              }
+            </ya-breadcrumb-trail>
+          }
+          @if (service.capabilities.fileList) {
+            <a
+              class="lastFileListTime mat-button mat-primary"
+              title="Refresh file list"
+              (click)="requestFileList()">
+              <mat-icon>refresh</mat-icon> {{ lastFileListTime$ | async | datetime }}
+              {{ (lastFileListState$ | async) ? "(" + (lastFileListState$ | async) + ")" : "" }}
+              <!-- TODO: throws a RangeError for some reason -->
+            </a>
+          }
+        </div>
+      }
 
-        <ya-breadcrumb-trail [showMargin]="false" *ngIf="remoteBreadcrumb$ | async as breadcrumb">
-          <ya-breadcrumb icon="account_tree" [action]="true"
-                         (click)="changeRemotePrefix('')" />
-          <ya-breadcrumb *ngFor="let item of breadcrumb"
-                         [label]="item.name"
-                         [action]="true"
-                         (click)="changeRemotePrefix(item.prefix)" />
-        </ya-breadcrumb-trail>
-
-        <a class="lastFileListTime mat-button mat-primary" title="Refresh file list" (click)="requestFileList()"
-           *ngIf="service.capabilities.fileList">
-          <mat-icon>refresh</mat-icon> {{ lastFileListTime$ | async | datetime }}
-          {{ (lastFileListState$ | async) ? "(" + (lastFileListState$ | async) + ")" : ""}}
-          <!-- TODO: throws a RangeError for some reason -->
-        </a>
-      </div>
-
-      <div class="remote-column table-wrapper" *ngIf="service.capabilities.fileList"
-           (click)="clearSelection($event, remoteSelector)">
-        <app-remote-file-selector #remoteSelector
-                                  formControlName="remoteFilenames"
-                                  [isMultiSelect]="true"
-                                  [foldersOnly]="false"
-                                  [noSelect]="true"
-                                  [allowFolderSelection]="true"
-                                  [fileListExtraColumns]="service.capabilities.fileListExtraColumns || []"
-                                  [fileActions]="service.capabilities.fileActions || []"
-                                  (prefixChange)="updateRemoteBreadcrumb($event)"
-                                  (onAction)="onActionRequest($event)" />
-      </div>
-
+      @if (service.capabilities.fileList) {
+        <div class="remote-column table-wrapper" (click)="clearSelection($event, remoteSelector)">
+          <app-remote-file-selector
+            #remoteSelector
+            formControlName="remoteFilenames"
+            [isMultiSelect]="true"
+            [foldersOnly]="false"
+            [noSelect]="true"
+            [allowFolderSelection]="true"
+            [fileListExtraColumns]="service.capabilities.fileListExtraColumns || []"
+            [fileActions]="service.capabilities.fileActions || []"
+            (prefixChange)="updateRemoteBreadcrumb($event)"
+            (onAction)="onActionRequest($event)" />
+        </div>
+      }
 
       <div class="remote-column footer">
-        <button class="ya-button primary"
-                *ngIf="service.capabilities.download"
-                [disabled]="!isDownloadEnabled"
-                (click)="startDownload()"><mat-icon>chevron_left</mat-icon> DOWNLOAD</button>
+        @if (service.capabilities.download) {
+          <button
+            class="ya-button primary"
+            [disabled]="!isDownloadEnabled"
+            (click)="startDownload()">
+            <mat-icon>chevron_left</mat-icon> DOWNLOAD
+          </button>
+        }
 
-        <input type="text" formControlName="remoteFilenames" placeholder="Remote filename"
-               *ngIf="service.capabilities.download || service.capabilities.remotePath"
-               [value]="form.get('remoteFilenames')?.value">
+        @if (service.capabilities.download || service.capabilities.remotePath) {
+          <input
+            type="text"
+            formControlName="remoteFilenames"
+            placeholder="Remote filename"
+            [value]="form.get('remoteFilenames')?.value" />
+        }
 
-        <div *ngIf="service.remoteEntities && service.remoteEntities.length">
-          <label>Remote entity</label>
-          {{ form.get("remoteEntity")?.value || '-' }}
-        </div>
+        @if (service.remoteEntities && service.remoteEntities.length) {
+          <div>
+            <label>Remote entity</label>
+            {{ form.get("remoteEntity")?.value || "-" }}
+          </div>
+        }
       </div>
 
       <div class="options-footer">
-        <div *ngFor="let option of service.transferOptions; let i = index" [title]="option.description || ''">
-          <label>{{ option.title || option.name }}</label>
-          <!-- Boolean option type -->
-          <label class="checkbox-label" *ngIf="option.type === 'BOOLEAN'">
-            <input type="checkbox" [formControlName]="getControlName(option, i)">
-            {{option.associatedText}}
-          </label>
-          <!-- Double and string option type-->
-          <div style="display:flex; column-gap: 8px; flex-wrap: wrap;">
-            <select *ngIf="(option.type === 'DOUBLE' || option.type === 'STRING') && option.values"
-                    [formControlName]="getControlName(option, i) + DROPDOWN_SUFFIX">
-              <option *ngIf="option.allowCustomOption" [value]="CUSTOM_OPTION_VALUE">Custom</option>
-              <option *ngFor="let value of option.values" [value]="value.value">{{ value.verboseName != null ?
-                value.verboseName : value.value }}</option>
-            </select>
-            <input
-                   *ngIf="(option.type === 'DOUBLE' || option.type === 'STRING') && ((option.allowCustomOption && form.get(getControlName(option, i) + DROPDOWN_SUFFIX)?.value === CUSTOM_OPTION_VALUE) || !option.values)"
-                   [formControlName]="getControlName(option, i)"
-                   [type]="option.type === 'DOUBLE' ? 'number' : 'text'"
-                   [placeholder]="option.associatedText || ''"
-                   style="width: 120px">
+        @for (option of service.transferOptions; track option; let i = $index) {
+          <div [title]="option.description || ''">
+            <label>{{ option.title || option.name }}</label>
+            <!-- Boolean option type -->
+            @if (option.type === "BOOLEAN") {
+              <label class="checkbox-label">
+                <input type="checkbox" [formControlName]="getControlName(option, i)" />
+                {{ option.associatedText }}
+              </label>
+            }
+            <!-- Double and string option type-->
+            <div style="display: flex; column-gap: 8px; flex-wrap: wrap">
+              @if ((option.type === "DOUBLE" || option.type === "STRING") && option.values) {
+                <select [formControlName]="getControlName(option, i) + DROPDOWN_SUFFIX">
+                  @if (option.allowCustomOption) {
+                    <option [value]="CUSTOM_OPTION_VALUE">Custom</option>
+                  }
+                  @for (value of option.values; track value) {
+                    <option [value]="value.value">
+                      {{ value.verboseName != null ? value.verboseName : value.value }}
+                    </option>
+                  }
+                </select>
+              }
+              @if (
+                (option.type === "DOUBLE" || option.type === "STRING") &&
+                ((option.allowCustomOption &&
+                  form.get(getControlName(option, i) + DROPDOWN_SUFFIX)?.value ===
+                    CUSTOM_OPTION_VALUE) ||
+                  !option.values)
+              ) {
+                <input
+                  [formControlName]="getControlName(option, i)"
+                  [type]="option.type === 'DOUBLE' ? 'number' : 'text'"
+                  [placeholder]="option.associatedText || ''"
+                  style="width: 120px" />
+              }
+            </div>
           </div>
-        </div>
+        }
       </div>
     </div>
-
   </form>
 </div>

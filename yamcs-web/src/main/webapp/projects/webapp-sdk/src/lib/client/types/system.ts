@@ -61,7 +61,7 @@ export interface ThreadInfo {
   state: string;
   native: boolean;
   suspended: boolean;
-  group: ThreadGroup;
+  group?: ThreadGroup;
   trace: TraceElementInfo[];
 }
 
@@ -270,13 +270,13 @@ export interface UserInfo {
   creationTime: string;
   confirmationTime: string;
   lastLoginTime: string;
-  groups: GroupInfo[];
-  roles: RoleInfo[];
-  identities: ExternalIdentity[];
+  groups?: GroupInfo[];
+  roles?: RoleInfo[];
+  identities?: ExternalIdentity[];
   clearance: string;
 
-  systemPrivileges: string[];
-  objectPrivileges: ObjectPrivilege[];
+  systemPrivileges?: string[];
+  objectPrivileges?: ObjectPrivilege[];
 }
 
 export interface ExternalIdentity {
@@ -306,8 +306,8 @@ export interface ServiceAccount {
 export interface GroupInfo {
   name: string;
   description: string;
-  users: UserInfo[];
-  serviceAccounts: ServiceAccount[];
+  users?: UserInfo[];
+  serviceAccounts?: ServiceAccount[];
 }
 
 export interface GroupMemberInfo {
@@ -334,8 +334,8 @@ export interface RoleInfo {
   name: string;
   description: string;
   default: boolean;
-  systemPrivileges: string[];
-  objectPrivileges: ObjectPrivilege[];
+  systemPrivileges?: string[];
+  objectPrivileges?: ObjectPrivilege[];
 }
 
 export interface Clearance {
@@ -352,6 +352,8 @@ export type ReplicationInfoSubscription = WebSocketCall<void, ReplicationInfo>;
 
 export type SystemInfoSubscription = WebSocketCall<void, SystemInfo>;
 
+export type HttpTrafficSubscription = WebSocketCall<void, HttpTraffic>;
+
 export interface Service {
   instance: string;
   name: string;
@@ -365,6 +367,7 @@ export interface Bucket {
   maxSize: number;
   numObjects: number;
   maxObjects: number;
+  created: string;
   directory?: string;
 }
 
@@ -426,8 +429,20 @@ export interface SystemInfo {
   nonHeapMemory: number;
   usedNonHeapMemory: number;
   usedMaxHeapMemory: number;
+  maxNonHeapMemory: number;
   jvmThreadCount: number;
   rootDirectories: RootDirectory[];
+  process: ProcessInfo;
+}
+
+export interface ProcessInfo {
+  pid: number;
+  user: string;
+  command: string;
+  arguments?: string[];
+  startTime: string;
+  totalCpuDuration: string;
+  children?: ProcessInfo[];
 }
 
 export interface RootDirectory {

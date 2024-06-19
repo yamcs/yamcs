@@ -4,13 +4,13 @@
 
 <mat-menu #colMenu="matMenu" yPosition="below" class="ya-menu" [overlapTrigger]="false">
   <ng-template matMenuContent>
-    <ng-container *ngFor="let column of columns">
-      <button *ngIf="!column.alwaysVisible"
-              mat-menu-item
-              (click)="toggleColumn(column)">
-        <mat-icon [style.visibility]="isVisible(column) ? 'visible' : 'hidden'">check</mat-icon>
-        {{ column.label }}
-      </button>
-    </ng-container>
+    @for (column of columns; track column) {
+      @if (!column.alwaysVisible) {
+        <button mat-menu-item (click)="toggleColumn(column)">
+          <mat-icon [style.visibility]="isVisible(column) ? 'visible' : 'hidden'">check</mat-icon>
+          {{ column.label }}
+        </button>
+      }
+    }
   </ng-template>
 </mat-menu>

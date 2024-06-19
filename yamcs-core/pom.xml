@@ -117,18 +117,13 @@
     </resources>
 
     <plugins>
-      <plugin> <!-- Sets the 'os.detected.classifier' maven property (used by protobuf plugin) -->
-        <groupId>kr.motd.maven</groupId>
-        <artifactId>os-maven-plugin</artifactId>
-      </plugin>
       <plugin>
-        <groupId>org.xolstice.maven.plugins</groupId>
-        <artifactId>protobuf-maven-plugin</artifactId>
+        <groupId>org.yamcs</groupId>
+        <artifactId>yamcs-maven-plugin</artifactId>
         <executions>
           <execution>
-            <id>protoc-core</id>
             <goals>
-              <goal>compile</goal>
+              <goal>protoc</goal>
             </goals>
           </execution>
         </executions>

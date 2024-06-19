@@ -81,7 +81,7 @@ export class AggregateArgumentComponent implements OnInit {
       formGroup = formArray.at(index) as FormGroup;
     }
 
-    for (const member of this.type.member) {
+    for (const member of this.type.member || []) {
       let initialValue;
       if (member.type.engType === 'aggregate') {
         initialValue = {};

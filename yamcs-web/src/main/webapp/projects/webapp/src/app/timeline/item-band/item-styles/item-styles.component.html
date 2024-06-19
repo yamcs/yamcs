@@ -1,15 +1,15 @@
-<p class="hint">
-  When unset, items inherit the styling of the band they are displayed on.
-</p>
+<p class="hint">When unset, items inherit the styling of the band they are displayed on.</p>
 <form [formGroup]="form">
   <table class="style-table" yaSimpleTable formGroupName="properties">
     <tr [class.disabled]="!backgroundColor_overrideBand.checked">
       <td class="property">
-        <mat-slide-toggle #backgroundColor_overrideBand formControlName="backgroundColor_overrideBand" />
+        <mat-slide-toggle
+          #backgroundColor_overrideBand
+          formControlName="backgroundColor_overrideBand" />
         Background Color
       </td>
       <td class="widget">
-        <input type="color" formControlName="backgroundColor">
+        <input type="color" formControlName="backgroundColor" />
       </td>
     </tr>
     <tr [class.disabled]="!textColor_overrideBand.checked">
@@ -18,7 +18,7 @@
         Text Color
       </td>
       <td class="widget">
-        <input type="color" formControlName="textColor">
+        <input type="color" formControlName="textColor" />
       </td>
     </tr>
     <tr [class.disabled]="!textSize_overrideBand.checked">
@@ -27,7 +27,7 @@
         Text Size
       </td>
       <td class="widget">
-        <input type="number" formControlName="textSize" style="width: 100px" min="0">
+        <input type="number" formControlName="textSize" style="width: 100px" min="0" />
       </td>
     </tr>
     <tr [class.disabled]="!marginLeft_overrideBand.checked">
@@ -36,7 +36,7 @@
         Margin Left
       </td>
       <td class="widget">
-        <input type="number" formControlName="marginLeft" style="width: 100px" min="0">
+        <input type="number" formControlName="marginLeft" style="width: 100px" min="0" />
       </td>
     </tr>
     <tr [class.disabled]="!borderColor_overrideBand.checked">
@@ -45,7 +45,7 @@
         Border Color
       </td>
       <td class="widget">
-        <input type="color" formControlName="borderColor">
+        <input type="color" formControlName="borderColor" />
       </td>
     </tr>
     <tr [class.disabled]="!borderWidth_overrideBand.checked">
@@ -54,7 +54,7 @@
         Border Width
       </td>
       <td class="widget">
-        <input type="number" formControlName="borderWidth" style="width: 100px" min="0">
+        <input type="number" formControlName="borderWidth" style="width: 100px" min="0" />
       </td>
     </tr>
     <tr [class.disabled]="!cornerRadius_overrideBand.checked">
@@ -63,7 +63,7 @@
         Corner Radius
       </td>
       <td class="widget">
-        <input type="number" formControlName="cornerRadius" style="width: 100px" min="0">
+        <input type="number" formControlName="cornerRadius" style="width: 100px" min="0" />
       </td>
     </tr>
   </table>

@@ -1,40 +1,49 @@
-<ng-container *ngIf="(value?.type === 'AGGREGATE' || value?.type === 'ARRAY'); else simpleValue">
-  <table *ngIf="nodes$ | async as nodes">
-    <ng-container *ngFor="let node of nodes">
-      <tr *ngIf="!node.parent || node.parent.expanded">
-        <td>
-          <div class="indent" [style.width.px]="node.margin"></div>
-          <ng-container *ngIf="node.children">
-            <span class="toggle" *ngIf="!node.expanded"
-                  (click)="expandNode(node)">▸</span>
-            <span class="toggle" *ngIf="node.expanded"
-                  (click)="collapseNode(node)">▾</span>
-          </ng-container>
-
-          <ng-container *ngIf="node.key !== undefined">
-            <span class="key">{{ node.key }}</span><span class="symbol">: </span>
-          </ng-container>
-
-          <ng-container *ngIf="node.expanded">
-            <ng-container *ngIf="node.value.type === 'ARRAY'">
-              <span class="value expandable"
-                    (click)="collapseNode(node)">Array({{ node.value.arrayValue?.length || 0 }})</span>
-            </ng-container>
-            <ng-container *ngIf="node.value.type === 'AGGREGATE'">
-              <span class="value expandable"
-                    (click)="collapseNode(node)">&#123;...&#125;</span>
-            </ng-container>
-          </ng-container>
-          <ng-container *ngIf="!node.expanded || (node.value.type !== 'ARRAY' && node.value.type !== 'AGGREGATE')">
-            <span class="value"
+@if (value?.type === "AGGREGATE" || value?.type === "ARRAY") {
+  @if (nodes$ | async; as nodes) {
+    <table>
+      @for (node of nodes; track node) {
+        @if (!node.parent || node.parent.expanded) {
+          <tr>
+            <td>
+              <div class="indent" [style.width.px]="node.margin"></div>
+              @if (node.children) {
+                @if (!node.expanded) {
+                  <span class="toggle" (click)="expandNode(node)">▸</span>
+                }
+                @if (node.expanded) {
+                  <span class="toggle" (click)="collapseNode(node)">▾</span>
+                }
+              }
+              @if (node.key !== undefined) {
+                <span class="key">{{ node.key }}</span
+                ><span class="symbol">: </span>
+              }
+              @if (node.expanded) {
+                @if (node.value.type === "ARRAY") {
+                  <span class="value expandable" (click)="collapseNode(node)"
+                    >Array({{ node.value.arrayValue?.length || 0 }})</span
+                  >
+                }
+                @if (node.value.type === "AGGREGATE") {
+                  <span class="value expandable" (click)="collapseNode(node)">&#123;...&#125;</span>
+                }
+              }
+              @if (
+                !node.expanded || (node.value.type !== "ARRAY" && node.value.type !== "AGGREGATE")
+              ) {
+                <span
+                  class="value"
                   [class.expandable]="node.children"
-                  (click)="node.children ? expandNode(node) : false">{{ node.value | value }}</span>
-          </ng-container>
-        </td>
-      </tr>
-    </ng-container>
-  </table>
-</ng-container>
-<ng-template #simpleValue>
-  {{ (value | value) ?? '-' }}
-</ng-template>
+                  (click)="node.children ? expandNode(node) : false"
+                  >{{ node.value | value }}</span
+                >
+              }
+            </td>
+          </tr>
+        }
+      }
+    </table>
+  }
+} @else {
+  {{ (value | value) ?? "-" }}
+}

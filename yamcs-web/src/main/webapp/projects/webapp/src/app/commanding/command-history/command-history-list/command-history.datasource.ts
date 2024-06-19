@@ -25,7 +25,7 @@ export class CommandHistoryDataSource extends DataSource<CommandHistoryRecord> {
     super();
     this.syncSubscription = synchronizer.sync(() => {
       if (this.buffer.dirty && !this.loading$.getValue()) {
-        this.records$.next(this.buffer.snapshot());
+        this.emitCommands();
         this.buffer.dirty = false;
       }
     });
@@ -44,6 +44,10 @@ export class CommandHistoryDataSource extends DataSource<CommandHistoryRecord> {
     return this.records$;
   }
 
+  private emitCommands() {
+    this.records$.next(this.buffer.snapshot());
+  }
+
   loadEntries(options: GetCommandHistoryOptions) {
     this.loading$.next(true);
     return this.loadPage({
@@ -53,6 +57,9 @@ export class CommandHistoryDataSource extends DataSource<CommandHistoryRecord> {
       this.buffer.reset();
       this.blockHasMore = false;
       this.buffer.addArchiveData(entries.map(entry => new CommandHistoryRecord(entry)));
+
+      // Quick emit, don't wait on sync tick
+      this.emitCommands();
     }).finally(() => {
       this.loading$.next(false);
     });
@@ -82,7 +89,11 @@ export class CommandHistoryDataSource extends DataSource<CommandHistoryRecord> {
       next: this.continuationToken,
       limit: this.pageSize,
     }).then(entries => {
-      this.buffer.addArchiveData(entries.map(entry => new CommandHistoryRecord(entry)));
+      const records = entries.map(entry => new CommandHistoryRecord(entry));
+      this.buffer.addArchiveData(records);
+
+      // Quick emit, don't wait on sync tick
+      this.emitCommands();
     });
   }
 

@@ -1,20 +1,30 @@
 <table>
-  <tr *ngFor="let ack of command.extraAcks">
-    <td *ngIf="showIcons" style="width: 16px">
-      <div style="display: flex; align-items: center">
-        <app-acknowledgment-icon [ack]="ack" />
-      </div>
-    </td>
-    <td style="width: 150px">{{ ack.name }}</td>
-    <td style="width: 70px">{{ ack.status }}</td>
-    <td>
-      <ng-container [ngSwitch]="ack.status">
-        <span *ngSwitchCase="'SCHEDULED'">-</span>
-        <span *ngSwitchCase="'PENDING'">-</span>
-        <span *ngSwitchDefault [matTooltip]="ack.time">
-          {{ ack.time | deltaWith:command.generationTime }}
-        </span>
-      </ng-container>
-    </td>
-  </tr>
+  @for (ack of command.extraAcks; track ack.name) {
+    <tr>
+      @if (showIcons) {
+        <td style="width: 16px">
+          <div style="display: flex; align-items: center">
+            <app-acknowledgment-icon [ack]="ack" />
+          </div>
+        </td>
+      }
+      <td style="width: 150px">{{ ack.name }}</td>
+      <td style="width: 70px">{{ ack.status }}</td>
+      <td>
+        @switch (ack.status) {
+          @case ("SCHEDULED") {
+            <span>-</span>
+          }
+          @case ("PENDING") {
+            <span>-</span>
+          }
+          @default {
+            <span [matTooltip]="ack.time | datetime">
+              {{ ack.time | deltaWith: command.generationTime }}
+            </span>
+          }
+        }
+      </td>
+    </tr>
+  }
 </table>

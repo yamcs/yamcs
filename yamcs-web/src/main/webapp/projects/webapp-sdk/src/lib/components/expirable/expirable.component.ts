@@ -1,4 +1,3 @@
-import { NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
@@ -12,8 +11,7 @@ import { ParameterValue } from '../../client';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatIcon,
-    MatTooltip,
-    NgIf,
+    MatTooltip
   ],
 })
 export class YaExpirable {

@@ -1,17 +1,18 @@
-<div class="label" *ngIf="option() as option">
-  <div class="meta" [class.error]="err.invalid$ | async">
-    <div class="item">float</div>
+@if (option(); as option) {
+  <div class="label">
+    <div class="meta" [class.error]="err.invalid$ | async">
+      <div class="item">float</div>
+    </div>
+    {{ option.name }}
+    @if (!option.required) {
+      <span class="hint">(optional)</span>
+    }
+    @if (option.description; as description) {
+      <ya-help>
+        {{ description }}
+      </ya-help>
+    }
+    <ya-errors #err [controlName]="option.name" />
+    <input [formControl]="formControl" type="text" autocomplete="off" />
   </div>
-
-  {{ option.name }}
-  <span class="hint" *ngIf="!option.required">(optional)</span>
-  <ya-help *ngIf="option.description as description">
-    {{ description }}
-  </ya-help>
-
-  <ya-errors #err [controlName]="option.name" />
-
-  <input [formControl]="formControl"
-         type="text"
-         autocomplete="off">
-</div>
+}

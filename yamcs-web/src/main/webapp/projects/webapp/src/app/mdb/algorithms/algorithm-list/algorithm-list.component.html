@@ -4,65 +4,63 @@
 
   <div class="panel-content">
     <div class="filter-bar">
-      <ya-search-filter [formControl]="filterControl"
-                        placeholder="Filter algorithms"
-                        (onArrowDown)="selectNext()"
-                        (onArrowUp)="selectPrevious()"
-                        (onEnter)="applySelection()" />
-      <ya-column-chooser #columnChooser
-                         [columns]="columns"
-                         preferenceKey="algorithms" />
+      <ya-search-filter
+        [formControl]="filterControl"
+        placeholder="Filter algorithms"
+        (onArrowDown)="selectNext()"
+        (onArrowUp)="selectPrevious()"
+        (onEnter)="applySelection()" />
+      <ya-column-chooser #columnChooser [columns]="columns" preferenceKey="algorithms" />
     </div>
 
-    <table mat-table
-           *ngIf="dataSource"
-           class="ya-data-table expand"
-           [dataSource]="dataSource">
-
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef>Name</th>
-        <td mat-cell *matCellDef="let algorithm">
-          <a [routerLink]="['/mdb/algorithms', algorithm.qualifiedName]"
-             [queryParams]="{c: yamcs.context}">
-            <ya-highlight [text]="shortName ? algorithm.name : algorithm.qualifiedName"
-                          [term]="filterControl.value" />
-          </a>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="type">
-        <th mat-header-cell *matHeaderCellDef>Type</th>
-        <td mat-cell *matCellDef="let algorithm">{{ algorithm.type || '-' }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="language">
-        <th mat-header-cell *matHeaderCellDef>Language</th>
-        <td mat-cell *matCellDef="let algorithm">{{ algorithm.language || '-' }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="scope">
-        <th mat-header-cell *matHeaderCellDef>Scope</th>
-        <td mat-cell *matCellDef="let algorithm">{{ algorithm.scope || '-' }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="shortDescription">
-        <th mat-header-cell *matHeaderCellDef>Description</th>
-        <td mat-cell *matCellDef="let algorithm" class="wrap200">{{ algorithm.shortDescription || '-' }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef class="expand"></th>
-        <td mat-cell *matCellDef="let row"></td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
-      <tr mat-row *matRowDef="let row; columns: (columnChooser.displayedColumns$ | async);"
+    @if (dataSource) {
+      <table mat-table class="ya-data-table expand" [dataSource]="dataSource">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let algorithm">
+            <a
+              [routerLink]="['/mdb/algorithms', algorithm.qualifiedName]"
+              [queryParams]="{ c: yamcs.context }">
+              <ya-highlight
+                [text]="shortName ? algorithm.name : algorithm.qualifiedName"
+                [term]="filterControl.value" />
+            </a>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef>Type</th>
+          <td mat-cell *matCellDef="let algorithm">{{ algorithm.type || "-" }}</td>
+        </ng-container>
+        <ng-container matColumnDef="language">
+          <th mat-header-cell *matHeaderCellDef>Language</th>
+          <td mat-cell *matCellDef="let algorithm">{{ algorithm.language || "-" }}</td>
+        </ng-container>
+        <ng-container matColumnDef="scope">
+          <th mat-header-cell *matHeaderCellDef>Scope</th>
+          <td mat-cell *matCellDef="let algorithm">{{ algorithm.scope || "-" }}</td>
+        </ng-container>
+        <ng-container matColumnDef="shortDescription">
+          <th mat-header-cell *matHeaderCellDef>Description</th>
+          <td mat-cell *matCellDef="let algorithm" class="wrap200">
+            {{ algorithm.shortDescription || "-" }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="expand"></th>
+          <td mat-cell *matCellDef="let row"></td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: columnChooser.displayedColumns$ | async"
           [class.selected]="selection.isSelected(row)"></tr>
-    </table>
-    <mat-paginator [pageSize]="pageSize"
-                   [hidePageSize]="true"
-                   [showFirstLastButtons]="true"
-                   [length]="dataSource.totalSize$ | async" />
+      </table>
+    }
+    <mat-paginator
+      [pageSize]="pageSize"
+      [hidePageSize]="true"
+      [showFirstLastButtons]="true"
+      [length]="dataSource.totalSize$ | async" />
   </div>
   <ng-template #empty>
     <div class="panel-content">

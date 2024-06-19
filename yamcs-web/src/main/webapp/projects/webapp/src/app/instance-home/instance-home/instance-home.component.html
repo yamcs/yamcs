@@ -2,8 +2,8 @@
   <app-instance-toolbar>Home</app-instance-toolbar>
 
   <div class="panel-content">
-    <ng-container *ngIf="showPackets()">
+    @if (showPackets()) {
       <app-tmstats-table [tmstats$]="tmstats$" />
-    </ng-container>
+    }
   </div>
 </app-instance-page>

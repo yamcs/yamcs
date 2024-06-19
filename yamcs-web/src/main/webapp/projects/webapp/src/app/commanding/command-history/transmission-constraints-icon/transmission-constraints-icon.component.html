@@ -1,5 +1,10 @@
-<ng-container [ngSwitch]="command.transmissionConstraints?.status">
-  <mat-icon *ngSwitchCase="'PENDING'" class="down icon16 spin" matTooltip="Checking transmission constraints">cached
-  </mat-icon>
-  <mat-icon *ngSwitchDefault class="down icon16">lens</mat-icon>
-</ng-container>
+@switch (command.transmissionConstraints?.status) {
+  @case ("PENDING") {
+    <mat-icon class="down icon16 spin" matTooltip="Checking transmission constraints"
+      >cached
+    </mat-icon>
+  }
+  @default {
+    <mat-icon class="down icon16">lens</mat-icon>
+  }
+}

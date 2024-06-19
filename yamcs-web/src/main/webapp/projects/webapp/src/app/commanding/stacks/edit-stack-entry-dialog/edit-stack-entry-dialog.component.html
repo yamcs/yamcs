@@ -1,5 +1,5 @@
-<ng-container *ngIf="!(selectedCommand$ | async)">
-  <div class="wrapper mat-typography">
+@if (!(selectedCommand$ | async)) {
+  <div class="wrapper">
     <form [formGroup]="selectCommandForm" class="ya-form">
       <h2>Select command</h2>
       <div class="command-table-wrapper">
@@ -7,83 +7,91 @@
       </div>
     </form>
   </div>
-  <div class="footer mat-typography">
+  <div class="footer">
     <mat-toolbar>
       <mat-toolbar-row>
         <button class="ya-button" mat-dialog-close>CANCEL</button>
       </mat-toolbar-row>
     </mat-toolbar>
   </div>
-</ng-container>
+}
 
-<ng-container *ngIf="selectedCommand$ | async as command">
-  <div class="wrapper mat-typography">
+@if (selectedCommand$ | async; as command) {
+  <div class="wrapper">
     <div class="command-detail">
       <div class="names">
         <div>
-          <ng-container *ngIf="command.qualifiedName | spaceSystemName as spaceSystem">
+          @if (command.qualifiedName | spaceSystemName; as spaceSystem) {
             <ya-text-action [padding]="false" (click)="returnToList(spaceSystem)">
               {{ spaceSystem }}
             </ya-text-action>
-          </ng-container>
+          }
           <h2>{{ command.name }}</h2>
         </div>
-        <div *ngFor="let alias of command.alias || []">
-          {{ alias.namespace }}<br>
-          <h2>{{ alias.name }}</h2>
-        </div>
+        @for (alias of command.alias || []; track alias) {
+          <div>
+            {{ alias.namespace }}<br />
+            <h2>{{ alias.name }}</h2>
+          </div>
+        }
       </div>
       <p>&nbsp;</p>
-      <app-command-form #commandForm
-                        [command]="command"
-                        [templateProvider]="templateProvider" />
-      <ng-container *ngIf="format === 'ycs'">
-        <form [formGroup]="stackOptionsForm" class="ya-form" [ngClass]="this.stackOptionsForm.disabled && 'disabled'">
+      <app-command-form #commandForm [command]="command" [templateProvider]="templateProvider" />
+      @if (format === "ycs") {
+        <form
+          [formGroup]="stackOptionsForm"
+          class="ya-form"
+          [ngClass]="this.stackOptionsForm.disabled && 'disabled'">
           <p>&nbsp;</p>
           <h3>Stack advancement</h3>
           <div class="label">
             Advance when
-            <app-advance-ack-help [verifiers]="verifierAcknowledgments"
-                                  [extra]="extraAcknowledgments" />
-            <br>
-            <div style="display: flex; align-items: flex-start;">
-              <ya-select #ackSelect
-                         [options]="ackOptions"
-                         formControlName="advancementAckDropDown"
-                         emptyOption="Inherit" />
-              <input type="text" formControlName="advancementAckCustom"
-                     *ngIf="stackOptionsForm.get('advancementAckDropDown')?.value === 'custom'"
-                     style="width: 200px; margin-left: -1px">
+            <app-advance-ack-help
+              [verifiers]="verifierAcknowledgments"
+              [extra]="extraAcknowledgments" />
+            <br />
+            <div style="display: flex; align-items: flex-start">
+              <ya-select
+                #ackSelect
+                [options]="ackOptions"
+                formControlName="advancementAckDropDown"
+                emptyOption="Inherit" />
+              @if (stackOptionsForm.get("advancementAckDropDown")?.value === "custom") {
+                <input
+                  type="text"
+                  formControlName="advancementAckCustom"
+                  style="width: 200px; margin-left: -1px" />
+              }
             </div>
           </div>
-          <br>
+          <br />
           <div class="label">
             Wait (ms)
             <ya-help dialogTitle="Wait time">
-              <p>
-                Wait time before advancing to the next command in the stack.
-              </p>
-              <p>
-                This triggers after successful acknowledgment.
-              </p>
+              <p>Wait time before advancing to the next command in the stack.</p>
+              <p>This triggers after successful acknowledgment.</p>
             </ya-help>
-            <br>
-            <input type="number" formControlName="advancementWait" placeholder="Inherit" step="1000" min="0">
+            <br />
+            <input
+              type="number"
+              formControlName="advancementWait"
+              placeholder="Inherit"
+              step="1000"
+              min="0" />
           </div>
         </form>
-      </ng-container>
+      }
     </div>
   </div>
-  <div class="footer mat-typography">
+  <div class="footer">
     <mat-toolbar>
       <mat-toolbar-row>
         <button class="ya-button" mat-dialog-close>CANCEL</button>&nbsp;&nbsp;
-        <button class="ya-button primary"
-                (click)="handleOK()"
-                [disabled]="!commandForm.form.valid">
+        <button class="ya-button primary" (click)="handleOK()" [disabled]="!commandForm.form.valid">
           <!-- TODO: disabled throws a "ExpressionChangedAfterItHasBeenCheckedError", potentially needs fix -->
-          {{ okLabel }}</button>
+          {{ okLabel }}
+        </button>
       </mat-toolbar-row>
     </mat-toolbar>
   </div>
-</ng-container>
+}

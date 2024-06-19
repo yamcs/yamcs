@@ -1,4 +1,4 @@
-import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { YaLabel } from '../label/label.component';
@@ -14,10 +14,8 @@ interface Entry {
   templateUrl: './labels.component.html',
   imports: [
     AsyncPipe,
-    NgIf,
-    NgForOf,
-    YaLabel,
-  ],
+    YaLabel
+],
 })
 export class YaLabels implements OnInit {
 

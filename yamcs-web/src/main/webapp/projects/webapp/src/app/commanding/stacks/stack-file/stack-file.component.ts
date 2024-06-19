@@ -100,7 +100,7 @@ export class StackFileComponent implements OnDestroy {
 
   // KeyValuePipe comparator that preserves original order.
   // (default KeyValuePipe is to sort A-Z, but that's undesired for args).
-  insertionOrder = (a: KeyValue<number, string>, b: KeyValue<number, string>): number => {
+  insertionOrder = (a: KeyValue<string, any>, b: KeyValue<string, any>): number => {
     return 0;
   };
 

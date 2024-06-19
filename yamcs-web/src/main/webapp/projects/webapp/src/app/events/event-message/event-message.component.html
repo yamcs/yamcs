@@ -1,10 +1,13 @@
-<ng-container *ngIf="summary === null || summary === undefined">-</ng-container>
-<ya-highlight *ngIf="summary !== null && summary !== undefined"
-              [text]="summary" [term]="highlight" />
-<ng-container *ngIf="detail">
+@if (summary === null || summary === undefined) {
+  -
+}
+@if (summary !== null && summary !== undefined) {
+  <ya-highlight [text]="summary" [term]="highlight" />
+}
+@if (detail) {
   <ya-icon-action icon="more_horiz" (click)="toggleExpanded()" />
-  <ng-container *ngIf="expanded$ | async">
-    <br>
+  @if (expanded$ | async) {
+    <br />
     <ya-highlight [text]="detail" [term]="highlight" />
-  </ng-container>
-</ng-container>
+  }
+}

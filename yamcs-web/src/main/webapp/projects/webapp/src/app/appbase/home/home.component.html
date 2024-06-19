@@ -2,119 +2,123 @@
 
 <mat-toolbar class="top">
   <mat-toolbar-row>
-    Instances
-    &nbsp;&nbsp;&nbsp;
-    <a mat-button
-       color="primary"
-       routerLink="create-instance"
-       *ngIf="isCreateInstanceEnabled()">
-      <mat-icon>add_circle_outline</mat-icon>
-      Create instance
-    </a>
-    <a mat-button
-       color="primary"
-       *ngIf="mayControlServices()"
-       [disabled]="!isGroupStartEnabled()"
-       (click)="startSelectedInstances()">
-      <mat-icon>play_arrow</mat-icon>
-      Start
-    </a>
-    <a mat-button
-       color="primary"
-       *ngIf="mayControlServices()"
-       [disabled]="!isGroupStopEnabled()"
-       (click)="stopSelectedInstances()">
-      <mat-icon>stop</mat-icon>
-      Stop
-    </a>
-    <a mat-button
-       color="primary"
-       *ngIf="mayControlServices()"
-       [disabled]="!isGroupRestartEnabled()"
-       (click)="restartSelectedInstances()">
-      <mat-icon>sync_problem</mat-icon>
-      Restart
-    </a>
+    Instances &nbsp;&nbsp;&nbsp;
+    @if (isCreateInstanceEnabled()) {
+      <a mat-button color="primary" routerLink="create-instance">
+        <mat-icon>add_circle_outline</mat-icon>
+        Create instance
+      </a>
+    }
+    @if (mayControlServices()) {
+      <a
+        mat-button
+        color="primary"
+        [disabled]="!isGroupStartEnabled()"
+        (click)="startSelectedInstances()">
+        <mat-icon>play_arrow</mat-icon>
+        Start
+      </a>
+    }
+    @if (mayControlServices()) {
+      <a
+        mat-button
+        color="primary"
+        [disabled]="!isGroupStopEnabled()"
+        (click)="stopSelectedInstances()">
+        <mat-icon>stop</mat-icon>
+        Stop
+      </a>
+    }
+    @if (mayControlServices()) {
+      <a
+        mat-button
+        color="primary"
+        [disabled]="!isGroupRestartEnabled()"
+        (click)="restartSelectedInstances()">
+        <mat-icon>sync_problem</mat-icon>
+        Restart
+      </a>
+    }
   </mat-toolbar-row>
 </mat-toolbar>
 
 <div class="panel-content">
   <div class="filter-bar">
-    <ya-search-filter [formControl]="filterControl"
-                      placeholder="Filter instances"
-                      (onArrowDown)="selectNext()"
-                      (onArrowUp)="selectPrevious()"
-                      (onEnter)="applySelection()" />
+    <ya-search-filter
+      [formControl]="filterControl"
+      placeholder="Filter instances"
+      (onArrowDown)="selectNext()"
+      (onArrowUp)="selectPrevious()"
+      (onEnter)="applySelection()" />
   </div>
-  <table mat-table
-         [dataSource]="dataSource"
-         class="ya-data-table expand"
-         matSort
-         matSortActive="name"
-         matSortDirection="asc"
-         matSortDisableClear>
-
+  <table
+    mat-table
+    [dataSource]="dataSource"
+    class="ya-data-table expand"
+    matSort
+    matSortActive="name"
+    matSortDirection="asc"
+    matSortDisableClear>
     <ng-container cdkColumnDef="select">
       <th mat-header-cell *cdkHeaderCellDef class="checkbox">
-        <input type="checkbox" (change)="$event ? masterToggle() : null"
-               [checked]="selection.hasValue() && isAllSelected()">
+        <input
+          type="checkbox"
+          (change)="$event ? masterToggle() : null"
+          [checked]="selection.hasValue() && isAllSelected()" />
       </th>
       <td mat-cell *cdkCellDef="let row" class="checkbox">
-        <input type="checkbox" (click)="$event.stopPropagation()"
-               (change)="$event ? selection.toggle(row) : null"
-               [checked]="selection.isSelected(row)">
+        <input
+          type="checkbox"
+          (click)="$event.stopPropagation()"
+          (change)="$event ? selection.toggle(row) : null"
+          [checked]="selection.isSelected(row)" />
       </td>
     </ng-container>
 
     <ng-container matColumnDef="status">
       <th mat-header-cell *matHeaderCellDef class="status"></th>
       <td mat-cell *matCellDef="let row" class="status">
-        <mat-icon *ngIf="row.state === 'INITIALIZED'"
-                  class="warning"
-                  [matTooltip]="row.state">
-          adjust
-        </mat-icon>
-        <mat-icon *ngIf="row.state === 'RUNNING'"
-                  class="success"
-                  [matTooltip]="row.state">
-          check_circle
-        </mat-icon>
-        <mat-icon *ngIf="row.state === 'FAILED'"
-                  class="alert"
-                  [matTooltip]="row.state">
-          highlight_off
-        </mat-icon>
-        <mat-icon *ngIf="row.state === 'OFFLINE'"
-                  class="down"
-                  [matTooltip]="row.state">
-          lens
-        </mat-icon>
-        <mat-icon *ngIf="row.state === 'INITIALIZING' || row.state === 'STARTING' || row.state === 'STOPPING'"
-                  class="spin"
-                  [matTooltip]="row.state">
-          cached
-        </mat-icon>
+        @if (row.state === "INITIALIZED") {
+          <mat-icon class="warning" [matTooltip]="row.state"> adjust </mat-icon>
+        }
+        @if (row.state === "RUNNING") {
+          <mat-icon class="success" [matTooltip]="row.state"> check_circle </mat-icon>
+        }
+        @if (row.state === "FAILED") {
+          <mat-icon class="alert" [matTooltip]="row.state"> highlight_off </mat-icon>
+        }
+        @if (row.state === "OFFLINE") {
+          <mat-icon class="down" [matTooltip]="row.state"> lens </mat-icon>
+        }
+        @if (row.state === "INITIALIZING" || row.state === "STARTING" || row.state === "STOPPING") {
+          <mat-icon class="spin" [matTooltip]="row.state"> cached </mat-icon>
+        }
       </td>
     </ng-container>
 
     <ng-container cdkColumnDef="name">
       <th mat-header-cell *cdkHeaderCellDef mat-sort-header>Instance</th>
       <td mat-cell *cdkCellDef="let row">
-        <a *ngIf="row.state !== 'OFFLINE'"
-           routerLink="/instance"
-           [queryParams]="{c: (row.processors?.length ? (row.name + '__' + (row | defaultProcessor)) : row.name)}"
-           (click)="$event.stopPropagation()">
-          <ya-highlight [text]="row.name"
-                        [term]="filterControl.value" />
-        </a>
-        <span *ngIf="row.state === 'OFFLINE'">{{ row.name }}</span>
+        @if (row.state !== "OFFLINE") {
+          <a
+            routerLink="/instance"
+            [queryParams]="{
+              c: row.processors?.length ? row.name + '__' + (row | defaultProcessor) : row.name
+            }"
+            (click)="$event.stopPropagation()">
+            <ya-highlight [text]="row.name" [term]="filterControl.value" />
+          </a>
+        }
+        @if (row.state === "OFFLINE") {
+          <span>{{ row.name }}</span>
+        }
       </td>
     </ng-container>
 
     <ng-container cdkColumnDef="processor">
-      <th mat-header-cell *cdkHeaderCellDef mat-sort-header>Default Processor</th>
+      <th mat-header-cell *cdkHeaderCellDef mat-sort-header>Default processor</th>
       <td mat-cell *cdkCellDef="let row">
-        {{ row | defaultProcessor | nvl:'-' }}
+        {{ row | defaultProcessor | nvl: "-" }}
       </td>
     </ng-container>
 
@@ -122,16 +126,19 @@
       <th mat-header-cell *cdkHeaderCellDef mat-sort-header>Labels</th>
       <td mat-cell *cdkCellDef="let row">
         <ya-labels [dict]="row.labels" />
-        <ng-container *ngIf="!row.labels">-</ng-container>
+        @if (!row.labels) {
+          -
+        }
       </td>
     </ng-container>
 
     <ng-container cdkColumnDef="template">
       <th mat-header-cell *cdkHeaderCellDef mat-sort-header>Template</th>
       <td mat-cell *cdkCellDef="let row">
-        {{ row.template || '-' }}
-        <mat-icon *ngIf="row.templateChanged"
-                  matTooltip="Template has changed">warning_amber</mat-icon>
+        {{ row.template || "-" }}
+        @if (row.templateChanged) {
+          <mat-icon matTooltip="Template has changed">warning_amber</mat-icon>
+        }
       </td>
     </ng-container>
 
@@ -145,37 +152,43 @@
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef class="expand"></th>
       <td mat-cell *matCellDef="let instance">
-        <ya-more *ngIf="mayControlServices()">
-          <button mat-menu-item
-                  (click)="startInstance(instance)"
-                  [disabled]="instance.state !== 'OFFLINE'">
-            Start
-          </button>
-          <button mat-menu-item
-                  (click)="stopInstance(instance)"
-                  [disabled]="instance.state === 'OFFLINE'">
-            Stop
-          </button>
-          <button mat-menu-item
-                  (click)="restartInstance(instance)"
-                  [disabled]="instance.state === 'OFFLINE'">
-            Restart
-          </button>
-        </ya-more>
-        <span class="alert" *ngIf="instance.failureCause as failureCause">
-          {{ failureCause }}
-        </span>
+        @if (mayControlServices()) {
+          <ya-more>
+            <button
+              mat-menu-item
+              (click)="startInstance(instance)"
+              [disabled]="instance.state !== 'OFFLINE'">
+              Start
+            </button>
+            <button
+              mat-menu-item
+              (click)="stopInstance(instance)"
+              [disabled]="instance.state === 'OFFLINE'">
+              Stop
+            </button>
+            <button
+              mat-menu-item
+              (click)="restartInstance(instance)"
+              [disabled]="instance.state === 'OFFLINE'">
+              Restart
+            </button>
+          </ya-more>
+        }
+        @if (instance.failureCause; as failureCause) {
+          <span class="alert">
+            {{ failureCause }}
+          </span>
+        }
       </td>
     </ng-container>
 
     <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row
-        *cdkRowDef="let row; columns: displayedColumns;"
-        [class.selected]="selection.isSelected(row)"
-        (click)="toggleOne(row)"></tr>
+    <tr
+      mat-row
+      *cdkRowDef="let row; columns: displayedColumns"
+      [class.selected]="selection.isSelected(row)"
+      (click)="toggleOne(row)"></tr>
   </table>
 
-  <mat-paginator [pageSize]="100"
-                 [hidePageSize]="true"
-                 [showFirstLastButtons]="true" />
+  <mat-paginator [pageSize]="100" [hidePageSize]="true" [showFirstLastButtons]="true" />
 </div>

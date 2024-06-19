@@ -1,55 +1,65 @@
-<ng-container [ngSwitch]="type.engType">
-  <app-aggregate-argument *ngSwitchCase="'aggregate'"
-                          [name]="name"
-                          [description]="description"
-                          [type]="type"
-                          [initialValue]="parsedInitialValue" />
-
-  <app-binary-argument *ngSwitchCase="'binary'"
-                       [name]="name"
-                       [description]="description"
-                       [type]="type"
-                       [formControlName]="name" />
-
-  <app-boolean-argument *ngSwitchCase="'boolean'"
-                        [name]="name"
-                        [description]="description"
-                        [type]="type"
-                        [formControlName]="name" />
-
-  <app-enumeration-argument *ngSwitchCase="'enumeration'"
-                            [name]="name"
-                            [description]="description"
-                            [type]="type"
-                            [formControlName]="name" />
-
-  <app-float-argument *ngSwitchCase="'float'"
-                      [name]="name"
-                      [description]="description"
-                      [type]="type"
-                      [formControlName]="name" />
-
-  <app-integer-argument *ngSwitchCase="'integer'"
-                        [name]="name"
-                        [description]="description"
-                        [type]="type"
-                        [formControlName]="name" />
-
-  <app-string-argument *ngSwitchCase="'string'"
-                       [name]="name"
-                       [description]="description"
-                       [type]="type"
-                       [formControlName]="name" />
-
-  <app-time-argument *ngSwitchCase="'time'"
-                     [name]="name"
-                     [description]="description"
-                     [type]="type"
-                     [formControlName]="name" />
-
-  <app-array-argument *ngSwitchCase="type.engType.endsWith('[]') ? type.engType : ''"
-                      [name]="name"
-                      [description]="description"
-                      [type]="type"
-                      [initialValue]="parsedInitialValue" />
-</ng-container>
+@switch (type.engType) {
+  @case ("aggregate") {
+    <app-aggregate-argument
+      [name]="name"
+      [description]="description"
+      [type]="type"
+      [initialValue]="parsedInitialValue" />
+  }
+  @case ("binary") {
+    <app-binary-argument
+      [name]="name"
+      [description]="description"
+      [type]="type"
+      [formControlName]="name" />
+  }
+  @case ("boolean") {
+    <app-boolean-argument
+      [name]="name"
+      [description]="description"
+      [type]="type"
+      [formControlName]="name" />
+  }
+  @case ("enumeration") {
+    <app-enumeration-argument
+      [name]="name"
+      [description]="description"
+      [type]="type"
+      [formControlName]="name" />
+  }
+  @case ("float") {
+    <app-float-argument
+      [name]="name"
+      [description]="description"
+      [type]="type"
+      [formControlName]="name" />
+  }
+  @case ("integer") {
+    <app-integer-argument
+      [name]="name"
+      [description]="description"
+      [type]="type"
+      [formControlName]="name" />
+  }
+  @case ("string") {
+    <app-string-argument
+      [name]="name"
+      [description]="description"
+      [type]="type"
+      [formControlName]="name" />
+  }
+  @case ("time") {
+    <app-time-argument
+      [name]="name"
+      [description]="description"
+      [type]="type"
+      [formControlName]="name" />
+  }
+  @case (type.engType.endsWith("[]") ? type.engType : "") {
+    <app-array-argument
+      [name]="name"
+      [description]="description"
+      [type]="type"
+      [initialValue]="parsedInitialValue" />
+  }
+}

@@ -1,16 +1,18 @@
-<app-instance-page *ngIf="container$ | async as container">
-  <app-instance-toolbar>
-    <ng-container *ngIf="(container.qualifiedName | spaceSystemName) as spaceSystemName">
-      <a routerLink="/mdb/containers"
-         [queryParams]="{c: yamcs.context, filter: spaceSystemName}"
-         class="ya-link ya-header-link">
-        {{ spaceSystemName }}
-      </a>/{{ container.qualifiedName | shortName }}
-      <ya-title-copy [text]="container.qualifiedName" />
-    </ng-container>
-  </app-instance-toolbar>
-
-  <div class="panel-content">
-    <app-container-detail [container]="container" />
-  </div>
-</app-instance-page>
+@if (container$ | async; as container) {
+  <app-instance-page>
+    <app-instance-toolbar>
+      @if (container.qualifiedName | spaceSystemName; as spaceSystemName) {
+        <a
+          routerLink="/mdb/containers"
+          [queryParams]="{ c: yamcs.context, filter: spaceSystemName }"
+          class="ya-link ya-header-link">
+          {{ spaceSystemName }} </a
+        >/{{ container.qualifiedName | shortName }}
+        <ya-title-copy [text]="container.qualifiedName" />
+      }
+    </app-instance-toolbar>
+    <div class="panel-content">
+      <app-container-detail [container]="container" />
+    </div>
+  </app-instance-page>
+}

@@ -8,9 +8,7 @@
           <td width="1">
             <mat-icon class="icon16" style="vertical-align: middle">notifications</mat-icon>
           </td>
-          <td>
-            The alarm is unacknowledged and the cause of the alarm still exists.
-          </td>
+          <td>The alarm is unacknowledged and the cause of the alarm still exists.</td>
         </tr>
         <tr>
           <td>
@@ -24,9 +22,7 @@
           <td>
             <mat-icon class="icon16" style="vertical-align: middle">check_circle</mat-icon>
           </td>
-          <td>
-            The alarm is acknowledged and the cause of the alarm still exists.
-          </td>
+          <td>The alarm is acknowledged and the cause of the alarm still exists.</td>
         </tr>
         <tr>
           <td>
@@ -40,83 +36,83 @@
           <td>
             <mat-icon class="icon16" style="vertical-align: middle">timer</mat-icon>
           </td>
-          <td>
-            The alarm was shelved.
-          </td>
+          <td>The alarm was shelved.</td>
         </tr>
       </table>
     </ya-help>
     &nbsp;&nbsp;&nbsp;
-    <button mat-button
-            color="primary"
-            (click)="acknowledgeAlarms(selection.selected)"
-            [disabled]="!selection.hasValue()"
-            *ngIf="mayControlAlarms()">
-      <mat-icon>notifications_off</mat-icon>
-      Acknowledge
-    </button>
-    <button mat-button
-            color="primary"
-            (click)="shelveAlarms(selection.selected)"
-            [disabled]="!selection.hasValue()"
-            *ngIf="mayControlAlarms()">
-      <mat-icon>timer</mat-icon>
-      Shelve
-    </button>
+    @if (mayControlAlarms()) {
+      <button
+        mat-button
+        color="primary"
+        (click)="acknowledgeAlarms(selection.selected)"
+        [disabled]="!selection.hasValue()">
+        <mat-icon>notifications_off</mat-icon>
+        Acknowledge
+      </button>
+    }
+    @if (mayControlAlarms()) {
+      <button
+        mat-button
+        color="primary"
+        (click)="shelveAlarms(selection.selected)"
+        [disabled]="!selection.hasValue()">
+        <mat-icon>timer</mat-icon>
+        Shelve
+      </button>
+    }
   </app-instance-toolbar>
 
   <ya-detail-pane>
-    <ng-container *ngIf="detailAlarm$ | async as detailAlarm; else noDetail">
-      <ya-detail-toolbar>
-        Alarm Detail
-      </ya-detail-toolbar>
+    @if (detailAlarm$ | async; as detailAlarm) {
+      <ya-detail-toolbar> Alarm Detail </ya-detail-toolbar>
       <div style="padding: 0 16px">
-        <app-alarm-detail [alarm]="detailAlarm"
-                          [mayControl]="mayControlAlarms()"
-                          (acknowledgeAlarm)="acknowledgeAlarms([$event])"
-                          (shelveAlarm)="shelveAlarms([$event])"
-                          (unshelveAlarm)="unshelveAlarms([$event])"
-                          (clearAlarm)="clearAlarms([$event])" />
+        <app-alarm-detail
+          [alarm]="detailAlarm"
+          [mayControl]="mayControlAlarms()"
+          (acknowledgeAlarm)="acknowledgeAlarms([$event])"
+          (shelveAlarm)="shelveAlarms([$event])"
+          (unshelveAlarm)="unshelveAlarms([$event])"
+          (clearAlarm)="clearAlarms([$event])" />
       </div>
-    </ng-container>
-    <ng-template #noDetail>
-      <ya-detail-toolbar>
-        Select an alarm
-      </ya-detail-toolbar>
-    </ng-template>
+    } @else {
+      <ya-detail-toolbar> Select an alarm </ya-detail-toolbar>
+    }
   </ya-detail-pane>
 
   <div class="table-wrapper">
-    <div class="panel-content" *ngIf="dataSource">
-      <app-alarms-page-tabs />
-      <dl class="dl-horizontal">
-        <dt>Unacknowledged alarms:</dt>
-        <dd>
-          <strong>{{ (dataSource.unacknowledgedAlarms$ | async)?.length }}</strong>
-        </dd>
-        <dt>Acknowledged alarms:</dt>
-        <dd>
-          <strong>{{ (dataSource.acknowledgedAlarms$ | async)?.length }}</strong>
-        </dd>
-        <dt>Shelved alarms:</dt>
-        <dd>
-          <strong>{{ (dataSource.shelvedAlarms$ | async)?.length }}</strong>
-        </dd>
-      </dl>
-      <form [formGroup]="filterForm">
-        <div class="filter-bar">
-          <ya-search-filter formControlName="filter"
-                            placeholder="Filter by text search" />
-          <ya-select [options]="viewOptions" formControlName="view" />
-        </div>
-      </form>
-      <app-alarms-table [dataSource]="dataSource"
-                        [selection]="selection"
-                        [view]="view$ | async"
-                        [mayControl]="mayControlAlarms()"
-                        (acknowledgeAlarm)="acknowledgeAlarms([$event])"
-                        (shelveAlarm)="shelveAlarms([$event])"
-                        (unshelveAlarm)="unshelveAlarms([$event])" />
-    </div>
+    @if (dataSource) {
+      <div class="panel-content">
+        <app-alarms-page-tabs />
+        <dl class="dl-horizontal">
+          <dt>Unacknowledged alarms:</dt>
+          <dd>
+            <strong>{{ (dataSource.unacknowledgedAlarms$ | async)?.length }}</strong>
+          </dd>
+          <dt>Acknowledged alarms:</dt>
+          <dd>
+            <strong>{{ (dataSource.acknowledgedAlarms$ | async)?.length }}</strong>
+          </dd>
+          <dt>Shelved alarms:</dt>
+          <dd>
+            <strong>{{ (dataSource.shelvedAlarms$ | async)?.length }}</strong>
+          </dd>
+        </dl>
+        <form [formGroup]="filterForm">
+          <div class="filter-bar">
+            <ya-search-filter formControlName="filter" placeholder="Filter by text search" />
+            <ya-select [options]="viewOptions" formControlName="view" />
+          </div>
+        </form>
+        <app-alarms-table
+          [dataSource]="dataSource"
+          [selection]="selection"
+          [view]="view$ | async"
+          [mayControl]="mayControlAlarms()"
+          (acknowledgeAlarm)="acknowledgeAlarms([$event])"
+          (shelveAlarm)="shelveAlarms([$event])"
+          (unshelveAlarm)="unshelveAlarms([$event])" />
+      </div>
+    }
   </div>
 </app-instance-page>

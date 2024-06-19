@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
-import { Table, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { Column, Table, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { ShowEnumDialogComponent } from '../show-enum-dialog/show-enum-dialog.component';
 
 @Component({
@@ -24,7 +24,7 @@ export class TableInfoTabComponent {
     this.table$ = yamcs.yamcsClient.getTable(database, name);
   }
 
-  showEnum(column: string) {
+  showEnum(column: Column) {
     this.dialog.open(ShowEnumDialogComponent, {
       width: '400px',
       data: { column },

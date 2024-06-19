@@ -1,31 +1,32 @@
-<app-admin-page *ngIf="role$ | async as role">
-  <app-admin-toolbar>
-    {{ role.name }}
-  </app-admin-toolbar>
-
-  <div class="panel-content ya-link">
-    <h4>Description</h4>
-    <div style="white-space: pre-wrap">{{ role.description || '-' }}</div>
-
-    <br>
-    <div class="section-divider">
-      <mat-divider />
+@if (role$ | async; as role) {
+  <app-admin-page>
+    <app-admin-toolbar>
+      {{ role.name }}
+    </app-admin-toolbar>
+    <div class="panel-content ya-link">
+      <h4>Description</h4>
+      <div style="white-space: pre-wrap">{{ role.description || "-" }}</div>
+      <br />
+      <div class="section-divider">
+        <mat-divider />
+      </div>
+      <h4>{{ role.systemPrivileges?.length || 0 }} assigned system privileges</h4>
+      @for (privilege of role.systemPrivileges; track privilege) {
+        <div>
+          {{ privilege }}
+        </div>
+      }
+      <br />
+      <div class="section-divider">
+        <mat-divider />
+      </div>
+      <h4>{{ role.objectPrivileges?.length || 0 }} assigned object privileges</h4>
+      <dl>
+        @for (privilege of role.objectPrivileges; track privilege) {
+          <dt>{{ privilege.type }}</dt>
+          <dd>{{ privilege.objects }}</dd>
+        }
+      </dl>
     </div>
-    <h4>{{ role.systemPrivileges?.length || 0 }} assigned system privileges</h4>
-    <div *ngFor="let privilege of role.systemPrivileges">
-      {{ privilege }}
-    </div>
-
-    <br>
-    <div class="section-divider">
-      <mat-divider />
-    </div>
-    <h4>{{ role.objectPrivileges?.length || 0 }} assigned object privileges</h4>
-    <dl>
-      <ng-container *ngFor="let privilege of role.objectPrivileges">
-        <dt>{{ privilege.type }}</dt>
-        <dd>{{ privilege.object }}</dd>
-      </ng-container>
-    </dl>
-  </div>
-</app-admin-page>
+  </app-admin-page>
+}

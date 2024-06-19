@@ -1,3 +1,5 @@
-<div class="panel-content sql" *ngIf="stream$ | async as stream">
-  <code [innerHTML]="formatSQL(stream.script)"></code>
-</div>
+@if (stream$ | async; as stream) {
+  <div class="panel-content sql">
+    <code [innerHTML]="formatSQL(stream.script)"></code>
+  </div>
+}

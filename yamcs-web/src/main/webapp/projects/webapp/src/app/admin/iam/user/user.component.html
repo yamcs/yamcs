@@ -1,85 +1,83 @@
-<app-admin-page *ngIf="user$ | async as user">
-  <app-admin-toolbar>
-    <a mat-icon-button routerLink=".." color="primary">
-      <mat-icon>arrow_back</mat-icon>
-    </a> {{ user.displayName || user.name }}
-    &nbsp;&nbsp;&nbsp;
-    <a mat-button
-       color="primary"
-       routerLink="edit">
-      <mat-icon>edit</mat-icon>
-      Edit user
-    </a>
-    <a mat-button
-       color="primary"
-       [disabled]="user.identities?.length"
-       (click)="showChangeUserPasswordDialog()">
-      <mat-icon>account_box</mat-icon>
-      Change password
-    </a>
-  </app-admin-toolbar>
-
-  <div class="panel-content ya-link">
-    <dl class="dl-horizontal">
-      <dt>Username</dt>
-      <dd>{{ user.name }}</dd>
-
-      <dt>Display name</dt>
-      <dd>{{ user.displayName || '-' }}</dd>
-
-      <dt>Email</dt>
-      <dd>{{ user.email || '-' }}</dd>
-
-      <dt>Joined</dt>
-      <dd>{{ user.creationTime | datetime }}</dd>
-
-      <dt>Confirmed at</dt>
-      <dd>{{ (user.confirmationTime | datetime) || 'never' }}</dd>
-
-      <dt>Last login</dt>
-      <dd>{{ (user.lastLoginTime | datetime) || 'never' }}</dd>
-
-      <dt>Active</dt>
-      <dd>{{ user.active }}</dd>
-
-      <dt>Superuser</dt>
-      <dd>{{ user.superuser }}</dd>
-
-      <dt>Created by</dt>
-      <dd>
-        <a *ngIf="user.createdBy"
-           [routerLink]="['../' + user.createdBy.name]">{{ user.createdBy.name || '-' }}</a>
-        <ng-container *ngIf="!user.createdBy">-</ng-container>
-      </dd>
-    </dl>
-
-    <div class="section-divider">
-      <mat-divider />
-    </div>
-    <h4>{{ user.roles?.length || '0' }} assigned roles</h4>
-    <ng-container *ngFor="let role of user.roles">
-      {{ role.name }}<br>
-    </ng-container>
-
-    <ng-container *ngIf="user.identities">
+@if (user$ | async; as user) {
+  <app-admin-page>
+    <app-admin-toolbar>
+      <a mat-icon-button routerLink=".." color="primary">
+        <mat-icon>arrow_back</mat-icon>
+      </a>
+      {{ user.displayName || user.name }}
+      &nbsp;&nbsp;&nbsp;
+      <a mat-button color="primary" routerLink="edit">
+        <mat-icon>edit</mat-icon>
+        Edit user
+      </a>
+      <a
+        mat-button
+        color="primary"
+        [disabled]="user.identities?.length"
+        (click)="showChangeUserPasswordDialog()">
+        <mat-icon>account_box</mat-icon>
+        Change password
+      </a>
+    </app-admin-toolbar>
+    <div class="panel-content ya-link">
+      <dl class="dl-horizontal">
+        <dt>Username</dt>
+        <dd>{{ user.name }}</dd>
+        <dt>Display name</dt>
+        <dd>{{ user.displayName || "-" }}</dd>
+        <dt>Email</dt>
+        <dd>{{ user.email || "-" }}</dd>
+        <dt>Joined</dt>
+        <dd>{{ user.creationTime | datetime }}</dd>
+        <dt>Confirmed at</dt>
+        <dd>{{ (user.confirmationTime | datetime) || "never" }}</dd>
+        <dt>Last login</dt>
+        <dd>{{ (user.lastLoginTime | datetime) || "never" }}</dd>
+        <dt>Active</dt>
+        <dd>{{ user.active }}</dd>
+        <dt>Superuser</dt>
+        <dd>{{ user.superuser }}</dd>
+        <dt>Created by</dt>
+        <dd>
+          @if (user.createdBy) {
+            <a [routerLink]="['../' + user.createdBy.name]">{{ user.createdBy.name || "-" }}</a>
+          } @else {
+            -
+          }
+        </dd>
+      </dl>
       <div class="section-divider">
         <mat-divider />
       </div>
-      <h4>External Identities</h4>
-      <table yaDataTable>
-        <tr>
-          <th>Identity</th>
-          <th>Provider</th>
-          <th></th>
-        </tr>
-        <tr *ngFor="let identity of user.identities">
-          <td>{{ identity.identity }}</td>
-          <td>{{ identity.provider }}</td>
-          <td>
-            <ya-text-action icon="delete" (click)="deleteIdentity(identity)">DELETE</ya-text-action>
-          </td>
-        </tr>
-      </table>
-    </ng-container>
-  </div>
-</app-admin-page>
+      <h4>{{ user.roles?.length || "0" }} assigned roles</h4>
+      @for (role of user.roles; track role) {
+        {{ role.name }}
+        <br />
+      }
+      @if (user.identities) {
+        <div class="section-divider">
+          <mat-divider />
+        </div>
+        <h4>External Identities</h4>
+        <table yaDataTable>
+          <tr>
+            <th>Identity</th>
+            <th>Provider</th>
+            <th></th>
+          </tr>
+          @for (identity of user.identities; track identity) {
+            <tr>
+              <td>{{ identity.identity }}</td>
+              <td>{{ identity.provider }}</td>
+              <td>
+                <ya-text-action icon="delete" (click)="deleteIdentity(identity)">
+                  DELETE
+                </ya-text-action>
+              </td>
+            </tr>
+          }
+        </table>
+      }
+    </div>
+  </app-admin-page>
+}

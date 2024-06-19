@@ -1,18 +1,17 @@
 <div class="legend-wrapper">
-  <app-parameter-legend [data]="legendData$ | async"
-                        [backgroundColor]="plotAreaBackgroundColor"
-                        [borderColor]="gridLineColor"
-                        [closable]="removableSeries"
-                        (close)="removeParameter($event)"
-                        (select)="modifyParameter($event)" />
+  <app-parameter-legend
+    [data]="legendData$ | async"
+    [backgroundColor]="plotAreaBackgroundColor"
+    [borderColor]="gridLineColor"
+    [closable]="removableSeries"
+    (close)="removeParameter($event)"
+    (select)="modifyParameter($event)" />
 </div>
 
 <div class="timestamp-wrapper">
-  <app-timestamp-tracker [legendData]="legendData$ | async"
-                         [timestampData]="timestampTrackerData$ | async" />
+  <app-timestamp-tracker
+    [legendData]="legendData$ | async"
+    [timestampData]="timestampTrackerData$ | async" />
 </div>
 
-<div #graphContainer
-     class="graph-container"
-     [style.height]="height"
-     [style.width]="width"></div>
+<div #graphContainer class="graph-container" [style.height]="height" [style.width]="width"></div>

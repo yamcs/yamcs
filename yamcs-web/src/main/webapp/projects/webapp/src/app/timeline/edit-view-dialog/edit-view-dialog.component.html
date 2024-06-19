@@ -1,12 +1,12 @@
-<div class="mat-typography ya-form" style="max-width: 600px;">
+<div class="ya-form" style="max-width: 600px">
   <form [formGroup]="form" novalidate autocomplete="off">
     <h2>Edit View</h2>
     <label>
-      Name <span class="hint">(required)</span><br>
-      <input type="text" formControlName="name">
+      Name <span class="hint">(required)</span><br />
+      <input type="text" formControlName="name" />
     </label>
 
-    <br>
+    <br />
     <div class="section-divider">
       <mat-divider />
     </div>
@@ -16,13 +16,16 @@
   </form>
 </div>
 
-<div class="footer mat-typography">
+<div class="footer">
   <mat-toolbar>
     <mat-toolbar-row>
       <button class="ya-button" mat-dialog-close>CANCEL</button>&nbsp;&nbsp;
-      <button class="ya-button primary"
-              [disabled]="!(dirty$ | async) || !form.valid"
-              (click)="onConfirm()">SAVE CHANGES</button>
+      <button
+        class="ya-button primary"
+        [disabled]="!(dirty$ | async) || !form.valid"
+        (click)="onConfirm()">
+        SAVE CHANGES
+      </button>
     </mat-toolbar-row>
   </mat-toolbar>
 </div>

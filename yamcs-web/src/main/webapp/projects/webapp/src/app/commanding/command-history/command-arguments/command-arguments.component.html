@@ -1,8 +1,10 @@
 <table class="args">
-  <tr *ngFor="let arg of command.userAssignments">
-    <td class="key" width="1">{{ arg.name }}</td>
-    <td class="value">
-      <ya-value [value]="arg.value" />
-    </td>
-  </tr>
+  @for (arg of command.userAssignments; track arg.name) {
+    <tr>
+      <td class="key" width="1">{{ arg.name }}</td>
+      <td class="value">
+        <ya-value [value]="arg.value" />
+      </td>
+    </tr>
+  }
 </table>

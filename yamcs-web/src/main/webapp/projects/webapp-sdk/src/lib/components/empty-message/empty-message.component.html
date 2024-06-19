@@ -1,8 +1,10 @@
 <div style="width: 100%; text-align: center">
   <div class="frame" [style.marginTop]="marginTop">
-    <div class="header" *ngIf="headerTitle">
-      {{ headerTitle }}
-    </div>
+    @if (headerTitle) {
+      <div class="header">
+        {{ headerTitle }}
+      </div>
+    }
     <div class="body">
       <ng-content />
     </div>

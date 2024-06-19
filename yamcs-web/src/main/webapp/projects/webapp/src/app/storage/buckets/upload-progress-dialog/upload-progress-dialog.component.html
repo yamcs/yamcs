@@ -5,23 +5,28 @@
   Uploads
 </h3>
 
-<mat-dialog-content class="mat-typography">
+<mat-dialog-content>
   <div #tableWrapper class="table-wrapper">
     <table style="font-size: small; width: 100%">
-      <tr *ngFor="let upload of uploads$ | async" [class.failed]="upload.err">
-        <td>{{ upload.filename }}</td>
-        <td style="width: 100px; text-align: center">
-          <ng-container *ngIf="upload.complete && !upload.err">
-            Finished
-          </ng-container>
-          <ng-container *ngIf="upload.complete && upload.err">
-            <mat-icon class="icon14" style="vertical-align: middle"
-                      [matTooltip]="upload.err">error</mat-icon>
-            Failed
-          </ng-container>
-          <ya-dots *ngIf="!upload.complete" />
-        </td>
-      </tr>
+      @for (upload of uploads$ | async; track upload) {
+        <tr [class.failed]="upload.err">
+          <td>{{ upload.filename }}</td>
+          <td style="width: 100px; text-align: center">
+            @if (upload.complete && !upload.err) {
+              Finished
+            }
+            @if (upload.complete && upload.err) {
+              <mat-icon class="icon14" style="vertical-align: middle" [matTooltip]="upload.err"
+                >error</mat-icon
+              >
+              Failed
+            }
+            @if (!upload.complete) {
+              <ya-dots />
+            }
+          </td>
+        </tr>
+      }
     </table>
   </div>
 </mat-dialog-content>
