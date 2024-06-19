@@ -291,6 +291,9 @@ public final class FastPFOR128 implements IntegerCODEC,SkippableIntegerCODEC {
             inlength = Util.greatestMultiple(inlength,  BLOCK_SIZE);
             if (inlength == 0)
                     return;
+                for (int k = 1; k < dataTobePacked.length; ++k)
+                    Arrays.fill(dataTobePacked[k], 0);
+
             out[outpos.get()] = inlength;
             outpos.increment();
             headlessCompress(in, inpos, inlength, out, outpos);        
