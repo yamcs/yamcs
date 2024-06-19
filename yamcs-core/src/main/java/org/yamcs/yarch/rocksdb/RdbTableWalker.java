@@ -85,7 +85,6 @@ public class RdbTableWalker extends AbstractTableWalker {
             rdb = tablespace.getRdb();
         }
         ReadOptions readOptions = new ReadOptions();
-        readOptions.setPrefixSameAsStart(true);
 
         readOptions.setTailing(follow);
         if (!follow) {
