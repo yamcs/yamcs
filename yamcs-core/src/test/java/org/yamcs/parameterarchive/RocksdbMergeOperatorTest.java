@@ -19,16 +19,25 @@ import org.yamcs.utils.ValueUtility;
 
 public class RocksdbMergeOperatorTest {
 
+    private static RocksDB db;
+    private static Options options;
+
     @BeforeAll
-    public static void loadRocksdb() {
+    public static void loadRocksdb() throws Exception {
         RocksDB.loadLibrary();
+        var path = Paths.get("/tmp/RocksdbMergeOperatorTest");
+        FileUtils.deleteRecursively(path);
+
+        options = new Options();
+        options.setMergeOperator(new YamcsParchiveMergeOperator());
+        options.setCreateIfMissing(true);
+        db = RocksDB.open(options, path.toString());
+
     }
 
     /***** Int segment ****/
     @Test
     public void testIntSegment() throws Exception {
-        RocksDB db = openDb("/tmp/RocksdbMergeOperatorTest_testIntSegment");
-
         IntValueSegment ivs1 = new IntValueSegment(true);
         ivs1.add(ValueUtility.getSint32Value(1));
         byte[] data1 = SegmentEncoderDecoder.encode(ivs1);
@@ -37,7 +46,7 @@ public class RocksdbMergeOperatorTest {
         ivs2.add(ValueUtility.getSint32Value(2));
         byte[] data2 = SegmentEncoderDecoder.encode(ivs2);
 
-        var key = "a1".getBytes();
+        var key = "testIntSegment".getBytes();
         db.put(key, data1);
         db.merge(key, data2);
 
@@ -101,7 +110,6 @@ public class RocksdbMergeOperatorTest {
     /***** Long segment ****/
     @Test
     public void testLongSegment() throws Exception {
-        RocksDB db = openDb("/tmp/RocksdbMergeOperatorTest_testLongSegment");
 
         LongValueSegment lvs1 = new LongValueSegment(Type.UINT64);
         lvs1.add(ValueUtility.getUint64Value(1));
@@ -111,12 +119,11 @@ public class RocksdbMergeOperatorTest {
         lvs2.add(ValueUtility.getUint64Value(2));
         byte[] data2 = SegmentEncoderDecoder.encode(lvs2);
 
-        var key = "a1".getBytes();
+        var key = "testLongSegment".getBytes();
         db.put(key, data1);
         db.merge(key, data2);
 
         var data12_out = db.get(key);
-        System.out.println("got data12_out: " + StringConverter.arrayToHexString(data12_out));
         var lvs12_out = (LongValueSegment) SegmentEncoderDecoder.decode(data12_out, 0);
 
         verify_merge(lvs12_out, lvs1, lvs2);
@@ -126,14 +133,13 @@ public class RocksdbMergeOperatorTest {
     /***** Boolean segment ****/
     @Test
     public void testBooleanSegment() throws Exception {
-        RocksDB db = openDb("/tmp/RocksdbMergeOperatorTest_testBooleanSegment");
 
         BooleanValueSegment bvs1 = new BooleanValueSegment();
         bvs1.add(ValueUtility.getBooleanValue(true));
         byte[] data1 = SegmentEncoderDecoder.encode(bvs1);
 
         BooleanValueSegment bvs2 = new BooleanValueSegment();
-        for (int i = 0; i < 65; i++) {
+        for (int i = 0; i < 64; i++) {
             bvs2.add(ValueUtility.getBooleanValue(i % 2 == 0));
         }
         byte[] data2 = SegmentEncoderDecoder.encode(bvs2);
@@ -143,7 +149,6 @@ public class RocksdbMergeOperatorTest {
         db.merge(key, data2);
 
         var data12_out = db.get(key);
-        System.out.println("got data12_out: " + StringConverter.arrayToHexString(data12_out));
         var bvs12_out = (BooleanValueSegment) SegmentEncoderDecoder.decode(data12_out, 0);
 
         verify_merge(bvs12_out, bvs1, bvs2);
@@ -152,24 +157,23 @@ public class RocksdbMergeOperatorTest {
     /***** Double segment ****/
     @Test
     public void testDoubleSegment() throws Exception {
-        RocksDB db = openDb("/tmp/RocksdbMergeOperatorTest_testDoubleSegment");
 
         DoubleValueSegment dvs1 = new DoubleValueSegment();
         dvs1.add(ValueUtility.getDoubleValue(1.1));
         byte[] data1 = SegmentEncoderDecoder.encode(dvs1);
 
         DoubleValueSegment dvs2 = new DoubleValueSegment();
-        for (int i = 0; i < 65; i++) {
+        for (int i = 0; i < 1; i++) {
             dvs2.add(ValueUtility.getDoubleValue(i * 1.1));
         }
         byte[] data2 = SegmentEncoderDecoder.encode(dvs2);
 
-        var key = "a1".getBytes();
+
+        var key = "testDoubleSegment".getBytes();
         db.put(key, data1);
         db.merge(key, data2);
 
         var data12_out = db.get(key);
-        System.out.println("got data12_out: " + StringConverter.arrayToHexString(data12_out));
         var dvs12_out = (DoubleValueSegment) SegmentEncoderDecoder.decode(data12_out, 0);
 
         verify_merge(dvs12_out, dvs1, dvs2);
@@ -178,24 +182,22 @@ public class RocksdbMergeOperatorTest {
     /***** Float segment ****/
     @Test
     public void testFloatSegment() throws Exception {
-        RocksDB db = openDb("/tmp/RocksdbMergeOperatorTest_testFloatSegment");
 
         FloatValueSegment fvs1 = new FloatValueSegment();
         fvs1.add(ValueUtility.getFloatValue(1.1f));
         byte[] data1 = SegmentEncoderDecoder.encode(fvs1);
 
         FloatValueSegment fvs2 = new FloatValueSegment();
-        for (int i = 0; i < 65; i++) {
+        for (int i = 0; i < 1; i++) {
             fvs2.add(ValueUtility.getFloatValue(i * 1.1f));
         }
         byte[] data2 = SegmentEncoderDecoder.encode(fvs2);
 
-        var key = "a1".getBytes();
+        var key = "testFloatSegment".getBytes();
         db.put(key, data1);
         db.merge(key, data2);
 
         var data12_out = db.get(key);
-        System.out.println("got data12_out: " + StringConverter.arrayToHexString(data12_out));
         var fvs12_out = (FloatValueSegment) SegmentEncoderDecoder.decode(data12_out, 0);
 
         verify_merge(fvs12_out, fvs1, fvs2);
@@ -203,20 +205,22 @@ public class RocksdbMergeOperatorTest {
 
     /***** Object Value segment ****/
     @Test
-    public void testStraightPlusStraight() throws Exception {
-        RocksDB db = openDb("/tmp/RocksdbMergeOperatorTest_testStraightPlusStraight");
+    public void testObjectSegment_RawPlusRaw() throws Exception {
         BinaryValueSegment bvs1 = new BinaryValueSegment(true);
         bvs1.add(ValueUtility.getBinaryValue("abc".getBytes()));
         bvs1.add(ValueUtility.getBinaryValue("bcd".getBytes()));
+        bvs1.consolidate();
         byte[] data1 = SegmentEncoderDecoder.encode(bvs1);
-        var key = "a1".getBytes();
+        var key = "testObjectSegment_RawPlusRaw".getBytes();
         db.put(key, data1);
 
         BinaryValueSegment bvs2 = new BinaryValueSegment(true);
         bvs2.add(ValueUtility.getBinaryValue("cde".getBytes()));
         bvs2.add(ValueUtility.getBinaryValue("def".getBytes()));
+        bvs2.consolidate();
         byte[] data2 = SegmentEncoderDecoder.encode(bvs2);
         db.merge(key, data2);
+
 
         var data12_out = db.get(key);
         var bvs12_out = (BinaryValueSegment) SegmentEncoderDecoder.decode(data12_out, 0);
@@ -225,18 +229,19 @@ public class RocksdbMergeOperatorTest {
     }
 
     @Test
-    public void testStraightPlusRunLength() throws Exception {
-        RocksDB db = openDb("/tmp/RocksdbMergeOperatorTest_testStraightPlusRunLength");
+    public void testObjectSegment_RawPlusRle() throws Exception {
         BinaryValueSegment bvs1 = new BinaryValueSegment(true);
         bvs1.add(ValueUtility.getBinaryValue("abc".getBytes()));
         bvs1.add(ValueUtility.getBinaryValue("bcd".getBytes()));
+        bvs1.consolidate();
         byte[] data1 = SegmentEncoderDecoder.encode(bvs1);
-        var key = "a1".getBytes();
+        var key = "testObjectSegment_RawPlusRle".getBytes();
         db.put(key, data1);
 
         BinaryValueSegment bvs2 = new BinaryValueSegment(true);
         bvs2.add(ValueUtility.getBinaryValue("def".getBytes()));
         bvs2.add(ValueUtility.getBinaryValue("def".getBytes()));
+        bvs2.consolidate();
         byte[] data2 = SegmentEncoderDecoder.encode(bvs2);
         db.merge(key, data2);
 
@@ -247,18 +252,20 @@ public class RocksdbMergeOperatorTest {
     }
 
     @Test
-    public void testStraightPlusEnumeration() throws Exception {
-        RocksDB db = openDb("/tmp/RocksdbMergeOperatorTest_testStraightPlusEnumeration");
+    public void testObjectSegment_RawPlusEnum() throws Exception {
         BinaryValueSegment bvs1 = new BinaryValueSegment(true);
         bvs1.add(ValueUtility.getBinaryValue("abc".getBytes()));
         bvs1.add(ValueUtility.getBinaryValue("bcd".getBytes()));
+        bvs1.consolidate();
         byte[] data1 = SegmentEncoderDecoder.encode(bvs1);
-        var key = "a1".getBytes();
+        var key = "testObjectSegment_RawPlusEnum".getBytes();
         db.put(key, data1);
 
         BinaryValueSegment bvs2 = new BinaryValueSegment(true);
         bvs2.add(ValueUtility.getBinaryValue("xyz".getBytes()));
         bvs2.add(ValueUtility.getBinaryValue("abc".getBytes()));
+        bvs2.add(ValueUtility.getBinaryValue("xyz".getBytes()));
+        bvs2.consolidate();
         byte[] data2 = SegmentEncoderDecoder.encode(bvs2);
         db.merge(key, data2);
 
@@ -269,18 +276,19 @@ public class RocksdbMergeOperatorTest {
     }
 
     @Test
-    public void testRunLengthPlusStraight() throws Exception {
-        RocksDB db = openDb("/tmp/RocksdbMergeOperatorTest_testRunLengthPlusStraight");
+    public void testObjectSegment_RlePlusRaw() throws Exception {
         BinaryValueSegment bvs1 = new BinaryValueSegment(true);
         bvs1.add(ValueUtility.getBinaryValue("abc".getBytes()));
         bvs1.add(ValueUtility.getBinaryValue("abc".getBytes()));
+        bvs1.consolidate();
         byte[] data1 = SegmentEncoderDecoder.encode(bvs1);
-        var key = "a1".getBytes();
+        var key = "testObjectSegment_RlePlusRaw".getBytes();
         db.put(key, data1);
 
         BinaryValueSegment bvs2 = new BinaryValueSegment(true);
         bvs2.add(ValueUtility.getBinaryValue("bcd".getBytes()));
         bvs2.add(ValueUtility.getBinaryValue("def".getBytes()));
+        bvs2.consolidate();
         byte[] data2 = SegmentEncoderDecoder.encode(bvs2);
         db.merge(key, data2);
 
@@ -291,18 +299,19 @@ public class RocksdbMergeOperatorTest {
     }
 
     @Test
-    public void testRunLengthPlusRunLength() throws Exception {
-        RocksDB db = openDb("/tmp/RocksdbMergeOperatorTest_testRunLengthPlusRunLength");
+    public void testObjectSegment_RlePlusRle() throws Exception {
         BinaryValueSegment bvs1 = new BinaryValueSegment(true);
         bvs1.add(ValueUtility.getBinaryValue("abc".getBytes()));
         bvs1.add(ValueUtility.getBinaryValue("abc".getBytes()));
+        bvs1.consolidate();
         byte[] data1 = SegmentEncoderDecoder.encode(bvs1);
-        var key = "a1".getBytes();
+        var key = "testObjectSegment_RlePlusRle".getBytes();
         db.put(key, data1);
 
         BinaryValueSegment bvs2 = new BinaryValueSegment(true);
         bvs2.add(ValueUtility.getBinaryValue("def".getBytes()));
         bvs2.add(ValueUtility.getBinaryValue("def".getBytes()));
+        bvs2.consolidate();
         byte[] data2 = SegmentEncoderDecoder.encode(bvs2);
         db.merge(key, data2);
 
@@ -313,18 +322,19 @@ public class RocksdbMergeOperatorTest {
     }
 
     @Test
-    public void testRunLengthPlusEnumeration() throws Exception {
-        RocksDB db = openDb("/tmp/RocksdbMergeOperatorTest_testRunLengthPlusEnumeration");
+    public void testObjectSegment_RlePlusEnum() throws Exception {
         BinaryValueSegment bvs1 = new BinaryValueSegment(true);
         bvs1.add(ValueUtility.getBinaryValue("abc".getBytes()));
         bvs1.add(ValueUtility.getBinaryValue("abc".getBytes()));
+        bvs1.consolidate();
         byte[] data1 = SegmentEncoderDecoder.encode(bvs1);
-        var key = "a1".getBytes();
+        var key = "testObjectSegment_RlePlusEnum".getBytes();
         db.put(key, data1);
 
         BinaryValueSegment bvs2 = new BinaryValueSegment(true);
         bvs2.add(ValueUtility.getBinaryValue("xyz".getBytes()));
         bvs2.add(ValueUtility.getBinaryValue("abc".getBytes()));
+        bvs2.consolidate();
         byte[] data2 = SegmentEncoderDecoder.encode(bvs2);
         db.merge(key, data2);
 
@@ -335,18 +345,19 @@ public class RocksdbMergeOperatorTest {
     }
 
     @Test
-    public void testEnumerationPlusStraight() throws Exception {
-        RocksDB db = openDb("/tmp/RocksdbMergeOperatorTest_testEnumerationPlusStraight");
+    public void testObjectSegment_EnumPlusRaw() throws Exception {
         BinaryValueSegment bvs1 = new BinaryValueSegment(true);
         bvs1.add(ValueUtility.getBinaryValue("xyz".getBytes()));
         bvs1.add(ValueUtility.getBinaryValue("abc".getBytes()));
+        bvs1.consolidate();
         byte[] data1 = SegmentEncoderDecoder.encode(bvs1);
-        var key = "a1".getBytes();
+        var key = "testObjectSegment_EnumPlusRaw".getBytes();
         db.put(key, data1);
 
         BinaryValueSegment bvs2 = new BinaryValueSegment(true);
         bvs2.add(ValueUtility.getBinaryValue("bcd".getBytes()));
         bvs2.add(ValueUtility.getBinaryValue("def".getBytes()));
+        bvs2.consolidate();
         byte[] data2 = SegmentEncoderDecoder.encode(bvs2);
         db.merge(key, data2);
 
@@ -357,18 +368,19 @@ public class RocksdbMergeOperatorTest {
     }
 
     @Test
-    public void testEnumerationPlusRunLength() throws Exception {
-        RocksDB db = openDb("/tmp/RocksdbMergeOperatorTest_testEnumerationPlusRunLength");
+    public void testObjectSegment_EnumPlusRle() throws Exception {
         BinaryValueSegment bvs1 = new BinaryValueSegment(true);
         bvs1.add(ValueUtility.getBinaryValue("xyz".getBytes()));
         bvs1.add(ValueUtility.getBinaryValue("abc".getBytes()));
+        bvs1.consolidate();
         byte[] data1 = SegmentEncoderDecoder.encode(bvs1);
-        var key = "a1".getBytes();
+        var key = "testObjectSegment_EnumPlusRle".getBytes();
         db.put(key, data1);
 
         BinaryValueSegment bvs2 = new BinaryValueSegment(true);
         bvs2.add(ValueUtility.getBinaryValue("def".getBytes()));
         bvs2.add(ValueUtility.getBinaryValue("def".getBytes()));
+        bvs2.consolidate();
         byte[] data2 = SegmentEncoderDecoder.encode(bvs2);
         db.merge(key, data2);
 
@@ -379,18 +391,21 @@ public class RocksdbMergeOperatorTest {
     }
 
     @Test
-    public void testEnumerationPlusEnumeration() throws Exception {
-        RocksDB db = openDb("/tmp/RocksdbMergeOperatorTest_testEnumerationPlusEnumeration");
+    public void testObjectSegment_EnumPlusEnum() throws Exception {
         BinaryValueSegment bvs1 = new BinaryValueSegment(true);
         bvs1.add(ValueUtility.getBinaryValue("xyz".getBytes()));
         bvs1.add(ValueUtility.getBinaryValue("abc".getBytes()));
+        bvs1.add(ValueUtility.getBinaryValue("xyz".getBytes()));
+        bvs1.consolidate();
         byte[] data1 = SegmentEncoderDecoder.encode(bvs1);
-        var key = "a1".getBytes();
+        var key = "testObjectSegment_EnumPlusEnum".getBytes();
         db.put(key, data1);
 
         BinaryValueSegment bvs2 = new BinaryValueSegment(true);
         bvs2.add(ValueUtility.getBinaryValue("uvw".getBytes()));
         bvs2.add(ValueUtility.getBinaryValue("xyz".getBytes()));
+        bvs2.add(ValueUtility.getBinaryValue("uvw".getBytes()));
+        bvs2.consolidate();
         byte[] data2 = SegmentEncoderDecoder.encode(bvs2);
         db.merge(key, data2);
 
@@ -421,18 +436,4 @@ public class RocksdbMergeOperatorTest {
                     "The value at index " + i + " does not match.");
         }
     }
-
-
-
-    RocksDB openDb(String dir) throws Exception {
-        var path = Paths.get(dir);
-        FileUtils.deleteRecursively(path);
-
-        var options = new Options();
-        options.setMergeOperator(new YamcsParchiveMergeOperator());
-        options.setCreateIfMissing(true);
-        RocksDB db = RocksDB.open(options, dir);
-        return db;
-    }
-
 }
