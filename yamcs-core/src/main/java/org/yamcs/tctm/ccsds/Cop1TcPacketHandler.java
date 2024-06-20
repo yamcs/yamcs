@@ -33,7 +33,6 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.tctm.AbstractTcDataLink;
 import org.yamcs.tctm.ccsds.Cop1Monitor.AlertType;
 import org.yamcs.tctm.ccsds.TcManagedParameters.TcVcManagedParameters;
-import org.yamcs.tctm.csp.AbstractCspTcFrameLink.CspManagedParameters;
 import org.yamcs.tctm.csp.CspFrameFactory;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
@@ -213,7 +212,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
                     vmp.maxFrameLength);
             failedCommand(pc.getCommandId(),
                     "Command too large to fit in a frame; cmd size: " + pcLength + "; max frame length: "
-                            + vmp.maxFrameLength + "; frame overhead: " + framingLength + "; cspHeader included: " + (cspFrameFactory != null? "Yes | " + cspFrameFactory.getCspHeaderLength() + " bytes" : "No"));
+                            + vmp.maxFrameLength + "; frame overhead: " + framingLength + "; cspHeader and radioHeader included: " + (cspFrameFactory != null? "Yes | (" + cspFrameFactory.getCspHeaderLength() + ", " + cspFrameFactory.getRadioHeaderLength() +") bytes" : "No"));
 
             return true;
         }
@@ -244,27 +243,37 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
             qf.cf.complete(null);
         }
         frameFactory.encodeFrame(qf.tf);
-
-        // Check if cspHeader needs to be added
-        int ccsdsDataStart = qf.tf.getDataStart();
-        int ccsdsDataEnd = qf.tf.getDataEnd();
         byte[] data = qf.tf.getData();
 
         CspFrameFactory cspFrameFactory = vmp.getCspFrameFactory();
         if (cspFrameFactory != null) {
+            AtomicInteger dataStart, dataEnd;
+
+            dataStart = new AtomicInteger(0);
+            dataEnd = new AtomicInteger(dataStart.get() + cspFrameFactory.getPaddingAndDataLength());
+
+            if (cspFrameFactory.getCspManagedParameters().getEncryption() != null) {
+                dataStart.set(dataStart.get() + cspFrameFactory.getIVLength());
+                dataEnd.set(dataEnd.get() + cspFrameFactory.getIVLength());
+            }
+
             byte[] cspFrame = cspFrameFactory.makeFrame(data.length);
 
             int cspOffset = cspFrameFactory.getCspHeaderLength();
-            System.arraycopy(data, 0, cspFrame, cspOffset, data.length);
+            int radioOffset = cspFrameFactory.getRadioHeaderLength();
+            dataEnd.set(dataEnd.get() + cspOffset + radioOffset);
 
-            // Add the cspHeader to the CCSDS Frame
-            cspFrameFactory.encodeFrame(cspFrame);
+            System.arraycopy(data, 0, cspFrame, dataStart.get() + cspOffset + radioOffset, data.length);
+
+            // Add the cspHeader + radioHeader + Encryption to the CCSDS Frame
+            cspFrameFactory.encodeFrame(cspFrame, dataStart, dataEnd);
             
             // Set the cspFrame
             qf.tf.setData(cspFrame);
-            qf.tf.setDataStart(cspOffset + ccsdsDataStart);
-            qf.tf.setDataEnd(cspOffset + ccsdsDataEnd);
+            qf.tf.setDataStart(dataStart.get());
+            qf.tf.setDataEnd(dataEnd.get());
         }
+
         // BC frames contain no command but we still count it as one item out
         var count = qf.tf.commands == null ? 1 : qf.tf.commands.size();
         dataOut(count, qf.tf.getData().length);
@@ -324,6 +333,8 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         PreparedCommand pc;
 
         int framingLength = frameFactory.getFramingLength(vmp.vcId);
+        int cspFrameLength = cspFrameFactory.getFramingLength();
+
         int dataLength = 0;
         List<PreparedCommand> l = new ArrayList<>();
 
@@ -333,7 +344,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
                 continue;
             }
             int pcLength = cmdPostProcessor.getBinaryLength(pc);
-            if (framingLength + dataLength + pcLength <= vmp.maxFrameLength) {
+            if (framingLength + dataLength + pcLength + cspFrameLength <= vmp.maxFrameLength) {
                 l.add(pc);
                 dataLength += pcLength;
                 if (!vmp.multiplePacketsPerFrame) {

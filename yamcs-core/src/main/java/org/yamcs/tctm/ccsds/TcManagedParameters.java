@@ -7,8 +7,9 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.csp.CspFrameFactory;
+import org.yamcs.tctm.ccsds.encryption.SymmetricEncryption;
 import org.yamcs.tctm.csp.AbstractCspTcFrameLink.CspManagedParameters;
-import org.yamcs.utils.StringConverter;
+import org.yamcs.utils.YObjectLoader;
 
 /**
  * Configuration (managed parameters) used for generation of TC frames as per CCSDS 232.0-B-3
@@ -24,8 +25,10 @@ public class TcManagedParameters extends UplinkManagedParameters {
     };
 
     PriorityScheme priorityScheme;
-
     List<TcVcManagedParameters> vcParams = new ArrayList<>();
+
+    // Encryption parameters
+    SymmetricEncryption se;
 
     public TcManagedParameters(YConfiguration config) {
         super(config);
@@ -39,6 +42,16 @@ public class TcManagedParameters extends UplinkManagedParameters {
         }
 
         priorityScheme = config.getEnum("priorityScheme", PriorityScheme.class, PriorityScheme.FIFO);
+
+        if (config.containsKey("encryption")) {
+            YConfiguration en = config.getConfig("encryption");
+
+            String className = en.getString("class");
+            YConfiguration enConfig = en.getConfigOrEmpty("args");
+
+            se = YObjectLoader.loadObject(className);
+            se.init(enConfig);
+        }
 
         List<YConfiguration> l = config.getConfigList("virtualChannels");
         for (YConfiguration yc : l) {
@@ -66,6 +79,10 @@ public class TcManagedParameters extends UplinkManagedParameters {
     @Override
     public int getMaxFrameLength() {
         return maxFrameLength;
+    }
+
+    public SymmetricEncryption getEncryption() {
+        return se;
     }
 
     @Override
@@ -107,6 +124,7 @@ public class TcManagedParameters extends UplinkManagedParameters {
      */
     static public class TcVcManagedParameters extends VcUplinkManagedParameters {
         final TcManagedParameters tcParams;
+
         /**
          * Allows to enable/disable frame error detection at Virtual Channel level.
          * <p>
@@ -125,8 +143,10 @@ public class TcManagedParameters extends UplinkManagedParameters {
         public boolean bdAbsolutePriority;
 
         // initialise it to null
-        byte[] cspHeader;
         private CspManagedParameters cspManagedParameters;
+
+        // Encryption parameters
+        protected SymmetricEncryption se;
 
         // this is used to compose the link name, if not set it will be vc<x>
         String linkName;
@@ -156,9 +176,19 @@ public class TcManagedParameters extends UplinkManagedParameters {
             this.linkName = config.getString("linkName", null);
             this.multiplePacketsPerFrame = config.getBoolean("multiplePacketsPerFrame", true);
 
-            if (config.containsKey("cspHeader")) {
-                this.cspHeader = StringConverter.hexStringToArray(config.getString("cspHeader"));
-                this.cspManagedParameters = new CspManagedParameters("NONE", maxFrameLength, multiplePacketsPerFrame, cspHeader);
+            if (config.containsKey("encryption")) {
+                YConfiguration en = config.getConfig("encryption");
+    
+                String className = en.getString("class");
+                YConfiguration enConfig = en.getConfigOrEmpty("args");
+    
+                se = YObjectLoader.loadObject(className);
+                se.init(enConfig);
+            }
+
+            if (config.containsKey("csp")) {
+                YConfiguration c = config.getConfig("csp");
+                this.cspManagedParameters = new CspManagedParameters(c, maxFrameLength);
             }
         }
 
@@ -179,6 +209,10 @@ public class TcManagedParameters extends UplinkManagedParameters {
          */
         public FrameErrorDetection getErrorDetection() {
             return errorDetection == null ? tcParams.getErrorDetection() : errorDetection;
+        }
+
+        public SymmetricEncryption getEncyption() {
+            return se == null ? tcParams.getEncryption() : se;
         }
     }
 }

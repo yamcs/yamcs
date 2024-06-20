@@ -4,26 +4,29 @@ import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Semaphore;
-
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.tctm.AbstractTcDataLink;
-
+import org.yamcs.tctm.ErrorDetectionWordCalculator;
+import org.yamcs.tctm.ccsds.encryption.SymmetricEncryption;
+import org.yamcs.utils.YObjectLoader;
 
 
 public abstract class AbstractCspTcFrameLink extends AbstractTcDataLink implements Runnable {
     Semaphore dataAvailableSemaphore = new Semaphore(0);
+    BlockingQueue<PreparedCommand> commandQueue;
 
-    protected BlockingQueue<PreparedCommand> commandQueue;
     boolean blockSenderOnQueueFull;
     int initialDelay;
 
     private CspFrameFactory frameFactory;
     private CspManagedParameters cspManagedParameters; 
+
+    int maxFrameLength;
 
     @Override
     public void init(String yamcsInstance, String linkName, YConfiguration config) throws ConfigurationException {
@@ -32,10 +35,16 @@ public abstract class AbstractCspTcFrameLink extends AbstractTcDataLink implemen
         initialDelay = config.getInt("initialDelay", 2000);
         blockSenderOnQueueFull = config.getBoolean("blockSenderOnQueueFull", false);
 
-        int queueSize = config.getInt("cspFrameQueueSize", 10);
+        int queueSize = config.getInt("tcQueueSize", 10);
         commandQueue = new ArrayBlockingQueue<>(queueSize);
 
-        cspManagedParameters = new CspManagedParameters(config);
+        maxFrameLength = config.getInt("maxFrameLength");
+
+        if (maxFrameLength < 8 || maxFrameLength > 0xFFFF) {
+            throw new ConfigurationException("Invalid CSP frame length " + maxFrameLength);
+        }
+
+        cspManagedParameters = new CspManagedParameters(config, maxFrameLength);
         frameFactory = cspManagedParameters.getFrameFactory();
     }
 
@@ -149,7 +158,7 @@ public abstract class AbstractCspTcFrameLink extends AbstractTcDataLink implemen
         int dataLength = 0;
         while ((pc = commandQueue.peek()) != null) {
             int pcLength = cmdPostProcessor.getBinaryLength(pc);
-            if (framingLength + pcLength <= getMaxFrameLength()) {
+            if (dataLength + framingLength + pcLength <= getMaxFrameLength()) {
                 pc = commandQueue.poll();
                 if (pc == null) {
                     break;
@@ -168,20 +177,29 @@ public abstract class AbstractCspTcFrameLink extends AbstractTcDataLink implemen
             return null;
         }
 
-        byte[] cspFrame = frameFactory.makeFrame(dataLength);
         byte[] pcBinary = postprocess(pc);
-
         int length = pcBinary.length;
 
-        int offset = cspManagedParameters.getCspHeader().length;
-        System.arraycopy(pcBinary, 0, cspFrame, offset, length);
+        AtomicInteger dataStart, dataEnd;
+
+        dataStart = new AtomicInteger(0);
+        dataEnd = new AtomicInteger(dataStart.get() + frameFactory.getPaddingAndDataLength());
+
+        if (cspManagedParameters.getEncryption() != null) {
+            dataStart.set(dataStart.get() + frameFactory.getIVLength());
+            dataEnd.set(dataEnd.get() + frameFactory.getIVLength());
+        }
+
+        byte[] cspFrame = frameFactory.makeFrame(dataLength);
+
+        int cspOffset = frameFactory.getCspHeaderLength();
+        int radioOffset = frameFactory.getRadioHeaderLength();
+        dataEnd.set(dataEnd.get() + cspOffset + radioOffset);
+
+        System.arraycopy(pcBinary, 0, cspFrame, dataStart.get() + cspOffset + radioOffset, length);
 
         dataOut(1, cspFrame.length);
-        return frameFactory.encodeFrame(cspFrame);
-    }
-
-    public int getMaxFrameLength() {
-        return cspManagedParameters.getMaxFrameLength();
+        return frameFactory.encodeFrame(cspFrame, dataStart, dataEnd);
     }
 
     @Override
@@ -231,6 +249,11 @@ public abstract class AbstractCspTcFrameLink extends AbstractTcDataLink implemen
 
     }
 
+    public int getMaxFrameLength() {
+        return cspManagedParameters.maxFrameLength;
+    }
+
+
     /**
      * Called at shutdown (if the link is enabled) or when the link is disabled
      * 
@@ -239,62 +262,65 @@ public abstract class AbstractCspTcFrameLink extends AbstractTcDataLink implemen
     protected abstract void shutDown() throws Exception;
 
     static public class CspManagedParameters {
-        public enum FrameErrorDetection {
-            NONE("NONE"), CRC16("CRC16"), CRC32("CRC32");
-
-            private final String value;
-
-            FrameErrorDetection(String value) {
-                this.value = value;
-            }
-    
-            public String getValue() {
-                return value;
-            }
-
-            public static FrameErrorDetection fromValue(String value) {
-                for (FrameErrorDetection enumValue : FrameErrorDetection.values()) {
-                    if (enumValue.value == value) {
-                        return enumValue;
-                    }
-                }
-                throw new IllegalArgumentException("No enum constant with value " + value);
-            }
-        };
-
-        boolean multiplePacketsPerFrame;
-        int maxFrameLength;
         byte[] cspHeader;
-        FrameErrorDetection errorDetection;
+        byte[] radioHeader;
 
-        public CspManagedParameters(String errorDetection, int maxFrameLength, boolean multiplePacketsPerFrame, byte[] cspHeader) {
-            this.multiplePacketsPerFrame = multiplePacketsPerFrame;
+        // which error detection algorithm to use (null = no checksum)
+        protected ErrorDetectionWordCalculator errorDetectionCalculator;
 
+        // Encryption parameters
+        protected SymmetricEncryption se;
+
+        int maxFrameLength;
+        boolean multiplePacketsPerFrame;
+        boolean enforceFrameLength;
+
+        // Default CRC and Encryption field sizes, if enforceFrameLength = true
+        int defaultCrcSize;
+
+        public CspManagedParameters(YConfiguration config, int maxFrameLength) {
             this.maxFrameLength = maxFrameLength;
-            if (maxFrameLength < 8 || maxFrameLength > 0xFFFF) {
-                throw new ConfigurationException("Invalid CSP frame length " + maxFrameLength);
-            }
-
-            this.errorDetection = FrameErrorDetection.fromValue(errorDetection);
-            this.cspHeader = cspHeader;
-        }
-
-        public CspManagedParameters(YConfiguration config) {
-            maxFrameLength = config.getInt("maxFrameLength");
-            if (maxFrameLength < 8 || maxFrameLength > 0xFFFF) {
-                throw new ConfigurationException("Invalid CSP frame length " + maxFrameLength);
-            }
-
-            errorDetection = config.getEnum("errorDetection", FrameErrorDetection.class, FrameErrorDetection.NONE);
             multiplePacketsPerFrame = config.getBoolean("multiplePacketsPerFrame", false);
+            enforceFrameLength = config.getBoolean("enforceFrameLength", false);
 
-            try {
-                this.cspHeader = Hex.decodeHex(config.getString("cspHeader"));
-            } catch (DecoderException e) {
-                e.printStackTrace();
-                throw new ConfigurationException(e);
+            if (enforceFrameLength) {
+                if (!config.containsKey("defaultCrcSize")) {
+                    throw new IllegalArgumentException("If `enforceFrameLength=true`, then the field `defaultCrcSize` must be set");
+                }
+                defaultCrcSize = config.getInt("defaultCrcSize");
             }
 
+            if (config.containsKey("radioHeader"))
+                radioHeader = config.getBinary("radioHeader");
+
+            errorDetectionCalculator = AbstractPacketPreprocessor.getErrorDetectionWordCalculator(config);
+            if (errorDetectionCalculator != null) {
+                if (!enforceFrameLength)
+                    throw new IllegalArgumentException("If `errorDetection` is set, then the field `enforceFrameLength` must be set to true");
+            
+                if (radioHeader == null) {
+                    throw new IllegalArgumentException("If `errorDetection` is set, then the field `radioHeader` must be set");
+                }
+            }
+
+            cspHeader = config.getBinary("cspHeader");
+
+            if (config.containsKey("encryption")) {
+                if (!enforceFrameLength)
+                    throw new IllegalArgumentException("If `encryption` is set, then the field `enforceFrameLength` must be set to true");
+
+                if (radioHeader == null) {
+                    throw new IllegalArgumentException("If `errorDetection` is set, then the field `radioHeader` must be set");
+                }
+
+                YConfiguration en = config.getConfig("encryption");
+
+                String className = en.getString("class");
+                YConfiguration enConfig = en.getConfigOrEmpty("args");
+
+                se = YObjectLoader.loadObject(className);
+                se.init(enConfig);
+            }
         }
 
         public CspFrameFactory getFrameFactory() {
@@ -304,8 +330,8 @@ public abstract class AbstractCspTcFrameLink extends AbstractTcDataLink implemen
         /**
          * Returns the error detection used for this virtual channel.
          */
-        public FrameErrorDetection getErrorDetection() {
-            return errorDetection;
+        public ErrorDetectionWordCalculator getErrorDetection() {
+            return errorDetectionCalculator;
         }
 
         public int getMaxFrameLength() {
@@ -314,6 +340,18 @@ public abstract class AbstractCspTcFrameLink extends AbstractTcDataLink implemen
 
         public byte[] getCspHeader() {
             return cspHeader;
+        }
+
+        public byte[] getRadioHeader() {
+            return radioHeader;
+        }
+
+        public SymmetricEncryption getEncryption() {
+            return se;
+        }
+
+        public int getDefaultCrcSize() {
+            return defaultCrcSize;
         }
     }
 }

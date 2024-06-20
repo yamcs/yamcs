@@ -1,26 +1,29 @@
 package org.yamcs.tctm.csp;
 
-import org.yamcs.tctm.csp.AbstractCspTcFrameLink.CspManagedParameters.FrameErrorDetection;
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.yamcs.utils.ByteArrayUtils;
-import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
+import org.yamcs.tctm.ErrorDetectionWordCalculator;
+import org.yamcs.tctm.ccsds.encryption.SymmetricEncryption;
 import org.yamcs.tctm.csp.AbstractCspTcFrameLink.CspManagedParameters;
 
 
 public class CspFrameFactory {
-    final CrcCciitCalculator crc;
+    ErrorDetectionWordCalculator crc;
+    SymmetricEncryption se;
 
     CspManagedParameters cspManagedParameters;
     
     public CspFrameFactory(CspManagedParameters cspManagedParameters) {
         this.cspManagedParameters = cspManagedParameters;
 
-        FrameErrorDetection err = cspManagedParameters.getErrorDetection();
-        if (err == FrameErrorDetection.CRC16) {
-            crc = new CrcCciitCalculator();
+        crc = cspManagedParameters.getErrorDetection();
+        se = cspManagedParameters.getEncryption();
+    }
 
-        } else {
-            crc = null;
-        }
+    public CspManagedParameters getCspManagedParameters() {
+        return cspManagedParameters;
     }
 
     /**
@@ -30,17 +33,31 @@ public class CspFrameFactory {
      * @return
      */
     public byte[] makeFrame(int dataLength) {
-        int length = dataLength + getCspHeaderLength();
-        if (crc != null) {
-            length += 2;
-        }
+        int length = dataLength + getFramingLength();
 
         if (length > cspManagedParameters.getMaxFrameLength()) {
             throw new IllegalArgumentException("Resulting frame length " + length + " is more than the maximum allowed "
                     + cspManagedParameters.getMaxFrameLength());
         }
+
+        // Enforce maxLength of the CSP Frame
+        if (cspManagedParameters.enforceFrameLength)
+            length = cspManagedParameters.getMaxFrameLength();
+
         byte[] data = new byte[length];
         return data;
+    }
+
+    public int getPaddingAndDataLength() {
+        int length = cspManagedParameters.getMaxFrameLength() - getFramingLength();
+
+        if (cspManagedParameters.enforceFrameLength){
+            if (crc == null) {
+                length -= cspManagedParameters.getDefaultCrcSize();
+            }
+        }
+
+        return length;
     }
 
     /**
@@ -49,9 +66,13 @@ public class CspFrameFactory {
      * @return
      */
     public int getFramingLength() {
-        int length = getCspHeaderLength();
+        int length = getCspHeaderLength() + getRadioHeaderLength();
         if (crc != null) {
-            length += 2;
+            length += crc.sizeInBits() / 8;
+        }
+
+        if (se != null) {
+            length += getTagLength() + getIVLength();
         }
 
         return length;
@@ -61,15 +82,66 @@ public class CspFrameFactory {
         return cspManagedParameters.getCspHeader().length;
     }
 
-    public byte[] encodeFrame(byte[] cspFrame) {
-        if (crc != null) {
-            int c = crc.compute(cspFrame, 0, cspFrame.length - 2);
-            ByteArrayUtils.encodeUnsignedShort(c, cspFrame, cspFrame.length - 2);
+    public int getRadioHeaderLength() {
+        if (cspManagedParameters.getRadioHeader() != null)
+            return cspManagedParameters.getRadioHeader().length;
+        
+        return 0;
+    }
+
+    public byte[] encodeFrame(byte[] cspFrame, AtomicInteger dataStart, AtomicInteger dataEnd) {
+        byte[] cspHeader = cspManagedParameters.getCspHeader();
+
+        if (cspManagedParameters.getRadioHeader() != null) {
+            byte[] radioHeader = cspManagedParameters.getRadioHeader();
+            System.arraycopy(radioHeader, 0, cspFrame, dataStart.get(), radioHeader.length);
         }
 
-        byte[] cspHeader = cspManagedParameters.getCspHeader();
-        System.arraycopy(cspHeader, 0, cspFrame, 0, cspHeader.length);
+        System.arraycopy(cspHeader, 0, cspFrame, dataStart.get() + getRadioHeaderLength(), cspHeader.length);
+
+        if (se != null) {
+            try {
+                byte[] ivMessage = se.encrypt(Arrays.copyOfRange(cspFrame, dataStart.get(), dataEnd.get()));
+
+                // Update the dataStart and dataEnd, accounting for the data that must undergo CRC
+                dataStart.set(dataStart.get() - se.getIVLength());
+                dataEnd.set(dataEnd.get() + se.getTagLength());
+                System.arraycopy(ivMessage, 0, cspFrame, dataStart.get(), ivMessage.length);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (crc != null) {
+            int c = crc.compute(cspFrame, dataStart.get(), dataEnd.get());
+
+            if (crc.sizeInBits() / 8 == 4)
+                ByteArrayUtils.encodeInt(c, cspFrame, dataEnd.get());
+            
+            if (crc.sizeInBits() / 8 == 2)
+                ByteArrayUtils.encodeUnsignedShort(c, cspFrame, dataEnd.get());
+
+            // Update dataEnd
+            dataEnd.set(dataEnd.get() + crc.sizeInBits() / 8);
+        }
 
         return cspFrame;
+    }
+
+    public int getTagLength() {
+        if (se != null) {
+            return se.getTagLength();
+        }
+
+        return 0;
+    }
+
+    public int getIVLength() {
+        if (se != null) {
+            return se.getIVLength();
+        }
+
+        return 0;
     }
 }

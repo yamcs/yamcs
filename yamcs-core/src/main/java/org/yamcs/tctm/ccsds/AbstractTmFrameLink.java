@@ -11,7 +11,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.tctm.AbstractLink;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.Link;
-import org.yamcs.tctm.RawFrameDecoder;
+import org.yamcs.tctm.RawFrameEnDec;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.TransferFrameDecoder.CcsdsFrameType;
 import org.yamcs.time.Instant;
@@ -22,7 +22,7 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
     protected AtomicLong frameCount = new AtomicLong(0);
 
     protected long errFrameCount;
-    protected RawFrameDecoder rawFrameDecoder;
+    protected RawFrameEnDec rawFrameDecoder;
 
     @Override
     public Spec getDefaultSpec() {

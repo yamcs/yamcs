@@ -82,8 +82,7 @@ public class MasterChannelFrameHandler {
             frameStreamHelper.sendBadFrame(badframeCount, ertime, data, offset, length, e.getMessage());
             throw e;
         }
-       
-       
+
         if (frame.getSpacecraftId() != params.spacecraftId) {
             log.warn("Ignoring frame with unexpected spacecraftId {} (expected {})", frame.getSpacecraftId(),
                     params.spacecraftId);
