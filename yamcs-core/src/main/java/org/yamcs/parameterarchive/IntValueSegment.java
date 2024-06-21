@@ -21,7 +21,7 @@ import me.lemire.integercompression.IntWrapper;
  *
  */
 public class IntValueSegment extends BaseSegment implements ValueSegment {
-    final static int SUBFORMAT_ID_RAW = 0; // uncompresed
+    final static int SUBFORMAT_ID_RAW = 0; // uncompressed
     final static int SUBFORMAT_ID_DELTAZG_FPF128_VB = 1; // compressed with DeltaZigzag and then FastPFOR128 plus
                                                          // VariableByte for remaining
     final static int SUBFORMAT_ID_DELTAZG_VB = 2; // compressed with DeltaZigzag plus VariableByte
