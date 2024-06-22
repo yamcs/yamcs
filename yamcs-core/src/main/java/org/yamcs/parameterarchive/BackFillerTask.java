@@ -24,7 +24,6 @@ class BackFillerTask extends AbstractArchiveFiller {
         }
     }
 
-
     public void setProcessor(Processor proc) {
         this.processor = proc;
     }
@@ -41,7 +40,6 @@ class BackFillerTask extends AbstractArchiveFiller {
         }
     }
 
-
     @Override
     protected void processParameters(long t, BasicParameterList pvList) {
 
@@ -49,11 +47,11 @@ class BackFillerTask extends AbstractArchiveFiller {
             var pg = parameterGroupIdMap.getGroup(pvList.getPids());
             var parameterGroupId = pg.id;
             PGSegment pgs = pgSegments.computeIfAbsent(parameterGroupId,
-                    id -> new PGSegment(parameterGroupId, t, pg.pids.size()));
+                    id -> new PGSegment(parameterGroupId, ParameterArchive.getInterval(t), pg.pids.size()));
 
             if (getInterval(t) != pgs.getInterval()) {
                 writeToArchive(pgs);
-                pgs = new PGSegment(parameterGroupId, t, pg.pids.size());
+                pgs = new PGSegment(parameterGroupId, ParameterArchive.getInterval(t), pg.pids.size());
                 pgSegments.put(parameterGroupId, pgs);
             }
 
@@ -66,7 +64,6 @@ class BackFillerTask extends AbstractArchiveFiller {
             log.error("Error writing to the parameter archive", e);
         }
     }
-
 
     @Override
     protected void abort() {

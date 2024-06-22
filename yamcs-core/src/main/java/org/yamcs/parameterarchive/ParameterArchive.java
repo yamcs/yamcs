@@ -223,7 +223,7 @@ public class ParameterArchive extends AbstractYamcsService {
 
     public void writeToArchive(PGSegment pgs) throws RocksDBException, IOException {
         pgs.consolidate();
-        Partition p = createAndGetPartition(getIntervalStart(pgs.getSegmentStart()));
+        Partition p = createAndGetPartition(pgs.getInterval());
         YRDB rdb = tablespace.getRdb(p.partitionDir, false);
         ColumnFamilyHandle cfh = cfh(rdb, p);
 
@@ -233,8 +233,8 @@ public class ParameterArchive extends AbstractYamcsService {
         }
     }
 
-    public void writeToArchive(long segStart, Collection<PGSegment> pgList) throws RocksDBException, IOException {
-        Partition p = createAndGetPartition(getIntervalStart(segStart));
+    public void writeToArchive(long interval, Collection<PGSegment> pgList) throws RocksDBException, IOException {
+        Partition p = createAndGetPartition(interval);
         YRDB rdb = tablespace.getRdb(p.partitionDir, false);
 
         ColumnFamilyHandle cfh = cfh(rdb, p);
@@ -242,7 +242,7 @@ public class ParameterArchive extends AbstractYamcsService {
         try (WriteBatch writeBatch = new WriteBatch(); WriteOptions wo = new WriteOptions()) {
             for (PGSegment pgs : pgList) {
                 pgs.consolidate();
-                assert (segStart == pgs.getSegmentStart());
+                assert (interval == pgs.getInterval());
                 writeToBatch(cfh, writeBatch, pgs);
             }
             rdb.write(wo, writeBatch);

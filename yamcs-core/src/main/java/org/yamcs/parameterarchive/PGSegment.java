@@ -21,13 +21,13 @@ public class PGSegment {
     private SortedTimeSegment timeSegment;
     List<ParameterValueSegment> pvSegments;
 
-    public PGSegment(int parameterGroupId, long segmentStart) {
-        this(parameterGroupId, segmentStart, 1000);
+    public PGSegment(int parameterGroupId, long interval) {
+        this(parameterGroupId, interval, 1000);
     }
 
-    public PGSegment(int parameterGroupId, long segmentStart, int capacity) {
+    public PGSegment(int parameterGroupId, long interval, int capacity) {
         this.parameterGroupId = parameterGroupId;
-        this.timeSegment = new SortedTimeSegment(segmentStart);
+        this.timeSegment = new SortedTimeSegment(interval);
         this.pvSegments = new ArrayList<>(capacity);
     }
 
@@ -118,7 +118,7 @@ public class PGSegment {
     }
 
     public long getInterval() {
-        return ParameterArchive.getInterval(timeSegment.getSegmentStart());
+        return timeSegment.getInterval();
     }
 
     public long getSegmentStart() {

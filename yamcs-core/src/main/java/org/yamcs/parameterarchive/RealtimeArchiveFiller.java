@@ -363,7 +363,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                     return false;
                 }
 
-                PGSegment seg = new PGSegment(parameterGroupId, t, pids.size());
+                PGSegment seg = new PGSegment(parameterGroupId, ParameterArchive.getInterval(t), pids.size());
                 seg.addRecord(t, pids, pvList);
 
                 // shift everything between k and tail to the right
