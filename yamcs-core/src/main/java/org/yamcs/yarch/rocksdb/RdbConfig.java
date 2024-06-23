@@ -152,13 +152,15 @@ public class RdbConfig {
             tableFormatConfig.setBlockSize(256l * 1024);
             tableFormatConfig.setFormatVersion(5);
             tableFormatConfig.setFilterPolicy(new BloomFilter());
-            lruCache = new LRUCache(16 * 1024 * 1024);
+            lruCache = new LRUCache(64 * 1024 * 1024);
             tableFormatConfig.setBlockCache(lruCache);
 
             tableFormatConfig.setIndexType(IndexType.kTwoLevelIndexSearch);
 
             rtDataCfOptions.setTableFormatConfig(tableFormatConfig);
             parchiveCfOptions.setTableFormatConfig(tableFormatConfig);
+            defaultCfOptions.setTableFormatConfig(tableFormatConfig);
+            metadataDbCfOptions.setTableFormatConfig(tableFormatConfig);
 
             cfConfigList.add(new CfConfig(lruCache, Pattern.compile(ParameterArchive.CF_NAME), parchiveCfOptions));
             cfConfigList.add(new CfConfig(lruCache, Pattern.compile(XtceTmRecorder.CF_NAME), rtDataCfOptions));
