@@ -7,6 +7,7 @@ import java.util.Map;
 import org.rocksdb.RocksDBException;
 import org.yamcs.Processor;
 
+
 import static org.yamcs.parameterarchive.ParameterArchive.*;
 
 class BackFillerTask extends AbstractArchiveFiller {
@@ -42,22 +43,21 @@ class BackFillerTask extends AbstractArchiveFiller {
 
     @Override
     protected void processParameters(long t, BasicParameterList pvList) {
-
         try {
             var pg = parameterGroupIdMap.getGroup(pvList.getPids());
             var parameterGroupId = pg.id;
-            var intvt = getInterval(t);
+            var interval = getInterval(t);
             PGSegment pgs = pgSegments.computeIfAbsent(parameterGroupId,
-                    id -> new PGSegment(parameterGroupId, intvt, pg.pids.size()));
+                    id -> new PGSegment(parameterGroupId, interval, pg.pids.size()));
 
-            if (intvt != pgs.getInterval()) {
+            if (interval != pgs.getInterval()) {
                 writeToArchive(pgs);
-                pgs = new PGSegment(parameterGroupId, intvt, pg.pids.size());
+                pgs = new PGSegment(parameterGroupId, interval, pg.pids.size());
                 pgSegments.put(parameterGroupId, pgs);
             } else if (pgs.size() >= maxSegmentSize) {
                 writeToArchive(pgs);
                 int startIdx = pgs.getSegmentIdxInsideInterval() + pgs.size();
-                pgs = new PGSegment(parameterGroupId, intvt, pg.pids.size());
+                pgs = new PGSegment(parameterGroupId, interval, pg.pids.size());
                 pgs.setSegmentIdxInsideInterval(startIdx);
                 pgSegments.put(parameterGroupId, pgs);
             }

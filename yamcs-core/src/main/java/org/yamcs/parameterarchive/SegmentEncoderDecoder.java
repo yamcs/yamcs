@@ -1,7 +1,7 @@
 package org.yamcs.parameterarchive;
 
 import java.nio.ByteBuffer;
-
+import java.util.Arrays;
 
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.SortedIntArray;
@@ -27,6 +27,7 @@ public class SegmentEncoderDecoder {
     }
 
     static public BaseSegment decode(byte[] buf, long segmentStart) throws DecodingException {
+        buf = Arrays.copyOf(buf, buf.length + 16);
         ByteBuffer bb = ByteBuffer.wrap(buf);
         byte formatId = bb.get();
         return BaseSegment.parseSegment(formatId, segmentStart, bb);

@@ -27,7 +27,6 @@ public class FloatCompressor {
         int prevTz = 0;
 
         for(int i=1; i<n; i++) {
-        //	System.out.println("bb.position: "+bb.position()+" i: "+i+" fa.length: "+fa.length);
             int v = Float.floatToRawIntBits(fa[i]);
             xor = v^prevV;
             //If XOR with the previous is zero (same value), store single ‘0’ bit

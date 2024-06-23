@@ -159,7 +159,8 @@ public class ParameterArchive extends AbstractYamcsService {
                 }
                 readPartitions();
                 if (partitions.isEmpty() && partitioningSchema == null) {
-                    partitions.insert(new Partition(tr.hasParchiveCf() ? tr.getParchiveCf() : null));
+                    partitions.insert(new Partition(tr.hasParchiveCf() ? tr.getParchiveCf() : null,
+                            tr.hasParchiveUsesMergeOperator() ? tr.hasParchiveUsesMergeOperator() : false));
                 }
             }
 
@@ -178,7 +179,7 @@ public class ParameterArchive extends AbstractYamcsService {
         if (partitioningSchema != null) {
             trb.setPartitioningSchema(partitioningSchema.getName());
         } else {
-            partitions.insert(new Partition(CF_NAME));
+            partitions.insert(new Partition(CF_NAME, true));
         }
         trb.setParchiveCf(CF_NAME);
         TablespaceRecord tr = tablespace.createMetadataRecord(yamcsInstance, trb);
@@ -203,7 +204,7 @@ public class ParameterArchive extends AbstractYamcsService {
                 String cfName = tbp.hasPartitionCf() ? tbp.getPartitionCf() : null;
 
                 Partition p = new Partition(tbp.getPartitionStart(), tbp.getPartitionEnd(), tbp.getPartitionDir(),
-                        cfName);
+                        cfName, tbp.hasParchiveUsesMergeOperator() ? tbp.getParchiveUsesMergeOperator() : false);
                 if (partitions.insert(p, 0) == null) {
                     throw new DatabaseCorruptionException("Partition " + p + " overlaps with existing partitions");
                 }
@@ -227,7 +228,11 @@ public class ParameterArchive extends AbstractYamcsService {
         ColumnFamilyHandle cfh = cfh(rdb, p);
 
         try (WriteBatch writeBatch = new WriteBatch(); WriteOptions wo = new WriteOptions()) {
-            writeToBatch(cfh, writeBatch, pgs);
+            if (p.useRocksdbMergeOpeator) {
+                writeToBatch(cfh, writeBatch, pgs);
+            } else {
+                writeToBatchWithoutMergeOperator(cfh, writeBatch, pgs);
+            }
             rdb.write(wo, writeBatch);
         }
     }
@@ -242,13 +247,101 @@ public class ParameterArchive extends AbstractYamcsService {
             for (PGSegment pgs : pgList) {
                 pgs.consolidate();
                 assert (interval == pgs.getInterval());
-                writeToBatch(cfh, writeBatch, pgs);
+                if (p.useRocksdbMergeOpeator) {
+                    writeToBatch(cfh, writeBatch, pgs);
+                } else {
+                    writeToBatchWithoutMergeOperator(cfh, writeBatch, pgs);
+                }
             }
             rdb.write(wo, writeBatch);
         }
     }
 
-    private void writeToBatch(ColumnFamilyHandle cfh, WriteBatch writeBatch, PGSegment pgs) throws RocksDBException {
+    // write data to the archive using the merge operator.
+    // first segment has to be written with put, the subsequent ones with merge
+    // the merge operator will merge the segments into intervals
+    private void writeToBatch(ColumnFamilyHandle cfh, WriteBatch writeBatch, PGSegment pgs)
+            throws RocksDBException {
+
+        // write the time segment
+        SortedTimeSegment timeSegment = pgs.getTimeSegment();
+        byte[] timeKey = new SegmentKey(parameterIdDb.timeParameterId, pgs.getParameterGroupId(),
+                pgs.getInterval(), SegmentKey.TYPE_ENG_VALUE).encode();
+        byte[] timeValue = SegmentEncoderDecoder.encode(timeSegment);
+        if (pgs.isFirstInInterval()) {
+            writeBatch.put(cfh, timeKey, timeValue);
+        } else {
+            writeBatch.merge(cfh, timeKey, timeValue);
+        }
+        // and then the consolidated value segments
+
+        for (var pvs : pgs.pvSegments) {
+            int parameterId = pvs.pid;
+
+            if (pvs.numGaps() + pvs.numValues() != timeSegment.size()) {
+                String pname = parameterIdDb.getParameterFqnById(parameterId);
+                throw new IllegalStateException(
+                        "Trying to write to archive an engineering value segment whose number of values ("
+                                + pvs.numValues()
+                                + ") + number of gaps (" + pvs.numGaps() + ") is different than the time segment ("
+                                + timeSegment.size() + ") " + "for parameterId: " + parameterId + "(" + pname
+                                + ") and segment: [" + TimeEncoding.toString(timeSegment.getSegmentStart()) + " - "
+                                + TimeEncoding.toString(timeSegment.getSegmentEnd()) + "]");
+            }
+            BaseSegment vs = pvs.getConsolidatedEngValueSegment();
+            BaseSegment rvs = pvs.getConsolidatedRawValueSegment();
+            BaseSegment pss = pvs.getConsolidatedParmeterStatusSegment();
+            SortedIntArray gaps = pvs.getGaps();
+
+            byte[] engKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getInterval(),
+                    SegmentKey.TYPE_ENG_VALUE).encode();
+            byte[] engValue = SegmentEncoderDecoder.encode(vs);
+            if (pgs.isFirstInInterval()) {
+                writeBatch.put(cfh, engKey, engValue);
+            } else {
+                writeBatch.merge(cfh, engKey, engValue);
+            }
+
+            if (STORE_RAW_VALUES && rvs != null) {
+                byte[] rawKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getInterval(),
+                        SegmentKey.TYPE_RAW_VALUE).encode();
+                byte[] rawValue = SegmentEncoderDecoder.encode(rvs);
+                if (pgs.isFirstInInterval()) {
+                    writeBatch.put(cfh, rawKey, rawValue);
+                } else {
+                    writeBatch.merge(cfh, rawKey, rawValue);
+                }
+            }
+
+            byte[] pssKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getInterval(),
+                    SegmentKey.TYPE_PARAMETER_STATUS).encode();
+            byte[] pssValue = SegmentEncoderDecoder.encode(pss);
+            if (pgs.isFirstInInterval()) {
+                writeBatch.put(cfh, pssKey, pssValue);
+            } else {
+                writeBatch.merge(cfh, pssKey, pssValue);
+            }
+
+            if (gaps != null) {
+                byte[] rawKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getInterval(),
+                        SegmentKey.TYPE_GAPS).encode();
+                byte[] rawValue = SegmentEncoderDecoder.encodeGaps(pgs.segmentIdxInsideInterval, gaps);
+                if (pgs.isFirstInInterval()) {
+                    writeBatch.put(cfh, rawKey, rawValue);
+                } else {
+                    writeBatch.merge(cfh, rawKey, rawValue);
+                }
+            }
+        }
+    }
+
+    // writes to the archive without using the rocksdb merge operator (which merges segments together into intervals).
+    // The segment start is used part of the key (instead of the interval start) which means that we need to remove old
+    // data as it may have a different start
+    //
+    private void writeToBatchWithoutMergeOperator(ColumnFamilyHandle cfh, WriteBatch writeBatch, PGSegment pgs)
+            throws RocksDBException {
+
         removeOldOverlappingSegments(cfh, writeBatch, pgs);
 
         // write the time segment
@@ -344,7 +437,7 @@ public class ParameterArchive extends AbstractYamcsService {
 
             if (p == null) {
                 TimePartitionInfo pinfo = partitioningSchema.getPartitionInfo(intervalStart);
-                p = new Partition(pinfo.getStart(), pinfo.getEnd(), pinfo.getDir(), CF_NAME);
+                p = new Partition(pinfo.getStart(), pinfo.getEnd(), pinfo.getDir(), CF_NAME, true);
                 p = partitions.insert(p, 60000L);
                 assert p != null;
                 TimeBasedPartition tbp = TimeBasedPartition.newBuilder().setPartitionDir(p.partitionDir)
@@ -423,7 +516,6 @@ public class ParameterArchive extends AbstractYamcsService {
 
     public void printKeys(PrintStream out) throws DecodingException, RocksDBException, IOException {
         out.println("pid\t pgid\t type\tSegmentStart\tcount\tsize\tstype");
-        SegmentEncoderDecoder decoder = new SegmentEncoderDecoder();
         for (Partition p : partitions) {
             try (RocksIterator it = getIterator(p)) {
                 it.seekToFirst();
@@ -673,17 +765,20 @@ public class ParameterArchive extends AbstractYamcsService {
     public static class Partition extends TimeInterval {
         final String partitionDir;
         final private String cfName;
+        final boolean useRocksdbMergeOpeator;
 
-        Partition(String cfName) {
+        Partition(String cfName, boolean useRocksdbMergeOpeator) {
             super();
             this.partitionDir = null;
             this.cfName = cfName;
+            this.useRocksdbMergeOpeator = useRocksdbMergeOpeator;
         }
 
-        Partition(long start, long end, String dir, String cfName) {
+        Partition(long start, long end, String dir, String cfName, boolean useRocksdbMergeOpeator) {
             super(start, end);
             this.partitionDir = dir;
             this.cfName = cfName;
+            this.useRocksdbMergeOpeator = useRocksdbMergeOpeator;
         }
 
         @Override

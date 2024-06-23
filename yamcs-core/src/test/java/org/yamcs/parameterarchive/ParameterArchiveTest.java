@@ -208,8 +208,8 @@ public class ParameterArchiveTest extends BaseParchiveTest {
         Partition p = parchive.getPartitions(100);
         var rdb = parchive.getTablespace().getRdb(p.partitionDir);
         var cfh = rdb.getColumnFamilyHandle(ParameterArchive.CF_NAME);
-        assertNotNull(rdb.get(cfh, new SegmentKey(p1id, pg1.id, 100, SegmentKey.TYPE_ENG_VALUE).encode()));
-        assertNull(rdb.get(cfh, new SegmentKey(p1id, pg1.id, 100, SegmentKey.TYPE_RAW_VALUE).encode()));
+        assertNotNull(rdb.get(cfh, new SegmentKey(p1id, pg1.id, 0, SegmentKey.TYPE_ENG_VALUE).encode()));
+        assertNull(rdb.get(cfh, new SegmentKey(p1id, pg1.id, 0, SegmentKey.TYPE_RAW_VALUE).encode()));
 
         List<ParameterValueArray> l1a = retrieveSingleParamSingleGroup(0, TimeEncoding.POSITIVE_INFINITY, p1id, pg1.id,
                 true, false, true, false);
@@ -510,6 +510,7 @@ public class ParameterArchiveTest extends BaseParchiveTest {
         pgSegment2.addRecord(t2, l2.getPids(), l2.getValues());
 
         PGSegment pgSegment1 = new PGSegment(pg1.id, ParameterArchive.getInterval(t1));
+
         pgSegment1.addRecord(t1, l1.getPids(), l1.getValues());
 
         parchive.writeToArchive(pgSegment2);

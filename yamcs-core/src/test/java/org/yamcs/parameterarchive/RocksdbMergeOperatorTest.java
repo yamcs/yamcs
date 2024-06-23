@@ -14,6 +14,7 @@ import org.rocksdb.YamcsParchiveMergeOperator;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.FileUtils;
+import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.ValueUtility;
 
@@ -107,6 +108,30 @@ public class RocksdbMergeOperatorTest {
         verify_merge(ivs123456_out, ivs1, ivs2, ivs3, ivs4, ivs5, ivs6);
     }
 
+    @Test
+    public void testIntSegment2() throws Exception {
+        IntValueSegment ivs1 = new IntValueSegment(false);
+        ivs1.add(ValueUtility.getUint32Value(1));
+        byte[] data1 = SegmentEncoderDecoder.encode(ivs1);
+
+        IntValueSegment ivs2 = new IntValueSegment(false);
+        for (int i = 0; i < 2000; i++) {
+            ivs2.add(ValueUtility.getUint32Value(i));
+        }
+        byte[] data2 = SegmentEncoderDecoder.encode(ivs2);
+
+        var key = "testIntSegment".getBytes();
+        db.put(key, data1);
+        db.merge(key, data2);
+
+        var data12_out = db.get(key);
+        var ivs12_out = (IntValueSegment) SegmentEncoderDecoder.decode(data12_out, 0);
+
+        verify_merge(ivs12_out, ivs1, ivs2);
+
+    }
+
+
     /***** Long segment ****/
     @Test
     public void testLongSegment() throws Exception {
@@ -182,25 +207,42 @@ public class RocksdbMergeOperatorTest {
     /***** Float segment ****/
     @Test
     public void testFloatSegment() throws Exception {
+        FloatValueSegment fvs = new FloatValueSegment();
 
         FloatValueSegment fvs1 = new FloatValueSegment();
         fvs1.add(ValueUtility.getFloatValue(1.1f));
+        fvs.add(ValueUtility.getFloatValue(1.1f));
         byte[] data1 = SegmentEncoderDecoder.encode(fvs1);
 
         FloatValueSegment fvs2 = new FloatValueSegment();
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 11; i++) {
             fvs2.add(ValueUtility.getFloatValue(i * 1.1f));
+            fvs.add(ValueUtility.getFloatValue(i * 1.1f));
         }
         byte[] data2 = SegmentEncoderDecoder.encode(fvs2);
+
+        FloatValueSegment fvs3 = new FloatValueSegment();
+        for (int i = 0; i < 10; i++) {
+            fvs3.add(ValueUtility.getFloatValue(3.14f));
+            fvs.add(ValueUtility.getFloatValue(3.14f));
+        }
+        byte[] data3 = SegmentEncoderDecoder.encode(fvs3);
+
+        byte[] data = SegmentEncoderDecoder.encode(fvs);
+
+        System.out.println("data.length: " + data.length);
 
         var key = "testFloatSegment".getBytes();
         db.put(key, data1);
         db.merge(key, data2);
+        db.merge(key, data3);
 
-        var data12_out = db.get(key);
-        var fvs12_out = (FloatValueSegment) SegmentEncoderDecoder.decode(data12_out, 0);
+        var data123_out = db.get(key);
+        System.out.println("data    " + StringConverter.arrayToHexString(data));
+        System.out.println("data123 " + StringConverter.arrayToHexString(data123_out));
+        var fvs123_out = (FloatValueSegment) SegmentEncoderDecoder.decode(data123_out, 0);
 
-        verify_merge(fvs12_out, fvs1, fvs2);
+        verify_merge(fvs123_out, fvs1, fvs2, fvs3);
     }
 
     /***** Object Value segment ****/
@@ -413,6 +455,24 @@ public class RocksdbMergeOperatorTest {
         var bvs12_out = (BinaryValueSegment) SegmentEncoderDecoder.decode(data12_out, 0);
 
         verify_merge(bvs12_out, bvs1, bvs2);
+    }
+
+    /***** gaps segment ****/
+    @Test
+    public void testGapsSegment() throws Exception {
+        var gs1 = new SortedIntArray(2, 5, 6);
+        var gs2 = new SortedIntArray(2, 5, 6);
+        
+        byte[] data1 = SegmentEncoderDecoder.encodeGaps(0, gs1);
+        byte[] data2 = SegmentEncoderDecoder.encodeGaps(100, gs2);
+        
+        var key = "testGapsSegment".getBytes();
+        db.put(key, data1);
+        db.merge(key, data2);
+
+        var data12_out = db.get(key);
+        var gs12_out = (SortedIntArray) SegmentEncoderDecoder.decodeGaps(data12_out);
+        assertEquals(new SortedIntArray(2, 5, 6, 102, 105, 106), gs12_out);
     }
 
     private void verify_merge(ValueSegment vs, ValueSegment... expectedSegments) {

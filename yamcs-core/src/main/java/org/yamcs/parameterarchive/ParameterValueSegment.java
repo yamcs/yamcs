@@ -32,7 +32,7 @@ public class ParameterValueSegment {
 
     // engValueSegment should not be null during buildup but maybe null during retrieval (if the retrieving of
     // engineering values is skipped)
-    private ValueSegment engValueSegment;
+    ValueSegment engValueSegment;
     private ValueSegment rawValueSegment;
     private ParameterStatusSegment parameterStatusSegment;
 

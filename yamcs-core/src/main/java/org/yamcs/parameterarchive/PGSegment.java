@@ -22,6 +22,7 @@ public class PGSegment {
     // for the subsequent segments it is the number of rows from the previous segments
     int segmentIdxInsideInterval;
 
+
     public PGSegment(int parameterGroupId, long interval) {
         this(parameterGroupId, interval, 1000);
     }
