@@ -628,10 +628,16 @@ public class XtceAssembler {
             doc.writeAttribute("offset", Double.toString(ptype.getOffset()));
         }
 
-        writeDataEncoding(doc, ptype.getEncoding());
+        DataEncoding encoding = ptype.getEncoding();
+        if (encoding != null) {
+            writeDataEncoding(doc, encoding);
+        }
         doc.writeEndElement();
 
-        writeReferenceTime(doc, ptype.getReferenceTime());
+        ReferenceTime referenceTime = ptype.getReferenceTime();
+        if (referenceTime != null) {
+            writeReferenceTime(doc, referenceTime);
+        }
         doc.writeEndElement();
     }
 
