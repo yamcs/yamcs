@@ -85,7 +85,6 @@ public class ParameterArchive extends AbstractYamcsService {
     int partitionTbsIndex;
 
     private PartitionedTimeInterval<Partition> partitions = new PartitionedTimeInterval<>();
-    SegmentEncoderDecoder vsEncoder = new SegmentEncoderDecoder();
 
     TimeService timeService;
     private BackFiller backFiller;
@@ -299,7 +298,7 @@ public class ParameterArchive extends AbstractYamcsService {
             if (gaps != null) {
                 byte[] rawKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getSegmentStart(),
                         SegmentKey.TYPE_GAPS).encode();
-                byte[] rawValue = vsEncoder.encodeGaps(pgs.getSegmentIdxInsideInterval(), gaps);
+                byte[] rawValue = SegmentEncoderDecoder.encodeGaps(pgs.getSegmentIdxInsideInterval(), gaps);
                 writeBatch.put(cfh, rawKey, rawValue);
             }
         }
@@ -432,7 +431,7 @@ public class ParameterArchive extends AbstractYamcsService {
                     SegmentKey key = SegmentKey.decode(it.key());
                     byte[] v = it.value();
                     BaseSegment s;
-                    s = decoder.decode(it.value(), key.segmentStart);
+                    s = SegmentEncoderDecoder.decode(it.value(), key.segmentStart);
                     out.println(key.parameterId + "\t " + key.parameterGroupId + "\t " + key.type + "\t"
                             + TimeEncoding.toString(key.segmentStart) + "\t" + s.size() + "\t" + v.length + "\t"
                             + s.getClass().getSimpleName());
@@ -549,7 +548,7 @@ public class ParameterArchive extends AbstractYamcsService {
             return null;
         }
         try {
-            return (SortedTimeSegment) vsEncoder.decode(tv, segmentStart);
+            return (SortedTimeSegment) SegmentEncoderDecoder.decode(tv, segmentStart);
         } catch (DecodingException e) {
             throw new DatabaseCorruptionException(e);
         }

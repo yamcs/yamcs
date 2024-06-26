@@ -26,18 +26,16 @@ public class SegmentEncoderDecoder {
         }
     }
 
-    public BaseSegment decode(byte[] buf, long segmentStart) throws DecodingException {
+    static public BaseSegment decode(byte[] buf, long segmentStart) throws DecodingException {
         ByteBuffer bb = ByteBuffer.wrap(buf);
-
         byte formatId = bb.get();
-
         return BaseSegment.parseSegment(formatId, segmentStart, bb);
     }
 
     /**
      * the gaps is a sorted int array so we encode it with the same encoding like the time segment
      */
-    public byte[] encodeGaps(int segStartIdxInsideInterval, SortedIntArray gaps) {
+    static public byte[] encodeGaps(int segStartIdxInsideInterval, SortedIntArray gaps) {
         ByteBuffer bb = ByteBuffer.allocate(5 + 4 * (gaps.size()));
         bb.put(FORMAT_ID_GapSegment);
         VarIntUtil.writeVarInt32(bb, segStartIdxInsideInterval);
@@ -55,7 +53,7 @@ public class SegmentEncoderDecoder {
     }
 
 
-    public SortedIntArray decodeGaps(byte[] buf) throws DecodingException {
+    static public SortedIntArray decodeGaps(byte[] buf) throws DecodingException {
         ByteBuffer bb = ByteBuffer.wrap(buf);
 
         byte formatId = bb.get();
