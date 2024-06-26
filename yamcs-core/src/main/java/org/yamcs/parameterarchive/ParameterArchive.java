@@ -256,7 +256,7 @@ public class ParameterArchive extends AbstractYamcsService {
         SortedTimeSegment timeSegment = pgs.getTimeSegment();
         byte[] timeKey = new SegmentKey(parameterIdDb.timeParameterId, pgs.getParameterGroupId(),
                 pgs.getSegmentStart(), SegmentKey.TYPE_ENG_VALUE).encode();
-        byte[] timeValue = vsEncoder.encode(timeSegment);
+        byte[] timeValue = SegmentEncoderDecoder.encode(timeSegment);
         writeBatch.put(cfh, timeKey, timeValue);
 
         // and then the consolidated value segments
@@ -281,25 +281,25 @@ public class ParameterArchive extends AbstractYamcsService {
 
             byte[] engKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getSegmentStart(),
                     SegmentKey.TYPE_ENG_VALUE).encode();
-            byte[] engValue = vsEncoder.encode(vs);
+            byte[] engValue = SegmentEncoderDecoder.encode(vs);
             writeBatch.put(cfh, engKey, engValue);
 
             if (STORE_RAW_VALUES && rvs != null) {
                 byte[] rawKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getSegmentStart(),
                         SegmentKey.TYPE_RAW_VALUE).encode();
-                byte[] rawValue = vsEncoder.encode(rvs);
+                byte[] rawValue = SegmentEncoderDecoder.encode(rvs);
                 writeBatch.put(cfh, rawKey, rawValue);
             }
 
             byte[] pssKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getSegmentStart(),
                     SegmentKey.TYPE_PARAMETER_STATUS).encode();
-            byte[] pssValue = vsEncoder.encode(pss);
+            byte[] pssValue = SegmentEncoderDecoder.encode(pss);
             writeBatch.put(cfh, pssKey, pssValue);
 
             if (gaps != null) {
                 byte[] rawKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getSegmentStart(),
                         SegmentKey.TYPE_GAPS).encode();
-                byte[] rawValue = vsEncoder.encodeGaps(gaps);
+                byte[] rawValue = vsEncoder.encodeGaps(pgs.getSegmentIdxInsideInterval(), gaps);
                 writeBatch.put(cfh, rawKey, rawValue);
             }
         }

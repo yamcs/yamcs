@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -56,7 +57,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
     private YamcsServer yamcsServer;
 
     // Maximum time to wait for new data before flushing to archive
-    int flushInterval = 10*60; // seconds
+    int flushInterval = 10 * 60; // seconds
 
     // max allowed time for old data
     long sortingThreshold;
@@ -92,11 +93,10 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
 
         return spec;
     }
-    
+
     /**
-     * Gets the Yamcs server reference. Code in this class should call this method
-     * rather than <code>YamcsServer.getServer()</code> so the server can be mocked
-     * for unit testing.
+     * Gets the Yamcs server reference. Code in this class should call this method rather than
+     * <code>YamcsServer.getServer()</code> so the server can be mocked for unit testing.
      * 
      * @return the Yamcs server reference
      */
@@ -106,12 +106,12 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
         }
         return yamcsServer;
     }
-    
+
     /**
-     * Sets the Yamcs server to use. Default scope for unit testing. Should only
-     * be called by unit tests.
+     * Sets the Yamcs server to use. Default scope for unit testing. Should only be called by unit tests.
      * 
-     * @param yamcsServer the Yamcs server to use, perhaps a mock object
+     * @param yamcsServer
+     *            the Yamcs server to use, perhaps a mock object
      */
     synchronized void setYamcsServer(YamcsServer yamcsServer) {
         this.yamcsServer = yamcsServer;
@@ -157,7 +157,6 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
 
     public void shutDown() throws InterruptedException {
         realtimeProcessor.getParameterRequestManager().unsubscribeAll(subscriptionId);
-
         log.info("Shutting down, writing all pending segments");
         for (SegmentQueue queue : queues.values()) {
             queue.flush(pgs -> scheduleWriteToArchive(pgs));
@@ -195,12 +194,12 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                             TimeEncoding.toString(t),
                             TimeEncoding.toString(segStart - sortingThreshold));
                     return;
-                } else {
-                    segQueue.sendToArchive(t - sortingThreshold, pgs -> scheduleWriteToArchive(pgs));
                 }
             }
 
-            if (!segQueue.addRecord(t, pvList.getPids(), pvList.getValues())) {
+            if (segQueue.addRecord(t, pvList.getPids(), pvList.getValues())) {
+                segQueue.sendToArchive(t - sortingThreshold, pgs -> scheduleWriteToArchive(pgs));
+            } else {
                 log.warn("Realtime parameter archive queue full."
                         + "Consider increasing the writerThreads (if CPUs are available) or using a back filler");
             }
@@ -209,17 +208,29 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
     }
 
     private CompletableFuture<Void> scheduleWriteToArchive(PGSegment pgs) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                long t0 = System.nanoTime();
-                parameterArchive.writeToArchive(pgs);
-                long d = System.nanoTime() - t0;
-                log.debug("Wrote segment {} to archive in {} millisec", pgs, d / 1000_000);
-            } catch (RocksDBException | IOException e) {
-                log.error("Error writing segment to the parameter archive", e);
-            }
-            return null;
-        }, executor);
+        CompletableFuture<Void> cf = new CompletableFuture<>();
+        try {
+            executor.submit(() -> {
+                doWriteToArchive(pgs, cf);
+            });
+        } catch (RejectedExecutionException e) {
+            // the executor is shutdown and won't accept new tasks, keep writing in the same thread
+            doWriteToArchive(pgs, cf);
+        }
+        return cf;
+    }
+
+    private void doWriteToArchive(PGSegment pgs, CompletableFuture<Void> cf) {
+        try {
+            long t0 = System.nanoTime();
+            parameterArchive.writeToArchive(pgs);
+            long d = System.nanoTime() - t0;
+            log.debug("Wrote segment {} to archive in {} millisec", pgs, d / 1000_000);
+            cf.complete(null);
+        } catch (RocksDBException | IOException e) {
+            log.error("Error writing segment to the parameter archive", e);
+            cf.completeExceptionally(e);
+        }
     }
 
     /**
@@ -242,12 +253,11 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
      * If ascending is false, the list of segments is sorted by descending start time but the data inside the segments
      * is still sorted in ascending order.
      * <p>
-     * The segments are references to the data that is being added, that means they are modified by external
-     * threads.
+     * The segments are references to the data that is being added, that means they are modified by external threads.
      * <p>
      * Some segments may just being written to the archive, so care has to be taken by the caller to eliminate duplicate
-     * data when using the return of this method combined with reading data from archive.
-     * The {@link SegmentIterator} does that.
+     * data when using the return of this method combined with reading data from archive. The {@link SegmentIterator}
+     * does that.
      * 
      * 
      * @param parameterId
@@ -272,13 +282,14 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
 
         return queue.getPVSegments(pids, ascending);
     }
+
     /**
      * 
      * This class is used to accumulate "slightly" unsorted data and also keeps the data while is being written to the
      * archive.
      * <p>
-     * Works like a queue, new segments are added to the tail, they are written to the archive from the head.
-     * The elements in the queue are only cleared (set to null) after they have been written to the archive, even if
+     * Works like a queue, new segments are added to the tail, they are written to the archive from the head. The
+     * elements in the queue are only cleared (set to null) after they have been written to the archive, even if
      * theoretically they are out of the queue.
      * <p>
      * This gives the chance to still use the data in the retrieval. See {@link SingleParameterRetrieval} and
@@ -306,6 +317,8 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
         final int maxSegmentSize;
 
         private long latestUpdateTime;
+        // we use this to make sure that only one write is running for a given pg at a time
+        CompletableFuture<Void> lastWriteFuture = CompletableFuture.completedFuture(null);
 
         public SegmentQueue(int parameterGroupId, int maxSegmentSize) {
             this.parameterGroupId = parameterGroupId;
@@ -322,8 +335,8 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
         /**
          * Add the record to the queue.
          * <p>
-         * Given the queue state s1, s2, s3... sn, it is inserted into the sk such that the
-         * t is in the same interval as sk and either sk is not full, or t<sk.end.
+         * Given the queue state s1, s2, s3... sn, it is inserted into the sk such that the t is in the same interval as
+         * sk and either sk is not full, or t<sk.end.
          * <p>
          * If not such a segment exists, a new segment is created and inserted in the queue (if the queue is not full).
          * <p>
@@ -348,7 +361,6 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                 if (t <= seg.getSegmentEnd() || seg.size() < maxSegmentSize) {
                     // when the first condition is met only (i.e. new data coming in the middle of a full segment)
                     // the segment will become bigger than the maxSegmentSize
-                    // FIXME: split the interval in two if this happens
                     seg.addRecord(t, pids, pvList);
                     added = true;
                     break;
@@ -365,7 +377,6 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
 
                 PGSegment seg = new PGSegment(parameterGroupId, ParameterArchive.getInterval(t), pids.size());
                 seg.addRecord(t, pids, pvList);
-
                 // shift everything between k and tail to the right
                 for (int i = k; i != tail; i = inc(i)) {
                     segments[inc(i)] = segments[i];
@@ -378,8 +389,6 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
             }
             return true;
         }
-
-
 
         /**
          * send to archive all segments which are either from an older interval than t1 or are full and their end is
@@ -399,23 +408,35 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                 }
                 int _head = head;
                 head = inc(head);
+                if (head != tail) {
+                    var nextSeg = segments[head];
+                    if (nextSeg.getInterval() == seg.getInterval()) {
+                        nextSeg.setSegmentIdxInsideInterval(seg.getSegmentIdxInsideInterval() + seg.size());
+                    }
+                }
                 toArchive(_head, f);
             }
         }
 
         synchronized void flush(Function<PGSegment, CompletableFuture<Void>> f) {
             while (head != tail) {
+                PGSegment seg = segments[head];
                 toArchive(head, f);
                 head = inc(head);
+                if (head != tail) {
+                    var nextSeg = segments[head];
+                    if (nextSeg.getInterval() == seg.getInterval()) {
+                        nextSeg.setSegmentIdxInsideInterval(seg.getSegmentIdxInsideInterval() + seg.size());
+                    }
+                }
             }
         }
 
         private void toArchive(int idx, Function<PGSegment, CompletableFuture<Void>> f) {
             PGSegment seg = segments[idx];
-
-            f.apply(seg).thenAccept(v -> {
-                segments[idx] = null;
-            });
+            lastWriteFuture = lastWriteFuture
+                    .thenCompose(v -> f.apply(seg))
+                    .thenAccept(v -> segments[idx] = null);
         }
 
         public int size() {
