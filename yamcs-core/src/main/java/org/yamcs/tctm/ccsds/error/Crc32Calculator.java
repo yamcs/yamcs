@@ -1,6 +1,8 @@
 package org.yamcs.tctm.ccsds.error;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.zip.CRC32C;
 
 public class Crc32Calculator {
     final long polynomial;
@@ -10,31 +12,15 @@ public class Crc32Calculator {
 
     public Crc32Calculator(int polynomial) {
         this.polynomial = polynomial;
-        init2();
+        init();
     }
 
     public Crc32Calculator(int polynomial, boolean xor) {
         this.polynomial = polynomial;
         this.xor = xor;
 
-        init2();
+        init();
     }
-
-    void init2() {
-        for (int i = 0; i < 256; i++) {
-            int crc = i;
-            for (int j = 8; j > 0; j--) {
-                if ((crc & 1) == 1) {
-                    crc = (crc >>> 1) ^ (int) polynomial;
-                } else {
-                    crc = crc >>> 1;
-                }
-            }
-            r[i] = crc;
-        }
-    }
-
-
 
     void init() {
         long remainder;
@@ -53,15 +39,6 @@ public class Crc32Calculator {
             r[dividend] = (int) remainder;
         }
     }
-
-    public int compute2(byte[] data, int offset, int length, int initialValue) {
-        int crc = initialValue;
-        for (byte b : data) {
-            crc = (crc >>> 8) ^ r[(crc ^ b) & 0xFF];
-        }
-        return crc ^ 0xFFFFFFFF;  // Final XOR value
-    }
-
 
     public int compute(byte[] data, int offset, int length, int initialValue) {
         int crc = initialValue;
@@ -89,5 +66,22 @@ public class Crc32Calculator {
             return crc ^ 0xFFFF;
 
         return crc;
+    }
+
+    public int computeCrc32c(byte[] data, int offset, int length) {
+
+        CRC32C crc32c = new CRC32C();
+        crc32c.update(data, offset, length);
+
+        return (int) crc32c.getValue();
+    }
+
+    public int computeCrc32c(ByteBuffer bb, int offset, int length) {
+        byte[] data = bb.array();
+
+        CRC32C crc32c = new CRC32C();
+        crc32c.update(data, offset, length);
+
+        return (int) crc32c.getValue();
     }
 }
