@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>5.9.7-Pixxel.SNAPSHOT-2.8.6</version>
+    <version>5.9.7-Pixxel.SNAPSHOT-2.9.0</version>
   </parent>
 
   <artifactId>distribution</artifactId>
