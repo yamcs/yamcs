@@ -235,6 +235,9 @@ public class BitBuffer {
         ensureByteBoundary();
         int bytePos = idx(position >> 3);
 
+        if (byteOrder == ByteOrder.LITTLE_ENDIAN)
+            src = toLE(src);
+
         System.arraycopy(src, offset, b, bytePos, length);
         position += (length << 3);
     }
@@ -244,6 +247,18 @@ public class BitBuffer {
      */
     public void put(byte[] src) {
         put(src, 0, src.length);
+    }
+
+
+    public byte[] toLE(byte[] data) {
+        if (data == null) {
+            return null;
+        }
+        byte[] leData = new byte[data.length];
+        for (int i = 0; i < data.length; i++) {
+            leData[i] = data[data.length - 1 - i];
+        }
+        return leData;
     }
 
     /**

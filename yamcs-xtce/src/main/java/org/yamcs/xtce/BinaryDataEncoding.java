@@ -23,6 +23,7 @@ public class BinaryDataEncoding extends DataEncoding {
     int sizeInBitsOfSizeTag = 16; // this is used when type is LEADING_SIZE to encod the length of the value before the
                                   // value
     private Type type = Type.FIXED_SIZE;
+    boolean lsbPadding;
 
     /**
      * For variable-sized parameters or arguments, a reference to the parameter
@@ -39,6 +40,7 @@ public class BinaryDataEncoding extends DataEncoding {
         super(bde);
         this.sizeInBitsOfSizeTag = bde.sizeInBitsOfSizeTag;
         this.type = bde.type;
+        this.lsbPadding = bde.lsbPadding;
     }
 
     public BinaryDataEncoding(Builder builder) {
@@ -56,6 +58,10 @@ public class BinaryDataEncoding extends DataEncoding {
             this.dynamicSize = builder.dynamicSize;
         }
 
+        if (builder.lsbPadding != null) {
+            this.lsbPadding = builder.lsbPadding;
+        }
+
         if (builder.baseEncoding instanceof BinaryDataEncoding) {
             BinaryDataEncoding baseEncoding = (BinaryDataEncoding) builder.baseEncoding;
 
@@ -68,6 +74,10 @@ public class BinaryDataEncoding extends DataEncoding {
             }
             if (builder.dynamicSize == null) {
                 this.dynamicSize = baseEncoding.dynamicSize;
+            }
+
+            if (builder.lsbPadding == null) {
+                this.lsbPadding = baseEncoding.lsbPadding;
             }
         }
     }
@@ -87,6 +97,14 @@ public class BinaryDataEncoding extends DataEncoding {
 
     public int getSizeInBitsOfSizeTag() {
         return sizeInBitsOfSizeTag;
+    }
+
+    public boolean getLsbPadding() {
+        return lsbPadding;
+    }
+
+    public void setLsbPadding(boolean lsbPadding) {
+        this.lsbPadding = lsbPadding;
     }
 
     public void setSizeInBitsOfSizeTag(int sizeInBits) {
@@ -120,11 +138,13 @@ public class BinaryDataEncoding extends DataEncoding {
         Integer sizeInBitsOfSizeTag;
         private Type type;
         DynamicIntegerValue dynamicSize;
+        Boolean lsbPadding;
 
         public Builder(BinaryDataEncoding encoding) {
             super(encoding);
             this.sizeInBitsOfSizeTag = encoding.sizeInBitsOfSizeTag;
             this.type = encoding.type;
+            this.lsbPadding = encoding.lsbPadding;
         }
 
         public Builder() {
@@ -149,6 +169,11 @@ public class BinaryDataEncoding extends DataEncoding {
             this.sizeInBitsOfSizeTag = sizeInBitsOfSizeTag;
             return self();
         }
+
+        public Builder setLsbPadding(Boolean lsbPadding) {
+            this.lsbPadding = lsbPadding;
+            return self();
+        } 
 
         @Override
         public Builder setToBinaryTransformAlgorithm(Algorithm alg) {

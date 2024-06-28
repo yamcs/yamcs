@@ -124,7 +124,7 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
     static final Pattern ALGO_FIRERATE_PATTERN = Pattern.compile("OnPeriodicRate\\((\\d+)\\)");
 
     static final Pattern PARAM_ENCODING_PATTERN_old = Pattern.compile("\\d+");
-    static final Pattern PARAM_ENCODING_PATTERN = Pattern.compile("(\\w+)\\s?\\(([\\w\\s,\\-\\.]+)\\)");
+    static final Pattern PARAM_ENCODING_PATTERN = Pattern.compile("(\\w+)\\s?\\((\\w+\\s?,?\\s?\\w*\\s?,?\\s?\\w*)\\)");
 
     protected static final String PARAM_RAWTYPE_STRING_PREPENDED = "prependedsizestring";
     protected static final String PARAM_RAWTYPE_STRING_TERMINATED = "terminatedstring";
@@ -330,6 +330,16 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
                     + "'. Supported values: unsigned, twosComplement, signMagnitude and string");
         }
 
+    }
+
+    static boolean getLsbPadding(SpreadsheetLoadContext ctx, String bo) {
+        if ("true".equalsIgnoreCase(bo)) {
+            return true;
+        } else if ("false".equalsIgnoreCase(bo)) {
+            return false;
+        } else {
+            throw new SpreadsheetLoadException(ctx, "Unsupported lsb padding '" + bo + "'. Supported values: true|false");
+        }
     }
 
     static ByteOrder getByteOrder(SpreadsheetLoadContext ctx, String bo) {
