@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit, Optional, SkipSelf } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit, Optional, SkipSelf, forwardRef } from '@angular/core';
 import { ControlContainer, FormArray, FormArrayName, FormGroup, FormGroupName, UntypedFormControl } from '@angular/forms';
 import { ArgumentType, WebappSdkModule, utils } from '@yamcs/webapp-sdk';
 import { ArrayArgumentComponent } from '../array-argument/array-argument.component';
@@ -24,7 +24,8 @@ import { TimeArgumentComponent } from '../time-argument/time-argument.component'
     deps: [[new SkipSelf(), new Optional(), FormArrayName], FormGroupName],
   }],
   imports: [
-    ArrayArgumentComponent,
+    // Break circular imports
+    forwardRef(() => ArrayArgumentComponent),
     BinaryArgumentComponent,
     BooleanArgumentComponent,
     EnumerationArgumentComponent,

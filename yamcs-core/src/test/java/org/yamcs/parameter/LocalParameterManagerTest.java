@@ -18,15 +18,15 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
+import org.yamcs.mdb.ProcessingData;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.mdb.Mdb;
 
 public class LocalParameterManagerTest {
     Mdb mdb;
@@ -44,10 +44,9 @@ public class LocalParameterManagerTest {
     @BeforeEach
     public void beforeTest() throws Exception {
         localParamMgr = new LocalParameterManager();
-        localParamMgr.init("test");
         mdb = MdbFactory.createInstanceByConfig("refmdb");
+        localParamMgr.init("test", mdb);
         paraProc = new MyParamProcessor();
-        localParamMgr.init(mdb);
         localParamMgr.setParameterProcessor(paraProc);
 
         p1 = mdb.getParameter("/REFMDB/SUBSYS1/LocalPara1");
@@ -82,23 +81,29 @@ public class LocalParameterManagerTest {
         ParameterValue pv = pvs.iterator().next();
         assertEquals(p1, pv.getParameter());
 
+        localParamMgr.stopProviding(p1);
+        localParamMgr.updateParameters(pvList);
+        pvs = paraProc.received.poll(5, TimeUnit.SECONDS);
+        assertNull(pvs);
+
+        localParamMgr.startProviding(p1);
+        localParamMgr.startProviding(p2);
+        localParamMgr.updateParameters(pvList);
+        pvs = paraProc.received.poll(5, TimeUnit.SECONDS);
+        assertEquals(2, pvs.size());
+
+        localParamMgr.stopProviding(p2);
+        localParamMgr.updateParameters(pvList);
+        pvs = paraProc.received.poll(5, TimeUnit.SECONDS);
+        assertEquals(1, pvs.size());
+        pv = pvs.iterator().next();
+        assertEquals(p1, pv.getParameter());
+
         localParamMgr.startProvidingAll();
 
         localParamMgr.updateParameters(pvList);
         pvs = paraProc.received.poll(5, TimeUnit.SECONDS);
         assertEquals(2, pvs.size());
-
-        localParamMgr.stopProviding(p1);
-        localParamMgr.updateParameters(pvList);
-        pvs = paraProc.received.poll(5, TimeUnit.SECONDS);
-        assertEquals(1, pvs.size());
-        pv = pvs.iterator().next();
-        assertEquals(p2, pv.getParameter());
-
-        localParamMgr.stopProviding(p2);
-        localParamMgr.updateParameters(pvList);
-        pvs = paraProc.received.poll(2, TimeUnit.SECONDS);
-        assertNull(pvs);
     }
 
     @Test

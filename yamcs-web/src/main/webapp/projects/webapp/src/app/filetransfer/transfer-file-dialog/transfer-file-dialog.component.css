@@ -40,6 +40,7 @@
   grid-row: header;
   position: relative;
   overflow: hidden;
+  font-family: Roboto, sans-serif;
 }
 
 .table-wrapper {
@@ -57,6 +58,7 @@
   justify-content: stretch;
   gap: 8px;
   height: fit-content;
+  font-family: Roboto, sans-serif;
 }
 
 .options-footer {
@@ -69,6 +71,7 @@
   justify-content: stretch;
   gap: 8px;
   height: fit-content;
+  font-family: Roboto, sans-serif;
 }
 
 .buckets-column {

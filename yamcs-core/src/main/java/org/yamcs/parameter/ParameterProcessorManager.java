@@ -93,6 +93,10 @@ public class ParameterProcessorManager extends AbstractService implements Parame
 
         if (cacheConfig.enabled) {
             parameterCache = new ArrayParameterCache(proc.getInstance(), cacheConfig);
+
+            // Populate any initial values
+            var pvs = proc.getLastValueCache().getValues();
+            parameterCache.update(pvs);
         }
         prm = new ParameterRequestManager(this);
     }
@@ -208,6 +212,7 @@ public class ParameterProcessorManager extends AbstractService implements Parame
         throw new InvalidIdentification(paraId);
     }
 
+    @Override
     public void process(ProcessingData processingData) {
         ParameterValueList pvlist = processingData.getTmParams();
         log.trace("Received TM data with {} parameters", pvlist.size);

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, Optional, SkipSelf } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, Optional, SkipSelf, forwardRef } from '@angular/core';
 import { AbstractControl, ControlContainer, FormArrayName, FormControl, FormGroup, FormGroupDirective, FormGroupName, UntypedFormArray, UntypedFormGroup } from '@angular/forms';
 import { ArgumentType, NamedObjectId, ParameterSubscription, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription, distinctUntilChanged } from 'rxjs';
@@ -25,7 +25,8 @@ import { TimeArgumentComponent } from '../time-argument/time-argument.component'
     deps: [[new SkipSelf(), new Optional(), FormArrayName], FormGroupName],
   }],
   imports: [
-    AggregateArgumentComponent,
+    // Break circular imports
+    forwardRef(() => AggregateArgumentComponent),
     BinaryArgumentComponent,
     BooleanArgumentComponent,
     EnumerationArgumentComponent,
