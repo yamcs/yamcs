@@ -25,12 +25,11 @@ import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tc.PusTcCcsdsPacket;
 import org.yamcs.tctm.pus.services.tm.BucketSaveHandler;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
+import org.yamcs.time.TimeService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.YarchException;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 public class SubServiceTen extends BucketSaveHandler implements PusSubService {
     String yamcsInstance;
@@ -41,7 +40,7 @@ public class SubServiceTen extends BucketSaveHandler implements PusSubService {
     private static final int messageSubTypeSize = 2;
 
     Bucket timetagScheduleDetailReportBucket;
-    Gson gson;
+    TimeService timeService;
 
     public SubServiceTen(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
@@ -54,27 +53,24 @@ public class SubServiceTen extends BucketSaveHandler implements PusSubService {
             throw new YarchException("Failed to create RDB based bucket: timetagScheduleDetailReport | (Service - 11 | SubService - 10)", e);
         }
 
-        // Create Gson instance
-        gson = new GsonBuilder().setPrettyPrinting().create();
+        timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
     public ArrayList<byte[]> generateTimetagScheduleDetailReport(Map<Long, byte[]> requestTcPacketsMap) {
         // Apid, SeqCount, Timetag, Service, SubService, sourceId
 
-        long missionTime = ServiceEleven.timeService.getMissionTime();
+        long missionTime = timeService.getMissionTime();
         String timetagDetailReportName = "TimeTagSchedule_DetailReport | " + LocalDateTime.ofInstant(
             Instant.ofEpochMilli(missionTime),
             ZoneId.of("GMT")
         ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss' UTC'"));
         
-        HashMap<String, String> timetagDetailReportMetadata = new HashMap<>();
         ArrayList<byte[]> releaseAndRequestTimes = new ArrayList<>();
-
         try (StringWriter stringWriter = new StringWriter();
-             BufferedWriter writer = new BufferedWriter(stringWriter)) {
+            BufferedWriter writer = new BufferedWriter(stringWriter)) {
             
             // Write header
-            writer.write("Release Timetag, Source ID, Command APID, Command Ccsds SeqCount, Pus Service, Pus SubService\n");
+            writer.write("ReleaseTimetag, SourceID, CommandApid, CommandCcsdsSeqCount, PusService, PusSubService\n");
 
             for(Map.Entry<Long, byte[]> requestTcMap: requestTcPacketsMap.entrySet()) {
                 byte[] tcPacket = requestTcMap.getValue();
@@ -106,10 +102,9 @@ public class SubServiceTen extends BucketSaveHandler implements PusSubService {
             }
 
             // Put report in the bucket
-            timetagScheduleDetailReportBucket.putObject(timetagDetailReportName, "CSV", timetagDetailReportMetadata, stringWriter.toString().getBytes());
+            timetagScheduleDetailReportBucket.putObject(timetagDetailReportName, "csv", new HashMap<>(), stringWriter.toString().getBytes());
 
         } catch (IOException e) {
-            // FIXME: Should not happen
             e.printStackTrace();
         }
 
@@ -118,7 +113,6 @@ public class SubServiceTen extends BucketSaveHandler implements PusSubService {
 
     @Override
     public PreparedCommand process(PreparedCommand telecommand) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'process'");
     }
 
