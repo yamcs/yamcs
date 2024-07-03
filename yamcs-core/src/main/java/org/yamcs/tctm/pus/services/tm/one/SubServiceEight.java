@@ -1,8 +1,6 @@
 package org.yamcs.tctm.pus.services.tm.one;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.ArrayList;
 
 import org.yamcs.TmPacket;
@@ -13,7 +11,7 @@ import org.yamcs.tctm.pus.PusTmManager;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
 import org.yamcs.utils.ByteArrayUtils;
-import org.yamcs.utils.StringConverter;
+
 
 public class SubServiceEight implements PusSubService {
     EventProducer eventProducer;

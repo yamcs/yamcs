@@ -31,7 +31,7 @@ public class ServiceEleven implements PusService {
     protected static int seqCountSize;
     protected static int reportCountSize;
 
-    protected static TimeService timeService;
+    TimeService timeService;
 
     public ServiceEleven(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
