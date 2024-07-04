@@ -21,8 +21,6 @@ import org.yamcs.utils.StringConverter;
  *
  */
 public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
-    private volatile int invalidDatagramCount = 0;
-
     private DatagramSocket tmSocket;
     private int port;
 
@@ -110,15 +108,9 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
     @Override
     public Map<String, Object> getExtraInfo() {
         var extra = new LinkedHashMap<String, Object>();
-        extra.put("Valid datagrams", frameCount.get());
-        extra.put("Invalid datagrams", invalidDatagramCount);
+        extra.put("Valid frames", validFrameCount.get());
+        extra.put("Invalid frames", invalidFrameCount.get());
         return extra;
-    }
-
-    @Override
-    public void resetCounters() {
-        super.resetCounters();
-        invalidDatagramCount = 0;
     }
 
     @Override
