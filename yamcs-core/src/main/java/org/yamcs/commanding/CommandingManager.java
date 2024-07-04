@@ -74,8 +74,10 @@ public class CommandingManager extends AbstractService {
                 .setSequenceNumber(seq).setGenerationTime(processor.getCurrentTime()).build();
         PreparedCommand pc = new PreparedCommand(cmdId);
         pc.setMetaCommand(mc);
-        pc.setUnprocessedBinary(cbr.getCmdPacket());
-        pc.setBinary(cbr.getCmdPacket());
+        if (cbr.getCmdPacket() != null) {
+            pc.setUnprocessedBinary(cbr.getCmdPacket());
+            pc.setBinary(cbr.getCmdPacket());
+        }
         pc.setUsername(user.getName());
 
         Set<String> userAssignedArgumentNames = new HashSet<>(argAssignmentList.keySet());

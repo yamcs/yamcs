@@ -1,53 +1,43 @@
 <app-admin-page>
   <app-admin-toolbar>
-    API routes
-    &nbsp;&nbsp;&nbsp;
-    <button mat-icon-button
-            color="primary"
-            (click)="refresh()"
-            matTooltip="Refresh view">
+    API routes &nbsp;&nbsp;&nbsp;
+    <button mat-icon-button color="primary" (click)="refresh()" matTooltip="Refresh view">
       <mat-icon>refresh</mat-icon>
     </button>
   </app-admin-toolbar>
 
   <ya-detail-pane>
-    <ng-container *ngIf="selectedRoute$ | async as selectedItem; else noSelection">
-      <ya-detail-toolbar>
-        Route Detail
-      </ya-detail-toolbar>
+    @if (selectedRoute$ | async; as selectedItem) {
+      <ya-detail-toolbar> Route Detail </ya-detail-toolbar>
       <div style="padding: 0 16px">
         <app-route-detail [route]="selectedItem" />
       </div>
-    </ng-container>
-    <ng-template #noSelection>
-      <ya-detail-toolbar>
-        Select a route
-      </ya-detail-toolbar>
-    </ng-template>
+    } @else {
+      <ya-detail-toolbar> Select a route </ya-detail-toolbar>
+    }
   </ya-detail-pane>
 
   <div class="table-wrapper">
     <div class="panel-content">
       <div class="filter-bar">
-        <ya-search-filter [formControl]="filterControl"
-                          placeholder="Filter routes" />
+        <ya-search-filter [formControl]="filterControl" placeholder="Filter routes" />
       </div>
-      <table mat-table
-             [dataSource]="dataSource"
-             class="ya-data-table expand"
-             matSort
-             matSortActive="requestCount"
-             matSortDirection="desc"
-             matSortDisableClear>
-
+      <table
+        mat-table
+        [dataSource]="dataSource"
+        class="ya-data-table expand"
+        matSort
+        matSortActive="requestCount"
+        matSortDirection="desc"
+        matSortDisableClear>
         <ng-container matColumnDef="service">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Service</th>
-          <td mat-cell *matCellDef="let route">{{ route.service || 'Other' }}</td>
+          <td mat-cell *matCellDef="let route">{{ route.service || "Other" }}</td>
         </ng-container>
 
         <ng-container matColumnDef="method">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Method</th>
-          <td mat-cell *matCellDef="let route">{{ route.description || '-' }}</td>
+          <td mat-cell *matCellDef="let route">{{ route.description || "-" }}</td>
         </ng-container>
 
         <ng-container matColumnDef="requestCount">
@@ -71,10 +61,12 @@
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-            (click)="selectRoute(row)"
-            [ngClass]="{selected: (row === (selectedRoute$ | async))}"
-            [class.deprecated]="row.deprecated"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: displayedColumns"
+          (click)="selectRoute(row)"
+          [ngClass]="{ selected: row === (selectedRoute$ | async) }"
+          [class.deprecated]="row.deprecated"></tr>
       </table>
     </div>
   </div>

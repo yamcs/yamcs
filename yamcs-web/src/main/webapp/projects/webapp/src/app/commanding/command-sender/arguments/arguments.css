@@ -21,7 +21,8 @@
   color: white;
 }
 
-.members, .entries {
+.members,
+.entries {
   margin-top: 5px;
   padding-top: 5px;
   padding-left: 10px;
@@ -29,7 +30,7 @@
 }
 
 .meta .item.menu:hover {
-  background-color: #5787b1;
+  background-color: #009e97;
   color: white;
   cursor: pointer;
 }

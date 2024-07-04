@@ -1,24 +1,38 @@
 <button [matMenuTriggerFor]="selMenu" class="ya-button">
-  <mat-icon *ngIf="icon" class="icon12" style="vertical-align: middle">{{ icon }}</mat-icon>
-  <ng-container *ngIf="selected$ | async as selected">
+  @if (icon) {
+    <mat-icon class="icon12" style="vertical-align: middle">{{ icon }}</mat-icon>
+  }
+  @if (selected$ | async; as selected) {
     {{ getLabel(selected) }}
-  </ng-container>
-  <span *ngIf="!(selected$ | async)!.length">{{ emptyOption }}</span>
+  }
+  @if (!(selected$ | async)!.length) {
+    <span>{{ emptyOption }}</span>
+  }
   <mat-icon class="icon12">arrow_drop_down</mat-icon>
 </button>
 
 <mat-menu #selMenu="matMenu" yPosition="below" class="ya-menu" [overlapTrigger]="false">
-  <ng-container *ngFor="let option of (options$ | async)">
-    <mat-divider *ngIf="option.group" />
-    <button *ngIf="isSelected(option.id)" mat-menu-item (click)="disableOption($event, option.id)">
-      <mat-icon>check_box_outline</mat-icon>
-      <mat-icon *ngIf="option.icon">{{ option.icon }}</mat-icon>
-      {{ option.label }}
-    </button>
-    <button *ngIf="!isSelected(option.id)" mat-menu-item (click)="enableOption($event, option.id)">
-      <mat-icon>check_box_outline_blank</mat-icon>
-      <mat-icon *ngIf="option.icon">{{ option.icon }}</mat-icon>
-      {{ option.label }}
-    </button>
-  </ng-container>
+  @for (option of options$ | async; track option) {
+    @if (option.group) {
+      <mat-divider />
+    }
+    @if (isSelected(option.id)) {
+      <button mat-menu-item (click)="disableOption($event, option.id)">
+        <mat-icon>check_box_outline</mat-icon>
+        @if (option.icon) {
+          <mat-icon>{{ option.icon }}</mat-icon>
+        }
+        {{ option.label }}
+      </button>
+    }
+    @if (!isSelected(option.id)) {
+      <button mat-menu-item (click)="enableOption($event, option.id)">
+        <mat-icon>check_box_outline_blank</mat-icon>
+        @if (option.icon) {
+          <mat-icon>{{ option.icon }}</mat-icon>
+        }
+        {{ option.label }}
+      </button>
+    }
+  }
 </mat-menu>

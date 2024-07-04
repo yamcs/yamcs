@@ -4,44 +4,61 @@
   <mat-toolbar-row>
     <a mat-icon-button routerLink=".." color="primary">
       <mat-icon>arrow_back</mat-icon>
-    </a> Create an instance
+    </a>
+    Create an instance
   </mat-toolbar-row>
 </mat-toolbar>
 
 <app-create-instance-wizard-step step="2" />
 
-<div *ngIf="template$ | async as template" class="form-content ya-form mat-typography">
-  <form [formGroup]="form" novalidate>
-    <label>
-      Instance name<br>
-      <input formControlName="name" type="text">
-    </label>
-    <ng-container *ngFor="let v of template?.variables">
-      <br>
-      <label *ngIf="v.choices">
-        {{ v.label || v.name }}
-        <ya-help [dialogTitle]="v.label || v.name" *ngIf="v.help">
-          <div [innerHTML]="v.help"></div>
-        </ya-help>
-        <select [formControlName]="v.name">
-          <option *ngFor="let choice of v.choices" [value]="choice">{{ choice }}</option>
-        </select>
+@if (template$ | async; as template) {
+  <div class="form-content ya-form">
+    <form [formGroup]="form" novalidate>
+      <label>
+        Instance name<br />
+        <input formControlName="name" type="text" />
       </label>
-
-      <label *ngIf="!v.choices">
-        {{ v.label || v.name }}
-        <ya-help [dialogTitle]="v.label || v.name" *ngIf="v.help">
-          <div [innerHTML]="v.help"></div>
-        </ya-help>
-        <br>
-        <input [formControlName]="v.name" type="text">
-      </label>
-    </ng-container>
-  </form>
-  <p>&nbsp;</p>
-  <div class="action-bar">
-    <button class="ya-button" routerLink="/">CANCEL</button>
-    <button class="ya-button primary" type="submit" (click)="onConfirm()"
-            [disabled]="!form.valid">CREATE</button>
+      @for (v of template?.variables; track v) {
+        <br />
+        @if (v.choices) {
+          <label>
+            {{ v.label || v.name }}
+            @if (v.help) {
+              <ya-help [dialogTitle]="v.label || v.name">
+                <div [innerHTML]="v.help"></div>
+              </ya-help>
+            }
+            <select [formControlName]="v.name">
+              @for (choice of v.choices; track choice) {
+                <option [value]="choice">{{ choice }}</option>
+              }
+            </select>
+          </label>
+        }
+        @if (!v.choices) {
+          <label>
+            {{ v.label || v.name }}
+            @if (v.help) {
+              <ya-help [dialogTitle]="v.label || v.name">
+                <div [innerHTML]="v.help"></div>
+              </ya-help>
+            }
+            <br />
+            <input [formControlName]="v.name" type="text" />
+          </label>
+        }
+      }
+    </form>
+    <p>&nbsp;</p>
+    <div class="action-bar">
+      <button class="ya-button" routerLink="/">CANCEL</button>
+      <button
+        class="ya-button primary"
+        type="submit"
+        (click)="onConfirm()"
+        [disabled]="!form.valid">
+        CREATE
+      </button>
+    </div>
   </div>
-</div>
+}

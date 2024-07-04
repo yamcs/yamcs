@@ -35,14 +35,12 @@ autoTmPartitions (boolean)
 
    .. code-block:: xml
 
-        </xtce:SequenceContainer>
+        <SequenceContainer>
           ....
-          <xtce:AncillaryDataSet>
-              <xtce:AncillaryData name="Yamcs">
-                  UseAsArchivingPartition
-              </xtce:AncillaryData>
-           </xtce:AncillaryDataSet>
-        </xtce:SequenceContainer>    
+          <AncillaryDataSet>
+              <AncillaryData name="Yamcs">UseAsArchivingPartition</AncillaryData>
+           </AncillaryDataSet>
+        </SequenceContainer>
 
    Default: true
 

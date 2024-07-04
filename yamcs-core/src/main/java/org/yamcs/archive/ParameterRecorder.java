@@ -23,14 +23,12 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 
 /**
  * ParameterRecorder Records (processed) Parameters
- * 
+ * <p>
  * This records parameters as tuples - good for realtime recording but not very efficient for retrieval of a few
  * parameters over long time periods.
- * 
+ * <p>
  * The {@link org.yamcs.parameterarchive} records parameters in a columnar fashion - not good for realtime but much more
  * efficient for retrieval especially retrieval of few parameters over long time periods.
- * 
- * @author nm
  *
  */
 public class ParameterRecorder extends AbstractYamcsService {

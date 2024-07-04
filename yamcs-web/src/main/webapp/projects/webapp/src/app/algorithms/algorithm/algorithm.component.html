@@ -1,37 +1,45 @@
-<app-instance-page *ngIf="algorithm$ | async as algorithm">
-  <app-instance-toolbar>
-    <ng-container *ngFor="let parent of algorithm.qualifiedName | parents; first as isFirst">
-      <a *ngIf="!isFirst"
-         routerLink="/algorithms"
-         class="ya-link ya-header-link"
-         [queryParams]="{c: yamcs.context, system: parent.path}">{{ parent.name }}</a>/
-    </ng-container>
-    <span>{{ algorithm.qualifiedName | shortName }}</span>
-    <ya-title-copy [text]="algorithm.qualifiedName" />
-
-  </app-instance-toolbar>
-
-  <nav #tabs mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
-    <a mat-tab-link
-       routerLink="-/summary"
-       routerLinkActive #rla="routerLinkActive"
-       [active]="rla.isActive"
-       [queryParams]="{c: yamcs.context}">
-      Summary
-    </a>
-    <a mat-tab-link
-       routerLink="-/trace"
-       routerLinkActive #rlb="routerLinkActive"
-       [active]="rlb.isActive"
-       [queryParams]="{c: yamcs.context}"
-       [disabled]="algorithm.scope !== 'GLOBAL'">
-      Trace
-    </a>
-  </nav>
-
-  <div class="tab-content-wrapper">
-    <mat-tab-nav-panel #tabPanel>
-      <router-outlet />
-    </mat-tab-nav-panel>
-  </div>
-</app-instance-page>
+@if (algorithm$ | async; as algorithm) {
+  <app-instance-page>
+    <app-instance-toolbar>
+      @for (parent of algorithm.qualifiedName | parents; track parent; let isFirst = $first) {
+        @if (!isFirst) {
+          <a
+            routerLink="/algorithms"
+            class="ya-link ya-header-link"
+            [queryParams]="{ c: yamcs.context, system: parent.path }"
+            >{{ parent.name }}</a
+          >
+        }
+        /
+      }
+      <span>{{ algorithm.qualifiedName | shortName }}</span>
+      <ya-title-copy [text]="algorithm.qualifiedName" />
+    </app-instance-toolbar>
+    <nav #tabs mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
+      <a
+        mat-tab-link
+        routerLink="-/summary"
+        routerLinkActive
+        #rla="routerLinkActive"
+        [active]="rla.isActive"
+        [queryParams]="{ c: yamcs.context }">
+        Summary
+      </a>
+      <a
+        mat-tab-link
+        routerLink="-/trace"
+        routerLinkActive
+        #rlb="routerLinkActive"
+        [active]="rlb.isActive"
+        [queryParams]="{ c: yamcs.context }"
+        [disabled]="algorithm.scope !== 'GLOBAL'">
+        Trace
+      </a>
+    </nav>
+    <div class="tab-content-wrapper">
+      <mat-tab-nav-panel #tabPanel>
+        <router-outlet />
+      </mat-tab-nav-panel>
+    </div>
+  </app-instance-page>
+}

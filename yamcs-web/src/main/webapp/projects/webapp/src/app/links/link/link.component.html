@@ -1,207 +1,222 @@
-<app-instance-page *ngIf="link$ | async as link">
-  <app-instance-toolbar>
-    <a mat-icon-button routerLink=".." [queryParams]="{c: yamcs.context}" color="primary">
-      <mat-icon>arrow_back</mat-icon>
-    </a> Links / {{ link.name }}
-    &nbsp;&nbsp;&nbsp;
-    <button mat-button
-            color="primary"
-            *ngIf="mayControlLinks()"
-            [disabled]="!link.disabled"
-            (click)="enableLink(link.name)">
-      <mat-icon>link</mat-icon>
-      Enable
-    </button>
-    <button mat-button
-            color="primary"
-            *ngIf="mayControlLinks()"
-            [disabled]="link.disabled"
-            (click)="disableLink(link.name)">
-      <mat-icon>link_off</mat-icon>
-      Disable
-    </button>
-    <button mat-button
-            color="primary"
-            *ngIf="mayControlLinks()"
-            [matMenuTriggerFor]="moreActions">
-      More ▾
-    </button>
-    <mat-menu #moreActions class="ya-menu" yPosition="below" [overlapTrigger]="false">
-      <ng-template matMenuContent>
-        <button mat-menu-item
-                (click)="resetCounters(link.name)">
-          Reset counters
+@if (link$ | async; as link) {
+  <app-instance-page>
+    <app-instance-toolbar>
+      <a mat-icon-button routerLink=".." [queryParams]="{ c: yamcs.context }" color="primary">
+        <mat-icon>arrow_back</mat-icon>
+      </a>
+      Links / {{ link.name }}
+      &nbsp;&nbsp;&nbsp;
+      @if (mayControlLinks()) {
+        <button
+          mat-button
+          color="primary"
+          [disabled]="!link.disabled"
+          (click)="enableLink(link.name)">
+          <mat-icon>link</mat-icon>
+          Enable
         </button>
-        <ng-container *ngIf="link.actions">
-          <mat-divider />
-          <ng-container *ngFor="let action of link.actions">
-            <button mat-menu-item
-                    [disabled]="!action.enabled"
-                    (click)="runAction(link.name, action)">
-              <ng-container *ngIf="action.style === 'CHECK_BOX'">
-                <mat-icon [style.visibility]="action.checked ? 'visible' : 'hidden'">check</mat-icon>
-              </ng-container>
-              {{ action.label }}
-            </button>
-          </ng-container>
-        </ng-container>
-      </ng-template>
-    </mat-menu>
-  </app-instance-toolbar>
-
-  <div class="form-content">
-    <dl class="dl-horizontal" style="margin-top: 0">
-      <dt>Type</dt>
-      <dd>{{ link.type }}</dd>
-      <dt>Status</dt>
-      <dd style="display: flex; align-items: center">
-        <app-link-status [link]="link" />&nbsp;
-        {{ link.status }}
-      </dd>
-      <dt>In count</dt>
-      <dd>{{ link.dataInCount | number }}</dd>
-      <dt>Out count</dt>
-      <dd>{{ link.dataOutCount | number }}</dd>
-      <dt>Detail</dt>
-      <dd>{{ link.detailedStatus || '-' }}</dd>
-    </dl>
-
-    <ng-container *ngIf="link.extra">
-      <div class="section-divider">
-        <mat-divider />
-      </div>
-      <dl class="dl-horizontal">
-        <ng-container *ngFor="let entry of link.extra | keyvalue">
-          <dt>{{ entry.key }}</dt>
-          <dd>
-            <ng-container *ngIf="getEntriesForValue(entry.value) as subentries">
-              <ng-container *ngIf="subentries.length">
-                <ng-container *ngFor="let subentry of subentries">
-                  {{ subentry || '-' }}<br>
-                </ng-container>
-              </ng-container>
-              <ng-container *ngIf="!subentries.length">-</ng-container>
-            </ng-container>
-          </dd>
-        </ng-container>
+      }
+      @if (mayControlLinks()) {
+        <button
+          mat-button
+          color="primary"
+          [disabled]="link.disabled"
+          (click)="disableLink(link.name)">
+          <mat-icon>link_off</mat-icon>
+          Disable
+        </button>
+      }
+      @if (mayControlLinks()) {
+        <button mat-button color="primary" [matMenuTriggerFor]="moreActions">More ▾</button>
+      }
+      <mat-menu #moreActions class="ya-menu" yPosition="below" [overlapTrigger]="false">
+        <ng-template matMenuContent>
+          <button mat-menu-item (click)="resetCounters(link.name)">Reset counters</button>
+          @if (link.actions) {
+            <mat-divider />
+            @for (action of link.actions; track action) {
+              <button
+                mat-menu-item
+                [disabled]="!action.enabled"
+                (click)="runAction(link.name, action)">
+                @if (action.style === "CHECK_BOX") {
+                  <mat-icon [style.visibility]="action.checked ? 'visible' : 'hidden'"
+                    >check</mat-icon
+                  >
+                }
+                {{ action.label }}
+              </button>
+            }
+          }
+        </ng-template>
+      </mat-menu>
+    </app-instance-toolbar>
+    <div class="form-content">
+      <dl class="dl-horizontal" style="margin-top: 0">
+        <dt>Type</dt>
+        <dd>{{ link.type }}</dd>
+        <dt>Status</dt>
+        <dd style="display: flex; align-items: center">
+          <app-link-status [link]="link" />&nbsp;
+          {{ link.status }}
+        </dd>
+        <dt>In count</dt>
+        <dd>{{ link.dataInCount | number }}</dd>
+        <dt>Out count</dt>
+        <dd>{{ link.dataOutCount | number }}</dd>
+        <dt>Detail</dt>
+        <dd>{{ link.detailedStatus || "-" }}</dd>
       </dl>
-    </ng-container>
-
-    <ng-container *ngIf="link.parameters">
-      <div class="section-divider">
-        <mat-divider />
-      </div>
-      <h4>System parameters</h4>
-      <ng-container *ngFor="let parameter of link.parameters">
-        <mat-icon class="icon12" style="vertical-align: middle">toll</mat-icon>&nbsp;
-        <a [routerLink]="'/telemetry/parameters' + parameter"
-           [queryParams]="{c: yamcs.context}"
-           class="ya-link">{{ parameter }}</a>
-        <br>
-      </ng-container>
-    </ng-container>
-
-    <ng-container *ngIf="cop1Config$ | async as config">
-      <ng-container *ngIf="cop1Status$ | async as status">
+      @if (link.extra) {
         <div class="section-divider">
           <mat-divider />
         </div>
-        <h4>
-          COP-1
-          <div style="float: right" *ngIf="mayControlLinks()">
-            <ya-text-action icon="adjust" (click)="openInitiateCop1Dialog(link.name)" *ngIf="!status.cop1Active">
-              INITIATE AD
-            </ya-text-action>
-            <ya-text-action icon="redo" (click)="resumeCop1(link.name)" *ngIf="status.state === 'SUSPENDED'">
-              RESUME AD
-            </ya-text-action>
-            <ya-text-action icon="not_interested" (click)="disableCop1(link.name)" *ngIf="status.cop1Active">
-              TERMINATE AD
-            </ya-text-action>
+        <dl class="dl-horizontal">
+          @for (entry of link.extra | keyvalue; track entry) {
+            <dt>{{ entry.key }}</dt>
+            <dd>
+              @if (getEntriesForValue(entry.value); as subentries) {
+                @if (subentries.length) {
+                  @for (subentry of subentries; track subentry) {
+                    {{ subentry || "-" }}<br />
+                  }
+                }
+                @if (!subentries.length) {
+                  -
+                }
+              }
+            </dd>
+          }
+        </dl>
+      }
+      @if (link.parameters) {
+        <div class="section-divider">
+          <mat-divider />
+        </div>
+        <h4>System parameters</h4>
+        @for (parameter of link.parameters; track parameter) {
+          <mat-icon class="icon12" style="vertical-align: middle">toll</mat-icon>&nbsp;
+          <a
+            [routerLink]="'/telemetry/parameters' + parameter"
+            [queryParams]="{ c: yamcs.context }"
+            class="ya-link"
+            >{{ parameter }}</a
+          >
+          <br />
+        }
+      }
+      @if (cop1Config$ | async; as config) {
+        @if (cop1Status$ | async; as status) {
+          <div class="section-divider">
+            <mat-divider />
           </div>
-        </h4>
-        <dl class="dl-horizontal">
-          <dt>
-            Service
-            <ya-help>
-              <p>
-                COP-1 provides two service modes that determine how reliably frames are transmitted:
-              </p>
-              <table class="ya-data-table">
-                <tr>
-                  <td width="1" style="white-space: nowrap;">
-                    AD (Sequence-controlled)
-                  </td>
-                  <td>Sends Type-AD and Type-BC Transfer Frames.</td>
-                </tr>
-                <tr>
-                  <td width="1" style="white-space: nowrap;">
-                    BD (Expedited)
-                  </td>
-                  <td>Sends Type-BD Transfer Frames. There are no retransmissions.</td>
-                </tr>
-              </table>
-            </ya-help>
-          </dt>
-          <dd>
-            <ng-container *ngIf="status.cop1Active">AD (Sequence-controlled service)</ng-container>
-            <ng-container *ngIf="!status.cop1Active">BD (Expedited service)</ng-container>
-          </dd>
-        </dl>
-        <dl class="dl-horizontal">
-          <dt>Wait queue</dt>
-          <dd>{{ status.waitQueueNumTC || 0 }} TCs</dd>
-          <dt>Enqueue TCs with bypass</dt>
-          <dd>
-            {{ !config.bdAbsolutePriority | nvl:'-' }}
-          </dd>
-        </dl>
-        <dl class="dl-horizontal">
-          <dt>TX state</dt>
-          <dd>{{ status.state || '-' }}</dd>
-          <dt>V(S)</dt>
-          <dd>{{ status.vS | nvl: '-' }}</dd>
-          <dt>Sent queue</dt>
-          <dd>{{ status.sentQueueNumTC || 0 }} frames (limit: {{ config.windowWidth }})</dd>
-          <dt>Out queue</dt>
-          <dd>{{ status.outQueueNumTC || 0 }}</dd>
-          <dt>Last frame TX attempts</dt>
-          <dd>
-            {{ status.txCount | nvl:'-' }}
-            <ng-container *ngIf="status.txCount">of {{ config.txLimit }}</ng-container>
-          </dd>
-        </dl>
-        <dl class="dl-horizontal">
-          <dt>On TX timeout</dt>
-          <dd>{{ config.timeoutType || '-' }}</dd>
-          <dt>Retransmission delay</dt>
-          <dd>{{ config.t1 }} ms</dd>
-        </dl>
-
-        <h4>CLCW</h4>
-        <dl class="dl-horizontal" style="margin-top: 0">
-          <dt>Received</dt>
-          <dd>{{ (status.clcw?.receptionTime | datetime) || '-' }}</dd>
-          <dt>Lockout</dt>
-          <dd>
-            {{ status.clcw?.lockout | nvl:'-' }}
-          </dd>
-          <dt>Wait</dt>
-          <dd>
-            {{ status.clcw?.wait | nvl:'-' }}
-          </dd>
-          <dt>Retransmit</dt>
-          <dd>
-            {{ status.clcw?.retransmit | nvl:'-' }}
-          </dd>
-          <dt>N(R)</dt>
-          <dd>{{ status.clcw?.nR | nvl:'-' }}</dd>
-        </dl>
-        <dl class="dl-horizontal">
-          <dt>NN(R)</dt>
-          <dd>{{ status.nnR | nvl:'-' }}</dd>
-        </dl>
-      </ng-container>
-    </ng-container>
-  </div>
-</app-instance-page>
+          <h4>
+            COP-1
+            @if (mayControlLinks()) {
+              <div style="float: right">
+                @if (!status.cop1Active) {
+                  <ya-text-action icon="adjust" (click)="openInitiateCop1Dialog(link.name)">
+                    INITIATE AD
+                  </ya-text-action>
+                }
+                @if (status.state === "SUSPENDED") {
+                  <ya-text-action icon="redo" (click)="resumeCop1(link.name)">
+                    RESUME AD
+                  </ya-text-action>
+                }
+                @if (status.cop1Active) {
+                  <ya-text-action icon="not_interested" (click)="disableCop1(link.name)">
+                    TERMINATE AD
+                  </ya-text-action>
+                }
+              </div>
+            }
+          </h4>
+          <dl class="dl-horizontal">
+            <dt>
+              Service
+              <ya-help>
+                <p>
+                  COP-1 provides two service modes that determine how reliably frames are
+                  transmitted:
+                </p>
+                <table class="ya-data-table">
+                  <tr>
+                    <td width="1" style="white-space: nowrap">AD (Sequence-controlled)</td>
+                    <td>Sends Type-AD and Type-BC Transfer Frames.</td>
+                  </tr>
+                  <tr>
+                    <td width="1" style="white-space: nowrap">BD (Expedited)</td>
+                    <td>Sends Type-BD Transfer Frames. There are no retransmissions.</td>
+                  </tr>
+                </table>
+              </ya-help>
+            </dt>
+            <dd>
+              @if (status.cop1Active) {
+                AD (Sequence-controlled service)
+              }
+              @if (!status.cop1Active) {
+                BD (Expedited service)
+              }
+            </dd>
+          </dl>
+          <dl class="dl-horizontal">
+            <dt>Wait queue</dt>
+            <dd>{{ status.waitQueueNumTC || 0 }} TCs</dd>
+            <dt>Enqueue TCs with bypass</dt>
+            <dd>
+              {{ !config.bdAbsolutePriority | nvl: "-" }}
+            </dd>
+          </dl>
+          <dl class="dl-horizontal">
+            <dt>TX state</dt>
+            <dd>{{ status.state || "-" }}</dd>
+            <dt>V(S)</dt>
+            <dd>{{ status.vS | nvl: "-" }}</dd>
+            <dt>Sent queue</dt>
+            <dd>{{ status.sentQueueNumFrames || 0 }} frames (limit: {{ config.windowWidth }})</dd>
+            <dt>Out queue</dt>
+            <dd>{{ status.outQueueNumFrames || 0 }}</dd>
+            <dt>Last frame TX attempts</dt>
+            <dd>
+              {{ status.txCount | nvl: "-" }}
+              @if (status.txCount) {
+                of {{ config.txLimit }}
+              }
+            </dd>
+          </dl>
+          <dl class="dl-horizontal">
+            <dt>On TX timeout</dt>
+            <dd>{{ config.timeoutType || "-" }}</dd>
+            <dt>Retransmission delay</dt>
+            <dd>{{ config.t1 }} ms</dd>
+          </dl>
+          <h4>CLCW</h4>
+          <dl class="dl-horizontal" style="margin-top: 0">
+            <dt>Received</dt>
+            <dd>{{ (status.clcw?.receptionTime | datetime) || "-" }}</dd>
+            <dt>Lockout</dt>
+            <dd>
+              {{ status.clcw?.lockout | nvl: "-" }}
+            </dd>
+            <dt>Wait</dt>
+            <dd>
+              {{ status.clcw?.wait | nvl: "-" }}
+            </dd>
+            <dt>Retransmit</dt>
+            <dd>
+              {{ status.clcw?.retransmit | nvl: "-" }}
+            </dd>
+            <dt>N(R)</dt>
+            <dd>{{ status.clcw?.nR | nvl: "-" }}</dd>
+          </dl>
+          <dl class="dl-horizontal">
+            <dt>NN(R)</dt>
+            <dd>{{ status.nnR | nvl: "-" }}</dd>
+          </dl>
+        }
+      }
+    </div>
+  </app-instance-page>
+}

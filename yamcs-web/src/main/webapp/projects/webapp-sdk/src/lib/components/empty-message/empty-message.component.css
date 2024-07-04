@@ -4,6 +4,7 @@
   border-radius: 10px;
   box-shadow: 0px 10px 16px -8px rgba(0, 0, 0, 0.2);
   background-color: #fff;
+  font: 400 12px / 24px Roboto, sans-serif;
 }
 
 .frame .header {

@@ -85,7 +85,6 @@ public class ParameterArchive extends AbstractYamcsService {
     int partitionTbsIndex;
 
     private PartitionedTimeInterval<Partition> partitions = new PartitionedTimeInterval<>();
-    SegmentEncoderDecoder vsEncoder = new SegmentEncoderDecoder();
 
     TimeService timeService;
     private BackFiller backFiller;
@@ -223,7 +222,7 @@ public class ParameterArchive extends AbstractYamcsService {
 
     public void writeToArchive(PGSegment pgs) throws RocksDBException, IOException {
         pgs.consolidate();
-        Partition p = createAndGetPartition(getIntervalStart(pgs.getSegmentStart()));
+        Partition p = createAndGetPartition(pgs.getInterval());
         YRDB rdb = tablespace.getRdb(p.partitionDir, false);
         ColumnFamilyHandle cfh = cfh(rdb, p);
 
@@ -233,8 +232,8 @@ public class ParameterArchive extends AbstractYamcsService {
         }
     }
 
-    public void writeToArchive(long segStart, Collection<PGSegment> pgList) throws RocksDBException, IOException {
-        Partition p = createAndGetPartition(getIntervalStart(segStart));
+    public void writeToArchive(long interval, Collection<PGSegment> pgList) throws RocksDBException, IOException {
+        Partition p = createAndGetPartition(interval);
         YRDB rdb = tablespace.getRdb(p.partitionDir, false);
 
         ColumnFamilyHandle cfh = cfh(rdb, p);
@@ -242,7 +241,7 @@ public class ParameterArchive extends AbstractYamcsService {
         try (WriteBatch writeBatch = new WriteBatch(); WriteOptions wo = new WriteOptions()) {
             for (PGSegment pgs : pgList) {
                 pgs.consolidate();
-                assert (segStart == pgs.getSegmentStart());
+                assert (interval == pgs.getInterval());
                 writeToBatch(cfh, writeBatch, pgs);
             }
             rdb.write(wo, writeBatch);
@@ -256,7 +255,7 @@ public class ParameterArchive extends AbstractYamcsService {
         SortedTimeSegment timeSegment = pgs.getTimeSegment();
         byte[] timeKey = new SegmentKey(parameterIdDb.timeParameterId, pgs.getParameterGroupId(),
                 pgs.getSegmentStart(), SegmentKey.TYPE_ENG_VALUE).encode();
-        byte[] timeValue = vsEncoder.encode(timeSegment);
+        byte[] timeValue = SegmentEncoderDecoder.encode(timeSegment);
         writeBatch.put(cfh, timeKey, timeValue);
 
         // and then the consolidated value segments
@@ -281,25 +280,25 @@ public class ParameterArchive extends AbstractYamcsService {
 
             byte[] engKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getSegmentStart(),
                     SegmentKey.TYPE_ENG_VALUE).encode();
-            byte[] engValue = vsEncoder.encode(vs);
+            byte[] engValue = SegmentEncoderDecoder.encode(vs);
             writeBatch.put(cfh, engKey, engValue);
 
             if (STORE_RAW_VALUES && rvs != null) {
                 byte[] rawKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getSegmentStart(),
                         SegmentKey.TYPE_RAW_VALUE).encode();
-                byte[] rawValue = vsEncoder.encode(rvs);
+                byte[] rawValue = SegmentEncoderDecoder.encode(rvs);
                 writeBatch.put(cfh, rawKey, rawValue);
             }
 
             byte[] pssKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getSegmentStart(),
                     SegmentKey.TYPE_PARAMETER_STATUS).encode();
-            byte[] pssValue = vsEncoder.encode(pss);
+            byte[] pssValue = SegmentEncoderDecoder.encode(pss);
             writeBatch.put(cfh, pssKey, pssValue);
 
             if (gaps != null) {
                 byte[] rawKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getSegmentStart(),
                         SegmentKey.TYPE_GAPS).encode();
-                byte[] rawValue = vsEncoder.encodeGaps(gaps);
+                byte[] rawValue = SegmentEncoderDecoder.encodeGaps(pgs.getSegmentIdxInsideInterval(), gaps);
                 writeBatch.put(cfh, rawKey, rawValue);
             }
         }
@@ -432,7 +431,7 @@ public class ParameterArchive extends AbstractYamcsService {
                     SegmentKey key = SegmentKey.decode(it.key());
                     byte[] v = it.value();
                     BaseSegment s;
-                    s = decoder.decode(it.value(), key.segmentStart);
+                    s = SegmentEncoderDecoder.decode(it.value(), key.segmentStart);
                     out.println(key.parameterId + "\t " + key.parameterGroupId + "\t " + key.type + "\t"
                             + TimeEncoding.toString(key.segmentStart) + "\t" + s.size() + "\t" + v.length + "\t"
                             + s.getClass().getSimpleName());
@@ -549,7 +548,7 @@ public class ParameterArchive extends AbstractYamcsService {
             return null;
         }
         try {
-            return (SortedTimeSegment) vsEncoder.decode(tv, segmentStart);
+            return (SortedTimeSegment) SegmentEncoderDecoder.decode(tv, segmentStart);
         } catch (DecodingException e) {
             throw new DatabaseCorruptionException(e);
         }

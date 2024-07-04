@@ -100,12 +100,7 @@ mdb:
       spec: "mdb/simulator-ccsds.xls"
       subLoaders:
           - type: "sheet"
-            spec: "mdb/landing.xls"
-    #Loads the performance testing mission database
-    - type: "org.yamcs.simulator.PerfMdbLoader"
-      args:
-         numPackets: 100
-         packetSize: 1476
+            spec: "mdb/landing.xls"    
 
 #Configuration for streams created at server startup
 streamConfig:

@@ -7,4 +7,5 @@
   right: 0;
   overflow: auto;
   background-color: var(--y-background-color);
+  font: 400 12px / 20px Roboto, sans-serif;
 }

@@ -1,45 +1,45 @@
-<app-admin-page *ngIf="thread$ | async as thread">
-  <app-admin-toolbar>
-    <a mat-icon-button routerLink=".." color="primary">
-      <mat-icon>arrow_back</mat-icon>
-    </a> {{ thread.name }}
-  </app-admin-toolbar>
-
-  <div class="panel-content ya-link">
-    <dl class="dl-horizontal">
-      <dt>ID</dt>
-      <dd>{{ thread.id }}</dd>
-
-      <dt>Name</dt>
-      <dd>{{ thread.name }}</dd>
-
-      <dt>Native</dt>
-      <dd>
-        <mat-icon class="icon14" *ngIf="thread.native">check</mat-icon>
-        <mat-icon class="icon14" *ngIf="!thread.native">close</mat-icon>
-      </dd>
-
-      <dt>Suspended</dt>
-      <dd>
-        <mat-icon class="icon14" *ngIf="thread.suspended">check</mat-icon>
-        <mat-icon class="icon14" *ngIf="!thread.suspended">close</mat-icon>
-      </dd>
-
-      <dt>Group</dt>
-      <dd>{{ thread.group?.name || '-' }}</dd>
-    </dl>
-
-    <div class="section-divider">
-      <mat-divider />
+@if (thread$ | async; as thread) {
+  <app-admin-page>
+    <app-admin-toolbar>
+      <a mat-icon-button routerLink=".." color="primary">
+        <mat-icon>arrow_back</mat-icon>
+      </a>
+      {{ thread.name }}
+    </app-admin-toolbar>
+    <div class="panel-content ya-link">
+      <dl class="dl-horizontal no-lead">
+        <dt>ID</dt>
+        <dd>{{ thread.id }}</dd>
+        <dt>Name</dt>
+        <dd>{{ thread.name }}</dd>
+        <dt>Native</dt>
+        <dd>
+          {{ thread.native ? "Yes" : "No" }}
+        </dd>
+        <dt>Suspended</dt>
+        <dd>
+          {{ thread.suspended ? "Yes" : "No" }}
+        </dd>
+        <dt>Group</dt>
+        <dd>{{ thread.group?.name || "-" }}</dd>
+      </dl>
+      <div class="section-divider">
+        <mat-divider />
+      </div>
+      <h4>Stack trace</h4>
+      @if (thread.trace) {
+        <table yaDataTable>
+          @for (element of thread.trace; track element) {
+            <tr>
+              <td>
+                <app-trace-element [element]="element" />
+              </td>
+            </tr>
+          }
+        </table>
+      } @else {
+        Information not available
+      }
     </div>
-    <h4>Stack trace</h4>
-    <table yaDataTable *ngIf="thread.trace">
-      <tr *ngFor="let element of thread.trace">
-        <td>
-          <app-trace-element [element]="element" />
-        </td>
-      </tr>
-    </table>
-    <ng-container *ngIf="!thread.trace">Information not available</ng-container>
-  </div>
-</app-admin-page>
+  </app-admin-page>
+}

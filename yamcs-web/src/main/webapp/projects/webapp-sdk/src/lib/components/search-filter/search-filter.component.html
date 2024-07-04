@@ -1,13 +1,16 @@
 <div class="search-input" [style.width]="width">
-  <input #input
-         class="ya-input"
-         type="text"
-         [placeholder]="placeholder"
-         (keydown)="onKeydown($event)">
+  <input
+    #input
+    class="ya-input"
+    type="text"
+    [placeholder]="placeholder"
+    (keydown)="onKeydown($event)" />
   <div class="filter">
     <mat-icon class="icon16">{{ icon }}</mat-icon>
   </div>
-  <div class="clear" *ngIf="showClear$ | async" (click)="clearInput()">
-    <mat-icon class="icon16">close</mat-icon>
-  </div>
+  @if (showClear$ | async) {
+    <div class="clear" (click)="clearInput()">
+      <mat-icon class="icon16">close</mat-icon>
+    </div>
+  }
 </div>

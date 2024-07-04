@@ -1,4 +1,4 @@
-import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
 import { MatIcon } from '@angular/material/icon';
@@ -19,11 +19,9 @@ import { YaLabel } from '../label/label.component';
   imports: [
     AsyncPipe,
     MatIcon,
-    NgForOf,
-    NgIf,
     ReactiveFormsModule,
-    YaLabel,
-  ],
+    YaLabel
+],
 })
 export class YaTagSelect implements ControlValueAccessor {
 

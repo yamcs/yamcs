@@ -628,10 +628,16 @@ public class XtceAssembler {
             doc.writeAttribute("offset", Double.toString(ptype.getOffset()));
         }
 
-        writeDataEncoding(doc, ptype.getEncoding());
+        DataEncoding encoding = ptype.getEncoding();
+        if (encoding != null) {
+            writeDataEncoding(doc, encoding);
+        }
         doc.writeEndElement();
 
-        writeReferenceTime(doc, ptype.getReferenceTime());
+        ReferenceTime referenceTime = ptype.getReferenceTime();
+        if (referenceTime != null) {
+            writeReferenceTime(doc, referenceTime);
+        }
         doc.writeEndElement();
     }
 
@@ -1709,6 +1715,8 @@ public class XtceAssembler {
         return sb.toString();
     }
 
+    // converts the nd qualified name to a relative reference to the current subsystem
+    // if the reference is to the "/yamcs" then an absolute reference is provided instead
     private String getNameReference(NameDescription nd) {
         String ndqn = nd.getQualifiedName();
         if (ndqn == null) { // happens for arguments
@@ -1716,11 +1724,17 @@ public class XtceAssembler {
         }
 
         String ssname = currentSpaceSystem.getQualifiedName();
-        if (ndqn.startsWith(ssname)) {
+
+        if (ndqn.startsWith(ssname + "/")) {
             return ndqn.substring(ssname.length() + 1);
+        } else if (ndqn.startsWith(Mdb.YAMCS_SPACESYSTEM_NAME)) {
+            return ndqn;
         } else {
             String[] pe1 = currentSpaceSystem.getQualifiedName().split("/");
             String[] pe2 = nd.getSubsystemName().split("/");
+            if (!pe1[1].equals(pe2[1])) {
+                return ndqn;
+            }
             int k = 0;
             for (k = 0; k < Math.min(pe1.length, pe2.length); k++) {
                 if (!pe1[k].equals(pe2[k])) {

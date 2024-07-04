@@ -1,4 +1,4 @@
-import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input, OnChanges, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatDivider } from '@angular/material/divider';
@@ -29,10 +29,8 @@ export interface YaSelectOption {
     MatIcon,
     MatMenu,
     MatMenuItem,
-    MatMenuTrigger,
-    NgForOf,
-    NgIf,
-  ],
+    MatMenuTrigger
+],
 })
 export class YaSelect implements OnChanges, ControlValueAccessor {
 

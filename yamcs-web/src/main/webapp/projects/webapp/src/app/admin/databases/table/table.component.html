@@ -1,3 +1,3 @@
-<ng-container *ngIf="table$ | async as table">
+@if (table$ | async; as table) {
   <router-outlet />
-</ng-container>
+}

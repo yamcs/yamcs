@@ -2,7 +2,7 @@ export interface Spec {
   options: Option[];
 }
 
-export type OptionType = 'STRING' | 'INTEGER';
+export type OptionType = 'BOOLEAN' | 'FLOAT' | 'STRING' | 'INTEGER';
 
 export interface Option {
   name: string;
@@ -11,4 +11,5 @@ export interface Option {
   hidden: boolean;
   required: boolean;
   secret: boolean;
+  description?: string[];
 }

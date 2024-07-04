@@ -27,7 +27,7 @@ public class CcsdsFrameDecoder implements RawFrameDecoder {
         if ("RS".equalsIgnoreCase(codec)) {
             int errcc = config.getInt("errorCorrectionCapability", 16);
             if (errcc != 8 && errcc != 16) {
-                throw new ConfigurationException("Bad value for errorCorrectionCapability " + interleavingDepth
+                throw new ConfigurationException("Bad value for errorCorrectionCapability " + errcc
                         + ". Valid values are 8 and 16");
             }
             interleavingDepth = config.getInt("interleavingDepth", 5);

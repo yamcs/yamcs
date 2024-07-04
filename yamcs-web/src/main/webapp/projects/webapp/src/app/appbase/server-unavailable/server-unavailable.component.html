@@ -1,4 +1,4 @@
-<div class="panel-content mat-typography">
+<div class="panel-content">
   <p>&nbsp;</p>
   <table style="padding-left: 60px; margin: 0 auto; padding-top: 100px">
     <tr>
@@ -7,7 +7,7 @@
         <p>Yamcs appears to be down.</p>
         <p>&nbsp;</p>
         <p>
-          <a mat-raised-button [href]="next" color="primary">TRY AGAIN</a>
+          <button class="ya-button primary" (click)="reload()">RELOAD</button>
         </p>
       </td>
       <td style="padding-left: 15em; padding-right: 5em">

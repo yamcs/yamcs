@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, input } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { Algorithm, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 

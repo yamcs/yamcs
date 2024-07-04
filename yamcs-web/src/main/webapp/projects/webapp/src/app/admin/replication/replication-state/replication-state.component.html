@@ -1,8 +1,6 @@
-<mat-icon *ngIf="connected === true"
-          class="success">
-  check_circle
-</mat-icon>
-<mat-icon *ngIf="connected === false"
-          class="down">
-  lens
-</mat-icon>
+@if (connected === true) {
+  <mat-icon class="success"> check_circle </mat-icon>
+}
+@if (connected === false) {
+  <mat-icon class="down"> lens </mat-icon>
+}

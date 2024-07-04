@@ -85,7 +85,7 @@ export interface ParameterType {
   contextAlarm: ContextAlarmInfo[];
   enumValue: EnumValue[];
   absoluteTimeInfo: AbsoluteTimeInfo;
-  member: Member[];
+  member: ParameterMember[];
   signed?: boolean;
   oneStringValue?: string;
   zeroStringValue?: string;
@@ -104,6 +104,10 @@ export interface Member {
   shortDescription: string;
   longDescription: string;
   alias: NamedObjectId[];
+}
+
+export interface ParameterMember extends Member {
+  type: ParameterType;
 }
 
 export interface ArgumentMember extends Member {
@@ -141,7 +145,7 @@ export interface DataEncoding {
   sizeInBits: number;
   encoding: string;
   defaultCalibrator: Calibrator;
-  contextCalibrator: Calibrator[];
+  contextCalibrator: ContextCalibrator[];
 }
 
 export interface Calibrator {
@@ -149,6 +153,12 @@ export interface Calibrator {
   polynomialCalibrator: PolynomialCalibrator;
   splineCalibrator: SplineCalibrator;
   javaExpressionCalibrator: JavaExpressionCalibrator;
+}
+
+export interface ContextCalibrator {
+  comparison: ComparisonInfo[];
+  calibrator: Calibrator;
+  context: string;
 }
 
 export interface PolynomialCalibrator {
@@ -176,8 +186,8 @@ export interface Command extends NameDescription {
   significance: Significance;
   effectiveSignificance: Significance;
   constraint: TransmissionConstraint[];
-  commandContainer: CommandContainer;
-  verifier: Verifier[];
+  commandContainer?: CommandContainer;
+  verifier?: Verifier[];
 }
 
 export type TerminationActionType = 'SUCCESS' | 'FAIL';
@@ -217,18 +227,18 @@ export interface ArgumentType {
   dataEncoding: DataEncoding;
   unitSet: UnitInfo[];
   enumValue: EnumValue[];
-  signed: boolean;
-  rangeMin: number;
-  rangeMax: number;
-  minChars: number;
-  maxChars: number;
-  minBytes: number;
-  maxBytes: number;
-  member: ArgumentMember[];
-  zeroStringValue: string;
-  oneStringValue: string;
-  dimensions: ArgumentDimension[];
-  elementType: ArgumentType;
+  signed?: boolean;
+  rangeMin?: number;
+  rangeMax?: number;
+  minChars?: number;
+  maxChars?: number;
+  minBytes?: number;
+  maxBytes?: number;
+  member?: ArgumentMember[];
+  zeroStringValue?: string;
+  oneStringValue?: string;
+  dimensions?: ArgumentDimension[];
+  elementType?: ArgumentType;
 }
 
 export interface ArgumentDimension {
@@ -257,6 +267,7 @@ export interface TransmissionConstraint {
 export interface EnumValue {
   value: number;
   label: string;
+  description: string;
 }
 
 export type AlarmLevelType = 'NORMAL' | 'WATCH' | 'WARNING' | 'DISTRESS' | 'CRITICAL' | 'SEVERE';
@@ -293,14 +304,14 @@ export interface AlgorithmStatus {
 }
 
 export interface AlgorithmTrace {
-  runs: AlgorithmRun[];
-  logs: AlgorithmLog[];
+  runs?: AlgorithmRun[];
+  logs?: AlgorithmLog[];
 }
 
 export interface AlgorithmRun {
   time: string;
-  inputs: ParameterValue[];
-  outputs: ParameterValue[];
+  inputs?: ParameterValue[];
+  outputs?: ParameterValue[];
   returnValue: string;
   error: string;
 }
@@ -332,12 +343,12 @@ export interface OutputParameter {
 }
 
 export interface Container extends NameDescription {
-  maxInterval: number;
-  sizeInBits: number;
-  baseContainer: Container;
+  maxInterval?: number;
+  sizeInBits?: number;
+  baseContainer?: Container;
   archivePartition: boolean;
-  restrictionCriteriaExpression: string;
-  entry: SequenceEntry[];
+  restrictionCriteriaExpression?: string;
+  entry?: SequenceEntry[];
 }
 
 export type OperatorType = 'EQUAL_TO'

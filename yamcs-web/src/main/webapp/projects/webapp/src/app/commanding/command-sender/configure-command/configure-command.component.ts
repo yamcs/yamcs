@@ -167,6 +167,7 @@ export class ConfigureCommandComponent implements OnInit, AfterViewInit, OnDestr
 
         const qname = this.qualifiedName();
         const args = this.commandForm.getAssignments();
+        const extra = this.commandForm.getExtraOptions(true);
 
         const options: CreateTimelineItemRequest = {
           type: 'ACTIVITY',
@@ -180,6 +181,7 @@ export class ConfigureCommandComponent implements OnInit, AfterViewInit, OnDestr
               "processor": this.yamcs.processor!,
               "command": qname,
               "args": args,
+              "extra": extra,
             }
           },
         };

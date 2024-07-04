@@ -1,10 +1,9 @@
 package org.yamcs.activities;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.MetaCommand;
 
@@ -17,8 +16,8 @@ public class StackedCommand {
     // -1 means: inherit from stack
     private int waitTime = -1;
     private MetaCommand meta;
-    private Map<Argument, String> assignments = new HashMap<>();
-    private Map<String, Value> extra = new HashMap<>();
+    private Map<Argument, String> assignments = new LinkedHashMap<>();
+    private Map<String, Object> extra = new LinkedHashMap<>();
 
     private String comment;
 
@@ -82,7 +81,7 @@ public class StackedCommand {
         return comment;
     }
 
-    public void setExtra(String option, Value value) {
+    public void setExtra(String option, Object value) {
         if (value == null) {
             extra.remove(option);
         } else {
@@ -90,7 +89,7 @@ public class StackedCommand {
         }
     }
 
-    public Map<String, Value> getExtra() {
+    public Map<String, Object> getExtra() {
         return extra;
     }
 
@@ -100,6 +99,14 @@ public class StackedCommand {
             return entry.getKey().getName() + "=" + entry.getValue();
         }).collect(Collectors.joining(", "));
 
-        return meta.getQualifiedName() + "(" + argLine + ")";
+        var res = meta.getQualifiedName() + "(" + argLine + ")";
+
+        if (!extra.isEmpty()) {
+            res += " [" + extra.entrySet().stream().map(entry -> {
+                return entry.getKey() + "=" + entry.getValue();
+            }).collect(Collectors.joining(", ")) + "]";
+        }
+
+        return res;
     }
 }

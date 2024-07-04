@@ -1,8 +1,10 @@
 <div class="label">
   {{ label }}
-  <ya-help *ngIf="description">
-    {{ description }}
-  </ya-help>
+  @if (description) {
+    <ya-help>
+      {{ description }}
+    </ya-help>
+  }
 
   <ya-errors #err [controlName]="name" />
 
@@ -11,74 +13,82 @@
   </div>
 
   <div class="entries" [formArrayName]="name">
-    <ng-container *ngFor="let control of formArray.controls; index as i">
-      <ng-container [ngSwitch]="type.elementType.engType">
-
-        <app-aggregate-argument *ngSwitchCase="'aggregate'"
-                                [name]="name"
-                                [type]="type.elementType"
-                                [index]="i"
-                                [dimensions]="ownDimensions"
-                                [initialValue]="entryInitialValues[i]" />
-
-        <app-binary-argument *ngSwitchCase="'binary'"
-                             [name]="name"
-                             [type]="type.elementType"
-                             [index]="i"
-                             [dimensions]="ownDimensions"
-                             [formControlName]="i" />
-
-        <app-boolean-argument *ngSwitchCase="'boolean'"
-                              [name]="name"
-                              [type]="type.elementType"
-                              [index]="i"
-                              [dimensions]="ownDimensions"
-                              [formControlName]="i" />
-
-        <app-enumeration-argument *ngSwitchCase="'enumeration'"
-                                  [name]="name"
-                                  [type]="type.elementType"
-                                  [index]="i"
-                                  [dimensions]="ownDimensions"
-                                  [formControlName]="i" />
-
-        <app-float-argument *ngSwitchCase="'float'"
-                            [name]="name"
-                            [type]="type.elementType"
-                            [index]="i"
-                            [dimensions]="ownDimensions"
-                            [formControlName]="i" />
-
-        <app-integer-argument *ngSwitchCase="'integer'"
-                              [name]="name"
-                              [type]="type.elementType"
-                              [index]="i"
-                              [dimensions]="ownDimensions"
-                              [formControlName]="i" />
-
-        <app-string-argument *ngSwitchCase="'string'"
-                             [name]="name"
-                             [type]="type.elementType"
-                             [index]="i"
-                             [dimensions]="ownDimensions"
-                             [formControlName]="i" />
-
-        <app-time-argument *ngSwitchCase="'time'"
-                           [name]="name"
-                           [type]="type.elementType"
-                           [index]="i"
-                           [dimensions]="ownDimensions"
-                           [formControlName]="i" />
-
-        <app-array-argument *ngSwitchCase="type.elementType.engType.endsWith('[]') ? type.elementType.engType : ''"
-                            [name]="i"
-                            [type]="type.elementType"
-                            [index]="i"
-                            [dimensions]="ownDimensions"
-                            [initialValue]="entryInitialValues[i]" />
-      </ng-container>
-
-      <br>
-    </ng-container>
+    @for (control of formArray.controls; track control; let i = $index) {
+      @switch (type.elementType!.engType) {
+        @case ("aggregate") {
+          <app-aggregate-argument
+            [name]="name"
+            [type]="type.elementType"
+            [index]="i"
+            [dimensions]="ownDimensions"
+            [initialValue]="entryInitialValues[i]" />
+        }
+        @case ("binary") {
+          <app-binary-argument
+            [name]="name"
+            [type]="type.elementType"
+            [index]="i"
+            [dimensions]="ownDimensions"
+            [formControlName]="i" />
+        }
+        @case ("boolean") {
+          <app-boolean-argument
+            [name]="name"
+            [type]="type.elementType"
+            [index]="i"
+            [dimensions]="ownDimensions"
+            [formControlName]="i" />
+        }
+        @case ("enumeration") {
+          <app-enumeration-argument
+            [name]="name"
+            [type]="type.elementType"
+            [index]="i"
+            [dimensions]="ownDimensions"
+            [formControlName]="i" />
+        }
+        @case ("float") {
+          <app-float-argument
+            [name]="name"
+            [type]="type.elementType"
+            [index]="i"
+            [dimensions]="ownDimensions"
+            [formControlName]="i" />
+        }
+        @case ("integer") {
+          <app-integer-argument
+            [name]="name"
+            [type]="type.elementType"
+            [index]="i"
+            [dimensions]="ownDimensions"
+            [formControlName]="i" />
+        }
+        @case ("string") {
+          <app-string-argument
+            [name]="name"
+            [type]="type.elementType"
+            [index]="i"
+            [dimensions]="ownDimensions"
+            [formControlName]="i" />
+        }
+        @case ("time") {
+          <app-time-argument
+            [name]="name"
+            [type]="type.elementType"
+            [index]="i"
+            [dimensions]="ownDimensions"
+            [formControlName]="i" />
+        }
+        @case (type.elementType!.engType.endsWith("[]") ? type.elementType!.engType : "") {
+          <app-array-argument
+            [name]="i"
+            [type]="type.elementType"
+            [index]="i"
+            [dimensions]="ownDimensions"
+            [initialValue]="entryInitialValues[i]" />
+        }
+      }
+      <br />
+    }
   </div>
 </div>

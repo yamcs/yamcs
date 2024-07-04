@@ -1,50 +1,78 @@
-<table yaDataTable
-       *ngIf="ptype?.dataEncoding?.defaultCalibrator || ptype?.dataEncoding?.contextCalibrator; else noCalibrator">
-  <tr>
-    <th width="200">Calibrator</th>
-    <th width="100">Type</th>
-    <th width="200">Definition</th>
-  </tr>
-  <tr *ngIf="ptype?.dataEncoding?.defaultCalibrator as defaultCalibrator">
-    <td>default</td>
-    <td>{{ defaultCalibrator.type }}</td>
-    <td [ngSwitch]="defaultCalibrator.type">
-      <span *ngSwitchCase="'POLYNOMIAL'"
-            [innerHTML]="defaultCalibrator.polynomialCalibrator.coefficient | polynomial">
-      </span>
-      <span *ngSwitchCase="'SPLINE'">
-        {{ defaultCalibrator.splineCalibrator.point.length }} points
-      </span>
-      <span *ngSwitchCase="'JAVA_EXPRESSION'">
-        {{ defaultCalibrator.javaExpressionCalibrator.formula }}
-      </span>
-      <span *ngSwitchDefault>-</span>
-    </td>
-  </tr>
-  <ng-container *ngIf="ptype?.dataEncoding?.contextCalibrator as contextCalibrators">
-    <tr *ngFor="let contextCalibrator of contextCalibrators">
-      <td>
-        <ng-container *ngFor="let comparison of contextCalibrator.comparison">
-          <a [routerLink]="['/mdb/parameters/', comparison.parameter.qualifiedName]"
-             [queryParams]="{c: yamcs.context}">{{ comparison.parameter.qualifiedName }}</a>
-          {{ comparison.operator | operator }}
-          {{ comparison.value }}
-        </ng-container>
-      </td>
-      <td>{{ contextCalibrator.calibrator.type }}</td>
-      <td [ngSwitch]="contextCalibrator.calibrator.type">
-        <span *ngSwitchCase="'POLYNOMIAL'"
-              [innerHTML]="contextCalibrator.calibrator.polynomialCalibrator.coefficient | polynomial">
-        </span>
-        <span *ngSwitchCase="'SPLINE'">
-          {{ contextCalibrator.calibrator.splineCalibrator.point.length }} points
-        </span>
-        <span *ngSwitchCase="'JAVA_EXPRESSION'">
-          {{ contextCalibrator.calibrator.javaExpressionCalibrator.formula }}
-        </span>
-        <span *ngSwitchDefault>-</span>
-      </td>
+@if (ptype.dataEncoding?.defaultCalibrator || ptype.dataEncoding?.contextCalibrator) {
+  <table yaDataTable>
+    <tr>
+      <th width="200">Calibrator</th>
+      <th width="100">Type</th>
+      <th width="200">Definition</th>
     </tr>
-  </ng-container>
-</table>
-<ng-template #noCalibrator>None</ng-template>
+    @if (ptype.dataEncoding?.defaultCalibrator; as defaultCalibrator) {
+      <tr>
+        <td>default</td>
+        <td>{{ defaultCalibrator.type }}</td>
+        <td>
+          @switch (defaultCalibrator.type) {
+            @case ("POLYNOMIAL") {
+              <span [innerHTML]="defaultCalibrator.polynomialCalibrator.coefficient | polynomial">
+              </span>
+            }
+            @case ("SPLINE") {
+              <span> {{ defaultCalibrator.splineCalibrator.point.length }} points </span>
+            }
+            @case ("JAVA_EXPRESSION") {
+              <span>
+                {{ defaultCalibrator.javaExpressionCalibrator.formula }}
+              </span>
+            }
+            @default {
+              <span>-</span>
+            }
+          }
+        </td>
+      </tr>
+    }
+    @if (ptype.dataEncoding?.contextCalibrator; as contextCalibrators) {
+      @for (contextCalibrator of contextCalibrators; track contextCalibrator) {
+        <tr>
+          <td>
+            @for (comparison of contextCalibrator.comparison; track comparison) {
+              <a
+                [routerLink]="['/mdb/parameters/', comparison.parameter.qualifiedName]"
+                [queryParams]="{ c: yamcs.context }"
+                >{{ comparison.parameter.qualifiedName }}</a
+              >
+              {{ comparison.operator | operator }}
+              {{ comparison.value }}
+            }
+          </td>
+          <td>{{ contextCalibrator.calibrator.type }}</td>
+          <td>
+            @switch (contextCalibrator.calibrator.type) {
+              @case ("POLYNOMIAL") {
+                <span
+                  [innerHTML]="
+                    contextCalibrator.calibrator.polynomialCalibrator.coefficient | polynomial
+                  ">
+                </span>
+              }
+              @case ("SPLINE") {
+                <span>
+                  {{ contextCalibrator.calibrator.splineCalibrator.point.length }} points
+                </span>
+              }
+              @case ("JAVA_EXPRESSION") {
+                <span>
+                  {{ contextCalibrator.calibrator.javaExpressionCalibrator.formula }}
+                </span>
+              }
+              @default {
+                <span>-</span>
+              }
+            }
+          </td>
+        </tr>
+      }
+    }
+  </table>
+} @else {
+  None
+}

@@ -1,15 +1,19 @@
-<mat-dialog-content class="mat-typography ya-form">
+<h2 mat-dialog-title>{{ label }}</h2>
+
+<mat-dialog-content class="ya-form">
   <label>
     {{ label }}
-    <input type="text"
-           [formControl]="parameter"
-           [matAutocomplete]="auto">
+    <input type="text" [formControl]="parameter" [matAutocomplete]="auto" />
     <mat-autocomplete class="ya-autocomplete" #auto>
-      <mat-option *ngFor="let option of filteredOptions | async" [value]="option | memberPath">
-        {{ option | memberPath}}
-      </mat-option>
+      @for (option of filteredOptions | async; track option) {
+        <mat-option [value]="option | memberPath">
+          {{ option | memberPath }}
+        </mat-option>
+      }
     </mat-autocomplete>
-    <span class="hint" *ngIf="hint">{{ hint }}</span>
+    @if (hint) {
+      <span class="hint">{{ hint }}</span>
+    }
   </label>
 </mat-dialog-content>
 

@@ -1,8 +1,9 @@
 <div class="text-action">
   <span class="action-content">
-    <ng-container *ngIf="icon">
-      <mat-icon class="icon14">{{ icon }}</mat-icon>&nbsp;
-    </ng-container>
+    @if (icon) {
+      <mat-icon class="icon14">{{ icon }}</mat-icon
+      >&nbsp;
+    }
     <ng-content />
   </span>
 </div>

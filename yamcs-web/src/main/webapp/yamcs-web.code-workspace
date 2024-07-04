@@ -6,7 +6,8 @@
   ],
   "extensions": {
     "recommendations": [
-      "angular.ng-template"
+      "angular.ng-template",
+      "esbenp.prettier-vscode"
     ]
   },
   "settings": {
@@ -37,7 +38,7 @@
       "editor.defaultFormatter": "vscode.css-language-features"
     },
     "[html]": {
-      "editor.defaultFormatter": "vscode.html-language-features"
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[json]": {
       "editor.defaultFormatter": "vscode.json-language-features"

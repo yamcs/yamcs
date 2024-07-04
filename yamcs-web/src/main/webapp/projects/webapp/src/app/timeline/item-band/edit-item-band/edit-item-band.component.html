@@ -1,26 +1,24 @@
-<ng-container *ngIf="formConfigured$ | async">
+@if (formConfigured$ | async) {
   <form [formGroup]="form">
     <label>
-      Label <span class="hint">(required)</span><br>
-      <input type="text" formControlName="name">
+      Label <span class="hint">(required)</span><br />
+      <input type="text" formControlName="name" />
     </label>
-    <br>
+    <br />
     <label>
-      Description <span class="hint">(optional)</span><br>
+      Description <span class="hint">(optional)</span><br />
       <textarea formControlName="description" rows="3"></textarea>
     </label>
-    <br>
+    <br />
     <label>
-      Tags<br>
+      Tags<br />
       <ya-tag-select formControlName="tags" />
     </label>
-
-    <br>
+    <br />
     <div class="section-divider">
       <mat-divider />
     </div>
-
     <h4>Styles</h4>
     <app-item-band-styles [form]="form" />
   </form>
-</ng-container>
+}

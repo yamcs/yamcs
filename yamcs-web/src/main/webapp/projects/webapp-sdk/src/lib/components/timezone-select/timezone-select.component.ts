@@ -1,4 +1,4 @@
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
@@ -17,10 +17,9 @@ import tznames from './tznames';
   }],
   imports: [
     AsyncPipe,
-    NgIf,
     ReactiveFormsModule,
-    YaSelect,
-  ],
+    YaSelect
+],
 })
 export class YaTimezoneSelect implements ControlValueAccessor {
 

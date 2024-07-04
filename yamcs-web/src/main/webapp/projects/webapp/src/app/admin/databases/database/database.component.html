@@ -1,101 +1,119 @@
-<app-admin-page *ngIf="database$ | async as database">
-  <app-admin-toolbar>
-    <a mat-icon-button routerLink="/admin/databases">
-      <mat-icon>account_tree</mat-icon>
-    </a>
-    <mat-icon class="icon14 sep">navigate_next</mat-icon>
-    <a class="ya-link ya-header-link"
-       [routerLink]="['/admin/databases', database.name]">
-      {{ database.name }}
-    </a>
-
-    <ng-container *ngIf="object$ | async as obj">
-      <mat-icon class="icon14 sep">navigate_next</mat-icon>
-      <a *ngIf="obj.type === 'table'"
-         class="ya-link ya-header-link"
-         [routerLink]="['/admin/databases', database.name, 'tables']">
-        Tables
-      </a>
-      <a *ngIf="obj.type === 'stream'"
-         class="ya-link ya-header-link"
-         [routerLink]="['/admin/databases', database.name, 'streams']">
-        Streams
+@if (database$ | async; as database) {
+  <app-admin-page>
+    <app-admin-toolbar>
+      <a mat-icon-button routerLink="/admin/databases">
+        <mat-icon>account_tree</mat-icon>
       </a>
       <mat-icon class="icon14 sep">navigate_next</mat-icon>
-      {{ obj.name }}
-    </ng-container>
-  </app-admin-toolbar>
-
-  <nav mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
-    <ng-container *ngIf="!(object$ | async)">
-      <a mat-tab-link
-         [routerLink]="['/admin/databases', database.name, 'tables']"
-         routerLinkActive #rla="routerLinkActive"
-         [active]="rla.isActive">
-        Tables
+      <a class="ya-link ya-header-link" [routerLink]="['/admin/databases', database.name]">
+        {{ database.name }}
       </a>
-      <a mat-tab-link
-         [routerLink]="['/admin/databases', database.name, 'streams']"
-         routerLinkActive #rlb="routerLinkActive"
-         [active]="rlb.isActive">
-        Streams
-      </a>
-      <a mat-tab-link
-         [routerLink]="['/admin/databases', database.name, 'shell']"
-         routerLinkActive #rlc="routerLinkActive"
-         [active]="rlc.isActive">
-        DB Shell
-      </a>
-    </ng-container>
-
-    <ng-container *ngIf="object$ | async as obj">
-      <ng-container *ngIf="obj.type === 'table'">
-        <a mat-tab-link
-           [routerLink]="['/admin/databases', database.name, 'tables', obj.name, 'info']"
-           routerLinkActive #rla1="routerLinkActive"
-           [active]="rla1.isActive">
-          Info
+      @if (object$ | async; as obj) {
+        <mat-icon class="icon14 sep">navigate_next</mat-icon>
+        @if (obj.type === "table") {
+          <a
+            class="ya-link ya-header-link"
+            [routerLink]="['/admin/databases', database.name, 'tables']">
+            Tables
+          </a>
+        }
+        @if (obj.type === "stream") {
+          <a
+            class="ya-link ya-header-link"
+            [routerLink]="['/admin/databases', database.name, 'streams']">
+            Streams
+          </a>
+        }
+        <mat-icon class="icon14 sep">navigate_next</mat-icon>
+        {{ obj.name }}
+      }
+    </app-admin-toolbar>
+    <nav mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
+      @if (!(object$ | async)) {
+        <a
+          mat-tab-link
+          [routerLink]="['/admin/databases', database.name, 'tables']"
+          routerLinkActive
+          #rla="routerLinkActive"
+          [active]="rla.isActive">
+          Tables
         </a>
-        <a mat-tab-link
-           [routerLink]="['/admin/databases', database.name, 'tables', obj.name, 'data']"
-           routerLinkActive #rla2="routerLinkActive"
-           [active]="rla2.isActive">
-          Data
+        <a
+          mat-tab-link
+          [routerLink]="['/admin/databases', database.name, 'streams']"
+          routerLinkActive
+          #rlb="routerLinkActive"
+          [active]="rlb.isActive">
+          Streams
         </a>
-        <a mat-tab-link
-           [routerLink]="['/admin/databases', database.name, 'tables', obj.name, 'script']"
-           routerLinkActive #rla3="routerLinkActive"
-           [active]="rla3.isActive">
-          Script
+        <a
+          mat-tab-link
+          [routerLink]="['/admin/databases', database.name, 'shell']"
+          routerLinkActive
+          #rlc="routerLinkActive"
+          [active]="rlc.isActive">
+          DB Shell
         </a>
-      </ng-container>
-
-      <ng-container *ngIf="obj.type === 'stream'">
-        <a mat-tab-link
-           [routerLink]="['/admin/databases', database.name, 'streams', obj.name, 'columns']"
-           routerLinkActive #rlb1="routerLinkActive"
-           [active]="rlb1.isActive">
-          Columns
-        </a>
-        <a mat-tab-link
-           [routerLink]="['/admin/databases', database.name, 'streams', obj.name, 'data']"
-           routerLinkActive #rlb2="routerLinkActive"
-           [active]="rlb2.isActive">
-          Data
-        </a>
-        <a mat-tab-link
-           [routerLink]="['/admin/databases', database.name, 'streams', obj.name, 'script']"
-           routerLinkActive #rlb3="routerLinkActive"
-           [active]="rlb3.isActive">
-          Script
-        </a>
-      </ng-container>
-    </ng-container>
-  </nav>
-
-  <div class="outlet-wrapper">
-    <mat-tab-nav-panel #tabPanel>
-      <router-outlet />
-    </mat-tab-nav-panel>
-  </div>
-</app-admin-page>
+      }
+      @if (object$ | async; as obj) {
+        @if (obj.type === "table") {
+          <a
+            mat-tab-link
+            [routerLink]="['/admin/databases', database.name, 'tables', obj.name, 'info']"
+            routerLinkActive
+            #rla1="routerLinkActive"
+            [active]="rla1.isActive">
+            Info
+          </a>
+          <a
+            mat-tab-link
+            [routerLink]="['/admin/databases', database.name, 'tables', obj.name, 'data']"
+            routerLinkActive
+            #rla2="routerLinkActive"
+            [active]="rla2.isActive">
+            Data
+          </a>
+          <a
+            mat-tab-link
+            [routerLink]="['/admin/databases', database.name, 'tables', obj.name, 'script']"
+            routerLinkActive
+            #rla3="routerLinkActive"
+            [active]="rla3.isActive">
+            Script
+          </a>
+        }
+        @if (obj.type === "stream") {
+          <a
+            mat-tab-link
+            [routerLink]="['/admin/databases', database.name, 'streams', obj.name, 'columns']"
+            routerLinkActive
+            #rlb1="routerLinkActive"
+            [active]="rlb1.isActive">
+            Columns
+          </a>
+          <a
+            mat-tab-link
+            [routerLink]="['/admin/databases', database.name, 'streams', obj.name, 'data']"
+            routerLinkActive
+            #rlb2="routerLinkActive"
+            [active]="rlb2.isActive">
+            Data
+          </a>
+          <a
+            mat-tab-link
+            [routerLink]="['/admin/databases', database.name, 'streams', obj.name, 'script']"
+            routerLinkActive
+            #rlb3="routerLinkActive"
+            [active]="rlb3.isActive">
+            Script
+          </a>
+        }
+      }
+    </nav>
+    <div class="outlet-wrapper">
+      <mat-tab-nav-panel #tabPanel>
+        <router-outlet />
+      </mat-tab-nav-panel>
+    </div>
+  </app-admin-page>
+}

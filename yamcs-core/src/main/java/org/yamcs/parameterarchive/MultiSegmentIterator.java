@@ -34,7 +34,6 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
 
     ParameterArchive parchive;
 
-    SegmentEncoderDecoder segmentEncoder = new SegmentEncoderDecoder();
     List<Partition> partitions;
 
     // iterates over partitions
@@ -209,7 +208,7 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
             valid = true;
             currentKey = SegmentKey.decode(dbIterator.key());
             try {
-                currentTimeSegment = (SortedTimeSegment) segmentEncoder.decode(dbIterator.value(),
+                currentTimeSegment = (SortedTimeSegment) SegmentEncoderDecoder.decode(dbIterator.value(),
                         currentKey.segmentStart);
             } catch (DecodingException e) {
                 throw new DatabaseCorruptionException("Cannot decode time segment", e);
@@ -261,22 +260,23 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
                         switch (type) {
                         case SegmentKey.TYPE_ENG_VALUE:
                             if (retrieveEngValues || retrieveRawValues) {
-                                engValueSegment = (ValueSegment) segmentEncoder.decode(it.value(), segStart);
+                                engValueSegment = (ValueSegment) SegmentEncoderDecoder.decode(it.value(), segStart);
                             }
                             break;
                         case SegmentKey.TYPE_RAW_VALUE:
                             if (retrieveRawValues) {
-                                rawValueSegment = (ValueSegment) segmentEncoder.decode(it.value(), segStart);
+                                rawValueSegment = (ValueSegment) SegmentEncoderDecoder.decode(it.value(), segStart);
                             }
                             break;
                         case SegmentKey.TYPE_PARAMETER_STATUS:
                             if (retrieveParameterStatus) {
-                                parameterStatusSegment = (ParameterStatusSegment) segmentEncoder.decode(it.value(),
+                                parameterStatusSegment = (ParameterStatusSegment) SegmentEncoderDecoder.decode(
+                                        it.value(),
                                         segStart);
                             }
                             break;
                         case SegmentKey.TYPE_GAPS:
-                            gaps = segmentEncoder.decodeGaps(it.value());
+                            gaps = SegmentEncoderDecoder.decodeGaps(it.value());
                             break;
                         }
                         it.next();

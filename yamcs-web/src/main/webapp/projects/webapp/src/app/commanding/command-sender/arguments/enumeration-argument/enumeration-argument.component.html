@@ -4,15 +4,19 @@
   </div>
 
   {{ label }}
-  <ya-help *ngIf="description">
-    {{ description }}
-  </ya-help>
+  @if (description) {
+    <ya-help>
+      {{ description }}
+    </ya-help>
+  }
 
   <ya-errors #err [controlName]="controlName" />
   <div class="control-group">
     <ya-select [formControl]="formControl" [options]="selectOptions$ | async" />&nbsp;
-    <button class="ya-button" matTooltip="Lookup enumeration state"
-            (click)="openSelectEnumerationDialog()">
+    <button
+      class="ya-button"
+      matTooltip="Lookup enumeration state"
+      (click)="openSelectEnumerationDialog()">
       <mat-icon>search</mat-icon>
     </button>
   </div>

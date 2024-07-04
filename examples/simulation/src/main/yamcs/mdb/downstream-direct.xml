@@ -1,4 +1,4 @@
-<SpaceSystem name="DOWNSTREAM">
+<SpaceSystem name="DOWNSTREAM_DIRECT">
     <Header validationStatus="Unknown" version="1.3" date="2023-07-10T11:16:59Z"/>
    
     <CommandMetaData>
@@ -35,7 +35,7 @@
                     <BaseContainer containerRef="DOWNSTREAM_CMD"/>
                 </CommandContainer>
             </MetaCommand>
-            <MetaCommand name="SWITCH_VOLTAGE_OFF">
+            <MetaCommand name="SWITCH_VOLTAGE_OFF_WITH_DIFFERENT_NAME">
                 <BaseMetaCommand metaCommandRef="DOWNSTREAM_CMD">
                     <ArgumentAssignmentList>
                         <ArgumentAssignment argumentName="onoff" argumentValue="2"/>

@@ -1,7 +1,27 @@
-import { Instance, Member, Parameter, ParameterType, UnitInfo, Value } from './client';
-const PREVIEW_LENGTH = 3;
+import { Instance, Parameter, ParameterMember, ParameterType, UnitInfo, Value } from './client';
 
-export type ISOResolution = 'day' | 'hhmm' | 'hhmmss' | 'millis';
+/**
+ * Minimum valid date for a proto Timestamp
+ */
+export const MIN_DATE = new Date("0001-01-01T00:00:00Z");
+
+/**
+ * Maximum valid date for a proto Timestamp
+ */
+export const MAX_DATE = new Date("9999-12-31T23:59:59.999999999Z");
+
+/**
+ * Return a new date, clamped to the range {@link MIN_DATE} - {@link MAX_DATE}
+ */
+export function clampDate(date: Date | number | string): Date {
+  const copy = new Date(date);
+  if (copy.getTime() < MIN_DATE.getTime()) {
+    copy.setTime(MIN_DATE.getTime());
+  } else if (copy.getTime() > MAX_DATE.getTime()) {
+    copy.setTime(MAX_DATE.getTime());
+  }
+  return copy;
+}
 
 /**
  * Deep clones an object.
@@ -236,151 +256,6 @@ export function generateRandomName() {
   return `${adjective}_${animal}`;
 }
 
-export interface PrintValueOptions {
-  maxBytes?: number;
-}
-
-export function printValue(value: Value, options?: PrintValueOptions) {
-  if (value.type === 'AGGREGATE') {
-    let preview = '{';
-    if (value.aggregateValue) {
-      const n = Math.min(value.aggregateValue.name.length, PREVIEW_LENGTH);
-      for (let i = 0; i < n; i++) {
-        if (i !== 0) {
-          preview += ', ';
-        }
-        preview += value.aggregateValue.name[i] + ': ' + printValueWithoutPreview(value.aggregateValue.value[i], options);
-      }
-      if (n < value.aggregateValue.value.length) {
-        preview += `, …`;
-      }
-    }
-    return preview + '}';
-  } else if (value.type === 'ARRAY') {
-    let preview = '';
-    if (value.arrayValue) {
-      preview += `(${value.arrayValue.length}) [`;
-      const n = Math.min(value.arrayValue.length, PREVIEW_LENGTH);
-      for (let i = 0; i < n; i++) {
-        if (i !== 0) {
-          preview += ', ';
-        }
-        preview += printValueWithoutPreview(value.arrayValue[i], options);
-      }
-      if (n < value.arrayValue.length) {
-        preview += ', …';
-      }
-      preview += ']';
-    } else {
-      preview += '(0) []';
-    }
-    return preview;
-  } else {
-    return printValueWithoutPreview(value, options);
-  }
-}
-
-function printValueWithoutPreview(value: Value, options?: PrintValueOptions): string {
-  switch (value.type) {
-    case 'AGGREGATE':
-      return '{…}';
-    case 'ARRAY':
-      return 'array';
-    case 'BOOLEAN':
-      return '' + value.booleanValue;
-    case 'FLOAT':
-      return '' + value.floatValue;
-    case 'DOUBLE':
-      return '' + value.doubleValue;
-    case 'UINT32':
-      return '' + value.uint32Value;
-    case 'SINT32':
-      return '' + value.sint32Value;
-    case 'BINARY':
-      if (options?.maxBytes !== undefined) {
-        return printHexPreview('' + value.binaryValue, options.maxBytes);
-      } else {
-        return printHexPreview('' + value.binaryValue);
-      }
-    case 'ENUMERATED':
-    case 'STRING':
-      return value.stringValue!;
-    case 'TIMESTAMP':
-      return printDateTime(value.stringValue!);
-    case 'UINT64':
-      return '' + value.uint64Value;
-    case 'SINT64':
-      return '' + value.sint64Value;
-    case 'NONE':
-      return '';
-    default:
-      return 'Unsupported data type';
-  }
-}
-
-export function printHexPreview(binaryValue: string, maxBytes = 16) {
-  const hex = convertBase64ToHex(binaryValue);
-  if (hex.length > maxBytes * 2) {
-    return '0x' + hex.slice(0, maxBytes * 2) + '…';
-  } else if (hex.length > 0) {
-    return '0x' + hex;
-  } else {
-    return '';
-  }
-}
-
-export function printHexDump(base64: string) {
-  function lpad(hex: string, width: number) {
-    if (hex.length >= width) {
-      return hex;
-    } else {
-      return new Array(width - hex.length + 1).join('0') + hex;
-    }
-  }
-
-  const raw = window.atob(base64);
-  let result = '';
-  let charCount = 0;
-  let lineAscii = '';
-  for (let i = 0; i < raw.length; i++) {
-    if (i % 16 === 0) {
-      const charCountHex = charCount.toString(16);
-      result += lpad(charCountHex, 8);
-      result += ': ';
-    }
-    const code = raw.charCodeAt(i);
-    const hex = code.toString(16);
-    if (32 <= code && code <= 126) {
-      lineAscii += raw[i];
-    } else {
-      lineAscii += '.';
-    }
-
-    result += (hex.length === 2 ? hex : '0' + hex);
-    if ((i + 1) % 2 === 0) {
-      result += ' ';
-    }
-
-    if ((i + 1) % 16 === 0) {
-      result += ' ' + lineAscii + '\n';
-      lineAscii = '';
-      charCount += 16;
-    }
-  }
-  return result;
-}
-
-export function printDateTime(date: Date | string, addTimezone = true): string {
-  let dateString;
-  if (typeof date === 'string') {
-    // Convert to date first, this standardizes output (millis precision)
-    dateString = toDate(date).toISOString();
-  } else {
-    dateString = date.toISOString();
-  }
-  return dateString.replace('T', ' ').replace('Z', addTimezone ? ' UTC' : '');
-}
-
 /**
  * Prints a date in ISO format (with Z suffix).
  * Dates or datetimes without Z suffix are considered UTC.
@@ -394,39 +269,6 @@ export function toISOString(date: Date | string): string {
     dateString = date.toISOString();
   }
   return dateString;
-}
-
-/**
- * Prints a date in ISO format without any timezone indication.
- *
- * For example:
- * - 'day' resolution: 2050-12-20
- * - 'hhmm' resolution: 2050-12-20T08:06
- * - 'millis' resolution: 2050-12-20T08:06:00.123
- */
-export function printLocalDate(date: Date | string, resolution: ISOResolution = 'millis'): string | null {
-  if (!date) {
-    return null;
-  }
-  let dateString;
-  if (typeof date === 'string') {
-    // Convert to date first, this standardizes output (millis precision)
-    dateString = toDate(date).toISOString();
-  } else {
-    dateString = date.toISOString();
-  }
-  switch (resolution) {
-    case 'day':
-      return dateString.substr(0, 10);
-    case 'hhmm':
-      return dateString.substr(0, 16);
-    case 'hhmmss':
-      return dateString.substr(0, 19);
-    case 'millis':
-      return dateString;
-    default:
-      return `Unexpected resolution ${resolution}`;
-  }
 }
 
 export function toDate(obj: any): Date {
@@ -558,14 +400,14 @@ export function getExtension(filename: string | null): string | null {
   }
 }
 
-export function getEntryForOffset(parameter: Parameter, offset: string): Parameter | Member | null {
+export function getEntryForOffset(parameter: Parameter, offset: string): Parameter | ParameterMember | null {
   const entry = parameter.name + offset;
   const parts = entry.split('.');
 
-  let node: Parameter | Member = parameter;
+  let node: Parameter | ParameterMember = parameter;
   for (let i = 1; i < parts.length; i++) {
     let memberNode;
-    const members: Member[] = getParameterTypeForEntry(node)?.member || [];
+    const members: ParameterMember[] = getParameterTypeForEntry(node)?.member || [];
     for (const member of members) {
       if (member.name === parts[i]) {
         memberNode = member;
@@ -583,7 +425,7 @@ export function getEntryForOffset(parameter: Parameter, offset: string): Paramet
   return node || null;
 }
 
-function getParameterTypeForEntry(entry: Parameter | Member) {
+function getParameterTypeForEntry(entry: Parameter | ParameterMember) {
   const entryType = entry.type as ParameterType;
   if (entryType.arrayInfo) {
     return entryType.arrayInfo.type;

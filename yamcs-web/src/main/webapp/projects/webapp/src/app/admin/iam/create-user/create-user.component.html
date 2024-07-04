@@ -2,48 +2,56 @@
   <app-admin-toolbar>
     <a mat-icon-button routerLink=".." color="primary">
       <mat-icon>arrow_back</mat-icon>
-    </a> Create user
+    </a>
+    Create user
   </app-admin-toolbar>
 
   <div class="form-content ya-form">
     <form [formGroup]="form" novalidate autocomplete="off">
       <label>
-        Username <span class="hint">(required)</span><br>
-        <input formControlName="name" type="text">
+        Username <span class="hint">(required)</span><br />
+        <input formControlName="name" type="text" />
       </label>
-      <br>
+      <br />
       <label>
-        Display name <span class="hint">(optional)</span><br>
-        <input formControlName="displayName" type="text">
+        Display name <span class="hint">(optional)</span><br />
+        <input formControlName="displayName" type="text" />
       </label>
-      <br>
+      <br />
       <label>
-        Email <span class="hint">(optional)</span><br>
-        <input formControlName="email" type="text">
+        Email <span class="hint">(optional)</span><br />
+        <input formControlName="email" type="text" />
       </label>
       <p>&nbsp;</p>
       <div class="section-divider">
         <mat-divider />
       </div>
-      <br>
+      <br />
       <label>
-        Password <span class="hint">(optional)</span><br>
-        <span class="hint">User without a password may still be able to login if an external identity provider is
-          configured.</span>
-        <input formControlName="password" type="password">
+        Password <span class="hint">(optional)</span><br />
+        <span class="hint"
+          >User without a password may still be able to login if an external identity provider is
+          configured.</span
+        >
+        <input formControlName="password" type="password" />
       </label>
-      <br>
+      <br />
       <label>
-        Password confirmation<br>
-        <input formControlName="passwordConfirmation" type="password">
+        Password confirmation<br />
+        <input formControlName="passwordConfirmation" type="password" />
       </label>
     </form>
 
     <p>&nbsp;</p>
     <div class="action-bar">
       <button class="ya-button" routerLink="..">Cancel</button>
-      <button class="ya-button primary" type="submit" (click)="onConfirm()"
-              [disabled]="!form.valid">CREATE</button>
+      <button
+        class="ya-button primary"
+        type="submit"
+        (click)="onConfirm()"
+        [disabled]="!form.valid">
+        CREATE
+      </button>
     </div>
   </div>
 </app-admin-page>

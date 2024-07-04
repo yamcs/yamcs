@@ -1,8 +1,11 @@
 <mat-dialog-content>
-  <label class="mat-typography">Color</label><br>
-  <app-color-palette #palette [selectedColor]="data.color" (select)="thickness.changeColor($event)" />
-  <br>
-  <label class="mat-typography">Thickness</label><br>
+  <label>Color</label><br />
+  <app-color-palette
+    #palette
+    [selectedColor]="data.color"
+    (select)="thickness.changeColor($event)" />
+  <br />
+  <label>Thickness</label><br />
   <app-thickness #thickness [selectedThickness]="data.strokeWidth" [color]="data.color" />
 </mat-dialog-content>
 

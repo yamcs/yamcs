@@ -1,4 +1,4 @@
-import { NgIf } from '@angular/common';
+
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { MatListItem } from '@angular/material/list';
@@ -11,9 +11,8 @@ import { MatListItem } from '@angular/material/list';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatIcon,
-    MatListItem,
-    NgIf,
-  ],
+    MatListItem
+],
 })
 export class YaSidebarNavGroup {
 

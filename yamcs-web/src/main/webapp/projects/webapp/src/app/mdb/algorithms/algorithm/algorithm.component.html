@@ -1,16 +1,18 @@
-<app-instance-page *ngIf="algorithm$ | async as algorithm">
-  <app-instance-toolbar>
-    <ng-container *ngIf="(algorithm.qualifiedName | spaceSystemName) as spaceSystemName">
-      <a routerLink="/mdb/algorithms"
-         [queryParams]="{c: yamcs.context, filter: spaceSystemName}"
-         class="ya-link ya-header-link">
-        {{ spaceSystemName }}
-      </a>/{{ algorithm.qualifiedName | shortName }}
-      <ya-title-copy [text]="algorithm.qualifiedName" />
-    </ng-container>
-  </app-instance-toolbar>
-
-  <div class="panel-content">
-    <app-algorithm-detail [algorithm]="algorithm" />
-  </div>
-</app-instance-page>
+@if (algorithm$ | async; as algorithm) {
+  <app-instance-page>
+    <app-instance-toolbar>
+      @if (algorithm.qualifiedName | spaceSystemName; as spaceSystemName) {
+        <a
+          routerLink="/mdb/algorithms"
+          [queryParams]="{ c: yamcs.context, filter: spaceSystemName }"
+          class="ya-link ya-header-link">
+          {{ spaceSystemName }} </a
+        >/{{ algorithm.qualifiedName | shortName }}
+        <ya-title-copy [text]="algorithm.qualifiedName" />
+      }
+    </app-instance-toolbar>
+    <div class="panel-content">
+      <app-algorithm-detail [algorithm]="algorithm" />
+    </div>
+  </app-instance-page>
+}

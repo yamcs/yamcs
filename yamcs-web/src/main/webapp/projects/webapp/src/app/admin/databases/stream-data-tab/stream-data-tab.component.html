@@ -1,28 +1,24 @@
 <ya-detail-pane>
-  <ng-container *ngIf="selectedStreamData$ | async as selectedStreamData; else noSelection">
-    <ya-detail-toolbar>
-      Tuple
-    </ya-detail-toolbar>
+  @if (selectedStreamData$ | async; as selectedStreamData) {
+    <ya-detail-toolbar> Tuple </ya-detail-toolbar>
     <div style="padding: 0 16px">
       <app-stream-data [streamData]="selectedStreamData" />
     </div>
-  </ng-container>
-  <ng-template #noSelection>
-    <ya-detail-toolbar>
-      Select a tuple
-    </ya-detail-toolbar>
-  </ng-template>
+  } @else {
+    <ya-detail-toolbar> Select a tuple </ya-detail-toolbar>
+  }
 </ya-detail-pane>
 <div class="data-table-wrapper">
   <div class="panel-content">
     <table mat-table #table [dataSource]="dataSource" class="ya-data-table expand">
-
-      <ng-container *ngFor="let column of (availableColumns$ | async)" [cdkColumnDef]="column">
-        <th mat-header-cell *cdkHeaderCellDef>{{ column }}</th>
-        <td mat-cell *cdkCellDef="let item">
-          {{ (item.column | columnValue:column | value) || '-' }}
-        </td>
-      </ng-container>
+      @for (column of availableColumns$ | async; track column) {
+        <ng-container [cdkColumnDef]="column">
+          <th mat-header-cell *cdkHeaderCellDef>{{ column }}</th>
+          <td mat-cell *cdkCellDef="let item">
+            {{ (item.column | columnValue: column | value) || "-" }}
+          </td>
+        </ng-container>
+      }
 
       <ng-container matColumnDef="actions">
         <th mat-header-cell *cdkHeaderCellDef class="expand"></th>
@@ -30,9 +26,11 @@
       </ng-container>
 
       <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"
-          [ngClass]="{selected: (row === (selectedStreamData$ | async))}"
-          (click)="selectStreamData(row)"></tr>
+      <tr
+        mat-row
+        *cdkRowDef="let row; columns: displayedColumns"
+        [ngClass]="{ selected: row === (selectedStreamData$ | async) }"
+        (click)="selectStreamData(row)"></tr>
     </table>
   </div>
 </div>

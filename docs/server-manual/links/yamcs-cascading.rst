@@ -133,3 +133,6 @@ commandMapping (list of CommandMapData)
     
     The list of commandMapping is checked in order - the first entry which matches the ``local`` entry will be used.
     If no entry matches the sent command, the command will fail.
+    
+failCommandIfNoMappingMatches (boolean)
+    Since Yamcs 5.9.7. If no mapping was found for the local command, setting this option to true will cause immediately the command to fail. If set to false (default) the command will not fail immediately and the link manager will try to send it on another link (if available).

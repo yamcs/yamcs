@@ -1,5 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { ParameterValue, Synchronizer, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
@@ -12,7 +12,7 @@ import { ParameterTable } from '../ParameterTableModel';
   selector: 'app-multiple-parameter-table',
   templateUrl: './multiple-parameter-table.component.html',
   styleUrl: './multiple-parameter-table.component.css',
-  // changeDetection: ChangeDetectionStrategy.OnPush, // FIXME
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AlarmLevelComponent,
     WebappSdkModule,

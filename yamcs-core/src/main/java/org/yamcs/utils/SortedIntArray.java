@@ -279,6 +279,19 @@ public class SortedIntArray implements Serializable {
         }
     }
 
+    /**
+     * Add x to the elements of the array whose value is greater or equal than v
+     */
+    public void addIfGreaterOrEqualThan(int v, int x) {
+        for (int i = length - 1; i >= 0; i--) {
+            if (a[i] >= v) {
+                a[i] += x;
+            } else {
+                break;
+            }
+        }
+    }
+
     @Override
     public String toString() {
         if (length == 0) {

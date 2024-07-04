@@ -1,10 +1,6 @@
-<ya-led *ngIf="!status.errorMessage"
-        [color]="onColor"
-        [fade]="false"
-        [width]="size"
-        [height]="size" />
-<ya-led *ngIf="status.errorMessage"
-        color="red"
-        [fade]="false"
-        [width]="size"
-        [height]="size" />
+@if (!status.errorMessage) {
+  <ya-led [color]="onColor" [fade]="false" [width]="size" [height]="size" />
+}
+@if (status.errorMessage) {
+  <ya-led color="red" [fade]="false" [width]="size" [height]="size" />
+}

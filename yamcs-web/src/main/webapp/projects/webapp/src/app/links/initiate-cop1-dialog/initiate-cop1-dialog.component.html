@@ -1,58 +1,62 @@
 <h2 mat-dialog-title>Initiate COP-1 AD Service</h2>
 
-<mat-dialog-content class="mat-typography">
+<mat-dialog-content>
   <form [formGroup]="form" class="ya-form">
     <label>
-      <input type="radio" formControlName="type" value="WITHOUT_CLCW_CHECK">
+      <input type="radio" formControlName="type" value="WITHOUT_CLCW_CHECK" />
       <span style="font-weight: normal">Without CLCW check</span>
     </label>
     <label>
-      <input type="radio" formControlName="type" value="WITH_CLCW_CHECK">
+      <input type="radio" formControlName="type" value="WITH_CLCW_CHECK" />
       <span style="font-weight: normal">With CLCW check</span>
     </label>
     <label>
-      <input type="radio" formControlName="type" value="UNLOCK">
+      <input type="radio" formControlName="type" value="UNLOCK" />
       <span style="font-weight: normal">With Unlock</span>
     </label>
     <label>
-      <input type="radio" formControlName="type" value="SET_VR">
+      <input type="radio" formControlName="type" value="SET_VR" />
       <span style="font-weight: normal">With Set V(R)</span>
     </label>
 
-    <ng-container *ngIf="form.controls.type.value == 'WITH_CLCW_CHECK' || form.controls.type.value == 'SET_VR'">
+    @if (form.controls.type.value == "WITH_CLCW_CHECK" || form.controls.type.value == "SET_VR") {
       <mat-divider style="margin-top: 1em; margin-bottom: 1em" />
-
-      <label *ngIf="form.controls.type.value == 'WITH_CLCW_CHECK'">
-        CLCW check timeout (milliseconds)
-        <ya-help dialogTitle="CLCW Check Timeout">
-          <p>
-            Timeout associated to acknowledgment CLCWs. If a command frame is not acknowledged
-            within this time, it will be retransmitted.
-          </p>
-          <p>
-            Other names: <code>T1_Initial</code> &nbsp;&bull;&nbsp; <code>Timer_Initial_Value</code>.
-          </p>
-        </ya-help>
-        <input type="text" formControlName="clcwCheckTimeout">
-      </label>
-
-      <label *ngIf="form.controls.type.value == 'SET_VR'">
-        V(R)
-        <ya-help dialogTitle="V(R)">
-          <p>
-            The N(S) frame sequence number expected to be seen by FARM-1 in the next Type-AD transfer frame.
-          </p>
-          <p>
-            Other name: <code>Receiver_Frame_Sequence_Number</code>.
-          </p>
-        </ya-help>
-        <input type="text" formControlName="vr">
-      </label>
-    </ng-container>
+      @if (form.controls.type.value == "WITH_CLCW_CHECK") {
+        <label>
+          CLCW check timeout (milliseconds)
+          <ya-help dialogTitle="CLCW Check Timeout">
+            <p>
+              Timeout associated to acknowledgment CLCWs. If a command frame is not acknowledged
+              within this time, it will be retransmitted.
+            </p>
+            <p>
+              Other names: <code>T1_Initial</code> &nbsp;&bull;&nbsp;
+              <code>Timer_Initial_Value</code>.
+            </p>
+          </ya-help>
+          <input type="text" formControlName="clcwCheckTimeout" />
+        </label>
+      }
+      @if (form.controls.type.value == "SET_VR") {
+        <label>
+          V(R)
+          <ya-help dialogTitle="V(R)">
+            <p>
+              The N(S) frame sequence number expected to be seen by FARM-1 in the next Type-AD
+              transfer frame.
+            </p>
+            <p>Other name: <code>Receiver_Frame_Sequence_Number</code>.</p>
+          </ya-help>
+          <input type="text" formControlName="vr" />
+        </label>
+      }
+    }
   </form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
   <button class="ya-button" mat-dialog-close>CANCEL</button>
-  <button class="ya-button primary" (click)="sendRequest()" [disabled]="!form.valid">INITIATE</button>
+  <button class="ya-button primary" (click)="sendRequest()" [disabled]="!form.valid">
+    INITIATE
+  </button>
 </mat-dialog-actions>

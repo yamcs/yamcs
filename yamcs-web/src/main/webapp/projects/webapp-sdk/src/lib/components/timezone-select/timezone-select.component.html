@@ -1,15 +1,15 @@
 <div style="display: inline-block">
   <ya-select [options]="areaOptions" [formControl]="areaControl" />
 </div>
-<ng-container *ngIf="(locationOptions$ | async)!.length">
+@if ((locationOptions$ | async)!.length) {
   &nbsp;
   <div style="display: inline-block">
     <ya-select [options]="locationOptions$ | async" [formControl]="locationControl" />
   </div>
-</ng-container>
-<ng-container *ngIf="(sublocationOptions$ | async)!.length">
+}
+@if ((sublocationOptions$ | async)!.length) {
   &nbsp;
   <div style="display: inline-block">
     <ya-select [options]="sublocationOptions$ | async" [formControl]="sublocationControl" />
   </div>
-</ng-container>
+}

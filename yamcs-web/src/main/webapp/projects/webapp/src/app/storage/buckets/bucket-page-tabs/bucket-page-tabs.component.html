@@ -1,16 +1,18 @@
 <nav mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
-  <a mat-tab-link
-     [routerLink]="['/storage/buckets', bucket, 'objects']"
-     routerLinkActive
-     #rla="routerLinkActive"
-     [active]="rla.isActive">
+  <a
+    mat-tab-link
+    [routerLink]="['/storage/buckets', bucket, 'objects']"
+    routerLinkActive
+    #rla="routerLinkActive"
+    [active]="rla.isActive">
     Objects
   </a>
-  <a mat-tab-link
-     [routerLink]="['/storage/buckets', bucket, 'properties']"
-     routerLinkActive
-     #rlb="routerLinkActive"
-     [active]="rlb.isActive">
+  <a
+    mat-tab-link
+    [routerLink]="['/storage/buckets', bucket, 'properties']"
+    routerLinkActive
+    #rlb="routerLinkActive"
+    [active]="rlb.isActive">
     Properties
   </a>
 </nav>

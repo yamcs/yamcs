@@ -1,1 +1,22 @@
-<app-shell (command)="handleCommand($event)" />
+<ya-empty-message headerTitle="Notice">
+  <p>The DB shell functionality has been removed from the Yamcs Web UI.</p>
+  <p>
+    Use
+    <strong>yamcs-cli</strong>
+    instead:
+  </p>
+  <p style="background-color: black; color: white; padding: 12px">
+    <code>
+      pip install --upgrade yamcs-cli
+      <br />
+      yamcs login http://localhost:8090
+      <br />
+      yamcs dbshell
+    </code>
+  </p>
+  <p>
+    <a class="ya-link" href="https://github.com/yamcs/yamcs-cli">
+      https://docs.yamcs.org/yamcs-cli/
+    </a>
+  </p>
+</ya-empty-message>

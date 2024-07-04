@@ -1,6 +1,7 @@
 <div class="panel-content">
-  <app-file-transfer-table [serviceName]="serviceName$ | async"
-                           [dataSource]="dataSource"
-                           [showActions]="true"
-                           [extraColumns]="hasTransferType ? ['transferType'] : []" />
+  <app-file-transfer-table
+    [serviceName]="serviceName$ | async"
+    [dataSource]="dataSource"
+    [showActions]="true"
+    [extraColumns]="hasTransferType ? ['transferType'] : []" />
 </div>

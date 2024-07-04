@@ -12,22 +12,26 @@
 <div #logContainer class="log-container">
   <div #top class="top"></div>
   <table class="logs mono" style="width: 100%">
-    <tr *ngFor="let log of logs$ | async; index as index"
+    @for (log of logs$ | async; track log; let index = $index) {
+      <tr
         [class.activity]="log.source === 'ACTIVITY'"
         [class.service]="log.source === 'SERVICE'"
         [class.WARNING]="log.level === 'WARNING'"
         [class.ERROR]="log.level === 'ERROR'">
-      <td style="text-align: right" width="1">{{ index + 1 }}</td>
-      <td class="time" style="white-space: nowrap" width="1">
-        [{{ log.time | datetime:false }}]
-      </td>
-      <td class="message">{{ log.message }}</td>
-    </tr>
-    <ng-container *ngIf="activity$ | async as activity">
-      <tr *ngIf="!activity.stop">
-        <td colspan="3"><ya-dots /></td>
+        <td style="text-align: right" width="1">{{ index + 1 }}</td>
+        <td class="time" style="white-space: nowrap" width="1">
+          [{{ log.time | datetime: false }}]
+        </td>
+        <td class="message">{{ log.message }}</td>
       </tr>
-    </ng-container>
+    }
+    @if (activity$ | async; as activity) {
+      @if (!activity.stop) {
+        <tr>
+          <td colspan="3"><ya-dots /></td>
+        </tr>
+      }
+    }
   </table>
   <div #bottom class="bottom"></div>
 </div>

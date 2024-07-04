@@ -34,7 +34,7 @@ class AuthGuard {
       return true;
     } catch (err: any) {
       if (err.name === 'NetworkError' || err.name === 'TypeError') { // TypeError is how Fetch API reports network or CORS failure
-        this.router.navigate(['/down'], { queryParams: { next: state.url } });
+        this.router.navigate(['/down'], { skipLocationChange: true });
         return false;
       } else {
         if (this.configService.getConfig().logoutRedirectUrl) {

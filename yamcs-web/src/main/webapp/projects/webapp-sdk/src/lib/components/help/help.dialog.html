@@ -1,12 +1,12 @@
 <h2 mat-dialog-title>
-  <mat-icon style="vertical-align: middle;">{{ data.icon || 'help' }}</mat-icon>
-  <span style="vertical-align: middle;"> {{ data.title }}</span>
+  <mat-icon style="vertical-align: middle">{{ data.icon || "help" }}</mat-icon>
+  <span style="vertical-align: middle"> {{ data.title }}</span>
 </h2>
 
-<mat-dialog-content class="mat-typography" style="text-align: justify">
+<mat-dialog-content style="text-align: justify">
   <span class="help-dialog-content" [innerHTML]="data.content"></span>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button class="ya-button primary" mat-dialog-close>{{ data.closeText || 'Close' }}</button>
+  <button class="ya-button primary" mat-dialog-close>{{ data.closeText || "Close" }}</button>
 </mat-dialog-actions>

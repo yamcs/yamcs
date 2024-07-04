@@ -112,7 +112,7 @@ In this case the raw value will be of type string and the engineering value of t
 Float data type
 ----------------
 
-Floating point data in Yamcs can be simple precision (32  bit) or double precision (64 bit).
+Floating point data in Yamcs can be simple precision (32 bit) or double precision (64 bit).
 
 It can be encoded/decoded either to a IEEE754 representation or to an integer representation using a calibration function. Typically a sensor will produce a digital value (e.g. 12 bits integer) which has to be converted to an analog value using a calibration (or transfer) function. 
 
@@ -348,12 +348,12 @@ The example above needs another parameter for the data size. When used in comman
 
 .. code-block:: xml
 
-    <xtce:BinaryArgumentType name="barray">
-        <xtce:AncillaryDataSet>
-            <xtce:AncillaryData name="Yamcs">minLength=2</xtce:AncillaryData>
-            <xtce:AncillaryData name="Yamcs">maxLength=10</xtce:AncillaryData>
-        </xtce:AncillaryDataSet>
-        <xtce:BinaryDataEncoding>       
+    <BinaryArgumentType name="barray">
+        <AncillaryDataSet>
+            <AncillaryData name="Yamcs">minLength=2</AncillaryData>
+            <AncillaryData name="Yamcs">maxLength=10</AncillaryData>
+        </AncillaryDataSet>
+        <BinaryDataEncoding>       
             <SizeInBits> 
                  <DynamicValue>
                     <ParameterInstanceRef parameterRef="_yamcs_ignore" />
@@ -390,14 +390,14 @@ This transformation could be used for a system whose internal clock counts in se
 
 .. code-block:: xml
 
-    <xtce:AbsoluteTimeParameterType name="absolute_time_param_type_example">
-        <xtce:Encoding offset="946677600" scale="1">
-            <xtce:IntegerDataEncoding sizeInBits="32" />
-        </xtce:Encoding>
-        <xtce:ReferenceTime>
-            <xtce:Epoch>UNIX</xtce:Epoch>
-        </xtce:ReferenceTime>
-    </xtce:AbsoluteTimeParameterType>
+    <AbsoluteTimeParameterType name="absolute_time_param_type_example">
+        <Encoding offset="946677600" scale="1">
+            <IntegerDataEncoding sizeInBits="32" />
+        </Encoding>
+        <ReferenceTime>
+            <Epoch>UNIX</Epoch>
+        </ReferenceTime>
+    </AbsoluteTimeParameterType>
 
 
 Enumerated data type
@@ -409,15 +409,15 @@ The EnumeratedParameterType supports the description of enumerations, which are 
 
 .. code-block:: xml
 
-    <xtce:EnumeratedParameterType name="enumerated_parameter_type_example">
-        <xtce:IntegerDataEncoding sizeInBits="16"/>
-            <xtce:EnumerationList>
-                <xtce:Enumeration value="0" label="label_1" />
-                <xtce:Enumeration value="2" label="label_2" />
-                <xtce:Enumeration value="4" label="label_3" />
-                <xtce:Enumeration value="6" label="label_4" />
-            </xtce:EnumerationList>
-    </xtce:EnumeratedParameterType>
+    <EnumeratedParameterType name="enumerated_parameter_type_example">
+        <IntegerDataEncoding sizeInBits="16"/>
+            <EnumerationList>
+                <Enumeration value="0" label="label_1" />
+                <Enumeration value="2" label="label_2" />
+                <Enumeration value="4" label="label_3" />
+                <Enumeration value="6" label="label_4" />
+            </EnumerationList>
+    </EnumeratedParameterType>
 
 
 Aggregate data type
@@ -428,17 +428,17 @@ in other languages. The ArrayParameterType is defined as shown in the example be
 
 .. rubric:: Example 1: simple aggregate parameter declaration
 
-``<xtce:Member>`` is used to define members of the aggregate. Each member has a ``name``, a ``typeRef`` for its type and an optional ``initialValue`` for a possible predefined value.
+``<Member>`` is used to define members of the aggregate. Each member has a ``name``, a ``typeRef`` for its type and an optional ``initialValue`` for a possible predefined value.
 
 .. code-block:: xml
 
-    <xtce:AggregateParameterType name="aggregate_parameter_type_example"  shortDescription="Aggregate Parameter Type Example">
-        <xtce:MemberList>
-            <xtce:Member name="member_1" typeRef="bool_t"/>
-            <xtce:Member name="member_1" typeRef="uint16_t" initialValue="5"/>
-            <xtce:Member name="member_1" typeRef="float_t"/>
-        </xtce:MemberList>
-    </xtce:AggregateParameterType>
+    <AggregateParameterType name="aggregate_parameter_type_example"  shortDescription="Aggregate Parameter Type Example">
+        <MemberList>
+            <Member name="member_1" typeRef="bool_t"/>
+            <Member name="member_1" typeRef="uint16_t" initialValue="5"/>
+            <Member name="member_1" typeRef="float_t"/>
+        </MemberList>
+    </AggregateParameterType>
 
 
 Array data type
@@ -457,37 +457,37 @@ The ArrayParameterType is defined as shown in the example below:
 
 .. code-block:: xml
 
-    <xtce:ArrayParameterType name="array_parameter_type_example" arrayTypeRef="other_parameter_type">
-        <xtce:DimensionList>
-            <xtce:Dimension>
-                <xtce:StartingIndex>
-                    <xtce:FixedValue>0</xtce:FixedValue>
-                </xtce:StartingIndex>
-                <xtce:EndingIndex>
-                    <xtce:FixedValue>5</xtce:FixedValue>
-                </xtce:EndingIndex>
-            </xtce:Dimension>
-        </xtce:DimensionList>
-    </xtce:ArrayParameterType>
+    <ArrayParameterType name="array_parameter_type_example" arrayTypeRef="other_parameter_type">
+        <DimensionList>
+            <Dimension>
+                <StartingIndex>
+                    <FixedValue>0</FixedValue>
+                </StartingIndex>
+                <EndingIndex>
+                    <FixedValue>5</FixedValue>
+                </EndingIndex>
+            </Dimension>
+        </DimensionList>
+    </ArrayParameterType>
 
 .. rubric:: Example 2: simple array parameter declaration with dynamic size
 
-In this exmaple, the size of the array is equal to the integer parameter ``number_of_parameters``. The ``<LinearAdjustment>`` element is used because the final array size will be equal to ``<EndingIOndex> - <StartindIndex> + 1``   
+In this example, the size of the array is equal to the integer parameter ``number_of_parameters``. The ``<LinearAdjustment>`` element is used because the final array size will be equal to ``<EndingIndex> - <StartingIndex> + 1``   
 
 .. code-block:: xml
 
-    <xtce:ArrayParameterType name="array_parameter_type_example" arrayTypeRef="other_parameter_type">
-        <xtce:DimensionList>
-            <xtce:Dimension>
-                <xtce:StartingIndex>
-                    <xtce:FixedValue>0</xtce:FixedValue>
-                </xtce:StartingIndex>
-                    <EndingIndex>
-                        <DynamicValue>
-                            <ArgumentInstanceRef argumentRef="number_of_parameters" />
-                            <LinearAdjustment intercept="-1" />
-                        </DynamicValue>
-                    </EndingIndex>
-            </xtce:Dimension>
-        </xtce:DimensionList>
-    </xtce:ArrayParameterType>
+    <ArrayParameterType name="array_parameter_type_example" arrayTypeRef="other_parameter_type">
+        <DimensionList>
+            <Dimension>
+                <StartingIndex>
+                    <FixedValue>0</FixedValue>
+                </StartingIndex>
+                <EndingIndex>
+                    <DynamicValue>
+                        <ParameterInstanceRef parameterRef="number_of_parameters" />
+                        <LinearAdjustment intercept="-1" />
+                    </DynamicValue>
+                </EndingIndex>
+            </Dimension>
+        </DimensionList>
+    </ArrayParameterType>

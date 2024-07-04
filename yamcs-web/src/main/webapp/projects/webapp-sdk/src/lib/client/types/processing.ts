@@ -103,9 +103,11 @@ export interface Processor {
   checkCommandClearance: boolean;
   state: ServiceState;
   persistent: boolean;
+  protected: boolean;
   time: string;
   replay: boolean;
   replayRequest?: ReplayRequest;
+  replayState?: string;
   services: Service[];
   acknowledgments: AcknowledgmentInfo[];
 }

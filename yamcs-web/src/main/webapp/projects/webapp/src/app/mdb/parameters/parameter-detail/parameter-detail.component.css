@@ -1,3 +1,7 @@
+:host {
+  font: 400 12px / 20px Roboto, sans-serif;
+}
+
 .dl-horizontal dt {
   text-align: left;
 }

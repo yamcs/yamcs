@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { Value } from '../client';
-import * as utils from '../utils';
+import { FormatValueOptions, Formatter } from '../services/formatter.service';
 
 @Pipe({
   standalone: true,
@@ -8,10 +8,13 @@ import * as utils from '../utils';
 })
 export class ValuePipe implements PipeTransform {
 
-  transform(value: Value | null | undefined, options?: utils.PrintValueOptions): string | null {
+  constructor(private formatter: Formatter) {
+  }
+
+  transform(value: Value | null | undefined, options?: FormatValueOptions): string | null {
     if (!value) {
       return null;
     }
-    return utils.printValue(value, options);
+    return this.formatter.formatValue(value, options);
   }
 }

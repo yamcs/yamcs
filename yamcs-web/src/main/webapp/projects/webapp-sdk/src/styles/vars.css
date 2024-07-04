@@ -16,6 +16,7 @@ html {
   --y-vertical-scrollbar-border: 4px;
 
   --y-background-color: #f7f7f7;
+  --y-app-bar-background-color: #212121;
 }
 
 html.dark {

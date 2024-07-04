@@ -1,20 +1,20 @@
 <h2 mat-dialog-title>Start replay processor</h2>
 
-<mat-dialog-content class="mat-typography">
+<mat-dialog-content>
   <form [formGroup]="form" class="ya-form">
     <label>
-      Start time<br>
+      Start time<br />
       <ya-date-time-input formControlName="start" />
     </label>
-    <br>
+    <br />
     <label>
       Stop time <span class="hint">(optional)</span>
       <ya-date-time-input formControlName="stop" />
     </label>
-    <br>
+    <br />
     <label>
       Processor name
-      <input type="text" formControlName="name">
+      <input type="text" formControlName="name" />
       <span class="hint">Must be unique. Other users can join your replay via this name</span>
     </label>
   </form>
