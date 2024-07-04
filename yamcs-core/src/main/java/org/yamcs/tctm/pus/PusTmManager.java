@@ -1,5 +1,6 @@
 package org.yamcs.tctm.pus;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,17 +15,21 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.tm.eleven.ServiceEleven;
 import org.yamcs.tctm.pus.services.tm.fifteen.ServiceFifteen;
 import org.yamcs.tctm.pus.services.tm.fourteen.ServiceFourteen;
 import org.yamcs.tctm.pus.services.tm.six.ServiceSix;
+import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.YarchException;
 import org.yamcs.time.Instant;
+import org.yamcs.time.TimeService;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSink;
 import org.yamcs.tctm.pus.services.tm.twenty.ServiceTwenty;
@@ -52,11 +57,15 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
     public static int absoluteTimeLength;
     public static int destinationId;
 
+    public static TimeService timeService;
+
     Map<Integer, PusService> pusServices = new HashMap<>();
     YConfiguration serviceConfig;
     PusSink tmSink;
     HashMap<Stream, Stream> streamMatrix = new HashMap<>();
     YarchDatabaseInstance ydb;
+
+    public static Bucket reports;
 
     @Override
     public Spec getSpec() {
@@ -66,14 +75,33 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
         streamMatrixSpec.addOption("inStream", OptionType.STRING);
         streamMatrixSpec.addOption("outStream", OptionType.STRING);
 
+        Spec bucketSpec = new Spec();
+        bucketSpec.addOption("name", OptionType.STRING);
+        bucketSpec.addOption("global", OptionType.BOOLEAN);
+
         spec.addOption("streamMatrix", OptionType.LIST).withElementType(OptionType.MAP).withSpec(streamMatrixSpec);
         spec.addOption("secondaryHeaderLength", OptionType.INTEGER);
         spec.addOption("absoluteTimeLength", OptionType.INTEGER);
         spec.addOption("destinationId", OptionType.INTEGER);
         spec.addOption("services", OptionType.MAP).withSpec(Spec.ANY);
+        spec.addOption("bucket", OptionType.MAP).withSpec(bucketSpec);
         // FIXME:
         // Add pus spec options
         return spec;
+    }
+
+    public Bucket getOrCreateBucket(String bucketName, boolean global) throws InitException {
+        YarchDatabaseInstance ydb = global ? YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE)
+                : YarchDatabase.getInstance(yamcsInstance);
+        try {
+            Bucket bucket = ydb.getBucket(bucketName);
+            if (bucket == null) {
+                bucket = ydb.createBucket(bucketName);
+            }
+            return bucket;
+        } catch (IOException e) {
+            throw new InitException(e);
+        }
     }
 
     @Override
@@ -88,6 +116,7 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
         PUS_HEADER_LENGTH = 7 + absoluteTimeLength;
 
         ydb = YarchDatabase.getInstance(yamcsInstance);
+        timeService = YamcsServer.getTimeService(yamcsInstance);
 
         if (!config.containsKey("streamMatrix"))
             throw new ConfigurationException(this.getClass() + ": streamMatrix needs to be defined to know the inputStream -> outStream mapping");
@@ -101,6 +130,22 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
                 Objects.requireNonNull(ydb.getStream(outStream))
             );
         }
+
+        if (!config.containsKey("bucket")) {
+            throw new ConfigurationException(this.getClass() + ": `bucket` config needs to be set");
+        }
+
+        YConfiguration bConfig = config.getConfigOrEmpty("bucket");
+        String bucketName = bConfig.getString("name");
+        boolean global = bConfig.getBoolean("global");
+        try {
+            reports = getOrCreateBucket(bucketName, global);
+
+        } catch (InitException e) {
+            log.error("Unable to create a `" + bucketName + " bucket` for " + this.getClass(), e);
+            throw new YarchException("Failed to create RDB based bucket: " + bucketName + " for " + this.getClass(), e);
+        }
+
         tmSink = new PusSink() {
             @Override
             public void emitTmTuple(TmPacket tmPacket, Stream stream, String tmLinkName) {

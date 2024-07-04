@@ -1,22 +1,21 @@
 package org.yamcs.tctm.pus.services.tm.fifteen;
 
-import org.yamcs.InitException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsServer;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
+import org.yamcs.tctm.pus.PusTmManager;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
-import org.yamcs.time.TimeService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.YarchException;
-import org.yamcs.tctm.pus.services.tm.BucketSaveHandler;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -26,12 +25,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SubServiceThirteen extends BucketSaveHandler implements PusSubService {
+public class SubServiceThirteen implements PusSubService {
     String yamcsInstance;
     Log log;
 
     private int DEFAULT_TIMETAG_SIZE = 4;
-    private int DEFAULT_PERCENTAGE_SIZE = 2;
+    private int DEFAULT_PERCENTAGE_SIZE = 1;
     private int DEFAULT_REPORT_COUNT_SIZE = 1;
     private int DEFAULT_PACKET_STORE_ID_SIZE = 1;
 
@@ -43,7 +42,6 @@ public class SubServiceThirteen extends BucketSaveHandler implements PusSubServi
     protected int packetStoreIdSize;
 
     Bucket packetStoreSummaryReportBucket;
-    TimeService timeService;
 
     public SubServiceThirteen(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
@@ -56,14 +54,15 @@ public class SubServiceThirteen extends BucketSaveHandler implements PusSubServi
         fromOpenRetrievalPercentageFilledSize = config.getInt("fromOpenRetrievalPercentageFilledSize", DEFAULT_PERCENTAGE_SIZE);
         reportCountSize = config.getInt("reportCountSize", DEFAULT_REPORT_COUNT_SIZE);
 
-        try {
-            packetStoreSummaryReportBucket = getBucket("packetStoreSummaryReportBucket", yamcsInstance);
-        } catch (InitException e) {
-            log.error("Unable to create a `packetStoreSummaryReportBucket bucket` for (Service - 15 | SubService - 13)", e);
-            throw new YarchException("Failed to create RDB based bucket: packetStoreSummaryReportBucket | (Service - 15 | SubService - 13)", e);
-        }
+        packetStoreSummaryReportBucket = PusTmManager.reports;
 
-        timeService = YamcsServer.getTimeService(yamcsInstance);
+        try {
+            packetStoreSummaryReportBucket.putObject("packetStoreSummaryReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
+
+        } catch (IOException e) {
+            log.error("Unable to create a directory `" + packetStoreSummaryReportBucket.getName() + "reports/packetStoreSummaryReport` for (Service - 15 | SubService - 13)", e);
+            throw new YarchException("Failed to create a directory `" + packetStoreSummaryReportBucket.getName() + "reports/packetStoreSummaryReport` for (Service - 15 | SubService - 13)", e);
+        }
     }
 
     @Override
@@ -72,18 +71,25 @@ public class SubServiceThirteen extends BucketSaveHandler implements PusSubServi
     }
 
     public void generatePacketStoredSummaryReport(Map<Integer, byte[]> packetStoreReportMap) {
-        long missionTime = timeService.getMissionTime();
-        String packetStoreSummaryReportName = "PacketStoreSummaryReport | " + LocalDateTime.ofInstant(
+        long missionTime = PusTmManager.timeService.getMissionTime();
+        String filename = "packetStoreSummaryReport/" + LocalDateTime.ofInstant(
             Instant.ofEpochMilli(missionTime),
             ZoneId.of("GMT")
-        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss' UTC'"));
-        
+        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+
+        // Populate metadata
+        HashMap<String, String> metadata = new HashMap<>();
+        metadata.put("CreationTime", LocalDateTime.ofInstant(
+            Instant.ofEpochMilli(missionTime),
+            ZoneId.of("GMT")
+        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")));
 
         try (StringWriter stringWriter = new StringWriter();
             BufferedWriter writer = new BufferedWriter(stringWriter)) {
 
             // Write header
-            writer.write("PacketStoreID, OldestStoredPacketTime, NewestStoredPacketTime, CurrentOpenRetrievalStartTimetag, PercentageFilled, FromOpenRetrievalStartTimetagPercentageFilled\n");
+            writer.write("PacketStoreID,OldestStoredPacketTime,NewestStoredPacketTime,CurrentOpenRetrievalStartTimetag,PercentageFilled,FromOpenRetrievalStartTimetagPercentageFilled");
+            writer.newLine();
 
             for (Map.Entry<Integer, byte[]> packetStoreReport: packetStoreReportMap.entrySet()) {
                 byte[] report = packetStoreReport.getValue();
@@ -92,26 +98,28 @@ public class SubServiceThirteen extends BucketSaveHandler implements PusSubServi
                 String oldestStoredTime = LocalDateTime.ofInstant(
                     Instant.ofEpochSecond(ByteArrayUtils.decodeCustomInteger(report, 0, storedTimeSize)),
                     ZoneId.of("GMT")
-                ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss' UTC'"));
+                ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
                 String newestStoredTime = LocalDateTime.ofInstant(
                     Instant.ofEpochSecond(ByteArrayUtils.decodeCustomInteger(report, storedTimeSize, storedTimeSize)),
                     ZoneId.of("GMT")
-                ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss' UTC'"));
+                ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
                 String currentTimetag = LocalDateTime.ofInstant(
                     Instant.ofEpochSecond(ByteArrayUtils.decodeCustomInteger(report, storedTimeSize * 2, openRetrievalStartTimetagSize)),
                     ZoneId.of("GMT")
-                ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss' UTC'"));
+                ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
                 int percentageFilled = (int) ByteArrayUtils.decodeCustomInteger(report, storedTimeSize * 2 + openRetrievalStartTimetagSize, percentageFilledSize);
                 int fromPercentageFilled = (int) ByteArrayUtils.decodeCustomInteger(report, storedTimeSize * 2 + openRetrievalStartTimetagSize + percentageFilledSize, fromOpenRetrievalPercentageFilledSize);
 
-                writer.write(packetStoreId + ", " + oldestStoredTime + ", " + newestStoredTime + ", " + currentTimetag + ", " + percentageFilled + ", " + fromPercentageFilled + "\n");
+                writer.write(packetStoreId + "," + oldestStoredTime + "," + newestStoredTime + "," + currentTimetag + "," + percentageFilled + "," + fromPercentageFilled);
+                writer.newLine();
             }
+            writer.flush();
 
             // Put report in the bucket
-            packetStoreSummaryReportBucket.putObject(packetStoreSummaryReportName, "csv", new HashMap<>(), stringWriter.toString().getBytes());
+            packetStoreSummaryReportBucket.putObject(filename, "csv", metadata, stringWriter.getBuffer().toString().getBytes(StandardCharsets.UTF_8));
 
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new UncheckedIOException("S(15, 13) | Cannot save packet store summary report in bucket: " + filename + (packetStoreSummaryReportBucket != null ? " -> " + packetStoreSummaryReportBucket.getName() : ""), e);
         }
     }
 

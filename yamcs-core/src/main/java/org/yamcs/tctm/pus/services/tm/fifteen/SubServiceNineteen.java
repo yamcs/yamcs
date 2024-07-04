@@ -1,15 +1,12 @@
 package org.yamcs.tctm.pus.services.tm.fifteen;
 
-import org.yamcs.InitException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsServer;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
+import org.yamcs.tctm.pus.PusTmManager;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tm.BucketSaveHandler;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
-import org.yamcs.time.TimeService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.YarchException;
@@ -17,6 +14,8 @@ import org.yamcs.yarch.YarchException;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -26,7 +25,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SubServiceNineteen extends BucketSaveHandler implements PusSubService {
+public class SubServiceNineteen implements PusSubService {
     enum PacketStoreStatus {
         ENABLED(1), DISABLED(0);
 
@@ -63,7 +62,6 @@ public class SubServiceNineteen extends BucketSaveHandler implements PusSubServi
     protected int statusSize;
 
     Bucket packetStoreStatusReportBucket;
-    TimeService timeService;
 
     public SubServiceNineteen(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
@@ -72,15 +70,15 @@ public class SubServiceNineteen extends BucketSaveHandler implements PusSubServi
         packetStoreIdSize = config.getInt("packetStoreIdSize", DEFAULT_PACKET_STORE_ID_SIZE);
         reportCountSize = config.getInt("reportCountSize", DEFAULT_REPORT_COUNT_SIZE);
         statusSize = config.getInt("statusSize", DEFAULT_STATUS_SIZE);
+        packetStoreStatusReportBucket = PusTmManager.reports;
 
         try {
-            packetStoreStatusReportBucket = getBucket("packetStoreStatusReportBucket", yamcsInstance);
-        } catch (InitException e) {
-            log.error("Unable to create a `packetStoreStatusReportBucket bucket` for (Service - 15 | SubService - 19)", e);
-            throw new YarchException("Failed to create RDB based bucket: packetStoreStatusReportBucket | (Service - 15 | SubService - 19)", e);
-        }
+            packetStoreStatusReportBucket.putObject("packetStoreStatusReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
 
-        timeService = YamcsServer.getTimeService(yamcsInstance);
+        } catch (IOException e) {
+            log.error("Unable to create a directory `" + packetStoreStatusReportBucket.getName() + "/packetStoreStatusReport` for (Service - 15 | SubService - 19)", e);
+            throw new YarchException("Failed to create a directory `" + packetStoreStatusReportBucket.getName() + "/packetStoreStatusReport` for (Service - 15 | SubService - 19)", e);
+        }
     }
 
     @Override
@@ -89,18 +87,25 @@ public class SubServiceNineteen extends BucketSaveHandler implements PusSubServi
     }
 
     public void generatePacketStoredStatusReport(Map<Integer, byte[]> packetStoreReportMap) {
-        long missionTime = timeService.getMissionTime();
-        String packetStoreStatusReportName = "PacketStoreStatusReport | " + LocalDateTime.ofInstant(
+        long missionTime = PusTmManager.timeService.getMissionTime();
+        String filename = "packetStoreStatusReport/" + LocalDateTime.ofInstant(
             Instant.ofEpochMilli(missionTime),
             ZoneId.of("GMT")
-        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss' UTC'"));
-        
+        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+
+        // Populate metadata
+        HashMap<String, String> metadata = new HashMap<>();
+        metadata.put("CreationTime", LocalDateTime.ofInstant(
+            Instant.ofEpochMilli(missionTime),
+            ZoneId.of("GMT")
+        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")));
 
         try (StringWriter stringWriter = new StringWriter();
             BufferedWriter writer = new BufferedWriter(stringWriter)) {
 
             // Write header
-            writer.write("PacketStoreID, PacketStoreStatus, PacketStoreOpenRetrievalStatus\n");
+            writer.write("PacketStoreID, PacketStoreStatus, PacketStoreOpenRetrievalStatus");
+            writer.newLine();
 
             for (Map.Entry<Integer, byte[]> packetStoreReport: packetStoreReportMap.entrySet()) {
                 byte[] report = packetStoreReport.getValue();
@@ -109,14 +114,16 @@ public class SubServiceNineteen extends BucketSaveHandler implements PusSubServi
                 PacketStoreStatus packetStoreStatus = PacketStoreStatus.fromValue((int) ByteArrayUtils.decodeCustomInteger(report, 0, statusSize));
                 PacketStoreStatus packetStoreOpenRetrievalStatus = PacketStoreStatus.fromValue((int) ByteArrayUtils.decodeCustomInteger(report, statusSize, statusSize));
 
-                writer.write(packetStoreId + ", " + packetStoreStatus + ", " + packetStoreOpenRetrievalStatus + "\n");
+                writer.write(packetStoreId + "," + packetStoreStatus + "," + packetStoreOpenRetrievalStatus);
+                writer.newLine();
             }
+            writer.flush();
 
             // Put report in the bucket
-            packetStoreStatusReportBucket.putObject(packetStoreStatusReportName, "csv", new HashMap<>(), stringWriter.toString().getBytes());
+            packetStoreStatusReportBucket.putObject(filename, "csv", metadata, stringWriter.getBuffer().toString().getBytes(StandardCharsets.UTF_8));
 
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new UncheckedIOException("S(15, 19) | Cannot save packet store status report in bucket: " + filename + (packetStoreStatusReportBucket != null ? " -> " + packetStoreStatusReportBucket.getName() : ""), e);
         }
     }
 

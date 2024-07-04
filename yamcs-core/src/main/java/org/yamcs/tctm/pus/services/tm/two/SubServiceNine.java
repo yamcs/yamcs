@@ -2,17 +2,21 @@ package org.yamcs.tctm.pus.services.tm.two;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import org.yamcs.InitException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
-import org.yamcs.tctm.pus.services.tm.BucketSaveHandler;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
+import org.yamcs.tctm.pus.PusTmManager;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.yarch.Bucket;
@@ -23,7 +27,7 @@ import com.google.gson.GsonBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class SubServiceNine extends BucketSaveHandler implements PusSubService {
+public class SubServiceNine implements PusSubService {
     String yamcsInstance;
     Log log;
 
@@ -56,11 +60,14 @@ public class SubServiceNine extends BucketSaveHandler implements PusSubService {
         pactIDSize = subServiceSixConfig.getInt("pactIDSize", DEFAULT_PACT_ID_SIZE);
         dataAcquiredSize = subServiceSixConfig.getInt("dataAcquiredSize", DEFAULT_DATA_ACQUIRED_SIZE);
 
+        physicalDeviceReportBucket = PusTmManager.reports;
+
         try {
-            physicalDeviceReportBucket = getBucket("physicalDeviceReport", yamcsInstance);
-        } catch (InitException e) {
-            log.error("Unable to create a `physicalDeviceReport bucket` for (Service - 2 | SubService - 9)", e);
-            throw new YarchException("Failed to create RDB based bucket: physicalDeviceReport", e);
+            physicalDeviceReportBucket.putObject("physicalDeviceReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
+
+        } catch (IOException e) {
+            log.error("Unable to create a directory `" + physicalDeviceReportBucket.getName() + "/physicalDeviceReport` for (Service - 2 | SubService - 9)", e);
+            throw new YarchException("Failed to create a directory `" + physicalDeviceReportBucket.getName() + "/physicalDeviceReport` for (Service - 2 | SubService - 9)", e);
         }
 
         // Create Gson instance
@@ -80,18 +87,28 @@ public class SubServiceNine extends BucketSaveHandler implements PusSubService {
         int pactID = ByteArrayUtils.decodeUnsignedShort(auxillaryData, 0);
         int physicalDeviceID = ByteArrayUtils.decodeUnsignedShort(auxillaryData, pactIDSize);
         int protocolSpecificData = ByteArrayUtils.decodeUnsignedShort(auxillaryData, (pactIDSize + physicalDeviceIDSize));
+        long missionTime = PusTmManager.timeService.getMissionTime();
+        String filename = "physicalDeviceReport/" + LocalDateTime.ofInstant(
+            Instant.ofEpochMilli(missionTime),
+            ZoneId.of("GMT")
+        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+        
+        // Populate metadata
+        HashMap<String, String> metadata = new HashMap<>();
+        metadata.put("CreationTime", LocalDateTime.ofInstant(
+            Instant.ofEpochMilli(missionTime),
+            ZoneId.of("GMT")
+        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")));
+        
 
-        String physicalDeviceReportName = "";
-        HashMap<String, String> physicalDeviceReportMetadata = new HashMap<>();
-
-        // Save file to deviceRegisterDump bucket
+        // Save file to physicalDeviceReport bucket
         try {
             JSONArray physicalDeviceReportJSON = new JSONArray();
-            byte[] physicalDeviceReport = physicalDeviceReportBucket.getObject(physicalDeviceReportName);
+            byte[] physicalDeviceReport = physicalDeviceReportBucket.getObject(filename);
 
             if (physicalDeviceReport != null) {
                 physicalDeviceReportJSON = new JSONArray(new String(physicalDeviceReport));
-                physicalDeviceReportBucket.deleteObject(physicalDeviceReportName);
+                physicalDeviceReportBucket.deleteObject(filename);
             }
 
             JSONObject currentDeviceReport = new JSONObject();
@@ -103,10 +120,10 @@ public class SubServiceNine extends BucketSaveHandler implements PusSubService {
             currentDeviceReport.put("dataAcquired", dataAcquired);
 
             physicalDeviceReportJSON.put(currentDeviceReport);
-            physicalDeviceReportBucket.putObject(physicalDeviceReportName, "JSON", physicalDeviceReportMetadata, physicalDeviceReportJSON.toString().getBytes());
+            physicalDeviceReportBucket.putObject(filename, "json", metadata, physicalDeviceReportJSON.toString().getBytes(StandardCharsets.UTF_8));
 
         } catch(IOException e) {
-            throw new UncheckedIOException("Cannot save / update physical device ID dump report in bucket: " + physicalDeviceReportName + (physicalDeviceReportBucket != null ? " -> " + physicalDeviceReportBucket.getName() : ""), e);
+            throw new UncheckedIOException("S(2, 9)| Cannot save / update physical device ID dump report in bucket: " + filename + (physicalDeviceReportBucket != null ? " -> " + physicalDeviceReportBucket.getName() : ""), e);
         }
 
         ArrayList<TmPacket> pktList = new ArrayList<>();
@@ -117,7 +134,6 @@ public class SubServiceNine extends BucketSaveHandler implements PusSubService {
 
     @Override
     public PreparedCommand process(PreparedCommand pusTelecommand) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'process'");
     }    
 }

@@ -3,6 +3,8 @@ package org.yamcs.tctm.pus.services.tm.eleven;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -12,60 +14,62 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.yamcs.InitException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsServer;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.PusTcManager;
+import org.yamcs.tctm.pus.PusTmManager;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tm.BucketSaveHandler;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
-import org.yamcs.time.TimeService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.YarchException;
 
 
-public class SubServiceThirteen extends BucketSaveHandler implements PusSubService {
+public class SubServiceThirteen implements PusSubService {
     String yamcsInstance;
     Log log;
     private static int requestIdSize;
     
     Bucket timetagScheduleSummaryReportBucket;
-    TimeService timeService;
 
     public SubServiceThirteen(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
         log = new Log(getClass(), yamcsInstance);
 
         requestIdSize = ServiceEleven.sourceIdSize + ServiceEleven.apidSize + ServiceEleven.seqCountSize;
+        timetagScheduleSummaryReportBucket = PusTmManager.reports;
 
         try {
-            timetagScheduleSummaryReportBucket = getBucket("timetagScheduleSummaryReport", yamcsInstance);
-        } catch (InitException e) {
-            log.error("Unable to create a `timetagScheduleSummaryReport bucket` for (Service - 11 | SubService - 13)", e);
-            throw new YarchException("Failed to create RDB based bucket: timetagScheduleSummaryReport | (Service - 11 | SubService - 13)", e);
-        }
+            timetagScheduleSummaryReportBucket.putObject("timetagScheduleSummaryReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
 
-        timeService = YamcsServer.getTimeService(yamcsInstance);
+        } catch (IOException e) {
+            log.error("Unable to create a directory `" + timetagScheduleSummaryReportBucket.getName() + "reports/timetagScheduleSummaryReport` for (Service - 11 | SubService - 13)", e);
+            throw new YarchException("Failed to create a directory `" + timetagScheduleSummaryReportBucket.getName() + "reports/timetagScheduleSummaryReport` for (Service - 11 | SubService - 13)", e);
+        }
     }
 
     public void generateTimetagScheduleSummaryReport(Map<Long, ArrayList<Integer>> requestTcPacketsMap) {
-        // Apid, SeqCount, Timetag, Service, SubService, sourceId
-
-        long missionTime = timeService.getMissionTime();
-        String timetagSummaryReportName = "TimeTagSchedule_SummaryReport | " + LocalDateTime.ofInstant(
+        long missionTime = PusTmManager.timeService.getMissionTime();
+        String filename = "timetagScheduleSummaryReport/" + LocalDateTime.ofInstant(
                 Instant.ofEpochMilli(missionTime),
                 ZoneId.of("GMT")
-        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss' UTC'"));        HashMap<String, String> timetagSummaryReportMetadata = new HashMap<>();
-        
+        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+
+        // Populate metadata
+        HashMap<String, String> metadata = new HashMap<>();
+        metadata.put("CreationTime", LocalDateTime.ofInstant(
+            Instant.ofEpochMilli(missionTime),
+            ZoneId.of("GMT")
+        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")));
+
         try (StringWriter stringWriter = new StringWriter();
             BufferedWriter writer = new BufferedWriter(stringWriter)) {
             
             // Write header
-            writer.write("Release Timetag, Source ID, Command APID, Command Ccsds SeqCount, Pus Service, Pus SubService\n");
+            writer.write("ReleaseTimetag,SourceId,CommandApid,CommandCcsdsSeqCount,PusService,PusSubService");
+            writer.newLine();
 
             for(Map.Entry<Long, ArrayList<Integer>> requestTcMap: requestTcPacketsMap.entrySet()) {
                 ArrayList<Integer> requestId = requestTcMap.getValue();
@@ -73,20 +77,22 @@ public class SubServiceThirteen extends BucketSaveHandler implements PusSubServi
                 String timetagStr = LocalDateTime.ofInstant(
                     Instant.ofEpochSecond(requestTcMap.getKey()),
                     ZoneId.of("GMT")
-                ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss' UTC'"));
+                ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
 
                 int sourceId = requestId.get(0);
                 int commandApid = requestId.get(1);
                 int commandCcsdsSeqCount = requestId.get(2);
 
-                writer.write(timetagStr + "," + sourceId + "," + commandApid + "," + commandCcsdsSeqCount + "\n");
+                writer.write(timetagStr + "," + sourceId + "," + commandApid + "," + commandCcsdsSeqCount);
+                writer.newLine();
             }
+            writer.flush();
 
             // Put report in the bucket
-            timetagScheduleSummaryReportBucket.putObject(timetagSummaryReportName, "CSV", timetagSummaryReportMetadata, stringWriter.toString().getBytes());
+            timetagScheduleSummaryReportBucket.putObject(filename, "csv", metadata, stringWriter.getBuffer().toString().getBytes(StandardCharsets.UTF_8));
 
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new UncheckedIOException("S(11, 13) | Cannot save timetag summary report in bucket: " + filename + (timetagScheduleSummaryReportBucket != null ? " -> " + timetagScheduleSummaryReportBucket.getName() : ""), e);
         }
     }
 

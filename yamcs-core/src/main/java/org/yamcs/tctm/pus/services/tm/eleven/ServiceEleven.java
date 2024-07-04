@@ -6,13 +6,12 @@ import java.util.Map;
 
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsServer;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
-import org.yamcs.time.TimeService;
+
 
 public class ServiceEleven implements PusService {
     Log log;
@@ -31,8 +30,6 @@ public class ServiceEleven implements PusService {
     protected static int seqCountSize;
     protected static int reportCountSize;
 
-    TimeService timeService;
-
     public ServiceEleven(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
         this.config = config;
@@ -42,8 +39,6 @@ public class ServiceEleven implements PusService {
         sourceIdSize = config.getInt("sourceIdSize", DEFAULT_SOURCE_ID_SIZE);
         apidSize = config.getInt("apidSize", DEFAULT_APID_SIZE);
         seqCountSize = config.getInt("seqCountSize", DEFAULT_SEQ_COUNT_SIZE);
-
-        timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
     public void initializeSubServices() {
