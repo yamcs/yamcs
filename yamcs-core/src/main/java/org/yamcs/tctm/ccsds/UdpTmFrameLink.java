@@ -108,7 +108,7 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
     @Override
     public Map<String, Object> getExtraInfo() {
         var extra = new LinkedHashMap<String, Object>();
-        extra.put("Valid frames", frameCount.get());
+        extra.put("Valid frames", validFrameCount.get());
         extra.put("Invalid frames", invalidFrameCount.get());
         return extra;
     }
