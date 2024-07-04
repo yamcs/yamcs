@@ -19,7 +19,8 @@ import org.yamcs.time.Instant;
 public abstract class AbstractTmFrameLink extends AbstractLink implements AggregatedDataLink {
     protected List<Link> subLinks;
     protected MasterChannelFrameHandler frameHandler;
-    protected AtomicLong frameCount = new AtomicLong(0);
+    protected AtomicLong validFrameCount = new AtomicLong(0);
+    protected AtomicLong invalidFrameCount = new AtomicLong(0);
 
     protected long errFrameCount;
     protected RawFrameDecoder rawFrameDecoder;
@@ -95,7 +96,6 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
      */
     protected void handleFrame(Instant ert, byte[] data, int offset, int length) {
         try {
-            frameCount.getAndIncrement();
             if (rawFrameDecoder != null) {
                 length = rawFrameDecoder.decodeFrame(data, offset, length);
                 if (length == -1) {
@@ -118,14 +118,24 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
             }
 
             frameHandler.handleFrame(ert, data, offset, length);
+
+            validFrameCount.getAndIncrement();
         } catch (TcTmException e) {
             eventProducer.sendWarning("Error processing frame: " + e.toString());
+            invalidFrameCount.getAndIncrement();
         }
     }
 
     @Override
     public List<Link> getSubLinks() {
         return subLinks;
+    }
+
+    @Override
+    public void resetCounters() {
+        super.resetCounters();
+        validFrameCount.set(0);
+        invalidFrameCount.set(0);
     }
 
 }
