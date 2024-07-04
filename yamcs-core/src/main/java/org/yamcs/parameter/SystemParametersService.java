@@ -401,7 +401,7 @@ public class SystemParametersService extends AbstractYamcsService implements Run
 
     static ParameterType getBasicType(Mdb mdb, Yamcs.Value.Type type, UnitType unit) {
         try {
-            return mdb.getOrCreateBasicType(Mdb.YAMCS_SPACESYSTEM_NAME, type, unit);
+            return mdb.getOrCreateBasicParameterType(Mdb.YAMCS_SPACESYSTEM_NAME, type, unit);
         } catch (IOException e) {
             // this normally does not happen becasuse the /yamcs spacesystem is not actually written to disk
             throw new UncheckedIOException(e);

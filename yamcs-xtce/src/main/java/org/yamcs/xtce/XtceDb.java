@@ -51,6 +51,7 @@ public class XtceDb implements Serializable {
     protected Map<String, SequenceContainer> sequenceContainers = new LinkedHashMap<>();
     protected Map<String, Parameter> parameters = new LinkedHashMap<>();
     protected Map<String, ParameterType> parameterTypes = new LinkedHashMap<>();
+    protected Map<String, ArgumentType> argumentTypes = new LinkedHashMap<>();
     protected HashMap<String, Algorithm> algorithms = new HashMap<>();
     protected HashMap<String, MetaCommand> commands = new HashMap<>();
 
@@ -61,6 +62,7 @@ public class XtceDb implements Serializable {
     private NamedDescriptionIndex<SpaceSystem> spaceSystemAliases = new NamedDescriptionIndex<>();
     private NamedDescriptionIndex<Parameter> parameterAliases = new NamedDescriptionIndex<>();
     private NamedDescriptionIndex<NameDescription> parameterTypeAliases = new NamedDescriptionIndex<>();
+    private NamedDescriptionIndex<NameDescription> argumentTypeAliases = new NamedDescriptionIndex<>();
     private NamedDescriptionIndex<SequenceContainer> sequenceContainerAliases = new NamedDescriptionIndex<>();
     private NamedDescriptionIndex<Algorithm> algorithmAliases = new NamedDescriptionIndex<>();
     private NamedDescriptionIndex<MetaCommand> commandAliases = new NamedDescriptionIndex<>();
@@ -165,6 +167,16 @@ public class XtceDb implements Serializable {
 
     public ParameterType getParameterType(String qualifiedName) {
         return parameterTypes.get(qualifiedName);
+    }
+
+    /**
+     * Returns an argument type with the given qualified name or null if it does not exist
+     * <p>
+     * Note that not all argument types have qualified names, some are used only locally in the command definitions and
+     * are never registered at the global level
+     */
+    public ArgumentType getArgumentType(String qualifiedName) {
+        return argumentTypes.get(qualifiedName);
     }
 
     public ParameterType getParameterType(String namespace, String name) {
@@ -370,6 +382,7 @@ public class XtceDb implements Serializable {
         buildSpaceSystemsMap(rootSystem);
         buildParameterMap(rootSystem);
         buildParameterTypeMap(rootSystem);
+        buildArgumentTypeMap(rootSystem);
         buildSequenceContainerMap(rootSystem);
         buildAlgorithmMap(rootSystem);
         buildMetaCommandMap(rootSystem);
@@ -442,6 +455,14 @@ public class XtceDb implements Serializable {
             }
         }
 
+        for (ArgumentType t : argumentTypes.values()) {
+            argumentTypeAliases.add((NameDescription) t);
+            XtceAliasSet aliases = ((NameDescription) t).getAliasSet();
+            if (aliases != null) {
+                aliases.getNamespaces().forEach(ns -> namespaces.add(ns));
+            }
+        }
+
         for (Algorithm a : algorithms.values()) {
             algorithmAliases.add(a);
             XtceAliasSet aliases = a.getAliasSet();
@@ -482,6 +503,16 @@ public class XtceDb implements Serializable {
         }
         for (SpaceSystem ss1 : ss.getSubSystems()) {
             buildParameterTypeMap(ss1);
+        }
+    }
+
+    private void buildArgumentTypeMap(SpaceSystem ss) {
+        for (ArgumentType t : ss.getArgumentTypes()) {
+            String qualifiedName = ((NameDescription) t).getQualifiedName();
+            argumentTypes.put(qualifiedName, t);
+        }
+        for (SpaceSystem ss1 : ss.getSubSystems()) {
+            buildArgumentTypeMap(ss1);
         }
     }
 
@@ -633,7 +664,7 @@ public class XtceDb implements Serializable {
     }
 
     /**
-     * Adds a new parameter type to the XTCE db.
+     * Adds new parameter types to the XTCE db.
      * <p>
      *
      * If the SpaceSystem where this parameter type does not exist, and createSpaceSystem is false, throws an
@@ -682,6 +713,67 @@ public class XtceDb implements Serializable {
                 parameterTypes.put(fqn, ptype);
 
                 parameterTypeAliases.add((NameDescription) ptype);
+                XtceAliasSet aliases = ((NameDescription) ptype).getAliasSet();
+                if (aliases != null) {
+                    aliases.getNamespaces().forEach(ns -> namespaces.add(ns));
+                }
+            }
+        } finally {
+            rwLock.writeLock().unlock();
+        }
+
+    }
+
+    /**
+     * Adds new argument types to the XTCE db.
+     * <p>
+     *
+     * If the SpaceSystem where this argument type does not exist, and createSpaceSystem is false, throws an
+     * IllegalArgumentException.
+     * <p>
+     * If the SpaceSystem where this argument belongs exists and already contains an argument type by this name, throws
+     * and IllegalArgumentException
+     * <p>
+     * If the SpaceSystem where this argument belongs does not exist, and createSpaceSystem is true, the whole
+     * SpaceSystem hierarchy is created.
+     * 
+     *
+     * @param atypeList
+     *            - the argument types to be added
+     * @param createSpaceSystem
+     *            - if true, create all the necessary space systems
+     */
+    protected void doAddArgumentType(List<ArgumentType> atypeList, boolean createSpaceSystem) {
+
+        log.debug("Adding argument types {} , createSpaceSystem: {}", atypeList, createSpaceSystem);
+        rwLock.writeLock().lock();
+
+        try {
+            for (var ptype : atypeList) {
+                String fqn = ptype.getQualifiedName();
+                if (argumentTypes.containsKey(fqn)) {
+                    throw new IllegalArgumentException(
+                            "There is already an argument with qualified name '" + fqn + "'");
+                }
+                String ssname = NameDescription.getSubsystemName(fqn);
+                SpaceSystem ss = spaceSystems.get(ssname);
+                if (ss == null && !createSpaceSystem) {
+                    throw new IllegalArgumentException("No SpaceSystem by name '" + ssname + "'");
+                }
+            }
+            for (var ptype : atypeList) {
+                String fqn = ptype.getQualifiedName();
+                String ssname = NameDescription.getSubsystemName(fqn);
+                SpaceSystem ss = spaceSystems.get(ssname);
+                if (ss == null) {
+                    createAllSpaceSystems(ssname);
+                }
+
+                ss = spaceSystems.get(ssname);
+                ss.addArgumentType(ptype);
+                argumentTypes.put(fqn, ptype);
+
+                argumentTypeAliases.add((NameDescription) ptype);
                 XtceAliasSet aliases = ((NameDescription) ptype).getAliasSet();
                 if (aliases != null) {
                     aliases.getNamespaces().forEach(ns -> namespaces.add(ns));
