@@ -48,15 +48,9 @@ public class AggrrayIterator implements ParameterIterator {
         SortedTimeSegment timeSegment = currentSegment.timeSegment;
 
         if (req.isAscending()) {
-            pos = timeSegment.search(req.getStart());
-            if (pos < 0) {
-                pos = -pos - 1;
-            }
+            pos = timeSegment.lowerBound(req.getStart());
         } else {
-            pos = timeSegment.search(req.getStop());
-            if (pos < 0) {
-                pos = -pos - 2;
-            }
+            pos = timeSegment.higherBound(req.getStop());
         }
         if (valid(timeSegment, pos) || advancePos()) {
             while (true) {
@@ -96,6 +90,7 @@ public class AggrrayIterator implements ParameterIterator {
     // otherwise (i.e. the values at the current position are all null, may happen because the parameter archive has
     // gaps) it returns false
     private boolean readCurrentValue() {
+
         long t = currentSegment.timeSegment.getTime(pos);
 
         ParameterStatus paramStatus = null;

@@ -402,7 +402,6 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         List<ParameterValue> values = new ArrayList<>();
         page.iterator().forEachRemaining(values::add);
 
-        // TODO fix parameter cache to cache multiple values for the same parameter
         assertEquals(60, values.size());
         org.yamcs.protobuf.Pvalue.ParameterValue pv0 = values.get(0);
         org.yamcs.protobuf.Pvalue.ParameterValue pv1 = values.get(1);
@@ -451,6 +450,81 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
 
         assertEquals(4, pv0.getEngValue().getUint32Value());
         assertEquals(3, pv1.getEngValue().getUint32Value());
+    }
+
+
+    @Test
+    public void testAggregatesWithSameTimestamps() throws Exception {
+        generatePkt3("2024-07-05T14:00:00", 100);
+
+        Instant start = Instant.parse("2024-07-05T14:00:00Z");
+        Instant stop = Instant.parse("2024-07-05T14:00:30Z");
+        Page<ParameterValue> page = archiveClient.listValues("/REFMDB/SUBSYS1/aggregate_para2", start, stop)
+                .get();
+
+        List<ParameterValue> values = new ArrayList<>();
+        page.iterator().forEachRemaining(values::add);
+
+        assertEquals(60, values.size());
+        org.yamcs.protobuf.Pvalue.ParameterValue pv0 = values.get(0);
+        org.yamcs.protobuf.Pvalue.ParameterValue pv1 = values.get(1);
+
+        assertEquals("2024-07-05T14:00:30Z", Timestamps.toString(pv0.getGenerationTime()));
+        assertEquals("2024-07-05T14:00:30Z", Timestamps.toString(pv1.getGenerationTime()));
+
+        assertEquals(16, pv0.getEngValue().getAggregateValue().getValue(0).getUint32Value());
+        assertEquals(16.5, pv0.getEngValue().getAggregateValue().getValue(1).getFloatValue());
+
+        assertEquals(15, pv1.getEngValue().getAggregateValue().getValue(0).getUint32Value());
+        assertEquals(15.5, pv1.getEngValue().getAggregateValue().getValue(1).getFloatValue());
+
+        // build the parameter archive
+        buildParameterArchive("2024-07-05T14:00:00", "2024-07-05T16:00:00");
+
+        start = Instant.parse("2024-07-05T14:00:02Z");
+        stop = Instant.parse("2024-07-05T14:00:10Z");
+        page = archiveClient.listValues("/REFMDB/SUBSYS1/aggregate_para2",
+                start, stop, ListOptions.ascending(true)).get();
+
+        values.clear();
+        page.iterator().forEachRemaining(values::add);
+
+        for (var v : values) {
+            System.out.println("v: " + Timestamps.toString(v.getGenerationTime()));
+        }
+        assertEquals(16, values.size());
+        pv0 = values.get(0);
+        pv1 = values.get(1);
+
+        assertEquals("2024-07-05T14:00:02Z", Timestamps.toString(pv0.getGenerationTime()));
+        assertEquals("2024-07-05T14:00:02Z", Timestamps.toString(pv1.getGenerationTime()));
+
+        assertEquals(15, pv0.getEngValue().getAggregateValue().getValue(0).getUint32Value());
+        assertEquals(15.5, pv0.getEngValue().getAggregateValue().getValue(1).getFloatValue());
+
+        assertEquals(16, pv1.getEngValue().getAggregateValue().getValue(0).getUint32Value());
+        assertEquals(16.5, pv1.getEngValue().getAggregateValue().getValue(1).getFloatValue());
+
+        start = Instant.parse("2024-07-05T14:00:02Z");
+        stop = Instant.parse("2024-07-05T14:00:10Z");
+        page = archiveClient.listValues("/REFMDB/SUBSYS1/aggregate_para2",
+                start, stop, ListOptions.ascending(false)).get();
+
+        values.clear();
+        page.iterator().forEachRemaining(values::add);
+
+        assertEquals(16, values.size());
+        pv0 = values.get(0);
+        pv1 = values.get(1);
+
+        assertEquals("2024-07-05T14:00:10Z", Timestamps.toString(pv0.getGenerationTime()));
+        assertEquals("2024-07-05T14:00:10Z", Timestamps.toString(pv1.getGenerationTime()));
+
+        assertEquals(16, pv0.getEngValue().getAggregateValue().getValue(0).getUint32Value());
+        assertEquals(16.5, pv0.getEngValue().getAggregateValue().getValue(1).getFloatValue());
+
+        assertEquals(15, pv1.getEngValue().getAggregateValue().getValue(0).getUint32Value());
+        assertEquals(15.5, pv1.getEngValue().getAggregateValue().getValue(1).getFloatValue());
     }
 
     private void buildParameterArchive(String start, String stop) throws InterruptedException, ExecutionException {
