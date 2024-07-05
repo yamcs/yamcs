@@ -12,6 +12,9 @@ public class PusTmCcsdsPacket extends CcsdsPacket {
     static int messageSubTypeIndex = 8;
     static int destinationIDIndex = 11;
 
+    public static int messageSubTypeSize = 2;
+    public static int messageTypeSize = 2;
+
     public PusTmCcsdsPacket(byte[] packet) {
         super(packet);
     }

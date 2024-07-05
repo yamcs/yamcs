@@ -53,8 +53,8 @@ public class SubServiceSix implements PusSubService {
             registerDumpBucket.putObject("deviceRegisterReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
 
         } catch (IOException e) {
-            log.error("Unable to create a directory `" + registerDumpBucket.getName() + "reports/registerDumpBucket` for (Service - 2 | SubService - 6)", e);
-            throw new YarchException("Failed to create a directory `" + registerDumpBucket.getName() + "reports/registerDumpBucket` for (Service - 2 | SubService - 6)", e);
+            log.error("Unable to create a directory `" + registerDumpBucket.getName() + "/registerDumpBucket` for (Service - 2 | SubService - 6)", e);
+            throw new YarchException("Failed to create a directory `" + registerDumpBucket.getName() + "/registerDumpBucket` for (Service - 2 | SubService - 6)", e);
         }
 
         // Create Gson instance
@@ -80,7 +80,7 @@ public class SubServiceSix implements PusSubService {
         String filename = "deviceRegisterReport/" + LocalDateTime.ofInstant(
             Instant.ofEpochMilli(missionTime),
             ZoneId.of("GMT")
-        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + ".json";
         
         // Populate metadata
         HashMap<String, String> metadata = new HashMap<>();

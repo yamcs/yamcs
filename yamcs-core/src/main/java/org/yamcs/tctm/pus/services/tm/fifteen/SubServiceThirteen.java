@@ -60,8 +60,8 @@ public class SubServiceThirteen implements PusSubService {
             packetStoreSummaryReportBucket.putObject("packetStoreSummaryReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
 
         } catch (IOException e) {
-            log.error("Unable to create a directory `" + packetStoreSummaryReportBucket.getName() + "reports/packetStoreSummaryReport` for (Service - 15 | SubService - 13)", e);
-            throw new YarchException("Failed to create a directory `" + packetStoreSummaryReportBucket.getName() + "reports/packetStoreSummaryReport` for (Service - 15 | SubService - 13)", e);
+            log.error("Unable to create a directory `" + packetStoreSummaryReportBucket.getName() + "/packetStoreSummaryReport` for (Service - 15 | SubService - 13)", e);
+            throw new YarchException("Failed to create a directory `" + packetStoreSummaryReportBucket.getName() + "/packetStoreSummaryReport` for (Service - 15 | SubService - 13)", e);
         }
     }
 
@@ -75,7 +75,7 @@ public class SubServiceThirteen implements PusSubService {
         String filename = "packetStoreSummaryReport/" + LocalDateTime.ofInstant(
             Instant.ofEpochMilli(missionTime),
             ZoneId.of("GMT")
-        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + ".csv";
 
         // Populate metadata
         HashMap<String, String> metadata = new HashMap<>();

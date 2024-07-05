@@ -91,7 +91,7 @@ public class SubServiceNineteen implements PusSubService {
         String filename = "packetStoreStatusReport/" + LocalDateTime.ofInstant(
             Instant.ofEpochMilli(missionTime),
             ZoneId.of("GMT")
-        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + ".csv";
 
         // Populate metadata
         HashMap<String, String> metadata = new HashMap<>();

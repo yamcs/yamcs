@@ -66,8 +66,8 @@ public class SubServiceTwelve implements PusSubService {
             logicalDeviceReportBucket.putObject("logicalDeviceReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
 
         } catch (IOException e) {
-            log.error("Unable to create a directory `" + logicalDeviceReportBucket.getName() + "reports/logicalDeviceReport` for (Service - 2 | SubService - 12)", e);
-            throw new YarchException("Failed to create a directory `" + logicalDeviceReportBucket.getName() + "reports/logicalDeviceReport` for (Service - 2 | SubService - 12)", e);
+            log.error("Unable to create a directory `" + logicalDeviceReportBucket.getName() + "/logicalDeviceReport` for (Service - 2 | SubService - 12)", e);
+            throw new YarchException("Failed to create a directory `" + logicalDeviceReportBucket.getName() + "/logicalDeviceReport` for (Service - 2 | SubService - 12)", e);
         }
 
         // Create Gson instance
@@ -92,7 +92,7 @@ public class SubServiceTwelve implements PusSubService {
         String filename = "logicalDeviceReport/" + LocalDateTime.ofInstant(
             Instant.ofEpochMilli(missionTime),
             ZoneId.of("GMT")
-        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + ".json";
         
         // Populate metadata
         HashMap<String, String> metadata = new HashMap<>();
