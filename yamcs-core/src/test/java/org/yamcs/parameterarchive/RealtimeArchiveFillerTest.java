@@ -30,6 +30,7 @@ import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameterarchive.RealtimeArchiveFiller.SegmentQueue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
@@ -341,6 +342,34 @@ public class RealtimeArchiveFillerTest {
     }
 
     /**
+     * Tests with multiple values for the same parameter at the same timestamp
+     */
+    @Test
+    public void testWithSameTimstamps() throws InterruptedException, RocksDBException, IOException {
+        when(yamcsServer.getProcessor(anyString(), anyString())).thenReturn(processor);
+        RealtimeArchiveFiller filler = getFiller(1000);
+        filler.start();
+        List<ParameterValue> values = getValues(5000, "/myproject/value1", "/myproject/value1", "/myproject/value2");
+        filler.processParameters(values);
+
+        
+        // Shut down and capture the segment that was written.
+        filler.shutDown();
+        ArgumentCaptor<PGSegment> segCaptor = ArgumentCaptor.forClass(PGSegment.class);
+        verify(parameterArchive).writeToArchive(segCaptor.capture());
+        var segList = segCaptor.getAllValues();
+        assertEquals(1, segList.size());
+        PGSegment seg = segList.get(0);
+        assertEquals(5000, seg.getSegmentStart());
+        assertEquals(5000, seg.getSegmentEnd());
+        assertEquals(2, seg.size());
+        
+        var mpvs = seg.getParametersValues(new ParameterId[] { new MyPid(0, "/myproject/value1") });
+        var pvs = mpvs.getPvs(0);
+        assertEquals(2, pvs.numValues());
+    }
+
+    /**
      * Tests that when the cache is full, a new value cannot be added, but that all segments are flushed when the
      * archive is shut down.
      * 
@@ -413,4 +442,49 @@ public class RealtimeArchiveFillerTest {
         return Arrays.asList(pv);
     }
 
+    static class MyPid implements ParameterId {
+        int pid;
+        String fqn;
+
+        MyPid(int pid, String fqn) {
+            this.pid = pid;
+            this.fqn = fqn;
+        }
+
+        @Override
+        public Type getRawType() {
+            return Type.SINT32;
+        }
+
+        @Override
+        public Type getEngType() {
+            return Type.SINT32;
+        }
+
+        @Override
+        public int getPid() {
+            return pid;
+        }
+
+        @Override
+        public String getParamFqn() {
+            return fqn;
+        }
+
+        @Override
+        public boolean isSimple() {
+            return true;
+        }
+
+        @Override
+        public boolean hasRawValue() {
+            return true;
+        }
+
+        @Override
+        public IntArray getComponents() {
+            return null;
+        }
+
+    }
 }
