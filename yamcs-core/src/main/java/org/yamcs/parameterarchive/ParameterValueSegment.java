@@ -362,10 +362,8 @@ public class ParameterValueSegment {
         private TimedValue currentValue = null;
 
         public AscendingIterator(long t0) {
-            idxT = timeSegment.search(t0);
-            if (idxT < 0) {
-                idxT = -(idxT + 1);
-            }
+            idxT = timeSegment.lowerBound(t0);
+
             if (gaps == null) {
                 idxV = idxT;
             } else {
@@ -417,10 +415,8 @@ public class ParameterValueSegment {
         private TimedValue currentValue = null;
 
         public DescendingIterator(long t0) {
-            idxT = timeSegment.search(t0);
-            if (idxT < 0) {
-                idxT = -(idxT + 2);
-            }
+            idxT = timeSegment.higherBound(t0);
+
             if (gaps == null) {
                 idxV = idxT;
             } else {

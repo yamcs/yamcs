@@ -33,7 +33,10 @@ public class PGSegment {
     }
 
     public void addRecord(long instant, BasicParameterList sortedPvList) {
-        addRecord(instant, sortedPvList.getPids(), sortedPvList.pvList);
+        do {
+            addRecord(instant, sortedPvList.getPids(), sortedPvList.pvList);
+            sortedPvList = sortedPvList.next();
+        } while (sortedPvList != null);
     }
 
     /**
@@ -142,6 +145,9 @@ public class PGSegment {
         return parameterGroupId;
     }
 
+    /**
+     * returns the number of rows in the segment
+     */
     public int size() {
         return timeSegment.size();
     }
@@ -167,7 +173,6 @@ public class PGSegment {
     public int getSegmentIdxInsideInterval() {
         return segmentIdxInsideInterval;
     }
-
 
     public void setSegmentIdxInsideInterval(int segmentIdxInsideInterval) {
         this.segmentIdxInsideInterval = segmentIdxInsideInterval;

@@ -213,19 +213,20 @@ public class ArrayParameterCache implements ParameterCache {
     public List<ParameterValue> getAllValues(Parameter pdef, long start, long stop) {
         List<ParameterId> pidlist = getParameterIds(pdef);
         List<ParameterValue> result = new ArrayList<>();
-        boolean needsSorting = false;
+        int numTables = 0;
         for (ParameterId p : pidlist) {
             for (Map.Entry<SortedIntArray, ParameterValueTable> me : tables.entrySet()) {
                 SortedIntArray sia = me.getKey();
                 if (sia.contains(p.id)) {
-                    needsSorting = true;
+                    numTables++;
                     me.getValue().retrieveAll(p, start, stop, result);
                 }
             }
         }
+
         // if values are retrieved from multiple tables, we need to sort them by generation time
         // (in reverse order such that the newest is first)
-        if (needsSorting) {
+        if (numTables > 1) {
             Collections.sort(result, (pv1, pv2) -> Long.compare(pv2.getGenerationTime(), pv1.getGenerationTime()));
         }
         if (result.isEmpty()) {
@@ -388,7 +389,12 @@ public class ArrayParameterCache implements ParameterCache {
     /**
      * Stores values for list of parameters of predefined types
      * 
-     * It's like a big table: t0, ev01, rv01, ps01, ev02, rv02, ps02 ... t1, ev11, rv11, ps11, ev12, rv12, ps12 ... ....
+     * It's like a big table:
+     * 
+     * <pre>
+     * t0, ev01, rv01, ps01, ev02, rv02, ps02 ... 
+     * t1, ev11, rv11, ps11, ev12, rv12, ps12 ... ....
+     * </pre>
      * 
      * where: t = timestamp ev = engineering value rv = raw value ps = parameter status
      *
@@ -501,15 +507,22 @@ public class ArrayParameterCache implements ParameterCache {
         public void retrieveAll(ParameterId p, long start, long stop, List<ParameterValue> result) {
             lock.readLock().lock();
             try {
-                int col = pids.search(p.id);
+                // col1 will be different than col2 when there are multiple values for the same parameter
+                int col2 = pids.higherBound(p.id);
+                int col1 = col2;
+                while (col1 > 0 && pids.get(col1 - 1) == p.id) {
+                    col1--;
+                }
                 int _tail = tail;
                 int _head = head;
                 int n = generationTimeColumn.length - 1;
                 int row = _head;
                 do {
                     row = (row - 1) & n;
-                    if (generationTimeColumn[row] > start && generationTimeColumn[row] <= stop) {
-                        result.add(getParameterValue(row, col, p));
+                    for (int col = col2; col >= col1; col--) {
+                        if (generationTimeColumn[row] > start && generationTimeColumn[row] <= stop) {
+                            result.add(getParameterValue(row, col, p));
+                        }
                     }
                 } while (row != _tail);
             } finally {
