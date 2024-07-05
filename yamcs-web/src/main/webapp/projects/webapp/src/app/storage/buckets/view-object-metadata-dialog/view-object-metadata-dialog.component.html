@@ -1,15 +1,17 @@
 <h2 mat-dialog-title>Object Metadata</h2>
 
-<mat-dialog-content class="mat-typography">
+<mat-dialog-content>
   <table yaDataTable class="expand">
     <tr>
       <th width="1">Key</th>
       <th>Value</th>
     </tr>
-    <tr *ngFor="let entry of data.metadata | keyvalue">
-      <td>{{ entry.key }}</td>
-      <td>{{ entry.value ?? '-' }}</td>
-    </tr>
+    @for (entry of data.metadata | keyvalue; track entry) {
+      <tr>
+        <td>{{ entry.key }}</td>
+        <td>{{ entry.value ?? "-" }}</td>
+      </tr>
+    }
   </table>
 </mat-dialog-content>
 

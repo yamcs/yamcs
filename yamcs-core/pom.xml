@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>5.9.7-Pixxel.SNAPSHOT-2.10.1</version>
+    <version>5.9.8-Pixxel.SNAPSHOT-2.11.0</version>
   </parent>
 
   <artifactId>yamcs-core</artifactId>
@@ -131,18 +131,13 @@
     </resources>
 
     <plugins>
-      <plugin> <!-- Sets the 'os.detected.classifier' maven property (used by protobuf plugin) -->
-        <groupId>kr.motd.maven</groupId>
-        <artifactId>os-maven-plugin</artifactId>
-      </plugin>
       <plugin>
-        <groupId>org.xolstice.maven.plugins</groupId>
-        <artifactId>protobuf-maven-plugin</artifactId>
+        <groupId>org.yamcs</groupId>
+        <artifactId>yamcs-maven-plugin</artifactId>
         <executions>
           <execution>
-            <id>protoc-core</id>
             <goals>
-              <goal>compile</goal>
+              <goal>protoc</goal>
             </goals>
           </execution>
         </executions>

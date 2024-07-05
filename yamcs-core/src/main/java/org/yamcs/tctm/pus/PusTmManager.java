@@ -78,6 +78,7 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
         Spec bucketSpec = new Spec();
         bucketSpec.addOption("name", OptionType.STRING);
         bucketSpec.addOption("global", OptionType.BOOLEAN);
+        bucketSpec.addOption("maxObjects", OptionType.INTEGER);
 
         spec.addOption("streamMatrix", OptionType.LIST).withElementType(OptionType.MAP).withSpec(streamMatrixSpec);
         spec.addOption("secondaryHeaderLength", OptionType.INTEGER);
@@ -138,12 +139,17 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
         YConfiguration bConfig = config.getConfigOrEmpty("bucket");
         String bucketName = bConfig.getString("name");
         boolean global = bConfig.getBoolean("global");
+        int maxObjects = bConfig.getInt("maxObjects", 1000);
         try {
             reports = getOrCreateBucket(bucketName, global);
-
+            reports.setMaxObjects(maxObjects);
         } catch (InitException e) {
-            log.error("Unable to create a `" + bucketName + " bucket` for " + this.getClass(), e);
-            throw new YarchException("Failed to create RDB based bucket: " + bucketName + " for " + this.getClass(), e);
+            log.error("Unable to create a `" + bucketName + " bucket` at class: " + this.getClass(), e);
+            throw new YarchException("Failed to create RDB based bucket: " + bucketName + " at class: " + this.getClass(), e);
+
+        } catch (IOException e) {
+            log.error("Unable to set maxObjects for `" + bucketName + " bucket` at class: " + this.getClass(), e);
+            throw new YarchException("Failed to set maxObjects for RDB based bucket: " + bucketName + " at class: " + this.getClass(), e);
         }
 
         tmSink = new PusSink() {

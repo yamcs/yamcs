@@ -4,28 +4,31 @@
 
   <dt>System</dt>
   <dd>
-    <ng-container *ngIf="(container.qualifiedName | spaceSystemName) as spaceSystemName">
-      <a routerLink="/mdb/containers"
-         [queryParams]="{c: yamcs.context, filter: spaceSystemName}"
-         class="ya-link">
+    @if (container.qualifiedName | spaceSystemName; as spaceSystemName) {
+      <a
+        routerLink="/mdb/containers"
+        [queryParams]="{ c: yamcs.context, filter: spaceSystemName }"
+        class="ya-link">
         {{ spaceSystemName }}
       </a>
-    </ng-container>
+    }
   </dd>
 
-  <ng-container *ngFor="let alias of container.alias">
+  @for (alias of container.alias; track alias) {
     <dt>{{ alias.namespace }}</dt>
     <dd>{{ alias.name }}</dd>
-  </ng-container>
+  }
 
   <dt>Short Description</dt>
-  <dd>{{ container.shortDescription || '-' }}</dd>
+  <dd>{{ container.shortDescription || "-" }}</dd>
 
   <dt>Long Description</dt>
   <dd>
-    <ng-container *ngIf="container.longDescription; else dash">
+    @if (container.longDescription) {
       <app-markdown [text]="container.longDescription" />
-    </ng-container>
+    } @else {
+      -
+    }
   </dd>
 </dl>
 
@@ -34,32 +37,35 @@
 <dl class="dl-horizontal">
   <dt>Max Interval</dt>
   <dd>
-    <span *ngIf="container.maxInterval">{{ container.maxInterval | duration }}</span>
-    <span *ngIf="!container.maxInterval">-</span>
+    @if (container.maxInterval) {
+      <span>{{ container.maxInterval | duration }}</span>
+    } @else {
+      <span>-</span>
+    }
   </dd>
 
   <dt>Base Container</dt>
   <dd>
-    <a *ngIf="container.baseContainer"
-       [routerLink]="['/mdb/containers/', container.baseContainer.qualifiedName]"
-       [queryParams]="{c: yamcs.context}"
-       class="ya-link">
-      {{ container.baseContainer.qualifiedName || '-' }}
-    </a>
-    <span *ngIf="!container.baseContainer">-</span>
+    @if (container.baseContainer) {
+      <a
+        [routerLink]="['/mdb/containers/', container.baseContainer.qualifiedName]"
+        [queryParams]="{ c: yamcs.context }"
+        class="ya-link">
+        {{ container.baseContainer.qualifiedName || "-" }}
+      </a>
+    } @else {
+      <span>-</span>
+    }
   </dd>
 
   <dt>Restriction Criteria</dt>
-  <dd>
-    {{ container.restrictionCriteriaExpression || '-' }}
+  <dd class="mono">
+    {{ container.restrictionCriteriaExpression || "-" }}
   </dd>
 
   <dt>Archive Partition</dt>
   <dd>
-    <mat-icon *ngIf="container.archivePartition"
-              class="icon14" style="vertical-align: middle">check</mat-icon>
-    <mat-icon *ngIf="!container.archivePartition"
-              class="icon14" style="vertical-align: middle">close</mat-icon>
+    {{ container.archivePartition ? "Yes" : "No" }}
   </dd>
 </dl>
 
@@ -68,37 +74,41 @@
 <dl class="dl-horizontal">
   <dt>Sequence Entries</dt>
   <dd>
-    <table *ngIf="container.entry" yaDataTable>
-      <tr>
-        <th>Type</th>
-        <th>Ref</th>
-        <th>Size in bits</th>
-        <th>Location in Bits</th>
-        <th>Reference Location</th>
-      </tr>
-      <tr *ngFor="let entry of container.entry">
-        <ng-container *ngIf="entry.parameter">
-          <td>Parameter</td>
-          <td>
-            <a [routerLink]="['/mdb/parameters/', entry.parameter!.qualifiedName]"
-               [queryParams]="{c: yamcs.context}"
-               class="ya-link">
-              {{ entry.parameter.qualifiedName }}
-            </a>
-          </td>
-          <td>{{ entry.parameter.type.dataEncoding?.sizeInBits ?? '-' }}</td>
-        </ng-container>
-        <ng-container *ngIf="entry.container">
-          <td>Container</td>
-          <td>{{ entry.container.qualifiedName }}</td>
-          <td>{{ entry.container.sizeInBits ?? '-' }}</td>
-        </ng-container>
-        <td>{{ entry.locationInBits }}</td>
-        <td>{{ entry.referenceLocation }}</td>
-      </tr>
-    </table>
-    <span *ngIf="!container.entry">-</span>
+    @if (container.entry) {
+      <table yaDataTable>
+        <tr>
+          <th>Type</th>
+          <th>Ref</th>
+          <th>Size in bits</th>
+          <th>Location in Bits</th>
+          <th>Reference Location</th>
+        </tr>
+        @for (entry of container.entry; track entry) {
+          <tr>
+            @if (entry.parameter) {
+              <td>Parameter</td>
+              <td>
+                <a
+                  [routerLink]="['/mdb/parameters/', entry.parameter!.qualifiedName]"
+                  [queryParams]="{ c: yamcs.context }"
+                  class="ya-link">
+                  {{ entry.parameter.qualifiedName }}
+                </a>
+              </td>
+              <td>{{ entry.parameter.type?.dataEncoding?.sizeInBits ?? "-" }}</td>
+            }
+            @if (entry.container) {
+              <td>Container</td>
+              <td>{{ entry.container.qualifiedName }}</td>
+              <td>{{ entry.container.sizeInBits ?? "-" }}</td>
+            }
+            <td>{{ entry.locationInBits }}</td>
+            <td>{{ entry.referenceLocation }}</td>
+          </tr>
+        }
+      </table>
+    } @else {
+      <span>-</span>
+    }
   </dd>
 </dl>
-
-<ng-template #dash>-</ng-template>

@@ -1,3 +1,10 @@
+Version 5.9.7 released 19-June-2024
+- Fix event/command text search not matching beyond limit.
+- Fix extra command options not considered when scheduling command or stack.
+- Fix LDAP unauthenticated bind issue when using LdapAuthModule.
+- Add yamcs-web configuration option to allow displaying local times instead of UTC. Default behaviour remains UTC.
+- Fix TC cascading when direct mapping was used.
+
 Version 5.9.6 released 24-May-2024
 - Allow descriptions for aggregate members defined in the spreadsheet
 - Small tweaks and fixes

@@ -1,10 +1,7 @@
 <app-admin-page>
   <app-admin-toolbar>
-    Users
-    &nbsp;&nbsp;&nbsp;
-    <a mat-button
-       color="primary"
-       routerLink="create">
+    Users &nbsp;&nbsp;&nbsp;
+    <a mat-button color="primary" routerLink="create">
       <mat-icon>add_circle_outline</mat-icon>
       Create user
     </a>
@@ -12,45 +9,40 @@
 
   <div class="panel-content">
     <div class="filter-bar">
-      <ya-search-filter [formControl]="filterControl"
-                        placeholder="Filter users" />
+      <ya-search-filter [formControl]="filterControl" placeholder="Filter users" />
     </div>
     <mat-tab-group animationDuration="0ms" class="secondary" [mat-stretch-tabs]="false">
       <mat-tab>
-        <ng-template mat-tab-label>
-          ACTIVE ({{ activeUserCount$ | async }})
-        </ng-template>
-        <br>
-        <app-users-table [users]="activeUsers$ | async"
-                         [filter]="filterValue$ | async"
-                         (deleteUser)="deleteUser($event)" />
+        <ng-template mat-tab-label> ACTIVE ({{ activeUserCount$ | async }}) </ng-template>
+        <br />
+        <app-users-table
+          [users]="activeUsers$ | async"
+          [filter]="filterValue$ | async"
+          (deleteUser)="deleteUser($event)" />
       </mat-tab>
       <mat-tab>
-        <ng-template mat-tab-label>
-          SUPERUSERS ({{ superUserCount$ | async }})
-        </ng-template>
-        <br>
-        <app-users-table [users]="superUsers$ | async"
-                         [filter]="filterValue$ | async"
-                         (deleteUser)="deleteUser($event)" />
+        <ng-template mat-tab-label> SUPERUSERS ({{ superUserCount$ | async }}) </ng-template>
+        <br />
+        <app-users-table
+          [users]="superUsers$ | async"
+          [filter]="filterValue$ | async"
+          (deleteUser)="deleteUser($event)" />
       </mat-tab>
       <mat-tab>
-        <ng-template mat-tab-label>
-          INTERNAL ({{ internalUserCount$ | async }})
-        </ng-template>
-        <br>
-        <app-users-table [users]="internalUsers$ | async"
-                         [filter]="filterValue$ | async"
-                         (deleteUser)="deleteUser($event)" />
+        <ng-template mat-tab-label> INTERNAL ({{ internalUserCount$ | async }}) </ng-template>
+        <br />
+        <app-users-table
+          [users]="internalUsers$ | async"
+          [filter]="filterValue$ | async"
+          (deleteUser)="deleteUser($event)" />
       </mat-tab>
       <mat-tab>
-        <ng-template mat-tab-label>
-          BLOCKED ({{ blockedUserCount$ | async }})
-        </ng-template>
-        <br>
-        <app-users-table [users]="blockedUsers$ | async"
-                         [filter]="filterValue$ | async"
-                         (deleteUser)="deleteUser($event)" />
+        <ng-template mat-tab-label> BLOCKED ({{ blockedUserCount$ | async }}) </ng-template>
+        <br />
+        <app-users-table
+          [users]="blockedUsers$ | async"
+          [filter]="filterValue$ | async"
+          (deleteUser)="deleteUser($event)" />
       </mat-tab>
     </mat-tab-group>
   </div>

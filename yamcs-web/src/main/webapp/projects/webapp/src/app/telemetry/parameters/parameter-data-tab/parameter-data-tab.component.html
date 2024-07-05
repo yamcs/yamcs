@@ -1,57 +1,50 @@
 <ya-detail-pane>
-  <ng-container *ngIf="(table.selectedValue | async) as pval; else noSelection">
-    <ya-detail-toolbar>
-      Value Detail
-    </ya-detail-toolbar>
+  @if (table.selectedValue | async; as pval) {
+    <ya-detail-toolbar> Value Detail </ya-detail-toolbar>
     <div style="padding: 0 16px">
       <div class="block-title">Severity</div>
       <div class="block">
-        <app-alarm-level *ngIf="pval.monitoringResult" [level]="pval.monitoringResult" />
-        <span *ngIf="!pval.monitoringResult">-</span>
+        @if (pval.monitoringResult) {
+          <app-alarm-level [level]="pval.monitoringResult" />
+        }
+        @if (!pval.monitoringResult) {
+          <span>-</span>
+        }
       </div>
-
       <div class="block-title">Generation time</div>
       <div class="block">
         {{ pval.generationTime | datetime }}
       </div>
-
       <div class="block-title">Valid for</div>
       <div class="block">
-        {{ (pval.expireMillis | millisDuration) || '-' }}
+        {{ (pval.expireMillis | millisDuration) || "-" }}
       </div>
-
       <div class="block-title">
         Raw value
-        <ng-container *ngTemplateOutlet="valueActionsTemplate; context:{value: pval.rawValue}" />
+        <ng-container *ngTemplateOutlet="valueActionsTemplate; context: { value: pval.rawValue }" />
       </div>
       <div class="block">
-        <ng-container *ngTemplateOutlet="valueTemplate; context:{value: pval.rawValue}" />
+        <ng-container *ngTemplateOutlet="valueTemplate; context: { value: pval.rawValue }" />
       </div>
-
       <div class="block-title">
         Engineering value
-        <ng-container *ngTemplateOutlet="valueActionsTemplate; context:{value: pval.engValue}" />
+        <ng-container *ngTemplateOutlet="valueActionsTemplate; context: { value: pval.engValue }" />
       </div>
       <div class="block">
-        <ng-container *ngTemplateOutlet="valueTemplate; context:{value: pval.engValue}" />
+        <ng-container *ngTemplateOutlet="valueTemplate; context: { value: pval.engValue }" />
       </div>
-
       <div class="block-title">Range condition</div>
       <div class="block">
-        {{ pval.rangeCondition || '-' }}
+        {{ pval.rangeCondition || "-" }}
       </div>
-
       <div class="block-title">Acquisition status</div>
       <div class="block">
-        {{ pval.acquisitionStatus || '-' }}
+        {{ pval.acquisitionStatus || "-" }}
       </div>
     </div>
-  </ng-container>
-  <ng-template #noSelection>
-    <ya-detail-toolbar>
-      Select a value
-    </ya-detail-toolbar>
-  </ng-template>
+  } @else {
+    <ya-detail-toolbar> Select a value </ya-detail-toolbar>
+  }
 </ya-detail-pane>
 <div class="table-wrapper">
   <div class="panel-content">
@@ -59,19 +52,21 @@
       <div class="filter-bar">
         <ya-select icon="access_time" formControlName="interval" [options]="intervalOptions" />
 
-        <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
+        @if (filterForm.value["interval"] === "CUSTOM") {
           <ya-date-time-input formControlName="customStart" />
           <ya-date-time-input formControlName="customStop" />
-          <button class="ya-button" (click)="applyCustomDates()" [disabled]="filterForm.invalid">Apply</button>
-        </ng-container>
-
-        <ng-container *ngIf="filterForm.value['interval'] !== 'CUSTOM'">
-          <button class="ya-button" (click)="jumpToNow()">
-            Jump to now
+          <button class="ya-button" (click)="applyCustomDates()" [disabled]="filterForm.invalid">
+            Apply
           </button>
-        </ng-container>
+        }
 
-        <ya-dots *ngIf="dataSource.loading$ | async" />
+        @if (filterForm.value["interval"] !== "CUSTOM") {
+          <button class="ya-button" (click)="jumpToNow()">Jump to now</button>
+        }
+
+        @if (dataSource.loading$ | async) {
+          <ya-dots />
+        }
 
         <div style="flex: 1 1 auto"></div>
 
@@ -82,60 +77,76 @@
       </div>
     </form>
 
-    <div class="table-status" [ngSwitch]="appliedInterval">
-      <span *ngSwitchCase="'PT1H'">
-        Showing data from <b>the last hour</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
-      </span>
-      <span *ngSwitchCase="'PT6H'">
-        Showing data from <b>the last 6 hours</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
-      </span>
-      <span *ngSwitchCase="'P1D'">
-        Showing data from <b>the last 24 hours</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
-      </span>
-      <span *ngSwitchCase="'NO_LIMIT'">
-        Showing data from <b>all time</b>
-      </span>
-      <span *ngSwitchCase="'CUSTOM'">
-        Showing data from <b>{{ validStart | datetime }}</b> to <b>{{ validStop | datetime }}</b> (Mission Time)
-      </span>
+    <div class="table-status">
+      @switch (appliedInterval) {
+        @case ("PT1H") {
+          <span>
+            Showing data from <b>the last hour</b> ending at
+            <b>{{ validStop | datetime }}</b> (Mission Time)
+          </span>
+        }
+        @case ("PT6H") {
+          <span>
+            Showing data from <b>the last 6 hours</b> ending at
+            <b>{{ validStop | datetime }}</b> (Mission Time)
+          </span>
+        }
+        @case ("P1D") {
+          <span>
+            Showing data from <b>the last 24 hours</b> ending at
+            <b>{{ validStop | datetime }}</b> (Mission Time)
+          </span>
+        }
+        @case ("NO_LIMIT") {
+          <span> Showing data from <b>all time</b> </span>
+        }
+        @case ("CUSTOM") {
+          <span>
+            Showing data from <b>{{ validStart | datetime }}</b> to
+            <b>{{ validStop | datetime }}</b> (Mission Time)
+          </span>
+        }
+      }
     </div>
 
     <app-parameter-values-table #table [dataSource]="dataSource" />
 
-    <ya-empty-message *ngIf="dataSource.isEmpty()">
-      No records found matching current filter in the selected time range.
-    </ya-empty-message>
+    @if (dataSource.isEmpty()) {
+      <ya-empty-message>
+        No records found matching current filter in the selected time range.
+      </ya-empty-message>
+    }
 
-    <mat-toolbar *ngIf="!(dataSource.loading$ | async) && !dataSource.isEmpty()">
-      <span style="flex: 1 1 auto"></span>
-      <button class="ya-button" [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">Load More</button>
-      <span style="flex: 1 1 auto"></span>
-    </mat-toolbar>
+    @if (!(dataSource.loading$ | async) && !dataSource.isEmpty()) {
+      <mat-toolbar>
+        <span style="flex: 1 1 auto"></span>
+        <button class="ya-button" [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">
+          Load More
+        </button>
+        <span style="flex: 1 1 auto"></span>
+      </mat-toolbar>
+    }
   </div>
 </div>
 
 <ng-template #valueActionsTemplate let-value="value">
-  <ng-container [ngSwitch]="value?.type">
-    <ng-container *ngSwitchCase="'BINARY'">
+  @switch (value?.type) {
+    @case ("BINARY") {
       <ya-more icon="more_horiz">
-        <button mat-menu-item (click)="copyHex(value.binaryValue)">
-          Copy Hex
-        </button>
-        <button mat-menu-item (click)="copyBinary(value.binaryValue)">
-          Copy Binary
-        </button>
+        <button mat-menu-item (click)="copyHex(value.binaryValue)">Copy Hex</button>
+        <button mat-menu-item (click)="copyBinary(value.binaryValue)">Copy Binary</button>
       </ya-more>
-    </ng-container>
-  </ng-container>
+    }
+  }
 </ng-template>
 
 <ng-template #valueTemplate let-value="value">
-  <ng-container [ngSwitch]="value?.type">
-    <ng-container *ngSwitchCase="'BINARY'">
+  @switch (value?.type) {
+    @case ("BINARY") {
       <app-hex [base64String]="value.binaryValue" />
-    </ng-container>
-    <ng-container *ngSwitchDefault>
+    }
+    @default {
       <ya-value [value]="value" />
-    </ng-container>
-  </ng-container>
+    }
+  }
 </ng-template>

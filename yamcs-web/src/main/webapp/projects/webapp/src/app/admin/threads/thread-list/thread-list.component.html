@@ -1,10 +1,7 @@
 <app-admin-page>
   <app-admin-toolbar>
-    Threads
-    &nbsp;&nbsp;&nbsp;
-    <a mat-button
-       color="primary"
-       [href]="threadDumpURL">
+    Threads &nbsp;&nbsp;&nbsp;
+    <a mat-button color="primary" [href]="threadDumpURL">
       <mat-icon>notes</mat-icon>
       Text dump
     </a>
@@ -12,43 +9,36 @@
 
   <div class="panel-content">
     <div class="filter-bar">
-      <ya-search-filter [formControl]="filterControl"
-                        placeholder="Filter threads" />
+      <ya-search-filter [formControl]="filterControl" placeholder="Filter threads" />
     </div>
     <mat-tab-group animationDuration="0ms" class="secondary" [mat-stretch-tabs]="false">
       <mat-tab>
-        <ng-template mat-tab-label>
-          ALL ({{ allThreadCount$ | async }})
-        </ng-template>
-        <br>
+        <ng-template mat-tab-label> ALL ({{ allThreadCount$ | async }}) </ng-template>
+        <br />
         <app-threads-table [threads]="allThreads$ | async" [filter]="filterValue$ | async" />
       </mat-tab>
       <mat-tab>
-        <ng-template mat-tab-label>
-          RUNNABLE ({{ runnableThreadCount$ | async }})
-        </ng-template>
-        <br>
+        <ng-template mat-tab-label> RUNNABLE ({{ runnableThreadCount$ | async }}) </ng-template>
+        <br />
         <app-threads-table [threads]="runnableThreads$ | async" [filter]="filterValue$ | async" />
       </mat-tab>
       <mat-tab>
         <ng-template mat-tab-label>
           TIMED WAITING ({{ timedWaitingThreadCount$ | async }})
         </ng-template>
-        <br>
-        <app-threads-table [threads]="timedWaitingThreads$ | async" [filter]="filterValue$ | async" />
+        <br />
+        <app-threads-table
+          [threads]="timedWaitingThreads$ | async"
+          [filter]="filterValue$ | async" />
       </mat-tab>
       <mat-tab>
-        <ng-template mat-tab-label>
-          WAITING ({{ waitingThreadCount$ | async }})
-        </ng-template>
-        <br>
+        <ng-template mat-tab-label> WAITING ({{ waitingThreadCount$ | async }}) </ng-template>
+        <br />
         <app-threads-table [threads]="waitingThreads$ | async" [filter]="filterValue$ | async" />
       </mat-tab>
       <mat-tab>
-        <ng-template mat-tab-label>
-          BLOCKED ({{ blockedThreadCount$ | async }})
-        </ng-template>
-        <br>
+        <ng-template mat-tab-label> BLOCKED ({{ blockedThreadCount$ | async }}) </ng-template>
+        <br />
         <app-threads-table [threads]="blockedThreads$ | async" [filter]="filterValue$ | async" />
       </mat-tab>
     </mat-tab-group>

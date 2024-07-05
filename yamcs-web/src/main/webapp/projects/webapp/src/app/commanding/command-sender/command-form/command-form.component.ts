@@ -160,7 +160,7 @@ export class CommandFormComponent implements OnChanges {
         assignments[arg.name] = this.getMemberAssignments(subform, arg.type);
       } else if (arg.type.engType.endsWith('[]')) {
         const subarray = this.argsGroup.get(arg.name) as FormArray;
-        assignments[arg.name] = this.getArrayAssignment(subarray, arg.type.elementType);
+        assignments[arg.name] = this.getArrayAssignment(subarray, arg.type.elementType!);
       } else {
         const control = this.argsGroup.controls[arg.name];
         if (!this.isArgumentWithInitialValue(arg.name) || control.dirty) {
@@ -186,7 +186,7 @@ export class CommandFormComponent implements OnChanges {
         result[member.name] = this.getMemberAssignments(subform, member.type);
       } else if (member.type.engType.endsWith('[]')) {
         const subarray = form.get(member.name) as FormArray;
-        result[member.name] = this.getArrayAssignment(subarray, member.type.elementType);
+        result[member.name] = this.getArrayAssignment(subarray, member.type.elementType!);
       } else if (member.type.engType === 'boolean') {
         const control = form.get(member.name) as FormControl;
         result[member.name] = (control.value === 'true');
@@ -220,18 +220,40 @@ export class CommandFormComponent implements OnChanges {
     return this.form.value['comment'] || undefined;
   }
 
-  getExtraOptions() {
+  getExtraOptions(struct = false) {
     const extra: { [key: string]: Value; } = {};
     for (const id in this.form.controls) {
       if (id.startsWith('extra__')) {
         const control = this.form.controls[id];
         if (control.value !== null) {
           const optionId = id.replace('extra__', '');
-          extra[optionId] = this.toYamcsValue(optionId, control.value);
+
+          if (struct) {
+            extra[optionId] = this.toStructValue(optionId, control.value);
+          } else {
+            extra[optionId] = this.toYamcsValue(optionId, control.value);
+          }
         }
       }
     }
     return extra;
+  }
+
+  private toStructValue(optionId: string, controlValue: any): any {
+    let option: CommandOption;
+    for (const candidate of this.commandOptions) {
+      if (candidate.id === optionId) {
+        option = candidate;
+      }
+    }
+    switch (option!.type) {
+      case "BOOLEAN":
+        return controlValue === 'true';
+      case "NUMBER":
+        return Number(controlValue);
+      default:
+        return String(controlValue);
+    }
   }
 
   private toYamcsValue(optionId: string, controlValue: any): Value {
@@ -298,7 +320,7 @@ export class CommandFormComponent implements OnChanges {
   }
 
   private isAggregateFullyInitialized(argument: Argument | ArgumentMember, value: { [key: string]: any; }) {
-    for (const member of argument.type.member) {
+    for (const member of argument.type.member || []) {
       if (!value.hasOwnProperty(member.name) && argument.initialValue === undefined) {
         return false;
       } else if (member.type.engType === 'aggregate') {

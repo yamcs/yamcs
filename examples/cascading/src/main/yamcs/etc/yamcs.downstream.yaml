@@ -36,19 +36,20 @@ dataLinks:
     upstreamInstance: "upstream"
     commandMapping:
       - type: "DIRECT"
-        local: "/YSS/SIMULATOR/SWITCH_VOLTAGE_OFF"
+        local: "/YSS/DOWNSTREAM_DIRECT/SWITCH_VOLTAGE_OFF_WITH_DIFFERENT_NAME"
         upstream: "/YSS/SIMULATOR/SWITCH_VOLTAGE_OFF"
       - type: "DIRECT"
-        local: "/YSS/SIMULATOR/"
+        local: "/YSS/DOWNSTREAM_DIRECT/"
         upstream: "/YSS/SIMULATOR/"
       - type: "EMBEDDED_BINARY"
-        local: "/YSS/DOWNSTREAM/SWITCH_VOLTAGE_ON"
+        local: "/YSS/DOWNSTREAM_EMBEDDED/SWITCH_VOLTAGE_ON"
         upstream: "/YSS/SIMULATOR/DOWNSTREAM_CMD"
         argument: "binary_arg"
       - type: "EMBEDDED_BINARY"
         local: "/YSS/DOWNSTREAM/"
         upstream: "/YSS/SIMULATOR/DOWNSTREAM_CMD"
         argument: "binary_arg"
+    #failCommandIfNoMappingMatches: false
     #tm: true
     #event: true
     #pp: true
@@ -69,7 +70,9 @@ mdb:
       - type: "sheet"
         spec: "mdb/landing.xls"
       - type: "xtce"
-        spec: "mdb/downstream.xml"
+        spec: "mdb/downstream-embedded.xml"
+      - type: "xtce"
+        spec: "mdb/downstream-direct.xml"
 
 
 

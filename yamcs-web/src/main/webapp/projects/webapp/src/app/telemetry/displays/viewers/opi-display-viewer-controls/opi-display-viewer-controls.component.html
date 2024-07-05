@@ -1,15 +1,11 @@
-<ng-container *ngIf="initialized$ | async">
-  <button mat-button
-          color="primary"
-          [matMenuTriggerFor]="viewMenu">
-    View ▾
-  </button>
-
-  <mat-menu #viewMenu="matMenu"
-            class="ya-menu"
-            overlapTrigger="false"
-            xPosition="after"
-            yPosition="below">
+@if (initialized$ | async) {
+  <button mat-button color="primary" [matMenuTriggerFor]="viewMenu">View ▾</button>
+  <mat-menu
+    #viewMenu="matMenu"
+    class="ya-menu"
+    overlapTrigger="false"
+    xPosition="after"
+    yPosition="below">
     <button mat-menu-item (click)="resetZoom()">
       <mat-icon>aspect_ratio</mat-icon>
       Actual size
@@ -27,4 +23,4 @@
       Zoom out
     </button>
   </mat-menu>
-</ng-container>
+}

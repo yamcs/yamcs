@@ -4,9 +4,11 @@
   </div>
 
   {{ label }}
-  <ya-help *ngIf="description">
-    {{ description }}
-  </ya-help>
+  @if (description) {
+    <ya-help>
+      {{ description }}
+    </ya-help>
+  }
 
   <ya-errors #err [controlName]="controlName" />
 

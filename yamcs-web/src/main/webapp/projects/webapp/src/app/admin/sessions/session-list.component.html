@@ -1,18 +1,16 @@
 <app-admin-page>
-  <app-admin-toolbar>
-    Sessions
-  </app-admin-toolbar>
+  <app-admin-toolbar> Sessions </app-admin-toolbar>
 
   <div class="panel-content">
-    <table mat-table
-           [dataSource]="dataSource"
-           [trackBy]="tableTrackerFn"
-           class="ya-data-table expand"
-           matSort
-           matSortActive="started"
-           matSortDirection="desc"
-           matSortDisableClear>
-
+    <table
+      mat-table
+      [dataSource]="dataSource"
+      [trackBy]="tableTrackerFn"
+      class="ya-data-table expand"
+      matSort
+      matSortActive="started"
+      matSortDirection="desc"
+      matSortDisableClear>
       <ng-container matColumnDef="id">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Id</th>
         <td mat-cell *matCellDef="let session">{{ session.id }}</td>
@@ -20,22 +18,22 @@
 
       <ng-container matColumnDef="user">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>User</th>
-        <td mat-cell *matCellDef="let session">{{ session.username || '-' }}</td>
+        <td mat-cell *matCellDef="let session">{{ session.username || "-" }}</td>
       </ng-container>
 
       <ng-container matColumnDef="ipAddress">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>IP address</th>
-        <td mat-cell *matCellDef="let session">{{ session.ipAddress || '-' }}</td>
+        <td mat-cell *matCellDef="let session">{{ session.ipAddress || "-" }}</td>
       </ng-container>
 
       <ng-container matColumnDef="hostname">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Hostname</th>
-        <td mat-cell *matCellDef="let session">{{ session.hostname || '-' }}</td>
+        <td mat-cell *matCellDef="let session">{{ session.hostname || "-" }}</td>
       </ng-container>
 
       <ng-container matColumnDef="started">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Started</th>
-        <td mat-cell *matCellDef="let session">{{ (session.startTime | datetime) || '-' }}</td>
+        <td mat-cell *matCellDef="let session">{{ (session.startTime | datetime) || "-" }}</td>
       </ng-container>
 
       <ng-container matColumnDef="lastAccessTime">
@@ -55,18 +53,21 @@
       <ng-container matColumnDef="clients">
         <th mat-header-cell *matHeaderCellDef class="expand">Client</th>
         <td mat-cell *matCellDef="let session">
-          <ng-container *ngFor="let client of (session.clients || []); let first = first">
-            <ng-container *ngIf="!first">, </ng-container>{{ client | userAgent }}
-          </ng-container>
-          <ng-container *ngIf="!session.clients">-</ng-container>
+          @for (client of session.clients || []; track client; let first = $first) {
+            @if (!first) {
+              ,
+            }
+            {{ client | userAgent }}
+          }
+          @if (!session.clients) {
+            -
+          }
         </td>
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
-    <mat-paginator [pageSize]="100"
-                   [hidePageSize]="true"
-                   [showFirstLastButtons]="true" />
+    <mat-paginator [pageSize]="100" [hidePageSize]="true" [showFirstLastButtons]="true" />
   </div>
 </app-admin-page>

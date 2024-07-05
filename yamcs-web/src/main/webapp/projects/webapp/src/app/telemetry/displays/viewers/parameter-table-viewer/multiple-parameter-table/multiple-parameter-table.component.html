@@ -1,87 +1,92 @@
-<table mat-table
-       *ngIf="dataSource.data.length"
-       [dataSource]="dataSource"
-       class="ya-data-table expand"
-       [class.paused]="paused">
-
-  <ng-container cdkColumnDef="select">
-    <th mat-header-cell *cdkHeaderCellDef style="text-align: left">
-      <input type="checkbox" (change)="$event ? masterToggle() : null"
-             [checked]="selection.hasValue() && isAllSelected()">
-    </th>
-    <td mat-cell *cdkCellDef="let row">
-      <input type="checkbox"
-             (click)="$event.stopPropagation()"
-             (change)="$event ? selection.toggle(row.name) : null"
-             [checked]="selection.isSelected(row.name)">
-    </td>
-  </ng-container>
-
-  <ng-container cdkColumnDef="name">
-    <th mat-header-cell *cdkHeaderCellDef>Name</th>
-    <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">
-      <a [routerLink]="'/telemetry/parameters' + row.name"
-         [queryParams]="{c: yamcs.context}">
-        {{ row.name }}
-      </a>
-    </td>
-  </ng-container>
-
-  <ng-container cdkColumnDef="severity">
-    <th mat-header-cell *cdkHeaderCellDef>Severity</th>
-    <td mat-cell *cdkCellDef="let row">
-      <app-alarm-level *ngIf="row.pval?.monitoringResult" [level]="row.pval?.monitoringResult" />
-      <span *ngIf="!row.pval?.monitoringResult">-</span>
-    </td>
-  </ng-container>
-
-  <ng-container cdkColumnDef="rawValue">
-    <th mat-header-cell *cdkHeaderCellDef>Raw</th>
-    <td mat-cell *cdkCellDef="let row" class="wrap200">{{ (row.pval?.rawValue | value) || '-' }}</td>
-  </ng-container>
-
-  <ng-container cdkColumnDef="engValue">
-    <th mat-header-cell *cdkHeaderCellDef>Eng</th>
-    <td mat-cell *cdkCellDef="let row" class="wrap200">
-      <ya-expirable *ngIf="row.pval" [pval]="row.pval">
-        {{ (row.pval?.engValue | value) || '-' }}
-        <span *ngIf="row.pval?.rangeCondition === 'LOW'">&#8595;</span>
-        <span *ngIf="row.pval?.rangeCondition === 'HIGH'">&#8593;</span>
-      </ya-expirable>
-      <span *ngIf="!row.pval">-</span>
-    </td>
-  </ng-container>
-
-  <ng-container cdkColumnDef="receptionTime">
-    <th mat-header-cell *cdkHeaderCellDef>Reception time</th>
-    <td mat-cell *cdkCellDef="let row">
-      {{ (row.pval?.acquisitionTime | datetime) || '-' }}</td>
-  </ng-container>
-
-  <ng-container cdkColumnDef="generationTime">
-    <th mat-header-cell *cdkHeaderCellDef>Generation time</th>
-    <td mat-cell *cdkCellDef="let row">{{ (row.pval?.generationTime | datetime) || '-' }}
-    </td>
-  </ng-container>
-
-  <ng-container cdkColumnDef="acquisitionStatus">
-    <th mat-header-cell *cdkHeaderCellDef>Acquisition status</th>
-    <td mat-cell *cdkCellDef="let row">{{ row.pval?.acquisitionStatus || '-' }}</td>
-  </ng-container>
-
-  <ng-container cdkColumnDef="actions">
-    <th mat-header-cell *cdkHeaderCellDef class="expand"></th>
-    <td mat-cell *cdkCellDef="let row; let i = index">
-      <ya-icon-action (click)="moveDown.emit(i); $event.stopPropagation()"
-                      icon="keyboard_arrow_down" />
-      <ya-icon-action (click)="moveUp.emit(i); $event.stopPropagation()"
-                      icon="keyboard_arrow_up" />
-    </td>
-  </ng-container>
-
-  <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
-  <tr mat-row
-      *cdkRowDef="let row; columns: displayedColumns;"
+@if (dataSource.data.length) {
+  <table mat-table [dataSource]="dataSource" class="ya-data-table expand" [class.paused]="paused">
+    <ng-container cdkColumnDef="select">
+      <th mat-header-cell *cdkHeaderCellDef style="text-align: left">
+        <input
+          type="checkbox"
+          (change)="$event ? masterToggle() : null"
+          [checked]="selection.hasValue() && isAllSelected()" />
+      </th>
+      <td mat-cell *cdkCellDef="let row">
+        <input
+          type="checkbox"
+          (click)="$event.stopPropagation()"
+          (change)="$event ? selection.toggle(row.name) : null"
+          [checked]="selection.isSelected(row.name)" />
+      </td>
+    </ng-container>
+    <ng-container cdkColumnDef="name">
+      <th mat-header-cell *cdkHeaderCellDef>Name</th>
+      <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">
+        <a [routerLink]="'/telemetry/parameters' + row.name" [queryParams]="{ c: yamcs.context }">
+          {{ row.name }}
+        </a>
+      </td>
+    </ng-container>
+    <ng-container cdkColumnDef="severity">
+      <th mat-header-cell *cdkHeaderCellDef>Severity</th>
+      <td mat-cell *cdkCellDef="let row">
+        @if (row.pval?.monitoringResult) {
+          <app-alarm-level [level]="row.pval?.monitoringResult" />
+        } @else {
+          <span>-</span>
+        }
+      </td>
+    </ng-container>
+    <ng-container cdkColumnDef="rawValue">
+      <th mat-header-cell *cdkHeaderCellDef>Raw</th>
+      <td mat-cell *cdkCellDef="let row" class="wrap200">
+        {{ (row.pval?.rawValue | value) || "-" }}
+      </td>
+    </ng-container>
+    <ng-container cdkColumnDef="engValue">
+      <th mat-header-cell *cdkHeaderCellDef>Eng</th>
+      <td mat-cell *cdkCellDef="let row" class="wrap200">
+        @if (row.pval) {
+          <ya-expirable [pval]="row.pval">
+            {{ (row.pval?.engValue | value) || "-" }}
+            @if (row.pval?.rangeCondition === "LOW") {
+              <span>&#8595;</span>
+            }
+            @if (row.pval?.rangeCondition === "HIGH") {
+              <span>&#8593;</span>
+            }
+          </ya-expirable>
+        } @else {
+          <span>-</span>
+        }
+      </td>
+    </ng-container>
+    <ng-container cdkColumnDef="receptionTime">
+      <th mat-header-cell *cdkHeaderCellDef>Reception time</th>
+      <td mat-cell *cdkCellDef="let row">
+        {{ (row.pval?.acquisitionTime | datetime) || "-" }}
+      </td>
+    </ng-container>
+    <ng-container cdkColumnDef="generationTime">
+      <th mat-header-cell *cdkHeaderCellDef>Generation time</th>
+      <td mat-cell *cdkCellDef="let row">{{ (row.pval?.generationTime | datetime) || "-" }}</td>
+    </ng-container>
+    <ng-container cdkColumnDef="acquisitionStatus">
+      <th mat-header-cell *cdkHeaderCellDef>Acquisition status</th>
+      <td mat-cell *cdkCellDef="let row">{{ row.pval?.acquisitionStatus || "-" }}</td>
+    </ng-container>
+    <ng-container cdkColumnDef="actions">
+      <th mat-header-cell *cdkHeaderCellDef class="expand"></th>
+      <td mat-cell *cdkCellDef="let row; let i = index">
+        <ya-icon-action
+          (click)="moveDown.emit(i); $event.stopPropagation()"
+          icon="keyboard_arrow_down" />
+        <ya-icon-action
+          (click)="moveUp.emit(i); $event.stopPropagation()"
+          icon="keyboard_arrow_up" />
+      </td>
+    </ng-container>
+    <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+    <tr
+      mat-row
+      *cdkRowDef="let row; columns: displayedColumns"
       [class.selected]="selection.isSelected(row.name)"
       (click)="toggleOne(row.name)"></tr>
-</table>
+  </table>
+}

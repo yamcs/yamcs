@@ -1,166 +1,158 @@
 <app-instance-page>
   <app-instance-toolbar>
-    Displays
-    &nbsp;&nbsp;&nbsp;
-    <button mat-button
-            *ngIf="mayManageDisplays()"
-            color="primary"
-            (click)="createDisplay()">
-      <mat-icon>add_circle_outline</mat-icon>
-      Create display
-    </button>
-    <button mat-button
-            *ngIf="mayManageDisplays()"
-            color="primary"
-            (click)="uploader.click()">
-      <mat-icon>file_upload</mat-icon>
-      Upload files
-      <input #uploader
-             type="file"
-             hidden
-             multiple
-             (change)="uploadFiles()">
-    </button>
-    <button mat-button
-            *ngIf="mayManageDisplays()"
-            color="primary"
-            (click)="createFolder()">
-      <mat-icon>create_new_folder</mat-icon>
-      Create folder
-    </button>
-    <button mat-button
-            *ngIf="mayManageDisplays()"
-            color="primary"
-            (click)="deleteSelectedDisplays()"
-            [disabled]="!selection.hasValue()">
-      <mat-icon>delete</mat-icon>
-      Delete
-    </button>
+    Displays &nbsp;&nbsp;&nbsp;
+    @if (mayManageDisplays()) {
+      <button mat-button color="primary" (click)="createDisplay()">
+        <mat-icon>add_circle_outline</mat-icon>
+        Create display
+      </button>
+    }
+    @if (mayManageDisplays()) {
+      <button mat-button color="primary" (click)="uploader.click()">
+        <mat-icon>file_upload</mat-icon>
+        Upload files
+        <input #uploader type="file" hidden multiple (change)="uploadFiles()" />
+      </button>
+    }
+    @if (mayManageDisplays()) {
+      <button mat-button color="primary" (click)="createFolder()">
+        <mat-icon>create_new_folder</mat-icon>
+        Create folder
+      </button>
+    }
+    @if (mayManageDisplays()) {
+      <button
+        mat-button
+        color="primary"
+        (click)="deleteSelectedDisplays()"
+        [disabled]="!selection.hasValue()">
+        <mat-icon>delete</mat-icon>
+        Delete
+      </button>
+    }
   </app-instance-toolbar>
 
-  <div #droparea
-       class="droparea"
-       [class.active]="dragActive$ | async"
-       (dragenter)="dragEnter($event)">
-
-    <div class="droparea-overlay"
-         [class.hide]="!(dragActive$ | async)"
-         (dragover)="dragOver($event)"
-         (dragleave)="dragLeave($event)"
-         (drop)="drop($event)">
-    </div>
+  <div
+    #droparea
+    class="droparea"
+    [class.active]="dragActive$ | async"
+    (dragenter)="dragEnter($event)">
+    <div
+      class="droparea-overlay"
+      [class.hide]="!(dragActive$ | async)"
+      (dragover)="dragOver($event)"
+      (dragleave)="dragLeave($event)"
+      (drop)="drop($event)"></div>
 
     <div class="panel-content">
-      <ng-container *ngIf="breadcrumb$ | async as breadcrumb">
-        <ya-breadcrumb-trail *ngIf="breadcrumb.length">
-          <ya-breadcrumb link="/telemetry/displays/browse"
-                         [queryParams]="{c: yamcs.context}"
-                         icon="account_tree" />
-          <ya-breadcrumb *ngFor="let item of breadcrumb"
-                         [link]="item.route"
-                         [queryParams]="{c: yamcs.context}"
-                         [label]="item.name" />
-        </ya-breadcrumb-trail>
-      </ng-container>
-      <table mat-table
-             *ngIf="dataSource && dataSource.data.length; else empty"
-             [dataSource]="dataSource"
-             class="ya-data-table expand">
-
-        <ng-container cdkColumnDef="select">
-          <th mat-header-cell *cdkHeaderCellDef class="checkbox">
-            <input type="checkbox"
-                   *ngIf="mayManageDisplays()"
-                   (change)="$event ? masterToggle() : null"
-                   [checked]="selection.hasValue() && isAllSelected()">
-          </th>
-          <td mat-cell *cdkCellDef="let row" class="checkbox">
-            <input type="checkbox"
-                   *ngIf="mayManageDisplays()"
-                   (click)="$event.stopPropagation()"
-                   (change)="$event ? selection.toggle(row) : null"
-                   [checked]="selection.isSelected(row)">
-          </td>
-        </ng-container>
-
-        <ng-container cdkColumnDef="name">
-          <th mat-header-cell *cdkHeaderCellDef>Name</th>
-          <td mat-cell *cdkCellDef="let item">
-            <ng-container *ngIf="item.folder">
-              <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px">folder</mat-icon>
-              <a [routerLink]="'/telemetry/displays/browse/' + item.nameWithoutInstance"
-                 [queryParams]="{c: yamcs.context}"
-                 (click)="$event.stopPropagation()">{{ item.name | filename }}
-              </a>
-            </ng-container>
-            <ng-container *ngIf="!item.folder">
-              <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px">description</mat-icon>
-              <a [routerLink]="'/telemetry/displays/files/' + item.nameWithoutInstance"
-                 [queryParams]="{c: yamcs.context}"
-                 (click)="$event.stopPropagation()">{{ item.name | filename }}
-              </a>
-            </ng-container>
-          </td>
-        </ng-container>
-
-        <ng-container cdkColumnDef="type">
-          <th mat-header-cell *cdkHeaderCellDef>Type</th>
-          <td mat-cell *cdkCellDef="let item">
-            <ng-container *ngIf="item.folder">Folder</ng-container>
-            <ng-container *ngIf="!item.folder">
-              {{ (item.name | displayType) || '-' }}
-            </ng-container>
-          </td>
-        </ng-container>
-
-        <ng-container cdkColumnDef="visibility">
-          <th mat-header-cell *cdkHeaderCellDef>Visibility</th>
-          <td mat-cell *cdkCellDef="let item">
-            Private
-          </td>
-        </ng-container>
-
-        <ng-container cdkColumnDef="modified">
-          <th mat-header-cell *cdkHeaderCellDef>Date modified</th>
-          <td mat-cell *cdkCellDef="let item">
-            {{ (item.modified | datetime) || '-' }}
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef class="expand"></th>
-          <td mat-cell *matCellDef="let item">
-            <ng-container *ngIf="!item.folder">
-              <ya-more *ngIf="mayManageDisplays()">
-                <button mat-menu-item
-                        (click)="renameFile(item)">
-                  Rename
-                </button>
-                <a mat-menu-item
-                   [href]="item.objectUrl"
-                   download>
-                  Download
+      @if (breadcrumb$ | async; as breadcrumb) {
+        @if (breadcrumb.length) {
+          <ya-breadcrumb-trail>
+            <ya-breadcrumb
+              link="/telemetry/displays/browse"
+              [queryParams]="{ c: yamcs.context }"
+              icon="account_tree" />
+            @for (item of breadcrumb; track item) {
+              <ya-breadcrumb
+                [link]="item.route"
+                [queryParams]="{ c: yamcs.context }"
+                [label]="item.name" />
+            }
+          </ya-breadcrumb-trail>
+        }
+      }
+      @if (dataSource && dataSource.data.length) {
+        <table mat-table [dataSource]="dataSource" class="ya-data-table expand">
+          <ng-container cdkColumnDef="select">
+            <th mat-header-cell *cdkHeaderCellDef class="checkbox">
+              @if (mayManageDisplays()) {
+                <input
+                  type="checkbox"
+                  (change)="$event ? masterToggle() : null"
+                  [checked]="selection.hasValue() && isAllSelected()" />
+              }
+            </th>
+            <td mat-cell *cdkCellDef="let row" class="checkbox">
+              @if (mayManageDisplays()) {
+                <input
+                  type="checkbox"
+                  (click)="$event.stopPropagation()"
+                  (change)="$event ? selection.toggle(row) : null"
+                  [checked]="selection.isSelected(row)" />
+              }
+            </td>
+          </ng-container>
+          <ng-container cdkColumnDef="name">
+            <th mat-header-cell *cdkHeaderCellDef>Name</th>
+            <td mat-cell *cdkCellDef="let item">
+              @if (item.folder) {
+                <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px">
+                  folder
+                </mat-icon>
+                <a
+                  [routerLink]="'/telemetry/displays/browse/' + item.nameWithoutInstance"
+                  [queryParams]="{ c: yamcs.context }"
+                  (click)="$event.stopPropagation()">
+                  {{ item.name | filename }}
                 </a>
-                <mat-divider />
-                <button mat-menu-item
-                        (click)="deleteFile(item)">
-                  Delete
-                </button>
-              </ya-more>
-            </ng-container>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row
-            *cdkRowDef="let row; columns: displayedColumns;"
+              } @else {
+                <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px">
+                  description
+                </mat-icon>
+                <a
+                  [routerLink]="'/telemetry/displays/files/' + item.nameWithoutInstance"
+                  [queryParams]="{ c: yamcs.context }"
+                  (click)="$event.stopPropagation()">
+                  {{ item.name | filename }}
+                </a>
+              }
+            </td>
+          </ng-container>
+          <ng-container cdkColumnDef="type">
+            <th mat-header-cell *cdkHeaderCellDef>Type</th>
+            <td mat-cell *cdkCellDef="let item">
+              @if (item.folder) {
+                Folder
+              } @else {
+                {{ (item.name | displayType) || "-" }}
+              }
+            </td>
+          </ng-container>
+          <ng-container cdkColumnDef="visibility">
+            <th mat-header-cell *cdkHeaderCellDef>Visibility</th>
+            <td mat-cell *cdkCellDef="let item">Private</td>
+          </ng-container>
+          <ng-container cdkColumnDef="modified">
+            <th mat-header-cell *cdkHeaderCellDef>Date modified</th>
+            <td mat-cell *cdkCellDef="let item">
+              {{ (item.modified | datetime) || "-" }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef class="expand"></th>
+            <td mat-cell *matCellDef="let item">
+              @if (!item.folder) {
+                @if (mayManageDisplays()) {
+                  <ya-more>
+                    <button mat-menu-item (click)="renameFile(item)">Rename</button>
+                    <a mat-menu-item [href]="item.objectUrl" download>Download</a>
+                    <mat-divider />
+                    <button mat-menu-item (click)="deleteFile(item)">Delete</button>
+                  </ya-more>
+                }
+              }
+            </td>
+          </ng-container>
+          <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+          <tr
+            mat-row
+            *cdkRowDef="let row; columns: displayedColumns"
             [class.selected]="selection.isSelected(row)"
             (click)="toggleOne(row)"></tr>
-      </table>
-
-      <ng-template #empty>
+        </table>
+      } @else {
         <ya-empty-message>Empty directory.</ya-empty-message>
-      </ng-template>
+      }
     </div>
   </div>
 </app-instance-page>

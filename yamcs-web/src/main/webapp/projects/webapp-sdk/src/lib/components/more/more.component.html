@@ -1,8 +1,9 @@
 <mat-menu #moreMenu="matMenu" overlapTrigger="false" class="ya-menu">
   <ng-content />
 </mat-menu>
-<ya-icon-action [matMenuTriggerFor]="moreMenu"
-                class="no-print"
-                (click)="$event.stopPropagation()"
-                [icon]="icon"
-                [padding]="padding" />
+<ya-icon-action
+  [matMenuTriggerFor]="moreMenu"
+  class="no-print"
+  (click)="$event.stopPropagation()"
+  [icon]="icon"
+  [padding]="padding" />

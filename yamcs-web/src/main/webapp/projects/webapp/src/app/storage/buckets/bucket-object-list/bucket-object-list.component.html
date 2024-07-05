@@ -2,174 +2,162 @@
   <app-storage-toolbar>
     <a mat-icon-button routerLink="/storage/buckets" color="primary">
       <mat-icon>arrow_back</mat-icon>
-    </a> {{ name }}
+    </a>
+    {{ name }}
 
     &nbsp;&nbsp;&nbsp;
-    <button mat-button
-            color="primary"
-            (click)="uploader.click()">
+    <button mat-button color="primary" (click)="uploader.click()">
       <mat-icon>file_upload</mat-icon>
       Upload files
-      <input #uploader
-             type="file"
-             hidden
-             multiple
-             (change)="uploadObjects()">
+      <input #uploader type="file" hidden multiple (change)="uploadObjects()" />
     </button>
-    <button mat-button
-            color="primary"
-            (click)="createFolder()">
+    <button mat-button color="primary" (click)="createFolder()">
       <mat-icon>create_new_folder</mat-icon>
       Create folder
     </button>
-    <button mat-button
-            color="primary"
-            (click)="deleteSelectedObjects()"
-            [disabled]="!selection.hasValue()">
+    <button
+      mat-button
+      color="primary"
+      (click)="deleteSelectedObjects()"
+      [disabled]="!selection.hasValue()">
       <mat-icon>delete</mat-icon>
       Delete
     </button>
-    <button mat-button
-            color="primary"
-            (click)="togglePreview()">
-      <mat-icon *ngIf="showPreview$ | async">image_not_supported</mat-icon>
-      <mat-icon *ngIf="!(showPreview$ | async)">image</mat-icon>
+    <button mat-button color="primary" (click)="togglePreview()">
+      @if (showPreview$ | async) {
+        <mat-icon>image_not_supported</mat-icon>
+      } @else {
+        <mat-icon>image</mat-icon>
+      }
       Preview panel
     </button>
   </app-storage-toolbar>
 
-  <div #droparea
-       class="droparea"
-       [class.active]="dragActive$ | async"
-       (dragenter)="dragEnter($event)">
-
-    <div class="droparea-overlay"
-         [class.hide]="!(dragActive$ | async)"
-         (dragover)="dragOver($event)"
-         (dragleave)="dragLeave($event)"
-         (drop)="drop($event)">
-    </div>
+  <div
+    #droparea
+    class="droparea"
+    [class.active]="dragActive$ | async"
+    (dragenter)="dragEnter($event)">
+    <div
+      class="droparea-overlay"
+      [class.hide]="!(dragActive$ | async)"
+      (dragover)="dragOver($event)"
+      (dragleave)="dragLeave($event)"
+      (drop)="drop($event)"></div>
 
     <mat-sidenav-container [autosize]="true">
-      <mat-sidenav mode="side" [opened]="showPreview$ | async"
-                   [disableClose]="false" position="end"
-                   [style.width]="(previewWidth$ | async) + 'px'" style="text-align: center">
-        <div class="resize-handle"
-             (mousedown)="resizeMouseDown($event)"></div>
-        <ng-container *ngIf="(selection.selected.length === 1 && isImage(selection.selected[0])); else placeholder">
-          <img [src]="selection.selected[0].objectUrl">
-        </ng-container>
-        <ng-template #placeholder>
-          <div style="margin-top:4em; color: #fff">
+      <mat-sidenav
+        mode="side"
+        [opened]="showPreview$ | async"
+        [disableClose]="false"
+        position="end"
+        [style.width]="(previewWidth$ | async) + 'px'"
+        style="text-align: center">
+        <div class="resize-handle" (mousedown)="resizeMouseDown($event)"></div>
+        @if (selection.selected.length === 1 && isImage(selection.selected[0])) {
+          <img [src]="selection.selected[0].objectUrl" />
+        } @else {
+          <div style="margin-top: 4em; color: #fff">
             <mat-icon>arrow_back</mat-icon>
-            <p>
-              Select an image to make it appear here
-            </p>
+            <p>Select an image to make it appear here</p>
           </div>
-        </ng-template>
+        }
       </mat-sidenav>
       <mat-sidenav-content>
         <div class="panel-content">
           <app-bucket-page-tabs [bucket]="name" />
-          <div *ngIf="breadcrumb$ | async as breadcrumb" style="margin-top: 16px">
-            <ya-breadcrumb-trail>
-              <ya-breadcrumb [link]="['/storage/buckets']"
-                             label="Buckets" />
-              <ya-breadcrumb [link]="['/storage/buckets', name, 'objects']"
-                             [label]="name" />
-              <ya-breadcrumb *ngFor="let item of breadcrumb"
-                             [link]="item.route"
-                             [label]="item.name" />
-            </ya-breadcrumb-trail>
-          </div>
-          <table mat-table
-                 *ngIf="dataSource && dataSource.data.length; else empty"
-                 [dataSource]="dataSource"
-                 class="ya-data-table expand">
-
-            <ng-container cdkColumnDef="select">
-              <th mat-header-cell *cdkHeaderCellDef class="checkbox">
-                <input type="checkbox"
-                       (change)="$event ? masterToggle() : null"
-                       [checked]="selection.hasValue() && isAllSelected()">
-              </th>
-              <td mat-cell *cdkCellDef="let row" class="checkbox">
-                <input type="checkbox"
-                       (click)="$event.stopPropagation()"
-                       (change)="$event ? selection.toggle(row) : null"
-                       [checked]="selection.isSelected(row)">
-              </td>
-            </ng-container>
-
-            <ng-container cdkColumnDef="name">
-              <th mat-header-cell *cdkHeaderCellDef>Name</th>
-              <td mat-cell *cdkCellDef="let item">
-                <ng-container *ngIf="item.folder">
-                  <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px">folder</mat-icon>
-                  <a [routerLink]="'/storage/buckets/' + name + '/objects/' + item.name"
-                     (click)="$event.stopPropagation()">{{ item.name | filename }}
-                  </a>
-                </ng-container>
-                <ng-container *ngIf="!item.folder">
-                  <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px">description</mat-icon>
-                  <a [href]="item.objectUrl" download (click)="$event.stopPropagation()">{{ item.name | filename }}
-                  </a>
-                </ng-container>
-              </td>
-            </ng-container>
-
-            <ng-container cdkColumnDef="modified">
-              <th mat-header-cell *cdkHeaderCellDef>Date modified</th>
-              <td mat-cell *cdkCellDef="let item">
-                {{ (item.modified | datetime) || '-' }}
-              </td>
-            </ng-container>
-
-            <ng-container cdkColumnDef="size">
-              <th mat-header-cell *cdkHeaderCellDef>Size</th>
-              <td mat-cell *cdkCellDef="let item">
-                {{ (item.size | formatBytes) || '-' }}
-              </td>
-            </ng-container>
-
-            <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef class="expand"></th>
-              <td mat-cell *matCellDef="let item">
-                <ya-more *ngIf="!item.folder">
-                  <button mat-menu-item
-                          (click)="renameFile(item)">
-                    Rename
-                  </button>
-                  <a mat-menu-item
-                     [href]="item.objectUrl"
-                     download>
-                    Download
-                  </a>
-                  <mat-divider />
-                  <button mat-menu-item
-                          [disabled]="!item.metadata"
-                          (click)="openViewMetadataDialog(item)">
-                    View metadata
-                  </button>
-                  <mat-divider />
-                  <button mat-menu-item
-                          (click)="deleteFile(item)">
-                    Delete
-                  </button>
-                </ya-more>
-              </td>
-            </ng-container>
-
-            <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row
-                *cdkRowDef="let row; columns: displayedColumns;"
+          @if (breadcrumb$ | async; as breadcrumb) {
+            <div style="margin-top: 16px">
+              <ya-breadcrumb-trail>
+                <ya-breadcrumb [link]="['/storage/buckets']" label="Buckets" />
+                <ya-breadcrumb [link]="['/storage/buckets', name, 'objects']" [label]="name" />
+                @for (item of breadcrumb; track item) {
+                  <ya-breadcrumb [link]="item.route" [label]="item.name" />
+                }
+              </ya-breadcrumb-trail>
+            </div>
+          }
+          @if (dataSource && dataSource.data.length) {
+            <table mat-table [dataSource]="dataSource" class="ya-data-table expand">
+              <ng-container cdkColumnDef="select">
+                <th mat-header-cell *cdkHeaderCellDef class="checkbox">
+                  <input
+                    type="checkbox"
+                    (change)="$event ? masterToggle() : null"
+                    [checked]="selection.hasValue() && isAllSelected()" />
+                </th>
+                <td mat-cell *cdkCellDef="let row" class="checkbox">
+                  <input
+                    type="checkbox"
+                    (click)="$event.stopPropagation()"
+                    (change)="$event ? selection.toggle(row) : null"
+                    [checked]="selection.isSelected(row)" />
+                </td>
+              </ng-container>
+              <ng-container cdkColumnDef="name">
+                <th mat-header-cell *cdkHeaderCellDef>Name</th>
+                <td mat-cell *cdkCellDef="let item">
+                  @if (item.folder) {
+                    <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px">
+                      folder
+                    </mat-icon>
+                    <a
+                      [routerLink]="'/storage/buckets/' + name + '/objects/' + item.name"
+                      (click)="$event.stopPropagation()">
+                      {{ item.name | filename }}
+                    </a>
+                  } @else {
+                    <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px">
+                      description
+                    </mat-icon>
+                    <a [href]="item.objectUrl" download (click)="$event.stopPropagation()">
+                      {{ item.name | filename }}
+                    </a>
+                  }
+                </td>
+              </ng-container>
+              <ng-container cdkColumnDef="modified">
+                <th mat-header-cell *cdkHeaderCellDef>Date modified</th>
+                <td mat-cell *cdkCellDef="let item">
+                  {{ (item.modified | datetime) || "-" }}
+                </td>
+              </ng-container>
+              <ng-container cdkColumnDef="size">
+                <th mat-header-cell *cdkHeaderCellDef>Size</th>
+                <td mat-cell *cdkCellDef="let item">
+                  {{ (item.size | formatBytes) || "-" }}
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef class="expand"></th>
+                <td mat-cell *matCellDef="let item">
+                  @if (!item.folder) {
+                    <ya-more>
+                      <button mat-menu-item (click)="renameFile(item)">Rename</button>
+                      <a mat-menu-item [href]="item.objectUrl" download>Download</a>
+                      <mat-divider />
+                      <button
+                        mat-menu-item
+                        [disabled]="!item.metadata"
+                        (click)="openViewMetadataDialog(item)">
+                        View metadata
+                      </button>
+                      <mat-divider />
+                      <button mat-menu-item (click)="deleteFile(item)">Delete</button>
+                    </ya-more>
+                  }
+                </td>
+              </ng-container>
+              <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+              <tr
+                mat-row
+                *cdkRowDef="let row; columns: displayedColumns"
                 [class.selected]="selection.isSelected(row)"
                 (click)="toggleOne(row)"></tr>
-          </table>
-
-          <ng-template #empty>
+            </table>
+          } @else {
             <ya-empty-message>Empty directory.</ya-empty-message>
-          </ng-template>
+          }
         </div>
       </mat-sidenav-content>
     </mat-sidenav-container>

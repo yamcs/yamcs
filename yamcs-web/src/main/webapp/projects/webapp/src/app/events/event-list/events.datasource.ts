@@ -25,8 +25,7 @@ export class EventsDataSource extends DataSource<Event> {
     super();
     this.syncSubscription = synchronizer.sync(() => {
       if (this.eventBuffer.dirty && !this.loading$.getValue()) {
-        const events = this.eventBuffer.snapshot();
-        this.events$.next(events);
+        this.emitEvents();
         this.eventBuffer.dirty = false;
       }
     });
@@ -43,6 +42,10 @@ export class EventsDataSource extends DataSource<Event> {
 
   connect() {
     return this.events$;
+  }
+
+  private emitEvents() {
+    this.events$.next(this.eventBuffer.snapshot());
   }
 
   loadEvents(options: GetEventsOptions) {
@@ -63,6 +66,10 @@ export class EventsDataSource extends DataSource<Event> {
       this.eventBuffer.addArchiveData(events);
 
       this.sources$.next(sources);
+
+      // Quick emit, don't wait on sync tick
+      this.emitEvents();
+
       return events;
     });
   }
@@ -106,6 +113,9 @@ export class EventsDataSource extends DataSource<Event> {
       limit: this.pageSize + 1, // One extra to detect hasMore
     }).then(events => {
       this.eventBuffer.addArchiveData(events);
+
+      // Quick emit, don't wait on sync tick
+      this.emitEvents();
     });
   }
 

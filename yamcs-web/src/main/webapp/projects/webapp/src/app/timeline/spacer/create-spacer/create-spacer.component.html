@@ -1,25 +1,21 @@
 <app-instance-page>
-  <app-instance-toolbar>
-    Create band
-  </app-instance-toolbar>
+  <app-instance-toolbar> Create band </app-instance-toolbar>
 
   <app-create-band-wizard-step step="2" />
 
   <div class="form-content ya-form">
-    <form [formGroup]="form"
-          novalidate
-          autocomplete="off">
+    <form [formGroup]="form" novalidate autocomplete="off">
       <label>
-        Label <span class="hint">(optional)</span><br>
-        <input type="text" formControlName="name" style="width: 100%">
+        Label <span class="hint">(optional)</span><br />
+        <input type="text" formControlName="name" style="width: 100%" />
       </label>
-      <br>
+      <br />
       <label>
-        Description <span class="hint">(optional)</span><br>
+        Description <span class="hint">(optional)</span><br />
         <textarea formControlName="description" rows="3"></textarea>
       </label>
 
-      <br>
+      <br />
       <div class="section-divider">
         <mat-divider />
       </div>
@@ -29,10 +25,16 @@
     </form>
     <p>&nbsp;</p>
     <div class="action-bar">
-      <button class="ya-button" routerLink="../.."
-              [queryParams]="{c: yamcs.context}">Cancel</button>
-      <button class="ya-button primary" type="submit" (click)="onConfirm()"
-              [disabled]="!form.valid">CREATE</button>
+      <button class="ya-button" routerLink="../.." [queryParams]="{ c: yamcs.context }">
+        Cancel
+      </button>
+      <button
+        class="ya-button primary"
+        type="submit"
+        (click)="onConfirm()"
+        [disabled]="!form.valid">
+        CREATE
+      </button>
     </div>
   </div>
 </app-instance-page>

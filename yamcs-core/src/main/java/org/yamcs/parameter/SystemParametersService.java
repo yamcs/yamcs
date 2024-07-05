@@ -4,6 +4,7 @@ import static org.yamcs.xtce.NameDescription.qualifiedName;
 import static org.yamcs.mdb.Mdb.YAMCS_SPACESYSTEM_NAME;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -15,7 +16,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
@@ -27,23 +27,15 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.protobuf.Yamcs;
-import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ValueUtility;
-import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.ArrayParameterType;
-import org.yamcs.xtce.BaseDataType;
-import org.yamcs.xtce.BinaryParameterType;
-import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.EnumeratedParameterType;
-import org.yamcs.xtce.FloatParameterType;
-import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.yarch.DataType;
@@ -64,8 +56,6 @@ import com.google.common.io.Files;
  * <p>
  * For aggregate, the caller can use the {@link #createSystemParameter(String, AggregateParameterType, String)} to make
  * the parameter and also add the corresponding type to the MDB.
- *
- * @author nm
  *
  */
 public class SystemParametersService extends AbstractYamcsService implements Runnable {
@@ -409,78 +399,13 @@ public class SystemParametersService extends AbstractYamcsService implements Run
         return getBasicType(mdb, type, unit);
     }
 
-    public static ParameterType getBasicType(Mdb mdb, Type type, UnitType unit) {
-
-        switch (type) {
-        case BINARY:
-            return getOrCreateType(mdb, "binary", unit,
-                    () -> new BinaryParameterType.Builder());
-        case BOOLEAN:
-            return getOrCreateType(mdb, "boolean", unit,
-                    () -> new BooleanParameterType.Builder());
-        case STRING:
-            return getOrCreateType(mdb, "string", unit,
-                    () -> new StringParameterType.Builder());
-        case FLOAT:
-            return getOrCreateType(mdb, "float32", unit,
-                    () -> new FloatParameterType.Builder().setSizeInBits(32));
-        case DOUBLE:
-            return getOrCreateType(mdb, "float64", unit,
-                    () -> new FloatParameterType.Builder().setSizeInBits(64));
-        case SINT32:
-            return getOrCreateType(mdb, "sint32", unit,
-                    () -> new IntegerParameterType.Builder().setSizeInBits(32).setSigned(true));
-        case SINT64:
-            return getOrCreateType(mdb, "sint64", unit,
-                    () -> new IntegerParameterType.Builder().setSizeInBits(64).setSigned(true));
-        case UINT32:
-            return getOrCreateType(mdb, "uint32", unit,
-                    () -> new IntegerParameterType.Builder().setSizeInBits(32).setSigned(false));
-        case UINT64:
-            return getOrCreateType(mdb, "uint64", unit,
-                    () -> new IntegerParameterType.Builder().setSizeInBits(64).setSigned(false));
-        case TIMESTAMP:
-            return getOrCreateType(mdb, "time", unit, () -> new AbsoluteTimeParameterType.Builder());
-        case ENUMERATED:
-            return getOrCreateType(mdb, "enum", unit, () -> new EnumeratedParameterType.Builder());
-        default:
-            throw new IllegalArgumentException(type + "is not a basic type");
+    static ParameterType getBasicType(Mdb mdb, Yamcs.Value.Type type, UnitType unit) {
+        try {
+            return mdb.getOrCreateBasicParameterType(Mdb.YAMCS_SPACESYSTEM_NAME, type, unit);
+        } catch (IOException e) {
+            // this normally does not happen becasuse the /yamcs spacesystem is not actually written to disk
+            throw new UncheckedIOException(e);
         }
-    }
-
-    public ParameterType getOrCreateType(String name, Supplier<ParameterType.Builder<?>> supplier) {
-        return getOrCreateType(mdb, name, null, supplier);
-    }
-
-    static private ParameterType getOrCreateType(Mdb mdb, String name, UnitType unit,
-            Supplier<ParameterType.Builder<?>> supplier) {
-
-        String units;
-        if (unit != null) {
-            units = unit.getUnit();
-            if (!"1".equals(unit.getFactor())) {
-                units = unit.getFactor() + "x" + units;
-            }
-            if (unit.getPower() != 1) {
-                units = units + "^" + unit.getPower();
-            }
-            name = name + "_" + units.replaceAll("/", "_");
-        }
-
-        String fqn = Mdb.YAMCS_SPACESYSTEM_NAME + NameDescription.PATH_SEPARATOR + name;
-        ParameterType ptype = mdb.getParameterType(fqn);
-        if (ptype != null) {
-            return ptype;
-        }
-        ParameterType.Builder<?> typeb = supplier.get().setName(name);
-        if (unit != null) {
-            ((BaseDataType.Builder<?>) typeb).addUnit(unit);
-        }
-
-        ptype = typeb.build();
-        ((NameDescription) ptype).setQualifiedName(fqn);
-
-        return mdb.addSystemParameterType(ptype);
     }
 
     public static ParameterValue getNewPv(Parameter parameter, long time) {

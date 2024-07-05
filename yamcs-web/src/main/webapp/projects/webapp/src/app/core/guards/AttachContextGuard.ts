@@ -31,24 +31,14 @@ class AttachContextGuard {
         .catch(err => {
           if (err.statusCode === 404) {
             this.router.navigate(['/404'], {
-              queryParams: {
-                page: state.url,
-              },
+              queryParams: { page: state.url },
             }).then(() => {
               // Keep the attempted URL in the address bar.
-              // skipLocationChange would be better, but it does not work in guard...
-              // https://github.com/angular/angular/issues/16981
               this.location.replaceState(state.url);
             });
           } else {
-            this.router.navigate(['/down'], {
-              queryParams: {
-                page: state.url,
-              },
-            }).then(() => {
+            this.router.navigate(['/down']).then(() => {
               // Keep the attempted URL in the address bar.
-              // skipLocationChange would be better, but it does not work in guard...
-              // https://github.com/angular/angular/issues/16981
               this.location.replaceState(state.url);
             });
           }

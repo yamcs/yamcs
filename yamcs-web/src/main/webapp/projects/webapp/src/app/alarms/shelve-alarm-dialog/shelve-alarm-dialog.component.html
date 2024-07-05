@@ -1,21 +1,23 @@
 <h2 mat-dialog-title>Shelve</h2>
 
-<mat-dialog-content class="mat-typography">
+<mat-dialog-content>
   <p>
-    <ng-container *ngIf="data.alarms.length === 1">
-      {{ data.alarms[0].id.namespace }}<ng-container *ngIf="data.alarms[0].id.name">/{{ data.alarms[0].id.name }}
-      </ng-container>
-    </ng-container>
-    <ng-container *ngIf="data.alarms.length !== 1">
+    @if (data.alarms.length === 1) {
+      {{ data.alarms[0].id.namespace }}
+      @if (data.alarms[0].id.name) {
+        /{{ data.alarms[0].id.name }}
+      }
+    }
+    @if (data.alarms.length !== 1) {
       {{ data.alarms.length }} selected alarms.
-    </ng-container>
+    }
   </p>
   <form [formGroup]="formGroup" class="ya-form">
     <label>
-      Duration<br>
+      Duration<br />
       <ya-select formControlName="duration" [options]="durationOptions" />
     </label>
-    <br>
+    <br />
     <label>
       Comment
       <textarea formControlName="comment" rows="5" style="resize: none"></textarea>
@@ -25,7 +27,5 @@
 
 <mat-dialog-actions align="end">
   <button class="ya-button" mat-dialog-close>CANCEL</button>
-  <button class="ya-button primary"
-          (click)="shelve()"
-          [disabled]="!formGroup.valid">OK</button>
+  <button class="ya-button primary" (click)="shelve()" [disabled]="!formGroup.valid">OK</button>
 </mat-dialog-actions>

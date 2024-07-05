@@ -1,6 +1,5 @@
 <div class="panel-content">
-  <ng-container *ngIf="algorithm$ | async as algorithm">
-    <app-algorithm-detail [algorithm]="algorithm"
-                          [status]="status$ | async" />
-  </ng-container>
+  @if (algorithm$ | async; as algorithm) {
+    <app-algorithm-detail [algorithm]="algorithm" [status]="status$ | async" />
+  }
 </div>

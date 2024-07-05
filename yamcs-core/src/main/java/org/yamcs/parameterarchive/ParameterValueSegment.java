@@ -95,9 +95,11 @@ public class ParameterValueSegment {
     public void insertGap(int pos) {
         if (gaps == null) {
             gaps = new SortedIntArray();
+        } else {
+            // the position of all the indices following the pos have to increase by 1
+            gaps.addIfGreaterOrEqualThan(pos, 1);
         }
         gaps.insert(pos);
-        gaps.addIfGreaterThan(pos, 1);
     }
 
     public void insert(int pos, BasicParameterValue pv) {
@@ -123,6 +125,7 @@ public class ParameterValueSegment {
                 int pos1;
 
                 var idx = gaps.search(pos);
+
                 if (idx < 0) {
                     pos1 = pos + idx + 1;
                 } else {
@@ -135,7 +138,7 @@ public class ParameterValueSegment {
                 if (rawValueSegment != null) {
                     rawValueSegment.insert(pos1, pv.getRawValue());
                 }
-                gaps.addIfGreaterThan(pos, 1);
+                gaps.addIfGreaterOrEqualThan(pos, 1);
             }
         }
     }
@@ -359,10 +362,8 @@ public class ParameterValueSegment {
         private TimedValue currentValue = null;
 
         public AscendingIterator(long t0) {
-            idxT = timeSegment.search(t0);
-            if (idxT < 0) {
-                idxT = -(idxT + 1);
-            }
+            idxT = timeSegment.lowerBound(t0);
+
             if (gaps == null) {
                 idxV = idxT;
             } else {
@@ -414,10 +415,8 @@ public class ParameterValueSegment {
         private TimedValue currentValue = null;
 
         public DescendingIterator(long t0) {
-            idxT = timeSegment.search(t0);
-            if (idxT < 0) {
-                idxT = -(idxT + 2);
-            }
+            idxT = timeSegment.higherBound(t0);
+
             if (gaps == null) {
                 idxV = idxT;
             } else {

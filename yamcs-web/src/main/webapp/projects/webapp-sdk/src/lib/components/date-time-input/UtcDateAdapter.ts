@@ -141,7 +141,7 @@ export class UtcDateAdapter extends DateAdapter<Date> {
   }
 
   toIso8601(date: Date): string {
-    return date.toISOString().substr(0, 10);
+    return date.toISOString().substring(0, 10);
   }
 
   isDateInstance(obj: any): boolean {

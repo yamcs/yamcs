@@ -13,26 +13,30 @@ import org.yamcs.utils.TimeEncoding;
  * <p>
  * This class is used during the parameter archive buildup
  * 
- * @author nm
- *
  */
 public class PGSegment {
     final int parameterGroupId;
     private SortedTimeSegment timeSegment;
     List<ParameterValueSegment> pvSegments;
+    // for the first segment in the interval this is zero
+    // for the subsequent segments it is the number of rows from the previous segments
+    int segmentIdxInsideInterval;
 
-    public PGSegment(int parameterGroupId, long segmentStart) {
-        this(parameterGroupId, segmentStart, 1000);
+    public PGSegment(int parameterGroupId, long interval) {
+        this(parameterGroupId, interval, 1000);
     }
 
-    public PGSegment(int parameterGroupId, long segmentStart, int capacity) {
+    public PGSegment(int parameterGroupId, long interval, int capacity) {
         this.parameterGroupId = parameterGroupId;
-        this.timeSegment = new SortedTimeSegment(segmentStart);
+        this.timeSegment = new SortedTimeSegment(interval);
         this.pvSegments = new ArrayList<>(capacity);
     }
 
     public void addRecord(long instant, BasicParameterList sortedPvList) {
-        addRecord(instant, sortedPvList.getPids(), sortedPvList.pvList);
+        do {
+            addRecord(instant, sortedPvList.getPids(), sortedPvList.pvList);
+            sortedPvList = sortedPvList.next();
+        } while (sortedPvList != null);
     }
 
     /**
@@ -118,7 +122,7 @@ public class PGSegment {
     }
 
     public long getInterval() {
-        return ParameterArchive.getInterval(timeSegment.getSegmentStart());
+        return timeSegment.getInterval();
     }
 
     public long getSegmentStart() {
@@ -141,16 +145,41 @@ public class PGSegment {
         return parameterGroupId;
     }
 
+    /**
+     * returns the number of rows in the segment
+     */
     public int size() {
         return timeSegment.size();
+    }
+
+    public int getParameterId(int idx) {
+        return pvSegments.get(idx).pid;
+    }
+
+    public boolean isFirstInInterval() {
+        return segmentIdxInsideInterval == 0;
+    }
+
+    /**
+     * In case the interval is composed of multiple segments, this returns the idx of the segment inside interval.
+     * <p>
+     * For the first segment this will be 0, for the following segments it is the sum of the number of elements of the
+     * previous segments.
+     * <p>
+     * The number is used when merging the segments together in the interval to know where the gaps are in the combined
+     * interval.
+     * 
+     */
+    public int getSegmentIdxInsideInterval() {
+        return segmentIdxInsideInterval;
+    }
+
+    public void setSegmentIdxInsideInterval(int segmentIdxInsideInterval) {
+        this.segmentIdxInsideInterval = segmentIdxInsideInterval;
     }
 
     public String toString() {
         return "groupId: " + parameterGroupId + ", [" + TimeEncoding.toString(getSegmentStart()) + ", "
                 + TimeEncoding.toString(getSegmentEnd()) + "], size: " + size();
-    }
-
-    public int getParameterId(int idx) {
-        return pvSegments.get(idx).pid;
     }
 }

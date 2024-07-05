@@ -1,22 +1,22 @@
-<mat-dialog-content class="mat-typography ya-form">
+<mat-dialog-content class="ya-form">
   <label>
     Search parameter for comparison
-    <input type="text"
-           [formControl]="parameter"
-           [matAutocomplete]="auto">
+    <input type="text" [formControl]="parameter" [matAutocomplete]="auto" />
     <mat-autocomplete class="ya-autocomplete" #auto>
-      <mat-option *ngFor="let option of filteredOptions | async" [value]="option | memberPath">
-        {{ option | memberPath }}
-      </mat-option>
+      @for (option of filteredOptions | async; track option) {
+        <mat-option [value]="option | memberPath">
+          {{ option | memberPath }}
+        </mat-option>
+      }
     </mat-autocomplete>
   </label>
 
-  <br>
-  <label class="mat-typography">Color</label>
+  <br />
+  <label>Color</label>
   <app-color-palette #palette />
 
-  <br>
-  <label class="mat-typography">Thickness</label>
+  <br />
+  <label>Thickness</label>
   <app-thickness #thickness [color]="palette.selectedColor" />
 </mat-dialog-content>
 

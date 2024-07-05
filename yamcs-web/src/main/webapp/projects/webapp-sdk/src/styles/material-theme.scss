@@ -1,94 +1,141 @@
 @use '@angular/material' as mat;
 
-$my-typography: mat.define-typography-config();
-@include mat.typography-hierarchy($my-typography);
-
 @include mat.core();
 
-// Define the palettes for your theme using the Material Design palettes available in palette.scss
-// (imported above). For each palette, you can optionally specify a default, lighter, and darker
-// hue. Available color palettes: https://www.google.com/design/spec/style/color.html
-
-$yamcs-primary: (
-  50: #1effde,
-  100: #05ffdb,
-  200: #00eac8,
-  300: #00d1b3,
-  400: #00b79d,
-  500: #009e87,
-  600: #008471,
-  700: #006b5b,
-  800: #005146,
-  900: #003830,
-  A100: #38ffe2,
-  A200: #51ffe6,
-  A400: #6bffe9,
-  A700: #001e1a,
-  contrast: (
-    50: #000000,
-    100: #000000,
-    200: #000000,
-    300: #ffffff,
-    400: #ffffff,
-    500: #ffffff,
-    600: #ffffff,
-    700: #ffffff,
-    800: #ffffff,
-    900: #ffffff,
-    A100: #000000,
-    A200: #ffffff,
-    A400: #ffffff,
-    A700: #ffffff,
+$ya-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$azure-palette,
+    tertiary: mat.$blue-palette,
+  ),
+  density: (
+    scale: 0,
   )
-);
+));
 
-$yamcs-accent: (
-  50: #f0bc9b,
-  100: #edad85,
-  200: #ea9e6f,
-  300: #e78f58,
-  400: #e38042,
-  500: #e0712c,
-  600: #d3641f,
-  700: #bd5a1c,
-  800: #a74f19,
-  900: #914515,
-  A100: #f4cbb1,
-  A200: #f7dac8,
-  A400: #fae9de,
-  A700: #7a3a12,
-  contrast: (
-    50: #000000,
-    100: #000000,
-    200: #000000,
-    300: #ffffff,
-    400: #ffffff,
-    500: #ffffff,
-    600: #ffffff,
-    700: #ffffff,
-    800: #ffffff,
-    900: #ffffff,
-    A100: #000000,
-    A200: #ffffff,
-    A400: #ffffff,
-    A700: #ffffff,
-  )
-);
+:root {
+  @include mat.all-component-themes($ya-theme);
 
+  --mat-app-background-color: #ffffff;
+  --mat-sidenav-container-shape: 0;
+  --mat-list-active-indicator-shape: 0;
 
-$app-primary: mat.define-palette($yamcs-primary);
-$app-accent: mat.define-palette($yamcs-accent);
-$app-warn: mat.define-palette(mat.$red-palette);
+  --mat-table-background-color: #ffffff;
+  --mat-table-row-item-outline-color: rgba(0, 0, 0, 0.12);
 
-$app-theme: mat.define-light-theme(
-  (
-    color: (
-      primary: $app-primary,
-      accent: $app-accent,
-      warn: $app-warn,
-    ),
-    typography: $my-typography,
-    density: 0
-  )
-);
-@include mat.all-component-themes($app-theme);
+  --mat-divider-color: rgba(0, 0, 0, 0.12);
+
+  --mdc-text-button-label-text-size: 14px;
+  --mdc-text-button-label-text-weight: 400;
+  --mdc-text-button-label-text-tracking: .0892857143em;
+  --mat-text-button-state-layer-color: #009e87;
+  --mdc-text-button-label-text-color: #009e87;
+  --mdc-icon-button-icon-color: #009e87;
+  --mdc-outlined-button-label-text-color: #009e87;
+  --mdc-outlined-button-label-text-color: #009e87;
+
+  --mat-menu-container-color: #fff;
+  --mat-menu-divider-top-spacing: 0px;
+  --mat-menu-divider-bottom-spacing: 0px;
+  --mat-menu-item-label-text-weight: 400;
+
+  --mdc-tab-indicator-active-indicator-color: #009e87;
+  --mat-tab-header-active-focus-indicator-color: #009e87;
+  --mat-tab-header-active-focus-label-text-color: #009e87;
+  --mat-tab-header-active-hover-indicator-color: #009e87;
+  --mat-tab-header-active-hover-label-text-color: #009e87;
+  --mat-tab-header-active-ripple-color: #009e87;
+  --mat-tab-header-active-label-text-color: #009e87;
+  --mat-tab-header-divider-color: rgba(0, 0, 0, 0.12);
+  --mat-tab-header-inactive-ripple-color: #009e87;
+  --mat-tab-header-inactive-label-text-color: rgba(0, 0, 0, 0.6);
+  --mat-tab-header-inactive-focus-label-text-color: rgba(0, 0, 0, 0.6);
+  --mat-tab-header-inactive-hover-label-text-color: rgba(0, 0, 0, 0.6);
+  --mat-tab-header-label-text-tracking: .0892857143em;
+
+  --mdc-dialog-container-color: #fff;
+  --mdc-dialog-container-shape: 10px;
+  --mat-dialog-container-elevation-shadow: 0px 11px 15px -7px rgba(0, 0, 0, .2), 0px 24px 38px 3px rgba(0, 0, 0, .14), 0px 9px 46px 8px rgba(0, 0, 0, .12);
+  --mat-dialog-actions-padding: 16px 24px;
+  --mat-dialog-content-padding: 20px 24px;
+  --mat-dialog-with-actions-content-padding: 20px 24px 0;
+  --mat-dialog-headline-padding: 6px 24px 13px;
+  --mdc-dialog-subhead-line-height: 1rem;
+  --mdc-dialog-subhead-size: 14px;
+
+  --mdc-switch-track-height: 14px;
+  --mdc-switch-track-width: 30px;
+  --mdc-switch-selected-icon-size: 16px;
+  --mdc-switch-unselected-icon-size: 16px;
+  --mat-switch-track-outline-width: 0;
+  --mat-switch-selected-track-outline-width: 0px;
+  --mat-switch-unselected-with-icon-handle-horizontal-margin: 0;
+  --mat-switch-unselected-pressed-handle-horizontal-margin: 0;
+  --mdc-switch-selected-focus-state-layer-color: #009e97;
+  --mdc-switch-selected-handle-color: #009e97;
+  --mdc-switch-selected-hover-state-layer-color: #009e97;
+  --mdc-switch-selected-pressed-state-layer-color: #009e97;
+  --mdc-switch-selected-focus-track-color: #009e975f;
+  --mdc-switch-selected-hover-track-color: #009e975f;
+  --mdc-switch-selected-pressed-track-color: #009e975f;
+  --mdc-switch-selected-track-color: #009e975f;
+  --mat-switch-with-icon-handle-size: 16px;
+  --mat-switch-pressed-handle-size: 16px;
+  --mdc-switch-state-layer-size: 16px;
+  --mdc-switch-selected-focus-handle-color: #009e97;
+  --mdc-switch-selected-hover-handle-color: #009e97;
+  --mdc-switch-selected-pressed-handle-color: #009e97;
+  --mat-switch-selected-with-icon-handle-horizontal-margin: 0 16px;
+  --mat-switch-selected-pressed-handle-horizontal-margin: 0 16px;
+  --mdc-switch-selected-icon-color: #e0e2ec;
+
+  --mdc-dialog-subhead-color: #fff;
+  --mat-dialog-headline-padding: 0 12px 0;
+  --mdc-dialog-subhead-line-height: 48px;
+  --mat-dialog-with-actions-content-padding: 20px 12px 0;
+  --mat-dialog-actions-padding: 12px;
+
+  --mat-paginator-container-size: 24px;
+
+  --mat-datepicker-calendar-date-selected-state-background-color: #009e97;
+  --mat-datepicker-calendar-date-today-selected-state-outline-color: #009e97;
+  --mat-datepicker-calendar-date-today-outline-color: #009e97;
+  --mat-datepicker-calendar-container-background-color: #fff;
+  --mat-datepicker-calendar-container-elevation-shadow: 0px 2px 4px -1px rgba(0, 0, 0, .2), 0px 4px 5px 0px rgba(0, 0, 0, .14), 0px 1px 10px 0px rgba(0, 0, 0, .12);
+
+  --mat-toolbar-container-background-color: var(--y-background-color);
+  --mat-toolbar-title-text-size: 20px;
+  --mat-toolbar-title-text-tracking: .0125em;
+}
+
+// Comment out the line below if you want to use the pre-defined typography utility classes.
+// For more information: https://material.angular.io/guide/typography#using-typography-styles-in-your-application.
+// @include mat.typography-hierarchy($ya-theme);
+
+// Comment out the line below if you want to use the deprecated `color` inputs.
+//@include mat.color-variants-backwards-compatibility($ya-theme);
+
+.mat-mdc-menu-panel {
+  box-shadow: 0 5px 5px -3px #0003, 0 8px 10px 1px #00000024, 0 3px 14px 2px #0000001f;
+}
+
+.mat-mdc-dialog-title {
+  background-color: var(--y-app-bar-background-color);
+}
+
+.mat-mdc-dialog-title::before {
+  display: none !important;
+}
+
+.mat-mdc-dialog-container .mat-mdc-dialog-title+.mat-mdc-dialog-content {
+  padding-top: 12px !important;
+}
+
+.mat-mdc-dialog-container .mat-mdc-dialog-actions {
+  margin-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.mat-mdc-dialog-container .mat-mdc-dialog-content {
+  overflow: hidden;
+}

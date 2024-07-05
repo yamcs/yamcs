@@ -1,44 +1,40 @@
 <h2 mat-dialog-title>Add roles</h2>
 
-<mat-dialog-content class="mat-typography">
-  <div class="filter-bar" style="margin-top: 5px">
-    <ya-search-filter [formControl]="filterControl"
-                      placeholder="Filter roles" />
+<mat-dialog-content>
+  <div class="filter-bar">
+    <ya-search-filter [formControl]="filterControl" placeholder="Filter roles" />
   </div>
-  <table mat-table
-         *ngIf="dataSource"
-         [dataSource]="dataSource"
-         class="ya-data-table"
-         style="width: 100%">
-
-    <ng-container matColumnDef="select">
-      <th mat-header-cell *matHeaderCellDef class="checkbox"></th>
-      <td mat-cell *matCellDef="let row" class="checkbox">
-        <input type="checkbox" (click)="$event.stopPropagation()"
-               (change)="$event ? selection.toggle(row) : null"
-               [checked]="selection.isSelected(row)">
-      </td>
-    </ng-container>
-
-    <ng-container matColumnDef="name">
-      <th mat-header-cell *matHeaderCellDef>Role</th>
-      <td mat-cell *matCellDef="let role">
-        {{ role.label }}
-      </td>
-    </ng-container>
-
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+  @if (dataSource) {
+    <table mat-table [dataSource]="dataSource" class="ya-data-table" style="width: 100%">
+      <ng-container matColumnDef="select">
+        <th mat-header-cell *matHeaderCellDef class="checkbox"></th>
+        <td mat-cell *matCellDef="let row" class="checkbox">
+          <input
+            type="checkbox"
+            (click)="$event.stopPropagation()"
+            (change)="$event ? selection.toggle(row) : null"
+            [checked]="selection.isSelected(row)" />
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Role</th>
+        <td mat-cell *matCellDef="let role">
+          {{ role.label }}
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr
+        mat-row
+        *matRowDef="let row; columns: displayedColumns"
         [class.selected]="selection.isSelected(row)"
         (click)="toggleOne(row)"></tr>
-  </table>
-  <ya-empty-message *ngIf="!dataSource.data.length">
-    No rows to display
-  </ya-empty-message>
+    </table>
+  }
+  @if (!dataSource.data.length) {
+    <ya-empty-message> No rows to display </ya-empty-message>
+  }
 
-  <mat-paginator [pageSize]="10"
-                 [hidePageSize]="true"
-                 [showFirstLastButtons]="false" />
+  <mat-paginator [pageSize]="10" [hidePageSize]="true" [showFirstLastButtons]="false" />
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

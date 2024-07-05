@@ -1,7 +1,6 @@
 package org.yamcs.parameter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -15,17 +14,14 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.YConfiguration;
 import org.yamcs.logging.Log;
-import org.yamcs.mdb.DataTypeProcessor;
 import org.yamcs.mdb.Mdb;
+
 import org.yamcs.mdb.ProcessingData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.StreamParameterSender;
-import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.DataSource;
-import org.yamcs.xtce.NamedDescriptionIndex;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterType;
 
 /**
  * Implements local parameters - these are parameters that can be set from the clients.
@@ -33,25 +29,26 @@ import org.yamcs.xtce.ParameterType;
  * <p>
  * All the parameters are sent from the executor thread.
  * 
- * @author nm
- *
  */
 public class LocalParameterManager extends AbstractProcessorService
         implements SoftwareParameterManager, ParameterProvider {
 
     ExecutorService executor;
     private List<ParameterProcessor> parameterListeners = new CopyOnWriteArrayList<>();
-    private NamedDescriptionIndex<Parameter> params = new NamedDescriptionIndex<>();
 
+    boolean subscribeToAllParams = false;
     Set<Parameter> subscribedParams = new HashSet<>();
+
     String yamcsInstance;
     Processor proc;
+    Mdb mdb;
     LastValueCache lvc;
     StreamParameterSender streamParameterSender;
 
     // called from unit test
-    void init(String yamcsInstance) {
+    void init(String yamcsInstance, Mdb mdb) {
         this.yamcsInstance = yamcsInstance;
+        this.mdb = mdb;
         log = new Log(getClass(), yamcsInstance);
         executor = Executors.newFixedThreadPool(1);
     }
@@ -59,8 +56,8 @@ public class LocalParameterManager extends AbstractProcessorService
     @Override
     public void init(Processor proc, YConfiguration config, Object spec) {
         super.init(proc, config, spec);
-        init(proc.getMdb());
         this.proc = proc;
+        this.mdb = proc.getMdb();
         this.lvc = proc.getLastValueCache();
         this.executor = proc.getTimer();
 
@@ -71,15 +68,6 @@ public class LocalParameterManager extends AbstractProcessorService
         if (proc.recordLocalValues()) {
             streamParameterSender = proc.getStreamParameterSender();
         }
-    }
-
-    void init(Mdb mdb) {
-        for (Parameter p : mdb.getParameters()) {
-            if (p.getDataSource() == DataSource.LOCAL) {
-                params.add(p);
-            }
-        }
-        log.debug("Found {} local parameters", params.size());
     }
 
     @Override
@@ -97,7 +85,7 @@ public class LocalParameterManager extends AbstractProcessorService
         ParameterValueList pvlist = new ParameterValueList();
         for (ParameterValue pv : gpvList) {
             Parameter p = pv.getParameter();
-            if (subscribedParams.contains(p)) {
+            if (subscribeToAllParams || subscribedParams.contains(p)) {
                 long t;
                 if (proc != null) {
                     t = proc.getCurrentTime();
@@ -111,6 +99,7 @@ public class LocalParameterManager extends AbstractProcessorService
                 if (pv.getAcquisitionTime() == TimeEncoding.INVALID_INSTANT) {
                     pv.setAcquisitionTime(t);
                 }
+
                 pvlist.add(pv);
             }
         }
@@ -134,7 +123,7 @@ public class LocalParameterManager extends AbstractProcessorService
     public void updateParameters(final List<ParameterValue> pvList) {
         List<ParameterValue> pvl = new ArrayList<>(pvList.size());
         for (ParameterValue pv : pvList) {
-            pvl.add(transformValue(pv));
+            pvl.add(SoftwareParameterManager.transformValue(lvc, pv));
         }
         // then filter out the subscribed ones and send it to PRM
         executor.submit(() -> {
@@ -146,43 +135,6 @@ public class LocalParameterManager extends AbstractProcessorService
         });
     }
 
-    private ParameterValue transformValue(ParameterValue pv) {
-        Parameter p = pv.getParameter();
-        ParameterType ptype = p.getParameterType();
-        if (ptype == null) {
-            return pv;
-        }
-
-        ParameterValue r;
-
-        if (pv instanceof PartialParameterValue) {
-            ParameterValue oldValue = lvc.getValue(p);
-            if (oldValue == null) {
-                throw new IllegalArgumentException("Received request to partially update " + p.getQualifiedName()
-                        + " but has no value in the cache");
-            }
-            r = new ParameterValue(oldValue);
-            AggregateUtil.updateMember(r, (PartialParameterValue) pv);
-        } else {
-            Value v = DataTypeProcessor.convertEngValueForType(ptype, pv.getEngValue());
-            r = new ParameterValue(pv);
-            r.setEngValue(v);
-        }
-
-        return r;
-    }
-
-    /**
-     * Updates a parameter just with the engineering value
-     */
-    @Override
-    public void updateParameter(final Parameter p, final Value engValue) {
-        ParameterValue pv = new ParameterValue(p);
-        pv.setEngValue(engValue);
-
-        List<ParameterValue> pvlist = Arrays.asList(pv);
-        updateParameters(pvlist);
-    }
 
     @Override
     public void startProviding(final Parameter paramDef) {
@@ -193,12 +145,7 @@ public class LocalParameterManager extends AbstractProcessorService
     @Override
     public void startProvidingAll() {
         log.debug("requested to provide all");
-
-        executor.submit(() -> {
-            for (Parameter p : params) {
-                subscribedParams.add(p);
-            }
-        });
+        executor.submit(() -> subscribeToAllParams = true);
     }
 
     @Override
@@ -209,22 +156,23 @@ public class LocalParameterManager extends AbstractProcessorService
 
     @Override
     public boolean canProvide(NamedObjectId paraId) {
-        return getParam(paraId) != null;
+        return getLocalParam(paraId) != null;
     }
 
-    private Parameter getParam(NamedObjectId paraId) {
+    private Parameter getLocalParam(NamedObjectId paraId) {
         Parameter p;
         if (paraId.hasNamespace()) {
-            p = params.get(paraId.getNamespace(), paraId.getName());
+            p = mdb.getParameter(paraId.getNamespace(), paraId.getName());
         } else {
-            p = params.get(paraId.getName());
+            p = mdb.getParameter(paraId.getName());
         }
-        return p;
+
+        return (p != null && p.getDataSource() == DataSource.LOCAL) ? p : null;
     }
 
     @Override
     public Parameter getParameter(NamedObjectId paraId) throws InvalidIdentification {
-        Parameter p = getParam(paraId);
+        Parameter p = getLocalParam(paraId);
         if (p == null) {
             log.info("throwing InvalidIdentification because cannot provide {}", paraId);
             throw new InvalidIdentification(paraId);
@@ -234,7 +182,7 @@ public class LocalParameterManager extends AbstractProcessorService
 
     @Override
     public boolean canProvide(Parameter param) {
-        return params.get(param.getQualifiedName()) != null;
+        return param.getDataSource() == DataSource.LOCAL;
     }
 
     @Override

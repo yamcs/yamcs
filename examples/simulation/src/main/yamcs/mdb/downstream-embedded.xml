@@ -1,0 +1,56 @@
+<SpaceSystem name="DOWNSTREAM_EMBEDDED">
+    <Header validationStatus="Unknown" version="1.3" date="2023-07-10T11:16:59Z"/>
+   
+    <CommandMetaData>
+        <ArgumentTypeSet>            
+            <IntegerArgumentType sizeInBits="8" signed="false" name="uint8">
+                <UnitSet/>
+                <IntegerDataEncoding encoding="unsigned" sizeInBits="8"/>
+            </IntegerArgumentType>            
+        </ArgumentTypeSet>
+        <MetaCommandSet>
+            <MetaCommand abstract="true" name="DOWNSTREAM_CMD">
+                <ArgumentList>
+                    <Argument argumentTypeRef="uint8" name="onoff"/>
+                </ArgumentList>
+                <CommandContainer name="DOWNSTREAM_CMD">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="onoff"/>
+                    </EntryList>
+                </CommandContainer>
+            </MetaCommand>
+            <MetaCommand name="SWITCH_VOLTAGE_ON">
+                <BaseMetaCommand metaCommandRef="DOWNSTREAM_CMD">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="onoff" argumentValue="1"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument argumentTypeRef="uint8" name="voltage_num"/>
+                </ArgumentList>
+                <CommandContainer name="voltage-on-packet">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="voltage_num"/>
+                    </EntryList>
+                    <BaseContainer containerRef="DOWNSTREAM_CMD"/>
+                </CommandContainer>
+            </MetaCommand>
+            <MetaCommand name="SWITCH_VOLTAGE_OFF">
+                <BaseMetaCommand metaCommandRef="DOWNSTREAM_CMD">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="onoff" argumentValue="2"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument argumentTypeRef="uint8" name="voltage_num"/>
+                </ArgumentList>
+                <CommandContainer name="voltage-off-packet">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="voltage_num"/>
+                    </EntryList>
+                    <BaseContainer containerRef="DOWNSTREAM_CMD"/>
+                </CommandContainer>
+            </MetaCommand>
+        </MetaCommandSet>
+    </CommandMetaData>
+</SpaceSystem>

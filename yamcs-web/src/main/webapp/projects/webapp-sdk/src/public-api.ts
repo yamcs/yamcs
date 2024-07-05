@@ -92,6 +92,7 @@ export * from './lib/providers';
 export * from './lib/services/config.service';
 export * from './lib/services/extension.service';
 export * from './lib/services/favicon.service';
+export * from './lib/services/formatter.service';
 export * from './lib/services/message.service';
 export * from './lib/services/preference-store.service';
 export * from './lib/services/synchronizer.service';

@@ -6,7 +6,6 @@ import { AlarmLevelComponent } from '../../shared/alarm-level/alarm-level.compon
   standalone: true,
   selector: 'app-alarm-detail',
   templateUrl: './alarm-detail.component.html',
-  styleUrl: './alarm-detail.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AlarmLevelComponent,

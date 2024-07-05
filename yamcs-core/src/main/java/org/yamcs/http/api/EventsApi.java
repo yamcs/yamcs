@@ -78,10 +78,14 @@ public class EventsApi extends AbstractEventsApi<Context> {
 
         ctx.checkSystemPrivilege(SystemPrivilege.ReadEvents);
 
-        long pos = request.hasPos() ? request.getPos() : 0;
+        Long pos = request.hasPos() ? request.getPos() : null;
         int limit = request.hasLimit() ? request.getLimit() : 100;
         boolean desc = !request.getOrder().equals("asc");
         String severity = request.hasSeverity() ? request.getSeverity().toUpperCase() : INFO;
+
+        if (pos != null) {
+            log.warn("DEPRECATION WARNING: Do not use pos, use continuationToken instead");
+        }
 
         EventPageToken nextToken = null;
         if (request.hasNext()) {
@@ -117,7 +121,10 @@ public class EventsApi extends AbstractEventsApi<Context> {
         addSeverityFilter(sqlb, severity);
 
         sqlb.descend(desc);
-        sqlb.limit(pos, limit + 1l); // one more to detect hasMore
+
+        if (pos != null) {
+            sqlb.limit(pos, limit + 1l); // one more to detect hasMore
+        }
 
         ListEventsResponse.Builder responseb = ListEventsResponse.newBuilder();
         StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {

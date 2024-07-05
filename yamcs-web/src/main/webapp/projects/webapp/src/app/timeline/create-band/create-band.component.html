@@ -1,10 +1,9 @@
 <app-instance-page>
   <app-instance-toolbar>
-    <a mat-icon-button routerLink=".."
-       [queryParams]="{c: yamcs.context}"
-       color="primary">
+    <a mat-icon-button routerLink=".." [queryParams]="{ c: yamcs.context }" color="primary">
       <mat-icon>arrow_back</mat-icon>
-    </a> Create band
+    </a>
+    Create band
   </app-instance-toolbar>
 
   <app-create-band-wizard-step step="1"></app-create-band-wizard-step>
@@ -12,34 +11,22 @@
   <div class="panel-content">
     <div class="category-title">General</div>
     <div class="band-type-list">
-      <a class="band-type"
-         routerLink="time-ruler"
-         [queryParams]="{c: yamcs.context}">
+      <a class="band-type" routerLink="time-ruler" [queryParams]="{ c: yamcs.context }">
         <div class="card">
           <div class="card-title">Time Ruler</div>
-          <div class="card-content">
-            Display absolute time, formatted in a timezone of choice.
-          </div>
+          <div class="card-content">Display absolute time, formatted in a timezone of choice.</div>
         </div>
       </a>
-      <a class="band-type"
-         routerLink="item-band"
-         [queryParams]="{c: yamcs.context}">
+      <a class="band-type" routerLink="item-band" [queryParams]="{ c: yamcs.context }">
         <div class="card">
           <div class="card-title">Item Band</div>
-          <div class="card-content">
-            Show a selection of timeline items.
-          </div>
+          <div class="card-content">Show a selection of timeline items.</div>
         </div>
       </a>
-      <a class="band-type"
-         routerLink="spacer"
-         [queryParams]="{c: yamcs.context}">
+      <a class="band-type" routerLink="spacer" [queryParams]="{ c: yamcs.context }">
         <div class="card">
           <div class="card-title">Spacer</div>
-          <div class="card-content">
-            Insert empty vertical space.
-          </div>
+          <div class="card-content">Insert empty vertical space.</div>
         </div>
       </a>
     </div>
@@ -47,14 +34,10 @@
     <p>&nbsp;</p>
     <div class="category-title">Yamcs entities</div>
     <div class="band-type-list">
-      <a class="band-type"
-         routerLink="command-band"
-         [queryParams]="{c: yamcs.context}">
+      <a class="band-type" routerLink="command-band" [queryParams]="{ c: yamcs.context }">
         <div class="card">
           <div class="card-title">Commands</div>
-          <div class="card-content">
-            Display issued commands.
-          </div>
+          <div class="card-content">Display issued commands.</div>
         </div>
       </a>
     </div>

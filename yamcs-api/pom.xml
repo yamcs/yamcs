@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>5.9.7-Pixxel.SNAPSHOT-2.10.1</version>
+    <version>5.9.8-Pixxel.SNAPSHOT-2.11.0</version>
   </parent>
 
   <artifactId>yamcs-api</artifactId>
@@ -42,36 +42,23 @@
     </resources>
   
     <plugins>
-      <plugin> <!-- Sets the 'os.detected.classifier' maven property (used by protobuf-maven-plugin) -->
-        <groupId>kr.motd.maven</groupId>
-        <artifactId>os-maven-plugin</artifactId>
-      </plugin>
       <plugin>
-        <groupId>org.xolstice.maven.plugins</groupId>
-        <artifactId>protobuf-maven-plugin</artifactId>
+        <groupId>org.yamcs</groupId>
+        <artifactId>yamcs-maven-plugin</artifactId>
         <executions>
           <execution>
             <goals>
-              <goal>compile</goal>
+              <goal>protoc</goal>
             </goals>
+            <configuration>
+              <writeDescriptorSet>true</writeDescriptorSet>
+              <descriptorSetFileName>${project.artifactId}.protobin</descriptorSetFileName>
+              <descriptorSetOutputDirectory>${project.build.directory}/generated-resources/protobuf</descriptorSetOutputDirectory>
+              <includeDependenciesInDescriptorSet>true</includeDependenciesInDescriptorSet>
+              <includeSourceInfoInDescriptorSet>true</includeSourceInfoInDescriptorSet>
+            </configuration>
           </execution>
         </executions>
-        <configuration>
-          <writeDescriptorSet>true</writeDescriptorSet>
-          <descriptorSetFileName>${project.artifactId}.protobin</descriptorSetFileName>
-          <descriptorSetOutputDirectory>${project.build.directory}/generated-resources/protobuf</descriptorSetOutputDirectory>
-          <includeDependenciesInDescriptorSet>true</includeDependenciesInDescriptorSet>
-          <includeSourceInfoInDescriptorSet>true</includeSourceInfoInDescriptorSet>
-          <protocPlugins>
-            <protocPlugin>
-              <id>yamcs</id>
-              <groupId>org.yamcs</groupId>
-              <artifactId>yamcs-protoc-plugin</artifactId>
-              <version>5.3.1</version>
-              <mainClass>org.yamcs.protoc.ServiceGenerator</mainClass>
-            </protocPlugin>
-          </protocPlugins>
-        </configuration>
       </plugin>
     </plugins>
   </build>

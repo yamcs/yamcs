@@ -6,6 +6,7 @@
   overflow: auto;
   border-left: 1px solid rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
+  font: 400 12px / 20px Roboto, sans-serif;
 }
 
 @media print {

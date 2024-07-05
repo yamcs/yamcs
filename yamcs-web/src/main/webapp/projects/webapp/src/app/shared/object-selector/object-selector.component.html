@@ -1,51 +1,57 @@
-<table mat-table
-       *ngIf="dataSource"
-       [dataSource]="dataSource"
-       class="ya-data-table expand"
-       [class.no-frame]="noFrame"
-       [class.no-select]="noSelect">
-
-  <ng-container cdkColumnDef="name">
-    <th mat-header-cell *cdkHeaderCellDef style="width: 400px">Name</th>
-    <td mat-cell *cdkCellDef="let item">
-      <ng-container *ngIf="item.folder">
-        <mat-icon class="icon12" style="vertical-align: middle">folder</mat-icon>
-        {{ item.name | filename }}
-      </ng-container>
-      <ng-container *ngIf="!item.folder">
-        <mat-icon class="icon12" style="vertical-align: middle">description</mat-icon>
-        <span [ngClass]="foldersOnly ? 'disabled' : ''">{{ item.name | filename }}</span>
-      </ng-container>
-    </td>
-  </ng-container>
-
-  <ng-container cdkColumnDef="modified">
-    <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Date modified</th>
-    <td mat-cell *cdkCellDef="let item">
-      <span [ngClass]="(!item.folder && foldersOnly) ? 'disabled' : ''">{{ (item.modified | datetime) || '-' }}</span>
-    </td>
-  </ng-container>
-
-  <ng-container cdkColumnDef="size">
-    <th mat-header-cell *cdkHeaderCellDef style="width: 70px">Size</th>
-    <td mat-cell *cdkCellDef="let item">
-      <span [ngClass]="(!item.folder && foldersOnly) ? 'disabled' : ''">{{ (item.size | formatBytes) || '-' }}</span>
-    </td>
-  </ng-container>
-
-  <ng-container cdkColumnDef="parent">
-    <td mat-header-cell *cdkHeaderCellDef [attr.colspan]="displayedColumns.length">
-      <mat-icon class="icon12" style="vertical-align: middle; visibility: hidden">description</mat-icon>
-      ..
-    </td>
-  </ng-container>
-
-  <tr mat-header-row *cdkHeaderRowDef="displayedColumns" (click)="clearSelection()"></tr>
-  <tr mat-row *cdkHeaderRowDef="['parent']"
+@if (dataSource) {
+  <table
+    mat-table
+    [dataSource]="dataSource"
+    class="ya-data-table expand"
+    [class.no-frame]="noFrame"
+    [class.no-select]="noSelect">
+    <ng-container cdkColumnDef="name">
+      <th mat-header-cell *cdkHeaderCellDef style="width: 400px">Name</th>
+      <td mat-cell *cdkCellDef="let item">
+        @if (item.folder) {
+          <mat-icon class="icon12" style="vertical-align: middle">folder</mat-icon>
+          {{ item.name | filename }}
+        } @else {
+          <mat-icon class="icon12" style="vertical-align: middle">description</mat-icon>
+          <span [ngClass]="foldersOnly ? 'disabled' : ''">{{ item.name | filename }}</span>
+        }
+      </td>
+    </ng-container>
+    <ng-container cdkColumnDef="modified">
+      <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Date modified</th>
+      <td mat-cell *cdkCellDef="let item">
+        <span [ngClass]="!item.folder && foldersOnly ? 'disabled' : ''">
+          {{ (item.modified | datetime) || "-" }}
+        </span>
+      </td>
+    </ng-container>
+    <ng-container cdkColumnDef="size">
+      <th mat-header-cell *cdkHeaderCellDef style="width: 70px">Size</th>
+      <td mat-cell *cdkCellDef="let item">
+        <span [ngClass]="!item.folder && foldersOnly ? 'disabled' : ''">
+          {{ (item.size | formatBytes) || "-" }}
+        </span>
+      </td>
+    </ng-container>
+    <ng-container cdkColumnDef="parent">
+      <td mat-header-cell *cdkHeaderCellDef [attr.colspan]="displayedColumns.length">
+        <mat-icon class="icon12" style="vertical-align: middle; visibility: hidden">
+          description
+        </mat-icon>
+        ..
+      </td>
+    </ng-container>
+    <tr mat-header-row *cdkHeaderRowDef="displayedColumns" (click)="clearSelection()"></tr>
+    <tr
+      mat-row
+      *cdkHeaderRowDef="['parent']"
       class="parent-row"
       [class.hide]="!(currentPrefix$ | async)"
       (click)="selectParent()"></tr>
-  <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"
+    <tr
+      mat-row
+      *cdkRowDef="let row; columns: displayedColumns"
       [class.selected]="isSelected(row)"
       (click)="selectFile($event, row)"></tr>
-</table>
+  </table>
+}

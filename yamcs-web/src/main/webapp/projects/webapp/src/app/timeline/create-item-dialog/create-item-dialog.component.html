@@ -1,26 +1,25 @@
 <h2 mat-dialog-title>Add {{ data.type | lowercase }} item</h2>
 
-<mat-dialog-content class="mat-typography">
+<mat-dialog-content>
   <form [formGroup]="form" class="ya-form">
-    <mat-tab-group animationDuration="0ms"
-                   class="small-tabs"
-                   [mat-stretch-tabs]="false">
+    <mat-tab-group animationDuration="0ms" class="small-tabs" [mat-stretch-tabs]="false">
       <mat-tab label="General">
         <div style="margin-top: 1em">
           <label>
-            Name<br>
-            <input cdkFocusRegionstart type="text" formControlName="name" style="width: 100%">
+            Name<br />
+            <input cdkFocusRegionstart type="text" formControlName="name" style="width: 100%" />
           </label>
-          <hr class="half-break">
+          <hr class="half-break" />
           <label>
             Tags
             <ya-help dialogTitle="Tags">
-              Tags allow to categorise items per band. Bands only show items for which one of the tags is matching.
+              Tags allow to categorise items per band. Bands only show items for which one of the
+              tags is matching.
             </ya-help>
-            <br>
+            <br />
             <ya-tag-select formControlName="tags" />
           </label>
-          <hr class="half-break">
+          <hr class="half-break" />
           <label>
             Duration
             <ya-duration-input formControlName="duration" />
@@ -29,7 +28,7 @@
             <mat-divider />
           </div>
           <label>
-            Start<br>
+            Start<br />
             <ya-date-time-input formControlName="start" />
           </label>
         </div>

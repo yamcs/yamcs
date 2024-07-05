@@ -55,7 +55,6 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
 
     ParameterArchive parchive;
 
-    SegmentEncoderDecoder segmentEncoder = new SegmentEncoderDecoder();
     List<Partition> partitions;
 
     // iterates over partitions
@@ -318,22 +317,22 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
 
                 ValueSegment _engValueSegment = null;
                 if (currentEngValueSegment != null) {
-                    _engValueSegment = (ValueSegment) segmentEncoder.decode(currentEngValueSegment, segStart);
+                    _engValueSegment = (ValueSegment) SegmentEncoderDecoder.decode(currentEngValueSegment, segStart);
                 }
 
                 ValueSegment engValueSegment = retrieveEngValues ? _engValueSegment : null;
 
                 ValueSegment rawValueSegment = null;
                 if (currentRawValueSegment != null) {
-                    rawValueSegment = (ValueSegment) segmentEncoder.decode(currentRawValueSegment, segStart);
+                    rawValueSegment = (ValueSegment) SegmentEncoderDecoder.decode(currentRawValueSegment, segStart);
                 } else if (retrieveRawValues) {
                     rawValueSegment = _engValueSegment;
                 }
                 ParameterStatusSegment parameterStatusSegment = currentStatusSegment == null ? null
-                        : (ParameterStatusSegment) segmentEncoder.decode(currentStatusSegment,
+                        : (ParameterStatusSegment) SegmentEncoderDecoder.decode(currentStatusSegment,
                                 segStart);
                 SortedIntArray gaps = currentGaps == null || segStart != currentGapsSegmentStart ? null
-                        : segmentEncoder.decodeGaps(currentGaps);
+                        : SegmentEncoderDecoder.decodeGaps(currentGaps);
 
                 ParameterValueSegment pvs = new ParameterValueSegment(parameterId.getPid(), timeSegment,
                         engValueSegment, rawValueSegment, parameterStatusSegment, gaps);

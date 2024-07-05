@@ -33,12 +33,13 @@ public class ServiceEleven implements PusService {
     public ServiceEleven(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
         this.config = config;
-        initializeSubServices();
 
         reportCountSize = config.getInt("reportCountSize", DEFAULT_REPORT_COUNT_SIZE);
         sourceIdSize = config.getInt("sourceIdSize", DEFAULT_SOURCE_ID_SIZE);
         apidSize = config.getInt("apidSize", DEFAULT_APID_SIZE);
         seqCountSize = config.getInt("seqCountSize", DEFAULT_SEQ_COUNT_SIZE);
+
+        initializeSubServices();
     }
 
     public void initializeSubServices() {

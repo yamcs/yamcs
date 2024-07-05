@@ -10,9 +10,7 @@ import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
 
 /**
- * Decodes frames as per CCSDS 132.0-B-2 
- * 
- * @author nm
+ * Decodes frames as per CCSDS 132.0-B-3
  *
  */
 public class TmFrameDecoder implements TransferFrameDecoder {
@@ -34,12 +32,12 @@ public class TmFrameDecoder implements TransferFrameDecoder {
         }
 
         int version = (data[offset] & 0xFF) >> 6;
-        if(version != 0) {
+        if (version != 0) {
             throw new TcTmException("Bad frame version number " + version + "; expected 0 (TM)");
         }
 
         int dataEnd = offset + length;
-        if (crc!=null) {
+        if (crc != null) {
             dataEnd -= 2;
             int c1 = crc.compute(data, offset, dataEnd - offset);
             int c2 = ByteArrayUtils.decodeUnsignedShort(data, dataEnd);
@@ -71,13 +69,13 @@ public class TmFrameDecoder implements TransferFrameDecoder {
             dataEnd -= 4;
             ttf.setOcf(ByteArrayUtils.decodeInt(data, dataEnd));
         }
-        
+
         int tfdfs = ByteArrayUtils.decodeShort(data, offset + 4);
         boolean secHeaderPresent = (tfdfs & 0x8000) == 0x8000;
         boolean syncFlag = (tfdfs & 0x4000) == 0x4000;
 
         if (secHeaderPresent) {
-            int secHeaderLength = data[dataOffset] & 0x3F;
+            int secHeaderLength = 1 + data[dataOffset] & 0x3F;
             ttf.setShStart(dataOffset);
             ttf.setShLength(secHeaderLength);
             dataOffset += secHeaderLength;

@@ -1,16 +1,18 @@
-<app-instance-page *ngIf="ptype$ | async as ptype">
-  <app-instance-toolbar>
-    <ng-container *ngIf="(ptype.qualifiedName | spaceSystemName) as spaceSystemName">
-      <a routerLink="/mdb/parameter-types"
-         [queryParams]="{c: yamcs.context, filter: spaceSystemName}"
-         class="ya-link ya-header-link">
-        {{ spaceSystemName }}
-      </a>/{{ ptype.qualifiedName | shortName }}
-      <ya-title-copy [text]="ptype.qualifiedName" />
-    </ng-container>
-  </app-instance-toolbar>
-
-  <div class="panel-content">
-    <app-parameter-type-detail [parameterType]="ptype" />
-  </div>
-</app-instance-page>
+@if (ptype$ | async; as ptype) {
+  <app-instance-page>
+    <app-instance-toolbar>
+      @if (ptype.qualifiedName | spaceSystemName; as spaceSystemName) {
+        <a
+          routerLink="/mdb/parameter-types"
+          [queryParams]="{ c: yamcs.context, filter: spaceSystemName }"
+          class="ya-link ya-header-link">
+          {{ spaceSystemName }} </a
+        >/{{ ptype.qualifiedName | shortName }}
+        <ya-title-copy [text]="ptype.qualifiedName" />
+      }
+    </app-instance-toolbar>
+    <div class="panel-content">
+      <app-parameter-type-detail [parameterType]="ptype" />
+    </div>
+  </app-instance-page>
+}

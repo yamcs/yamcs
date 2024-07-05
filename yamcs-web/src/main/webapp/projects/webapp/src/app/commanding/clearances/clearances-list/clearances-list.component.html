@@ -2,17 +2,21 @@
   <app-instance-toolbar>
     Clearances
     <ya-help>
-      <p>Clearances allow central control over the level of commands that users are able to send.</p>
+      <p>
+        Clearances allow central control over the level of commands that users are able to send.
+      </p>
       <p>
         Clearance works in addition to regular permission checks. So if a user does anyway not have
-        authorization to send certain commands, giving this user clearance will not change this fact.
+        authorization to send certain commands, giving this user clearance will not change this
+        fact.
       </p>
     </ya-help>
     &nbsp;&nbsp;&nbsp;
-    <button mat-button
-            color="primary"
-            [disabled]="!isGroupChangeLevelEnabled()"
-            (click)="openChangeLevelDialog()">
+    <button
+      mat-button
+      color="primary"
+      [disabled]="!isGroupChangeLevelEnabled()"
+      (click)="openChangeLevelDialog()">
       <mat-icon>how_to_reg</mat-icon>
       Change level
     </button>
@@ -20,75 +24,74 @@
 
   <div class="panel-content">
     <app-clearances-page-tabs />
-    <table mat-table
-           *ngIf="dataSource"
-           [dataSource]="dataSource"
-           matSort
-           class="ya-data-table expand"
-           style="margin-top: 16px"
-           matSortActive="username"
-           matSortDirection="asc"
-           matSortDisableClear>
-
-      <ng-container cdkColumnDef="select">
-        <th mat-header-cell *cdkHeaderCellDef class="checkbox">
-          <input type="checkbox" (change)="$event ? masterToggle() : null"
-                 [checked]="selection.hasValue() && isAllSelected()">
-        </th>
-        <td mat-cell *cdkCellDef="let row" class="checkbox">
-          <input type="checkbox" (click)="$event.stopPropagation()"
-                 (change)="$event ? selection.toggle(row) : null"
-                 [checked]="selection.isSelected(row)">
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="username">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Username</th>
-        <td mat-cell *matCellDef="let clearance">
-          {{ clearance.username }}
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="hasCommandPrivileges">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>May Command</th>
-        <td mat-cell *matCellDef="let clearance">
-          <mat-icon *ngIf="clearance.hasCommandPrivileges">check</mat-icon>
-          <mat-icon *ngIf="!clearance.hasCommandPrivileges">close</mat-icon>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="level">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Clearance Level</th>
-        <td mat-cell *matCellDef="let clearance">
-          <ng-container *ngIf="!clearance.level">No clearance</ng-container>
-          <ng-container *ngIf="clearance.level">
-            <app-significance-level [level]="clearance.level" [grayscale]="true" />
-          </ng-container>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="issued">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Issued</th>
-        <td mat-cell *matCellDef="let clearance">
-          {{ (clearance.issueTime | datetime) || '-' }}
-          <ng-container *ngIf="clearance.issuedBy">
-            by {{ clearance.issuedBy }}
-          </ng-container>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef></th>
-        <td mat-cell *matCellDef="let row" class="expand"></td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+    @if (dataSource) {
+      <table
+        mat-table
+        [dataSource]="dataSource"
+        matSort
+        class="ya-data-table expand"
+        style="margin-top: 16px"
+        matSortActive="username"
+        matSortDirection="asc"
+        matSortDisableClear>
+        <ng-container cdkColumnDef="select">
+          <th mat-header-cell *cdkHeaderCellDef class="checkbox">
+            <input
+              type="checkbox"
+              (change)="$event ? masterToggle() : null"
+              [checked]="selection.hasValue() && isAllSelected()" />
+          </th>
+          <td mat-cell *cdkCellDef="let row" class="checkbox">
+            <input
+              type="checkbox"
+              (click)="$event.stopPropagation()"
+              (change)="$event ? selection.toggle(row) : null"
+              [checked]="selection.isSelected(row)" />
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="username">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Username</th>
+          <td mat-cell *matCellDef="let clearance">
+            {{ clearance.username }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="hasCommandPrivileges">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>May Command</th>
+          <td mat-cell *matCellDef="let clearance">
+            {{ clearance.hasCommandPrivileges ? "Yes" : "-" }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="level">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Clearance Level</th>
+          <td mat-cell *matCellDef="let clearance">
+            @if (!clearance.level) {
+              No clearance
+            } @else {
+              <app-significance-level [level]="clearance.level" [grayscale]="true" />
+            }
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="issued">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Issued</th>
+          <td mat-cell *matCellDef="let clearance">
+            {{ (clearance.issueTime | datetime) || "-" }}
+            @if (clearance.issuedBy) {
+              by {{ clearance.issuedBy }}
+            }
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let row" class="expand"></td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: displayedColumns"
           [class.selected]="selection.isSelected(row)"
           (click)="toggleOne(row)"></tr>
-    </table>
-    <mat-paginator [pageSize]="100"
-                   [hidePageSize]="true"
-                   [showFirstLastButtons]="true" />
+      </table>
+    }
+    <mat-paginator [pageSize]="100" [hidePageSize]="true" [showFirstLastButtons]="true" />
   </div>
 </app-instance-page>

@@ -1,12 +1,9 @@
-<mat-dialog-content class="mat-typography">
+<mat-dialog-content>
   <h3>Close without saving?</h3>
   <p>You have unsaved changes, close without saving?</p>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
   <button class="ya-button" mat-dialog-close>CANCEL</button>
-  <button class="ya-button primary"
-          (click)="confirmDiscard()">
-    OK
-  </button>
+  <button class="ya-button primary" (click)="confirmDiscard()">OK</button>
 </mat-dialog-actions>

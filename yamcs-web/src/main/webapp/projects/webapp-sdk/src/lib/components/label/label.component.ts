@@ -1,4 +1,4 @@
-import { NgIf } from '@angular/common';
+
 import { Component, Input } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 
@@ -8,9 +8,8 @@ import { MatIcon } from '@angular/material/icon';
   templateUrl: './label.component.html',
   styleUrl: './label.component.css',
   imports: [
-    MatIcon,
-    NgIf,
-  ],
+    MatIcon
+],
 })
 export class YaLabel {
 

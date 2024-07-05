@@ -24,6 +24,7 @@ services:
       backFiller:
         enabled: true
         warmupTime: 60
+  - class: org.yamcs.timeline.TimelineService
   - class: org.yamcs.simulator.SimulatorCommander
     args:
       telnet:

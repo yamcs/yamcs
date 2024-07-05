@@ -1,10 +1,10 @@
 <h2 mat-dialog-title>Create folder</h2>
 
-<mat-dialog-content class="mat-typography">
+<mat-dialog-content>
   <form [formGroup]="form" class="ya-form">
     <label>
       Folder name
-      <input type="text" formControlName="name" pattern="\w[\w\s\.\-\(\)\[\]]*">
+      <input type="text" formControlName="name" pattern="\w[\w\s\.\-\(\)\[\]]*" />
     </label>
   </form>
 </mat-dialog-content>

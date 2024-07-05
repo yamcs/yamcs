@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { AcknowledgeInfo, WebappSdkModule } from '@yamcs/webapp-sdk';
+import { AcknowledgmentInfo, WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -13,8 +13,8 @@ import { AcknowledgeInfo, WebappSdkModule } from '@yamcs/webapp-sdk';
 export class AdvanceAckHelpComponent {
 
   @Input()
-  verifiers: AcknowledgeInfo[] = [];
+  verifiers: AcknowledgmentInfo[] = [];
 
   @Input()
-  extra: AcknowledgeInfo[] = [];
+  extra: AcknowledgmentInfo[] = [];
 }

@@ -33,6 +33,7 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Argument;
+import org.yamcs.xtce.ArgumentType;
 import org.yamcs.xtce.CommandContainer;
 import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.MetaCommand;
@@ -425,6 +426,11 @@ public class MdbFactory {
         }
         for (ParameterType pt : ss.getParameterTypes()) {
             NameDescription nd = (NameDescription) pt;
+            nd.setQualifiedName(ss.getQualifiedName() + NameDescription.PATH_SEPARATOR + nd.getName());
+        }
+
+        for (ArgumentType at : ss.getArgumentTypes()) {
+            NameDescription nd = (NameDescription) at;
             nd.setQualifiedName(ss.getQualifiedName() + NameDescription.PATH_SEPARATOR + nd.getName());
         }
 

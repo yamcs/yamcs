@@ -24,7 +24,6 @@ class BackFillerTask extends AbstractArchiveFiller {
         }
     }
 
-
     public void setProcessor(Processor proc) {
         this.processor = proc;
     }
@@ -41,32 +40,34 @@ class BackFillerTask extends AbstractArchiveFiller {
         }
     }
 
-
     @Override
     protected void processParameters(long t, BasicParameterList pvList) {
-
         try {
             var pg = parameterGroupIdMap.getGroup(pvList.getPids());
             var parameterGroupId = pg.id;
+            var intvt = getInterval(t);
             PGSegment pgs = pgSegments.computeIfAbsent(parameterGroupId,
-                    id -> new PGSegment(parameterGroupId, t, pg.pids.size()));
+                    id -> new PGSegment(parameterGroupId, intvt, pg.pids.size()));
 
-            if (getInterval(t) != pgs.getInterval()) {
+            if (intvt != pgs.getInterval()) {
                 writeToArchive(pgs);
-                pgs = new PGSegment(parameterGroupId, t, pg.pids.size());
+                pgs = new PGSegment(parameterGroupId, intvt, pg.pids.size());
+                pgSegments.put(parameterGroupId, pgs);
+            } else if (pgs.size() >= maxSegmentSize) {
+                writeToArchive(pgs);
+                int startIdx = pgs.getSegmentIdxInsideInterval() + pgs.size();
+                pgs = new PGSegment(parameterGroupId, intvt, pg.pids.size());
+                pgs.setSegmentIdxInsideInterval(startIdx);
                 pgSegments.put(parameterGroupId, pgs);
             }
 
             pgs.addRecord(t, pvList);
-            if (pgs.size() >= maxSegmentSize) {
-                writeToArchive(pgs);
-                pgSegments.remove(parameterGroupId);
-            }
+
         } catch (RocksDBException e) {
             log.error("Error writing to the parameter archive", e);
         }
-    }
 
+    }
 
     @Override
     protected void abort() {

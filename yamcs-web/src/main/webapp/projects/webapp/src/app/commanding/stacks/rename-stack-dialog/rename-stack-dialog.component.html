@@ -1,17 +1,17 @@
 <h2 mat-dialog-title>Rename stack</h2>
 
-<mat-dialog-content class="mat-typography">
+<mat-dialog-content>
   <form [formGroup]="filenameForm" class="ya-form">
     <label [class.invalid]="filenameForm.get('name')?.invalid">
       Name
-      <input #filename type="text" formControlName="name">
+      <input #filename type="text" formControlName="name" />
     </label>
   </form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
   <button class="ya-button" mat-dialog-close>CANCEL</button>
-  <button class="ya-button primary"
-          (click)="rename()"
-          [disabled]="!filenameForm.valid">RENAME</button>
+  <button class="ya-button primary" (click)="rename()" [disabled]="!filenameForm.valid">
+    RENAME
+  </button>
 </mat-dialog-actions>

@@ -1,71 +1,73 @@
 <div class="block-title" style="padding-top: 0">Command</div>
 <div class="block">
-  {{ (entry.command?.qualifiedName | shortName) || '-' }}
+  {{ (entry.command?.qualifiedName | shortName) || "-" }}
 </div>
 
 <div class="block-title">System</div>
 <div class="block">
-  {{ (entry.command?.qualifiedName| spaceSystemName) || '-' }}
+  {{ (entry.command?.qualifiedName | spaceSystemName) || "-" }}
 </div>
 
-<ng-container *ngFor="let alias of entry.command?.alias">
+@for (alias of entry.command?.alias; track alias) {
   <div class="block-title">{{ alias.namespace }}</div>
   <div class="block">
     {{ alias.name }}
   </div>
-</ng-container>
+}
 
 <div class="block-title">Description</div>
 <div class="block">
-  <ng-container *ngIf="entry.command?.longDescription">
+  @if (entry.command?.longDescription) {
     <app-markdown [text]="entry.command?.longDescription" />
-  </ng-container>
-  <ng-container *ngIf="!entry.command?.longDescription">
-    {{ entry.command?.shortDescription || '-' }}
-  </ng-container>
+  } @else {
+    {{ entry.command?.shortDescription || "-" }}
+  }
 </div>
 
 <mat-divider style="margin-top: 1em; margin-bottom: 1em" />
 
 <div class="block-title">Significance</div>
 <div class="block">
-  <ng-container *ngIf="entry.command?.effectiveSignificance as significance; else dash">
+  @if (entry.command?.effectiveSignificance; as significance) {
     <app-significance-level [level]="significance.consequenceLevel" />
     {{ significance.reasonForWarning }}
-  </ng-container>
+  } @else {
+    -
+  }
 </div>
 
 <mat-divider style="margin-top: 1em; margin-bottom: 1em" />
 
 <div class="block-title" style="padding-top: 0">Constraints</div>
 <div class="block">
-  <ng-container *ngIf="entry.command?.constraint as constraints">
+  @if (entry.command?.constraint; as constraints) {
     <table yaDataTable>
       <tr>
         <th>Constraint</th>
         <th>Timeout</th>
         <th>Live Evaluation</th>
       </tr>
-      <tr *ngFor="let constraint of constraints">
-        <td>{{ constraint.expression }}</td>
-        <td>{{ constraint.timeout || '-' }}</td>
-        <td>
-          <span class="evaluation valid" *ngIf="(expr.result$ | async) === true">
-            satisfied
-          </span>
-          <span class="evaluation invalid" *ngIf="(expr.result$ | async) === false">
-            not satisfied
-          </span>
-          <app-live-expression #expr
-                               [expression]="constraint.expression"
-                               [style.display]="'none'" />
-        </td>
-      </tr>
+      @for (constraint of constraints; track constraint) {
+        <tr>
+          <td>{{ constraint.expression }}</td>
+          <td>{{ constraint.timeout || "-" }}</td>
+          <td>
+            @if ((expr.result$ | async) === true) {
+              <span class="evaluation valid">satisfied</span>
+            }
+            @if ((expr.result$ | async) === false) {
+              <span class="evaluation invalid">not satisfied</span>
+            }
+            <app-live-expression
+              #expr
+              [expression]="constraint.expression"
+              [style.display]="'none'" />
+          </td>
+        </tr>
+      }
     </table>
-  </ng-container>
-  <ng-container *ngIf="!entry.command?.constraint">-</ng-container>
+  }
+  @if (!entry.command?.constraint) {
+    -
+  }
 </div>
-
-<ng-template #dash>
-  -
-</ng-template>

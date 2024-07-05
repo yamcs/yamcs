@@ -1,11 +1,13 @@
 <app-instance-page>
   <app-instance-toolbar>
-    <a mat-icon-button
-       [routerLink]="folderLink"
-       [queryParams]="{c: yamcs.context}"
-       color="primary">
+    <a
+      mat-icon-button
+      [routerLink]="folderLink"
+      [queryParams]="{ c: yamcs.context }"
+      color="primary">
       <mat-icon>arrow_back</mat-icon>
-    </a> {{ filename }}
+    </a>
+    {{ filename }}
 
     &nbsp;&nbsp;&nbsp;
     <ng-template app-viewer-controls-host />

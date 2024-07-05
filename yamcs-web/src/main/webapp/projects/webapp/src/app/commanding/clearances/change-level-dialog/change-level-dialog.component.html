@@ -1,33 +1,33 @@
 <h2 mat-dialog-title>Command clearance</h2>
 
-<mat-dialog-content class="mat-typography">
+<mat-dialog-content>
   <form [formGroup]="form" class="ya-form">
     <label>
-      <input type="radio" formControlName="level" value="DISABLED">
+      <input type="radio" formControlName="level" value="DISABLED" />
       <span style="font-weight: normal">No clearance</span>
     </label>
     <label>
-      <input type="radio" formControlName="level" value="NONE">
+      <input type="radio" formControlName="level" value="NONE" />
       <app-significance-level level="NONE" [grayscale]="true" />
     </label>
     <label>
-      <input type="radio" formControlName="level" value="WATCH">
+      <input type="radio" formControlName="level" value="WATCH" />
       <app-significance-level level="WATCH" [grayscale]="true" />
     </label>
     <label>
-      <input type="radio" formControlName="level" value="WARNING">
+      <input type="radio" formControlName="level" value="WARNING" />
       <app-significance-level level="WARNING" [grayscale]="true" />
     </label>
     <label>
-      <input type="radio" formControlName="level" value="DISTRESS">
+      <input type="radio" formControlName="level" value="DISTRESS" />
       <app-significance-level level="DISTRESS" [grayscale]="true" />
     </label>
     <label>
-      <input type="radio" formControlName="level" value="CRITICAL">
+      <input type="radio" formControlName="level" value="CRITICAL" />
       <app-significance-level level="CRITICAL" [grayscale]="true" />
     </label>
     <label>
-      <input type="radio" formControlName="level" value="SEVERE">
+      <input type="radio" formControlName="level" value="SEVERE" />
       <app-significance-level level="SEVERE" [grayscale]="true" />
     </label>
   </form>
@@ -35,5 +35,7 @@
 
 <mat-dialog-actions align="end">
   <button class="ya-button" mat-dialog-close>CANCEL</button>
-  <button class="ya-button primary" (click)="confirm()" [disabled]="!form.valid">SAVE CHANGES</button>
+  <button class="ya-button primary" (click)="confirm()" [disabled]="!form.valid">
+    SAVE CHANGES
+  </button>
 </mat-dialog-actions>

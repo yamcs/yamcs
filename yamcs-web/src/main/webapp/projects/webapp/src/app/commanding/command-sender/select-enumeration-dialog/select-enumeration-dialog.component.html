@@ -1,21 +1,16 @@
-<mat-toolbar style="background-color: #fff">
-  Select enumeration state
-</mat-toolbar>
+<h2 mat-dialog-title>Select enumeration state</h2>
 
 <mat-dialog-content>
   <div class="filter-bar">
-    <ya-search-filter [formControl]="filterControl"
-                      width="100%"
-                      (onArrowDown)="selectNext()"
-                      (onArrowUp)="selectPrevious()"
-                      (onEnter)="applySelection()" />
+    <ya-search-filter
+      [formControl]="filterControl"
+      width="100%"
+      (onArrowDown)="selectNext()"
+      (onArrowUp)="selectPrevious()"
+      (onEnter)="applySelection()" />
   </div>
   <div class="scrollpane">
-    <table mat-table
-           [dataSource]="dataSource"
-           class="ya-data-table"
-           style="width: 100%">
-
+    <table mat-table [dataSource]="dataSource" class="ya-data-table" style="width: 100%">
       <ng-container cdkColumnDef="value">
         <th mat-header-cell *cdkHeaderCellDef>Value</th>
         <td mat-cell *cdkCellDef="let row">
@@ -38,25 +33,22 @@
       </ng-container>
 
       <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row
-          *cdkRowDef="let row; columns: displayedColumns;"
-          [class.selected]="selection.isSelected(row)"
-          (click)="selection.toggle(row)"></tr>
+      <tr
+        mat-row
+        *cdkRowDef="let row; columns: displayedColumns"
+        [class.selected]="selection.isSelected(row)"
+        (click)="selection.toggle(row)"></tr>
     </table>
   </div>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <mat-paginator [pageSize]="100"
-                 [hidePageSize]="true"
-                 [showFirstLastButtons]="true" />
+  <mat-paginator [pageSize]="100" [hidePageSize]="true" [showFirstLastButtons]="true" />
   <div style="flex: 1 1 auto"></div>
 
   <button class="ya-button" mat-dialog-close>CANCEL</button>
 
-  <button class="ya-button primary"
-          [disabled]="selection.isEmpty()"
-          (click)="applySelection()">
+  <button class="ya-button primary" [disabled]="selection.isEmpty()" (click)="applySelection()">
     SELECT
   </button>
 </mat-dialog-actions>

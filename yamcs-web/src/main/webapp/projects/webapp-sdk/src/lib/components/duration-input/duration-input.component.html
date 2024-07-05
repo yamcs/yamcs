@@ -1,10 +1,11 @@
 <div class="duration-input">
-  <input #input
-         id="duration-input"
-         class="ya-input"
-         type="text"
-         autocomplete="off"
-         (keyup)="fireChange()"
-         (change)="fireChange()">
+  <input
+    #input
+    id="duration-input"
+    class="ya-input"
+    type="text"
+    autocomplete="off"
+    (keyup)="fireChange()"
+    (change)="fireChange()" />
   <ya-select [formControl]="resolutionControl" [options]="resolutionOptions" />
 </div>

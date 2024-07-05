@@ -2,6 +2,7 @@ package org.yamcs.tctm.pus.services.tm.two;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -63,11 +64,11 @@ public class SubServiceTwelve implements PusSubService {
         logicalDeviceReportBucket = PusTmManager.reports;
 
         try {
-            logicalDeviceReportBucket.putObject("logicalDeviceReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
+            logicalDeviceReportBucket.putObject(yamcsInstance + "/logicalDeviceReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
 
         } catch (IOException e) {
-            log.error("Unable to create a directory `" + logicalDeviceReportBucket.getName() + "reports/logicalDeviceReport` for (Service - 2 | SubService - 12)", e);
-            throw new YarchException("Failed to create a directory `" + logicalDeviceReportBucket.getName() + "reports/logicalDeviceReport` for (Service - 2 | SubService - 12)", e);
+            log.error("Unable to create a directory `" + logicalDeviceReportBucket.getName() + "/logicalDeviceReport` for (Service - 2 | SubService - 12)", e);
+            throw new YarchException("Failed to create a directory `" + logicalDeviceReportBucket.getName() + "/logicalDeviceReport` for (Service - 2 | SubService - 12)", e);
         }
 
         // Create Gson instance
@@ -88,11 +89,13 @@ public class SubServiceTwelve implements PusSubService {
         int logicalDeviceID = ByteArrayUtils.decodeUnsignedShort(auxillaryData, pactIDSize);
         int parameterIDData = ByteArrayUtils.decodeUnsignedShort(auxillaryData, (pactIDSize + logicalDeviceIDSize));
 
+        long generationTime = ByteArrayUtils.decodeCustomInteger(pPkt.getGenerationTime(), 0, PusTmManager.absoluteTimeLength);
         long missionTime = PusTmManager.timeService.getMissionTime();
-        String filename = "logicalDeviceReport/" + LocalDateTime.ofInstant(
-            Instant.ofEpochMilli(missionTime),
+
+        String filename = yamcsInstance + "/logicalDeviceReport/" + LocalDateTime.ofInstant(
+            Instant.ofEpochSecond(generationTime),
             ZoneId.of("GMT")
-        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + ".json";
         
         // Populate metadata
         HashMap<String, String> metadata = new HashMap<>();

@@ -45,6 +45,7 @@ public class YamcsTcLink extends AbstractTcDataLink {
     private ProcessorClient procClient;
     private MissionDatabaseClient mdbClient;
     private String cmdOrigin;
+    private boolean failCommandIfNoMappingMatches;
 
     private Set<String> keepUpstreamAcks = new HashSet<>();
     private ArrayList<CommandMapData> commandMapDataList = new ArrayList<>();
@@ -73,15 +74,18 @@ public class YamcsTcLink extends AbstractTcDataLink {
             log.info("Using default config for Cascading command mapping");
             commandMapDataList.add(new CommandMapData());
         }
+        failCommandIfNoMappingMatches = config.getBoolean("failCommandIfNoMappingMatches");
 
         keepUpstreamAcks = new HashSet<>(l);
     }
 
+    @Override
     public boolean sendCommand(PreparedCommand pc) {
         for (CommandMapData data : commandMapDataList) {
             if (data.getCommandType() == CommandMapData.CommandType.DEFAULT) {
                 return sendDirectCommand(pc, data);
             }
+
             String pcfqn = pc.getMetaCommand().getQualifiedName();
             String pcCommandPath;
             if (data.getLocalPath().endsWith("/")) {
@@ -89,7 +93,6 @@ public class YamcsTcLink extends AbstractTcDataLink {
             } else {
                 pcCommandPath = pcfqn;
             }
-
             if (pcCommandPath.startsWith(data.getLocalPath())) {
                 switch (data.getCommandType()) {
                 case DIRECT:
@@ -101,7 +104,13 @@ public class YamcsTcLink extends AbstractTcDataLink {
                 }
             }
         }
-        return true;
+
+        if (failCommandIfNoMappingMatches) {
+            failedCommand(pc.getCommandId(), "No command mapping matched the command");
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private boolean sendEmbeddedBinaryCommand(PreparedCommand pc, CommandMapData data) {
@@ -183,7 +192,7 @@ public class YamcsTcLink extends AbstractTcDataLink {
             return true;
         }
 
-        CommandBuilder cb = procClient.prepareCommand(pc.getCmdName());
+        CommandBuilder cb = procClient.prepareCommand(upstreamCmd.getQualifiedName());
         cb.withOrigin(cmdOrigin);
         long count = tcCount.getAndIncrement();
         cb.withSequenceNumber((int) count);

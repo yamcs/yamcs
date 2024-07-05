@@ -1,3 +1,5 @@
-<div class="panel-content sql" *ngIf="table$ | async as table">
-  <code [innerHTML]="formatSQL(table.script)"></code>
-</div>
+@if (table$ | async; as table) {
+  <div class="panel-content sql">
+    <code [innerHTML]="formatSQL(table.script)"></code>
+  </div>
+}

@@ -2,6 +2,7 @@ package org.yamcs.tctm.pus.services.tm.two;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -63,7 +64,7 @@ public class SubServiceNine implements PusSubService {
         physicalDeviceReportBucket = PusTmManager.reports;
 
         try {
-            physicalDeviceReportBucket.putObject("physicalDeviceReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
+            physicalDeviceReportBucket.putObject(yamcsInstance + "/physicalDeviceReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
 
         } catch (IOException e) {
             log.error("Unable to create a directory `" + physicalDeviceReportBucket.getName() + "/physicalDeviceReport` for (Service - 2 | SubService - 9)", e);
@@ -87,11 +88,14 @@ public class SubServiceNine implements PusSubService {
         int pactID = ByteArrayUtils.decodeUnsignedShort(auxillaryData, 0);
         int physicalDeviceID = ByteArrayUtils.decodeUnsignedShort(auxillaryData, pactIDSize);
         int protocolSpecificData = ByteArrayUtils.decodeUnsignedShort(auxillaryData, (pactIDSize + physicalDeviceIDSize));
+
+        long generationTime = ByteArrayUtils.decodeCustomInteger(pPkt.getGenerationTime(), 0, PusTmManager.absoluteTimeLength);
         long missionTime = PusTmManager.timeService.getMissionTime();
-        String filename = "physicalDeviceReport/" + LocalDateTime.ofInstant(
-            Instant.ofEpochMilli(missionTime),
+
+        String filename = yamcsInstance + "/physicalDeviceReport/" + LocalDateTime.ofInstant(
+            Instant.ofEpochSecond(generationTime),
             ZoneId.of("GMT")
-        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + ".json";
         
         // Populate metadata
         HashMap<String, String> metadata = new HashMap<>();

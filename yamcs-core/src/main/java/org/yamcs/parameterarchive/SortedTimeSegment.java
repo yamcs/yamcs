@@ -3,24 +3,19 @@ package org.yamcs.parameterarchive;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import me.lemire.integercompression.FastPFOR128;
-import me.lemire.integercompression.IntWrapper;
-
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.VarIntUtil;
 
-import static org.yamcs.parameterarchive.ParameterArchive.*;
+import me.lemire.integercompression.FastPFOR128;
+import me.lemire.integercompression.IntWrapper;
 
 /**
- * TimeSegment stores timestamps relative to a segmentStart. The timestamps are stored in a sorted int array.
+ * TimeSegment stores timestamps relative to the interval start. The timestamps are stored in a sorted int array.
  * <p>
- * The timestamps have to be larger than the segmentStart and have to be part of the same interval (see
- * {@link ParameterArchive#INTERVAL_MASK}.
+ * The timestamps have to be part of the same interval (see {@link ParameterArchive#INTERVAL_MASK}.
  * 
- * @author nm
- *
  */
 public class SortedTimeSegment extends BaseSegment {
 
@@ -29,14 +24,16 @@ public class SortedTimeSegment extends BaseSegment {
     static final byte SUBFORMAT_ID_DELTAZG_VB = 2; // compressed with DeltaZigzag plus VarInt32
 
     public static final int VERSION = 0;
-    private long segmentStart;
+    private long interval;
     private SortedIntArray tsarray;
 
-    public SortedTimeSegment(long segmentStart) {
-        super(FORMAT_ID_SortedTimeValueSegment);
-
+    public SortedTimeSegment(long interval) {
+        super(FORMAT_ID_SortedTimeValueSegmentV2);
+        if (interval != ParameterArchive.getInterval(interval)) {
+            throw new IllegalArgumentException(interval + " is not the start of an interval");
+        }
         tsarray = new SortedIntArray();
-        this.segmentStart = segmentStart;
+        this.interval = interval;
     }
 
     /**
@@ -45,18 +42,13 @@ public class SortedTimeSegment extends BaseSegment {
      * @param instant
      */
     public int add(long instant) {
-        if (getIntervalStart(instant) != getIntervalStart(segmentStart)) {
+        if (ParameterArchive.getInterval(instant) != interval) {
             throw new IllegalArgumentException("This timestamp does not fit into this interval;"
-                    + " intervalStart: " + TimeEncoding.toString(getIntervalStart(segmentStart))
+                    + " intervalStart: " + TimeEncoding.toString(interval)
                     + ", instant: " + TimeEncoding.toString(instant));
         }
 
-        if (instant < segmentStart) {
-            tsarray.addToAll((int) (segmentStart - instant));
-            segmentStart = instant;
-        }
-
-        return tsarray.insert((int) (instant - segmentStart));
+        return tsarray.insert((int) (instant - interval));
     }
 
     /**
@@ -66,7 +58,7 @@ public class SortedTimeSegment extends BaseSegment {
      * @return
      */
     public long getTime(int idx) {
-        return segmentStart + tsarray.get(idx);
+        return interval + tsarray.get(idx);
     }
 
     /**
@@ -80,15 +72,54 @@ public class SortedTimeSegment extends BaseSegment {
      * @return
      */
     public int search(long instant) {
-        if (getInterval(segmentStart) != getInterval(instant)) {
-            if (instant < segmentStart) {
+        if (interval != ParameterArchive.getInterval(instant)) {
+            if (instant < interval) {
                 return -1;
             } else {
                 return -tsarray.size() - 1;
             }
         }
 
-        return tsarray.search((int) (instant - segmentStart));
+        return tsarray.search((int) (instant - interval));
+    }
+
+    /**
+     * returns idx such that
+     * 
+     * <pre>
+     * ts[i] >= instant iif i >= idx
+     * </pre>
+     * 
+     */
+    public int lowerBound(long instant) {
+        if (interval != ParameterArchive.getInterval(instant)) {
+            if (instant < interval) {
+                return 0;
+            } else {
+                return tsarray.size();
+            }
+        }
+
+        return tsarray.lowerBound((int) (instant - interval));
+    }
+
+    /**
+     * returns idx such that
+     * 
+     * <pre>
+     * ts[i] <= instant iif i <= idx
+     * </pre>
+     */
+    public int higherBound(long instant) {
+        if (interval != ParameterArchive.getInterval(instant)) {
+            if (instant < interval) {
+                return -1;
+            } else {
+                return tsarray.size() - 1;
+            }
+        }
+
+        return tsarray.higherBound((int) (instant - interval));
     }
 
     public int size() {
@@ -96,7 +127,11 @@ public class SortedTimeSegment extends BaseSegment {
     }
 
     public long getSegmentStart() {
-        return segmentStart;
+        if (tsarray.isEmpty()) {
+            return interval;
+        } else {
+            return interval + tsarray.get(0);
+        }
     }
 
     @Override
@@ -140,10 +175,8 @@ public class SortedTimeSegment extends BaseSegment {
         }
     }
 
-
     /**
-     * Creates a TimeSegment by decoding the buffer
-     * this is the reverse of the {@link #encode()} operation
+     * Creates a TimeSegment by decoding the buffer this is the reverse of the {@link #encode()} operation
      * 
      */
     static SortedIntArray parse(ByteBuffer bb) throws DecodingException {
@@ -173,8 +206,18 @@ public class SortedTimeSegment extends BaseSegment {
         return new SortedIntArray(VarIntUtil.decodeDeltaDeltaZigZag(ddz));
     }
 
-    public static SortedTimeSegment parseFrom(ByteBuffer bb, long segmentStart) throws DecodingException {
-        SortedTimeSegment r = new SortedTimeSegment(segmentStart);
+    public static SortedTimeSegment parseFromV1(ByteBuffer bb, long segmentStart) throws DecodingException {
+        long interval = ParameterArchive.getInterval(segmentStart);
+        SortedTimeSegment r = new SortedTimeSegment(interval);
+        int diff = (int) (segmentStart - interval);
+
+        r.tsarray = parse(bb);
+        r.tsarray.addToAll(diff);
+        return r;
+    }
+
+    public static SortedTimeSegment parseFromV2(ByteBuffer bb, long segmentStart) throws DecodingException {
+        SortedTimeSegment r = new SortedTimeSegment(ParameterArchive.getInterval(segmentStart));
         r.tsarray = parse(bb);
         return r;
     }
@@ -187,7 +230,7 @@ public class SortedTimeSegment extends BaseSegment {
     public long getSegmentEnd() {
         int size = tsarray.size();
         if (size == 0) {
-            return segmentStart;
+            return interval;
         } else {
             return getTime(size - 1);
         }
@@ -197,11 +240,11 @@ public class SortedTimeSegment extends BaseSegment {
         long[] r = new long[posStop - posStart];
         if (ascending) {
             for (int i = posStart; i < posStop; i++) {
-                r[i - posStart] = tsarray.get(i) + segmentStart;
+                r[i - posStart] = tsarray.get(i) + interval;
             }
         } else {
             for (int i = posStop; i > posStart; i--) {
-                r[posStop - i] = tsarray.get(i) + segmentStart;
+                r[posStop - i] = tsarray.get(i) + interval;
             }
         }
         return r;
@@ -220,7 +263,7 @@ public class SortedTimeSegment extends BaseSegment {
                     k++;
                 }
                 if (k >= gaps.size() || gaps.get(k) != i) {
-                    r[j++] = tsarray.get(i) + segmentStart;
+                    r[j++] = tsarray.get(i) + interval;
                 }
             }
         } else {
@@ -230,15 +273,19 @@ public class SortedTimeSegment extends BaseSegment {
                     k--;
                 }
                 if (k < 0 || gaps.get(k) != i) {
-                    r[j++] = tsarray.get(i) + segmentStart;
+                    r[j++] = tsarray.get(i) + interval;
                 }
             }
         }
         return Arrays.copyOf(r, j);
     }
 
+    public long getInterval() {
+        return interval;
+    }
+
     public String toString() {
-        return "[TimeSegment: id:" + segmentStart + ", relative times: " + tsarray.toString() + "]";
+        return "[TimeSegment: interval:" + interval + ", relative times: " + tsarray.toString() + "]";
     }
 
 }

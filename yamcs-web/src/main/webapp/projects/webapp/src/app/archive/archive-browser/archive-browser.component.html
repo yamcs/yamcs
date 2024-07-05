@@ -1,38 +1,38 @@
 <app-instance-page noscroll="true">
   <app-instance-toolbar>
-    Archive browser
-    &nbsp;&nbsp;&nbsp;
-    <button mat-button
-            color="primary"
-            (click)="replayRange()"
-            [disabled]="!(rangeSelection$ | async)">
+    Archive browser &nbsp;&nbsp;&nbsp;
+    <button
+      mat-button
+      color="primary"
+      (click)="replayRange()"
+      [disabled]="!(rangeSelection$ | async)">
       <mat-icon>video_settings</mat-icon>
       Replay range
     </button>
 
-    <ng-container *ngIf="processor$ | async as processor">
-      <button *ngIf="processor.replayRequest as replayRequest"
-              mat-button
-              color="primary"
-              (click)="enableLoop(processor, replayRequest.endAction !== 'LOOP')"
-              [disabled]="!replayRequest.start || !replayRequest.stop">
-        <mat-icon>{{ replayRequest.endAction === 'LOOP' ? 'repeat_on' : 'repeat' }}</mat-icon>
-        Repeat: {{ replayRequest.endAction === 'LOOP' ? 'on' : 'off' }}
-      </button>
-    </ng-container>
+    @if (processor$ | async; as processor) {
+      @if (processor.replayRequest; as replayRequest) {
+        <button
+          mat-button
+          color="primary"
+          (click)="enableLoop(processor, replayRequest.endAction !== 'LOOP')"
+          [disabled]="!replayRequest.start || !replayRequest.stop">
+          <mat-icon>{{ replayRequest.endAction === "LOOP" ? "repeat_on" : "repeat" }}</mat-icon>
+          Repeat: {{ replayRequest.endAction === "LOOP" ? "on" : "off" }}
+        </button>
+      }
+    }
 
-    <button mat-button
-            color="primary"
-            (click)="downloadDump()"
-            [disabled]="!(rangeSelection$ | async)">
+    <button
+      mat-button
+      color="primary"
+      (click)="downloadDump()"
+      [disabled]="!(rangeSelection$ | async)">
       <mat-icon>file_download</mat-icon>
       Download dump
     </button>
 
-    <button mat-icon-button
-            color="primary"
-            (click)="refreshData()"
-            matTooltip="Refresh view">
+    <button mat-icon-button color="primary" (click)="refreshData()" matTooltip="Refresh view">
       <mat-icon>refresh</mat-icon>
     </button>
   </app-instance-toolbar>
@@ -42,34 +42,38 @@
       <button class="ya-button" (click)="pageLeft()">
         <mat-icon>west</mat-icon>
       </button>
-      <button class="ya-button"
-              (mousedown)="toggleMove(-50)"
-              (mouseup)="untoggleMove()"
-              (mouseleave)="untoggleMove()">
+      <button
+        class="ya-button"
+        (mousedown)="toggleMove(-50)"
+        (mouseup)="untoggleMove()"
+        (mouseleave)="untoggleMove()">
         <mat-icon>chevron_left</mat-icon>
       </button>
-      <button class="ya-button"
-              (mousedown)="toggleMove(50)"
-              (mouseup)="untoggleMove()"
-              (mouseleave)="untoggleMove()">
+      <button
+        class="ya-button"
+        (mousedown)="toggleMove(50)"
+        (mouseup)="untoggleMove()"
+        (mouseleave)="untoggleMove()">
         <mat-icon>chevron_right</mat-icon>
       </button>
       <button class="ya-button" (click)="pageRight()">
         <mat-icon>east</mat-icon>
       </button>
       &nbsp;
-      <button class="ya-button" (click)="fitAll()"
-              matTooltip="Show all archive data">
+      <button class="ya-button" (click)="fitAll()" matTooltip="Show all archive data">
         <mat-icon>fit_screen</mat-icon>
         Fit all
       </button>
-      <button class="ya-button" (click)="fitSelection()"
-              *ngIf="(tool$ | async) === 'range-select'"
-              [disabled]="!(rangeSelection$ | async)"
-              matTooltip="Zoom to selected range">
-        <mat-icon>fit_screen</mat-icon>
-        Fit selection
-      </button>
+      @if ((tool$ | async) === "range-select") {
+        <button
+          class="ya-button"
+          (click)="fitSelection()"
+          [disabled]="!(rangeSelection$ | async)"
+          matTooltip="Zoom to selected range">
+          <mat-icon>fit_screen</mat-icon>
+          Fit selection
+        </button>
+      }
       <button class="ya-button" (click)="jumpToToday()">
         <mat-icon>today</mat-icon>
         Today
@@ -89,33 +93,34 @@
         <mat-icon>remove</mat-icon>
       </button>
       &nbsp;
-      <button class="ya-button"
-              [class.active]="((tool$ | async) === 'hand')" (click)="setTool('hand')"
-              matTooltip="Use pan tool">
+      <button
+        class="ya-button"
+        [class.active]="(tool$ | async) === 'hand'"
+        (click)="setTool('hand')"
+        matTooltip="Use pan tool">
         <mat-icon>pan_tool</mat-icon>
       </button>
-      <button class="ya-button"
-              [class.active]="((tool$ | async) === 'range-select')" (click)="setTool('range-select')"
-              matTooltip="Use range selection tool">
+      <button
+        class="ya-button"
+        [class.active]="(tool$ | async) === 'range-select'"
+        (click)="setTool('range-select')"
+        matTooltip="Use range selection tool">
         <mat-icon>highlight_alt</mat-icon>
       </button>
 
       &nbsp;&nbsp;&nbsp;&nbsp;
-      <label *ngFor="let option of legendOptions"
-             class="legend no-select"
-             [style.background]="option.bg"
-             [style.color]="option.fg">
-        <input type="checkbox" [formControlName]="option.id" (change)="updateLegend()">
-        {{ option.name }}
-      </label>
+      @for (option of legendOptions; track option) {
+        <label class="legend no-select" [style.background]="option.bg" [style.color]="option.fg">
+          <input type="checkbox" [formControlName]="option.id" (change)="updateLegend()" />
+          {{ option.name }}
+        </label>
+      }
     </form>
   </div>
 
-
-  <div #container class="timeline-container">
-  </div>
+  <div #container class="timeline-container"></div>
   <div class="zoom-actions">
-    <div class="zoom-actions-inner mat-elevation-z1">
+    <div class="zoom-actions-inner elevation-z1">
       <button mat-button (click)="zoomIn()">
         <mat-icon>add</mat-icon>
       </button>
@@ -126,15 +131,19 @@
     </div>
   </div>
   <div class="info">
-    <span *ngIf="viewportRange$ | async as viewportRange">
-      {{ viewportRange?.start | datetime:false }} &ndash; {{ viewportRange?.stop | datetime }}
-    </span>
+    @if (viewportRange$ | async; as viewportRange) {
+      <span>
+        {{ viewportRange?.start | datetime: false }} &ndash; {{ viewportRange?.stop | datetime }}
+      </span>
+    }
     &nbsp;&nbsp;
     <ya-help>
-      <p>This view allows inspecting the content of the TM Archive, as well as retrieving data as packets. Data is
-        grouped by packet name in bands. For each band, index blocks indicate the presence of data at a particular time
-        range. Note that a single index block does not necessarily mean that there was no gap in the data. When zooming
-        in, more gaps may appear.</p>
+      <p>
+        This view allows inspecting the content of the TM Archive, as well as retrieving data as
+        packets. Data is grouped by packet name in bands. For each band, index blocks indicate the
+        presence of data at a particular time range. Note that a single index block does not
+        necessarily mean that there was no gap in the data. When zooming in, more gaps may appear.
+      </p>
       <p>Pan around by grabbing the canvas.</p>
     </ya-help>
   </div>
