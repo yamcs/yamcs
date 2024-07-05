@@ -129,6 +129,14 @@ public abstract class AbstractIntegrationTest {
         }
     }
 
+    void generatePkt3(String utcStart, int numPackets) {
+        long t0 = TimeEncoding.parse(utcStart);
+        for (int i = 0; i < numPackets; i++) {
+            packetGenerator.setGenerationTime(t0 + 1000 * i);
+            packetGenerator.generate_PKT3();
+        }
+    }
+
     void generatePkt7(String utcStart, int numPackets) {
         long t0 = TimeEncoding.parse(utcStart);
         for (int i = 0; i < numPackets; i++) {
@@ -144,6 +152,7 @@ public abstract class AbstractIntegrationTest {
             packetGenerator.generate_PKT8();
         }
     }
+
 
     void generatePkt13AndTm2Pkt1(String utcStart, int numPackets) {
         long t0 = TimeEncoding.parse(utcStart);

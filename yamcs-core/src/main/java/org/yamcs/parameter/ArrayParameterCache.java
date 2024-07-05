@@ -388,7 +388,12 @@ public class ArrayParameterCache implements ParameterCache {
     /**
      * Stores values for list of parameters of predefined types
      * 
-     * It's like a big table: t0, ev01, rv01, ps01, ev02, rv02, ps02 ... t1, ev11, rv11, ps11, ev12, rv12, ps12 ... ....
+     * It's like a big table:
+     * 
+     * <pre>
+     * t0, ev01, rv01, ps01, ev02, rv02, ps02 ... 
+     * t1, ev11, rv11, ps11, ev12, rv12, ps12 ... ....
+     * </pre>
      * 
      * where: t = timestamp ev = engineering value rv = raw value ps = parameter status
      *

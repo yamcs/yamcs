@@ -21,10 +21,8 @@ import org.yamcs.Processor;
 import org.yamcs.Spec;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.parameterarchive.ParameterGroupIdDb.ParameterGroup;
-import org.yamcs.utils.IntArray;
 import org.yamcs.utils.TimeEncoding;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -197,7 +195,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                 }
             }
 
-            if (segQueue.addRecord(t, pvList.getPids(), pvList.getValues())) {
+            if (segQueue.addRecord(t, pvList)) {
                 segQueue.sendToArchive(t - sortingThreshold, pgs -> scheduleWriteToArchive(pgs));
             } else {
                 log.warn("Realtime parameter archive queue full."
@@ -342,7 +340,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
          * <p>
          * Returns true if the record has been added or false if the queue was full.
          */
-        public synchronized boolean addRecord(long t, IntArray pids, List<BasicParameterValue> pvList) {
+        public synchronized boolean addRecord(long t, BasicParameterList pvList) {
             latestUpdateTime = System.currentTimeMillis();
 
             boolean added = false;
@@ -361,7 +359,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                 if (t <= seg.getSegmentEnd() || seg.size() < maxSegmentSize) {
                     // when the first condition is met only (i.e. new data coming in the middle of a full segment)
                     // the segment will become bigger than the maxSegmentSize
-                    seg.addRecord(t, pids, pvList);
+                    seg.addRecord(t, pvList);
                     added = true;
                     break;
                 }
@@ -374,9 +372,9 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                 if (inc(tail) == head || segments[tail] != null) {
                     return false;
                 }
-
+                var pids = pvList.getPids();
                 PGSegment seg = new PGSegment(parameterGroupId, ParameterArchive.getInterval(t), pids.size());
-                seg.addRecord(t, pids, pvList);
+                seg.addRecord(t, pvList);
                 // shift everything between k and tail to the right
                 for (int i = k; i != tail; i = inc(i)) {
                     segments[inc(i)] = segments[i];

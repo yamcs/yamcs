@@ -11,6 +11,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.IntArray;
+import org.yamcs.utils.IntHashSet;
 
 /**
  * Builds list of parameter id and parameter value.
@@ -18,14 +19,35 @@ import org.yamcs.utils.IntArray;
  * The list can be sorted on parameter ids using the {@link #sort()} method
  * <p>
  * Any parameter which is not in the ParameterIdDb will be added. This includes the aggregates and arrays.
+ * <p>
+ * In order to handle the case when the same parameter has multiple values (with the same timestamp), we have a chain of
+ * these lists. The first list in the chain contains maximum of parameter values, the next in chain contains the next
+ * values for the parameters that have already some value in the first list and so on such that each list of the chain
+ * contains only one single value for each parameter.
+ * <p>
+ * Note that elements of arrays are considered different parameters, not duplicates of the same parameter.
+ * 
  */
 class BasicParameterList {
     final ParameterIdDb parameterIdMap;
-    final IntArray idArray = new IntArray();
-    final List<BasicParameterValue> pvList = new ArrayList<>();
+    final IntArray idArray;
+    // unique parameter ids for this list
+    final IntHashSet uniquePids = new IntHashSet();
+
+    final List<BasicParameterValue> pvList;
+    BasicParameterList next = null;
 
     public BasicParameterList(ParameterIdDb parameterIdMap) {
         this.parameterIdMap = parameterIdMap;
+        this.idArray = new IntArray();
+        this.pvList = new ArrayList<>();
+    }
+
+    // used for unit tests
+    BasicParameterList(IntArray idArray, List<BasicParameterValue> pvList) {
+        this.idArray = idArray;
+        this.parameterIdMap = null;
+        this.pvList = pvList;
     }
 
     // add the parameter to the list but also expand if it is an aggregate or array
@@ -56,8 +78,7 @@ class BasicParameterList {
             addArray(name, pv, aggrray);
         } else {
             int parameterId = parameterIdMap.createAndGet(name, engType, rawType);
-            idArray.add(parameterId);
-            pvList.add(pv);
+            doAdd(parameterId, pv);
             if (aggrray != null) {
                 aggrray.add(parameterId);
             }
@@ -118,6 +139,18 @@ class BasicParameterList {
         }
     }
 
+    private void doAdd(int pid, BasicParameterValue pv) {
+        if (uniquePids.add(pid)) {
+            idArray.add(pid);
+            pvList.add(pv);
+        } else {
+            if (next == null) {
+                next = new BasicParameterList(parameterIdMap);
+                next.doAdd(pid, pv);
+            }
+        }
+    }
+
     private static String toIndexSpecifier(int[] dims) {
         String[] dimStrings = Arrays.stream(dims).mapToObj(String::valueOf).toArray(String[]::new);
         return "[" + String.join("][", dimStrings) + "]";
@@ -135,9 +168,21 @@ class BasicParameterList {
         return pvList;
     }
 
+    /**
+     * returns the next list containing values for parameters that already had a value in this list
+     * <p>
+     * If there are no parameters with two values, this returns null
+     */
+    public BasicParameterList next() {
+        return next;
+    }
+
     // sort the parameters by id
     public void sort() {
         idArray.sort(pvList);
+        if (next != null) {
+            next.sort();
+        }
     }
 
     public String toString() {

@@ -387,6 +387,67 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
 
     }
 
+    /**
+     * PKT3 contains n*block constructs that generate multiple values for one parameter at the same timestamp
+     */
+    @Test
+    public void testWithSameTimestamps() throws Exception {
+        generatePkt3("2024-07-05T04:00:00", 100);
+
+        Instant start = Instant.parse("2024-07-05T04:00:00Z");
+        Instant stop = Instant.parse("2024-07-05T04:01:00Z");
+        Page<ParameterValue> page = archiveClient.listValues("/REFMDB/SUBSYS1/IntegerPara1_2", start, stop)
+                .get();
+
+        List<ParameterValue> values = new ArrayList<>();
+        page.iterator().forEachRemaining(values::add);
+
+        // TODO fix parameter cache to cache multiple values for the same parameter
+        // assertEquals(120, values.size());
+        org.yamcs.protobuf.Pvalue.ParameterValue pv = values.get(0);
+
+        // build the parameter archive
+        buildParameterArchive("2024-07-05T04:00:00", "2024-07-05T06:00:00");
+
+        start = Instant.parse("2024-07-05T04:00:02Z");
+        stop = Instant.parse("2024-07-05T04:00:10Z");
+        page = archiveClient.listValues("/REFMDB/SUBSYS1/IntegerPara1_2",
+                start, stop, ListOptions.ascending(true)).get();
+
+        values.clear();
+        page.iterator().forEachRemaining(values::add);
+        for (var v : values) {
+            System.out.println("values: " + Timestamps.toString(v.getGenerationTime()));
+
+        }
+
+        assertEquals(16, values.size());
+        var pv0 = values.get(0);
+        var pv1 = values.get(1);
+
+        assertEquals("2024-07-05T04:00:02Z", Timestamps.toString(pv0.getGenerationTime()));
+        assertEquals("2024-07-05T04:00:02Z", Timestamps.toString(pv1.getGenerationTime()));
+
+        assertEquals(3, pv0.getEngValue().getUint32Value());
+        assertEquals(4, pv1.getEngValue().getUint32Value());
+
+        start = Instant.parse("2024-07-05T04:00:02Z");
+        stop = Instant.parse("2024-07-05T04:00:10Z");
+        page = archiveClient.listValues("/REFMDB/SUBSYS1/IntegerPara1_2",
+                start, stop, ListOptions.ascending(false)).get();
+
+        values.clear();
+        page.iterator().forEachRemaining(values::add);
+        for (var v : values) {
+            System.out.println("values: " + Timestamps.toString(v.getGenerationTime()));
+
+        }
+
+        assertEquals(16, values.size());
+        pv0 = values.get(0);
+        pv1 = values.get(1);
+    }
+
     private void buildParameterArchive(String start, String stop) throws InterruptedException, ExecutionException {
         ParameterArchive parameterArchive = YamcsServer.getServer().getService(yamcsInstance, ParameterArchive.class);
         Future<?> f = parameterArchive.reprocess(TimeEncoding.parse(start), TimeEncoding.parse(stop));

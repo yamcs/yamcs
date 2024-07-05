@@ -83,6 +83,45 @@ public class SortedTimeSegment extends BaseSegment {
         return tsarray.search((int) (instant - interval));
     }
 
+    /**
+     * returns idx such that
+     * 
+     * <pre>
+     * ts[i] >= instant iif i >= idx
+     * </pre>
+     * 
+     */
+    public int lowerBound(long instant) {
+        if (interval != ParameterArchive.getInterval(instant)) {
+            if (instant < interval) {
+                return 0;
+            } else {
+                return tsarray.size();
+            }
+        }
+
+        return tsarray.lowerBound((int) (instant - interval));
+    }
+
+    /**
+     * returns idx such that
+     * 
+     * <pre>
+     * ts[i] <= instant iif i <= idx
+     * </pre>
+     */
+    public int higherBound(long instant) {
+        if (interval != ParameterArchive.getInterval(instant)) {
+            if (instant < interval) {
+                return -1;
+            } else {
+                return tsarray.size() - 1;
+            }
+        }
+
+        return tsarray.higherBound((int) (instant - interval));
+    }
+
     public int size() {
         return tsarray.size();
     }

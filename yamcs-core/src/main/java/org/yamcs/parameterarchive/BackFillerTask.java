@@ -42,7 +42,6 @@ class BackFillerTask extends AbstractArchiveFiller {
 
     @Override
     protected void processParameters(long t, BasicParameterList pvList) {
-
         try {
             var pg = parameterGroupIdMap.getGroup(pvList.getPids());
             var parameterGroupId = pg.id;
