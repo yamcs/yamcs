@@ -2,6 +2,7 @@ package org.yamcs.tctm.pus.services.tm.two;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -77,8 +78,10 @@ public class SubServiceSix implements PusSubService {
         }
 
         long missionTime = PusTmManager.timeService.getMissionTime();
+        long generationTime = ByteArrayUtils.decodeCustomInteger(pPkt.getGenerationTime(), 0, PusTmManager.absoluteTimeLength);
+
         String filename = "deviceRegisterReport/" + LocalDateTime.ofInstant(
-            Instant.ofEpochMilli(missionTime),
+            Instant.ofEpochSecond(generationTime),
             ZoneId.of("GMT")
         ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + ".json";
         

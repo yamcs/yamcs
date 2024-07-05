@@ -15,6 +15,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -86,10 +87,10 @@ public class SubServiceNineteen implements PusSubService {
         throw new UnsupportedOperationException("Unimplemented method 'process'");
     }
 
-    public void generatePacketStoredStatusReport(Map<Integer, byte[]> packetStoreReportMap) {
+    public void generatePacketStoredStatusReport(long generationTime, Map<Integer, byte[]> packetStoreReportMap) {
         long missionTime = PusTmManager.timeService.getMissionTime();
         String filename = "packetStoreStatusReport/" + LocalDateTime.ofInstant(
-            Instant.ofEpochMilli(missionTime),
+            Instant.ofEpochSecond(generationTime),
             ZoneId.of("GMT")
         ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + ".csv";
 
@@ -145,7 +146,8 @@ public class SubServiceNineteen implements PusSubService {
         }
 
         // Generate CSV report
-        generatePacketStoredStatusReport(packetStoreReportMap);
+        long generationTime = ByteArrayUtils.decodeCustomInteger(pPkt.getGenerationTime(), 0, PusTmManager.absoluteTimeLength);
+        generatePacketStoredStatusReport(generationTime, packetStoreReportMap);
 
         ArrayList<TmPacket> pPkts = new ArrayList<>();
         pPkts.add(tmPacket); 

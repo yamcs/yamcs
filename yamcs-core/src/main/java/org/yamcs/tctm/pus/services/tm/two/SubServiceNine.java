@@ -2,6 +2,7 @@ package org.yamcs.tctm.pus.services.tm.two;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -87,9 +88,12 @@ public class SubServiceNine implements PusSubService {
         int pactID = ByteArrayUtils.decodeUnsignedShort(auxillaryData, 0);
         int physicalDeviceID = ByteArrayUtils.decodeUnsignedShort(auxillaryData, pactIDSize);
         int protocolSpecificData = ByteArrayUtils.decodeUnsignedShort(auxillaryData, (pactIDSize + physicalDeviceIDSize));
+
+        long generationTime = ByteArrayUtils.decodeCustomInteger(pPkt.getGenerationTime(), 0, PusTmManager.absoluteTimeLength);
         long missionTime = PusTmManager.timeService.getMissionTime();
+
         String filename = "physicalDeviceReport/" + LocalDateTime.ofInstant(
-            Instant.ofEpochMilli(missionTime),
+            Instant.ofEpochSecond(generationTime),
             ZoneId.of("GMT")
         ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + ".json";
         

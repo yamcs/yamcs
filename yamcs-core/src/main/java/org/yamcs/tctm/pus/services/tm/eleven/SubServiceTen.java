@@ -91,7 +91,7 @@ public class SubServiceTen implements PusSubService {
         return null;
     }
 
-    public ArrayList<byte[]> generateTimetagScheduleDetailReport(Map<Long, byte[]> requestTcPacketsMap,  Map<String, Integer> props, ObjectProperties foundObject) {
+    public ArrayList<byte[]> generateTimetagScheduleDetailReport(long gentime, Map<Long, byte[]> requestTcPacketsMap,  Map<String, Integer> props, ObjectProperties foundObject) {
         long missionTime = PusTmManager.timeService.getMissionTime();
 
         String filename;
@@ -100,7 +100,7 @@ public class SubServiceTen implements PusSubService {
 
         if (foundObject == null) {
             filename = "timetagScheduleDetailReport/" + LocalDateTime.ofInstant(
-                Instant.ofEpochMilli(missionTime),
+                Instant.ofEpochSecond(gentime),
                 ZoneId.of("GMT")
             ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + ".csv";
 
@@ -245,7 +245,8 @@ public class SubServiceTen implements PusSubService {
         }
 
         // Generate the report
-        ArrayList<byte[]> newPayload = generateTimetagScheduleDetailReport(requestTcPacketsMap, props, foundObject);
+        long generationTime = ByteArrayUtils.decodeCustomInteger(pPkt.getGenerationTime(), 0, PusTmManager.absoluteTimeLength);
+        ArrayList<byte[]> newPayload = generateTimetagScheduleDetailReport(generationTime, requestTcPacketsMap, props, foundObject);
 
         // Create a new TmPacket similar S(11, 10)
         byte[] primaryHeader = pPkt.getPrimaryHeader();

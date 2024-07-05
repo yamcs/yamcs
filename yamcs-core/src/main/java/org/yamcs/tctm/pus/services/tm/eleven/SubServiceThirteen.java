@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -87,7 +88,7 @@ public class SubServiceThirteen implements PusSubService {
         return null;
     }
 
-    public void generateTimetagScheduleSummaryReport(Map<Long, ArrayList<Integer>> requestTcPacketsMap, Map<String, Integer> props, ObjectProperties foundObject) {
+    public void generateTimetagScheduleSummaryReport(long gentime, Map<Long, ArrayList<Integer>> requestTcPacketsMap, Map<String, Integer> props, ObjectProperties foundObject) {
         long missionTime = PusTmManager.timeService.getMissionTime();
 
         String filename;
@@ -96,7 +97,7 @@ public class SubServiceThirteen implements PusSubService {
 
         if (foundObject == null) {
             filename = "timetagScheduleSummaryReport/" + LocalDateTime.ofInstant(
-                Instant.ofEpochMilli(missionTime),
+                Instant.ofEpochSecond(gentime),
                 ZoneId.of("GMT")
             ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + ".csv";
 
@@ -228,9 +229,10 @@ public class SubServiceThirteen implements PusSubService {
         // Check if a unique file already exists
         try {
             ObjectProperties foundObject = findObject(uniqueSignature);
+            long generationTime = ByteArrayUtils.decodeCustomInteger(pPkt.getGenerationTime(), 0, PusTmManager.absoluteTimeLength);
 
             // Generate the report
-            generateTimetagScheduleSummaryReport(requestTcPacketsMap, props, foundObject);
+            generateTimetagScheduleSummaryReport(generationTime, requestTcPacketsMap, props, foundObject);
 
         } catch (IOException e) {
             throw new UncheckedIOException("S(11, 13) | Unable to find object with UniqueSignature: " + uniqueSignature + " in bucket: " + (timetagScheduleSummaryReportBucket != null ? " -> " + timetagScheduleSummaryReportBucket.getName() : ""), e);
