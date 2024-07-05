@@ -240,6 +240,15 @@ public class YConfiguration {
         return c;
     }
 
+    public synchronized static YConfiguration getConfiguration(String subsystem, String pathDir) throws ConfigurationException {
+        YConfiguration c = configurations.get(subsystem);
+        if (c == null) {
+            c = new YConfiguration(subsystem, resolver.getConfigurationStream("/" + pathDir + "/" + subsystem + ".yaml"), pathDir + "/" + subsystem + ".yaml");
+            configurations.put(pathDir + "/" + subsystem, c);
+        }
+        return c;
+    }
+
     /**
      * Loads and returns a configuration corresponding to a file &lt;subsystem&gt;.yaml
      *

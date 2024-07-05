@@ -47,7 +47,7 @@ public class ServiceSix implements PusService {
 
         // Load Group<>Offset mapping
         List<String> memoryIdStr = config.getList("memoryId");
-        YConfiguration memoryIdConfig = YConfiguration.getConfiguration("pus.six");
+        YConfiguration memoryIdConfig = YConfiguration.getConfiguration("six", "pus");
         
         for (String memoryId: memoryIdStr) {
             if (memoryIdConfig.containsKey(memoryId)) {

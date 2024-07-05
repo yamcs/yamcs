@@ -48,7 +48,7 @@ public class ServiceSix implements PusService {
 
         crc = new CrcCciitCalculator(config.getConfig("crc"));
         List<String> memoryIdStr = config.getList("memoryId");
-        YConfiguration memoryIdConfig = YConfiguration.getConfiguration("pus.six");
+        YConfiguration memoryIdConfig = YConfiguration.getConfiguration("six", "pus");
         
         for (String memoryId: memoryIdStr) {
             if (memoryIdConfig.containsKey(memoryId)) {
