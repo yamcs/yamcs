@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.yamcs.examples</groupId>
     <artifactId>examples</artifactId>
-    <version>5.9.8-Pixxel.SNAPSHOT-2.11.0</version>
+    <version>5.9.8-Pixxel.SNAPSHOT-2.11.1</version>
   </parent>
 
   <artifactId>templates</artifactId>
