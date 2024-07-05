@@ -146,8 +146,8 @@ class BasicParameterList {
         } else {
             if (next == null) {
                 next = new BasicParameterList(parameterIdMap);
-                next.doAdd(pid, pv);
             }
+            next.doAdd(pid, pv);
         }
     }
 
