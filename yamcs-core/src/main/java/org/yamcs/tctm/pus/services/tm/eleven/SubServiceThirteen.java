@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -63,7 +62,7 @@ public class SubServiceThirteen implements PusSubService {
         timetagScheduleSummaryReportBucket = PusTmManager.reports;
 
         try {
-            timetagScheduleSummaryReportBucket.putObject("timetagScheduleSummaryReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
+            timetagScheduleSummaryReportBucket.putObject(yamcsInstance + "/timetagScheduleSummaryReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
 
         } catch (IOException e) {
             log.error("Unable to create a directory `" + timetagScheduleSummaryReportBucket.getName() + "/timetagScheduleSummaryReport` for (Service - 11 | SubService - 13)", e);
@@ -96,7 +95,7 @@ public class SubServiceThirteen implements PusSubService {
         Map<String, String> metadata;
 
         if (foundObject == null) {
-            filename = "timetagScheduleSummaryReport/" + LocalDateTime.ofInstant(
+            filename = yamcsInstance + "/timetagScheduleSummaryReport/" + LocalDateTime.ofInstant(
                 Instant.ofEpochSecond(gentime),
                 ZoneId.of("GMT")
             ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + ".csv";
@@ -130,7 +129,7 @@ public class SubServiceThirteen implements PusSubService {
                 BufferedWriter writer = new BufferedWriter(stringWriter)) {
 
                 // Write header
-                writer.write("ReleaseTimetag,SourceId,CommandApid,CommandCcsdsSeqCount,PusService,PusSubService");
+                writer.write("ReleaseTimetag,SourceId,CommandApid,CommandCcsdsSeqCount");
                 writer.newLine();
                 writer.flush();
                 
@@ -141,7 +140,7 @@ public class SubServiceThirteen implements PusSubService {
             }
 
         } else {
-            metadata = foundObject.getMetadataMap();
+            metadata = new HashMap<>(foundObject.getMetadataMap());
             filename = foundObject.getName();
 
             // Populate modified time
@@ -157,8 +156,16 @@ public class SubServiceThirteen implements PusSubService {
             indices.add(String.valueOf(props.get("ReportIndex")));
             metadata.put("ReportIndices", new Gson().toJson(indices));
 
-            // Fetch content from foundObject
-            content = foundObject.getContentTypeBytes().toStringUtf8();
+            try {
+                // Fetch content from foundObject
+                content = new String(timetagScheduleSummaryReportBucket.getObject(filename), StandardCharsets.UTF_8);
+
+                // Delete File
+                timetagScheduleSummaryReportBucket.deleteObject(filename);
+
+            } catch (IOException e) {
+                throw new UncheckedIOException("S(11, 13) | Cannot delete previous timetag summary report in bucket: " + filename + " " + (timetagScheduleSummaryReportBucket != null ? " -> " + timetagScheduleSummaryReportBucket.getName() : ""), e);
+            }
         }
 
         try (StringWriter stringWriter = new StringWriter();
@@ -166,7 +173,6 @@ public class SubServiceThirteen implements PusSubService {
 
             // Add content
             writer.write(content);
-            if (content != null)
 
             for(Map.Entry<Long, ArrayList<Integer>> requestTcMap: requestTcPacketsMap.entrySet()) {
                 ArrayList<Integer> requestId = requestTcMap.getValue();
@@ -219,7 +225,7 @@ public class SubServiceThirteen implements PusSubService {
         Map<Long, ArrayList<Integer>> requestTcPacketsMap = new HashMap<>(numOfReports);
 
         for (int index = 0; index < numOfReports; index++) {
-            long releaseTime = ByteArrayUtils.decodeLong(reportArr, 0);
+            long releaseTime = ByteArrayUtils.decodeCustomInteger(reportArr, 0, PusTcManager.timetagLength);
             ArrayList<Integer> tcIdentification = extractFromRequestId(reportArr);
 
             requestTcPacketsMap.put(releaseTime, tcIdentification);

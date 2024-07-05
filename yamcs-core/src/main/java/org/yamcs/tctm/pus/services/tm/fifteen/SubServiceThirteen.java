@@ -59,7 +59,7 @@ public class SubServiceThirteen implements PusSubService {
         packetStoreSummaryReportBucket = PusTmManager.reports;
 
         try {
-            packetStoreSummaryReportBucket.putObject("packetStoreSummaryReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
+            packetStoreSummaryReportBucket.putObject(yamcsInstance + "/packetStoreSummaryReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
 
         } catch (IOException e) {
             log.error("Unable to create a directory `" + packetStoreSummaryReportBucket.getName() + "/packetStoreSummaryReport` for (Service - 15 | SubService - 13)", e);
@@ -74,7 +74,7 @@ public class SubServiceThirteen implements PusSubService {
 
     public void generatePacketStoredSummaryReport(long generationTime, Map<Integer, byte[]> packetStoreReportMap) {
         long missionTime = PusTmManager.timeService.getMissionTime();
-        String filename = "packetStoreSummaryReport/" + LocalDateTime.ofInstant(
+        String filename = yamcsInstance + "/packetStoreSummaryReport/" + LocalDateTime.ofInstant(
             Instant.ofEpochSecond(generationTime),
             ZoneId.of("GMT")
         ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + ".csv";

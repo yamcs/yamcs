@@ -15,7 +15,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -74,7 +73,7 @@ public class SubServiceNineteen implements PusSubService {
         packetStoreStatusReportBucket = PusTmManager.reports;
 
         try {
-            packetStoreStatusReportBucket.putObject("packetStoreStatusReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
+            packetStoreStatusReportBucket.putObject(yamcsInstance + "/packetStoreStatusReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
 
         } catch (IOException e) {
             log.error("Unable to create a directory `" + packetStoreStatusReportBucket.getName() + "/packetStoreStatusReport` for (Service - 15 | SubService - 19)", e);
@@ -89,7 +88,7 @@ public class SubServiceNineteen implements PusSubService {
 
     public void generatePacketStoredStatusReport(long generationTime, Map<Integer, byte[]> packetStoreReportMap) {
         long missionTime = PusTmManager.timeService.getMissionTime();
-        String filename = "packetStoreStatusReport/" + LocalDateTime.ofInstant(
+        String filename = yamcsInstance + "/packetStoreStatusReport/" + LocalDateTime.ofInstant(
             Instant.ofEpochSecond(generationTime),
             ZoneId.of("GMT")
         ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + ".csv";

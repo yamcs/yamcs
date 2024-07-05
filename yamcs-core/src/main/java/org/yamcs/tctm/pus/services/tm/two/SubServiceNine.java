@@ -64,7 +64,7 @@ public class SubServiceNine implements PusSubService {
         physicalDeviceReportBucket = PusTmManager.reports;
 
         try {
-            physicalDeviceReportBucket.putObject("physicalDeviceReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
+            physicalDeviceReportBucket.putObject(yamcsInstance + "/physicalDeviceReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
 
         } catch (IOException e) {
             log.error("Unable to create a directory `" + physicalDeviceReportBucket.getName() + "/physicalDeviceReport` for (Service - 2 | SubService - 9)", e);
@@ -92,7 +92,7 @@ public class SubServiceNine implements PusSubService {
         long generationTime = ByteArrayUtils.decodeCustomInteger(pPkt.getGenerationTime(), 0, PusTmManager.absoluteTimeLength);
         long missionTime = PusTmManager.timeService.getMissionTime();
 
-        String filename = "physicalDeviceReport/" + LocalDateTime.ofInstant(
+        String filename = yamcsInstance + "/physicalDeviceReport/" + LocalDateTime.ofInstant(
             Instant.ofEpochSecond(generationTime),
             ZoneId.of("GMT")
         ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + ".json";

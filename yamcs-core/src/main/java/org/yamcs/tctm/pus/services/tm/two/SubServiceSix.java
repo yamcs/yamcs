@@ -51,7 +51,7 @@ public class SubServiceSix implements PusSubService {
         registerDumpBucket = PusTmManager.reports;
 
         try {
-            registerDumpBucket.putObject("deviceRegisterReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
+            registerDumpBucket.putObject(yamcsInstance + "/deviceRegisterReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
 
         } catch (IOException e) {
             log.error("Unable to create a directory `" + registerDumpBucket.getName() + "/registerDumpBucket` for (Service - 2 | SubService - 6)", e);
@@ -80,7 +80,7 @@ public class SubServiceSix implements PusSubService {
         long missionTime = PusTmManager.timeService.getMissionTime();
         long generationTime = ByteArrayUtils.decodeCustomInteger(pPkt.getGenerationTime(), 0, PusTmManager.absoluteTimeLength);
 
-        String filename = "deviceRegisterReport/" + LocalDateTime.ofInstant(
+        String filename = yamcsInstance + "/deviceRegisterReport/" + LocalDateTime.ofInstant(
             Instant.ofEpochSecond(generationTime),
             ZoneId.of("GMT")
         ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + ".json";

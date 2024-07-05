@@ -64,7 +64,7 @@ public class SubServiceTwelve implements PusSubService {
         logicalDeviceReportBucket = PusTmManager.reports;
 
         try {
-            logicalDeviceReportBucket.putObject("logicalDeviceReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
+            logicalDeviceReportBucket.putObject(yamcsInstance + "/logicalDeviceReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
 
         } catch (IOException e) {
             log.error("Unable to create a directory `" + logicalDeviceReportBucket.getName() + "/logicalDeviceReport` for (Service - 2 | SubService - 12)", e);
@@ -92,7 +92,7 @@ public class SubServiceTwelve implements PusSubService {
         long generationTime = ByteArrayUtils.decodeCustomInteger(pPkt.getGenerationTime(), 0, PusTmManager.absoluteTimeLength);
         long missionTime = PusTmManager.timeService.getMissionTime();
 
-        String filename = "logicalDeviceReport/" + LocalDateTime.ofInstant(
+        String filename = yamcsInstance + "/logicalDeviceReport/" + LocalDateTime.ofInstant(
             Instant.ofEpochSecond(generationTime),
             ZoneId.of("GMT")
         ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + ".json";

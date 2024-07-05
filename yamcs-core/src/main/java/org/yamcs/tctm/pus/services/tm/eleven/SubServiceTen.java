@@ -66,7 +66,7 @@ public class SubServiceTen implements PusSubService {
         timetagScheduleDetailReportBucket = PusTmManager.reports;
 
         try {
-            timetagScheduleDetailReportBucket.putObject("timetagScheduleDetailReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
+            timetagScheduleDetailReportBucket.putObject(yamcsInstance + "/timetagScheduleDetailReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
 
         } catch (IOException e) {
             log.error("Unable to create a directory `" + timetagScheduleDetailReportBucket.getName() + "/timetagScheduleDetailReport` for (Service - 11 | SubService - 10)", e);
@@ -99,7 +99,7 @@ public class SubServiceTen implements PusSubService {
         Map<String, String> metadata;
 
         if (foundObject == null) {
-            filename = "timetagScheduleDetailReport/" + LocalDateTime.ofInstant(
+            filename = yamcsInstance + "/timetagScheduleDetailReport/" + LocalDateTime.ofInstant(
                 Instant.ofEpochSecond(gentime),
                 ZoneId.of("GMT")
             ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + ".csv";
@@ -144,7 +144,7 @@ public class SubServiceTen implements PusSubService {
                 throw new UncheckedIOException("S(11, 10) | Cannot save timetag summary report in bucket: " + filename + " " + (timetagScheduleDetailReportBucket != null ? " -> " + timetagScheduleDetailReportBucket.getName() : ""), e);
             }
         } else {
-            metadata = foundObject.getMetadataMap();
+            metadata = new HashMap<>(foundObject.getMetadataMap());
             filename = foundObject.getName();
 
             // Populate modified time
@@ -160,8 +160,16 @@ public class SubServiceTen implements PusSubService {
             indices.add(String.valueOf(props.get("ReportIndex")));
             metadata.put("ReportIndices", new Gson().toJson(indices));
 
-            // Fetch content from foundObject
-            content = foundObject.getContentTypeBytes().toStringUtf8();
+            try {
+                // Fetch content from foundObject
+                content = new String(timetagScheduleDetailReportBucket.getObject(filename), StandardCharsets.UTF_8);
+
+                // Delete File
+                timetagScheduleDetailReportBucket.deleteObject(filename);
+
+            } catch (IOException e) {
+                throw new UncheckedIOException("S(11, 10) | Cannot delete previous timetag summary report in bucket: " + filename + " " + (timetagScheduleDetailReportBucket != null ? " -> " + timetagScheduleDetailReportBucket.getName() : ""), e);
+            }
         }
 
         ArrayList<byte[]> releaseAndRequestTimes = new ArrayList<>();
@@ -170,7 +178,6 @@ public class SubServiceTen implements PusSubService {
 
             // Add content
             writer.write(content);
-            if (content != null)
 
             for(Map.Entry<Long, byte[]> requestTcMap: requestTcPacketsMap.entrySet()) {
                 byte[] tcPacket = requestTcMap.getValue();
@@ -272,7 +279,7 @@ public class SubServiceTen implements PusSubService {
         Map<Long, byte[]> requestTcPacketsMap = new HashMap<>(numOfReports);
 
         for (int reportIndex = 0; reportIndex < numOfReports; reportIndex++) {
-            long releaseTime = ByteArrayUtils.decodeLong(reportArr, 0);
+            long releaseTime = ByteArrayUtils.decodeCustomInteger(reportArr, 0, PusTcManager.timetagLength);
             int requestTcPacketLength = (ByteArrayUtils.decodeShort(reportArr,
                     PusTcManager.timetagLength + packIdPackSeqControlLength) + 1) + 6;
 
