@@ -61,6 +61,7 @@ export class AlgorithmDetailComponent implements AfterViewInit {
     const extensions: Extension[] = [
       basicSetup,
       keymap.of([indentWithTab]),
+      EditorView.lineWrapping,
     ];
 
     if (this.isChangeMissionDatabaseEnabled()) {
