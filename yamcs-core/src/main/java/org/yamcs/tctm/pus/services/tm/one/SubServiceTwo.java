@@ -2,8 +2,6 @@ package org.yamcs.tctm.pus.services.tm.one;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.yamcs.TmPacket;
 import org.yamcs.commanding.PreparedCommand;
@@ -13,7 +11,6 @@ import org.yamcs.tctm.pus.PusTmManager;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
 import org.yamcs.utils.ByteArrayUtils;
-import org.yamcs.utils.StringConverter;
 
 
 public class SubServiceTwo implements PusSubService {
@@ -42,11 +39,19 @@ public class SubServiceTwo implements PusSubService {
         byte[] failureNotice = Arrays.copyOfRange(dataField, ServiceOne.REQUEST_ID_LENGTH, dataField.length);
         long errorCode = ByteArrayUtils.decodeCustomInteger(failureNotice, 0, ServiceOne.failureCodeSize);
 
-        eventProducer.sendCritical(TC_ACCEPTANCE_FAILED,
-            "TC with (Source ID: " + pPkt.getDestinationID() + " | Apid: " + ServiceOne.CcsdsApid.fromValue(tcCcsdsApid) + " | Packet Seq Count: "
-                    + tcCcsdsSeqCount
-                    + ") has been rejected | Error Code: " + ServiceOne.FailureCode.fromValue((int) errorCode).toString()
-        );
+        try {
+            eventProducer.sendCritical(TC_ACCEPTANCE_FAILED,
+                "TC with (Source ID: " + pPkt.getDestinationID() + " | Apid: " + ServiceOne.CcsdsApid.fromValue(tcCcsdsApid) + " | Packet Seq Count: "
+                        + tcCcsdsSeqCount
+                        + ") has been rejected | Error Code: " + ServiceOne.FailureCode.fromValue((int) errorCode).toString()
+            );
+        } catch (Exception e) {
+            eventProducer.sendCritical(TC_ACCEPTANCE_FAILED,
+                "TC with (Source ID: " + pPkt.getDestinationID() + " | Apid: " + ServiceOne.CcsdsApid.fromValue(tcCcsdsApid) + " | Packet Seq Count: "
+                        + tcCcsdsSeqCount
+                        + ") has been rejected | Error Code: " + errorCode + " (No enumeration found)"
+            );
+        }
 
         ArrayList<TmPacket> pktList = new ArrayList<>();
         pktList.add(tmPacket);
