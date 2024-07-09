@@ -39,30 +39,34 @@ public class ServiceFive implements PusService {
             if (eventIdConfig.containsKey(eventId)) {
                 YConfiguration eventIdMap = eventIdConfig.getConfig(eventId);
 
-                Map<Integer, Triple<Integer, String, Map<Integer, Pair<Integer, String>>>> chunks = new HashMap<>();
-                for (YConfiguration chunkConfig: eventIdMap.getConfigList("chunks")) {
-                    int chunkValue = chunkConfig.getInt("value");
-                    String chunkName = chunkConfig.getString("name");
-                    int chunkLength = chunkConfig.getInt("length");
+                Map<Integer, Triple<Integer, String, Map<Integer, Pair<Integer, String>>>> chunks = null;
+                if (eventIdMap.containsKey("chunks")) {
+                    chunks = new HashMap<>();
 
-                    Map<Integer, Pair<Integer, String>> bits = null;
-                    if (chunkConfig.containsKey("bits")) {
-                        bits = new HashMap<>();
+                    for (YConfiguration chunkConfig: eventIdMap.getConfigList("chunks")) {
+                        int chunkValue = chunkConfig.getInt("value");
+                        String chunkName = chunkConfig.getString("name");
+                        int chunkLength = chunkConfig.getInt("length");
 
-                        for (YConfiguration bitsConfig: chunkConfig.getConfigList("bits")) {
-                            int bitValue = bitsConfig.getInt("value");
-                            int bitLength = bitsConfig.getInt("length");
-                            String bitName = bitsConfig.getString("name");
+                        Map<Integer, Pair<Integer, String>> bits = null;
+                        if (chunkConfig.containsKey("bits")) {
+                            bits = new HashMap<>();
 
-                            bits.put(bitValue,
-                                new Pair<>(bitLength, bitName)
-                            );
+                            for (YConfiguration bitsConfig: chunkConfig.getConfigList("bits")) {
+                                int bitValue = bitsConfig.getInt("value");
+                                int bitLength = bitsConfig.getInt("length");
+                                String bitName = bitsConfig.getString("name");
+
+                                bits.put(bitValue,
+                                    new Pair<>(bitLength, bitName)
+                                );
+                            }
                         }
-                    }
 
-                    chunks.put(chunkValue,
-                        new Triple<>(chunkLength, chunkName, bits)
-                    );                    
+                        chunks.put(chunkValue,
+                            new Triple<>(chunkLength, chunkName, bits)
+                        );                    
+                    }
                 }
 
                 eventIds.put(new Pair<> (

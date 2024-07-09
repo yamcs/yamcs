@@ -54,37 +54,39 @@ public class SubServiceOne implements PusSubService {
         Map<Integer, Triple<Integer, String, Map<Integer, Pair<Integer, String>>>> chunkMap = ServiceFive.eventIds.get(new Pair<>(apid, eventId));
 
         String eventDec = "EventID: " + eventId;
-        for (Map.Entry<Integer, Triple<Integer, String, Map<Integer, Pair<Integer, String>>>> chunk: chunkMap.entrySet()) {
-            Triple<Integer, String, Map<Integer, Pair<Integer, String>>> chunkDeets = chunk.getValue();
+        if (chunkMap != null) {
+            for (Map.Entry<Integer, Triple<Integer, String, Map<Integer, Pair<Integer, String>>>> chunk: chunkMap.entrySet()) {
+                Triple<Integer, String, Map<Integer, Pair<Integer, String>>> chunkDeets = chunk.getValue();
 
-            int chunkOffset = chunk.getKey();
-            int chunkLength = chunkDeets.getFirst();
-            String chunkName = chunkDeets.getSecond();
-            Map<Integer, Pair<Integer, String>> bitsMap = chunkDeets.getThird();
+                int chunkOffset = chunk.getKey();
+                int chunkLength = chunkDeets.getFirst();
+                String chunkName = chunkDeets.getSecond();
+                Map<Integer, Pair<Integer, String>> bitsMap = chunkDeets.getThird();
 
-            if (bitsMap != null) {
-                long data = ByteArrayUtils.decodeCustomInteger(dataField, chunkOffset + ServiceFive.eventIdSize, chunkLength);
+                if (bitsMap != null) {
+                    long data = ByteArrayUtils.decodeCustomInteger(dataField, chunkOffset + ServiceFive.eventIdSize, chunkLength);
 
-                System.out.println("Size: " + bitsMap.size());
-                for (Map.Entry<Integer, Pair<Integer, String>> bits: bitsMap.entrySet()) {
-                    long mask = createOnes(chunkLength);
-                    Pair<Integer, String> bitsDeets = bits.getValue();
+                    System.out.println("Size: " + bitsMap.size());
+                    for (Map.Entry<Integer, Pair<Integer, String>> bits: bitsMap.entrySet()) {
+                        long mask = createOnes(chunkLength);
+                        Pair<Integer, String> bitsDeets = bits.getValue();
 
-                    int bitLength = bitsDeets.getFirst();
-                    int bitOffset = bits.getKey() + bitLength;
-                    String bitName = bitsDeets.getSecond();
+                        int bitLength = bitsDeets.getFirst();
+                        int bitOffset = bits.getKey() + bitLength;
+                        String bitName = bitsDeets.getSecond();
 
-                    // Generate bitMask
-                    mask = ((~(mask >> bitOffset)) << (bitOffset - bitLength)) >> (bitOffset - bitLength);
+                        // Generate bitMask
+                        mask = ((~(mask >> bitOffset)) << (bitOffset - bitLength)) >> (bitOffset - bitLength);
 
-                    long disValue = data & mask;
-                    eventDec += " | " + bitName + ": " + disValue;
+                        long disValue = data & mask;
+                        eventDec += " | " + bitName + ": " + disValue;
+                    }
+                    continue;
                 }
-                continue;
-            }
 
-            int data = (int) ByteArrayUtils.decodeCustomInteger(dataField, chunkOffset + ServiceFive.eventIdSize, chunkLength);
-            eventDec += " | " + chunkName + ": " + data;
+                long data = ByteArrayUtils.decodeCustomInteger(dataField, chunkOffset + ServiceFive.eventIdSize, chunkLength);
+                eventDec += " | " + chunkName + ": " + data;
+            }
         }
 
         eventDec += " is thrown";
