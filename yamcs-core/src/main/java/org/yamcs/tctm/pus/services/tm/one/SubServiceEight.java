@@ -39,11 +39,20 @@ public class SubServiceEight implements PusSubService {
         byte[] failureNotice = Arrays.copyOfRange(dataField, ServiceOne.REQUEST_ID_LENGTH, dataField.length);
         long errorCode = ByteArrayUtils.decodeCustomInteger(failureNotice, 0, ServiceOne.failureCodeSize);
 
-        eventProducer.sendCritical(TC_COMPLETION_EXECUTION_FAILED,
-            "TC with (Source ID: " + pPkt.getDestinationID() + " | Apid: " + ServiceOne.CcsdsApid.fromValue(tcCcsdsApid) + " | Packet Seq Count: "
-                    + tcCcsdsSeqCount
-                    + ") has failed to complete execution | Error Code: " + ServiceOne.FailureCode.fromValue((int) errorCode).toString()
-        );
+        try {
+            eventProducer.sendCritical(TC_COMPLETION_EXECUTION_FAILED,
+                "TC with (Source ID: " + pPkt.getDestinationID() + " | Apid: " + ServiceOne.CcsdsApid.fromValue(tcCcsdsApid) + " | Packet Seq Count: "
+                        + tcCcsdsSeqCount
+                        + ") has failed to complete execution | Error Code: " + ServiceOne.FailureCode.fromValue((int) errorCode).toString()
+            );
+        } catch (Exception e) {
+            eventProducer.sendCritical(TC_COMPLETION_EXECUTION_FAILED,
+                "TC with (Source ID: " + pPkt.getDestinationID() + " | Apid: " + ServiceOne.CcsdsApid.fromValue(tcCcsdsApid) + " | Packet Seq Count: "
+                        + tcCcsdsSeqCount
+                        + ") has failed to complete execution | Error Code: " + errorCode + " (No enumeration found)"
+            );
+        }
+        
 
         ArrayList<TmPacket> pktList = new ArrayList<>();
         pktList.add(tmPacket);

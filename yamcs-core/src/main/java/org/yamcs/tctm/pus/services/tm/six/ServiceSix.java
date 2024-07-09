@@ -9,7 +9,7 @@ import org.yamcs.logging.Log;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSubService;
-import org.yamcs.tctm.pus.services.tc.six.ServiceSix.Pair;
+import org.yamcs.tctm.pus.tuples.Pair;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
 
 public class ServiceSix implements PusService {
@@ -47,7 +47,7 @@ public class ServiceSix implements PusService {
 
         // Load Group<>Offset mapping
         List<String> memoryIdStr = config.getList("memoryId");
-        YConfiguration memoryIdConfig = YConfiguration.getConfiguration("pus.six");
+        YConfiguration memoryIdConfig = YConfiguration.getConfiguration("six", "pus");
         
         for (String memoryId: memoryIdStr) {
             if (memoryIdConfig.containsKey(memoryId)) {
