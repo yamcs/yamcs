@@ -69,7 +69,6 @@ public class SubServiceOne implements PusSubService {
                 if (bitsMap != null) {
                     long data = ByteArrayUtils.decodeCustomInteger(dataField, chunkOffset + ServiceFive.eventIdSize, chunkLength);
 
-                    System.out.println("Size: " + bitsMap.size());
                     for (Map.Entry<Integer, Pair<Integer, String>> bits: bitsMap.entrySet()) {
                         long mask = createOnes(chunkLength);
                         Pair<Integer, String> bitsDeets = bits.getValue();
