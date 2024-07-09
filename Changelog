@@ -1,3 +1,7 @@
+Version 5.9.8 released 9-July-2024
+- small tweaks and fixes related to Parameter Archive, Frame valid/invalid counters, command dispatching, parameter link configuration.
+- updated yamcs-maven plugin to work with Java 22.
+
 Version 5.9.7 released 19-June-2024
 - Fix event/command text search not matching beyond limit.
 - Fix extra command options not considered when scheduling command or stack.

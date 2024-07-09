@@ -12,7 +12,9 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -68,18 +70,27 @@ public class RealtimeArchiveFillerTest {
 
     @Mock
     private ParameterRequestManager parameterRequestManager;
+    Map<String, Integer> paramFqnToIdMap = new HashMap<>();
 
     @BeforeEach
     public void setup() throws RocksDBException {
+        // TimeEncoding is used when logging messages by RealtimeArchiveFiller.
+        TimeEncoding.setUp();
+
         MockitoAnnotations.openMocks(this);
         when(processor.getParameterRequestManager()).thenReturn(parameterRequestManager);
         when(parameterArchive.getYamcsInstance()).thenReturn("realtime");
         when(parameterArchive.getParameterIdDb()).thenReturn(parameterIdDb);
         when(parameterArchive.getParameterGroupIdDb()).thenReturn(parameterGroupIdDb);
-        when(parameterGroupIdDb.getGroup(IntArray.wrap(0))).thenReturn(new ParameterGroupIdDb.ParameterGroup(0, null));
+        when(parameterGroupIdDb.getGroup(any(IntArray.class)))
+                .thenReturn(new ParameterGroupIdDb.ParameterGroup(0, null));
 
-        // TimeEncoding is used when logging messages by RealtimeArchiveFiller.
-        TimeEncoding.setUp();
+        when(parameterIdDb.createAndGet(anyString(), any(Type.class), any(Type.class)))
+                .thenAnswer(invocation -> {
+                    String paramFqn = invocation.getArgument(0);
+                    return paramFqnToIdMap.computeIfAbsent(paramFqn, k -> paramFqnToIdMap.size());
+                });
+
     }
 
     /**
@@ -362,6 +373,7 @@ public class RealtimeArchiveFillerTest {
         PGSegment seg = segList.get(0);
         assertEquals(5000, seg.getSegmentStart());
         assertEquals(5000, seg.getSegmentEnd());
+        assertEquals(2, seg.numSegments());
         assertEquals(2, seg.size());
         
         var mpvs = seg.getParametersValues(new ParameterId[] { new MyPid(0, "/myproject/value1") });
@@ -386,7 +398,7 @@ public class RealtimeArchiveFillerTest {
         when(yamcsServer.getProcessor(anyString(), anyString())).thenReturn(processor);
         RealtimeArchiveFiller filler = getFiller(1000);
         filler.start();
-        filler.processParameters(getValues(10, "/myproject/value1"));
+        filler.processParameters(getValues(10, "/myproject/value"));
 
         for (int i = 0; i < SegmentQueue.QSIZE - 1; ++i) {
             // Add two values to fill a segment.

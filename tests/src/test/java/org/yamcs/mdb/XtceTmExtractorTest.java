@@ -377,7 +377,7 @@ public class XtceTmExtractorTest {
         RefMdbPacketGenerator tmGenerator = new RefMdbPacketGenerator();
         ParameterValueList received = extractParameters(tmGenerator.generate_PKT3());
 
-        assertEquals(17, received.size());
+        assertEquals(19, received.size());
         assertEquals(2, received.removeFirst(mdb.getParameter("/REFMDB/SUBSYS1/IntegerPara1_1")).getRawValue()
                 .getUint32Value());
         assertEquals(3, received.removeFirst(mdb.getParameter("/REFMDB/SUBSYS1/IntegerPara1_2")).getRawValue()

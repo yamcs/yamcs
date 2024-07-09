@@ -30,6 +30,7 @@ export class AlgorithmDetailComponent {
     const extensions: Extension[] = [
       basicSetup,
       EditorState.readOnly.of(true),
+      EditorView.lineWrapping,
       EditorView.theme({
         '&': { height: '300px', fontSize: '12px' },
         '.cm-scroller': {

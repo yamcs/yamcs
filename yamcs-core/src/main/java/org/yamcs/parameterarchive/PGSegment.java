@@ -146,10 +146,17 @@ public class PGSegment {
     }
 
     /**
-     * returns the number of rows in the segment
+     * returns the number of rows in the segment group
      */
     public int size() {
         return timeSegment.size();
+    }
+
+    /**
+     * returns the number of parameter segments inside this segment group
+     */
+    public int numSegments() {
+        return pvSegments.size();
     }
 
     public int getParameterId(int idx) {
