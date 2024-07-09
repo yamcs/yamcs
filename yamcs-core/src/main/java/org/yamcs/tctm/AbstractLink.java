@@ -156,7 +156,7 @@ public abstract class AbstractLink extends AbstractService
     protected abstract Status connectionStatus();
 
     protected long getCurrentTime() {
-        return TimeEncoding.getWallclockTime();
+        return timeService.getMissionTime();
     }
 
     @Override
