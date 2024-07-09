@@ -51,9 +51,12 @@ public class SubServiceOne implements PusSubService {
 
         int apid = pPkt.getAPID();
         int eventId = (int) ByteArrayUtils.decodeCustomInteger(dataField, 0, ServiceFive.eventIdSize);
-        Map<Integer, Triple<Integer, String, Map<Integer, Pair<Integer, String>>>> chunkMap = ServiceFive.eventIds.get(new Pair<>(apid, eventId));
 
-        String eventDec = "EventID: " + eventId;
+        Pair<String, Map<Integer, Triple<Integer, String, Map<Integer, Pair<Integer, String>>>>> eventMap = ServiceFive.eventIds.get(new Pair<>(apid, eventId));
+        Map<Integer, Triple<Integer, String, Map<Integer, Pair<Integer, String>>>> chunkMap = eventMap.getSecond();
+
+        String eventDec = "EventName: " + eventMap.getFirst() + " | EventId: " + eventId;
+
         if (chunkMap != null) {
             for (Map.Entry<Integer, Triple<Integer, String, Map<Integer, Pair<Integer, String>>>> chunk: chunkMap.entrySet()) {
                 Triple<Integer, String, Map<Integer, Pair<Integer, String>>> chunkDeets = chunk.getValue();

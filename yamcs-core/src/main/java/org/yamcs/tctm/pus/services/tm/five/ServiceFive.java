@@ -22,7 +22,7 @@ public class ServiceFive implements PusService {
     YConfiguration serviceFiveConfig;
     private String yamcsInstance;
 
-    protected static Map<Pair<Integer, Integer>, Map<Integer, Triple<Integer, String, Map<Integer, Pair<Integer, String>>>>> eventIds = new HashMap<>();
+    protected static Map<Pair<Integer, Integer>, Pair<String, Map<Integer, Triple<Integer, String, Map<Integer, Pair<Integer, String>>>>>>eventIds = new HashMap<>();
 
     private final int DEFAULT_EVENTID_SIZE = 1;
     protected static int eventIdSize;
@@ -71,7 +71,7 @@ public class ServiceFive implements PusService {
 
                 eventIds.put(new Pair<> (
                     eventIdMap.getInt("apid"), eventIdMap.getInt("value")
-                ), chunks);
+                ), new Pair<>(eventIdMap.getString("name"), chunks));
             }
         }        
 
