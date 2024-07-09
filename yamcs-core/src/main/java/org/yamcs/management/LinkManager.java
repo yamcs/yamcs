@@ -70,8 +70,6 @@ import com.google.gson.Gson;
  *
  * The configuration of this service is done in the "dataLinks" sections of the yamcs.&lt;instance-name&gt;.yaml file.
  *
- *
- * @author nm
  */
 public class LinkManager {
     private static final String MEMENTO_KEY = "yamcs.links";
@@ -185,6 +183,9 @@ public class LinkManager {
                 if (streamf != null) {
                     InvalidPacketAction ipa = getInvalidPacketAction(link.getName(), linkArgs);
                     tmLink.setTmSink(tmPacket -> processTmPacket(tmLink, tmPacket, streamf, ipa));
+                } else {
+                    throw new ConfigurationException("No stream configured for parameter link " + link.getName()
+                            + ". Please set a stream using the 'ppStream; option");
                 }
             }
         }
