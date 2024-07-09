@@ -6,6 +6,7 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
 import org.yamcs.utils.ByteArrayUtils;
+import org.yamcs.tctm.pus.tuples.Pair;
 
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -44,7 +45,7 @@ public class SubServiceFour implements PusSubService {
 
         Integer groupId = null;
         Map<Integer, Integer> offsetGroupMap = null;
-        Map<Integer, Map<Integer, Integer>> baseIdMap = ServiceSix.memoryIds.get(new org.yamcs.tctm.pus.services.tc.six.ServiceSix.Pair<>(apid, memoryId));
+        Map<Integer, Map<Integer, Integer>> baseIdMap = ServiceSix.memoryIds.get(new Pair<>(apid, memoryId));
         if (baseIdMap != null)
             offsetGroupMap = baseIdMap.get(baseId);
 
