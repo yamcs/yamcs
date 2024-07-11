@@ -14,7 +14,8 @@
   height: 100%;
 }
 
-tr.disabled td, tr.disabled td a {
+tr.disabled td,
+tr.disabled td a {
   font-style: italic;
   color: #aaa;
 }
@@ -25,6 +26,7 @@ tr.disabled td, tr.disabled td a {
   font-size: 12px;
   margin-top: 12px;
   margin-left: 10px;
+  font-family: Roboto, sans-serif;
 }
 
 .legend-item {

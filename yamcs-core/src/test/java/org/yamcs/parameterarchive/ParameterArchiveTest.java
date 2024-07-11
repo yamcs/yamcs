@@ -204,13 +204,12 @@ public class ParameterArchiveTest extends BaseParchiveTest {
         pgSegment1.addRecord(200, IntArray.wrap(p1id), Arrays.asList(pv1_1));
 
         parchive.writeToArchive(pgSegment1);
-        long segmentStart = ParameterArchive.getIntervalStart(100);
 
         Partition p = parchive.getPartitions(100);
         var rdb = parchive.getTablespace().getRdb(p.partitionDir);
         var cfh = rdb.getColumnFamilyHandle(ParameterArchive.CF_NAME);
-        assertNotNull(rdb.get(cfh, new SegmentKey(p1id, pg1.id, segmentStart, SegmentKey.TYPE_ENG_VALUE).encode()));
-        assertNull(rdb.get(cfh, new SegmentKey(p1id, pg1.id, segmentStart, SegmentKey.TYPE_RAW_VALUE).encode()));
+        assertNotNull(rdb.get(cfh, new SegmentKey(p1id, pg1.id, 100, SegmentKey.TYPE_ENG_VALUE).encode()));
+        assertNull(rdb.get(cfh, new SegmentKey(p1id, pg1.id, 100, SegmentKey.TYPE_RAW_VALUE).encode()));
 
         List<ParameterValueArray> l1a = retrieveSingleParamSingleGroup(0, TimeEncoding.POSITIVE_INFINITY, p1id, pg1.id,
                 true, false, true, false);
@@ -507,10 +506,10 @@ public class ParameterArchiveTest extends BaseParchiveTest {
         // because sparseGroups is false, the different size array values are stored in different groups
         assertTrue(pg2.id != pg1.id);
 
-        PGSegment pgSegment2 = new PGSegment(pg2.id, ParameterArchive.getIntervalStart(t2));
+        PGSegment pgSegment2 = new PGSegment(pg2.id, ParameterArchive.getInterval(t2));
         pgSegment2.addRecord(t2, l2.getPids(), l2.getValues());
 
-        PGSegment pgSegment1 = new PGSegment(pg1.id, ParameterArchive.getIntervalStart(t1));
+        PGSegment pgSegment1 = new PGSegment(pg1.id, ParameterArchive.getInterval(t1));
         pgSegment1.addRecord(t1, l1.getPids(), l1.getValues());
 
         parchive.writeToArchive(pgSegment2);
@@ -546,7 +545,7 @@ public class ParameterArchiveTest extends BaseParchiveTest {
                 pv1_0.getRawValue().getType());
 
         var pg1 = parchive.getParameterGroupIdDb().getGroup(IntArray.wrap(p1id));
-        PGSegment pgSegment1 = new PGSegment(pg1.id, ParameterArchive.getIntervalStart(t));
+        PGSegment pgSegment1 = new PGSegment(pg1.id, ParameterArchive.getInterval(t));
 
         pgSegment1.addRecord(t, IntArray.wrap(p1id), Arrays.asList(pv1_0));
 
@@ -588,6 +587,7 @@ public class ParameterArchiveTest extends BaseParchiveTest {
         assertEquals(1, l1a.size());
         checkEquals(l2a.get(0), 100, pv1_0, pv1_1);
     }
+
 
     public static YConfiguration backFillerDisabledConfig() {
         Map<String, Object> pam = new HashMap<>();

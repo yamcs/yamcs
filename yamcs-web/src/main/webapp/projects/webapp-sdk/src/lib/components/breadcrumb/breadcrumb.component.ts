@@ -1,4 +1,4 @@
-import { NgIf } from '@angular/common';
+
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
@@ -11,9 +11,8 @@ import { RouterLink } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatIcon,
-    NgIf,
-    RouterLink,
-  ],
+    RouterLink
+],
 })
 export class YaBreadcrumb {
 

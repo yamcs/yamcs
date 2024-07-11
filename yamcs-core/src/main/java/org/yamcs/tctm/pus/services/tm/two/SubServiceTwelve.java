@@ -2,17 +2,22 @@ package org.yamcs.tctm.pus.services.tm.two;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import org.yamcs.InitException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
-import org.yamcs.tctm.pus.services.tm.BucketSaveHandler;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
+import org.yamcs.tctm.pus.PusTmManager;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.yarch.Bucket;
@@ -23,7 +28,7 @@ import com.google.gson.GsonBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class SubServiceTwelve extends BucketSaveHandler implements PusSubService {
+public class SubServiceTwelve implements PusSubService {
     String yamcsInstance;
     Log log;
 
@@ -56,11 +61,14 @@ public class SubServiceTwelve extends BucketSaveHandler implements PusSubService
         pactIDSize = subServiceSixConfig.getInt("pactIDSize", DEFAULT_PACT_ID_SIZE);
         dataAcquiredSize = subServiceSixConfig.getInt("dataAcquiredSize", DEFAULT_DATA_ACQUIRED_SIZE);
 
+        logicalDeviceReportBucket = PusTmManager.reports;
+
         try {
-            logicalDeviceReportBucket = getBucket("logicalDeviceReport", yamcsInstance);
-        } catch (InitException e) {
-            log.error("Unable to create a `logicalDeviceReport bucket` for (Service - 2 | SubService - 12)", e);
-            throw new YarchException("Failed to create RDB based bucket: logicalDeviceReport", e);
+            logicalDeviceReportBucket.putObject(yamcsInstance + "/logicalDeviceReport/", "application/octet-stream", new HashMap<>(), new byte[0]);
+
+        } catch (IOException e) {
+            log.error("Unable to create a directory `" + logicalDeviceReportBucket.getName() + "/logicalDeviceReport` for (Service - 2 | SubService - 12)", e);
+            throw new YarchException("Failed to create a directory `" + logicalDeviceReportBucket.getName() + "/logicalDeviceReport` for (Service - 2 | SubService - 12)", e);
         }
 
         // Create Gson instance
@@ -81,17 +89,30 @@ public class SubServiceTwelve extends BucketSaveHandler implements PusSubService
         int logicalDeviceID = ByteArrayUtils.decodeUnsignedShort(auxillaryData, pactIDSize);
         int parameterIDData = ByteArrayUtils.decodeUnsignedShort(auxillaryData, (pactIDSize + logicalDeviceIDSize));
 
-        String logicalDeviceReportName = "";
-        HashMap<String, String> logicalDeviceReportMetadata = new HashMap<>();
+        long generationTime = ByteArrayUtils.decodeCustomInteger(pPkt.getGenerationTime(), 0, PusTmManager.absoluteTimeLength);
+        long missionTime = PusTmManager.timeService.getMissionTime();
 
-        // Save file to deviceRegisterDump bucket
+        String filename = yamcsInstance + "/logicalDeviceReport/" + LocalDateTime.ofInstant(
+            Instant.ofEpochSecond(generationTime),
+            ZoneId.of("GMT")
+        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + ".json";
+        
+        // Populate metadata
+        HashMap<String, String> metadata = new HashMap<>();
+        metadata.put("CreationTime", LocalDateTime.ofInstant(
+            Instant.ofEpochMilli(missionTime),
+            ZoneId.of("GMT")
+        ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")));
+        
+
+        // Save file to logicalDeviceReport bucket
         try {
             JSONArray logicalDeviceReportJSON = new JSONArray();
-            byte[] logicalDeviceReport = logicalDeviceReportBucket.getObject(logicalDeviceReportName);
+            byte[] logicalDeviceReport = logicalDeviceReportBucket.getObject(filename);
 
             if (logicalDeviceReport != null) {
                 logicalDeviceReportJSON = new JSONArray(new String(logicalDeviceReport));
-                logicalDeviceReportBucket.deleteObject(logicalDeviceReportName);
+                logicalDeviceReportBucket.deleteObject(filename);
             }
 
             JSONObject currentDeviceReport = new JSONObject();
@@ -103,10 +124,10 @@ public class SubServiceTwelve extends BucketSaveHandler implements PusSubService
             currentDeviceReport.put("dataAcquired", dataAcquired);
 
             logicalDeviceReportJSON.put(currentDeviceReport);
-            logicalDeviceReportBucket.putObject(logicalDeviceReportName, "JSON", logicalDeviceReportMetadata, logicalDeviceReportJSON.toString().getBytes());
+            logicalDeviceReportBucket.putObject(filename, "json", metadata, logicalDeviceReportJSON.toString().getBytes(StandardCharsets.UTF_8));
 
         } catch(IOException e) {
-            throw new UncheckedIOException("Cannot save / update logical device ID dump report in bucket: " + logicalDeviceReportName + (logicalDeviceReportBucket != null ? " -> " + logicalDeviceReportBucket.getName() : ""), e);
+            throw new UncheckedIOException("S(2, 12) | Cannot save / update logical device ID dump report in bucket: " + filename + (logicalDeviceReportBucket != null ? " -> " + logicalDeviceReportBucket.getName() : ""), e);
         }
 
         ArrayList<TmPacket> pktList = new ArrayList<>();
@@ -117,7 +138,6 @@ public class SubServiceTwelve extends BucketSaveHandler implements PusSubService
 
     @Override
     public PreparedCommand process(PreparedCommand pusTelecommand) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'process'");
     }    
 }

@@ -1,78 +1,87 @@
 <div class="panel-content">
-  <ng-container *ngIf="plist$ | async as plist">
+  @if (plist$ | async; as plist) {
     <div class="filter-bar">
-      <ya-column-chooser #columnChooser
-                         [columns]="columns"
-                         preferenceKey="tmParameters" />
-
-      <ya-dots *ngIf="dataSource.loading$ | async" />
+      <ya-column-chooser #columnChooser [columns]="columns" preferenceKey="tmParameters" />
+      @if (dataSource.loading$ | async) {
+        <ya-dots />
+      }
     </div>
-    <table mat-table
-           class="ya-data-table expand"
-           [dataSource]="dataSource">
-
+    <table mat-table class="ya-data-table expand" [dataSource]="dataSource">
       <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef>Name</th>
         <td mat-cell *matCellDef="let item">
-          <a [routerLink]="'/telemetry/parameters' + item.parameter.qualifiedName"
-             [queryParams]="{c: yamcs.context}">{{ item.name }}
+          <a
+            [routerLink]="'/telemetry/parameters' + item.parameter.qualifiedName"
+            [queryParams]="{ c: yamcs.context }">
+            {{ item.name }}
           </a>
         </td>
       </ng-container>
-
       <ng-container matColumnDef="rawValue">
         <th mat-header-cell *matHeaderCellDef class="wrap200">Raw value</th>
         <td mat-cell *cdkCellDef="let item">
-          {{ (item.pval?.rawValue | value:{maxBytes: dataSource.binaryPreview}) || '-' }}
+          {{ (item.pval?.rawValue | value: { maxBytes: dataSource.binaryPreview }) || "-" }}
         </td>
       </ng-container>
-
       <ng-container matColumnDef="engValue">
         <th mat-header-cell *matHeaderCellDef class="wrap200">Value</th>
-        <td mat-cell *matCellDef="let item"
-            [class.alert]="item.pval?.monitoringResult && item.pval?.monitoringResult !== 'IN_LIMITS'">
-          <ya-expirable *ngIf="item.pval" [pval]="item.pval">
-            {{ (item.pval?.engValue | value:{maxBytes: dataSource.binaryPreview}) || '-' }}
-            <span *ngIf="item.parameter?.type?.unitSet">
-              {{ (item.parameter | parameterTypeForPath)?.unitSet | units }}
-            </span>
-            <span *ngIf="item.pval?.rangeCondition === 'LOW'">&#8595;</span>
-            <span *ngIf="item.pval?.rangeCondition === 'HIGH'">&#8593;</span>
-          </ya-expirable>
-          <span *ngIf="!item.pval">-</span>
+        <td
+          mat-cell
+          *matCellDef="let item"
+          [class.alert]="
+            item.pval?.monitoringResult && item.pval?.monitoringResult !== 'IN_LIMITS'
+          ">
+          @if (item.pval) {
+            <ya-expirable [pval]="item.pval">
+              {{ (item.pval?.engValue | value: { maxBytes: dataSource.binaryPreview }) || "-" }}
+              @if (item.parameter?.type?.unitSet) {
+                <span>
+                  {{ (item.parameter | parameterTypeForPath)?.unitSet | units }}
+                </span>
+              }
+              @if (item.pval?.rangeCondition === "LOW") {
+                <span>&#8595;</span>
+              }
+              @if (item.pval?.rangeCondition === "HIGH") {
+                <span>&#8593;</span>
+              }
+            </ya-expirable>
+          }
+          @if (!item.pval) {
+            <span>-</span>
+          }
         </td>
       </ng-container>
-
       <ng-container matColumnDef="type">
         <th mat-header-cell *matHeaderCellDef>Type</th>
         <td mat-cell *matCellDef="let item">
-          <span class="mono" *ngIf="(item.parameter | parameterTypeForPath)?.engType as engType; else dash">
-            {{ engType }}
-          </span>
+          @if ((item.parameter | parameterTypeForPath)?.engType; as engType) {
+            <span class="mono">
+              {{ engType }}
+            </span>
+          } @else {
+            -
+          }
         </td>
       </ng-container>
-
       <ng-container matColumnDef="dataSource">
         <th mat-header-cell *matHeaderCellDef>Data source</th>
-        <td mat-cell *matCellDef="let item">{{ (item.parameter?.dataSource | titlecase) || '-' }}</td>
+        <td mat-cell *matCellDef="let item">
+          {{ (item.parameter?.dataSource | titlecase) || "-" }}
+        </td>
       </ng-container>
-
       <ng-container matColumnDef="shortDescription">
         <th mat-header-cell *matHeaderCellDef class="wrap200">Description</th>
         <td mat-cell *matCellDef="let item">
-          {{ item.parameter.shortDescription || '-' }}
+          {{ item.parameter.shortDescription || "-" }}
         </td>
       </ng-container>
-
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef class="expand"></th>
         <td mat-cell *matCellDef="let row"></td>
       </ng-container>
-
       <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
-      <tr mat-row *matRowDef="let row; columns: (columnChooser.displayedColumns$ | async);"></tr>
+      <tr mat-row *matRowDef="let row; columns: columnChooser.displayedColumns$ | async"></tr>
     </table>
-  </ng-container>
+  }
 </div>
-
-<ng-template #dash>-</ng-template>

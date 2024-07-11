@@ -184,8 +184,11 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
                         + "from the upstream server to keep unmodified")
                 .withDefault(List.of(CommandHistoryPublisher.CcsdsSeq_KEY));
 
-        spec.addOption("commandMapping", OptionType.LIST).withElementType(OptionType.MAP).withSpec(CommandMapData.getSpec())
+        spec.addOption("commandMapping", OptionType.LIST).withElementType(OptionType.MAP)
+                .withSpec(CommandMapData.getSpec())
                 .withDescription("The mapping of commands and arguments between downstream and upstream.");
+        spec.addOption("failCommandIfNoMappingMatches", OptionType.BOOLEAN).withDefault(false)
+                .withDescription("Fail the command if no mapping matches");
 
         /*
          * EV

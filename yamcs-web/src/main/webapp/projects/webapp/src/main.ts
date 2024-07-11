@@ -1,4 +1,4 @@
-import { APP_INITIALIZER, isDevMode } from '@angular/core';
+import { APP_INITIALIZER, isDevMode, provideExperimentalZonelessChangeDetection } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter, withComponentInputBinding, withPreloading, withRouterConfig } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
@@ -12,6 +12,7 @@ bootstrapApplication(AppComponent, {
   providers: [
     provideBaseHrefFromIndexHtml(),
     provideYamcsMaterialConfiguration(),
+    provideExperimentalZonelessChangeDetection(),
     provideRouter(APP_ROUTES,
       withComponentInputBinding(),
       withPreloading(CustomPreloadingStrategy),

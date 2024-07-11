@@ -1,20 +1,19 @@
 <app-instance-page>
   <app-instance-toolbar>
-    <a mat-icon-button routerLink=".."
-       [queryParams]="{c: yamcs.context}"
-       color="primary">
+    <a mat-icon-button routerLink=".." [queryParams]="{ c: yamcs.context }" color="primary">
       <mat-icon>arrow_back</mat-icon>
-    </a> Update view
+    </a>
+    Update view
   </app-instance-toolbar>
 
   <div class="form-content ya-form">
     <form [formGroup]="form" novalidate autocomplete="off">
       <label>
-        Name <span class="hint">(required)</span><br>
-        <input type="text" formControlName="name">
+        Name <span class="hint">(required)</span><br />
+        <input type="text" formControlName="name" />
       </label>
 
-      <br>
+      <br />
       <div class="section-divider">
         <mat-divider />
       </div>
@@ -23,11 +22,15 @@
       <app-band-multi-select formControlName="bands" />
     </form>
     <p>&nbsp;</p>
-    <div class=" action-bar">
-      <button class="ya-button" routerLink=".."
-              [queryParams]="{c: yamcs.context}">Cancel</button>
-      <button class="ya-button primary" type="submit" (click)="onConfirm()"
-              [disabled]="!(dirty$ | async) || !form.valid">SAVE CHANGES</button>
+    <div class="action-bar">
+      <button class="ya-button" routerLink=".." [queryParams]="{ c: yamcs.context }">Cancel</button>
+      <button
+        class="ya-button primary"
+        type="submit"
+        (click)="onConfirm()"
+        [disabled]="!(dirty$ | async) || !form.valid">
+        SAVE CHANGES
+      </button>
     </div>
   </div>
 </app-instance-page>

@@ -1,32 +1,34 @@
-<app-admin-page *ngIf="group$ | async as group">
-  <app-admin-toolbar>
-    {{ group.name }}
-    &nbsp;&nbsp;&nbsp;
-    <a mat-button
-       color="primary"
-       routerLink="edit">
-      <mat-icon>edit</mat-icon>
-      Edit group
-    </a>
-  </app-admin-toolbar>
-
-  <div class="panel-content ya-link">
-    <ng-container *ngIf="group.description">
+@if (group$ | async; as group) {
+  <app-admin-page>
+    <app-admin-toolbar>
+      {{ group.name }}
+      &nbsp;&nbsp;&nbsp;
+      <a mat-button color="primary" routerLink="edit">
+        <mat-icon>edit</mat-icon>
+        Edit group
+      </a>
+    </app-admin-toolbar>
+    <div class="panel-content ya-link">
+      @if (group.description) {
+        <div class="section-divider">
+          <mat-divider />
+        </div>
+        <h4>Description</h4>
+        <div style="white-space: pre-wrap">{{ group.description || "-" }}</div>
+      }
+      <br />
       <div class="section-divider">
         <mat-divider />
       </div>
-      <h4>Description</h4>
-      <div style="white-space: pre-wrap">{{ group.description || '-' }}</div>
-    </ng-container>
-
-    <br>
-    <div class="section-divider">
-      <mat-divider />
+      <h4>{{ group.users?.length || 0 }} members</h4>
+      @for (user of group.users; track user) {
+        <div>
+          <mat-icon class="icon16" style="vertical-align: middle" matTooltip="User"
+            >person</mat-icon
+          >
+          <a [routerLink]="['/admin/iam/users', user.name]">{{ user.displayName || user.name }}</a>
+        </div>
+      }
     </div>
-    <h4>{{ group.users?.length || 0 }} members</h4>
-    <div *ngFor="let user of group.users">
-      <mat-icon class="icon16" style="vertical-align: middle" matTooltip="User">person</mat-icon>
-      <a [routerLink]="['/admin/iam/users', user.name]">{{ user.displayName || user.name }}</a>
-    </div>
-  </div>
-</app-admin-page>
+  </app-admin-page>
+}

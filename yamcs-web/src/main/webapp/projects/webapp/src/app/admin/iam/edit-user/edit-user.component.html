@@ -1,73 +1,97 @@
-<app-admin-page *ngIf="user$ | async as user">
-  <app-admin-toolbar>
-    Edit User: {{ user.displayName || user.name }}
-  </app-admin-toolbar>
-
-  <div class="form-content ya-form">
-    <form [formGroup]="form" novalidate autocomplete="off">
-      <div class="label">
-        Username<br>
-        <input disabled type="text" [value]="user.name">
-      </div>
-      <br>
-      <div class="label">
-        Display name<br>
-        <input formControlName="displayName" type="text">
-        <span *ngIf="user.identities && user.identities.length > 0" class="hint">
-          This user has an external identity. Changes to this field may get overwritten on next login.
-        </span>
-      </div>
-      <br>
-      <div class="label">
-        Email<br>
-        <input formControlName="email" type="text">
-        <span *ngIf="user.identities && user.identities.length > 0" class="hint">
-          This user has an external identity. Changes to this field may get overwritten on next login.
-        </span>
-      </div>
-      <br>
-      <div class="label">
-        Active<br>
-        <mat-slide-toggle formControlName="active" /><br>
-        <span class="hint">Inactive users are considered "blocked". They are not or no longer able to login.</span>
-      </div>
-      <br>
-      <div class="label">
-        Superuser<br>
-        <mat-slide-toggle formControlName="superuser" /><br>
-        <span class="hint">Superusers bypass any permission checks. This attribute is intended for system administrators
-          only.</span>
-      </div>
-
+@if (user$ | async; as user) {
+  <app-admin-page>
+    <app-admin-toolbar>Edit User: {{ user.displayName || user.name }}</app-admin-toolbar>
+    <div class="form-content ya-form">
+      <form [formGroup]="form" novalidate autocomplete="off">
+        <div class="label">
+          Username
+          <br />
+          <input disabled type="text" [value]="user.name" />
+        </div>
+        <br />
+        <div class="label">
+          Display name
+          <br />
+          <input formControlName="displayName" type="text" />
+          @if (user.identities && user.identities.length > 0) {
+            <span class="hint">
+              This user has an external identity. Changes to this field may get overwritten on next
+              login.
+            </span>
+          }
+        </div>
+        <br />
+        <div class="label">
+          Email
+          <br />
+          <input formControlName="email" type="text" />
+          @if (user.identities && user.identities.length > 0) {
+            <span class="hint">
+              This user has an external identity. Changes to this field may get overwritten on next
+              login.
+            </span>
+          }
+        </div>
+        <br />
+        <div class="label">
+          Active
+          <br />
+          <mat-slide-toggle formControlName="active" />
+          <br />
+          <span class="hint">
+            Inactive users are considered "blocked". They are not or no longer able to login.
+          </span>
+        </div>
+        <br />
+        <div class="label">
+          Superuser
+          <br />
+          <mat-slide-toggle formControlName="superuser" />
+          <br />
+          <span class="hint">
+            Superusers bypass any permission checks. This attribute is intended for system
+            administrators only.
+          </span>
+        </div>
+        <p>&nbsp;</p>
+        <button class="ya-button" (click)="showAddRolesDialog()">
+          <mat-icon>add_circle_outline</mat-icon>
+          Add roles
+        </button>
+        <p>&nbsp;</p>
+        @if (roleItems$ | async; as roleItems) {
+          <table yaDataTable style="width: 100%">
+            <tr>
+              <th>Role</th>
+              <th></th>
+            </tr>
+            @if (!roleItems.length) {
+              <tr>
+                <td colspan="2">No rows to display</td>
+              </tr>
+            }
+            @for (item of roleItems; track item) {
+              <tr>
+                <td>{{ item.label }}</td>
+                <td style="text-align: right">
+                  <ya-text-action icon="delete" (click)="deleteItem(item)">DELETE</ya-text-action>
+                </td>
+              </tr>
+            }
+          </table>
+        }
+      </form>
       <p>&nbsp;</p>
-      <button mat-stroked-button (click)="showAddRolesDialog()">
-        <mat-icon>add_circle_outline</mat-icon>
-        Add roles
-      </button>
-
-      <p>&nbsp;</p>
-      <table yaDataTable style="width: 100%" *ngIf="roleItems$ | async as roleItems">
-        <tr>
-          <th>Role</th>
-          <th></th>
-        </tr>
-        <tr *ngIf="!roleItems.length">
-          <td colspan="2">No rows to display</td>
-        </tr>
-        <tr *ngFor="let item of roleItems">
-          <td>{{ item.label }}</td>
-          <td style="text-align: right">
-            <ya-text-action icon="delete" (click)="deleteItem(item)">DELETE</ya-text-action>
-          </td>
-        </tr>
-      </table>
-    </form>
-
-    <p>&nbsp;</p>
-    <div class="action-bar">
-      <button class="ya-button" (click)="location.back()">Cancel</button>
-      <button class="ya-button primary" type="submit" (click)="onConfirm()"
-              [disabled]="!(dirty$ | async) || !form.valid">SAVE CHANGES</button>
+      <div class="action-bar">
+        <button class="ya-button" (click)="location.back()">Cancel</button>
+        <button
+          class="ya-button primary"
+          type="submit"
+          (click)="onConfirm()"
+          [disabled]="!(dirty$ | async) || !form.valid">
+          SAVE CHANGES
+        </button>
+      </div>
     </div>
-  </div>
-</app-admin-page>
+  </app-admin-page>
+}

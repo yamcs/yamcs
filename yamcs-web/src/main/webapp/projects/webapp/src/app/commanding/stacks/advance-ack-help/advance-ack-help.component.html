@@ -1,7 +1,7 @@
 <ya-help dialogTitle="Await acknowledgement success" dialogWidth="800px">
   <p>
-    Configure the acknowledgment which is required to be successful before
-    advancing to the next command in the stack.
+    Configure the acknowledgment which is required to be successful before advancing to the next
+    command in the stack.
   </p>
   <table yaSimpleTable style="width: 100%">
     <tr>
@@ -19,38 +19,36 @@
     <tr>
       <th>Completed</th>
       <td>
+        <p>The command completed successfully.</p>
         <p>
-          The command completed successfully.
-        </p>
-        <p>
-          This requires the configuration of a success verifier
-          in the Mission Database specification.
+          This requires the configuration of a success verifier in the Mission Database
+          specification.
         </p>
       </td>
     </tr>
   </table>
-  <ng-container *ngIf="verifiers.length">
+  @if (verifiers.length) {
     <p>&nbsp;</p>
-    <p>
-      Verifiers:
-    </p>
+    <p>Verifiers:</p>
     <table yaSimpleTable style="width: 100%">
-      <tr *ngFor="let ack of verifiers">
-        <th>{{ ack.name }}</th>
-        <td>{{ ack.description || '-' }}</td>
-      </tr>
+      @for (ack of verifiers; track ack) {
+        <tr>
+          <th>{{ ack.name }}</th>
+          <td>{{ ack.description || "-" }}</td>
+        </tr>
+      }
     </table>
-  </ng-container>
-  <ng-container *ngIf="extra.length">
+  }
+  @if (extra.length) {
     <p>&nbsp;</p>
-    <p>
-      Extra acknowledgments:
-    </p>
+    <p>Extra acknowledgments:</p>
     <table yaSimpleTable style="width: 100%">
-      <tr *ngFor="let ack of extra">
-        <th>{{ ack.name.replace('Acknowledge_', '') }}</th>
-        <td>{{ ack.description || '-' }}</td>
-      </tr>
+      @for (ack of extra; track ack) {
+        <tr>
+          <th>{{ ack.name.replace("Acknowledge_", "") }}</th>
+          <td>{{ ack.description || "-" }}</td>
+        </tr>
+      }
     </table>
-  </ng-container>
+  }
 </ya-help>

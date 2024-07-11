@@ -1,16 +1,18 @@
-<app-instance-page *ngIf="command$ | async as command">
-  <app-instance-toolbar>
-    <ng-container *ngIf="(command.qualifiedName | spaceSystemName) as spaceSystemName">
-      <a routerLink="/mdb/commands"
-         [queryParams]="{c: yamcs.context, filter: spaceSystemName}"
-         class="ya-link ya-header-link">
-        {{ spaceSystemName }}
-      </a>/{{ command.qualifiedName | shortName }}
-      <ya-title-copy [text]="command.qualifiedName" />
-    </ng-container>
-  </app-instance-toolbar>
-
-  <div class="panel-content">
-    <app-command-detail [command]="command" />
-  </div>
-</app-instance-page>
+@if (command$ | async; as command) {
+  <app-instance-page>
+    <app-instance-toolbar>
+      @if (command.qualifiedName | spaceSystemName; as spaceSystemName) {
+        <a
+          routerLink="/mdb/commands"
+          [queryParams]="{ c: yamcs.context, filter: spaceSystemName }"
+          class="ya-link ya-header-link">
+          {{ spaceSystemName }} </a
+        >/{{ command.qualifiedName | shortName }}
+        <ya-title-copy [text]="command.qualifiedName" />
+      }
+    </app-instance-toolbar>
+    <div class="panel-content">
+      <app-command-detail [command]="command" />
+    </div>
+  </app-instance-page>
+}

@@ -1,2 +1,4 @@
 <span [innerHTML]="element.className | classNameHtml"></span>.{{ element.methodName }}
-<small *ngIf="element.lineNumber">(line: {{ element.lineNumber }})</small>
+@if (element.lineNumber) {
+  <small>(line: {{ element.lineNumber }})</small>
+}

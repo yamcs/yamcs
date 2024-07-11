@@ -1,8 +1,11 @@
-<ng-container *ngFor="let color of colors; index as i">
-  <div class="box"
-      [class.selected]="color === selectedColor"
-      [style.backgroundColor]="color"
-      (click)="doSelect(color)"></div>
-  <div *ngIf="(i + 1) % 10 === 0" style="clear: both"></div>
-</ng-container>
+@for (color of colors; track color; let i = $index) {
+  <div
+    class="box"
+    [class.selected]="color === selectedColor"
+    [style.backgroundColor]="color"
+    (click)="doSelect(color)"></div>
+  @if ((i + 1) % 10 === 0) {
+    <div style="clear: both"></div>
+  }
+}
 <div style="clear: both"></div>

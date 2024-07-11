@@ -1,22 +1,24 @@
-<div class="label" *ngIf="option() as option">
-  <div class="meta" [class.error]="err.invalid$ | async">
-    <div class="item">boolean</div>
+@if (option(); as option) {
+  <div class="label">
+    <div class="meta" [class.error]="err.invalid$ | async">
+      <div class="item">boolean</div>
+    </div>
+    {{ option.name }}
+    @if (!option.required) {
+      <span class="hint">(optional)</span>
+    }
+    @if (option.description?.length) {
+      <ya-help>
+        @for (description of option.description; track description) {
+          <p>{{ description }}</p>
+        }
+      </ya-help>
+    }
+    <ya-errors #err [controlName]="option.name" />
+    <br />
+    <ng-container [formGroup]="formGroup">
+      <input type="radio" formControlName="enabled" value="true" /> True
+      <input type="radio" formControlName="enabled" value="false" /> False
+    </ng-container>
   </div>
-
-  {{ option.name }}
-  <span class="hint" *ngIf="!option.required">(optional)</span>
-  <ya-help *ngIf="option.description as description">
-    {{ description }}
-  </ya-help>
-
-  <ya-errors #err [controlName]="option.name" />
-  <br>
-  <ng-container [formGroup]="formGroup">
-    <input type="radio"
-           formControlName="enabled"
-           value="true"> True
-    <input type="radio"
-           formControlName="enabled"
-           value="false"> False
-  </ng-container>
-</div>
+}

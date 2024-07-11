@@ -4,46 +4,53 @@
 
   <dt>System</dt>
   <dd>
-    <ng-container *ngIf="(parameterType.qualifiedName | spaceSystemName) as spaceSystemName">
-      <a routerLink="/mdb/parameter-types"
-         [queryParams]="{c: yamcs.context, filter: spaceSystemName}"
-         class="ya-link">
+    @if (parameterType.qualifiedName | spaceSystemName; as spaceSystemName) {
+      <a
+        routerLink="/mdb/parameter-types"
+        [queryParams]="{ c: yamcs.context, filter: spaceSystemName }"
+        class="ya-link">
         {{ spaceSystemName }}
       </a>
-    </ng-container>
+    }
   </dd>
 
-  <ng-container *ngFor="let alias of parameterType.alias">
+  @for (alias of parameterType.alias; track alias) {
     <dt>{{ alias.namespace }}</dt>
     <dd>{{ alias.name }}</dd>
-  </ng-container>
+  }
 
   <dt>Type</dt>
   <dd>
-    <span class="mono" *ngIf="parameterType.engType as engType; else dash">
-      {{ engType }}
-    </span>
+    @if (parameterType.engType; as engType) {
+      <span class="mono">
+        {{ engType }}
+      </span>
+    } @else {
+      -
+    }
   </dd>
 
-  <ng-container *ngIf="parameterType.signed !== undefined">
+  @if (parameterType.signed !== undefined) {
     <dt>Signed</dt>
     <dd>
       {{ parameterType.signed }}
     </dd>
-  </ng-container>
+  }
 
   <dt>Short Description</dt>
-  <dd>{{ parameterType.shortDescription || '-' }}</dd>
+  <dd>{{ parameterType.shortDescription || "-" }}</dd>
 
   <dt>Long Description</dt>
   <dd>
-    <ng-container *ngIf="parameterType.longDescription; else dash">
+    @if (parameterType.longDescription) {
       <app-markdown [text]="parameterType.longDescription" />
-    </ng-container>
+    } @else {
+      -
+    }
   </dd>
 </dl>
 
-<ng-container *ngIf="parameterType.usedBy?.length">
+@if (parameterType.usedBy?.length) {
   <div class="section-divider">
     <mat-divider />
   </div>
@@ -54,20 +61,23 @@
       <th>Type</th>
       <th>Ref</th>
     </tr>
-    <tr *ngFor="let parameter of parameterType.usedBy">
-      <td>Parameter</td>
-      <td>
-        <a [routerLink]="['/mdb/parameters/', parameter.qualifiedName]"
-           [queryParams]="{c: yamcs.context}">
-          {{ parameter.qualifiedName }}
-        </a>
-      </td>
-    </tr>
+    @for (parameter of parameterType.usedBy; track parameter) {
+      <tr>
+        <td>Parameter</td>
+        <td>
+          <a
+            [routerLink]="['/mdb/parameters/', parameter.qualifiedName]"
+            [queryParams]="{ c: yamcs.context }">
+            {{ parameter.qualifiedName }}
+          </a>
+        </td>
+      </tr>
+    }
   </table>
   <p>&nbsp;</p>
-</ng-container>
+}
 
-<ng-container *ngIf="parameterType.dataEncoding as dataEncoding">
+@if (parameterType.dataEncoding; as dataEncoding) {
   <div class="section-divider">
     <mat-divider />
   </div>
@@ -75,24 +85,24 @@
   <h4>Data Encoding</h4>
   <dl class="dl-horizontal no-trail">
     <dt>Size in bits</dt>
-    <dd>{{ dataEncoding?.sizeInBits | nvl:'-' }}</dd>
-    <ng-container *ngIf="dataEncoding?.littleEndian !== undefined">
+    <dd>{{ dataEncoding?.sizeInBits | nvl: "-" }}</dd>
+    @if (dataEncoding?.littleEndian !== undefined) {
       <dt>Byte order</dt>
       <dd>
-        <ng-container *ngIf="dataEncoding?.littleEndian !== undefined">
-          {{ dataEncoding?.littleEndian ? 'Little Endian' : 'Big Endian' }}
-        </ng-container>
-        <ng-container *ngIf="dataEncoding?.littleEndian === undefined">
+        @if (dataEncoding?.littleEndian !== undefined) {
+          {{ dataEncoding?.littleEndian ? "Little Endian" : "Big Endian" }}
+        }
+        @if (dataEncoding?.littleEndian === undefined) {
           -
-        </ng-container>
+        }
       </dd>
-    </ng-container>
+    }
     <dt>Encoding</dt>
-    <dd>{{ dataEncoding?.encoding || '-' }}</dd>
+    <dd>{{ dataEncoding?.encoding || "-" }}</dd>
   </dl>
-</ng-container>
+}
 
-<ng-container *ngIf="parameterType.engType === 'integer' || parameterType.engType === 'float'">
+@if (parameterType.engType === "integer" || parameterType.engType === "float") {
   <div class="section-divider">
     <mat-divider />
   </div>
@@ -100,130 +110,162 @@
   <h4>Calibration</h4>
   <app-parameter-calibration [ptype]="parameterType" />
   <p>&nbsp;</p>
-</ng-container>
+}
 
-<ng-container *ngIf="parameterType.engType === 'enumeration'">
+@if (parameterType.engType === "enumeration") {
   <div class="section-divider">
     <mat-divider />
   </div>
 
   <h4>Enumeration</h4>
-  <table yaDataTable *ngIf="parameterType.engType === 'enumeration'">
-    <tr>
-      <th style="width: 50px">Value</th>
-      <th style="width: 100px">Label</th>
-      <th style="width: 300px">Description</th>
-      <th>Alarm Level (default)</th>
-      <th *ngFor="let context of parameterType.contextAlarm">
-        <ng-container *ngFor="let comparison of context.comparison; let first = first">
-          <ng-container *ngIf="!first">, </ng-container>
-          <a [routerLink]="['/mdb/parameters/', comparison.parameter.qualifiedName]"
-             [queryParams]="{c: yamcs.context}"
-             class="secundary">
-            {{ comparison.parameter.name }}
-          </a>
-          {{ comparison.operator | operator }}
-          {{ comparison.value }}
-        </ng-container>
-      </th>
-    </tr>
-    <tr *ngFor="let enumValue of parameterType.enumValue">
-      <td style="white-space: nowrap">{{ enumValue.value }}</td>
-      <td style="white-space: nowrap">{{ enumValue.label }}</td>
-      <td>{{ enumValue.description || '-' }}</td>
-      <td>
-        <ng-container *ngIf="getDefaultAlarmLevel(parameterType, enumValue) as level">
-          <app-alarm-level [level]="level" [grayscale]="true" />
-          {{ level }}
-        </ng-container>
-        <span *ngIf="!getDefaultAlarmLevel(parameterType, enumValue)">-</span>
-      </td>
-      <td *ngFor="let context of parameterType.contextAlarm">
-        <ng-container *ngIf="getEnumerationAlarmLevel(context, enumValue) as level">
-          <app-alarm-level [level]="level" [grayscale]="true" />
-          {{ level }}
-        </ng-container>
-        <span *ngIf="!getEnumerationAlarmLevel(context, enumValue)">-</span>
-      </td>
-    </tr>
-  </table>
+  @if (parameterType.engType === "enumeration") {
+    <table yaDataTable>
+      <tr>
+        <th style="width: 50px">Value</th>
+        <th style="width: 100px">Label</th>
+        <th style="width: 300px">Description</th>
+        <th>Alarm Level (default)</th>
+        @for (context of parameterType.contextAlarm; track context) {
+          <th>
+            @for (comparison of context.comparison; track comparison; let first = $first) {
+              @if (!first) {
+                ,
+              }
+              <a
+                [routerLink]="['/mdb/parameters/', comparison.parameter.qualifiedName]"
+                [queryParams]="{ c: yamcs.context }"
+                class="secundary">
+                {{ comparison.parameter.name }}
+              </a>
+              {{ comparison.operator | operator }}
+              {{ comparison.value }}
+            }
+          </th>
+        }
+      </tr>
+      @for (enumValue of parameterType.enumValue; track enumValue) {
+        <tr>
+          <td style="white-space: nowrap">{{ enumValue.value }}</td>
+          <td style="white-space: nowrap">{{ enumValue.label }}</td>
+          <td>{{ enumValue.description || "-" }}</td>
+          <td>
+            @if (getDefaultAlarmLevel(parameterType, enumValue); as level) {
+              <app-alarm-level [level]="level" [grayscale]="true" />
+              {{ level }}
+            } @else {
+              <span>-</span>
+            }
+          </td>
+          @for (context of parameterType.contextAlarm; track context) {
+            <td>
+              @if (getEnumerationAlarmLevel(context, enumValue); as level) {
+                <app-alarm-level [level]="level" [grayscale]="true" />
+                {{ level }}
+              } @else {
+                <span>-</span>
+              }
+            </td>
+          }
+        </tr>
+      }
+    </table>
+  }
   <p>&nbsp;</p>
-</ng-container>
+}
 
-<ng-container *ngIf="parameterType.engType === 'integer' || parameterType.engType === 'float'">
+@if (parameterType.engType === "integer" || parameterType.engType === "float") {
   <div class="section-divider">
     <mat-divider />
   </div>
 
   <h4>Alarm Info</h4>
-  <ng-container *ngIf="parameterType.defaultAlarm || parameterType.contextAlarm; else noLevels">
-    <ng-container *ngIf="parameterType.defaultAlarm as alarm">
+  @if (parameterType.defaultAlarm || parameterType.contextAlarm) {
+    @if (parameterType.defaultAlarm; as alarm) {
       <dl class="dl-horizontal">
         <dt>Min. violations</dt>
-        <dd>{{ alarm.minViolations ?? '-' }}</dd>
+        <dd>{{ alarm.minViolations }}</dd>
       </dl>
       <table yaDataTable>
         <tr>
           <th>Alarm Level (default)</th>
           <th>Range</th>
         </tr>
-        <tr *ngFor="let range of alarm.staticAlarmRange">
-          <td>
-            <app-alarm-level [level]="range.level" [grayscale]="true" />
-            {{ range.level }}
-          </td>
-          <td>
-            <ya-interval *ngIf="(range.minInclusive !== undefined
-                          || range.minExclusive !== undefined
-                          || range.maxInclusive !== undefined
-                          || range.maxExclusive !== undefined); else dash"
-                         [left]="range.minInclusive | nvl:range.minExclusive"
-                         [right]="range.maxInclusive | nvl:range.maxExclusive"
-                         [leftInclusive]="range.minInclusive !== undefined"
-                         [rightInclusive]="range.maxInclusive !== undefined"
-                         [outside]="true" />
-            <ng-template #dash>-</ng-template>
-          </td>
-        </tr>
+        @for (range of alarm.staticAlarmRange; track range) {
+          <tr>
+            <td>
+              <app-alarm-level [level]="range.level" [grayscale]="true" />
+              {{ range.level }}
+            </td>
+            <td>
+              @if (
+                range.minInclusive !== undefined ||
+                range.minExclusive !== undefined ||
+                range.maxInclusive !== undefined ||
+                range.maxExclusive !== undefined
+              ) {
+                <ya-interval
+                  [left]="range.minInclusive | nvl: range.minExclusive"
+                  [right]="range.maxInclusive | nvl: range.maxExclusive"
+                  [leftInclusive]="range.minInclusive !== undefined"
+                  [rightInclusive]="range.maxInclusive !== undefined"
+                  [outside]="true" />
+              } @else {
+                -
+              }
+            </td>
+          </tr>
+        }
       </table>
-    </ng-container>
-    <ng-container *ngFor="let contextAlarm of parameterType.contextAlarm; let first=first">
-      <p *ngIf="!first">&nbsp;</p>
-      <h5>Context: <code>{{ contextAlarm.context }}</code></h5>
+    }
+    @for (contextAlarm of parameterType.contextAlarm; track contextAlarm; let first = $first) {
+      @if (!first) {
+        <p>&nbsp;</p>
+      }
+      <h5>
+        Context:
+        <code>{{ contextAlarm.context }}</code>
+      </h5>
       <dl class="dl-horizontal">
         <dt>Min. violations</dt>
-        <dd>{{ contextAlarm.minViolations ?? '-' }}</dd>
+        <dd>{{ contextAlarm.alarm.minViolations }}</dd>
       </dl>
       <table yaDataTable>
         <tr>
           <th>Level</th>
           <th>Range</th>
         </tr>
-        <tr *ngFor="let range of contextAlarm.alarm.staticAlarmRange">
-          <td>
-            <app-alarm-level [level]="range.level" [grayscale]="true" />
-            {{ range.level }}
-          </td>
-          <td>
-            <ya-interval *ngIf="(range.minInclusive !== undefined
-                            || range.minExclusive !== undefined
-                            || range.maxInclusive !== undefined
-                            || range.maxExclusive !== undefined); else dash"
-                         [left]="range.minInclusive | nvl:range.minExclusive"
-                         [right]="range.maxInclusive | nvl:range.maxExclusive"
-                         [leftInclusive]="range.minInclusive !== undefined"
-                         [rightInclusive]="range.maxInclusive !== undefined"
-                         [outside]="true" />
-            <ng-template #dash>-</ng-template>
-          </td>
-        </tr>
+        @for (range of contextAlarm.alarm.staticAlarmRange; track range) {
+          <tr>
+            <td>
+              <app-alarm-level [level]="range.level" [grayscale]="true" />
+              {{ range.level }}
+            </td>
+            <td>
+              @if (
+                range.minInclusive !== undefined ||
+                range.minExclusive !== undefined ||
+                range.maxInclusive !== undefined ||
+                range.maxExclusive !== undefined
+              ) {
+                <ya-interval
+                  [left]="range.minInclusive | nvl: range.minExclusive"
+                  [right]="range.maxInclusive | nvl: range.maxExclusive"
+                  [leftInclusive]="range.minInclusive !== undefined"
+                  [rightInclusive]="range.maxInclusive !== undefined"
+                  [outside]="true" />
+              } @else {
+                -
+              }
+            </td>
+          </tr>
+        }
       </table>
-    </ng-container>
-  </ng-container>
-  <ng-template #noLevels>None</ng-template>
+    }
+  } @else {
+    None
+  }
+
   <p>&nbsp;</p>
-</ng-container>
+}
 
 <mat-divider />
-
-<ng-template #dash>-</ng-template>

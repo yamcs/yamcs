@@ -4,83 +4,88 @@
 
   <div class="panel-content">
     <div class="filter-bar">
-      <ya-search-filter [formControl]="filterControl"
-                        placeholder="Filter parameter types"
-                        (onArrowDown)="selectNext()"
-                        (onArrowUp)="selectPrevious()"
-                        (onEnter)="applySelection()" />
-      <ya-column-chooser #columnChooser
-                         [columns]="columns"
-                         preferenceKey="mdb-parameter-types" />
+      <ya-search-filter
+        [formControl]="filterControl"
+        placeholder="Filter parameter types"
+        (onArrowDown)="selectNext()"
+        (onArrowUp)="selectPrevious()"
+        (onEnter)="applySelection()" />
+      <ya-column-chooser #columnChooser [columns]="columns" preferenceKey="mdb-parameter-types" />
     </div>
 
-    <table mat-table
-           *ngIf="dataSource"
-           class="ya-data-table expand"
-           [dataSource]="dataSource">
-
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef>Name</th>
-        <td mat-cell *matCellDef="let ptype">
-          <a [routerLink]="['/mdb/parameter-types', ptype.qualifiedName]"
-             [queryParams]="{c: yamcs.context}">
-            <ya-highlight [text]="shortName ? ptype.name : ptype.qualifiedName"
-                          [term]="filterControl.value" />
-          </a>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="type">
-        <th mat-header-cell *matHeaderCellDef>Type</th>
-        <td mat-cell *matCellDef="let ptype">
-          <span class="mono" *ngIf="ptype.engType as engType; else dash">
-            {{ engType }}
-          </span>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="units">
-        <th mat-header-cell *matHeaderCellDef>Units</th>
-        <td mat-cell *matCellDef="let ptype">
-          {{ (ptype?.unitSet | units) || '-' }}
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="shortDescription">
-        <th mat-header-cell *matHeaderCellDef>Description</th>
-        <td mat-cell *matCellDef="let ptype" class="wrap200">
-          <ng-container *ngIf="ptype.shortDescription as desc; else dash">
-            <ya-highlight [text]="desc" [term]="filterControl.value" />
+    @if (dataSource) {
+      <table mat-table class="ya-data-table expand" [dataSource]="dataSource">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let ptype">
+            <a
+              [routerLink]="['/mdb/parameter-types', ptype.qualifiedName]"
+              [queryParams]="{ c: yamcs.context }">
+              <ya-highlight
+                [text]="shortName ? ptype.name : ptype.qualifiedName"
+                [term]="filterControl.value" />
+            </a>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef>Type</th>
+          <td mat-cell *matCellDef="let ptype">
+            @if (ptype.engType; as engType) {
+              <span class="mono">
+                {{ engType }}
+              </span>
+            } @else {
+              -
+            }
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="units">
+          <th mat-header-cell *matHeaderCellDef>Units</th>
+          <td mat-cell *matCellDef="let ptype">
+            {{ (ptype?.unitSet | units) || "-" }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="shortDescription">
+          <th mat-header-cell *matHeaderCellDef>Description</th>
+          <td mat-cell *matCellDef="let ptype" class="wrap200">
+            @if (ptype.shortDescription; as desc) {
+              <ya-highlight [text]="desc" [term]="filterControl.value" />
+            } @else {
+              -
+            }
+          </td>
+        </ng-container>
+        @for (aliasColumn of aliasColumns$ | async; track aliasColumn) {
+          <ng-container [matColumnDef]="aliasColumn.id">
+            <th mat-header-cell *matHeaderCellDef>
+              {{ aliasColumn.label }}
+            </th>
+            <td mat-cell *matCellDef="let ptype">
+              @if (ptype | alias: aliasColumn.id; as name) {
+                <ya-highlight [text]="name" [term]="filterControl.value" />
+              } @else {
+                -
+              }
+            </td>
           </ng-container>
-        </td>
-      </ng-container>
-
-      <ng-container *ngFor="let aliasColumn of aliasColumns$ | async"
-                    [matColumnDef]="aliasColumn.id">
-        <th mat-header-cell *matHeaderCellDef>
-          {{ aliasColumn.label }}
-        </th>
-        <td mat-cell *matCellDef="let ptype">
-          <ng-container *ngIf="(ptype | alias:aliasColumn.id) as name; else dash">
-            <ya-highlight [text]="name" [term]="filterControl.value" />
-          </ng-container>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef class="expand"></th>
-        <td mat-cell *matCellDef="let row"></td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
-      <tr mat-row *matRowDef="let row; columns: (columnChooser.displayedColumns$ | async);"
+        }
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="expand"></th>
+          <td mat-cell *matCellDef="let row"></td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: columnChooser.displayedColumns$ | async"
           [class.selected]="selection.isSelected(row)"></tr>
-    </table>
+      </table>
+    }
 
-    <mat-paginator [pageSize]="pageSize"
-                   [hidePageSize]="true"
-                   [showFirstLastButtons]="true"
-                   [length]="dataSource.totalSize$ | async" />
+    <mat-paginator
+      [pageSize]="pageSize"
+      [hidePageSize]="true"
+      [showFirstLastButtons]="true"
+      [length]="dataSource.totalSize$ | async" />
   </div>
 </app-instance-page>
 
@@ -88,7 +93,4 @@
   <div class="panel-content">
     The Mission Database for <i>{{ yamcs.instance }}</i> does not define any parameter types.
   </div>
-</ng-template>
-<ng-template #dash>
-  -
 </ng-template>

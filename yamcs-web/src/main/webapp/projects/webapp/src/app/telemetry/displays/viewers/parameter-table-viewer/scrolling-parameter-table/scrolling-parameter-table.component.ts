@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { ParameterValue, Synchronizer, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
@@ -11,7 +11,7 @@ import { ParameterTable } from '../ParameterTableModel';
   selector: 'app-scrolling-parameter-table',
   templateUrl: './scrolling-parameter-table.component.html',
   styleUrl: './scrolling-parameter-table.component.css',
-  // changeDetection: ChangeDetectionStrategy.OnPush, // FIXME
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     WebappSdkModule,
   ],

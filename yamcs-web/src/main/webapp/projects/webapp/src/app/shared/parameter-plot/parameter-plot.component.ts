@@ -1,7 +1,7 @@
 import { AsyncPipe } from '@angular/common';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, EventEmitter, Input, OnDestroy, Output, QueryList, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Parameter, utils } from '@yamcs/webapp-sdk';
+import { Formatter, Parameter, utils } from '@yamcs/webapp-sdk';
 import Dygraph from 'dygraphs';
 import { BehaviorSubject } from 'rxjs';
 import { ModifyParameterDialogComponent } from '../../telemetry/parameters/modify-parameter-dialog/modify-parameter-dialog.component';
@@ -61,12 +61,6 @@ export class ParameterPlotComponent implements AfterViewInit, OnDestroy {
   @Input()
   stop = new Date();
 
-  /**
-   * If true display timestamps in UTC, otherwise use browser default
-   */
-  @Input()
-  utc = true;
-
   @Input()
   crosshair: 'horizontal' | 'vertical' | 'both' | 'none' = 'vertical';
 
@@ -99,7 +93,7 @@ export class ParameterPlotComponent implements AfterViewInit, OnDestroy {
   legendData$ = new BehaviorSubject<DyLegendData | null>(null);
   timestampTrackerData$ = new BehaviorSubject<TimestampTrackerData | null>(null);
 
-  constructor(private dialog: MatDialog) {
+  constructor(private dialog: MatDialog, private formatter: Formatter) {
   }
 
   ngAfterViewInit() {
@@ -205,7 +199,7 @@ export class ParameterPlotComponent implements AfterViewInit, OnDestroy {
       digitsAfterDecimal: 6,
       labels: ['Generation Time', ...configs.map(s => s.label || s.parameter)],
       rightGap: 0,
-      labelsUTC: this.utc,
+      labelsUTC: this.formatter.isUTC(),
       series: seriesByLabel,
       axes: {
         x: {

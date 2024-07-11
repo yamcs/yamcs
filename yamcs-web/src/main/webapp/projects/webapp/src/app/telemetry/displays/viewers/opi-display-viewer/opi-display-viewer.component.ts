@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, Inject, OnDestroy, View
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlarmSeverity, Display, PV, PVProvider, Sample } from '@yamcs/opi';
 import { Widget } from '@yamcs/opi/dist/types/Widget';
-import { ConfigService, MessageService, NamedObjectId, ParameterSubscription, ParameterValue, StorageClient, SubscribedParameterInfo, Synchronizer, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ConfigService, Formatter, MessageService, NamedObjectId, ParameterSubscription, ParameterValue, StorageClient, SubscribedParameterInfo, Synchronizer, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 import { Viewer } from '../Viewer';
 import { OpiDisplayConsoleHandler } from './OpiDisplayConsoleHandler';
@@ -67,6 +67,7 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
     private messageService: MessageService,
     @Inject(APP_BASE_HREF) private baseHref: string,
     private configService: ConfigService,
+    private formatter: Formatter,
   ) {
     this.storageClient = yamcs.createStorageClient();
     this.bucket = configService.getDisplayBucket();
@@ -184,6 +185,7 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
   public init(objectName: string) {
     const container: HTMLDivElement = this.displayContainer.nativeElement;
     this.display = new Display(container);
+    this.display.utc = this.formatter.isUTC();
     this.display.imagesPrefix = this.baseHref + 'media/';
     this.display.setPathResolver(new OpiDisplayPathResolver(this.storageClient, this.display));
     this.display.setConsoleHandler(new OpiDisplayConsoleHandler(this.messageService));

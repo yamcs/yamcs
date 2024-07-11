@@ -1,38 +1,43 @@
 <h2 mat-dialog-title>Create display</h2>
 
-<mat-dialog-content class="mat-typography">
-  <form *ngIf="page === 1" [formGroup]="typeForm" class="ya-form">
-    <label>
-      Type
-      <select formControlName="type">
-        <option value="par">Parameter Table</option>
-      </select>
-    </label>
-  </form>
+<mat-dialog-content>
+  @if (page === 1) {
+    <form [formGroup]="typeForm" class="ya-form">
+      <label>
+        Type
+        <select formControlName="type">
+          <option value="par">Parameter Table</option>
+        </select>
+      </label>
+    </form>
+  }
 
-  <form *ngIf="page === 2" [formGroup]="filenameForm" class="ya-form">
-    <label [class.invalid]="filenameForm.get('name')?.invalid">
-      Name
-      <input #filename type="text" formControlName="name">
-      <span class="error-message"
-            *ngIf="filenameForm.get('name')?.invalid">File name must end with <code>.par</code></span>
-    </label>
-    <br>
-    <label>
-      Path
-      <input type="text" formControlName="path">
-    </label>
-  </form>
+  @if (page === 2) {
+    <form [formGroup]="filenameForm" class="ya-form">
+      <label [class.invalid]="filenameForm.get('name')?.invalid">
+        Name
+        <input #filename type="text" formControlName="name" />
+        @if (filenameForm.get("name")?.invalid) {
+          <span class="error-message">File name must end with <code>.par</code></span>
+        }
+      </label>
+      <br />
+      <label>
+        Path
+        <input type="text" formControlName="path" />
+      </label>
+    </form>
+  }
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
   <button class="ya-button" mat-dialog-close>CANCEL</button>
-  <button class="ya-button"
-          *ngIf="page === 1"
-          (click)="selectType()"
-          [disabled]="!typeForm.valid">NEXT »</button>
-  <button class="ya-button primary"
-          *ngIf="page === 2"
-          (click)="save()"
-          [disabled]="!filenameForm.valid">SAVE</button>
+  @if (page === 1) {
+    <button class="ya-button" (click)="selectType()" [disabled]="!typeForm.valid">NEXT »</button>
+  }
+  @if (page === 2) {
+    <button class="ya-button primary" (click)="save()" [disabled]="!filenameForm.valid">
+      SAVE
+    </button>
+  }
 </mat-dialog-actions>

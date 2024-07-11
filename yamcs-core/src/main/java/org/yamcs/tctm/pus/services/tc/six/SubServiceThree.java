@@ -3,11 +3,11 @@ package org.yamcs.tctm.pus.services.tc.six;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
-import org.yamcs.mdb.CommandEncodingException;
 import org.yamcs.tctm.pus.PusTcManager;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tc.PusTcCcsdsPacket;
 import org.yamcs.utils.ByteArrayUtils;
+import org.yamcs.tctm.pus.tuples.Pair;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -36,13 +36,13 @@ public class SubServiceThree implements PusSubService {
         int nFields = (int) ByteArrayUtils.decodeCustomInteger(dataField, ServiceSix.memoryIdSize + ServiceSix.baseIdSize, ServiceSix.nfieldsSize);
         byte[] argOffsetValues = Arrays.copyOfRange(dataField, ServiceSix.memoryIdSize + ServiceSix.baseIdSize + ServiceSix.nfieldsSize, dataField.length);
         
-        List<ServiceSix.Pair<Integer, Integer>> baseIdMap = ServiceSix.memoryIds.get(new ServiceSix.Pair<>(apid, memoryId)).get(baseId);
+        List<Pair<Integer, Integer>> baseIdMap = ServiceSix.memoryIds.get(new Pair<>(apid, memoryId)).get(baseId);
         ArrayList<byte[]> loadData = new ArrayList<>();
 
         while(nFields > 0) {
             int argOffsetValue = (int) ByteArrayUtils.decodeCustomInteger(argOffsetValues, 0, ServiceSix.offsetArgumentSize);
             
-            for(ServiceSix.Pair<Integer, Integer> offsetMap: baseIdMap) {
+            for(Pair<Integer, Integer> offsetMap: baseIdMap) {
                 int offsetValue = offsetMap.getFirst();
                 int dataLength = offsetMap.getSecond();
 

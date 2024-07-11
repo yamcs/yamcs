@@ -12,6 +12,7 @@
 
 .ya-data-table tr.mat-mdc-row {
   height: auto;
+  background: #fff;
 }
 
 .ya-data-table:not(.nohover) tr.mat-mdc-row:hover td {
@@ -100,9 +101,7 @@
   background-color: rgba(0, 158, 135, 0.15) !important;
 }
 
-.ya-data-table .mat-mdc-button,
-.ya-data-table .mat-mdc-stroked-button,
-.ya-data-table .mat-mdc-raised-button {
+.ya-data-table .mat-mdc-button {
   line-height: 16px;
   min-width: 0;
 }
@@ -117,6 +116,7 @@
 a.ya-link {
   color: #009e87;
   text-decoration: underline;
+  display: inline-block;
 }
 
 .ya-data-table .mat-mdc-row:hover a:not(.secundary) {
@@ -173,6 +173,10 @@ a.ya-link:hover {
 
 .ya-data-table.no-frame th.mat-mdc-header-cell {
   border-top: none;
+}
+
+.table-status {
+  font-family: Roboto, sans-serif;
 }
 
 @media print {

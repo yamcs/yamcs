@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnChanges, OnDestroy, input } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
-import { ConfigService, MessageService, Parameter, ParameterSubscription, ParameterValue, Value, WebsiteConfig, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ConfigService, Formatter, MessageService, Parameter, ParameterSubscription, ParameterValue, Value, WebsiteConfig, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
@@ -38,6 +38,7 @@ export class ParameterComponent implements OnChanges, OnDestroy {
     private messageService: MessageService,
     private dialog: MatDialog,
     private title: Title,
+    private formatter: Formatter,
     configService: ConfigService,
   ) {
     this.config = configService.getConfig();
@@ -87,7 +88,7 @@ export class ParameterComponent implements OnChanges, OnDestroy {
       }
       const pval = this.parameterValue$.getValue();
       if (pval?.engValue) {
-        title += ': ' + utils.printValue(pval.engValue);
+        title += ': ' + this.formatter.formatValue(pval.engValue);
         if (parameter.type && parameter.type.unitSet) {
           title += ' ' + utils.getUnits(parameter.type.unitSet);
         }

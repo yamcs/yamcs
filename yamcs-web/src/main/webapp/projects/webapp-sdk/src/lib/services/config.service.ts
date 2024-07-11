@@ -23,6 +23,7 @@ export interface WebsiteConfig {
   dass: boolean;
   tc: boolean;
   tmArchive: boolean;
+  utc: boolean;
   displayFolderPerInstance: boolean;
   stackFolderPerInstance: boolean;
   siteLinks: SiteLink[];
@@ -55,7 +56,7 @@ export interface ExtraColumnInfo extends YaColumnInfo {
   after: string;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class ConfigService {
 
   private websiteConfig: WebsiteConfig;

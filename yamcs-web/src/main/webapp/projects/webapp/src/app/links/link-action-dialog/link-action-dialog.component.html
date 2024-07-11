@@ -1,20 +1,26 @@
 <h2 mat-dialog-title>{{ data.action.label }}</h2>
 
-<mat-dialog-content class="mat-typography">
+<mat-dialog-content>
   <form [formGroup]="form" class="ya-form">
-    <ng-container *ngFor="let option of options; let first = first">
-      <hr class="half-break" *ngIf="!first">
-      <ng-container [ngSwitch]="option.type">
-        <app-boolean-option *ngSwitchCase="'BOOLEAN'"
-                            [formControlName]="option.name" [option]="option" />
-        <app-float-option *ngSwitchCase="'FLOAT'"
-                          [formControlName]="option.name" [option]="option" />
-        <app-integer-option *ngSwitchCase="'INTEGER'"
-                            [formControlName]="option.name" [option]="option" />
-        <app-string-option *ngSwitchCase="'STRING'"
-                           [formControlName]="option.name" [option]="option" />
-      </ng-container>
-    </ng-container>
+    @for (option of options; track option; let first = $first) {
+      @if (!first) {
+        <hr class="half-break" />
+      }
+      @switch (option.type) {
+        @case ("BOOLEAN") {
+          <app-boolean-option [formControlName]="option.name" [option]="option" />
+        }
+        @case ("FLOAT") {
+          <app-float-option [formControlName]="option.name" [option]="option" />
+        }
+        @case ("INTEGER") {
+          <app-integer-option [formControlName]="option.name" [option]="option" />
+        }
+        @case ("STRING") {
+          <app-string-option [formControlName]="option.name" [option]="option" />
+        }
+      }
+    }
   </form>
 </mat-dialog-content>
 

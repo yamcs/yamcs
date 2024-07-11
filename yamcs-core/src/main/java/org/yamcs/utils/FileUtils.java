@@ -31,6 +31,9 @@ public class FileUtils {
     }
 
     public static void deleteRecursively(Path dirToRemove) throws IOException {
+        if (!Files.exists(dirToRemove)) {
+            return;
+        }
         Files.walkFileTree(dirToRemove, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {

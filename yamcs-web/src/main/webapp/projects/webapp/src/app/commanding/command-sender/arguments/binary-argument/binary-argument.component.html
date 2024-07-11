@@ -1,19 +1,20 @@
 <div class="label">
   <div class="meta" [class.error]="err.invalid$ | async">
-    <div class="item"
-         *ngIf="type.minBytes !== undefined || type.maxBytes !== undefined">
-      bytes:
-      <ya-interval [left]="type.minBytes"
-                   [right]="type.maxBytes"
-                   [singleValueIfEqual]="true" />
-    </div>
+    @if (type.minBytes !== undefined || type.maxBytes !== undefined) {
+      <div class="item">
+        bytes:
+        <ya-interval [left]="type.minBytes" [right]="type.maxBytes" [singleValueIfEqual]="true" />
+      </div>
+    }
     <div class="item" [class.error]="err.invalid$ | async">{{ type.engType }}</div>
   </div>
 
   {{ label }}
-  <ya-help *ngIf="description">
-    {{ description }}
-  </ya-help>
+  @if (description) {
+    <ya-help>
+      {{ description }}
+    </ya-help>
+  }
 
   <ya-errors #err [controlName]="controlName" />
 

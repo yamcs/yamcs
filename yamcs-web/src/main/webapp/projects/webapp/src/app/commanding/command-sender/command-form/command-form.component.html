@@ -1,67 +1,86 @@
-<form [formGroup]="form"
-      class="ya-form"
-      [class.showAll]="showAll$ | async">
-
+<form [formGroup]="form" class="ya-form" [class.showAll]="showAll$ | async">
   <ng-container formGroupName="args">
-    <ng-container *ngFor="let argument of arguments; let first = first">
-      <br *ngIf="!first">
-      <app-argument [name]="argument.name"
-                    [description]="argument.description"
-                    [type]="argument.type"
-                    [initialValue]="argument.initialValue"
-                    [templateProvider]="templateProvider" />
-    </ng-container>
+    @for (argument of arguments; track argument; let first = $first) {
+      @if (!first) {
+        <br />
+      }
+      <app-argument
+        [name]="argument.name"
+        [description]="argument.description"
+        [type]="argument.type"
+        [initialValue]="argument.initialValue"
+        [templateProvider]="templateProvider" />
+    }
 
-    <ng-container *ngFor="let argument of argumentsWithInitial; let first = first">
-      <br class="hasInitial" *ngIf="!first || arguments.length">
-      <app-argument [name]="argument.name"
-                    [description]="argument.description"
-                    [type]="argument.type"
-                    [initialValue]="argument.initialValue"
-                    [templateProvider]="templateProvider"
-                    class="hasInitial" />
-    </ng-container>
+    @for (argument of argumentsWithInitial; track argument; let first = $first) {
+      @if (!first || arguments.length) {
+        <br class="hasInitial" />
+      }
+      <app-argument
+        [name]="argument.name"
+        [description]="argument.description"
+        [type]="argument.type"
+        [initialValue]="argument.initialValue"
+        [templateProvider]="templateProvider"
+        class="hasInitial" />
+    }
 
-    <ng-container *ngIf="config.collapseInitializedArguments">
-      <ng-container *ngIf="argumentsWithInitial.length && !(showAll$ | async)">
-        <br *ngIf="arguments.length">
-        <ya-text-action (click)="showAll$.next(true)"
-                        icon="double_arrow">
+    @if (config.collapseInitializedArguments) {
+      @if (argumentsWithInitial.length && !(showAll$ | async)) {
+        @if (arguments.length) {
+          <br />
+        }
+        <ya-text-action (click)="showAll$.next(true)" icon="double_arrow">
           Show {{ argumentsWithInitial.length }}
-          argument<ng-container *ngIf="argumentsWithInitial.length !== 1">s</ng-container> with defaults
+          @if (argumentsWithInitial.length === 1) {
+            argument
+          } @else {
+            arguments
+          }
+          with defaults
         </ya-text-action>
-      </ng-container>
-    </ng-container>
+      }
+    }
   </ng-container>
 
   <p>&nbsp;</p>
   <h3>Options</h3>
-  <ng-container *ngIf="showCommandOptions()">
-    <ng-container *ngFor="let extra of commandOptions">
-      <ng-container [ngSwitch]="extra.type">
-        <div class="label" *ngSwitchCase="'BOOLEAN'">
-          {{ extra.verboseName || extra.id }}
-          <ya-help [dialogTitle]="extra.verboseName || extra.id" *ngIf="extra.help">
-            <div [innerHTML]="extra.help"></div>
-          </ya-help>
-          <br>
-          <input type="radio" [formControlName]="'extra__' + extra.id" value="true"> true
-          <input type="radio" [formControlName]="'extra__' + extra.id" value="false"> false
-        </div>
-
-        <div class="label" *ngSwitchDefault>
-          {{ extra.verboseName || extra.id }}
-          <ya-help [dialogTitle]="extra.verboseName || extra.id" *ngIf="extra.help">
-            <div [innerHTML]="extra.help"></div>
-          </ya-help>
-          <input type="text" [formControlName]="'extra__' + extra.id">
-        </div>
-      </ng-container>
-      <br>
-    </ng-container>
-  </ng-container>
+  @if (showCommandOptions()) {
+    @for (extra of commandOptions; track extra) {
+      @switch (extra.type) {
+        @case ("BOOLEAN") {
+          <div class="label">
+            {{ extra.verboseName || extra.id }}
+            @if (extra.help) {
+              <ya-help [dialogTitle]="extra.verboseName || extra.id">
+                <div [innerHTML]="extra.help"></div>
+              </ya-help>
+            }
+            <br />
+            <input type="radio" [formControlName]="'extra__' + extra.id" value="true" />
+            true
+            <input type="radio" [formControlName]="'extra__' + extra.id" value="false" />
+            false
+          </div>
+        }
+        @default {
+          <div class="label">
+            {{ extra.verboseName || extra.id }}
+            @if (extra.help) {
+              <ya-help [dialogTitle]="extra.verboseName || extra.id">
+                <div [innerHTML]="extra.help"></div>
+              </ya-help>
+            }
+            <input type="text" [formControlName]="'extra__' + extra.id" />
+          </div>
+        }
+      }
+      <br />
+    }
+  }
   <label>
-    Comment <span class="hint">(optional)</span>
+    Comment
+    <span class="hint">(optional)</span>
     <textarea formControlName="comment" rows="3" style="width: 100%; resize: none"></textarea>
   </label>
 </form>

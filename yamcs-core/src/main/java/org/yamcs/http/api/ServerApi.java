@@ -70,7 +70,6 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
-import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import io.netty.handler.traffic.TrafficCounter;
 
 public class ServerApi extends AbstractServerApi<Context> {
@@ -242,75 +241,18 @@ public class ServerApi extends AbstractServerApi<Context> {
     @Override
     public void getHttpTraffic(Context ctx, Empty request, Observer<HttpTraffic> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadSystemInfo);
+        observer.complete(toHttpTraffic());
+    }
 
-        HttpTraffic.Builder responseb = HttpTraffic.newBuilder();
-
-        GlobalTrafficShapingHandler globalTrafficHandler = httpServer.getGlobalTrafficShapingHandler();
-        if (globalTrafficHandler != null) {
-            TrafficCounter counter = globalTrafficHandler.trafficCounter();
-            if (counter != null) {
-                responseb.setReadThroughput(counter.lastReadThroughput());
-                responseb.setWriteThroughput(counter.lastWriteThroughput());
-                responseb.setReadBytes(counter.cumulativeReadBytes());
-                responseb.setWrittenBytes(counter.cumulativeWrittenBytes());
-            }
-        }
-
-        List<ClientConnectionInfo> result = new ArrayList<>();
-        for (Channel channel : httpServer.getClientChannels()) {
-            HttpRequest httpRequest = channel.attr(HttpRequestHandler.CTX_HTTP_REQUEST).get();
-            if (httpRequest == null) {
-                continue; // Could be in the process of being handled
-            }
-
-            ClientConnectionInfo.Builder connectionb = ClientConnectionInfo.newBuilder()
-                    .setId(channel.id().asShortText())
-                    .setOpen(channel.isOpen())
-                    .setActive(channel.isActive())
-                    .setWritable(channel.isWritable());
-
-            InetSocketAddress address = (InetSocketAddress) channel.remoteAddress();
-            if (address != null) {
-                connectionb.setRemoteAddress(address.getAddress().getHostAddress() + ":" + address.getPort());
-            }
-
-            ChannelTrafficShapingHandler trafficHandler = channel.pipeline()
-                    .get(ChannelTrafficShapingHandler.class);
-            if (trafficHandler != null) {
-                TrafficCounter counter = trafficHandler.trafficCounter();
-                if (counter != null) {
-                    connectionb.setReadThroughput(counter.lastReadThroughput());
-                    connectionb.setWriteThroughput(counter.lastWriteThroughput());
-                    connectionb.setReadBytes(counter.cumulativeReadBytes());
-                    connectionb.setWrittenBytes(counter.cumulativeWrittenBytes());
-                }
-            }
-
-            String username = channel.attr(HttpRequestHandler.CTX_USERNAME).get();
-            if (username != null) {
-                connectionb.setUsername(username);
-            }
-
-            String protocol = httpRequest.protocolVersion().text();
-            if (channel.pipeline().get(WebSocketFrameHandler.class) != null) {
-                protocol = "WebSocket";
-            }
-            HttpRequestInfo.Builder httpRequestb = HttpRequestInfo.newBuilder()
-                    .setKeepAlive(HttpUtil.isKeepAlive(httpRequest))
-                    .setProtocol(protocol)
-                    .setMethod(httpRequest.method().name())
-                    .setUri(httpRequest.uri());
-            String userAgent = httpRequest.headers().getAsString(HttpHeaderNames.USER_AGENT);
-            if (userAgent != null) {
-                httpRequestb.setUserAgent(userAgent);
-            }
-
-            connectionb.setHttpRequest(httpRequestb.build());
-            result.add(connectionb.build());
-        }
-
-        responseb.addAllConnections(result);
-        observer.complete(responseb.build());
+    @Override
+    public void subscribeHttpTraffic(Context ctx, Empty request, Observer<HttpTraffic> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadSystemInfo);
+        var exec = YamcsServer.getServer().getThreadPoolExecutor();
+        var future = exec.scheduleAtFixedRate(() -> {
+            var httpTraffic = toHttpTraffic();
+            observer.next(httpTraffic);
+        }, 0, 5, TimeUnit.SECONDS);
+        observer.setCancelHandler(() -> future.cancel(false));
     }
 
     @Override
@@ -474,6 +416,76 @@ public class ServerApi extends AbstractServerApi<Context> {
         }
 
         return threadb.build();
+    }
+
+    private HttpTraffic toHttpTraffic() {
+        var trafficb = HttpTraffic.newBuilder();
+
+        var globalTrafficHandler = httpServer.getGlobalTrafficShapingHandler();
+        if (globalTrafficHandler != null) {
+            TrafficCounter counter = globalTrafficHandler.trafficCounter();
+            if (counter != null) {
+                trafficb.setReadThroughput(counter.lastReadThroughput());
+                trafficb.setWriteThroughput(counter.lastWriteThroughput());
+                trafficb.setReadBytes(counter.cumulativeReadBytes());
+                trafficb.setWrittenBytes(counter.cumulativeWrittenBytes());
+            }
+        }
+
+        List<ClientConnectionInfo> result = new ArrayList<>();
+        for (Channel channel : httpServer.getClientChannels()) {
+            HttpRequest httpRequest = channel.attr(HttpRequestHandler.CTX_HTTP_REQUEST).get();
+            if (httpRequest == null) {
+                continue; // Could be in the process of being handled
+            }
+
+            var connectionb = ClientConnectionInfo.newBuilder()
+                    .setId(channel.id().asShortText())
+                    .setOpen(channel.isOpen())
+                    .setActive(channel.isActive())
+                    .setWritable(channel.isWritable());
+
+            InetSocketAddress address = (InetSocketAddress) channel.remoteAddress();
+            if (address != null) {
+                connectionb.setRemoteAddress(address.getAddress().getHostAddress() + ":" + address.getPort());
+            }
+
+            var trafficHandler = channel.pipeline().get(ChannelTrafficShapingHandler.class);
+            if (trafficHandler != null) {
+                TrafficCounter counter = trafficHandler.trafficCounter();
+                if (counter != null) {
+                    connectionb.setReadThroughput(counter.lastReadThroughput());
+                    connectionb.setWriteThroughput(counter.lastWriteThroughput());
+                    connectionb.setReadBytes(counter.cumulativeReadBytes());
+                    connectionb.setWrittenBytes(counter.cumulativeWrittenBytes());
+                }
+            }
+
+            String username = channel.attr(HttpRequestHandler.CTX_USERNAME).get();
+            if (username != null) {
+                connectionb.setUsername(username);
+            }
+
+            String protocol = httpRequest.protocolVersion().text();
+            if (channel.pipeline().get(WebSocketFrameHandler.class) != null) {
+                protocol = "WebSocket";
+            }
+            var httpRequestb = HttpRequestInfo.newBuilder()
+                    .setKeepAlive(HttpUtil.isKeepAlive(httpRequest))
+                    .setProtocol(protocol)
+                    .setMethod(httpRequest.method().name())
+                    .setUri(httpRequest.uri());
+            String userAgent = httpRequest.headers().getAsString(HttpHeaderNames.USER_AGENT);
+            if (userAgent != null) {
+                httpRequestb.setUserAgent(userAgent);
+            }
+
+            connectionb.setHttpRequest(httpRequestb.build());
+            result.add(connectionb.build());
+        }
+
+        trafficb.addAllConnections(result);
+        return trafficb.build();
     }
 
     private static SystemInfo toSystemInfo() {

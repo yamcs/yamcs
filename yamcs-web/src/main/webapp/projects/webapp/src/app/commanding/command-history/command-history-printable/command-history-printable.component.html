@@ -1,4 +1,4 @@
-<ng-container *ngFor="let record of data">
+@for (record of data; track record) {
   <app-command-detail2 [command]="record" [showIcons]="false" />
-  <div style="page-break-after: always;"></div>
-</ng-container>
+  <div style="page-break-after: always"></div>
+}

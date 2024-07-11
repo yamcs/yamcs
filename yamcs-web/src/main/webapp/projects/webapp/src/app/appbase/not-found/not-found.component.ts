@@ -6,6 +6,7 @@ import { OopsComponent } from '../oops/oops.component';
 @Component({
   standalone: true,
   templateUrl: './not-found.component.html',
+  styleUrl: './not-found.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     OopsComponent,

@@ -1,73 +1,94 @@
-<div class="panel-content" *ngIf="plist$ | async as plist">
-  <form [formGroup]="filterForm">
-    <div class="filter-bar">
-      <ya-select icon="access_time" formControlName="interval" [options]="intervalOptions" />
+@if (plist$ | async; as plist) {
+  <div class="panel-content">
+    <form [formGroup]="filterForm">
+      <div class="filter-bar">
+        <ya-select icon="access_time" formControlName="interval" [options]="intervalOptions" />
 
-      <ng-container *ngIf="filterForm.value['interval'] === 'CUSTOM'">
-        <ya-date-time-input formControlName="customStart" />
-        <ya-date-time-input formControlName="customStop" />
-        <button class="ya-button" (click)="applyCustomDates()" [disabled]="filterForm.invalid">Apply</button>
-      </ng-container>
+        @if (filterForm.value["interval"] === "CUSTOM") {
+          <ya-date-time-input formControlName="customStart" />
+          <ya-date-time-input formControlName="customStop" />
+          <button class="ya-button" (click)="applyCustomDates()" [disabled]="filterForm.invalid">
+            Apply
+          </button>
+        }
 
-      <ng-container *ngIf="filterForm.value['interval'] !== 'CUSTOM'">
-        <button class="ya-button" (click)="jumpToNow()">
-          Jump to now
+        @if (filterForm.value["interval"] !== "CUSTOM") {
+          <button class="ya-button" (click)="jumpToNow()">Jump to now</button>
+        }
+
+        <div style="flex: 1 1 auto"></div>
+
+        <button class="ya-button primary" style="margin-right: 0" (click)="exportParameterData()">
+          <mat-icon>download</mat-icon>
+          Export CSV
         </button>
-      </ng-container>
+      </div>
+    </form>
 
-      <div style="flex: 1 1 auto"></div>
+    <div class="table-status">
+      <div class="toggles">
+        <!--ya-table-toggle #preserveLast preferenceKey="tmParameters.preserveLast">Preserve last value</ya-table-toggle-->
+      </div>
 
-      <button class="ya-button primary" style="margin-right: 0" (click)="exportParameterData()">
-        <mat-icon>download</mat-icon>
-        Export CSV
-      </button>
+      @switch (appliedInterval) {
+        @case ("PT1H") {
+          <span>
+            Showing data from <b>the last hour</b> ending at
+            <b>{{ validStop | datetime }}</b> (Mission Time)
+          </span>
+        }
+        @case ("PT6H") {
+          <span>
+            Showing data from <b>the last 6 hours</b> ending at
+            <b>{{ validStop | datetime }}</b> (Mission Time)
+          </span>
+        }
+        @case ("P1D") {
+          <span>
+            Showing data from <b>the last 24 hours</b> ending at
+            <b>{{ validStop | datetime }}</b> (Mission Time)
+          </span>
+        }
+        @case ("NO_LIMIT") {
+          <span> Showing data from <b>all time</b> </span>
+        }
+        @case ("CUSTOM") {
+          <span>
+            Showing data from <b>{{ validStart | datetime }}</b> to
+            <b>{{ validStop | datetime }}</b> (Mission Time)
+          </span>
+        }
+      }
     </div>
-  </form>
 
-  <div class="table-status" [ngSwitch]="appliedInterval">
-    <div class="toggles">
-      <!--ya-table-toggle #preserveLast preferenceKey="tmParameters.preserveLast">Preserve last value</ya-table-toggle-->
-    </div>
-    <span *ngSwitchCase="'PT1H'">
-      Showing data from <b>the last hour</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
-    </span>
-    <span *ngSwitchCase="'PT6H'">
-      Showing data from <b>the last 6 hours</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
-    </span>
-    <span *ngSwitchCase="'P1D'">
-      Showing data from <b>the last 24 hours</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
-    </span>
-    <span *ngSwitchCase="'NO_LIMIT'">
-      Showing data from <b>all time</b>
-    </span>
-    <span *ngSwitchCase="'CUSTOM'">
-      Showing data from <b>{{ validStart | datetime }}</b> to <b>{{ validStop | datetime }}</b> (Mission Time)
-    </span>
+    @if (exportData$ | async; as exportData) {
+      <div class="table-container">
+        <table mat-table class="ya-data-table expand" [dataSource]="dataSource">
+          <ng-container matColumnDef="generationTime" sticky>
+            <th mat-header-cell *cdkHeaderCellDef>Generation time</th>
+            <td mat-cell *cdkCellDef="let row">
+              {{ row.generationTime | datetime }}
+            </td>
+          </ng-container>
+
+          @for (header of exportData.headers; track header; let i = $index) {
+            <ng-container [cdkColumnDef]="header">
+              <th mat-header-cell *cdkHeaderCellDef>{{ header }}</th>
+              <td mat-cell *cdkCellDef="let row">
+                {{ row.values[i] ?? "-" }}
+              </td>
+            </ng-container>
+          }
+
+          <ng-container cdkColumnDef="actions">
+            <th mat-header-cell *cdkHeaderCellDef class="expand"></th>
+            <td mat-cell *cdkCellDef="let row"></td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns$ | async; sticky: true"></tr>
+          <tr mat-row *cdkRowDef="let row; columns: displayedColumns$ | async"></tr>
+        </table>
+      </div>
+    }
   </div>
-
-  <div class="table-container" *ngIf="exportData$ | async as exportData">
-    <table mat-table class="ya-data-table expand" [dataSource]="dataSource">
-      <ng-container matColumnDef="generationTime" sticky>
-        <th mat-header-cell *cdkHeaderCellDef>Generation time</th>
-        <td mat-cell *cdkCellDef="let row">
-          {{ row.generationTime | datetime }}
-        </td>
-      </ng-container>
-
-      <ng-container *ngFor="let header of exportData.headers; index as i" [cdkColumnDef]="header">
-        <th mat-header-cell *cdkHeaderCellDef>{{ header}}</th>
-        <td mat-cell *cdkCellDef="let row">
-          {{ row.values[i] ?? '-' }}
-        </td>
-      </ng-container>
-
-      <ng-container cdkColumnDef="actions">
-        <th mat-header-cell *cdkHeaderCellDef class="expand"></th>
-        <td mat-cell *cdkCellDef="let row"></td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="displayedColumns$ | async; sticky: true"></tr>
-      <tr mat-row *cdkRowDef="let row; columns: (displayedColumns$ | async);"></tr>
-    </table>
-  </div>
-</div>
+}

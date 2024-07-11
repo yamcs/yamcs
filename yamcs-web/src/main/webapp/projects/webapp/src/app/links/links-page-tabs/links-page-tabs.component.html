@@ -1,19 +1,21 @@
 <nav mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
-  <a mat-tab-link
-     routerLink="/links"
-     routerLinkActive
-     [routerLinkActiveOptions]="{exact: true}"
-     #rla="routerLinkActive"
-     [active]="rla.isActive"
-     [queryParams]="{c: yamcs.context}">
+  <a
+    mat-tab-link
+    routerLink="/links"
+    routerLinkActive
+    [routerLinkActiveOptions]="{ exact: true }"
+    #rla="routerLinkActive"
+    [active]="rla.isActive"
+    [queryParams]="{ c: yamcs.context }">
     Links
   </a>
-  <a mat-tab-link
-     routerLink="/links/log"
-     routerLinkActive
-     #rlb="routerLinkActive"
-     [active]="rlb.isActive"
-     [queryParams]="{c: yamcs.context}">
+  <a
+    mat-tab-link
+    routerLink="/links/log"
+    routerLinkActive
+    #rlb="routerLinkActive"
+    [active]="rlb.isActive"
+    [queryParams]="{ c: yamcs.context }">
     Action log
   </a>
 </nav>

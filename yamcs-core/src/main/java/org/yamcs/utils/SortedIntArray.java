@@ -98,6 +98,45 @@ public class SortedIntArray implements Serializable {
     }
 
     /**
+     * returns idx such that
+     * 
+     * <pre>
+     * a[i] >= x iif i >= idx
+     * </pre>
+     * 
+     */
+    public int lowerBound(int x) {
+        int idx = Arrays.binarySearch(a, 0, length, x);
+        if (idx < 0) {
+            return -(idx + 1);
+        } else {
+            while (idx > 0 && a[idx - 1] == x) {
+                idx--;
+            }
+        }
+        return idx;
+    }
+
+    /**
+     * returns idx such that
+     * 
+     * <pre>
+     * a[i] <= x iif i <= idx
+     * </pre>
+     */
+    public int higherBound(int x) {
+        int idx = Arrays.binarySearch(a, 0, length, x);
+        if (idx < 0) {
+            return -(idx + 1) - 1;
+        } else {
+            while (idx < length - 1 && a[idx + 1] == x) {
+                idx++;
+            }
+            return idx;
+        }
+    }
+
+    /**
      * get element at position
      * 
      * @param pos
@@ -279,6 +318,19 @@ public class SortedIntArray implements Serializable {
         }
     }
 
+    /**
+     * Add x to the elements of the array whose value is greater or equal than v
+     */
+    public void addIfGreaterOrEqualThan(int v, int x) {
+        for (int i = length - 1; i >= 0; i--) {
+            if (a[i] >= v) {
+                a[i] += x;
+            } else {
+                break;
+            }
+        }
+    }
+
     @Override
     public String toString() {
         if (length == 0) {
@@ -311,6 +363,5 @@ public class SortedIntArray implements Serializable {
         }
         return h;
     }
-
 
 }

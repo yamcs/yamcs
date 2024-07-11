@@ -38,6 +38,10 @@
   min-width: 0;
 }
 
+.zoom-actions .mat-mdc-button:not(:disabled) {
+  color: #000;
+}
+
 .info {
   position: absolute;
   bottom: 35px;

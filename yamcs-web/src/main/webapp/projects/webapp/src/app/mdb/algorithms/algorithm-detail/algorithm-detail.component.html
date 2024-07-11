@@ -4,28 +4,31 @@
 
   <dt>System</dt>
   <dd>
-    <ng-container *ngIf="(algorithm.qualifiedName | spaceSystemName) as spaceSystemName">
-      <a routerLink="/mdb/algorithms"
-         [queryParams]="{c: yamcs.context, filter: spaceSystemName}"
-         class="ya-link">
+    @if (algorithm.qualifiedName | spaceSystemName; as spaceSystemName) {
+      <a
+        routerLink="/mdb/algorithms"
+        [queryParams]="{ c: yamcs.context, filter: spaceSystemName }"
+        class="ya-link">
         {{ spaceSystemName }}
       </a>
-    </ng-container>
+    }
   </dd>
 
-  <ng-container *ngFor="let alias of algorithm.alias">
+  @for (alias of algorithm.alias; track alias) {
     <dt>{{ alias.namespace }}</dt>
     <dd>{{ alias.name }}</dd>
-  </ng-container>
+  }
 
   <dt>Short Description</dt>
-  <dd>{{ algorithm.shortDescription || '-' }}</dd>
+  <dd>{{ algorithm.shortDescription || "-" }}</dd>
 
   <dt>Long Description</dt>
   <dd>
-    <ng-container *ngIf="algorithm.longDescription; else dash">
+    @if (algorithm.longDescription) {
       <app-markdown [text]="algorithm.longDescription" />
-    </ng-container>
+    } @else {
+      -
+    }
   </dd>
 </dl>
 
@@ -33,16 +36,16 @@
 
 <dl class="dl-horizontal">
   <dt>Scope</dt>
-  <dd>{{ algorithm.scope || '-' }}</dd>
+  <dd>{{ algorithm.scope || "-" }}</dd>
 
   <dt>Type</dt>
-  <dd>{{ algorithm.type || '-' }}</dd>
+  <dd>{{ algorithm.type || "-" }}</dd>
 
   <dt>Language</dt>
-  <dd>{{ algorithm.language || '-' }}</dd>
+  <dd>{{ algorithm.language || "-" }}</dd>
 </dl>
 
-<ng-container *ngIf="algorithm.text">
+@if (algorithm.text) {
   <mat-divider />
   <dl class="dl-horizontal">
     <dt>Text</dt>
@@ -50,9 +53,9 @@
       <div #text class="algorithm-text"></div>
     </dd>
   </dl>
-</ng-container>
+}
 
-<ng-container *ngIf="algorithm.mathElements">
+@if (algorithm.mathElements) {
   <mat-divider />
   <dl class="dl-horizontal">
     <dt>Postfix Expression</dt>
@@ -62,63 +65,75 @@
           <th>Type</th>
           <th>Value</th>
         </tr>
-        <tr *ngFor="let el of algorithm.mathElements" [ngSwitch]="el.type">
-          <ng-container *ngSwitchCase="'VALUE_OPERAND'">
-            <td>Operand</td>
-            <td>{{ el.value }}</td>
-          </ng-container>
-          <ng-container *ngSwitchCase="'OPERATOR'">
-            <td>Operator</td>
-            <td>{{ el.operator }}</td>
-          </ng-container>
-          <ng-container *ngSwitchCase="'THIS_PARAMETER_OPERAND'">
-            <td>Operand</td>
-            <td>this</td>
-          </ng-container>
-          <ng-container *ngSwitchCase="'PARAMETER'">
-            <td>Operand</td>
-            <td>
-              <a [routerLink]="['/mdb/parameters/', el.parameter.qualifiedName]"
-                 [queryParams]="{c: yamcs.context}"
-                 class="ya-link">{{ el.parameter.qualifiedName }}</a>
-            </td>
-          </ng-container>
-        </tr>
+        @for (el of algorithm.mathElements; track el) {
+          <tr>
+            @switch (el.type) {
+              @case ("VALUE_OPERAND") {
+                <td>Operand</td>
+                <td>{{ el.value }}</td>
+              }
+              @case ("OPERATOR") {
+                <td>Operator</td>
+                <td>{{ el.operator }}</td>
+              }
+              @case ("THIS_PARAMETER_OPERAND") {
+                <td>Operand</td>
+                <td>this</td>
+              }
+              @case ("PARAMETER") {
+                <td>Operand</td>
+                <td>
+                  <a
+                    [routerLink]="['/mdb/parameters/', el.parameter.qualifiedName]"
+                    [queryParams]="{ c: yamcs.context }"
+                    class="ya-link">
+                    {{ el.parameter.qualifiedName }}
+                  </a>
+                </td>
+              }
+            }
+          </tr>
+        }
       </table>
     </dd>
   </dl>
-</ng-container>
+}
 
 <mat-divider />
 
 <dl class="dl-horizontal">
   <dt>Input Parameters</dt>
   <dd>
-    <table yaDataTable *ngIf="algorithm.inputParameter">
-      <tr>
-        <th>Input Name</th>
-        <th>Parameter</th>
-        <th>Instance</th>
-        <th>Mandatory</th>
-      </tr>
-      <tr *ngFor="let inputParameter of algorithm.inputParameter">
-        <td>{{ inputParameter.inputName || '-' }}</td>
-        <td>
-          <a [routerLink]="['/mdb/parameters/', inputParameter.parameter.qualifiedName]"
-             [queryParams]="{c: yamcs.context}">
-            {{ inputParameter.parameter.qualifiedName }}
-          </a>
-        </td>
-        <td style="text-align: center">
-          {{ inputParameter.parameterInstance }}
-        </td>
-        <td style="text-align: center">
-          <mat-icon *ngIf="inputParameter.mandatory">check</mat-icon>
-          <mat-icon *ngIf="!inputParameter.mandatory">close</mat-icon>
-        </td>
-      </tr>
-    </table>
-    <span *ngIf="!algorithm.inputParameter">-</span>
+    @if (algorithm.inputParameter) {
+      <table yaDataTable>
+        <tr>
+          <th>Input Name</th>
+          <th>Parameter</th>
+          <th>Instance</th>
+          <th>Mandatory</th>
+        </tr>
+        @for (inputParameter of algorithm.inputParameter; track inputParameter) {
+          <tr>
+            <td>{{ inputParameter.inputName || "-" }}</td>
+            <td>
+              <a
+                [routerLink]="['/mdb/parameters/', inputParameter.parameter.qualifiedName]"
+                [queryParams]="{ c: yamcs.context }">
+                {{ inputParameter.parameter.qualifiedName }}
+              </a>
+            </td>
+            <td style="text-align: center">
+              {{ inputParameter.parameterInstance }}
+            </td>
+            <td style="text-align: center">
+              {{ inputParameter.mandatory ? "Yes" : "No" }}
+            </td>
+          </tr>
+        }
+      </table>
+    } @else {
+      <span>-</span>
+    }
   </dd>
 </dl>
 
@@ -127,22 +142,28 @@
 <dl class="dl-horizontal">
   <dt>Output Parameters</dt>
   <dd>
-    <table yaDataTable *ngIf="algorithm.outputParameter">
-      <tr>
-        <th>Output Name</th>
-        <th>Parameter</th>
-      </tr>
-      <tr *ngFor="let outputParameter of algorithm.outputParameter">
-        <td>{{ outputParameter.outputName || '-' }}</td>
-        <td>
-          <a [routerLink]="['/mdb/parameters/', outputParameter.parameter.qualifiedName]"
-             [queryParams]="{c: yamcs.context}">
-            {{ outputParameter.parameter.qualifiedName }}
-          </a>
-        </td>
-      </tr>
-    </table>
-    <span *ngIf="!algorithm.outputParameter">-</span>
+    @if (algorithm.outputParameter) {
+      <table yaDataTable>
+        <tr>
+          <th>Output Name</th>
+          <th>Parameter</th>
+        </tr>
+        @for (outputParameter of algorithm.outputParameter; track outputParameter) {
+          <tr>
+            <td>{{ outputParameter.outputName || "-" }}</td>
+            <td>
+              <a
+                [routerLink]="['/mdb/parameters/', outputParameter.parameter.qualifiedName]"
+                [queryParams]="{ c: yamcs.context }">
+                {{ outputParameter.parameter.qualifiedName }}
+              </a>
+            </td>
+          </tr>
+        }
+      </table>
+    } @else {
+      <span>-</span>
+    }
   </dd>
 </dl>
 
@@ -156,21 +177,24 @@
         <th>Type</th>
         <th>Value</th>
       </tr>
-      <tr *ngFor="let trigger of algorithm.onParameterUpdate">
-        <td>OnParameterUpdate</td>
-        <td>
-          <a [routerLink]="['/mdb/parameters/', trigger.qualifiedName]"
-             [queryParams]="{c: yamcs.context}">
-            {{ trigger.qualifiedName }}
-          </a>
-        </td>
-      </tr>
-      <tr *ngIf="algorithm.onPeriodicRate">
-        <td>OnPeriodicRate</td>
-        <td>{{ algorithm.onPeriodicRate }} ms</td>
-      </tr>
+      @for (trigger of algorithm.onParameterUpdate; track trigger) {
+        <tr>
+          <td>OnParameterUpdate</td>
+          <td>
+            <a
+              [routerLink]="['/mdb/parameters/', trigger.qualifiedName]"
+              [queryParams]="{ c: yamcs.context }">
+              {{ trigger.qualifiedName }}
+            </a>
+          </td>
+        </tr>
+      }
+      @if (algorithm.onPeriodicRate) {
+        <tr>
+          <td>OnPeriodicRate</td>
+          <td>{{ algorithm.onPeriodicRate }} ms</td>
+        </tr>
+      }
     </table>
   </dd>
 </dl>
-
-<ng-template #dash>-</ng-template>

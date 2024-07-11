@@ -15,7 +15,7 @@ import { DyLegendData, TimestampTrackerData } from '../parameter-plot/dygraphs';
 export class TimestampTrackerComponent {
 
   @Input()
-  legendData: DyLegendData; // Use this to hide timestamp when mouse leaves canvas
+  legendData?: DyLegendData; // Use this to hide timestamp when mouse leaves canvas
 
   @Input()
   timestampData: TimestampTrackerData;

@@ -1,30 +1,28 @@
 <app-admin-page>
-  <app-admin-toolbar>
-    Open databases
-  </app-admin-toolbar>
+  <app-admin-toolbar> Open databases </app-admin-toolbar>
 
   <div class="panel-content">
-    <table mat-table
-           [dataSource]="dataSource"
-           class="ya-data-table expand">
-
+    <table mat-table [dataSource]="dataSource" class="ya-data-table expand">
       <ng-container matColumnDef="tablespace">
         <th mat-header-cell *matHeaderCellDef>Tablespace</th>
-        <td mat-cell *matCellDef="let database">{{ database.tablespace || '-' }}</td>
+        <td mat-cell *matCellDef="let database">{{ database.tablespace || "-" }}</td>
       </ng-container>
 
       <ng-container matColumnDef="dataDir">
         <th mat-header-cell *matHeaderCellDef>Data Dir</th>
         <td mat-cell *matCellDef="let database">
           <a [routerLink]="[database.tablespace, database.dbPath]">
-            {{ database.dataDir }}<ng-container *ngIf="database.dbPath">/{{ database.dbPath }}</ng-container>
+            {{ database.dataDir }}
+            @if (database.dbPath) {
+              /{{ database.dbPath }}
+            }
           </a>
         </td>
       </ng-container>
 
       <ng-container matColumnDef="dbPath">
         <th mat-header-cell *matHeaderCellDef>DB Path</th>
-        <td mat-cell *matCellDef="let database">{{ database.dbPath || '(root)' }}</td>
+        <td mat-cell *matCellDef="let database">{{ database.dbPath || "(root)" }}</td>
       </ng-container>
 
       <ng-container matColumnDef="actions">
@@ -33,7 +31,7 @@
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
   </div>
 </app-admin-page>

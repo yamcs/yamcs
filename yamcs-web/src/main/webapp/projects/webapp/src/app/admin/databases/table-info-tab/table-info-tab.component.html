@@ -1,90 +1,103 @@
-<div class="panel-content" *ngIf="table$ | async as table">
-  <h3>Key</h3>
-  <table yaDataTable class="expand">
-    <tr>
-      <th>Column</th>
-      <th>Type</th>
-      <th>Extra</th>
-      <th class="expand"></th>
-    </tr>
-    <tr *ngFor="let column of table.keyColumn">
-      <td>{{ column.name }}</td>
-      <td>
-        <ng-container *ngIf="column.type === 'ENUM'">
-          <span (click)="showEnum(column)" matTooltip="Show enum states" class="enum">{{ column.type }}</span>
-        </ng-container>
-        <ng-container *ngIf="column.type !== 'ENUM'">
-          {{ column.type }}
-        </ng-container>
-      </td>
-      <td>
-        {{ column.autoIncrement ? 'auto_increment' : '-' }}
-      </td>
-      <td></td>
-    </tr>
-  </table>
-
-  <p>&nbsp;</p>
-
-  <h3>Value</h3>
-  <table yaDataTable>
-    <tr>
-      <th>Column</th>
-      <th>Type</th>
-      <th>Extra</th>
-      <th class="expand"></th>
-    </tr>
-    <tr *ngFor="let column of table.valueColumn">
-      <td>{{ column.name }}</td>
-      <td>
-        <ng-container *ngIf="column.type === 'ENUM'">
-          <span (click)="showEnum(column)" matTooltip="Show enum states" class="enum">{{ column.type }}</span>
-        </ng-container>
-        <ng-container *ngIf="column.type !== 'ENUM'">
-          {{ column.type }}
-        </ng-container>
-      </td>
-      <td>
-        {{ column.autoIncrement ? 'auto_increment' : '-' }}
-      </td>
-      <td></td>
-    </tr>
-  </table>
-
-  <p>&nbsp;</p>
-
-  <h3>Options</h3>
-  <dl class="dl-horizontal">
-    <dt>Format version</dt>
-    <dd>{{ table.formatVersion }}</dd>
-    <dt>Storage engine</dt>
-    <dd>{{ table.storageEngine }}</dd>
-    <dt>Tablespace</dt>
-    <dd>{{ table.tablespace || '-' }}</dd>
-    <dt>Compressed</dt>
-    <dd>{{ table.compressed ? 'yes' : 'no' }}</dd>
-    <dt>Histogram</dt>
-    <dd>
-      <ng-container *ngIf="table.histogramColumn">
-        <ng-container *ngFor="let col of table.histogramColumn; let last = last">
-          {{ col }}<span *ngIf="!last">, </span>
-        </ng-container>
-      </ng-container>
-      <ng-container *ngIf="!table.histogramColumn">-</ng-container>
-    </dd>
-    <dt>Partition by</dt>
-    <dd>{{ (table.partitioningInfo?.type | lowercase) || '-' }}</dd>
-    <ng-container *ngIf="table.partitioningInfo?.timeColumn">
-      <dt>Time partition column</dt>
+@if (table$ | async; as table) {
+  <div class="panel-content">
+    <h3>Key</h3>
+    <table yaDataTable class="expand">
+      <tr>
+        <th>Column</th>
+        <th>Type</th>
+        <th>Extra</th>
+        <th class="expand"></th>
+      </tr>
+      @for (column of table.keyColumn; track column) {
+        <tr>
+          <td>{{ column.name }}</td>
+          <td>
+            @if (column.type === "ENUM") {
+              <span (click)="showEnum(column)" matTooltip="Show enum states" class="enum">{{
+                column.type
+              }}</span>
+            }
+            @if (column.type !== "ENUM") {
+              {{ column.type }}
+            }
+          </td>
+          <td>
+            {{ column.autoIncrement ? "auto_increment" : "-" }}
+          </td>
+          <td></td>
+        </tr>
+      }
+    </table>
+    <p>&nbsp;</p>
+    <h3>Value</h3>
+    <table yaDataTable>
+      <tr>
+        <th>Column</th>
+        <th>Type</th>
+        <th>Extra</th>
+        <th class="expand"></th>
+      </tr>
+      @for (column of table.valueColumn; track column) {
+        <tr>
+          <td>{{ column.name }}</td>
+          <td>
+            @if (column.type === "ENUM") {
+              <span (click)="showEnum(column)" matTooltip="Show enum states" class="enum">{{
+                column.type
+              }}</span>
+            }
+            @if (column.type !== "ENUM") {
+              {{ column.type }}
+            }
+          </td>
+          <td>
+            {{ column.autoIncrement ? "auto_increment" : "-" }}
+          </td>
+          <td></td>
+        </tr>
+      }
+    </table>
+    <p>&nbsp;</p>
+    <h3>Options</h3>
+    <dl class="dl-horizontal">
+      <dt>Format version</dt>
+      <dd>{{ table.formatVersion }}</dd>
+      <dt>Storage engine</dt>
+      <dd>{{ table.storageEngine }}</dd>
+      <dt>Tablespace</dt>
+      <dd>{{ table.tablespace || "-" }}</dd>
+      <dt>Compressed</dt>
+      <dd>{{ table.compressed ? "yes" : "no" }}</dd>
+      <dt>Histogram</dt>
       <dd>
-        {{ table.partitioningInfo?.timeColumn }}('{{ table.partitioningInfo?.timePartitionSchema }}')
+        @if (table.histogramColumn) {
+          @for (col of table.histogramColumn; track col; let last = $last) {
+            {{ col }}
+            @if (!last) {
+              <span>, </span>
+            }
+          }
+        }
+        @if (!table.histogramColumn) {
+          -
+        }
       </dd>
-    </ng-container>
-    <ng-container *ngIf="table.partitioningInfo?.valueColumn">
-      <dt>Value partition column</dt>
-      <dd>
-        {{ table.partitioningInfo?.valueColumn }}
-      </dd>
-    </ng-container>
-  </dl>
-</div>
+      <dt>Partition by</dt>
+      <dd>{{ (table.partitioningInfo?.type | lowercase) || "-" }}</dd>
+      @if (table.partitioningInfo?.timeColumn) {
+        <dt>Time partition column</dt>
+        <dd>
+          {{ table.partitioningInfo?.timeColumn }}('{{
+            table.partitioningInfo?.timePartitionSchema
+          }}')
+        </dd>
+      }
+      @if (table.partitioningInfo?.valueColumn) {
+        <dt>Value partition column</dt>
+        <dd>
+          {{ table.partitioningInfo?.valueColumn }}
+        </dd>
+      }
+    </dl>
+  </div>
+}

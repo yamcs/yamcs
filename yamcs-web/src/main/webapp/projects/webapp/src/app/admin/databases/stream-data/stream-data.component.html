@@ -1,11 +1,11 @@
-<ng-container *ngFor="let column of streamData.column; index as i">
+@for (column of streamData.column; track column; let i = $index) {
   <div class="block-title">{{ column.name }}</div>
   <div class="block">
-    <ng-container *ngIf="column.value.type !== 'BINARY'">
-      {{ (streamData.column[i].value | value) || '-' }}
-    </ng-container>
-    <ng-container *ngIf="column.value.type === 'BINARY'">
+    @if (column.value.type !== "BINARY") {
+      {{ (streamData.column[i].value | value) || "-" }}
+    }
+    @if (column.value.type === "BINARY") {
       <app-hex [base64String]="streamData.column[i].value.binaryValue" />
-    </ng-container>
+    }
   </div>
-</ng-container>
+}

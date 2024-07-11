@@ -7,11 +7,6 @@ td {
   height: 200px;
 }
 
-.mat-mdc-dialog-actions {
-  padding: 24px;
-}
-
 .filter-bar {
   display: block;
-  padding: 24px;
 }

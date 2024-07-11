@@ -126,6 +126,32 @@ public class CommandStack {
                         }
                     }
                 }
+                if (commandObject.has("extraOptions")) {
+                    var extraArray = commandObject.get("extraOptions").getAsJsonArray();
+                    for (var extraEl : extraArray) {
+                        var extraObject = extraEl.getAsJsonObject();
+
+                        var extraId = extraObject.get("id").getAsString();
+
+                        var extraValue = extraObject.get("value");
+                        if (extraValue.isJsonNull()) {
+                            command.setExtra(extraId, null);
+                        } else if (extraValue.isJsonPrimitive()) {
+                            var primitive = extraValue.getAsJsonPrimitive();
+                            if (primitive.isBoolean()) {
+                                command.setExtra(extraId, primitive.getAsBoolean());
+                            } else if (primitive.isNumber()) {
+                                command.setExtra(extraId, primitive.getAsNumber());
+                            } else if (primitive.isString()) {
+                                command.setExtra(extraId, primitive.getAsString());
+                            } else {
+                                throw new CommandStackParseException("Unexpected value type for " + extraValue);
+                            }
+                        } else {
+                            throw new CommandStackParseException("Unexpected value type for " + extraValue);
+                        }
+                    }
+                }
 
                 stack.addCommand(command);
             }

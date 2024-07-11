@@ -1,4 +1,4 @@
-import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { AggregateValue, Value } from '../../client';
@@ -23,10 +23,8 @@ interface ValueNode {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AsyncPipe,
-    NgForOf,
-    NgIf,
-    ValuePipe,
-  ],
+    ValuePipe
+],
 })
 export class YaValue implements OnChanges {
 

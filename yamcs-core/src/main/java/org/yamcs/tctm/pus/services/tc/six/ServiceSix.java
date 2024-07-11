@@ -11,6 +11,7 @@ import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tc.PusTcCcsdsPacket;
+import org.yamcs.tctm.pus.tuples.Pair;
 
 public class ServiceSix implements PusService {
     Log log;
@@ -48,7 +49,7 @@ public class ServiceSix implements PusService {
 
         crc = new CrcCciitCalculator(config.getConfig("crc"));
         List<String> memoryIdStr = config.getList("memoryId");
-        YConfiguration memoryIdConfig = YConfiguration.getConfiguration("pus.six");
+        YConfiguration memoryIdConfig = YConfiguration.getConfiguration("six", "pus");
         
         for (String memoryId: memoryIdStr) {
             if (memoryIdConfig.containsKey(memoryId)) {
@@ -106,40 +107,6 @@ public class ServiceSix implements PusService {
     public ArrayList<TmPacket> extractPusModifiers(TmPacket tmPacket) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'extractPusModifiers'");
-    }
-
-    public static class Pair<K, V> {
-        private final K first;
-        private final V second;
-
-        public Pair(K first, V second) {
-            this.first = first;
-            this.second = second;
-        }
-
-        public K getFirst() {
-            return first;
-        }
-
-        public V getSecond() {
-            return second;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (o == null || getClass() != o.getClass())
-                return false;
-            Pair<?, ?> pair = (Pair<?, ?>) o;
-
-            return Objects.equals(first, pair.first) && Objects.equals(second, pair.second);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(first, second);
-        }
     }
 }
 

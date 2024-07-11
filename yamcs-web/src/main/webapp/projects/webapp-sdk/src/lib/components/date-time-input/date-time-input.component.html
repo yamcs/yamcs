@@ -1,38 +1,48 @@
 <div class="date-time-input">
-  <input #dayInput class="day ya-input"
-         type="text"
-         autocomplete="off"
-         placeholder="YYYY-MM-DD"
-         [matDatepicker]="picker"
-         (keyup)="fireChange({ standardizeInputs: false })"
-         (dateInput)="fireChange()"
-         (paste)="processPaste($event)">
+  <input
+    #dayInput
+    class="day ya-input"
+    type="text"
+    autocomplete="off"
+    placeholder="YYYY-MM-DD"
+    [matDatepicker]="picker"
+    (keyup)="fireChange({ standardizeInputs: false })"
+    (dateInput)="fireChange()"
+    (paste)="processPaste($event)" />
   <div class="cal">
     <mat-icon class="icon14" (click)="picker.open()">calendar_today</mat-icon>
   </div>
   <mat-datepicker #picker [restoreFocus]="false" />
-  <input #hourInput class="hh ya-input"
-         type="text"
-         placeholder="hh"
-         (keyup)="fireChange({ standardizeInputs: false })"
-         (change)="fireChange()"
-         (paste)="processPaste($event)">
-  <input #minuteInput class="mm ya-input"
-         type="text"
-         placeholder="mm"
-         (keyup)="fireChange({ standardizeInputs: false })"
-         (change)="fireChange()"
-         (paste)="processPaste($event)">
-  <input #secondInput class="ss ya-input"
-         type="text"
-         placeholder="ss"
-         (keyup)="fireChange({ standardizeInputs: false })"
-         (change)="fireChange()"
-         (paste)="processPaste($event)">
-  <input #millisInput class="sss ya-input"
-         [type]="showMillis ? 'text' : 'hidden'"
-         placeholder="ms"
-         (keyup)="fireChange({ standardizeInputs: false })"
-         (change)="fireChange()"
-         (paste)="processPaste($event)">
+  <input
+    #hourInput
+    class="hh ya-input"
+    type="text"
+    placeholder="hh"
+    (keyup)="fireChange({ standardizeInputs: false })"
+    (change)="fireChange()"
+    (paste)="processPaste($event)" />
+  <input
+    #minuteInput
+    class="mm ya-input"
+    type="text"
+    placeholder="mm"
+    (keyup)="fireChange({ standardizeInputs: false })"
+    (change)="fireChange()"
+    (paste)="processPaste($event)" />
+  <input
+    #secondInput
+    class="ss ya-input"
+    type="text"
+    placeholder="ss"
+    (keyup)="fireChange({ standardizeInputs: false })"
+    (change)="fireChange()"
+    (paste)="processPaste($event)" />
+  <input
+    #millisInput
+    class="sss ya-input"
+    [type]="showMillis ? 'text' : 'hidden'"
+    placeholder="ms"
+    (keyup)="fireChange({ standardizeInputs: false })"
+    (change)="fireChange()"
+    (paste)="processPaste($event)" />
 </div>

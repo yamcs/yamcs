@@ -4,28 +4,31 @@
 
   <dt>System</dt>
   <dd>
-    <ng-container *ngIf="(command.qualifiedName | spaceSystemName) as spaceSystemName">
-      <a routerLink="/mdb/commands"
-         [queryParams]="{c: yamcs.context, filter: spaceSystemName}"
-         class="ya-link">
+    @if (command.qualifiedName | spaceSystemName; as spaceSystemName) {
+      <a
+        routerLink="/mdb/commands"
+        [queryParams]="{ c: yamcs.context, filter: spaceSystemName }"
+        class="ya-link">
         {{ spaceSystemName }}
       </a>
-    </ng-container>
+    }
   </dd>
 
-  <ng-container *ngFor="let alias of command.alias">
+  @for (alias of command.alias; track alias) {
     <dt>{{ alias.namespace }}</dt>
     <dd>{{ alias.name }}</dd>
-  </ng-container>
+  }
 
   <dt>Short description</dt>
-  <dd>{{ command.shortDescription || '-' }}</dd>
+  <dd>{{ command.shortDescription || "-" }}</dd>
 
   <dt>Long Description</dt>
   <dd>
-    <ng-container *ngIf="command.longDescription; else dash">
+    @if (command.longDescription) {
       <app-markdown [text]="command.longDescription" />
-    </ng-container>
+    } @else {
+      -
+    }
   </dd>
 </dl>
 
@@ -33,93 +36,118 @@
 
 <dl class="dl-horizontal">
   <dt>Base command</dt>
-  <dd *ngIf="command.baseCommand">
-    <a [routerLink]="['/mdb/commands/', command.baseCommand.qualifiedName]"
-       [queryParams]="{c: yamcs.context}"
-       class="ya-link">
-      {{ command.baseCommand.qualifiedName }}
-    </a>
-  </dd>
-  <dd *ngIf="!command.baseCommand">-</dd>
+  @if (command.baseCommand) {
+    <dd>
+      <a
+        [routerLink]="['/mdb/commands/', command.baseCommand.qualifiedName]"
+        [queryParams]="{ c: yamcs.context }"
+        class="ya-link">
+        {{ command.baseCommand.qualifiedName }}
+      </a>
+    </dd>
+  } @else {
+    <dd>-</dd>
+  }
 
   <dt>Abstract</dt>
-  <dd>{{ command.abstract }}</dd>
+  <dd>{{ command.abstract ? "Yes" : "No" }}</dd>
 
   <dt>Significance</dt>
-  <dd *ngIf="command.significance">
-    <app-significance-level [level]="command.significance.consequenceLevel" />
-    {{ command.significance.reasonForWarning }}
-  </dd>
-  <dd *ngIf="!command.significance">-</dd>
+  @if (command.significance) {
+    <dd>
+      <app-significance-level [level]="command.significance.consequenceLevel" />
+      {{ command.significance.reasonForWarning }}
+    </dd>
+  } @else {
+    <dd>-</dd>
+  }
 
   <dt>Argument assignments</dt>
-  <dd *ngIf="command.argumentAssignment">
-    <ng-container *ngFor="let assignment of command.argumentAssignment">
-      {{ assignment.name}} = {{ assignment.value }}<br>
-    </ng-container>
-  </dd>
-  <dd *ngIf="!command.argumentAssignment">-</dd>
+  @if (command.argumentAssignment) {
+    <dd>
+      @for (assignment of command.argumentAssignment; track assignment) {
+        {{ assignment.name }} = {{ assignment.value }}
+        <br />
+      }
+    </dd>
+  } @else {
+    <dd>-</dd>
+  }
 
   <dt>Arguments</dt>
-  <dd *ngIf="command.argument">
-    <table yaDataTable>
-      <tr>
-        <th>Name</th>
-        <th>Description</th>
-        <th>Type</th>
-        <th>Signed</th>
-        <th>Encoding</th>
-        <th>Size in bits</th>
-        <th>Byte order</th>
-        <th>Range</th>
-        <th>Initial value</th>
-      </tr>
-      <tr *ngFor="let argument of command.argument">
-        <td>{{ argument.name || '-' }}</td>
-        <td>{{ argument.description || '-' }}</td>
-        <td>
-          <ng-container *ngIf="argument.type?.engType === 'enumeration'">
-            <span (click)="showEnum(argument)" matTooltip="Show enum states"
-                  class="enum">{{ argument.type?.engType }}</span>
-          </ng-container>
-          <ng-container *ngIf="argument.type?.engType !== 'enumeration'">
-            {{ argument.type?.engType || '-' }}
-          </ng-container>
-        </td>
-        <td>{{ argument.type?.signed ?? '-' }}</td>
-        <td>{{ argument.type?.dataEncoding?.encoding || '-' }}</td>
-        <td>{{ argument.type?.dataEncoding?.sizeInBits | nvl:'-' }}</td>
-        <td>{{ argument.type?.dataEncoding?.littleEndian ? 'Little Endian' : 'Big Endian' }}</td>
-        <td>
-          <ya-interval *ngIf="(argument.type?.rangeMin || argument.type?.rangeMax); else empty"
-                       [left]="argument.type?.rangeMin"
-                       [right]="argument.type?.rangeMax" />
-          <ng-template #empty>-</ng-template>
-        </td>
-        <td>{{ argument.initialValue || '-'}}</td>
-      </tr>
-    </table>
-  </dd>
-  <dd *ngIf="!command.argument">-</dd>
+  @if (command.argument) {
+    <dd>
+      <table yaDataTable>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Type</th>
+          <th>Signed</th>
+          <th>Encoding</th>
+          <th>Size in bits</th>
+          <th>Byte order</th>
+          <th>Range</th>
+          <th>Initial value</th>
+        </tr>
+        @for (argument of command.argument; track argument) {
+          <tr>
+            <td>{{ argument.name || "-" }}</td>
+            <td>{{ argument.description || "-" }}</td>
+            <td>
+              @if (argument.type.engType === "enumeration") {
+                <span (click)="showEnum(argument)" matTooltip="Show enum states" class="enum">
+                  {{ argument.type.engType }}
+                </span>
+              }
+              @if (argument.type.engType !== "enumeration") {
+                {{ argument.type.engType || "-" }}
+              }
+            </td>
+            <td>{{ argument.type.signed ?? "-" }}</td>
+            <td>{{ argument.type.dataEncoding.encoding || "-" }}</td>
+            <td>{{ argument.type.dataEncoding.sizeInBits | nvl: "-" }}</td>
+            <td>
+              {{ argument.type.dataEncoding.littleEndian ? "Little Endian" : "Big Endian" }}
+            </td>
+            <td>
+              @if (argument.type.rangeMin || argument.type.rangeMax) {
+                <ya-interval [left]="argument.type.rangeMin" [right]="argument.type.rangeMax" />
+              } @else {
+                -
+              }
+            </td>
+            <td>{{ argument.initialValue || "-" }}</td>
+          </tr>
+        }
+      </table>
+    </dd>
+  } @else {
+    <dd>-</dd>
+  }
 </dl>
 
 <mat-divider />
 
 <dl class="dl-horizontal">
   <dt>Constraints</dt>
-  <dd *ngIf="command.constraint">
-    <table yaDataTable>
-      <tr>
-        <th>Constraint</th>
-        <th>Timeout</th>
-      </tr>
-      <tr *ngFor="let constraint of command.constraint">
-        <td>{{ constraint.expression }}</td>
-        <td>{{ constraint.timeout || '-' }}</td>
-      </tr>
-    </table>
-  </dd>
-  <dd *ngIf="!command.constraint">-</dd>
+  @if (command.constraint) {
+    <dd>
+      <table yaDataTable>
+        <tr>
+          <th>Constraint</th>
+          <th>Timeout</th>
+        </tr>
+        @for (constraint of command.constraint; track constraint) {
+          <tr>
+            <td>{{ constraint.expression }}</td>
+            <td>{{ constraint.timeout || "-" }}</td>
+          </tr>
+        }
+      </table>
+    </dd>
+  } @else {
+    <dd>-</dd>
+  }
 </dl>
 
 <mat-divider />
@@ -127,47 +155,66 @@
 <dl class="dl-horizontal">
   <dt>Verifiers</dt>
   <dd>
-    <table *ngIf="command.verifier?.length" yaDataTable>
-      <tr>
-        <th>Stage</th>
-        <th>Type</th>
-        <th>Ref</th>
-        <th>Check window</th>
-        <th>Relative to</th>
-        <th>On success</th>
-        <th>On fail</th>
-        <th>On timeout</th>
-      </tr>
-      <tr *ngFor="let verifier of command.verifier">
-        <td>{{ verifier.stage }}</td>
-        <td>
-          <ng-container *ngIf="verifier.algorithm">Algorithm</ng-container>
-          <ng-container *ngIf="verifier.container">Container</ng-container>
-          <ng-container *ngIf="verifier.expression">Expression</ng-container>
-        </td>
-        <td>
-          <ng-container *ngIf="verifier.algorithm">
-            <a [routerLink]="['/mdb/algorithms/', verifier.algorithm.qualifiedName]"
-               [queryParams]="{c: yamcs.context}">{{ verifier.algorithm.qualifiedName }}</a>
-          </ng-container>
-          <ng-container *ngIf="verifier.container">
-            <a [routerLink]="['/mdb/containers/', verifier.container.qualifiedName]"
-               [queryParams]="{c: yamcs.context}">{{ verifier.container.qualifiedName }}</a>
-          </ng-container>
-          <ng-container *ngIf="verifier.expression">
-            {{ verifier.expression }}
-          </ng-container>
-        </td>
-        <td>
-          [{{ verifier.checkWindow.timeToStartChecking || '0' }},{{ verifier.checkWindow.timeToStopChecking || '0' }}]
-        </td>
-        <td>{{ verifier.checkWindow.relativeTo }}</td>
-        <td>{{ verifier.onSuccess || '-' }}</td>
-        <td>{{ verifier.onFail || '-' }}</td>
-        <td>{{ verifier.onTimeout || '-' }}</td>
-      </tr>
-    </table>
-    <ng-container *ngIf="!command.verifier?.length">-</ng-container>
+    @if (command.verifier?.length) {
+      <table yaDataTable>
+        <tr>
+          <th>Stage</th>
+          <th>Type</th>
+          <th>Ref</th>
+          <th>Check window</th>
+          <th>Relative to</th>
+          <th>On success</th>
+          <th>On fail</th>
+          <th>On timeout</th>
+        </tr>
+        @for (verifier of command.verifier; track verifier) {
+          <tr>
+            <td>{{ verifier.stage }}</td>
+            <td>
+              @if (verifier.algorithm) {
+                Algorithm
+              }
+              @if (verifier.container) {
+                Container
+              }
+              @if (verifier.expression) {
+                Expression
+              }
+            </td>
+            <td>
+              @if (verifier.algorithm) {
+                <a
+                  [routerLink]="['/mdb/algorithms/', verifier.algorithm.qualifiedName]"
+                  [queryParams]="{ c: yamcs.context }">
+                  {{ verifier.algorithm.qualifiedName }}
+                </a>
+              }
+              @if (verifier.container) {
+                <a
+                  [routerLink]="['/mdb/containers/', verifier.container.qualifiedName]"
+                  [queryParams]="{ c: yamcs.context }">
+                  {{ verifier.container.qualifiedName }}
+                </a>
+              }
+              @if (verifier.expression) {
+                {{ verifier.expression }}
+              }
+            </td>
+            <td>
+              [{{ verifier.checkWindow.timeToStartChecking || "0" }},{{
+                verifier.checkWindow.timeToStopChecking || "0"
+              }}]
+            </td>
+            <td>{{ verifier.checkWindow.relativeTo }}</td>
+            <td>{{ verifier.onSuccess || "-" }}</td>
+            <td>{{ verifier.onFail || "-" }}</td>
+            <td>{{ verifier.onTimeout || "-" }}</td>
+          </tr>
+        }
+      </table>
+    } @else {
+      -
+    }
   </dd>
 </dl>
 
@@ -176,39 +223,45 @@
 <dl class="dl-horizontal">
   <dt>Sequence entries</dt>
   <dd>
-    <table *ngIf="command.commandContainer?.entry" yaDataTable>
-      <tr>
-        <th>Type</th>
-        <th>Ref</th>
-        <th>Size in bits</th>
-        <th>Location in bits</th>
-        <th>Reference location</th>
-      </tr>
-      <tr *ngFor="let entry of command.commandContainer.entry">
-        <ng-container *ngIf="entry.argument">
-          <td>Argument</td>
-          <td>{{ entry.argument.name }}</td>
-          <td>{{ entry.argument.type.dataEncoding.sizeInBits }}</td>
-        </ng-container>
-        <ng-container *ngIf="entry.parameter">
-          <td>Parameter</td>
-          <td>
-            <a [routerLink]="['/mdb/parameters/', entry.parameter.qualifiedName]"
-               [queryParams]="{c: yamcs.context}">{{ entry.parameter.qualifiedName }}</a>
-          </td>
-          <td>{{ entry.parameter.type.dataEncoding?.sizeInBits ?? '-' }}</td>
-        </ng-container>
-        <ng-container *ngIf="entry.fixedValue">
-          <td>Fixed value</td>
-          <td>{{ entry.fixedValue.name }}: 0x{{ entry.fixedValue.hexValue }}</td>
-          <td>{{ entry.fixedValue.sizeInBits }}</td>
-        </ng-container>
-        <td>{{ entry.locationInBits }}</td>
-        <td>{{ entry.referenceLocation }}</td>
-      </tr>
-    </table>
-    <span *ngIf="!command.commandContainer?.entry">-</span>
+    @if (command.commandContainer?.entry) {
+      <table yaDataTable>
+        <tr>
+          <th>Type</th>
+          <th>Ref</th>
+          <th>Size in bits</th>
+          <th>Location in bits</th>
+          <th>Reference location</th>
+        </tr>
+        @for (entry of command.commandContainer?.entry; track entry) {
+          <tr>
+            @if (entry.argument) {
+              <td>Argument</td>
+              <td>{{ entry.argument.name }}</td>
+              <td>{{ entry.argument.type.dataEncoding.sizeInBits }}</td>
+            }
+            @if (entry.parameter) {
+              <td>Parameter</td>
+              <td>
+                <a
+                  [routerLink]="['/mdb/parameters/', entry.parameter.qualifiedName]"
+                  [queryParams]="{ c: yamcs.context }">
+                  {{ entry.parameter.qualifiedName }}
+                </a>
+              </td>
+              <td>{{ entry.parameter.type?.dataEncoding?.sizeInBits ?? "-" }}</td>
+            }
+            @if (entry.fixedValue) {
+              <td>Fixed value</td>
+              <td>{{ entry.fixedValue.name }}: 0x{{ entry.fixedValue.hexValue }}</td>
+              <td>{{ entry.fixedValue.sizeInBits }}</td>
+            }
+            <td>{{ entry.locationInBits }}</td>
+            <td>{{ entry.referenceLocation }}</td>
+          </tr>
+        }
+      </table>
+    } @else {
+      <span>-</span>
+    }
   </dd>
 </dl>
-
-<ng-template #dash>-</ng-template>

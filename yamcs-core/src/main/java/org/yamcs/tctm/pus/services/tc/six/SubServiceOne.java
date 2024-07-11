@@ -7,6 +7,7 @@ import org.yamcs.tctm.pus.PusTcManager;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tc.PusTcCcsdsPacket;
 import org.yamcs.utils.ByteArrayUtils;
+import org.yamcs.tctm.pus.tuples.Pair;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -35,14 +36,14 @@ public class SubServiceOne implements PusSubService {
         int nFields = (int) ByteArrayUtils.decodeCustomInteger(dataField, ServiceSix.memoryIdSize + ServiceSix.baseIdSize, ServiceSix.nfieldsSize);
         byte[] cmdLoadData = Arrays.copyOfRange(dataField, ServiceSix.memoryIdSize + ServiceSix.baseIdSize + ServiceSix.nfieldsSize, dataField.length);
 
-        List<ServiceSix.Pair<Integer, Integer>> baseIdMap = ServiceSix.memoryIds.get(new ServiceSix.Pair<>(apid, memoryId)).get(baseId);
+        List<Pair<Integer, Integer>> baseIdMap = ServiceSix.memoryIds.get(new Pair<>(apid, memoryId)).get(baseId);
         ArrayList<byte[]> loadData = new ArrayList<>();
 
         for (int index = 0; index < nFields; index++) {
             int argOffsetValue = (int) ByteArrayUtils.decodeCustomInteger(cmdLoadData, 0, ServiceSix.offsetArgumentSize);
 
             int offsetValue, dataLength;
-            for (ServiceSix.Pair<Integer, Integer> offsetMap: baseIdMap) {
+            for (Pair<Integer, Integer> offsetMap: baseIdMap) {
                 offsetValue = offsetMap.getFirst();
                 dataLength = offsetMap.getSecond();
 

@@ -1,4 +1,4 @@
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, Output, ViewChild, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatIcon } from '@angular/material/icon';
@@ -18,9 +18,8 @@ import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
   }],
   imports: [
     AsyncPipe,
-    MatIcon,
-    NgIf,
-  ],
+    MatIcon
+],
 })
 export class YaSearchFilter implements ControlValueAccessor, AfterViewInit, OnDestroy {
 

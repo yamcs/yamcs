@@ -3,6 +3,9 @@ package org.yamcs.xtce.xlsv7;
 import static org.yamcs.mdb.Mdb.YAMCS_CMDARG_SPACESYSTEM_NAME;
 import static org.yamcs.mdb.Mdb.YAMCS_CMDHIST_SPACESYSTEM_NAME;
 import static org.yamcs.mdb.Mdb.YAMCS_CMD_SPACESYSTEM_NAME;
+import static org.yamcs.xtce.XtceDb.YAMCS_CMDARG_SPACESYSTEM_NAME;
+import static org.yamcs.xtce.XtceDb.YAMCS_CMDHIST_SPACESYSTEM_NAME;
+import static org.yamcs.xtce.XtceDb.YAMCS_CMD_SPACESYSTEM_NAME;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -1097,7 +1100,15 @@ public class V7Loader extends V7LoaderBase {
                 if (encodingArgs.length == 0) {
                     throw new SpreadsheetLoadException(ctx, "Encodings for fixed strings need to specify size in bits");
                 }
-                encoding = new BinaryDataEncoding.Builder().setType(BinaryDataEncoding.Type.FIXED_SIZE);
+                ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
+                boolean lsbPadding = true;
+                if (encodingArgs.length > 1) {
+                    byteOrder = getByteOrder(ctx, encodingArgs[1]);
+                    if (encodingArgs.length == 3)
+                        lsbPadding = getLsbPadding(ctx, encodingArgs[2]);
+                }
+                encoding = new BinaryDataEncoding.Builder().setType(BinaryDataEncoding.Type.FIXED_SIZE).setByteOrder(byteOrder).setLsbPadding(lsbPadding);
+
                 int bitlength = parseInt(encodingArgs[0]);
                 encoding.setSizeInBits(bitlength);
             } else if ("PrependedSize".equalsIgnoreCase(encodingType)) {

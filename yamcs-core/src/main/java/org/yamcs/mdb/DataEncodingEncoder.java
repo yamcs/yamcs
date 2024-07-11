@@ -3,6 +3,7 @@ package org.yamcs.mdb;
 import static org.yamcs.mdb.DataEncodingUtils.rawRawStringValue;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.utils.MilStd1750A;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.DynamicIntegerValue;
@@ -297,17 +299,25 @@ public class DataEncodingEncoder {
         switch (bde.getType()) {
         case FIXED_SIZE:
             int sizeInBytes, bdeSizeInBytes;
+            bitbuf.setByteOrder(bde.getByteOrder());
             if (bde.getSizeInBits() < 0) { // if the size is negative, we take all the data
                 bdeSizeInBytes = sizeInBytes = v.length;
             } else {
                 bdeSizeInBytes = bde.getSizeInBits() / 8;
                 sizeInBytes = Math.min(bdeSizeInBytes, v.length);
             }
-            bitbuf.put(v, 0, sizeInBytes);
+            int offset = 0;
+            int vLength = sizeInBytes;
             if (bdeSizeInBytes > v.length) { // fill up with nulls to reach the required size
-                byte[] nulls = new byte[bdeSizeInBytes - sizeInBytes];
-                bitbuf.put(nulls);
+                offset = bdeSizeInBytes - sizeInBytes;
+                sizeInBytes = bdeSizeInBytes;
             }
+            ByteBuffer bb = ByteBuffer.wrap(new byte[sizeInBytes]);
+            if (!bde.getLsbPadding())
+                bb.put(new byte[offset]);          
+            bb.put(v, 0, vLength);
+
+            bitbuf.put(bb.array(), 0, sizeInBytes);
             break;
         case LEADING_SIZE:
             bitbuf.setByteOrder(ByteOrder.BIG_ENDIAN); // TBD

@@ -11,7 +11,7 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:application",
+          "builder": "@angular/build:application",
           "options": {
             "outputPath": {
               "base": "dist/webapp",
@@ -20,9 +20,6 @@
             "index": "projects/webapp/src/index.template.html",
             "browser": "projects/webapp/src/main.ts",
             "tsConfig": "projects/webapp/tsconfig.app.json",
-            "polyfills": [
-              "zone.js"
-            ],
             "preserveSymlinks": true,
             "outputHashing": "bundles",
             "assets": [

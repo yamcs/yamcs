@@ -1,29 +1,32 @@
-<app-instance-page *ngIf="band$ | async as band">
-  <app-instance-toolbar>Edit band</app-instance-toolbar>
-
-  <div class="form-content ya-form">
-    <form [formGroup]="form"
-          novalidate
-          autocomplete="off">
-      <app-edit-item-band *ngIf="band.type === 'ITEM_BAND'"
-                          [form]="form"
-                          [band]="band" />
-      <app-edit-spacer *ngIf="band.type === 'SPACER'"
-                       [form]="form"
-                       [band]="band" />
-      <app-edit-time-ruler *ngIf="band.type === 'TIME_RULER'"
-                           [form]="form"
-                           [band]="band" />
-      <app-edit-command-band *ngIf="band.type === 'COMMAND_BAND'"
-                             [form]="form"
-                             [band]="band" />
-    </form>
-    <p>&nbsp;</p>
-    <div class="action-bar">
-      <button class="ya-button" (click)="location.back()">Cancel</button>
-      <button class="ya-button primary" type="submit"
-              (click)="doOnConfirm()"
-              [disabled]="!(dirty$ | async) || !form.valid">SAVE CHANGES</button>
+@if (band$ | async; as band) {
+  <app-instance-page>
+    <app-instance-toolbar>Edit band</app-instance-toolbar>
+    <div class="form-content ya-form">
+      <form [formGroup]="form" novalidate autocomplete="off">
+        @if (band.type === "ITEM_BAND") {
+          <app-edit-item-band [form]="form" [band]="band" />
+        }
+        @if (band.type === "SPACER") {
+          <app-edit-spacer [form]="form" [band]="band" />
+        }
+        @if (band.type === "TIME_RULER") {
+          <app-edit-time-ruler [form]="form" [band]="band" />
+        }
+        @if (band.type === "COMMAND_BAND") {
+          <app-edit-command-band [form]="form" [band]="band" />
+        }
+      </form>
+      <p>&nbsp;</p>
+      <div class="action-bar">
+        <button class="ya-button" (click)="location.back()">Cancel</button>
+        <button
+          class="ya-button primary"
+          type="submit"
+          (click)="doOnConfirm()"
+          [disabled]="!(dirty$ | async) || !form.valid">
+          SAVE CHANGES
+        </button>
+      </div>
     </div>
-  </div>
-</app-instance-page>
+  </app-instance-page>
+}

@@ -1,4 +1,4 @@
-import { NgFor, NgIf } from '@angular/common';
+
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { DyLegendData } from '../dygraphs';
@@ -10,10 +10,8 @@ import { DyLegendData } from '../dygraphs';
   styleUrl: './parameter-legend.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    MatIcon,
-    NgFor,
-    NgIf,
-  ],
+    MatIcon
+],
 })
 export class ParameterLegendComponent {
 

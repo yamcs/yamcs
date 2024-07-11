@@ -1,27 +1,30 @@
 <nav mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
-  <a mat-tab-link
-     routerLink="/alarms"
-     routerLinkActive
-     [routerLinkActiveOptions]="{matrixParams: 'exact', paths: 'exact', queryParams: 'ignored'}"
-     #rla="routerLinkActive"
-     [active]="rla.isActive"
-     [queryParams]="{c: yamcs.context}">
+  <a
+    mat-tab-link
+    routerLink="/alarms"
+    routerLinkActive
+    [routerLinkActiveOptions]="{ matrixParams: 'exact', paths: 'exact', queryParams: 'ignored' }"
+    #rla="routerLinkActive"
+    [active]="rla.isActive"
+    [queryParams]="{ c: yamcs.context }">
     Active
   </a>
-  <a mat-tab-link
-     routerLink="/alarms/history"
-     routerLinkActive
-     #rlb="routerLinkActive"
-     [active]="rlb.isActive"
-     [queryParams]="{c: yamcs.context}">
+  <a
+    mat-tab-link
+    routerLink="/alarms/history"
+    routerLinkActive
+    #rlb="routerLinkActive"
+    [active]="rlb.isActive"
+    [queryParams]="{ c: yamcs.context }">
     History
   </a>
-  <a mat-tab-link
-     routerLink="/alarms/log"
-     routerLinkActive
-     #rlc="routerLinkActive"
-     [active]="rlc.isActive"
-     [queryParams]="{c: yamcs.context}">
+  <a
+    mat-tab-link
+    routerLink="/alarms/log"
+    routerLinkActive
+    #rlc="routerLinkActive"
+    [active]="rlc.isActive"
+    [queryParams]="{ c: yamcs.context }">
     Action log
   </a>
 </nav>

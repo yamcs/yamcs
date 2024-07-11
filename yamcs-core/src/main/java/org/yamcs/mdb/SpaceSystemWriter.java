@@ -1,6 +1,7 @@
 package org.yamcs.mdb;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * This is the analogous to the {@link SpaceSystemLoader} and is used for writing Mdb information to files (or to other
@@ -10,7 +11,7 @@ import java.io.IOException;
  * their subsystems).
  *
  */
-public interface SpaceSystemWriter {
+public interface SpaceSystemWriter extends Serializable {
     /**
      * Write the space system with the given fully qualified name.
      * 

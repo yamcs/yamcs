@@ -1,4 +1,4 @@
-import { NgIf } from '@angular/common';
+
 import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 
@@ -9,9 +9,8 @@ import { MatIcon } from '@angular/material/icon';
   templateUrl: './text-action.component.html',
   styleUrl: './text-action.component.css',
   imports: [
-    MatIcon,
-    NgIf,
-  ],
+    MatIcon
+],
 })
 export class YaTextAction {
 

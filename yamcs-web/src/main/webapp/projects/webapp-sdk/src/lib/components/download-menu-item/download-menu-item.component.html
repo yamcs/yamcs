@@ -1,7 +1,4 @@
-<button mat-menu-item
-        class="ya-menu"
-        (click)="triggerDownload()"
-        [disabled]="disabled">
+<button mat-menu-item class="ya-menu" (click)="triggerDownload()" [disabled]="disabled">
   <ng-content />
 </button>
 <a #hiddenLink [href]="link" style="display: none" download></a>

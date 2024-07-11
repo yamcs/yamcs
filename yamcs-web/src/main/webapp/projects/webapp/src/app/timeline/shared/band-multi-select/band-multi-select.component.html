@@ -1,60 +1,72 @@
 <div style="display: flex">
   <div class="bands-from">
-    <table mat-table [dataSource]="availableDataSource"
-           class="ya-data-table"
-           style="width: 100%">
+    <table mat-table [dataSource]="availableDataSource" class="ya-data-table" style="width: 100%">
       <ng-container cdkColumnDef="name">
         <th mat-header-cell *cdkHeaderCellDef>Available</th>
         <td mat-cell *cdkCellDef="let item">
-          <ng-container *ngIf="item.name">{{ item.name }}</ng-container>
-          <i *ngIf="!item.name">(no name)</i>
-          <ng-container *ngIf="item.description">
-            <br>
+          @if (item.name) {
+            {{ item.name }}
+          }
+          @if (!item.name) {
+            <i>(no name)</i>
+          }
+          @if (item.description) {
+            <br />
             <span class="hint">{{ item.description }}</span>
-          </ng-container>
+          }
         </td>
       </ng-container>
 
       <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"
-          [class.selected]="isLeftSelected(row)"
-          (click)="selectBand(row)"></tr>
+      <tr
+        mat-row
+        *cdkRowDef="let row; columns: displayedColumns"
+        [class.selected]="isLeftSelected(row)"
+        (click)="selectBand(row)"></tr>
     </table>
   </div>
 
-  <div style="display: inline-block; margin: 1em; align-self: center;">
-    <button class="ya-button" style="width: 90px"
-            [disabled]="!isAnyLeftSelected()"
-            (click)="moveRight()">
-      Add <mat-icon>chevron_right</mat-icon>
-    </button><br>
-    <button class="ya-button" style="width: 90px"
-            [disabled]="!isAnyRightSelected()"
-            (click)="moveLeft()">
+  <div style="display: inline-block; margin: 1em; align-self: center">
+    <button
+      class="ya-button"
+      style="width: 90px"
+      [disabled]="!isAnyLeftSelected()"
+      (click)="moveRight()">
+      Add <mat-icon>chevron_right</mat-icon></button
+    ><br />
+    <button
+      class="ya-button"
+      style="width: 90px"
+      [disabled]="!isAnyRightSelected()"
+      (click)="moveLeft()">
       <mat-icon>chevron_left</mat-icon> Remove
     </button>
   </div>
 
   <div class="bands-to">
-    <table mat-table [dataSource]="selectedDataSource"
-           class="ya-data-table"
-           style="width: 100%">
+    <table mat-table [dataSource]="selectedDataSource" class="ya-data-table" style="width: 100%">
       <ng-container cdkColumnDef="name">
         <th mat-header-cell *cdkHeaderCellDef>Selected</th>
         <td mat-cell *cdkCellDef="let item">
-          <ng-container *ngIf="item.name">{{ item.name }}</ng-container>
-          <i *ngIf="!item.name">(no name)</i>
-          <ng-container *ngIf="item.description">
-            <br>
+          @if (item.name) {
+            {{ item.name }}
+          }
+          @if (!item.name) {
+            <i>(no name)</i>
+          }
+          @if (item.description) {
+            <br />
             <span class="hint">{{ item.description }}</span>
-          </ng-container>
+          }
         </td>
       </ng-container>
 
       <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"
-          [class.selected]="isRightSelected(row)"
-          (click)="selectBand(row)"></tr>
+      <tr
+        mat-row
+        *cdkRowDef="let row; columns: displayedColumns"
+        [class.selected]="isRightSelected(row)"
+        (click)="selectBand(row)"></tr>
     </table>
   </div>
 </div>

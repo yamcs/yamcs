@@ -8,6 +8,7 @@ import { ParameterCalibrationComponent } from '../../parameters/parameter-calibr
   standalone: true,
   selector: 'app-parameter-type-detail',
   templateUrl: './parameter-type-detail.component.html',
+  styleUrl: './parameter-type-detail.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AlarmLevelComponent,

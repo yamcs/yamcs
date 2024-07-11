@@ -1,47 +1,59 @@
-<table *ngIf="command">
-  <tr>
-    <td *ngIf="showIcons" style="width: 16px">
-      <div style="display: flex; align-items: center">
-        <app-acknowledgment-icon [ack]="command.queued" />
-      </div>
-    </td>
-    <td style="width: 150px">Queued</td>
-    <td style="width: 70px">{{ command.queued?.status || '-' }}</td>
-    <td>
-      <span [matTooltip]="command.queued?.time">
-        {{ (command.queued?.time | deltaWith:command.generationTime) || '-' }}
-      </span>
-    </td>
-  </tr>
-  <tr>
-    <td *ngIf="showIcons">
-      <div style="display: flex; align-items: center">
-        <app-transmission-constraints-icon *ngIf="!command.released" [command]="command" />
-        <app-acknowledgment-icon *ngIf="command.released" [ack]="command.released" />
-      </div>
-    </td>
-    <td>Released</td>
-    <td>
-      {{ command.released?.status || command.transmissionConstraints?.status || '-' }}
-    </td>
-    <td>
-      <span [matTooltip]="command.released?.time">
-        {{ (command.released?.time | deltaWith:command.generationTime) || '-' }}
-      </span>
-    </td>
-  </tr>
-  <tr>
-    <td *ngIf="showIcons">
-      <div style="display: flex; align-items: center">
-        <app-acknowledgment-icon [ack]="command.sent" />
-      </div>
-    </td>
-    <td>Sent</td>
-    <td>{{ command.sent?.status || '-' }}</td>
-    <td>
-      <span [matTooltip]="command.sent?.time">
-        {{ (command.sent?.time | deltaWith:command.generationTime) || '-' }}
-      </span>
-    </td>
-  </tr>
-</table>
+@if (command) {
+  <table>
+    <tr>
+      @if (showIcons) {
+        <td style="width: 16px">
+          <div style="display: flex; align-items: center">
+            <app-acknowledgment-icon [ack]="command.queued" />
+          </div>
+        </td>
+      }
+      <td style="width: 150px">Queued</td>
+      <td style="width: 70px">{{ command.queued?.status || "-" }}</td>
+      <td>
+        <span [matTooltip]="command.queued?.time | datetime">
+          {{ (command.queued?.time | deltaWith: command.generationTime) || "-" }}
+        </span>
+      </td>
+    </tr>
+    <tr>
+      @if (showIcons) {
+        <td>
+          <div style="display: flex; align-items: center">
+            @if (!command.released) {
+              <app-transmission-constraints-icon [command]="command" />
+            }
+            @if (command.released) {
+              <app-acknowledgment-icon [ack]="command.released" />
+            }
+          </div>
+        </td>
+      }
+      <td>Released</td>
+      <td>
+        {{ command.released?.status || command.transmissionConstraints?.status || "-" }}
+      </td>
+      <td>
+        <span [matTooltip]="command.released?.time | datetime">
+          {{ (command.released?.time | deltaWith: command.generationTime) || "-" }}
+        </span>
+      </td>
+    </tr>
+    <tr>
+      @if (showIcons) {
+        <td>
+          <div style="display: flex; align-items: center">
+            <app-acknowledgment-icon [ack]="command.sent" />
+          </div>
+        </td>
+      }
+      <td>Sent</td>
+      <td>{{ command.sent?.status || "-" }}</td>
+      <td>
+        <span [matTooltip]="command.sent?.time | datetime">
+          {{ (command.sent?.time | deltaWith: command.generationTime) || "-" }}
+        </span>
+      </td>
+    </tr>
+  </table>
+}

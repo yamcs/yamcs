@@ -1,63 +1,68 @@
-<app-instance-page *ngIf="activity$ | async as activity">
-  <app-instance-toolbar>
-    <a mat-icon-button routerLink=".."
-       [queryParams]="{c: yamcs.context}"
-       color="primary">
-      <mat-icon>arrow_back</mat-icon>
-    </a> Activity details
-    &nbsp;&nbsp;&nbsp;
-
-    <ng-container *ngIf="activity.type === 'MANUAL' && activity.status === 'RUNNING' && mayControlActivities()">
-      <button mat-button color="primary" (click)="setSuccessful(activity)">
-        <mat-icon>thumb_up</mat-icon>
-        Set successful
-      </button>
-      <button mat-button color="primary" (click)="setFailed(activity)">
-        <mat-icon>thumb_down</mat-icon>
-        Set failed
-      </button>
-    </ng-container>
-    <button mat-button
-            color="primary"
-            *ngIf="mayControlActivities()"
-            [disabled]="!!activity.stop"
-            (click)="cancelActivity(activity)">
-      <mat-icon>cancel</mat-icon>
-      Cancel
-    </button>
-  </app-instance-toolbar>
-
-  <div class="activity-header">
-    <div class="activity-header-left">
-      <span class="title">{{ activity.detail }}</span><br>
-      <span class="subtitle">ID: {{ activity.id }}</span><br>
-      <span class="subtitle">Started {{ activity.start | datetime }}</span><br>
+@if (activity$ | async; as activity) {
+  <app-instance-page>
+    <app-instance-toolbar>
+      <a mat-icon-button routerLink=".." [queryParams]="{ c: yamcs.context }" color="primary">
+        <mat-icon>arrow_back</mat-icon>
+      </a>
+      Activity details &nbsp;&nbsp;&nbsp;
+      @if (activity.type === "MANUAL" && activity.status === "RUNNING" && mayControlActivities()) {
+        <button mat-button color="primary" (click)="setSuccessful(activity)">
+          <mat-icon>thumb_up</mat-icon>
+          Set successful
+        </button>
+        <button mat-button color="primary" (click)="setFailed(activity)">
+          <mat-icon>thumb_down</mat-icon>
+          Set failed
+        </button>
+      }
+      @if (mayControlActivities()) {
+        <button
+          mat-button
+          color="primary"
+          [disabled]="!!activity.stop"
+          (click)="cancelActivity(activity)">
+          <mat-icon>cancel</mat-icon>
+          Cancel
+        </button>
+      }
+    </app-instance-toolbar>
+    <div class="activity-header">
+      <div class="activity-header-left">
+        <span class="title">{{ activity.detail }}</span
+        ><br />
+        <span class="subtitle">ID: {{ activity.id }}</span
+        ><br />
+        <span class="subtitle">Started {{ activity.start | datetime }}</span
+        ><br />
+      </div>
+      <div class="activity-header-right">
+        <app-activity-status [activity]="activity" />
+      </div>
     </div>
-    <div class="activity-header-right">
-      <app-activity-status [activity]="activity" />
+    <nav #tabs mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
+      <a
+        mat-tab-link
+        routerLink="log"
+        routerLinkActive
+        #rla="routerLinkActive"
+        [active]="rla.isActive"
+        [queryParams]="{ c: yamcs.context }">
+        Activity Log
+      </a>
+      <a
+        mat-tab-link
+        routerLink="details"
+        routerLinkActive
+        #rlb="routerLinkActive"
+        [active]="rlb.isActive"
+        [queryParams]="{ c: yamcs.context }">
+        Details
+      </a>
+    </nav>
+    <div class="tab-content-wrapper">
+      <mat-tab-nav-panel #tabPanel>
+        <router-outlet />
+      </mat-tab-nav-panel>
     </div>
-  </div>
-
-  <nav #tabs mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
-    <a mat-tab-link
-       routerLink="log"
-       routerLinkActive #rla="routerLinkActive"
-       [active]="rla.isActive"
-       [queryParams]="{c: yamcs.context}">
-      Activity Log
-    </a>
-    <a mat-tab-link
-       routerLink="details"
-       routerLinkActive #rlb="routerLinkActive"
-       [active]="rlb.isActive"
-       [queryParams]="{c: yamcs.context}">
-      Details
-    </a>
-  </nav>
-
-  <div class="tab-content-wrapper">
-    <mat-tab-nav-panel #tabPanel>
-      <router-outlet />
-    </mat-tab-nav-panel>
-  </div>
-</app-instance-page>
+  </app-instance-page>
+}

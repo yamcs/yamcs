@@ -1,37 +1,44 @@
-<ng-container *ngIf="ack">
-  <ng-container [ngSwitch]="ack.status">
-    <mat-icon *ngSwitchCase="'SCHEDULED'"
-              [matTooltip]="ack.name! + ': Scheduled'"
-              class="icon16 down">schedule</mat-icon>
-    <mat-icon *ngSwitchCase="'OK'"
-              [matTooltip]="ack.name! + ': OK'"
-              class="icon16"
-              style="color: #00c752">check_circle_outline</mat-icon>
+@if (ack) {
+  @switch (ack.status) {
+    @case ("SCHEDULED") {
+      <mat-icon [matTooltip]="ack.name! + ': Scheduled'" class="icon16 down">schedule</mat-icon>
+    }
+    @case ("OK") {
+      <mat-icon [matTooltip]="ack.name! + ': OK'" class="icon16" style="color: #00c752"
+        >check_circle_outline</mat-icon
+      >
+    }
     <!--mat-icon *ngSwitchCase="'PENDING'"
-              [matTooltip]="ack.name! + ': PENDING'"
-              class="icon16 spin">cached</mat-icon-->
-    <mat-icon *ngSwitchCase="'PENDING'"
-              [matTooltip]="ack.name! + ': PENDING'"
-              class="icon16 down">lens</mat-icon>
-    <mat-icon *ngSwitchCase="'CANCELLED'"
-              [matTooltip]="ack.name! + ': CANCELLED'"
-              class="icon16"
-              style="color: lightgrey">block</mat-icon>
-    <mat-icon *ngSwitchCase="'DISABLED'"
-              [matTooltip]="ack.name! + ': DISABLED'"
-              class="icon16"
-              style="color: lightgrey">block</mat-icon>
-    <mat-icon *ngSwitchCase="'TIMEOUT'"
-              [matTooltip]="ack.name! + ': TIMEOUT'"
-              class="icon16"
-              style="color: red">highlight_off</mat-icon>
-    <mat-icon *ngSwitchDefault
-              [matTooltip]="ack.name! + ': ' + ack.status! + ' (' + ack.message! + ')'"
-              class="icon16"
-              style="color: red">highlight_off</mat-icon>
-  </ng-container>
-</ng-container>
-<ng-container *ngIf="!ack">
-  <mat-icon [matTooltip]="'Unknown'"
-            class="down icon16">lens</mat-icon>
-</ng-container>
+        [matTooltip]="ack.name! + ': PENDING'"
+      class="icon16 spin">cached</mat-icon-->
+    @case ("PENDING") {
+      <mat-icon [matTooltip]="ack.name! + ': PENDING'" class="icon16 down">lens</mat-icon>
+    }
+    @case ("CANCELLED") {
+      <mat-icon [matTooltip]="ack.name! + ': CANCELLED'" class="icon16" style="color: lightgrey"
+        >block</mat-icon
+      >
+    }
+    @case ("DISABLED") {
+      <mat-icon [matTooltip]="ack.name! + ': DISABLED'" class="icon16" style="color: lightgrey"
+        >block</mat-icon
+      >
+    }
+    @case ("TIMEOUT") {
+      <mat-icon [matTooltip]="ack.name! + ': TIMEOUT'" class="icon16" style="color: red"
+        >highlight_off</mat-icon
+      >
+    }
+    @default {
+      <mat-icon
+        [matTooltip]="ack.name! + ': ' + ack.status! + ' (' + ack.message! + ')'"
+        class="icon16"
+        style="color: red"
+        >highlight_off</mat-icon
+      >
+    }
+  }
+}
+@if (!ack) {
+  <mat-icon [matTooltip]="'Unknown'" class="down icon16">lens</mat-icon>
+}

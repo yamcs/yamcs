@@ -65,6 +65,7 @@ export class ScriptViewerComponent implements Viewer {
       basicSetup,
       keymap.of([indentWithTab]),
       javascript(),
+      EditorView.lineWrapping,
     ];
 
     if (this.mayManageDisplays()) {

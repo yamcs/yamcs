@@ -15,16 +15,24 @@ mat-toolbar-row {
 }
 
 .app-bar {
-  background-color: #212121;
+  background-color: var(--y-app-bar-background-color);
 }
 
 .app-bar.replay {
   background-color: darkviolet;
 }
 
+.app-bar .mat-mdc-button:not(:disabled) {
+  color: #fff !important;
+}
+
 .logo-wrapper {
   padding-left: 16px;
   padding-right: 16px;
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
 }
 
 .logo-wrapper.nosidebar {
@@ -46,6 +54,7 @@ mat-toolbar-row {
   font-size: 14px;
   white-space: nowrap;
   overflow: hidden;
+  color: #fff;
 }
 
 .selected-instance.mat-mdc-button {

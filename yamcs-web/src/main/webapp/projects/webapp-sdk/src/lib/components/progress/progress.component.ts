@@ -1,4 +1,4 @@
-import { AsyncPipe, NgIf, PercentPipe } from '@angular/common';
+import { AsyncPipe, PercentPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
@@ -10,9 +10,8 @@ import { BehaviorSubject } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AsyncPipe,
-    NgIf,
-    PercentPipe,
-  ],
+    PercentPipe
+],
 })
 export class YaProgress implements OnChanges {
 

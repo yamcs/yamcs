@@ -11,6 +11,11 @@ public class PusTmCcsdsPacket extends CcsdsPacket {
     static int messageTypeIndex = 7;
     static int messageSubTypeIndex = 8;
     static int destinationIDIndex = 11;
+    static int generationTimeIndex = 13;
+    static int generationTimeSize = PusTmManager.absoluteTimeLength;
+
+    public static int messageSubTypeSize = 2;
+    public static int messageTypeSize = 2;
 
     public PusTmCcsdsPacket(byte[] packet) {
         super(packet);
@@ -20,6 +25,14 @@ public class PusTmCcsdsPacket extends CcsdsPacket {
         super(bb);
     }
 
+    public static byte[] getGenerationTime(byte[] b) {
+        return Arrays.copyOfRange(b, generationTimeIndex, generationTimeIndex + generationTimeSize);
+    }
+
+    public byte[] getGenerationTime() {
+        byte[] b = bb.duplicate().array();
+        return Arrays.copyOfRange(b, generationTimeIndex, generationTimeIndex + generationTimeSize);
+    }
 
     public static int getMessageType(byte[] b) {
         return Byte.toUnsignedInt(b[messageTypeIndex]);

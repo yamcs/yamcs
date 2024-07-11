@@ -1,17 +1,17 @@
 <h2 mat-dialog-title>Create event</h2>
 
-<mat-dialog-content class="mat-typography">
+<mat-dialog-content>
   <form [formGroup]="form" class="ya-form">
     <label>
       Message
       <textarea formControlName="message" rows="3"></textarea>
     </label>
-    <br>
+    <br />
     <label>
-      Severity<br>
+      Severity<br />
       <ya-select formControlName="severity" [options]="severityOptions" />
     </label>
-    <br>
+    <br />
     <label>
       Event time
       <ya-date-time-input formControlName="time" step="1" />

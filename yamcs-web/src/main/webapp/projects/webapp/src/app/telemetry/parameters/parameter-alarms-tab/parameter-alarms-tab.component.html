@@ -3,46 +3,65 @@
     <div class="filter-bar">
       <ya-select formControlName="interval" [options]="intervalOptions" icon="access_time" />
 
-      <ng-container *ngIf="filter.value['interval'] === 'CUSTOM'">
+      @if (filter.value["interval"] === "CUSTOM") {
         <ya-date-time-input formControlName="customStart" />
         <ya-date-time-input formControlName="customStop" />
-        <button class="ya-button" (click)="applyCustomDates()" [disabled]="filter.invalid">Apply</button>
-      </ng-container>
-
-      <ng-container *ngIf="filter.value['interval'] !== 'CUSTOM'">
-        <button class="ya-button" (click)="jumpToNow()">
-          Jump to now
+        <button class="ya-button" (click)="applyCustomDates()" [disabled]="filter.invalid">
+          Apply
         </button>
-      </ng-container>
+      }
 
-      <ya-dots *ngIf="dataSource.loading$ | async" />
+      @if (filter.value["interval"] !== "CUSTOM") {
+        <button class="ya-button" (click)="jumpToNow()">Jump to now</button>
+      }
+
+      @if (dataSource.loading$ | async) {
+        <ya-dots />
+      }
     </div>
   </form>
 
-  <div class="table-status" [ngSwitch]="appliedInterval">
-    <span *ngSwitchCase="'P1M'">
-      Showing data from <b>the last month</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
-    </span>
-    <span *ngSwitchCase="'P1Y'">
-      Showing data from <b>the last year</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
-    </span>
-    <span *ngSwitchCase="'NO_LIMIT'">
-      Showing data from <b>all time</b>
-    </span>
-    <span *ngSwitchCase="'CUSTOM'">
-      Showing data from <b>{{ validStart | datetime }}</b> to <b>{{ validStop | datetime }}</b> (Mission Time)
-    </span>
+  <div class="table-status">
+    @switch (appliedInterval) {
+      @case ("P1M") {
+        <span>
+          Showing data from <b>the last month</b> ending at
+          <b>{{ validStop | datetime }}</b> (Mission Time)
+        </span>
+      }
+      @case ("P1Y") {
+        <span>
+          Showing data from <b>the last year</b> ending at
+          <b>{{ validStop | datetime }}</b> (Mission Time)
+        </span>
+      }
+      @case ("NO_LIMIT") {
+        <span> Showing data from <b>all time</b> </span>
+      }
+      @case ("CUSTOM") {
+        <span>
+          Showing data from <b>{{ validStart | datetime }}</b> to
+          <b>{{ validStop | datetime }}</b> (Mission Time)
+        </span>
+      }
+    }
   </div>
 
   <app-parameter-alarms-table [dataSource]="dataSource" />
 
-  <ya-empty-message *ngIf="dataSource.isEmpty()">
-    No records found matching current filter in the selected time range.
-  </ya-empty-message>
+  @if (dataSource.isEmpty()) {
+    <ya-empty-message>
+      No records found matching current filter in the selected time range.
+    </ya-empty-message>
+  }
 
-  <mat-toolbar *ngIf="!(dataSource.loading$ | async) && !dataSource.isEmpty()">
-    <span style="flex: 1 1 auto"></span>
-    <button class="ya-button" [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">Load More</button>
-    <span style="flex: 1 1 auto"></span>
-  </mat-toolbar>
+  @if (!(dataSource.loading$ | async) && !dataSource.isEmpty()) {
+    <mat-toolbar>
+      <span style="flex: 1 1 auto"></span>
+      <button class="ya-button" [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">
+        Load More
+      </button>
+      <span style="flex: 1 1 auto"></span>
+    </mat-toolbar>
+  }
 </div>

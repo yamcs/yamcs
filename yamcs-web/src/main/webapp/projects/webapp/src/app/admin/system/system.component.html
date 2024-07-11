@@ -1,125 +1,140 @@
 <app-admin-page>
-  <app-admin-toolbar>
-    System
-  </app-admin-toolbar>
+  <app-admin-toolbar>System</app-admin-toolbar>
 
-  <div class="panel-content" *ngIf="info$ | async as info">
-    <dl class="dl-horizontal" style="margin-top: 0">
-      <dt>Yamcs version</dt>
-      <dd>{{ info.yamcsVersion || '-' }}</dd>
-      <dt>Build</dt>
-      <dd>{{ info.revision || '-' }}</dd>
-      <dt>Server ID</dt>
-      <dd>{{ info.serverId || '-' }}</dd>
-    </dl>
-    <dl class="dl-horizontal">
-      <dt>OS</dt>
-      <dd>{{ info.os }}</dd>
-      <dt>Architecture</dt>
-      <dd>{{ info.arch }}</dd>
-      <dt>JVM</dt>
-      <dd>{{ info.jvm }}</dd>
-    </dl>
-    <dl class="dl-horizontal">
-      <dt>Working directory</dt>
-      <dd>{{ info.workingDirectory }}</dd>
-      <dt>Config directory</dt>
-      <dd>{{ info.configDirectory }}</dd>
-      <dt>Cache directory</dt>
-      <dd>{{ info.cacheDirectory }}</dd>
-      <dt>Data directory</dt>
-      <dd>{{ info.dataDirectory }}</dd>
-    </dl>
-    <dl class="dl-horizontal">
-      <dt>Uptime</dt>
-      <dd>{{ info.uptime | duration }}</dd>
-      <dt>Load average</dt>
-      <dd>{{ (info.loadAverage | number:'1.2-2') || '-' }}</dd>
-      <dt>Available processors</dt>
-      <dd>{{ info.availableProcessors }}</dd>
-      <dt>Heap memory</dt>
-      <dd>
-        {{ info.heapMemory | formatBytes }}
-        (used: {{ (info.heapMemory - info.usedHeapMemory) | formatBytes }},
-        limit: {{ (info.maxHeapMemory | formatBytes) || 'n/a' }})</dd>
-      <dt>Non-heap memory</dt>
-      <dd>
-        {{ info.nonHeapMemory | formatBytes }}
-        (used: {{ (info.nonHeapMemory - info.usedNonHeapMemory) | formatBytes }},
-        limit: {{ (info.maxNonHeapMemory | formatBytes) || 'n/a' }})</dd>
-      <dt>Thread count</dt>
-      <dd>{{ info.jvmThreadCount }}</dd>
-    </dl>
-    <ng-container *ngIf="plugins$ | async as plugins">
-      <h4>Plugins</h4>
+  @if (info$ | async; as info) {
+    <div class="panel-content">
+      <dl class="dl-horizontal" style="margin-top: 0">
+        <dt>Yamcs version</dt>
+        <dd>{{ info.yamcsVersion || "-" }}</dd>
+        <dt>Build</dt>
+        <dd>{{ info.revision || "-" }}</dd>
+        <dt>Server ID</dt>
+        <dd>{{ info.serverId || "-" }}</dd>
+      </dl>
+      <dl class="dl-horizontal">
+        <dt>OS</dt>
+        <dd>{{ info.os }}</dd>
+        <dt>Architecture</dt>
+        <dd>{{ info.arch }}</dd>
+        <dt>JVM</dt>
+        <dd>{{ info.jvm }}</dd>
+      </dl>
+      <dl class="dl-horizontal">
+        <dt>Working directory</dt>
+        <dd>{{ info.workingDirectory }}</dd>
+        <dt>Config directory</dt>
+        <dd>{{ info.configDirectory }}</dd>
+        <dt>Cache directory</dt>
+        <dd>{{ info.cacheDirectory }}</dd>
+        <dt>Data directory</dt>
+        <dd>{{ info.dataDirectory }}</dd>
+      </dl>
+      <dl class="dl-horizontal">
+        <dt>Uptime</dt>
+        <dd>{{ info.uptime | duration }}</dd>
+        <dt>Load average</dt>
+        <dd>{{ (info.loadAverage | number: "1.2-2") || "-" }}</dd>
+        <dt>Available processors</dt>
+        <dd>{{ info.availableProcessors }}</dd>
+        <dt>Heap memory</dt>
+        <dd>
+          {{ info.heapMemory | formatBytes }}
+          (used: {{ info.heapMemory - info.usedHeapMemory | formatBytes }}, limit:
+          {{ (info.maxHeapMemory | formatBytes) || "n/a" }})
+        </dd>
+        <dt>Non-heap memory</dt>
+        <dd>
+          {{ info.nonHeapMemory | formatBytes }}
+          (used: {{ info.nonHeapMemory - info.usedNonHeapMemory | formatBytes }}, limit:
+          {{ (info.maxNonHeapMemory | formatBytes) || "n/a" }})
+        </dd>
+        <dt>Thread count</dt>
+        <dd>{{ info.jvmThreadCount }}</dd>
+      </dl>
+      @if (plugins$ | async; as plugins) {
+        <h4>Plugins</h4>
+        <table yaDataTable class="expand">
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Version</th>
+            <th>Maintainer</th>
+            <th class="expand"></th>
+          </tr>
+          @for (plugin of plugins; track plugin) {
+            <tr>
+              <td>{{ plugin.name }}</td>
+              <td class="wrap200">{{ plugin.description || "-" }}</td>
+              <td>{{ plugin.version || "-" }}</td>
+              <td>{{ plugin.vendor || "-" }}</td>
+              <td></td>
+            </tr>
+          }
+        </table>
+        <br />
+      }
+      <h4>Root directories</h4>
       <table yaDataTable class="expand">
         <tr>
-          <th>Name</th>
-          <th>Description</th>
-          <th>Version</th>
-          <th>Maintainer</th>
+          <th>Directory</th>
+          <th>Type</th>
+          <th>Total space</th>
+          <th>Unallocated space</th>
+          <th>Usable space</th>
           <th class="expand"></th>
         </tr>
-        <tr *ngFor="let plugin of plugins">
-          <td>{{ plugin.name }}</td>
-          <td class="wrap200">{{ plugin.description || '-' }}</td>
-          <td>{{ plugin.version || '-' }}</td>
-          <td>{{ plugin.vendor || '-' }}</td>
-          <td></td>
-        </tr>
+        @for (root of info.rootDirectories; track root) {
+          <tr>
+            <td>{{ root.directory }}</td>
+            <td>{{ root.type || "-" }}</td>
+            <td>{{ root.totalSpace | formatBytes }}</td>
+            <td>{{ root.unallocatedSpace | formatBytes }}</td>
+            <td>{{ root.usableSpace | formatBytes }}</td>
+            <td></td>
+          </tr>
+        }
       </table>
-      <br>
-    </ng-container>
-    <h4>Root directories</h4>
-    <table yaDataTable class="expand">
-      <tr>
-        <th>Directory</th>
-        <th>Type</th>
-        <th>Total space</th>
-        <th>Unallocated space</th>
-        <th>Usable space</th>
-        <th class="expand"></th>
-      </tr>
-      <tr *ngFor="let root of info.rootDirectories">
-        <td>{{ root.directory }}</td>
-        <td>{{ root.type || '-' }}</td>
-        <td>{{ root.totalSpace | formatBytes }}</td>
-        <td>{{ root.unallocatedSpace | formatBytes }}</td>
-        <td>{{ root.usableSpace | formatBytes }}</td>
-        <td></td>
-      </tr>
-    </table>
-    <br>
-    <h4>Process tree</h4>
-    <table yaDataTable class="expand">
-      <tr>
-        <th>PID</th>
-        <th>User</th>
-        <th>Start time</th>
-        <th class="expand">Command</th>
-      </tr>
-      <ng-container *ngTemplateOutlet="processTemplate; context:{process: info.process, indent: 0, last: false}">
-      </ng-container>
-    </table>
-  </div>
+      <br />
+      <h4>Process tree</h4>
+      <table yaDataTable class="expand">
+        <tr>
+          <th>PID</th>
+          <th>User</th>
+          <th>Start time</th>
+          <th class="expand">Command</th>
+        </tr>
+        <ng-container
+          *ngTemplateOutlet="
+            processTemplate;
+            context: { process: info.process, indent: 0, last: false }
+          " />
+      </table>
+    </div>
+  }
 </app-admin-page>
 
 <ng-template #processTemplate let-process="process" let-indent="indent" let-last="last">
   <tr>
     <td>{{ process.pid }}</td>
     <td>{{ process.user }}</td>
-    <td>{{ (process.startTime | datetime) || '-' }}</td>
+    <td>{{ (process.startTime | datetime) || "-" }}</td>
     <td>
-      <ng-container *ngIf="indent">
+      @if (indent) {
         <span class="tree mono">{{ " ".repeat(indent) }}</span>
-        <span class="tree mono" *ngIf="!last">├──</span>
-        <span class="tree mono" *ngIf="last">└──</span>
-      </ng-container>
+        @if (last) {
+          <span class="tree mono">└──</span>
+        } @else {
+          <span class="tree mono">├──</span>
+        }
+      }
       {{ process.command }}
     </td>
   </tr>
-  <ng-container *ngFor="let child of (process.children || []); last as last">
-    <ng-container *ngTemplateOutlet="processTemplate; context:{process: child, indent: indent + 2, last: last}">
-    </ng-container>
-  </ng-container>
+  @for (child of process.children || []; track child; let last = $last) {
+    <ng-container
+      *ngTemplateOutlet="
+        processTemplate;
+        context: { process: child, indent: indent + 2, last: last }
+      " />
+  }
 </ng-template>
