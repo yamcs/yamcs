@@ -11,6 +11,7 @@ import org.yamcs.events.EventProducerFactory;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
+import org.yamcs.tctm.pus.services.tm.one.ServiceOne;
 import org.yamcs.tctm.pus.tuples.Pair;
 import org.yamcs.tctm.pus.tuples.Triple;
 import org.yamcs.utils.ByteArrayUtils;
@@ -21,7 +22,7 @@ public class SubServiceOne implements PusSubService {
 
     EventProducer eventProducer;
 
-    static final String source = "Service: 5 | SubService: 1";
+    static String source = "Service: 5 | SubService: 1";
 
     public SubServiceOne(String yamcsInstance, YConfiguration subServiceSixConfig) {
         this.yamcsInstance = yamcsInstance;
@@ -34,14 +35,6 @@ public class SubServiceOne implements PusSubService {
     @Override
     public PreparedCommand process(PreparedCommand pusTelecommand) {
         throw new UnsupportedOperationException("Unimplemented method 'process'");
-    }
-
-    public long createOnes(int length) {
-        byte[] bb = new byte[length];
-        for (int i = 0; i < length; i++) {
-            bb[i] = (byte) 0xFF; // Set each byte to 0xFF (11111111 in binary)
-        }
-        return ByteArrayUtils.decodeCustomInteger(bb, 0, length);
     }
 
     @Override
@@ -70,7 +63,7 @@ public class SubServiceOne implements PusSubService {
                     long data = ByteArrayUtils.decodeCustomInteger(dataField, chunkOffset + ServiceFive.eventIdSize, chunkLength);
 
                     for (Map.Entry<Integer, Pair<Integer, String>> bits: bitsMap.entrySet()) {
-                        long mask = createOnes(chunkLength);
+                        long mask = ServiceFive.createOnes(chunkLength);
                         Pair<Integer, String> bitsDeets = bits.getValue();
 
                         int bitLength = bitsDeets.getFirst();
@@ -92,12 +85,11 @@ public class SubServiceOne implements PusSubService {
         }
 
         eventDec += " is thrown";
-        eventProducer.sendInfo(source, eventDec);
+        eventProducer.sendWatch(ServiceOne.CcsdsApid.fromValue(apid).name(), eventDec);
 
         ArrayList<TmPacket> pPkts = new ArrayList<>();
         pPkts.add(tmPacket);
 
         return pPkts;
     }
-
 }

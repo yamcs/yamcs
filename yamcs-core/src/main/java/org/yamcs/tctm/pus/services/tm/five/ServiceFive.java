@@ -13,6 +13,7 @@ import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.tuples.Pair;
 import org.yamcs.tctm.pus.tuples.Triple;
+import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
 
 public class ServiceFive implements PusService {
@@ -77,6 +78,14 @@ public class ServiceFive implements PusService {
 
         eventIdSize = config.getInt("eventIdSize", DEFAULT_EVENTID_SIZE);
         initializeSubServices();
+    }
+
+    public static long createOnes(int length) {
+        byte[] bb = new byte[length];
+        for (int i = 0; i < length; i++) {
+            bb[i] = (byte) 0xFF; // Set each byte to 0xFF (11111111 in binary)
+        }
+        return ByteArrayUtils.decodeCustomInteger(bb, 0, length);
     }
 
     public void initializeSubServices() {

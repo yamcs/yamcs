@@ -14,7 +14,7 @@ import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
 
 public class ServiceOne implements PusService {
 
-    protected enum CcsdsApid {
+    public enum CcsdsApid {
         GROUND(0),
         AOCS(3),
         PROPULSION(4),
