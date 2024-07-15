@@ -19,6 +19,7 @@ public class VcDownlinkManagedParameters {
     //if set to true, the encapsulation packets sent to the preprocessor will be without the encapsulation header(CCSDS 133.1-B-2)
     boolean stripEncapsulationHeader;
     TMDecoder tmDecoder;
+    boolean isIdleVcid;
 
     // if service = M_PDU
     int maxPacketLength;
@@ -51,6 +52,7 @@ public class VcDownlinkManagedParameters {
             packetPreprocessorArgs = config.getConfig("packetPreprocessorArgs");
         }
         stripEncapsulationHeader = config.getBoolean("stripEncapsulationHeader", false);
+        isIdleVcid = config.getBoolean("isIdle", false);
     }
 
     protected void parseVcaConfig() {

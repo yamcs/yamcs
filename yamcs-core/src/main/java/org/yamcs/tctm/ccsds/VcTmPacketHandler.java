@@ -1,5 +1,8 @@
 package org.yamcs.tctm.ccsds;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
@@ -44,6 +47,8 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
     private TimeService timeService;
     private Instant ertime;
 
+    boolean isIdleVcid;
+
     public VcTmPacketHandler(String yamcsInstance, String name, VcDownlinkManagedParameters vmp) {
         this.vmp = vmp;
         this.name = name;
@@ -59,6 +64,9 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
 
         packetDecoder = new PacketDecoder(vmp.maxPacketLength, p -> handlePacket(p));
         packetDecoder.stripEncapsulationHeader(vmp.stripEncapsulationHeader);
+
+        // Check if idle vcid?
+        isIdleVcid = vmp.isIdleVcid;
 
         try {
             if (vmp.packetPreprocessorArgs != null) {
@@ -204,11 +212,6 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
     }
 
     @Override
-    public String getDetailedStatus() {
-        return null;
-    }
-
-    @Override
     public void enable() {
         this.disabled = false;
     }
@@ -225,7 +228,7 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
 
     @Override
     public long getDataInCount() {
-        return numPackets;
+        return isIdleVcid? idleFrameCount: numPackets;
     }
 
     @Override
@@ -236,6 +239,7 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
     @Override
     public void resetCounters() {
         numPackets = 0;
+        idleFrameCount = 0;
     }
 
     @Override
@@ -262,4 +266,28 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
     public void setParent(AggregatedDataLink parent) {
         this.parent = parent;
     }
+
+    @Override
+    public Map<String, Object> getExtraInfo() {
+        var extra = new LinkedHashMap<String, Object>();
+        extra.put("Idle CCSDS Frames", idleFrameCount);
+        extra.put("Valid CCSDS Packets", numPackets);
+        extra.put("Is Idle vcId link?", isIdleVcid);
+        return extra;
+    }
+
+    /**
+     * returns statistics with the number of datagram received and the number of
+     * invalid datagrams
+     */
+    @Override
+    public String getDetailedStatus() {
+        if (isDisabled()) {
+            return "DISABLED";
+
+        } else {
+            return String.format("Idle CCSDS Frames: %d%n | Valid CCSDS Packets: %d%n", idleFrameCount, numPackets);
+        }
+    }
+
 }
