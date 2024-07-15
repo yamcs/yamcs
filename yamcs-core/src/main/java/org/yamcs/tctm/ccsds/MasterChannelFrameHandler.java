@@ -100,11 +100,6 @@ public class MasterChannelFrameHandler {
             clcwHelper.sendClcw(frame.getOcf());
         }
 
-        if (frame.containsOnlyIdleData()) {
-            idleFrameCount++;
-            return;
-        }
-
         int vcid = frame.getVirtualChannelId();
         VcDownlinkHandler vch = handlers.get(vcid);
         if (vch == null) {
