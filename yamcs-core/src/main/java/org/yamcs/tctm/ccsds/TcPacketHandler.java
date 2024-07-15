@@ -11,7 +11,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.tctm.AbstractTcDataLink;
 import org.yamcs.tctm.ccsds.TcManagedParameters.TcVcManagedParameters;
-import org.yamcs.tctm.csp.CspFrameFactory;
+import org.yamcs.tctm.srs3.CspFrameFactory;
 import org.yamcs.utils.TimeEncoding;
 
 /**

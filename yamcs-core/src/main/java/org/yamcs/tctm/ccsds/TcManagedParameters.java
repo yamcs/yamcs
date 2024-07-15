@@ -6,9 +6,9 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.tctm.csp.CspFrameFactory;
-import org.yamcs.tctm.ccsds.encryption.SymmetricEncryption;
+import org.yamcs.security.encryption.SymmetricEncryption;
 import org.yamcs.tctm.csp.AbstractCspTcFrameLink.CspManagedParameters;
+import org.yamcs.tctm.srs3.CspFrameFactory;
 import org.yamcs.utils.YObjectLoader;
 
 /**

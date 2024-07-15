@@ -1,4 +1,4 @@
-package org.yamcs.tctm.ccsds.encryption;
+package org.yamcs.security.encryption;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;

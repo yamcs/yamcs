@@ -1,11 +1,12 @@
-package org.yamcs.tctm.csp;
+package org.yamcs.tctm.srs3;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.utils.ByteArrayUtils;
+import org.yamcs.security.encryption.SymmetricEncryption;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
-import org.yamcs.tctm.ccsds.encryption.SymmetricEncryption;
+import org.yamcs.tctm.csp.AbstractCspTcFrameLink;
 import org.yamcs.tctm.csp.AbstractCspTcFrameLink.CspManagedParameters;
 
 

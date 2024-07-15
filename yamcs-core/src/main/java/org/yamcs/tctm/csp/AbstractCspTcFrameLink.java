@@ -9,10 +9,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.security.encryption.SymmetricEncryption;
 import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.tctm.AbstractTcDataLink;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
-import org.yamcs.tctm.ccsds.encryption.SymmetricEncryption;
+import org.yamcs.tctm.srs3.CspFrameFactory;
 import org.yamcs.utils.YObjectLoader;
 
 

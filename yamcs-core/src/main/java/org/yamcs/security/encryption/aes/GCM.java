@@ -1,4 +1,4 @@
-package org.yamcs.tctm.ccsds.encryption.aes;
+package org.yamcs.security.encryption.aes;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -19,7 +19,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 
 import org.yamcs.YConfiguration;
-import org.yamcs.tctm.ccsds.encryption.SymmetricEncryption;
+import org.yamcs.security.encryption.SymmetricEncryption;
 import org.yamcs.utils.StringConverter;
 
 
