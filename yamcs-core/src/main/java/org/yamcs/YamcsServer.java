@@ -27,6 +27,7 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Formatter;
@@ -111,6 +112,7 @@ public class YamcsServer {
     private Map<ConfigScope, Map<String, Spec>> sectionSpecs = new HashMap<>();
 
     private Map<String, CommandOption> commandOptions = new ConcurrentHashMap<>();
+    private Set<CommandOptionListener> commandOptionListeners = new CopyOnWriteArraySet<>();
 
     List<ServiceWithConfig> globalServiceList;
     Map<String, YamcsServerInstance> instances = new LinkedHashMap<>();
@@ -324,6 +326,7 @@ public class YamcsServer {
             throw new IllegalArgumentException(
                     "Command options may not be named '" + option.getId() + "'. This name is reserved");
         }
+        commandOptionListeners.forEach(l -> l.commandOptionAdded(option));
     }
 
     /**
@@ -339,6 +342,14 @@ public class YamcsServer {
 
     public CommandOption getCommandOption(String id) {
         return commandOptions.get(id);
+    }
+
+    public void addCommandOptionListener(CommandOptionListener listener) {
+        commandOptionListeners.add(listener);
+    }
+
+    public void removeCommandOptionListener(CommandOptionListener listener) {
+        commandOptionListeners.remove(listener);
     }
 
     /**

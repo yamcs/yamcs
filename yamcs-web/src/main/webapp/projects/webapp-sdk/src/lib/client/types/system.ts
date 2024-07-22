@@ -117,7 +117,7 @@ export interface PluginInfo {
   vendor: string;
 }
 
-export type CommandOptionType = 'BOOLEAN' | 'STRING' | 'NUMBER';
+export type CommandOptionType = 'BOOLEAN' | 'STRING' | 'NUMBER' | 'TIMESTAMP';
 
 export interface CommandOption {
   id: string;
