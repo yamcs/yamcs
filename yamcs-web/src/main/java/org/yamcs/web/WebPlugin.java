@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.yamcs.CommandOption;
+import org.yamcs.CommandOptionListener;
 import org.yamcs.Experimental;
 import org.yamcs.Plugin;
 import org.yamcs.PluginException;
@@ -25,7 +27,7 @@ import org.yamcs.templating.ParseException;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.YarchDatabase;
 
-public class WebPlugin implements Plugin {
+public class WebPlugin implements Plugin, CommandOptionListener {
 
     static final String CONFIG_SECTION = "yamcs-web";
     static final String CONFIG_DISPLAY_BUCKET = "displayBucket";
@@ -47,6 +49,11 @@ public class WebPlugin implements Plugin {
     // plugins are loaded.
     private List<Path> extraStaticRoots = new ArrayList<>();
     private Map<String, Map<String, Object>> extraConfigs = new HashMap<>();
+
+    public WebPlugin() {
+        var yamcs = YamcsServer.getServer();
+        yamcs.addCommandOptionListener(this);
+    }
 
     @Override
     public void onLoad(YConfiguration config) throws PluginException {
@@ -72,6 +79,15 @@ public class WebPlugin implements Plugin {
                 log.info("Website deployed at {}{}", binding, contextPath);
             }
         });
+    }
+
+    @Override
+    public void commandOptionAdded(CommandOption option) {
+        // Plugins are loaded in arbitrary order. Trigger deploy,
+        // so that index.html always contains the correct options.
+        if (deployer != null) {
+            deployer.redeploy();
+        }
     }
 
     @Experimental

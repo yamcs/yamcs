@@ -63,6 +63,20 @@
             false
           </div>
         }
+        @case ("TIMESTAMP") {
+          <div class="label">
+            {{ extra.verboseName || extra.id }}
+            @if (extra.help) {
+              <ya-help [dialogTitle]="extra.verboseName || extra.id">
+                <div [innerHTML]="extra.help"></div>
+              </ya-help>
+            }
+            <ya-date-time-input
+              [formControlName]="'extra__' + extra.id"
+              [showMillis]="true"
+              [showClear]="true" />
+          </div>
+        }
         @default {
           <div class="label">
             {{ extra.verboseName || extra.id }}
