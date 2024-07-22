@@ -128,6 +128,7 @@ export class ConfigureCommandComponent implements OnInit, AfterViewInit, OnDestr
     const args = this.commandForm.getAssignments();
     const comment = this.commandForm.getComment();
     const extra = this.commandForm.getExtraOptions();
+    console.log('extra', extra);
 
     const qname = this.qualifiedName();
 
@@ -266,6 +267,8 @@ export class CommandHistoryTemplateProvider implements TemplateProvider {
             return this.getNumberOption(attr.value);
           case 'STRING':
             return this.getStringOption(attr.value);
+          case 'TIMESTAMP':
+            return this.getTimestampOption(attr.value);
         }
       }
     }
@@ -289,6 +292,12 @@ export class CommandHistoryTemplateProvider implements TemplateProvider {
 
   private getStringOption(value: Value) {
     if (value.type === 'STRING') {
+      return value;
+    }
+  }
+
+  private getTimestampOption(value: Value) {
+    if (value.type === 'TIMESTAMP') {
       return value;
     }
   }
