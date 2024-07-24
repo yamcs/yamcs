@@ -5,6 +5,7 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
 @Component({
   standalone: true,
   selector: 'app-argument-enum-dialog',
+  styleUrl: './argument-enum-dialog.component.css',
   templateUrl: './argument-enum-dialog.component.html',
   imports: [
     WebappSdkModule,
