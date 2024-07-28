@@ -91,7 +91,7 @@ public class CcsdsFrameDecoder implements RawFrameEnDec {
     }
 
     @Override
-    public int encodeFrame(byte[] data, int offset, int length) {
+    public int encodeFrame(byte[] data, int length) {
         throw new UnsupportedOperationException("Unimplemented method 'encodeFrame'");
     }
 }

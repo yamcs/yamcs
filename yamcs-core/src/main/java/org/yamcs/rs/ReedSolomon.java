@@ -394,4 +394,8 @@ public class ReedSolomon {
     public int nroots() {
         return nroots;
     }
+
+    public int getnn() {
+        return nn;
+    }
 }
