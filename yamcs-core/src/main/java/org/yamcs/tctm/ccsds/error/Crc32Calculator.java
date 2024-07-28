@@ -1,7 +1,6 @@
 package org.yamcs.tctm.ccsds.error;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.zip.CRC32C;
 
 public class Crc32Calculator {

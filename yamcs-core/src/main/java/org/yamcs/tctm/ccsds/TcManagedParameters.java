@@ -7,8 +7,8 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.security.encryption.SymmetricEncryption;
-import org.yamcs.tctm.csp.AbstractCspTcFrameLink.CspManagedParameters;
-import org.yamcs.tctm.srs3.CspFrameFactory;
+import org.yamcs.tctm.srs3.Srs3FrameFactory;
+import org.yamcs.tctm.srs3.Srs3ManagedParameters;
 import org.yamcs.utils.YObjectLoader;
 
 /**
@@ -143,7 +143,7 @@ public class TcManagedParameters extends UplinkManagedParameters {
         public boolean bdAbsolutePriority;
 
         // initialise it to null
-        private CspManagedParameters cspManagedParameters;
+        private Srs3ManagedParameters srs3Mp;
 
         // Encryption parameters
         protected SymmetricEncryption se;
@@ -186,9 +186,9 @@ public class TcManagedParameters extends UplinkManagedParameters {
                 se.init(enConfig);
             }
 
-            if (config.containsKey("csp")) {
-                YConfiguration c = config.getConfig("csp");
-                this.cspManagedParameters = new CspManagedParameters(c, maxFrameLength);
+            if (config.containsKey("srs3")) {
+                YConfiguration c = config.getConfig("srs3");
+                this.srs3Mp = new Srs3ManagedParameters(c, maxFrameLength);
             }
         }
 
@@ -196,9 +196,9 @@ public class TcManagedParameters extends UplinkManagedParameters {
             return new TcFrameFactory(this);
         }
 
-        public CspFrameFactory getCspFrameFactory() {
-            if (cspManagedParameters != null) {
-                return new CspFrameFactory(cspManagedParameters);
+        public Srs3FrameFactory getsSrs3FrameFactory() {
+            if (srs3Mp != null) {
+                return new Srs3FrameFactory(srs3Mp);
             }
 
             return null;

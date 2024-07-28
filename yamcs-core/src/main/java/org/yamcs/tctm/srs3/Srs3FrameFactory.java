@@ -6,59 +6,58 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.security.encryption.SymmetricEncryption;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
-import org.yamcs.tctm.csp.AbstractCspTcFrameLink;
-import org.yamcs.tctm.csp.AbstractCspTcFrameLink.CspManagedParameters;
 
 
-public class CspFrameFactory {
+public class Srs3FrameFactory {
     ErrorDetectionWordCalculator crc;
     SymmetricEncryption se;
 
-    CspManagedParameters cspManagedParameters;
+    Srs3ManagedParameters srs3Mp;
     
-    public CspFrameFactory(CspManagedParameters cspManagedParameters) {
-        this.cspManagedParameters = cspManagedParameters;
+    public Srs3FrameFactory(Srs3ManagedParameters srs3Mp) {
+        this.srs3Mp = srs3Mp;
 
-        crc = cspManagedParameters.getErrorDetection();
-        se = cspManagedParameters.getEncryption();
+        crc = srs3Mp.getErrorDetection();
+        se = srs3Mp.getEncryption();
     }
 
-    public CspManagedParameters getCspManagedParameters() {
-        return cspManagedParameters;
+    public Srs3ManagedParameters getSrs3ManagedParameters() {
+        return srs3Mp;
     }
 
     /**
-     * Makes a new CSP frame of the given length with the generation time set to the current wall clock time
+     * Makes a new SRS3 frame of the given length with the generation time set to the current wall clock time
      * 
      * @param dataLength
      * @return
      */
     public byte[] makeFrame(int dataLength) {
-        int length = dataLength + getFramingLength();
+        int length = dataLength + getInnerFramingLength();
 
-        if (length > cspManagedParameters.getMaxFrameLength()) {
+        // Enforce maxLength of the SRS3 Frame
+        if (srs3Mp.enforceFrameLength)
+            length = srs3Mp.getMaxFrameLength();
+
+        if (length > srs3Mp.getMaxFrameLength())
             throw new IllegalArgumentException("Resulting frame length " + length + " is more than the maximum allowed "
-                    + cspManagedParameters.getMaxFrameLength());
-        }
+                    + srs3Mp.getMaxFrameLength());
 
-        // Enforce maxLength of the CSP Frame
-        if (cspManagedParameters.enforceFrameLength)
-            length = cspManagedParameters.getMaxFrameLength();
+        length += getOuterFramingLength();
 
         byte[] data = new byte[length];
         return data;
     }
 
-    public int getPaddingAndDataLength() {
-        int length = cspManagedParameters.getMaxFrameLength() - getFramingLength();
+    public int getPaddingLength(int datalength) {
+        if (!srs3Mp.enforceFrameLength)
+            return 0;
+        
+        return srs3Mp.maxFrameLength - (getCspHeaderLength() + datalength);
 
-        if (cspManagedParameters.enforceFrameLength){
-            if (crc == null) {
-                length -= cspManagedParameters.getDefaultCrcSize();
-            }
-        }
+    }
 
-        return length;
+    public int getInnerFramingLength() {
+        return getCspHeaderLength();
     }
 
     /**
@@ -66,8 +65,8 @@ public class CspFrameFactory {
      * 
      * @return
      */
-    public int getFramingLength() {
-        int length = getCspHeaderLength() + getRadioHeaderLength();
+    public int getOuterFramingLength() {
+        int length = getRadioHeaderLength() + getSpacecraftIdLength();
         if (crc != null) {
             length += crc.sizeInBits() / 8;
         }
@@ -79,26 +78,42 @@ public class CspFrameFactory {
         return length;
     }
 
+    public int getSpacecraftIdLength() {
+        if (srs3Mp.getSpacecraftId() != null)
+            return srs3Mp.getSpacecraftId().length;
+        
+        return 0;
+    }
+
     public int getCspHeaderLength() {
-        return cspManagedParameters.getCspHeader().length;
+        if (srs3Mp.getCspHeader() != null)
+            return srs3Mp.getCspHeader().length;
+
+        return 0;
     }
 
     public int getRadioHeaderLength() {
-        if (cspManagedParameters.getRadioHeader() != null)
-            return cspManagedParameters.getRadioHeader().length;
+        if (srs3Mp.getRadioHeader() != null)
+            return srs3Mp.getRadioHeader().length;
         
         return 0;
     }
 
     public byte[] encodeFrame(byte[] cspFrame, AtomicInteger dataStart, AtomicInteger dataEnd) {
-        byte[] cspHeader = cspManagedParameters.getCspHeader();
-
-        if (cspManagedParameters.getRadioHeader() != null) {
-            byte[] radioHeader = cspManagedParameters.getRadioHeader();
+        if (srs3Mp.getRadioHeader() != null) {
+            byte[] radioHeader = srs3Mp.getRadioHeader();
             System.arraycopy(radioHeader, 0, cspFrame, dataStart.get(), radioHeader.length);
         }
 
-        System.arraycopy(cspHeader, 0, cspFrame, dataStart.get() + getRadioHeaderLength(), cspHeader.length);
+        if (srs3Mp.getSpacecraftId() != null) {
+            byte[] spacecraftId = srs3Mp.getSpacecraftId();
+            System.arraycopy(spacecraftId, 0, cspFrame, dataStart.get() + getRadioHeaderLength(), spacecraftId.length);
+        }
+
+        if (srs3Mp.getCspHeader() != null) {
+            byte[] cspHeader = srs3Mp.getCspHeader();
+            System.arraycopy(cspHeader, 0, cspFrame, dataStart.get() + getRadioHeaderLength() + getSpacecraftIdLength(), cspHeader.length);
+        }
 
         if (se != null) {
             try {
@@ -116,32 +131,31 @@ public class CspFrameFactory {
 
         if (crc != null) {
             int c = crc.compute(cspFrame, dataStart.get(), dataEnd.get());
+            int crcSize = crc.sizeInBits() / 8;
 
-            if (crc.sizeInBits() / 8 == 4)
+            if (crcSize == 4)
                 ByteArrayUtils.encodeInt(c, cspFrame, dataEnd.get());
             
-            if (crc.sizeInBits() / 8 == 2)
+            if (crcSize == 2)
                 ByteArrayUtils.encodeUnsignedShort(c, cspFrame, dataEnd.get());
 
             // Update dataEnd
-            dataEnd.set(dataEnd.get() + crc.sizeInBits() / 8);
+            dataEnd.set(dataEnd.get() + crcSize);
         }
 
         return cspFrame;
     }
 
     public int getTagLength() {
-        if (se != null) {
+        if (se != null)
             return se.getTagLength();
-        }
 
         return 0;
     }
 
     public int getIVLength() {
-        if (se != null) {
+        if (se != null)
             return se.getIVLength();
-        }
 
         return 0;
     }
