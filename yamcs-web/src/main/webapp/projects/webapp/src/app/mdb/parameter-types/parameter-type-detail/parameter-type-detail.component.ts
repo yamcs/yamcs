@@ -28,8 +28,8 @@ export class ParameterTypeDetailComponent {
   getDefaultAlarmLevel(ptype: ParameterType, enumValue: EnumValue) {
     if (ptype && ptype.defaultAlarm) {
       const alarm = ptype.defaultAlarm;
-      if (alarm.enumerationAlarm) {
-        for (const enumAlarm of alarm.enumerationAlarm) {
+      if (alarm.enumerationAlarms) {
+        for (const enumAlarm of alarm.enumerationAlarms) {
           if (enumAlarm.label === enumValue.label) {
             return enumAlarm.level;
           }
@@ -40,7 +40,7 @@ export class ParameterTypeDetailComponent {
 
   getEnumerationAlarmLevel(contextAlarm: ContextAlarmInfo, enumValue: EnumValue) {
     const alarm = contextAlarm.alarm;
-    for (const enumAlarm of alarm.enumerationAlarm) {
+    for (const enumAlarm of alarm.enumerationAlarms) {
       if (enumAlarm.label === enumValue.label) {
         return enumAlarm.level;
       }

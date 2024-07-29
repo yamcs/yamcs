@@ -1,7 +1,6 @@
 import { Alarm } from './alarms';
 import { Event } from './events';
 import { Link } from './management';
-import { SpaceSystem } from './mdb';
 import { IndexGroup, Range, Sample } from './monitoring';
 import { Processor } from './processing';
 import { CommandQueue } from './queue';
@@ -9,7 +8,7 @@ import { Bucket, GroupInfo, Instance, InstanceTemplate, RocksDbDatabase, RoleInf
 import { Record, Stream, Table } from './table';
 
 export interface EventsWrapper {
-  event: Event[];
+  events: Event[];
 }
 
 export interface InstancesWrapper {
@@ -26,10 +25,6 @@ export interface LinksWrapper {
 
 export interface ServicesWrapper {
   services: Service[];
-}
-
-export interface SpaceSystemsWrapper {
-  spaceSystem: SpaceSystem[];
 }
 
 export interface AlarmsWrapper {
@@ -57,7 +52,7 @@ export interface CommandQueuesWrapper {
 }
 
 export interface ProcessorsWrapper {
-  processor: Processor[];
+  processors: Processor[];
 }
 
 export interface StreamsWrapper {
@@ -81,7 +76,7 @@ export interface RangesWrapper {
 }
 
 export interface SourcesWrapper {
-  source: string[];
+  sources: string[];
 }
 
 export interface IndexResult {

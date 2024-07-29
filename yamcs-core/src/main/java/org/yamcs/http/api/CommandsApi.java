@@ -354,6 +354,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                         entry.getCommandName())) {
                     count++;
                     if (count <= limit) {
+                        responseb.addCommands(entry);
                         responseb.addEntry(entry);
                         last = entry;
                     } else {

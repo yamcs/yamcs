@@ -237,7 +237,11 @@ message UpdateCommandHistoryRequest {
 }
 
 message ListCommandsResponse {
-  repeated CommandHistoryEntry entry = 1;
+  // Deprecated, use ``commands`` instead
+  repeated CommandHistoryEntry entry = 1 [deprecated=true];
+
+  // Page  of matching commands
+  repeated CommandHistoryEntry commands = 3;
 
   // Token indicating the response is only partial. More results can then
   // be obtained by performing the same request (including all original

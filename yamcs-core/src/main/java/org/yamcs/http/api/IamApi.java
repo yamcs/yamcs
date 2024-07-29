@@ -500,7 +500,6 @@ public class IamApi extends AbstractIamApi<Context> {
                 unsortedSystemPrivileges.add(privilege.getName());
             }
             Collections.sort(unsortedSystemPrivileges);
-            userb.addAllSystemPrivilege(unsortedSystemPrivileges);
             userb.addAllSystemPrivileges(unsortedSystemPrivileges);
 
             List<ObjectPrivilegeInfo> unsortedObjectPrivileges = new ArrayList<>();
@@ -508,13 +507,11 @@ public class IamApi extends AbstractIamApi<Context> {
                 ObjectPrivilegeInfo.Builder infob = ObjectPrivilegeInfo.newBuilder();
                 infob.setType(privilege.getKey().toString());
                 for (ObjectPrivilege objectPrivilege : privilege.getValue()) {
-                    infob.addObject(objectPrivilege.getObject());
                     infob.addObjects(objectPrivilege.getObject());
                 }
                 unsortedObjectPrivileges.add(infob.build());
             }
             Collections.sort(unsortedObjectPrivileges, (p1, p2) -> p1.getType().compareTo(p2.getType()));
-            userb.addAllObjectPrivilege(unsortedObjectPrivileges);
             userb.addAllObjectPrivileges(unsortedObjectPrivileges);
 
             user.getIdentityEntrySet().forEach(entry -> {
@@ -603,8 +600,7 @@ public class IamApi extends AbstractIamApi<Context> {
         for (ObjectPrivilege privilege : objectPrivileges) {
             b.addObjectPrivileges(ObjectPrivilegeInfo.newBuilder()
                     .setType(privilege.getType().toString())
-                    .addObjects(privilege.getObject())
-                    .addObject(privilege.getObject()));
+                    .addObjects(privilege.getObject()));
         }
         return b.build();
     }

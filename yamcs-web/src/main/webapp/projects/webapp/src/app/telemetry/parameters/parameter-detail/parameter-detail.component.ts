@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
-import { ContextAlarmInfo, EnumValue, Member, Parameter, ParameterMember, ParameterType, ParameterValue, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ContextAlarmInfo, EnumValue, Parameter, ParameterMember, ParameterType, ParameterValue, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AlarmLevelComponent } from '../../../shared/alarm-level/alarm-level.component';
 import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
@@ -55,8 +55,8 @@ export class ParameterDetailComponent implements OnChanges {
   getDefaultAlarmLevel(ptype: ParameterType, enumValue: EnumValue) {
     if (ptype && ptype.defaultAlarm) {
       const alarm = ptype.defaultAlarm;
-      if (alarm.enumerationAlarm) {
-        for (const enumAlarm of alarm.enumerationAlarm) {
+      if (alarm.enumerationAlarms) {
+        for (const enumAlarm of alarm.enumerationAlarms) {
           if (enumAlarm.label === enumValue.label) {
             return enumAlarm.level;
           }
@@ -67,7 +67,7 @@ export class ParameterDetailComponent implements OnChanges {
 
   getEnumerationAlarmLevel(contextAlarm: ContextAlarmInfo, enumValue: EnumValue) {
     const alarm = contextAlarm.alarm;
-    for (const enumAlarm of alarm.enumerationAlarm) {
+    for (const enumAlarm of alarm.enumerationAlarms) {
       if (enumAlarm.label === enumValue.label) {
         return enumAlarm.level;
       }
