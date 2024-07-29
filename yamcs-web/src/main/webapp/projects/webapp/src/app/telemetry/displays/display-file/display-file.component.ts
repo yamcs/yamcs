@@ -57,8 +57,6 @@ export class DisplayFileComponent implements AfterViewInit, OnDestroy {
 
   private subscriptions: Subscription[] = [];
 
-  private folderPerInstance: boolean;
-
   constructor(
     readonly yamcs: YamcsService,
     private route: ActivatedRoute,
@@ -66,7 +64,6 @@ export class DisplayFileComponent implements AfterViewInit, OnDestroy {
     private title: Title,
     configService: ConfigService,
   ) {
-    this.folderPerInstance = configService.getConfig().displayFolderPerInstance;
     const initialObject = this.getObjectNameFromUrl();
     this.loadFile(initialObject);
 
@@ -99,9 +96,6 @@ export class DisplayFileComponent implements AfterViewInit, OnDestroy {
   private getObjectNameFromUrl() {
     const url = this.route.snapshot.url;
     let objectName = '';
-    if (this.folderPerInstance) {
-      objectName += this.yamcs.instance!;
-    }
     for (const segment of url) {
       if (objectName) {
         objectName += '/';
@@ -111,15 +105,6 @@ export class DisplayFileComponent implements AfterViewInit, OnDestroy {
     return objectName;
   }
 
-  private getNameWithoutInstance(name: string) {
-    if (this.folderPerInstance) {
-      const instance = this.yamcs.instance!;
-      return name.substr(instance.length);
-    } else {
-      return name;
-    }
-  }
-
   private loadFile(objectName: string, reloadViewer = false) {
     this.objectName = objectName;
     const idx = this.objectName.lastIndexOf('/');
@@ -127,8 +112,8 @@ export class DisplayFileComponent implements AfterViewInit, OnDestroy {
       this.folderLink = '/telemetry/displays/browse/';
       this.filename = this.objectName;
     } else {
-      const folderWithoutInstance = this.getNameWithoutInstance(this.objectName.substring(0, idx));
-      this.folderLink = '/telemetry/displays/browse/' + folderWithoutInstance;
+      const folderName = this.objectName.substring(0, idx);
+      this.folderLink = '/telemetry/displays/browse/' + folderName;
       this.filename = this.objectName.substring(idx + 1);
     }
 

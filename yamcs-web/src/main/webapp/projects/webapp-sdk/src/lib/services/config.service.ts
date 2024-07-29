@@ -24,8 +24,6 @@ export interface WebsiteConfig {
   tc: boolean;
   tmArchive: boolean;
   utc: boolean;
-  displayFolderPerInstance: boolean;
-  stackFolderPerInstance: boolean;
   siteLinks: SiteLink[];
   extra: { [key: string]: { [key: string]: any; }; };
 }

@@ -47,7 +47,6 @@ export class StackFolderComponent implements OnDestroy {
   private storageClient: StorageClient;
 
   private bucket: string;
-  private folderPerInstance: boolean;
 
   loaded = false;
   converting = false;
@@ -65,9 +64,7 @@ export class StackFolderComponent implements OnDestroy {
     title.setTitle('Command stacks');
     this.storageClient = yamcs.createStorageClient();
 
-    const config = configService.getConfig();
     this.bucket = configService.getStackBucket();
-    this.folderPerInstance = config.stackFolderPerInstance;
 
     this.loadCurrentFolder();
     this.routerSubscription = router.events.pipe(
@@ -82,16 +79,9 @@ export class StackFolderComponent implements OnDestroy {
       delimiter: '/',
     };
 
-    let prefix = '';
-    if (this.folderPerInstance) {
-      prefix = this.yamcs.instance! + '/';
-    }
-
     const routeSegments = this.route.snapshot.url;
     if (routeSegments.length) {
-      options.prefix = prefix + routeSegments.map(s => s.path).join('/') + '/';
-    } else if (prefix) {
-      options.prefix = prefix;
+      options.prefix = routeSegments.map(s => s.path).join('/') + '/';
     }
 
     this.storageClient.listObjects(this.bucket, options).then(dir => {
@@ -101,15 +91,6 @@ export class StackFolderComponent implements OnDestroy {
     });
   }
 
-  private getNameWithoutInstance(name: string) {
-    if (this.folderPerInstance) {
-      const instance = this.yamcs.instance!;
-      return name.substr(instance.length);
-    } else {
-      return name;
-    }
-  }
-
   private changedir(dir: ListObjectsResponse) {
     this.selection.clear();
     const items: BrowseItem[] = [];
@@ -117,7 +98,6 @@ export class StackFolderComponent implements OnDestroy {
       items.push({
         folder: true,
         name: prefix,
-        nameWithoutInstance: this.getNameWithoutInstance(prefix),
       });
     }
     for (const object of dir.objects || []) {
@@ -128,7 +108,6 @@ export class StackFolderComponent implements OnDestroy {
       items.push({
         folder: false,
         name: object.name,
-        nameWithoutInstance: this.getNameWithoutInstance(object.name),
         modified: object.created,
         objectUrl: this.storageClient.getObjectURL(this.bucket, object.name),
       });
@@ -160,7 +139,7 @@ export class StackFolderComponent implements OnDestroy {
       width: '400px',
       data: {
         path: this.getCurrentPath(),
-        prefix: this.folderPerInstance ? (this.yamcs.instance! + '/') : '',
+        prefix: '',
       }
     });
     dialogRef.afterClosed().subscribe(result => {
@@ -200,7 +179,7 @@ export class StackFolderComponent implements OnDestroy {
       if (!isNaN(parseInt(key, 10))) {
         const file = files[key as any];
         const fullPath = path ? path + '/' + file.name : file.name;
-        const prefix = this.folderPerInstance ? (this.yamcs.instance! + '/') : '';
+        const prefix = '';
         const objectName = prefix + fullPath;
         const promise = this.storageClient.uploadObject(this.bucket, objectName, file);
         uploadPromises.push(promise);
@@ -288,7 +267,7 @@ export class StackFolderComponent implements OnDestroy {
   }
 
   deleteFile(item: BrowseItem) {
-    if (confirm(`Are you sure you want to delete ${item.nameWithoutInstance}?`)) {
+    if (confirm(`Are you sure you want to delete ${item.name}?`)) {
       this.storageClient.deleteObject(this.bucket, item.name).then(() => {
         this.loadCurrentFolder();
       });
@@ -327,9 +306,6 @@ export class StackFolderComponent implements OnDestroy {
         const uploadPromises: any[] = [];
         for (const droppedFile of droppedFiles) {
           let objectPath = objectPrefix + droppedFile._fullPath;
-          if (this.folderPerInstance) {
-            objectPath = this.yamcs.instance! + '/' + objectPath;
-          }
           const promise = this.storageClient.uploadObject(this.bucket, objectPath, droppedFile);
           uploadPromises.push(promise);
         }
@@ -372,7 +348,6 @@ export class StackFolderComponent implements OnDestroy {
 export class BrowseItem {
   folder: boolean;
   name: string;
-  nameWithoutInstance: string;
   modified?: string;
   objectUrl?: string;
 }

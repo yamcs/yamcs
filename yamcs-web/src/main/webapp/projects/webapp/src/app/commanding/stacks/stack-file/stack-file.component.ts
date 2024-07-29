@@ -69,7 +69,6 @@ export class StackFileComponent implements OnDestroy {
   private executionCounter = 0;
 
   private bucket: string;
-  private folderPerInstance: boolean;
 
   loaded = false;
   format: "ycs" | "xml";
@@ -118,7 +117,6 @@ export class StackFileComponent implements OnDestroy {
   ) {
     const config = configService.getConfig();
     this.bucket = configService.getStackBucket();
-    this.folderPerInstance = config.displayFolderPerInstance;
     this.storageClient = yamcs.createStorageClient();
 
     this.extraAcknowledgments = yamcs.getProcessor()?.acknowledgments ?? [];
@@ -216,9 +214,6 @@ export class StackFileComponent implements OnDestroy {
   private getObjectNameFromUrl() {
     const url = this.route.snapshot.url;
     let objectName = '';
-    if (this.folderPerInstance) {
-      objectName += this.yamcs.instance!;
-    }
     for (const segment of url) {
       if (objectName) {
         objectName += '/';
@@ -228,15 +223,6 @@ export class StackFileComponent implements OnDestroy {
     return objectName;
   }
 
-  private getNameWithoutInstance(name: string) {
-    if (this.folderPerInstance) {
-      const instance = this.yamcs.instance!;
-      return name.substring(instance.length);
-    } else {
-      return name;
-    }
-  }
-
   private async loadFile(objectName: string) {
     this.objectName = objectName;
     const idx = this.objectName.lastIndexOf('/');
@@ -244,8 +230,8 @@ export class StackFileComponent implements OnDestroy {
       this.folderLink = '/commanding/stacks/browse/';
       this.filename = this.objectName;
     } else {
-      const folderWithoutInstance = this.getNameWithoutInstance(this.objectName.substring(0, idx));
-      this.folderLink = '/commanding/stacks/browse/' + folderWithoutInstance;
+      const folderName = this.objectName.substring(0, idx);
+      this.folderLink = '/commanding/stacks/browse/' + folderName;
       this.filename = this.objectName.substring(idx + 1);
     }
 
