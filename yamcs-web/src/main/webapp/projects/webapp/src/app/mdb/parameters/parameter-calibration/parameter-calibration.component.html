@@ -1,4 +1,4 @@
-@if (ptype.dataEncoding?.defaultCalibrator || ptype.dataEncoding?.contextCalibrator) {
+@if (ptype.dataEncoding?.defaultCalibrator || ptype.dataEncoding?.contextCalibrators) {
   <table yaDataTable>
     <tr>
       <th width="200">Calibrator</th>
@@ -12,11 +12,13 @@
         <td>
           @switch (defaultCalibrator.type) {
             @case ("POLYNOMIAL") {
-              <span [innerHTML]="defaultCalibrator.polynomialCalibrator.coefficient | polynomial">
-              </span>
+              <span
+                [innerHTML]="
+                  defaultCalibrator.polynomialCalibrator.coefficients | polynomial
+                "></span>
             }
             @case ("SPLINE") {
-              <span> {{ defaultCalibrator.splineCalibrator.point.length }} points </span>
+              <span>{{ defaultCalibrator.splineCalibrator.points.length }} points</span>
             }
             @case ("JAVA_EXPRESSION") {
               <span>
@@ -30,16 +32,16 @@
         </td>
       </tr>
     }
-    @if (ptype.dataEncoding?.contextCalibrator; as contextCalibrators) {
+    @if (ptype.dataEncoding?.contextCalibrators; as contextCalibrators) {
       @for (contextCalibrator of contextCalibrators; track contextCalibrator) {
         <tr>
           <td>
             @for (comparison of contextCalibrator.comparison; track comparison) {
               <a
                 [routerLink]="['/mdb/parameters/', comparison.parameter.qualifiedName]"
-                [queryParams]="{ c: yamcs.context }"
-                >{{ comparison.parameter.qualifiedName }}</a
-              >
+                [queryParams]="{ c: yamcs.context }">
+                {{ comparison.parameter.qualifiedName }}
+              </a>
               {{ comparison.operator | operator }}
               {{ comparison.value }}
             }
@@ -50,13 +52,12 @@
               @case ("POLYNOMIAL") {
                 <span
                   [innerHTML]="
-                    contextCalibrator.calibrator.polynomialCalibrator.coefficient | polynomial
-                  ">
-                </span>
+                    contextCalibrator.calibrator.polynomialCalibrator.coefficients | polynomial
+                  "></span>
               }
               @case ("SPLINE") {
                 <span>
-                  {{ contextCalibrator.calibrator.splineCalibrator.point.length }} points
+                  {{ contextCalibrator.calibrator.splineCalibrator.points.length }} points
                 </span>
               }
               @case ("JAVA_EXPRESSION") {

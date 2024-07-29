@@ -128,7 +128,6 @@ export class ConfigureCommandComponent implements OnInit, AfterViewInit, OnDestr
     const args = this.commandForm.getAssignments();
     const comment = this.commandForm.getComment();
     const extra = this.commandForm.getExtraOptions();
-    console.log('extra', extra);
 
     const qname = this.qualifiedName();
 

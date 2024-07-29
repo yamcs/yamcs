@@ -171,19 +171,19 @@ message ListProcessorsResponse {
 
 // Request message for `SubscribeTMStatistics`.
 message SubscribeTMStatisticsRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
-  // Processor name.
+  // Processor name
   optional string processor = 2;
 }
 
 // Request message for `SubscribeProcessors`.
 message SubscribeProcessorsRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
-  // Processor name.
+  // Processor name
   optional string processor = 2;
 }
 
@@ -207,10 +207,10 @@ message SubscribeParametersRequest {
     REMOVE = 2;
   }
   
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
  
-  // Processor name.
+  // Processor name
   optional string processor = 2;
 
   // Parameter identifiers. Each identifier takes the form of
@@ -277,19 +277,19 @@ message SubscribedParameterInfo {
 
 // Request message for `GetProcessor`.
 message GetProcessorRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
-  
-  // Processor name.
+
+  // Processor name
   optional string processor = 2;
 }
 
 // Request message for `DeleteProcessor`.
 message DeleteProcessorRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
-  
-  // Processor name.
+
+  // Processor name
   optional string processor = 2;
 }
 
@@ -300,16 +300,16 @@ message CreateProcessorRequest {
 
   // **Required.** The name of the processor. Must be unique for the Yamcs instance.
   optional string name = 2;
-  
+
   // Keep the processor when terminated. Default: ``no``.
   optional bool persistent = 4;
-  
+
   // **Required.** The type of the processor. The available values depend on how
   // Yamcs Server is configured. Most Yamcs deployments support at least a type
   // ``Archive`` which allows for the creation of processors replaying archived
   // data.
   optional string type = 5;
-  
+
   // Configuration options specific to the processor type. Note that this should
   // be a string representation of a valid JSON structure.
   optional string config = 6;
@@ -317,10 +317,10 @@ message CreateProcessorRequest {
 
 // Request message for `EditProcessor`.
 message EditProcessorRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
-  
-  // Processor name.
+
+  // Processor name
   optional string processor = 2;
   
   // The state this replay processor should be updated to. Either ``paused`` or
@@ -351,11 +351,11 @@ message EditProcessorRequest {
 message GetParameterValueRequest {
   // Yamcs instance name.
   optional string instance = 1;
-  
-  // Processor name.
+
+  // Processor name
   optional string processor = 2;
-  
-  // Parameter name. 
+
+  // Parameter name.
   optional string name = 3;
 
   // Whether the latest cached value may be returned. Default: ``yes``.
@@ -369,16 +369,16 @@ message GetParameterValueRequest {
 
 // Request message for `SetParameterValue`.
 message SetParameterValueRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
   
-  // Parameter name.
+  // Parameter name
   optional string name = 3;
   
-  // The new value.
+  // The new value
   optional Value value = 4;
 
   // The generation time of the value. If specified, must be a date
@@ -391,10 +391,10 @@ message SetParameterValueRequest {
 
 // Request message for `BatchGetParameterValues`.
 message BatchGetParameterValuesRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 4;
   
-  // Processor name.
+  // Processor name
   optional string processor = 5;
 
   // Parameter identifiers. Each identifier takes the form of
@@ -438,10 +438,10 @@ message BatchSetParameterValuesRequest {
     optional uint64 expiresIn = 4;
   }
   
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 2;
   
-  // Processor name.
+  // Processor name
   optional string processor = 3;
 
   // Requests, one for each new value
@@ -453,46 +453,46 @@ message GetAlgorithmStatusRequest {
   // Yamcs instance name.
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
   
-  // Algorithm name.
+  // Algorithm name
   optional string name = 3;
 }
 
 // Request message for `SubscribeAlgorithmStatus`.
 message SubscribeAlgorithmStatusRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
   
-  // Algorithm name.
+  // Algorithm name
   optional string name = 3;
 }
 
 // Request message for `GetAlgorithmTrace`.
 message GetAlgorithmTraceRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
   
-  // Algorithm name.
+  // Algorithm name
   optional string name = 3;
 }
 
 // Request message for `EditAlgorithmTrace`.
 message EditAlgorithmTraceRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
   
-  // Algorithm name.
+  // Algorithm name
   optional string name = 3;
 
   // Trace state: either ``enabled`` or ``disabled``.

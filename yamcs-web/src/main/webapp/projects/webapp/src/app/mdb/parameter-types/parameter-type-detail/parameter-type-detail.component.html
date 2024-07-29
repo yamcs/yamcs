@@ -190,7 +190,7 @@
           <th>Alarm Level (default)</th>
           <th>Range</th>
         </tr>
-        @for (range of alarm.staticAlarmRange; track range) {
+        @for (range of alarm.staticAlarmRanges; track range) {
           <tr>
             <td>
               <app-alarm-level [level]="range.level" [grayscale]="true" />
@@ -234,7 +234,7 @@
           <th>Level</th>
           <th>Range</th>
         </tr>
-        @for (range of contextAlarm.alarm.staticAlarmRange; track range) {
+        @for (range of contextAlarm.alarm.staticAlarmRanges; track range) {
           <tr>
             <td>
               <app-alarm-level [level]="range.level" [grayscale]="true" />

@@ -78,8 +78,6 @@ message StreamParameterValuesRequest {
 }
 
 message ParameterGroupInfo {
-  // Parameter group names
-  repeated string group = 1 [deprecated=true];
 
   // Parameter group names
   repeated string groups = 2;

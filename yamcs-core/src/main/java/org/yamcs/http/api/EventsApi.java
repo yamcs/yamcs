@@ -136,7 +136,9 @@ public class EventsApi extends AbstractEventsApi<Context> {
             public void onTuple(Stream stream, Tuple tuple) {
                 if (++count <= limit) {
                     Db.Event incoming = (Db.Event) tuple.getColumn("body");
-                    responseb.addEvent(fromDbEvent(incoming));
+                    var event = fromDbEvent(incoming);
+                    responseb.addEvents(event);
+                    responseb.addEvent(event);
                     last = incoming;
                 }
             }
@@ -235,6 +237,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
                 unsortedSources.add(entry.getKey());
             }
             Collections.sort(unsortedSources, String.CASE_INSENSITIVE_ORDER);
+            responseb.addAllSources(unsortedSources);
             responseb.addAllSource(unsortedSources);
         }
         observer.complete(responseb.build());
