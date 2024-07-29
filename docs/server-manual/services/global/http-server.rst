@@ -67,6 +67,13 @@ maxInitialLineLength (integer)
 maxHeaderSize (integer)
     Maximum allowed length of all headers combined. Default: ``8192``
 
+maxPageSize (integer)
+    Maximum allowed page size.
+
+    This corresponds with the ``limit`` query parameter that is used in the HTTP API.
+
+    Default: ``1000``.
+
 nThreads (integer)
     Configure the number of threads that handle HTTP requests. The value ``0`` resolves to two times the number of CPU cores. Default: ``0``
 
