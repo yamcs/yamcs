@@ -12,7 +12,6 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.audit.AuditLog;
-import org.yamcs.management.LinkListener;
 import org.yamcs.management.LinkManager;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.SystemParametersProducer;
@@ -74,44 +73,16 @@ public class LinksApi extends AbstractLinksApi<Context> {
         YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(instance);
 
         LinkManager linkManager = ysi.getLinkManager();
-        for (Link link : linkManager.getLinks()) {
-            observer.next(LinkEvent.newBuilder()
-                    .setType(LinkEvent.Type.REGISTERED)
-                    .setLinkInfo(toLink(instance, link))
-                    .build());
-        }
-
-        LinkListener listener = new LinkListener() {
-            @Override
-            public void linkRegistered(LinkInfo linkInfo) {
-                if (instance.equals(linkInfo.getInstance())) {
-                    observer.next(LinkEvent.newBuilder()
-                            .setType(LinkEvent.Type.REGISTERED)
-                            .setLinkInfo(linkInfo)
-                            .build());
-                }
-            }
-
-            @Override
-            public void linkUnregistered(LinkInfo linkInfo) {
-                // NOP
-            }
-        };
 
         var exec = YamcsServer.getServer().getThreadPoolExecutor();
         var future = exec.scheduleAtFixedRate(() -> {
-            var b = LinkEvent.newBuilder()
-                    .setType(LinkEvent.Type.UPDATE_ALL);
+            var b = LinkEvent.newBuilder();
             for (var link : linkManager.getLinks()) {
                 b.addLinks(toLink(instance, link));
             }
             observer.next(b.build());
         }, 0, 1, TimeUnit.SECONDS);
-        observer.setCancelHandler(() -> {
-            future.cancel(false);
-            linkManager.removeLinkListener(listener);
-        });
-        linkManager.addLinkListener(listener);
+        observer.setCancelHandler(() -> future.cancel(false));
     }
 
     @Override
