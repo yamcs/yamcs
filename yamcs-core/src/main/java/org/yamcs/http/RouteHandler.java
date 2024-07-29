@@ -30,16 +30,19 @@ public class RouteHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
     private static final Log log = new Log(RouteHandler.class);
     private static final Pattern LOG_PARAM_PATTERN = Pattern.compile("\\{(\\w+)\\}");
 
+    private int maxPageSize;
     private boolean logSlowRequests = true;
     private ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
 
-    // this is used to execute the routes marked as offloaded
+    // Execute routes marked as offloaded
     private final ExecutorService workerPool;
 
-    public RouteHandler() {
+    public RouteHandler(int maxPageSize) {
+        this.maxPageSize = maxPageSize;
+
         ThreadFactory tf = new ThreadFactoryBuilder().setNameFormat("YamcsHttpExecutor-%d").setDaemon(false).build();
         workerPool = new ThreadPoolExecutor(0, 2 * Runtime.getRuntime().availableProcessors(), 60, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<Runnable>(), tf);
+                new LinkedBlockingQueue<>(), tf);
     }
 
     @Override
@@ -139,11 +142,11 @@ public class RouteHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
     }
 
     // Protect paged calls against excessive memory allocation
-    private static void assertSafe(Message message) {
+    private void assertSafe(Message message) {
         FieldDescriptor limitField = message.getDescriptorForType().findFieldByName("limit");
         if (limitField != null && message.hasField(limitField)) {
             Number limit = (Number) message.getField(limitField);
-            if (limit.intValue() > 1000) {
+            if (limit.intValue() > maxPageSize) {
                 throw new BadRequestException("Limit parameter is too large");
             }
         }

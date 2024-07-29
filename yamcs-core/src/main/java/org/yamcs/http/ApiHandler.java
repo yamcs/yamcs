@@ -29,11 +29,15 @@ import io.netty.handler.timeout.IdleStateHandler;
 public class ApiHandler extends HttpHandler {
 
     private HttpServer httpServer;
-    private RouteHandler routeHandler = new RouteHandler();
+    private RouteHandler routeHandler;
     private YConfiguration wsConfig;
 
     public ApiHandler(HttpServer httpServer) {
         this.httpServer = httpServer;
+
+        var maxPageSize = httpServer.getConfig().getInt("maxPageSize");
+        routeHandler = new RouteHandler(maxPageSize);
+
         wsConfig = httpServer.getConfig().getConfig("webSocket");
     }
 

@@ -197,6 +197,7 @@ public class HttpServer extends AbstractYamcsService {
         spec.addOption("maxInitialLineLength", OptionType.INTEGER).withDefault(8192);
         spec.addOption("maxHeaderSize", OptionType.INTEGER).withDefault(8192);
         spec.addOption("maxContentLength", OptionType.INTEGER).withDefault(65536);
+        spec.addOption("maxPageSize", OptionType.INTEGER).withDefault(1000);
         spec.addOption("cors", OptionType.MAP).withSpec(corsSpec);
         spec.addOption("webSocket", OptionType.MAP).withSpec(websocketSpec).withApplySpecDefaults(true);
         spec.addOption("bindings", OptionType.LIST)
