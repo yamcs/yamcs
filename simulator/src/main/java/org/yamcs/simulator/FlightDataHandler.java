@@ -27,21 +27,21 @@ public class FlightDataHandler {
                 String[] parts = line.split(";");
                 FlightData entry = new FlightData();
 
-                entry.timestamp = new Double(parts[0]).doubleValue();
-                entry.longitude = new Double(parts[1]).doubleValue();
-                entry.latitude = new Double(parts[2]).doubleValue();
-                entry.altitude = new Double(parts[3]).doubleValue();
-                entry.heading = new Float(parts[4]).floatValue();
-                entry.alpha = new Float(parts[5]).floatValue();
-                entry.beta = new Float(parts[6]).floatValue();
-                entry.tas = new Float(parts[7]).floatValue();
-                entry.cas = new Float(parts[8]).floatValue();
-                entry.mach = new Float(parts[9]).floatValue();
-                entry.loadFactor = new Float(parts[10]).floatValue();
-                entry.sinkRate = new Float(parts[11]).floatValue();
-                entry.phi = new Float(parts[12]).floatValue();
-                entry.theta = new Float(parts[13]).floatValue();
-                entry.psi = new Float(parts[14]).floatValue();
+                entry.timestamp = Double.parseDouble(parts[0]);
+                entry.longitude = Double.parseDouble(parts[1]);
+                entry.latitude = Double.parseDouble(parts[2]);
+                entry.altitude = Double.parseDouble(parts[3]);
+                entry.heading = Float.parseFloat(parts[4]);
+                entry.alpha = Float.parseFloat(parts[5]);
+                entry.beta = Float.parseFloat(parts[6]);
+                entry.tas = Float.parseFloat(parts[7]);
+                entry.cas = Float.parseFloat(parts[8]);
+                entry.mach = Float.parseFloat(parts[9]);
+                entry.loadFactor = Float.parseFloat(parts[10]);
+                entry.sinkRate = Float.parseFloat(parts[11]);
+                entry.phi = Float.parseFloat(parts[12]);
+                entry.theta = Float.parseFloat(parts[13]);
+                entry.psi = Float.parseFloat(parts[14]);
 
                 entries.add(entry);
             }

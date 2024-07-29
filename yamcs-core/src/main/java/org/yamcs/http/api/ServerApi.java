@@ -377,8 +377,7 @@ public class ServerApi extends AbstractServerApi<Context> {
 
     private ThreadGroupInfo toThreadGroupInfo(ThreadGroup group) {
         ThreadGroupInfo.Builder b = ThreadGroupInfo.newBuilder()
-                .setName(group.getName())
-                .setDaemon(group.isDaemon());
+                .setName(group.getName());
         ThreadGroup parent = group.getParent();
         if (parent != null) {
             b.setParent(toThreadGroupInfo(parent));
