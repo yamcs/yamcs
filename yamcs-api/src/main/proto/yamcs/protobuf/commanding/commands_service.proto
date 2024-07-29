@@ -137,10 +137,6 @@ message IssueCommandRequest {
   // The name/value assignments for this command.
   optional google.protobuf.Struct args = 16;
 
-  // The name/value assignments for this command.
-  // Deprecated: use ``args`` instead.
-  repeated Assignment assignment = 1 [deprecated=true];
-
   // The origin of the command. Typically a hostname.
   optional string origin = 2;
   
