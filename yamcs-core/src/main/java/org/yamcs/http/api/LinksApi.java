@@ -18,7 +18,6 @@ import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.protobuf.links.AbstractLinksApi;
 import org.yamcs.protobuf.links.DisableLinkRequest;
-import org.yamcs.protobuf.links.EditLinkRequest;
 import org.yamcs.protobuf.links.EnableLinkRequest;
 import org.yamcs.protobuf.links.GetLinkRequest;
 import org.yamcs.protobuf.links.LinkEvent;
@@ -130,50 +129,6 @@ public class LinksApi extends AbstractLinksApi<Context> {
             lmgr.resetCounters(link.getName());
         } catch (IllegalArgumentException e) {
             throw new NotFoundException(e);
-        }
-
-        observer.complete(toLink(request.getInstance(), link));
-    }
-
-    @Override
-    public void updateLink(Context ctx, EditLinkRequest request, Observer<LinkInfo> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ControlLinks);
-
-        Link link = verifyLink(request.getInstance(), request.getLink());
-
-        String state = null;
-        if (request.hasState()) {
-            state = request.getState();
-        }
-
-        LinkManager lmgr = InstancesApi.verifyInstanceObj(request.getInstance()).getLinkManager();
-        if (state != null) {
-            switch (state.toLowerCase()) {
-            case "enabled":
-                try {
-                    lmgr.enableLink(link.getName());
-                } catch (IllegalArgumentException e) {
-                    throw new NotFoundException(e);
-                }
-                break;
-            case "disabled":
-                try {
-                    lmgr.disableLink(link.getName());
-                } catch (IllegalArgumentException e) {
-                    throw new NotFoundException(e);
-                }
-                break;
-            default:
-                throw new BadRequestException("Unsupported link state '" + state + "'");
-            }
-        }
-
-        if (request.hasResetCounters() && request.getResetCounters()) {
-            try {
-                lmgr.resetCounters(link.getName());
-            } catch (IllegalArgumentException e) {
-                throw new NotFoundException(e);
-            }
         }
 
         observer.complete(toLink(request.getInstance(), link));
