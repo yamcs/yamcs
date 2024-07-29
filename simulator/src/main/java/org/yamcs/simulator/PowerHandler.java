@@ -29,23 +29,23 @@ public class PowerHandler {
 
                 PowerData entry = new PowerData();
 
-                entry.timestamp = new Float(parts[0]).floatValue();
-                entry.busStatus = new Integer(parts[1]).intValue();
-                entry.busVoltage = new Float(parts[2]).floatValue();
-                entry.busCurrent = new Float(parts[3]).floatValue();
-                entry.systemCurrent = new Float(parts[4]).floatValue();
+                entry.timestamp = Float.parseFloat(parts[0]);
+                entry.busStatus = Integer.parseInt(parts[1]);
+                entry.busVoltage = Float.parseFloat(parts[2]);
+                entry.busCurrent = Float.parseFloat(parts[3]);
+                entry.systemCurrent = Float.parseFloat(parts[4]);
 
-                entry.batteryVoltage1 = new Float(parts[5]).floatValue();
-                entry.batteryTemp1 = new Float(parts[6]).floatValue();
-                entry.batteryCapacity1 = new Float(parts[7]).floatValue();
+                entry.batteryVoltage1 = Float.parseFloat(parts[5]);
+                entry.batteryTemp1 = Float.parseFloat(parts[6]);
+                entry.batteryCapacity1 = Float.parseFloat(parts[7]);
 
-                entry.batteryVoltage2 = new Float(parts[8]).floatValue();
-                entry.batteryTemp2 = new Float(parts[9]).floatValue();
-                entry.batteryCapacity2 = new Float(parts[10]).floatValue();
+                entry.batteryVoltage2 = Float.parseFloat(parts[8]);
+                entry.batteryTemp2 = Float.parseFloat(parts[9]);
+                entry.batteryCapacity2 = Float.parseFloat(parts[10]);
 
-                entry.batteryVoltage3 = new Float(parts[11]).floatValue();
-                entry.batteryTemp3 = new Float(parts[12]).floatValue();
-                entry.batteryCapacity3 = new Float(parts[13]).floatValue();
+                entry.batteryVoltage3 = Float.parseFloat(parts[11]);
+                entry.batteryTemp3 = Float.parseFloat(parts[12]);
+                entry.batteryCapacity3 = Float.parseFloat(parts[13]);
 
                 entries.add(entry);
             }
@@ -67,9 +67,9 @@ public class PowerHandler {
         PowerData entry = entries.get(currentEntry++);
         entry.fillPacket(buffer);
 
-        for(int i = 1; i< 4; i++) {
-            if(!batOnOff[i]) {
-                buffer.put(4*i, (byte)0);
+        for (int i = 1; i < 4; i++) {
+            if (!batOnOff[i]) {
+                buffer.put(4 * i, (byte) 0);
             }
         }
 

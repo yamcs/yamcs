@@ -31,22 +31,22 @@ public class RCSHandler {
                 String[] parts = line.split(";");
                 RCSData entry = new RCSData();
 
-                entry.timestamp = new Float(parts[0]).floatValue();
+                entry.timestamp = Float.parseFloat(parts[0]);
 
-                entry.H2TankFill = new Float(parts[1]).floatValue();
-                entry.H2TankTemp = new Float(parts[2]).floatValue();
-                entry.H2TankPressure = new Float(parts[3]).floatValue();
-                entry.H2ValveTemp = new Float(parts[4]).floatValue();
-                entry.H2ValvePressure = new Float(parts[5]).floatValue();
+                entry.H2TankFill = Float.parseFloat(parts[1]);
+                entry.H2TankTemp = Float.parseFloat(parts[2]);
+                entry.H2TankPressure = Float.parseFloat(parts[3]);
+                entry.H2ValveTemp = Float.parseFloat(parts[4]);
+                entry.H2ValvePressure = Float.parseFloat(parts[5]);
 
-                entry.O2TankFill = new Float(parts[6]).floatValue();
-                entry.O2TankTemp = new Float(parts[7]).floatValue();
-                entry.O2TankPressure = new Float(parts[8]).floatValue();
-                entry.O2ValveTemp = new Float(parts[9]).floatValue();
-                entry.O2ValvePressure = new Float(parts[10]).floatValue();
+                entry.O2TankFill = Float.parseFloat(parts[6]);
+                entry.O2TankTemp = Float.parseFloat(parts[7]);
+                entry.O2TankPressure = Float.parseFloat(parts[8]);
+                entry.O2ValveTemp = Float.parseFloat(parts[9]);
+                entry.O2ValvePressure = Float.parseFloat(parts[10]);
 
-                entry.TurbineTemp = new Float(parts[11]).floatValue();
-                entry.TurbinePressure = new Float(parts[12]).floatValue();
+                entry.TurbineTemp = Float.parseFloat(parts[11]);
+                entry.TurbinePressure = Float.parseFloat(parts[12]);
 
                 entries.add(entry);
             }

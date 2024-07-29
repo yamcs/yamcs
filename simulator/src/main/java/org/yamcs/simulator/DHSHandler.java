@@ -31,15 +31,15 @@ public class DHSHandler {
                 String[] parts = line.split(";");
                 DHSData entry = new DHSData();
 
-                entry.timestamp = new Float(parts[0]).floatValue();
-                entry.primBusVoltage1 = new Float(parts[1]).floatValue();
-                entry.primBusCurrent1 = new Float(parts[2]).floatValue();
-                entry.primBusVoltage2 = new Float(parts[3]).floatValue();
-                entry.primBusCurrent2 = new Float(parts[4]).floatValue();
-                entry.secBusVoltage2 = new Float(parts[5]).floatValue();
-                entry.secBusCurrent2 = new Float(parts[6]).floatValue();
-                entry.secBusVoltage3 = new Float(parts[7]).floatValue();
-                entry.secBusCurrent3 = new Float(parts[8]).floatValue();
+                entry.timestamp = Float.parseFloat(parts[0]);
+                entry.primBusVoltage1 = Float.parseFloat(parts[1]);
+                entry.primBusCurrent1 = Float.parseFloat(parts[2]);
+                entry.primBusVoltage2 = Float.parseFloat(parts[3]);
+                entry.primBusCurrent2 = Float.parseFloat(parts[4]);
+                entry.secBusVoltage2 = Float.parseFloat(parts[5]);
+                entry.secBusCurrent2 = Float.parseFloat(parts[6]);
+                entry.secBusVoltage3 = Float.parseFloat(parts[7]);
+                entry.secBusCurrent3 = Float.parseFloat(parts[8]);
 
                 entries.add(entry);
             }
