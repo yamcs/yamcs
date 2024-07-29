@@ -96,7 +96,7 @@
                   folder
                 </mat-icon>
                 <a
-                  [routerLink]="'/commanding/stacks/browse/' + item.nameWithoutInstance"
+                  [routerLink]="'/commanding/stacks/browse/' + item.name"
                   [queryParams]="{ c: yamcs.context }"
                   (click)="$event.stopPropagation()">
                   {{ item.name | filename }}
@@ -106,7 +106,7 @@
                   description
                 </mat-icon>
                 <a
-                  [routerLink]="'/commanding/stacks/files/' + item.nameWithoutInstance"
+                  [routerLink]="'/commanding/stacks/files/' + item.name"
                   [queryParams]="{ c: yamcs.context }"
                   (click)="$event.stopPropagation()"
                   [title]="item.name | filename">
@@ -138,7 +138,7 @@
                     <mat-divider />
                   }
                   @if ((item.name | filename | extension | lowercase) === "xml") {
-                    <button mat-menu-item (click)="convertToJSON($event, item.nameWithoutInstance)">
+                    <button mat-menu-item (click)="convertToJSON($event, item.name)">
                       Convert to new format
                     </button>
                   }
@@ -159,7 +159,7 @@
                         Warning: XML-formatted command stacks are deprecated,
                         <a
                           style="color: inherit; cursor: pointer"
-                          (click)="convertToJSON($event, item.nameWithoutInstance)"
+                          (click)="convertToJSON($event, item.name)"
                           title="Convert to YCS">
                           convert to the new format
                         </a>

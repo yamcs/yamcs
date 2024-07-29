@@ -42,28 +42,12 @@ options:
     type: STRING
     default: displays
 
-  displayFolderPerInstance:
-    title: Display Folder Per Instance
-    description:
-      - Controls whether displays are specific to an instance.
-    type: BOOLEAN
-    default: false
-    deprecationMessage: If you need instance-specific displays, configure ``displayBucket`` inside :file:`etc/yamcs.{instance}.yaml` (section ``yamcs-web``).
-
   stackBucket:
     title: Stack Bucket
     description:
       - Bucket where to find stacks.
     type: STRING
     default: stacks
-
-  stackFolderPerInstance:
-    title: Stack Folder Per Instance
-    description:
-      - Controls whether stacks are specific to an instance.
-    type: BOOLEAN
-    default: false
-    deprecationMessage: If you need instance-specific stacks, configure ``stackBucket`` inside :file:`etc/yamcs.{instance}.yaml` (section ``yamcs-web``).
 
   staticRoot:
     title: Static Root

@@ -90,7 +90,7 @@
                   folder
                 </mat-icon>
                 <a
-                  [routerLink]="'/telemetry/displays/browse/' + item.nameWithoutInstance"
+                  [routerLink]="'/telemetry/displays/browse/' + item.name"
                   [queryParams]="{ c: yamcs.context }"
                   (click)="$event.stopPropagation()">
                   {{ item.name | filename }}
@@ -100,7 +100,7 @@
                   description
                 </mat-icon>
                 <a
-                  [routerLink]="'/telemetry/displays/files/' + item.nameWithoutInstance"
+                  [routerLink]="'/telemetry/displays/files/' + item.name"
                   [queryParams]="{ c: yamcs.context }"
                   (click)="$event.stopPropagation()">
                   {{ item.name | filename }}
