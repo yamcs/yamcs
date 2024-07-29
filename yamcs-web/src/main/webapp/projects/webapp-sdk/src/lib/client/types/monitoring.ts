@@ -132,7 +132,7 @@ export interface CommandHistoryEntry {
 }
 
 export interface CommandHistoryPage {
-  entry?: CommandHistoryEntry[];
+  commands?: CommandHistoryEntry[];
   continuationToken?: string;
 }
 

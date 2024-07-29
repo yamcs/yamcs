@@ -328,11 +328,9 @@ message UserInfo {
   
   // System privileges
   repeated string systemPrivileges = 26;
-  repeated string systemPrivilege = 11 [deprecated=true];
   
   // Object privileges
   repeated ObjectPrivilegeInfo objectPrivileges = 27;
-  repeated ObjectPrivilegeInfo objectPrivilege = 12 [deprecated=true];
   
   // Groups that this user is member of
   repeated GroupInfo groups = 22;
@@ -415,8 +413,6 @@ message ServiceAccountInfo {
 message ObjectPrivilegeInfo {
   // Privilege type
   optional string type = 1;
-
-  repeated string object = 2 [deprecated=true];
   
   // Objects of this type
   repeated string objects = 3;

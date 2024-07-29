@@ -1083,6 +1083,7 @@ public class XtceToGpbAssembler {
                     MatchCriteria matchCriteria = contextCalibrator.getContextMatch();
                     contextCalibratorb.addAllComparison(toComparisons(matchCriteria));
                     contextCalibratorb.setCalibrator(toCalibratorInfo(contextCalibrator.getCalibrator()));
+                    infob.addContextCalibrators(contextCalibratorb);
                     infob.addContextCalibrator(contextCalibratorb);
                 }
             }
@@ -1105,6 +1106,7 @@ public class XtceToGpbAssembler {
                     MatchCriteria matchCriteria = contextCalibrator.getContextMatch();
                     contextCalibratorb.addAllComparison(toComparisons(matchCriteria));
                     contextCalibratorb.setCalibrator(toCalibratorInfo(contextCalibrator.getCalibrator()));
+                    infob.addContextCalibrators(contextCalibratorb);
                     infob.addContextCalibrator(contextCalibratorb);
                 }
             }
@@ -1178,6 +1180,7 @@ public class XtceToGpbAssembler {
             PolynomialCalibrator polynomialCalibrator = (PolynomialCalibrator) calibrator;
             PolynomialCalibratorInfo.Builder polyb = PolynomialCalibratorInfo.newBuilder();
             for (double coefficient : polynomialCalibrator.getCoefficients()) {
+                polyb.addCoefficients(coefficient);
                 polyb.addCoefficient(coefficient);
             }
             calibratorInfob.setPolynomialCalibrator(polyb);
@@ -1186,9 +1189,11 @@ public class XtceToGpbAssembler {
             SplineCalibrator splineCalibrator = (SplineCalibrator) calibrator;
             SplineCalibratorInfo.Builder splineb = SplineCalibratorInfo.newBuilder();
             for (SplinePoint point : splineCalibrator.getPoints()) {
-                splineb.addPoint(SplinePointInfo.newBuilder()
+                var pointInfo = SplinePointInfo.newBuilder()
                         .setRaw(point.getRaw())
-                        .setCalibrated(point.getCalibrated()));
+                        .setCalibrated(point.getCalibrated());
+                splineb.addPoints(pointInfo);
+                splineb.addPoint(pointInfo);
             }
             calibratorInfob.setSplineCalibrator(splineb);
         } else if (calibrator instanceof JavaExpressionCalibrator) {
@@ -1213,26 +1218,31 @@ public class XtceToGpbAssembler {
         if (staticRanges.getWatchRange() != null) {
             AlarmRange watchRange = BasicParameterValue.toGpbAlarmRange(AlarmLevelType.WATCH,
                     staticRanges.getWatchRange());
+            alarmInfob.addStaticAlarmRanges(watchRange);
             alarmInfob.addStaticAlarmRange(watchRange);
         }
         if (staticRanges.getWarningRange() != null) {
             AlarmRange warningRange = BasicParameterValue.toGpbAlarmRange(AlarmLevelType.WARNING,
                     staticRanges.getWarningRange());
+            alarmInfob.addStaticAlarmRanges(warningRange);
             alarmInfob.addStaticAlarmRange(warningRange);
         }
         if (staticRanges.getDistressRange() != null) {
             AlarmRange distressRange = BasicParameterValue.toGpbAlarmRange(AlarmLevelType.DISTRESS,
                     staticRanges.getDistressRange());
+            alarmInfob.addStaticAlarmRanges(distressRange);
             alarmInfob.addStaticAlarmRange(distressRange);
         }
         if (staticRanges.getCriticalRange() != null) {
             AlarmRange criticalRange = BasicParameterValue.toGpbAlarmRange(AlarmLevelType.CRITICAL,
                     staticRanges.getCriticalRange());
+            alarmInfob.addStaticAlarmRanges(criticalRange);
             alarmInfob.addStaticAlarmRange(criticalRange);
         }
         if (staticRanges.getSevereRange() != null) {
             AlarmRange severeRange = BasicParameterValue.toGpbAlarmRange(AlarmLevelType.SEVERE,
                     staticRanges.getSevereRange());
+            alarmInfob.addStaticAlarmRanges(severeRange);
             alarmInfob.addStaticAlarmRange(severeRange);
         }
 
@@ -1251,6 +1261,7 @@ public class XtceToGpbAssembler {
         AlarmInfo.Builder alarmInfob = AlarmInfo.newBuilder();
         alarmInfob.setMinViolations(enumerationAlarm.getMinViolations());
         for (EnumerationAlarmItem item : enumerationAlarm.getAlarmList()) {
+            alarmInfob.addEnumerationAlarms(toEnumerationAlarm(item));
             alarmInfob.addEnumerationAlarm(toEnumerationAlarm(item));
         }
         return alarmInfob.build();

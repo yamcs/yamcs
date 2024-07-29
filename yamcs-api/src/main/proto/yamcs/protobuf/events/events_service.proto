@@ -103,8 +103,12 @@ message ListEventsRequest {
 }
 
 message ListEventsResponse {
-  repeated Event event = 1;
-  
+  // Deprecated, use ``events`` instead
+  repeated Event event = 1 [deprecated=true];
+
+  // Page of matching events
+  repeated Event events = 3;
+
   // Token indicating the response is only partial. More results can then
   // be obtained by performing the same request (including all original
   // query parameters) and setting the ``next`` parameter to this token.
@@ -112,6 +116,7 @@ message ListEventsResponse {
 }
 
 message SubscribeEventsRequest {
+  // Yamcs instance name
   optional string instance = 1;
 }
 
@@ -174,8 +179,11 @@ message ListEventSourcesRequest {
 }
 
 message ListEventSourcesResponse {
+  // Deprecated, use ``sources`` instead
+  repeated string source = 1 [deprecated=true];
+
   // Known event sources
-  repeated string source = 1;
+  repeated string sources = 2;
 }
 
 message ExportEventsRequest {

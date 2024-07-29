@@ -1,8 +1,8 @@
 package org.yamcs.client.mdb;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.MethodHandler;
@@ -195,7 +195,9 @@ public class MissionDatabaseClient {
 
         @Override
         public List<String> getSubsystems() {
-            return new ArrayList<>(getResponse().getSpaceSystemsList());
+            return getResponse().getSystemsList().stream()
+                    .map(system -> system.getQualifiedName())
+                    .collect(Collectors.toList());
         }
     }
 
@@ -213,7 +215,9 @@ public class MissionDatabaseClient {
 
         @Override
         public List<String> getSubsystems() {
-            return new ArrayList<>(getResponse().getSpaceSystemsList());
+            return getResponse().getSystemsList().stream()
+                    .map(system -> system.getQualifiedName())
+                    .collect(Collectors.toList());
         }
     }
 
@@ -231,7 +235,9 @@ public class MissionDatabaseClient {
 
         @Override
         public List<String> getSubsystems() {
-            return new ArrayList<>(getResponse().getSpaceSystemsList());
+            return getResponse().getSystemsList().stream()
+                    .map(system -> system.getQualifiedName())
+                    .collect(Collectors.toList());
         }
     }
 
