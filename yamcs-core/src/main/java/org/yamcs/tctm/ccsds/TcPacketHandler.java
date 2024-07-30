@@ -146,7 +146,7 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
             dataEnd.set(dataEnd.get() + data.length + srs3FrameFactory.getPaddingLength(data.length));
 
             // Add the cspHeader + radioHeader + Encryption to the CCSDS Frame
-            srs3FrameFactory.encodeFrame(srs3Frame, dataStart, dataEnd);
+            srs3FrameFactory.encodeFrame(srs3Frame, dataStart, dataEnd, data.length + srs3FrameFactory.getCspHeaderLength());
 
             // Set the srs3Frame
             tf.setData(srs3Frame);

@@ -93,16 +93,13 @@ public class Srs3FrameFactory {
     }
 
     public int getRadioHeaderLength() {
-        if (srs3Mp.getRadioHeader() != null)
-            return srs3Mp.getRadioHeader().length;
-        
-        return 0;
+        return srs3Mp.getRadioHeaderLength();
     }
 
-    public byte[] encodeFrame(byte[] cspFrame, AtomicInteger dataStart, AtomicInteger dataEnd) {
-        if (srs3Mp.getRadioHeader() != null) {
-            byte[] radioHeader = srs3Mp.getRadioHeader();
-            System.arraycopy(radioHeader, 0, cspFrame, dataStart.get(), radioHeader.length);
+    public byte[] encodeFrame(byte[] cspFrame, AtomicInteger dataStart, AtomicInteger dataEnd, int tcFrameLength) {
+        int rh = srs3Mp.getRadioHeaderLength();
+        if (rh != 0) {
+            System.arraycopy(ByteArrayUtils.encodeCustomInteger(tcFrameLength, rh), 0, cspFrame, dataStart.get(), rh);
         }
 
         if (srs3Mp.getSpacecraftId() != null) {

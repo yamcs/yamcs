@@ -197,7 +197,7 @@ public abstract class GenericTcFrameLink extends AbstractTcDataLink implements R
             dataEnd.set(dataEnd.get() + length + frameFactory.getPaddingLength(length));
     
             dataOut(1, srs3Frame.length);
-            return frameFactory.encodeFrame(srs3Frame, dataStart, dataEnd);
+            return frameFactory.encodeFrame(srs3Frame, dataStart, dataEnd, length + frameFactory.getCspHeaderLength());
         }
 
         return pcBinary;

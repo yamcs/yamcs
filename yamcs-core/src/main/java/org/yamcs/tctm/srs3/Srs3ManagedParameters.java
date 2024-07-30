@@ -4,12 +4,11 @@ import org.yamcs.YConfiguration;
 import org.yamcs.security.encryption.SymmetricEncryption;
 import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
-import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.YObjectLoader;
 
 public class Srs3ManagedParameters {
     byte[] cspHeader;
-    byte[] radioHeader;
+    int radioHeaderLength;
     byte[] spacecraftId;
 
     // which error detection algorithm to use (null = no checksum)
@@ -31,8 +30,8 @@ public class Srs3ManagedParameters {
 
         enforceFrameLength = config.getBoolean("enforceFrameLength");
 
-        if (config.containsKey("radioHeader"))
-            radioHeader = config.getBinary("radioHeader");
+        if (config.containsKey("rhLength"))
+            radioHeaderLength = config.getInt("rhLength", 0);
 
         if (config.containsKey("spacecraftIdSrs"))
             spacecraftId = config.getBinary("spacecraftIdSrs");
@@ -78,8 +77,8 @@ public class Srs3ManagedParameters {
         return cspHeader;
     }
 
-    public byte[] getRadioHeader() {
-        return radioHeader;
+    public int getRadioHeaderLength() {
+        return radioHeaderLength;
     }
 
     public SymmetricEncryption getEncryption() {
