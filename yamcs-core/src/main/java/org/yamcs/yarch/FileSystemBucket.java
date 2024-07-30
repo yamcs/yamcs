@@ -217,7 +217,7 @@ public class FileSystemBucket implements Bucket {
         Path path = root.resolve(objectName);
 
         // Prevent directory traversal
-        if (!path.toFile().getCanonicalPath().startsWith(root.toFile().getCanonicalPath())) {
+        if (!path.normalize().toAbsolutePath().startsWith(root.normalize().toAbsolutePath())) {
             throw new IOException("Directory traversal attempted: " + path);
         }
 
