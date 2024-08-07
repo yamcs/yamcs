@@ -40,7 +40,7 @@ import org.yamcs.xtce.XtceDb;
  * Offers persistence capabilities for selected subtrees.
  */
 public class Mdb extends XtceDb {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
     final Map<String, SpaceSystemWriter> subsystemWriters;
 
     public Mdb(SpaceSystem spaceSystem, Map<String, SpaceSystemWriter> susbsystemWriters) {
