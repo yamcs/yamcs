@@ -172,6 +172,9 @@ message FileTransferCapabilities {
   // Whether transfers contain a column describing the Transfer Type
   optional bool hasTransferType = 6;
 
+  // Whether the transfer service supports pause/resume
+  optional bool pauseResume = 9;
+
   // Additional columns to show in a file listing, where id
   // is a key of ``RemoteFile.extra``
   repeated ExtraColumnInfo fileListExtraColumns = 7;
@@ -315,6 +318,37 @@ message ListTransfersRequest {
 
   // File transfer service name
   optional string serviceName = 2;
+
+  // Filter the lower bound of the transfer's creation time.
+  // Specify a date string in ISO 8601 format. This bound is
+  // inclusive.
+  optional google.protobuf.Timestamp start = 3;
+  
+  // Filter the upper bound of the transfer's creation time.
+  // Specify a date string in ISO 8601 format. This bound is
+  // exclusive.
+  optional google.protobuf.Timestamp stop = 4;
+
+  // Filter by local entity identifier
+  optional int64 localEntityId = 5;
+
+  // Filter by remote entity identifier
+  optional int64 remoteEntityId = 6;
+
+  // Filter by transfer state. Leave empty to return any.
+  repeated TransferState state = 7;
+
+  // Filter by transfer direction (UPLOAD or DOWNLOAD)
+  optional TransferDirection direction = 8;
+
+  // The maximum number of returned records per page. Choose this value too high
+  // and you risk hitting the maximum response size limit enforced by the server.
+  // Default: ``100``
+  optional int32 limit = 9;
+
+  // The order of the returned results. Can be either ``asc`` or ``desc``.
+  // Default: ``desc``
+  optional string order = 10;
 }
 
 message GetTransferRequest {
@@ -338,6 +372,15 @@ message SubscribeTransfersRequest {
 
   // File transfer service name
   optional string serviceName = 2;
+
+  // If true, send info on all currently ongoing transfers,
+  // as well as any future updates (recommended).
+  //
+  // For legacy reasons, the default is ``false``, which will
+  // send also finished transfers upon subscription. This behaviour
+  // is due for removal in a future release (if you want to receive
+  // past transfers, do a GET request).
+  optional bool ongoingOnly = 3;
 }
 
 message ListFilesRequest {
@@ -391,6 +434,9 @@ message ListFilesResponse {
   optional string remotePath = 3;
   optional google.protobuf.Timestamp listTime = 4;
   optional string state = 5;
+
+  // Progress message, in case the file listing is still underway
+  optional string progressMessage = 6;
 }
 
 message RunFileActionRequest {

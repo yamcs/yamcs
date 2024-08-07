@@ -1,7 +1,9 @@
 <div class="transfer-files">
   <form [formGroup]="form" class="ya-form">
     <h2>
-      <button class="close-button mat-button" mat-dialog-close><mat-icon>close</mat-icon></button>
+      <button mat-icon-button class="close-button" mat-dialog-close>
+        <mat-icon>close</mat-icon>
+      </button>
       New
       {{
         service.capabilities.download && service.capabilities.upload
@@ -15,9 +17,11 @@
     <div class="grid-container">
       <!-- BUCKETS COLUMN -->
       <div class="buckets-column header">
-        <label class="table-caption"
-          >Buckets
-          <a (click)="toggleBucketSize()">{{ !showBucketSize$.value ? "show" : "hide" }} size</a>
+        <label class="table-caption">
+          Buckets
+          <a class="column-action" (click)="toggleBucketSize()">
+            {{ !showBucketSize$.value ? "show" : "hide" }} size
+          </a>
         </label>
       </div>
 
@@ -28,12 +32,12 @@
               mat-cell
               *cdkCellDef="let bucket"
               [title]="(bucket.maxSize - bucket.size | formatBytes) + ' available'">
-              <span
-                ><mat-icon style="vertical-align: middle">shopping_basket</mat-icon>&nbsp;
-                {{ bucket.name }}</span
-              >
+              <span>
+                <mat-icon style="vertical-align: middle">shopping_basket</mat-icon>
+                &nbsp; {{ bucket.name }}
+              </span>
               @if (showBucketSize$.value) {
-                <span> {{ bucket.size | formatBytes }}/{{ bucket.maxSize | formatBytes }} </span>
+                <span>{{ bucket.size | formatBytes }}/{{ bucket.maxSize | formatBytes }}</span>
               }
               @if (showBucketSize$.value) {
                 <ya-progress [value]="bucket.size" [total]="bucket.maxSize" />
@@ -49,19 +53,10 @@
         </table>
       </div>
 
-      @if (selectedBucket$ | async; as bucket) {
-        <div class="buckets-column footer">
-          <div>
-            <label>Target bucket</label>
-            {{ bucket.name }}
-          </div>
-        </div>
-      }
-
       <!-- LOCAL COLUMN -->
       <div class="local-column header">
-        <label class="table-caption"
-          >Local {{ service.localEntities && service.localEntities.length ? "Entity" : "" }}
+        <label class="table-caption">
+          Local {{ service.localEntities && service.localEntities.length ? "Entity" : "" }}
           <select
             formControlName="localEntity"
             [ngStyle]="
@@ -105,13 +100,6 @@
       </div>
 
       <div class="local-column footer">
-        @if (service.localEntities && service.localEntities.length) {
-          <div>
-            <label>Local entity</label>
-            {{ form.get("localEntity")?.value || "-" }}
-          </div>
-        }
-
         <input
           type="text"
           formControlName="localFilenames"
@@ -120,7 +108,8 @@
 
         @if (service.capabilities.upload) {
           <button class="ya-button primary" [disabled]="!isUploadEnabled" (click)="startUpload()">
-            UPLOAD <mat-icon>chevron_right</mat-icon>
+            UPLOAD
+            <mat-icon>chevron_right</mat-icon>
           </button>
         }
       </div>
@@ -132,13 +121,13 @@
         <div
           class="remote-column header"
           [ngClass]="{ 'no-filelist': !service.capabilities.fileList }">
-          <label class="table-caption"
-            >Remote {{ service.remoteEntities && service.remoteEntities.length ? "Entity" : "" }}
+          <label class="table-caption">
+            Remote {{ service.remoteEntities && service.remoteEntities.length ? "Entity" : "" }}
             <select
               formControlName="remoteEntity"
               [ngStyle]="
                 !(service.remoteEntities && service.remoteEntities.length) && {
-                  visibility: 'hidden'
+                  visibility: 'hidden',
                 }
               ">
               @for (entity of service.remoteEntities; track entity) {
@@ -159,13 +148,23 @@
           }
           @if (service.capabilities.fileList) {
             <a
-              class="lastFileListTime mat-button mat-primary"
-              title="Refresh file list"
-              (click)="requestFileList()">
-              <mat-icon>refresh</mat-icon> {{ lastFileListTime$ | async | datetime }}
-              {{ (lastFileListState$ | async) ? "(" + (lastFileListState$ | async) + ")" : "" }}
-              <!-- TODO: throws a RangeError for some reason -->
+              class="lastFileListTime column-action"
+              [matMenuTriggerFor]="remoteMenu"
+              matTooltip="Last refresh. Click for actions">
+              {{ (lastFileListTime$ | async | datetime) || "No file list received" }}
+              @if (lastFileListState$ | async; as state) {
+                ({{ state }})
+              }
+              ▾
             </a>
+            <mat-menu
+              #remoteMenu="matMenu"
+              overlapTrigger="false"
+              class="ya-menu"
+              xPosition="before"
+              yPosition="below">
+              <button mat-menu-item (click)="requestFileList()">Refresh file list</button>
+            </mat-menu>
           }
         </div>
       }
@@ -192,7 +191,8 @@
             class="ya-button primary"
             [disabled]="!isDownloadEnabled"
             (click)="startDownload()">
-            <mat-icon>chevron_left</mat-icon> DOWNLOAD
+            <mat-icon>chevron_left</mat-icon>
+            DOWNLOAD
           </button>
         }
 
@@ -202,13 +202,6 @@
             formControlName="remoteFilenames"
             placeholder="Remote filename"
             [value]="form.get('remoteFilenames')?.value" />
-        }
-
-        @if (service.remoteEntities && service.remoteEntities.length) {
-          <div>
-            <label>Remote entity</label>
-            {{ form.get("remoteEntity")?.value || "-" }}
-          </div>
         }
       </div>
 
