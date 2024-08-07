@@ -128,7 +128,7 @@ service BucketsApi {
   // .. rubric:: Example
   // .. code-block:: http
   // 
-  //     POST /api/buckets/my_bucket HTTP/1.1
+  //     POST /api/storage/buckets/my_bucket/objects HTTP/1.1
   //     Host: localhost:8090
   //     User-Agent: curl/7.58.0
   //     Accept: */*

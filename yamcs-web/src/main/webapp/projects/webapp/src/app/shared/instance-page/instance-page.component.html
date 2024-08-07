@@ -112,7 +112,7 @@
           ((connectionInfo$ | async)?.instance?.capabilities | arrayContains: "file-transfer") &&
           showFileTransferItem()
         ) {
-          <ya-sidebar-nav-item routerLink="/filetransfer" [queryParams]="{ c: yamcs.context }">
+          <ya-sidebar-nav-item routerLink="/file-transfer" [queryParams]="{ c: yamcs.context }">
             <mat-icon class="item-icon">file_copy</mat-icon>
             File transfer
           </ya-sidebar-nav-item>

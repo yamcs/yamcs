@@ -1,0 +1,20 @@
+@if (transfer(); as transfer) {
+  @if (transfer.state === "COMPLETED") {
+    <mat-icon class="success" [matTooltip]="transfer.state">check_circle</mat-icon>
+  }
+  @if (transfer.state === "RUNNING") {
+    <mat-icon class="spin" [matTooltip]="transfer.state">cached</mat-icon>
+  }
+  @if (transfer.state === "FAILED") {
+    <mat-icon class="alert" [matTooltip]="transfer.state">highlight_off</mat-icon>
+  }
+  @if (transfer.state === "CANCELLING") {
+    <mat-icon class="warning spin" [matTooltip]="transfer.state">cached</mat-icon>
+  }
+  @if (transfer.state === "PAUSED") {
+    <mat-icon class="blink" [matTooltip]="transfer.state">pause_circle</mat-icon>
+  }
+  @if (transfer.state === "QUEUED") {
+    <mat-icon [matTooltip]="transfer.state">pending</mat-icon>
+  }
+}

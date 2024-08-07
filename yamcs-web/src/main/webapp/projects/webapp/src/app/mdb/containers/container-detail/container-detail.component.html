@@ -35,7 +35,7 @@
 <mat-divider />
 
 <dl class="dl-horizontal">
-  <dt>Max Interval</dt>
+  <dt>Max interval</dt>
   <dd>
     @if (container.maxInterval) {
       <span>{{ container.maxInterval | duration }}</span>
@@ -44,7 +44,7 @@
     }
   </dd>
 
-  <dt>Base Container</dt>
+  <dt>Base container</dt>
   <dd>
     @if (container.baseContainer) {
       <a
@@ -58,12 +58,12 @@
     }
   </dd>
 
-  <dt>Restriction Criteria</dt>
+  <dt>Restriction criteria</dt>
   <dd class="mono">
     {{ container.restrictionCriteriaExpression || "-" }}
   </dd>
 
-  <dt>Archive Partition</dt>
+  <dt>Archive partition</dt>
   <dd>
     {{ container.archivePartition ? "Yes" : "No" }}
   </dd>
