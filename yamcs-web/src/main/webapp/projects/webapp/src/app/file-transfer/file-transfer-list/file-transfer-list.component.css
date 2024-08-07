@@ -1,0 +1,31 @@
+tr.item-row:not(.nodetail) td {
+  border-bottom-width: 0;
+}
+
+tr.item-detail td {
+  padding-left: 40px !important;
+}
+
+.detail-layout {
+  display: flex;
+  align-items: center;
+}
+
+.detail-layout>* {
+  margin-left: 20px;
+}
+
+.error {
+  color: crimson;
+}
+
+.file-column {
+  white-space: normal !important;
+  min-width: 250px !important;
+  max-width: 250px !important;
+  overflow-wrap: break-word;
+}
+
+tr.upload td {
+  background-color: #f7f7f7;
+}

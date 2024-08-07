@@ -281,7 +281,7 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new AlarmsApi(auditLog));
         addApi(new AuditApi(auditLog));
         addApi(new BucketsApi());
-        addApi(new FileTransferApi());
+        addApi(new FileTransferApi(auditLog));
         addApi(new ClearanceApi(auditLog));
         addApi(new CommandsApi());
         addApi(new Cop1Api());
