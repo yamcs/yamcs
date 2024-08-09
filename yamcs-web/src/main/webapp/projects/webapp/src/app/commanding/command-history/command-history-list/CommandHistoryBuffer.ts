@@ -51,7 +51,7 @@ export class CommandHistoryBuffer {
   }
 
   snapshot(): CommandHistoryRecord[] {
-    const splicedRecords = this.archiveRecords;
+    const splicedRecords = [...this.archiveRecords];
 
     this.realtimeBuffer.map(entry => {
       if (!entry) return;

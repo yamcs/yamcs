@@ -70,8 +70,8 @@ export const APP_ROUTES: Routes = [{
     loadChildren: () => import('projects/webapp/src/app/admin/admin.routes').then(m => m.ROUTES),
     canActivate: [authGuardFn],
   }, {
-    path: 'filetransfer',
-    loadChildren: () => import('projects/webapp/src/app/filetransfer/filetransfer.routes').then(m => m.ROUTES),
+    path: 'file-transfer',
+    loadChildren: () => import('projects/webapp/src/app/file-transfer/file-transfer.routes').then(m => m.ROUTES),
     canActivate: [authGuardFn],
   }, {
     path: 'commanding',

@@ -1,0 +1,24 @@
+<nav mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
+  <a
+    mat-tab-link
+    routerLink="/file-transfer"
+    routerLinkActive
+    [routerLinkActiveOptions]="{ matrixParams: 'exact', paths: 'exact', queryParams: 'ignored' }"
+    #rla="routerLinkActive"
+    [active]="rla.isActive"
+    [queryParams]="{ c: yamcs.context, service: service()?.name }">
+    Transfers
+  </a>
+  <a
+    mat-tab-link
+    routerLink="/file-transfer/log"
+    routerLinkActive
+    #rlb="routerLinkActive"
+    [active]="rlb.isActive"
+    [queryParams]="{ c: yamcs.context, service: service()?.name }">
+    Action log
+  </a>
+</nav>
+<mat-tab-nav-panel #tabPanel>
+  <router-outlet />
+</mat-tab-nav-panel>

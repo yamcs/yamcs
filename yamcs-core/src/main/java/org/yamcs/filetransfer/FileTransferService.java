@@ -140,7 +140,7 @@ public interface FileTransferService extends YamcsService, FileListingService {
      * 
      * @return the list of transfers
      */
-    List<FileTransfer> getTransfers();
+    List<FileTransfer> getTransfers(FileTransferFilter filter);
 
     /**
      * Get the file transfer with the given identifier.

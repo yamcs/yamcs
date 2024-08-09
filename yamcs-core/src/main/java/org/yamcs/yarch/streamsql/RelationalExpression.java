@@ -1,12 +1,11 @@
 package org.yamcs.yarch.streamsql;
 
+import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.ArrayDataType;
 import org.yamcs.yarch.CompiledExpression;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.FilterableTarget;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
-
-import org.yamcs.utils.parser.ParseException;
 
 /**
  * Expressions of type <code>x &gt; y</code> or <code>x=y</code>
@@ -87,7 +86,7 @@ public class RelationalExpression extends Expression {
                 return;
             } catch (IllegalArgumentException e) {
                 throw new StreamSqlException(ErrCode.INCOMPATIBLE,
-                        "Cannot convert " + children[0].getConstantValue() + " to " + ltype);
+                        "Cannot convert " + children[1].getConstantValue() + " to " + ltype);
             }
         }
 

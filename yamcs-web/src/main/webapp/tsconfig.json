@@ -4,6 +4,7 @@
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
     "esModuleInterop": true,
     "strict": true,
     "strictFunctionTypes": false,

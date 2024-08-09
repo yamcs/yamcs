@@ -118,8 +118,10 @@ public class AngularHandler extends StaticFileHandler {
                 var bufOut = new ByteBufOutputStream(body)) {
             ByteStreams.copy(fileIn, bufOut);
         } catch (NoSuchFileException e) {
+            body.release();
             throw new NotFoundException(e);
         } catch (IOException e) {
+            body.release();
             throw new InternalServerErrorException(e);
         }
 
@@ -137,8 +139,10 @@ public class AngularHandler extends StaticFileHandler {
         try (var in = Files.newInputStream(logoFile); var out = new ByteBufOutputStream(body)) {
             ByteStreams.copy(in, out);
         } catch (NoSuchFileException e) {
+            body.release();
             throw new NotFoundException();
         } catch (IOException e) {
+            body.release();
             throw new InternalServerErrorException(e);
         }
 

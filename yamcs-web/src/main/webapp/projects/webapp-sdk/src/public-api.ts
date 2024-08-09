@@ -84,7 +84,7 @@ export * from './lib/pipes/storage-url.pipe';
 export * from './lib/pipes/to-value.pipe';
 export * from './lib/pipes/units.pipe';
 export * from './lib/pipes/value.pipe';
-export { Printable } from './lib/print/Printable';
+export * from './lib/print/Printable';
 export * from './lib/print/print-zone.component';
 export * from './lib/print/print.service';
 export * from './lib/print/printable.directive';
