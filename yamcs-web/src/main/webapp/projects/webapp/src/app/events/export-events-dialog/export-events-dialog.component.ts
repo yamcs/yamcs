@@ -1,7 +1,7 @@
 import { Component, Inject, OnDestroy } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { DownloadEventsOptions, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { DownloadEventsOptions, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Component({
@@ -12,12 +12,6 @@ import { BehaviorSubject, Subscription } from 'rxjs';
   ],
 })
 export class ExportEventsDialogComponent implements OnDestroy {
-
-  delimiterOptions: YaSelectOption[] = [
-    { id: 'COMMA', label: 'Comma' },
-    { id: 'SEMICOLON', label: 'Semicolon' },
-    { id: 'TAB', label: 'Tab' },
-  ];
 
   private formChangeSubscription: Subscription;
 

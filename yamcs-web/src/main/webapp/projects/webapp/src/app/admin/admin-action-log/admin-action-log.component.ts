@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, OnInit, input } from '@angular/core';
+import { FormControl, FormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuditRecord, GetAuditRecordsOptions, MessageService, WebappSdkModule, YaSelect, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { AuditRecord, GetAuditRecordsOptions, MessageService, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, debounceTime } from 'rxjs';
 import { AdminPageTemplateComponent } from '../shared/admin-page-template/admin-page-template.component';
 import { AdminToolbarComponent } from '../shared/admin-toolbar/admin-toolbar.component';
@@ -22,10 +22,12 @@ const defaultInterval = 'NO_LIMIT';
     WebappSdkModule,
   ],
 })
-export class AdminActionLogComponent {
+export class AdminActionLogComponent implements OnInit {
 
-  @ViewChild('intervalSelect')
-  intervalSelect: YaSelect;
+  filter = input<string>();
+  interval = input<string>();
+  customStart = input<string>();
+  customStop = input<string>();
 
   validStart: Date | null;
   validStop: Date | null;
@@ -35,11 +37,11 @@ export class AdminActionLogComponent {
   // range is actually applied.
   appliedInterval: string;
 
-  filterForm = new UntypedFormGroup({
-    filter: new UntypedFormControl(),
-    interval: new UntypedFormControl(defaultInterval),
-    customStart: new UntypedFormControl(null),
-    customStop: new UntypedFormControl(null),
+  filterForm = new FormGroup({
+    filter: new FormControl<string | null>(null),
+    interval: new FormControl<string | null>(defaultInterval),
+    customStart: new FormControl<string | null>(null),
+    customStop: new FormControl<string | null>(null),
   });
 
   displayedColumns = [
@@ -57,10 +59,6 @@ export class AdminActionLogComponent {
     { id: 'CUSTOM', label: 'Custom', group: true },
   ];
 
-  // Would prefer to use formGroup, but when using valueChanges this
-  // only is updated after the callback...
-  private filter: string;
-
   rowGroups$ = new BehaviorSubject<RowGroup[]>([]);
 
   constructor(
@@ -71,14 +69,15 @@ export class AdminActionLogComponent {
     title: Title,
   ) {
     title.setTitle('Admin Area');
+  }
 
+  ngOnInit(): void {
     this.initializeOptions();
     this.loadData();
 
     this.filterForm.get('filter')!.valueChanges.pipe(
       debounceTime(400),
     ).forEach(filter => {
-      this.filter = filter;
       this.loadData();
     });
 
@@ -94,7 +93,7 @@ export class AdminActionLogComponent {
         this.validStop = null;
         this.appliedInterval = nextInterval;
         this.loadData();
-      } else {
+      } else if (nextInterval) {
         this.validStop = new Date();
         this.validStart = utils.subtractDuration(this.validStop, nextInterval);
         this.appliedInterval = nextInterval;
@@ -104,19 +103,18 @@ export class AdminActionLogComponent {
   }
 
   private initializeOptions() {
-    const queryParams = this.route.snapshot.queryParamMap;
-    if (queryParams.has('filter')) {
-      this.filter = queryParams.get('filter') || '';
-      this.filterForm.get('filter')!.setValue(this.filter);
+    if (this.filter()) {
+      const filter = this.filter()!;
+      this.filterForm.get('filter')!.setValue(filter);
     }
-    if (queryParams.has('interval')) {
-      this.appliedInterval = queryParams.get('interval')!;
+    if (this.interval()) {
+      this.appliedInterval = this.interval()!;
       this.filterForm.get('interval')!.setValue(this.appliedInterval);
       if (this.appliedInterval === 'CUSTOM') {
-        const customStart = queryParams.get('customStart')!;
+        const customStart = this.customStart()!;
         this.filterForm.get('customStart')!.setValue(customStart);
         this.validStart = utils.toDate(customStart);
-        const customStop = queryParams.get('customStop')!;
+        const customStop = this.customStop()!;
         this.filterForm.get('customStop')!.setValue(customStop);
         this.validStop = utils.toDate(customStop);
       } else if (this.appliedInterval === 'NO_LIMIT') {
@@ -142,7 +140,7 @@ export class AdminActionLogComponent {
     } else if (interval === 'CUSTOM') {
       // For simplicity reasons, just reset to default 1h interval.
       this.filterForm.get('interval')!.setValue(defaultInterval);
-    } else {
+    } else if (interval) {
       this.validStop = new Date();
       this.validStart = utils.subtractDuration(this.validStop, interval);
       this.loadData();
@@ -150,8 +148,9 @@ export class AdminActionLogComponent {
   }
 
   applyCustomDates() {
-    this.validStart = utils.toDate(this.filterForm.value['customStart']);
-    this.validStop = utils.toDate(this.filterForm.value['customStop']);
+    const { controls } = this.filterForm;
+    this.validStart = utils.toDate(controls['customStart'].value);
+    this.validStop = utils.toDate(controls['customStop'].value);
     this.appliedInterval = 'CUSTOM';
     this.loadData();
   }
@@ -169,12 +168,12 @@ export class AdminActionLogComponent {
     if (this.validStop) {
       options.stop = this.validStop.toISOString();
     }
-    if (this.filter) {
-      options.q = this.filter;
+    if (this.filterForm.controls['filter'].value) {
+      options.q = this.filterForm.controls['filter'].value;
     }
 
-    const today = new Date().toISOString().substr(0, 10);
-    const yesterday = utils.subtractDuration(new Date(), 'P1D').toISOString().substr(0, 10);
+    const today = new Date().toISOString().substring(0, 10);
+    const yesterday = utils.subtractDuration(new Date(), 'P1D').toISOString().substring(0, 10);
     this.yamcs.yamcsClient.getAuditRecords('_global', options).then(page => {
       const rowGroups = this.groupByDay(page.records || []).map(group => {
         const dataSource = new MatTableDataSource<Row>();
@@ -185,7 +184,7 @@ export class AdminActionLogComponent {
           }
           return { item, expanded: false, requestOptions };
         });
-        let grouper = group[0].time.substr(0, 10);
+        let grouper = group[0].time.substring(0, 10);
         if (grouper === today) {
           grouper = 'Today';
         } else if (grouper === yesterday) {
@@ -211,14 +210,15 @@ export class AdminActionLogComponent {
   }
 
   private updateURL() {
+    const { controls } = this.filterForm;
     this.router.navigate([], {
       replaceUrl: true,
       relativeTo: this.route,
       queryParams: {
-        filter: this.filter || null,
+        filter: controls['filter'].value || null,
         interval: this.appliedInterval,
-        customStart: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStart'] : null,
-        customStop: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStop'] : null,
+        customStart: this.appliedInterval === 'CUSTOM' ? controls['customStart'].value : null,
+        customStop: this.appliedInterval === 'CUSTOM' ? controls['customStop'].value : null,
       },
       queryParamsHandling: 'merge',
     });
@@ -229,7 +229,7 @@ export class AdminActionLogComponent {
     let currentDay: string | undefined;
     let dayRecords: AuditRecord[] = [];
     for (const record of records) {
-      const day = record.time.substr(0, 10);
+      const day = record.time.substring(0, 10);
       if (day !== currentDay) {
         currentDay = day;
         if (dayRecords.length) {
