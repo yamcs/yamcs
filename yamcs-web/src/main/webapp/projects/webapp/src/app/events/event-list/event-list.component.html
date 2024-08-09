@@ -42,16 +42,25 @@
           </button>
         </div>
         <div class="filter-bar">
-          <ya-select [options]="severityOptions" formControlName="severity" />
+          <ya-select formControlName="severity">
+            <ya-option id="INFO" label="Info level" />
+            <ya-option id="WATCH" label="Watch level" />
+            <ya-option id="WARNING" label="Warning level" />
+            <ya-option id="DISTRESS" label="Distress level" />
+            <ya-option id="CRITICAL" label="Critical level" />
+            <ya-option id="SEVERE" label="Severe level" />
+          </ya-select>
           <ya-multi-select
             [options]="sourceOptions$ | async"
             formControlName="source"
             emptyOption="Any source" />
-          <ya-select
-            #intervalSelect
-            [options]="intervalOptions"
-            icon="access_time"
-            formControlName="interval" />
+          <ya-select icon="access_time" formControlName="interval">
+            <ya-option id="PT1H" label="Last hour" />
+            <ya-option id="PT6H" label="Last 6 hours" />
+            <ya-option id="P1D" label="Last 24 hours" />
+            <ya-option id="NO_LIMIT" label="No limit" />
+            <ya-option id="CUSTOM" label="Custom" group="true" />
+          </ya-select>
           @if (filterForm.value["interval"] === "CUSTOM") {
             <ya-date-time-input formControlName="customStart" />
             <ya-date-time-input formControlName="customStop" />

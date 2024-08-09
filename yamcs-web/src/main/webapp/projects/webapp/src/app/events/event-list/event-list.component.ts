@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, OnInit, input } from '@angular/core';
+import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ConfigService, ExtraColumnInfo, GetEventsOptions, Synchronizer, WebappSdkModule, YaColumnInfo, YaSelect, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ConfigService, EventSeverity, ExtraColumnInfo, GetEventsOptions, MessageService, Synchronizer, WebappSdkModule, YaColumnInfo, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AuthService } from '../../core/services/AuthService';
@@ -31,10 +31,14 @@ const defaultInterval = 'PT1H';
     WebappSdkModule,
   ],
 })
-export class EventListComponent {
+export class EventListComponent implements OnInit {
 
-  @ViewChild('intervalSelect')
-  intervalSelect: YaSelect;
+  filter = input<string>();
+  severity = input<EventSeverity>();
+  source = input<string[]>();
+  interval = input<string>();
+  customStart = input<string>();
+  customStop = input<string>();
 
   validStart: Date | null;
   validStop: Date | null;
@@ -44,13 +48,13 @@ export class EventListComponent {
   // range is actually applied.
   appliedInterval: string;
 
-  filterForm = new UntypedFormGroup({
-    filter: new UntypedFormControl(),
-    severity: new UntypedFormControl('INFO'),
-    source: new UntypedFormControl([]),
-    interval: new UntypedFormControl(defaultInterval),
-    customStart: new UntypedFormControl(null),
-    customStop: new UntypedFormControl(null),
+  filterForm = new FormGroup({
+    filter: new FormControl<string | null>(null),
+    severity: new FormControl<EventSeverity | null>('INFO'),
+    source: new FormControl<string[] | null>([]),
+    interval: new FormControl<string | null>(defaultInterval),
+    customStart: new FormControl<string | null>(null),
+    customStop: new FormControl<string | null>(null),
   });
 
   dataSource: EventsDataSource;
@@ -70,38 +74,16 @@ export class EventListComponent {
    */
   extraColumns: ExtraColumnInfo[] = [];
 
-  severityOptions: YaSelectOption[] = [
-    { id: 'INFO', label: 'Info level' },
-    { id: 'WATCH', label: 'Watch level' },
-    { id: 'WARNING', label: 'Warning level' },
-    { id: 'DISTRESS', label: 'Distress level' },
-    { id: 'CRITICAL', label: 'Critical level' },
-    { id: 'SEVERE', label: 'Severe level' },
-  ];
-
   sourceOptions$ = new BehaviorSubject<YaSelectOption[]>([]);
 
-  intervalOptions: YaSelectOption[] = [
-    { id: 'PT1H', label: 'Last hour' },
-    { id: 'PT6H', label: 'Last 6 hours' },
-    { id: 'P1D', label: 'Last 24 hours' },
-    { id: 'NO_LIMIT', label: 'No limit' },
-    { id: 'CUSTOM', label: 'Custom', group: true },
-  ];
-
   downloadURL$ = new BehaviorSubject<string | null>(null);
-
-  // Would prefer to use formGroup, but when using valueChanges this
-  // only is updated after the callback...
-  private severity = 'INFO';
-  private source: string[] = [];
-  private filter: string;
 
   constructor(
     readonly yamcs: YamcsService,
     private authService: AuthService,
     private dialog: MatDialog,
     configService: ConfigService,
+    private messageService: MessageService,
     private router: Router,
     private route: ActivatedRoute,
     title: Title,
@@ -143,24 +125,23 @@ export class EventListComponent {
         return { id: source, label: source };
       }));
     });
+  }
 
+  ngOnInit(): void {
     this.initializeOptions();
     this.loadData();
 
     this.filterForm.get('filter')!.valueChanges.pipe(
       debounceTime(400),
     ).forEach(filter => {
-      this.filter = filter;
       this.loadData();
     });
 
     this.filterForm.get('severity')!.valueChanges.forEach(severity => {
-      this.severity = severity;
       this.loadData();
     });
 
     this.filterForm.get('source')!.valueChanges.forEach(source => {
-      this.source = source;
       this.loadData();
     });
 
@@ -175,8 +156,8 @@ export class EventListComponent {
         this.validStop = null;
         this.appliedInterval = nextInterval;
         this.loadData();
-      } else {
-        this.validStop = yamcs.getMissionTime();
+      } else if (nextInterval) {
+        this.validStop = this.yamcs.getMissionTime();
         this.validStart = utils.subtractDuration(this.validStop, nextInterval);
         this.appliedInterval = nextInterval;
         this.loadData();
@@ -185,27 +166,26 @@ export class EventListComponent {
   }
 
   private initializeOptions() {
-    const queryParams = this.route.snapshot.queryParamMap;
-    if (queryParams.has('filter')) {
-      this.filter = queryParams.get('filter') || '';
-      this.filterForm.get('filter')!.setValue(this.filter);
+    if (this.filter()) {
+      const filter = this.filter()!;
+      this.filterForm.get('filter')!.setValue(filter);
     }
-    if (queryParams.has('severity')) {
-      this.severity = queryParams.get('severity')!;
-      this.filterForm.get('severity')!.setValue(this.severity);
+    if (this.severity()) {
+      const severity = this.severity()!;
+      this.filterForm.get('severity')!.setValue(severity);
     }
-    if (queryParams.has('source')) {
-      this.source = queryParams.getAll('source')!;
-      this.filterForm.get('source')!.setValue(this.source);
+    if (this.source()) {
+      const source = this.source()!;
+      this.filterForm.get('source')!.setValue(source);
     }
-    if (queryParams.has('interval')) {
-      this.appliedInterval = queryParams.get('interval')!;
+    if (this.interval()) {
+      this.appliedInterval = this.interval()!;
       this.filterForm.get('interval')!.setValue(this.appliedInterval);
       if (this.appliedInterval === 'CUSTOM') {
-        const customStart = queryParams.get('customStart')!;
+        const customStart = this.customStart()!;
         this.filterForm.get('customStart')!.setValue(customStart);
         this.validStart = utils.toDate(customStart);
-        const customStop = queryParams.get('customStop')!;
+        const customStop = this.customStop()!;
         this.filterForm.get('customStop')!.setValue(customStop);
         this.validStop = utils.toDate(customStop);
       } else if (this.appliedInterval === 'NO_LIMIT') {
@@ -223,7 +203,7 @@ export class EventListComponent {
   }
 
   jumpToNow() {
-    const interval = this.filterForm.value['interval'];
+    const interval = this.filterForm.controls['interval'].value;
     if (interval === 'NO_LIMIT') {
       // NO_LIMIT may include future data under erratic conditions. Reverting
       // to the default interval is more in line with the wording 'jump to now'.
@@ -231,7 +211,7 @@ export class EventListComponent {
     } else if (interval === 'CUSTOM') {
       // For simplicity reasons, just reset to default 1h interval.
       this.filterForm.get('interval')!.setValue(defaultInterval);
-    } else {
+    } else if (interval) {
       this.validStop = this.yamcs.getMissionTime();
       this.validStart = utils.subtractDuration(this.validStop, interval);
       this.loadData();
@@ -248,8 +228,9 @@ export class EventListComponent {
   }
 
   applyCustomDates() {
-    this.validStart = utils.toDate(this.filterForm.value['customStart']);
-    this.validStop = utils.toDate(this.filterForm.value['customStop']);
+    const { controls } = this.filterForm;
+    this.validStart = utils.toDate(controls['customStart'].value);
+    this.validStop = utils.toDate(controls['customStop'].value);
     this.appliedInterval = 'CUSTOM';
     this.loadData();
   }
@@ -258,9 +239,10 @@ export class EventListComponent {
    * Loads the first page of data within validStart and validStop
    */
   loadData() {
+    const { controls } = this.filterForm;
     this.updateURL();
     const options: GetEventsOptions = {
-      severity: this.severity as any,
+      severity: controls['severity'].value!,
     };
     if (this.validStart) {
       options.start = this.validStart.toISOString();
@@ -268,44 +250,52 @@ export class EventListComponent {
     if (this.validStop) {
       options.stop = this.validStop.toISOString();
     }
-    if (this.filter) {
-      options.q = this.filter;
+    const filter = controls['filter'].value;
+    if (filter) {
+      options.q = filter;
     }
-    if (this.source.length) {
-      options.source = this.source;
+    const source = controls['source'].value;
+    if (source?.length) {
+      options.source = source;
     }
 
-    this.dataSource.loadEvents(options);
+    this.dataSource.loadEvents(options)
+      .catch(err => this.messageService.showError(err));
   }
 
   loadMoreData() {
+    const { controls } = this.filterForm;
     const options: GetEventsOptions = {
-      severity: this.severity as any,
+      severity: controls['severity'].value!,
     };
     if (this.validStart) {
       options.start = this.validStart.toISOString();
     }
-    if (this.filter) {
-      options.q = this.filter;
+    const filter = controls['filter'].value;
+    if (filter) {
+      options.q = filter;
     }
-    if (this.source.length) {
-      options.source = this.source;
+    const source = controls['source'].value;
+    if (source?.length) {
+      options.source = source;
     }
 
-    this.dataSource.loadMoreData(options);
+    this.dataSource.loadMoreData(options)
+      .catch(err => this.messageService.showError(err));
   }
 
   private updateURL() {
+    const { controls } = this.filterForm;
     this.router.navigate([], {
       replaceUrl: true,
       relativeTo: this.route,
       queryParams: {
-        filter: this.filter || null,
-        severity: this.severity,
-        source: this.source.length ? this.source : null,
+        filter: controls['filter'].value || null,
+        severity: controls['severity'].value,
+        source: controls['source'].value ? controls['source'].value : null,
         interval: this.appliedInterval,
-        customStart: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStart'] : null,
-        customStop: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStop'] : null,
+        customStart: this.appliedInterval === 'CUSTOM' ? controls['customStart'].value : null,
+        customStop: this.appliedInterval === 'CUSTOM' ? controls['customStop'].value : null,
       },
       queryParamsHandling: 'merge',
     });
@@ -327,15 +317,15 @@ export class EventListComponent {
   }
 
   exportEvents() {
+    const { controls } = this.filterForm;
     this.dialog.open(ExportEventsDialogComponent, {
       width: '400px',
       data: {
-        severity: this.severity,
-        severityOptions: this.severityOptions,
+        severity: controls['severity'].value,
         start: this.validStart,
         stop: this.validStop,
-        q: this.filter,
-        source: this.source,
+        q: controls['filter'].value,
+        source: controls['source'].value,
         sourceOptions: this.sourceOptions$.value,
       },
     });

@@ -1,10 +1,9 @@
-import { AsyncPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input, OnChanges, forwardRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, contentChildren, forwardRef, input, signal } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatDivider } from '@angular/material/divider';
 import { MatIcon } from '@angular/material/icon';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
-import { BehaviorSubject } from 'rxjs';
+import { YaOption } from '../option/option.component';
 
 export interface YaSelectOption {
   id: string;
@@ -24,40 +23,53 @@ export interface YaSelectOption {
     multi: true,
   }],
   imports: [
-    AsyncPipe,
     MatDivider,
     MatIcon,
     MatMenu,
     MatMenuItem,
     MatMenuTrigger
-],
+  ],
 })
-export class YaSelect implements OnChanges, ControlValueAccessor {
+export class YaSelect implements ControlValueAccessor {
 
-  @Input()
-  emptyOption: string = '-- select an option --';
+  icon = input<string>();
+  emptyOption = input<string>('-- select an option --');
 
-  @Input()
-  options: YaSelectOption[] = [];
+  // Options are allowed to be provided as children, or
+  // in a single attribute.
+  options = input<YaSelectOption[]>([]);
+  optionChildren = contentChildren(YaOption);
 
-  @Input()
-  icon: string;
+  selected = signal<string | null>(null);
 
-  options$ = new BehaviorSubject<YaSelectOption[]>([]);
-  selected$ = new BehaviorSubject<string | null>(null);
+  label = computed(() => {
+    const selectedId = this.selected() || '';
+
+    for (const option of this.options()) {
+      if (option.id === selectedId) {
+        return option.label || option.id;
+      }
+    }
+    for (const option of this.optionChildren()) {
+      if (option.id() === selectedId) {
+        return option.label() || option.id();
+      }
+    }
+    return selectedId;
+  });
 
   private onChange = (_: string | null) => { };
 
-  ngOnChanges() {
-    this.options$.next(this.options);
-  }
-
   public isSelected(id: string) {
-    return this.selected$.value === id;
+    const value = this.selected();
+    if (id === '') {
+      return value === id || value === null;
+    }
+    return value === id;
   }
 
   writeValue(value: any) {
-    this.selected$.next(value);
+    this.selected.set(value);
     this.onChange(value);
   }
 
@@ -66,23 +78,5 @@ export class YaSelect implements OnChanges, ControlValueAccessor {
   }
 
   registerOnTouched(fn: any) {
-  }
-
-  getLabel(id: string) {
-    const option = this.findOption(id);
-    if (option) {
-      return option.label || option.id;
-    } else {
-      return id;
-    }
-  }
-
-  private findOption(id: string) {
-    for (const option of this.options) {
-      if (option.id === id) {
-        return option;
-      }
-    }
-    return null;
   }
 }
