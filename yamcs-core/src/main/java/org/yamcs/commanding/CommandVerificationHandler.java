@@ -269,7 +269,7 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
             if (failureReason == null) {
                 failureReason = "Verifier " + cv.getStage() + " result: " + state;
             }
-            cmdHistPublisher.commandFailed(activeCommand.getCommandId(), processor.getCurrentTime(), failureReason);
+            cmdHistPublisher.commandFailed(activeCommand.getCommandId(), processor.getCurrentTime(), failureReason, returnPv);
             stop();
         }
 

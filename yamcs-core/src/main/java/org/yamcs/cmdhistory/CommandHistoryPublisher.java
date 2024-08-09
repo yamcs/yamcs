@@ -101,4 +101,7 @@ public interface CommandHistoryPublisher {
         publishAck(cmdId, CommandComplete_KEY, time, AckStatus.NOK, reason);
     }
 
+    default void commandFailed(CommandId cmdId, long time, String reason, ParameterValue returnPv) {
+        publishAck(cmdId, CommandComplete_KEY, time, AckStatus.NOK, reason, returnPv);
+    }
 }
