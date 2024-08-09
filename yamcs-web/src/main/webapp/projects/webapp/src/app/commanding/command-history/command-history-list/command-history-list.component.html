@@ -27,7 +27,7 @@
 
   <ya-detail-pane>
     @if (selectedRecord$ | async; as selectedRecord) {
-      <ya-detail-toolbar> Command Detail </ya-detail-toolbar>
+      <ya-detail-toolbar>Command Detail</ya-detail-toolbar>
       <div style="padding: 0 16px">
         <app-command-detail2 [command]="selectedRecord" />
         @if (showResend()) {
@@ -44,7 +44,7 @@
         <p>&nbsp;</p>
       </div>
     } @else {
-      <ya-detail-toolbar> Select a command </ya-detail-toolbar>
+      <ya-detail-toolbar>Select a command</ya-detail-toolbar>
     }
   </ya-detail-pane>
 
@@ -91,12 +91,19 @@
             </mat-menu>
           </div>
           <div class="filter-bar">
-            <ya-select [options]="queueOptions" formControlName="queue" />
-            <ya-select
-              #intervalSelect
-              [options]="intervalOptions"
-              icon="access_time"
-              formControlName="interval" />
+            <ya-select formControlName="queue">
+              <ya-option id="" label="Any queue" />
+              @for (queue of config.queueNames; track queue) {
+                <ya-option [id]="queue" [label]="queue" />
+              }
+            </ya-select>
+            <ya-select icon="access_time" formControlName="interval">
+              <ya-option id="" label="Last hour" />
+              <ya-option id="PT6H" label="Last 6 hours" />
+              <ya-option id="P1D" label="Last 24 hours" />
+              <ya-option id="NO_LIMIT" label="No limit" />
+              <ya-option id="CUSTOM" label="Custom" group="true" />
+            </ya-select>
             @if (filterForm.value["interval"] === "CUSTOM") {
               <ya-date-time-input formControlName="customStart" />
               <ya-date-time-input formControlName="customStop" />
@@ -134,29 +141,44 @@
           @switch (appliedInterval) {
             @case ("PT1H") {
               <span>
-                Showing entries from <b>the last hour</b> ending at
-                <b>{{ validStop | datetime }}</b> (Mission Time)
+                Showing entries from
+                <b>the last hour</b>
+                ending at
+                <b>{{ validStop | datetime }}</b>
+                (Mission Time)
               </span>
             }
             @case ("PT6H") {
               <span>
-                Showing entries from <b>the last 6 hours</b> ending at
-                <b>{{ validStop | datetime }}</b> (Mission Time)
+                Showing entries from
+                <b>the last 6 hours</b>
+                ending at
+                <b>{{ validStop | datetime }}</b>
+                (Mission Time)
               </span>
             }
             @case ("P1D") {
               <span>
-                Showing entries from <b>the last 24 hours</b> ending at
-                <b>{{ validStop | datetime }}</b> (Mission Time)
+                Showing entries from
+                <b>the last 24 hours</b>
+                ending at
+                <b>{{ validStop | datetime }}</b>
+                (Mission Time)
               </span>
             }
             @case ("NO_LIMIT") {
-              <span> Showing entries from <b>all time</b> </span>
+              <span>
+                Showing entries from
+                <b>all time</b>
+              </span>
             }
             @case ("CUSTOM") {
               <span>
-                Showing entries from <b>{{ validStart | datetime }}</b> to
-                <b>{{ validStop | datetime }}</b> (Mission Time)
+                Showing entries from
+                <b>{{ validStart | datetime }}</b>
+                to
+                <b>{{ validStop | datetime }}</b>
+                (Mission Time)
               </span>
             }
           }
@@ -172,9 +194,9 @@
             <td mat-cell *matCellDef="let item">
               <a
                 [routerLink]="['/commanding/history', item.id]"
-                [queryParams]="{ c: yamcs.context }"
-                >{{ item.id }}</a
-              >
+                [queryParams]="{ c: yamcs.context }">
+                {{ item.id }}
+              </a>
             </td>
           </ng-container>
 
@@ -323,7 +345,7 @@
                 SUCCESS
               }
               @if (item.completed?.status === "NOK") {
-                <span [matTooltip]="item.completed?.message"> FAILURE </span>
+                <span [matTooltip]="item.completed?.message">FAILURE</span>
               }
               @if (!item.completed) {
                 -

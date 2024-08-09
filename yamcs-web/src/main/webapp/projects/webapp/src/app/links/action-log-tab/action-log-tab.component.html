@@ -1,15 +1,11 @@
 <app-instance-page>
-  <app-instance-toolbar> Links </app-instance-toolbar>
+  <app-instance-toolbar>Links</app-instance-toolbar>
 
   <div class="panel-content">
     <app-links-page-tabs />
     <form [formGroup]="filterForm" style="margin-top: 16px">
       <div class="filter-bar">
-        <ya-select
-          #intervalSelect
-          [options]="intervalOptions"
-          icon="access_time"
-          formControlName="interval" />
+        <ya-select [options]="intervalOptions" icon="access_time" formControlName="interval" />
         @if (filterForm.value["interval"] === "CUSTOM") {
           <ya-date-time-input formControlName="customStart" />
           <ya-date-time-input formControlName="customStop" />

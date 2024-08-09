@@ -50,6 +50,7 @@ import { YaLed } from './components/led/led.component';
 import { YaMessageBar } from './components/message-bar/message-bar.component';
 import { YaMore } from './components/more/more.component';
 import { YaMultiSelect } from './components/multi-select/multi-select.component';
+import { YaOption } from './components/option/option.component';
 import { YaProgress } from './components/progress/progress.component';
 import { YaSearchFilter } from './components/search-filter/search-filter.component';
 import { YaSelect } from './components/select/select.component';
@@ -169,6 +170,7 @@ const sharedComponents = [
   YaMessageBar,
   YaMore,
   YaMultiSelect,
+  YaOption,
   YaProgress,
   YaPrintZone,
   YaSearchFilter,

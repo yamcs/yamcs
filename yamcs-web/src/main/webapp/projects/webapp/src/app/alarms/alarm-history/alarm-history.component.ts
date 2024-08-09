@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Alarm, GetAlarmsOptions, MessageService, WebappSdkModule, YaSelect, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { Alarm, GetAlarmsOptions, MessageService, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { addHours } from 'date-fns';
 import { AlarmLevelComponent } from '../../shared/alarm-level/alarm-level.component';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
@@ -22,9 +22,6 @@ import { AlarmsPageTabsComponent } from '../alarms-page-tabs/alarms-page-tabs.co
   ],
 })
 export class AlarmHistoryComponent {
-
-  @ViewChild('intervalSelect')
-  intervalSelect: YaSelect;
 
   validStart: Date | null;
   validStop: Date | null;
