@@ -1,3 +1,12 @@
+Version 5.10.0 released 11-Aug-2024
+- Introduced RocksDB Merge Operator for the Parameter Archive. Archives created with this version will be incompatible with older versions of Yamcs. The Parameter Archive created with older versions of Yamcs will continue working with this version (and they are backward compatible). 
+ The advatange of the Merge Operator is that it requires much less memory when filling the Parameter Archive (the maxSegmentSize can be set to low values) without losing retrieval performance in the long run (RocksDB merges in the bagkround the small segments into larger intervals).
+ To take advantage of this new format, a complete rebuild of the Parameter Archive is required (can be done with yamcs parameter-archive purge, yamcs parameter-archive rebuild)
+- Java 17 or higher is required starting with this version
+- Fixes an MDB cache issue introduce in recent releases
+- File transfer list was reworked to show all transfers on a single page, with filter capability
+- Various other small tweaks and fixes
+
 Version 5.9.8 released 9-July-2024
 - small tweaks and fixes related to Parameter Archive, Frame valid/invalid counters, command dispatching, parameter link configuration.
 - updated yamcs-maven plugin to work with Java 22.
