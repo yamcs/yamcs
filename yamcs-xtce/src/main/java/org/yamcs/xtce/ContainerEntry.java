@@ -4,8 +4,6 @@ package org.yamcs.xtce;
  * Entry from a container that makes reference to another container.
  * This is different than container inheritance: here the small container is included in the big one and does not extend
  * it.
- * 
- * @author mache
  *
  */
 public class ContainerEntry extends SequenceEntry {

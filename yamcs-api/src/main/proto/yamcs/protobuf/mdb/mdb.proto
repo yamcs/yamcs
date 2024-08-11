@@ -665,6 +665,7 @@ message SequenceEntryInfo {
   optional FixedValueInfo fixedValue = 7;
 
   optional RepeatInfo repeat = 5;
+  optional IndirectParameterRefInfo inidrectParameterRef = 8;
 }
 
 message FixedValueInfo {
@@ -682,6 +683,11 @@ message CommandContainerInfo {
   optional int32 sizeInBits = 6;
   optional CommandContainerInfo baseContainer = 7;
   repeated SequenceEntryInfo entry = 8;
+}
+
+message IndirectParameterRefInfo {
+   optional ParameterInfo parameter = 1;
+   optional string aliasNamespace = 2;
 }
 
 message ContainerInfo {
