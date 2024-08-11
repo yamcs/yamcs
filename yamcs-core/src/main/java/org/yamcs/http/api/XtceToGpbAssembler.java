@@ -39,6 +39,7 @@ import org.yamcs.protobuf.Mdb.DataEncodingInfo;
 import org.yamcs.protobuf.Mdb.DataSourceType;
 import org.yamcs.protobuf.Mdb.FixedValueInfo;
 import org.yamcs.protobuf.Mdb.HistoryInfo;
+import org.yamcs.protobuf.Mdb.IndirectParameterRefInfo;
 import org.yamcs.protobuf.Mdb.InputParameterInfo;
 import org.yamcs.protobuf.Mdb.JavaExpressionCalibratorInfo;
 import org.yamcs.protobuf.Mdb.MathElement;
@@ -108,6 +109,7 @@ import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.History;
+import org.yamcs.xtce.IndirectParameterRefEntry;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.IntegerArgumentType;
 import org.yamcs.xtce.IntegerDataEncoding;
@@ -235,33 +237,28 @@ public class XtceToGpbAssembler {
             throw new IllegalStateException("Unexpected reference location " + e);
         }
 
-        if (e instanceof ContainerEntry) {
-            ContainerEntry ce = (ContainerEntry) e;
+        if (e instanceof ContainerEntry ce) {
             if (detail == DetailLevel.SUMMARY) {
                 b.setContainer(toContainerInfo(ce.getRefContainer(), DetailLevel.LINK));
             } else if (detail == DetailLevel.FULL) {
                 b.setContainer(toContainerInfo(ce.getRefContainer(), DetailLevel.FULL));
             }
-        } else if (e instanceof ParameterEntry) {
-            ParameterEntry pe = (ParameterEntry) e;
+        } else if (e instanceof ParameterEntry pe) {
             if (detail == DetailLevel.SUMMARY) {
                 b.setParameter(toParameterInfo(pe.getParameter(), DetailLevel.LINK));
             } else if (detail == DetailLevel.FULL) {
                 b.setParameter(toParameterInfo(pe.getParameter(), DetailLevel.FULL));
             }
-        } else if (e instanceof ArrayParameterEntry) {
-            ArrayParameterEntry ae = (ArrayParameterEntry) e;
+        } else if (e instanceof ArrayParameterEntry ae) {
             if (detail == DetailLevel.SUMMARY) {
                 b.setParameter(toParameterInfo(ae.getParameter(), DetailLevel.LINK));
             } else if (detail == DetailLevel.FULL) {
                 b.setParameter(toParameterInfo(ae.getParameter(), DetailLevel.FULL));
             }
             // TODO map dimensions info
-        } else if (e instanceof ArgumentEntry) {
-            ArgumentEntry ae = (ArgumentEntry) e;
+        } else if (e instanceof ArgumentEntry ae) {
             b.setArgument(toArgumentInfo(ae.getArgument()));
-        } else if (e instanceof FixedValueEntry) {
-            FixedValueEntry fe = (FixedValueEntry) e;
+        } else if (e instanceof FixedValueEntry fe) {
             FixedValueInfo.Builder feb = FixedValueInfo.newBuilder();
             if (fe.getName() != null) {
                 feb.setName(fe.getName());
@@ -271,6 +268,12 @@ public class XtceToGpbAssembler {
             }
             feb.setHexValue(StringConverter.arrayToHexString(fe.getBinaryValue()));
             b.setFixedValue(feb.build());
+        } else if (e instanceof IndirectParameterRefEntry ipe) {
+            IndirectParameterRefInfo.Builder ipeb = IndirectParameterRefInfo.newBuilder();
+            if (ipe.getAliasNameSpace() != null) {
+                ipeb.setAliasNamespace(ipe.getAliasNameSpace());
+            }
+            ipeb.setParameter(toParameterInfo(ipe.getParameterRef()));
         } else {
             throw new IllegalStateException("Unexpected entry " + e);
         }
