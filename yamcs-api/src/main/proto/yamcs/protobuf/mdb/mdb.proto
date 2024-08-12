@@ -668,7 +668,7 @@ message SequenceEntryInfo {
   optional FixedValueInfo fixedValue = 7;
 
   optional RepeatInfo repeat = 5;
-  optional IndirectParameterRefInfo inidrectParameterRef = 8;
+  optional IndirectParameterRefInfo indirectParameterRef = 8;
 }
 
 message FixedValueInfo {
