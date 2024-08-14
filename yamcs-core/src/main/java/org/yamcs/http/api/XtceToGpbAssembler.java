@@ -900,6 +900,7 @@ public class XtceToGpbAssembler {
     public static ArgumentTypeInfo toArgumentTypeInfo(ArgumentType argumentType) {
         ArgumentTypeInfo.Builder infob = ArgumentTypeInfo.newBuilder()
                 .setEngType(argumentType.getTypeAsString());
+        infob.setName(argumentType.getName());
 
         if (argumentType instanceof BaseDataType) {
             BaseDataType bdt = (BaseDataType) argumentType;
