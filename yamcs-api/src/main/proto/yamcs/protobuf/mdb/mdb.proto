@@ -501,6 +501,9 @@ message ArgumentTypeInfo {
 
   // Type of array entries (only used by array arguments)
   optional ArgumentTypeInfo elementType = 17;
+
+  // Name of the parameter type
+  optional string name = 18;
 }
 
 message ArgumentDimensionInfo {
