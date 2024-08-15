@@ -212,8 +212,8 @@ public class SubServiceThirteen implements PusSubService {
 
         Map<String, Integer> props = new HashMap<>();
         int uniqueSignature = (int) ByteArrayUtils.decodeCustomInteger(spareField, uniqueSignatureOffset, uniqueSignatureSize);
-        int reportIndex = (int) ByteArrayUtils.decodeCustomInteger(spareField, uniqueSignatureOffset + uniqueSignatureSize, reportIndexSize);
-        int reportCount = (int) ByteArrayUtils.decodeCustomInteger(spareField, uniqueSignatureOffset + uniqueSignatureSize + reportIndexSize, reportCountSize);
+        int reportCount = (int) ByteArrayUtils.decodeCustomInteger(spareField, uniqueSignatureOffset + uniqueSignatureSize, reportCountSize);
+        int reportIndex = (int) ByteArrayUtils.decodeCustomInteger(spareField, uniqueSignatureOffset + uniqueSignatureSize + reportCountSize, reportIndexSize);
 
         props.put("UniqueSignature", uniqueSignature);
         props.put("ReportIndex", reportIndex);
