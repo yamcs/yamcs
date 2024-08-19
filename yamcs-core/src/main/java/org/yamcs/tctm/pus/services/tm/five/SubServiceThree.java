@@ -1,6 +1,7 @@
 package org.yamcs.tctm.pus.services.tm.five;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 
 import org.yamcs.TmPacket;
@@ -11,9 +12,10 @@ import org.yamcs.events.EventProducerFactory;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
+import org.yamcs.tctm.pus.services.tm.five.ServiceFive.Endianess;
 import org.yamcs.tctm.pus.services.tm.one.ServiceOne;
 import org.yamcs.tctm.pus.tuples.Pair;
-import org.yamcs.tctm.pus.tuples.Triple;
+import org.yamcs.tctm.pus.tuples.Quattro;
 import org.yamcs.utils.ByteArrayUtils;
 
 public class SubServiceThree implements PusSubService {
@@ -44,7 +46,7 @@ public class SubServiceThree implements PusSubService {
         int apid = pPkt.getAPID();
         int eventId = (int) ByteArrayUtils.decodeCustomInteger(dataField, 0, ServiceFive.eventIdSize);
 
-        Pair<String, Map<Integer, Triple<Integer, String, Map<Integer, Pair<Integer, String>>>>> eventMap = ServiceFive.eventIds.get(new Pair<>(apid, eventId));
+        Pair<String, Map<Integer, Quattro<Integer, String, Endianess, Map<Integer, Pair<Integer, String>>>>> eventMap = ServiceFive.eventIds.get(new Pair<>(apid, eventId));
         if(eventMap == null) {
             log.error("Invalid APID, Event ID for S5,3 packet: {}, {}", apid, eventId);
             ArrayList<TmPacket> pPkts = new ArrayList<>();
@@ -53,18 +55,19 @@ public class SubServiceThree implements PusSubService {
             return pPkts;
         }
 
-        Map<Integer, Triple<Integer, String, Map<Integer, Pair<Integer, String>>>> chunkMap = eventMap.getSecond();
+        Map<Integer, Quattro<Integer, String, Endianess, Map<Integer, Pair<Integer, String>>>> chunkMap = eventMap.getSecond();
 
         String eventDec = "EventName: " + eventMap.getFirst() + " | EventId: " + eventId;
 
         if (chunkMap != null) {
-            for (Map.Entry<Integer, Triple<Integer, String, Map<Integer, Pair<Integer, String>>>> chunk: chunkMap.entrySet()) {
-                Triple<Integer, String, Map<Integer, Pair<Integer, String>>> chunkDeets = chunk.getValue();
+            for (Map.Entry<Integer, Quattro<Integer, String, Endianess, Map<Integer, Pair<Integer, String>>>> chunk: chunkMap.entrySet()) {
+                Quattro<Integer, String, Endianess, Map<Integer, Pair<Integer, String>>> chunkDeets = chunk.getValue();
 
                 int chunkOffset = chunk.getKey();
                 int chunkLength = chunkDeets.getFirst();
                 String chunkName = chunkDeets.getSecond();
-                Map<Integer, Pair<Integer, String>> bitsMap = chunkDeets.getThird();
+                Endianess en = chunkDeets.getThird();
+                Map<Integer, Pair<Integer, String>> bitsMap = chunkDeets.getFourth();
 
                 if (bitsMap != null) {
                     long data = ByteArrayUtils.decodeCustomInteger(dataField, chunkOffset + ServiceFive.eventIdSize, chunkLength);
@@ -86,7 +89,11 @@ public class SubServiceThree implements PusSubService {
                     continue;
                 }
 
-                long data = ByteArrayUtils.decodeCustomInteger(dataField, chunkOffset + ServiceFive.eventIdSize, chunkLength);
+                byte[] dataDar = Arrays.copyOfRange(dataField, chunkOffset + ServiceFive.eventIdSize, chunkOffset + ServiceFive.eventIdSize + chunkLength);
+                if (en.equals(Endianess.LE))
+                    dataDar = ServiceFive.convertEndian(dataDar);
+
+                long data = ByteArrayUtils.decodeCustomInteger(dataDar, 0, chunkLength);
                 eventDec += " | " + chunkName + ": " + data;
             }
         }

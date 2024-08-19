@@ -12,18 +12,22 @@ import org.yamcs.logging.Log;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.tuples.Pair;
-import org.yamcs.tctm.pus.tuples.Triple;
+import org.yamcs.tctm.pus.tuples.Quattro;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
 
 public class ServiceFive implements PusService {
+    protected enum Endianess {
+        LE, BE
+    }
+
     Log log;
 
     Map<Integer, PusSubService> pusSubServices = new HashMap<>();
     YConfiguration serviceFiveConfig;
     private String yamcsInstance;
 
-    protected static Map<Pair<Integer, Integer>, Pair<String, Map<Integer, Triple<Integer, String, Map<Integer, Pair<Integer, String>>>>>>eventIds = new HashMap<>();
+    protected static Map<Pair<Integer, Integer>, Pair<String, Map<Integer, Quattro<Integer, String, Endianess, Map<Integer, Pair<Integer, String>>>>>>eventIds = new HashMap<>();
 
     private final int DEFAULT_EVENTID_SIZE = 1;
     protected static int eventIdSize;
@@ -40,7 +44,7 @@ public class ServiceFive implements PusService {
             if (eventIdConfig.containsKey(eventId)) {
                 YConfiguration eventIdMap = eventIdConfig.getConfig(eventId);
 
-                Map<Integer, Triple<Integer, String, Map<Integer, Pair<Integer, String>>>> chunks = null;
+                Map<Integer, Quattro<Integer, String, Endianess, Map<Integer, Pair<Integer, String>>>> chunks = null;
                 if (eventIdMap.containsKey("chunks")) {
                     chunks = new HashMap<>();
 
@@ -48,6 +52,7 @@ public class ServiceFive implements PusService {
                         int chunkValue = chunkConfig.getInt("value");
                         String chunkName = chunkConfig.getString("name");
                         int chunkLength = chunkConfig.getInt("length");
+                        Endianess en = chunkConfig.getEnum("endianess", Endianess.class, Endianess.BE);
 
                         Map<Integer, Pair<Integer, String>> bits = null;
                         if (chunkConfig.containsKey("bits")) {
@@ -65,7 +70,7 @@ public class ServiceFive implements PusService {
                         }
 
                         chunks.put(chunkValue,
-                            new Triple<>(chunkLength, chunkName, bits)
+                            new Quattro<>(chunkLength, chunkName, en, bits)
                         );                    
                     }
                 }
@@ -78,6 +83,14 @@ public class ServiceFive implements PusService {
 
         eventIdSize = config.getInt("eventIdSize", DEFAULT_EVENTID_SIZE);
         initializeSubServices();
+    }
+
+    public static byte[] convertEndian(byte[] input) {
+        byte[] output = new byte[input.length];
+        for (int i = 0; i < input.length; i++) {
+            output[i] = input[input.length - 1 - i];
+        }
+        return output;
     }
 
     public static long createOnes(int length) {
