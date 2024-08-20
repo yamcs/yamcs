@@ -82,7 +82,6 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
     static Spec getSpec() {
         Spec spec = new Spec();
 
-        spec.addOption("flushInterval", OptionType.INTEGER).withDefault(300);
         spec.addOption("enabled", OptionType.BOOLEAN);
         spec.addOption("processorName", OptionType.STRING).withDefault("realtime");
         spec.addOption("sortingThreshold", OptionType.INTEGER).withDefault(1000);
