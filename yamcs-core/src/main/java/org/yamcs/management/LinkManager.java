@@ -68,6 +68,7 @@ import com.google.gson.Gson;
  */
 public class LinkManager {
     private static final String MEMENTO_KEY = "yamcs.links";
+    public static final String PP_STREAM_KEY = "ppStream";
 
     private Map<String, Link> linksByName = new HashMap<>();
 
@@ -172,7 +173,7 @@ public class LinkManager {
         // such that we can have links doing both TC and TM
         Stream tcStream = getStream(linkArgs, "tcStream");
         Stream tmStream = getStream(linkArgs, "tmStream");
-        Stream ppStream = getStream(linkArgs, "ppStream");
+        Stream ppStream = getStream(linkArgs, PP_STREAM_KEY);
 
         if (link instanceof TmPacketDataLink) {
             TmPacketDataLink tmLink = (TmPacketDataLink) link;
