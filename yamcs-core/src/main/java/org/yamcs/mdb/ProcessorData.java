@@ -42,7 +42,6 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.SplineCalibrator;
-import org.yamcs.mdb.Mdb;
 
 /**
  * Holds information related and required for XTCE processing. It is separated from Processor because it has to be
