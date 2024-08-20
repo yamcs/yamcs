@@ -64,18 +64,6 @@ public class TimeEncoding {
     }
 
     /**
-     * Returns the current wall clock time. Is the same with getWallclockTime
-     *
-     * Should use instead timeService.getMissionTime()
-     *
-     * @return
-     */
-    @Deprecated
-    public static long currentInstant() {
-        return taiUtcConverter.unixToInstant(System.currentTimeMillis());
-    }
-
-    /**
      * Returns the current operating system time but converted to Yamcs instant.
      * 
      * @return
@@ -265,7 +253,7 @@ public class TimeEncoding {
      * @return GPS time
      */
     public static GpsCcsdsTime getCurrentGpsTime() {
-        return toGpsTime(TimeEncoding.currentInstant());
+        return toGpsTime(TimeEncoding.getWallclockTime());
     }
 
     /**
@@ -292,6 +280,10 @@ public class TimeEncoding {
 
     public static TaiUtcConverter.DateTimeComponents toUtc(long instant) {
         return taiUtcConverter.instantToUtc(instant);
+    }
+
+    public static long fromUtc(TaiUtcConverter.DateTimeComponents dtc) {
+        return taiUtcConverter.utcToInstant(dtc);
     }
 
     public static List<ValidityLine> getTaiUtcConversionTable() {
