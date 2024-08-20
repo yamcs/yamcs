@@ -21,7 +21,6 @@ import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.DataRateMeter;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.UnitType;
@@ -156,7 +155,7 @@ public abstract class AbstractLink extends AbstractService
     protected abstract Status connectionStatus();
 
     protected long getCurrentTime() {
-        return TimeEncoding.getWallclockTime();
+        return timeService.getMissionTime();
     }
 
     @Override
@@ -218,8 +217,6 @@ public abstract class AbstractLink extends AbstractService
             throw new IllegalArgumentException("Action '" + action.getId() + "' already registered");
         }
         actions.put(action.getId(), action);
-        var linkManager = YamcsServer.getServer().getInstance(yamcsInstance).getLinkManager();
-        action.addChangeListener(() -> linkManager.notifyChanged(this));
     }
 
     @Override

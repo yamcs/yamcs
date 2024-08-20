@@ -1,0 +1,65 @@
+services:
+  - class: org.yamcs.archive.XtceTmRecorder
+  - class: org.yamcs.archive.ParameterRecorder
+  - class: org.yamcs.archive.EventRecorder
+  - class: org.yamcs.archive.ReplayServer
+  - class: org.yamcs.archive.CcsdsTmIndex
+  - class: org.yamcs.archive.AlarmRecorder
+  - class: org.yamcs.parameterarchive.ParameterArchive
+    args:
+      realtimeFiller:
+        enabled: true
+      backFiller:
+        enabled: false
+  - class: org.yamcs.ProcessorCreatorService
+    args: 
+      name: "realtime"
+      type: "realtime"
+  - class: org.yamcs.archive.CommandHistoryRecorder
+  - class: org.yamcs.timeline.TimelineService
+
+dataLinks:
+  - name: tm_realtime
+    class: org.yamcs.tests.AbstractIntegrationTest$PacketProvider
+    num: 0
+    stream: tm_realtime
+  - name: tm2_realtime
+    class: org.yamcs.tests.AbstractIntegrationTest$PacketProvider
+    num: 1
+    stream: tm2_realtime
+            
+  - name: pp_realtime
+    class: org.yamcs.tests.AbstractIntegrationTest$ParameterProvider
+    stream: pp_realtime
+    num: 0
+  - name: tc_realtime
+    class: org.yamcs.tests.AbstractIntegrationTest$TcDataLink
+    num: 0
+    stream: tc_realtime
+
+mdb:
+  - type: "sheet"
+    args: 
+      file: "mdb/refmdb.xls"
+      enableAliasReferences: false
+  - type: "xtce"    
+    args:
+      file: "mdb/writable_subsys.xml"
+    writable: true
+    
+streamConfig:
+  tm: 
+   - name: tm_realtime
+     processor: realtime
+   - name: tm2_realtime
+     processor: realtime
+     rootContainer: /REFMDB/tm2
+   - name: tm_dump
+  cmdHist: ["cmdhist_realtime",  "cmdhist_dump"]
+  event: ["events_realtime", "events_dump"]
+  param: ["sys_param", "pp_realtime", "proc_param"]
+  parameterAlarm: ["alarms_realtime"]
+  eventAlarm: ["event_alarms_realtime"]
+  tc: 
+    - name: "tc_realtime"
+      processor: realtime

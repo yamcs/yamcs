@@ -1,5 +1,8 @@
 package org.yamcs.cfdp;
 
+import static org.yamcs.cfdp.CompletedTransfer.COL_CREATION_TIME;
+import static org.yamcs.cfdp.CompletedTransfer.COL_DIRECTION;
+import static org.yamcs.cfdp.CompletedTransfer.COL_TRANSFER_STATE;
 import static org.yamcs.cfdp.CompletedTransfer.TDEF;
 
 import java.io.IOException;
@@ -52,6 +55,7 @@ import org.yamcs.filetransfer.FileListingParser;
 import org.yamcs.filetransfer.FileListingService;
 import org.yamcs.filetransfer.FileSaveHandler;
 import org.yamcs.filetransfer.FileTransfer;
+import org.yamcs.filetransfer.FileTransferFilter;
 import org.yamcs.filetransfer.InvalidRequestException;
 import org.yamcs.filetransfer.RemoteFileListMonitor;
 import org.yamcs.filetransfer.TransferMonitor;
@@ -70,6 +74,7 @@ import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Sequence;
+import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -506,28 +511,115 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
     }
 
     @Override
-    public List<FileTransfer> getTransfers() {
+    public List<FileTransfer> getTransfers(FileTransferFilter filter) {
         List<FileTransfer> toReturn = new ArrayList<>();
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-        pendingTransfers.values().stream().filter(CfdpService::isRunning).forEach(toReturn::add);
+
+        pendingTransfers.values().stream()
+                .filter(CfdpService::isRunning)
+                .forEach(toReturn::add);
         toReturn.addAll(queuedTransfers);
 
-        try {
-            StreamSqlResult res = ydb
-                    .execute("select * from " + TABLE_NAME
-                            + " where transferState='COMPLETED' or transferState='FAILED' "
-                            + " order desc limit " + archiveRetrievalLimit);
-            while (res.hasNext()) {
-                Tuple t = res.next();
-                toReturn.add(new CompletedTransfer(t));
+        toReturn.removeIf(transfer -> {
+            if (filter.start != TimeEncoding.INVALID_INSTANT) {
+                if (transfer.getCreationTime() < filter.start) {
+                    return true;
+                }
             }
-            res.close();
-            return toReturn;
+            if (filter.stop != TimeEncoding.INVALID_INSTANT) {
+                if (transfer.getCreationTime() >= filter.stop) {
+                    return true;
+                }
+            }
+            if (!filter.states.isEmpty() && !filter.states.contains(transfer.getTransferState())) {
+                return true;
+            }
+            if (filter.direction != null && !Objects.equals(filter.direction, transfer.getDirection())) {
+                return true;
+            }
+            if (filter.localEntityId != null && !Objects.equals(filter.localEntityId, transfer.getLocalEntityId())) {
+                return true;
+            }
+            if (filter.remoteEntityId != null && !Objects.equals(filter.remoteEntityId, transfer.getRemoteEntityId())) {
+                return true;
+            }
 
-        } catch (Exception e) {
-            log.error("Error executing query", e);
-            return Collections.emptyList();
+            return false;
+        });
+
+        if (toReturn.size() >= filter.limit) {
+            return toReturn;
         }
+
+        // Query only for COMPLETED or FAILED, while respecting the incoming requested states
+        // (want to avoid duplicates with the in-memory data structure)
+        if (filter.states.isEmpty() || filter.states.contains(TransferState.COMPLETED)
+                || filter.states.contains(TransferState.FAILED)) {
+
+            var sqlb = new SqlBuilder(TABLE_NAME);
+
+            if (filter.start != TimeEncoding.INVALID_INSTANT) {
+                sqlb.whereColAfterOrEqual(COL_CREATION_TIME, filter.start);
+            }
+            if (filter.stop != TimeEncoding.INVALID_INSTANT) {
+                sqlb.whereColBefore(COL_CREATION_TIME, filter.stop);
+            }
+
+            if (filter.states.isEmpty()) {
+                sqlb.whereColIn(COL_TRANSFER_STATE,
+                        Arrays.asList(TransferState.COMPLETED.name(), TransferState.FAILED.name()));
+            } else {
+                var queryStates = new ArrayList<>(filter.states);
+                queryStates.removeIf(state -> {
+                    return state != TransferState.COMPLETED && state != TransferState.FAILED;
+                });
+
+                var stringStates = queryStates.stream().map(TransferState::name).toList();
+                sqlb.whereColIn(COL_TRANSFER_STATE, stringStates);
+
+            }
+            if (filter.direction != null) {
+                sqlb.where(COL_DIRECTION + " = ?", filter.direction.name());
+            }
+            if (filter.localEntityId != null) {
+                // The 1=1 clause is a trick because Yarch is being difficult about multiple lparens
+                sqlb.where("""
+                        (1=1 and
+                          (direction = 'UPLOAD' and sourceId = ?) or
+                          (direction = 'DOWNLOAD' and destinationId = ?)
+                        )
+                        """, filter.localEntityId, filter.localEntityId);
+            }
+            if (filter.remoteEntityId != null) {
+                // The 1=1 clause is a trick because Yarch is being difficult about multiple lparens
+                sqlb.where("""
+                        (1=1 and
+                          (direction = 'UPLOAD' and destinationId = ?) or
+                          (direction = 'DOWNLOAD' and sourceId = ?)
+                        )
+                        """, filter.remoteEntityId, filter.remoteEntityId);
+            }
+
+            sqlb.descend(filter.descending);
+            sqlb.limit(filter.limit - toReturn.size());
+
+            try {
+                var res = ydb.execute(sqlb.toString(), sqlb.getQueryArgumentsArray());
+                while (res.hasNext()) {
+                    Tuple t = res.next();
+                    toReturn.add(new CompletedTransfer(t));
+                }
+                res.close();
+            } catch (ParseException | StreamSqlException e) {
+                log.error("Error executing query", e);
+            }
+        }
+
+        Collections.sort(toReturn, (a, b) -> {
+            var rc = Long.compare(a.getCreationTime(), b.getCreationTime());
+            return filter.descending ? -rc : rc;
+        });
+        return toReturn;
     }
 
     private CfdpFileTransfer processPutRequest(long initiatorEntityId, long seqNum, long creationTime,
@@ -1262,6 +1354,7 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
                 .setUpload(true)
                 .setRemotePath(true)
                 .setFileList(hasFileListingCapability)
+                .setPauseResume(true)
                 .setHasTransferType(true);
     }
 

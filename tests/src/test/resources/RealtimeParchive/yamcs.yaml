@@ -1,0 +1,11 @@
+instances:
+  - instance1
+
+services:
+  - class: org.yamcs.http.HttpServer
+    args:
+      port: 9190
+
+dataDir: ${java.io.tmpdir}/yamcs-IntegrationTest-data
+
+secretKey: testtest

@@ -9,8 +9,8 @@ import org.yamcs.utils.ByteArray;
 import org.yamcs.utils.ByteArrayUtils;
 
 /**
- * serializers for table format version <2 where the signed integers (and timestamps) are stored as they are and do not
- * sort properly when they are primary keys.
+ * serializers for table format version &#8804; 2 where the signed integers (and timestamps) are stored as they are and
+ * do not sort properly when they are primary keys.
  *
  */
 public class ColumnSerializerV2 {

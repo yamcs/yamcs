@@ -62,7 +62,7 @@ public class ObjectSegmentTest {
         assertEquals(s, statusList[1]);
         assertEquals(s, statusList[0]);
 
-        pv.setEngineeringValue(ValueUtility.getUint32Value(70));
+        pv.setEngValue(ValueUtility.getUint32Value(70));
         pv.setMonitoringResult(MonitoringResult.WARNING);
         pv.setWarningRange(new DoubleRange(0, 80));
         pv.setAcquisitionTime(200);
@@ -213,6 +213,27 @@ public class ObjectSegmentTest {
             assertTrue(ps1.equals(pss.get(i)));
             assertTrue(ps2.equals(pss.get(i + 1)));
         }
+
+        pss.makeWritable();
+        pss.add(ps1);
+        pss.add(ps2);
+        for (int i = 0; i < 2002; i += 2) {
+            assertTrue(ps1.equals(pss.get(i)));
+            assertTrue(ps2.equals(pss.get(i + 1)));
+        }
+
+        pss.consolidate();
+        bb = ByteBuffer.allocate(pss.getMaxSerializedSize());
+        pss.writeTo(bb);
+
+        assertEquals(ObjectSegment.SUBFORMAT_ID_ENUM_FPROF, bb.get(0));
+        bb.rewind();
+        pss = ParameterStatusSegment.parseFrom(bb);
+
+        for (int i = 0; i < 2002; i += 2) {
+            assertTrue(ps1.equals(pss.get(i)));
+            assertTrue(ps2.equals(pss.get(i + 1)));
+        }
     }
 
     @Test
@@ -276,6 +297,28 @@ public class ObjectSegmentTest {
 
         r = pss.getRangeArray(0, 9, true);
         checkEquals(r, ps1, ps1, ps2, ps2, ps2, ps3, ps3, ps3, ps3);
+
+        pss.makeWritable();
+        pss.add(ps3);
+
+        r = pss.getRangeArray(0, 10, true);
+        checkEquals(r, ps1, ps1, ps2, ps2, ps2, ps3, ps3, ps3, ps3, ps3);
+
+        pss.consolidate();
+
+        assertEquals(10, pss.size);
+
+        bb = ByteBuffer.allocate(pss.getMaxSerializedSize());
+        pss.writeTo(bb);
+        bb.rewind();
+
+        pss = ParameterStatusSegment.parseFrom(bb);
+
+        assertTrue(pss.runLengthEncoded);
+        assertEquals(3, pss.rleObjectList.size());
+
+        r = pss.getRangeArray(0, 10, true);
+        checkEquals(r, ps1, ps1, ps2, ps2, ps2, ps3, ps3, ps3, ps3, ps3);
 
     }
 

@@ -72,11 +72,11 @@ export class CommandHistoryDataSource extends DataSource<CommandHistoryRecord> {
   private async loadPage(options: GetCommandHistoryOptions) {
     return this.yamcs.yamcsClient.getCommandHistoryEntries(this.yamcs.instance!, options).then(page => {
       this.continuationToken = page.continuationToken;
-      var entries = page.entry || [];
-      for (const entry of entries) {
-        this.updateNamespaces(entry);
+      var commands = page.commands || [];
+      for (const command of commands) {
+        this.updateNamespaces(command);
       }
-      return entries;
+      return commands;
     });
   }
 
@@ -110,10 +110,10 @@ export class CommandHistoryDataSource extends DataSource<CommandHistoryRecord> {
     });
   }
 
-  private updateNamespaces(entry: CommandHistoryEntry) {
+  private updateNamespaces(command: CommandHistoryEntry) {
     const knownNamespaces = this.namespaces$.value;
-    if (entry.aliases) {
-      for (const namespace in entry.aliases) {
+    if (command.aliases) {
+      for (const namespace in command.aliases) {
         if (knownNamespaces.indexOf(namespace) === -1) {
           knownNamespaces.push(namespace);
           knownNamespaces.sort();

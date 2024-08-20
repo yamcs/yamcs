@@ -1,0 +1,86 @@
+# this file defines the different processors types
+# a processor is where TM/TC processing happens inside Yamcs.
+#
+
+realtime:
+    services: 
+        - class: org.yamcs.StreamTmPacketProvider
+          args: 
+              streams: ["tm_realtime"]    
+        - class: org.yamcs.StreamTcCommandReleaser
+        - class: org.yamcs.tctm.StreamParameterProvider
+       # implements XTCE algorithms
+        - class: org.yamcs.algorithms.AlgorithmManager
+          args:            
+              libraries:
+                  JavaScript:
+                      - mdb/algolib.js
+                  python:
+                      - mdb/algolib.py
+        - class: org.yamcs.parameter.LocalParameterManager
+    config:
+        persistParameters: true
+        subscribeAll: true
+        #check parameter and event alarms and also enable the alarm servers (that keeps track of unacknowledged alarms)
+        alarm:
+            parameterCheck: true
+            parameterServer: enabled
+            eventServer: enabled
+        parameterCache:
+            enabled: true
+            cacheAll: true
+            duration: 3600
+            maxNumEntries: 4096
+        recordInitialValues: true
+        recordLocalValues: true
+
+
+#used for archive replays (to displays, etc)
+Archive:
+    services: 
+       - class: org.yamcs.tctm.ReplayService
+    config:
+        subscribeAll: true
+        parameterCache:
+            enabled: true
+            cacheAll: true
+
+#used for archive replays (to displays, etc)
+ArchiveWithPpExclusion:
+    services: 
+       - class: org.yamcs.tctm.ReplayService
+         args: 
+             #do not replay these parameters
+            excludeParameterGroups: ["IntegrationTest"]
+    config:
+        subscribeAll: true
+        parameterCache:
+            enabled: true
+            cacheAll: true
+
+
+            
+#used for performing archive retrievals (e.g. parameter-extractor.sh)
+ArchiveRetrieval:
+    services:
+        - class: org.yamcs.tctm.ReplayService
+        - class: org.yamcs.algorithms.AlgorithmManager
+          args:
+              libraries:
+                  JavaScript:
+                      - mdb/algolib.js
+                  python:
+                      - mdb/algolib.py
+    config:
+        parameterCache:
+            enabled: false
+            
+            
+#used for performing archive retrievals (e.g. parameter-extractor.sh)
+ParameterArchive:
+    services :
+        - class: org.yamcs.tctm.ReplayService
+    config:
+        parameterCache:
+            enabled: false
+            

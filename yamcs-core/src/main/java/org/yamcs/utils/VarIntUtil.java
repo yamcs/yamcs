@@ -14,35 +14,36 @@ public class VarIntUtil {
      */
     static public int writeVarInt32(byte[] buf, int pos, int x) {
         while ((x & ~0x7F) != 0) {
-            buf[pos++] = ((byte)((x & 0x7F) | 0x80));
+            buf[pos++] = ((byte) ((x & 0x7F) | 0x80));
             x >>>= 7;
         }
-        buf[pos++] = (byte)(x & 0x7F);
+        buf[pos++] = (byte) (x & 0x7F);
 
         return pos;
     }
 
     public static void writeVarInt32(ByteBuffer bb, int x) {
         while ((x & ~0x7F) != 0) {
-            bb.put((byte)((x & 0x7F) | 0x80));
+            bb.put((byte) ((x & 0x7F) | 0x80));
             x >>>= 7;
         }
-        bb.put((byte)(x & 0x7F));
+        bb.put((byte) (x & 0x7F));
     }
 
     public static void writeVarInt64(ByteBuffer bb, long x) {
         while ((x & ~0x7F) != 0) {
-            bb.put((byte)((x & 0x7F) | 0x80));
+            bb.put((byte) ((x & 0x7F) | 0x80));
             x >>>= 7;
         }
-        bb.put((byte)(x & 0x7F));
+        bb.put((byte) (x & 0x7F));
     }
 
     public static int readVarInt32(ByteBuffer bb) throws DecodingException {
         byte b = bb.get();
-        int v = b &0x7F;
+        int v = b & 0x7F;
         for (int shift = 7; (b & 0x80) != 0; shift += 7) {
-            if(shift>28) throw new DecodingException("Invalid VarInt32: more than 5 bytes!");
+            if (shift > 28)
+                throw new DecodingException("Invalid VarInt32: more than 5 bytes!");
 
             b = bb.get();
             v |= (b & 0x7F) << shift;
@@ -53,14 +54,13 @@ public class VarIntUtil {
 
     public static long readVarInt64(ByteBuffer bb) {
         byte b = bb.get();
-        long v = b &0x7F;
+        long v = b & 0x7F;
         for (int shift = 7; (b & 0x80) != 0; shift += 7) {
             b = bb.get();
             v |= (b & 0x7F) << shift;
         }
         return v;
     }
-
 
     public static void writeSignedVarint32(ByteBuffer bb, int x) {
         writeVarInt32(bb, encodeZigZag(x));
@@ -70,24 +70,26 @@ public class VarIntUtil {
         return decodeZigZag(readVarInt32(bb));
     }
 
-    //same as above but better for negative numbers
+    // same as above but better for negative numbers
     static public int encodeSigned(byte[] buf, int pos, int x) {
-        return writeVarInt32(buf, pos, encodeZigZag(x));       
+        return writeVarInt32(buf, pos, encodeZigZag(x));
     }
 
     /**
      * decodes an array of varints
      */
     public static class ArrayDecoder {
-        int pos=0; 
+        int pos = 0;
         final byte[] buf;
+
         private ArrayDecoder(byte[] buf) {
             this.buf = buf;
         }
 
         /**
-         * Returns true if the array contains another element. 
-         *  If the array is corrupted, this will return true and next() will throw an BufferOverflow exception
+         * Returns true if the array contains another element. If the array is corrupted, this will return true and
+         * next() will throw an BufferOverflow exception
+         * 
          * @return
          */
         public boolean hasNext() {
@@ -96,7 +98,7 @@ public class VarIntUtil {
 
         public int next() {
             byte b = buf[pos++];
-            int v = b &0x7F;
+            int v = b & 0x7F;
             for (int shift = 7; (b & 0x80) != 0; shift += 7) {
                 b = buf[pos++];
                 v |= (b & 0x7F) << shift;
@@ -105,9 +107,7 @@ public class VarIntUtil {
         }
     }
 
-
-
-    public static class SignedArrayDecoder extends ArrayDecoder{
+    public static class SignedArrayDecoder extends ArrayDecoder {
         private SignedArrayDecoder(byte[] buf) {
             super(buf);
         }
@@ -121,9 +121,7 @@ public class VarIntUtil {
         return new ArrayDecoder(buf);
     }
 
-
-
-    //used to transform small signed integers into unsigned (see protobuf docs)
+    // used to transform small signed integers into unsigned (see protobuf docs)
     public static int decodeZigZag(int x) {
         return (x >>> 1) ^ -(x & 1);
     }
@@ -133,8 +131,8 @@ public class VarIntUtil {
     }
 
     public static void writeSizeDelimitedString(ByteBuffer bb, String s) {
-        byte[]b = s.getBytes(StandardCharsets.UTF_8);
-        writeVarInt32(bb,  b.length);
+        byte[] b = s.getBytes(StandardCharsets.UTF_8);
+        writeVarInt32(bb, b.length);
         bb.put(b);
     }
 
@@ -145,86 +143,94 @@ public class VarIntUtil {
         return new String(b, StandardCharsets.UTF_8);
     }
 
-    //return a zigzag encoding of deltas of deltas
+    // return a zigzag encoding of deltas of deltas
     // -> if the values in x are close to each-other or are increasing by a constant factor (think counters)
     // this result in an array of small numbers
     public static int[] encodeDeltaDeltaZigZag(int x[]) {
         int n = x.length;
         int[] ddz = new int[n];
-        if(n>0) {
+        if (n > 0) {
             ddz[0] = encodeZigZag(x[0]);
             int d = 0;
-            for(int i=1; i<n; i++) {
-                int d1 = x[i]-x[i-1];
-                ddz[i] = encodeZigZag(d1-d);
-                d=d1;
+            for (int i = 1; i < n; i++) {
+                int d1 = x[i] - x[i - 1];
+                ddz[i] = encodeZigZag(d1 - d);
+                d = d1;
             }
         }
         return ddz;
     }
-    
-    
+
     // this is the reverse of the above
     public static int[] decodeDeltaDeltaZigZag(int ddz[]) {
         int n = ddz.length;
         int[] x = new int[n];
-        if(n>0) {
+        if (n > 0) {
             x[0] = decodeZigZag(ddz[0]);
             int d = 0;
-            for(int i=1; i<n; i++) {
+            for (int i = 1; i < n; i++) {
                 d = d + decodeZigZag(ddz[i]);
-                x[i] = x[i-1] + d;
+                x[i] = x[i - 1] + d;
             }
         }
         return x;
     }
 
-    //encoding of SortedIntArray in deltas of deltas
+    // encoding of SortedIntArray in deltas of deltas
     public static int[] encodeDeltaDeltaZigZag(SortedIntArray a) {
         int n = a.size();
         int[] ddz = new int[n];
-        if(n>0) {
+        if (n > 0) {
             ddz[0] = encodeZigZag(a.get(0));
             int d = 0;
-            for(int i=1; i<n; i++) {
-                int d1 = a.get(i)-a.get(i-1);
-                ddz[i] = encodeZigZag(d1-d);
-                d=d1;
+            for (int i = 1; i < n; i++) {
+                int d1 = a.get(i) - a.get(i - 1);
+                ddz[i] = encodeZigZag(d1 - d);
+                d = d1;
             }
         }
         return ddz;
     }
-    
+
     public static int[] encodeDeltaDeltaZigZag(IntArray a) {
         int n = a.size();
         int[] ddz = new int[n];
-        if(n>0) {
+        if (n > 0) {
             ddz[0] = encodeZigZag(a.get(0));
             int d = 0;
-            for(int i=1; i<n; i++) {
-                int d1 = a.get(i)-a.get(i-1);
-                ddz[i] = encodeZigZag(d1-d);
-                d=d1;
+            for (int i = 1; i < n; i++) {
+                int d1 = a.get(i) - a.get(i - 1);
+                ddz[i] = encodeZigZag(d1 - d);
+                d = d1;
             }
         }
         return ddz;
     }
+
     /**
      * get the number of bytes necessary to encode value
+     * 
      * @param value
      * @return
      */
     public static int getEncodedSize(int value) {
-        if(value<128) return 1;
-        if(value<16384) return 2;
-        if(value<2097152) return 3;
-        if(value<268435456) return 4;
+        if (value < 128)
+            return 1;
+        if (value < 16384)
+            return 2;
+        if (value < 2097152)
+            return 3;
+        if (value < 268435456)
+            return 4;
         return 5;
     }
+
     /**
-     * Encode an int array as a sequence of varints representing the deltas between the subsequent elements of the input array.
+     * Encode an int array as a sequence of varints representing the deltas between the subsequent elements of the input
+     * array.
      * 
-     * It is best if the array is sorted in ascending order (because encoding negative numbers in varint is not efficient).
+     * It is best if the array is sorted in ascending order (because encoding negative numbers in varint is not
+     * efficient).
      * 
      * @param s
      * @return
@@ -271,6 +277,4 @@ public class VarIntUtil {
         return sia;
     }
 
-    
-    
 }

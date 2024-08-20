@@ -172,7 +172,10 @@ message MissionDatabase {
   
   // Root space-system header version
   optional string version = 3;
-  repeated SpaceSystemInfo spaceSystem = 4;
+
+  // Deprecated, use ``spaceSystems`` instead
+  repeated SpaceSystemInfo spaceSystem = 4 [deprecated=true];
+  repeated SpaceSystemInfo spaceSystems = 11;
   optional int32 parameterCount = 6;
   optional int32 containerCount = 7;
   optional int32 commandCount = 8;
@@ -229,8 +232,14 @@ message EnumerationAlarm {
 
 message AlarmInfo {
   optional int32 minViolations = 1;
-  repeated AlarmRange staticAlarmRange = 2;
-  repeated EnumerationAlarm enumerationAlarm = 3;
+
+  // Deprecated, use ``staticAlarmRanges`` instead
+  repeated AlarmRange staticAlarmRange = 2 [deprecated=true];
+  repeated AlarmRange staticAlarmRanges = 4;
+
+  // Deprecated, use ``enumerationAlarms`` instead
+  repeated EnumerationAlarm enumerationAlarm = 3 [deprecated=true];
+  repeated EnumerationAlarm enumerationAlarms = 5;
 }
 
 message ContextAlarmInfo {
@@ -257,7 +266,9 @@ message DataEncodingInfo {
   optional int32 sizeInBits = 3;
   optional string encoding = 4;
   optional CalibratorInfo defaultCalibrator = 6;
-  repeated ContextCalibratorInfo contextCalibrator = 7;
+  // Deprecated, use ``contextCalibrators`` instead
+  repeated ContextCalibratorInfo contextCalibrator = 7 [deprecated=true];
+  repeated ContextCalibratorInfo contextCalibrators = 8;
 }
 
 message ContextCalibratorInfo {
@@ -285,7 +296,9 @@ message CalibratorInfo {
 }
 
 message PolynomialCalibratorInfo {
-  repeated double coefficient = 1;
+  // Deprecated, use ``coefficients`` instead
+  repeated double coefficient = 1 [deprecated=true];
+  repeated double coefficients = 2;
 }
 
 message SplineCalibratorInfo {
@@ -293,7 +306,9 @@ message SplineCalibratorInfo {
     optional double raw = 1;
     optional double calibrated = 2;
   }
-  repeated SplinePointInfo point = 1;
+  // Deprecated, use ``points`` instead
+  repeated SplinePointInfo point = 1 [deprecated=true];
+  repeated SplinePointInfo points = 2;
 }
 
 message JavaExpressionCalibratorInfo {
@@ -486,6 +501,9 @@ message ArgumentTypeInfo {
 
   // Type of array entries (only used by array arguments)
   optional ArgumentTypeInfo elementType = 17;
+
+  // Name of the parameter type
+  optional string name = 18;
 }
 
 message ArgumentDimensionInfo {
@@ -650,6 +668,7 @@ message SequenceEntryInfo {
   optional FixedValueInfo fixedValue = 7;
 
   optional RepeatInfo repeat = 5;
+  optional IndirectParameterRefInfo inidrectParameterRef = 8;
 }
 
 message FixedValueInfo {
@@ -667,6 +686,11 @@ message CommandContainerInfo {
   optional int32 sizeInBits = 6;
   optional CommandContainerInfo baseContainer = 7;
   repeated SequenceEntryInfo entry = 8;
+}
+
+message IndirectParameterRefInfo {
+   optional ParameterInfo parameter = 1;
+   optional string aliasNamespace = 2;
 }
 
 message ContainerInfo {

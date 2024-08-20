@@ -50,4 +50,89 @@ public class IntHashSetTest {
 
         assertFalse(set.contains(100));
     }
+
+    @Test
+    public void testRemoveExistingElement() {
+        IntHashSet set = new IntHashSet();
+        set.add(10);
+
+        assertTrue(set.contains(10));
+        assertTrue(set.remove(10));
+        assertFalse(set.contains(10));
+        assertEquals(0, set.size());
+    }
+
+    @Test
+    public void testRemoveNonExistingElement() {
+        IntHashSet set = new IntHashSet();
+        set.add(10);
+        assertFalse(set.remove(20));
+        assertTrue(set.contains(10));
+        assertEquals(1, set.size());
+    }
+
+    @Test
+    public void testRemoveEmptyValue() {
+        IntHashSet set = new IntHashSet();
+        set.add(Integer.MIN_VALUE);
+        assertTrue(set.contains(Integer.MIN_VALUE));
+        assertTrue(set.remove(Integer.MIN_VALUE));
+        assertFalse(set.contains(Integer.MIN_VALUE));
+        assertEquals(0, set.size());
+    }
+
+    @Test
+    public void testRemoveAlreadyRemovedElement() {
+        IntHashSet set = new IntHashSet();
+        set.add(10);
+        assertTrue(set.remove(10));
+        assertFalse(set.remove(10));
+        assertFalse(set.contains(10));
+        assertEquals(0, set.size());
+    }
+
+    @Test
+    public void testRemoveFromEmptySet() {
+        IntHashSet set = new IntHashSet();
+
+        assertFalse(set.remove(10));
+        assertFalse(set.contains(10));
+        assertEquals(0, set.size());
+    }
+
+    @Test
+    public void testRemoveUpdatesSize() {
+        IntHashSet set = new IntHashSet();
+
+        set.add(10);
+        set.add(20);
+        set.add(30);
+        assertEquals(3, set.size());
+
+        assertTrue(set.remove(20));
+        assertEquals(2, set.size());
+
+        assertTrue(set.remove(10));
+        assertEquals(1, set.size());
+
+        assertTrue(set.remove(30));
+        assertEquals(0, set.size());
+    }
+
+    @Test
+    public void testRemoveAndRehash() {
+        IntHashSet set = new IntHashSet();
+
+        set.add(10);
+        set.add(20);
+        set.add(30);
+
+        assertTrue(set.remove(20));
+        assertTrue(set.add(40)); // Should add successfully even after removal
+
+        assertTrue(set.contains(10));
+        assertTrue(set.contains(30));
+        assertTrue(set.contains(40));
+        assertFalse(set.contains(20));
+    }
 }

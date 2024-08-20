@@ -38,7 +38,7 @@
           <ya-text-action
             class="processor-time"
             [class.paused]="processor.replayState === 'PAUSED'"
-            matTooltip="Processor time. Click for more actions"
+            matTooltip="Processor time. Click for actions"
             [matMenuTriggerFor]="processorMenu"
             (menuOpened)="switchProcessorMenuOpened()">
             {{ time$ | async | datetime }} ▾
@@ -186,9 +186,9 @@
             16x
           </button>
           <button mat-menu-item (click)="changeSpeed('afap')">
-            <mat-icon [class.hide]="processor.replayRequest?.speed?.type !== 'AFAP'"
-              >check</mat-icon
-            >
+            <mat-icon [class.hide]="processor.replayRequest?.speed?.type !== 'AFAP'">
+              check
+            </mat-icon>
             As fast as possible
           </button>
         }

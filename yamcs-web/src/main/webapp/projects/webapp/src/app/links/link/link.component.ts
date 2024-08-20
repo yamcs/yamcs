@@ -48,10 +48,6 @@ export class LinkComponent implements OnDestroy {
     this.linkSubscription = this.yamcs.yamcsClient.createLinkSubscription({
       instance: this.yamcs.instance!,
     }, evt => {
-      if (evt.type !== 'UPDATE_ALL') {
-        return; // Legacy type
-      }
-
       for (const linkInfo of evt.links || []) {
         const link = this.link$.value;
         if (link && link.name === linkInfo.name) {

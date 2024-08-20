@@ -40,6 +40,10 @@ public abstract class BaseSegment {
 
     public abstract void writeTo(ByteBuffer buf);
 
+
+
+    public void makeWritable() {
+    }
     /**
      *
      * @return a high approximation for the serialized size in order to allocate a ByteBuffer big enough

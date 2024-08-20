@@ -68,7 +68,6 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                 unsortedGroups.add(entry.getKey());
             }
             Collections.sort(unsortedGroups);
-            responseb.addAllGroup(unsortedGroups);
             responseb.addAllGroups(unsortedGroups);
         }
         observer.complete(responseb.build());

@@ -172,10 +172,6 @@ export class LinkListComponent implements AfterViewInit, OnDestroy {
   }
 
   private processLinkEvent(evt: LinkEvent) {
-    if (evt.type !== 'UPDATE_ALL') {
-      return; // Legacy type
-    }
-
     const linkNames: string[] = [];
     for (const linkInfo of evt.links || []) {
       linkNames.push(linkInfo.name);

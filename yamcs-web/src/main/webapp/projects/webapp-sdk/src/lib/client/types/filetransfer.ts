@@ -1,6 +1,10 @@
 import { WebSocketCall } from '../WebSocketCall';
 import { ActionInfo } from './management';
 
+export type FileTransferDirection = 'UPLOAD' | 'DOWNLOAD';
+
+export type FileTransferStatus = 'RUNNING' | 'PAUSED' | 'FAILED' | 'COMPLETED' | 'CANCELLING' | 'QUEUED';
+
 export interface FileTransferService {
   instance: string;
   name: string;
@@ -27,9 +31,21 @@ export interface FileTransferCapabilities {
   reliability: boolean;
   remotePath: boolean;
   hasTransferType: boolean;
+  pauseResume: boolean;
   fileList: boolean;
   fileListExtraColumns?: FileListExtraColumnInfo[];
   fileActions?: ActionInfo[];
+}
+
+export interface GetFileTransfersOptions {
+  start?: string;
+  stop?: string;
+  state?: string | string[];
+  direction?: FileTransferDirection;
+  localEntityId?: number;
+  remoteEntityId?: number;
+  limit?: number;
+  order?: 'asc' | 'desc';
 }
 
 export interface FileListExtraColumnInfo {
@@ -46,19 +62,21 @@ export interface Transfer {
   id: number;
   startTime?: string;
   creationTime: string;
-  state: 'RUNNING' | 'PAUSED' | 'FAILED' | 'COMPLETED' | 'CANCELLING' | 'QUEUED';
+  state: FileTransferStatus;
   bucket: string;
   objectName: string;
   remotePath: string;
-  direction: 'UPLOAD' | 'DOWNLOAD';
+  direction: FileTransferDirection;
   totalSize: number;
   sizeTransferred: number;
   failureReason?: string;
   transferType?: string;
+  localEntity: Entity;
+  remoteEntity: Entity;
 }
 
 export interface CreateTransferRequest {
-  direction: 'UPLOAD' | 'DOWNLOAD';
+  direction: FileTransferDirection;
   bucket: string;
   objectName: string;
   remotePath: string;
@@ -93,6 +111,7 @@ export interface ListFilesResponse {
   remotePath: string;
   listTime: string;
   state?: string;
+  progressMessage?: string;
 }
 
 export interface RunFileActionRequest {
@@ -109,7 +128,13 @@ export interface ServicesPage {
 export interface SubscribeTransfersRequest {
   instance: string;
   serviceName: string;
+  ongoingOnly: true;
+}
+
+export interface SubscribeRemoteFileListRequest {
+  instance: string;
+  serviceName: string;
 }
 
 export type TransferSubscription = WebSocketCall<SubscribeTransfersRequest, Transfer>;
-export type RemoteFileListSubscription = WebSocketCall<SubscribeTransfersRequest, ListFilesResponse>;
+export type RemoteFileListSubscription = WebSocketCall<SubscribeRemoteFileListRequest, ListFilesResponse>;

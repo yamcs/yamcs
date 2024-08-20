@@ -7,6 +7,7 @@ message TimeBasedPartition {
   optional int64 partitionStart = 2;
   optional int64 partitionEnd = 3;
   optional string partitionCf = 4;
+  optional uint32 parchiveVersion = 5 [default = 0];
 }
 
 /**
@@ -112,11 +113,16 @@ message TablespaceRecord {
     //used for PARCHIVE_AGGARR_INFO to store the numeric type (engType, rawType) of the parameter
     optional uint32 numericType = 16;
     
-    //if partitioning is not used, this indicates that parameter archive data is stored in separate column family
+    //if time based partitioning is not used for the parameter archive, this indicates that parameter archive data is stored in separate column family
     //if partitioning is used, each partition has the property partitionCf indicating the name of the column family
     // if this is not set, the parameter archive is not stored in separate column family  (databases created 
     //  with Yamcs versions prior to 5.8.1) 
     optional string parchiveCf = 17;
+    
+    //Starting with Yamcs 5.10.0 stores the version of the Parameter Archive in case time based partitioning is not used
+    // if time based partitioning is used, each partition has its own version
+    optional uint32 parchiveVersion = 18 [default = 0];
+    
 }
 
 //associated to each bucket

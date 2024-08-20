@@ -51,7 +51,6 @@ public class MultiParameterRetrieval {
 
         for (int i = 0; i < mpvr.parameterIds.length; i++) {
             ParameterId paraId = mpvr.parameterIds[i];
-
             ParameterRequest req = new ParameterRequest(mpvr.start, mpvr.stop, mpvr.ascending, mpvr.retrieveEngValues,
                     mpvr.retrieveRawValues && paraId.hasRawValue(), mpvr.retrieveParamStatus);
 

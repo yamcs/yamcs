@@ -50,7 +50,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<nettyVersion>4.1.94.Final</nettyVersion>
 		<protobufVersion>3.19.6</protobufVersion>
-		<rocksdbVersion>7.9.2</rocksdbVersion>
+		<rocksdbVersion>9.4.0.6</rocksdbVersion>
 		<slf4jVersion>2.0.9</slf4jVersion>
 	</properties>
 
@@ -167,8 +167,8 @@
 				<version>2.7.3</version>
 			</dependency>
 			<dependency>
-				<groupId>org.rocksdb</groupId>
-				<artifactId>rocksdbjni</artifactId>
+				<groupId>org.yamcs</groupId>
+				<artifactId>yamcs-rocksdb</artifactId>
 				<version>${rocksdbVersion}</version>
 			</dependency>
 			<dependency>
@@ -238,7 +238,7 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.12.1</version>
 					<configuration>
-						<release>11</release>
+						<release>17</release>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -291,7 +291,7 @@
 					<artifactId>maven-javadoc-plugin</artifactId>
 					<version>3.6.3</version>
 					<configuration>
-						<release>11</release>
+						<release>17</release>
 						<author>false</author>
 						<breakiterator>true</breakiterator>
 						<additionalOptions>

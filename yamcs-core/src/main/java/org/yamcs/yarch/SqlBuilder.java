@@ -124,6 +124,7 @@ public class SqlBuilder {
 
         return this;
     }
+
     public SqlBuilder descend(boolean descend) {
         this.descend = descend;
         return this;
@@ -142,6 +143,10 @@ public class SqlBuilder {
 
     public List<Object> getQueryArguments() {
         return queryArgs;
+    }
+
+    public Object[] getQueryArgumentsArray() {
+        return queryArgs.toArray();
     }
 
     @Override

@@ -13,9 +13,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -56,7 +54,6 @@ import org.yamcs.protobuf.ExportCommandRequest;
 import org.yamcs.protobuf.ExportCommandsRequest;
 import org.yamcs.protobuf.GetCommandRequest;
 import org.yamcs.protobuf.IssueCommandRequest;
-import org.yamcs.protobuf.IssueCommandRequest.Assignment;
 import org.yamcs.protobuf.IssueCommandResponse;
 import org.yamcs.protobuf.ListCommandsRequest;
 import org.yamcs.protobuf.ListCommandsResponse;
@@ -120,19 +117,11 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
             comment = request.getComment();
         }
 
-        Map<String, Object> assignments = new LinkedHashMap<>();
-        if (request.getAssignmentCount() > 0) {
-            for (Assignment a : request.getAssignmentList()) {
-                assignments.put(a.getName(), a.getValue());
-            }
-        } else if (request.hasArgs()) {
-            assignments.putAll(GpbWellKnownHelper.toJava(request.getArgs()));
-        }
+        var args = GpbWellKnownHelper.toJava(request.getArgs());
 
-        // Prepare the command
         PreparedCommand preparedCommand;
         try {
-            preparedCommand = processor.getCommandingManager().buildCommand(cmd, assignments, origin, sequenceNumber,
+            preparedCommand = processor.getCommandingManager().buildCommand(cmd, args, origin, sequenceNumber,
                     ctx.user);
             if (comment != null && !comment.trim().isEmpty()) {
                 preparedCommand.setComment(comment);
@@ -365,6 +354,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                         entry.getCommandName())) {
                     count++;
                     if (count <= limit) {
+                        responseb.addCommands(entry);
                         responseb.addEntry(entry);
                         last = entry;
                     } else {

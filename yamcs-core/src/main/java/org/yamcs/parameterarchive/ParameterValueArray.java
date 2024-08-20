@@ -7,8 +7,6 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 
 /**
  * an array of values for one {@link ParameterId}
- * 
- * @author nm
  *
  */
 public class ParameterValueArray {

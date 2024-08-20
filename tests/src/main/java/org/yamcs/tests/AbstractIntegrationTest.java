@@ -38,7 +38,7 @@ public abstract class AbstractIntegrationTest {
 
     protected final String yamcsHost = "localhost";
     protected final int yamcsPort = 9190;
-    protected final String yamcsInstance = "IntegrationTest";
+    protected final String yamcsInstance = "instance1";
 
     ParameterProvider parameterProvider;
     MyConnectionListener connectionListener;
@@ -56,7 +56,7 @@ public abstract class AbstractIntegrationTest {
 
     @BeforeAll
     public static void beforeClass() throws Exception {
-        setupYamcs();
+        setupYamcs("IntegrationTest", true);
     }
 
     @BeforeEach
@@ -83,11 +83,12 @@ public abstract class AbstractIntegrationTest {
                 .clearAll();
     }
 
-    protected static void setupYamcs() throws Exception {
-        Path dataDir = Path.of(System.getProperty("java.io.tmpdir"), "yamcs-IntegrationTest-data");
-        FileUtils.deleteRecursivelyIfExists(dataDir);
-
-        YConfiguration.setupTest("IntegrationTest");
+    protected static void setupYamcs(String integrationTestConfig, boolean cleanExistingData) throws Exception {
+        if (cleanExistingData) {
+            Path dataDir = Path.of(System.getProperty("java.io.tmpdir"), "yamcs-IntegrationTest-data");
+            FileUtils.deleteRecursivelyIfExists(dataDir);
+        }
+        YConfiguration.setupTest(integrationTestConfig);
 
         yamcs = YamcsServer.getServer();
         yamcs.prepareStart();
@@ -152,7 +153,6 @@ public abstract class AbstractIntegrationTest {
             packetGenerator.generate_PKT8();
         }
     }
-
 
     void generatePkt13AndTm2Pkt1(String utcStart, int numPackets) {
         long t0 = TimeEncoding.parse(utcStart);

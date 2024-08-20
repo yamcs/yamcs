@@ -1,6 +1,9 @@
 package org.yamcs;
 
 import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.utils.TimeEncoding;
+
+import com.google.protobuf.util.Timestamps;
 
 /**
  * A command option. Instances of this class should be registered once, system-wide, against an instance of
@@ -13,6 +16,7 @@ public class CommandOption {
         BOOLEAN,
         NUMBER,
         STRING,
+        TIMESTAMP,
     }
 
     private final String id;
@@ -107,6 +111,19 @@ public class CommandOption {
             default:
                 throw new IllegalArgumentException("Command option cannot be converted to string");
             }
+        case TIMESTAMP:
+            switch (value.getType()) {
+            case TIMESTAMP:
+                return value;
+            case STRING:
+                var ts = Timestamps.parseUnchecked(value.getStringValue());
+                return Value.newBuilder()
+                        .setType(Value.Type.TIMESTAMP)
+                        .setTimestampValue(TimeEncoding.fromProtobufTimestamp(ts))
+                        .build();
+            default:
+                throw new IllegalArgumentException("Command option cannot be converted to timestamp");
+            }
         default:
             throw new IllegalStateException("Unexpected type " + type);
         }
@@ -173,6 +190,21 @@ public class CommandOption {
                         .build();
             } else {
                 throw new IllegalArgumentException("Command option cannot be converted to string");
+            }
+        case TIMESTAMP:
+            if (value instanceof Long) {
+                return Value.newBuilder()
+                        .setType(Value.Type.TIMESTAMP)
+                        .setTimestampValue((long) value)
+                        .build();
+            } else if (value instanceof String) {
+                var ts = Timestamps.parseUnchecked((String) value);
+                return Value.newBuilder()
+                        .setType(Value.Type.TIMESTAMP)
+                        .setTimestampValue(TimeEncoding.fromProtobufTimestamp(ts))
+                        .build();
+            } else {
+                throw new IllegalArgumentException("Command option cannot be converted to timestamp");
             }
         default:
             throw new IllegalStateException("Unexpected type " + type);

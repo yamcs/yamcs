@@ -7,7 +7,6 @@ import org.yamcs.xtce.util.HexUtils;
  * Holds an optional attributes name, bitOrder, byteOrderList, required attributes binaryValue, sizeInBits and optional
  * LocationInContainerInBits, RepeatEntry and IncludeCondition.
  * 
- * @author nm
  */
 public class FixedValueEntry extends SequenceEntry {
     private static final long serialVersionUID = 1L;

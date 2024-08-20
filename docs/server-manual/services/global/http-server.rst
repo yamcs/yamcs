@@ -56,9 +56,6 @@ tlsKey (string)
 contextPath (string)
     Path string prepended to all routes. For example, a contextPath of ``/yamcs`` will make the API available on ``/yamcs/api`` instead of the default ``/api``. When using this property in combination with a reverse proxy, you should ensure that the proxy path matches with the context path because rewriting may lead to unexpected results.
 
-zeroCopyEnabled (boolean)
-    Indicates whether zero-copy can be used to optimize non-TLS static file serving. Default: ``true``
-
 maxContentLength (integer)
     Maximum allowed length of request bodies. This is applied to all non-streaming API requests. Default: ``65536``
 
@@ -69,6 +66,13 @@ maxInitialLineLength (integer)
 
 maxHeaderSize (integer)
     Maximum allowed length of all headers combined. Default: ``8192``
+
+maxPageSize (integer)
+    Maximum allowed page size.
+
+    This corresponds with the ``limit`` query parameter that is used in the HTTP API.
+
+    Default: ``1000``.
 
 nThreads (integer)
     Configure the number of threads that handle HTTP requests. The value ``0`` resolves to two times the number of CPU cores. Default: ``0``

@@ -55,7 +55,6 @@ public class FloatValueSegment extends BaseSegment implements ValueSegment {
         for (int i = 0; i < n; i++) {
             bb.putFloat(values.get(i));
         }
-
     }
 
     private void parse(ByteBuffer bb) throws DecodingException {

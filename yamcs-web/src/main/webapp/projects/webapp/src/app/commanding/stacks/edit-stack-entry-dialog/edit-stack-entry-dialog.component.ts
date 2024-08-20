@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, Inject, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { AcknowledgmentInfo, AdvancementParams, Command, CommandOptionType, StackEntry, Value, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { AcknowledgmentInfo, AdvancementParams, Command, CommandOptionType, StackEntry, Value, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { CommandSelectorComponent } from '../../../shared/command-selector/command-selector.component';
 import { CommandFormComponent, TemplateProvider } from '../../command-sender/command-form/command-form.component';
@@ -41,6 +41,8 @@ export class StackEntryTemplateProvider implements TemplateProvider {
             return this.getNumberOption(value);
           case 'STRING':
             return this.getStringOption(value);
+          case 'TIMESTAMP':
+            return this.getStringOption(value);
         }
       }
     }
@@ -72,8 +74,6 @@ export class StackEntryTemplateProvider implements TemplateProvider {
     return this.entry.comment;
   }
 }
-
-import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,

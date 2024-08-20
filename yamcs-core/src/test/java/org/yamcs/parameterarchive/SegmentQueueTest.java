@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -21,6 +23,8 @@ public class SegmentQueueTest {
     /** The size of an interval, in milliseconds. (2^23 seconds) */
     private static final long INTERVAL_SIZE_MILLIS = 8388608000L;
 
+    Function<PGSegment, CompletableFuture<Void>> dbWriter = pgs -> CompletableFuture.completedFuture(null);
+
     @BeforeAll
     public static void beforeAll() {
         TimeEncoding.setUp();
@@ -32,7 +36,7 @@ public class SegmentQueueTest {
         List<BasicParameterValue> plist1 = getParaList(9);
         List<BasicParameterValue> plist2 = getParaList(10);
 
-        SegmentQueue sq = new SegmentQueue(1, 2);
+        SegmentQueue sq = new SegmentQueue(1, 2, dbWriter, t -> null);
         sq.addRecord(10, new BasicParameterList(IntArray.wrap(1), plist2));
         sq.addRecord(9, new BasicParameterList(IntArray.wrap(1), plist1));
 
@@ -60,7 +64,7 @@ public class SegmentQueueTest {
         List<BasicParameterValue> plist1 = getParaList(t1);
         List<BasicParameterValue> plist2 = getParaList(t1 + 1);
 
-        SegmentQueue sq = new SegmentQueue(1, 2);
+        SegmentQueue sq = new SegmentQueue(1, 2, dbWriter, t -> null);
         sq.addRecord(t1 + 1, new BasicParameterList(IntArray.wrap(1), plist2));
         sq.addRecord(t1, new BasicParameterList(IntArray.wrap(1), plist1));
 
@@ -84,7 +88,7 @@ public class SegmentQueueTest {
      */
     @Test
     public void testEmptyQueue() {
-        SegmentQueue sq = new SegmentQueue(1, 2);
+        SegmentQueue sq = new SegmentQueue(1, 2, dbWriter, t -> null);
         assertTrue(sq.isEmpty());
         assertEquals(0, sq.getPVSegments(1, false).size());
         assertEquals(0, sq.getPVSegments(1, true).size());
@@ -95,7 +99,7 @@ public class SegmentQueueTest {
      */
     @Test
     public void testQueueCapacity() {
-        SegmentQueue sq = new SegmentQueue(1, 2);
+        SegmentQueue sq = new SegmentQueue(1, 2, dbWriter, t -> null);
 
         // Add one value in each separate interval, until the cache has only one
         // slot free.

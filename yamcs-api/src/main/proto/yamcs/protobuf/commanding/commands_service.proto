@@ -137,10 +137,6 @@ message IssueCommandRequest {
   // The name/value assignments for this command.
   optional google.protobuf.Struct args = 16;
 
-  // The name/value assignments for this command.
-  // Deprecated: use ``args`` instead.
-  repeated Assignment assignment = 1 [deprecated=true];
-
   // The origin of the command. Typically a hostname.
   optional string origin = 2;
   
@@ -241,7 +237,11 @@ message UpdateCommandHistoryRequest {
 }
 
 message ListCommandsResponse {
-  repeated CommandHistoryEntry entry = 1;
+  // Deprecated, use ``commands`` instead
+  repeated CommandHistoryEntry entry = 1 [deprecated=true];
+
+  // Page  of matching commands
+  repeated CommandHistoryEntry commands = 3;
 
   // Token indicating the response is only partial. More results can then
   // be obtained by performing the same request (including all original
