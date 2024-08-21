@@ -1,4 +1,6 @@
-package org.yamcs.tctm.pus;
+package org.yamcs.pus;
+
+import static org.yamcs.pus.Constants.*;
 
 import java.nio.ByteBuffer;
 
@@ -10,8 +12,6 @@ import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
-
-import static org.yamcs.tctm.pus.Constants.*;
 
 /**
  * Implementation for ECSS PUS (ECSS-E-ST-70-41C) packets.

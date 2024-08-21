@@ -25,7 +25,6 @@ import org.yamcs.xtce.DataEncoding;
  * <p>
  * Unlike the pure XTCE based decoder, this one can use a time correlation service to convert between an on-board time
  * and Yamcs time.
- * 
  */
 public class TimeBinaryDecoder extends AbstractDataDecoder {
 

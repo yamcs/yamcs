@@ -32,10 +32,11 @@ import org.yamcs.simulator.TcpTmTcLink;
  * <li>ST[05] - event reporting - TODO</li>
  * <li>ST[06] - memory management - TODO</li>
  * <li>ST[09] - time management - only sending the time packet</li>
- * <li>ST[11] - time based schedule - TODO</li>
+ * <li>ST[11] - time based schedule</li>
  * <li>ST[12] - on-board monitoring - TODO</li>
  * <li>ST[13] - large packet transfer - TODO</li>
  * <li>ST[15] - on-board storage and retrieval - TODO</li>
+ * <li>ST[17] - test</li>
  * <li>ST[23] - file management - TODO</li>
  * 
  * <li>
@@ -45,9 +46,19 @@ import org.yamcs.simulator.TcpTmTcLink;
  */
 public class PusSimulator extends AbstractSimulator {
     static final int MAIN_APID = 1;
-    static final int PUS_TYPE_HK = 3;
+
     static final int PUS_TYPE_ACK = 1;
-    static final int START_FAILURE_INVALID_VOLTAGE_NUM = 1;
+    static final int PUS_TYPE_HK = 3;
+    static final int PUS_TYPE_EVENT = 5;
+
+    static final int PUS_SUBTYPE_ACK_ACCEPTANCE = 1;
+    static final int PUS_SUBTYPE_NACK_ACCEPTANCE = 2;
+    static final int PUS_SUBTYPE_ACK_START = 3;
+    static final int PUS_SUBTYPE_NACK_START = 4;
+    static final int PUS_SUBTYPE_ACK_COMPLETION = 7;
+    static final int PUS_SUBTYPE_NACK_COMPLETION = 8;
+
+    static final int START_FAILURE_INVALID_VOLTAGE_NUM = 100;
     private static final Logger log = LoggerFactory.getLogger(PusSimulator.class);
 
     final Random random = new Random();
@@ -61,6 +72,9 @@ public class PusSimulator extends AbstractSimulator {
     RCSHandler rcsHandler;
     EpsLvpduHandler epslvpduHandler;
     CfdpReceiver cfdpReceiver;
+    Pus5Service pus5Service;
+    Pus11Service pus11Service;
+    Pus17Service pus17Service;
 
     protected BlockingQueue<PusTcPacket> pendingCommands = new ArrayBlockingQueue<>(100);
 
@@ -71,6 +85,9 @@ public class PusSimulator extends AbstractSimulator {
         flightDataHandler = new FlightDataHandler();
         dhsHandler = new DHSHandler();
         cfdpReceiver = new CfdpReceiver(this, dataDir);
+        pus5Service = new Pus5Service(this);
+        pus11Service = new Pus11Service(this);
+        pus17Service = new Pus17Service(this);
     }
 
     @Override
@@ -82,6 +99,9 @@ public class PusSimulator extends AbstractSimulator {
         executor.scheduleAtFixedRate(() -> sendHkTm(), 0, 1000, TimeUnit.MILLISECONDS);
         // executor.scheduleAtFixedRate(() -> sendCfdp(), 0, 1000, TimeUnit.MILLISECONDS);
         executor.scheduleAtFixedRate(() -> executePendingCommands(), 0, 200, TimeUnit.MILLISECONDS);
+
+        pus5Service.start();
+        pus11Service.start();
     }
 
     private void sendFlightPacket() {
@@ -122,7 +142,7 @@ public class PusSimulator extends AbstractSimulator {
         }
     }
 
-    private void transmitRealtimeTM(PusTmPacket packet) {
+    void transmitRealtimeTM(PusTmPacket packet) {
         packet.fillChecksum();
         tmLink.sendPacket(packet.getBytes());
     }
@@ -196,27 +216,28 @@ public class PusSimulator extends AbstractSimulator {
     private void executePendingCommands() {
         PusTcPacket commandPacket;
         while ((commandPacket = pendingCommands.poll()) != null) {
-            if (commandPacket.getType() == 25) {
-                log.info("Received PUS TC : {}", commandPacket);
-
-                switch (commandPacket.getSubtype()) {
-                case 1:
-                    switchBatteryOn(commandPacket);
-                    break;
-                case 2:
-                    switchBatteryOff(commandPacket);
-                    break;
-
-                default:
-                    log.error("Invalid command  subtype {}", commandPacket.getSubtype());
+            try {
+                log.info("Received PUS TC : {} (now: {})", commandPacket, PusTime.now());
+                switch (commandPacket.getType()) {
+                case 5 -> pus5Service.executeTc(commandPacket);
+                case 11 -> pus11Service.executeTc(commandPacket);
+                case 17 -> pus17Service.executeTc(commandPacket);
+                case 25 -> {
+                    switch (commandPacket.getSubtype()) {
+                    case 1 -> switchBatteryOn(commandPacket);
+                    case 2 -> switchBatteryOff(commandPacket);
+                    default -> log.error("Invalid command  subtype {}", commandPacket.getSubtype());
+                    }
                 }
-            } else {
-                log.warn("Unknown command type {}", commandPacket.getType());
+                default -> log.warn("Unknown command type {}", commandPacket.getType());
+                }
+            } catch (Exception e) {
+                log.warn("Error executing command", e);
             }
         }
     }
 
-    protected PusTmPacket ack(PusTcPacket commandPacket, int subtype) {
+    protected static PusTmPacket ack(PusTcPacket commandPacket, int subtype) {
         PusTmPacket ackPacket = new PusTmPacket(MAIN_APID, 4, PUS_TYPE_ACK, subtype);
 
         ByteBuffer bb = ackPacket.getUserDataBuffer();
@@ -224,7 +245,7 @@ public class PusSimulator extends AbstractSimulator {
         return ackPacket;
     }
 
-    protected PusTmPacket nack(PusTcPacket commandPacket, int subtype, int code) {
+    public static PusTmPacket nack(PusTcPacket commandPacket, int subtype, int code) {
         PusTmPacket ackPacket = new PusTmPacket(MAIN_APID, 8, PUS_TYPE_ACK, subtype);
 
         ByteBuffer bb = ackPacket.getUserDataBuffer();

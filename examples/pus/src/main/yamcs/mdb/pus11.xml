@@ -1,0 +1,544 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem name="PUS11" xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+	<Header validationStatus="Unknown" version="1.0" date="2020-07-01T16:48:10Z">
+		<NoteSet>
+			<Note>Sample implementation of PUS11 Time-based scheduling</Note>
+		</NoteSet>		
+	</Header>
+	<TelemetryMetaData>
+		<ParameterTypeSet>
+			<IntegerParameterType name="ScheduleIdType" signed="false">
+				<IntegerDataEncoding sizeInBits="8"/>
+			</IntegerParameterType>
+			<EnumeratedParameterType name="ScheduleStatusType">
+				<IntegerDataEncoding sizeInBits="8"/>
+				<EnumerationList>
+					<Enumeration value="0" label="disabled" />
+					<Enumeration value="1" label="enabled" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+			<AggregateParameterType name="ScheduleStatusElementType">
+				<MemberList>
+					<Member typeRef="ScheduleIdType" name="schedule_id"/>
+					<Member typeRef="ScheduleStatusType" name="schedule_status"/>
+				</MemberList>
+			</AggregateParameterType>
+			<ArrayParameterType arrayTypeRef="ScheduleStatusElementType" name="StatusReportType">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex> <DynamicValue><ParameterInstanceRef parameterRef="status_report_n"/><LinearAdjustment intercept="-1"/></DynamicValue></EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayParameterType>
+						
+			<AggregateParameterType name="RequestIdType">
+				<MemberList>
+					<Member typeRef="/PUS/PusSourceIdType" name="source_id"/>
+					<Member typeRef="/dt/uint16" name="apid"/>
+					<Member typeRef="/dt/uint16" name="seq"/>
+				</MemberList>
+			</AggregateParameterType>
+			
+		</ParameterTypeSet>
+		<ParameterSet>
+			<Parameter parameterTypeRef="/dt/uint32" name="status_report_n"/>
+			<Parameter parameterTypeRef="/dt/uint32" name="summary_report_n"/>
+			<Parameter parameterTypeRef="StatusReportType" name="status_report" shortDescription="Contains the status (enable/disable) of the sub-schedules."/>
+		</ParameterSet>
+		<ContainerSet>
+			<SequenceContainer name="pus11-tm">
+				<EntryList/>
+				<BaseContainer containerRef="/PUS/pus-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/type" comparisonOperator="==" value="11" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			
+			
+			<SequenceContainer name="SUBSCHEDULE_STATUS_REPORT" shortDescription="TM[11,19] time-based sub-schedule status report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="status_report_n"/>
+					<ArrayParameterRefEntry parameterRef="status_report"/>
+				</EntryList>
+				<BaseContainer containerRef="pus11-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="19" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			
+		</ContainerSet>
+	</TelemetryMetaData>
+	<CommandMetaData>
+		<ArgumentTypeSet>
+			<IntegerArgumentType name="NumRequestsType" baseType="/dt/uint16"/>
+			<IntegerArgumentType name="NumSchedulesType" baseType="/dt/uint8"/>
+			
+			<AggregateArgumentType name="RequestIdType">
+				<MemberList>
+					<Member typeRef="/dt/uint16" name="source_id"/>
+					<Member typeRef="/dt/uint16" name="apid"/>
+					<Member typeRef="/dt/uint16" name="seqcount"/>
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType arrayTypeRef="RequestIdType" name="RequestArrayType">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="num_requests" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+			<IntegerArgumentType name="ScheduleIdType" baseType="/dt/uint8"/>
+			<ArrayArgumentType arrayTypeRef="ScheduleIdType" name="ScheduleIdArrayType">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="num_schedules" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+		</ArgumentTypeSet>
+		<MetaCommandSet>
+			<MetaCommand name="pus11-tc" abstract="true">
+				<BaseMetaCommand metaCommandRef="/PUS/pus-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="apid" argumentValue="1" />
+						<ArgumentAssignment argumentName="type" argumentValue="11" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="pus11-tc">
+					<EntryList/>
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="ENABLE_SCHEDULER" shortDescription="TC[11,1] enable the time-based schedule execution function">
+				<BaseMetaCommand metaCommandRef="pus11-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="1" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="ENABLE_SCHEDULER">
+					<EntryList/>
+					<BaseContainer containerRef="pus11-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="DISABLE_SCHEDULER" shortDescription="TC[11,2] disable the time-based schedule execution function">
+				<BaseMetaCommand metaCommandRef="pus11-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="2" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="DISABLE_SCHEDULER">
+					<EntryList/>
+					<BaseContainer containerRef="pus11-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="RESET_SCHEDULER" shortDescription="TC[11,3] reset the time-based schedule">
+				<BaseMetaCommand metaCommandRef="pus11-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="3" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="RESET_SCHEDULER">
+					<EntryList/>
+					<BaseContainer containerRef="pus11-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			
+			<MetaCommand name="DELETE_ACTIVITIES_BY_ID" shortDescription="TC[11,5] delete time-based scheduled activities identified by request identifier">
+				<BaseMetaCommand metaCommandRef="pus11-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="5" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="NumRequestsType" name="num_requests"></Argument>
+					<Argument argumentTypeRef="RequestArrayType" name="requests"></Argument>
+				</ArgumentList>
+				<CommandContainer name="DELETE_ACTIVITIES_BY_ID">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="num_requests" />
+						<ArgumentRefEntry argumentRef="requests" />
+					</EntryList>
+					<BaseContainer containerRef="pus11-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="DELETE_ACTIVITIES_BY_FILTER" shortDescription="TC[11,6] delete the time-based scheduled activitiesidentified by a filter">
+				<BaseMetaCommand metaCommandRef="pus11-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="6" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="/PUS/PusTimeType" name="start_time"></Argument>
+					<Argument argumentTypeRef="/PUS/PusTimeType" name="end_time"></Argument>
+					<Argument argumentTypeRef="NumSchedulesType" name="num_schedules"></Argument>
+					<Argument argumentTypeRef="ScheduleIdArrayType" name="schedules"></Argument>
+				</ArgumentList>
+				<CommandContainer name="DELETE_ACTIVITIES_BY_FILTER">
+					<EntryList>
+						<FixedValueEntry binaryValue="01" sizeInBits="8" name="filter_type"/>
+						<ArgumentRefEntry argumentRef="start_time" />
+						<ArgumentRefEntry argumentRef="end_time" />
+						<ArgumentRefEntry argumentRef="num_schedules" />
+						<ArgumentRefEntry argumentRef="schedules" />
+					</EntryList>
+					<BaseContainer containerRef="pus11-tc" />
+				</CommandContainer>
+			</MetaCommand>
+		
+			<MetaCommand name="TIME_SHIFT_ACTIVITIES_BY_ID" shortDescription="TC[11,7] time-shift scheduled activities identified by request identifier">
+				<BaseMetaCommand metaCommandRef="pus11-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="7" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="NumRequestsType" name="num_requests"></Argument>
+					<Argument argumentTypeRef="RequestArrayType" name="requests"></Argument>
+				</ArgumentList>
+				<CommandContainer name="TIME_SHIFT_ACTIVITIES_BY_ID">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="num_requests" />
+						<ArgumentRefEntry argumentRef="requests" />
+					</EntryList>
+					<BaseContainer containerRef="pus11-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TIME_SHIFT_ACTIVITIES_BY_FILTER" shortDescription="TC[11,8] time-shift the scheduled activities identified by a filter">
+				<BaseMetaCommand metaCommandRef="pus11-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="8" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="/PUS/PusTimeType" name="start_time"></Argument>
+					<Argument argumentTypeRef="/PUS/PusTimeType" name="end_time"></Argument>
+					<Argument argumentTypeRef="NumSchedulesType" name="num_schedules"></Argument>
+					<Argument argumentTypeRef="ScheduleIdArrayType" name="schedules"></Argument>
+				</ArgumentList>
+				<CommandContainer name="TIME_SHIFT_ACTIVITIES_BY_FILTER">
+					<EntryList>
+						<FixedValueEntry binaryValue="01" sizeInBits="8" name="filter_type"/>
+						<ArgumentRefEntry argumentRef="start_time" />
+						<ArgumentRefEntry argumentRef="end_time" />
+						<ArgumentRefEntry argumentRef="num_schedules" />
+						<ArgumentRefEntry argumentRef="schedules" />
+					</EntryList>
+					<BaseContainer containerRef="pus11-tc" />
+				</CommandContainer>
+			</MetaCommand>
+				
+			<MetaCommand name="GET_DETAIL_REPORT_BY_ID" shortDescription="TC[11,9] detail-report time-based scheduled activities identified by request identifier">
+				<BaseMetaCommand metaCommandRef="pus11-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="9" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="NumRequestsType" name="num_requests"></Argument>
+					<Argument argumentTypeRef="RequestArrayType" name="requests"></Argument>
+				</ArgumentList>
+				<CommandContainer name="GET_DETAIL_REPORT_BY_ID">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="num_requests" />
+						<ArgumentRefEntry argumentRef="requests" />
+					</EntryList>
+					<BaseContainer containerRef="pus11-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="GET_DETAIL_REPORT_BY_FILTER" shortDescription=" TC[11,11] detail-report the time-based scheduledactivities identified by a filter">
+				<BaseMetaCommand metaCommandRef="pus11-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="11" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="/PUS/PusTimeType" name="start_time"></Argument>
+					<Argument argumentTypeRef="/PUS/PusTimeType" name="end_time"></Argument>
+					<Argument argumentTypeRef="NumSchedulesType" name="num_schedules"></Argument>
+					<Argument argumentTypeRef="ScheduleIdArrayType" name="schedules"></Argument>
+				</ArgumentList>
+				<CommandContainer name="GET_DETAIL_REPORT_BY_FILTER">
+					<EntryList>
+						<FixedValueEntry binaryValue="01" sizeInBits="8" name="filter_type"/>
+						<ArgumentRefEntry argumentRef="start_time" />
+						<ArgumentRefEntry argumentRef="end_time" />
+						<ArgumentRefEntry argumentRef="num_schedules" />
+						<ArgumentRefEntry argumentRef="schedules" />
+					</EntryList>
+					<BaseContainer containerRef="pus11-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			
+			<MetaCommand name="GET_SUMMARY_REPORT_BY_ID" shortDescription="TC[11,12] summary-report time-based scheduled activities identified by request identifier">
+				<BaseMetaCommand metaCommandRef="pus11-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="12" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="NumRequestsType" name="num_requests"></Argument>
+					<Argument argumentTypeRef="RequestArrayType" name="requests"></Argument>
+				</ArgumentList>
+				<CommandContainer name="GET_SUMMARY_REPORT_BY_ID">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="num_requests" />
+						<ArgumentRefEntry argumentRef="requests" />
+					</EntryList>
+					<BaseContainer containerRef="pus11-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="GET_SUMMARY_REPORT_BY_FILTER" shortDescription=" TC[11,14] summary-report the time-basedscheduled activities identified by a filter">
+				<BaseMetaCommand metaCommandRef="pus11-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="14" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="/PUS/PusTimeType" name="start_time"></Argument>
+					<Argument argumentTypeRef="/PUS/PusTimeType" name="end_time"></Argument>
+					<Argument argumentTypeRef="NumSchedulesType" name="num_schedules"></Argument>
+					<Argument argumentTypeRef="ScheduleIdArrayType" name="schedules"></Argument>
+				</ArgumentList>
+				<CommandContainer name="GET_SUMMARY_REPORT_BY_FILTER">
+					<EntryList>
+						<FixedValueEntry binaryValue="01" sizeInBits="8" name="filter_type"/>
+						<ArgumentRefEntry argumentRef="start_time" />
+						<ArgumentRefEntry argumentRef="end_time" />
+						<ArgumentRefEntry argumentRef="num_schedules" />
+						<ArgumentRefEntry argumentRef="schedules" />
+					</EntryList>
+					<BaseContainer containerRef="pus11-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			
+			<MetaCommand name="TIME_SHIFT_ACTIVITIES" shortDescription="5 TC[11,15] time-shift all scheduled activities">
+				<BaseMetaCommand metaCommandRef="pus11-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="15" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="NumRequestsType" name="num_requests"></Argument>
+					<Argument argumentTypeRef="RequestArrayType" name="requests"></Argument>
+				</ArgumentList>
+				<CommandContainer name="TIME_SHIFT_ACTIVITIES">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="num_requests" />
+						<ArgumentRefEntry argumentRef="requests" />
+					</EntryList>
+					<BaseContainer containerRef="pus11-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			
+			<MetaCommand name="GET_DETAIL_REPORT" shortDescription="TC[11,16] detail-report all time-based scheduled activities">
+				<BaseMetaCommand metaCommandRef="pus11-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="16" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="GET_DETAIL_REPORT">
+					<EntryList/>
+					<BaseContainer containerRef="pus11-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			
+			<MetaCommand name="GET_SUMMARY_REPORT" shortDescription="TC[11,17] summary-report all time-based scheduled activities">
+				<BaseMetaCommand metaCommandRef="pus11-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="17" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="GET_SUMMARY_REPORT">
+					<EntryList/>
+					<BaseContainer containerRef="pus11-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			
+			<MetaCommand name="GET_SCHEDULE_STATUS" shortDescription=" TC[11,18] report the status of each time-based sub-schedule">
+				<BaseMetaCommand metaCommandRef="pus11-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="18" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="GET_SCHEDULE_STATUS">
+					<EntryList/>
+					<BaseContainer containerRef="pus11-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			
+			<MetaCommand name="ENABLE_SCHEDULE" shortDescription=" TC[11,20] enable time-based sub-schedules">
+				<BaseMetaCommand metaCommandRef="pus11-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="20" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="NumSchedulesType" name="num_schedules"></Argument>
+					<Argument argumentTypeRef="ScheduleIdArrayType" name="schedules"></Argument>
+				</ArgumentList>
+				<CommandContainer name="ENABLE_SCHEDULE">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="num_schedules"/>
+						<ArgumentRefEntry argumentRef="schedules"/>
+					</EntryList>
+					<BaseContainer containerRef="pus11-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			
+			<MetaCommand name="DISABLE_SCHEDULE" shortDescription=" TC[11,21] disable time-based sub-schedules">
+				<BaseMetaCommand metaCommandRef="pus11-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="21" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="NumSchedulesType" name="num_schedules"></Argument>
+					<Argument argumentTypeRef="ScheduleIdArrayType" name="schedules"></Argument>
+				</ArgumentList>
+				<CommandContainer name="DISABLE_SCHEDULE">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="num_schedules"/>
+						<ArgumentRefEntry argumentRef="schedules"/>
+					</EntryList>
+					<BaseContainer containerRef="pus11-tc" />
+				</CommandContainer>
+			</MetaCommand>
+		</MetaCommandSet>
+	</CommandMetaData>
+	<!-- we added the detailed report into its own subsystem to allow nicer names in the parameter list on yamcs-web-->
+	<SpaceSystem name="DETAIL_REPORT">
+		<TelemetryMetaData>
+			<ParameterTypeSet>
+				<BinaryParameterType name="DetailReportTcPacketDataType">
+				<BinaryDataEncoding>
+					<SizeInBits>
+						<DynamicValue>
+							<ParameterInstanceRef parameterRef="length" />
+							<!-- the resulting size should be in bits but the length is the CCSDS packet lenght in bytes 
+							we subtract 7 bytes for the secondary header and crc -->
+							<LinearAdjustment slope="8" intercept="-48"/>
+						</DynamicValue>
+					</SizeInBits>
+				</BinaryDataEncoding>
+			</BinaryParameterType>
+			</ParameterTypeSet>
+			<ParameterSet>
+				<Parameter parameterTypeRef="/dt/uint16" name="n"/>
+				<Parameter parameterTypeRef="ScheduleIdType" name="schedule_id"/>
+				<Parameter parameterTypeRef="/PUS/PusTimeType" name="release_time"/>
+				<Parameter parameterTypeRef="/dt/uint11" name="apid"/>
+				<Parameter parameterTypeRef="/dt/uint14" name="seq"/>
+				<Parameter parameterTypeRef="/dt/uint16" name="length"/>
+				<Parameter parameterTypeRef="/dt/uint4" name="ackflags"/>
+				<Parameter parameterTypeRef="/dt/uint8" name="type"/>
+				<Parameter parameterTypeRef="/dt/uint8" name="subtype"/>
+				<Parameter parameterTypeRef="/PUS/PusSourceIdType" name="source"/>
+				<Parameter parameterTypeRef="DetailReportTcPacketDataType" name="tc_data"/>
+				<Parameter parameterTypeRef="/dt/uint16" name="crc"/>
+			</ParameterSet>
+			<ContainerSet>
+				<SequenceContainer name="DETAIL_REPORT_ELEMENT" shortDescription="One entry in the detail report">
+					<EntryList>
+						<ParameterRefEntry parameterRef="schedule_id"/>
+						<ParameterRefEntry parameterRef="release_time"/>
+						<ParameterRefEntry parameterRef="apid">
+							<LocationInContainerInBits><FixedValue>5</FixedValue></LocationInContainerInBits>
+						</ParameterRefEntry>					
+						<ParameterRefEntry parameterRef="seq">
+							<LocationInContainerInBits><FixedValue>2</FixedValue></LocationInContainerInBits>
+						</ParameterRefEntry>
+						<ParameterRefEntry parameterRef="length"/>
+						<ParameterRefEntry parameterRef="ackflags">
+							<LocationInContainerInBits><FixedValue>4</FixedValue></LocationInContainerInBits>
+						</ParameterRefEntry>
+						<ParameterRefEntry parameterRef="type"/>
+						<ParameterRefEntry parameterRef="subtype"/>
+						<ParameterRefEntry parameterRef="source"/>
+						<ParameterRefEntry parameterRef="tc_data"/>
+						<ParameterRefEntry parameterRef="crc"/>
+					</EntryList>
+				</SequenceContainer>
+				<SequenceContainer name="DETAIL_REPORT" shortDescription=" TM[11,10] time-based schedule detail report">
+					<EntryList>
+						<ParameterRefEntry parameterRef="n"/>
+						<ContainerRefEntry containerRef="DETAIL_REPORT_ELEMENT">
+							<RepeatEntry>
+								<Count>
+									<DynamicValue>
+										<ParameterInstanceRef parameterRef="n" />
+									</DynamicValue>
+								</Count>
+							</RepeatEntry>
+						</ContainerRefEntry>
+					</EntryList>
+					<BaseContainer containerRef="pus11-tm">
+						<RestrictionCriteria>
+							<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="10" />
+						</RestrictionCriteria>
+					</BaseContainer>
+				</SequenceContainer>
+			</ContainerSet>
+		</TelemetryMetaData>
+	</SpaceSystem>
+	<SpaceSystem name="SUMMARY_REPORT"> 
+		<TelemetryMetaData>
+			<ParameterSet>
+					<Parameter parameterTypeRef="/dt/uint16" name="n"/>
+					<Parameter parameterTypeRef="ScheduleIdType" name="schedule_id"/>
+					<Parameter parameterTypeRef="/PUS/PusTimeType" name="release_time"/>
+					<Parameter parameterTypeRef="/dt/uint16" name="source"/>
+					<Parameter parameterTypeRef="/dt/uint16" name="apid"/>
+					<Parameter parameterTypeRef="/dt/uint16" name="seq"/>
+			</ParameterSet>
+			<ContainerSet>
+				<SequenceContainer name="SUMMARY_REPORT_ELEMENT">
+					<EntryList>
+						<ParameterRefEntry parameterRef="schedule_id"/>
+						<ParameterRefEntry parameterRef="release_time"/>
+						<ParameterRefEntry parameterRef="source"/>
+						<ParameterRefEntry parameterRef="apid"/>
+						<ParameterRefEntry parameterRef="seq"/>			
+					</EntryList>
+				</SequenceContainer>
+				<SequenceContainer name="SUMMARY_REPORT" shortDescription="TM[11,13] time-based schedule summary report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="n"/>
+					<ContainerRefEntry containerRef="SUMMARY_REPORT_ELEMENT">
+						<RepeatEntry>
+							<Count>
+								<DynamicValue>
+									<ParameterInstanceRef parameterRef="n" />
+								</DynamicValue>
+							</Count>
+						</RepeatEntry>
+					</ContainerRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus11-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="13" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			</ContainerSet>
+		</TelemetryMetaData>
+	</SpaceSystem>
+</SpaceSystem>

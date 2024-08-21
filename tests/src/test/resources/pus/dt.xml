@@ -8,9 +8,6 @@
 			<IntegerParameterType signed="false" name="uint4">
 				<IntegerDataEncoding encoding="unsigned" sizeInBits="4" />
 			</IntegerParameterType>
-			<IntegerParameterType signed="false" name="uint5">
-				<IntegerDataEncoding encoding="unsigned" sizeInBits="5" />
-			</IntegerParameterType>
 			<IntegerParameterType signed="false" name="uint8">
 				<IntegerDataEncoding encoding="unsigned" sizeInBits="8" />
 			</IntegerParameterType>
