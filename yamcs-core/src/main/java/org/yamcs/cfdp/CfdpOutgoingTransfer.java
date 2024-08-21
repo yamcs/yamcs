@@ -329,7 +329,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         }
         eofTimer.cancel();
 
-        eofAckReceived = true;  // FIXME: Should this be added?
+        // eofAckReceived = true;  // FIXME: Should this be added?
         if (outTxState == OutTxState.CANCELING) {
             complete(reasonForCancellation);
         }
