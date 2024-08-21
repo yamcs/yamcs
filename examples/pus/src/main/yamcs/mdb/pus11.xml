@@ -35,6 +35,13 @@
 						<ArgumentAssignment argumentName="type" argumentValue="11" />
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
+			</MetaCommand>
+			<MetaCommand name="DELETE_ACTIVITIES">
+				<BaseMetaCommand metaCommandRef="pus11-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="5" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
 				<ArgumentList>
 					<Argument argumentTypeRef="/dt/uint16" name="N"></Argument>
 					<Argument argumentTypeRef="request_array_type" name="requests"></Argument>
@@ -44,15 +51,8 @@
 						<ArgumentRefEntry argumentRef="N" />
 						<ArgumentRefEntry argumentRef="requests" />
 					</EntryList>
-					<BaseContainer containerRef="pus11-tc" />
+					<BaseContainer containerRef="/PUS/pus-tc" />
 				</CommandContainer>
-			</MetaCommand>
-			<MetaCommand name="DELETE_ACTIVITIES">
-				<BaseMetaCommand metaCommandRef="pus11-tc">
-					<ArgumentAssignmentList>
-						<ArgumentAssignment argumentName="subtype" argumentValue="5" />
-					</ArgumentAssignmentList>
-				</BaseMetaCommand>
 			</MetaCommand>
 		</MetaCommandSet>
 	</CommandMetaData>
