@@ -4,13 +4,14 @@ services:
   - class: org.yamcs.archive.AlarmRecorder
   - class: org.yamcs.archive.EventRecorder
   - class: org.yamcs.archive.ReplayServer
+  - class: org.yamcs.plists.ParameterListService
   - class: org.yamcs.parameter.SystemParametersService
     args:
       producers: ['jvm', 'fs']
   - class: org.yamcs.time.TimeCorrelationService
     name: tco0
     args:
-       onboardDelay: 1.0
+       onboardDelay: 0.02
        accuracy: 0.5
        validity: 1.0
        defaultTof: 0.001
@@ -52,6 +53,10 @@ services:
          id: 7
      senderFaultHandlers:
        AckLimitReached: suspend
+  - class: org.yamcs.pus.PusEventDecoder
+    args: 
+        eventIdParameter: /PUS5/event_id
+        eventTemplateFile: etc/events.json
 
 dataLinks:
   - name: tm_realtime
@@ -59,9 +64,9 @@ dataLinks:
     stream: tm_realtime
     host: localhost
     port: 10015
-    # Give the embedded simulator some time to boot up
+    # Give the embedded simulator some time to start up
     initialDelay: 2000
-    packetPreprocessorClassName: org.yamcs.tctm.pus.PusPacketPreprocessor
+    packetPreprocessorClassName: org.yamcs.pus.PusPacketPreprocessor
     packetPreprocessorArgs:
         errorDetection:
            type: CRC-16-CCIIT
@@ -75,12 +80,16 @@ dataLinks:
     stream: tc_realtime
     host: localhost
     port: 10025
-    # Give the embedded simulator smoe time to boot up
+    # Give the embedded simulator some time to start up
     initialDelay: 2000
-    commandPostprocessorClassName: org.yamcs.tctm.pus.PusCommandPostprocessor
+    commandPostprocessorClassName: org.yamcs.pus.PusCommandPostprocessor
     commandPostprocessorArgs:
         errorDetection:
-          type: CRC-16-CCIIT
+            type: CRC-16-CCIIT
+        timeEncoding:
+            implicitPfield: false
+            pfield: 0x2f
+        tcoService: tco0
         
 mdb:
   # Configuration of the active loaders
@@ -89,6 +98,12 @@ mdb:
     spec: "mdb/dt.xml"
   - type: "xtce"
     spec: "mdb/pus.xml"
+  - type: "xtce"
+    spec: "mdb/pus5.xml"
+  - type: "xtce"
+    spec: "mdb/pus11.xml"
+  - type: "xtce"
+    spec: "mdb/pus17.xml"
   - type: "xtce"
     spec: "mdb/landing.xml"
 

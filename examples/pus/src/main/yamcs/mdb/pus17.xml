@@ -1,0 +1,57 @@
+<SpaceSystem name="PUS17" xmlns="http://www.omg.org/spec/XTCE/20180204"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+	<Header validationStatus="Unknown" version="1.0" date="2020-07-01T16:48:10Z" />
+	<TelemetryMetaData>
+		<ContainerSet>
+			<SequenceContainer name="pus17-tm">
+				<EntryList/>
+				<BaseContainer containerRef="/PUS/pus-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/type" comparisonOperator="==" value="17" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="are-you-alive-report">
+				<EntryList/>
+				<BaseContainer containerRef="pus17-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="2" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+		</ContainerSet>
+	</TelemetryMetaData>
+	<CommandMetaData>
+		<MetaCommandSet>
+			<MetaCommand name="pus17-tc" abstract="true">
+				<BaseMetaCommand metaCommandRef="/PUS/pus-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="apid"	argumentValue="1" />
+						<ArgumentAssignment argumentName="type"	argumentValue="17" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="pus17-tc">
+					<EntryList />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="ARE_YOU_ALIVE">
+				<BaseMetaCommand metaCommandRef="pus17-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="1" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				
+				<CommandContainer name="ARE_YOU_ALIVE">
+					<EntryList />
+				</CommandContainer>
+				<VerifierSet>
+					<ExecutionVerifier name= "PUS17_Report">
+						<ContainerRef containerRef="are-you-alive-report" />
+						<CheckWindow timeToStopChecking="PT15S" timeWindowIsRelativeTo="commandRelease"/>
+					</ExecutionVerifier>
+				</VerifierSet>
+			</MetaCommand>
+		</MetaCommandSet>
+	</CommandMetaData>
+</SpaceSystem>

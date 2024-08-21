@@ -50,6 +50,8 @@ ParameterArchive:
 #used for performing archive retrievals via replays (e.g. parameter-extractor.sh)
 # we do not want cache in order to extract the minimum data necessary
 ArchiveRetrieval:
+  config:
+    subscribeContainerArchivePartitions: false
   services: 
     - class: org.yamcs.tctm.ReplayService
     - class: org.yamcs.algorithms.AlgorithmManager

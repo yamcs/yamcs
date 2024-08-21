@@ -4,10 +4,14 @@
 	<Header validationStatus="Unknown" version="1.0" date="2020-07-01T16:48:10Z" />
 	<TelemetryMetaData>
 		<ParameterTypeSet>
+			<IntegerParameterType name="PusSourceIdType" baseType="/dt/uint16"/>
 			<EnumeratedParameterType name="start-failure-code">
 				<IntegerDataEncoding sizeInBits="32" />
 				<EnumerationList>
-					<Enumeration label="INVALID_VOLTAGE_NUM" value="1" />
+					<Enumeration label="INVALID_PUS_SUBTYPE" value="1" />
+					<Enumeration label="NOT_IMPLEMENTED" value="2" />
+					<Enumeration label="INVALID_EVENT_ID" value="3" />
+					<Enumeration label="INVALID_VOLTAGE_NUM" value="100" />
 				</EnumerationList>
 			</EnumeratedParameterType>
 			<EnumeratedParameterType name="completion-failure-code">
@@ -16,10 +20,26 @@
 					<Enumeration label="COMPLETION_ERROR_0" value="0" />
 					<Enumeration label="COMPLETION_ERROR_1" value="1" />
 					<Enumeration label="COMPLETION_ERROR_2" value="2" />
-					<Enumeration label="COMPLETION_ERROR_3" value="3" />
+					<Enumeration label="INVALID_EVENT_ID" value="3" />
+					<Enumeration label="SCHEDULE_TIME_IN_THE_PAST" value="4" />
 				</EnumerationList>
 			</EnumeratedParameterType>
-
+		<AbsoluteTimeParameterType name="PusTimeType">
+			<Encoding>
+				<BinaryDataEncoding>
+					<SizeInBits>
+						<!-- -1 means the algorithm will find the size -->
+						<FixedValue>-1</FixedValue>
+					</SizeInBits>
+					<FromBinaryTransformAlgorithm name="TimeBinaryDecoder">						
+						<AlgorithmText language="java">
+							<!-- type = CUC, epoch = NONE, timeCorrelationService = tco0-->
+       	   		    		org.yamcs.algo.TimeBinaryDecoder({type: CUC, epoch: NONE, tcoService: tco0})
+       	   	   			</AlgorithmText>
+					</FromBinaryTransformAlgorithm>
+				</BinaryDataEncoding>
+			</Encoding>
+		</AbsoluteTimeParameterType>
 		</ParameterTypeSet>
 		<ParameterSet>
 			<Parameter parameterTypeRef="/dt/uint11" name="apid" />
@@ -32,6 +52,7 @@
 			<Parameter parameterTypeRef="/dt/uint8" name="time-type" />
 			<Parameter parameterTypeRef="/dt/uint32" name="obt-coarse" />
 			<Parameter parameterTypeRef="/dt/uint24" name="obt-fine" />
+			<Parameter parameterTypeRef="PusTimeType" name="pus-time" />
 			<Parameter parameterTypeRef="/dt/uint32" name="hkid" />
 			<Parameter parameterTypeRef="/dt/uint11" name="tc-ack-apid" />
 			<Parameter parameterTypeRef="/dt/uint14" name="tc-ack-seq" />
@@ -83,7 +104,13 @@
 					<ParameterRefEntry parameterRef="destination" />
 					<ParameterRefEntry parameterRef="time-type" />
 					<ParameterRefEntry parameterRef="obt-coarse" />
-					<ParameterRefEntry parameterRef="obt-fine" />
+					<ParameterRefEntry parameterRef="obt-fine" />					
+					<ParameterRefEntry parameterRef="pus-time">
+						<!-- pus-time is the decoded time and overlaps with the previous values which are accessible in raw -->
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>-64</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
 				</EntryList>
 				<BaseContainer containerRef="ccsds">
 					<RestrictionCriteria>
@@ -174,6 +201,25 @@
 		</ContainerSet>
 	</TelemetryMetaData>
 	<CommandMetaData>
+		<ArgumentTypeSet>
+			<IntegerArgumentType name="PusSourceIdType" baseType="/dt/uint16"/>
+			<AbsoluteTimeArgumentType name="PusTimeType">
+				<Encoding>
+					<BinaryDataEncoding>
+						<SizeInBits>
+							<!-- -1 means the algorithm will find the size -->
+							<FixedValue>-1</FixedValue>
+						</SizeInBits>
+						<ToBinaryTransformAlgorithm name="TimeBinaryEncoder">						
+							<AlgorithmText language="java">
+								<!-- type = CUC, epoch = NONE, timeCorrelationService = tco0-->
+       	   		    			org.yamcs.algo.TimeBinaryEncoder({type: CUC, epoch: NONE, tcoService: tco0, pfield: 0x2f, implicitPfield: false})
+       	   	   				</AlgorithmText>
+						</ToBinaryTransformAlgorithm>
+					</BinaryDataEncoding>
+				</Encoding>
+			</AbsoluteTimeArgumentType>
+		</ArgumentTypeSet>
 		<MetaCommandSet>
 			<MetaCommand name="pus-tc" abstract="true" shortDescription="Super-container for all PUS telecommand packets">
 				<ArgumentList>
@@ -181,7 +227,7 @@
 					<Argument argumentTypeRef="/dt/uint4" name="ackflags" initialValue="7" />
 					<Argument argumentTypeRef="/dt/uint8" name="type" />
 					<Argument argumentTypeRef="/dt/uint8" name="subtype" />
-					<Argument argumentTypeRef="/dt/uint16" name="source" initialValue="0" />
+					<Argument argumentTypeRef="PusSourceIdType" name="source" initialValue="0" />
 				</ArgumentList>
 				<CommandContainer name="pus-tc">
 					<EntryList>
@@ -204,10 +250,12 @@
                                     This verifier set is using algorithms for verification. Check the pus-xtce-verif.xml for an example of doing almost the same without algorithms, only XTCE.
                                     Using algorithms has the advantage that no Failed verifier is required, any verifier can return false or a value to indicate failure.
                                   -->
-					<ReceivedVerifier name="Accepted">
+					<ReceivedVerifier name="Accepted" >
 						<CustomAlgorithm name="alg_verif_accepted" shortDescription="Verify the PUS acceptance">
 							<AncillaryDataSet>
 								<!--
+								    This is a javascript implementation of the accepted verifier. Note below a Java version that is simpler to use.
+								    
 									This is a Yamcs XTCE extension which says to only run the algorithm if these inputs are present.
 
 									Without this, the algorithm would run on receiving other packet because all packets (except time) have the subtype pus header parameter.
@@ -259,31 +307,19 @@
 
 						</CustomAlgorithm>
 						<!-- This says that the algorithm will run for maximum 5 seconds from when the command is sent -->
-						<CheckWindow timeToStopChecking="PT5S" />
+						<CheckWindow timeToStopChecking="PT5S" timeWindowIsRelativeTo="commandRelease" />
 					</ReceivedVerifier>
 					<ExecutionVerifier name="Started">
-						<CustomAlgorithm name="alg_verif_started" shortDescription="Verify the PUS start">
-							<AncillaryDataSet>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">sentApid</AncillaryData>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">sentSeq</AncillaryData>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">rcvdApid</AncillaryData>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">rcvdSeq</AncillaryData>
-							</AncillaryDataSet>
-							<AlgorithmText language="JavaScript">
-								if(rcvdApid.value == sentApid.value &#38;&#38; rcvdSeq.value == sentSeq.value) {
-								   if(subtype.value == 3) {
-								       return true;
-								    } else if(subtype.value == 4) {
-								       return errorCode.value;
-								    }
-								}
+						<CustomAlgorithm name="alg_verif_started" shortDescription="Verify the PUS start">							
+							<AlgorithmText language="Java">
+								org.yamcs.pus.Pus1Verifier({stage: 3, template: "{errorCode}"})
 							</AlgorithmText>
 							<InputSet>
 								<InputParameterInstanceRef parameterRef="/yamcs/cmd/arg/apid" inputName="sentApid" />
 								<InputParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-seqcount" inputName="sentSeq" />
-								<InputParameterInstanceRef parameterRef="subtype" inputName="subtype" />
 								<InputParameterInstanceRef parameterRef="tc-ack-apid" inputName="rcvdApid" />
 								<InputParameterInstanceRef parameterRef="tc-ack-seq" inputName="rcvdSeq" />
+								<InputParameterInstanceRef parameterRef="subtype" inputName="subtype" />
 								<InputParameterInstanceRef parameterRef="tc-ack-start-failure-code" inputName="errorCode" />
 							</InputSet>
 						</CustomAlgorithm>
@@ -291,30 +327,17 @@
 					</ExecutionVerifier>
 					<CompleteVerifier name="Complete">
 						<CustomAlgorithm name="alg_verif_completed" shortDescription="Verify the PUS completion">
-							<AncillaryDataSet>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">sentApid</AncillaryData>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">sentSeq</AncillaryData>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">rcvdApid</AncillaryData>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">rcvdSeq</AncillaryData>
-							</AncillaryDataSet>
-							<AlgorithmText language="JavaScript">
-								if(rcvdApid.value == sentApid.value &#38;&#38; rcvdSeq.value == sentSeq.value) {
-								   if(subtype.value == 7) {
-								       return true;
-								    } else if(subtype.value == 8) {
-								       return errorCode.value;
-								    }
-								}
+							<AlgorithmText language="Java">
+								org.yamcs.pus.Pus1Verifier({stage: 7, template: "the completion error code is {errorCode}"})
 							</AlgorithmText>
 							<InputSet>
 								<InputParameterInstanceRef parameterRef="/yamcs/cmd/arg/apid" inputName="sentApid" />
 								<InputParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-seqcount" inputName="sentSeq" />
-								<InputParameterInstanceRef parameterRef="subtype" inputName="subtype" />
 								<InputParameterInstanceRef parameterRef="tc-ack-apid" inputName="rcvdApid" />
 								<InputParameterInstanceRef parameterRef="tc-ack-seq" inputName="rcvdSeq" />
+								<InputParameterInstanceRef parameterRef="subtype" inputName="subtype" />
 								<InputParameterInstanceRef parameterRef="tc-ack-completion-failure-code" inputName="errorCode" />
 							</InputSet>
-
 						</CustomAlgorithm>
 						<CheckWindow timeToStopChecking="PT15S" timeWindowIsRelativeTo="commandRelease" />
 					</CompleteVerifier>

@@ -1,0 +1,7 @@
+instances:
+  - instance1
+ 
+services:
+  - class: org.yamcs.http.HttpServer
+    args:
+      port: 9190
