@@ -148,7 +148,9 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         entityIdLength = config.getInt("entityIdLength");
         seqNrSize = config.getInt("sequenceNrLength");
         int maxPduSize = customPduSize != null && customPduSize > 0 ? customPduSize : config.getInt("maxPduSize", 512);
-        maxDataSize = maxPduSize - 4 - 2 * entityIdLength - seqNrSize;
+        // Header = 4 + entityIdLength + sequenceNumberLength + entityIdLength = 16
+        // For FileDataPdu, offset = 4
+        maxDataSize = maxPduSize - 4 - 2 * entityIdLength - seqNrSize - 4;
         long eofAckTimeout = config.getInt("eofAckTimeout", 10000);
         int eofAckLimit = config.getInt("eofAckLimit", 5);
 
