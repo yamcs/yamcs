@@ -148,7 +148,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         entityIdLength = config.getInt("entityIdLength");
         seqNrSize = config.getInt("sequenceNrLength");
         int maxPduSize = customPduSize != null && customPduSize > 0 ? customPduSize : config.getInt("maxPduSize", 512);
-        maxDataSize = maxPduSize - 4 - 2 * entityIdLength - seqNrSize - 4;
+        maxDataSize = maxPduSize - 4 - 2 * entityIdLength - seqNrSize;
         long eofAckTimeout = config.getInt("eofAckTimeout", 10000);
         int eofAckLimit = config.getInt("eofAckLimit", 5);
 
@@ -311,6 +311,9 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
                             .collect(Collectors.toList()));
                 }
             }
+
+            // Resume
+            resume();
         } else if (packet instanceof KeepAlivePacket) {
             log.info("TXID{} Ignoring Keep Alive PDU: {}", cfdpTransactionId, packet); // Handling not implemented
         } else {
