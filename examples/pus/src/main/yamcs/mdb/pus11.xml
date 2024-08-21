@@ -41,9 +41,10 @@
 				</ArgumentList>
 				<CommandContainer name="pus11-tc">
 					<EntryList>
-						
+						<ArgumentRefEntry argumentRef="N" />
+						<ArgumentRefEntry argumentRef="requests" />
 					</EntryList>
-					<BaseContainer containerRef="/PUS/pus-tc" />
+					<BaseContainer containerRef="pus11-tc" />
 				</CommandContainer>
 			</MetaCommand>
 			<MetaCommand name="DELETE_ACTIVITIES">
