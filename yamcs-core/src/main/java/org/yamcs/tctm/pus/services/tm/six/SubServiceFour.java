@@ -52,7 +52,6 @@ public class SubServiceFour implements PusSubService {
         while (nFields > 0) {
             int offset = (int) ByteArrayUtils.decodeCustomInteger(dumpData, 0, ServiceSix.offsetSize);
             int length = (int) ByteArrayUtils.decodeCustomInteger(dumpData, ServiceSix.offsetSize, ServiceSix.lengthSize);
-            int data = (int) ByteArrayUtils.decodeCustomInteger(dumpData, ServiceSix.offsetSize + ServiceSix.lengthSize, length);
 
             if (offsetGroupMap != null)
                 groupId = offsetGroupMap.get(offset);
@@ -62,7 +61,7 @@ public class SubServiceFour implements PusSubService {
              * FIXME: Verify the checksum | But how?
              *  In case of checksum verification failure for an offset, the MDb unfortunately still expects all the N fields to be filled, in the correct order
              * */
-            dumpObject.put(offset, ByteArrayUtils.encodeCustomInteger(data, length));
+            dumpObject.put(offset, Arrays.copyOfRange(dumpData, ServiceSix.offsetSize + ServiceSix.lengthSize, ServiceSix.offsetSize + ServiceSix.lengthSize + length));
             totalLength += length;
 
             // Reset the dumpData for the next iteration
