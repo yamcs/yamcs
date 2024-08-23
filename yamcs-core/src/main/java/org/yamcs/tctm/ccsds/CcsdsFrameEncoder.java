@@ -1,6 +1,7 @@
 package org.yamcs.tctm.ccsds;
 
 
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import org.yamcs.ConfigurationException;
@@ -139,7 +140,7 @@ public class CcsdsFrameEncoder implements RawFrameEnDec {
     }
 
     @Override
-    public int encodeFrame(byte[] data, int length) {
+    public int encodeFrame(byte[] data, int length, int vf) {
         if (rs != null) {
             if (length != encodedFrameLength) {
                 throw new IllegalArgumentException("Bad length " + length + " (expected " + encodedFrameLength + ")");
@@ -179,6 +180,26 @@ public class CcsdsFrameEncoder implements RawFrameEnDec {
                     data[i + p * interleavingDepth] = cRsBlock[p];
                 }
             }
+
+            // Shifting logic
+            int rotateShift = interleavingDepth - (vf % interleavingDepth);
+            byte[] parityBlock = Arrays.copyOfRange(data, decodedFrameLength, data.length);
+            byte[] dataBlock = Arrays.copyOfRange(data, 0, decodedFrameLength);
+
+            ByteBuffer pp = ByteBuffer.wrap(new byte[parityBlock.length]);
+            for(int i = 0; i < parityBlock.length / interleavingDepth; i++) {
+                byte[] input = Arrays.copyOfRange(parityBlock, i * interleavingDepth, (i + 1) * interleavingDepth);
+                pp.put(circularRightShift(input, rotateShift));
+            }
+
+            ByteBuffer bb = ByteBuffer.wrap(new byte[encodedFrameLength]);
+            bb.put(dataBlock);
+            bb.put(pp.array());
+
+            byte[] newData = bb.array();
+            for (int i = 0; i < encodedFrameLength; i++) {
+                data[i] = newData[i];
+            }
         }
     
         if (randomize) {
@@ -186,6 +207,20 @@ public class CcsdsFrameEncoder implements RawFrameEnDec {
         }
         
         return encodedFrameLength;
+    }
+
+
+    private static byte[] circularRightShift(byte[] array, int shift) {
+        int length = array.length;
+        byte[] result = new byte[length];
+
+        for (int i = 0; i < length; i++) {
+            // Calculate the new position after shifting
+            int newPosition = (i + shift) % length;
+            result[newPosition] = array[i];
+        }
+
+        return result;
     }
 }
 

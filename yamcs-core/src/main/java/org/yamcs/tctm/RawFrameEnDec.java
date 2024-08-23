@@ -33,6 +33,6 @@ public interface RawFrameEnDec {
      * <p>
      * Returns the length of the encoded frame
      */
-    int encodeFrame(byte[] data, int length);
+    int encodeFrame(byte[] data, int length, int vf);
 
 }
