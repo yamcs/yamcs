@@ -88,7 +88,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         generatePkt13AndPps("2015-01-01T10:00:00", 300);
 
         CreateProcessorRequest prequest = CreateProcessorRequest.newBuilder()
-                .setInstance("IntegrationTest")
+                .setInstance("instance1")
                 .setName("testReplay")
                 .setPersistent(true) // TODO temp
                 .setType("Archive")
@@ -174,7 +174,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         generatePkt1AndTm2Pkt1("2019-01-01T10:00:00", 300);
 
         CreateProcessorRequest prequest = CreateProcessorRequest.newBuilder()
-                .setInstance("IntegrationTest")
+                .setInstance("instance1")
                 .setName("testReplayWithTm2")
                 .setPersistent(true) // TODO temp
                 .setType("Archive")
@@ -242,7 +242,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         generatePkt13AndPps("2015-02-01T10:00:00", 300);
 
         CreateProcessorRequest prequest = CreateProcessorRequest.newBuilder()
-                .setInstance("IntegrationTest")
+                .setInstance("instance1")
                 .setName("testReplayWithPpExclusion")
                 .setType("ArchiveWithPpExclusion")
                 .setPersistent(true) // TODO temp

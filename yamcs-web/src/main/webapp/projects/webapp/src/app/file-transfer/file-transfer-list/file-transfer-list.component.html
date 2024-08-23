@@ -1,0 +1,225 @@
+<app-instance-page>
+  <app-instance-toolbar>
+    File transfer&nbsp;&nbsp;&nbsp;&nbsp;
+
+    @if (services().length) {
+      <button mat-button [matMenuTriggerFor]="serviceMenu">
+        {{ service()?.name || "select service" }} ▾
+      </button>
+      <mat-menu #serviceMenu="matMenu" class="ya-menu">
+        @for (service of services(); track service) {
+          <button mat-menu-item (click)="switchService(service)">
+            {{ service.name }}
+          </button>
+        }
+      </mat-menu>
+    }
+
+    @if (service(); as service) {
+      @if (
+        mayControlFileTransfers() && (service.capabilities.download || service.capabilities.upload)
+      ) {
+        <button mat-button color="primary" (click)="showCreateTransferDialog(service)">
+          <mat-icon>
+            {{
+              service.capabilities.download && service.capabilities.upload
+                ? "cloud"
+                : service.capabilities.upload
+                  ? "cloud_upload"
+                  : "cloud_download"
+            }}
+          </mat-icon>
+          New
+          {{
+            service.capabilities.download && service.capabilities.upload
+              ? "transfer"
+              : service.capabilities.upload
+                ? "upload"
+                : "download"
+          }}
+        </button>
+      }
+    }
+  </app-instance-toolbar>
+
+  <div class="table-wrapper">
+    <div class="panel-content">
+      <app-file-transfer-tabs />
+
+      <form [formGroup]="filterForm" style="margin-top: 16px">
+        <div class="filter-bar">
+          <ya-select [options]="directionOptions" formControlName="direction" />
+          <ya-multi-select
+            [options]="stateOptions"
+            formControlName="state"
+            emptyOption="Any status" />
+          <ya-select [options]="localEntityOptions()" formControlName="localEntityId" />
+          <ya-select [options]="remoteEntityOptions()" formControlName="remoteEntityId" />
+          <ya-select
+            #intervalSelect
+            [options]="intervalOptions"
+            icon="access_time"
+            formControlName="interval" />
+          @if (filterForm.value["interval"] === "CUSTOM") {
+            <ya-date-time-input formControlName="customStart" />
+            <ya-date-time-input formControlName="customStop" />
+            <button (click)="applyCustomDates()" class="ya-button" [disabled]="filterForm.invalid">
+              Apply
+            </button>
+          }
+          @if (filterForm.value["interval"] !== "CUSTOM") {
+            <button class="ya-button" (click)="jumpToNow()">Jump to now</button>
+          }
+        </div>
+      </form>
+
+      <table mat-table [dataSource]="dataSource" class="ya-data-table expand" multiTemplateDataRows>
+        <ng-container matColumnDef="startTime">
+          <th mat-header-cell *matHeaderCellDef>Started</th>
+          <td mat-cell *matCellDef="let item" style="white-space: nowrap">
+            {{ item.startTime | datetime }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="localEntity">
+          <th mat-header-cell *matHeaderCellDef>Local entity</th>
+          <td mat-cell *matCellDef="let item">
+            {{ item.localEntity?.name ?? item.localEntity?.id ?? "-" }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="localFile">
+          <th mat-header-cell *matHeaderCellDef>Local file</th>
+          <td mat-cell *matCellDef="let item" class="file-column">
+            @if ((item.direction === "DOWNLOAD" && item.state !== "COMPLETED") || !item.objectUrl) {
+              <span>
+                {{ (item.objectName | storageUrl: item.bucket) || "-" }}
+              </span>
+            } @else {
+              <a [href]="item.objectUrl" download>
+                {{ (item.objectName | storageUrl: item.bucket) || "-" }}
+              </a>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="direction">
+          <th mat-header-cell *matHeaderCellDef>Direction</th>
+          <td mat-cell *matCellDef="let item" style="text-align: center">
+            @if (item.direction === "DOWNLOAD") {
+              <mat-icon>west</mat-icon>
+            }
+            @if (item.direction === "UPLOAD") {
+              <mat-icon class="upload">east</mat-icon>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="remoteEntity">
+          <th mat-header-cell *matHeaderCellDef>Remote entity</th>
+          <td mat-cell *matCellDef="let item">
+            {{ item.remoteEntity?.name ?? item.remoteEntity?.id ?? "-" }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="remoteFile">
+          <th mat-header-cell *matHeaderCellDef>Remote file</th>
+          <td mat-cell *matCellDef="let item" class="file-column">
+            {{ item.remotePath || "-" }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="size">
+          <th mat-header-cell *matHeaderCellDef>Size</th>
+          <td mat-cell *matCellDef="let item">
+            {{ (item.totalSize | formatBytes) ?? "-" }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef class="status"></th>
+          <td mat-cell *matCellDef="let item" class="status">
+            <app-file-transfer-icon [transfer]="item" />
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="transferred">
+          <th mat-header-cell *matHeaderCellDef>Transferred</th>
+          <td mat-cell *matCellDef="let item">
+            {{ (item.sizeTransferred | formatBytes) ?? "-" }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="transferType">
+          <th mat-header-cell *matHeaderCellDef>Transfer type</th>
+          <td mat-cell *matCellDef="let item">{{ item.transferType || "-" }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="expand"></th>
+          <td mat-cell *matCellDef="let item">
+            @if (service()?.capabilities?.pauseResume) {
+              @if (item.state === "RUNNING") {
+                <ya-text-action icon="pause_circle_outline" (click)="pauseTransfer(item)">
+                  PAUSE
+                </ya-text-action>
+              }
+              @if (item.state === "PAUSED") {
+                <ya-text-action icon="play_circle_outline" (click)="resumeTransfer(item)">
+                  RESUME
+                </ya-text-action>
+              }
+            }
+            @if (item.state !== "COMPLETED" && item.state !== "FAILED") {
+              <ya-text-action icon="not_interested" (click)="cancelTransfer(item)">
+                CANCEL
+              </ya-text-action>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="detail">
+          <td
+            mat-cell
+            *matCellDef="let transfer"
+            [attr.colspan]="(displayedColumns$ | async)!.length">
+            <div class="detail-layout">
+              @if (
+                $any(transfer).state === "RUNNING" ||
+                $any(transfer).state === "PAUSED" ||
+                $any(transfer).state === "CANCELLING"
+              ) {
+                <ya-progress width="200px" [value]="transferPercent($any(transfer))" [total]="1" />
+              }
+              <span>{{ $any(transfer).sizeTransferred | formatBytes }}</span>
+              @if ($any(transfer).failureReason) {
+                <span class="error">
+                  {{ $any(transfer).failureReason }}
+                </span>
+              }
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns$ | async"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: displayedColumns$ | async"
+          class="item-row"
+          [class.upload]="row.direction === 'UPLOAD'"
+          [class.nodetail]="row.state === 'COMPLETED'"></tr>
+        <tr
+          mat-row
+          class="item-detail"
+          [class.upload]="row.direction === 'UPLOAD'"
+          *matRowDef="let row; columns: ['detail']; when: isIncomplete"></tr>
+      </table>
+
+      @if (!services().length) {
+        <ya-empty-message headerTitle="File Transfer">
+          <p>This instance has no file transfer services configured.</p>
+        </ya-empty-message>
+      }
+    </div>
+  </div>
+</app-instance-page>

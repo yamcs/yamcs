@@ -2,10 +2,12 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, forwardR
 import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator } from '@angular/forms';
 import { MatDatepicker, MatDatepickerInput } from '@angular/material/datepicker';
 import { MatIcon } from '@angular/material/icon';
+import { MatTooltip } from '@angular/material/tooltip';
 import { formatInTimeZone } from 'date-fns-tz';
 import { provideUtcNativeDateAdapter } from '../../providers';
 import { Formatter } from '../../services/formatter.service';
 import * as utils from '../../utils';
+import { YaIconAction } from '../icon-action/icon-action.component';
 
 export interface FireChangeOptions {
   /**
@@ -37,12 +39,17 @@ const DAY_OF_YEAR_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
     MatDatepicker,
     MatDatepickerInput,
     MatIcon,
+    MatTooltip,
+    YaIconAction,
   ],
 })
 export class YaDateTimeInput implements AfterViewInit, ControlValueAccessor, Validator {
 
   @Input()
   showMillis = false;
+
+  @Input()
+  showClear = false;
 
   @ViewChild('dayInput', { static: true })
   private dayInputComponent: ElementRef<HTMLInputElement>;
@@ -138,13 +145,22 @@ export class YaDateTimeInput implements AfterViewInit, ControlValueAccessor, Val
     }
   }
 
+  clearValue() {
+    this.dayInputComponent.nativeElement.value = '';
+    this.hourInputComponent.nativeElement.value = '';
+    this.minuteInputComponent.nativeElement.value = '';
+    this.secondInputComponent.nativeElement.value = '';
+    this.millisInputComponent.nativeElement.value = '';
+    this.fireChange();
+  }
+
   private createDateOrThrow(standardizeInputs: boolean) {
     const dayInput = this.dayInputComponent.nativeElement.value;
     const hourInput = this.hourInputComponent.nativeElement.value;
     const minuteInput = this.minuteInputComponent.nativeElement.value;
     const secondInput = this.secondInputComponent.nativeElement.value;
-    const millisInput = this.millisInputComponent?.nativeElement.value;
-    if (!dayInput && !hourInput && !minuteInput && !secondInput && !millisInput) {
+    const millisInput = this.millisInputComponent.nativeElement.value;
+    if (!dayInput) {
       return null;
     }
 

@@ -132,6 +132,10 @@ public class WebFileDeployer {
     public void setExtraSources(List<Path> extraStaticRoots, Map<String, Map<String, Object>> extraConfigs) {
         this.extraStaticRoots = extraStaticRoots;
         this.extraConfigs = extraConfigs;
+        redeploy();
+    }
+
+    public void redeploy() {
         try { // Silent redeploy
             prepareWebApplication();
         } catch (IOException | ParseException e) {

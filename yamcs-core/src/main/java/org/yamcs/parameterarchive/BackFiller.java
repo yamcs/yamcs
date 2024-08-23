@@ -88,8 +88,8 @@ public class BackFiller implements StreamSubscriber {
         spec.addOption("streamUpdateFillFrequency", OptionType.INTEGER).withDefault(600);
 
         Spec schedSpec = new Spec();
-        schedSpec.addOption("startSegment", OptionType.INTEGER);
-        schedSpec.addOption("numSegments", OptionType.INTEGER);
+        schedSpec.addOption("startInterval", OptionType.INTEGER);
+        schedSpec.addOption("numIntervals", OptionType.INTEGER);
         schedSpec.addOption("interval", OptionType.INTEGER);
 
         spec.addOption("schedule", OptionType.LIST).withElementType(OptionType.MAP).withSpec(schedSpec);
@@ -135,8 +135,8 @@ public class BackFiller implements StreamSubscriber {
             List<YConfiguration> l = config.getConfigList("schedule");
             schedules = new ArrayList<>(l.size());
             for (YConfiguration sch : l) {
-                int segstart = sch.getInt("startSegment");
-                int numseg = sch.getInt("numSegments");
+                int segstart = sch.getInt("startInterval");
+                int numseg = sch.getInt("numIntervals");
                 long interval = sch.getInt("interval", -1);
                 Schedule s = new Schedule(segstart, numseg, interval);
                 schedules.add(s);

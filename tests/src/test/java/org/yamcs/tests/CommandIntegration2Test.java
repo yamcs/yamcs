@@ -23,7 +23,7 @@ public class CommandIntegration2Test extends AbstractIntegrationTest {
     TcDataLink mtdl1;
     TcDataLink mtdl2;
 
-    String yamcsInstance2 = "IntegrationTest2";
+    String yamcsInstance2 = "instance2";
 
     @BeforeEach
     public void prepareTests() throws InterruptedException {

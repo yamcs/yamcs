@@ -734,7 +734,7 @@ public class ArchiveClient {
                 .setInstance(instance);
         CompletableFuture<ListEventSourcesResponse> f = new CompletableFuture<>();
         eventService.listEventSources(null, requestb.build(), new ResponseObserver<>(f));
-        return f.thenApply(response -> new ArrayList<>(response.getSourceList()));
+        return f.thenApply(response -> new ArrayList<>(response.getSourcesList()));
     }
 
     public CompletableFuture<Void> dumpTable(String table, StreamReceiver<Row> consumer) {
@@ -787,7 +787,7 @@ public class ArchiveClient {
     private class CommandPage extends AbstractPage<ListCommandsRequest, ListCommandsResponse, Command> {
 
         public CommandPage(ListCommandsRequest request) {
-            super(request, "entry");
+            super(request, "commands");
         }
 
         @Override
@@ -811,7 +811,7 @@ public class ArchiveClient {
     private class EventPage extends AbstractPage<ListEventsRequest, ListEventsResponse, Event> {
 
         public EventPage(ListEventsRequest request) {
-            super(request, "event");
+            super(request, "events");
         }
 
         @Override

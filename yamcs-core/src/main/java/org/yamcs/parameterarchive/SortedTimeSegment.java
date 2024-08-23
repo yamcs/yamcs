@@ -45,7 +45,7 @@ public class SortedTimeSegment extends BaseSegment {
         if (ParameterArchive.getInterval(instant) != interval) {
             throw new IllegalArgumentException("This timestamp does not fit into this interval;"
                     + " intervalStart: " + TimeEncoding.toString(interval)
-                    + ", instant: " + TimeEncoding.toString(instant));
+                    + ", timestamp: " + TimeEncoding.toString(instant));
         }
 
         return tsarray.insert((int) (instant - interval));
@@ -176,7 +176,7 @@ public class SortedTimeSegment extends BaseSegment {
     }
 
     /**
-     * Creates a TimeSegment by decoding the buffer this is the reverse of the {@link #encode()} operation
+     * Creates a TimeSegment by decoding the buffer this is the reverse of the {@link #writeTo()} operation
      * 
      */
     static SortedIntArray parse(ByteBuffer bb) throws DecodingException {

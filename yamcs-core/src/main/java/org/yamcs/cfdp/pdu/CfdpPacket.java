@@ -24,7 +24,7 @@ public abstract class CfdpPacket {
     // outgoing CFDP packets
     static {
         CFDP.addColumn(StandardTupleDefinitions.GENTIME_COLUMN, DataType.TIMESTAMP);
-        CFDP.addColumn("entityId", DataType.INT);
+        CFDP.addColumn("entityId", DataType.LONG);
         CFDP.addColumn(StandardTupleDefinitions.SEQNUM_COLUMN, DataType.INT);
         CFDP.addColumn("pdu", DataType.BINARY);
     }

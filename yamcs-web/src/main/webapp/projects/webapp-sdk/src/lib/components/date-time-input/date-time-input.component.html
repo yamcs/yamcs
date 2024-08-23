@@ -45,4 +45,19 @@
     (keyup)="fireChange({ standardizeInputs: false })"
     (change)="fireChange()"
     (paste)="processPaste($event)" />
+  @if (showClear) {
+    <ya-icon-action
+      class="no-print"
+      icon="clear"
+      [padding]="true"
+      [disabled]="
+        !dayInput.value &&
+        !hourInput.value &&
+        !minuteInput.value &&
+        !secondInput.value &&
+        !millisInput.value
+      "
+      (click)="clearValue()"
+      matTooltip="Clear value" />
+  }
 </div>

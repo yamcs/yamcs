@@ -40,9 +40,10 @@ service BucketsApi {
   // List buckets
   rpc ListBuckets(ListBucketsRequest) returns (ListBucketsResponse) {
     option (yamcs.api.route) = {
-      get: "/api/buckets/{instance}"
+      get: "/api/storage/buckets"
       additional_bindings {
-        get: "/api/storage/buckets"
+        get: "/api/buckets/{instance}"
+        deprecated: true
       }
     };
   }
@@ -50,9 +51,10 @@ service BucketsApi {
   // Get a bucket
   rpc GetBucket(GetBucketRequest) returns (BucketInfo) {
     option (yamcs.api.route) = {
-      get: "/api/buckets/{instance}/{bucketName}"
+      get: "/api/storage/buckets/{bucketName}"
       additional_bindings {
-        get: "/api/storage/buckets/{bucketName}"
+        get: "/api/buckets/{instance}/{bucketName}"
+        deprecated: true
       }
     };
   }
@@ -60,11 +62,12 @@ service BucketsApi {
   // Create a bucket
   rpc CreateBucket(CreateBucketRequest) returns (BucketInfo) {
     option (yamcs.api.route) = {
-      post: "/api/buckets/{instance}"
+      post: "/api/storage/buckets"
       body: "*"
       additional_bindings {
-        post: "/api/storage/buckets"
+        post: "/api/buckets/{instance}"
         body: "*"
+        deprecated: true
       }
     };
   }
@@ -74,9 +77,10 @@ service BucketsApi {
   // Deleting a bucket means also deleting all objects that are part of it.
   rpc DeleteBucket(DeleteBucketRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      delete: "/api/buckets/{instance}/{bucketName}"
+      delete: "/api/storage/buckets/{bucketName}"
       additional_bindings {
-        delete: "/api/storage/buckets/{bucketName}"
+        delete: "/api/buckets/{instance}/{bucketName}"
+        deprecated: true
       }
     };
   }
@@ -90,9 +94,10 @@ service BucketsApi {
   // ``application/octet-stream``.
   rpc GetObject(GetObjectRequest) returns (yamcs.api.HttpBody) {
     option (yamcs.api.route) = {
-      get: "/api/buckets/{instance}/{bucketName}/objects/{objectName*}"
+      get: "/api/storage/buckets/{bucketName}/objects/{objectName*}"
       additional_bindings {
-        get: "/api/storage/buckets/{bucketName}/objects/{objectName*}"
+        get: "/api/buckets/{instance}/{bucketName}/objects/{objectName*}"
+        deprecated: true
       }
     };
   }
@@ -123,7 +128,7 @@ service BucketsApi {
   // .. rubric:: Example
   // .. code-block:: http
   // 
-  //     POST /api/buckets/_global/my_bucket HTTP/1.1
+  //     POST /api/storage/buckets/my_bucket/objects HTTP/1.1
   //     Host: localhost:8090
   //     User-Agent: curl/7.58.0
   //     Accept: */*
@@ -156,13 +161,14 @@ service BucketsApi {
   //     }
   rpc UploadObject(UploadObjectRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      post: "/api/buckets/{instance}/{bucketName}/objects/{objectName**}"
+      post: "/api/storage/buckets/{bucketName}/objects/{objectName**}"
       body: "data"
       max_body_size: 5242880
       additional_bindings {
-        post: "/api/storage/buckets/{bucketName}/objects/{objectName**}"
+        post: "/api/buckets/{instance}/{bucketName}/objects/{objectName**}"
         body: "data"
         max_body_size: 5242880
+        deprecated: true
       }
     };
   }
@@ -170,11 +176,12 @@ service BucketsApi {
   // List objects
   rpc ListObjects(ListObjectsRequest) returns (ListObjectsResponse) {
     option (yamcs.api.route) = {
-      get: "/api/buckets/{instance}/{bucketName}/objects"
+      get: "/api/storage/buckets/{bucketName}/objects"
       field_mask_root: "objects"
       additional_bindings {
-        get: "/api/storage/buckets/{bucketName}/objects"
+        get: "/api/buckets/{instance}/{bucketName}/objects"
         field_mask_root: "objects"
+        deprecated: true
       }
     };
   }
@@ -182,9 +189,10 @@ service BucketsApi {
   // Delete an object
   rpc DeleteObject(DeleteObjectRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
-      delete: "/api/buckets/{instance}/{bucketName}/objects/{objectName*}"
+      delete: "/api/storage/buckets/{bucketName}/objects/{objectName*}"
       additional_bindings {
-        delete: "/api/storage/buckets/{bucketName}/objects/{objectName*}"
+        delete: "/api/buckets/{instance}/{bucketName}/objects/{objectName*}"
+        deprecated: true
       }
     };
   }
@@ -192,45 +200,45 @@ service BucketsApi {
 
 message CreateBucketRequest {
   // Yamcs instance name. Or _global.
-  optional string instance = 1;
+  optional string instance = 1 [deprecated = true];
   
-  // Bucket name.
+  // Bucket name
   optional string name = 2;
 }
 
 message DeleteBucketRequest {
   // Yamcs instance name. Or _global.
-  optional string instance = 1;
+  optional string instance = 1 [deprecated = true];
   
-  // Bucket name.
+  // Bucket name
   optional string bucketName = 2;
 }
 
 message GetObjectRequest {
   // Yamcs instance name. Or _global.
-  optional string instance = 1;
+  optional string instance = 1 [deprecated = true];
   
-  // Bucket name.
+  // Bucket name
   optional string bucketName = 2;
   
-  // Object name.
+  // Object name
   optional string objectName = 3;
 }
 
 message DeleteObjectRequest {
   // Yamcs instance name. Or _global.
-  optional string instance = 1;
+  optional string instance = 1 [deprecated = true];
   
-  // Bucket name.
+  // Bucket name
   optional string bucketName = 2;
   
-  // Object name.
+  // Object name
   optional string objectName = 3;
 }
 
 message UploadObjectRequest {
   // Yamcs instance name. Or _global.
-  optional string instance = 1;
+  optional string instance = 1 [deprecated = true];
   
   // Bucket name.
   //
@@ -238,14 +246,14 @@ message UploadObjectRequest {
   // if it does not exist. Otherwise the bucket must exist before being used.
   optional string bucketName = 2;
   
-  // Object name.
+  // Object name
   optional string objectName = 3;
   
   optional yamcs.api.HttpBody data = 4;
 }
 
 message BucketInfo {
-  // Bucket name.
+  // Bucket name
   optional string name = 1;
   
   // Total size in bytes of all objects in the bucket (metadata is not counted)
@@ -284,14 +292,14 @@ message ObjectInfo {
 
 message ListBucketsRequest {
   // Yamcs instance name. Or _global.
-  optional string instance = 1;
+  optional string instance = 1 [deprecated = true];
 }
 
 message GetBucketRequest {
   // Yamcs instance name. Or _global.
-  optional string instance = 1;
+  optional string instance = 1 [deprecated = true];
 
-  // Bucket name.
+  // Bucket name
   optional string bucketName = 2;
 }
 
@@ -301,9 +309,9 @@ message ListBucketsResponse {
 
 message ListObjectsRequest {
   // Yamcs instance name. Or _global.
-  optional string instance = 1;
+  optional string instance = 1 [deprecated = true];
   
-  // Bucket name.
+  // Bucket name
   optional string bucketName = 2;
   
   // Return only objects whose name do not contain the delimiter after the
@@ -326,9 +334,9 @@ message ListObjectsRequest {
 
 message ListObjectsResponse {
   // Object name prefixes for objects that matched the request but were
-  // excluded forom ``objects`` because of a delimiter.
+  // excluded from ``objects`` because of a delimiter.
   repeated string prefixes = 1;
   
-  // The list of objects.
+  // The list of objects
   repeated ObjectInfo objects = 2;
 }

@@ -43,6 +43,14 @@ public interface ValueSegment {
     public abstract int size();
 
     /**
+     * In rare circumstances, a segment read from the archive has to be modified.
+     * <p>
+     * This method updates the object such that it can be modified
+     */
+    public default void makeWritable() {
+
+    }
+    /**
      * returns an array containing the values in the range [posStart, posStop) if ascending or [posStop, posStart) if
      * descending
      *

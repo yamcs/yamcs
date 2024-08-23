@@ -104,22 +104,9 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
                     return;
                 }
             }
-
-            if (length < frameHandler.getMinFrameSize()) {
-                eventProducer.sendWarning("Error processing frame: size " + length
-                        + " shorter than minimum allowed " + frameHandler.getMinFrameSize());
-                errFrameCount++;
-                return;
-            }
-            if (length > frameHandler.getMaxFrameSize()) {
-                eventProducer.sendWarning("Error processing frame: size " + length + " longer than maximum allowed "
-                        + frameHandler.getMaxFrameSize());
-                errFrameCount++;
-            }
-
             frameHandler.handleFrame(ert, data, offset, length);
-
             validFrameCount.getAndIncrement();
+
         } catch (TcTmException e) {
             eventProducer.sendWarning("Error processing frame: " + e.toString());
             invalidFrameCount.getAndIncrement();

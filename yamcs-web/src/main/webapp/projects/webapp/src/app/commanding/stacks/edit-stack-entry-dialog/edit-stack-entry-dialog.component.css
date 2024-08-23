@@ -7,6 +7,7 @@
   position: relative;
   height: calc(100% - 48px);
   overflow: auto;
+  font: 400 12px / 20px Roboto, sans-serif;
 }
 
 .command-table-wrapper {
@@ -40,11 +41,11 @@ div.names {
   display: flex;
 }
 
-div.names > div {
+div.names>div {
   padding-right: 25px;
 }
 
-div.names > div:not(:first-child) {
+div.names>div:not(:first-child) {
   padding-left: 25px;
   border-left: 1px solid rgba(0, 0, 0, 0.1);
 }

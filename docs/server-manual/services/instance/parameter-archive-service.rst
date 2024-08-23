@@ -58,13 +58,16 @@ General Options
 ---------------
 
 maxSegmentSize (integer)
-     The ParameterArchive stores data in segments, each segment storing multiple samples of the same parameter. This option configures the maximum segment size.
+     The ParameterArchive stores data in segments, each segment storing multiple samples of the same parameter. This option configures the maximum segment size. 
 
      The parameter archive accumulates data in memory to fill the segments, in parallel for all parameters. This option affects thus the memory consumed when the parameter archive is being filled.
 
      The segment size is limited by the duration of an interval, a segment cannot be larger than :math:`2^{23}` milliseconds (approximately 139 minutes).
 
-     Default: ``5000``
+     Starting with Yamcs 5.10 the segments from an interval are merged together inside RocksDB such that when retrieving there is only one segment for each interval.
+     In order to reduce the memory consumption during parameter archive buildup, the default value of this setting has been changed from 5000 to 500.
+
+     Default: ``500``
 
 sparseGroups (boolean)
     If set to true Parameter Archive will allow gaps in the parameter groups. This reduces the memory consumption and increases the retrieval speed at the expense of storing a gap list with some parameters.
@@ -136,4 +139,7 @@ pastJumpThreshold (integer) seconds
 
 numThreads (integer)
      The realtime filler will compress and flush the segments to disk in background. This option configures how many threads should be used for that operation. The default is the total number of CPUs of the system minus 1.
-     
+
+flushInterval (integer) seconds
+     If no data is received for a parameter group in this number of seconds, then flush the data to the archive. If data is received regularely, it will be flushed when the segment is full (see maxSegmentSize above)
+

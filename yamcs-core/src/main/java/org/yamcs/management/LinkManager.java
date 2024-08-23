@@ -6,13 +6,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.stream.Collectors;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
@@ -22,7 +19,6 @@ import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
-import org.yamcs.actions.ActionHelper;
 import org.yamcs.client.utils.WellKnownTypes;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
@@ -30,6 +26,7 @@ import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.management.LinkManager.InvalidPacketAction.Action;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.memento.MementoDb;
 import org.yamcs.parameter.SystemParametersProducer;
@@ -38,7 +35,6 @@ import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.links.LinkInfo;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.Link;
-import org.yamcs.tctm.LinkActionProvider;
 import org.yamcs.tctm.LinkMemento;
 import org.yamcs.tctm.LinkState;
 import org.yamcs.tctm.ParameterDataLink;
@@ -48,7 +44,6 @@ import org.yamcs.tctm.TmPacketDataLink;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.ServiceUtil;
 import org.yamcs.utils.YObjectLoader;
-import org.yamcs.mdb.Mdb;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -80,10 +75,13 @@ public class LinkManager {
     Log log;
     final String yamcsInstance;
     Set<LinkListener> linkListeners = new CopyOnWriteArraySet<>();
-    List<LinkWithInfo> links = new CopyOnWriteArrayList<>();
     final CommandHistoryPublisher cmdHistPublisher;
     Map<Stream, TcStreamSubscriber> tcStreamSubscribers = new HashMap<>();
-    Set<Link> linksWithChanges = ConcurrentHashMap.newKeySet();
+
+    // To be fully replaced by linksByName, currently still
+    // used for deprecated register/unregister methods in LinkListener.
+    @Deprecated
+    List<LinkWithInfo> links = new CopyOnWriteArrayList<>();
 
     public LinkManager(String instanceName) throws ValidationException {
         this.yamcsInstance = instanceName;
@@ -326,7 +324,7 @@ public class LinkManager {
 
     public void stopLinks() {
         linksByName.forEach((name, link) -> {
-            unregisterLink(name);
+            unregisterLink(name, link);
             if (link instanceof Service) {
                 ((Service) link).stopAsync();
             }
@@ -337,10 +335,6 @@ public class LinkManager {
                 ServiceUtil.awaitServiceTerminated((Service) link, YamcsServer.SERVICE_STOP_GRACE_TIME, log);
             }
         });
-    }
-
-    public void notifyChanged(Link link) {
-        linksWithChanges.add(link);
     }
 
     private void registerLink(String linkName, String spec, Link link) {
@@ -365,18 +359,28 @@ public class LinkManager {
         }
         LinkInfo linkInfo = linkb.build();
         links.add(new LinkWithInfo(link, linkInfo));
-        linkListeners.forEach(l -> l.linkRegistered(linkInfo));
+        linkListeners.forEach(l -> {
+            l.linkAdded(link);
+            l.linkRegistered(linkInfo);
+        });
     }
 
-    private void unregisterLink(String linkName) {
+    private void unregisterLink(String linkName, Link link) {
         Optional<LinkWithInfo> o = getLinkWithInfo(linkName);
         if (o.isPresent()) {
             LinkWithInfo lwi = o.get();
             links.remove(lwi);
-            linkListeners.forEach(l -> l.linkUnregistered(lwi.linkInfo));
+            linkListeners.forEach(l -> {
+                l.linkRemoved(link);
+                l.linkUnregistered(lwi.linkInfo);
+            });
         }
     }
 
+    /**
+     * Use {@link #getLink(String)} instead.
+     */
+    @Deprecated
     public Optional<LinkWithInfo> getLinkWithInfo(String linkName) {
         return links.stream()
                 .filter(lwi -> linkName.equals(lwi.linkInfo.getName()))
@@ -433,30 +437,6 @@ public class LinkManager {
         return linkListeners.remove(l);
     }
 
-    /**
-     * Use {@link #getLinks()} instead.
-     */
-    @Deprecated
-    public List<LinkInfo> getLinkInfo() {
-        return links.stream().map(lwi -> lwi.linkInfo).collect(Collectors.toList());
-    }
-
-    /**
-     * Use {@link #getLink(String)} instead.
-     */
-    @Deprecated
-    public LinkInfo getLinkInfo(String linkName) {
-        Optional<LinkInfo> o = links.stream()
-                .map(lwi -> lwi.linkInfo)
-                .filter(li -> li.getName().equals(linkName))
-                .findFirst();
-        if (o.isPresent()) {
-            return o.get();
-        } else {
-            return null;
-        }
-    }
-
     public List<Link> getLinks() {
         return new ArrayList<>(linksByName.values());
     }
@@ -493,6 +473,10 @@ public class LinkManager {
         Action action;
     }
 
+    /**
+     * @deprecated Access to linkInfo copy will be removed in a future release.
+     */
+    @Deprecated
     public class LinkWithInfo {
         final Link link;
         LinkInfo linkInfo;
@@ -500,46 +484,6 @@ public class LinkManager {
         public LinkWithInfo(Link link, LinkInfo linkInfo) {
             this.link = link;
             this.linkInfo = linkInfo;
-        }
-
-        boolean hasChanged() {
-            try {
-                String prevDetailedStatus = linkInfo.hasDetailedStatus() ? linkInfo.getDetailedStatus() : null;
-                if (linksWithChanges.remove(link)
-                        || !linkInfo.getStatus().equals(link.getLinkStatus().name())
-                        || linkInfo.getDisabled() != link.isDisabled()
-                        || linkInfo.getDataInCount() != link.getDataInCount()
-                        || linkInfo.getDataOutCount() != link.getDataOutCount()
-                        || !Objects.equals(prevDetailedStatus, link.getDetailedStatus())) {
-
-                    LinkInfo.Builder lib = LinkInfo.newBuilder(linkInfo)
-                            .setDisabled(link.isDisabled())
-                            .setStatus(link.getLinkStatus().name())
-                            .setDataInCount(link.getDataInCount())
-                            .setDataOutCount(link.getDataOutCount());
-                    String ds = link.getDetailedStatus();
-                    if (ds != null) {
-                        lib.setDetailedStatus(ds);
-                    }
-                    var extra = link.getExtraInfo();
-                    if (extra != null) {
-                        lib.setExtra(WellKnownTypes.toStruct(extra));
-                    }
-                    if (link instanceof LinkActionProvider) {
-                        lib.clearActions();
-                        for (var action : ((LinkActionProvider) link).getActions()) {
-                            lib.addActions(ActionHelper.toActionInfo(action, false));
-                        }
-                    }
-                    linkInfo = lib.build();
-                    return true;
-                } else {
-                    return false;
-                }
-            } catch (Exception e) {
-                log.error("Error checking link status for {}", link.getName(), e);
-                return false;
-            }
         }
 
         public Link getLink() {

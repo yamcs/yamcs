@@ -4,7 +4,7 @@ export interface MissionDatabase {
   configName: string;
   name: string;
   version: string;
-  spaceSystem: SpaceSystem[];
+  spaceSystems: SpaceSystem[];
   parameterCount: number;
   containerCount: number;
   commandCount: number;
@@ -124,8 +124,8 @@ export interface AbsoluteTimeInfo {
 
 export interface AlarmInfo {
   minViolations: number;
-  staticAlarmRange: AlarmRange[];
-  enumerationAlarm: EnumerationAlarm[];
+  staticAlarmRanges: AlarmRange[];
+  enumerationAlarms: EnumerationAlarm[];
 }
 
 export interface ContextAlarmInfo {
@@ -145,7 +145,7 @@ export interface DataEncoding {
   sizeInBits: number;
   encoding: string;
   defaultCalibrator: Calibrator;
-  contextCalibrator: ContextCalibrator[];
+  contextCalibrators: ContextCalibrator[];
 }
 
 export interface Calibrator {
@@ -162,11 +162,11 @@ export interface ContextCalibrator {
 }
 
 export interface PolynomialCalibrator {
-  coefficient: number[];
+  coefficients: number[];
 }
 
 export interface SplineCalibrator {
-  point: SplinePoint[];
+  points: SplinePoint[];
 }
 
 export interface SplinePoint {

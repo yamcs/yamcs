@@ -34,7 +34,6 @@ public class RdbTableWalker extends AbstractTableWalker {
     boolean batchUpdates = false;
     protected TableVisitor visitor;
 
-
     protected RdbTableWalker(ExecutionContext ctx, TableDefinition tableDefinition,
             boolean ascending, boolean follow) {
         super(ctx, tableDefinition, ascending, follow);
@@ -48,7 +47,7 @@ public class RdbTableWalker extends AbstractTableWalker {
      * Iterate data through the given interval taking into account also the tableRange.
      * <p>
      * tableRange has to be non-null but can be unbounded at one or both ends.
-     * <p
+     * <p>
      * Return true if the tableRange is bounded and the end has been reached.
      * 
      * @throws StreamSqlException
@@ -86,6 +85,7 @@ public class RdbTableWalker extends AbstractTableWalker {
             rdb = tablespace.getRdb();
         }
         ReadOptions readOptions = new ReadOptions();
+
         readOptions.setTailing(follow);
         if (!follow) {
             Snapshot snapshot = ctx.getSnapshot(rdb);

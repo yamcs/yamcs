@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, forwardRef, Input, OnChanges, OnDestroy, Output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, forwardRef, Input, OnChanges, OnDestroy, Output, signal } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActionInfo, FileListExtraColumnInfo, ListFilesResponse, WebappSdkModule, YaColumnInfo } from '@yamcs/webapp-sdk';
@@ -56,6 +56,7 @@ export class RemoteFileSelectorComponent implements ControlValueAccessor, OnChan
   displayedColumns$ = new BehaviorSubject<string[]>(['name', 'size', 'modified']);
   extraColumns$ = new BehaviorSubject<YaColumnInfo[]>([]);
   dataSource = new MatTableDataSource<RemoteFileItem>([]);
+  progressMessage = signal<string | null>(null);
 
   currentPrefix$ = new BehaviorSubject<string | null>(null);
 
@@ -135,6 +136,7 @@ export class RemoteFileSelectorComponent implements ControlValueAccessor, OnChan
         extra: file.extra || {},
       });
     }
+    this.progressMessage.set(dir.progressMessage || null);
     this.dataSource.data = items;
     this.changeDetection.detectChanges();
   }

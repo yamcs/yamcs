@@ -24,6 +24,7 @@
         </ya-more>
       </td>
     </ng-container>
+
     <ng-container cdkColumnDef="name">
       <th mat-header-cell *cdkHeaderCellDef style="width: 400px">Name</th>
       <td mat-cell *cdkCellDef="let item">
@@ -38,6 +39,7 @@
         }
       </td>
     </ng-container>
+
     <ng-container cdkColumnDef="modified">
       <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Date modified</th>
       <td mat-cell *cdkCellDef="let item">
@@ -46,6 +48,7 @@
         </span>
       </td>
     </ng-container>
+
     <ng-container cdkColumnDef="size">
       <th mat-header-cell *cdkHeaderCellDef style="width: 70px">Size</th>
       <td mat-cell *cdkCellDef="let item">
@@ -54,6 +57,7 @@
         </span>
       </td>
     </ng-container>
+
     <ng-container cdkColumnDef="parent">
       <td mat-header-cell *cdkHeaderCellDef [attr.colspan]="(displayedColumns$ | async)?.length">
         <mat-icon class="icon12" style="vertical-align: middle; visibility: hidden">
@@ -62,6 +66,14 @@
         ..
       </td>
     </ng-container>
+
+    <ng-container cdkColumnDef="progress">
+      <td mat-footer-cell *cdkFooterCellDef [attr.colspan]="(displayedColumns$ | async)?.length">
+        {{ progressMessage() }}
+        <ya-dots style="vertical-align: middle" />
+      </td>
+    </ng-container>
+
     @for (extraColumn of extraColumns$ | async; track extraColumn) {
       <ng-container [cdkColumnDef]="extraColumn.id">
         <th mat-header-cell *cdkHeaderCellDef width="1">{{ extraColumn.label }}</th>
@@ -74,6 +86,7 @@
         </td>
       </ng-container>
     }
+
     <tr mat-header-row *cdkHeaderRowDef="displayedColumns$ | async" (click)="clearSelection()"></tr>
     <tr
       mat-row
@@ -86,5 +99,10 @@
       *cdkRowDef="let row; columns: displayedColumns$ | async"
       [class.selected]="isSelected(row)"
       (click)="selectFile($event, row)"></tr>
+    <tr
+      mat-footer-row
+      *cdkFooterRowDef="['progress']"
+      class="progress-row"
+      [class.hide]="!progressMessage()"></tr>
   </table>
 }

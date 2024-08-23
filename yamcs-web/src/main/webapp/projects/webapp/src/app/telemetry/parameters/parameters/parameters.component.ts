@@ -13,6 +13,8 @@ export const PLIST_COLUMNS: YaColumnInfo[] = [
   { id: 'name', label: 'Name', alwaysVisible: true },
   { id: 'type', label: 'Type', visible: true },
   { id: 'dataSource', label: 'Data source', visible: true },
+  { id: 'gentime', label: 'Generation time', visible: true},
+  { id: 'rectime', label: 'Reception time', visible: true},
   { id: 'engValue', label: 'Value', visible: true },
   { id: 'shortDescription', label: 'Description', visible: true },
   { id: 'actions', label: '', alwaysVisible: true },

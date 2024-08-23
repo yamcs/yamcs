@@ -1,6 +1,5 @@
 package org.yamcs.http.api;
 
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -12,7 +11,6 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.logging.Log;
 import org.yamcs.management.LinkManager;
-import org.yamcs.management.LinkManager.LinkWithInfo;
 import org.yamcs.protobuf.AbstractCop1Api;
 import org.yamcs.protobuf.Cop1Config;
 import org.yamcs.protobuf.Cop1Status;
@@ -160,16 +158,15 @@ public class Cop1Api extends AbstractCop1Api<Context> {
         LinksApi.verifyLink(instance, linkName);
         YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(instance);
         LinkManager lmgr = ysi.getLinkManager();
-        Optional<LinkWithInfo> o = lmgr.getLinkWithInfo(linkName);
-        if (!o.isPresent()) {
+        Link link = lmgr.getLink(linkName);
+        if (link == null) {
             throw new BadRequestException("There is no link named '" + linkName + "' in instance " + instance);
         }
-        Link link = o.get().getLink();
         if (link instanceof Cop1TcPacketHandler) {
             return (Cop1TcPacketHandler) link;
         }
         throw new BadRequestException(String.format(
-                "Link '%s' for instance '%s' does not support COP1",
+                "Link '%s' for instance '%s' does not support COP-1",
                 linkName, instance));
     }
 

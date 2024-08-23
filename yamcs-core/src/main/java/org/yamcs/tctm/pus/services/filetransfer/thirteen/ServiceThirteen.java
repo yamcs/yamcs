@@ -1,15 +1,20 @@
 package org.yamcs.tctm.pus.services.filetransfer.thirteen;
 
 import static org.yamcs.tctm.pus.services.filetransfer.thirteen.CompletedTransfer.TDEF;
+import static org.yamcs.tctm.pus.services.filetransfer.thirteen.CompletedTransfer.COL_CREATION_TIME;
+import static org.yamcs.tctm.pus.services.filetransfer.thirteen.CompletedTransfer.COL_DIRECTION;
+import static org.yamcs.tctm.pus.services.filetransfer.thirteen.CompletedTransfer.COL_TRANSFER_STATE;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,6 +40,7 @@ import org.yamcs.filetransfer.AbstractFileTransferService;
 import org.yamcs.filetransfer.FileDownloadRequests;
 import org.yamcs.filetransfer.FileSaveHandler;
 import org.yamcs.filetransfer.FileTransfer;
+import org.yamcs.filetransfer.FileTransferFilter;
 import org.yamcs.filetransfer.InvalidRequestException;
 import org.yamcs.filetransfer.RemoteFileListMonitor;
 import org.yamcs.filetransfer.TransferMonitor;
@@ -54,9 +60,11 @@ import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.CancelRequest;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.FilePutRequest;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.PauseRequest;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.requests.ResumeRequest;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Sequence;
+import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -393,30 +401,6 @@ public class ServiceThirteen extends AbstractFileTransferService implements Stre
         }
     }
 
-    @Override
-    public List<FileTransfer> getTransfers() {
-        List<FileTransfer> toReturn = new ArrayList<>();
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-        pendingTransfers.values().stream().filter(ServiceThirteen::isRunning).forEach(toReturn::add);
-
-        try {
-            StreamSqlResult res = ydb
-                    .execute("select * from " + TABLE_NAME
-                            + " where transferState='COMPLETED' or transferState='FAILED' "
-                            + " order desc limit " + archiveRetrievalLimit);
-            while (res.hasNext()) {
-                Tuple t = res.next();
-                toReturn.add(new CompletedTransfer(t));
-            }
-            res.close();
-            return toReturn;
-
-        } catch (Exception e) {
-            log.error("Error executing query", e);
-            return Collections.emptyList();
-        }
-    }
-
     private S13FileTransfer processPutRequest(long transferInstanceId, long largePacketTransactionId, long creationTime, FilePutRequest request, Bucket bucket, String transferType) {
         S13OutgoingTransfer transfer = new S13OutgoingTransfer(yamcsInstance, transferInstanceId, largePacketTransactionId, creationTime,
                 executor, cmdhistRealtime, request, config, bucket, null, null, eventProducer, this, transferType, senderFaultHandlers);
@@ -586,6 +570,117 @@ public class ServiceThirteen extends AbstractFileTransferService implements Stre
     }
 
     @Override
+    public List<FileTransfer> getTransfers(FileTransferFilter filter) {
+        List<FileTransfer> toReturn = new ArrayList<>();
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+
+        pendingTransfers.values().stream()
+                .filter(ServiceThirteen::isRunning)
+                .forEach(toReturn::add);
+
+        toReturn.removeIf(transfer -> {
+            if (filter.start != TimeEncoding.INVALID_INSTANT) {
+                if (transfer.getCreationTime() < filter.start) {
+                    return true;
+                }
+            }
+            if (filter.stop != TimeEncoding.INVALID_INSTANT) {
+                if (transfer.getCreationTime() >= filter.stop) {
+                    return true;
+                }
+            }
+            if (!filter.states.isEmpty() && !filter.states.contains(transfer.getTransferState())) {
+                return true;
+            }
+            if (filter.direction != null && !Objects.equals(filter.direction, transfer.getDirection())) {
+                return true;
+            }
+            if (filter.localEntityId != null && !Objects.equals(filter.localEntityId, transfer.getLocalEntityId())) {
+                return true;
+            }
+            if (filter.remoteEntityId != null && !Objects.equals(filter.remoteEntityId, transfer.getRemoteEntityId())) {
+                return true;
+            }
+
+            return false;
+        });
+
+        if (toReturn.size() >= filter.limit) {
+            return toReturn;
+        }
+
+        // Query only for COMPLETED or FAILED, while respecting the incoming requested states
+        // (want to avoid duplicates with the in-memory data structure)
+        if (filter.states.isEmpty() || filter.states.contains(TransferState.COMPLETED)
+                || filter.states.contains(TransferState.FAILED)) {
+
+            var sqlb = new SqlBuilder(TABLE_NAME);
+
+            if (filter.start != TimeEncoding.INVALID_INSTANT) {
+                sqlb.whereColAfterOrEqual(COL_CREATION_TIME, filter.start);
+            }
+            if (filter.stop != TimeEncoding.INVALID_INSTANT) {
+                sqlb.whereColBefore(COL_CREATION_TIME, filter.stop);
+            }
+
+            if (filter.states.isEmpty()) {
+                sqlb.whereColIn(COL_TRANSFER_STATE,
+                        Arrays.asList(TransferState.COMPLETED.name(), TransferState.FAILED.name()));
+            } else {
+                var queryStates = new ArrayList<>(filter.states);
+                queryStates.removeIf(state -> {
+                    return state != TransferState.COMPLETED && state != TransferState.FAILED;
+                });
+
+                var stringStates = queryStates.stream().map(TransferState::name).toList();
+                sqlb.whereColIn(COL_TRANSFER_STATE, stringStates);
+
+            }
+            if (filter.direction != null) {
+                sqlb.where(COL_DIRECTION + " = ?", filter.direction.name());
+            }
+            if (filter.localEntityId != null) {
+                // The 1=1 clause is a trick because Yarch is being difficult about multiple lparens
+                sqlb.where("""
+                        (1=1 and
+                          (direction = 'UPLOAD' and sourceId = ?) or
+                          (direction = 'DOWNLOAD' and destinationId = ?)
+                        )
+                        """, filter.localEntityId, filter.localEntityId);
+            }
+            if (filter.remoteEntityId != null) {
+                // The 1=1 clause is a trick because Yarch is being difficult about multiple lparens
+                sqlb.where("""
+                        (1=1 and
+                          (direction = 'UPLOAD' and destinationId = ?) or
+                          (direction = 'DOWNLOAD' and sourceId = ?)
+                        )
+                        """, filter.remoteEntityId, filter.remoteEntityId);
+            }
+
+            sqlb.descend(filter.descending);
+            sqlb.limit(filter.limit - toReturn.size());
+
+            try {
+                var res = ydb.execute(sqlb.toString(), sqlb.getQueryArgumentsArray());
+                while (res.hasNext()) {
+                    Tuple t = res.next();
+                    toReturn.add(new CompletedTransfer(t));
+                }
+                res.close();
+            } catch (ParseException | StreamSqlException e) {
+                log.error("Error executing query", e);
+            }
+        }
+
+        Collections.sort(toReturn, (a, b) -> {
+            var rc = Long.compare(a.getCreationTime(), b.getCreationTime());
+            return filter.descending ? -rc : rc;
+        });
+        return toReturn;
+    }
+
+    @Override
     public List<EntityInfo> getLocalEntities() {
         return localEntities.values().stream()
                 .map(c -> EntityInfo.newBuilder().setName(c.getName()).setId(c.getId()).build())
@@ -657,7 +752,7 @@ public class ServiceThirteen extends AbstractFileTransferService implements Stre
     @Override
     public FileTransfer startDownload(String sourceEntity, String sourcePath, String destinationEntity, Bucket bucket,
             String objectName, TransferOptions options) throws IOException, InvalidRequestException {
-        throw new InvalidRequestException("Downloading is not enabled on this CFDP service");
+        throw new InvalidRequestException("Downloading is not enabled on this S13 service");
     }
 
     @Override

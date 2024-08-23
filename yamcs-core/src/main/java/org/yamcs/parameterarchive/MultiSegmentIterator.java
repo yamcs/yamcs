@@ -29,8 +29,6 @@ import org.yamcs.yarch.rocksdb.DescendingRangeIterator;
 public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValueSegment> {
     private final int parameterGroupId;
     private final ParameterId[] pids;
-    final byte[] rangeStart;
-    final byte[] rangeStop;
 
     ParameterArchive parchive;
 
@@ -65,13 +63,6 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
 
         partitions = parchive.getPartitions(getIntervalStart(start), getIntervalEnd(stop), req.ascending);
         topIt = partitions.iterator();
-        int timeParaId = parchive.getParameterIdDb().getTimeParameterId();
-
-        // the ranges below are used for iterating over the time segments - those use the SegmentKey.TYPE_ENG_VALUE as
-        // segment type
-        rangeStart = new SegmentKey(timeParaId, parameterGroupId, ParameterArchive.getIntervalStart(start),
-                SegmentKey.TYPE_ENG_VALUE).encode();
-        rangeStop = new SegmentKey(timeParaId, parameterGroupId, stop, SegmentKey.TYPE_ENG_VALUE).encode();
 
         rtfiller = parchive.getRealtimeFiller();
 
@@ -192,6 +183,14 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
             } catch (RocksDBException | IOException e) {
                 throw new ParameterArchiveException("Failed to create iterator", e);
             }
+
+            int timeParaId = parchive.getParameterIdDb().getTimeParameterId();
+
+            var startk = new SegmentKey(timeParaId, parameterGroupId, ParameterArchive.getIntervalStart(start),
+                    SegmentKey.TYPE_ENG_VALUE);
+            byte[] rangeStart = partition.version == 0 ? startk.encodeV0() : startk.encode();
+            var stopk = new SegmentKey(timeParaId, parameterGroupId, stop, SegmentKey.TYPE_ENG_VALUE);
+            byte[] rangeStop = partition.version == 0 ? stopk.encodeV0() : stopk.encode();
             if (ascending) {
                 dbIterator = new AscendingRangeIterator(iterator, rangeStart, rangeStop);
             } else {
@@ -206,7 +205,8 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
                 return;
             }
             valid = true;
-            currentKey = SegmentKey.decode(dbIterator.key());
+            currentKey = this.partition.version == 0 ? SegmentKey.decodeV0(dbIterator.key())
+                    : SegmentKey.decode(dbIterator.key());
             try {
                 currentTimeSegment = (SortedTimeSegment) SegmentEncoderDecoder.decode(dbIterator.value(),
                         currentKey.segmentStart);
@@ -237,7 +237,7 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
                 for (int i = 0; i < pids.length; i++) {
                     int pid = pids[i].getPid();
                     SegmentKey key = new SegmentKey(pid, parameterGroupId, segStart, (byte) 0);
-                    it.seek(key.encode());
+                    it.seek(partition.version == 0 ? key.encodeV0() : key.encode());
                     if (!it.isValid()) {
                         throw new DatabaseCorruptionException(
                                 "Cannot find any record for parameter id " + pid + " at start " + segStart);
@@ -248,7 +248,7 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
                     SortedIntArray gaps = null;
                     boolean found = false;
                     while (it.isValid()) {
-                        key = SegmentKey.decode(it.key());
+                        key = partition.version == 0 ? SegmentKey.decodeV0(it.key()) : SegmentKey.decode(it.key());
                         if (key.parameterId != pid || key.parameterGroupId != parameterGroupId) {
                             break;
                         }

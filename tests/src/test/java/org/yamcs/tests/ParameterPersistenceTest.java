@@ -35,9 +35,7 @@ public class ParameterPersistenceTest extends AbstractIntegrationTest {
 
         yamcs.shutDown();
 
-        YConfiguration.setupTest("IntegrationTest");
-        yamcs.prepareStart();
-        yamcs.start();
+        setupYamcs("IntegrationTest", false);
 
         before();
         processorClient = yamcsClient.createProcessorClient(yamcsInstance, "realtime");

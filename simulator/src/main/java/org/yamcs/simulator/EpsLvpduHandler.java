@@ -34,8 +34,8 @@ public class EpsLvpduHandler {
 
                 EpsLvpduData entry = new EpsLvpduData();
 
-                entry.LVPDUStatus = new Integer(parts[0]).intValue();
-                entry.LVPDUVoltage = new Float(parts[1]).floatValue();
+                entry.LVPDUStatus = Integer.parseInt(parts[0]);
+                entry.LVPDUVoltage = Float.parseFloat(parts[1]);
 
                 entries.add(entry);
             }

@@ -1,7 +1,7 @@
 package org.yamcs.parameterarchive;
 
 import java.nio.ByteBuffer;
-
+import java.util.Arrays;
 
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.SortedIntArray;
@@ -27,6 +27,7 @@ public class SegmentEncoderDecoder {
     }
 
     static public BaseSegment decode(byte[] buf, long segmentStart) throws DecodingException {
+        buf = Arrays.copyOf(buf, buf.length + 16);
         ByteBuffer bb = ByteBuffer.wrap(buf);
         byte formatId = bb.get();
         return BaseSegment.parseSegment(formatId, segmentStart, bb);
@@ -36,7 +37,7 @@ public class SegmentEncoderDecoder {
      * the gaps is a sorted int array so we encode it with the same encoding like the time segment
      */
     static public byte[] encodeGaps(int segStartIdxInsideInterval, SortedIntArray gaps) {
-        ByteBuffer bb = ByteBuffer.allocate(5 + 4 * (gaps.size()));
+        ByteBuffer bb = ByteBuffer.allocate(5 + 4 * gaps.size());
         bb.put(FORMAT_ID_GapSegment);
         VarIntUtil.writeVarInt32(bb, segStartIdxInsideInterval);
         SortedTimeSegment.writeTo(gaps, bb);
@@ -52,7 +53,6 @@ public class SegmentEncoderDecoder {
         }
     }
 
-
     static public SortedIntArray decodeGaps(byte[] buf) throws DecodingException {
         ByteBuffer bb = ByteBuffer.wrap(buf);
 
@@ -60,12 +60,22 @@ public class SegmentEncoderDecoder {
         if (formatId == FORMAT_ID_SortedTimeValueSegmentV1) {
             return SortedTimeSegment.parse(bb);
         } else if (formatId == FORMAT_ID_GapSegment) {
-            // segStartIdxInsideInterval - used when merging segments (in RocksDB merge operator)
-            VarIntUtil.readVarInt32(bb);
-            return SortedTimeSegment.parse(bb);
+            /* int segStartIdxInsideInterval =*/ VarIntUtil.readVarInt32(bb);
+            SortedIntArray a = SortedTimeSegment.parse(bb);
+            return a;
         } else {
             throw new DecodingException("Invalid format id " + formatId + " for gaps");
         }
+    }
+
+    // makes a gap segment with all gaps between idx1 (inclusive) and idx2 (exclusive)
+    public static byte[] encodeGaps(int idx1, int idx2) {
+        int[] x = new int[idx2 - idx1];
+        for (int i = 0; i < x.length; i++) {
+            x[i] = i;
+        }
+        SortedIntArray gaps = new SortedIntArray(x);
+        return encodeGaps(idx1, gaps);
     }
 
 }

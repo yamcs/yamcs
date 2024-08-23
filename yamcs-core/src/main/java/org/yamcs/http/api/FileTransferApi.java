@@ -1,8 +1,7 @@
 package org.yamcs.http.api;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -15,10 +14,12 @@ import org.yamcs.actions.ActionHelper;
 import org.yamcs.api.Observer;
 import org.yamcs.cfdp.CfdpFileTransfer;
 import org.yamcs.cfdp.CfdpTransactionId;
+import org.yamcs.client.storage.ObjectId;
 import org.yamcs.filetransfer.FileActionIdentifier;
 import org.yamcs.filetransfer.FileActionProvider;
 import org.yamcs.filetransfer.FileTransfer;
 import org.yamcs.filetransfer.FileTransferId;
+import org.yamcs.filetransfer.FileTransferFilter;
 import org.yamcs.filetransfer.FileTransferService;
 import org.yamcs.filetransfer.InvalidRequestException;
 import org.yamcs.filetransfer.RemoteFileListMonitor;
@@ -28,6 +29,7 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
+import org.yamcs.http.audit.AuditLog;
 import org.yamcs.protobuf.AbstractFileTransferApi;
 import org.yamcs.protobuf.CancelTransferRequest;
 import org.yamcs.protobuf.CreateTransferRequest;
@@ -48,6 +50,7 @@ import org.yamcs.protobuf.SubscribeTransfersRequest;
 import org.yamcs.protobuf.TransactionId;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferInfo;
+import org.yamcs.protobuf.TransferState;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
 import org.yamcs.tctm.pus.services.filetransfer.thirteen.S13FileTransfer;
@@ -63,6 +66,15 @@ import com.google.protobuf.Struct;
 public class FileTransferApi extends AbstractFileTransferApi<Context> {
 
     private static final Logger log = LoggerFactory.getLogger(FileTransferApi.class);
+
+    private AuditLog auditLog;
+
+    public FileTransferApi(AuditLog auditLog) {
+        this.auditLog = auditLog;
+        auditLog.addPrivilegeChecker(getClass().getSimpleName(), user -> {
+            return user.hasSystemPrivilege(SystemPrivilege.ReadFileTransfers);
+        });
+    }
 
     @Override
     public void listFileTransferServices(Context ctx, ListFileTransferServicesRequest request,
@@ -93,14 +105,32 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
     public void listTransfers(Context ctx, ListTransfersRequest request, Observer<ListTransfersResponse> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadFileTransfers);
 
-        FileTransferService ftService = verifyService(request.getInstance(),
+        var ftService = verifyService(request.getInstance(),
                 request.hasServiceName() ? request.getServiceName() : null);
 
-        List<FileTransfer> transfers = new ArrayList<>(ftService.getTransfers());
-        Collections.sort(transfers, (a, b) -> Long.compare(b.getCreationTime(), a.getCreationTime()));
+        var filter = new FileTransferFilter();
+        filter.limit = request.hasLimit() ? request.getLimit() : 100;
+        filter.descending = !request.getOrder().equals("asc");
+        filter.states.addAll(request.getStateList());
 
-        ListTransfersResponse.Builder responseb = ListTransfersResponse.newBuilder();
-        for (FileTransfer transfer : transfers) {
+        if (request.hasStart()) {
+            filter.start = TimeEncoding.fromProtobufTimestamp(request.getStart());
+        }
+        if (request.hasStop()) {
+            filter.stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
+        }
+        if (request.hasDirection()) {
+            filter.direction = request.getDirection();
+        }
+        if (request.hasLocalEntityId()) {
+            filter.localEntityId = request.getLocalEntityId();
+        }
+        if (request.hasRemoteEntityId()) {
+            filter.remoteEntityId = request.getRemoteEntityId();
+        }
+
+        var responseb = ListTransfersResponse.newBuilder();
+        for (var transfer : ftService.getTransfers(filter)) {
             responseb.addTransfers(toTransferInfo(ftService, transfer));
         }
         observer.complete(responseb.build());
@@ -158,6 +188,19 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
             try {
                 FileTransfer transfer = ftService.startUpload(source, bucket, objectName, destination,
                         destinationPath, transferOptions);
+
+                var auditMessage = new StringBuilder("Upload ")
+                        .append(ObjectId.of(bucket.getName(), objectName));
+                if (destinationPath != null) {
+                    auditMessage.append(" to '").append(destinationPath).append("'");
+                }
+                if (request.hasServiceName()) {
+                    auditMessage.append(String.format(" (%s, %s → %s)", request.getServiceName(), source, destination));
+                } else {
+                    auditMessage.append(String.format(" (%s → %s)", source, destination));
+                }
+                auditLog.addRecord(ctx, request, auditMessage.toString());
+
                 observer.complete(toTransferInfo(ftService, transfer));
 
             } catch (InvalidRequestException e) {
@@ -179,6 +222,19 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
             try {
                 FileTransfer transfer = ftService.startDownload(source, sourcePath, destination, bucket, objectName,
                         transferOptions);
+
+                var auditMessage = new StringBuilder("Download '")
+                        .append(sourcePath)
+                        .append("' to ")
+                        .append(ObjectId.of(bucket.getName(), objectName));
+
+                if (request.hasServiceName()) {
+                    auditMessage.append(String.format(" (%s, %s ← %s)", request.getServiceName(), destination, source));
+                } else {
+                    auditMessage.append(String.format(" (%s ← %s)", destination, source));
+                }
+                auditLog.addRecord(ctx, request, auditMessage.toString());
+
                 observer.complete(toTransferInfo(ftService, transfer));
             } catch (InvalidRequestException e) {
                 throw new BadRequestException(e.getMessage());
@@ -204,6 +260,21 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
             throw new BadRequestException("Transaction '" + transaction.getId() + "' cannot be paused");
         }
         observer.complete(Empty.getDefaultInstance());
+
+        if (transaction.getDirection() == TransferDirection.UPLOAD) {
+            var auditMessage = new StringBuilder("Pausing upload of ")
+                    .append(ObjectId.of(transaction.getBucketName(), transaction.getObjectName()))
+                    .append(" to '")
+                    .append(transaction.getRemotePath())
+                    .append("'");
+            auditLog.addRecord(ctx, request, auditMessage.toString());
+        } else if (transaction.getDirection() == TransferDirection.DOWNLOAD) {
+            var auditMessage = new StringBuilder("Pausing download of '")
+                    .append(transaction.getRemotePath())
+                    .append("' to ")
+                    .append(ObjectId.of(transaction.getBucketName(), transaction.getObjectName()));
+            auditLog.addRecord(ctx, request, auditMessage.toString());
+        }
     }
 
     @Override
@@ -219,6 +290,21 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
             throw new BadRequestException("Transaction '" + transaction.getId() + "' cannot be cancelled");
         }
         observer.complete(Empty.getDefaultInstance());
+
+        if (transaction.getDirection() == TransferDirection.UPLOAD) {
+            var auditMessage = new StringBuilder("Cancelling upload of ")
+                    .append(ObjectId.of(transaction.getBucketName(), transaction.getObjectName()))
+                    .append(" to '")
+                    .append(transaction.getRemotePath())
+                    .append("'");
+            auditLog.addRecord(ctx, request, auditMessage.toString());
+        } else if (transaction.getDirection() == TransferDirection.DOWNLOAD) {
+            var auditMessage = new StringBuilder("Cancelling download of '")
+                    .append(transaction.getRemotePath())
+                    .append("' to ")
+                    .append(ObjectId.of(transaction.getBucketName(), transaction.getObjectName()));
+            auditLog.addRecord(ctx, request, auditMessage.toString());
+        }
     }
 
     @Override
@@ -234,6 +320,21 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
             throw new BadRequestException("Transaction '" + transaction.getId() + "' cannot be resumed");
         }
         observer.complete(Empty.getDefaultInstance());
+
+        if (transaction.getDirection() == TransferDirection.UPLOAD) {
+            var auditMessage = new StringBuilder("Resuming upload of ")
+                    .append(ObjectId.of(transaction.getBucketName(), transaction.getObjectName()))
+                    .append(" to '")
+                    .append(transaction.getRemotePath())
+                    .append("'");
+            auditLog.addRecord(ctx, request, auditMessage.toString());
+        } else if (transaction.getDirection() == TransferDirection.DOWNLOAD) {
+            var auditMessage = new StringBuilder("Resuming download of '")
+                    .append(transaction.getRemotePath())
+                    .append("' to ")
+                    .append(ObjectId.of(transaction.getBucketName(), transaction.getObjectName()));
+            auditLog.addRecord(ctx, request, auditMessage.toString());
+        }
     }
 
     @Override
@@ -246,9 +347,20 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         };
         observer.setCancelHandler(() -> ftService.unregisterTransferMonitor(listener));
 
-        for (FileTransfer transfer : ftService.getTransfers()) {
+        var filter = new FileTransferFilter();
+        if (request.getOngoingOnly()) {
+            filter.states = Arrays.asList(TransferState.CANCELLING, TransferState.PAUSED, TransferState.QUEUED,
+                    TransferState.RUNNING);
+        } else {
+            // Legacy initial dump. Capability to be removed after switching known clients
+            // to "ongoingOnly: true".
+            filter.states = Arrays.asList(TransferState.values());
+        }
+
+        for (var transfer : ftService.getTransfers(filter)) {
             observer.next(toTransferInfo(ftService, transfer));
         }
+
         ftService.registerTransferMonitor(listener);
     }
 
@@ -273,9 +385,19 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
         FileTransferService ftService = verifyService(request.getInstance(),
                 request.hasServiceName() ? request.getServiceName() : null);
-        ftService.fetchFileList(request.getSource(), request.getDestination(), request.getRemotePath(),
+        var source = request.getSource();
+        var destination = request.getDestination();
+        ftService.fetchFileList(source, destination, request.getRemotePath(),
                 GpbWellKnownHelper.toJava(request.getOptions()));
         observer.complete(Empty.getDefaultInstance());
+
+        var auditMessage = new StringBuilder("File list requested");
+        if (request.hasServiceName()) {
+            auditMessage.append(String.format(" (%s, %s ← %s)", request.getServiceName(), destination, source));
+        } else {
+            auditMessage.append(String.format(" (%s ← %s)", destination, source));
+        }
+        auditLog.addRecord(ctx, request, auditMessage.toString());
     }
 
     /**
@@ -299,16 +421,29 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlFileTransfers);
         FileTransferService ftService = verifyService(request.getInstance(),
                 request.hasServiceName() ? request.getServiceName() : null);
-        
+
         Action<FileActionIdentifier> action = null;
-        if (ftService instanceof FileActionProvider) {
-            action = ((FileActionProvider) ftService).getFileAction(request.getAction());
+        if (ftService instanceof FileActionProvider fileActionProvider) {
+            action = fileActionProvider.getFileAction(request.getAction());
         }
         if (action == null) {
             throw new BadRequestException("Unknown action '" + request.getAction() + "'");
         }
 
-        ActionHelper.runAction(new FileActionIdentifier(request.getRemoteEntity(), request.getFile()), action, request.getMessage(), observer);
+        ActionHelper.runAction(new FileActionIdentifier(request.getRemoteEntity(), request.getFile()), action,
+                request.getMessage(), observer);
+
+        var auditMessage = new StringBuilder("Action '")
+                .append(request.getAction())
+                .append("' performed on file '")
+                .append(request.getFile())
+                .append("'");
+        if (request.hasServiceName()) {
+            auditMessage.append(String.format(" (%s, %s)", request.getServiceName(), request.getRemoteEntity()));
+        } else {
+            auditMessage.append(String.format(" (%s)", request.getRemoteEntity()));
+        }
+        auditLog.addRecord(ctx, request, auditMessage.toString());
     }
 
     private static FileTransferServiceInfo toFileTransferServiceInfo(String name, FileTransferService service) {
@@ -361,8 +496,8 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
             tib.setRemoteEntity(findRemoteEntityInfo(service, transfer.getRemoteEntityId()));
         }
 
-        if (transfer instanceof CfdpFileTransfer) {
-            CfdpTransactionId txid = ((CfdpFileTransfer) transfer).getTransactionId();
+        if (transfer instanceof CfdpFileTransfer cfdpTransfer) {
+            CfdpTransactionId txid = cfdpTransfer.getTransactionId();
             if (txid != null) {// queued transfers do not have a transaction id
                 tib.setTransactionId(toTransactionId(txid));
             }

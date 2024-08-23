@@ -27,16 +27,6 @@ service LinksApi {
     };
   }
 
-  // Update a link
-  rpc UpdateLink(EditLinkRequest) returns (LinkInfo) {
-    option (yamcs.api.route) = {
-      patch: "/api/links/{instance}/{link}"
-      body: "*"
-      deprecated: true
-      log: "Link '{link}' updated"
-    };
-  }
-
   // Enable a link
   rpc EnableLink(EnableLinkRequest) returns (LinkInfo) {
     option (yamcs.api.route) = {
@@ -121,18 +111,6 @@ message ResetLinkCountersRequest {
   optional string link = 2;
 }
 
-message EditLinkRequest {
-  // Yamcs instance name
-  optional string instance = 3;
-
-  // Link name
-  optional string link = 4;
-  
-  // The state of the link. Either ``enabled`` or ``disabled``.
-  optional string state = 1;
-  optional bool resetCounters = 2;
-}
-
 message RunActionRequest {
   // Yamcs instance name
   optional string instance = 1;
@@ -148,33 +126,6 @@ message RunActionRequest {
 }
 
 message LinkEvent {
-  enum Type {
-    // A new link was registered. You also receive this event directly after you subscribe,
-    //  for every link that is registered at that time.
-    REGISTERED = 1;
-    // A link was unregistered.
-    UNREGISTERED = 2;
-    // A link was updated in one of its attributes, for example the dataCount has increased,
-    // or the status has changed.
-    // removed as of Yamcs 5.9.6
-    // UPDATED = 3;
-    
-    // Replace entire model with the link information
-    // provided in the `links` field.
-    UPDATE_ALL = 4;
-  }
-  // Type of event. This field is deprecated: in older versions of Yamcs, link updates
-  // were sent one-by-one using one of the types: ``REGISTERED``, ``UNREGISTERED`` or
-  // ``UPDATED`` and with the ``linkInfo`` field set to that sepific link.
-  //
-  // In current versions of Yamcs, users are advised to switch to read the ``links``
-  // field instead. This will be published automatically about every second with a
-  // snapshot of all links. The type for these batch updates is set to ``UPDATE_ALL``.
-  optional Type type = 1 [deprecated=true];
-
-  // Deprecated: read ``links`` instead.
-  optional LinkInfo linkInfo = 2 [deprecated=true];
-
   // Detail for all links
   repeated LinkInfo links = 3;
 }

@@ -99,7 +99,6 @@ import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumeration;
-import org.yamcs.mdb.Mdb;
 
 import com.google.protobuf.ByteString;
 
@@ -1251,6 +1250,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
         b.setParameterTypeCount(mdb.getParameterTypes().size());
         SpaceSystem ss = mdb.getRootSpaceSystem();
         for (SpaceSystem sub : ss.getSubSystems()) {
+            b.addSpaceSystems(XtceToGpbAssembler.toSpaceSystemInfo(sub, DetailLevel.FULL));
             b.addSpaceSystem(XtceToGpbAssembler.toSpaceSystemInfo(sub, DetailLevel.FULL));
         }
         return b.build();

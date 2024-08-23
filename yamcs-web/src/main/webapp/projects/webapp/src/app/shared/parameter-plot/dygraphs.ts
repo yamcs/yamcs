@@ -68,12 +68,12 @@ export function analyzeStaticValueRanges(parameter: NamedParameterType) {
   const staticAlarmZones = []; // Disjoint set of OOL alarm zones
   if (parameter.type && parameter.type.defaultAlarm) {
     const defaultAlarm = parameter.type.defaultAlarm;
-    if (defaultAlarm.staticAlarmRange) {
+    if (defaultAlarm.staticAlarmRanges) {
       let last_y = -Infinity;
 
       // LOW LIMITS
-      for (let i = defaultAlarm.staticAlarmRange.length - 1; i >= 0; i--) {
-        const range = defaultAlarm.staticAlarmRange[i];
+      for (let i = defaultAlarm.staticAlarmRanges.length - 1; i >= 0; i--) {
+        const range = defaultAlarm.staticAlarmRanges[i];
         if (range.minInclusive !== undefined) {
           const zone = {
             y1: last_y,
@@ -94,8 +94,8 @@ export function analyzeStaticValueRanges(parameter: NamedParameterType) {
 
       // HIGH LIMITS
       last_y = Infinity;
-      for (let i = defaultAlarm.staticAlarmRange.length - 1; i >= 0; i--) {
-        const range = defaultAlarm.staticAlarmRange[i];
+      for (let i = defaultAlarm.staticAlarmRanges.length - 1; i >= 0; i--) {
+        const range = defaultAlarm.staticAlarmRanges[i];
         if (range.maxInclusive) {
           const zone = {
             y1: range.maxInclusive,

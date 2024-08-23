@@ -1,5 +1,7 @@
 package org.yamcs.tests;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.IF_MODIFIED_SINCE;
+import static io.netty.handler.codec.http.HttpMethod.GET;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -21,16 +23,16 @@ import org.yamcs.http.HttpServer;
 import org.yamcs.http.StaticFileHandler;
 
 import io.netty.handler.codec.http.DefaultHttpHeaders;
-import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpMethod;
 
 public class HttpServerTest extends AbstractIntegrationTest {
 
     @Test
     public void testStaticFile() throws Exception {
         Path dir = Path.of(System.getProperty("java.io.tmpdir"), "yamcs-web");
-        YamcsServer.getServer().getGlobalService(HttpServer.class).addStaticRoot(dir);
+
+        var staticFileHandler = new StaticFileHandler("/static", dir);
+        YamcsServer.getServer().getGlobalService(HttpServer.class).addRoute("static", () -> staticFileHandler);
 
         HttpClient httpClient = new HttpClient();
         Files.createDirectories(dir);
@@ -46,27 +48,25 @@ public class HttpServerTest extends AbstractIntegrationTest {
         file1Out.close();
 
         File file2 = File.createTempFile("test2_", null, dir.toFile());
-        FileOutputStream file2Out = new FileOutputStream(file2);
-
-        httpClient
-                .doBulkReceiveRequest("http://localhost:9190/static/" + file1.getName(), HttpMethod.GET, null, data -> {
-                    try {
-                        file2Out.write(data);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }).get();
-        file2Out.close();
+        try (var file2Out = new FileOutputStream(file2)) {
+            httpClient.doBulkReceiveRequest("http://localhost:9190/static/" + file1.getName(), GET, null, data -> {
+                try {
+                    file2Out.write(data);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).get();
+        }
         assertTrue(com.google.common.io.Files.equal(file1, file2));
 
         // test if not modified since
         SimpleDateFormat dateFormatter = new SimpleDateFormat(StaticFileHandler.HTTP_DATE_FORMAT);
 
         HttpHeaders httpHeaders = new DefaultHttpHeaders();
-        httpHeaders.add(HttpHeaderNames.IF_MODIFIED_SINCE, dateFormatter.format(file1.lastModified()));
+        httpHeaders.add(IF_MODIFIED_SINCE, dateFormatter.format(file1.lastModified()));
         ClientException e1 = null;
         try {
-            httpClient.doAsyncRequest("http://localhost:9190/static/" + file1.getName(), HttpMethod.GET, null,
+            httpClient.doAsyncRequest("http://localhost:9190/static/" + file1.getName(), GET, null,
                     httpHeaders).get();
         } catch (ExecutionException e) {
             e1 = (ClientException) e.getCause();
@@ -75,8 +75,8 @@ public class HttpServerTest extends AbstractIntegrationTest {
         assertTrue(e1.toString().contains("304"));
 
         httpHeaders = new DefaultHttpHeaders();
-        httpHeaders.add(HttpHeaderNames.IF_MODIFIED_SINCE, dateFormatter.format(file1.lastModified() - 1000));
-        byte[] b1 = httpClient.doAsyncRequest("http://localhost:9190/static/" + file1.getName(), HttpMethod.GET, null,
+        httpHeaders.add(IF_MODIFIED_SINCE, dateFormatter.format(file1.lastModified() - 1000));
+        byte[] b1 = httpClient.doAsyncRequest("http://localhost:9190/static/" + file1.getName(), GET, null,
                 httpHeaders).get();
         assertEquals(file1.length(), b1.length);
 

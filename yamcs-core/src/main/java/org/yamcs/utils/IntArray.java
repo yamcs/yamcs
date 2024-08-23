@@ -2,14 +2,17 @@ package org.yamcs.utils;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.PrimitiveIterator;
 import java.util.stream.IntStream;
 
 /**
  * expandable array of ints
  * 
  */
-public class IntArray {
+public class IntArray implements Iterable<Integer> {
     public static final int DEFAULT_CAPACITY = 10;
     private int[] a;
     private int length;
@@ -362,6 +365,7 @@ public class IntArray {
         }
     }
 
+
     /**
      * Compares two arrays. Assuming that the arrays a1 and a2 are sorted, it returns
      * <ul>
@@ -419,4 +423,25 @@ public class IntArray {
         return c;
     }
 
+    @Override
+    public Iterator<Integer> iterator() {
+        return new IntArrayIterator();
+    }
+
+    private class IntArrayIterator implements PrimitiveIterator.OfInt {
+        private int idx = 0;
+
+        @Override
+        public boolean hasNext() {
+            return idx < length;
+        }
+
+        @Override
+        public int nextInt() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            return a[idx++];
+        }
+    }
 }

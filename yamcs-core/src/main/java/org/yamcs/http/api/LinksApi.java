@@ -12,14 +12,12 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.audit.AuditLog;
-import org.yamcs.management.LinkListener;
 import org.yamcs.management.LinkManager;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.protobuf.links.AbstractLinksApi;
 import org.yamcs.protobuf.links.DisableLinkRequest;
-import org.yamcs.protobuf.links.EditLinkRequest;
 import org.yamcs.protobuf.links.EnableLinkRequest;
 import org.yamcs.protobuf.links.GetLinkRequest;
 import org.yamcs.protobuf.links.LinkEvent;
@@ -74,44 +72,16 @@ public class LinksApi extends AbstractLinksApi<Context> {
         YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(instance);
 
         LinkManager linkManager = ysi.getLinkManager();
-        for (Link link : linkManager.getLinks()) {
-            observer.next(LinkEvent.newBuilder()
-                    .setType(LinkEvent.Type.REGISTERED)
-                    .setLinkInfo(toLink(instance, link))
-                    .build());
-        }
-
-        LinkListener listener = new LinkListener() {
-            @Override
-            public void linkRegistered(LinkInfo linkInfo) {
-                if (instance.equals(linkInfo.getInstance())) {
-                    observer.next(LinkEvent.newBuilder()
-                            .setType(LinkEvent.Type.REGISTERED)
-                            .setLinkInfo(linkInfo)
-                            .build());
-                }
-            }
-
-            @Override
-            public void linkUnregistered(LinkInfo linkInfo) {
-                // NOP
-            }
-        };
 
         var exec = YamcsServer.getServer().getThreadPoolExecutor();
         var future = exec.scheduleAtFixedRate(() -> {
-            var b = LinkEvent.newBuilder()
-                    .setType(LinkEvent.Type.UPDATE_ALL);
+            var b = LinkEvent.newBuilder();
             for (var link : linkManager.getLinks()) {
                 b.addLinks(toLink(instance, link));
             }
             observer.next(b.build());
         }, 0, 1, TimeUnit.SECONDS);
-        observer.setCancelHandler(() -> {
-            future.cancel(false);
-            linkManager.removeLinkListener(listener);
-        });
-        linkManager.addLinkListener(listener);
+        observer.setCancelHandler(() -> future.cancel(false));
     }
 
     @Override
@@ -159,50 +129,6 @@ public class LinksApi extends AbstractLinksApi<Context> {
             lmgr.resetCounters(link.getName());
         } catch (IllegalArgumentException e) {
             throw new NotFoundException(e);
-        }
-
-        observer.complete(toLink(request.getInstance(), link));
-    }
-
-    @Override
-    public void updateLink(Context ctx, EditLinkRequest request, Observer<LinkInfo> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ControlLinks);
-
-        Link link = verifyLink(request.getInstance(), request.getLink());
-
-        String state = null;
-        if (request.hasState()) {
-            state = request.getState();
-        }
-
-        LinkManager lmgr = InstancesApi.verifyInstanceObj(request.getInstance()).getLinkManager();
-        if (state != null) {
-            switch (state.toLowerCase()) {
-            case "enabled":
-                try {
-                    lmgr.enableLink(link.getName());
-                } catch (IllegalArgumentException e) {
-                    throw new NotFoundException(e);
-                }
-                break;
-            case "disabled":
-                try {
-                    lmgr.disableLink(link.getName());
-                } catch (IllegalArgumentException e) {
-                    throw new NotFoundException(e);
-                }
-                break;
-            default:
-                throw new BadRequestException("Unsupported link state '" + state + "'");
-            }
-        }
-
-        if (request.hasResetCounters() && request.getResetCounters()) {
-            try {
-                lmgr.resetCounters(link.getName());
-            } catch (IllegalArgumentException e) {
-                throw new NotFoundException(e);
-            }
         }
 
         observer.complete(toLink(request.getInstance(), link));

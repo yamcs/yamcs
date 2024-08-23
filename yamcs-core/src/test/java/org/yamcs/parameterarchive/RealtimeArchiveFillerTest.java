@@ -326,26 +326,23 @@ public class RealtimeArchiveFillerTest {
         // Shut down the executor to make sure the write of the first segment completes.
         filler.shutDown();
 
-
-
         ArgumentCaptor<PGSegment> segCaptor = ArgumentCaptor.forClass(PGSegment.class);
         verify(parameterArchive, times(4)).writeToArchive(segCaptor.capture());
         PGSegment seg0 = segCaptor.getAllValues().get(0);
         assertEquals(0, seg0.getSegmentStart());
         assertEquals(2, seg0.getSegmentEnd());
         assertEquals(0, seg0.getSegmentIdxInsideInterval());
-        
+
         PGSegment seg1 = segCaptor.getAllValues().get(1);
         assertEquals(INTERVAL_SIZE_MILLIS - 2, seg1.getSegmentStart());
         assertEquals(INTERVAL_SIZE_MILLIS - 1, seg1.getSegmentEnd());
         assertEquals(3, seg1.getSegmentIdxInsideInterval());
-        
-        
+
         PGSegment seg2 = segCaptor.getAllValues().get(2);
         assertEquals(INTERVAL_SIZE_MILLIS + 0, seg2.getSegmentStart());
         assertEquals(INTERVAL_SIZE_MILLIS + 2, seg2.getSegmentEnd());
         assertEquals(0, seg2.getSegmentIdxInsideInterval());
-        
+
         PGSegment seg3 = segCaptor.getAllValues().get(3);
         assertEquals(INTERVAL_SIZE_MILLIS + 3, seg3.getSegmentStart());
         assertEquals(INTERVAL_SIZE_MILLIS + 4, seg3.getSegmentEnd());
@@ -363,7 +360,6 @@ public class RealtimeArchiveFillerTest {
         List<ParameterValue> values = getValues(5000, "/myproject/value1", "/myproject/value1", "/myproject/value2");
         filler.processParameters(values);
 
-        
         // Shut down and capture the segment that was written.
         filler.shutDown();
         ArgumentCaptor<PGSegment> segCaptor = ArgumentCaptor.forClass(PGSegment.class);
@@ -373,9 +369,9 @@ public class RealtimeArchiveFillerTest {
         PGSegment seg = segList.get(0);
         assertEquals(5000, seg.getSegmentStart());
         assertEquals(5000, seg.getSegmentEnd());
-        assertEquals(2, seg.numSegments());
+        assertEquals(2, seg.numParameters());
         assertEquals(2, seg.size());
-        
+
         var mpvs = seg.getParametersValues(new ParameterId[] { new MyPid(0, "/myproject/value1") });
         var pvs = mpvs.getPvs(0);
         assertEquals(2, pvs.numValues());
@@ -408,17 +404,85 @@ public class RealtimeArchiveFillerTest {
             filler.processParameters(values);
         }
 
-
         // The queue should now be full. Adding another value should fail.
         // assertEquals(SegmentQueue.QSIZE - 1, filler.getSegments(0, 0, false).size());
         List<ParameterValue> values = getValues(2 * SegmentQueue.QSIZE, "/myproject/value");
         filler.processParameters(values);
         // assertEquals(SegmentQueue.QSIZE - 1, filler.getSegments(0, 0, false).size());
 
-
         // Shut down and make sure all segments are flushed.
         filler.shutDown();
         // verify(parameterArchive, times(SegmentQueue.QSIZE - 1)).writeToArchive(any(PGSegment.class));
+    }
+
+    /**
+     * Tests with gaps. Two segments in the same interval, the second segment does not have all the parameters from the
+     * interval
+     */
+    @Test
+    public void testWithGaps1() throws InterruptedException, RocksDBException, IOException {
+        when(yamcsServer.getProcessor(anyString(), anyString())).thenReturn(processor);
+        when(parameterArchive.getMaxSegmentSize()).thenReturn(2);
+
+        RealtimeArchiveFiller filler = getFiller(1000);
+        filler.start();
+        List<ParameterValue> values0 = getValues(5000, "/myproject/value1", "/myproject/value2");
+        List<ParameterValue> values1 = getValues(5001, "/myproject/value1");
+        List<ParameterValue> values2 = getValues(5002, "/myproject/value1");
+
+        filler.processParameters(values1);
+        filler.processParameters(values0);
+        filler.processParameters(values2);
+        // Shut down and capture the segment that was written.
+        filler.shutDown();
+        ArgumentCaptor<PGSegment> segCaptor = ArgumentCaptor.forClass(PGSegment.class);
+        verify(parameterArchive, times(2)).writeToArchive(segCaptor.capture());
+
+        var segList = segCaptor.getAllValues();
+        PGSegment seg0 = segList.get(0);
+        assertEquals(2, seg0.numParameters());
+        assertEquals(2, seg0.size());
+
+        PGSegment seg1 = segList.get(1);
+        assertEquals(1, seg1.numParameters());
+        assertEquals(1, seg1.size());
+        assertEquals(1, seg1.currentFullGaps.size());
+        assertEquals(0, seg1.previousFullGaps.size());
+    }
+
+    /**
+     * Tests with gaps. Two segments in the same interval, the first segment does not have all the parameters from the
+     * interval
+     */
+    @Test
+    public void testWithGaps2() throws InterruptedException, RocksDBException, IOException {
+        when(yamcsServer.getProcessor(anyString(), anyString())).thenReturn(processor);
+        when(parameterArchive.getMaxSegmentSize()).thenReturn(2);
+
+        RealtimeArchiveFiller filler = getFiller(1000);
+        filler.start();
+        List<ParameterValue> values0 = getValues(5000, "/myproject/value1");
+        List<ParameterValue> values1 = getValues(5001, "/myproject/value1");
+        List<ParameterValue> values2 = getValues(5002, "/myproject/value1", "/myproject/value2");
+
+        filler.processParameters(values1);
+        filler.processParameters(values0);
+        filler.processParameters(values2);
+        // Shut down and capture the segment that was written.
+        filler.shutDown();
+        ArgumentCaptor<PGSegment> segCaptor = ArgumentCaptor.forClass(PGSegment.class);
+        verify(parameterArchive, times(2)).writeToArchive(segCaptor.capture());
+
+        var segList = segCaptor.getAllValues();
+        PGSegment seg0 = segList.get(0);
+        assertEquals(1, seg0.numParameters());
+        assertEquals(2, seg0.size());
+
+        PGSegment seg1 = segList.get(1);
+        assertEquals(2, seg1.numParameters());
+        assertEquals(1, seg1.size());
+        assertEquals(0, seg1.currentFullGaps.size());
+        assertEquals(1, seg1.previousFullGaps.size());
     }
 
     private RealtimeArchiveFiller getFiller(long sortingThreshold) {

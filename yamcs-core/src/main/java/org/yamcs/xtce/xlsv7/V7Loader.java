@@ -130,7 +130,6 @@ import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumeration;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.util.AlgorithmReference;
 import org.yamcs.xtce.util.ArgumentReference;
 import org.yamcs.xtce.util.DoubleRange;

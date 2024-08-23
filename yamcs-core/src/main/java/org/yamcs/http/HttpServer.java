@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -126,10 +125,8 @@ public class HttpServer extends AbstractYamcsService {
     private List<Binding> bindings = new ArrayList<>(2);
 
     private String contextPath;
-    private boolean zeroCopyEnabled;
     private boolean reverseLookup;
     private int nThreads;
-    private List<Path> staticRoots = new ArrayList<>(2);
 
     // Cross-origin Resource Sharing (CORS) enables use of the HTTP API in non-official client web applications
     private CorsConfig corsConfig;
@@ -168,12 +165,6 @@ public class HttpServer extends AbstractYamcsService {
 
         Spec websocketSpec = new Spec();
         websocketSpec.addOption("writeBufferWaterMark", OptionType.MAP).withSpec(lohiSpec).withApplySpecDefaults(true);
-        websocketSpec.addOption("maxDrops", OptionType.INTEGER)
-                .withHidden(true)
-                .withAliases("connectionCloseNumDroppedMsg")
-                .withDeprecationMessage(
-                        "This property is ignored. Set maxDroppedWrites on the first message of a call instead")
-                .withDefault(5);
         websocketSpec.addOption("maxFrameLength", OptionType.INTEGER).withDefault(65536);
 
         // Value in seconds. Both nginx and apache have a default timeout of 60 seconds before
@@ -193,10 +184,12 @@ public class HttpServer extends AbstractYamcsService {
         spec.addOption("tlsCert", OptionType.LIST_OR_ELEMENT).withElementType(OptionType.STRING);
         spec.addOption("tlsKey", OptionType.STRING);
         spec.addOption("contextPath", OptionType.STRING).withDefault("" /* NOT null */);
-        spec.addOption("zeroCopyEnabled", OptionType.BOOLEAN).withDefault(true);
+        spec.addOption("zeroCopyEnabled", OptionType.BOOLEAN).withDefault(true)
+                .withDeprecationMessage("This optimization is automatically enabled where possible");
         spec.addOption("maxInitialLineLength", OptionType.INTEGER).withDefault(8192);
         spec.addOption("maxHeaderSize", OptionType.INTEGER).withDefault(8192);
         spec.addOption("maxContentLength", OptionType.INTEGER).withDefault(65536);
+        spec.addOption("maxPageSize", OptionType.INTEGER).withDefault(1000);
         spec.addOption("cors", OptionType.MAP).withSpec(corsSpec);
         spec.addOption("webSocket", OptionType.MAP).withSpec(websocketSpec).withApplySpecDefaults(true);
         spec.addOption("bindings", OptionType.LIST)
@@ -255,7 +248,6 @@ public class HttpServer extends AbstractYamcsService {
             }
         }
 
-        zeroCopyEnabled = config.getBoolean("zeroCopyEnabled");
         reverseLookup = config.getBoolean("reverseLookup");
 
         if (config.containsKey("cors")) {
@@ -289,7 +281,7 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new AlarmsApi(auditLog));
         addApi(new AuditApi(auditLog));
         addApi(new BucketsApi());
-        addApi(new FileTransferApi());
+        addApi(new FileTransferApi(auditLog));
         addApi(new ClearanceApi(auditLog));
         addApi(new CommandsApi());
         addApi(new Cop1Api());
@@ -334,33 +326,13 @@ public class HttpServer extends AbstractYamcsService {
             addRoute(path, () -> robotsTxtHandler);
         }
 
-        var staticFileHandler = new StaticFileHandler("/static", staticRoots);
-        staticFileHandler.setZeroCopyEnabled(zeroCopyEnabled);
-        addRoute("static", () -> staticFileHandler);
-
         var apiHandler = new ApiHandler(this);
         addRoute("api", () -> apiHandler);
 
     }
 
-    /**
-     * Deprecated. Use {@link #addRoute(String, Supplier) instead, passing a {@link StaticFileHandler}.
-     */
-    @Deprecated
-    public void addStaticRoot(Path staticRoot) {
-        staticRoots.add(staticRoot);
-    }
-
     public void addRoute(String pathSegment, Supplier<HttpHandler> handler) {
         httpHandlers.put(pathSegment, handler);
-    }
-
-    /**
-     * Deprecated. Use {@link #addRoute(String, Supplier)} instead.
-     */
-    @Deprecated
-    public void addHandler(String pathSegment, Supplier<Handler> handlerSupplier) {
-        extraHandlers.put(pathSegment, handlerSupplier);
     }
 
     public void addApi(Api<Context> api) {

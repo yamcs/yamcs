@@ -92,8 +92,8 @@
       <artifactId>nashorn-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.rocksdb</groupId>
-      <artifactId>rocksdbjni</artifactId>
+      <groupId>org.yamcs</groupId>
+      <artifactId>yamcs-rocksdb</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

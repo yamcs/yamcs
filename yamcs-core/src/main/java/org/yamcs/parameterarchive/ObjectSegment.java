@@ -18,20 +18,26 @@ import org.yamcs.utils.VarIntUtil;
 
 /**
  * Segment for all non primitive types.
- *
+ * <p>
  * Each element is encoded to a binary that is not compressed. The compression of the segment (if any) is realized by
  * not repeating elements.
- * 
- * Finds best encoding among: - raw - list of values stored verbatim, each preceded by its size varint32 encoded - enum
- * - the list of unique values are stored at the beginning of the segment - each value has an implicit id (the order in
- * the list) - the rest of the segment is the list of ids and can be encoded in one of the following formats - VB:
- * varint32 of each id - FPROF: coded with the FPROF codec + varint32 of remaining - RLE: run length encoded
- * 
- * 
- * @author nm
+ * <p>
+ * Finds best encoding among:
+ * <ul>
+ * <li>raw - list of values stored verbatim, each preceded by its size varint32 encoded</li>
+ * <li>enum - the list of unique values are stored at the beginning of the segment.
+ * <p>
+ * Each value has an implicit id (the order in the list). The rest of the segment is the list of ids and can be encoded
+ * in one of the following formats
+ * <ul>
+ * <li>VB: varint32 of each id</li>
+ * <li>FPROF: coded with the FPROF codec + varint32 of remaining</li>
+ * <li>RLE: run length encoded</li>
+ * </ul>
+ * </ul>
  *
  */
-public class ObjectSegment<E> extends BaseSegment {
+public abstract class ObjectSegment<E> extends BaseSegment {
     final static byte SUBFORMAT_ID_RAW = 0;
     final static byte SUBFORMAT_ID_ENUM_RLE = 1;
     final static byte SUBFORMAT_ID_ENUM_VB = 2;
@@ -51,7 +57,6 @@ public class ObjectSegment<E> extends BaseSegment {
 
     // temporary fields used during the construction before serialisation - could be probably refactored into some
     // builder which returns another object in the consolidate method
-    List<HashableByteArray> serializedObjectList;
     Map<HashableByteArray, Integer> valuemap;
     IntArray rleValues;
     IntArray enumValues;
@@ -62,6 +67,7 @@ public class ObjectSegment<E> extends BaseSegment {
     int enumRleSize;
 
     boolean consolidated = false;
+    boolean writable = false;
 
     /**
      * b
@@ -75,8 +81,8 @@ public class ObjectSegment<E> extends BaseSegment {
         this.objSerializer = objSerializer;
 
         if (buildForSerialisation) {
+            writable = true;
             objectList = new ArrayList<E>();
-            serializedObjectList = new ArrayList<HashableByteArray>();
             unique = new ArrayList<HashableByteArray>();
             valuemap = new HashMap<>();
             enumValues = new IntArray();
@@ -89,7 +95,9 @@ public class ObjectSegment<E> extends BaseSegment {
      * @param e
      */
     public void add(E e) {
-
+        if (!writable) {
+            throw new UnsupportedOperationException("Segment is not writable");
+        }
         byte[] b = objSerializer.serialize(e);
         HashableByteArray se = new HashableByteArray(b);
         int valueId;
@@ -103,12 +111,14 @@ public class ObjectSegment<E> extends BaseSegment {
             unique.add(se);
         }
         enumValues.add(valueId);
-        serializedObjectList.add(se);
         objectList.add(e);
         size++;
     }
 
     public void add(int pos, E e) {
+        if (!writable) {
+            throw new UnsupportedOperationException("Segment is not writable");
+        }
         if (pos == size) {
             add(e);
             return;
@@ -126,7 +136,6 @@ public class ObjectSegment<E> extends BaseSegment {
             unique.add(se);
         }
         enumValues.add(pos, valueId);
-        serializedObjectList.add(pos, se);
         objectList.add(pos, e);
         size++;
     }
@@ -162,7 +171,7 @@ public class ObjectSegment<E> extends BaseSegment {
         VarIntUtil.writeVarInt32(bb, objectList.size());
         // then write the values
         for (int i = 0; i < size; i++) {
-            byte[] b = serializedObjectList.get(i).b;
+            byte[] b = unique.get(enumValues.get(i)).b;
             VarIntUtil.writeVarInt32(bb, b.length);
             bb.put(b);
         }
@@ -326,6 +335,9 @@ public class ObjectSegment<E> extends BaseSegment {
 
     @Override
     public int getMaxSerializedSize() {
+        if (!consolidated) {
+            throw new IllegalStateException("The segment has to be consolidated before serialization can take place");
+        }
         return rawSize;
     }
 
@@ -449,9 +461,8 @@ public class ObjectSegment<E> extends BaseSegment {
         enumRleSize += VarIntUtil.getEncodedSize(unique.size());
 
         for (int i = 0; i < size; i++) {
-            HashableByteArray se = serializedObjectList.get(i);
-            byte[] b = se.b;
             int valueId = enumValues.get(i);
+            byte[] b = unique.get(valueId).b;
             rawSize += VarIntUtil.getEncodedSize(b.length) + b.length;
             enumRawSize += VarIntUtil.getEncodedSize(valueId);
 
@@ -486,6 +497,50 @@ public class ObjectSegment<E> extends BaseSegment {
         consolidated = true;
     }
 
+    @Override
+    public void makeWritable() {
+        if (writable) {
+            return;
+        }
+        unique = new ArrayList<HashableByteArray>();
+        valuemap = new HashMap<>();
+        enumValues = new IntArray();
+
+        if (runLengthEncoded) {
+            objectList = new ArrayList<E>(size);
+
+            for (int i = 0; i < rleObjectList.size(); i++) {
+                var o = rleObjectList.get(i);
+                byte[] b = objSerializer.serialize(o);
+                HashableByteArray se = new HashableByteArray(b);
+                int idx = valuemap.computeIfAbsent(se, k -> {
+                    int newIdx = unique.size();
+                    unique.add(k);
+                    return newIdx;
+                });
+
+                for (int k = 0; k < rleCounts.get(i); k++) {
+                    objectList.add(o);
+                    enumValues.add(idx);
+                }
+            }
+            runLengthEncoded = false;
+        } else {
+            for (var o : objectList) {
+                byte[] b = objSerializer.serialize(o);
+                HashableByteArray se = new HashableByteArray(b);
+                int idx = valuemap.computeIfAbsent(se, k -> {
+                    int newIdx = unique.size();
+                    unique.add(k);
+                    return newIdx;
+                });
+
+                enumValues.add(idx);
+            }
+        }
+        writable = true;
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public boolean equals(Object obj) {
@@ -496,11 +551,17 @@ public class ObjectSegment<E> extends BaseSegment {
         if (getClass() != obj.getClass())
             return false;
         ObjectSegment other = (ObjectSegment) obj;
-        if (serializedObjectList == null) {
-            if (other.serializedObjectList != null)
+        if (unique == null) {
+            if (other.unique != null)
                 return false;
-        } else if (!serializedObjectList.equals(other.serializedObjectList))
+        } else if (!unique.equals(other.unique))
             return false;
+        if (enumValues == null) {
+            if (other.enumValues != null)
+                return false;
+        } else if (!enumValues.equals(other.enumValues))
+            return false;
+
         return true;
     }
 

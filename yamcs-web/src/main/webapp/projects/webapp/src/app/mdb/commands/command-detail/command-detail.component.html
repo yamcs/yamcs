@@ -22,7 +22,7 @@
   <dt>Short description</dt>
   <dd>{{ command.shortDescription || "-" }}</dd>
 
-  <dt>Long Description</dt>
+  <dt>Long description</dt>
   <dd>
     @if (command.longDescription) {
       <app-markdown [text]="command.longDescription" />
@@ -244,7 +244,8 @@
               <td>
                 <a
                   [routerLink]="['/mdb/parameters/', entry.parameter.qualifiedName]"
-                  [queryParams]="{ c: yamcs.context }">
+                  [queryParams]="{ c: yamcs.context }"
+                  class="ya-link">
                   {{ entry.parameter.qualifiedName }}
                 </a>
               </td>
