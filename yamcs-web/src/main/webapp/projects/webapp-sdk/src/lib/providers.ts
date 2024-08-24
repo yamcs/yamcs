@@ -1,10 +1,11 @@
 import { FullscreenOverlayContainer, OverlayContainer } from '@angular/cdk/overlay';
 import { APP_BASE_HREF } from '@angular/common';
-import { Provider } from '@angular/core';
+import { APP_INITIALIZER, EnvironmentProviders, provideExperimentalZonelessChangeDetection, Provider } from '@angular/core';
 import { DateAdapter } from '@angular/material/core';
 import { MAT_TOOLTIP_DEFAULT_OPTIONS, MAT_TOOLTIP_DEFAULT_OPTIONS_FACTORY, MatTooltipDefaultOptions } from '@angular/material/tooltip';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { UtcDateAdapter } from './components/date-time-input/UtcDateAdapter';
+import { ConfigService } from './services/config.service';
 
 const matTooltipOptions: MatTooltipDefaultOptions = {
   ...MAT_TOOLTIP_DEFAULT_OPTIONS_FACTORY(),
@@ -45,9 +46,24 @@ export function provideYamcsMaterialConfiguration(): Provider[] {
   ];
 }
 
-export function provideYamcsWebExtension(): Provider[] {
+export function provideConfigInitializer(): Provider[] {
+  return [
+    {
+      provide: APP_INITIALIZER,
+      useFactory: (configService: ConfigService) => {
+        return () => configService.loadWebsiteConfig();
+      },
+      multi: true,
+      deps: [ConfigService]
+    },
+  ];
+}
+
+export function provideYamcsWebExtension(): (Provider | EnvironmentProviders)[] {
   return [
     provideBaseHrefFromIndexHtml(),
     provideYamcsMaterialConfiguration(),
+    provideConfigInitializer(),
+    provideExperimentalZonelessChangeDetection(),
   ];
 }
