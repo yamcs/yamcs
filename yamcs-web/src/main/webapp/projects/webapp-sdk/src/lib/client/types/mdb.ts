@@ -87,6 +87,7 @@ export interface ParameterType {
   absoluteTimeInfo: AbsoluteTimeInfo;
   member: ParameterMember[];
   signed?: boolean;
+  sizeInBits?: number;
   oneStringValue?: string;
   zeroStringValue?: string;
   usedBy?: Parameter[];
