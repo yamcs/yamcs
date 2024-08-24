@@ -36,6 +36,10 @@
         <dt>Signed</dt>
         <dd>{{ ptype.signed }}</dd>
       }
+      @if (ptype.sizeInBits !== undefined) {
+        <dt>Size in bits</dt>
+        <dd>{{ ptype.sizeInBits }}</dd>
+      }
     }
 
     <dt>Source</dt>
@@ -245,7 +249,7 @@
         <th style="width: 50px">Value</th>
         <th style="width: 100px">Label</th>
         <th style="width: 300px">Description</th>
-        <th>Alarm Level (default)</th>
+        <th>Alarm level (default)</th>
         @for (context of entry.type?.contextAlarm; track context) {
           <th>
             @for (comparison of context.comparison; track comparison; let first = $first) {
