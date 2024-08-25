@@ -9,16 +9,15 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.yamcs.AbstractPlugin;
 import org.yamcs.CommandOption;
 import org.yamcs.CommandOptionListener;
 import org.yamcs.Experimental;
-import org.yamcs.Plugin;
 import org.yamcs.PluginException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.http.HttpServer;
-import org.yamcs.logging.Log;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
@@ -27,9 +26,8 @@ import org.yamcs.templating.ParseException;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.YarchDatabase;
 
-public class WebPlugin implements Plugin, CommandOptionListener {
+public class WebPlugin extends AbstractPlugin implements CommandOptionListener {
 
-    static final String CONFIG_SECTION = "yamcs-web";
     static final String CONFIG_DISPLAY_BUCKET = "displayBucket";
     static final String CONFIG_STACK_BUCKET = "stackBucket";
 
@@ -40,8 +38,6 @@ public class WebPlugin implements Plugin, CommandOptionListener {
      */
     public static final SystemPrivilege PRIV_ADMIN = new SystemPrivilege("web.AccessAdminArea");
 
-    private Log log = new Log(getClass());
-
     private WebFileDeployer deployer;
     private AngularHandler angularHandler;
 
@@ -51,13 +47,11 @@ public class WebPlugin implements Plugin, CommandOptionListener {
     private Map<String, Map<String, Object>> extraConfigs = new HashMap<>();
 
     public WebPlugin() {
-        var yamcs = YamcsServer.getServer();
         yamcs.addCommandOptionListener(this);
     }
 
     @Override
-    public void onLoad(YConfiguration config) throws PluginException {
-        var yamcs = YamcsServer.getServer();
+    public void init() throws PluginException {
         yamcs.getSecurityStore().addSystemPrivilege(PRIV_ADMIN);
 
         var httpServer = yamcs.getGlobalService(HttpServer.class);
@@ -66,7 +60,7 @@ public class WebPlugin implements Plugin, CommandOptionListener {
         createBuckets(config);
 
         try {
-            deployer = new WebFileDeployer(config, contextPath, extraStaticRoots, extraConfigs);
+            deployer = new WebFileDeployer(pluginName, config, contextPath, extraStaticRoots, extraConfigs);
             setupRoutes(config, deployer);
         } catch (IOException | ParseException e) {
             throw new PluginException("Could not deploy website", e);
@@ -116,7 +110,7 @@ public class WebPlugin implements Plugin, CommandOptionListener {
             @Override
             public void instanceStateChanged(YamcsServerInstance ysi) {
                 if (ysi.state() == InstanceState.STARTING) {
-                    var instanceConfig = ysi.getConfig().getConfigOrEmpty(CONFIG_SECTION);
+                    var instanceConfig = ysi.getConfig().getConfigOrEmpty(pluginName);
                     if (instanceConfig.containsKey(CONFIG_DISPLAY_BUCKET)) {
                         var bucketName = instanceConfig.getString(CONFIG_DISPLAY_BUCKET);
                         try {
@@ -154,9 +148,8 @@ public class WebPlugin implements Plugin, CommandOptionListener {
     /**
      * Add routes used by Web UI.
      */
-    private void setupRoutes(YConfiguration config, WebFileDeployer deployer)
-            throws PluginException {
-        var httpServer = YamcsServer.getServer().getGlobalService(HttpServer.class);
+    private void setupRoutes(YConfiguration config, WebFileDeployer deployer) throws PluginException {
+        var httpServer = yamcs.getGlobalService(HttpServer.class);
 
         angularHandler = new AngularHandler(
                 config,
@@ -165,12 +158,6 @@ public class WebPlugin implements Plugin, CommandOptionListener {
                 deployer.getExtraStaticRoots());
         httpServer.addRoute("*", () -> angularHandler);
 
-        // Additional API Routes
-        try (var in = getClass().getResourceAsStream("/yamcs-web.protobin")) {
-            httpServer.getProtobufRegistry().importDefinitions(in);
-        } catch (IOException e) {
-            throw new PluginException(e);
-        }
         httpServer.addApi(new WebApi());
     }
 }
