@@ -1,7 +1,6 @@
 package org.yamcs.web;
 
 import static org.yamcs.web.WebPlugin.CONFIG_DISPLAY_BUCKET;
-import static org.yamcs.web.WebPlugin.CONFIG_SECTION;
 import static org.yamcs.web.WebPlugin.CONFIG_STACK_BUCKET;
 
 import org.yamcs.YamcsServer;
@@ -29,8 +28,10 @@ public class WebApi extends AbstractWebApi<Context> {
             throw new NotFoundException("No such instance");
         }
 
-        var globalConfig = yamcs.getConfig().getConfigOrEmpty(CONFIG_SECTION);
-        var instanceConfig = yamcsInstance.getConfig().getConfigOrEmpty(CONFIG_SECTION);
+        var pluginName = yamcs.getPluginManager().getMetadata(WebPlugin.class).getName();
+
+        var globalConfig = yamcs.getConfig().getConfigOrEmpty(pluginName);
+        var instanceConfig = yamcsInstance.getConfig().getConfigOrEmpty(pluginName);
 
         var b = InstanceConfiguration.newBuilder();
 
