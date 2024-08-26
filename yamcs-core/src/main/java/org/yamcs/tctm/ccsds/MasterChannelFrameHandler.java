@@ -21,7 +21,6 @@ public class MasterChannelFrameHandler {
     CcsdsFrameType frameType;
     TransferFrameDecoder frameDecoder;
     Map<Integer, VcDownlinkHandler> handlers = new HashMap<>();
-    int idleFrameCount;
     int frameCount;
     int badframeCount;
     
@@ -126,9 +125,5 @@ public class MasterChannelFrameHandler {
 
     public CcsdsFrameType getFrameType() {
         return frameType;
-    }
-
-    public int getIdleFrameCount() {
-        return idleFrameCount;
     }
 }
