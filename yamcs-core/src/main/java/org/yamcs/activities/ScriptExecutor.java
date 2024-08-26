@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -17,12 +18,14 @@ import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.security.User;
+import org.yamcs.utils.FileUtils;
 
 public class ScriptExecutor implements ActivityExecutor {
 
     private ActivityService activityService;
     private List<Path> searchPath;
     private boolean impersonateCaller;
+    private Map<String, String> fileAssociations = new HashMap<>();
 
     @Override
     public String getActivityType() {
@@ -54,6 +57,10 @@ public class ScriptExecutor implements ActivityExecutor {
                 .withDefault(yamcs.getConfigDirectory().resolve("scripts").toString());
 
         spec.addOption("impersonateCaller", OptionType.BOOLEAN).withDefault(true);
+
+        spec.addOption("fileAssociations", OptionType.MAP)
+                .withSpec(Spec.ANY)
+                .withApplySpecDefaults(true);
         return spec;
     }
 
@@ -64,6 +71,16 @@ public class ScriptExecutor implements ActivityExecutor {
                 .map(Path::of)
                 .collect(Collectors.toList());
         impersonateCaller = options.getBoolean("impersonateCaller");
+
+        fileAssociations.put("java", "java");
+        fileAssociations.put("js", "node");
+        fileAssociations.put("mjs", "node");
+        fileAssociations.put("pl", "perl");
+        fileAssociations.put("py", "python -u");
+        fileAssociations.put("rb", "ruby");
+        for (var assoc : options.<String, String> getMap("fileAssociations").entrySet()) {
+            fileAssociations.put(assoc.getKey().toLowerCase(), assoc.getValue());
+        }
     }
 
     @Override
@@ -85,8 +102,7 @@ public class ScriptExecutor implements ActivityExecutor {
         for (var scriptsDir : searchPath) {
             if (Files.exists(scriptsDir)) {
                 try (var stream = Files.walk(scriptsDir)) {
-                    stream.filter(path -> Files.isRegularFile(path))
-                            .filter(path -> Files.isExecutable(path))
+                    stream.filter(path -> canExecute(path))
                             .map(path -> scriptsDir.relativize(path).toString())
                             .forEach(scripts::add);
                 }
@@ -96,15 +112,32 @@ public class ScriptExecutor implements ActivityExecutor {
         return scripts;
     }
 
+    private boolean canExecute(Path file) {
+        if (!Files.isRegularFile(file)) {
+            return false;
+        }
+        if (Files.isExecutable(file)) {
+            return true;
+        }
+
+        // If there's a file association, the script may be non-executable
+        var fileExtension = FileUtils.getFileExtension(file);
+        if (fileExtension != null && fileAssociations.containsKey(fileExtension)) {
+            return true;
+        }
+
+        return false;
+    }
+
     private Path locateScript(String script) throws IOException {
         for (var scriptsDir : searchPath) {
             var path = scriptsDir.resolve(script);
 
-            if (!path.toFile().getCanonicalPath().startsWith(scriptsDir.toFile().getCanonicalPath())) {
+            if (!path.normalize().toAbsolutePath().startsWith(scriptsDir.normalize().toAbsolutePath())) {
                 throw new IOException("Directory traversal attempted: " + path);
             }
 
-            if (Files.isRegularFile(path) && Files.isExecutable(path)) {
+            if (canExecute(path)) {
                 return path;
             }
         }
@@ -133,11 +166,20 @@ public class ScriptExecutor implements ActivityExecutor {
             throw new IllegalArgumentException("Unexpected script '" + script + "'");
         }
 
+        var program = scriptFile.toString();
+        var fileExtension = FileUtils.getFileExtension(scriptFile);
+        if (fileExtension != null) {
+            var assoc = fileAssociations.get(fileExtension);
+            if (assoc != null) {
+                program = assoc + " " + scriptFile.toString();
+            }
+        }
+
         var becomeUser = caller;
         if (!impersonateCaller) {
             becomeUser = YamcsServer.getServer().getSecurityStore().getSystemUser();
         }
 
-        return new ScriptExecution(activityService, this, activity, processor, scriptFile, scriptArgs, becomeUser);
+        return new ScriptExecution(activityService, this, activity, processor, program, scriptArgs, becomeUser);
     }
 }

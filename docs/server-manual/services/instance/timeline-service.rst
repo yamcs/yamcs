@@ -26,6 +26,8 @@ This service is defined in :file:`etc/yamcs.{instance}.yaml`. Example:
             scriptExecution:
               searchPath: etc/scripts
               impersonateCaller: false
+              fileAssociations:
+                py: python3 -u
 
 
 Configuration Options
@@ -56,9 +58,26 @@ Script execution sub-configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 searchPath (string or string[])
-  Directory where to locate executable scripts.
+  Directory where to locate scripts or executables.
 
   Default: :file:`etc/scripts`
+
+fileAssociations (map)
+  Extend or override the default file associations. Each entry maps a file extension (case-insensitive) to a program that should be used to execute this file.
+
+  The default file associations are:
+
+  .. code-block:: yaml
+
+      fileAssociations:
+        java: java
+        js: node
+        mjs: node
+        pl: perl
+        py: python -u
+        rb: ruby
+
+  Any file that does not have an association, is executed directly.
 
 impersonateCaller (boolean)
   Scripts receive a transient API key via an environment variable. By default this API key uses the built-in ``System`` user, which provides unrestricted access.
