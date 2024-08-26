@@ -34,32 +34,36 @@ public class GCM implements SymmetricEncryption {
     private static final int SALT_LENGTH = 16;
     private static final int KEY_LENGTH = 32;
 
-    String iv;
     String key;
     boolean useSalt;
+    byte[] aad;
 
     @Override
     public void init(YConfiguration config) {
-        this.iv = config.getString("iv");
         this.key = config.getString("key");
         this.useSalt = config.getBoolean("useSalt");
+        if (config.containsKey("associatedData"))
+            this.aad = config.getBinary("associatedData");
     }
 
     public byte[] encrypt(byte[] plainMessage)
             throws NoSuchAlgorithmException,InvalidKeySpecException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
-        byte[] salt = useSalt? getRandomNonce(SALT_LENGTH): null;
+        byte[] salt = useSalt? getRandomNonce(SALT_LENGTH): new byte[0];
+        byte[] iv = getRandomNonce(IV_LENGTH);
+
         SecretKey secretKey = getSecretKey(key, salt);
         Cipher cipher = initCipher(Cipher.ENCRYPT_MODE, secretKey, iv);
+        if (aad != null)
+            cipher.updateAAD(aad);
 
         byte[] encryptedMessage = cipher.doFinal(plainMessage);
 
         // Add IV to the beginning
-        byte[] ivMessage = new byte[IV_LENGTH + encryptedMessage.length];
-        ByteBuffer bb = ByteBuffer.wrap(ivMessage);
-        bb.put(StringConverter.hexStringToArray(iv));
-        bb.put(encryptedMessage);
-
-        return bb.array();
+        return ByteBuffer.allocate(salt.length + iv.length + encryptedMessage.length)
+                .put(salt)
+                .put(iv)
+                .put(encryptedMessage)
+                .array();
     }
 
     public byte[] getRandomNonce(int length) {
@@ -68,16 +72,16 @@ public class GCM implements SymmetricEncryption {
         return nonce;
     }
 
-    private Cipher initCipher(int mode, SecretKey secretKey, String iv) 
+    private Cipher initCipher(int mode, SecretKey secretKey, byte[] iv) 
             throws InvalidKeyException, InvalidAlgorithmParameterException, NoSuchPaddingException, NoSuchAlgorithmException {
         Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
-        cipher.init(mode, secretKey, new GCMParameterSpec(TAG_LENGTH * 8, StringConverter.hexStringToArray(iv)));
+        cipher.init(mode, secretKey, new GCMParameterSpec(TAG_LENGTH * 8, iv));
         return cipher;
     }
 
     public SecretKey getSecretKey(String key, byte[] salt)
             throws NoSuchAlgorithmException, InvalidKeySpecException {
-        if (salt != null) {
+        if (salt.length != 0) {
             SecretKeyFactory factory = SecretKeyFactory.getInstance(FACTORY_INSTANCE);
             KeySpec spec = new PBEKeySpec(key.toCharArray(), salt, ITERATIONS, KEY_LENGTH * 8);
             return new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
@@ -87,8 +91,28 @@ public class GCM implements SymmetricEncryption {
     }
 
     @Override
-    public byte[] decrypt(byte[] encryptedText) throws Exception {
-        throw new UnsupportedOperationException("Unimplemented method 'decrypt'");
+    public byte[] decrypt(byte[] cipherContent) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException,
+            InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException  {
+        ByteBuffer byteBuffer = ByteBuffer.wrap(cipherContent);
+
+        byte[] salt = new byte[0];
+        if (useSalt) {
+            salt = new byte[SALT_LENGTH];
+            byteBuffer.get(salt);
+        }
+
+        byte[] iv = new byte[IV_LENGTH];
+        byteBuffer.get(iv);
+
+        byte[] content = new byte[byteBuffer.remaining()];
+        byteBuffer.get(content);
+
+        SecretKey secretKey = getSecretKey(key, salt);
+        Cipher cipher = initCipher(Cipher.DECRYPT_MODE, secretKey, iv);
+        if (aad != null)
+            cipher.updateAAD(aad);
+
+        return cipher.doFinal(content);
     }
 
     @Override

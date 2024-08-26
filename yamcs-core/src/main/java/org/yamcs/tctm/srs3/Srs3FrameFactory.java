@@ -114,12 +114,12 @@ public class Srs3FrameFactory {
 
         if (se != null) {
             try {
-                byte[] ivMessage = se.encrypt(Arrays.copyOfRange(cspFrame, dataStart.get(), dataEnd.get()));
+                byte[] iv = se.encrypt(Arrays.copyOfRange(cspFrame, dataStart.get(), dataEnd.get()));
 
                 // Update the dataStart and dataEnd, accounting for the data that must undergo CRC
                 dataStart.set(dataStart.get() - se.getIVLength());
                 dataEnd.set(dataEnd.get() + se.getTagLength());
-                System.arraycopy(ivMessage, 0, cspFrame, dataStart.get(), ivMessage.length);
+                System.arraycopy(iv, 0, cspFrame, dataStart.get(), iv.length);
 
             } catch (Exception e) {
                 e.printStackTrace();
