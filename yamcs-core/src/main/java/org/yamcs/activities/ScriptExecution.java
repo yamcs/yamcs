@@ -3,7 +3,6 @@ package org.yamcs.activities;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -16,7 +15,7 @@ import com.google.common.base.CharMatcher;
 public class ScriptExecution extends ActivityExecution {
 
     private String processor;
-    private Path script;
+    private String program;
     private List<String> scriptArgs;
     private User user;
 
@@ -27,19 +26,19 @@ public class ScriptExecution extends ActivityExecution {
             ScriptExecutor executor,
             Activity activity,
             String processor,
-            Path script,
+            String program,
             List<String> scriptArgs,
             User user) {
         super(activityService, executor, activity);
         this.processor = processor;
-        this.script = script;
+        this.program = program;
         this.scriptArgs = scriptArgs;
         this.user = user;
     }
 
     @Override
     public Void run() throws Exception {
-        var cmdline = script.toString();
+        var cmdline = program;
         for (var arg : scriptArgs) {
             cmdline += " " + arg;
         }
