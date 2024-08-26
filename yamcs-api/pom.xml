@@ -52,10 +52,6 @@
             </goals>
             <configuration>
               <writeDescriptorSet>true</writeDescriptorSet>
-              <descriptorSetFileName>${project.artifactId}.protobin</descriptorSetFileName>
-              <descriptorSetOutputDirectory>${project.build.directory}/generated-resources/protobuf</descriptorSetOutputDirectory>
-              <includeDependenciesInDescriptorSet>true</includeDependenciesInDescriptorSet>
-              <includeSourceInfoInDescriptorSet>true</includeSourceInfoInDescriptorSet>
             </configuration>
           </execution>
         </executions>
