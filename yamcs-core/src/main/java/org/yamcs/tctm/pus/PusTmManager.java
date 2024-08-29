@@ -196,6 +196,10 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
 
     public void acceptTmPacket(TmPacket tmPacket, String tmLinkName, Stream stream) {
         byte[] b = tmPacket.getPacket();
+        if(!pusServices.containsKey(PusTmCcsdsPacket.getMessageType(b))) {
+            log.error("Invalid service packet: {}", PusTmCcsdsPacket.getMessageType(b));
+            return;
+        }
         ArrayList<TmPacket> pkts = pusServices.get(PusTmCcsdsPacket.getMessageType(b)).extractPusModifiers(tmPacket);
 
         if (pkts != null){
