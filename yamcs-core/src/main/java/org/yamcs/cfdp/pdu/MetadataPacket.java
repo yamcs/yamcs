@@ -137,7 +137,8 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
     public String toString() {
         return "MetadataPacket [closureRequested=" + closureRequested + ", fileSize=" + fileSize
                 + ", checksumType=" + checksumType
-                + ", sourceFileName=" + sourceFileName + ", destinationFileName=" + destinationFileName + "]";
+                + ", sourceFileName=" + sourceFileName + ", destinationFileName=" + destinationFileName
+                + ", options=(" + (options == null ? "" : options.stream().map((option) -> option.toString()).collect(Collectors.joining(", "))) + ")" + "]";
     }
 
     public String toJson() {

@@ -37,8 +37,11 @@ import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.ConditionCode;
 import org.yamcs.cfdp.pdu.DirectoryListingRequest;
 import org.yamcs.cfdp.pdu.DirectoryListingResponse.ListingResponseCode;
+import org.yamcs.cfdp.pdu.FileStoreRequest.FilestoreType;
 import org.yamcs.cfdp.pdu.EofPacket;
 import org.yamcs.cfdp.pdu.FileDataPacket;
+import org.yamcs.cfdp.pdu.FileStoreRequest;
+import org.yamcs.cfdp.pdu.LV;
 import org.yamcs.cfdp.pdu.MessageToUser;
 import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.cfdp.pdu.PduDecodingException;
@@ -67,6 +70,7 @@ import org.yamcs.protobuf.ListFilesResponse;
 import org.yamcs.protobuf.RemoteFile;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
+import org.yamcs.tctm.pus.tuples.Triple;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
@@ -176,6 +180,8 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
     Sequence idSeq;
     static final Map<String, ConditionCode> VALID_CODES = new HashMap<>();
 
+    private List<Triple<Integer, String, String>> filestoreRequests = new ArrayList<>();
+
     static {
         VALID_CODES.put("AckLimitReached", ConditionCode.ACK_LIMIT_REACHED);
         VALID_CODES.put("KeepAliveLimitReached", ConditionCode.KEEP_ALIVE_LIMIT_REACHED);
@@ -211,6 +217,11 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
         entitySpec.addOption("name", OptionType.STRING);
         entitySpec.addOption("id", OptionType.INTEGER);
         entitySpec.addOption(BUCKET_OPT, OptionType.STRING).withDefault(null);
+
+        Spec filestoreSpec = new Spec();
+        filestoreSpec.addOption("action", OptionType.INTEGER);
+        filestoreSpec.addOption("firstFileName", OptionType.STRING);
+        filestoreSpec.addOption("secondFileName", OptionType.STRING);
 
         Spec spec = new Spec();
         spec.addOption("inStream", OptionType.STRING).withDefault("cfdp_in");
@@ -266,6 +277,7 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
                 .withDefault(new HashMap<>());
         spec.addOption("automaticDirectoryListingReloads", OptionType.BOOLEAN).withDefault(false);
 
+        spec.addOption("filestoreRequests", OptionType.LIST).withElementType(OptionType.MAP).withSpec(filestoreSpec);
         return spec;
     }
 
@@ -360,6 +372,16 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
         }
         setupRecording(ydb);
         setupFileListTable(ydb);
+
+        // Load filestoreRequests from the config
+        if (config.containsKey("filestoreRequests")) {
+            for (YConfiguration fr: config.getConfigList("filestoreRequests")) {
+                int action = fr.getInt("action");
+                String firstFileName = fr.getString("firstFileName");
+                String secondFileName = fr.getString("secondFileName", null);
+                filestoreRequests.add(new Triple<Integer,String,String>(action, firstFileName, secondFileName));
+            }
+        }
     }
 
     private Map<ConditionCode, FaultHandlingAction> readFaultHandlers(Map<String, String> map) {
@@ -981,9 +1003,19 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
 
         booleanOptions.putAll(optionValues.booleanOptions);
 
+        // Generate Filestore Requests
+        List<FileStoreRequest> fsr = new ArrayList<>();
+        for (Triple<Integer, String, String> fr: filestoreRequests) {
+            FilestoreType ft = FilestoreType.fromByte(fr.getFirst().byteValue());
+            LV firstFileName = new LV(fr.getSecond());
+            LV secondFileName = fr.getThird() == null? null: new LV(fr.getThird());
+
+            fsr.add(new FileStoreRequest(ft, firstFileName, secondFileName));
+        }
+
         FilePutRequest request = new FilePutRequest(sourceId, destinationId, objectName, absoluteDestinationPath,
                 booleanOptions.get(OVERWRITE_OPTION), booleanOptions.get(RELIABLE_OPTION),
-                booleanOptions.get(CLOSURE_OPTION), booleanOptions.get(CREATE_PATH_OPTION), bucket, objData);
+                booleanOptions.get(CLOSURE_OPTION), booleanOptions.get(CREATE_PATH_OPTION), bucket, objData, fsr);
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
         Double pduSize = optionValues.doubleOptions.get(PDU_SIZE_OPTION);

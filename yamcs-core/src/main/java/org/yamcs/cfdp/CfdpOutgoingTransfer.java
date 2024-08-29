@@ -549,7 +549,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
                 request.getFileLength(),
                 request.getSourceFileName(),
                 request.getDestinationFileName(),
-                null, directiveHeader);
+                new ArrayList<>(request.getFileStoreRequests()), directiveHeader);
     }
 
     private FileDataPacket getNextFileDataPacket() {
