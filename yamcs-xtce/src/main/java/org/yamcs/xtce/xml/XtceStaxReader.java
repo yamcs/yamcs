@@ -1411,10 +1411,13 @@ public class XtceStaxReader extends AbstractStaxReader {
                 integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.SIGN_MAGNITUDE);
             } else if ("twosComplement".equalsIgnoreCase(value)) {
                 integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.TWOS_COMPLEMENT);
-            } else if ("twosCompliment".equalsIgnoreCase(value)) { // this is for compatibility with CD-MCS/CGS SCOE XML
-                // exporter
+            } else if ("twosCompliment".equalsIgnoreCase(value)) {
+                // Tolerate this misspelling. It was part of XTCE v1.0 and v1.1 (fixed in v1.2)
                 integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.TWOS_COMPLEMENT);
             } else if ("onesComplement".equalsIgnoreCase(value)) {
+                integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.ONES_COMPLEMENT);
+            } else if ("onesCompliment".equalsIgnoreCase(value)) {
+                // Tolerate this misspelling. It was part of XTCE v1.0 and v1.1 (fixed in v1.2)
                 integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.ONES_COMPLEMENT);
             } else if ("string".equalsIgnoreCase(value)) {
                 integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.STRING);
