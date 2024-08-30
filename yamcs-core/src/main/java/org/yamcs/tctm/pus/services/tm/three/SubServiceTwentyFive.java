@@ -109,21 +109,23 @@ public class SubServiceTwentyFive implements PusSubService {
             0,
             housekeepingParameterReportStructureIDSize
         );
-        byte[] simpleCommutatedParameterArray = Arrays.copyOfRange(
-            dataField,
-            housekeepingParameterReportStructureIDSize,
-            (housekeepingParameterReportStructureIDSize + simpleCommutatedLength)
-        );
-        pPkts.add(
-            createSimpleCommutativePusTmPacket(tmPacket, housekeepingParameterReportStructureID, simpleCommutatedParameterArray)
-        );
+        if (simpleCommutatedLength != 0) {
+            byte[] simpleCommutatedParameterArray = Arrays.copyOfRange(
+                dataField,
+                housekeepingParameterReportStructureIDSize,
+                (housekeepingParameterReportStructureIDSize + simpleCommutatedLength)
+            );
+            pPkts.add(
+                createSimpleCommutativePusTmPacket(tmPacket, housekeepingParameterReportStructureID, simpleCommutatedParameterArray)
+            );
+        }
 
         if (superCommutatedSampleRepetitionNumber != 0) {
             byte[] superCommutedParameterArray = Arrays.copyOfRange(dataField, (housekeepingParameterReportStructureIDSize + simpleCommutatedLength), dataField.length);
             int superCommutatedParameterSubStructureSize = (int) superCommutedParameterArray.length / superCommutatedSampleRepetitionNumber; // FIXME: No need to typecast, since it will always be perfectly divisbible
 
             long gentime = tmPacket.getGenerationTime();
-            long collectionIntervalOffset = collectionInterval / superCommutatedSampleRepetitionNumber;
+            long collectionIntervalOffset = (long) collectionInterval / superCommutatedSampleRepetitionNumber;
 
             for (int index = 0; index < superCommutatedSampleRepetitionNumber; index++) {
                 byte[] superCommutativeParameterSubStructure = Arrays.copyOfRange(
