@@ -22,26 +22,27 @@ public class FileStoreRequest extends TLV {
     //‘0111’ Deny File (delete if present) N
     //‘1000’ Deny Directory (remove if present) N
 
-    // PS: This include the spare field as expected by the standard
+    // Set spare to 0 for now
+    final static byte spare = 0;
+
     public enum FilestoreType {
         CREATE((byte) 0x00),
-        DELETE((byte) 0x10),
-        RENAME((byte) 0x20),
-        APPEND((byte) 0x30),
-        REPLACE((byte) 0x40),
-        CREATE_DIRECTORY((byte) 0x50),
-        REMOVE_DIRECTORY((byte) 0x60),
-        DENY_FILE((byte) 0x70),
-        DENY_DIRECTORY((byte) 0x80),
-        DEFAULT((byte) 0x90);
+        DELETE((byte) 0x01),
+        RENAME((byte) 0x02),
+        APPEND((byte) 0x03),
+        REPLACE((byte) 0x04),
+        CREATE_DIRECTORY((byte) 0x05),
+        REMOVE_DIRECTORY((byte) 0x06),
+        DENY_FILE((byte) 0x07),
+        DENY_DIRECTORY((byte) 0x08);
 
-        private final byte[] bytes;
+        private final byte bytes;
 
         FilestoreType(byte bytes) {
-            this.bytes = new byte[] {bytes};
+            this.bytes = bytes;
         }
 
-        public byte[] getBytes() {
+        public byte getByte() {
             return bytes;
         }
 
@@ -55,8 +56,8 @@ public class FileStoreRequest extends TLV {
                 case 0x05: return CREATE_DIRECTORY;
                 case 0x06: return REMOVE_DIRECTORY;
                 case 0x07: return DENY_FILE;
-                case 0x08: return DENY_DIRECTORY;
-                default: return DEFAULT; // FIXME: What do be done here?
+                case (byte) 0x08: return DENY_DIRECTORY;
+                default: return CREATE; // FIXME: What do be done here?
             }
         }
     }
@@ -75,9 +76,9 @@ public class FileStoreRequest extends TLV {
 
     public static byte[] encode(FilestoreType ft, LV firstFileName, LV secondFileName) {
         if (secondFileName == null)
-            return Bytes.concat(ft.getBytes(), firstFileName.getBytes());
+            return Bytes.concat(new byte[(0xF0 & ft.getByte() << 4) & (0x0F & spare)], firstFileName.getBytes());
         
-        return Bytes.concat(ft.getBytes(), firstFileName.getBytes(), secondFileName.getBytes());
+        return Bytes.concat(new byte[(0xF0 & ft.getByte() << 4) & (0x0F & spare)], firstFileName.getBytes(), secondFileName.getBytes());
     }
 
     @Override
