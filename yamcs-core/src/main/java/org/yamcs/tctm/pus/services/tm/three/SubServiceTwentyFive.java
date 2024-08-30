@@ -8,6 +8,7 @@ import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
+import org.yamcs.tctm.pus.PusTmManager;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
 import org.yamcs.utils.ByteArrayUtils;
@@ -99,9 +100,9 @@ public class SubServiceTwentyFive implements PusSubService {
         byte[] spareField = pPkt.getSpareField();
         byte[] dataField = pPkt.getDataField();
 
-        int simpleCommutatedLength = (int) ByteArrayUtils.decodeCustomInteger(spareField, 0, simpleCommutatedSize);
-        int superCommutatedSampleRepetitionNumber = (int) ByteArrayUtils.decodeCustomInteger(spareField, simpleCommutatedSize, superCommutatedSampleRepetitionNumberSize);
-        int collectionInterval = (int) ByteArrayUtils.decodeCustomInteger(spareField, (simpleCommutatedSize + superCommutatedSampleRepetitionNumberSize), collectionIntervalSize);
+        int simpleCommutatedLength = (int) ByteArrayUtils.decodeCustomInteger(spareField, PusTmManager.spareOffsetForFractionTime, simpleCommutatedSize);
+        int superCommutatedSampleRepetitionNumber = (int) ByteArrayUtils.decodeCustomInteger(spareField, PusTmManager.spareOffsetForFractionTime + simpleCommutatedSize, superCommutatedSampleRepetitionNumberSize);
+        int collectionInterval = (int) ByteArrayUtils.decodeCustomInteger(spareField, (PusTmManager.spareOffsetForFractionTime + simpleCommutatedSize + superCommutatedSampleRepetitionNumberSize), collectionIntervalSize);
 
         byte[] housekeepingParameterReportStructureID = Arrays.copyOfRange(
             dataField,

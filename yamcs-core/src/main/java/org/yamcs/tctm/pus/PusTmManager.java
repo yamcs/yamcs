@@ -67,6 +67,9 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
 
     public static Bucket reports;
 
+    protected int DEFAULT_SPARE_OFFSET = 2;
+    public static int spareOffsetForFractionTime;
+
     @Override
     public Spec getSpec() {
         Spec spec = new Spec();
@@ -82,6 +85,7 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
 
         spec.addOption("streamMatrix", OptionType.LIST).withElementType(OptionType.MAP).withSpec(streamMatrixSpec);
         spec.addOption("secondaryHeaderLength", OptionType.INTEGER);
+        spec.addOption("spareOffsetForFractionTime", OptionType.INTEGER);
         spec.addOption("absoluteTimeLength", OptionType.INTEGER);
         spec.addOption("destinationId", OptionType.INTEGER);
         spec.addOption("services", OptionType.MAP).withSpec(Spec.ANY);
@@ -111,6 +115,7 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
         this.yamcsInstance = yamcsInstance;
 
         serviceConfig = config.getConfigOrEmpty("services");
+        spareOffsetForFractionTime = config.getInt("spareOffsetForFractionTime", DEFAULT_SPARE_OFFSET);
         secondaryHeaderLength = config.getInt("secondaryHeaderLength", DEFAULT_SECONDARY_HEADER_LENGTH);
         absoluteTimeLength = config.getInt("absoluteTimeLength", DEFAULT_ABSOLUTE_TIME_LENGTH);
         destinationId = config.getInt("destinationId");

@@ -134,7 +134,13 @@ public class CucTimeDecoder implements TimeDecoder {
                 fineTime = (fineTime << 8) + (0xFF & s.getAsByte());
                 fb--;
             }
-            fineTime = 1000 * fineTime / (1 << (ftBytes * 8));
+            /*
+             * FIXME: Commenting out the below line breaks the CUC standard
+             * In the commented version, the 2 ftBytes are encoded with the millisecond value directly
+             * Instead of fractionally encoding them, per unit of time
+             */
+
+            // fineTime = 1000 * fineTime / (1 << (ftBytes * 8));
         }
         if (log.isTraceEnabled()) {
             log.trace("Extracted corseTime={} sec and fineTime={} millis", coarseTime, fineTime);

@@ -36,13 +36,10 @@ public class SubServiceThirteen implements PusSubService {
     Log log;
     private static int requestIdSize;
 
-    private static int DEFAULT_UNIQUE_SIGNATURE_OFFSET = 2;
-
     private static int DEFAULT_UNIQUE_SIGNATURE_SIZE = 4;
     private static int DEFAULT_REPORT_INDEX_SIZE = 1;
     private static int DEFAULT_REPORT_COUNT_SIZE = 1;
 
-    protected int uniqueSignatureOffset;
     protected int uniqueSignatureSize;
     protected int reportIndexSize;
     protected int reportCountSize;
@@ -53,7 +50,6 @@ public class SubServiceThirteen implements PusSubService {
         this.yamcsInstance = yamcsInstance;
         log = new Log(getClass(), yamcsInstance);
 
-        uniqueSignatureOffset = config.getInt("tcIndexOffset", DEFAULT_UNIQUE_SIGNATURE_OFFSET);
         uniqueSignatureSize = config.getInt("tcIndexSize", DEFAULT_UNIQUE_SIGNATURE_SIZE);
         reportIndexSize = config.getInt("reportIndexSize", DEFAULT_REPORT_INDEX_SIZE);
         reportCountSize = config.getInt("reportCountSize", DEFAULT_REPORT_COUNT_SIZE);
@@ -211,9 +207,9 @@ public class SubServiceThirteen implements PusSubService {
         byte[] spareField = pPkt.getSpareField();
 
         Map<String, Integer> props = new HashMap<>();
-        int uniqueSignature = (int) ByteArrayUtils.decodeCustomInteger(spareField, uniqueSignatureOffset, uniqueSignatureSize);
-        int reportCount = (int) ByteArrayUtils.decodeCustomInteger(spareField, uniqueSignatureOffset + uniqueSignatureSize, reportCountSize);
-        int reportIndex = (int) ByteArrayUtils.decodeCustomInteger(spareField, uniqueSignatureOffset + uniqueSignatureSize + reportCountSize, reportIndexSize);
+        int uniqueSignature = (int) ByteArrayUtils.decodeCustomInteger(spareField, PusTmManager.spareOffsetForFractionTime, uniqueSignatureSize);
+        int reportCount = (int) ByteArrayUtils.decodeCustomInteger(spareField, PusTmManager.spareOffsetForFractionTime + uniqueSignatureSize, reportCountSize);
+        int reportIndex = (int) ByteArrayUtils.decodeCustomInteger(spareField, PusTmManager.spareOffsetForFractionTime + uniqueSignatureSize + reportCountSize, reportIndexSize);
 
         props.put("UniqueSignature", uniqueSignature);
         props.put("ReportIndex", reportIndex);
