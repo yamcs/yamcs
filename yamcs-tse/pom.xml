@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>5.10.0-Pixxel.SNAPSHOT-2.13.9-cfdpfix-0.6</version>
+    <version>5.10.0-Pixxel.SNAPSHOT-2.13.9-cfdpfix-0.7</version>
   </parent>
 
   <artifactId>yamcs-tse</artifactId>
