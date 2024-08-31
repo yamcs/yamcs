@@ -1,5 +1,9 @@
 package org.yamcs.cfdp.pdu;
 
+import java.nio.ByteBuffer;
+
+import org.yamcs.utils.StringConverter;
+
 import com.google.common.primitives.Bytes;
 
 /**
@@ -76,9 +80,9 @@ public class FileStoreRequest extends TLV {
 
     public static byte[] encode(FilestoreType ft, LV firstFileName, LV secondFileName) {
         if (secondFileName == null)
-            return Bytes.concat(new byte[(0xF0 & ft.getByte() << 4) & (0x0F & spare)], firstFileName.getBytes());
+            return Bytes.concat(ByteBuffer.allocate(1).put((byte) ((ft.getByte() << 4 & 0xF0) | (spare & 0x0F))).array(), firstFileName.getBytes());
         
-        return Bytes.concat(new byte[(0xF0 & ft.getByte() << 4) & (0x0F & spare)], firstFileName.getBytes(), secondFileName.getBytes());
+        return Bytes.concat(ByteBuffer.allocate(1).put((byte) ((ft.getByte() << 4 & 0xF0) | (spare & 0x0F))).array(), firstFileName.getBytes(), secondFileName.getBytes());
     }
 
     @Override
