@@ -49,7 +49,7 @@ public class PGSegment {
     List<ParameterValueSegment> pvSegments;
 
     /**
-     * This contains the parameters that have appeared in one of the previous segment of the interval and do not appear
+     * This contains the parameters that have appeared in one of the previous segments of the interval and do not appear
      * in this segment
      */
     IntHashSet currentFullGaps;
