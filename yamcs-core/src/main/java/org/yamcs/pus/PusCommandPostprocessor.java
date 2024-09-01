@@ -1,4 +1,4 @@
-package org.yamcs.tctm.pus;
+package org.yamcs.pus;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;

@@ -23,6 +23,7 @@ public class EventRecorder extends AbstractYamcsService {
 
     public static final String TABLE_NAME = "events";
     public static final String REALTIME_EVENT_STREAM_NAME = "events_realtime";
+    public static final String DUMP_EVENT_STREAM_NAME = "events_dump";
     public static final String CF_NAME = XtceTmRecorder.CF_NAME;
     
     @Override

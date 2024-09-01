@@ -5,8 +5,6 @@
 realtime:
     services: 
         - class: org.yamcs.StreamTmPacketProvider
-          args: 
-              streams: ["tm_realtime"]    
         - class: org.yamcs.StreamTcCommandReleaser
         - class: org.yamcs.tctm.StreamParameterProvider
        # implements XTCE algorithms

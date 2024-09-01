@@ -45,8 +45,18 @@ import org.yamcs.simulator.TcpTmTcLink;
  */
 public class PusSimulator extends AbstractSimulator {
     static final int MAIN_APID = 1;
-    static final int PUS_TYPE_HK = 3;
+
     static final int PUS_TYPE_ACK = 1;
+    static final int PUS_TYPE_HK = 3;
+    static final int PUS_TYPE_EVENT = 5;
+
+    static final int PUS_SUBTYPE_ACK_ACCEPTANCE = 1;
+    static final int PUS_SUBTYPE_NACK_ACCEPTANCE = 2;
+    static final int PUS_SUBTYPE_ACK_START = 3;
+    static final int PUS_SUBTYPE_NACK_START = 4;
+    static final int PUS_SUBTYPE_ACK_COMPLETION = 7;
+    static final int PUS_SUBTYPE_NACK_COMPLETION = 8;
+
     static final int START_FAILURE_INVALID_VOLTAGE_NUM = 1;
     private static final Logger log = LoggerFactory.getLogger(PusSimulator.class);
 
@@ -61,6 +71,7 @@ public class PusSimulator extends AbstractSimulator {
     RCSHandler rcsHandler;
     EpsLvpduHandler epslvpduHandler;
     CfdpReceiver cfdpReceiver;
+    Pus5Service pus5Service;
 
     protected BlockingQueue<PusTcPacket> pendingCommands = new ArrayBlockingQueue<>(100);
 
@@ -71,6 +82,7 @@ public class PusSimulator extends AbstractSimulator {
         flightDataHandler = new FlightDataHandler();
         dhsHandler = new DHSHandler();
         cfdpReceiver = new CfdpReceiver(this, dataDir);
+        pus5Service = new Pus5Service(this);
     }
 
     @Override
@@ -82,6 +94,7 @@ public class PusSimulator extends AbstractSimulator {
         executor.scheduleAtFixedRate(() -> sendHkTm(), 0, 1000, TimeUnit.MILLISECONDS);
         // executor.scheduleAtFixedRate(() -> sendCfdp(), 0, 1000, TimeUnit.MILLISECONDS);
         executor.scheduleAtFixedRate(() -> executePendingCommands(), 0, 200, TimeUnit.MILLISECONDS);
+        executor.scheduleAtFixedRate(() -> pus5Service.sendEvent(), 0, 1000, TimeUnit.MILLISECONDS);
     }
 
     private void sendFlightPacket() {
@@ -122,7 +135,7 @@ public class PusSimulator extends AbstractSimulator {
         }
     }
 
-    private void transmitRealtimeTM(PusTmPacket packet) {
+    void transmitRealtimeTM(PusTmPacket packet) {
         packet.fillChecksum();
         tmLink.sendPacket(packet.getBytes());
     }
@@ -196,9 +209,10 @@ public class PusSimulator extends AbstractSimulator {
     private void executePendingCommands() {
         PusTcPacket commandPacket;
         while ((commandPacket = pendingCommands.poll()) != null) {
-            if (commandPacket.getType() == 25) {
-                log.info("Received PUS TC : {}", commandPacket);
-
+            log.info("Received PUS TC : {}", commandPacket);
+            if (commandPacket.getType() == 5) {
+                pus5Service.executeTc(commandPacket);
+            } else if (commandPacket.getType() == 25) {
                 switch (commandPacket.getSubtype()) {
                 case 1:
                     switchBatteryOn(commandPacket);
@@ -224,7 +238,7 @@ public class PusSimulator extends AbstractSimulator {
         return ackPacket;
     }
 
-    protected PusTmPacket nack(PusTcPacket commandPacket, int subtype, int code) {
+    public static PusTmPacket nack(PusTcPacket commandPacket, int subtype, int code) {
         PusTmPacket ackPacket = new PusTmPacket(MAIN_APID, 8, PUS_TYPE_ACK, subtype);
 
         ByteBuffer bb = ackPacket.getUserDataBuffer();

@@ -96,6 +96,8 @@ mdb:
   - type: "xtce"
     spec: "mdb/pus.xml"
   - type: "xtce"
+    spec: "mdb/pus5.xml"
+  - type: "xtce"
     spec: "mdb/pus11.xml"
   - type: "xtce"
     spec: "mdb/landing.xml"
