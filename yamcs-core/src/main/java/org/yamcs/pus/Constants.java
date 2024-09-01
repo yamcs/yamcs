@@ -1,4 +1,4 @@
-package org.yamcs.tctm.pus;
+package org.yamcs.pus;
 
 public class Constants {
     //the offset of the time inside the regular PUS packets

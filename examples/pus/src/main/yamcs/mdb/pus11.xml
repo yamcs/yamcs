@@ -7,7 +7,7 @@
 			<AggregateArgumentType name="request_id_type">
 				<MemberList>
 					<Member typeRef="/dt/uint16" name="source_id"/>
-					<Member typeRef="/dt/uint11" name="apid"/>
+					<Member typeRef="/dt/uint8" name="apid"/>
 					<Member typeRef="/dt/uint16" name="seqcount"/>
 				</MemberList>
 			</AggregateArgumentType>
@@ -49,7 +49,7 @@
 					<Argument argumentTypeRef="/dt/uint16" name="N"></Argument>
 					<Argument argumentTypeRef="request_array_type" name="requests"></Argument>
 				</ArgumentList>
-				<CommandContainer name="DELTE_ACTIVITIES">
+				<CommandContainer name="DELETE_ACTIVITIES">
 					<EntryList>
 						<ArgumentRefEntry argumentRef="N" />
 						<ArgumentRefEntry argumentRef="requests" />

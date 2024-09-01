@@ -204,7 +204,7 @@
                                     This verifier set is using algorithms for verification. Check the pus-xtce-verif.xml for an example of doing almost the same without algorithms, only XTCE.
                                     Using algorithms has the advantage that no Failed verifier is required, any verifier can return false or a value to indicate failure.
                                   -->
-					<ReceivedVerifier name="Accepted">
+					<ReceivedVerifier name="Accepted" >
 						<CustomAlgorithm name="alg_verif_accepted" shortDescription="Verify the PUS acceptance">
 							<AncillaryDataSet>
 								<!--
@@ -259,7 +259,7 @@
 
 						</CustomAlgorithm>
 						<!-- This says that the algorithm will run for maximum 5 seconds from when the command is sent -->
-						<CheckWindow timeToStopChecking="PT5S" />
+						<CheckWindow timeToStopChecking="PT5S" timeWindowIsRelativeTo="commandRelease" />
 					</ReceivedVerifier>
 					<ExecutionVerifier name="Started">
 						<CustomAlgorithm name="alg_verif_started" shortDescription="Verify the PUS start">

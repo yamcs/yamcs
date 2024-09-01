@@ -67,7 +67,7 @@ dataLinks:
     port: 10015
     # Give the embedded simulator some time to boot up
     initialDelay: 2000
-    packetPreprocessorClassName: org.yamcs.tctm.pus.PusPacketPreprocessor
+    packetPreprocessorClassName: org.yamcs.pus.PusPacketPreprocessor
     packetPreprocessorArgs:
         errorDetection:
            type: CRC-16-CCIIT
@@ -83,7 +83,7 @@ dataLinks:
     port: 10025
     # Give the embedded simulator smoe time to boot up
     initialDelay: 2000
-    commandPostprocessorClassName: org.yamcs.tctm.pus.PusCommandPostprocessor
+    commandPostprocessorClassName: org.yamcs.pus.PusCommandPostprocessor
     commandPostprocessorArgs:
         errorDetection:
           type: CRC-16-CCIIT
@@ -96,7 +96,11 @@ mdb:
   - type: "xtce"
     spec: "mdb/pus.xml"
   - type: "xtce"
+    spec: "mdb/pus5.xml"
+  - type: "xtce"
     spec: "mdb/pus11.xml"
+  - type: "xtce"
+    spec: "mdb/pus17.xml"
   - type: "xtce"
     spec: "mdb/landing.xml"
 

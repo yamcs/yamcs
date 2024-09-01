@@ -1,0 +1,41 @@
+services:
+  - class: org.yamcs.ProcessorCreatorService
+    args: 
+      name: "realtime"
+      type: "realtime"
+  - class: org.yamcs.pus.PusEventDecoder
+    args: 
+        eventIdParameter: /PUS5/event_id
+        eventTemplateFile: src/test/resources/pus/events.json
+
+dataLinks:
+  - name: tm_realtime
+    class: org.yamcs.pus.PusTmTestLink
+    packetPreProcessorClassName: org.yamcs.pus.PusPacketPreprocessor
+    tmStream: tm_realtime
+  - name: pp_realtime
+    class: org.yamcs.tests.AbstractIntegrationTest$ParameterProvider
+    stream: pp_realtime
+    num: 0
+
+
+mdb:
+  - type: "xtce"
+    spec: "src/test/resources/pus/dt.xml"
+  - type: "xtce"
+    spec: "src/test/resources/pus/pus.xml"
+  - type: "xtce"
+    spec: "src/test/resources/pus/pus5.xml"
+    
+streamConfig:
+  tm: 
+   - name: tm_realtime
+     processor: realtime
+  tc: 
+   - name: tc_realtime
+     processor: realtime
+  cmdHist: ["cmdhist_realtime"]
+  event: ["events_realtime"]
+  parameterAlarm: ["alarms_realtime"]
+  eventAlarm: ["event_alarms_realtime"]
+  param: ["sys_param", "pp_realtime", "proc_param"]

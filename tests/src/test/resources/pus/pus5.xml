@@ -1,0 +1,144 @@
+<SpaceSystem name="PUS5" xmlns="http://www.omg.org/spec/XTCE/20180204"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+	<Header validationStatus="Unknown" version="1.0" date="2020-07-01T16:48:10Z" />
+	<TelemetryMetaData>
+		<ParameterTypeSet>
+			<IntegerParameterType name="member_type">
+				<IntegerDataEncoding sizeInBits="16">
+					<DefaultCalibrator>
+						<PolynomialCalibrator>
+							<Term coefficient="1" exponent="0" />
+						</PolynomialCalibrator>
+					</DefaultCalibrator>
+				</IntegerDataEncoding>
+			</IntegerParameterType>
+			<EnumeratedParameterType name="event_id_type">
+				<IntegerDataEncoding sizeInBits="8"/>
+				<EnumerationList>
+					<Enumeration value="1" label="EVENT_1" />
+					<Enumeration value="2" label="EVENT_2" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+			<AggregateParameterType name="para2_type">
+				<MemberList>
+					<Member name ="member" typeRef="member_type"/>
+				</MemberList>
+			</AggregateParameterType>
+		</ParameterTypeSet>
+		<ParameterSet>
+			<Parameter parameterTypeRef="event_id_type" name="event_id"/>
+			<Parameter parameterTypeRef="/dt/uint16" name="para1"/>
+			<Parameter parameterTypeRef="para2_type" name="para2"/>
+			<Parameter parameterTypeRef="/dt/float32" name="para3"/>
+		</ParameterSet>
+		<ContainerSet>
+			<SequenceContainer name="pus-event">
+				<EntryList>
+					<ParameterRefEntry parameterRef="event_id"></ParameterRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="/PUS/pus-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/type" comparisonOperator="==" value="5" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="event1">
+				<EntryList>
+					<ParameterRefEntry parameterRef="para1"/>
+					<ParameterRefEntry parameterRef="para2"/>
+				</EntryList>
+				<BaseContainer containerRef="pus-event">
+					<RestrictionCriteria>
+						<Comparison value="EVENT_1" parameterRef="event_id" />
+					</RestrictionCriteria>
+					</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="event2">
+				<EntryList>
+					<ParameterRefEntry parameterRef="para3"/>
+				</EntryList>
+				<BaseContainer containerRef="pus-event">
+					<RestrictionCriteria>
+						<Comparison value="EVENT_2" parameterRef="event_id" />
+					</RestrictionCriteria>
+					</BaseContainer>
+			</SequenceContainer>
+		</ContainerSet>
+	</TelemetryMetaData>
+	<CommandMetaData>
+		<ArgumentTypeSet>
+			<EnumeratedArgumentType name="event_id_type">
+				<IntegerDataEncoding sizeInBits="8"/>
+				<EnumerationList>
+					<Enumeration value="1" label="EVENT_1" />
+					<Enumeration value="2" label="EVENT_2" />
+				</EnumerationList>
+			</EnumeratedArgumentType>
+			<ArrayArgumentType arrayTypeRef="event_id_type" name="event_id_array_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="N" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+		</ArgumentTypeSet>
+		<MetaCommandSet>
+			<MetaCommand name="pus5-tc" abstract="true">
+				<BaseMetaCommand metaCommandRef="/PUS/pus-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="apid" argumentValue="1" />
+						<ArgumentAssignment argumentName="type" argumentValue="5" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="pus5-tc">
+					<EntryList/>
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="ENABLE_REPORT_GENERATION">
+				<BaseMetaCommand metaCommandRef="pus5-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="5" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="/dt/uint8" name="N"></Argument>
+					<Argument argumentTypeRef="event_id_array_type" name="events"></Argument>
+				</ArgumentList>
+				<CommandContainer name="ENABLE_REPORT_GENERATION">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N" />
+						<ArgumentRefEntry argumentRef="events" />
+					</EntryList>
+					<BaseContainer containerRef="pus5-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="DISABLE_REPORT_GENERATION">
+				<BaseMetaCommand metaCommandRef="pus5-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="6" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="/dt/uint8" name="N"></Argument>
+					<Argument argumentTypeRef="event_id_array_type" name="events"></Argument>
+				</ArgumentList>
+				<CommandContainer name="DISABLE_REPORT_GENERATION">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N" />
+						<ArgumentRefEntry argumentRef="events" />
+					</EntryList>
+					<BaseContainer containerRef="pus5-tc" />
+				</CommandContainer>
+			</MetaCommand>
+		</MetaCommandSet>
+	</CommandMetaData>
+</SpaceSystem>

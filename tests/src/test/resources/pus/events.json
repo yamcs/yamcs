@@ -1,0 +1,10 @@
+[ 
+  {
+    "eventId"  : "EVENT_1",
+    "template" : "this is {/PUS5/para1} and {para2.member.raw}"
+  },
+  {
+    "eventId"  : "EVENT_2",
+    "template" : "formatted {para3; %.3f}"
+  }
+]
