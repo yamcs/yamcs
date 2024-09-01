@@ -134,11 +134,8 @@ public class XtceTmRecorder extends AbstractYamcsService {
                             + streamConf.getName() + " stream");
         }
 
-        Stream inputStream = ydb.getStream(streamConf.getName());
+        Stream inputStream = findStream(streamConf.getName());
 
-        if (inputStream == null) {
-            throw new ConfigurationException("Cannot find stream '" + streamConf.getName() + "'");
-        }
         Stream stream = ydb.getStream(REC_STREAM_NAME);
         StreamRecorder recorder = new StreamRecorder(inputStream, stream, rootsc, streamConf.isAsync());
         recorders.add(recorder);
@@ -292,9 +289,9 @@ public class XtceTmRecorder extends AbstractYamcsService {
          * @param t
          */
         protected void saveTuple(Tuple t) {
-            long gentime = (Long) t.getColumn(0);
-            byte[] packet = (byte[]) t.getColumn(4);
-            int seqCount = (Integer) t.getColumn(1);
+            long gentime = t.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
+            byte[] packet = t.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
+            int seqCount = t.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
 
             totalNumPackets++;
 
