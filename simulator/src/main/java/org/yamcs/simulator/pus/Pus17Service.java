@@ -11,7 +11,7 @@ public class Pus17Service extends AbstractPusService {
 
         if (tc.getSubtype() != 1) {
             log.info("invalid subtype {}, sending NACK start", tc.getSubtype());
-            nack_start(tc, ERR_INVALID_PUS_SUBTYPE);
+            nack_start(tc, START_FAILURE_INVALID_PUS_SUBTYPE);
             return;
         }
 

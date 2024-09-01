@@ -51,28 +51,6 @@
 					</BaseContainer>
 			</SequenceContainer>
 		</ContainerSet>
-		<AlgorithmSet>
-			<CustomAlgorithm name="event2_msg" shortDescription="Creates Yamcs events from the PUS events">
-				<AncillaryDataSet>
-					<AncillaryData name="Yamcs:AlgorithmMandatoryInput">msg</AncillaryData>
-				</AncillaryDataSet>
-				<AlgorithmText language="JavaScript">
-					if(subtype == 1) {
-						Yamcs.info(msg)
-					} else if (subtype == 2) {
-						Yamcs.warn(msg)
-					} else if (subtype == 3) {
-						Yamcs.error(msg)
-					} else if (subtype == 4) {
-						Yamcs.severe(msg)
-					}
-				</AlgorithmText>
-				<InputSet>
-					<InputParameterInstanceRef parameterRef="/PUS/subtype" inputName="subtype" />
-					<InputParameterInstanceRef parameterRef="event2_msg" inputName="msg" />
-				</InputSet>
-			</CustomAlgorithm>
-		</AlgorithmSet>
 	</TelemetryMetaData>
 	<CommandMetaData>
 		<ArgumentTypeSet>

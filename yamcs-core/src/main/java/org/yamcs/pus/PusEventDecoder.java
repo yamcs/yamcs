@@ -241,7 +241,6 @@ public class PusEventDecoder extends AbstractYamcsService {
             String eventId = eventIdValue.getEngValue().getStringValue();
 
             String msg = eventFormatter.format(apid, eventId, params);
-            System.out.println("aici msg: " + msg + " apid: " + apid + " eventId: " + eventIdValue);
             if (msg == null) {
                 log.warn("No template found for message apid={}, eventId={}", apid, eventId);
             } else {
@@ -315,7 +314,6 @@ public class PusEventDecoder extends AbstractYamcsService {
 
             StringBuilder result = new StringBuilder();
             for (var tp : template) {
-                System.out.println("aici tp: " + tp);
                 var s = tp.format(params);
                 if (s != null) {
                     result.append(s);
@@ -408,7 +406,6 @@ public class PusEventDecoder extends AbstractYamcsService {
 
         @Override
         public String format(ParameterValueList params) {
-            System.out.println("params: " + params);
             ParameterValue pv = null;
             if (para != null) {
                 pv = params.getFirstInserted(para);

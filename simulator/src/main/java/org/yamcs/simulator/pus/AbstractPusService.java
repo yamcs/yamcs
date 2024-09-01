@@ -8,7 +8,9 @@ import static org.yamcs.simulator.pus.PusSimulator.ack;
 import static org.yamcs.simulator.pus.PusSimulator.nack;
 
 public abstract class AbstractPusService {
-    static final int ERR_INVALID_PUS_SUBTYPE = 1;
+    static final int START_FAILURE_INVALID_PUS_SUBTYPE = 1;
+    static final int START_FAILURE_NOT_IMPLEMENTED = 2;
+    static final int ERR_INVALID_EVENT_ID = 3;
 
     protected final Logger log = LoggerFactory.getLogger(this.getClass());
     protected final PusSimulator pusSimulator;
@@ -19,6 +21,9 @@ public abstract class AbstractPusService {
         this.pusType = pusType;
     }
 
+    public void start() {
+
+    }
     public abstract void executeTc(PusTcPacket tc);
     
     public PusTmPacket newPacket(int subtype, int userDataLength) {

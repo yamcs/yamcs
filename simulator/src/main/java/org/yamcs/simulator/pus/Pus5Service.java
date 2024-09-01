@@ -2,13 +2,10 @@ package org.yamcs.simulator.pus;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 
-import static org.yamcs.simulator.pus.PusSimulator.*;
 
 public class Pus5Service extends AbstractPusService {
-
-    static final int INVALID_EVENT_ID = 2;
-
     int count;
     boolean[] enabled = { true, true };
 
@@ -16,21 +13,28 @@ public class Pus5Service extends AbstractPusService {
         super(pusSimulator, 5);
     }
 
+    @Override
+    public void start() {
+        pusSimulator.executor.scheduleAtFixedRate(() -> sendEvent(), 0, 1000, TimeUnit.MILLISECONDS);
+    }
+
     public void sendEvent() {
         var id = count % 5;
         if (id == 0 && enabled[0]) {
             // send event1
-            PusTmPacket packet = newPacket(1, 6);
+            PusTmPacket packet = newPacket(1, 7);
             ByteBuffer bb = packet.getUserDataBuffer();
+            bb.put((byte) 1);
             bb.putShort((short) count);
-            bb.putFloat((float) (count + 3.14));
+            bb.putFloat((float) (count + 3.14159265));
 
             pusSimulator.transmitRealtimeTM(packet);
         } else if (enabled[1]) {
             // send event2 with subtype (severity level) id
             byte[] msg = ("This is an event with subtype " + id).getBytes(StandardCharsets.UTF_8);
-            PusTmPacket packet = newPacket(id, 2 + msg.length);
+            PusTmPacket packet = newPacket(id, 3 + msg.length);
             ByteBuffer bb = packet.getUserDataBuffer();
+            bb.put((byte) 2);
             bb.putShort((short) msg.length);
             bb.put(msg);
             pusSimulator.transmitRealtimeTM(packet);
@@ -38,20 +42,34 @@ public class Pus5Service extends AbstractPusService {
         count++;
     }
 
+
     public void executeTc(PusTcPacket tc) {
-
-        if (tc.getSubtype() < 5 || tc.getSubtype() > 6) {
+        if (tc.getSubtype() == 5 ||tc.getSubtype() == 6 ) {
+            ack_start(tc);
+            enableDisableEvents(tc, tc.getSubtype() == 5);
+        } else if (tc.getSubtype() == 7) {
+            nack_start(tc, START_FAILURE_NOT_IMPLEMENTED);
+        } else {
             log.info("invalid subtype {}, sending NACK start", tc.getSubtype());
-            pusSimulator.transmitRealtimeTM(nack(tc, PUS_SUBTYPE_NACK_START, ERR_INVALID_PUS_SUBTYPE));
+            nack_start(tc, START_FAILURE_INVALID_PUS_SUBTYPE);
             return;
         }
+    }
 
-        if (tc.getSubtype() < 5 || tc.getSubtype() > 6) {
-            log.info("invalid subtype {}, sending NACK start", tc.getSubtype());
-            pusSimulator.transmitRealtimeTM(nack(tc, PUS_SUBTYPE_NACK_START, ERR_INVALID_PUS_SUBTYPE));
-            return;
+    void enableDisableEvents(PusTcPacket tc, boolean enable) {
+        ByteBuffer bb = tc.getUserDataBuffer();
+        int n = bb.get() & 0xFF;
+        System.out.println("n: " + n);
+        for (int i = 0; i < n; i++) {
+            int eventId = bb.get() & 0xFF;
+            if (eventId == 0 || eventId  > enabled.length) {
+                log.info("invalid event id {}, sending NACK start", eventId);
+                nack_completion(tc, ERR_INVALID_EVENT_ID);
+                return;
+            }
+            enabled[eventId - 1] = enable;
         }
-
+        ack_completion(tc);
     }
 
 }

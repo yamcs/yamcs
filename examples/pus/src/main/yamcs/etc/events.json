@@ -1,0 +1,10 @@
+[ 
+  {
+    "eventId"  : "EVENT_1",
+    "template" : "Event 1: para1={event1_para1} and para2={event1_para2; %3.3f}"
+  },
+  {
+    "eventId"  : "EVENT_2",
+    "template" : "Event 2: msg={event2_msg}"
+  }
+]

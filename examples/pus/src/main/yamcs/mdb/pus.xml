@@ -7,7 +7,10 @@
 			<EnumeratedParameterType name="start-failure-code">
 				<IntegerDataEncoding sizeInBits="32" />
 				<EnumerationList>
-					<Enumeration label="INVALID_VOLTAGE_NUM" value="1" />
+					<Enumeration label="INVALID_PUS_SUBTYPE" value="1" />
+					<Enumeration label="NOT_IMPLEMENTED" value="1" />
+					<Enumeration label="INVALID_EVENT_ID" value="1" />
+					<Enumeration label="INVALID_VOLTAGE_NUM" value="100" />
 				</EnumerationList>
 			</EnumeratedParameterType>
 			<EnumeratedParameterType name="completion-failure-code">

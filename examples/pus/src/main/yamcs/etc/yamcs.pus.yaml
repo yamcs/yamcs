@@ -58,6 +58,10 @@ services:
          id: 7
      senderFaultHandlers:
        AckLimitReached: suspend
+  - class: org.yamcs.pus.PusEventDecoder
+    args: 
+        eventIdParameter: /PUS5/event_id
+        eventTemplateFile: etc/events.json
 
 dataLinks:
   - name: tm_realtime

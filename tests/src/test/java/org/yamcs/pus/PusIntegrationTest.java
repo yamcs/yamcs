@@ -39,7 +39,12 @@ public class PusIntegrationTest {
 
     @BeforeAll
     public static void beforeClass() throws Exception {
-        yamcsServer = AbstractIntegrationTest.setupYamcs("pus", true);
+        YConfiguration.setupTest("pus");
+
+        yamcsServer = YamcsServer.getServer();
+        yamcsServer.prepareStart();
+        yamcsServer.start();
+
     }
 
     @BeforeEach

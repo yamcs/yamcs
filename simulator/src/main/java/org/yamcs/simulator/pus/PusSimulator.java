@@ -58,7 +58,7 @@ public class PusSimulator extends AbstractSimulator {
     static final int PUS_SUBTYPE_ACK_COMPLETION = 7;
     static final int PUS_SUBTYPE_NACK_COMPLETION = 8;
 
-    static final int START_FAILURE_INVALID_VOLTAGE_NUM = 1;
+    static final int START_FAILURE_INVALID_VOLTAGE_NUM = 100;
     private static final Logger log = LoggerFactory.getLogger(PusSimulator.class);
 
     final Random random = new Random();
@@ -97,7 +97,8 @@ public class PusSimulator extends AbstractSimulator {
         executor.scheduleAtFixedRate(() -> sendHkTm(), 0, 1000, TimeUnit.MILLISECONDS);
         // executor.scheduleAtFixedRate(() -> sendCfdp(), 0, 1000, TimeUnit.MILLISECONDS);
         executor.scheduleAtFixedRate(() -> executePendingCommands(), 0, 200, TimeUnit.MILLISECONDS);
-        executor.scheduleAtFixedRate(() -> pus5Service.sendEvent(), 0, 1000, TimeUnit.MILLISECONDS);
+
+        pus5Service.start();
     }
 
     private void sendFlightPacket() {
