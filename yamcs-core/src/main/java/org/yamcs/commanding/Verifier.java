@@ -98,4 +98,8 @@ abstract class Verifier {
     public State getState() {
         return state;
     }
+
+    public String getStage() {
+        return cv.getStage();
+    }
 }
