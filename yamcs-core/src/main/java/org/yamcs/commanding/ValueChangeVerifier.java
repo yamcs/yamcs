@@ -2,7 +2,6 @@ package org.yamcs.commanding;
 
 import java.util.List;
 
-import org.yamcs.logging.Log;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.ParameterConsumer;

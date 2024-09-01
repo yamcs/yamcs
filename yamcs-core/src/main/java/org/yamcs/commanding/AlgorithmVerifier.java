@@ -65,7 +65,7 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
     public void algorithmRun(List<RawEngValue> inputValues, Object result, List<ParameterValue> outputValues) {
         if (log.isTraceEnabled()) {
             CommandId cmdId = activeCommand.getCommandId();
-            log.trace("command: {} algorithm {} stage{} executed: returnValue: {} , outputValues: {}",
+            log.trace("command: {} algorithm: {} stage: {} executed: returnValue: {} , outputValues: {}",
                     StringConverter.toString(cmdId), alg.getName(), cv.getStage(), result, outputValues);
         }
         if (result == null) {
