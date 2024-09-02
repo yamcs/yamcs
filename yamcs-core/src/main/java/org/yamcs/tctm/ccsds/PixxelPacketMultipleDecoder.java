@@ -79,11 +79,8 @@ public class PixxelPacketMultipleDecoder {
                 byte d0 = data[offset];
                 offset++;
                 length--;
-                try {
-                    headerLength = getHeaderLength(d0);
-                } catch (UnsupportedPacketVersionException e) {
-                    break;
-                }
+                headerLength = getHeaderLength(d0);
+
                 header[0] = d0;
                 headerOffset++;
 

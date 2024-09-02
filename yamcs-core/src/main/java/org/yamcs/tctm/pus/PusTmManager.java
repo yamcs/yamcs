@@ -1,12 +1,11 @@
 package org.yamcs.tctm.pus;
 
 import java.io.IOException;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.time.Instant;
 
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
@@ -30,11 +29,6 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
-
-import io.sentry.Sentry;
-import io.sentry.SentryEvent;
-import io.sentry.SentryLevel;
-import io.sentry.protocol.Message;
 
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.StringConverter;
@@ -207,19 +201,6 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
         pusServices.put(17, new ServiceSeventeen(yamcsInstance, serviceConfig.getConfigOrEmpty("seventeen")));
         pusServices.put(20, new ServiceTwenty(yamcsInstance, serviceConfig.getConfigOrEmpty("twenty")));
     }
-    void logException(Throwable e, String messageStr, SentryLevel stage) {
-        // This sends an exception event to Sentry.
-        SentryEvent event = new SentryEvent();
-
-        Message message = new Message();
-        message.setMessage(messageStr);
-        event.setMessage(message);
-        event.setLevel(stage);
-        event.setLogger(getClass().getName());
-        event.setThrowable(e);
-
-        Sentry.captureEvent(event);
-    }
 
     public void acceptTmPacket(TmPacket tmPacket, String tmLinkName, Stream stream) {
         byte[] b = tmPacket.getPacket();
@@ -231,18 +212,17 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
             );
         } catch (NullPointerException e) {
             log.error("Invalid CCSDS packet, Service Type: {}, SubService Type: {}, Packet: {}", PusTmCcsdsPacket.getMessageType(b), PusTmCcsdsPacket.getMessageSubType(b), StringConverter.arrayToHexString(b));
-            log.error("Packet in format: {}", StringConverter.arrayToHexString(b, true));
 
-            logException(e, StringConverter.arrayToHexString(b), SentryLevel.FATAL);
+            List<String> params = log.getSentryParams(tmPacket);
+            params.add(tmLinkName);
+            log.logSentryFatal(e, log.getStringMessage(), getClass().getName(), params);
         
         } catch (Exception e) {
-            Instant gentime = Instant.ofEpochMilli(tmPacket.getGenerationTime()).atZone(ZoneId.of("GMT")).toInstant();
-            Instant ert = Instant.ofEpochMilli(tmPacket.getEarthReceptionTime().getMillis()).atZone(ZoneId.of("GMT")).toInstant();
+            log.error("Error in processing CCSDS packet, PacketLen: {}, Packet: {}", b.length, StringConverter.arrayToHexString(b));
 
-            log.error("Error in processing CCSDS packet, PacketLen: {}, Packet: {}, Gentime: {}, ERT: {}", b.length, StringConverter.arrayToHexString(b), gentime, ert);
-            log.error("Packet in format: {}", StringConverter.arrayToHexString(b, true));
-
-            logException(e, StringConverter.arrayToHexString(b), SentryLevel.FATAL);
+            List<String> params = log.getSentryParams(tmPacket);
+            params.add(tmLinkName);
+            log.logSentryFatal(e, log.getStringMessage(), getClass().getName(), params);
         }
 
         if (pkts != null || !pkts.isEmpty()){
