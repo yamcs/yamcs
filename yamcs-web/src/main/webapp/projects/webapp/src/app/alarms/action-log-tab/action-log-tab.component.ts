@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, OnInit, input } from '@angular/core';
+import { FormControl, FormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
+import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuditRecord, GetAuditRecordsOptions, MessageService, WebappSdkModule, YaSelect, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { AuditRecord, GetAuditRecordsOptions, MessageService, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { AlarmsPageTabsComponent } from '../alarms-page-tabs/alarms-page-tabs.component';
@@ -19,10 +20,11 @@ import { AlarmsPageTabsComponent } from '../alarms-page-tabs/alarms-page-tabs.co
     WebappSdkModule,
   ],
 })
-export class ActionLogTabComponent {
+export class ActionLogTabComponent implements OnInit {
 
-  @ViewChild('intervalSelect')
-  intervalSelect: YaSelect;
+  interval = input<string>();
+  customStart = input<string>();
+  customStop = input<string>();
 
   validStart: Date | null;
   validStop: Date | null;
@@ -32,11 +34,10 @@ export class ActionLogTabComponent {
   // range is actually applied.
   appliedInterval: string;
 
-  filterForm = new UntypedFormGroup({
-    filter: new UntypedFormControl(),
-    interval: new UntypedFormControl('NO_LIMIT'),
-    customStart: new UntypedFormControl(null),
-    customStop: new UntypedFormControl(null),
+  filterForm = new FormGroup({
+    interval: new FormControl<string | null>('NO_LIMIT'),
+    customStart: new FormControl<string | null>(null),
+    customStop: new FormControl<string | null>(null),
   });
 
   displayedColumns = [
@@ -54,18 +55,19 @@ export class ActionLogTabComponent {
     { id: 'CUSTOM', label: 'Custom', group: true },
   ];
 
-  // Would prefer to use formGroup, but when using valueChanges this
-  // only is updated after the callback...
-  private filter: string;
-
   dataSource = new MatTableDataSource<AuditRecord>();
 
   constructor(
+    title: Title,
     readonly yamcs: YamcsService,
     private messageService: MessageService,
     private router: Router,
     private route: ActivatedRoute,
   ) {
+    title.setTitle('Alarms');
+  }
+
+  ngOnInit(): void {
     this.initializeOptions();
     this.loadData();
 
@@ -81,7 +83,7 @@ export class ActionLogTabComponent {
         this.validStop = null;
         this.appliedInterval = nextInterval;
         this.loadData();
-      } else {
+      } else if (nextInterval) {
         this.validStop = new Date();
         this.validStart = utils.subtractDuration(this.validStop, nextInterval);
         this.appliedInterval = nextInterval;
@@ -91,19 +93,14 @@ export class ActionLogTabComponent {
   }
 
   private initializeOptions() {
-    const queryParams = this.route.snapshot.queryParamMap;
-    if (queryParams.has('filter')) {
-      this.filter = queryParams.get('filter') || '';
-      this.filterForm.get('filter')!.setValue(this.filter);
-    }
-    if (queryParams.has('interval')) {
-      this.appliedInterval = queryParams.get('interval')!;
+    if (this.interval()) {
+      this.appliedInterval = this.interval()!;
       this.filterForm.get('interval')!.setValue(this.appliedInterval);
       if (this.appliedInterval === 'CUSTOM') {
-        const customStart = queryParams.get('customStart')!;
+        const customStart = this.customStart()!;
         this.filterForm.get('customStart')!.setValue(customStart);
         this.validStart = utils.toDate(customStart);
-        const customStop = queryParams.get('customStop')!;
+        const customStop = this.customStop()!;
         this.filterForm.get('customStop')!.setValue(customStop);
         this.validStop = utils.toDate(customStop);
       } else if (this.appliedInterval === 'NO_LIMIT') {
@@ -125,8 +122,9 @@ export class ActionLogTabComponent {
   }
 
   applyCustomDates() {
-    this.validStart = utils.toDate(this.filterForm.value['customStart']);
-    this.validStop = utils.toDate(this.filterForm.value['customStop']);
+    const { controls } = this.filterForm;
+    this.validStart = utils.toDate(controls['customStart'].value);
+    this.validStop = utils.toDate(controls['customStop'].value);
     this.appliedInterval = 'CUSTOM';
     this.loadData();
   }
@@ -145,9 +143,6 @@ export class ActionLogTabComponent {
     if (this.validStop) {
       options.stop = this.validStop.toISOString();
     }
-    if (this.filter) {
-      options.q = this.filter;
-    }
 
     this.yamcs.yamcsClient.getAuditRecords(this.yamcs.instance!, options)
       .then(page => this.dataSource.data = page.records || [])
@@ -155,14 +150,14 @@ export class ActionLogTabComponent {
   }
 
   private updateURL() {
+    const { controls } = this.filterForm;
     this.router.navigate([], {
       replaceUrl: true,
       relativeTo: this.route,
       queryParams: {
-        filter: this.filter || null,
         interval: this.appliedInterval,
-        customStart: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStart'] : null,
-        customStop: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStop'] : null,
+        customStart: this.appliedInterval === 'CUSTOM' ? controls['customStart'].value : null,
+        customStop: this.appliedInterval === 'CUSTOM' ? controls['customStop'].value : null,
       },
       queryParamsHandling: 'merge',
     });

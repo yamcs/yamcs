@@ -1,10 +1,12 @@
 package org.yamcs.tctm.pus;
 
 import java.io.IOException;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.time.Instant;
 
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
@@ -28,8 +30,14 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
-import org.yamcs.time.Instant;
+
+import io.sentry.Sentry;
+import io.sentry.SentryEvent;
+import io.sentry.SentryLevel;
+import io.sentry.protocol.Message;
+
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.tctm.pus.services.PusService;
 import org.yamcs.tctm.pus.services.PusSink;
 import org.yamcs.tctm.pus.services.tm.twenty.ServiceTwenty;
@@ -114,6 +122,7 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
         super.init(yamcsInstance, serviceName, config);
         this.yamcsInstance = yamcsInstance;
 
+        log = new Log(getClass(), yamcsInstance);
         serviceConfig = config.getConfigOrEmpty("services");
         spareOffsetForFractionTime = config.getInt("spareOffsetForFractionTime", DEFAULT_SPARE_OFFSET);
         secondaryHeaderLength = config.getInt("secondaryHeaderLength", DEFAULT_SECONDARY_HEADER_LENGTH);
@@ -198,12 +207,45 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
         pusServices.put(17, new ServiceSeventeen(yamcsInstance, serviceConfig.getConfigOrEmpty("seventeen")));
         pusServices.put(20, new ServiceTwenty(yamcsInstance, serviceConfig.getConfigOrEmpty("twenty")));
     }
+    void logException(Throwable e, String messageStr, SentryLevel stage) {
+        // This sends an exception event to Sentry.
+        SentryEvent event = new SentryEvent();
+
+        Message message = new Message();
+        message.setMessage(messageStr);
+        event.setMessage(message);
+        event.setLevel(stage);
+        event.setLogger(getClass().getName());
+        event.setThrowable(e);
+
+        Sentry.captureEvent(event);
+    }
 
     public void acceptTmPacket(TmPacket tmPacket, String tmLinkName, Stream stream) {
         byte[] b = tmPacket.getPacket();
-        ArrayList<TmPacket> pkts = pusServices.get(PusTmCcsdsPacket.getMessageType(b)).extractPusModifiers(tmPacket);
+        ArrayList<TmPacket> pkts = new ArrayList<>();
+        try {
+            pkts.addAll(
+                pusServices.get(PusTmCcsdsPacket.getMessageType(b))
+                            .extractPusModifiers(tmPacket)
+            );
+        } catch (NullPointerException e) {
+            log.error("Invalid CCSDS packet, Service Type: {}, SubService Type: {}, Packet: {}", PusTmCcsdsPacket.getMessageType(b), PusTmCcsdsPacket.getMessageSubType(b), StringConverter.arrayToHexString(b));
+            log.error("Packet in format: {}", StringConverter.arrayToHexString(b, true));
 
-        if (pkts != null){
+            logException(e, StringConverter.arrayToHexString(b), SentryLevel.FATAL);
+        
+        } catch (Exception e) {
+            Instant gentime = Instant.ofEpochMilli(tmPacket.getGenerationTime()).atZone(ZoneId.of("GMT")).toInstant();
+            Instant ert = Instant.ofEpochMilli(tmPacket.getEarthReceptionTime().getMillis()).atZone(ZoneId.of("GMT")).toInstant();
+
+            log.error("Error in processing CCSDS packet, PacketLen: {}, Packet: {}, Gentime: {}, ERT: {}", b.length, StringConverter.arrayToHexString(b), gentime, ert);
+            log.error("Packet in format: {}", StringConverter.arrayToHexString(b, true));
+
+            logException(e, StringConverter.arrayToHexString(b), SentryLevel.FATAL);
+        }
+
+        if (pkts != null || !pkts.isEmpty()){
             for (TmPacket pkt: pkts) {
                 tmSink.emitTmTuple(pkt, stream, tmLinkName);
             }
@@ -214,7 +256,7 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
     public void onTuple(Stream stream, Tuple tuple) {
         long rectime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN);
         long gentime = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
-        Instant ertime = (Instant) tuple.getColumn(StandardTupleDefinitions.TM_ERTIME_COLUMN);
+        org.yamcs.time.Instant ertime = (org.yamcs.time.Instant) tuple.getColumn(StandardTupleDefinitions.TM_ERTIME_COLUMN);
 
         int seqCount = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
         byte[] pkt = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);

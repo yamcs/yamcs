@@ -35,8 +35,7 @@
 				<xtce:UnitSet>
 					<xtce:Unit description="Bq">units:Becquerel</xtce:Unit>
 				</xtce:UnitSet>
-				<xtce:IntegerDataEncoding sizeInBits="16"
-					encoding="twosCompliment">
+				<xtce:IntegerDataEncoding sizeInBits="16" encoding="twosComplement">
 					<xtce:DefaultCalibrator>
 						<xtce:PolynomialCalibrator>
 							<xtce:Term coefficient="-7459.23273708" exponent="0" />

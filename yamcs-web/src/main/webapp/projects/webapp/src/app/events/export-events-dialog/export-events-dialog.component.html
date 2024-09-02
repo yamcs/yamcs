@@ -13,8 +13,16 @@
     </label>
     <br />
     <label>
-      Severity<br />
-      <ya-select formControlName="severity" [options]="data.severityOptions" />
+      Severity
+      <br />
+      <ya-select formControlName="severity">
+        <ya-option id="INFO" label="Info level" />
+        <ya-option id="WATCH" label="Watch level" />
+        <ya-option id="WARNING" label="Warning level" />
+        <ya-option id="DISTRESS" label="Distress level" />
+        <ya-option id="CRITICAL" label="Critical level" />
+        <ya-option id="SEVERE" label="Severe level" />
+      </ya-select>
     </label>
     <br />
     <label>
@@ -23,7 +31,8 @@
     </label>
     <br />
     <label>
-      Source<br />
+      Source
+      <br />
       <ya-multi-select
         formControlName="source"
         [options]="data.sourceOptions"
@@ -31,8 +40,13 @@
     </label>
     <br />
     <label>
-      CSV column delimiter<br />
-      <ya-select formControlName="delimiter" [options]="delimiterOptions" />
+      CSV column delimiter
+      <br />
+      <ya-select formControlName="delimiter">
+        <ya-option id="COMMA" label="Comma" />
+        <ya-option id="SEMICOLON" label="Semicolon" />
+        <ya-option id="TAB" label="Tab" />
+      </ya-select>
     </label>
   </form>
 </mat-dialog-content>

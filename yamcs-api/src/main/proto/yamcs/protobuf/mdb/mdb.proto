@@ -352,6 +352,9 @@ message ParameterTypeInfo {
   // (only used by integer parameter types)
   optional bool signed = 12;
 
+  // Hint about the range of allowed engineering values
+  optional int32 sizeInBits = 21;
+
   // String representation of a boolean zero (only used by boolean types)
   optional string zeroStringValue = 13;
 
@@ -668,7 +671,7 @@ message SequenceEntryInfo {
   optional FixedValueInfo fixedValue = 7;
 
   optional RepeatInfo repeat = 5;
-  optional IndirectParameterRefInfo inidrectParameterRef = 8;
+  optional IndirectParameterRefInfo indirectParameterRef = 8;
 }
 
 message FixedValueInfo {

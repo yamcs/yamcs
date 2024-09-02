@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>5.10.0-Pixxel.SNAPSHOT-2.13.12</version>
+    <version>5.10.1-Pixxel.SNAPSHOT-2.13.13</version>
   </parent>
 
   <artifactId>yamcs-web</artifactId>
@@ -56,10 +56,6 @@
             </goals>
             <configuration>
               <writeDescriptorSet>true</writeDescriptorSet>
-              <descriptorSetFileName>${project.artifactId}.protobin</descriptorSetFileName>
-              <descriptorSetOutputDirectory>${project.build.directory}/generated-resources/protobuf</descriptorSetOutputDirectory>
-              <includeDependenciesInDescriptorSet>false</includeDependenciesInDescriptorSet>
-              <includeSourceInfoInDescriptorSet>true</includeSourceInfoInDescriptorSet>
             </configuration>
           </execution>
         </executions>

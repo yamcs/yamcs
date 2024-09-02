@@ -787,6 +787,7 @@ public class XtceToGpbAssembler {
             if (parameterType instanceof IntegerParameterType) {
                 IntegerParameterType ipt = (IntegerParameterType) parameterType;
                 infob.setSigned(ipt.isSigned());
+                infob.setSizeInBits(ipt.getSizeInBits());
                 if (ipt.getDefaultAlarm() != null) {
                     infob.setDefaultAlarm(toAlarmInfo(ipt.getDefaultAlarm()));
                 }
@@ -800,6 +801,7 @@ public class XtceToGpbAssembler {
                 }
             } else if (parameterType instanceof FloatParameterType) {
                 FloatParameterType fpt = (FloatParameterType) parameterType;
+                infob.setSizeInBits(fpt.getSizeInBits());
                 if (fpt.getDefaultAlarm() != null) {
                     infob.setDefaultAlarm(toAlarmInfo(fpt.getDefaultAlarm()));
                 }
