@@ -390,7 +390,7 @@ public class CfdpDownlinkIntegrationTest {
             EventProducer eventProducer = EventProducerFactory.getEventProducer();
             eventProducer.setSource("unit-test");
             FilePutRequest putRequest = new FilePutRequest(15, 12, objName, objName, false, reliable, false, false,
-                    incomingBucket, data);
+                    incomingBucket, data, new ArrayList<>());
 
             trsf = new CfdpOutgoingTransfer(yamcsInstance, putRequest.getSourceId(), seqNum, TimeEncoding.getWallclockTime(),
                     myExecutor, putRequest, cfdpIn, config, null, null, null, eventProducer, this, null);
