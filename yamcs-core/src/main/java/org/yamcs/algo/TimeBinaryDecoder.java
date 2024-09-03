@@ -20,6 +20,10 @@ import org.yamcs.xtce.DataEncoding;
 
 /**
  * Can be used in BinaryParameterEncoding to decode binary data directly to absolute times
+ * <p>
+ * Unlike the pure XTCE based decoder, this one can use a time correlation service to convert between an on-board time
+ * and Yamcs time.
+ * 
  */
 public class TimeBinaryDecoder extends AbstractDataDecoder {
 
@@ -47,7 +51,6 @@ public class TimeBinaryDecoder extends AbstractDataDecoder {
         if (yc.containsKey("tcoService")) {
             String tcoServiceName = yc.getString("tcoService");
             String yamcsInstance = ctx.getProcessorData().getYamcsInstance();
-            System.out.println("yamcsInstance: " + yamcsInstance);
             tcoService = YamcsServer.getServer().getInstance(yamcsInstance)
                     .getService(TimeCorrelationService.class, tcoServiceName);
             if (tcoService == null) {
@@ -72,7 +75,7 @@ public class TimeBinaryDecoder extends AbstractDataDecoder {
         long t;
         if (tcoService != null) {
             long obt = timeDecoder.decodeRaw(suppl);
-            /// TODO: change to getHistoricalTime once we have a way of knowing the processor time (which should be the
+            /// FIXME: change to getHistoricalTime once we have a way of knowing the processor time (which should be the
             /// replay time during replay)
             t = tcoService.getTime(obt).getMillis();
         } else {

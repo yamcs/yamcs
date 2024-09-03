@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.IllegalFormatException;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.Map;
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
+import org.yamcs.ProcessorConfig;
 import org.yamcs.Spec;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.StreamConfig;
@@ -21,6 +23,7 @@ import org.yamcs.archive.EventRecorder;
 import org.yamcs.mdb.ContainerProcessingResult;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
+import org.yamcs.mdb.ProcessorData;
 import org.yamcs.mdb.XtceTmExtractor;
 import org.yamcs.parameter.DoubleValue;
 import org.yamcs.parameter.FloatValue;
@@ -208,7 +211,9 @@ public class PusEventDecoder extends AbstractYamcsService {
             this.inputStream = inputStream;
             this.eventStream = eventStream;
             this.rootsc = rootsc;
-            tmExtractor = new XtceTmExtractor(mdb);
+            var pdata = new ProcessorData(yamcsInstance, "XTCEPROC", mdb, new ProcessorConfig(),
+                    Collections.emptyMap());
+            tmExtractor = new XtceTmExtractor(mdb, pdata);
             tmExtractor.provideAll();
         }
 

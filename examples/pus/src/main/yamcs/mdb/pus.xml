@@ -22,7 +22,22 @@
 					<Enumeration label="COMPLETION_ERROR_3" value="3" />
 				</EnumerationList>
 			</EnumeratedParameterType>
-
+		<AbsoluteTimeParameterType name="pus-time-type">
+			<Encoding>
+				<BinaryDataEncoding>
+					<SizeInBits>
+						<!-- -1 means the algorithm will find the size -->
+						<FixedValue>-1</FixedValue>
+					</SizeInBits>
+					<FromBinaryTransformAlgorithm name="LeadingSizeBinaryDecoder" shortDescription="decodes byte arrays whith the size specified at the beginning">						
+						<AlgorithmText language="java">
+							<!-- type = CUC, epoch = NONE, timeCorrelationService = tco0-->
+       	   		    		org.yamcs.algo.TimeBinaryDecoder({type: CUC, epoch: NONE, tcoService: tco0})
+       	   	   			</AlgorithmText>
+					</FromBinaryTransformAlgorithm>
+				</BinaryDataEncoding>
+			</Encoding>
+		</AbsoluteTimeParameterType>
 		</ParameterTypeSet>
 		<ParameterSet>
 			<Parameter parameterTypeRef="/dt/uint11" name="apid" />
@@ -35,6 +50,7 @@
 			<Parameter parameterTypeRef="/dt/uint8" name="time-type" />
 			<Parameter parameterTypeRef="/dt/uint32" name="obt-coarse" />
 			<Parameter parameterTypeRef="/dt/uint24" name="obt-fine" />
+			<Parameter parameterTypeRef="pus-time-type" name="pus-time" />
 			<Parameter parameterTypeRef="/dt/uint32" name="hkid" />
 			<Parameter parameterTypeRef="/dt/uint11" name="tc-ack-apid" />
 			<Parameter parameterTypeRef="/dt/uint14" name="tc-ack-seq" />
@@ -86,7 +102,13 @@
 					<ParameterRefEntry parameterRef="destination" />
 					<ParameterRefEntry parameterRef="time-type" />
 					<ParameterRefEntry parameterRef="obt-coarse" />
-					<ParameterRefEntry parameterRef="obt-fine" />
+					<ParameterRefEntry parameterRef="obt-fine" />					
+					<ParameterRefEntry parameterRef="pus-time">
+						<!-- pus-time is the decoded time and overlaps with the previous values which are accessible in raw -->
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>-64</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
 				</EntryList>
 				<BaseContainer containerRef="ccsds">
 					<RestrictionCriteria>

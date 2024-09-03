@@ -21,8 +21,6 @@ import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
  * </pre>
  * 
  * 
- * @author nm
- *
  */
 public class PusTcPacket extends SimulatorCcsdsPacket {
     public static final int SH_OFFSET = 6;
@@ -62,6 +60,10 @@ public class PusTcPacket extends SimulatorCcsdsPacket {
         return bb.get(SH_OFFSET + 2) & 0xFF;
     }
 
+    public int getSourceId() {
+        return bb.getShort(SH_OFFSET + 3) & 0xFFFF;
+    }
+
     private static int getPacketLength(int userDataLength) {
         return DATA_OFFSET + userDataLength + 2;// 2 bytes for the CRC
     }
@@ -92,4 +94,5 @@ public class PusTcPacket extends SimulatorCcsdsPacket {
         appendBinaryData(sb);
         return sb.toString();
     }
+
 }

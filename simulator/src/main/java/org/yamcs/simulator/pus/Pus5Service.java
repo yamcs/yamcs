@@ -59,7 +59,6 @@ public class Pus5Service extends AbstractPusService {
     void enableDisableEvents(PusTcPacket tc, boolean enable) {
         ByteBuffer bb = tc.getUserDataBuffer();
         int n = bb.get() & 0xFF;
-        System.out.println("n: " + n);
         for (int i = 0; i < n; i++) {
             int eventId = bb.get() & 0xFF;
             if (eventId == 0 || eventId  > enabled.length) {
