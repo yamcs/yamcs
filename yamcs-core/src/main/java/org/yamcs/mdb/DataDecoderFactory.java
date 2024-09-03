@@ -11,7 +11,7 @@ import org.yaml.snakeyaml.Yaml;
 
 public class DataDecoderFactory {
 
-    public static DataDecoder get(Algorithm a) {
+    public static DataDecoder get(Algorithm a, ProcessorData pdata) {
         if (!(a instanceof CustomAlgorithm)) {
             throw new XtceProcessingException(
                     "Unsupported algorithm: '" + a + "'. Only Java custom algorithms supported");
@@ -23,7 +23,8 @@ public class DataDecoderFactory {
                     "Unsupported language for Data Decoder: '" + ca.getLanguage() + "'. Only Java supported");
         }
 
-        return loadJavaAlgo(ca, null);
+        AlgorithmExecutionContext execCtx = new AlgorithmExecutionContext("DataDecoder", pdata, Integer.MAX_VALUE);
+        return loadJavaAlgo(ca, execCtx);
     }
 
     static <T> T loadJavaAlgo(CustomAlgorithm alg, AlgorithmExecutionContext execCtx) {

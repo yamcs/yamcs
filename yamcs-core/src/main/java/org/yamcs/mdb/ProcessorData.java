@@ -77,7 +77,7 @@ public class ProcessorData {
     Map<Parameter, ParameterType> typeOverrides = new HashMap<>();
     private Set<ParameterTypeListener> typeListeners = new CopyOnWriteArraySet<>();
 
-    String yamcsInstance;
+    final String yamcsInstance;
 
     private ProcessorConfig processorConfig;
 
@@ -272,21 +272,13 @@ public class ProcessorData {
     }
 
     public DataDecoder getDataDecoder(DataEncoding de) {
-        DataDecoder dd = decoders.get(de);
-        if (dd == null) {
-            dd = DataDecoderFactory.get(de.getFromBinaryTransformAlgorithm());
-        }
-
-        return dd;
+        return decoders.computeIfAbsent(de,
+                de1 -> DataDecoderFactory.get(de1.getFromBinaryTransformAlgorithm(), this));
     }
 
     public DataEncoder getDataEncoder(DataEncoding de) {
-        DataEncoder enc = encoders.get(de);
-        if (enc == null) {
-            enc = DataEncoderFactory.get(de.getToBinaryTransformAlgorithm());
-        }
-
-        return enc;
+        return encoders.computeIfAbsent(de,
+                de1 -> DataEncoderFactory.get(de1.getToBinaryTransformAlgorithm(), this));
     }
 
     public Mdb getMdb() {

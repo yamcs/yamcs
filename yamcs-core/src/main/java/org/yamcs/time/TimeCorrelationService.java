@@ -62,8 +62,7 @@ import org.yamcs.yarch.streamsql.StreamSqlStatement;
  * </ul>
  * 
  * The time of flight can be fixed or computed by the {@link TimeOfFlightEstimator} by dynamically interpolating from
- * data provided by a flight
- * dynamics system.
+ * data provided by a flight dynamics system.
  * <p>
  * Computes {@code m} = gradient and {@code c} = offset such that
  * <p>
@@ -72,10 +71,9 @@ import org.yamcs.yarch.streamsql.StreamSqlStatement;
  * The determination of the gradient and offset is done using the least squares method.
  * <p>
  * The number of samples used for computing the coefficients is configurable and has to be minimum 2.
- * <h2>Accuracy and validity</h2>
- * Once the coefficients have been calculated, for each new sample received a deviation is calculated as the delta
- * between the OBT computed using the coefficients and the OBT which is part of the sample (after adjusting for
- * delays). The deviation is compared with the accuracy and validity parameters:
+ * <h2>Accuracy and validity</h2> Once the coefficients have been calculated, for each new sample received a deviation
+ * is calculated as the delta between the OBT computed using the coefficients and the OBT which is part of the sample
+ * (after adjusting for delays). The deviation is compared with the accuracy and validity parameters:
  *
  * <ul>
  * <li>If the deviation is greater than {@code accuracy} but smaller than {@code validity}, then a recalculation of the
@@ -83,20 +81,17 @@ import org.yamcs.yarch.streamsql.StreamSqlStatement;
  *
  * <li>If the deviation is greater than {@code validity} then the coefficients are declared as invalid and all the
  * samples from the buffer except the last one are dropped. The time returned by {@link #getTime(long)} will be invalid
- * until
- * the required number of new samples is received and the next recalculation is performed</li>
+ * until the required number of new samples is received and the next recalculation is performed</li>
  * </ul>
  * 
- * <h2>Historical coefficients</h2>
- * The service keeps track of multiple intervals corresponding to different on-board time resets. At Yamcs startup
- * the service loads a list of intervals from the tco table.
+ * <h2>Historical coefficients</h2> The service keeps track of multiple intervals corresponding to different on-board
+ * time resets. At Yamcs startup the service loads a list of intervals from the tco table.
  * <p>
  * If using the historical recording to insert some old data into the Yamcs, in order to get the correct coefficients
  * one has to know the approximate time when the data has been generated.
  *
- * <h2>Verify Only Mode</h2>
- * If the on-board clock is synchronized via a different method, this service can still be used to verify the
- * synchronization.
+ * <h2>Verify Only Mode</h2> If the on-board clock is synchronized via a different method, this service can still be
+ * used to verify the synchronization.
  *
  * <p>
  * The method {@link #verify} will check the difference between the packet generation time and the expected generation
@@ -107,9 +102,9 @@ import org.yamcs.yarch.streamsql.StreamSqlStatement;
  * 
  * <p>
  * To use this service there will be typically one component which adds samples using the
- * {@link #addSample(long, Instant)} each time it
- * receives a correlation sample from on-board. How the on-board system will send such samples is mission specific (for
- * example the PUS protocol defines some specific time packets for this purpose).
+ * {@link #addSample(long, Instant)} each time it receives a correlation sample from on-board. How the on-board system
+ * will send such samples is mission specific (for example the PUS protocol defines some specific time packets for this
+ * purpose).
  * <p>
  * In addition there will be other components (preprocessors or other services) which can use the class to get a Yamcs
  * time associated to a specific OBT.
@@ -117,11 +112,8 @@ import org.yamcs.yarch.streamsql.StreamSqlStatement;
  * 
  * <p>
  * This class is thread safe: the synchronised methods {@link #addSample} and {@link #reset} are the only one where the
- * state is changed and thus the {@link #getTime(long)} can be used
- * from multiple threads concurrently.
+ * state is changed and thus the {@link #getTime(long)} can be used from multiple threads concurrently.
  * 
- * @author nm
- *
  */
 public class TimeCorrelationService extends AbstractYamcsService implements SystemParametersProducer {
     static public final String TABLE_NAME = "tco_";
@@ -211,7 +203,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
         } else {
             tofEstimator = null;
         }
-        
+
         this.timeService = YamcsServer.getTimeService(yamcsInstance);
         if (saveCoefficients) {
             tableName = TABLE_NAME + serviceName;

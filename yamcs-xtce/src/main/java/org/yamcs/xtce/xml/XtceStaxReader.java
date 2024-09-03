@@ -674,8 +674,14 @@ public class XtceStaxReader extends AbstractStaxReader {
                 readEncoding(spaceSystem, typeBuilder);
             } else if (isEndElementWithName(ELEM_ABSOLUTE_TIME_PARAMETER_TYPE)) {
                 if (typeBuilder.getReferenceTime() == null) {
-                    throw new XMLStreamException("AbsoluteTimeParameterType without a reference time not supported",
-                            xmlEvent.getLocation());
+                    if (!(typeBuilder.getEncoding() instanceof BinaryDataEncoding.Builder bdb)
+                            || bdb.getFromBinaryTransformAlgorithm() == null) {
+                            throw new XMLStreamException(
+                                    "AbsoluteTimeParameterType without a reference time  not supported "
+                                            + "(except if it used a BinaryDataEncoding with an algorithm "
+                                            + "which could produce directly an absolute time)",
+                                    xmlEvent.getLocation());
+                    }
                 }
                 return incompleteType;
             } else {
@@ -725,6 +731,7 @@ public class XtceStaxReader extends AbstractStaxReader {
         }
     }
 
+    // encoding used only for absolute time arguments or parameters
     private void readEncoding(SpaceSystem spaceSystem, AbsoluteTimeDataType.Builder<?> ptype)
             throws XMLStreamException {
         log.trace(ELEM_ENCODING);
@@ -759,6 +766,8 @@ public class XtceStaxReader extends AbstractStaxReader {
                 dataEncoding = readIntegerDataEncoding(spaceSystem);
             } else if (isStartElementWithName(ELEM_FLOAT_DATA_ENCODING)) {
                 dataEncoding = readFloatDataEncoding(spaceSystem);
+            } else if (isStartElementWithName(ELEM_BINARY_DATA_ENCODING)) {
+                dataEncoding = readBinaryDataEncoding(spaceSystem);
             } else if (isEndElementWithName(ELEM_ENCODING)) {
                 ptype.setEncoding(dataEncoding);
                 return;

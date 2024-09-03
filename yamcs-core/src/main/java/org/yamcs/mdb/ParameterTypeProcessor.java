@@ -42,9 +42,6 @@ import org.yamcs.xtce.TimeEpoch.CommonEpochs;
 /**
  * Responsible for converting between raw and engineering value by usage of calibrators or by simple type conversions.
  * 
- * 
- * @author nm
- *
  */
 public class ParameterTypeProcessor {
     ProcessorData pdata;
@@ -337,7 +334,18 @@ public class ParameterTypeProcessor {
 
     private Value calibrateAbsoluteTime(ProcessingData processingData, AbsoluteTimeParameterType ptype,
             Value rawValue) {
+
         ReferenceTime rtime = ptype.getReferenceTime();
+        if (rtime == null) {
+            if (rawValue.getType() == Type.TIMESTAMP) {
+                return rawValue;
+            } else {
+                throw new IllegalStateException(
+                        "Raw value type '" + rawValue.getType()
+                                + "' cannot be converted to absolute time without a reference time");
+            }
+        }
+
         TimeEpoch epoch = rtime.getEpoch();
 
         long offsetMillisec;
