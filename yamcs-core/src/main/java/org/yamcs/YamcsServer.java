@@ -1,6 +1,7 @@
 package org.yamcs;
 
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import io.sentry.Sentry;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -1114,6 +1115,15 @@ public class YamcsServer {
                     stdoutLogger.info(String.valueOf(x));
                 }
             }
+        });
+
+        Sentry.init(options -> {
+            options.setDsn("https://bbfa57d0760a35f3f30b1bcaef523a5e@o4504519305658368.ingest.us.sentry.io/4507882069360640");
+            // Set tracesSampleRate to 1.0 to capture 100% of transactions for tracing.
+            // We recommend adjusting this value in production.
+            options.setTracesSampleRate(1.0);
+            // When first trying Sentry it's good to see what the SDK is doing:
+            options.setDebug(true);
         });
     }
 

@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit, Signal, ViewChild, computed, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, Signal, computed, inject, input, signal } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ResolveFn, Router } from '@angular/router';
-import { FileTransferService, GetFileTransfersOptions, MessageService, Synchronizer, Transfer, WebappSdkModule, YaSelect, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { FileTransferService, GetFileTransfersOptions, MessageService, Synchronizer, Transfer, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
@@ -77,9 +77,6 @@ export class FileTransferListComponent implements OnInit {
   isIncomplete = (index: number, transfer: Transfer) => {
     return transfer.state !== 'COMPLETED';
   };
-
-  @ViewChild('intervalSelect')
-  intervalSelect: YaSelect;
 
   validStart: Date | null;
   validStop: Date | null;

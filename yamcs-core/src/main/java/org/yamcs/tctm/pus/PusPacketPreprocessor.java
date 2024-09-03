@@ -126,27 +126,13 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
         int seq = (apidseqcount) & 0x3FFF;
         checkSequence(apid, seq);
 
-        boolean secondaryHeaderFlag = CcsdsPacket.getSecondaryHeaderFlag(packet);
-
-        if (!secondaryHeaderFlag) {
-            // in PUS only time packets are allowed without secondary header and they should have apid = 0
-            if (apid == 0) {
-                processTimePacket(tmPacket);
-                return tmPacket;
-            }
-            eventProducer.sendWarning("Packet with apid=" + apid
-                    + " and without secondary header received, ignoring.");
-            return null;
-        }
-
         if (packet.length < 12) {
             eventProducer.sendWarning("Short packet received, length: " + packet.length
                     + "; minimum required length is 14 bytes.");
             return null;
         }
 
-        tmPacket.setSequenceCount(apidseqcount);
-        setRealtimePacketTime(tmPacket, pktTimeOffset);
+        extactAndSetTime(tmPacket);
 
         if (log.isTraceEnabled()) {
             log.trace("Received packet length: {}, apid: {}, seqcount: {}, gentime: {}, status: {}", packet.length,
@@ -158,17 +144,17 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
         return tmPacket;
     }
 
-    private void processTimePacket(TmPacket tmPacket) {
+    private void extactAndSetTime(TmPacket tmPacket) {
         byte[] packet = tmPacket.getPacket();
         boolean corrupted = false;
         if (!useLocalGenerationTime && timeEpoch == null || timeEpoch == TimeEpochs.NONE) {
-            long obt = timeDecoder.decodeRaw(packet, timePktTimeOffset);
+            long obt = timeDecoder.decodeRaw(packet, pktTimeOffset);
             Instant ert = tmPacket.getEarthReceptionTime();
             log.debug("Adding tco sample obt: {} , ert: {}", obt, ert);
             tcoService.addSample(obt, ert);
         }
 
-        setRealtimePacketTime(tmPacket, timePktTimeOffset);
+        setRealtimePacketTime(tmPacket, pktTimeOffset);
 
         int apidseqcount = ByteBuffer.wrap(packet).getInt(0);
         tmPacket.setInvalid(corrupted);

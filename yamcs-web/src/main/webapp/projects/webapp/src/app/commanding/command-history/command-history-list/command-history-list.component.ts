@@ -1,10 +1,10 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommandHistoryRecord, ConfigService, GetCommandHistoryOptions, MessageService, PrintService, Synchronizer, User, WebappSdkModule, WebsiteConfig, YaColumnChooser, YaColumnInfo, YaSelect, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { CommandHistoryRecord, ConfigService, GetCommandHistoryOptions, MessageService, PrintService, Synchronizer, User, WebappSdkModule, WebsiteConfig, YaColumnChooser, YaColumnInfo, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/AuthService';
@@ -40,12 +40,9 @@ const defaultInterval = 'PT1H';
     TransmissionConstraintsIconComponent,
   ],
 })
-export class CommandHistoryListComponent implements AfterViewInit, OnDestroy {
+export class CommandHistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   selectedRecord$ = new BehaviorSubject<CommandHistoryRecord | null>(null);
-
-  @ViewChild('intervalSelect')
-  intervalSelect: YaSelect;
 
   validStart: Date | null;
   validStop: Date | null;
@@ -55,12 +52,12 @@ export class CommandHistoryListComponent implements AfterViewInit, OnDestroy {
   // range is actually applied.
   appliedInterval: string;
 
-  filterForm = new UntypedFormGroup({
-    filter: new UntypedFormControl(),
-    queue: new UntypedFormControl('ANY'),
-    interval: new UntypedFormControl(defaultInterval),
-    customStart: new UntypedFormControl(null),
-    customStop: new UntypedFormControl(null),
+  filterForm = new FormGroup({
+    filter: new FormControl<string | null>(null),
+    queue: new FormControl<string | null>(null),
+    interval: new FormControl<string | null>(defaultInterval),
+    customStart: new FormControl<string | null>(null),
+    customStop: new FormControl<string | null>(null),
   });
 
   dataSource: CommandHistoryDataSource;
@@ -83,23 +80,8 @@ export class CommandHistoryListComponent implements AfterViewInit, OnDestroy {
   // Added dynamically based on actual commands.
   aliasColumns$ = new BehaviorSubject<YaColumnInfo[]>([]);
 
-  intervalOptions: YaSelectOption[] = [
-    { id: 'PT1H', label: 'Last hour' },
-    { id: 'PT6H', label: 'Last 6 hours' },
-    { id: 'P1D', label: 'Last 24 hours' },
-    { id: 'NO_LIMIT', label: 'No limit' },
-    { id: 'CUSTOM', label: 'Custom', group: true },
-  ];
-
-  queueOptions: YaSelectOption[];
-
   @ViewChild(YaColumnChooser)
   columnChooser: YaColumnChooser;
-
-  // Would prefer to use formGroup, but when using valueChanges this
-  // only is updated after the callback...
-  private filter: string;
-  private queue: string;
 
   user: User;
   config: WebsiteConfig;
@@ -124,26 +106,19 @@ export class CommandHistoryListComponent implements AfterViewInit, OnDestroy {
     title.setTitle('Command history');
 
     this.dataSource = new CommandHistoryDataSource(this.yamcs, synchronizer);
+  }
 
-    this.queueOptions = [
-      { id: 'ANY', label: 'Any queue' },
-    ];
-    for (const queueName of this.config.queueNames) {
-      this.queueOptions.push({ id: queueName, label: queueName });
-    }
-
+  ngOnInit(): void {
     this.initializeOptions();
     this.loadData();
 
     this.filterForm.get('filter')!.valueChanges.pipe(
       debounceTime(400),
     ).forEach(filter => {
-      this.filter = filter;
       this.loadData();
     });
 
     this.filterForm.get('queue')!.valueChanges.forEach(queue => {
-      this.queue = (queue !== 'ANY') ? queue : null;
       this.loadData();
     });
 
@@ -158,8 +133,8 @@ export class CommandHistoryListComponent implements AfterViewInit, OnDestroy {
         this.validStop = null;
         this.appliedInterval = nextInterval;
         this.loadData();
-      } else {
-        this.validStop = yamcs.getMissionTime();
+      } else if (nextInterval) {
+        this.validStop = this.yamcs.getMissionTime();
         this.validStart = utils.subtractDuration(this.validStop, nextInterval);
         this.appliedInterval = nextInterval;
         this.loadData();
@@ -191,12 +166,12 @@ export class CommandHistoryListComponent implements AfterViewInit, OnDestroy {
   private initializeOptions() {
     const queryParams = this.route.snapshot.queryParamMap;
     if (queryParams.has('filter')) {
-      this.filter = queryParams.get('filter') || '';
-      this.filterForm.get('filter')!.setValue(this.filter);
+      const filter = queryParams.get('filter')!;
+      this.filterForm.get('filter')!.setValue(filter);
     }
     if (queryParams.has('queue')) {
-      this.queue = queryParams.get('queue')!;
-      this.filterForm.get('queue')!.setValue(this.queue);
+      const queue = queryParams.get('queue')!;
+      this.filterForm.get('queue')!.setValue(queue);
     }
     if (queryParams.has('interval')) {
       this.appliedInterval = queryParams.get('interval')!;
@@ -231,7 +206,7 @@ export class CommandHistoryListComponent implements AfterViewInit, OnDestroy {
     } else if (interval === 'CUSTOM') {
       // For simplicity reasons, just reset to default 1h interval.
       this.filterForm.get('interval')!.setValue(defaultInterval);
-    } else {
+    } else if (interval) {
       this.validStop = this.yamcs.getMissionTime();
       this.validStart = utils.subtractDuration(this.validStop, interval);
       this.loadData();
@@ -258,6 +233,7 @@ export class CommandHistoryListComponent implements AfterViewInit, OnDestroy {
   }
 
   loadData() {
+    const { controls } = this.filterForm;
     this.updateURL();
     const options: GetCommandHistoryOptions = {};
     if (this.validStart) {
@@ -266,26 +242,31 @@ export class CommandHistoryListComponent implements AfterViewInit, OnDestroy {
     if (this.validStop) {
       options.stop = this.validStop.toISOString();
     }
-    if (this.filter) {
-      options.q = this.filter;
+    const filter = controls['filter'].value;
+    if (filter) {
+      options.q = filter;
     }
-    if (this.queue) {
-      options.queue = this.queue;
+    const queue = controls['queue'].value;
+    if (queue) {
+      options.queue = queue;
     }
     this.dataSource.loadEntries(options)
       .catch(err => this.messageService.showError(err));
   }
 
   loadMoreData() {
+    const { controls } = this.filterForm;
     const options: GetCommandHistoryOptions = {};
     if (this.validStart) {
       options.start = this.validStart.toISOString();
     }
-    if (this.filter) {
-      options.q = this.filter;
+    const filter = controls['filter'].value;
+    if (filter) {
+      options.q = filter;
     }
-    if (this.queue) {
-      options.queue = this.queue;
+    const queue = controls['queue'].value;
+    if (queue) {
+      options.queue = queue;
     }
 
     this.dataSource.loadMoreData(options)
@@ -301,15 +282,16 @@ export class CommandHistoryListComponent implements AfterViewInit, OnDestroy {
   }
 
   private updateURL() {
+    const { controls } = this.filterForm;
     this.router.navigate([], {
       replaceUrl: true,
       relativeTo: this.route,
       queryParams: {
-        filter: this.filter || null,
-        queue: this.queue || null,
+        filter: controls['filter'].value || null,
+        queue: controls['queue'].value || null,
         interval: this.appliedInterval,
-        customStart: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStart'] : null,
-        customStop: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStop'] : null,
+        customStart: this.appliedInterval === 'CUSTOM' ? controls['customStart'].value : null,
+        customStop: this.appliedInterval === 'CUSTOM' ? controls['customStop'].value : null,
       },
       queryParamsHandling: 'merge',
     });
@@ -340,7 +322,7 @@ export class CommandHistoryListComponent implements AfterViewInit, OnDestroy {
       data: {
         start: this.validStart,
         stop: this.validStop,
-        q: this.filter,
+        q: this.filterForm.controls['filter'].value,
       },
     });
   }

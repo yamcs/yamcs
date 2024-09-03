@@ -87,6 +87,7 @@ export interface ParameterType {
   absoluteTimeInfo: AbsoluteTimeInfo;
   member: ParameterMember[];
   signed?: boolean;
+  sizeInBits?: number;
   oneStringValue?: string;
   zeroStringValue?: string;
   usedBy?: Parameter[];
@@ -373,12 +374,18 @@ export interface SequenceEntry {
   parameter?: Parameter;
   argument?: Argument;
   fixedValue?: FixedValue;
+  indirectParameterRef?: IndirectParameterRef;
 }
 
 export interface FixedValue {
   name: string;
   hexValue: string;
   sizeInBits: number;
+}
+
+export interface IndirectParameterRef {
+  parameter: Parameter;
+  aliasNamespace: string;
 }
 
 export interface RepeatInfo {

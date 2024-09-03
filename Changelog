@@ -1,3 +1,7 @@
+Version 5.10.1 released 1-Sept-2024
+- Activities: Execute known script files with (configurable) external program.
+- Small tweaks and fixes related to Parameter Archive and the web plugin.
+
 Version 5.10.0 released 11-Aug-2024
 - Introduced RocksDB Merge Operator for the Parameter Archive. Archives created with this version will be incompatible with older versions of Yamcs. The Parameter Archive created with older versions of Yamcs will continue working with this version (and they are backward compatible). 
  The advatange of the Merge Operator is that it requires much less memory when filling the Parameter Archive (the maxSegmentSize can be set to low values) without losing retrieval performance in the long run (RocksDB merges in the bagkround the small segments into larger intervals).

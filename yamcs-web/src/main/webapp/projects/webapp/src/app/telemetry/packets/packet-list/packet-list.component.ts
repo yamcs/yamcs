@@ -1,9 +1,9 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DownloadPacketsOptions, GetPacketsOptions, MessageService, Packet, Synchronizer, WebappSdkModule, YaColumnInfo, YaSelect, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { DownloadPacketsOptions, GetPacketsOptions, MessageService, Packet, Synchronizer, WebappSdkModule, YaColumnInfo, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { HexComponent } from '../../../shared/hex/hex.component';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
@@ -38,9 +38,6 @@ export class PacketListComponent {
     { id: 'size', label: 'Size', visible: true },
     { id: 'actions', label: '', alwaysVisible: true },
   ];
-
-  @ViewChild('intervalSelect')
-  intervalSelect: YaSelect;
 
   validStart: Date | null;
   validStop: Date | null;

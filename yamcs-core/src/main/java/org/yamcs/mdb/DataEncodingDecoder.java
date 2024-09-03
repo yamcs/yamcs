@@ -2,8 +2,10 @@ package org.yamcs.mdb;
 
 import static org.yamcs.mdb.DataEncodingUtils.*;
 
+import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.Value;
@@ -283,6 +285,7 @@ public class DataEncodingDecoder {
         }
 
         int sizeInBytes;
+        ByteOrder byteOrder = bde.getByteOrder();
         switch (bde.getType()) {
         case FIXED_SIZE:
             sizeInBytes = bde.getSizeInBits() / 8;
@@ -303,6 +306,10 @@ public class DataEncodingDecoder {
         }
         byte[] b = new byte[sizeInBytes];
         buffer.getByteArray(b);
+
+        if (byteOrder == ByteOrder.LITTLE_ENDIAN)
+            ArrayUtils.reverse(b);
+
         return ValueUtility.getBinaryValue(b);
     }
 

@@ -76,14 +76,14 @@ public class WebFileDeployer {
     private YConfiguration config;
     private String contextPath;
 
-    public WebFileDeployer(YConfiguration config, String contextPath, List<Path> extraStaticRoots,
+    public WebFileDeployer(String cacheKey, YConfiguration config, String contextPath, List<Path> extraStaticRoots,
             Map<String, Map<String, Object>> extraConfigs) throws IOException, ParseException {
         this.config = config;
         this.contextPath = contextPath;
         this.extraStaticRoots = extraStaticRoots;
         this.extraConfigs = extraConfigs;
 
-        target = YamcsServer.getServer().getCacheDirectory().resolve(WebPlugin.CONFIG_SECTION);
+        target = YamcsServer.getServer().getCacheDirectory().resolve(cacheKey);
         FileUtils.deleteRecursivelyIfExists(target);
         Files.createDirectory(target);
 

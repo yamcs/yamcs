@@ -103,11 +103,11 @@ export class EventsDataSource extends DataSource<Event> {
    * the last visible data and the offscreen record. This is unlikely to cause
    * practical problems.
    */
-  loadMoreData(options: GetEventsOptions) {
+  async loadMoreData(options: GetEventsOptions) {
     if (!this.offscreenRecord) {
       return;
     }
-    this.loadPage({
+    return this.loadPage({
       ...options,
       stop: this.offscreenRecord.generationTime,
       limit: this.pageSize + 1, // One extra to detect hasMore

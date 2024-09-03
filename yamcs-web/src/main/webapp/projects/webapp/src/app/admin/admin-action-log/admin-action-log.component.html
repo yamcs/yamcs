@@ -5,11 +5,7 @@
     <form [formGroup]="filterForm">
       <div class="filter-bar">
         <ya-search-filter formControlName="filter" placeholder="Filter by text search" />
-        <ya-select
-          #intervalSelect
-          [options]="intervalOptions"
-          icon="access_time"
-          formControlName="interval" />
+        <ya-select [options]="intervalOptions" icon="access_time" formControlName="interval" />
         @if (filterForm.value["interval"] === "CUSTOM") {
           <ya-date-time-input formControlName="customStart" />
           <ya-date-time-input formControlName="customStop" />

@@ -842,6 +842,9 @@ public class XtceStaxReader extends AbstractStaxReader {
                 // ok, this encoding is the default
             } else if ("MILSTD_1750A".equalsIgnoreCase(value)) {
                 enc = Encoding.MILSTD_1750A;
+            } else if ("STRING".equalsIgnoreCase(value)) {
+                // Not in XTCE, but allowed by Yamcs
+                enc = Encoding.STRING;
             } else {
                 throwException("Unknown encoding '" + value + "'");
             }
@@ -858,6 +861,9 @@ public class XtceStaxReader extends AbstractStaxReader {
                 floatDataEncoding.setDefaultCalibrator(readCalibrator(spaceSystem));
             } else if (isStartElementWithName(ELEM_CONTEXT_CALIBRATOR_LIST)) {
                 floatDataEncoding.setContextCalibratorList(readContextCalibratorList(spaceSystem));
+            } else if (isStartElementWithName(ELEM_STRING_DATA_ENCODING)) {
+                // Not in XTCE, but allowed by Yamcs
+                floatDataEncoding.setStringEncoding(readStringDataEncoding(spaceSystem).build());
             } else if (isEndElementWithName(ELEM_FLOAT_DATA_ENCODING)) {
                 return floatDataEncoding;
             } else {
@@ -1405,11 +1411,16 @@ public class XtceStaxReader extends AbstractStaxReader {
                 integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.SIGN_MAGNITUDE);
             } else if ("twosComplement".equalsIgnoreCase(value)) {
                 integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.TWOS_COMPLEMENT);
-            } else if ("twosCompliment".equalsIgnoreCase(value)) { // this is for compatibility with CD-MCS/CGS SCOE XML
-                // exporter
+            } else if ("twosCompliment".equalsIgnoreCase(value)) {
+                // Tolerate this misspelling. It was part of XTCE v1.0 and v1.1 (fixed in v1.2)
                 integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.TWOS_COMPLEMENT);
             } else if ("onesComplement".equalsIgnoreCase(value)) {
                 integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.ONES_COMPLEMENT);
+            } else if ("onesCompliment".equalsIgnoreCase(value)) {
+                // Tolerate this misspelling. It was part of XTCE v1.0 and v1.1 (fixed in v1.2)
+                integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.ONES_COMPLEMENT);
+            } else if ("string".equalsIgnoreCase(value)) {
+                integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.STRING);
             } else {
                 throwException("Unsupported encoding '" + value + "'");
             }
@@ -1422,6 +1433,9 @@ public class XtceStaxReader extends AbstractStaxReader {
                 integerDataEncoding.setDefaultCalibrator(readCalibrator(spaceSystem));
             } else if (isStartElementWithName(ELEM_CONTEXT_CALIBRATOR_LIST)) {
                 integerDataEncoding.setContextCalibratorList(readContextCalibratorList(spaceSystem));
+            } else if (isStartElementWithName(ELEM_STRING_DATA_ENCODING)) {
+                // Not in XTCE, but allowed by Yamcs
+                integerDataEncoding.setStringEncoding(readStringDataEncoding(spaceSystem).build());
             } else if (isEndElementWithName(ELEM_INTEGER_DATA_ENCODING)) {
                 return integerDataEncoding;
             } else {

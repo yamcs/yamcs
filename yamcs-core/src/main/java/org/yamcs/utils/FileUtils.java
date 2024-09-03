@@ -90,4 +90,17 @@ public class FileUtils {
             Files.move(swpFile, file, ATOMIC_MOVE);
         }
     }
+
+    /**
+     * Return the extension for a file. Always in lowercase.
+     */
+    public static String getFileExtension(Path file) {
+        var fileName = file.getFileName().toString();
+        var idx = fileName.lastIndexOf('.');
+        if (idx != -1 && idx != fileName.length() - 1) {
+            return fileName.substring(idx + 1).toLowerCase();
+        } else {
+            return null;
+        }
+    }
 }

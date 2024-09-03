@@ -19,10 +19,10 @@
     <dd>{{ alias.name }}</dd>
   }
 
-  <dt>Short Description</dt>
+  <dt>Short description</dt>
   <dd>{{ algorithm.shortDescription || "-" }}</dd>
 
-  <dt>Long Description</dt>
+  <dt>Long description</dt>
   <dd>
     @if (algorithm.longDescription) {
       <app-markdown [text]="algorithm.longDescription" />
@@ -58,7 +58,7 @@
 @if (algorithm.mathElements) {
   <mat-divider />
   <dl class="dl-horizontal">
-    <dt>Postfix Expression</dt>
+    <dt>Postfix expression</dt>
     <dd>
       <table yaDataTable>
         <tr>
@@ -102,12 +102,12 @@
 <mat-divider />
 
 <dl class="dl-horizontal">
-  <dt>Input Parameters</dt>
+  <dt>Input parameters</dt>
   <dd>
     @if (algorithm.inputParameter) {
       <table yaDataTable>
         <tr>
-          <th>Input Name</th>
+          <th>Input name</th>
           <th>Parameter</th>
           <th>Instance</th>
           <th>Mandatory</th>
@@ -140,12 +140,12 @@
 <mat-divider />
 
 <dl class="dl-horizontal">
-  <dt>Output Parameters</dt>
+  <dt>Output parameters</dt>
   <dd>
     @if (algorithm.outputParameter) {
       <table yaDataTable>
         <tr>
-          <th>Output Name</th>
+          <th>Output name</th>
           <th>Parameter</th>
         </tr>
         @for (outputParameter of algorithm.outputParameter; track outputParameter) {

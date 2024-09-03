@@ -1,10 +1,23 @@
 package org.yamcs.logging;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
+import org.yamcs.TmPacket;
+import org.yamcs.logging.sentry.SentryEventBuilder;
+import org.yamcs.logging.sentry.SentryMessageBuilder;
+import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
+import org.yamcs.utils.StringConverter;
+
+import io.sentry.Sentry;
+import io.sentry.SentryEvent;
+import io.sentry.SentryLevel;
+import io.sentry.protocol.Message;
 
 public class Log {
 
@@ -62,6 +75,55 @@ public class Log {
 
     public boolean isDebugEnabled() {
         return julLogger.isLoggable(Level.FINE);
+    }
+
+    public String getStringMessage() {
+        return "Service Type: %s\n\nSubService Type: %s\n\nPacket: %s\n\nGentime: %s\n\nERT: %s\n\nLink: %s";
+    }
+
+    public List<String> getSentryParams(TmPacket tmPacket) {
+        byte[] b = tmPacket.getPacket();
+        return List.of(
+            Integer.toString(PusTmCcsdsPacket.getMessageType(b)),
+            Integer.toString(PusTmCcsdsPacket.getMessageSubType(b)),
+            StringConverter.arrayToHexString(b, true),
+            Instant.ofEpochMilli(tmPacket.getGenerationTime()).atZone(ZoneId.of("GMT")).toInstant().toString(),
+            Instant.ofEpochMilli(tmPacket.getEarthReceptionTime().getMillis()).atZone(ZoneId.of("GMT")).toInstant().toString()
+        );
+    }
+
+    public void logSentryWarning(Throwable e, String message, String logger, List<String> params) {
+        Message m = new SentryMessageBuilder()
+                        .withMessage(message)
+                        .withParams(params)
+                        .build();
+        SentryEvent event = new SentryEventBuilder()
+                            .withMessage(m)
+                            .withLevel(SentryLevel.WARNING)
+                            .withLogger(logger)
+                            .withThrowable(e)
+                            .build();
+
+        captureSentryEvent(event);
+    }
+
+    public void logSentryFatal(Throwable e, String message, String logger, List<String> params) {
+        Message m = new SentryMessageBuilder()
+                        .withMessage(message)
+                        .withParams(params)
+                        .build();
+        SentryEvent event = new SentryEventBuilder()
+                            .withMessage(m)
+                            .withLevel(SentryLevel.FATAL)
+                            .withLogger(logger)
+                            .withThrowable(e)
+                            .build();
+
+        captureSentryEvent(event);
+    }
+
+    private void captureSentryEvent(SentryEvent event) {
+        Sentry.captureEvent(event);
     }
 
     /**
