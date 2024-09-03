@@ -38,7 +38,11 @@ public class FileStoreRequest extends TLV {
         CREATE_DIRECTORY((byte) 0x05),
         REMOVE_DIRECTORY((byte) 0x06),
         DENY_FILE((byte) 0x07),
-        DENY_DIRECTORY((byte) 0x08);
+        DENY_DIRECTORY((byte) 0x08),
+        COMPRESS((byte) 0x09),          // These are Pixxel additions
+        UNCOMPRESS((byte) 0x0A),        // These are Pixxel additions
+        VERIFY_CHECKSUM((byte) 0x0B),   // These are Pixxel additions
+        UPDATE_XDI((byte) 0x0C);        // These are Pixxel additions
 
         private final byte bytes;
 
@@ -60,7 +64,11 @@ public class FileStoreRequest extends TLV {
                 case 0x05: return CREATE_DIRECTORY;
                 case 0x06: return REMOVE_DIRECTORY;
                 case 0x07: return DENY_FILE;
-                case (byte) 0x08: return DENY_DIRECTORY;
+                case 0x08: return DENY_DIRECTORY;
+                case 0x09: return COMPRESS;
+                case 0x0A: return UNCOMPRESS;
+                case 0x0B: return VERIFY_CHECKSUM;
+                case 0x0C: return UPDATE_XDI;
                 default: return CREATE; // FIXME: What do be done here?
             }
         }
