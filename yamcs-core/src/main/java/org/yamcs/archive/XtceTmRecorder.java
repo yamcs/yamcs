@@ -4,6 +4,7 @@ import static org.yamcs.StandardTupleDefinitions.TM_ROOT_CONTAINER_COLUMN;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -11,6 +12,7 @@ import org.yamcs.AbstractYamcsService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.InitException;
+import org.yamcs.ProcessorConfig;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.StandardTupleDefinitions;
@@ -22,6 +24,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.mdb.ContainerProcessingResult;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
+import org.yamcs.mdb.ProcessorData;
 import org.yamcs.mdb.XtceTmExtractor;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.parser.ParseException;
@@ -197,7 +200,9 @@ public class XtceTmRecorder extends AbstractYamcsService {
             if (async) {
                 tmQueue = new LinkedBlockingQueue<>(100000);
             }
-            tmExtractor = new XtceTmExtractor(mdb);
+            var pdata = new ProcessorData(yamcsInstance, "XTCEPROC", mdb, new ProcessorConfig(),
+                    Collections.emptyMap());
+            tmExtractor = new XtceTmExtractor(mdb, pdata);
 
             // we do not want to get the containers which are included via container entry
             // we only want the inherited from the root

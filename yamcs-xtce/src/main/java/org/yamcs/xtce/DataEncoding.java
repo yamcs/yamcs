@@ -14,10 +14,10 @@ import java.util.Set;
  * <p>
  * 
  * DIFFERS_FROM_XTCE: XTCE defines known encodings for the usual types (e.g. twosComplement for signed integers) and
- * allows
- * a catch all using a BinaryDataEncoding with a custom algorithm. We consider this approach as flawed and inconsistent:
- * whereas FloatDataEncoding converts from binary to float, IntegerDataEncoding converts from binary to integer, etc,
- * the BinaryDataEncoding would convert from binary to anything and it cannot be known into what by just looking at it.
+ * allows a catch all using a BinaryDataEncoding with a custom algorithm. We consider this approach as flawed and
+ * inconsistent: whereas FloatDataEncoding converts from binary to float, IntegerDataEncoding converts from binary to
+ * integer, etc, the BinaryDataEncoding would convert from binary to anything and it cannot be known into what by just
+ * looking at it.
  * 
  * Therefore in Yamcs we allow the catch all custom algorithm for all encodings and the BinaryDataEncoding can only
  * convert from binary to binary.
@@ -85,9 +85,9 @@ public abstract class DataEncoding implements Serializable {
     }
 
     /**
-     * Returns the size in bits of data encoded according to this encoding.
-     * For some encodings like {@link StringDataEncoding} the size may be variable (depending on the data to be
-     * encoded). In this cases it returns -1.
+     * Returns the size in bits of data encoded according to this encoding. For some encodings like
+     * {@link StringDataEncoding} the size may be variable (depending on the data to be encoded). In this cases it
+     * returns -1.
      * 
      * @return size in bits or -1 if the size is unknown
      */
@@ -124,8 +124,8 @@ public abstract class DataEncoding implements Serializable {
     }
 
     /**
-     * parses the string into a java object of the correct type
-     * Has to match the DataEncodingDecoder (so probably it should be moved there somehow: TODO)
+     * parses the string into a java object of the correct type Has to match the DataEncodingDecoder (so probably it
+     * should be moved there somehow: TODO)
      */
     public abstract Object parseString(String stringValue);
 
@@ -191,6 +191,18 @@ public abstract class DataEncoding implements Serializable {
         public T setByteOrder(ByteOrder byteOrder) {
             this.byteOrder = byteOrder;
             return self();
+        }
+
+        public ByteOrder getByteOrder() {
+            return byteOrder;
+        }
+
+        public Algorithm getFromBinaryTransformAlgorithm() {
+            return fromBinaryTransformAlgorithm;
+        }
+
+        public Algorithm getToBinaryTransformAlgorithm() {
+            return toBinaryTransformAlgorithm;
         }
 
         @SuppressWarnings("unchecked")
