@@ -1,5 +1,6 @@
 package org.yamcs.mdb;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.yamcs.AbstractProcessorService;
@@ -56,7 +57,8 @@ public class XtceTmProcessor extends AbstractProcessorService
         this.processor = null;
         this.mdb = mdb;
         log = new Log(getClass());
-        tmExtractor = new XtceTmExtractor(mdb, new ProcessorData("XTCEPROC", mdb, pconfig));
+        var pdata = new ProcessorData(getYamcsInstance(), "XTCEPROC", mdb, pconfig, Collections.emptyMap());
+        tmExtractor = new XtceTmExtractor(mdb,pdata);
     }
 
     @Override
