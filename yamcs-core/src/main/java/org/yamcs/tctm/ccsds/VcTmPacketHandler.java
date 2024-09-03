@@ -183,10 +183,11 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
                 List<String> params = List.of(
                     StringConverter.arrayToHexString(data, true),
                     Integer.toString(packetStart),
-                    Integer.toString(dataEnd)
-                    );
+                    Integer.toString(dataEnd),
+                    this.name
+                );
 
-                String message = "Full Frame: %s\n\nPacket Start: %s\n\nData (i.e Frame) End: %s";
+                String message = "Full Frame: %s\n\nPacket Start: %s\n\nData (i.e Frame) End: %s\n\nLink: %s";
                 log.logSentryFatal(e, message, getClass().getName(), params);
 
                 eventProducer.sendWarning(e.toString());
@@ -202,9 +203,10 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
                 List<String> params = List.of(
                     StringConverter.arrayToHexString(data, true),
                     Integer.toString(packetStart),
-                    Integer.toString(dataEnd)
-                    );
-                String message = "Full Frame: %s\n\nPacket Start: %s\n\nData (i.e Frame) End: %s";
+                    Integer.toString(dataEnd),
+                    this.name
+                );
+                String message = "Full Frame: %s\n\nPacket Start: %s\n\nData (i.e Frame) End: %s\n\nLink: %s";
                 log.logSentryFatal(e, message, getClass().getName(), params);
 
                 eventProducer.sendWarning(e.toString());
@@ -221,9 +223,10 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
                 List<String> params = List.of(
                     StringConverter.arrayToHexString(data, true),
                     Integer.toString(packetStart),
-                    Integer.toString(dataEnd)
-                    );
-                String message = "Full Frame: %s\n\nPacket Start: %s\n\nData (i.e Frame) End: %s";
+                    Integer.toString(dataEnd),
+                    this.name
+                );
+                String message = "Full Frame: %s\n\nPacket Start: %s\n\nData (i.e Frame) End: %s\n\nLink: %s";
                 log.logSentryFatal(e, message, getClass().getName(), params);
             }
         }

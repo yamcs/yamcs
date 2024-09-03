@@ -81,14 +81,15 @@ public class Log {
         return "Service Type: %s\n\nSubService Type: %s\n\nPacket: %s\n\nGentime: %s\n\nERT: %s\n\nLink: %s";
     }
 
-    public List<String> getSentryParams(TmPacket tmPacket) {
+    public List<String> getSentryParams(TmPacket tmPacket, String tmLinkName) {
         byte[] b = tmPacket.getPacket();
         return List.of(
             Integer.toString(PusTmCcsdsPacket.getMessageType(b)),
             Integer.toString(PusTmCcsdsPacket.getMessageSubType(b)),
             StringConverter.arrayToHexString(b, true),
             Instant.ofEpochMilli(tmPacket.getGenerationTime()).atZone(ZoneId.of("GMT")).toInstant().toString(),
-            Instant.ofEpochMilli(tmPacket.getEarthReceptionTime().getMillis()).atZone(ZoneId.of("GMT")).toInstant().toString()
+            Instant.ofEpochMilli(tmPacket.getEarthReceptionTime().getMillis()).atZone(ZoneId.of("GMT")).toInstant().toString(),
+            tmLinkName
         );
     }
 

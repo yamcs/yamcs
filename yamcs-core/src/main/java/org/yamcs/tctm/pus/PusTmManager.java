@@ -213,15 +213,13 @@ public class PusTmManager extends AbstractYamcsService implements StreamSubscrib
         } catch (NullPointerException e) {
             log.error("Invalid CCSDS packet, Service Type: {}, SubService Type: {}, Packet: {}", PusTmCcsdsPacket.getMessageType(b), PusTmCcsdsPacket.getMessageSubType(b), StringConverter.arrayToHexString(b));
 
-            List<String> params = log.getSentryParams(tmPacket);
-            params.add(tmLinkName);
+            List<String> params = log.getSentryParams(tmPacket, tmLinkName);
             log.logSentryFatal(e, log.getStringMessage(), getClass().getName(), params);
         
         } catch (Exception e) {
             log.error("Error in processing CCSDS packet, PacketLen: {}, Packet: {}", b.length, StringConverter.arrayToHexString(b));
 
-            List<String> params = log.getSentryParams(tmPacket);
-            params.add(tmLinkName);
+            List<String> params = log.getSentryParams(tmPacket, tmLinkName);
             log.logSentryFatal(e, log.getStringMessage(), getClass().getName(), params);
         }
 
