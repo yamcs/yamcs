@@ -1,6 +1,9 @@
 package org.yamcs.cfdp;
 
+import java.util.List;
+
 import org.yamcs.cfdp.pdu.CfdpPacket;
+import org.yamcs.cfdp.pdu.FileStoreRequest;
 import org.yamcs.yarch.Bucket;
 
 /**
@@ -16,11 +19,11 @@ public class FilePutRequest extends PutRequest {
 
     public FilePutRequest(long sourceId, long destinationCfdpEntityId, String sourceFileName,
             String destinationFileName, boolean overwrite, boolean acknowledged, boolean closureRequested,
-            boolean createpath, Bucket b, byte[] data) {
+            boolean createpath, Bucket b, byte[] data, List<FileStoreRequest> fileStoreRequests) {
         super(destinationCfdpEntityId, sourceFileName, destinationFileName, null, null,
                 null,
                 acknowledged ? CfdpPacket.TransmissionMode.ACKNOWLEDGED : CfdpPacket.TransmissionMode.UNACKNOWLEDGED,
-                closureRequested, null, null);
+                closureRequested, null, fileStoreRequests);
         this.sourceId = sourceId;
         this.overwrite = overwrite;
         this.createpath = createpath;

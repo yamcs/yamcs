@@ -1,6 +1,7 @@
 package org.yamcs.tctm.ccsds;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.yamcs.ConfigurationException;
@@ -178,7 +179,19 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
                 }   
             } catch (TcTmException e) {
                 pMultipleDecoder.reset();
+
+                List<String> params = List.of(
+                    StringConverter.arrayToHexString(data, true),
+                    Integer.toString(packetStart),
+                    Integer.toString(dataEnd),
+                    this.name
+                );
+
+                String message = "Full Frame: %s\n\nPacket Start: %s\n\nData (i.e Frame) End: %s\n\nLink: %s";
+                log.logSentryFatal(e, message, getClass().getName(), params);
+
                 eventProducer.sendWarning(e.toString());
+
             } catch (ArrayIndexOutOfBoundsException e) {
                 pMultipleDecoder.reset();
                 log.warn(e.toString() + "\n"
@@ -186,7 +199,35 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
                         + "     Packet Start: " + packetStart + "\n"
                         + "     Data (i.e Frame) End: " + dataEnd + "\n"
                 );
+
+                List<String> params = List.of(
+                    StringConverter.arrayToHexString(data, true),
+                    Integer.toString(packetStart),
+                    Integer.toString(dataEnd),
+                    this.name
+                );
+                String message = "Full Frame: %s\n\nPacket Start: %s\n\nData (i.e Frame) End: %s\n\nLink: %s";
+                log.logSentryFatal(e, message, getClass().getName(), params);
+
                 eventProducer.sendWarning(e.toString());
+
+            } catch (Exception e) {
+                pMultipleDecoder.reset();
+                log.warn(e.toString() + "\n"
+                        + "     Full Frame: " + StringConverter.arrayToHexString(data, true) + "\n"
+                        + "     Packet Start: " + packetStart + "\n"
+                        + "     Data (i.e Frame) End: " + dataEnd + "\n"
+                );
+                eventProducer.sendWarning(e.toString());
+
+                List<String> params = List.of(
+                    StringConverter.arrayToHexString(data, true),
+                    Integer.toString(packetStart),
+                    Integer.toString(dataEnd),
+                    this.name
+                );
+                String message = "Full Frame: %s\n\nPacket Start: %s\n\nData (i.e Frame) End: %s\n\nLink: %s";
+                log.logSentryFatal(e, message, getClass().getName(), params);
             }
         }
     }

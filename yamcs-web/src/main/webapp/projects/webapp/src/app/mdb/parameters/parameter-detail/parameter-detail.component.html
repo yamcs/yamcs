@@ -35,12 +35,12 @@
       <dt>Source</dt>
       <dd>{{ (parameter.dataSource | titlecase) || "-" }}</dd>
 
-      <dt>Short Description</dt>
+      <dt>Short description</dt>
       <dd>
         {{ entry.shortDescription || "-" }}
       </dd>
 
-      <dt>Long Description</dt>
+      <dt>Long description</dt>
       <dd>
         @if (entry.longDescription) {
           <app-markdown [text]="entry.longDescription" />
@@ -53,7 +53,7 @@
 
   <dl class="dl-horizontal no-trail" [class.no-lead]="!offset">
     @if (offset) {
-      <dt>Host Parameter</dt>
+      <dt>Host parameter</dt>
       <dd>
         <a
           [routerLink]="['/mdb/parameters', parameter.qualifiedName]"
@@ -105,18 +105,24 @@
         {{ parameter.type?.signed ?? "-" }}
       </dd>
     }
+    @if (parameter.type?.sizeInBits !== undefined) {
+      <dt>Size in bits</dt>
+      <dd>
+        {{ parameter.type?.sizeInBits }}
+      </dd>
+    }
 
     @if (!offset) {
       <dt>Source</dt>
       <dd>{{ (parameter.dataSource | titlecase) || "-" }}</dd>
     }
 
-    <dt>Short Description</dt>
+    <dt>Short description</dt>
     <dd>
       {{ parameter.shortDescription || "-" }}
     </dd>
 
-    <dt>Long Description</dt>
+    <dt>Long description</dt>
     <dd>
       @if (parameter.longDescription) {
         <app-markdown [text]="parameter.longDescription" />
@@ -212,7 +218,7 @@
           <th style="width: 50px">Value</th>
           <th style="width: 100px">Label</th>
           <th style="width: 300px">Description</th>
-          <th>Alarm Level (default)</th>
+          <th>Alarm level (default)</th>
           @for (context of entry.type?.contextAlarm; track context) {
             <th>
               @for (comparison of context.comparison; track comparison; let first = $first) {
@@ -275,7 +281,7 @@
         </dl>
         <table yaDataTable>
           <tr>
-            <th>Alarm Level (default)</th>
+            <th>Alarm level (default)</th>
             <th>Range</th>
           </tr>
           @for (range of alarm.staticAlarmRanges; track range) {
@@ -372,7 +378,7 @@
           <a
             [routerLink]="[
               '/mdb/parameters/',
-              (entry.type?.absoluteTimeInfo)!.offsetFrom.qualifiedName
+              (entry.type?.absoluteTimeInfo)!.offsetFrom.qualifiedName,
             ]"
             [queryParams]="{ c: yamcs.context }"
             class="ya-link">
@@ -389,7 +395,7 @@
         <dd>{{ (entry.type?.absoluteTimeInfo)!.scale }}</dd>
       }
       @if ((entry.type?.absoluteTimeInfo)!.initialValue !== undefined) {
-        <dt>Initial Value</dt>
+        <dt>Initial value</dt>
         <dd>{{ (entry.type?.absoluteTimeInfo)!.initialValue }}</dd>
       }
     </dl>

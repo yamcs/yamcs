@@ -15,6 +15,7 @@ import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.ConditionCode;
 import org.yamcs.cfdp.pdu.DirectoryListingRequest;
 import org.yamcs.cfdp.pdu.DirectoryListingResponse;
+import org.yamcs.cfdp.pdu.FileStoreRequest;
 import org.yamcs.cfdp.pdu.MetadataPacket;
 import org.yamcs.cfdp.pdu.OriginatingTransactionId;
 import org.yamcs.cfdp.pdu.ProxyClosureRequest;
@@ -169,7 +170,10 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
                 } else {
                     transferTypeInfo.add(((ReservedMessageToUser) option).getMessageType().toString());
                 }
-            } else {
+            } else if (option instanceof FileStoreRequest) {
+                transferTypeInfo.add(option.toString());
+            } 
+            else {
                 unknownOptions += 1;
             }
         }

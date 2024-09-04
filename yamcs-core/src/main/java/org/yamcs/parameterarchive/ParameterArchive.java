@@ -319,14 +319,14 @@ public class ParameterArchive extends AbstractYamcsService {
             byte[] gapKey = new SegmentKey(parameterId, pgid, pgs.getInterval(), SegmentKey.TYPE_GAPS).encode();
 
             if (!pgs.isFirstInInterval() && pgs.wasPreviousGap(pvs.pid)) {
-                byte[] rawValue = SegmentEncoderDecoder.encodeGaps(0, pgs.segmentIdxInsideInterval);
-                writeBatch.merge(cfh, gapKey, rawValue);
+                byte[] gapValue = SegmentEncoderDecoder.encodeGaps(0, pgs.segmentIdxInsideInterval);
+                writeBatch.merge(cfh, gapKey, gapValue);
             }
 
             byte[] engKey = new SegmentKey(parameterId, pgs.getParameterGroupId(), pgs.getInterval(),
                     SegmentKey.TYPE_ENG_VALUE).encode();
             byte[] engValue = SegmentEncoderDecoder.encode(vs);
-            if (pgs.isFirstInInterval()) {
+            if (pgs.isFirstInInterval() || pgs.wasPreviousGap(pvs.pid)) {
                 writeBatch.put(cfh, engKey, engValue);
             } else {
                 writeBatch.merge(cfh, engKey, engValue);
@@ -336,7 +336,7 @@ public class ParameterArchive extends AbstractYamcsService {
                 byte[] rawKey = new SegmentKey(parameterId, pgid, pgs.getInterval(), SegmentKey.TYPE_RAW_VALUE)
                         .encode();
                 byte[] rawValue = SegmentEncoderDecoder.encode(rvs);
-                if (pgs.isFirstInInterval()) {
+                if (pgs.isFirstInInterval() || pgs.wasPreviousGap(pvs.pid)) {
                     writeBatch.put(cfh, rawKey, rawValue);
                 } else {
                     writeBatch.merge(cfh, rawKey, rawValue);
@@ -346,7 +346,7 @@ public class ParameterArchive extends AbstractYamcsService {
             byte[] pssKey = new SegmentKey(parameterId, pgid, pgs.getInterval(), SegmentKey.TYPE_PARAMETER_STATUS)
                     .encode();
             byte[] pssValue = SegmentEncoderDecoder.encode(pss);
-            if (pgs.isFirstInInterval()) {
+            if (pgs.isFirstInInterval() || pgs.wasPreviousGap(pvs.pid)) {
                 writeBatch.put(cfh, pssKey, pssValue);
             } else {
                 writeBatch.merge(cfh, pssKey, pssValue);
@@ -366,13 +366,15 @@ public class ParameterArchive extends AbstractYamcsService {
             }
         }
         if (orphans != null) {
-            // there might have been previously records containing these parameters, we have to remove them
+            // there might have been previously (in the previous fillings) records containing these parameters, we have
+            // to remove them
             for (int pid : orphans) {
                 var key = new SegmentKey(pid, pgid, pgs.getInterval(),
                         SegmentKey.TYPE_PARAMETER_STATUS);
                 byte[] rawKey = key.encode();
                 if (rdb.get(rawKey) != null) {
                     writeBatch.delete(cfh, rawKey);
+
                     key.type = SegmentKey.TYPE_RAW_VALUE;
                     writeBatch.delete(cfh, key.encode());
 

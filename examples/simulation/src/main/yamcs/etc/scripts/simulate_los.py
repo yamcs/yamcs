@@ -1,5 +1,3 @@
-#!/usr/bin/env -S python3 -u
-
 import argparse
 import os
 import time

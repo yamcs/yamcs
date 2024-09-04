@@ -1,5 +1,5 @@
 <dl class="dl-horizontal no-lead">
-  <dt>Parameter Type</dt>
+  <dt>Parameter type</dt>
   <dd>{{ parameterType.qualifiedName | shortName }}</dd>
 
   <dt>System</dt>
@@ -36,11 +36,17 @@
       {{ parameterType.signed }}
     </dd>
   }
+  @if (parameterType.sizeInBits !== undefined) {
+    <dt>Size in bits</dt>
+    <dd>
+      {{ parameterType.sizeInBits }}
+    </dd>
+  }
 
-  <dt>Short Description</dt>
+  <dt>Short description</dt>
   <dd>{{ parameterType.shortDescription || "-" }}</dd>
 
-  <dt>Long Description</dt>
+  <dt>Long description</dt>
   <dd>
     @if (parameterType.longDescription) {
       <app-markdown [text]="parameterType.longDescription" />
@@ -124,7 +130,7 @@
         <th style="width: 50px">Value</th>
         <th style="width: 100px">Label</th>
         <th style="width: 300px">Description</th>
-        <th>Alarm Level (default)</th>
+        <th>Alarm level (default)</th>
         @for (context of parameterType.contextAlarm; track context) {
           <th>
             @for (comparison of context.comparison; track comparison; let first = $first) {
@@ -187,7 +193,7 @@
       </dl>
       <table yaDataTable>
         <tr>
-          <th>Alarm Level (default)</th>
+          <th>Alarm level (default)</th>
           <th>Range</th>
         </tr>
         @for (range of alarm.staticAlarmRanges; track range) {

@@ -67,8 +67,7 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
             log.debug("All verifiers are disabled");
             CommandHistoryPublisher cmdHistPublisher = processor.getCommandHistoryPublisher();
             cmdVerifiers.forEach(cv -> cmdHistPublisher.publishAck(activeCommand.getCommandId(), getHistKey(cv),
-                    processor.getCurrentTime(),
-                    AckStatus.DISABLED));
+                    processor.getCurrentTime(), AckStatus.DISABLED));
             return;
         }
 
@@ -113,9 +112,10 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
                 }
             }
             verifiers.add(verifier);
-
             if (scheduleNow) {
                 scheduleVerifier(verifier, checkWindow.getTimeToStartChecking(), checkWindow.getTimeToStopChecking());
+            } else {
+                log.debug("Not scheduling {} because it depends on the {}", cv, prevVerifier.getStage());
             }
             prevVerifier = verifier;
         }
@@ -128,6 +128,10 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
     private void collectCmdVerifiers(MetaCommand cmd, List<CommandVerifier> cmdVerifiers,
             Map<String, VerifierConfig> verifierOverride) {
         CommandHistoryPublisher cmdHistPublisher = processor.getCommandHistoryPublisher();
+        MetaCommand basecmd = cmd.getBaseMetaCommand();
+        if (basecmd != null) {
+            collectCmdVerifiers(basecmd, cmdVerifiers, verifierOverride);
+        }
 
         for (CommandVerifier cv : cmd.getCommandVerifiers()) {
             boolean found = false;
@@ -144,8 +148,7 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
                 } else {
                     if (extraOptions.getDisable()) {
                         cmdHistPublisher.publishAck(activeCommand.getCommandId(), getHistKey(cv),
-                                processor.getCurrentTime(),
-                                AckStatus.DISABLED);
+                                processor.getCurrentTime(), AckStatus.DISABLED);
                         log.debug("skipping verifier {}", cv.getStage());
                         continue;
                     }
@@ -153,10 +156,7 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
                 }
             }
         }
-        MetaCommand basecmd = cmd.getBaseMetaCommand();
-        if (basecmd != null) {
-            collectCmdVerifiers(basecmd, cmdVerifiers, verifierOverride);
-        }
+
     }
 
     private CommandVerifier overrideVerifier(CommandVerifier cv, VerifierConfig extraOptions) {
