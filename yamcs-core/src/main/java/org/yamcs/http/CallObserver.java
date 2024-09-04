@@ -1,5 +1,8 @@
 package org.yamcs.http;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
@@ -152,7 +155,7 @@ public class CallObserver implements Observer<Message> {
         MediaType contentType = ctx.deriveTargetContentType();
         if (contentType != MediaType.JSON) {
             ctx.reportStatusCode(OK.code());
-            return HttpRequestHandler.sendMessageResponse(ctx.nettyContext, req, OK, responseMsg);
+            return sendMessageResponse(OK, responseMsg);
         } else {
             ByteBuf body = ctx.nettyContext.alloc().buffer();
             try (ByteBufOutputStream channelOut = new ByteBufOutputStream(body)) {
@@ -161,7 +164,7 @@ public class CallObserver implements Observer<Message> {
                 body.writeCharSequence(str, StandardCharsets.UTF_8);
             } catch (IOException e) {
                 body.release();
-                HttpResponseStatus status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
+                HttpResponseStatus status = INTERNAL_SERVER_ERROR;
                 ctx.reportStatusCode(status.code());
                 return HttpRequestHandler.sendPlainTextError(ctx.nettyContext, req, status, e.toString());
             }
@@ -173,7 +176,7 @@ public class CallObserver implements Observer<Message> {
         }
     }
 
-    static ChannelFuture sendError(RouteContext ctx, HttpException t) {
+    private ChannelFuture sendError(RouteContext ctx, HttpException t) {
         if (t instanceof InternalServerErrorException) {
             log.error("Internal server error while handling call", t);
         } else if (log.isDebugEnabled()) {
@@ -181,6 +184,33 @@ public class CallObserver implements Observer<Message> {
         }
         ExceptionMessage msg = t.toMessage();
         ctx.reportStatusCode(t.getStatus().code());
-        return HttpRequestHandler.sendMessageResponse(ctx.nettyContext, ctx.nettyRequest, t.getStatus(), msg);
+        return sendMessageResponse(t.getStatus(), msg);
+    }
+
+    private <T extends Message> ChannelFuture sendMessageResponse(HttpResponseStatus status, T responseMsg) {
+        ByteBuf body = ctx.nettyContext.alloc().buffer();
+        MediaType contentType = HttpRequestHandler.getAcceptType(ctx.nettyRequest);
+
+        try {
+            if (contentType == MediaType.PROTOBUF) {
+                try (ByteBufOutputStream channelOut = new ByteBufOutputStream(body)) {
+                    responseMsg.writeTo(channelOut);
+                }
+            } else if (contentType == MediaType.PLAIN_TEXT) {
+                body.writeCharSequence(responseMsg.toString(), StandardCharsets.UTF_8);
+            } else { // JSON by default
+                contentType = MediaType.JSON;
+                String str = ctx.printJson(responseMsg);
+                body.writeCharSequence(str, StandardCharsets.UTF_8);
+            }
+        } catch (IOException e) {
+            return HttpRequestHandler.sendPlainTextError(ctx.nettyContext, ctx.nettyRequest, INTERNAL_SERVER_ERROR,
+                    e.toString());
+        }
+        HttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, status, body);
+        response.headers().set(CONTENT_TYPE, contentType.toString());
+        response.headers().set(CONTENT_LENGTH, body.readableBytes());
+
+        return HttpRequestHandler.sendResponse(ctx.nettyContext, ctx.nettyRequest, response);
     }
 }

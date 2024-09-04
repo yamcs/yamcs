@@ -195,6 +195,9 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     public static <T extends Message> ChannelFuture sendMessageResponse(ChannelHandlerContext ctx, HttpRequest req,
             HttpResponseStatus status, T responseMsg) {
+        // Note: don't use this method when there's a possibility of JSON/Any message serialization
+        // The used JSON printer does not have type definitions registered.
+
         ByteBuf body = ctx.alloc().buffer();
         MediaType contentType = getAcceptType(req);
 
@@ -269,7 +272,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
      * Returns the Accept header if present and not set to ANY or Content-Type header if present or JSON if none of the
      * headers is present or the Accept is present and set to ANY.
      */
-    private static MediaType getAcceptType(HttpRequest req) {
+    static MediaType getAcceptType(HttpRequest req) {
         String acceptType = req.headers().get(ACCEPT);
         if (acceptType != null) {
             MediaType r = MediaType.from(acceptType);
