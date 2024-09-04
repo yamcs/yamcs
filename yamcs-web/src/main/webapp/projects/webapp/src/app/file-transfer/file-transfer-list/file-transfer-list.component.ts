@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, OnInit, Signal, computed, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, Signal, computed, input, signal } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
-import { ActivatedRoute, ResolveFn, Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FileTransferService, GetFileTransfersOptions, MessageService, Synchronizer, Transfer, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
@@ -14,12 +14,6 @@ import { FileTransferIconComponent } from './file-transfer-icon.component';
 import { FileTransferDataSource } from './file-transfer.datasource';
 
 const defaultInterval = 'NO_LIMIT';
-
-export const resolveServices: ResolveFn<FileTransferService[]> = (route, state) => {
-  const yamcs = inject(YamcsService);
-  return yamcs.yamcsClient.getFileTransferServices(yamcs.instance!)
-    .then(page => page.services);
-};
 
 @Component({
   standalone: true,

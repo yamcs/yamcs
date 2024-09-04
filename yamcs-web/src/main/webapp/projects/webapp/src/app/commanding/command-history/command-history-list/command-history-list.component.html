@@ -98,7 +98,7 @@
               }
             </ya-select>
             <ya-select icon="access_time" formControlName="interval">
-              <ya-option id="" label="Last hour" />
+              <ya-option id="PT1H" label="Last hour" />
               <ya-option id="PT6H" label="Last 6 hours" />
               <ya-option id="P1D" label="Last 24 hours" />
               <ya-option id="NO_LIMIT" label="No limit" />
@@ -125,7 +125,7 @@
             @if (dataSource.streaming$ | async) {
               <div style="text-align: right; flex: 1 1 150px">
                 Listening for commands
-                <ya-dots fontSize="16px" color="#1b61b9" />
+                <ya-dots fontSize="16px" />
               </div>
             }
           </div>

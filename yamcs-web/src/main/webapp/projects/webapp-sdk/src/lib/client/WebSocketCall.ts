@@ -11,13 +11,16 @@ export class WebSocketCall<O, D> {
   private _frameLoss = false;
   private frameLossListeners = new Set<() => void>();
   private replyListeners = new Set<() => void>();
+  private messageListeners = new Set<(data: D) => void>();
 
   constructor(
     private client: WebSocketClient,
     private requestId: number,
     private type: string,
-    private observer: (data: D) => void,
-  ) { }
+    observer: (data: D) => void,
+  ) {
+    this.messageListeners.add(observer);
+  }
 
   /**
    * Returns the server-assigned unique call id
@@ -61,6 +64,14 @@ export class WebSocketCall<O, D> {
     this.replyListeners.delete(replyListener);
   }
 
+  addMessageListener(messageListener: (data: D) => void) {
+    this.messageListeners.add(messageListener);
+  }
+
+  removeMessageListener(messageListener: (data: D) => void) {
+    this.messageListeners.delete(messageListener);
+  }
+
   sendMessage(options: O) {
     if (this._id !== undefined) {
       this.client.sendMessage({
@@ -94,7 +105,7 @@ export class WebSocketCall<O, D> {
         this.frameLossListeners.forEach(listener => listener());
       }
       this.seq = msg.seq;
-      this.observer(msg.data);
+      this.messageListeners.forEach(l => l(msg.data));
     }
   }
 

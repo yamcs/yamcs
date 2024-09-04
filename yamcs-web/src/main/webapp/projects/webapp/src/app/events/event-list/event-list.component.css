@@ -1,3 +1,7 @@
+.filter-bar.query {
+  height: unset;
+}
+
 .table-status {
   background-color: var(--y-background-color);
   height: 24px;

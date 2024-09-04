@@ -19,6 +19,10 @@ service EventsApi {
   rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}/events"
+      additional_bindings {
+        post: "/api/archive/{instance}/events:list"
+        body: "*"
+      }
     };
   }
 
@@ -53,7 +57,7 @@ service EventsApi {
   }
 
   // Receive event updates
-  rpc SubscribeEvents(SubscribeEventsRequest) returns (stream Event) {
+  rpc SubscribeEvents(stream SubscribeEventsRequest) returns (stream Event) {
     option (yamcs.api.websocket) = {
       topic: "events"
     };
@@ -72,7 +76,7 @@ message ListEventsRequest {
   optional int64 pos = 2 [deprecated = true];
   
   // The maximum number of returned records per page. Choose this value too high
-  //  and you risk hitting the maximum response size limit enforced by the server.
+  // and you risk hitting the maximum response size limit enforced by the server.
   // Default: ``100``
   optional int32 limit = 3;
   
@@ -100,13 +104,47 @@ message ListEventsRequest {
   
   // Text to search for in the message.
   optional string q = 10;
+
+  // Filter query. See :doc:`../filtering` for how to write a filter query.
+  //
+  // Literal text search matches against the fields ``message``, ``source`` and
+  // ``type``.
+  //
+  // Field comparisons can use any of the following fields:
+  //
+  // .. list-table::
+  //     :widths: 25 25 50
+  //
+  //     * - ``message``
+  //       - string
+  //       -
+  //     * - ``seqNumber``
+  //       - number
+  //       -
+  //     * - ``severity``
+  //       - enum
+  //       - One of ``info``, ``watch``, ``warning``, ``distress``, ``critical`` or ``severe``.
+  //     * - ``source``
+  //       - string
+  //       -
+  //     * - ``type``
+  //       - string
+  //       -
+  optional string filter = 11;
+
+  // If true, no events are returned. This option is currently used by
+  // yamcs-web to test the compilation of filter queries without hitting the
+  // Yamcs DB.
+  //
+  // Default: false
+  optional bool dryRun = 12;
 }
 
 message ListEventsResponse {
   // Deprecated, use ``events`` instead
   repeated Event event = 1 [deprecated=true];
 
-  // Page of matching events
+  // Page with matching events
   repeated Event events = 3;
 
   // Token indicating the response is only partial. More results can then
@@ -118,6 +156,33 @@ message ListEventsResponse {
 message SubscribeEventsRequest {
   // Yamcs instance name
   optional string instance = 1;
+
+  // Filter query. See :doc:`../filtering` for how to write a filter query.
+  //
+  // Literal text search matches against the fields ``message``, ``source`` and
+  // ``type``.
+  //
+  // Field comparisons can use any of the following fields:
+  //
+  // .. list-table::
+  //     :widths: 25 25 50
+  //
+  //     * - ``message``
+  //       - string
+  //       -
+  //     * - ``seqNumber``
+  //       - number
+  //       -
+  //     * - ``severity``
+  //       - enum
+  //       - One of ``info``, ``watch``, ``warning``, ``distress``, ``critical`` or ``severe``.
+  //     * - ``source``
+  //       - string
+  //       -
+  //     * - ``type``
+  //       - string
+  //       -
+  optional string filter = 2;
 }
 
 message CreateEventRequest {
@@ -171,6 +236,33 @@ message StreamEventsRequest {
 
   // Search by text
   optional string q = 6;
+
+  // Filter query. See :doc:`../filtering` for how to write a filter query.
+  //
+  // Literal text search matches against the fields ``message``, ``source`` and
+  // ``type``.
+  //
+  // Field comparisons can use any of the following fields:
+  //
+  // .. list-table::
+  //     :widths: 25 25 50
+  //
+  //     * - ``message``
+  //       - string
+  //       -
+  //     * - ``seqNumber``
+  //       - number
+  //       -
+  //     * - ``severity``
+  //       - enum
+  //       - One of ``info``, ``watch``, ``warning``, ``distress``, ``critical`` or ``severe``.
+  //     * - ``source``
+  //       - string
+  //       -
+  //     * - ``type``
+  //       - string
+  //       -
+  optional string filter = 7;
 }
 
 message ListEventSourcesRequest {
@@ -207,6 +299,33 @@ message ExportEventsRequest {
   
   // Text to search for in the message.
   optional string q = 6;
+
+  // Filter query. See :doc:`../filtering` for how to write a filter query.
+  //
+  // Literal text search matches against the fields ``message``, ``source`` and
+  // ``type``.
+  //
+  // Field comparisons can use any of the following fields:
+  //
+  // .. list-table::
+  //     :widths: 25 25 50
+  //
+  //     * - ``message``
+  //       - string
+  //       -
+  //     * - ``seqNumber``
+  //       - number
+  //       -
+  //     * - ``severity``
+  //       - enum
+  //       - One of ``info``, ``watch``, ``warning``, ``distress``, ``critical`` or ``severe``.
+  //     * - ``source``
+  //       - string
+  //       -
+  //     * - ``type``
+  //       - string
+  //       -
+  optional string filter = 8;
 
   // Column delimiter. One of ``TAB``, ``COMMA`` or ``SEMICOLON``.
   // Default: ``TAB``.

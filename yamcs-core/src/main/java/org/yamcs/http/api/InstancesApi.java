@@ -29,6 +29,7 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.logging.Log;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.plists.ParameterListService;
 import org.yamcs.protobuf.AbstractInstancesApi;
 import org.yamcs.protobuf.CreateInstanceRequest;
@@ -53,10 +54,9 @@ import org.yamcs.timeline.TimelineService;
 import org.yamcs.utils.ExceptionUtil;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.parser.FilterParser;
-import org.yamcs.utils.parser.FilterParser.Result;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.utils.parser.TokenMgrError;
-import org.yamcs.mdb.Mdb;
+import org.yamcs.utils.parser.ast.Comparison;
 
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.google.protobuf.Empty;
@@ -295,14 +295,24 @@ public class InstancesApi extends AbstractInstancesApi<Context> {
             return ysi -> true;
         }
 
-        FilterParser fp = new FilterParser((StringReader) null);
+        var fp = new FilterParser<YamcsServerInstance>((StringReader) null);
+        fp.addEnumField("state", InstanceState.class, ysi -> ysi.state());
+        fp.addPrefixField("label.", (ysi, field) -> {
+            var label = field.substring("label.".length());
+            return ysi.getLabels().get(label);
+        });
 
         Predicate<YamcsServerInstance> pred = ysi -> true;
         for (String filter : flist) {
+            // Temporary backwards support for an (undocumented) API change.
+            // Can be removed in a few months.
+            if (filter.startsWith("label:")) {
+                filter = filter.replace("label:", "label.");
+            }
             fp.ReInit(new StringReader(filter));
-            FilterParser.Result pr;
+            Comparison pr;
             try {
-                pr = fp.parse();
+                pr = fp.comparison();
                 pred = pred.and(getPredicate(pr));
             } catch (ParseException | TokenMgrError e) {
                 throw new BadRequestException("Cannot parse the filter '" + filter + "': " + e.getMessage());
@@ -312,24 +322,24 @@ public class InstancesApi extends AbstractInstancesApi<Context> {
         return pred;
     }
 
-    private Predicate<YamcsServerInstance> getPredicate(Result pr) throws HttpException {
-        if ("state".equals(pr.key)) {
+    private Predicate<YamcsServerInstance> getPredicate(Comparison pr) throws HttpException {
+        if ("state".equals(pr.comparable)) {
             try {
                 InstanceState state = InstanceState.valueOf(pr.value.toUpperCase());
-                switch (pr.op) {
-                case EQUAL:
+                switch (pr.comparator) {
+                case EQUAL_TO:
                     return ysi -> ysi.state() == state;
-                case NOT_EQUAL:
+                case NOT_EQUAL_TO:
                     return ysi -> ysi.state() != state;
                 default:
-                    throw new IllegalStateException("Unknown operator " + pr.op);
+                    throw new IllegalStateException("Unknown operator " + pr.comparator);
                 }
             } catch (IllegalArgumentException e) {
                 throw new BadRequestException(
                         "Unknown state '" + pr.value + "'. Valid values are: " + Arrays.asList(InstanceState.values()));
             }
-        } else if (pr.key.startsWith("label:")) {
-            String labelKey = pr.key.substring(6);
+        } else if (pr.comparable.startsWith("label.")) {
+            String labelKey = pr.comparable.substring(6);
             return ysi -> {
                 Map<String, ?> labels = ysi.getLabels();
                 if (labels == null) {
@@ -339,17 +349,17 @@ public class InstancesApi extends AbstractInstancesApi<Context> {
                 if (o == null) {
                     return false;
                 }
-                switch (pr.op) {
-                case EQUAL:
+                switch (pr.comparator) {
+                case EQUAL_TO:
                     return pr.value.equals(o);
-                case NOT_EQUAL:
+                case NOT_EQUAL_TO:
                     return !pr.value.equals(o);
                 default:
-                    throw new IllegalStateException("Unknown operator " + pr.op);
+                    throw new IllegalStateException("Unknown operator " + pr.comparator);
                 }
             };
         } else {
-            throw new BadRequestException("Unknown filter key '" + pr.key + "'");
+            throw new BadRequestException("Unknown filter key '" + pr.comparable + "'");
         }
     }
 

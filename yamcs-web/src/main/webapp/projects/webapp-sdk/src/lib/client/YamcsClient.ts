@@ -23,6 +23,7 @@ import { AuditRecordsPage, AuthInfo, Clearance, ClearanceSubscription, CompactRo
 import { Record, Stream, StreamData, StreamEvent, StreamStatisticsSubscription, StreamSubscription, SubscribeStreamRequest, SubscribeStreamStatisticsRequest, Table } from './types/table';
 import { SubscribeTimeRequest, Time, TimeSubscription } from './types/time';
 import { CreateTimelineBandRequest, CreateTimelineItemRequest, CreateTimelineViewRequest, GetTimelineItemsOptions, TimelineBand, TimelineBandsPage, TimelineItem, TimelineItemsPage, TimelineTagsPage, TimelineView, TimelineViewsPage, UpdateTimelineBandRequest, UpdateTimelineItemRequest, UpdateTimelineViewRequest } from './types/timeline';
+import { CreateQueryRequest, EditQueryRequest, ListQueriesResponse, ParseFilterData, ParseFilterRequest, ParseFilterSubscription, Query } from './types/web';
 
 
 export default class YamcsClient implements HttpHandler {
@@ -685,6 +686,10 @@ export default class YamcsClient implements HttpHandler {
     return this.webSocketClient!.createLowPrioritySubscription('parameters', options, observer);
   }
 
+  createParseFilterSubscription(options: ParseFilterRequest, observer: (data: ParseFilterData) => void): ParseFilterSubscription {
+    return this.webSocketClient!.createSubscription('web.parse-filter', options, observer);
+  }
+
   createStreamStatisticsSubscription(options: SubscribeStreamStatisticsRequest, observer: (event: StreamEvent) => void): StreamStatisticsSubscription {
     return this.webSocketClient!.createSubscription('stream-stats', options, observer);
   }
@@ -758,8 +763,12 @@ export default class YamcsClient implements HttpHandler {
   }
 
   async getEvents(instance: string, options: GetEventsOptions = {}) {
-    const url = `${this.apiUrl}/archive/${instance}/events`;
-    const response = await this.doFetch(url + this.queryString(options));
+    const url = `${this.apiUrl}/archive/${instance}/events:list`;
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(url, {
+      body,
+      method: 'POST',
+    });
     const wrapper = await response.json() as EventsWrapper;
     return wrapper.events || [];
   }
@@ -786,6 +795,38 @@ export default class YamcsClient implements HttpHandler {
       method: 'POST',
     });
     return await response.json() as Event;
+  }
+
+  async getQueries(instance: string, resource: string) {
+    const url = `${this.apiUrl}/web/queries/${instance}/${resource}`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as ListQueriesResponse;
+    return wrapper.queries || [];
+  }
+
+  async createQuery(instance: string, resource: string, options: CreateQueryRequest) {
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(`${this.apiUrl}/web/queries/${instance}/${resource}`, {
+      body,
+      method: 'POST',
+    });
+    return await response.json() as Query;
+  }
+
+  async editQuery(instance: string, resource: string, queryId: string, options: EditQueryRequest) {
+    const body = JSON.stringify(options);
+    const url = `${this.apiUrl}/web/queries/${instance}/${resource}/${queryId}`;
+    return await this.doFetch(url, {
+      body,
+      method: 'PATCH',
+    });
+  }
+
+  async deleteQuery(instance: string, resource: string, queryId: string) {
+    const url = `${this.apiUrl}/queries/${instance}/${resource}/${queryId}`;
+    return await this.doFetch(url, {
+      method: 'DELETE',
+    });
   }
 
   getCommandsDownloadURL(instance: string, options: DownloadCommandsOptions = {}) {
@@ -1516,7 +1557,11 @@ export default class YamcsClient implements HttpHandler {
     } else {
       return new Promise<Response>((resolve, reject) => {
         response.json().then(json => {
-          reject(new HttpError(response, json['msg']));
+          if (json.hasOwnProperty("detail")) {
+            reject(new HttpError(response, json['msg'], json['detail']));
+          } else {
+            reject(new HttpError(response, json['msg']));
+          }
         }).catch(err => {
           console.error('Failure while handling server error', err);
           reject(new HttpError(response));

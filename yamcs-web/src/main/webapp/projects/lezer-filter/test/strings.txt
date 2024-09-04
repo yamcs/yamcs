@@ -1,0 +1,23 @@
+# Empty String
+
+""
+
+==>
+
+Filter(String)
+
+# Non-empty String
+
+"This is a boring old string"
+
+==>
+
+Filter(String)
+
+# All The Valid One-Character Escapes
+
+"\"\\\/\b\f\n\rt\t"
+
+==>
+
+Filter(String)

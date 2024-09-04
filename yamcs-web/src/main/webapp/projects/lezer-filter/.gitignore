@@ -1,0 +1,6 @@
+/dist/
+/node_modules/
+
+# Generated, used only while testing generator
+src/parser.js
+src/parser.terms.js

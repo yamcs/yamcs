@@ -1,0 +1,21 @@
+# Logical operator
+
+foo = 123 AND bar = "abc"
+
+==>
+
+Filter(
+  Comparison(Comparable,CompareOp,Number),
+  LogicOp,
+  Comparison(Comparable,CompareOp,String),)
+
+# Not a logical operator
+
+foo = 123 and bar = "abc"
+
+==>
+
+Filter(
+  Comparison(Comparable,CompareOp,Number),
+  Text,
+  Comparison(Comparable,CompareOp,String),)

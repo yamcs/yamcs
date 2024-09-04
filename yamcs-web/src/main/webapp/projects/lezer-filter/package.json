@@ -1,0 +1,19 @@
+{
+  "name": "@yamcs/lezer-filter",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "lezer-generator src/filter.grammar -o src/parser && rollup -c",
+    "build-debug": "lezer-generator src/filter.grammar --names -o src/parser && rollup -c",
+    "test": "npm run build && mocha test/test-filter.js",
+    "deploy": "npm run build && cp src/*.js ../webapp-sdk/src/lib/components/filter/"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "devDependencies": {
+    "@lezer/generator": "^1.7.1",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "mocha": "^10.7.3",
+    "rollup": "^4.21.2"
+  }
+}

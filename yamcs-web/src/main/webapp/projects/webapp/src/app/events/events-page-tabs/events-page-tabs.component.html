@@ -1,0 +1,29 @@
+<nav mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
+  <a
+    mat-tab-link
+    routerLink="/events"
+    routerLinkActive
+    [routerLinkActiveOptions]="{ matrixParams: 'exact', paths: 'exact', queryParams: 'ignored' }"
+    #rla="routerLinkActive"
+    [active]="rla.isActive"
+    [queryParams]="{ c: yamcs.context }">
+    Query
+  </a>
+  <a
+    mat-tab-link
+    routerLink="/events/queries"
+    routerLinkActive
+    #rlb="routerLinkActive"
+    [active]="rlb.isActive"
+    [queryParams]="{ c: yamcs.context }">
+    Saved queries
+  </a>
+
+  <div style="flex: 1 1 auto"></div>
+  <div class="actions">
+    <ng-content />
+  </div>
+</nav>
+<mat-tab-nav-panel #tabPanel>
+  <router-outlet />
+</mat-tab-nav-panel>

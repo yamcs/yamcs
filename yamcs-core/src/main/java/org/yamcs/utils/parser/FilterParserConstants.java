@@ -11,13 +11,43 @@ public interface FilterParserConstants {
   /** End of File. */
   int EOF = 0;
   /** RegularExpression Id. */
-  int EQUAL = 5;
+  int SINGLE_LINE_COMMENT = 1;
   /** RegularExpression Id. */
-  int NOT_EQUAL = 6;
+  int WS = 2;
   /** RegularExpression Id. */
-  int STRING = 7;
+  int AND = 3;
   /** RegularExpression Id. */
-  int QUOTED_STRING = 8;
+  int EQUAL_TO = 4;
+  /** RegularExpression Id. */
+  int GREATER_THAN = 5;
+  /** RegularExpression Id. */
+  int GREATER_THAN_OR_EQUAL_TO = 6;
+  /** RegularExpression Id. */
+  int HAS = 7;
+  /** RegularExpression Id. */
+  int LESS_THAN = 8;
+  /** RegularExpression Id. */
+  int LESS_THAN_OR_EQUAL_TO = 9;
+  /** RegularExpression Id. */
+  int LPAREN = 10;
+  /** RegularExpression Id. */
+  int MINUS = 11;
+  /** RegularExpression Id. */
+  int NOT = 12;
+  /** RegularExpression Id. */
+  int NOT_EQUAL_TO = 13;
+  /** RegularExpression Id. */
+  int OR = 14;
+  /** RegularExpression Id. */
+  int RE_EQUAL_TO = 15;
+  /** RegularExpression Id. */
+  int RE_NOT_EQUAL_TO = 16;
+  /** RegularExpression Id. */
+  int RPAREN = 17;
+  /** RegularExpression Id. */
+  int STRING = 18;
+  /** RegularExpression Id. */
+  int QUOTED_STRING = 19;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -25,12 +55,23 @@ public interface FilterParserConstants {
   /** Literal token values. */
   String[] tokenImage = {
     "<EOF>",
-    "\" \"",
-    "\"\\t\"",
-    "\"\\n\"",
-    "\"\\r\"",
+    "<SINGLE_LINE_COMMENT>",
+    "<WS>",
+    "\"AND\"",
     "\"=\"",
+    "\">\"",
+    "\">=\"",
+    "\":\"",
+    "\"<\"",
+    "\"<=\"",
+    "\"(\"",
+    "\"-\"",
+    "\"NOT\"",
     "\"!=\"",
+    "\"OR\"",
+    "\"=~\"",
+    "\"!~\"",
+    "\")\"",
     "<STRING>",
     "<QUOTED_STRING>",
   };

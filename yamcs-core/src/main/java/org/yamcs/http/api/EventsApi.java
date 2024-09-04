@@ -126,33 +126,45 @@ public class EventsApi extends AbstractEventsApi<Context> {
             sqlb.limit(pos, limit + 1l); // one more to detect hasMore
         }
 
-        ListEventsResponse.Builder responseb = ListEventsResponse.newBuilder();
-        StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
+        var filter = request.hasFilter()
+                ? EventFilterFactory.create(request.getFilter())
+                : null;
 
-            Db.Event last;
-            int count;
+        if (request.getDryRun()) {
+            observer.complete(ListEventsResponse.getDefaultInstance());
+        } else {
+            var responseb = ListEventsResponse.newBuilder();
+            StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
 
-            @Override
-            public void onTuple(Stream stream, Tuple tuple) {
-                if (++count <= limit) {
-                    Db.Event incoming = (Db.Event) tuple.getColumn("body");
-                    var event = fromDbEvent(incoming);
-                    responseb.addEvents(event);
-                    responseb.addEvent(event);
-                    last = incoming;
+                Db.Event last;
+                int count;
+
+                @Override
+                public void onTuple(Stream stream, Tuple tuple) {
+                    if (filter != null && !filter.matches(tuple)) {
+                        return;
+                    }
+
+                    if (++count <= limit) {
+                        Db.Event incoming = (Db.Event) tuple.getColumn("body");
+                        var event = fromDbEvent(incoming);
+                        responseb.addEvents(event);
+                        responseb.addEvent(event);
+                        last = incoming;
+                    }
                 }
-            }
 
-            @Override
-            public void streamClosed(Stream stream) {
-                if (count > limit) {
-                    EventPageToken token = new EventPageToken(last.getGenerationTime(), last.getSource(),
-                            last.getSeqNumber());
-                    responseb.setContinuationToken(token.encodeAsString());
+                @Override
+                public void streamClosed(Stream stream) {
+                    if (count > limit) {
+                        var token = new EventPageToken(last.getGenerationTime(), last.getSource(),
+                                last.getSeqNumber());
+                        responseb.setContinuationToken(token.encodeAsString());
+                    }
+                    observer.complete(responseb.build());
                 }
-                observer.complete(responseb.build());
-            }
-        });
+            });
+        }
     }
 
     @Override
@@ -216,7 +228,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
 
         // Distribute event (without augmented fields, or they'll get stored)
         Db.Event event = eventb.build();
-        log.debug("Adding event: {}", event.toString());
+        log.debug("Adding event: {}", event);
         eventProducer.sendEvent(event);
 
         // Send back the event in response
@@ -248,29 +260,11 @@ public class EventsApi extends AbstractEventsApi<Context> {
     }
 
     @Override
-    public void subscribeEvents(Context ctx, SubscribeEventsRequest request, Observer<Event> observer) {
-        String instance = InstancesApi.verifyInstance(request.getInstance());
+    public Observer<SubscribeEventsRequest> subscribeEvents(Context ctx, Observer<Event> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadEvents);
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
-        Stream stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
-        if (stream == null) {
-            return; // No error, just don't send data
-        }
-
-        StreamSubscriber listener = new StreamSubscriber() {
-            @Override
-            public void onTuple(Stream stream, Tuple tuple) {
-                Db.Event event = (Db.Event) tuple.getColumn("body");
-                observer.next(fromDbEvent(event));
-            }
-
-            @Override
-            public void streamClosed(Stream stream) {
-                observer.complete();
-            }
-        };
-        observer.setCancelHandler(() -> stream.removeSubscriber(listener));
-        stream.addSubscriber(listener);
+        var clientObserver = new SubscribeEventsObserver(observer);
+        observer.setCancelHandler(() -> clientObserver.complete());
+        return clientObserver;
     }
 
     @Override
@@ -298,10 +292,18 @@ public class EventsApi extends AbstractEventsApi<Context> {
             sqlb.where("body.message like ?", "%" + request.getQ() + "%");
         }
 
+        var filter = request.hasFilter()
+                ? EventFilterFactory.create(request.getFilter())
+                : null;
+
         StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
+                if (filter != null && !filter.matches(tuple)) {
+                    return;
+                }
+
                 Db.Event incoming = (Db.Event) tuple.getColumn("body");
                 Event event = fromDbEvent(incoming);
                 observer.next(event);
@@ -346,6 +348,10 @@ public class EventsApi extends AbstractEventsApi<Context> {
 
         String sql = sqlb.toString();
 
+        var filter = request.hasFilter()
+                ? EventFilterFactory.create(request.getFilter())
+                : null;
+
         char delimiter = '\t';
         if (request.hasDelimiter()) {
             switch (request.getDelimiter()) {
@@ -363,7 +369,7 @@ public class EventsApi extends AbstractEventsApi<Context> {
             }
         }
 
-        CsvEventStreamer streamer = new CsvEventStreamer(observer, delimiter);
+        CsvEventStreamer streamer = new CsvEventStreamer(observer, filter, delimiter);
         StreamFactory.stream(instance, sql, sqlb.getQueryArguments(), streamer);
     }
 
@@ -411,10 +417,12 @@ public class EventsApi extends AbstractEventsApi<Context> {
     private static class CsvEventStreamer implements StreamSubscriber {
 
         Observer<HttpBody> observer;
+        EventFilter filter;
         char columnDelimiter;
 
-        CsvEventStreamer(Observer<HttpBody> observer, char columnDelimiter) {
+        CsvEventStreamer(Observer<HttpBody> observer, EventFilter filter, char columnDelimiter) {
             this.observer = observer;
+            this.filter = filter;
             this.columnDelimiter = columnDelimiter;
 
             String[] rec = new String[5];
@@ -441,6 +449,10 @@ public class EventsApi extends AbstractEventsApi<Context> {
         public void onTuple(Stream stream, Tuple tuple) {
             if (observer.isCancelled()) {
                 stream.close();
+                return;
+            }
+
+            if (filter != null && !filter.matches(tuple)) {
                 return;
             }
 
