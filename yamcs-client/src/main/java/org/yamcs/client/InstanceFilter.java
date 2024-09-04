@@ -10,7 +10,7 @@ public class InstanceFilter {
     private List<String> filterExpressions = new ArrayList<>();
 
     public void addLabel(String label, String value) {
-        filterExpressions.add("label:" + label + "=" + value);
+        filterExpressions.add("label." + label + "=" + value);
     }
 
     public void setState(InstanceState state) {

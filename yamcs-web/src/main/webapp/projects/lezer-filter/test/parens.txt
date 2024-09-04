@@ -1,0 +1,7 @@
+# Single term
+
+abc OR (def AND ghi)
+
+==>
+
+Filter(Text,LogicOp,Text,LogicOp,Text)

@@ -50,6 +50,16 @@ export class EventsDataSource extends DataSource<Event> {
 
   loadEvents(options: GetEventsOptions) {
     this.loading$.next(true);
+
+    if (this.streaming$.value) {
+      // Other filters (time, q, severity, source) are applied
+      // client-side
+      this.realtimeSubscription.sendMessage({
+        instance: this.yamcs.instance!,
+        filter: options.filter,
+      });
+    }
+
     return Promise.all([
       this.yamcs.yamcsClient.getEventSources(this.yamcs.instance!),
       this.loadPage({
@@ -60,7 +70,6 @@ export class EventsDataSource extends DataSource<Event> {
       const sources = results[0];
       const events = results[1];
 
-      this.loading$.next(false);
       this.eventBuffer.reset();
       this.blockHasMore = false;
       this.eventBuffer.addArchiveData(events);
@@ -71,6 +80,11 @@ export class EventsDataSource extends DataSource<Event> {
       this.emitEvents();
 
       return events;
+    }).catch(err => {
+      this.eventBuffer.reset();
+      throw err;
+    }).finally(() => {
+      this.loading$.next(false);
     });
   }
 
@@ -120,9 +134,11 @@ export class EventsDataSource extends DataSource<Event> {
   }
 
   startStreaming() {
+    console.log('filter with', this.options.filter);
     this.streaming$.next(true);
     this.realtimeSubscription = this.yamcs.yamcsClient.createEventSubscription({
       instance: this.yamcs.instance!,
+      filter: this.options.filter,
     }, event => {
       this.addEventSource(event);
       if (!this.loading$.getValue() && this.matchesFilter(event)) {
@@ -152,11 +168,6 @@ export class EventsDataSource extends DataSource<Event> {
     if (this.options) {
       if (this.options.source) {
         if (event.source !== this.options.source) {
-          return false;
-        }
-      }
-      if (this.options.q) {
-        if (event.message.indexOf(this.options.q) === -1) {
           return false;
         }
       }

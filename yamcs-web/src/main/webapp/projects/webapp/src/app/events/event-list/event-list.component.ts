@@ -1,18 +1,20 @@
-import { ChangeDetectionStrategy, Component, OnInit, input } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, OnInit, input, viewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ConfigService, EventSeverity, ExtraColumnInfo, GetEventsOptions, MessageService, Synchronizer, WebappSdkModule, YaColumnInfo, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ConfigService, EventSeverity, ExtraColumnInfo, GetEventsOptions, MessageService, ParseFilterSubscription, Synchronizer, WebappSdkModule, YaColumnInfo, YaSearchFilter2, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
 import { AuthService } from '../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { CreateEventDialogComponent } from '../create-event-dialog/create-event-dialog.component';
+import { CreateEventQueryDialogComponent } from '../create-event-query-dialog/create-event-query-dialog.component';
 import { EventMessageComponent } from '../event-message/event-message.component';
 import { EventSeverityComponent } from '../event-severity/event-severity.component';
+import { EventsPageTabsComponent } from '../events-page-tabs/events-page-tabs.component';
 import { ExportEventsDialogComponent } from '../export-events-dialog/export-events-dialog.component';
+import { EVENT_COMPLETIONS } from './completions';
 import { EventsDataSource } from './events.datasource';
 
 
@@ -25,13 +27,14 @@ const defaultInterval = 'PT1H';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     EventMessageComponent,
+    EventsPageTabsComponent,
     EventSeverityComponent,
     InstanceToolbarComponent,
     InstancePageTemplateComponent,
     WebappSdkModule,
   ],
 })
-export class EventListComponent implements OnInit {
+export class EventListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   filter = input<string>();
   severity = input<EventSeverity>();
@@ -39,6 +42,12 @@ export class EventListComponent implements OnInit {
   interval = input<string>();
   customStart = input<string>();
   customStop = input<string>();
+
+  // From resolver
+  parseFilterSubscription = input.required<ParseFilterSubscription>();
+
+  searchFilter = viewChild.required<YaSearchFilter2>('searchFilter');
+  completions = EVENT_COMPLETIONS;
 
   validStart: Date | null;
   validStop: Date | null;
@@ -56,6 +65,12 @@ export class EventListComponent implements OnInit {
     customStart: new FormControl<string | null>(null),
     customStop: new FormControl<string | null>(null),
   });
+  multilineControl = new FormControl<boolean>(false);
+
+  isClearQueryEnabled() {
+    const fv = this.filterForm.value;
+    return this.searchFilter().empty() || fv.severity !== 'INFO' || fv.source?.length;
+  }
 
   dataSource: EventsDataSource;
 
@@ -128,12 +143,23 @@ export class EventListComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.parseFilterSubscription().addMessageListener(data => {
+      if (data.errorMessage) {
+        this.searchFilter().addErrorMark(data.errorMessage, {
+          beginLine: data.beginLine!,
+          beginColumn: data.beginColumn!,
+          endLine: data.endLine!,
+          endColumn: data.endColumn!,
+        });
+      } else {
+        this.searchFilter().clearErrorMark();
+      }
+    });
+
     this.initializeOptions();
     this.loadData();
 
-    this.filterForm.get('filter')!.valueChanges.pipe(
-      debounceTime(400),
-    ).forEach(filter => {
+    this.filterForm.get('filter')!.valueChanges.forEach(filter => {
       this.loadData();
     });
 
@@ -163,6 +189,12 @@ export class EventListComponent implements OnInit {
         this.loadData();
       }
     });
+  };
+
+  ngAfterViewInit(): void {
+    if ((this.filter() || '').indexOf('\n') !== -1) {
+      this.multilineControl.setValue(true);
+    }
   }
 
   private initializeOptions() {
@@ -252,7 +284,7 @@ export class EventListComponent implements OnInit {
     }
     const filter = controls['filter'].value;
     if (filter) {
-      options.q = filter;
+      options.filter = filter;
     }
     const source = controls['source'].value;
     if (source?.length) {
@@ -273,7 +305,7 @@ export class EventListComponent implements OnInit {
     }
     const filter = controls['filter'].value;
     if (filter) {
-      options.q = filter;
+      options.filter = filter;
     }
     const source = controls['source'].value;
     if (source?.length) {
@@ -301,6 +333,39 @@ export class EventListComponent implements OnInit {
     });
   }
 
+  clearQuery() {
+    this.filterForm.reset({
+      severity: 'INFO',
+      source: [],
+      interval: defaultInterval,
+    });
+  }
+
+  openSaveQueryDialog() {
+    const { controls } = this.filterForm;
+    this.dialog.open(CreateEventQueryDialogComponent, {
+      width: '800px',
+      data: {
+        severity: controls['severity'].value,
+        // Use currently typed value (even if not submitted)
+        filter: this.searchFilter().getTypedValue(),
+        source: controls['source'].value,
+        sourceOptions: this.sourceOptions$.value,
+      },
+    }).afterClosed().subscribe(res => {
+      if (res) {
+        this.messageService.showInfo('Query saved');
+      }
+    });
+  }
+
+  parseQuery(typedQuery: string) {
+    this.parseFilterSubscription().sendMessage({
+      resource: 'events',
+      filter: typedQuery,
+    });
+  }
+
   mayWriteEvents() {
     return this.authService.getUser()!.hasSystemPrivilege('WriteEvents');
   }
@@ -319,15 +384,19 @@ export class EventListComponent implements OnInit {
   exportEvents() {
     const { controls } = this.filterForm;
     this.dialog.open(ExportEventsDialogComponent, {
-      width: '400px',
+      width: '800px',
       data: {
         severity: controls['severity'].value,
         start: this.validStart,
         stop: this.validStop,
-        q: controls['filter'].value,
+        filter: controls['filter'].value,
         source: controls['source'].value,
         sourceOptions: this.sourceOptions$.value,
       },
     });
+  }
+
+  ngOnDestroy(): void {
+    this.parseFilterSubscription().cancel();
   }
 }

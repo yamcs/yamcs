@@ -126,7 +126,6 @@ a.ya-link {
 .ya-data-table a:hover,
 .ya-link a:hover,
 a.ya-link:hover {
-  /*color: #1b61b9;*/
   text-decoration: underline;
 }
 
@@ -177,6 +176,15 @@ a.ya-link:hover {
 
 .table-status {
   font-family: Roboto, sans-serif;
+}
+
+.table-actions {
+  font-family: Roboto, sans-serif;
+  display: flex;
+}
+
+.table-actions .ya-button {
+  margin-left: 7px;
 }
 
 @media print {

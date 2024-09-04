@@ -1,0 +1,48 @@
+<app-instance-page>
+  <app-instance-toolbar>Events</app-instance-toolbar>
+
+  <div class="panel-content">
+    <app-events-page-tabs />
+    <table
+      mat-table
+      [dataSource]="dataSource"
+      class="ya-data-table expand"
+      style="margin-top: 16px">
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef style="min-width: 200px">Name</th>
+        <td mat-cell *matCellDef="let item">
+          <a
+            routerLink="/events"
+            [queryParams]="{
+              filter: item.query.filter,
+              severity: item.query.severity,
+              source: item.query.source,
+              c: yamcs.context,
+            }">
+            {{ item.name }}
+          </a>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="visibility">
+        <th mat-header-cell *matHeaderCellDef>Visibility</th>
+        <td mat-cell *matCellDef="let item">
+          {{ item.shared ? "Shared" : "Private" }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef class="expand"></th>
+        <td mat-cell *matCellDef="let item">
+          <ya-more>
+            <button mat-menu-item (click)="openEditQueryDialog(item)">Edit query</button>
+            <button mat-menu-item (click)="openDeleteQueryDialog(item)">Delete query</button>
+          </ya-more>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+  </div>
+</app-instance-page>

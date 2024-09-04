@@ -1,0 +1,21 @@
+:host {
+  background-color: #e6f1ef;
+  color: var(--y-accent);
+  border: 1px solid var(--y-border-color);
+  border-bottom: 0;
+  padding-left: 8px;
+  padding-right: 8px;
+  height: 26px;
+
+  display: flex;
+  align-items: center;
+}
+
+:host.error {
+  background-color: #fcc;
+  color: crimson;
+}
+
+:host>mat-icon {
+  margin-right: 4px;
+}

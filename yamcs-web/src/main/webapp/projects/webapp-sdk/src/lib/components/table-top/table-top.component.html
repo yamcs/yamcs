@@ -1,0 +1,12 @@
+<mat-icon class="icon14">
+  @if (icon() === "auto") {
+    @if (severity() === "info") {
+      info
+    } @else if (severity() === "error") {
+      error_outline
+    }
+  } @else {
+    {{ icon() }}
+  }
+</mat-icon>
+<ng-content />

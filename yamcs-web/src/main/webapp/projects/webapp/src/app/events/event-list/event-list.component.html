@@ -31,29 +31,21 @@
 
   @if (dataSource) {
     <div class="panel-content">
+      <app-events-page-tabs>
+        <button class="ya-button text-only primary" (click)="clearQuery()" [disabled]="!isClearQueryEnabled()">
+          <mat-icon>clear</mat-icon>
+          Clear query
+        </button>
+        <button
+          class="ya-button text-only primary"
+          style="margin-right: 0"
+          (click)="openSaveQueryDialog()">
+          <mat-icon>save</mat-icon>
+          Save query
+        </button>
+      </app-events-page-tabs>
       <form [formGroup]="filterForm">
-        <div class="filter-bar">
-          <ya-search-filter formControlName="filter" placeholder="Filter by text search" />
-          <ya-column-chooser #columnChooser [columns]="columns" preferenceKey="events" />
-          <div style="flex: 1 1 auto"></div>
-          <button class="ya-button primary" style="margin-right: 0" (click)="exportEvents()">
-            <mat-icon>download</mat-icon>
-            Export CSV
-          </button>
-        </div>
-        <div class="filter-bar">
-          <ya-select formControlName="severity">
-            <ya-option id="INFO" label="Info level" />
-            <ya-option id="WATCH" label="Watch level" />
-            <ya-option id="WARNING" label="Warning level" />
-            <ya-option id="DISTRESS" label="Distress level" />
-            <ya-option id="CRITICAL" label="Critical level" />
-            <ya-option id="SEVERE" label="Severe level" />
-          </ya-select>
-          <ya-multi-select
-            [options]="sourceOptions$ | async"
-            formControlName="source"
-            emptyOption="Any source" />
+        <div class="filter-bar query" style="margin-top: 16px">
           <ya-select icon="access_time" formControlName="interval">
             <ya-option id="PT1H" label="Last hour" />
             <ya-option id="PT6H" label="Last 6 hours" />
@@ -68,66 +60,119 @@
               Apply
             </button>
           }
+          <ya-search-filter2
+            #searchFilter
+            formControlName="filter"
+            placeholder="Search events"
+            style="flex: 1 1 auto; margin-right: 7px"
+            [completions]="completions"
+            [expanded]="multilineControl.value"
+            (typedValue)="parseQuery($event)" />
+          <ya-select formControlName="severity">
+            <ya-option id="INFO" label="Info level" />
+            <ya-option id="WATCH" label="Watch level" />
+            <ya-option id="WARNING" label="Warning level" />
+            <ya-option id="DISTRESS" label="Distress level" />
+            <ya-option id="CRITICAL" label="Critical level" />
+            <ya-option id="SEVERE" label="Severe level" />
+          </ya-select>
+          <ya-multi-select
+            [options]="sourceOptions$ | async"
+            formControlName="source"
+            emptyOption="Any source" />
           @if (filterForm.value["interval"] !== "CUSTOM") {
             <button class="ya-button" (click)="jumpToNow()">Jump to now</button>
           }
-          @if (dataSource.loading$ | async) {
-            <ya-dots />
-          }
-          @if (dataSource.streaming$ | async) {
-            <div style="text-align: right; flex: 1 1 150px">
-              Listening for events
-              <ya-dots fontSize="16px" color="#1b61b9" />
-            </div>
-          }
+          <mat-slide-toggle [disableRipple]="true" [formControl]="multilineControl">
+            Multiline
+          </mat-slide-toggle>
         </div>
       </form>
-      <div class="table-status">
-        @switch (appliedInterval) {
-          @case ("PT1H") {
-            <span>
-              Showing events from
-              <b>the last hour</b>
-              ending at
-              <b>{{ validStop | datetime }}</b>
-              (Mission Time)
-            </span>
+      <div class="table-actions">
+        <div>
+          @switch (appliedInterval) {
+            @case ("PT1H") {
+              <span>
+                Showing events from
+                <b>the last hour</b>
+                ending at
+                <b>{{ validStop | datetime }}</b>
+                (Mission Time)
+              </span>
+            }
+            @case ("PT6H") {
+              <span>
+                Showing events from
+                <b>the last 6 hours</b>
+                ending at
+                <b>{{ validStop | datetime }}</b>
+                (Mission Time)
+              </span>
+            }
+            @case ("P1D") {
+              <span>
+                Showing events from
+                <b>the last 24 hours</b>
+                ending at
+                <b>{{ validStop | datetime }}</b>
+                (Mission Time)
+              </span>
+            }
+            @case ("NO_LIMIT") {
+              <span>
+                Showing events from
+                <b>all time</b>
+              </span>
+            }
+            @case ("CUSTOM") {
+              <span>
+                Showing events from
+                <b>{{ validStart | datetime }}</b>
+                to
+                <b>{{ validStop | datetime }}</b>
+                (Mission Time)
+              </span>
+            }
           }
-          @case ("PT6H") {
-            <span>
-              Showing events from
-              <b>the last 6 hours</b>
-              ending at
-              <b>{{ validStop | datetime }}</b>
-              (Mission Time)
-            </span>
-          }
-          @case ("P1D") {
-            <span>
-              Showing events from
-              <b>the last 24 hours</b>
-              ending at
-              <b>{{ validStop | datetime }}</b>
-              (Mission Time)
-            </span>
-          }
-          @case ("NO_LIMIT") {
-            <span>
-              Showing events from
-              <b>all time</b>
-            </span>
-          }
-          @case ("CUSTOM") {
-            <span>
-              Showing events from
-              <b>{{ validStart | datetime }}</b>
-              to
-              <b>{{ validStop | datetime }}</b>
-              (Mission Time)
-            </span>
-          }
+        </div>
+        <div style="flex: 1 1 auto"></div>
+        @if (dataSource.loading$ | async) {
+          <ya-dots />
         }
+        @if (dataSource.streaming$ | async) {
+          <div style="text-align: right; flex: 1 1 150px">
+            Listening for events
+            <ya-dots fontSize="16px" />
+          </div>
+        }
+        <button
+          class="ya-button text-only primary"
+          style="margin-right: 0"
+          (click)="exportEvents()">
+          <mat-icon>download</mat-icon>
+          Export CSV
+        </button>
+
+        <ya-column-chooser
+          #columnChooser
+          [columns]="columns"
+          preferenceKey="events"
+          [text]="true"
+          icon="view_columns" />
       </div>
+
+      @if (searchFilter.dirty()) {
+        <ya-table-top>
+          The search filter has changed.
+          @if (!(searchFilter.errorState$ | async)) {
+            &nbsp;
+            <a href class="ya-link" (click)="searchFilter.doSearch(); $event.preventDefault()">
+              Apply filter
+            </a>
+            .
+          }
+        </ya-table-top>
+      }
       <table mat-table [dataSource]="dataSource" class="ya-data-table expand">
         <ng-container cdkColumnDef="severity">
           <th mat-header-cell *cdkHeaderCellDef>Severity</th>
@@ -154,26 +199,28 @@
           </td>
         </ng-container>
         <ng-container cdkColumnDef="gentime">
-          <th mat-header-cell *cdkHeaderCellDef>Generation Time</th>
+          <th mat-header-cell *cdkHeaderCellDef>Generation time</th>
           <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">
             {{ (row.generationTime | datetime) || "-" }}
           </td>
         </ng-container>
         <ng-container cdkColumnDef="rectime">
-          <th mat-header-cell *cdkHeaderCellDef>Reception Time</th>
+          <th mat-header-cell *cdkHeaderCellDef>Reception time</th>
           <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">
             {{ (row.receptionTime | datetime) || "-" }}
           </td>
         </ng-container>
         <ng-container cdkColumnDef="seqNumber">
-          <th mat-header-cell *cdkHeaderCellDef>Sequence Number</th>
+          <th mat-header-cell *cdkHeaderCellDef>Sequence number</th>
           <td mat-cell *cdkCellDef="let row">
             {{ row.seqNumber ?? "-" }}
           </td>
         </ng-container>
         @for (extraColumn of extraColumns; track extraColumn) {
           <ng-container [cdkColumnDef]="extraColumn.id">
-            <th mat-header-cell *cdkHeaderCellDef>{{ extraColumn.label }}</th>
+            <th mat-header-cell *cdkHeaderCellDef>
+              {{ extraColumn.label }}
+            </th>
             <td mat-cell *cdkCellDef="let row">
               @if (row.extra) {
                 {{ row.extra[extraColumn.id] ?? "-" }}
@@ -189,6 +236,7 @@
           *cdkRowDef="let row; columns: columnChooser.displayedColumns$ | async"
           [ngClass]="row.severity"></tr>
       </table>
+
       <mat-toolbar>
         <span style="flex: 1 1 auto"></span>
         <button [disabled]="!dataSource.hasMore()" class="ya-button" (click)="loadMoreData()">

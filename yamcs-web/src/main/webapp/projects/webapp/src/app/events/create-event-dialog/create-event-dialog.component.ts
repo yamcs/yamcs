@@ -5,6 +5,7 @@ import { WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/web
 
 @Component({
   standalone: true,
+  selector: 'app-create-event-dialog',
   templateUrl: './create-event-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

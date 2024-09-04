@@ -218,7 +218,7 @@ message ListCompletenessIndexRequest {
   // The maximum number of returned entries. Choose this value too high and you risk hitting
   // the maximum response size limit enforced by the server. Default: ``1000``.
   // Note that in general it is advised to control the size of the response via ``mergeTime``,
-  //  rather than via ``limit``.
+  // rather than via ``limit``.
   optional int32 limit = 2;
 
   // Filter the lower bound of the index entries. Specify a date string in ISO 8601 format.

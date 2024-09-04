@@ -1,0 +1,29 @@
+<div class="search-input" [style.width]="width()">
+  <div class="query-container-and-error">
+    @if (expanded()) {
+      <ya-filter-textarea
+        #multiline
+        [formControl]="formControl"
+        [errorMark]="(errorState$ | async)?.context"
+        [completions]="completions()" />
+    } @else {
+      <ya-filter-input
+        #oneline
+        [formControl]="formControl"
+        [errorMark]="(errorState$ | async)?.context"
+        (onEnter)="doSearch()"
+        [placeholder]="placeholder()"
+        [completions]="completions()"
+        icon="search" />
+    }
+    @if (errorState$ | async; as errorState) {
+      <div class="query-error">
+        {{ errorState.message }}
+      </div>
+    }
+  </div>
+
+  <button class="ya-button primary group" (click)="doSearch()" [disabled]="!!(errorState$ | async)">
+    Search
+  </button>
+</div>

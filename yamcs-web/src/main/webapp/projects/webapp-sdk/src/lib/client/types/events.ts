@@ -2,6 +2,7 @@ import { WebSocketCall } from '../WebSocketCall';
 
 export interface SubscribeEventsRequest {
   instance: string;
+  filter?: string;
 }
 
 export type EventSeverity =
@@ -38,12 +39,11 @@ export interface GetEventsOptions {
    */
   stop?: string;
   /**
-   * Search string
+   * Filter query
    */
-  q?: string;
+  filter?: string;
   severity?: EventSeverity;
   source?: string | string[];
-  pos?: number;
   limit?: number;
   order?: 'asc' | 'desc';
 }
@@ -58,9 +58,9 @@ export interface DownloadEventsOptions {
    */
   stop?: string;
   /**
-   * Search string
+   * Filter query
    */
-  q?: string;
+  filter?: string;
   severity?: EventSeverity;
   source?: string | string[];
   delimiter?: 'COMMA' | 'SEMICOLON' | 'TAB';

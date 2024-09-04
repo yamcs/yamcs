@@ -24,7 +24,7 @@ export interface YaColumnInfo {
     MatMenuItem,
     MatIcon,
     MatMenuTrigger
-],
+  ],
 })
 export class YaColumnChooser implements OnInit {
 
@@ -33,6 +33,12 @@ export class YaColumnChooser implements OnInit {
 
   @Input()
   preferenceKey: string;
+
+  @Input()
+  icon?: string;
+
+  @Input()
+  text = false;
 
   displayedColumns$ = new BehaviorSubject<string[]>([]);
 

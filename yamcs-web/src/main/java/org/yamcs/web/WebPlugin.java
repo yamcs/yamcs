@@ -23,13 +23,14 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.templating.ParseException;
+import org.yamcs.web.api.WebApi;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.YarchDatabase;
 
 public class WebPlugin extends AbstractPlugin implements CommandOptionListener {
 
-    static final String CONFIG_DISPLAY_BUCKET = "displayBucket";
-    static final String CONFIG_STACK_BUCKET = "stackBucket";
+    public static final String CONFIG_DISPLAY_BUCKET = "displayBucket";
+    public static final String CONFIG_STACK_BUCKET = "stackBucket";
 
     /**
      * Allows access to the Admin Area.

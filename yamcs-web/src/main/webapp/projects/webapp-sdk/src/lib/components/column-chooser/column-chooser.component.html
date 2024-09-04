@@ -1,5 +1,9 @@
-<button [matMenuTriggerFor]="colMenu" class="ya-button">
-  Columns <mat-icon class="icon12">arrow_drop_down</mat-icon>
+<button [matMenuTriggerFor]="colMenu" class="ya-button" [class.text-only]="text">
+  @if (icon) {
+    <mat-icon>{{ icon }}</mat-icon>
+  }
+  Columns
+  <mat-icon class="icon12">arrow_drop_down</mat-icon>
 </button>
 
 <mat-menu #colMenu="matMenu" yPosition="below" class="ya-menu" [overlapTrigger]="false">

@@ -222,7 +222,7 @@ public class ParameterListsApi extends AbstractParameterListsApi<Context> {
         try {
             return UUID.fromString(id);
         } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Invalid activity identifier '" + id + "'");
+            throw new BadRequestException("Invalid identifier '" + id + "'");
         }
     }
 }

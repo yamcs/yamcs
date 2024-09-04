@@ -54,27 +54,6 @@ Cross-origin Resource Sharing (CORS) allows access to the Yamcs HTTP API from a 
 CORS is off by default on Yamcs Server, but available through configuration.
 
 
-.. rubric:: Response Filtering
-
-Responses can be filtered using the query parameter ``fields``, or alternatively by setting the HTTP header ``X-Yamcs-Fields``. This is usually not needed, because when unspecified all fields are returned. Some clients may anyway want to be explicit, for optimizing the message sizes.
-
-Field names are applicable to the top-level response message, and multiple fields can be separated by commas. Methods that return a list of messages apply the mask to each of the listed resources. Field paths can be of arbitrary depth separated by dots. Only the last part can refer to a repeated field.
-
-Some examples:
-
-Return information on the `simulator` instance, but include only the ``name`` and ``state`` fields:
-
-.. code-block::
-
-    curl 'localhost:8090/api/instances/simulator?fields=name,state'
-
-Return a list of all instances, but include only the ``name`` and ``state`` fields:
-
-.. code-block::
-
-    curl 'localhost:8090/api/instances?fields=name,state'
-
-
 .. rubric:: JSON
 
 All API methods are designed for JSON-over-HTTP. Matching type definitions in this documentation are written in TypeScript syntax because of its high readability. Note however that we do not currently mark parameters as optional (``?``).

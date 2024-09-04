@@ -92,7 +92,7 @@ service TimelineApi {
     };
   }
   
-  // Add a band.
+  // Add a band
   rpc AddBand(AddBandRequest) returns (TimelineBand) {
     option (yamcs.api.route) = {
       post: "/api/timeline/{instance}/bands"
@@ -218,9 +218,12 @@ message TimelineItem {
   // If this item is part of a group, this is the group identifier
   optional string groupId = 7;
     
-  //if this item time specification is relative to another item, relativeTime contains a reference
-  // to that item as well as the relative start (the duration is the same as given by the duration above)
-  //note that start of the item will be computed by the server based on the relativeTime before sending the item to the client
+  // If this item time specification is relative to another item, ``relativeTime``
+  // contains a reference to that item as well as the relative start (the duration
+  // is the same as the ``duration`` field).
+  //
+  // Note that start of the item is computed by the server based on the
+  // ``relativeTime`` before sending the item to the client.
   optional RelativeTime relativeTime = 8;
 
   // Item description
@@ -278,18 +281,18 @@ message TimelineBand {
   // User who has created the band
   optional string username = 4;
 
-  //if true, all users have access to this band, otherwise only the user who has created it
+  // If true, all users have access to this band, otherwise only the user who has created it
   optional bool shared = 5;
 
-  //the band contains only items from this source
+  // The band contains only items from this source
   optional string source = 6;
 
   //the band contains only items with these tags; if the list is empty, then all items from the given source are part of the band
   //this is deprecated, the filters below should be used to select the items
   repeated string tags = 7 [deprecated=true];
 
-  //The filters are to be considered in an AND manner.
-  // An item will be part of the band if it matches all the filters.
+  // The filters are to be considered in an AND manner.
+  // An item is part of the band if it matches all filters.
   // If the list is empty, then all items from the given source are part of the band
   repeated ItemFilter filters = 8;
 
@@ -349,7 +352,7 @@ message CreateItemRequest {
   // If the item time specification is relative to another item,
   // ``relativeTime`` contains a reference to that item, as well
   // as the relative start (the duration is the same as given by the
-  // duration above).
+  // ``duration`` field).
   optional RelativeTime relativeTime = 9;
 
   // Item description
@@ -387,27 +390,26 @@ message UpdateItemRequest {
   // Item name
   optional string name = 4;
 
-  //new start time
+  // New start time
    optional google.protobuf.Timestamp start = 5;
 
-  //new duration
+  // New duration
   optional google.protobuf.Duration duration = 6;
 
-  //new tags
+  // New tags
   repeated string tags = 7;
 
   // Set this to true to remove completely all the tags
-  // (required because in the protobuf we cannot distinguish between an empty tags list and a non existent list)
   optional bool clearTags = 8;
 
-  //new group identifier.
-  //to keep the old value, leave out
-  // to clear the group, set to an empty string
+  // New group identifier.
+  //
+  // To keep the old value, leave out. To clear the group, set to an empty string
   optional string groupId = 9;
 
-  //new relative time
-  // to keep the old value, leave out the property
-  // to clear, set the start
+  // New relative time.
+  //
+  // To keep the old value, leave out the property. To clear, set ``start``.
   optional RelativeTime relativeTime = 10;
 
   //new status (valid for activities)
@@ -451,7 +453,7 @@ message ListItemsRequest {
 
 
 message DeleteItemRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
   // Item source
@@ -488,7 +490,7 @@ message AddItemLogRequest {
 }
 
 message DeleteTimelineGroupRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
   // Item source
@@ -556,7 +558,7 @@ message AddBandRequest {
   // this is deprecated, the filters below should be used instead
   repeated string tags = 5 [deprecated = true];
   
-  //a query filter which can be used to limit additionally the items which are part of the band
+  // A query filter which can be used to limit additionally the items which are part of the band
   repeated ItemFilter filters = 6;
   
   // Type of band
@@ -590,7 +592,7 @@ message UpdateBandRequest {
   // Band description
   optional string description = 4;
   
-  //if true, all users have access to this band, otherwise only the user who has created it
+  // If true, all users have access to this band, otherwise only the user who has created it
   optional bool shared = 5;
   
   // Items containing these tags will be part of the timeline
@@ -599,10 +601,10 @@ message UpdateBandRequest {
   // Additional properties used by yamcs-web to render this band
   map<string, string> properties = 7;
 
-  //Where the items shown on this band come from
+  // Where the items shown on this band come from
   optional string source = 8;
 
-  //filters to apply when retrieving the items
+  // Filters to apply when retrieving items
   repeated ItemFilter filters = 9;
 }
 
@@ -612,7 +614,7 @@ message ListBandsRequest {
 }
 
 message DeleteBandRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
   // Item identifier
@@ -633,7 +635,7 @@ message AddViewRequest {
   // View description
   optional string description = 3;
 
-  // The bands from this view
+  // The bands belonging to this view
   repeated string bands = 4;
 }
 
@@ -663,12 +665,12 @@ message UpdateViewRequest {
   // View description
   optional string description = 4;
 
-  // The bands from this view
+  // The bands belonging to this view
   repeated string bands = 5;
 }
 
 message DeleteViewRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
   // Item identifier
@@ -679,16 +681,21 @@ message ListViewsResponse {
   repeated TimelineView views = 1;
 }
 
-//an item matches the filter if it matches any of the criteria from the list.
-//if the list is empty, the filter will not match
+// An item matches the filter if it matches any of the criteria from the list.
+// If the list is empty, the filter will not match.
 message ItemFilter {
-  // The filter criteria depends very much of the source which provides the item
-  // rdb source
-  //  supported key is "tag"
-  //   -> An item matches if the value proprty is among its tags
-  // commands source
-  //  supported key is "cmdNamePattern"
-  //  value is considered as a regexp and match against the cmdName from the cmdhist table
+  // Available filter criteria depend on the item's source.
+  //
+  // When the source is rdb:
+  //
+  // tag
+  //   An item matches if the value property is among its tags.
+  //
+  // When the source is commands:
+  //
+  // cmdNamePattern:
+  //   value is considered as a regexp and matched against the ``cmdName``
+  //   column from the ``cmdhist`` table.
   message FilterCriterion {
     optional string key = 1;
     optional string value = 2;
