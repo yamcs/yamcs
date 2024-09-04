@@ -1,0 +1,35 @@
+# Single term
+
+abc
+
+==>
+
+Filter(Text)
+
+# Sequence
+
+abc
+def
+
+==>
+
+Filter(Text, Text)
+
+# Negate text term
+
+abc
+-def
+
+==>
+
+Filter(Text, Minus, Text)
+
+
+# Negate string term
+
+"abc def"
+-"def ghi"
+
+==>
+
+Filter(String, Minus, String)

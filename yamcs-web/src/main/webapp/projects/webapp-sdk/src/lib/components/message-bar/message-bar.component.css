@@ -28,6 +28,12 @@
   line-height: 48px;
 }
 
+.actions button {
+  margin-top: 4px;
+  color: #fff;
+  margin-right: 11px;
+}
+
 .message-bar.warning .actions {
   background-color: darkorange !important;
 }

@@ -1,0 +1,58 @@
+@top Filter {(value | Comparison | LogicOp)* }
+
+value {
+  True
+  | False
+  | Null
+  | Number
+  | (Minus? String)
+  | (Minus? Text)
+}
+
+String[isolate] { string }
+Text[isolate] { text }
+
+Comparison { Comparable CompareOp value }
+Comparable[isolate] { text | string }
+
+CompareOp { "=" | "!=" | "<" | ">" | "<=" | ">=" | "=~" | "!~" | ":" }
+LogicOp { "AND" | "OR" | "NOT" }
+
+
+@tokens {
+  True  { "true" }
+  False { "false" }
+  Null  { "null" }
+
+  Number { '-'? int frac? exp?  }
+  int  { '0' | $[1-9] @digit* }
+  frac { '.' @digit+ }
+  exp  { $[eE] $[+\-]? @digit+ }
+
+  string { '"' char* '"' }
+  text { $[a-zA-Z_$] $[a-zA-Z0-9_$\.]* }
+  char { $[\u{20}\u{21}\u{23}-\u{5b}\u{5d}-\u{10ffff}] | "\\" esc }
+  esc  { $["\\\/bfnrt] }
+
+  LineComment { "--" ![\n]* }
+  Minus { "-" }
+
+  whitespace { $[ \n\r\t] }
+
+  "(" ")"
+
+  @precedence { True, text }
+  @precedence { False, text }
+  @precedence { Null, text }
+  @precedence { LineComment, Minus }
+  @precedence { Number, Minus }
+  @precedence { "AND", text }
+  @precedence { "OR", text }
+  @precedence { "NOT", text }
+}
+
+@skip { whitespace | LineComment | "(" | ")" }
+
+@external propSource filterHighlighting from "./highlight"
+
+@detectDelim

@@ -1,0 +1,38 @@
+# Text Comparison
+
+foo = 123
+
+==>
+
+Filter(Comparison(Comparable,CompareOp,Number))
+
+# String Comparison
+
+foo="123"
+
+==>
+
+Filter(Comparison(Comparable,CompareOp,String))
+
+# Operators
+
+foo != "123"
+foo < "123"
+foo <= "123"
+foo > "123"
+foo >= "123"
+foo =~ "123"
+foo !~ "123"
+foo : "123"
+
+==>
+
+Filter(
+  Comparison(Comparable,CompareOp,String),
+  Comparison(Comparable,CompareOp,String),
+  Comparison(Comparable,CompareOp,String),
+  Comparison(Comparable,CompareOp,String),
+  Comparison(Comparable,CompareOp,String),
+  Comparison(Comparable,CompareOp,String),
+  Comparison(Comparable,CompareOp,String),
+  Comparison(Comparable,CompareOp,String))

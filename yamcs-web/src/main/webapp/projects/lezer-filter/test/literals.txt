@@ -1,0 +1,23 @@
+# True
+
+true
+
+==>
+
+Filter(True)
+
+# False
+
+false
+
+==>
+
+Filter(False)
+
+# Null
+
+null
+
+==>
+
+Filter(Null)

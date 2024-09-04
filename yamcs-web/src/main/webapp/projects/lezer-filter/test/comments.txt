@@ -1,0 +1,8 @@
+# Line comment
+
+-- Some comment
+foo = 123
+
+==>
+
+Filter(LineComment,Comparison(Comparable,CompareOp,Number))

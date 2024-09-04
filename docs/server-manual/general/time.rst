@@ -7,7 +7,7 @@ The text below documents several aspects of working with time in Yamcs.
 Time Encoding
 -------------
 
-Yamcs uses 8 bytes signed integers (long in java) for representing milliseconds since 1-Jan-1970 00:00:00 TAI, including leap seconds. The Yamcs time in milliseconds is the UNIX time (in milliseconds) + leap seconds. 
+Yamcs uses signed eight-byte integers (long in Java) for representing milliseconds since 1-Jan-1970 00:00:00 TAI, including leap seconds. The Yamcs time in milliseconds is the UNIX time (in milliseconds) + leap seconds. 
 
 To convert accurately between TAI and UTC, a leap second table is used. Yamcs parses this information from the configuration file :file:`etc/UTC-TAI.history` in :abbr:`IERS (International Earth Rotation and Reference Systems Service)` format:
 
@@ -29,11 +29,11 @@ The user is responsible for updating manually this file if it changes (when new 
 #. Download the latest :file:`UTC-TAI.history` file from IERS.
 #. Deploy this file to :file:`etc/UTC-TAI.history` under the Yamcs directory.
 #. Restart Yamcs
-#. Verify the leap second table in the :doc:`Admin Area <../web-interface/admin/leap-seconds>`.
+#. Verify the leap second table in :doc:`Admin Area <../web-interface/admin/leap-seconds>`.
 
 Yamcs also has a high resolution time implemented in the class :javadoc:`org.yamcs.time.Instant`. This is represented as :math:`8+4` bytes milliseconds and picoseconds of the millisecond. It is not widely used - in Java it is not even easily possible to get the time with a resolution better than millisecond. 
 
-The higher resolution time is sent sometimes from external systems - for example a Ground Station may timestamp the incoming packets with a microsecond or nanosecond precise time (derived from an atomic clock) - this time is available as the Earth Reception Time via the yamcs-sle plugin.
+The higher resolution time is sent sometimes from external systems. For example a Ground Station may timestamp the incoming packets with a microsecond or nanosecond precise time (derived from an atomic clock). This time is available as the Earth Reception Time via the yamcs-sle plugin.
 
 The class that allows working with times, offering conversion functionality between the Yamcs time and UTC is :javadoc:`org.yamcs.utils.TimeEncoding`.
 
@@ -41,7 +41,7 @@ The class that allows working with times, offering conversion functionality betw
 Wall clock time
 ---------------
 
-The wall clock time is the computer time converted to Yamcs format. The ``getWallclockTime()`` function in ``TimeEncoding`` can be used to get the current wallclock time. In practice, in 2023, the following is true:
+The wall clock time is the computer time converted to Yamcs format. The ``getWallclockTime()`` function in ``TimeEncoding`` can be used to get the current wallclock time. In practice, in 2024, the following is true:
 
 .. code-block:: java
 
@@ -55,7 +55,7 @@ Mission Time
 
 The mission time in Yamcs is the *current* time. For a realtime mission that would be the wall clock time. For a simulation it would be the simulation time.
 
-The mission time is specific to a Yamcs instance and is given by the  :javadoc:`org.yamcs.time.TimeService` configured in that instance. The time service is configured using the ``timeService`` keyword in the :file:`etc/yamcs.{instance}.yaml`.
+The mission time is specific to a Yamcs instance and is given by the  :javadoc:`org.yamcs.time.TimeService` configured in that instance. The time service is configured using the ``timeService`` keyword in :file:`etc/yamcs.{instance}.yaml`.
 
 There are two time services implemented as part of standard Yamcs:
 
@@ -84,10 +84,9 @@ The generation time is the time when the data has been generated.
 
 For telemetry packets, it is set by the pre-processor, normally with a time extracted from the packet. However it can be set to the mission time if the ``useLocalGenerationTime`` option is set to true.
 
-The timeEncoding option is used on the TM links to configure how to extract the time from the packet - which means how to covert a number (or more numbers) extracted from the packet to a Yamcs time. The various options for time decoding are documented in the :doc:`../links/packet-preprocessor`
+The timeEncoding option is used on the TM links to configure how to extract the time from the packet - which means how to convert a number (or more numbers) extracted from the packet to a Yamcs time. The various options for time decoding are documented in the :doc:`../links/packet-preprocessor`
 
-
-The spacecrafts which have no mean to synchronize time (e.g. no access to GPS) will usually use a free running on-board clock (initialized to 0 at startup) to timestamp the packets. In these cases, the on-board time needs to be correlated with the mission time. The :doc:`../services/instance/time-correlation` can be used for this purpose.
+Spacecrafts that have no means to synchronize time (e.g. no access to GPS) will usually use a free running on-board clock (initialized to 0 at startup) to timestamp the packets. In these cases, the on-board time needs to be correlated with the mission time. The :doc:`../services/instance/time-correlation` can be used for this purpose.
 
 Finally, the TM links have an option ``updateSimulationTime`` which can be used to set the mission time to the time extracted from the packet. This works if the SimulationTimeService is used. 
 

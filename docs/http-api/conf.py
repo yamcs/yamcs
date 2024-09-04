@@ -61,4 +61,9 @@ yamcs_api_protobin = (
 )
 yamcs_api_destdir = "."
 yamcs_api_title = "Yamcs HTTP API"
-yamcs_api_additional_docs = ["overview.rst", "websocket.rst"]
+yamcs_api_additional_docs = [
+    "overview.rst",
+    "filtering.rst",
+    "partial-responses.rst",
+    "websocket.rst",
+]

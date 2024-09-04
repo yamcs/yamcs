@@ -287,11 +287,7 @@ export class InstancePageComponent implements OnInit, OnDestroy {
 
   handleKeydown(event: KeyboardEvent) {
     const el: HTMLInputElement = this.searchInput.nativeElement;
-    if (event.key === "/"
-      && document.activeElement?.tagName !== "INPUT"
-      && document.activeElement?.tagName !== "SELECT"
-      && document.activeElement?.tagName !== "TEXTAREA"
-    ) {
+    if (event.key === "/" && this.isValidKeySource()) {
       el.focus();
       event.preventDefault();
     } else if (event.key === "Enter") {
@@ -303,6 +299,17 @@ export class InstancePageComponent implements OnInit, OnDestroy {
         });
       }
     }
+  }
+
+  private isValidKeySource() {
+    const { activeElement } = document;
+    if (!activeElement) {
+      return true;
+    }
+    return activeElement.tagName !== "INPUT"
+      && activeElement.tagName !== "SELECT"
+      && activeElement.tagName !== "TEXTAREA"
+      && !activeElement.classList.contains('cm-content'); // Exclude CodeMirror editor
   }
 
   ngOnDestroy() {

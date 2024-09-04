@@ -15,3 +15,17 @@ message ExceptionMessage {
   string msg = 3;
   google.protobuf.Any detail = 4;
 }
+
+message FilterSyntaxException {
+  // Begin line of the token where the exception occurs
+  int32 beginLine = 1;
+
+  // Begin column of the token where the exception occurs
+  int32 beginColumn = 2;
+
+  // End line of the token where the exception occurs
+  int32 endLine = 3;
+
+  // End column of the token where the exception occurs
+  int32 endColumn = 4;
+}

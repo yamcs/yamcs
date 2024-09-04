@@ -2,17 +2,22 @@
 
 <mat-dialog-content class="ya-form">
   <form [formGroup]="form">
-    <label>
+    <div class="label">
       Start
       <ya-date-time-input formControlName="start" />
-    </label>
-    <br />
-    <label>
+    </div>
+    <hr class="half-break" />
+    <div class="label">
       Stop
       <ya-date-time-input formControlName="stop" />
-    </label>
-    <br />
-    <label>
+    </div>
+    <hr class="half-break" />
+    <div class="label">
+      Query
+      <ya-filter-textarea formControlName="filter" />
+    </div>
+    <hr class="half-break" />
+    <div class="label">
       Severity
       <br />
       <ya-select formControlName="severity">
@@ -23,23 +28,18 @@
         <ya-option id="CRITICAL" label="Critical level" />
         <ya-option id="SEVERE" label="Severe level" />
       </ya-select>
-    </label>
-    <br />
-    <label>
-      Text filter
-      <input type="text" formControlName="q" />
-    </label>
-    <br />
-    <label>
+    </div>
+    <hr class="half-break" />
+    <div class="label">
       Source
       <br />
       <ya-multi-select
         formControlName="source"
         [options]="data.sourceOptions"
         emptyOption="Any source" />
-    </label>
-    <br />
-    <label>
+    </div>
+    <hr class="half-break" />
+    <div class="label">
       CSV column delimiter
       <br />
       <ya-select formControlName="delimiter">
@@ -47,7 +47,7 @@
         <ya-option id="SEMICOLON" label="Semicolon" />
         <ya-option id="TAB" label="Tab" />
       </ya-select>
-    </label>
+    </div>
   </form>
 </mat-dialog-content>
 

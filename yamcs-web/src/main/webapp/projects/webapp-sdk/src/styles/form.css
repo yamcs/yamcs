@@ -33,7 +33,9 @@
 .ya-form div.label input[type="password"],
 .ya-form div.label textarea,
 .ya-form div.label select,
-.ya-form div.label .date-time-input {
+.ya-form div.label .date-time-input,
+.ya-form div.label ya-filter-input,
+.ya-form div.label ya-filter-textarea {
   margin: 5px 0 0;
   display: block;
   width: 100%;
@@ -54,6 +56,7 @@
   background: white;
   border: 1px solid #d3d3d3;
   border-radius: 1px;
+  font-family: Roboto, sans-serif;
   font-size: 12px;
   font-weight: 400;
   height: 24px;
