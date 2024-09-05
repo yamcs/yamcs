@@ -107,8 +107,8 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
             YConfiguration srs3 = config.getConfig("srs3");
             crc = AbstractPacketPreprocessor.getErrorDetectionWordCalculator(srs3);
 
-            if (config.containsKey("stripHeaders")) {
-                YConfiguration sc = config.getConfig("stripHeaders");
+            if (srs3.containsKey("stripHeaders")) {
+                YConfiguration sc = srs3.getConfig("stripHeaders");
                 stripHeader = sc.getInt("length");
             }
 

@@ -28,7 +28,7 @@ public class Srs3ManagedParameters {
             cspHeader = config.getBinary("cspHeader");
         }
 
-        enforceFrameLength = config.getBoolean("enforceFrameLength");
+        enforceFrameLength = config.getBoolean("enforceFrameLength", false);
 
         if (config.containsKey("rhLength"))
             radioHeaderLength = config.getInt("rhLength", 0);
