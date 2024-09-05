@@ -6,7 +6,7 @@ package org.yamcs.tctm;
  * <p>
  * We assume the all frames are of pre-configured fixed length.
  */
-public interface RawFrameDecoder {
+public interface RawFrameEnDec {
     /**
      * Decodes frame in the buffer at offset. The decoded frame is stored in the same buffer.
      * <p>
@@ -15,7 +15,7 @@ public interface RawFrameDecoder {
     int decodeFrame(byte[] data, int offset, int length);
 
     /**
-     * Returns the length of the encoded (input) frame or -1 if it can be variable
+     * Returns the length of the encoded frame or -1 if it can be variable
      * 
      * @return
      */
@@ -27,5 +27,12 @@ public interface RawFrameDecoder {
      * @return
      */
     int decodedFrameLength();
+
+    /**
+     * Encodes frame in the buffer at offset. The Encoded frame is stored in the same buffer.
+     * <p>
+     * Returns the length of the encoded frame
+     */
+    int encodeFrame(byte[] data, int length, int vf);
 
 }

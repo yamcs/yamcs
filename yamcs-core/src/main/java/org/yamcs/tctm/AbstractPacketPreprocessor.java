@@ -10,6 +10,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.logging.Log;
+import org.yamcs.tctm.ccsds.error.CrcCciit32Calculator;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
 import org.yamcs.time.FixedSizeTimeDecoder;
@@ -241,6 +242,12 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
                 return new CrcCciitCalculator();
             } else {
                 return new CrcCciitCalculator(crcConf);
+            }
+        } else if ("CRC-32-CCIIT".equalsIgnoreCase(type)) {
+            if (crcConf == null) {
+                return new CrcCciit32Calculator();
+            } else {
+                return new CrcCciit32Calculator(crcConf);
             }
         } else if ("ISO-16".equalsIgnoreCase(type)) {
             return new Iso16CrcCalculator();

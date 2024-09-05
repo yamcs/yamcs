@@ -12,8 +12,29 @@ import org.yamcs.YConfiguration;
  *
  */
 public abstract class UplinkManagedParameters {
-    public enum FrameErrorDetection {NONE, CRC16, CRC32};
-   
+    public enum FrameErrorDetection {
+        NONE("NONE"), CRC16("CRC16"), CRC32("CRC32");
+
+        private final String value;
+
+        FrameErrorDetection(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public static FrameErrorDetection fromValue(String value) {
+            for (FrameErrorDetection enumValue : FrameErrorDetection.values()) {
+                if (enumValue.value == value) {
+                    return enumValue;
+                }
+            }
+            throw new IllegalArgumentException("No enum constant with value " + value);
+        }
+    };
+
     public enum ServiceType {
         PACKET
     };
