@@ -79,7 +79,11 @@ public class PixxelPacketMultipleDecoder {
                 byte d0 = data[offset];
                 offset++;
                 length--;
-                headerLength = getHeaderLength(d0);
+                try {
+                    headerLength = getHeaderLength(d0);
+                } catch (E0UnsupportedPacketVersionException e) {
+                    return;
+                }
 
                 header[0] = d0;
                 headerOffset++;
@@ -128,12 +132,12 @@ public class PixxelPacketMultipleDecoder {
     }
 
     // get headerLength based on the first byte of the packet
-    private static int getHeaderLength(byte b0) throws UnsupportedPacketVersionException {
+    private static int getHeaderLength(byte b0) throws TcTmException {
         int pv = (b0 & 0xFF) >>> 5;
         if (pv == PACKET_VERSION_CCSDS) {
             return 6;
         } else {
-            throw new UnsupportedPacketVersionException(pv);
+            throw new E0UnsupportedPacketVersionException(pv);
         }
     }
 
