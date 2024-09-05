@@ -91,6 +91,7 @@ public class ServiceSix implements PusService {
     public void initializeSubServices() {
         pusSubServices.put(1, new SubServiceOne(yamcsInstance, config.getConfigOrEmpty("one")));
         pusSubServices.put(3, new SubServiceThree(yamcsInstance, config.getConfigOrEmpty("three")));
+        pusSubServices.put(5, new SubServiceFive(yamcsInstance, config.getConfigOrEmpty("five")));
         pusSubServices.put(7, new SubServiceSeven(yamcsInstance, config.getConfigOrEmpty("seven")));
         pusSubServices.put(12, new SubServiceTwelve(yamcsInstance, config.getConfigOrEmpty("twelve")));
         pusSubServices.put(15, new SubServiceFifteen(yamcsInstance, config.getConfigOrEmpty("fifteen")));
