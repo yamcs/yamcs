@@ -33,8 +33,7 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.tctm.AbstractTcDataLink;
 import org.yamcs.tctm.ccsds.Cop1Monitor.AlertType;
 import org.yamcs.tctm.ccsds.TcManagedParameters.TcVcManagedParameters;
-import org.yamcs.tctm.csp.AbstractCspTcFrameLink.CspManagedParameters;
-import org.yamcs.tctm.csp.CspFrameFactory;
+import org.yamcs.tctm.srs3.Srs3FrameFactory;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AggregateParameterType;
@@ -92,7 +91,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
 
     TcVcManagedParameters vmp;
     TcFrameFactory frameFactory;
-    CspFrameFactory cspFrameFactory;
+    Srs3FrameFactory srs3FrameFactory;
 
     // used to signal to the master channel when data is available on this VC
     private Semaphore dataAvailableSemaphore;
@@ -176,7 +175,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         super.init(yamcsInstance, linkName, vmp.config);
 
         this.frameFactory = vmp.getFrameFactory();
-        this.cspFrameFactory = vmp.getCspFrameFactory();
+        this.srs3FrameFactory = vmp.getsSrs3FrameFactory();
         this.executor = executor;
         this.vmp = vmp;
         this.vcId = vmp.vcId;
@@ -203,8 +202,8 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
                 tcBypassFlag,
                 bypassAll);
         int framingLength = frameFactory.getFramingLength(vmp.vcId);
-        if (cspFrameFactory != null) {
-            framingLength += cspFrameFactory.getFramingLength();
+        if (srs3FrameFactory != null) {
+            framingLength += srs3FrameFactory.getInnerFramingLength();
         }
 
         int pcLength = cmdPostProcessor.getBinaryLength(pc);
@@ -213,7 +212,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
                     vmp.maxFrameLength);
             failedCommand(pc.getCommandId(),
                     "Command too large to fit in a frame; cmd size: " + pcLength + "; max frame length: "
-                            + vmp.maxFrameLength + "; frame overhead: " + framingLength + "; cspHeader included: " + (cspFrameFactory != null? "Yes | " + cspFrameFactory.getCspHeaderLength() + " bytes" : "No"));
+                            + vmp.maxFrameLength + "; frame overhead: " + framingLength + "; cspHeader and radioHeader included: " + (srs3FrameFactory != null? "Yes | (" + srs3FrameFactory.getCspHeaderLength() + ", " + srs3FrameFactory.getRadioHeaderLength() +") bytes" : "No"));
 
             return true;
         }
@@ -244,27 +243,36 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
             qf.cf.complete(null);
         }
         frameFactory.encodeFrame(qf.tf);
-
-        // Check if cspHeader needs to be added
-        int ccsdsDataStart = qf.tf.getDataStart();
-        int ccsdsDataEnd = qf.tf.getDataEnd();
         byte[] data = qf.tf.getData();
 
-        CspFrameFactory cspFrameFactory = vmp.getCspFrameFactory();
-        if (cspFrameFactory != null) {
-            byte[] cspFrame = cspFrameFactory.makeFrame(data.length);
+        Srs3FrameFactory srs3FrameFactory = vmp.getsSrs3FrameFactory();
+        if (srs3FrameFactory != null) {
+            byte[] srs3Frame = srs3FrameFactory.makeFrame(data.length);
+            AtomicInteger dataStart, dataEnd;
 
-            int cspOffset = cspFrameFactory.getCspHeaderLength();
-            System.arraycopy(data, 0, cspFrame, cspOffset, data.length);
+            dataStart = new AtomicInteger(0);
+            dataEnd = new AtomicInteger(0);
 
-            // Add the cspHeader to the CCSDS Frame
-            cspFrameFactory.encodeFrame(cspFrame);
+            if (srs3FrameFactory.getSrs3ManagedParameters().getEncryption() != null) {
+                dataStart.set(dataStart.get() + srs3FrameFactory.getIVLength());
+                dataEnd.set(dataEnd.get() + srs3FrameFactory.getIVLength());
+            }
+
+            int srs3Offset = srs3FrameFactory.getCspHeaderLength() + srs3FrameFactory.getRadioHeaderLength() + srs3FrameFactory.getSpacecraftIdLength();
+            dataEnd.set(dataEnd.get() + srs3Offset);
+
+            System.arraycopy(data, 0, srs3Frame, dataStart.get() + srs3Offset, data.length);
+            dataEnd.set(dataEnd.get() + data.length + srs3FrameFactory.getPaddingLength(data.length));
+
+            // Add the cspHeader + radioHeader + Encryption to the CCSDS Frame
+            srs3FrameFactory.encodeFrame(srs3Frame, dataStart, dataEnd, data.length + srs3FrameFactory.getCspHeaderLength());
             
-            // Set the cspFrame
-            qf.tf.setData(cspFrame);
-            qf.tf.setDataStart(cspOffset + ccsdsDataStart);
-            qf.tf.setDataEnd(cspOffset + ccsdsDataEnd);
+            // Set the srs3Frame
+            qf.tf.setData(srs3Frame);
+            qf.tf.setDataStart(dataStart.get());
+            qf.tf.setDataEnd(dataEnd.get());
         }
+
         // BC frames contain no command but we still count it as one item out
         var count = qf.tf.commands == null ? 1 : qf.tf.commands.size();
         dataOut(count, qf.tf.getData().length);
@@ -324,6 +332,9 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         PreparedCommand pc;
 
         int framingLength = frameFactory.getFramingLength(vmp.vcId);
+        if (srs3FrameFactory != null)
+            framingLength += srs3FrameFactory.getInnerFramingLength();
+
         int dataLength = 0;
         List<PreparedCommand> l = new ArrayList<>();
 

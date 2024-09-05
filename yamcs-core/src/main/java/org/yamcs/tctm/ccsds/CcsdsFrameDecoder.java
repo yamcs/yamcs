@@ -7,7 +7,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.rs.ReedSolomon;
 import org.yamcs.rs.ReedSolomonException;
-import org.yamcs.tctm.RawFrameDecoder;
+import org.yamcs.tctm.RawFrameEnDec;
 
 /**
  * 
@@ -15,7 +15,7 @@ import org.yamcs.tctm.RawFrameDecoder;
  * Only Reed-Solomon and de-randomization supported.
  * 
  */
-public class CcsdsFrameDecoder implements RawFrameDecoder {
+public class CcsdsFrameDecoder implements RawFrameEnDec {
     boolean derandomize;
     final ReedSolomon rs;
     int interleavingDepth;
@@ -88,5 +88,10 @@ public class CcsdsFrameDecoder implements RawFrameDecoder {
 
     public int decodedFrameLength() {
         return decodedFrameLength;
+    }
+
+    @Override
+    public int encodeFrame(byte[] data, int length, int vf) {
+        throw new UnsupportedOperationException("Unimplemented method 'encodeFrame'");
     }
 }

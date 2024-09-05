@@ -145,7 +145,7 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
                 lastFrameSeq = frame.getVcFrameSeq();
 
                 if (frameLoss != 0) {
-                    log.warn("Frame has been dropped, sigh");
+                    log.warn("Frames have been dropped in transit, sigh");
                 }
 
                 if (packetStart != -1) {
@@ -170,7 +170,7 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
                 lastFrameSeq = frame.getVcFrameSeq();
 
                 if (frameLoss != 0) {
-                    log.warn("Frame has been dropped, sigh");
+                    log.warn("Frames have been dropped in transit, sigh");
                 }
 
                 if (packetStart != -1) {
