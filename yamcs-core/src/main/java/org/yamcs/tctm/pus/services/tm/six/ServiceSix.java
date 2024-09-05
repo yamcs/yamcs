@@ -75,6 +75,7 @@ public class ServiceSix implements PusService {
 
     public void initializeSubServices() {
         subServices.put(4, new SubServiceFour(yamcsInstance, config.getConfigOrEmpty("four")));
+        subServices.put(6, new SubServiceSix(yamcsInstance, config.getConfigOrEmpty("six")));
     }
 
     @Override
