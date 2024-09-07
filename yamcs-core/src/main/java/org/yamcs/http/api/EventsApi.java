@@ -201,6 +201,10 @@ public class EventsApi extends AbstractEventsApi<Context> {
             if (severity == null) {
                 throw new BadRequestException("Unsupported severity: " + request.getSeverity());
             }
+            if (severity == EventSeverity.ERROR) {
+                log.warn("DEPRECATION WARNING: Do not create events with ERROR level, "
+                        + "this will be removed in a future release.");
+            }
             eventb.setSeverity(severity);
         } else {
             eventb.setSeverity(EventSeverity.INFO);
@@ -523,7 +527,14 @@ public class EventsApi extends AbstractEventsApi<Context> {
             evb.setMessage(other.getMessage());
         }
         if (other.hasSeverity()) {
-            evb.setSeverity(other.getSeverity());
+            if (other.getSeverity() == EventSeverity.ERROR) {
+                evb.setSeverity(EventSeverity.SEVERE);
+            } else if (other.getSeverity() == EventSeverity.WARNING_NEW) {
+                // Temporary during WARNING -> WARNING_NEW migration
+                evb.setSeverity(EventSeverity.WARNING);
+            } else {
+                evb.setSeverity(other.getSeverity());
+            }
         }
         if (other.hasCreatedBy()) {
             evb.setCreatedBy(other.getCreatedBy());

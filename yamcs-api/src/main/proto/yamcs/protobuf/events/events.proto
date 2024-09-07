@@ -10,16 +10,37 @@ import "google/protobuf/timestamp.proto";
 
 
 message Event {
+  // The severity levels, in order are:
+  // INFO, WATCH, WARNING, DISTRESS, CRITICAL, SEVERE.
+  //
+  // A migration is underway to fully move away from the legacy
+  // INFO, WARNING, ERROR levels.
   enum EventSeverity {
     INFO = 0;
     WARNING = 1;
-    ERROR = 2;
 
-    //the levels below are compatible with XTCE
-    // we left the 4 out since it could be used 
-    // for warning if we ever decide to get rid of the old ones
+    // Legacy, avoid use.
+    ERROR = 2 [deprecated=true];
 
     WATCH = 3;
+
+    // Placeholder for future WARNING constant.
+    // (correctly sorted between WATCH and DISTRESS)
+    //
+    // Most clients can ignore, this state is here
+    // to give Protobuf clients (Python Client, Yamcs Studio)
+    // the time to add a migration for supporting both WARNING
+    // and WARNING_NEW (Protobuf serializes the number).
+    //
+    // Then in a later phase, we move from:
+    // WARNING=1, WARNING_NEW=4
+    //
+    // To:
+    // WARNING_OLD=1, WARNING=4
+    //
+    // (which is a transparent change to JSON clients)
+    WARNING_NEW = 4;
+
     DISTRESS = 5;
     CRITICAL = 6;
     SEVERE = 7;

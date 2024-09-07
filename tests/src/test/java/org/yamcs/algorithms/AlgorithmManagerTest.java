@@ -204,7 +204,7 @@ public class AlgorithmManagerTest {
         String defaultSource = "CustomAlgorithm";
 
         for (EventSeverity sev : EventSeverity.values()) {
-            if (sev == EventSeverity.ERROR) {
+            if (sev == EventSeverity.ERROR || sev == EventSeverity.WARNING_NEW) {
                 continue;
             }
 
