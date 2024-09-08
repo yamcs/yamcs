@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem name="Example"
+  xmlns="https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  shortDescription="Example XTCE to test IndirectParamRefs with aliases">
+
+  <TelemetryMetaData>
+    <ParameterTypeSet>
+      <IntegerParameterType name="id_type">
+        <IntegerDataEncoding sizeInBits="32" />
+      </IntegerParameterType>
+      <FloatParameterType name="float_type">
+        <FloatDataEncoding sizeInBits="32" />
+      </FloatParameterType>
+    </ParameterTypeSet>
+    <ParameterSet>
+      <Parameter parameterTypeRef="id_type" name="id" />
+      <Parameter parameterTypeRef="float_type" name="example_param1">
+        <AliasSet>
+          <Alias nameSpace="test-ns-id" alias="1" />
+        </AliasSet>
+      </Parameter>
+      <Parameter parameterTypeRef="float_type" name="example_param2">
+        <AliasSet>
+          <Alias nameSpace="test-ns-id" alias="2" />
+        </AliasSet>
+      </Parameter>
+    </ParameterSet>
+    <ContainerSet>
+      <SequenceContainer name="id_value_pair">
+        <EntryList>
+          <ParameterRefEntry parameterRef="id" />
+          <IndirectParameterRefEntry aliasNameSpace="test-ns-id">
+            <ParameterInstance parameterRef="id" />
+          </IndirectParameterRefEntry>
+        </EntryList>
+      </SequenceContainer>
+    </ContainerSet>
+  </TelemetryMetaData>
+
+</SpaceSystem>
