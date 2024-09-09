@@ -1,5 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { indentWithTab } from '@codemirror/commands';
+import { java } from '@codemirror/lang-java';
 import { javascript } from '@codemirror/lang-javascript';
 import { python } from '@codemirror/lang-python';
 import { EditorState, Extension } from '@codemirror/state';
@@ -84,6 +85,9 @@ export class AlgorithmDetailComponent implements AfterViewInit {
     extensions.push(theme);
 
     switch (this.algorithm.language.toLowerCase()) {
+      case 'java-expression':
+        extensions.push(java());
+        break;
       case 'javascript':
         extensions.push(javascript());
         break;
