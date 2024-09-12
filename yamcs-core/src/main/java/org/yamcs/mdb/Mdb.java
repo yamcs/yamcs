@@ -43,12 +43,44 @@ public class Mdb extends XtceDb {
     private static final long serialVersionUID = 2L;
     final Map<String, SpaceSystemWriter> subsystemWriters;
 
+    Map<String, String> mdbVersion = new HashMap<>();
+
     public Mdb(SpaceSystem spaceSystem, Map<String, SpaceSystemWriter> susbsystemWriters) {
         super(spaceSystem);
         susbsystemWriters.put(YAMCS_SPACESYSTEM_NAME, (fqn, mdb) -> {
             // writer for the /yamcs doesn't write to disk
         });
         this.subsystemWriters = susbsystemWriters;
+        populateMdbVersion(spaceSystem);
+    }
+
+    public Map<String, String> getMdbVersion() {
+        return mdbVersion;
+    }
+
+    public void populateMdbVersion(SpaceSystem spaceSystem) {
+        if (spaceSystem == null)
+            return;
+
+        String version, name;
+        if (spaceSystem.getHeader() != null) {
+            version = spaceSystem.getHeader().getVersion();
+            name = spaceSystem.getName();
+            if (version != null)
+                mdbVersion.put(name, version);
+        }
+
+        for (SpaceSystem ss: spaceSystem.getSubSystems()) {
+            if (ss.getHeader() != null) {
+                version = ss.getHeader().getVersion();
+                name = ss.getName();
+                if (version != null)
+                    mdbVersion.put(name, version);
+                
+            }
+
+            populateMdbVersion(ss);
+        }
     }
 
     public void addParameter(Parameter p, boolean addSpaceSystem, boolean addParameterType) throws IOException {

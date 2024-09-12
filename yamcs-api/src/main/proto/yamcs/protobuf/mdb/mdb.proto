@@ -17,6 +17,13 @@ service MdbApi {
     };
   }
 
+  // Get the version of the mission database
+  rpc GetMissionDatabaseVersion(GetMissionDatabaseVersionRequest) returns (MissionDatabaseVersion) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}:version"
+    };
+  }
+
   // Export a java serialized dump of the mission database
   rpc ExportJavaMissionDatabase(ExportJavaMissionDatabaseRequest) returns (yamcs.api.HttpBody) {
     option (yamcs.api.route) = {
@@ -161,6 +168,14 @@ service MdbApi {
       get: "/api/mdb/{instance}/algorithms/{name*}"
     };
   }
+}
+
+message MissionDatabaseVersion {
+  message MdbVersion {
+    optional string subsytemName = 1;
+    optional string version = 2;
+  }
+  repeated MdbVersion mdbVersion = 1;
 }
 
 message MissionDatabase {
@@ -1169,6 +1184,11 @@ message CreateParameterTypeRequest {
 }
 
 message GetMissionDatabaseRequest {
+  // Yamcs instance name.
+  optional string instance = 1;
+}
+
+message GetMissionDatabaseVersionRequest {
   // Yamcs instance name.
   optional string instance = 1;
 }
