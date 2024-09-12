@@ -210,7 +210,7 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
                     String rName = value.getFourth();
 
                     byte[] contention = Arrays.copyOfRange(data, offset + roffset, offset + roffset + rsize);
-                    if (contention.equals(mc.getKey())) {
+                    if (Arrays.equals(mc.getKey(), contention)) {
                         data = Arrays.copyOfRange(data, offset + stripHeader, offset + length);
                         Tuple t = new Tuple(StandardTupleDefinitions.TM, new Object[] { null, null, timeService.getMissionTime(), null,
                                                 data, timeService.getHresMissionTime(), null, linkName, null});
