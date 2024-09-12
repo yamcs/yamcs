@@ -13,7 +13,7 @@ import { CreateEventRequest, DownloadEventsOptions, Event, EventSubscription, Ge
 import { CreateTransferRequest, GetFileTransfersOptions, ListFilesRequest, ListFilesResponse, RemoteFileListSubscription, RunFileActionRequest, ServicesPage, SubscribeRemoteFileListRequest, SubscribeTransfersRequest, Transfer, TransferSubscription, TransfersPage } from './types/filetransfer';
 import { AlarmsWrapper, CommandQueuesWrapper, EventsWrapper, GroupsWrapper, IndexResult, InstanceTemplatesWrapper, InstancesWrapper, LinksWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, RocksDbDatabasesWrapper, RolesWrapper, SamplesWrapper, ServicesWrapper, SessionsWrapper, SourcesWrapper, StreamsWrapper, TablesWrapper, UsersWrapper } from './types/internal';
 import { CreateInstanceRequest, InstancesSubscription, Link, LinkEvent, LinkSubscription, ListInstancesOptions, SubscribeLinksRequest } from './types/management';
-import { Algorithm, AlgorithmOverrides, AlgorithmStatus, AlgorithmTrace, AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParameterTypesOptions, GetParametersOptions, MissionDatabase, NamedObjectId, Parameter, ParameterType, ParameterTypesPage, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
+import { Algorithm, AlgorithmOverrides, AlgorithmStatus, AlgorithmTrace, AlgorithmsPage, Command, CommandsPage, Container, ContainersPage, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParameterTypesOptions, GetParametersOptions, MissionDatabase, MissionDatabaseVersion, NamedObjectId, Parameter, ParameterType, ParameterTypesPage, ParametersPage, SpaceSystem, SpaceSystemsPage } from './types/mdb';
 import { ArchiveRecord, CommandHistoryEntry, CommandHistoryPage, CreateProcessorRequest, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, ExecutorInfo, ExportParameterValuesOptions, GetCommandHistoryOptions, GetCompletenessIndexOptions, GetPacketsOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ListPacketsResponse, Packet, ParameterData, ParameterValue, Range, Sample, StartProcedureOptions, StreamCommandIndexOptions, StreamCompletenessIndexOptions, StreamEventIndexOptions, StreamPacketIndexOptions, StreamParameterIndexOptions, Value } from './types/monitoring';
 import { CreateParameterListRequest, GetParameterListsResponse, ParameterList, UpdateParameterListRequest } from './types/plists';
 import { AlgorithmStatusSubscription, BackfillingSubscription, DownloadCommandsOptions, ExtractPacketResponse, PacketNamesResponse, ParameterSubscription, Processor, ProcessorSubscription, Statistics, SubscribeAlgorithmStatusRequest, SubscribeBackfillingData, SubscribeBackfillingRequest, SubscribeParametersData, SubscribeParametersRequest, SubscribeProcessorsRequest, SubscribeTMStatisticsRequest, TMStatisticsSubscription } from './types/processing';
@@ -1146,6 +1146,12 @@ export default class YamcsClient implements HttpHandler {
     const url = `${this.apiUrl}/mdb/${instance}`;
     const response = await this.doFetch(url);
     return await response.json() as MissionDatabase;
+  }
+
+  async getMissionDatabaseVersion(instance: string) {
+    const url = `${this.apiUrl}/mdb/${instance}:version`;
+    const response = await this.doFetch(url);
+    return await response.json() as MissionDatabaseVersion;
   }
 
   async getSpaceSystems(instance: string) {
