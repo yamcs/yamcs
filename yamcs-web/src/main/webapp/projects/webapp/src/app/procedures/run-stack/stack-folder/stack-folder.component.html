@@ -1,6 +1,6 @@
 <app-instance-page>
   <app-instance-toolbar>
-    Command stacks &nbsp;&nbsp;&nbsp;
+    Stacks &nbsp;&nbsp;&nbsp;
     @if (mayManageStacks()) {
       <ya-page-button (click)="createStack()" icon="add_circle_outline">
         Create stack
@@ -50,7 +50,7 @@
         @if (breadcrumb.length) {
           <ya-breadcrumb-trail>
             <ya-breadcrumb
-              link="/commanding/stacks/browse"
+              link="/procedures/stacks/browse"
               [queryParams]="{ c: yamcs.context }"
               icon="account_tree" />
             @for (item of breadcrumb; track item) {
@@ -91,7 +91,7 @@
                   folder
                 </mat-icon>
                 <a
-                  [routerLink]="'/commanding/stacks/browse/' + item.name"
+                  [routerLink]="'/procedures/stacks/browse/' + item.name"
                   [queryParams]="{ c: yamcs.context }"
                   (click)="$event.stopPropagation()">
                   {{ item.name | filename }}
@@ -101,7 +101,7 @@
                   description
                 </mat-icon>
                 <a
-                  [routerLink]="'/commanding/stacks/files/' + item.name"
+                  [routerLink]="'/procedures/stacks/files/' + item.name"
                   [queryParams]="{ c: yamcs.context }"
                   (click)="$event.stopPropagation()"
                   [title]="item.name | filename">
@@ -151,7 +151,7 @@
                       <span
                         style="color: #cc0000; cursor: help"
                         title="Certain features are not implemented for XML, the format will be phased out gradually">
-                        Warning: XML-formatted command stacks are deprecated,
+                        Warning: XML-formatted stacks are deprecated,
                         <a
                           style="color: inherit; cursor: pointer"
                           (click)="convertToJSON($event, item.name)"
@@ -184,10 +184,9 @@
             <ya-empty-message>Empty directory.</ya-empty-message>
           }
           @if (loaded && !breadcrumb.length) {
-            <ya-empty-message headerTitle="Command Stacks">
+            <ya-empty-message headerTitle="Stacks">
               <p>
-                Command stacks are used to interactively execute a prepared set of commands. To
-                start, either:
+                Stacks are used to interactively execute a prepared set of steps. To start, either:
               </p>
               @if (mayManageStacks()) {
                 <p>

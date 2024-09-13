@@ -1,37 +1,28 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, SecurityContext, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, input, SecurityContext, viewChild } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { marked } from 'marked';
 
 @Component({
   standalone: true,
   selector: 'app-markdown',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './markdown.component.html',
+  styleUrl: './markdown.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MarkdownComponent implements AfterViewInit, OnChanges {
+export class MarkdownComponent {
 
-  @Input()
-  text: string;
+  text = input.required<string>();
+  ref = viewChild<ElementRef<HTMLDivElement>>('md');
 
-  @ViewChild('md')
-  ref: ElementRef<HTMLDivElement>;
-
-  constructor(private sanitizer: DomSanitizer) {
-  }
-
-  ngAfterViewInit() {
-    this.updateContent();
-  }
-
-  ngOnChanges() {
-    if (this.ref) {
-      this.updateContent();
-    }
-  }
-
-  private updateContent() {
-    let html = this.text ? marked.parse(this.text) : '';
-    html = this.sanitizer.sanitize(SecurityContext.HTML, html)!;
-    this.ref.nativeElement.innerHTML = html;
+  constructor(sanitizer: DomSanitizer) {
+    effect(() => {
+      const ref = this.ref();
+      if (ref) {
+        const text = this.text();
+        let html = text ? marked.parse(text) : '';
+        html = sanitizer.sanitize(SecurityContext.HTML, html)!;
+        ref.nativeElement.innerHTML = html;
+      }
+    });
   }
 }

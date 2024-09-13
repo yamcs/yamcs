@@ -1,0 +1,17 @@
+:host {
+  display: flex;
+  align-items: center;
+  background-color: inherit;
+  font-size: 12px;
+  font-weight: normal;
+  font-family: 'Roboto Mono', monospace;
+  line-height: 12px;
+  letter-spacing: 0.02em;
+  color: rgba(0, 0, 0, .654);
+  padding: 2px;
+  margin-bottom: 5px;
+}
+
+span {
+  margin-left: 5px;
+}

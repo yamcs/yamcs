@@ -1,0 +1,15 @@
+/**
+ * Avoid blank trailing line. Especially visible with oneline text
+ */
+:host ::ng-deep div>p:last-child,
+:host ::ng-deep div>ul:last-child {
+  margin-bottom: 0;
+}
+
+:host {
+  font-family: Roboto, sans-serif;
+  font-weight: normal;
+  letter-spacing: normal;
+  font-size: 12px;
+  line-height: normal;
+}

@@ -43,8 +43,11 @@
     }
   </ng-container>
 
-  <p>&nbsp;</p>
-  <h3>Options</h3>
+  @if (enableComment || (showCommandOptions() && commandOptions.length)) {
+    <p>&nbsp;</p>
+    <h3>Options</h3>
+  }
+
   @if (showCommandOptions()) {
     @for (extra of commandOptions; track extra) {
       @switch (extra.type) {
@@ -92,9 +95,11 @@
       <br />
     }
   }
-  <label>
-    Comment
-    <span class="hint">(optional)</span>
-    <textarea formControlName="comment" rows="3" style="width: 100%; resize: none"></textarea>
-  </label>
+  @if (enableComment) {
+    <label>
+      Comment
+      <span class="hint">(optional)</span>
+      <textarea formControlName="comment" rows="3" style="width: 100%; resize: none"></textarea>
+    </label>
+  }
 </form>

@@ -1,43 +1,47 @@
 {
-  "$schema": "https://yamcs.org/schema/command-stack.schema.json",
-  "commands": [
+  "$schema": "https://yamcs.org/schema/stack.schema.json",
+  "steps": [
     {
+      "type": "command",
       "name": "/YSS/SIMULATOR/SWITCH_VOLTAGE_ON",
-      "extraOptions": [],
       "arguments": [
         {
           "name": "voltage_num",
-          "value": "2"
+          "value": 1
         }
-      ]
+      ],
+      "comment": "Switch on battery 1 voltage"
     },
     {
+      "type": "check",
+      "parameters": [
+        {
+          "parameter": "/YSS/SIMULATOR/BatteryVoltage1"
+        },
+        {
+          "parameter": "/YSS/SIMULATOR/BatteryVoltage2"
+        },
+        {
+          "parameter": "/YSS/SIMULATOR/BatteryVoltage3"
+        }
+      ],
+      "comment": "Check the effect on observed telemetry"
+    },
+    {
+      "type": "command",
       "name": "/YSS/SIMULATOR/SWITCH_VOLTAGE_OFF",
-      "extraOptions": [],
       "arguments": [
         {
           "name": "voltage_num",
-          "value": "3"
+          "value": 1
         }
       ]
     },
     {
-      "name": "/YSS/SIMULATOR/SWITCH_VOLTAGE_ON_ENUM",
-      "extraOptions": [],
-      "arguments": [
+      "type": "check",
+      "parameters": [
         {
-          "name": "voltage_num",
-          "value": "SECONDARY"
-        }
-      ]
-    },
-    {
-      "name": "/TSE/simulator/get_battery_voltage",
-      "extraOptions": [],
-      "arguments": [
-        {
-          "name": "n",
-          "value": "2"
+          "parameter": "/YSS/SIMULATOR/BatteryVoltage1"
         }
       ]
     }

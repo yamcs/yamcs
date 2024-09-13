@@ -1,18 +1,18 @@
 import { Value } from '../client';
 import { AdvancementParams } from './AdvancementParams';
-import { StackEntry } from './StackEntry';
+import { Step } from './Step';
 
 export class StackFormatter {
-  private entries: StackEntry[];
+  private steps: Step[];
   private stackOptions: { advancement?: AdvancementParams; };
 
-  constructor(entries: StackEntry[] = [], stackOptions: { advancement?: AdvancementParams; }) {
-    this.entries = entries;
+  constructor(steps: Step[] = [], stackOptions: { advancement?: AdvancementParams; }) {
+    this.steps = steps;
     this.stackOptions = stackOptions;
   }
 
-  addEntry(entry: StackEntry) {
-    this.entries.push(entry);
+  addStep(step: Step) {
+    this.steps.push(step);
   }
 
   toXML() {
@@ -20,33 +20,37 @@ export class StackFormatter {
     const rootEl = doc.createElement('commandStack');
     doc.appendChild(rootEl);
 
-    for (const entry of this.entries) {
-      const entryEl = doc.createElement('command');
-      entryEl.setAttribute('qualifiedName', entry.name);
-      if (entry.comment) {
-        entryEl.setAttribute('comment', entry.comment);
+    for (const step of this.steps) {
+      if (step.type !== 'command') {
+        continue;
       }
-      if (entry.extra) {
+
+      const stepEl = doc.createElement('command');
+      stepEl.setAttribute('qualifiedName', step.name);
+      if (step.comment) {
+        stepEl.setAttribute('comment', step.comment);
+      }
+      if (step.extra) {
         const extraOptionsEl = doc.createElement('extraOptions');
-        for (const id in entry.extra) {
+        for (const id in step.extra) {
           const extraOptionEl = doc.createElement('extraOption');
           extraOptionEl.setAttribute('id', id);
-          const value = this.getValue(entry.extra[id]);
+          const value = this.getValue(step.extra[id]);
           if (value != null) {
             extraOptionEl.setAttribute('value', '' + value);
             extraOptionsEl.appendChild(extraOptionEl);
           }
         }
-        entryEl.appendChild(extraOptionsEl);
+        stepEl.appendChild(extraOptionsEl);
       }
-      for (const argName in entry.args) {
+      for (const argName in step.args) {
         const argumentEl = doc.createElement('commandArgument');
         argumentEl.setAttribute('argumentName', argName);
-        const argValue = this.formatValue(entry.args[argName]);
+        const argValue = this.formatValue(step.args[argName]);
         argumentEl.setAttribute('argumentValue', argValue);
-        entryEl.appendChild(argumentEl);
+        stepEl.appendChild(argumentEl);
       }
-      rootEl.appendChild(entryEl);
+      rootEl.appendChild(stepEl);
     }
 
     let xmlString = new XMLSerializer().serializeToString(rootEl);
@@ -76,20 +80,35 @@ export class StackFormatter {
   }
 
   toJSON() {
-    return JSON.stringify({
-      "$schema": "https://yamcs.org/schema/command-stack.schema.json",
-      commands: this.entries.map(entry => {
-        return {
-          name: entry.name,
-          ...(entry.namespace && { namespace: entry.namespace }),
-          ...(entry.comment && { comment: entry.comment }),
-          ...(entry.extra && { extraOptions: this.getExtraOptionsJSON(entry.extra) }),
-          ...(entry.args && { arguments: this.getCommandArgumentsJSON(entry.args) }),
-          ...(entry.advancement && { advancement: entry.advancement })
-        };
-      }),
-      ...(this.stackOptions.advancement && { advancement: this.stackOptions.advancement }),
-    }, null, 2);
+    const root: { [key: string]: any; } = {
+      '$schema': 'https://yamcs.org/schema/stack.schema.json',
+      'steps': [],
+    };
+    for (const step of this.steps) {
+      if (step.type === 'command') {
+        root['steps'].push({
+          type: step.type,
+          name: step.name,
+          ...(step.namespace && { namespace: step.namespace }),
+          ...(step.comment && { comment: step.comment }),
+          ...(step.extra && { extraOptions: this.getExtraOptionsJSON(step.extra) }),
+          ...(step.args && { arguments: this.getCommandArgumentsJSON(step.args) }),
+          ...(step.advancement && { advancement: step.advancement })
+        });
+      } else if (step.type === 'check') {
+        root['steps'].push({
+          type: step.type,
+          ...(step.comment && { comment: step.comment }),
+          parameters: [...step.parameters],
+        });
+      }
+    }
+
+    if (this.stackOptions.advancement) {
+      root['advancement'] = this.stackOptions.advancement;
+    }
+
+    return JSON.stringify(root, null, 2);
   }
 
   private getExtraOptionsJSON(extra: { [key: string]: Value; }): any {

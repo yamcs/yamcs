@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { StackEntry, WebappSdkModule } from '@yamcs/webapp-sdk';
+import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import { LiveExpressionComponent } from '../../../shared/live-expression/live-expression.component';
 import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
 import { SignificanceLevelComponent } from '../../../shared/significance-level/significance-level.component';
+import { StackedCommandEntry } from '../stack-file/StackedEntry';
 
 @Component({
   standalone: true,
@@ -20,5 +21,5 @@ import { SignificanceLevelComponent } from '../../../shared/significance-level/s
 export class StackedCommandDetailComponent {
 
   @Input()
-  entry: StackEntry;
+  entry: StackedCommandEntry;
 }

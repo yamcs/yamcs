@@ -33,6 +33,9 @@ export class CommandFormComponent implements OnChanges {
   @Input()
   templateProvider: TemplateProvider;
 
+  @Input()
+  enableComment = true;
+
   arguments: Argument[] = [];
   argumentsWithInitial: Argument[] = [];
   showAll$ = new BehaviorSubject<boolean>(false);
@@ -72,8 +75,11 @@ export class CommandFormComponent implements OnChanges {
     }
     this.form.reset();
 
-    const comment = this.templateProvider?.getComment() || '';
-    this.form.controls['comment'].setValue(comment);
+    if (this.enableComment) {
+      const comment = this.templateProvider?.getComment() || '';
+      this.form.controls['comment'].setValue(comment);
+
+    }
 
     if (!this.command) {
       return;

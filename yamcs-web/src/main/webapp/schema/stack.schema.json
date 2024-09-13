@@ -1,0 +1,160 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "JSON schema for Yamcs Stack files (*.ycs)",
+  "definitions": {
+    "advancement": {
+      "description": "Command advancement options",
+      "type": "object",
+      "properties": {
+        "acknowledgment": {
+          "description": "Acknowledgment which needs to succeed before the stack cursor advances on a command step",
+          "type": "string",
+          "default": "Acknowledge_Queued"
+        },
+        "wait": {
+          "description": "Time to await (in milliseconds) before advancing to the next step. This triggers after the acknowledgment has succeeded.",
+          "type": "number"
+        }
+      }
+    }
+  },
+  "type": "object",
+  "properties": {
+    "steps": {
+      "description": "Steps",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "description": "Step type",
+            "type": "string",
+            "enum": [
+              "check",
+              "command"
+            ]
+          },
+          "comment": {
+            "description": "Stack comment (Markdown syntax)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "command"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "name": {
+                  "description": "Name of the command. Unless namespace is specified, this should be the fully-qualified name",
+                  "type": "string"
+                },
+                "namespace": {
+                  "description": "Namespace applicable to the used command name. Not required if the name is the fully-qualified Yamcs name",
+                  "type": "string"
+                },
+                "arguments": {
+                  "description": "Command arguments",
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "description": "Argument name",
+                        "type": "string"
+                      },
+                      "value": {
+                        "description": "Argument value",
+                        "type": [
+                          "array",
+                          "boolean",
+                          "number",
+                          "object",
+                          "string"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "value"
+                    ]
+                  }
+                },
+                "extraOptions": {
+                  "description": "Additional command options",
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "description": "Option identifier",
+                        "type": "string"
+                      },
+                      "value": {
+                        "description": "Option value",
+                        "type": [
+                          "boolean",
+                          "number",
+                          "string"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "advancement": {
+                  "$ref": "#/definitions/advancement"
+                }
+              },
+              "required": [
+                "name"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "check"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "parameters": {
+                  "type": "array",
+                  "description": "Parameters to check",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "parameter": {
+                        "type": "string",
+                        "description": "Qualified parameter name"
+                      }
+                    },
+                    "required": [
+                      "parameter"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "parameters"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "advancement": {
+      "$ref": "#/definitions/advancement"
+    }
+  }
+}

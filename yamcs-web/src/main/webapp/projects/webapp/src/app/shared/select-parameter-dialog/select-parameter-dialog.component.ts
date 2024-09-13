@@ -14,7 +14,7 @@ export interface SelectParameterOptions {
 }
 
 /**
- * Reusabe dialog for selecting a single parameter via its qualified name.
+ * Reusable dialog for selecting a single parameter via its qualified name.
  * Allows also manual parameter entry for parameters that do not (yet) exist on the server.
  */
 
