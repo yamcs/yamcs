@@ -1,0 +1,13 @@
+<ya-button class="help" appearance="text" (click)="gotoMarkdownDocs()" icon="open_in_new">
+  Markdown syntax
+</ya-button>
+<mat-tab-group animationDuration="0ms" class="small-tabs" [mat-stretch-tabs]="false">
+  <mat-tab label="Write">
+    <div #editorContainer class="editor-container"></div>
+  </mat-tab>
+  <mat-tab label="Preview">
+    <div class="preview-container">
+      <app-markdown [text]="text()" />
+    </div>
+  </mat-tab>
+</mat-tab-group>

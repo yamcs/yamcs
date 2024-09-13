@@ -1,0 +1,31 @@
+@if (entry(); as entry) {
+  <app-entry-label icon="rss_feed" [text]="'Command: ' + entry.name" />
+  @for (item of entry.extra | keyvalue; track item) {
+    <span>[{{ item.key }}: {{ item.value | value }}]</span>
+  }
+  <table class="args">
+    @for (arg of entry.args | keyvalue: insertionOrder; track arg) {
+      <tr>
+        <td class="key" width="1">
+          {{ arg.key }}
+        </td>
+        <td class="value">
+          <ya-value [value]="arg.value | tovalue" />
+        </td>
+      </tr>
+    }
+  </table>
+  @if (entry.advancement) {
+    <div class="advance-on">
+      <mat-icon>reply</mat-icon>
+      @if (entry.advancement.acknowledgment) {
+        <span>
+          Advance when {{ entry.advancement.acknowledgment | acknowledgmentName }}
+          {{ entry.advancement.wait != null ? "+ " + entry.advancement.wait + " ms" : null }}
+        </span>
+      } @else if (entry.advancement.wait != null) {
+        <span>Advance after {{ entry.advancement.wait }} ms</span>
+      }
+    </div>
+  }
+}

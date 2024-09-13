@@ -1,0 +1,13 @@
+<input
+  class="ya-input"
+  type="text"
+  autocomplete="off"
+  [formControl]="formControl"
+  [matAutocomplete]="auto" />
+<mat-autocomplete class="ya-autocomplete" #auto>
+  @for (option of filteredOptions | async; track option) {
+    <mat-option [value]="option | memberPath">
+      {{ option | memberPath }}
+    </mat-option>
+  }
+</mat-autocomplete>

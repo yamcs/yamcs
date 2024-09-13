@@ -134,7 +134,6 @@ export class EventsDataSource extends DataSource<Event> {
   }
 
   startStreaming() {
-    console.log('filter with', this.options.filter);
     this.streaming$.next(true);
     this.realtimeSubscription = this.yamcs.yamcsClient.createEventSubscription({
       instance: this.yamcs.instance!,

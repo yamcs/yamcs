@@ -118,10 +118,7 @@
           </ya-sidebar-nav-item>
         }
 
-        @if (
-          ((connectionInfo$ | async)?.instance?.capabilities | arrayContains: "activities") &&
-          proceduresItems.length
-        ) {
+        @if (proceduresItems.length) {
           <ya-sidebar-nav-group
             label="Procedures"
             icon="playlist_play"

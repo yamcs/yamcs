@@ -1,0 +1,38 @@
+<app-entry-label icon="speed" text="Check" />
+@if (entry(); as entry) {
+  <table mat-table [dataSource]="dataSource" class="ya-data-table no-frame">
+    <ng-container matColumnDef="parameter">
+      <td mat-cell *matCellDef="let item" style="width: 400px">
+        {{ item.parameter }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="level">
+      <td mat-cell *matCellDef="let item" style="width: 80px">
+        @if (item.pval?.engValue; as value) {
+          <app-alarm-level [level]="item.pval.monitoringResult" />
+        }
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="value">
+      <td mat-cell *matCellDef="let item">
+        @if (item.pval?.engValue; as value) {
+          <ya-expirable [pval]="item.pval">
+            {{ item.pval.engValue | value }}
+            @if (item.pval.rangeCondition === "LOW") {
+              <span>&#8595;</span>
+            }
+            @if (item.pval.rangeCondition === "HIGH") {
+              <span>&#8593;</span>
+            }
+          </ya-expirable>
+        } @else {
+          -
+        }
+      </td>
+    </ng-container>
+
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+  </table>
+}
