@@ -3,12 +3,14 @@
 <mat-dialog-content>
   <form [formGroup]="form" class="ya-form">
     <label>
-      Start time<br />
+      Start time
+      <br />
       <ya-date-time-input formControlName="start" />
     </label>
     <br />
     <label>
-      Stop time <span class="hint">(optional)</span>
+      Stop time
+      <span class="hint">(optional)</span>
       <ya-date-time-input formControlName="stop" />
     </label>
     <br />
@@ -21,6 +23,6 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button class="ya-button" mat-dialog-close>CANCEL</button>
-  <button class="ya-button primary" (click)="start()" [disabled]="!form.valid">START</button>
+  <ya-button mat-dialog-close>CANCEL</ya-button>
+  <ya-button appearance="primary" (click)="start()" [disabled]="!form.valid">START</ya-button>
 </mat-dialog-actions>

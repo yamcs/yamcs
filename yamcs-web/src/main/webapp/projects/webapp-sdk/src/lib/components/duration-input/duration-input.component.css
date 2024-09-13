@@ -12,7 +12,3 @@ input {
   width: 100px !important;
   margin-right: 5px !important;
 }
-
-::ng-deep .duration-input .ya-button {
-  margin: 0 !important;
-}

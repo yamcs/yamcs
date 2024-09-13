@@ -27,20 +27,15 @@
   </div>
 
   <div style="display: inline-block; margin: 1em; align-self: center">
-    <button
-      class="ya-button"
-      style="width: 90px"
-      [disabled]="!isAnyLeftSelected()"
-      (click)="moveRight()">
-      Add <mat-icon>chevron_right</mat-icon></button
-    ><br />
-    <button
-      class="ya-button"
-      style="width: 90px"
-      [disabled]="!isAnyRightSelected()"
-      (click)="moveLeft()">
-      <mat-icon>chevron_left</mat-icon> Remove
-    </button>
+    <ya-button style="width: 90px" [disabled]="!isAnyLeftSelected()" (click)="moveRight()">
+      Add
+      <mat-icon class="icon12">chevron_right</mat-icon>
+    </ya-button>
+    <br />
+    <ya-button style="width: 90px" [disabled]="!isAnyRightSelected()" (click)="moveLeft()">
+      <mat-icon class="icon12">chevron_left</mat-icon>
+      Remove
+    </ya-button>
   </div>
 
   <div class="bands-to">
@@ -71,10 +66,6 @@
   </div>
 </div>
 <div style="text-align: right">
-  <button class="ya-button" [disabled]="!isAnyRightSelected()" (click)="moveDown()">
-    <mat-icon>keyboard_arrow_down</mat-icon>
-  </button>
-  <button class="ya-button" [disabled]="!isAnyRightSelected()" (click)="moveUp()">
-    <mat-icon>keyboard_arrow_up</mat-icon>
-  </button>
+  <ya-button [disabled]="!isAnyRightSelected()" (click)="moveDown()" icon="keyboard_arrow_down" />
+  <ya-button [disabled]="!isAnyRightSelected()" (click)="moveUp()" icon="keyboard_arrow_up" />
 </div>

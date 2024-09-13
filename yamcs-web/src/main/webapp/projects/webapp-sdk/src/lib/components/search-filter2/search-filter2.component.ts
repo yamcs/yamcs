@@ -5,6 +5,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { Completion } from '@codemirror/autocomplete';
 import { BehaviorSubject, debounceTime, Subscription } from 'rxjs';
+import { YaButton } from '../button/button.component';
 import { YaFilterInput } from '../filter/filter-input.component';
 import { YaFilterTextarea } from '../filter/filter-textarea.component';
 import { FilterErrorMark } from '../filter/FilterErrorMark';
@@ -30,6 +31,7 @@ interface ErrorState {
     MatIcon,
     MatTooltip,
     ReactiveFormsModule,
+    YaButton,
     YaFilterInput,
     YaFilterTextarea,
   ],

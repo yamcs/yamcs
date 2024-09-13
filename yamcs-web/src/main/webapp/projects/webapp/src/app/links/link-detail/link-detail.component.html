@@ -41,7 +41,8 @@
       @if (getEntriesForValue(entry.value); as subentries) {
         @if (subentries.length) {
           @for (subentry of subentries; track subentry) {
-            {{ subentry || "-" }}<br />
+            {{ subentry || "-" }}
+            <br />
           }
         }
         @if (!subentries.length) {
@@ -55,15 +56,12 @@
 @if (mayControlLinks()) {
   <div class="action-bar">
     @if (link.status === "DISABLED") {
-      <button class="ya-button" (click)="enableLink()">ENABLE LINK</button>
+      <ya-button (click)="enableLink()">ENABLE LINK</ya-button>
     }
     @if (link.status !== "DISABLED") {
-      <button class="ya-button" (click)="disableLink()">DISABLE LINK</button>
+      <ya-button (click)="disableLink()">DISABLE LINK</ya-button>
     }
-    <button class="ya-button" [matMenuTriggerFor]="moreActions">
-      MORE
-      <mat-icon>arrow_drop_down</mat-icon>
-    </button>
+    <ya-button [matMenuTriggerFor]="moreActions" dropdown="true">MORE</ya-button>
     <mat-menu #moreActions class="ya-menu" yPosition="below" [overlapTrigger]="false">
       <ng-template matMenuContent>
         <button mat-menu-item (click)="resetCounters()">Reset counters</button>
@@ -72,9 +70,9 @@
           @for (action of link.actions; track action) {
             <button mat-menu-item [disabled]="!action.enabled" (click)="runAction(action)">
               @if (action.style === "CHECK_BOX") {
-                <mat-icon [style.visibility]="action.checked ? 'visible' : 'hidden'"
-                  >check</mat-icon
-                >
+                <mat-icon [style.visibility]="action.checked ? 'visible' : 'hidden'">
+                  check
+                </mat-icon>
               }
               {{ action.label }}
               @if (action.spec) {

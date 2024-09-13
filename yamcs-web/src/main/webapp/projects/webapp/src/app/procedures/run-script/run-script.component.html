@@ -1,10 +1,12 @@
 <app-instance-page>
-  <app-instance-toolbar> Run a script </app-instance-toolbar>
+  <app-instance-toolbar>Run a script</app-instance-toolbar>
 
   <div class="form-content ya-form">
     <form [formGroup]="form" novalidate autocomplete="off">
       <div class="label">
-        Script <span class="hint">(required)</span><br />
+        Script
+        <span class="hint">(required)</span>
+        <br />
         <ya-select formControlName="script" [options]="scriptOptions$ | async" />
       </div>
       <br />
@@ -16,13 +18,7 @@
     <p>&nbsp;</p>
     <mat-toolbar>
       <span style="flex: 1 1 auto"></span>
-      <button
-        class="ya-button primary"
-        type="submit"
-        (click)="runScript()"
-        [disabled]="!form.valid">
-        Run
-      </button>
+      <ya-button appearance="primary" (click)="runScript()" [disabled]="!form.valid">Run</ya-button>
       @if (showSchedule()) {
         &nbsp;
         <ya-icon-action

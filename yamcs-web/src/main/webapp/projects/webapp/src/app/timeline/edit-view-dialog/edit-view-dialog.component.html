@@ -2,7 +2,9 @@
   <form [formGroup]="form" novalidate autocomplete="off">
     <h2>Edit View</h2>
     <label>
-      Name <span class="hint">(required)</span><br />
+      Name
+      <span class="hint">(required)</span>
+      <br />
       <input type="text" formControlName="name" />
     </label>
 
@@ -19,13 +21,14 @@
 <div class="footer">
   <mat-toolbar>
     <mat-toolbar-row>
-      <button class="ya-button" mat-dialog-close>CANCEL</button>&nbsp;&nbsp;
-      <button
-        class="ya-button primary"
+      <ya-button mat-dialog-close>CANCEL</ya-button>
+      &nbsp;&nbsp;
+      <ya-button
+        appearance="primary"
         [disabled]="!(dirty$ | async) || !form.valid"
         (click)="onConfirm()">
         SAVE CHANGES
-      </button>
+      </ya-button>
     </mat-toolbar-row>
   </mat-toolbar>
 </div>

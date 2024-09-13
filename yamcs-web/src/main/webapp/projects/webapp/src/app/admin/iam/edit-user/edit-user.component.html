@@ -54,10 +54,7 @@
           </span>
         </div>
         <p>&nbsp;</p>
-        <button class="ya-button" (click)="showAddRolesDialog()">
-          <mat-icon>add_circle_outline</mat-icon>
-          Add roles
-        </button>
+        <ya-button (click)="showAddRolesDialog()" icon="add_circle_outline">Add roles</ya-button>
         <p>&nbsp;</p>
         @if (roleItems$ | async; as roleItems) {
           <table yaDataTable style="width: 100%">
@@ -83,14 +80,13 @@
       </form>
       <p>&nbsp;</p>
       <div class="action-bar">
-        <button class="ya-button" (click)="location.back()">Cancel</button>
-        <button
-          class="ya-button primary"
-          type="submit"
+        <ya-button (click)="location.back()">Cancel</ya-button>
+        <ya-button
+          appearance="primary"
           (click)="onConfirm()"
           [disabled]="!(dirty$ | async) || !form.valid">
           SAVE CHANGES
-        </button>
+        </ya-button>
       </div>
     </div>
   </app-admin-page>

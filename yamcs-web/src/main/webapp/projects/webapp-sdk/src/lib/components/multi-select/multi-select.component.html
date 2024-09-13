@@ -1,15 +1,11 @@
-<button [matMenuTriggerFor]="selMenu" class="ya-button">
-  @if (icon) {
-    <mat-icon class="icon12" style="vertical-align: middle">{{ icon }}</mat-icon>
-  }
+<ya-button [matMenuTriggerFor]="selMenu" [icon]="icon()" dropdown="true">
   @if (selected$ | async; as selected) {
     {{ getLabel(selected) }}
   }
   @if (!(selected$ | async)!.length) {
-    <span>{{ emptyOption }}</span>
+    <span>{{ emptyOption() }}</span>
   }
-  <mat-icon class="icon12">arrow_drop_down</mat-icon>
-</button>
+</ya-button>
 
 <mat-menu #selMenu="matMenu" yPosition="below" class="ya-menu" [overlapTrigger]="false">
   @for (option of options$ | async; track option) {

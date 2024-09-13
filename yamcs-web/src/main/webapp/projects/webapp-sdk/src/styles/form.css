@@ -41,10 +41,9 @@
   width: 100%;
 }
 
-.ya-form label .ya-button,
-.ya-form div.label .ya-button {
+.ya-form div.label ya-button {
   margin: 5px 0 0;
-  display: block;
+  display: inline-block;
 }
 
 .ya-form input[type="text"],

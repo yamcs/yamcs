@@ -6,13 +6,11 @@
       @if (filter.value["interval"] === "CUSTOM") {
         <ya-date-time-input formControlName="customStart" />
         <ya-date-time-input formControlName="customStop" />
-        <button class="ya-button" (click)="applyCustomDates()" [disabled]="filter.invalid">
-          Apply
-        </button>
+        <ya-button (click)="applyCustomDates()" [disabled]="filter.invalid">Apply</ya-button>
       }
 
       @if (filter.value["interval"] !== "CUSTOM") {
-        <button class="ya-button" (click)="jumpToNow()">Jump to now</button>
+        <ya-button (click)="jumpToNow()">Jump to now</ya-button>
       }
 
       @if (dataSource.loading$ | async) {
@@ -25,23 +23,35 @@
     @switch (appliedInterval) {
       @case ("P1M") {
         <span>
-          Showing data from <b>the last month</b> ending at
-          <b>{{ validStop | datetime }}</b> (Mission Time)
+          Showing data from
+          <b>the last month</b>
+          ending at
+          <b>{{ validStop | datetime }}</b>
+          (Mission Time)
         </span>
       }
       @case ("P1Y") {
         <span>
-          Showing data from <b>the last year</b> ending at
-          <b>{{ validStop | datetime }}</b> (Mission Time)
+          Showing data from
+          <b>the last year</b>
+          ending at
+          <b>{{ validStop | datetime }}</b>
+          (Mission Time)
         </span>
       }
       @case ("NO_LIMIT") {
-        <span> Showing data from <b>all time</b> </span>
+        <span>
+          Showing data from
+          <b>all time</b>
+        </span>
       }
       @case ("CUSTOM") {
         <span>
-          Showing data from <b>{{ validStart | datetime }}</b> to
-          <b>{{ validStop | datetime }}</b> (Mission Time)
+          Showing data from
+          <b>{{ validStart | datetime }}</b>
+          to
+          <b>{{ validStop | datetime }}</b>
+          (Mission Time)
         </span>
       }
     }
@@ -58,9 +68,7 @@
   @if (!(dataSource.loading$ | async) && !dataSource.isEmpty()) {
     <mat-toolbar>
       <span style="flex: 1 1 auto"></span>
-      <button class="ya-button" [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">
-        Load More
-      </button>
+      <ya-button [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">Load more</ya-button>
       <span style="flex: 1 1 auto"></span>
     </mat-toolbar>
   }

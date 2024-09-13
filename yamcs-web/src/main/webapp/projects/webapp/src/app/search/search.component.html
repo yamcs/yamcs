@@ -13,18 +13,18 @@
       @for (resource of result.resources; track resource) {
         <div>
           <mat-icon class="icon12" style="vertical-align: middle; margin-right: 4px">toll</mat-icon>
-          <a class="ya-link" [routerLink]="resource.link" [queryParams]="{ c: yamcs.context }">{{
-            resource.label
-          }}</a
-          ><br />
+          <a class="ya-link" [routerLink]="resource.link" [queryParams]="{ c: yamcs.context }">
+            {{ resource.label }}
+          </a>
+          <br />
         </div>
       }
       @if (result.resources.length) {
         <mat-toolbar>
           <span style="flex: 1 1 auto"></span>
-          <button [disabled]="!result.continuationToken" class="ya-button" (click)="loadMoreData()">
-            Load More
-          </button>
+          <ya-button [disabled]="!result.continuationToken" (click)="loadMoreData()">
+            Load more
+          </ya-button>
           <span style="flex: 1 1 auto"></span>
         </mat-toolbar>
       }

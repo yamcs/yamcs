@@ -15,10 +15,7 @@
         </label>
       </form>
       <p>&nbsp;</p>
-      <button class="ya-button" (click)="showAddMembersDialog()">
-        <mat-icon>add_circle_outline</mat-icon>
-        Add members
-      </button>
+      <ya-button (click)="showAddMembersDialog()" icon="add_circle_outline">Add members</ya-button>
       <p>&nbsp;</p>
       @if (memberItems$ | async; as memberItems) {
         <table yaDataTable style="width: 100%">
@@ -47,14 +44,13 @@
       }
       <p>&nbsp;</p>
       <div class="action-bar">
-        <button class="ya-button" (click)="location.back()">Cancel</button>
-        <button
-          type="submit"
+        <ya-button (click)="location.back()">Cancel</ya-button>
+        <ya-button
+          appearance="primary"
           (click)="onConfirm()"
-          class="ya-button primary"
           [disabled]="!(dirty$ | async) || !form.valid">
           SAVE CHANGES
-        </button>
+        </ya-button>
       </div>
     </div>
   </app-admin-page>

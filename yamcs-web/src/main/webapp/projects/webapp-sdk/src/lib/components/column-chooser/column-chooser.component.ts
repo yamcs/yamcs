@@ -1,9 +1,10 @@
 
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, Input, OnInit } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { MatMenu, MatMenuContent, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { BehaviorSubject } from 'rxjs';
 import { PreferenceStore } from '../../services/preference-store.service';
+import { YaButton } from '../button/button.component';
 
 export interface YaColumnInfo {
   id: string;
@@ -23,7 +24,8 @@ export interface YaColumnInfo {
     MatMenuContent,
     MatMenuItem,
     MatIcon,
-    MatMenuTrigger
+    MatMenuTrigger,
+    YaButton,
   ],
 })
 export class YaColumnChooser implements OnInit {
@@ -31,14 +33,9 @@ export class YaColumnChooser implements OnInit {
   @Input()
   columns: YaColumnInfo[];
 
-  @Input()
-  preferenceKey: string;
-
-  @Input()
-  icon?: string;
-
-  @Input()
-  text = false;
+  preferenceKey = input<string>();
+  icon = input<string>();
+  appearance = input('basic');
 
   displayedColumns$ = new BehaviorSubject<string[]>([]);
 
@@ -52,9 +49,10 @@ export class YaColumnChooser implements OnInit {
   recalculate(columns: YaColumnInfo[]) {
     this.columns = columns;
 
+    const preferenceKey = this.preferenceKey();
     let preferredColumns: string[] = [];
-    if (this.preferenceKey) {
-      const storedDisplayedColumns = this.preferenceStore.getVisibleColumns(this.preferenceKey);
+    if (preferenceKey) {
+      const storedDisplayedColumns = this.preferenceStore.getVisibleColumns(preferenceKey);
       preferredColumns = (storedDisplayedColumns || []).filter(el => {
         // Filter out unknown columns
         for (const column of this.columns) {
@@ -82,8 +80,9 @@ export class YaColumnChooser implements OnInit {
   }
 
   writeValue(value: any) {
-    if (this.preferenceKey) {
-      this.preferenceStore.setVisibleColumns(this.preferenceKey, value);
+    const preferenceKey = this.preferenceKey();
+    if (preferenceKey) {
+      this.preferenceStore.setVisibleColumns(preferenceKey, value);
     }
     this.displayedColumns$.next(value);
   }

@@ -4,12 +4,10 @@
     @if (filterForm.value["interval"] === "CUSTOM") {
       <ya-date-time-input formControlName="customStart" />
       <ya-date-time-input formControlName="customStop" />
-      <button (click)="applyCustomDates()" class="ya-button" [disabled]="filterForm.invalid">
-        Apply
-      </button>
+      <ya-button (click)="applyCustomDates()" [disabled]="filterForm.invalid">Apply</ya-button>
     }
     @if (filterForm.value["interval"] !== "CUSTOM") {
-      <button class="ya-button" (click)="jumpToNow()">Jump to now</button>
+      <ya-button (click)="jumpToNow()">Jump to now</ya-button>
     }
   </div>
 </form>

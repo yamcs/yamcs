@@ -33,12 +33,10 @@
         @if (filterForm.value["interval"] === "CUSTOM") {
           <ya-date-time-input formControlName="customStart" />
           <ya-date-time-input formControlName="customStop" />
-          <button (click)="applyCustomDates()" class="ya-button" [disabled]="filterForm.invalid">
-            Apply
-          </button>
+          <ya-button (click)="applyCustomDates()" [disabled]="filterForm.invalid">Apply</ya-button>
         }
         @if (filterForm.value["interval"] !== "CUSTOM") {
-          <button class="ya-button" (click)="jumpToNow()">Jump to now</button>
+          <ya-button (click)="jumpToNow()">Jump to now</ya-button>
         }
 
         @if (dataSource.loading$ | async) {
@@ -182,15 +180,9 @@
             </span>
           }
           @if (row.type === "MANUAL" && row.status === "RUNNING" && mayControlActivities()) {
-            <button class="ya-button" (click)="setSuccessful(row)">
-              <mat-icon>thumb_up</mat-icon>
-              Set successful
-            </button>
+            <ya-button (click)="setSuccessful(row)" icon="thumb_up">Set successful</ya-button>
             &nbsp;
-            <button class="ya-button" (click)="setFailed(row)">
-              <mat-icon>thumb_down</mat-icon>
-              Set failed
-            </button>
+            <ya-button (click)="setFailed(row)" icon="thumb_down">Set failed</ya-button>
           }
         </td>
       </ng-container>
@@ -205,9 +197,7 @@
 
     <mat-toolbar>
       <span style="flex: 1 1 auto"></span>
-      <button [disabled]="!dataSource.hasMore()" class="ya-button" (click)="loadMoreData()">
-        Load More
-      </button>
+      <ya-button [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">Load more</ya-button>
       <span style="flex: 1 1 auto"></span>
     </mat-toolbar>
   </div>

@@ -30,8 +30,11 @@
               within this time, it will be retransmitted.
             </p>
             <p>
-              Other names: <code>T1_Initial</code> &nbsp;&bull;&nbsp;
-              <code>Timer_Initial_Value</code>.
+              Other names:
+              <code>T1_Initial</code>
+              &nbsp;&bull;&nbsp;
+              <code>Timer_Initial_Value</code>
+              .
             </p>
           </ya-help>
           <input type="text" formControlName="clcwCheckTimeout" />
@@ -45,7 +48,11 @@
               The N(S) frame sequence number expected to be seen by FARM-1 in the next Type-AD
               transfer frame.
             </p>
-            <p>Other name: <code>Receiver_Frame_Sequence_Number</code>.</p>
+            <p>
+              Other name:
+              <code>Receiver_Frame_Sequence_Number</code>
+              .
+            </p>
           </ya-help>
           <input type="text" formControlName="vr" />
         </label>
@@ -55,8 +62,8 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button class="ya-button" mat-dialog-close>CANCEL</button>
-  <button class="ya-button primary" (click)="sendRequest()" [disabled]="!form.valid">
+  <ya-button mat-dialog-close>CANCEL</ya-button>
+  <ya-button appearance="primary" (click)="sendRequest()" [disabled]="!form.valid">
     INITIATE
-  </button>
+  </ya-button>
 </mat-dialog-actions>

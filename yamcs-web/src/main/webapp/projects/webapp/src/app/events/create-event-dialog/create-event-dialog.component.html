@@ -8,7 +8,8 @@
     </label>
     <br />
     <label>
-      Severity<br />
+      Severity
+      <br />
       <ya-select formControlName="severity" [options]="severityOptions" />
     </label>
     <br />
@@ -20,6 +21,6 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button class="ya-button" mat-dialog-close>CANCEL</button>
-  <button class="ya-button primary" (click)="save()" [disabled]="!form.valid">SAVE</button>
+  <ya-button mat-dialog-close>CANCEL</ya-button>
+  <ya-button appearance="primary" (click)="save()" [disabled]="!form.valid">SAVE</ya-button>
 </mat-dialog-actions>

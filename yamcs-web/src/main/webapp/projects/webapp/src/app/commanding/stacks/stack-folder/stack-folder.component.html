@@ -196,9 +196,9 @@
               </p>
               @if (mayManageStacks()) {
                 <p>
-                  <button class="ya-button primary" (click)="createStack()">Create a stack</button>
+                  <ya-button appearance="primary" (click)="createStack()">Create a stack</ya-button>
                   or
-                  <button class="ya-button" (click)="openUploadDialog()">Import a stack</button>
+                  <ya-button (click)="openUploadDialog()">Import a stack</ya-button>
                 </p>
               }
             </ya-empty-message>
