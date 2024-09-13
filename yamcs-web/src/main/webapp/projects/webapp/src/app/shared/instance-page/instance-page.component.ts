@@ -128,6 +128,9 @@ export class InstancePageComponent implements OnInit, OnDestroy {
       }
     }
 
+    if (this.config.tc && this.user.hasObjectPrivilege('ReadBucket', stackBucket)) {
+      this.proceduresItems.push({ path: 'stacks', label: 'Stacks' });
+    }
     if (this.user.hasSystemPrivilege('ControlActivities')) {
       this.proceduresItems.push({ path: 'script', label: 'Run a script' });
     }

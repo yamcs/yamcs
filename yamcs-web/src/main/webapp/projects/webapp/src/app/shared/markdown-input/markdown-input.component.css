@@ -1,0 +1,26 @@
+:host {
+  display: block;
+  position: relative;
+}
+
+.help {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2000;
+}
+
+.editor-container {
+  border-bottom: 1px solid #d3d3d3;
+  border-left: 1px solid #d3d3d3;
+  border-right: 1px solid #d3d3d3;
+  height: 100px;
+}
+
+.preview-container {
+  border-bottom: 1px solid #d3d3d3;
+  border-left: 1px solid #d3d3d3;
+  border-right: 1px solid #d3d3d3;
+  background-color: #fafafa;
+  height: 100px;
+}

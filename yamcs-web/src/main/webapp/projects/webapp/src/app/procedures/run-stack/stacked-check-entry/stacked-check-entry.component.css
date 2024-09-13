@@ -1,0 +1,16 @@
+:host {
+  display: block;
+  position: relative;
+}
+
+table {
+  margin-left: 18px;
+}
+
+:host ::ng-deep tr.mat-mdc-row {
+  background: #fafafa;
+}
+
+:host ::ng-deep td:first-child {
+  padding-left: 0 !important;
+}

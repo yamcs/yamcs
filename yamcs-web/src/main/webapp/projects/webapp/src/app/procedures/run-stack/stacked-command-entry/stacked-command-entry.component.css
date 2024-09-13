@@ -1,0 +1,41 @@
+:host {
+  display: block;
+  position: relative;
+}
+
+.advance-on {
+  color: rgba(0, 0, 0, .654);
+  font-size: 12px;
+}
+
+.advance-on>* {
+  vertical-align: middle;
+}
+
+.advance-on>mat-icon {
+  transform: rotate(180deg);
+  font-size: 12px;
+  height: 12px;
+  width: 12px;
+}
+
+table.args {
+  margin: 0;
+  margin-left: 18px;
+  font-size: 10px;
+}
+
+table.args td {
+  padding: 0;
+  border: 0;
+}
+
+table.args td.key {
+  min-width: 120px;
+  white-space: nowrap;
+}
+
+table.args td.value {
+  color: grey;
+  padding-left: 10px;
+}

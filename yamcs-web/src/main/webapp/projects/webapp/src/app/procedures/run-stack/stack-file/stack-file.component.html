@@ -14,34 +14,47 @@
       Save
     </ya-page-button>
     <mat-divider vertical style="height: 100%" />
-    <ya-page-icon-button
-      matTooltip="Add a command below"
+    <ya-page-button
+      matTooltip="Add a step below"
       [disabled]="!format || (running$ | async)"
-      (click)="addCommand()"
-      icon="add_circle_outline" />
+      [matMenuTriggerFor]="addEntryMenu"
+      icon="add_circle_outline"
+      dropdown="true">
+      Add step
+    </ya-page-button>
+    <mat-menu class="ya-menu" #addEntryMenu="matMenu">
+      <a mat-menu-item (click)="addCommandEntry()">
+        <mat-icon>rss_feed</mat-icon>
+        Command
+      </a>
+      <a mat-menu-item (click)="addCheckEntry()">
+        <mat-icon>speed</mat-icon>
+        Check
+      </a>
+    </mat-menu>
     <ya-page-icon-button
-      matTooltip="Edit the selected command"
+      matTooltip="Edit the selected step"
       [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
-      (click)="editSelectedCommand()"
+      (click)="editSelectedEntry()"
       icon="edit" />
     <ya-page-icon-button
-      matTooltip="Cut the selected command"
+      matTooltip="Cut the selected step"
       [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
-      (click)="cutSelectedCommand()"
+      (click)="cutSelectedEntry()"
       icon="content_cut" />
     <ya-page-icon-button
-      matTooltip="Copy the selected command"
+      matTooltip="Copy the selected step"
       [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
-      (click)="copySelectedCommand()"
+      (click)="copySelectedEntry()"
       icon="content_copy" />
     <ya-page-icon-button
-      matTooltip="Paste command from the clipboard"
+      matTooltip="Paste entry from the clipboard"
       [disabled]="!format || (running$ | async) || !(clipboardEntry$ | async)"
-      (click)="pasteCommand()"
+      (click)="pasteEntry()"
       icon="content_paste" />
     <mat-divider vertical style="height: 100%" />
     <ya-page-icon-button
-      matTooltip="Run the selected command"
+      matTooltip="Run the selected step"
       [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
       (click)="runSelection()"
       icon="play_arrow" />
@@ -56,14 +69,14 @@
       (click)="clearOutputs()"
       icon="refresh" />
     <ya-page-icon-button
-      matTooltip="Run all from selected command"
+      matTooltip="Run all from selected step"
       [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
       (click)="runFromSelection()"
       icon="playlist_play" />
     <mat-divider vertical style="height: 100%" />
     @if (showSchedule()) {
       <ya-page-button
-        matTooltip="Run command stack at a later time"
+        matTooltip="Run stack at a later time"
         (click)="openScheduleStackDialog()"
         [disabled]="!loaded || format !== 'ycs' || !entries$.value.length"
         icon="schedule">
@@ -72,7 +85,7 @@
     }
     <mat-divider vertical style="height: 100%" />
     <ya-page-button
-      matTooltip="Export command stack"
+      matTooltip="Export stack"
       [matMenuTriggerFor]="exportMenu"
       [disabled]="!format"
       (click)="setExportURLs()"
@@ -91,15 +104,11 @@
       </ya-page-button>
     }
     <mat-menu class="ya-menu" #exportMenu="matMenu">
-      <a mat-menu-item [href]="JSONblobURL" [download]="(filename | basename) + '.ycs'">
+      <a mat-menu-item [href]="jsonBlobUrl" [download]="(filename | basename) + '.ycs'">
         <mat-icon>data_object</mat-icon>
         YCS FILE
       </a>
-      <a
-        mat-menu-item
-        [href]="XMLblobURL"
-        [download]="(filename | basename) + '.xml'"
-        title="Certain features are not implemented for XML, the format will be phased out gradually">
+      <a mat-menu-item [href]="xmlBlobUrl" [download]="(filename | basename) + '.xml'">
         <mat-icon>code</mat-icon>
         <span style="vertical-align: middle">
           XML FILE
@@ -117,7 +126,7 @@
         <p>&nbsp;</p>
       </div>
     } @else {
-      <ya-detail-toolbar>Select an entry</ya-detail-toolbar>
+      <ya-detail-toolbar>Select a step</ya-detail-toolbar>
     }
   </ya-detail-pane>
 
@@ -171,16 +180,16 @@
     @if (loaded && !format) {
       <ya-empty-message>
         <mat-icon style="vertical-align: bottom; margin-right: 10px">link_off</mat-icon>
-        Unsupported command stack format
+        Unsupported stack format
       </ya-empty-message>
     }
     @if (loaded && format && !entries$.value.length) {
       <ya-empty-message>
-        Empty command stack
+        Empty stack
         <br />
         Click
         <mat-icon inline style="vertical-align: bottom">add_circle_outline</mat-icon>
-        to start adding commands
+        to start adding steps
       </ya-empty-message>
     }
 
@@ -193,7 +202,7 @@
             class="entry"
             [class.selected]="entry === (selectedEntry$ | async)"
             (click)="selectEntry(entry)"
-            (dblclick)="editCommand(entry)">
+            (dblclick)="editEntry(entry)">
             <div class="in">
               <div cdkDragHandle class="seq">
                 @if (entry.executing) {
@@ -205,64 +214,45 @@
                 }
               </div>
               <div class="body">
-                {{ entry.name }}
+                @if (entry.type === "check") {
+                  <app-stacked-check-entry [entry]="entry" [pvals]="pvals$ | async" />
+                } @else if (entry.type === "command") {
+                  <app-stacked-command-entry [entry]="entry" />
+                }
+
                 @if (entry.comment) {
-                  <mat-icon
-                    [matTooltip]="entry.comment"
-                    class="icon14"
-                    style="vertical-align: middle">
-                    comment
-                  </mat-icon>
-                }
-                @for (item of entry.extra | keyvalue; track item) {
-                  <span>[{{ item.key }}: {{ item.value | value }}]</span>
-                }
-                <table class="args">
-                  @for (arg of entry.args | keyvalue: insertionOrder; track arg) {
-                    <tr>
-                      <td class="key" width="1">
-                        {{ arg.key }}
-                      </td>
-                      <td class="value">
-                        <ya-value [value]="arg.value | tovalue" />
-                      </td>
-                    </tr>
-                  }
-                </table>
-                @if (entry.advancement) {
-                  <div class="advance-on">
-                    <mat-icon>reply</mat-icon>
-                    @if (entry.advancement.acknowledgment) {
-                      <span>
-                        Advance when {{ entry.advancement.acknowledgment | acknowledgmentName }}
-                        {{
-                          entry.advancement.wait != null
-                            ? "+ " + entry.advancement.wait + " ms"
-                            : null
-                        }}
-                      </span>
-                    }
-                    @if (!entry.advancement.acknowledgment && entry.advancement.wait != null) {
-                      <span>Advance after {{ entry.advancement.wait }} ms</span>
-                    }
+                  <div class="comment">
+                    <div class="title">
+                      <mat-icon class="icon14">info</mat-icon>
+                      <span class="text">Info</span>
+                    </div>
+                    <app-markdown [text]="entry.comment" />
                   </div>
                 }
               </div>
             </div>
-            @if (entry.executionNumber === 0 || entry.executionNumber) {
+            @if (entry.hasOutputs()) {
               <div class="out">
                 <div class="seq" (click)="selectEntry(entry)"></div>
                 <div class="body" [class.err]="entry.err">
                   @if (entry.err) {
                     {{ entry.err }}
-                  }
-                  @if (!entry.err) {
+                  } @else if (entry.type === "command") {
                     <app-yamcs-acknowledgments-table [command]="entry.record" [inline]="true" />
                     @if ((entry.record?.extra || []).length) {
                       <div class="block">
                         <app-extra-acknowledgments-table [command]="entry.record" [inline]="true" />
                       </div>
                     }
+                  } @else if (entry.type === "check") {
+                    <table>
+                      @for (namedPval of entry.pvals; track namedPval) {
+                        <tr>
+                          <td style="padding-right: 20px">{{ namedPval.parameter }}</td>
+                          <td>{{ (namedPval.pval?.engValue | value) ?? "-" }}</td>
+                        </tr>
+                      }
+                    </table>
                   }
                 </div>
               </div>

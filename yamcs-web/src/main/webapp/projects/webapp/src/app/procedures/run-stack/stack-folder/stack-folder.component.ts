@@ -17,6 +17,7 @@ import { RenameStackDialogComponent } from '../rename-stack-dialog/rename-stack-
 import { StackFileComponent } from '../stack-file/stack-file.component';
 
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
+import { parseXML } from '../stack-file/xmlparse';
 
 @Component({
   standalone: true,
@@ -165,7 +166,7 @@ export class StackFolderComponent implements OnDestroy {
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.router.navigateByUrl(`/commanding/stacks/files/${result}?c=${this.yamcs.context}`);
+        this.router.navigateByUrl(`/procedures/stacks/files/${result}?c=${this.yamcs.context}`);
       }
     });
   }
@@ -218,15 +219,12 @@ export class StackFolderComponent implements OnDestroy {
     }
     if (event.shiftKey || confirm(`Are you sure you want to convert '${name}' to the new format?\nThis wil delete the original XML file.\n(Press shift if you do not want to show this dialog)`)) {
       this.converting = true;
-      const response = this.storageClient.getObject(this.bucket, name).then(async response => {
+      this.storageClient.getObject(this.bucket, name).then(async response => {
         if (response.ok) {
-          const xmlParser = new DOMParser();
-          const doc = xmlParser.parseFromString(await response.text(), 'text/xml') as XMLDocument;
-          const entries = StackFileComponent.parseXML(doc.documentElement, this.configService.getCommandOptions());
-          StackFileComponent.convertToJSON(this.messageService, this.storageClient, this.bucket, name, entries, {})
-            .then(() => {
-              this.loadCurrentFolder();
-            });
+          const text = await response.text();
+          const entries = parseXML(text, this.configService.getCommandOptions());
+          await StackFileComponent.convertToJSON(this.messageService, this.storageClient, this.bucket, name, entries, {});
+          this.loadCurrentFolder();
         } else {
           this.messageService.showError("Failed to load '" + name + "' for conversion");
         }
@@ -357,7 +355,7 @@ export class StackFolderComponent implements OnDestroy {
       path += '/' + segment.path;
       breadcrumb.push({
         name: segment.path,
-        route: '/commanding/stacks/browse' + path,
+        route: '/procedures/stacks/browse' + path,
       });
     }
     this.breadcrumb$.next(breadcrumb);

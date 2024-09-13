@@ -1,20 +1,23 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-
-/**
- * Placeholder just to work around being able to capture file paths via
- * angular router '**' wildcard, rather than being forced to use
- * query parameters.
- */
+import { Title } from '@angular/platform-browser';
+import { WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
+import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 
 @Component({
   standalone: true,
   selector: 'app-stacks-page',
-  template: '<router-outlet />',
+  templateUrl: './stacks-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    RouterOutlet,
+    InstancePageTemplateComponent,
+    InstanceToolbarComponent,
+    WebappSdkModule,
   ],
 })
 export class StacksPageComponent {
+
+  constructor(title: Title, readonly yamcs: YamcsService) {
+    title.setTitle('Command stacks');
+  }
 }

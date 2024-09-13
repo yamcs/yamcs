@@ -37,12 +37,20 @@
         }
       </div>
       <p>&nbsp;</p>
-      <app-command-form #commandForm [command]="command" [templateProvider]="templateProvider" />
+      <app-command-form
+        #commandForm
+        [command]="command"
+        [templateProvider]="templateProvider"
+        [enableComment]="false" />
       @if (format === "ycs") {
         <form
           [formGroup]="stackOptionsForm"
           class="ya-form"
           [ngClass]="this.stackOptionsForm.disabled && 'disabled'">
+          <p>&nbsp;</p>
+          <h3>Stack comment</h3>
+          <app-markdown-input formControlName="comment" />
+
           <p>&nbsp;</p>
           <h3>Stack advancement</h3>
           <div class="label">

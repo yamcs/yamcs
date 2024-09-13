@@ -1,11 +1,13 @@
 import { ChangeDetectorRef, Component, Inject, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { AcknowledgmentInfo, AdvancementParams, Command, CommandOptionType, StackEntry, Value, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { AcknowledgmentInfo, AdvancementParams, Command, CommandOptionType, CommandStep, Value, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
+import { CommandFormComponent, TemplateProvider } from '../../../commanding/command-sender/command-form/command-form.component';
 import { CommandSelectorComponent } from '../../../shared/command-selector/command-selector.component';
-import { CommandFormComponent, TemplateProvider } from '../../command-sender/command-form/command-form.component';
+import { AppMarkdownInput } from '../../../shared/markdown-input/markdown-input.component';
 import { AdvanceAckHelpComponent } from '../advance-ack-help/advance-ack-help.component';
+import { StackedCommandEntry } from '../stack-file/StackedEntry';
 
 export interface CommandResult {
   command: Command;
@@ -18,7 +20,7 @@ export interface CommandResult {
 
 export class StackEntryTemplateProvider implements TemplateProvider {
 
-  constructor(private entry: StackEntry) {
+  constructor(private entry: CommandStep) {
   }
 
   getAssignment(argumentName: string) {
@@ -77,16 +79,17 @@ export class StackEntryTemplateProvider implements TemplateProvider {
 
 @Component({
   standalone: true,
-  templateUrl: './edit-stack-entry-dialog.component.html',
-  styleUrl: './edit-stack-entry-dialog.component.css',
+  templateUrl: './edit-command-entry-dialog.component.html',
+  styleUrl: './edit-command-entry-dialog.component.css',
   imports: [
     AdvanceAckHelpComponent,
+    AppMarkdownInput,
     CommandFormComponent,
     CommandSelectorComponent,
     WebappSdkModule,
   ],
 })
-export class EditStackEntryDialogComponent {
+export class EditCommandEntryDialogComponent {
 
   okLabel = 'OK';
 
@@ -116,50 +119,50 @@ export class EditStackEntryDialogComponent {
   selectedCommand$ = new BehaviorSubject<Command | null>(null);
   templateProvider: StackEntryTemplateProvider | null;
 
-  format: "ycs" | "xml";
+  format: 'ycs' | 'xml';
 
   constructor(
-    private dialogRef: MatDialogRef<EditStackEntryDialogComponent>,
+    private dialogRef: MatDialogRef<EditCommandEntryDialogComponent>,
     readonly yamcs: YamcsService,
     formBuilder: UntypedFormBuilder,
     private changeDetection: ChangeDetectorRef,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
+    let commentDefault;
     let advancementAckDropDownDefault;
     let advancementAckCustomDefault;
     let advancementWaitDefault;
     if (data?.entry) {
-      const entry = data.entry as StackEntry;
-      this.templateProvider = new StackEntryTemplateProvider(entry);
+      const entry = data.entry as StackedCommandEntry;
+      this.templateProvider = new StackEntryTemplateProvider(entry.model);
       this.selectedCommand$.next(entry.command ?? null);
 
       this.verifierAcknowledgments = [];
-      if (entry.command) {
-        // Order command definitions top-down
-        const commandHierarchy: Command[] = [];
-        let c: Command | undefined = entry.command;
-        while (c) {
-          commandHierarchy.unshift(c);
-          c = c.baseCommand;
+
+      // Order command definitions top-down
+      const commandHierarchy: Command[] = [];
+      let c: Command | undefined = entry.command;
+      while (c) {
+        commandHierarchy.unshift(c);
+        c = c.baseCommand;
+      }
+      for (const command of commandHierarchy) {
+        for (const verifier of command.verifier ?? []) {
+          this.verifierAcknowledgments.push({ name: `Verifier_${verifier.stage}` });
         }
-        for (const command of commandHierarchy) {
-          for (const verifier of command.verifier ?? []) {
-            this.verifierAcknowledgments.push({ name: `Verifier_${verifier.stage}` });
-          }
-        }
-        let first = true;
-        for (const verifier of this.verifierAcknowledgments) {
-          this.ackOptions.push({
-            id: verifier.name,
-            label: verifier.name,
-            group: first,
-          });
-          first = false;
-        }
+      }
+      let first = true;
+      for (const verifier of this.verifierAcknowledgments) {
+        this.ackOptions.push({
+          id: verifier.name,
+          label: verifier.name,
+          group: first,
+        });
+        first = false;
       }
 
       this.extraAcknowledgments = yamcs.getProcessor()?.acknowledgments ?? [];
-      let first = true;
+      first = true;
       for (const ack of this.extraAcknowledgments) {
         this.ackOptions.push({
           id: ack.name,
@@ -180,8 +183,9 @@ export class EditStackEntryDialogComponent {
         advancementAckDropDownDefault = match ? match.id : 'custom';
       }
 
-      advancementAckCustomDefault = advancementAckDropDownDefault === "custom" ? entry.advancement?.acknowledgment : '';
+      advancementAckCustomDefault = advancementAckDropDownDefault === 'custom' ? entry.advancement?.acknowledgment : '';
       advancementWaitDefault = entry.advancement?.wait;
+      commentDefault = entry.comment || '';
     }
     if (data?.okLabel) {
       this.okLabel = data?.okLabel;
@@ -191,15 +195,15 @@ export class EditStackEntryDialogComponent {
     }
 
     this.stackOptionsForm = formBuilder.group({
+      comment: [commentDefault || '', []],
       advancementAckDropDown: [advancementAckDropDownDefault || '', []],
       advancementAckCustom: [advancementAckCustomDefault, []],
       advancementWait: [advancementWaitDefault, []],
     });
 
-    if (this.format !== "ycs") {
+    if (this.format !== 'ycs') {
       this.stackOptionsForm.disable();
     }
-
 
     this.selectCommandForm = formBuilder.group({
       command: ['', Validators.required],
@@ -221,15 +225,15 @@ export class EditStackEntryDialogComponent {
 
   handleOK() {
     const stackOptions: { advancement?: AdvancementParams; } = {};
-    const advancementAckDropDown = this.stackOptionsForm.get("advancementAckDropDown")?.value;
-    const advancementAckCustom = this.stackOptionsForm.get("advancementAckCustom")?.value?.trim();
-    const advancementWait = this.stackOptionsForm.get("advancementWait")?.value;
+    const advancementAckDropDown = this.stackOptionsForm.get('advancementAckDropDown')?.value;
+    const advancementAckCustom = this.stackOptionsForm.get('advancementAckCustom')?.value?.trim();
+    const advancementWait = this.stackOptionsForm.get('advancementWait')?.value;
 
-    if ((advancementAckDropDown && advancementAckDropDown !== "custom") ||
-      (advancementAckDropDown === "custom" && advancementAckCustom) || advancementWait != null) {
+    if ((advancementAckDropDown && advancementAckDropDown !== 'custom') ||
+      (advancementAckDropDown === 'custom' && advancementAckCustom) || advancementWait != null) {
       stackOptions.advancement = {
-        ...(advancementAckDropDown && advancementAckDropDown !== "custom" && { acknowledgment: advancementAckDropDown }),
-        ...(advancementAckDropDown === "custom" && advancementAckCustom && { acknowledgment: advancementAckCustom }),
+        ...(advancementAckDropDown && advancementAckDropDown !== 'custom' && { acknowledgment: advancementAckDropDown }),
+        ...(advancementAckDropDown === 'custom' && advancementAckCustom && { acknowledgment: advancementAckCustom }),
         ...(advancementWait != null && { wait: advancementWait })
       };
     }
@@ -237,7 +241,7 @@ export class EditStackEntryDialogComponent {
     const result: CommandResult = {
       command: this.selectedCommand$.value!,
       args: this.commandForm.getAssignments(),
-      comment: this.commandForm.getComment(),
+      comment: this.stackOptionsForm.value.comment || null,
       extra: this.commandForm.getExtraOptions(),
       stackOptions: stackOptions
     };

@@ -1,0 +1,58 @@
+<h2 mat-dialog-title>Check step</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="ya-form">
+    <div class="label">
+      Parameters
+      <br />
+      <table class="parameter-table" style="width: 100%" formArrayName="parameters">
+        @for (
+          parameter of parameterControls;
+          track parameter;
+          let i = $index;
+          let first = $first;
+          let last = $last
+        ) {
+          <tr>
+            <td style="width: 100%">
+              <app-parameter-input [formControlName]="i" />
+            </td>
+            <td style="white-space: nowrap">
+              <ya-icon-action
+                icon="keyboard_arrow_down"
+                [disabled]="last"
+                (click)="moveParameterControlDown(i)" />
+              <ya-icon-action
+                icon="keyboard_arrow_up"
+                [disabled]="first"
+                (click)="moveParameterControlUp(i)" />
+              <ya-text-action icon="delete" (click)="removeParameterControl(i)">
+                DELETE
+              </ya-text-action>
+            </td>
+          </tr>
+        }
+        <tr>
+          <td colspan="1">
+            <ya-button icon="add_circle_outline" (click)="addParameterControl()">
+              &nbsp;Add
+            </ya-button>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <br />
+    <div class="label">
+      Comment
+      <app-markdown-input formControlName="comment" />
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <div style="flex: 1 1 auto"></div>
+  <ya-button mat-dialog-close>CANCEL</ya-button>
+  <ya-button appearance="primary" (click)="save()">
+    {{ data.edit ? "UPDATE" : "ADD TO STACK" }}
+  </ya-button>
+</mat-dialog-actions>

@@ -50,34 +50,49 @@
                 },
                 "value": {
                   "description": "Argument value",
-                  "type": ["array", "boolean", "number", "object", "string"]
+                  "type": [
+                    "array",
+                    "boolean",
+                    "number",
+                    "object",
+                    "string"
+                  ]
                 }
               },
-              "required": ["name", "value"]
+              "required": [
+                "name",
+                "value"
+              ]
+            }
+          },
+          "extraOptions": {
+            "description": "Additional command options",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Option identifier",
+                  "type": "string"
+                },
+                "value": {
+                  "description": "Option value",
+                  "type": [
+                    "boolean",
+                    "number",
+                    "string"
+                  ]
+                }
+              }
             }
           },
           "advancement": {
             "$ref": "#/definitions/advancement"
           }
         },
-        "extraOptions": {
-          "description": "Additional command options",
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Option identifier",
-                "type": "string"
-              },
-              "value": {
-                "description": "Option value",
-                "type": ["boolean", "number", "string"]
-              }
-            }
-          }
-        },
-        "required": ["name"]
+        "required": [
+          "name"
+        ]
       }
     },
     "advancement": {

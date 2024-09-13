@@ -1,23 +1,31 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { KeyValue } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { FormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AcknowledgmentInfo, AdvancementParams, Argument, Command, CommandHistoryRecord, CommandSubscription, ConfigService, CreateTimelineItemRequest, MessageService, StackEntry, StackFormatter, StorageClient, Value, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { AcknowledgmentInfo, AdvancementParams, Argument, Command, CommandHistoryRecord, CommandStep, CommandSubscription, ConfigService, CreateTimelineItemRequest, MessageService, NamedObjectId, ParameterSubscription, ParameterValue, StackFormatter, Step, StorageClient, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { ExtraAcknowledgmentsTableComponent } from '../../../commanding/command-history/extra-acknowledgments-table/extra-acknowledgments-table.component';
+import { YamcsAcknowledgmentsTableComponent } from '../../../commanding/command-history/yamcs-acknowledgments-table/yamcs-acknowledgments-table.component';
 import { AuthService } from '../../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
-import { ExtraAcknowledgmentsTableComponent } from '../../command-history/extra-acknowledgments-table/extra-acknowledgments-table.component';
-import { YamcsAcknowledgmentsTableComponent } from '../../command-history/yamcs-acknowledgments-table/yamcs-acknowledgments-table.component';
-import { AcknowledgmentNamePipe } from '../acknowledgment-name.pipe';
+import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
 import { AdvanceAckHelpComponent } from '../advance-ack-help/advance-ack-help.component';
-import { CommandResult, EditStackEntryDialogComponent } from '../edit-stack-entry-dialog/edit-stack-entry-dialog.component';
+import { EditCheckEntryDialogComponent } from '../edit-check-entry-dialog/edit-check-entry-dialog.component';
+import { CommandResult, EditCommandEntryDialogComponent } from '../edit-command-entry-dialog/edit-command-entry-dialog.component';
 import { ScheduleStackDialogComponent } from '../schedule-stack-dialog/schedule-stack-dialog.component';
+import { StackedCheckEntryComponent } from '../stacked-check-entry/stacked-check-entry.component';
 import { StackedCommandDetailComponent } from '../stacked-command-detail/stacked-command-detail.component';
+import { StackedCommandEntryComponent } from '../stacked-command-entry/stacked-command-entry.component';
+import { NamedParameterValue, StackedCheckEntry, StackedCommandEntry, StackedEntry } from './StackedEntry';
+import { parseXML } from './xmlparse';
+import { parseYCS } from './ycsparse';
+
+const ACK_CONTINUE = ['OK', 'DISABLED'];
+const ACK_STOP = ['NOK', 'CANCELLED'];
 
 @Component({
   standalone: true,
@@ -25,13 +33,15 @@ import { StackedCommandDetailComponent } from '../stacked-command-detail/stacked
   styleUrl: './stack-file.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    AcknowledgmentNamePipe,
     AdvanceAckHelpComponent,
     ExtraAcknowledgmentsTableComponent,
-    InstanceToolbarComponent,
     InstancePageTemplateComponent,
-    WebappSdkModule,
+    InstanceToolbarComponent,
+    MarkdownComponent,
+    StackedCheckEntryComponent,
     StackedCommandDetailComponent,
+    StackedCommandEntryComponent,
+    WebappSdkModule,
     YamcsAcknowledgmentsTableComponent,
   ],
 })
@@ -43,11 +53,11 @@ export class StackFileComponent implements OnDestroy {
   folderLink: string;
 
   dirty$ = new BehaviorSubject<boolean>(false);
-  entries$ = new BehaviorSubject<StackEntry[]>([]);
+  entries$ = new BehaviorSubject<StackedEntry[]>([]);
   hasOutputs$ = this.entries$.pipe(
     map(entries => {
       for (const entry of entries) {
-        if (entry.record || entry.err) {
+        if (entry.hasOutputs()) {
           return true;
         }
       }
@@ -58,13 +68,14 @@ export class StackFileComponent implements OnDestroy {
   running$ = new BehaviorSubject<boolean>(false);
   runningStack = false;
 
+  private parameterSubscription: ParameterSubscription;
   private commandSubscription: CommandSubscription;
-  selectedEntry$ = new BehaviorSubject<StackEntry | null>(null);
-  clipboardEntry$ = new BehaviorSubject<StackEntry | null>(null);
+  selectedEntry$ = new BehaviorSubject<StackedEntry | null>(null);
+  clipboardEntry$ = new BehaviorSubject<StackedEntry | null>(null);
   private commandHistoryRecords = new Map<string, CommandHistoryRecord>();
 
   @ViewChild('entryParent')
-  private entryParent: ElementRef;
+  private entryParent: ElementRef<HTMLDivElement>;
 
   private executionCounter = 0;
 
@@ -72,22 +83,21 @@ export class StackFileComponent implements OnDestroy {
   private folderPerInstance: boolean;
 
   loaded = false;
-  format: "ycs" | "xml";
+  format: 'ycs' | 'xml';
 
-  JSONblobURL: SafeResourceUrl;
-  XMLblobURL: SafeResourceUrl;
+  jsonBlobUrl: SafeResourceUrl;
+  xmlBlobUrl: SafeResourceUrl;
 
   converting = false;
 
   // Configuration of command ack to accept to execute the following
-  private advancement: AdvancementParams = { acknowledgment: "Acknowledge_Queued", wait: 0 };
-
-  // Default: OK/DISABLED -> continue, NOK/CANCELLED/after timeout -> pause,  everything else -> ignore
-  private acceptingAckValues = ["OK", "DISABLED"];
-  private stoppingAckValues = ["NOK", "CANCELLED"];
+  private advancement: AdvancementParams = {
+    acknowledgment: 'Acknowledge_Queued',
+    wait: 0,
+  };
 
   private nextCommandDelayTimeout: number;
-  private nextCommandScheduled = false;
+  private nextEntryScheduled = false;
 
   stackOptionsForm: UntypedFormGroup;
   extraAcknowledgments: AcknowledgmentInfo[];
@@ -98,11 +108,8 @@ export class StackFileComponent implements OnDestroy {
     { id: 'CommandComplete', label: 'Completed' },
   ];
 
-  // KeyValuePipe comparator that preserves original order.
-  // (default KeyValuePipe is to sort A-Z, but that's undesired for args).
-  insertionOrder = (a: KeyValue<string, any>, b: KeyValue<string, any>): number => {
-    return 0;
-  };
+  idMapping: { [key: number]: NamedObjectId; } = {};
+  pvals$ = new BehaviorSubject<{ [key: string]: ParameterValue; }>({});
 
   constructor(
     private dialog: MatDialog,
@@ -116,7 +123,6 @@ export class StackFileComponent implements OnDestroy {
     private sanitizer: DomSanitizer,
     formBuilder: FormBuilder
   ) {
-    const config = configService.getConfig();
     this.bucket = configService.getStackBucket();
     this.folderPerInstance = config.displayFolderPerInstance;
     this.storageClient = yamcs.createStorageClient();
@@ -144,6 +150,30 @@ export class StackFileComponent implements OnDestroy {
       advancementWait: ['', []],
     });
 
+    this.parameterSubscription = yamcs.yamcsClient.createParameterSubscription({
+      instance: yamcs.instance!,
+      processor: yamcs.processor!,
+      action: 'REPLACE',
+      abortOnInvalid: false,
+      sendFromCache: true,
+      updateOnExpiration: true,
+      id: [],
+    }, data => {
+      if (data.mapping) {
+        this.idMapping = data.mapping;
+      }
+      if (data.values) {
+        const pvals = { ...this.pvals$.value };
+        for (const value of data.values) {
+          const pname = this.idMapping[value.numericId];
+          if (pname) {
+            pvals[pname.name] = value;
+          }
+        }
+        this.pvals$.next(pvals);
+      }
+    });
+
     this.initStackFile();
   }
 
@@ -152,7 +182,7 @@ export class StackFileComponent implements OnDestroy {
 
     this.loadFile(initialObject);
 
-    if (this.format !== "ycs") {
+    if (this.format !== 'ycs') {
       this.stackOptionsForm.disable();
     } else {
       this.stackOptionsForm.enable();
@@ -163,28 +193,33 @@ export class StackFileComponent implements OnDestroy {
       instance: this.yamcs.instance!,
       processor: this.yamcs.processor!,
       ignorePastCommands: true,
-    }, entry => {
-      const id = entry.id;
+    }, histUpdate => {
+      const id = histUpdate.id;
       let rec = this.commandHistoryRecords.get(id);
       if (rec) {
-        rec = rec.mergeEntry(entry);
+        rec = rec.mergeEntry(histUpdate);
       } else {
-        rec = new CommandHistoryRecord(entry);
+        rec = new CommandHistoryRecord(histUpdate);
       }
       this.commandHistoryRecords.set(id, rec);
 
-      // Try to find an entry with matching id. If it's there
+      // Try to find a with matching id. If it's there
       // update it. If not: no problem, the link will be made when
       // handling the command response.
       for (const entry of this.entries$.value) {
-        if (entry.id === id) {
+        if ((entry instanceof StackedCommandEntry) && entry.id === id) {
           entry.record = rec;
           break;
         }
       }
 
       // Continue running entries
-      this.checkAckContinueRunning(rec);
+      const currentEntry = this.selectedEntry$.value;
+      if (currentEntry && (currentEntry instanceof StackedCommandEntry)) {
+        if (currentEntry instanceof StackedCommandEntry) {
+          this.checkAckContinueRunning(currentEntry, rec);
+        }
+      }
     });
   }
 
@@ -194,18 +229,21 @@ export class StackFileComponent implements OnDestroy {
     }
 
     this.advancement = {
-      acknowledgment: result.advancementAckDropDown !== "custom" ? result.advancementAckDropDown : result.advancementAckCustom,
+      acknowledgment: result.advancementAckDropDown !== 'custom'
+        ? result.advancementAckDropDown : result.advancementAckCustom,
       wait: result.advancementWait ?? 0,
     };
 
-    if (result.advancementAckDropDown !== "custom") {
-      this.stackOptionsForm.patchValue({ 'advancementAckCustom': undefined }, { emitEvent: false });
+    if (result.advancementAckDropDown !== 'custom') {
+      this.stackOptionsForm.patchValue({
+        'advancementAckCustom': undefined,
+      }, { emitEvent: false });
     }
 
     this.dirty$.next(true);
   };
 
-  handleDrop(event: CdkDragDrop<StackEntry[]>) {
+  handleDrop(event: CdkDragDrop<Step[]>) {
     if (event.previousIndex !== event.currentIndex) {
       moveItemInArray(this.entries$.value, event.previousIndex, event.currentIndex);
       this.entries$.next([...this.entries$.value]);
@@ -241,18 +279,18 @@ export class StackFileComponent implements OnDestroy {
     this.objectName = objectName;
     const idx = this.objectName.lastIndexOf('/');
     if (idx === -1) {
-      this.folderLink = '/commanding/stacks/browse/';
+      this.folderLink = '/procedures/stacks/browse/';
       this.filename = this.objectName;
     } else {
       const folderWithoutInstance = this.getNameWithoutInstance(this.objectName.substring(0, idx));
-      this.folderLink = '/commanding/stacks/browse/' + folderWithoutInstance;
+      this.folderLink = '/procedures/stacks/browse/' + folderWithoutInstance;
       this.filename = this.objectName.substring(idx + 1);
     }
 
     this.title.setTitle(this.filename);
 
     const format = utils.getExtension(utils.getFilename(objectName))?.toLowerCase();
-    if (format === "ycs" || format === "xml") {
+    if (format === 'ycs' || format === 'xml') {
       this.format = format;
     } else {
       this.loaded = true;
@@ -260,43 +298,55 @@ export class StackFileComponent implements OnDestroy {
     }
 
     const response = await this.storageClient.getObject(this.bucket, objectName).catch(err => {
-      if (err.statusCode === 404 && format === "xml") {
-        this.router.navigate([objectName.replace(/\.xml$/i, ".ycs")], {
+      if (err.statusCode === 404 && format === 'xml') {
+        this.router.navigate([objectName.replace(/\.xml$/i, '.ycs')], {
           queryParamsHandling: 'preserve',
           relativeTo: this.route.parent,
         }).then(() => this.initStackFile());
       } else {
-        this.messageService.showError("Failed to load stack file '" + objectName + "'");
+        this.messageService.showError(`Failed to load stack file: ${objectName}`);
       }
     });
 
     if (response?.ok) {
       const text = await response.text();
-      let entries;
+      const entries: StackedEntry[] = [];
+
       switch (this.format) {
-        case "ycs":
-          [entries, this.advancement] = this.parseJSON(text);
+        case 'ycs':
+          let ycsEntries: Step[];
+          [ycsEntries, this.advancement] = parseYCS(text, this.configService.getCommandOptions());
+          for (const ycsEntry of ycsEntries) {
+            if (ycsEntry.type === 'check') {
+              entries.push(new StackedCheckEntry(ycsEntry));
+            } else if (ycsEntry.type === 'command') {
+              entries.push(new StackedCommandEntry(ycsEntry));
+            }
+          }
 
           const match = this.ackOptions.find(el => el.id === this.advancement.acknowledgment);
           const ackDefault = match ? match.id : 'custom';
 
           this.stackOptionsForm.setValue({
             advancementAckDropDown: ackDefault,
-            advancementAckCustom: ackDefault === "custom" ? this.advancement.acknowledgment : '',
+            advancementAckCustom: ackDefault === 'custom' ? this.advancement.acknowledgment : '',
             advancementWait: this.advancement.wait,
           });
           break;
-        case "xml":
-          const xmlParser = new DOMParser();
-          const doc = xmlParser.parseFromString(text, 'text/xml') as XMLDocument;
-          entries = StackFileComponent.parseXML(doc.documentElement, this.configService.getCommandOptions());
+        case 'xml':
+          const xmlModels = parseXML(text, this.configService.getCommandOptions());
+          for (const xmlModel of xmlModels) {
+            entries.push(new StackedCommandEntry(xmlModel));
+          }
           break;
       }
+
+      const commandEntries = entries.filter(entry => entry instanceof StackedCommandEntry);
 
       // Enrich entries with MDB info, it's used in the detail panel
       const promises = [];
       const instance = this.yamcs.instance!;
-      for (const entry of entries) {
+      for (const entry of commandEntries) {
         const namespace = entry.namespace ?? null;
         const name = entry.name;
         promises.push(this.yamcs.yamcsClient.getCommandForNamespace(instance, namespace, name).then(command => {
@@ -315,7 +365,7 @@ export class StackFileComponent implements OnDestroy {
 
       // Convert enum values to labels. This provides some resilience to MDB changes
       // where a numeric parameter becomes an enumeration.
-      for (const entry of entries) {
+      for (const entry of commandEntries) {
         if (entry.command) {
           for (const argumentName in entry.args) {
             const argument = this.getArgument(argumentName, entry.command);
@@ -343,7 +393,7 @@ export class StackFileComponent implements OnDestroy {
 
       // Convert arrays/aggregates from JSON to JavaScript
       if (this.format === 'xml') {
-        for (const entry of entries) {
+        for (const entry of commandEntries) {
           if (entry.command) {
             for (const argumentName in entry.args) {
               if (this.isComplex(argumentName, entry.command)) {
@@ -357,8 +407,33 @@ export class StackFileComponent implements OnDestroy {
       // Only now, update the page
       this.entries$.next(entries);
       this.selectedEntry$.next(entries.length ? entries[0] : null);
+      this.updateParameterSubscription();
       this.loaded = true;
     }
+  }
+
+  private updateParameterSubscription() {
+    const parameters = new Set<string>();
+    for (const entry of this.entries$.value) {
+      if (entry.type === 'check') {
+        for (const check of entry.parameters) {
+          parameters.add(check.parameter);
+        }
+      }
+    }
+
+    const ids: NamedObjectId[] = [];
+    parameters.forEach(p => ids.push({ 'name': p }));
+
+    this.parameterSubscription.sendMessage({
+      action: 'REPLACE',
+      instance: this.yamcs.instance!,
+      processor: this.yamcs.processor!,
+      abortOnInvalid: false,
+      sendFromCache: true,
+      updateOnExpiration: true,
+      id: ids,
+    });
   }
 
   private isComplex(argumentName: string, info: Command): boolean {
@@ -388,112 +463,7 @@ export class StackFileComponent implements OnDestroy {
     }
   }
 
-  private parseJSON(json: string) {
-    const entries: StackEntry[] = [];
-
-    const stack = JSON.parse(json);
-    if (stack.commands) {
-      for (let command of stack.commands) {
-        entries.push(this.parseJSONentry(command));
-      }
-    }
-
-    let advancement: AdvancementParams = {
-      acknowledgment: stack.advancement?.acknowledgment || "Acknowledge_Queued",
-      wait: stack.advancement?.wait != null ? stack.advancement?.wait : 0
-    };
-
-    return [entries, advancement] as const;
-  }
-
-  private parseJSONentry(command: any) {
-    const entry: StackEntry = {
-      name: command.name,
-      namespace: command.namespace,
-      ...(command.comment && { comment: command.comment }),
-      ...(command.extraOptions && { extra: this.parseJSONextraOptions(command.extraOptions) }),
-      ...(command.arguments && { args: this.parseJSONcommandArguments(command.arguments) }),
-      ...(command.advancement && { advancement: command.advancement })
-    };
-    return entry;
-  }
-
-  private parseJSONextraOptions(options: Array<any>) {
-    const extra: { [key: string]: Value; } = {};
-    for (let option of options) {
-      const value = StackFileComponent.convertOptionStringToValue(option.id, (new String(option.value)).toString(), this.configService.getCommandOptions()); // TODO: simplify value conversion
-      if (value) {
-        extra[option.id] = value;
-      }
-    }
-    return extra;
-  }
-
-  private parseJSONcommandArguments(commandArguments: Array<any>) {
-    const args: { [key: string]: any; } = {};
-    for (let argument of commandArguments) {
-      args[argument.name] = argument.value;
-    }
-    return args;
-  }
-
-  static parseXML(root: Node, commandOptions: any) {
-    const entries: StackEntry[] = [];
-    for (let i = 0; i < root.childNodes.length; i++) {
-      const child = root.childNodes[i];
-      if (child.nodeType !== 3) { // Ignore text or whitespace
-        if (child.nodeName === 'command') {
-          const entry = this.parseXMLEntry(child as Element, commandOptions);
-          entries.push(entry);
-        }
-      }
-    }
-
-    return entries;
-  }
-
-  private static parseXMLEntry(node: Element, commandOptions: any): StackEntry {
-    const args: { [key: string]: any; } = {};
-    const extra: { [key: string]: Value; } = {};
-    for (let i = 0; i < node.childNodes.length; i++) {
-      const child = node.childNodes[i] as Element;
-      if (child.nodeName === 'commandArgument') {
-        const argumentName = this.getStringAttribute(child, 'argumentName');
-        args[argumentName] = this.getStringAttribute(child, 'argumentValue');
-        if (args[argumentName] === 'true') {
-          args[argumentName] = true;
-        } else if (args[argumentName] === 'false') {
-          args[argumentName] = false;
-        }
-      } else if (child.nodeName === 'extraOptions') {
-        for (let j = 0; j < child.childNodes.length; j++) {
-          const extraChild = child.childNodes[j] as Element;
-          if (extraChild.nodeName === 'extraOption') {
-            const id = this.getStringAttribute(extraChild, 'id');
-            const stringValue = this.getStringAttribute(extraChild, 'value');
-            const value = this.convertOptionStringToValue(id, stringValue, commandOptions);
-            if (value) {
-              extra[id] = value;
-            }
-          }
-        }
-      }
-    }
-    const entry: StackEntry = {
-      name: this.getStringAttribute(node, 'qualifiedName'),
-      args,
-      extra,
-      executing: false,
-    };
-
-    if (node.hasAttribute('comment')) {
-      entry.comment = this.getStringAttribute(node, 'comment');
-    }
-
-    return entry;
-  }
-
-  selectEntry(entry: StackEntry) {
+  selectEntry(entry: StackedEntry) {
     this.selectedEntry$.next(entry);
   }
 
@@ -512,20 +482,12 @@ export class StackFileComponent implements OnDestroy {
 
   clearSelectedOutputs() {
     const entry = this.selectedEntry$.value;
-    if (entry) {
-      entry.executionNumber = undefined;
-      entry.id = undefined;
-      entry.record = undefined;
-      entry.err = undefined;
-    }
+    entry?.clearOutputs();
   }
 
   clearOutputs() {
     for (const entry of this.entries$.value) {
-      entry.executionNumber = undefined;
-      entry.id = undefined;
-      entry.record = undefined;
-      entry.err = undefined;
+      entry.clearOutputs();
     }
     this.executionCounter = 0;
     this.entries$.next([...this.entries$.value]);
@@ -548,35 +510,50 @@ export class StackFileComponent implements OnDestroy {
     this.runEntry(entry);
   }
 
-  private async runEntry(entry: StackEntry) {
+  private async runEntry(entry: StackedEntry) {
     const executionNumber = ++this.executionCounter;
     const { instance, processor } = this.yamcs;
-    const namespace = entry.namespace ?? null;
-    return this.yamcs.yamcsClient.issueCommandForNamespace(instance!, processor!, namespace, entry.name, {
-      sequenceNumber: executionNumber,
-      args: entry.args,
-      extra: entry.extra,
-    }).then(response => {
-      entry.executionNumber = executionNumber;
-      entry.executing = true;
-      entry.id = response.id;
+    if (entry instanceof StackedCommandEntry) {
+      const namespace = entry.namespace ?? null;
+      return this.yamcs.yamcsClient.issueCommandForNamespace(instance!, processor!, namespace, entry.name, {
+        sequenceNumber: executionNumber,
+        args: entry.args,
+        extra: entry.extra,
+      }).then(response => {
+        entry.executionNumber = executionNumber;
+        entry.executing = true;
+        entry.id = response.id;
 
-      // It's possible the WebSocket received data before we
-      // get our response.
-      const rec = this.commandHistoryRecords.get(entry.id);
-      if (rec) {
-        entry.record = rec;
-        this.checkAckContinueRunning(rec);
+        // It's possible the WebSocket received data before we
+        // get our response.
+        const rec = this.commandHistoryRecords.get(entry.id);
+        if (rec) {
+          entry.record = rec;
+          this.checkAckContinueRunning(entry, rec);
+        }
+      }).catch(err => {
+        entry.executionNumber = executionNumber;
+        entry.executing = false;
+        entry.err = err.message || err;
+        this.stopRun();
+      }).finally(() => {
+        // Refresh subject, to be sure
+        this.entries$.next([...this.entries$.value]);
+      });
+    } else if (entry instanceof StackedCheckEntry) {
+      const pvals: NamedParameterValue[] = [];
+      for (const check of entry.parameters) {
+        const allPvals = this.pvals$.value;
+        pvals.push({
+          parameter: check.parameter,
+          pval: allPvals[check.parameter] || null,
+        });
       }
-    }).catch(err => {
+      entry.pvals = pvals;
       entry.executionNumber = executionNumber;
-      entry.executing = false;
-      entry.err = err.message || err;
-      this.stopRun();
-    }).finally(() => {
-      // Refresh subject, to be sure
-      this.entries$.next([...this.entries$.value]);
-    });
+      this.entries$.next([...this.entries$.value]); // Refresh subject
+      this.continueRunning(entry);
+    }
   }
 
   runFromSelection() {
@@ -588,46 +565,47 @@ export class StackFileComponent implements OnDestroy {
 
     this.running$.next(true);
     this.runningStack = true;
-    this.nextCommandScheduled = false;
+    this.nextEntryScheduled = false;
 
     this.runEntry(entry);
   }
 
-  private checkAckContinueRunning(record: CommandHistoryRecord) {
+  private checkAckContinueRunning(entry: StackedCommandEntry, record: CommandHistoryRecord) {
     // Attempts to continue the current run from selected by checking acknowledgement statuses
-    if (!this.running$.value || this.nextCommandScheduled) {
+    if (!this.running$.value || this.nextEntryScheduled) {
       return;
     }
 
-    let selectedEntry = this.selectedEntry$.value;
+    let acceptingAck = entry.advancement?.acknowledgment || this.advancement.acknowledgment!;
+    let delay = entry.advancement?.wait ?? this.advancement.wait!;
 
-    let acceptingAck = selectedEntry?.advancement?.acknowledgment || this.advancement.acknowledgment!;
-    let delay = selectedEntry?.advancement?.wait ?? this.advancement.wait!;
-
-    if (selectedEntry?.id === record.id) {
+    if (entry.id === record.id) {
       let ack = record.acksByName[acceptingAck];
       if (ack && ack.status) {
-        if (this.acceptingAckValues.includes(ack.status)) {
-          this.nextCommandScheduled = this.runningStack;
-          this.nextCommandDelayTimeout = window.setTimeout(() => {
-            selectedEntry!.executing = false;
-            // Continue execution
-            if (this.running$.value && selectedEntry) {
-              this.advanceSelection(selectedEntry);
-              if (this.runningStack) {
-                this.runFromSelection();
-              } else {
-                this.stopRun();
-              }
-            }
-          }, Math.max(delay, 0));
-        } else if (this.stoppingAckValues.includes(ack.status)) {
-          selectedEntry.executing = false;
-          // Stop exection
+        if (ACK_CONTINUE.includes(ack.status)) {
+          this.continueRunning(entry, delay);
+        } else if (ACK_STOP.includes(ack.status)) {
+          entry.executing = false;
+          // Stop execution
           this.stopRun();
-        } // Ignore others
+        }
       }
     }
+  }
+
+  private continueRunning(entry: StackedEntry, delay = 0) {
+    this.nextEntryScheduled = this.runningStack;
+    this.nextCommandDelayTimeout = window.setTimeout(() => {
+      entry.executing = false;
+      if (this.running$.value) {
+        this.advanceSelection(entry);
+        if (this.runningStack) {
+          this.runFromSelection();
+        } else {
+          this.stopRun();
+        }
+      }
+    }, Math.max(delay, 0));
   }
 
   stopRun() {
@@ -637,17 +615,17 @@ export class StackFileComponent implements OnDestroy {
       entry.executing = false;
     }
     window.clearTimeout(this.nextCommandDelayTimeout);
-    this.nextCommandScheduled = false;
+    this.nextEntryScheduled = false;
   }
 
-  private advanceSelection(entry: StackEntry) {
+  private advanceSelection(entry: StackedEntry) {
     const entries = this.entries$.value;
     const idx = entries.indexOf(entry);
     if (idx < entries.length - 1) {
       const nextEntry = entries[idx + 1];
       this.selectEntry(nextEntry);
 
-      const parentEl = this.entryParent.nativeElement as HTMLDivElement;
+      const parentEl = this.entryParent.nativeElement;
       const entryEl = parentEl.getElementsByClassName('entry')[idx + 1] as HTMLDivElement;
       if (!this.isVisible(entryEl)) {
         entryEl.scrollIntoView();
@@ -663,24 +641,38 @@ export class StackFileComponent implements OnDestroy {
     return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
   }
 
-  private static convertOptionStringToValue(id: string, value: string, commandOptions: any): Value | null {
-    for (const option of commandOptions) {
-      if (option.id === id) {
-        switch (option.type) {
-          case 'BOOLEAN':
-            return { type: 'BOOLEAN', booleanValue: value === 'true' };
-          case 'NUMBER':
-            return { type: 'SINT32', sint32Value: Number(value) };
-          default:
-            return { type: 'STRING', stringValue: value };
+  addCheckEntry() {
+    this.dialog.open(EditCheckEntryDialogComponent, {
+      autoFocus: false,
+      width: '800px',
+      data: {
+        edit: false,
+      },
+    }).afterClosed().subscribe((result?: any) => {
+      if (result) {
+        const entry = new StackedCheckEntry({
+          type: 'check',
+          ...result,
+        });
+
+        const relto = this.selectedEntry$.value;
+        if (relto) {
+          const entries = this.entries$.value;
+          const idx = entries.indexOf(relto);
+          entries.splice(idx + 1, 0, entry);
+          this.entries$.next([...this.entries$.value]);
+        } else {
+          this.entries$.next([... this.entries$.value, entry]);
         }
+        this.selectEntry(entry);
+        this.dirty$.next(true);
+        this.updateParameterSubscription();
       }
-    }
-    return null;
+    });
   }
 
-  addCommand() {
-    const dialogRef = this.dialog.open(EditStackEntryDialogComponent, {
+  addCommandEntry() {
+    const dialogRef = this.dialog.open(EditCommandEntryDialogComponent, {
       width: '70%',
       height: '100%',
       autoFocus: false,
@@ -696,27 +688,32 @@ export class StackFileComponent implements OnDestroy {
 
     dialogRef.afterClosed().subscribe((result?: CommandResult) => {
       if (result) {
-        const entry: StackEntry = {
+        const model: CommandStep = {
+          type: 'command',
           name: result.command.qualifiedName,
           args: result.args,
           comment: result.comment,
           extra: result.extra,
-          command: result.command,
-          ...(result.stackOptions.advancement && { advancement: result.stackOptions.advancement })
         };
+
+        if (result.stackOptions.advancement) {
+          model.advancement = result.stackOptions.advancement;
+        }
 
         // Save with an alias, if so configured and the alias is available
         const config = this.configService.getConfig();
         if (config.preferredNamespace) {
           for (const alias of result.command.alias || []) {
             if (alias.namespace === config.preferredNamespace) {
-              entry.name = alias.name;
-              entry.namespace = alias.namespace;
+              model.name = alias.name;
+              model.namespace = alias.namespace;
               break;
             }
           }
         }
 
+        const entry = new StackedCommandEntry(model);
+        entry.command = result.command;
         const relto = this.selectedEntry$.value;
         if (relto) {
           const entries = this.entries$.value;
@@ -732,66 +729,94 @@ export class StackFileComponent implements OnDestroy {
     });
   }
 
-  editSelectedCommand() {
+  editSelectedEntry() {
     const entry = this.selectedEntry$.value!;
-    this.editCommand(entry);
+    this.editEntry(entry);
   }
 
-  editCommand(entry: StackEntry) {
+  editEntry(entry: StackedEntry) {
     this.selectEntry(entry);
 
-    const dialogRef = this.dialog.open(EditStackEntryDialogComponent, {
-      width: '70%',
-      height: '100%',
-      autoFocus: false,
-      position: {
-        right: '0',
-      },
-      panelClass: 'dialog-full-size',
-      data: {
-        okLabel: 'UPDATE',
-        entry,
-        format: this.format
-      }
-    });
+    if (entry instanceof StackedCommandEntry) {
+      this.dialog.open(EditCommandEntryDialogComponent, {
+        width: '70%',
+        height: '100%',
+        autoFocus: false,
+        position: {
+          right: '0',
+        },
+        panelClass: 'dialog-full-size',
+        data: {
+          okLabel: 'UPDATE',
+          entry,
+          format: this.format,
+        }
+      }).afterClosed().subscribe((result?: CommandResult) => {
+        if (result) {
+          const changedModel: CommandStep = {
+            type: 'command',
+            name: result.command.qualifiedName,
+            args: result.args,
+            comment: result.comment,
+            extra: result.extra,
+            command: result.command,
+            ...(result.stackOptions.advancement && { advancement: result.stackOptions.advancement })
+          };
 
-    dialogRef.afterClosed().subscribe((result?: CommandResult) => {
-      if (result) {
-        const changedEntry: StackEntry = {
-          name: result.command.qualifiedName,
-          args: result.args,
-          comment: result.comment,
-          extra: result.extra,
-          command: result.command,
-          ...(result.stackOptions.advancement && { advancement: result.stackOptions.advancement })
-        };
-
-        // Save with an alias, if so configured and the alias is available
-        const config = this.configService.getConfig();
-        if (config.preferredNamespace) {
-          for (const alias of result.command.alias || []) {
-            if (alias.namespace === config.preferredNamespace) {
-              changedEntry.name = alias.name;
-              changedEntry.namespace = alias.namespace;
-              break;
+          // Save with an alias, if so configured and the alias is available
+          const config = this.configService.getConfig();
+          if (config.preferredNamespace) {
+            for (const alias of result.command.alias || []) {
+              if (alias.namespace === config.preferredNamespace) {
+                changedModel.name = alias.name;
+                changedModel.namespace = alias.namespace;
+                break;
+              }
             }
           }
+
+          const changedEntry = new StackedCommandEntry(changedModel);
+
+          const entries = this.entries$.value;
+          const idx = entries.indexOf(entry);
+          entries.splice(idx, 1, changedEntry);
+          this.entries$.next([...this.entries$.value]);
+
+          this.selectEntry(changedEntry);
+          this.dirty$.next(true);
         }
+      });
+    } else if (entry instanceof StackedCheckEntry) {
+      this.dialog.open(EditCheckEntryDialogComponent, {
+        autoFocus: false,
+        width: '800px',
+        data: {
+          edit: true,
+          entry,
+        }
+      }).afterClosed().subscribe((result?: any) => {
+        if (result) {
+          const changedEntry = new StackedCheckEntry({
+            type: 'check',
+            ...result,
+          });
 
-        const entries = this.entries$.value;
-        const idx = entries.indexOf(entry);
-        entries.splice(idx, 1, changedEntry);
-        this.entries$.next([...this.entries$.value]);
+          const entries = this.entries$.value;
+          const idx = entries.indexOf(entry);
+          entries.splice(idx, 1, changedEntry);
+          this.entries$.next([...this.entries$.value]);
 
-        this.selectEntry(changedEntry);
-        this.dirty$.next(true);
-      }
-    });
+          this.selectEntry(changedEntry);
+          this.dirty$.next(true);
+          this.updateParameterSubscription();
+        }
+      });
+    }
 
     return false;
   }
 
-  cutSelectedCommand() {
+  cutSelectedEntry() {
     const entry = this.selectedEntry$.value!;
     this.advanceSelection(entry);
     this.clipboardEntry$.next(entry);
@@ -804,28 +829,15 @@ export class StackFileComponent implements OnDestroy {
     this.dirty$.next(true);
   }
 
-  copySelectedCommand() {
+  copySelectedEntry() {
     const entry = this.selectedEntry$.value!;
     this.clipboardEntry$.next(entry);
   }
 
-  pasteCommand() {
+  pasteEntry() {
     const entry = this.clipboardEntry$.value;
     if (entry) {
-      const copiedEntry: StackEntry = {
-        name: entry.name,
-        namespace: entry.namespace,
-        args: { ...entry.args },
-        comment: entry.comment,
-        command: entry.command,
-        executing: false,
-      };
-      if (entry.extra) {
-        copiedEntry.extra = { ...entry.extra };
-      }
-      if (entry.advancement) {
-        copiedEntry.advancement = { ...entry.advancement };
-      }
+      const copiedEntry = entry.copy();
 
       const relto = this.selectedEntry$.value;
       if (relto) {
@@ -860,18 +872,18 @@ export class StackFileComponent implements OnDestroy {
           start: scheduleOptions['executionTime'],
           tags: scheduleOptions['tags'],
           activityDefinition: {
-            "type": "COMMAND_STACK",
-            "args": {
-              "processor": this.yamcs.processor!,
-              "bucket": this.bucket,
-              "stack": this.filename,
+            'type': 'COMMAND_STACK',
+            'args': {
+              'processor': this.yamcs.processor!,
+              'bucket': this.bucket,
+              'stack': this.filename,
             }
           },
         };
 
         this.yamcs.yamcsClient.createTimelineItem(this.yamcs.instance!, options)
           .then(() => {
-            this.messageService.showInfo('Command stack scheduled');
+            this.messageService.showInfo('Stack scheduled');
           })
           .catch(err => this.messageService.showError(err));
       }
@@ -879,16 +891,17 @@ export class StackFileComponent implements OnDestroy {
   }
 
   saveStack() {
+    const modelEntries = this.entries$.value.map(e => e.model);
     let file;
     switch (this.format) {
-      case "ycs":
-        file = new StackFormatter(this.entries$.value, { advancement: this.advancement }).toJSON();
+      case 'ycs':
+        file = new StackFormatter(modelEntries, { advancement: this.advancement }).toJSON();
         break;
-      case "xml":
-        file = new StackFormatter(this.entries$.value, { advancement: this.advancement }).toXML();
+      case 'xml':
+        file = new StackFormatter(modelEntries, { advancement: this.advancement }).toXML();
         break;
     }
-    const type = (this.format === 'xml' ? 'application/xml' : 'application/json');
+    const type = (this.format === 'xml') ? 'application/xml' : 'application/json';
     const blob = new Blob([file], { type });
     return this.storageClient.uploadObject(this.bucket, this.objectName, blob).then(() => {
       this.dirty$.next(false);
@@ -896,22 +909,14 @@ export class StackFileComponent implements OnDestroy {
   }
 
   setExportURLs() {
-    const formatter = new StackFormatter(this.entries$.value, { advancement: this.advancement });
+    const entryModels = this.entries$.value.map(e => e.model);
+    const formatter = new StackFormatter(entryModels, { advancement: this.advancement });
 
-    const JSONblob = new Blob([formatter.toJSON()], { type: 'application/json' });
-    this.JSONblobURL = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(JSONblob));
+    const jsonBlob = new Blob([formatter.toJSON()], { type: 'application/json' });
+    this.jsonBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(jsonBlob));
 
-    const XMLblob = new Blob([formatter.toXML()], { type: 'application/xml' });
-    this.XMLblobURL = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(XMLblob));
-  }
-
-  private static getStringAttribute(node: Node, name: string) {
-    const attr = (node as Element).attributes.getNamedItem(name);
-    if (attr === null) {
-      throw new Error(`No attribute named ${name}`);
-    } else {
-      return attr.textContent || '';
-    }
+    const xmlBlob = new Blob([formatter.toXML()], { type: 'application/xml' });
+    this.xmlBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(xmlBlob));
   }
 
   async convertToJSON() {
@@ -926,11 +931,20 @@ export class StackFileComponent implements OnDestroy {
         await this.saveStack();
       }
 
-      StackFileComponent.convertToJSON(this.messageService, this.storageClient, this.bucket, this.objectName, this.entries$.value, { advancement: this.advancement })
-        .then((jsonObjectName) => {
-          this.router.navigate([jsonObjectName + ".ycs"], { queryParamsHandling: 'preserve', relativeTo: this.route.parent })
-            .then(() => this.initStackFile());
-        }).finally(() => this.converting = false);
+      const entryModels = this.entries$.value.map(e => e.model);
+      StackFileComponent.convertToJSON(
+        this.messageService,
+        this.storageClient,
+        this.bucket,
+        this.objectName,
+        entryModels,
+        { advancement: this.advancement },
+      ).then((jsonObjectName) => {
+        this.router.navigate([jsonObjectName + '.ycs'], {
+          queryParamsHandling: 'preserve',
+          relativeTo: this.route.parent,
+        }).then(() => this.initStackFile());
+      }).finally(() => this.converting = false);
     }
   }
 
@@ -939,7 +953,7 @@ export class StackFileComponent implements OnDestroy {
     storageClient: StorageClient,
     bucket: string,
     objectName: string,
-    entries: StackEntry[],
+    entries: Step[],
     stackOptions: { advancement?: AdvancementParams; }
   ) {
     const formatter = new StackFormatter(entries, stackOptions);
@@ -947,16 +961,17 @@ export class StackFileComponent implements OnDestroy {
     const jsonObjectName = utils.getBasename(objectName);
 
     if (!jsonObjectName) {
-      messageService.showError("Failed to convert command stack");
-      console.error("Failed to convert command stack due to objectName");
+      messageService.showError('Failed to convert stack');
+      console.error('Failed to convert stack due to objectName');
       return;
     }
-    await storageClient.uploadObject(bucket, jsonObjectName + ".ycs", blob);
+    await storageClient.uploadObject(bucket, jsonObjectName + '.ycs', blob);
     await storageClient.deleteObject(bucket, objectName);
     return jsonObjectName;
   }
 
   ngOnDestroy() {
+    this.parameterSubscription?.cancel();
     this.commandSubscription?.cancel();
     this.stackOptionsForm.reset();
   }
