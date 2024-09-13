@@ -1,12 +1,7 @@
 @if (initialized$ | async) {
   @if (mayManageDisplays()) {
-    <button
-      mat-button
-      color="primary"
-      [disabled]="!(viewer.hasUnsavedChanges$ | async)"
-      (click)="save()">
-      <mat-icon>save</mat-icon>
+    <ya-page-button [disabled]="!(viewer.hasUnsavedChanges$ | async)" (click)="save()" icon="save">
       SAVE
-    </button>
+    </ya-page-button>
   }
 }

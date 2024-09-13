@@ -3,14 +3,12 @@
     Activities &nbsp;&nbsp;&nbsp;
 
     @if (mayControlActivities()) {
-      <button
-        mat-button
-        color="primary"
+      <ya-page-button
         [disabled]="!isGroupCancelEnabled()"
-        (click)="cancelSelectedActivities()">
-        <mat-icon>cancel</mat-icon>
+        (click)="cancelSelectedActivities()"
+        icon="cancel">
         Cancel
-      </button>
+      </ya-page-button>
     }
   </app-instance-toolbar>
 

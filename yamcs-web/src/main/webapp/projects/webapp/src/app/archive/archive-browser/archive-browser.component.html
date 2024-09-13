@@ -1,40 +1,32 @@
 <app-instance-page noscroll="true">
   <app-instance-toolbar>
     Archive browser &nbsp;&nbsp;&nbsp;
-    <button
-      mat-button
-      color="primary"
+    <ya-page-button
       (click)="replayRange()"
-      [disabled]="!(rangeSelection$ | async)">
-      <mat-icon>video_settings</mat-icon>
+      [disabled]="!(rangeSelection$ | async)"
+      icon="video_settings">
       Replay range
-    </button>
+    </ya-page-button>
 
     @if (processor$ | async; as processor) {
       @if (processor.replayRequest; as replayRequest) {
-        <button
-          mat-button
-          color="primary"
+        <ya-page-button
           (click)="enableLoop(processor, replayRequest.endAction !== 'LOOP')"
-          [disabled]="!replayRequest.start || !replayRequest.stop">
-          <mat-icon>{{ replayRequest.endAction === "LOOP" ? "repeat_on" : "repeat" }}</mat-icon>
+          [disabled]="!replayRequest.start || !replayRequest.stop"
+          [icon]="replayRequest.endAction === 'LOOP' ? 'repeat_on' : 'repeat'">
           Repeat: {{ replayRequest.endAction === "LOOP" ? "on" : "off" }}
-        </button>
+        </ya-page-button>
       }
     }
 
-    <button
-      mat-button
-      color="primary"
+    <ya-page-button
       (click)="downloadDump()"
-      [disabled]="!(rangeSelection$ | async)">
-      <mat-icon>file_download</mat-icon>
+      [disabled]="!(rangeSelection$ | async)"
+      icon="file_download">
       Download dump
-    </button>
+    </ya-page-button>
 
-    <button mat-icon-button color="primary" (click)="refreshData()" matTooltip="Refresh view">
-      <mat-icon>refresh</mat-icon>
-    </button>
+    <ya-page-icon-button (click)="refreshData()" matTooltip="Refresh view" icon="refresh" />
   </app-instance-toolbar>
 
   <div style="height: 24px; margin: 6px">

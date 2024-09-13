@@ -2,33 +2,28 @@
   <app-instance-toolbar>
     Displays &nbsp;&nbsp;&nbsp;
     @if (mayManageDisplays()) {
-      <button mat-button color="primary" (click)="createDisplay()">
-        <mat-icon>add_circle_outline</mat-icon>
+      <ya-page-button (click)="createDisplay()" icon="add_circle_outline">
         Create display
-      </button>
+      </ya-page-button>
     }
     @if (mayManageDisplays()) {
-      <button mat-button color="primary" (click)="uploader.click()">
-        <mat-icon>file_upload</mat-icon>
+      <ya-page-button (click)="uploader.click()" icon="file_upload">
         Upload files
         <input #uploader type="file" hidden multiple (change)="uploadFiles()" />
-      </button>
+      </ya-page-button>
     }
     @if (mayManageDisplays()) {
-      <button mat-button color="primary" (click)="createFolder()">
-        <mat-icon>create_new_folder</mat-icon>
+      <ya-page-button (click)="createFolder()" icon="create_new_folder">
         Create folder
-      </button>
+      </ya-page-button>
     }
     @if (mayManageDisplays()) {
-      <button
-        mat-button
-        color="primary"
+      <ya-page-button
         (click)="deleteSelectedDisplays()"
-        [disabled]="!selection.hasValue()">
-        <mat-icon>delete</mat-icon>
+        [disabled]="!selection.hasValue()"
+        icon="delete">
         Delete
-      </button>
+      </ya-page-button>
     }
   </app-instance-toolbar>
 

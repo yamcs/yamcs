@@ -1,5 +1,5 @@
 @if (initialized$ | async) {
-  <button mat-button color="primary" [matMenuTriggerFor]="viewMenu">View ▾</button>
+  <ya-page-button [matMenuTriggerFor]="viewMenu" dropdown="true">View</ya-page-button>
   <mat-menu
     #viewMenu="matMenu"
     class="ya-menu"

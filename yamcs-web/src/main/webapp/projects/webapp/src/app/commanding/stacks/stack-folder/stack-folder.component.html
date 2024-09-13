@@ -2,14 +2,12 @@
   <app-instance-toolbar>
     Command stacks &nbsp;&nbsp;&nbsp;
     @if (mayManageStacks()) {
-      <button mat-button color="primary" (click)="createStack()">
-        <mat-icon>add_circle_outline</mat-icon>
+      <ya-page-button (click)="createStack()" icon="add_circle_outline">
         Create stack
-      </button>
+      </ya-page-button>
     }
     @if (mayManageStacks()) {
-      <button mat-button color="primary" (click)="openUploadDialog()">
-        <mat-icon>file_upload</mat-icon>
+      <ya-page-button (click)="openUploadDialog()" icon="file_upload">
         Upload stack
         <input
           #uploader
@@ -18,23 +16,20 @@
           accept=".xml,.XML,.ycs,.YCS"
           multiple
           (change)="importStack()" />
-      </button>
+      </ya-page-button>
     }
     @if (mayManageStacks()) {
-      <button mat-button color="primary" (click)="createFolder()">
-        <mat-icon>create_new_folder</mat-icon>
+      <ya-page-button (click)="createFolder()" icon="create_new_folder">
         Create folder
-      </button>
+      </ya-page-button>
     }
     @if (mayManageStacks()) {
-      <button
-        mat-button
-        color="primary"
+      <ya-page-button
         (click)="deleteSelectedStacks()"
-        [disabled]="!selection.hasValue()">
-        <mat-icon>delete</mat-icon>
+        [disabled]="!selection.hasValue()"
+        icon="delete">
         Delete
-      </button>
+      </ya-page-button>
     }
   </app-instance-toolbar>
 

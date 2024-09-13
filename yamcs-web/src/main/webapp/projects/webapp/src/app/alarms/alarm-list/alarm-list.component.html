@@ -42,30 +42,26 @@
     </ya-help>
     &nbsp;&nbsp;&nbsp;
     @if (mayControlAlarms()) {
-      <button
-        mat-button
-        color="primary"
+      <ya-page-button
         (click)="acknowledgeAlarms(selection.selected)"
-        [disabled]="!selection.hasValue()">
-        <mat-icon>notifications_off</mat-icon>
+        [disabled]="!selection.hasValue()"
+        icon="notifications_off">
         Acknowledge
-      </button>
+      </ya-page-button>
     }
     @if (mayControlAlarms()) {
-      <button
-        mat-button
-        color="primary"
+      <ya-page-button
         (click)="shelveAlarms(selection.selected)"
-        [disabled]="!selection.hasValue()">
-        <mat-icon>timer</mat-icon>
+        [disabled]="!selection.hasValue()"
+        icon="timer">
         Shelve
-      </button>
+      </ya-page-button>
     }
   </app-instance-toolbar>
 
   <ya-detail-pane>
     @if (detailAlarm$ | async; as detailAlarm) {
-      <ya-detail-toolbar> Alarm Detail </ya-detail-toolbar>
+      <ya-detail-toolbar>Alarm Detail</ya-detail-toolbar>
       <div style="padding: 0 16px">
         <app-alarm-detail
           [alarm]="detailAlarm"
@@ -76,7 +72,7 @@
           (clearAlarm)="clearAlarms([$event])" />
       </div>
     } @else {
-      <ya-detail-toolbar> Select an alarm </ya-detail-toolbar>
+      <ya-detail-toolbar>Select an alarm</ya-detail-toolbar>
     }
   </ya-detail-pane>
 

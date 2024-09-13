@@ -4,40 +4,33 @@
   <mat-toolbar-row>
     Instances &nbsp;&nbsp;&nbsp;
     @if (isCreateInstanceEnabled()) {
-      <a mat-button color="primary" routerLink="create-instance">
-        <mat-icon>add_circle_outline</mat-icon>
+      <ya-page-button routerLink="create-instance" icon="add_circle_outline">
         Create instance
-      </a>
+      </ya-page-button>
     }
     @if (mayControlServices()) {
-      <a
-        mat-button
-        color="primary"
+      <ya-page-button
         [disabled]="!isGroupStartEnabled()"
-        (click)="startSelectedInstances()">
-        <mat-icon>play_arrow</mat-icon>
+        (click)="startSelectedInstances()"
+        icon="play_arrow">
         Start
-      </a>
+      </ya-page-button>
     }
     @if (mayControlServices()) {
-      <a
-        mat-button
-        color="primary"
+      <ya-page-button
         [disabled]="!isGroupStopEnabled()"
-        (click)="stopSelectedInstances()">
-        <mat-icon>stop</mat-icon>
+        (click)="stopSelectedInstances()"
+        icon="stop">
         Stop
-      </a>
+      </ya-page-button>
     }
     @if (mayControlServices()) {
-      <a
-        mat-button
-        color="primary"
+      <ya-page-button
         [disabled]="!isGroupRestartEnabled()"
-        (click)="restartSelectedInstances()">
-        <mat-icon>sync_problem</mat-icon>
+        (click)="restartSelectedInstances()"
+        icon="sync_problem">
         Restart
-      </a>
+      </ya-page-button>
     }
   </mat-toolbar-row>
 </mat-toolbar>
@@ -79,19 +72,19 @@
       <th mat-header-cell *matHeaderCellDef class="status"></th>
       <td mat-cell *matCellDef="let row" class="status">
         @if (row.state === "INITIALIZED") {
-          <mat-icon class="warning" [matTooltip]="row.state"> adjust </mat-icon>
+          <mat-icon class="warning" [matTooltip]="row.state">adjust</mat-icon>
         }
         @if (row.state === "RUNNING") {
-          <mat-icon class="success" [matTooltip]="row.state"> check_circle </mat-icon>
+          <mat-icon class="success" [matTooltip]="row.state">check_circle</mat-icon>
         }
         @if (row.state === "FAILED") {
-          <mat-icon class="alert" [matTooltip]="row.state"> highlight_off </mat-icon>
+          <mat-icon class="alert" [matTooltip]="row.state">highlight_off</mat-icon>
         }
         @if (row.state === "OFFLINE") {
-          <mat-icon class="down" [matTooltip]="row.state"> lens </mat-icon>
+          <mat-icon class="down" [matTooltip]="row.state">lens</mat-icon>
         }
         @if (row.state === "INITIALIZING" || row.state === "STARTING" || row.state === "STOPPING") {
-          <mat-icon class="spin" [matTooltip]="row.state"> cached </mat-icon>
+          <mat-icon class="spin" [matTooltip]="row.state">cached</mat-icon>
         }
       </td>
     </ng-container>
@@ -103,7 +96,7 @@
           <a
             routerLink="/instance"
             [queryParams]="{
-              c: row.processors?.length ? row.name + '__' + (row | defaultProcessor) : row.name
+              c: row.processors?.length ? row.name + '__' + (row | defaultProcessor) : row.name,
             }"
             (click)="$event.stopPropagation()">
             <ya-highlight [text]="row.name" [term]="filterControl.value" />

@@ -1,12 +1,9 @@
 <app-instance-page>
   <app-instance-toolbar>
-    <a
-      mat-icon-button
+    <ya-page-icon-button
       [routerLink]="folderLink"
       [queryParams]="{ c: yamcs.context }"
-      color="primary">
-      <mat-icon>arrow_back</mat-icon>
-    </a>
+      icon="arrow_back" />
     {{ filename }}
 
     &nbsp;&nbsp;&nbsp;

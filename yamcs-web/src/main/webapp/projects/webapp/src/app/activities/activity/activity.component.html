@@ -1,39 +1,31 @@
 @if (activity$ | async; as activity) {
   <app-instance-page>
     <app-instance-toolbar>
-      <a mat-icon-button routerLink=".." [queryParams]="{ c: yamcs.context }" color="primary">
-        <mat-icon>arrow_back</mat-icon>
-      </a>
+      <ya-page-icon-button routerLink=".." [queryParams]="{ c: yamcs.context }" icon="arrow_back" />
       Activity details &nbsp;&nbsp;&nbsp;
       @if (activity.type === "MANUAL" && activity.status === "RUNNING" && mayControlActivities()) {
-        <button mat-button color="primary" (click)="setSuccessful(activity)">
-          <mat-icon>thumb_up</mat-icon>
+        <ya-page-button (click)="setSuccessful(activity)" icon="thumb_up">
           Set successful
-        </button>
-        <button mat-button color="primary" (click)="setFailed(activity)">
-          <mat-icon>thumb_down</mat-icon>
-          Set failed
-        </button>
+        </ya-page-button>
+        <ya-page-button (click)="setFailed(activity)" icon="thumb_down">Set failed</ya-page-button>
       }
       @if (mayControlActivities()) {
-        <button
-          mat-button
-          color="primary"
+        <ya-page-button
           [disabled]="!!activity.stop"
-          (click)="cancelActivity(activity)">
-          <mat-icon>cancel</mat-icon>
+          (click)="cancelActivity(activity)"
+          icon="cancel">
           Cancel
-        </button>
+        </ya-page-button>
       }
     </app-instance-toolbar>
     <div class="activity-header">
       <div class="activity-header-left">
-        <span class="title">{{ activity.detail }}</span
-        ><br />
-        <span class="subtitle">ID: {{ activity.id }}</span
-        ><br />
-        <span class="subtitle">Started {{ activity.start | datetime }}</span
-        ><br />
+        <span class="title">{{ activity.detail }}</span>
+        <br />
+        <span class="subtitle">ID: {{ activity.id }}</span>
+        <br />
+        <span class="subtitle">Started {{ activity.start | datetime }}</span>
+        <br />
       </div>
       <div class="activity-header-right">
         <app-activity-status [activity]="activity" />

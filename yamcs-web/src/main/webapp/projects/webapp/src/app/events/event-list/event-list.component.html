@@ -2,31 +2,20 @@
   <app-instance-toolbar>
     Events &nbsp;&nbsp;&nbsp;
     @if (mayWriteEvents()) {
-      <button mat-button color="primary" (click)="createEvent()">
-        <mat-icon>add_circle_outline</mat-icon>
+      <ya-page-button (click)="createEvent()" icon="add_circle_outline">
         Create event
-      </button>
+      </ya-page-button>
     }
 
     @if (dataSource.streaming$ | async) {
-      <button
-        mat-button
-        matTooltip="Pause streaming events"
-        color="primary"
-        (click)="stopStreaming()">
-        <mat-icon>pause</mat-icon>
+      <ya-page-button matTooltip="Pause streaming events" (click)="stopStreaming()" icon="pause">
         Stop streaming
-      </button>
+      </ya-page-button>
     } @else {
-      <button mat-button color="primary" (click)="startStreaming()">
-        <mat-icon>play_arrow</mat-icon>
-        Start streaming
-      </button>
+      <ya-page-button (click)="startStreaming()" icon="play_arrow">Start streaming</ya-page-button>
     }
 
-    <button mat-icon-button matTooltip="Jump to now" color="primary" (click)="jumpToNow()">
-      <mat-icon>refresh</mat-icon>
-    </button>
+    <ya-page-icon-button matTooltip="Jump to now" (click)="jumpToNow()" icon="refresh" />
   </app-instance-toolbar>
 
   @if (dataSource) {

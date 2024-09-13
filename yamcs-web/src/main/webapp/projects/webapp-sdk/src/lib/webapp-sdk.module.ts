@@ -54,6 +54,8 @@ import { YaMessageBar } from './components/message-bar/message-bar.component';
 import { YaMore } from './components/more/more.component';
 import { YaMultiSelect } from './components/multi-select/multi-select.component';
 import { YaOption } from './components/option/option.component';
+import { YaPageButton } from './components/page-button/page-button.component';
+import { YaPageIconButton } from './components/page-icon-button/page-icon-button.component';
 import { YaProgress } from './components/progress/progress.component';
 import { YaSearchFilter } from './components/search-filter/search-filter.component';
 import { YaSearchFilter2 } from './components/search-filter2/search-filter2.component';
@@ -179,6 +181,8 @@ const sharedComponents = [
   YaMore,
   YaMultiSelect,
   YaOption,
+  YaPageButton,
+  YaPageIconButton,
   YaProgress,
   YaPrintZone,
   YaSearchFilter,

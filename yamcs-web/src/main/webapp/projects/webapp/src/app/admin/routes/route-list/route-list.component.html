@@ -1,19 +1,17 @@
 <app-admin-page>
   <app-admin-toolbar>
     API routes &nbsp;&nbsp;&nbsp;
-    <button mat-icon-button color="primary" (click)="refresh()" matTooltip="Refresh view">
-      <mat-icon>refresh</mat-icon>
-    </button>
+    <ya-page-icon-button (click)="refresh()" matTooltip="Refresh view" icon="refresh" />
   </app-admin-toolbar>
 
   <ya-detail-pane>
     @if (selectedRoute$ | async; as selectedItem) {
-      <ya-detail-toolbar> Route Detail </ya-detail-toolbar>
+      <ya-detail-toolbar>Route Detail</ya-detail-toolbar>
       <div style="padding: 0 16px">
         <app-route-detail [route]="selectedItem" />
       </div>
     } @else {
-      <ya-detail-toolbar> Select a route </ya-detail-toolbar>
+      <ya-detail-toolbar>Select a route</ya-detail-toolbar>
     }
   </ya-detail-pane>
 

@@ -1,16 +1,13 @@
 @if (plist$ | async; as plist) {
   <app-instance-page>
     <app-instance-toolbar>
-      <a mat-icon-button routerLink=".." [queryParams]="{ c: yamcs.context }" color="primary">
-        <mat-icon>arrow_back</mat-icon>
-      </a>
+      <ya-page-icon-button routerLink=".." [queryParams]="{ c: yamcs.context }" icon="arrow_back" />
       {{ plist.name }}
       &nbsp;&nbsp;&nbsp;
       @if (mayManageParameterLists()) {
-        <a mat-button color="primary" routerLink="edit" [queryParams]="{ c: yamcs.context }">
-          <mat-icon>edit</mat-icon>
+        <ya-page-button routerLink="edit" [queryParams]="{ c: yamcs.context }" icon="edit">
           Edit list
-        </a>
+        </ya-page-button>
       }
     </app-instance-toolbar>
     <nav #tabs mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
