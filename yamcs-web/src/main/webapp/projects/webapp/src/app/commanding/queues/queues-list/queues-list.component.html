@@ -27,13 +27,12 @@
       </table>
     </ya-help>
     &nbsp;&nbsp;&nbsp;
-    <button
-      mat-button
-      color="primary"
+    <ya-page-button
       [matMenuTriggerFor]="actionMenu"
-      [disabled]="selection.isEmpty()">
-      Change action ▾
-    </button>
+      [disabled]="selection.isEmpty()"
+      dropdown="true">
+      Change action
+    </ya-page-button>
     <mat-menu #actionMenu="matMenu" class="ya-menu">
       <button mat-menu-item (click)="enableSelectedQueues()">
         <mat-icon>check</mat-icon>
@@ -112,7 +111,8 @@
                 any
               }
               @for (tcPattern of queue.tcPatterns; track tcPattern) {
-                {{ tcPattern }}<br />
+                {{ tcPattern }}
+                <br />
               }
             </td>
           </ng-container>
@@ -120,15 +120,13 @@
             <th mat-header-cell *matHeaderCellDef>Action</th>
             <td mat-cell *matCellDef="let queue">
               @if (queue.state === "ENABLED") {
-                <span> ACCEPT </span>
+                <span>ACCEPT</span>
               }
               @if (queue.state === "BLOCKED") {
-                <span [style.visibility]="(visibility$ | async) ? 'visible' : 'hidden'">
-                  HOLD
-                </span>
+                <span [style.visibility]="(visibility$ | async) ? 'visible' : 'hidden'">HOLD</span>
               }
               @if (queue.state === "DISABLED") {
-                <span> REJECT </span>
+                <span>REJECT</span>
               }
             </td>
           </ng-container>
@@ -206,8 +204,9 @@
             @if (connectionInfo.processor?.replay) {
               replay
             }
-            processor <strong>{{ connectionInfo.processor?.name }}</strong
-            >.
+            processor
+            <strong>{{ connectionInfo.processor?.name }}</strong>
+            .
           </p>
           <p>This processor does not support commanding.</p>
         </ya-empty-message>

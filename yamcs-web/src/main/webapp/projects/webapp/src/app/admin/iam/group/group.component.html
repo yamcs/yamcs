@@ -3,10 +3,7 @@
     <app-admin-toolbar>
       {{ group.name }}
       &nbsp;&nbsp;&nbsp;
-      <a mat-button color="primary" routerLink="edit">
-        <mat-icon>edit</mat-icon>
-        Edit group
-      </a>
+      <ya-page-button routerLink="edit" icon="edit">Edit group</ya-page-button>
     </app-admin-toolbar>
     <div class="panel-content ya-link">
       @if (group.description) {
@@ -23,9 +20,9 @@
       <h4>{{ group.users?.length || 0 }} members</h4>
       @for (user of group.users; track user) {
         <div>
-          <mat-icon class="icon16" style="vertical-align: middle" matTooltip="User"
-            >person</mat-icon
-          >
+          <mat-icon class="icon16" style="vertical-align: middle" matTooltip="User">
+            person
+          </mat-icon>
           <a [routerLink]="['/admin/iam/users', user.name]">{{ user.displayName || user.name }}</a>
         </div>
       }

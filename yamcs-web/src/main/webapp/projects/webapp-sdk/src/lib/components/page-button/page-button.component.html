@@ -1,0 +1,11 @@
+<button mat-button [color]="color()" [disabled]="disabled()" (click)="onClick($event)">
+  @if (icon(); as icon) {
+    <mat-icon [style.transform]="iconRotate90() ? 'rotate(90deg)' : 'none'">
+      {{ icon }}
+    </mat-icon>
+  }
+  <ng-content />
+  @if (dropdown()) {
+    ▾
+  }
+</button>

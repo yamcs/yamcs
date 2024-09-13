@@ -1,23 +1,14 @@
 @if (packet$ | async; as packet) {
   <app-instance-page>
     <app-instance-toolbar>
-      <a
-        mat-icon-button
+      <ya-page-icon-button
         routerLink="/telemetry/packets"
         [queryParams]="{ c: yamcs.context }"
-        color="primary">
-        <mat-icon>arrow_back</mat-icon>
-      </a>
+        icon="arrow_back" />
       {{ packet.id.name }} / {{ packet.generationTime }} / {{ packet.sequenceNumber }}
       &nbsp;&nbsp;&nbsp;
-      <button mat-button color="primary" (click)="expandAll()">
-        <mat-icon>unfold_more</mat-icon>
-        Expand all
-      </button>
-      <button mat-button color="primary" (click)="collapseAll()">
-        <mat-icon>unfold_less</mat-icon>
-        Collapse all
-      </button>
+      <ya-page-button (click)="expandAll()" icon="unfold_more">Expand all</ya-page-button>
+      <ya-page-button (click)="collapseAll()" icon="unfold_less">Collapse all</ya-page-button>
     </app-instance-toolbar>
     <ya-detail-pane>
       <ya-detail-toolbar>
@@ -119,9 +110,9 @@
                     '/telemetry/parameters' + node.parameter.qualifiedName + node.offset
                   "
                   [queryParams]="{ c: yamcs.context }"
-                  class="ya-link"
-                  >{{ node.name }}</a
-                >
+                  class="ya-link">
+                  {{ node.name }}
+                </a>
               }
               @if (node.type === "AGGREGATE_VALUE") {
                 @for (x of [].constructor(node.depth); track x; let last = $last) {
@@ -134,9 +125,9 @@
                     '/telemetry/parameters' + node.parameter.qualifiedName + node.offset
                   "
                   [queryParams]="{ c: yamcs.context }"
-                  class="ya-link"
-                  >{{ node.name }}</a
-                >
+                  class="ya-link">
+                  {{ node.name }}
+                </a>
               }
               @if (node.type === "ARRAY_VALUE") {
                 @for (x of [].constructor(node.depth); track x; let last = $last) {
@@ -149,9 +140,9 @@
                     '/telemetry/parameters' + node.parameter.qualifiedName + node.offset
                   "
                   [queryParams]="{ c: yamcs.context }"
-                  class="ya-link"
-                  >{{ node.name }}</a
-                >
+                  class="ya-link">
+                  {{ node.name }}
+                </a>
               }
             </td>
           </ng-container>

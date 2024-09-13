@@ -1,10 +1,9 @@
 <app-instance-page>
   <app-instance-toolbar>
     Items &nbsp;&nbsp;&nbsp;
-    <button mat-button color="primary" [matMenuTriggerFor]="itemMenu">
-      <mat-icon>add_circle_outline</mat-icon>
+    <ya-page-button [matMenuTriggerFor]="itemMenu" icon="add_circle_outline">
       Create item
-    </button>
+    </ya-page-button>
     <mat-menu #itemMenu="matMenu" class="ya-menu" [overlapTrigger]="false">
       <button
         mat-menu-item
@@ -21,14 +20,12 @@
         Activity item
       </button>
     </mat-menu>
-    <button
-      mat-button
-      color="primary"
+    <ya-page-button
       [disabled]="!isGroupDeleteEnabled()"
-      (click)="deleteSelectedItems()">
-      <mat-icon>close</mat-icon>
+      (click)="deleteSelectedItems()"
+      icon="close">
       Delete
-    </button>
+    </ya-page-button>
   </app-instance-toolbar>
 
   <div class="panel-content">

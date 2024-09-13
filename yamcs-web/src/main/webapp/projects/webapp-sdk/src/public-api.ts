@@ -36,6 +36,8 @@ export * from './lib/components/message-bar/message-bar.component';
 export * from './lib/components/more/more.component';
 export * from './lib/components/multi-select/multi-select.component';
 export * from './lib/components/option/option.component';
+export * from './lib/components/page-button/page-button.component';
+export * from './lib/components/page-icon-button/page-icon-button.component';
 export * from './lib/components/progress/progress.component';
 export * from './lib/components/search-filter/search-filter.component';
 export * from './lib/components/search-filter2/search-filter2.component';

@@ -6,9 +6,9 @@
           <a
             routerLink="/telemetry/parameters"
             class="ya-link ya-header-link"
-            [queryParams]="{ c: yamcs.context, system: parent.path }"
-            >{{ parent.name }}</a
-          >
+            [queryParams]="{ c: yamcs.context, system: parent.path }">
+            {{ parent.name }}
+          </a>
         }
         /
       }
@@ -16,20 +16,15 @@
       <ya-title-copy [text]="parameter.qualifiedName + ((offset$ | async) || '')" />
       &nbsp;&nbsp;&nbsp;
       @if (isWritable() && maySetParameter() && !(offset$ | async)) {
-        <button mat-button color="primary" (click)="setParameter()">
-          <mat-icon>edit</mat-icon>
-          Set value
-        </button>
+        <ya-page-button (click)="setParameter()" icon="edit">Set value</ya-page-button>
       }
       @if (mayReadMissionDatabase()) {
-        <a
-          mat-button
-          color="primary"
+        <ya-page-button
           [routerLink]="['/mdb/parameters', parameter.qualifiedName]"
-          [queryParams]="{ c: yamcs.context }">
-          <mat-icon>auto_stories</mat-icon>
+          [queryParams]="{ c: yamcs.context }"
+          icon="auto_stories">
           View in MDB
-        </a>
+        </ya-page-button>
       }
     </app-instance-toolbar>
     <nav #tabs mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">

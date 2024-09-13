@@ -2,20 +2,17 @@
   <app-storage-toolbar>
     Storage &nbsp;&nbsp;&nbsp;
     @if (mayManageBuckets()) {
-      <button mat-button color="primary" (click)="createBucket()">
-        <mat-icon>add_circle_outline</mat-icon>
+      <ya-page-button (click)="createBucket()" icon="add_circle_outline">
         Create bucket
-      </button>
+      </ya-page-button>
     }
     @if (mayManageBuckets()) {
-      <button
-        mat-button
-        color="primary"
+      <ya-page-button
         (click)="deleteSelectedBuckets()"
-        [disabled]="!selection.hasValue()">
-        <mat-icon>delete</mat-icon>
+        [disabled]="!selection.hasValue()"
+        icon="delete">
         Delete
-      </button>
+      </ya-page-button>
     }
   </app-storage-toolbar>
 
@@ -59,9 +56,9 @@
       <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Bucket</th>
         <td mat-cell *matCellDef="let bucket">
-          <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px"
-            >shopping_basket</mat-icon
-          >
+          <mat-icon class="icon12" style="vertical-align: middle; margin-right: 7px">
+            shopping_basket
+          </mat-icon>
           <a [routerLink]="[bucket.name]" (click)="$event.stopPropagation()">{{ bucket.name }}</a>
         </td>
       </ng-container>

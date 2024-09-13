@@ -1,15 +1,12 @@
 @if (properties$ | async; as properties) {
   <app-admin-page>
     <app-admin-toolbar>
-      <a mat-icon-button routerLink="/admin/rocksdb/databases" color="primary">
-        <mat-icon>arrow_back</mat-icon>
-      </a>
+      <ya-page-icon-button routerLink="/admin/rocksdb/databases" icon="arrow_back" />
       {{ tablespace }}://{{ dbPath }}
       &nbsp;&nbsp;&nbsp;
-      <button mat-button color="primary" [matMenuTriggerFor]="compactMenu">
-        <mat-icon>fullscreen_exit</mat-icon>
-        Compact ▾
-      </button>
+      <ya-page-button [matMenuTriggerFor]="compactMenu" icon="fullscreen_exit" dropdown="true">
+        Compact
+      </ya-page-button>
       <mat-menu #compactMenu="matMenu" class="ya-menu">
         <button
           mat-menu-item

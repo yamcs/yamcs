@@ -1,36 +1,25 @@
 <app-storage-page>
   <app-storage-toolbar>
-    <a mat-icon-button routerLink="/storage/buckets" color="primary">
-      <mat-icon>arrow_back</mat-icon>
-    </a>
+    <ya-page-icon-button routerLink="/storage/buckets" icon="arrow_back" />
     {{ name }}
 
     &nbsp;&nbsp;&nbsp;
-    <button mat-button color="primary" (click)="uploader.click()">
-      <mat-icon>file_upload</mat-icon>
+    <ya-page-button (click)="uploader.click()" icon="file_upload">
       Upload files
       <input #uploader type="file" hidden multiple (change)="uploadObjects()" />
-    </button>
-    <button mat-button color="primary" (click)="createFolder()">
-      <mat-icon>create_new_folder</mat-icon>
-      Create folder
-    </button>
-    <button
-      mat-button
-      color="primary"
+    </ya-page-button>
+    <ya-page-button (click)="createFolder()" icon="create_new_folder">Create folder</ya-page-button>
+    <ya-page-button
       (click)="deleteSelectedObjects()"
-      [disabled]="!selection.hasValue()">
-      <mat-icon>delete</mat-icon>
+      [disabled]="!selection.hasValue()"
+      icon="delete">
       Delete
-    </button>
-    <button mat-button color="primary" (click)="togglePreview()">
-      @if (showPreview$ | async) {
-        <mat-icon>image_not_supported</mat-icon>
-      } @else {
-        <mat-icon>image</mat-icon>
-      }
+    </ya-page-button>
+    <ya-page-button
+      (click)="togglePreview()"
+      [icon]="(showPreview$ | async) ? 'image_not_supported' : 'image'">
       Preview panel
-    </button>
+    </ya-page-button>
   </app-storage-toolbar>
 
   <div

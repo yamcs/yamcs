@@ -2,10 +2,12 @@
   <app-instance-toolbar>
     Parameter lists &nbsp;&nbsp;&nbsp;
     @if (mayManageParameterLists()) {
-      <a mat-button color="primary" routerLink="create" [queryParams]="{ c: yamcs.context }">
-        <mat-icon>add_circle_outline</mat-icon>
+      <ya-page-button
+        routerLink="create"
+        [queryParams]="{ c: yamcs.context }"
+        icon="add_circle_outline">
         Create list
-      </a>
+      </ya-page-button>
     }
   </app-instance-toolbar>
 
@@ -44,7 +46,7 @@
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
     @if (!dataSource.data.length) {
-      <ya-empty-message> No rows to display </ya-empty-message>
+      <ya-empty-message>No rows to display</ya-empty-message>
     }
   </div>
 </app-instance-page>
