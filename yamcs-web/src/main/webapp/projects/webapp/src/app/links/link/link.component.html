@@ -1,33 +1,21 @@
 @if (link$ | async; as link) {
   <app-instance-page>
     <app-instance-toolbar>
-      <a mat-icon-button routerLink=".." [queryParams]="{ c: yamcs.context }" color="primary">
-        <mat-icon>arrow_back</mat-icon>
-      </a>
+      <ya-page-icon-button routerLink=".." [queryParams]="{ c: yamcs.context }" icon="arrow_back" />
       Links / {{ link.name }}
       &nbsp;&nbsp;&nbsp;
       @if (mayControlLinks()) {
-        <button
-          mat-button
-          color="primary"
-          [disabled]="!link.disabled"
-          (click)="enableLink(link.name)">
-          <mat-icon>link</mat-icon>
+        <ya-page-button [disabled]="!link.disabled" (click)="enableLink(link.name)" icon="link">
           Enable
-        </button>
+        </ya-page-button>
       }
       @if (mayControlLinks()) {
-        <button
-          mat-button
-          color="primary"
-          [disabled]="link.disabled"
-          (click)="disableLink(link.name)">
-          <mat-icon>link_off</mat-icon>
+        <ya-page-button [disabled]="link.disabled" (click)="disableLink(link.name)" icon="link_off">
           Disable
-        </button>
+        </ya-page-button>
       }
       @if (mayControlLinks()) {
-        <button mat-button color="primary" [matMenuTriggerFor]="moreActions">More ▾</button>
+        <ya-page-button [matMenuTriggerFor]="moreActions" dropdown="true">More</ya-page-button>
       }
       <mat-menu #moreActions class="ya-menu" yPosition="below" [overlapTrigger]="false">
         <ng-template matMenuContent>
@@ -40,9 +28,9 @@
                 [disabled]="!action.enabled"
                 (click)="runAction(link.name, action)">
                 @if (action.style === "CHECK_BOX") {
-                  <mat-icon [style.visibility]="action.checked ? 'visible' : 'hidden'"
-                    >check</mat-icon
-                  >
+                  <mat-icon [style.visibility]="action.checked ? 'visible' : 'hidden'">
+                    check
+                  </mat-icon>
                 }
                 {{ action.label }}
               </button>
@@ -57,7 +45,8 @@
         <dd>{{ link.type }}</dd>
         <dt>Status</dt>
         <dd style="display: flex; align-items: center">
-          <app-link-status [link]="link" />&nbsp;
+          <app-link-status [link]="link" />
+          &nbsp;
           {{ link.status }}
         </dd>
         <dt>In count</dt>
@@ -78,7 +67,8 @@
               @if (getEntriesForValue(entry.value); as subentries) {
                 @if (subentries.length) {
                   @for (subentry of subentries; track subentry) {
-                    {{ subentry || "-" }}<br />
+                    {{ subentry || "-" }}
+                    <br />
                   }
                 }
                 @if (!subentries.length) {
@@ -95,13 +85,14 @@
         </div>
         <h4>System parameters</h4>
         @for (parameter of link.parameters; track parameter) {
-          <mat-icon class="icon12" style="vertical-align: middle">toll</mat-icon>&nbsp;
+          <mat-icon class="icon12" style="vertical-align: middle">toll</mat-icon>
           <a
             [routerLink]="'/telemetry/parameters' + parameter"
             [queryParams]="{ c: yamcs.context }"
             class="ya-link"
-            >{{ parameter }}</a
-          >
+            style="margin-left: 0.5em">
+            {{ parameter }}
+          </a>
           <br />
         }
       }

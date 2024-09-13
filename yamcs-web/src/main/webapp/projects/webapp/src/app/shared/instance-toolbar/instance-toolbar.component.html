@@ -8,24 +8,20 @@
       @if (connected$ | async) {
         @if (connectionInfo$ | async; as connectionInfo) {
           @if (processor.replay && processor.replayState === "RUNNING") {
-            <button
-              mat-button
+            <ya-page-button
               (menuOpened)="switchProcessorMenuOpened()"
-              color="primary"
-              (click)="pauseReplay()">
-              <mat-icon>pause</mat-icon>
+              (click)="pauseReplay()"
+              icon="pause">
               PAUSE REPLAY
-            </button>
+            </ya-page-button>
           }
           @if (processor.replay && processor.replayState !== "RUNNING") {
-            <button
-              mat-button
+            <ya-page-button
               (menuOpened)="switchProcessorMenuOpened()"
-              color="primary"
-              (click)="resumeReplay()">
-              <mat-icon>play_arrow</mat-icon>
+              (click)="resumeReplay()"
+              icon="play_arrow">
               PLAY
-            </button>
+            </ya-page-button>
           }
           @if (showRange$ | async) {
             <ya-text-action
@@ -58,11 +54,6 @@
               matTooltip="Exit zen mode" />
           }
           <ya-icon-action class="icon-action" icon="menu" [matMenuTriggerFor]="moreMenu" />
-          @if (false) {
-            <button mat-icon-button>
-              <mat-icon>more_vert</mat-icon>
-            </button>
-          }
         }
       }
     }

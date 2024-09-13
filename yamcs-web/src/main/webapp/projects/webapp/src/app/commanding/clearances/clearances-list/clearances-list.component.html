@@ -12,14 +12,12 @@
       </p>
     </ya-help>
     &nbsp;&nbsp;&nbsp;
-    <button
-      mat-button
-      color="primary"
+    <ya-page-button
       [disabled]="!isGroupChangeLevelEnabled()"
-      (click)="openChangeLevelDialog()">
-      <mat-icon>how_to_reg</mat-icon>
+      (click)="openChangeLevelDialog()"
+      icon="how_to_reg">
       Change level
-    </button>
+    </ya-page-button>
   </app-instance-toolbar>
 
   <div class="panel-content">

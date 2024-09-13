@@ -2,34 +2,26 @@
   <app-instance-toolbar>
     Links &nbsp;&nbsp;&nbsp;
     @if (mayControlLinks()) {
-      <button
-        mat-button
-        color="primary"
-        (click)="enableSelectedLinks()"
-        [disabled]="!allowGroupEnable()">
-        <mat-icon>link</mat-icon>
+      <ya-page-button (click)="enableSelectedLinks()" [disabled]="!allowGroupEnable()" icon="link">
         Enable
-      </button>
+      </ya-page-button>
     }
     @if (mayControlLinks()) {
-      <button
-        mat-button
-        color="primary"
+      <ya-page-button
         (click)="disableSelectedLinks()"
-        [disabled]="!allowGroupDisable()">
-        <mat-icon>link_off</mat-icon>
+        [disabled]="!allowGroupDisable()"
+        icon="link_off">
         Disable
-      </button>
+      </ya-page-button>
     }
 
     @if (mayControlLinks()) {
-      <button
-        mat-button
-        color="primary"
+      <ya-page-button
         [disabled]="selection.isEmpty()"
-        [matMenuTriggerFor]="moreActions">
-        More ▾
-      </button>
+        [matMenuTriggerFor]="moreActions"
+        dropdown="true">
+        More
+      </ya-page-button>
     }
     <mat-menu #moreActions class="ya-menu" yPosition="below" [overlapTrigger]="false">
       <ng-template matMenuContent>
@@ -43,9 +35,9 @@
                 [disabled]="!action.enabled"
                 (click)="runAction(selectedItem.link.name, action)">
                 @if (action.style === "CHECK_BOX") {
-                  <mat-icon [style.visibility]="action.checked ? 'visible' : 'hidden'"
-                    >check</mat-icon
-                  >
+                  <mat-icon [style.visibility]="action.checked ? 'visible' : 'hidden'">
+                    check
+                  </mat-icon>
                 }
                 {{ action.label }}
                 @if (action.spec) {
@@ -61,12 +53,12 @@
 
   <ya-detail-pane>
     @if (detailLink$ | async; as selectedItem) {
-      <ya-detail-toolbar> Link Detail </ya-detail-toolbar>
+      <ya-detail-toolbar>Link Detail</ya-detail-toolbar>
       <div style="padding: 0 16px">
         <app-link-detail [link]="selectedItem.link" />
       </div>
     } @else {
-      <ya-detail-toolbar> Select a link </ya-detail-toolbar>
+      <ya-detail-toolbar>Select a link</ya-detail-toolbar>
       @if (selection.hasValue()) {
         <div style="padding: 0 16px">{{ selection.selected.length }} links selected</div>
       }
@@ -189,9 +181,9 @@
                       (click)="runAction(row.link.name, action)"
                       [disabled]="!action.enabled">
                       @if (action.style === "CHECK_BOX") {
-                        <mat-icon [style.visibility]="action.checked ? 'visible' : 'hidden'"
-                          >check</mat-icon
-                        >
+                        <mat-icon [style.visibility]="action.checked ? 'visible' : 'hidden'">
+                          check
+                        </mat-icon>
                       }
                       {{ action.label }}
                       @if (action.spec) {
@@ -215,12 +207,22 @@
       </table>
 
       <div class="legend">
-        <div class="legend-item"><ya-led color="rgba(0, 100, 0)" [fade]="false" /> OK</div>
         <div class="legend-item">
-          <ya-led color="rgba(0, 255, 0)" [fade]="false" /> OK, activity
+          <ya-led color="rgba(0, 100, 0)" [fade]="false" />
+          OK
         </div>
-        <div class="legend-item"><ya-led color="red" [fade]="false" /> Error</div>
-        <div class="legend-item"><ya-led color="#aaa" [fade]="false" /> Disabled</div>
+        <div class="legend-item">
+          <ya-led color="rgba(0, 255, 0)" [fade]="false" />
+          OK, activity
+        </div>
+        <div class="legend-item">
+          <ya-led color="red" [fade]="false" />
+          Error
+        </div>
+        <div class="legend-item">
+          <ya-led color="#aaa" [fade]="false" />
+          Disabled
+        </div>
       </div>
     </div>
   </div>

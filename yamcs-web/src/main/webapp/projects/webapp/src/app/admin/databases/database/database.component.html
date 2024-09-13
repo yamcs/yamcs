@@ -1,9 +1,7 @@
 @if (database$ | async; as database) {
   <app-admin-page>
     <app-admin-toolbar>
-      <a mat-icon-button routerLink="/admin/databases">
-        <mat-icon>account_tree</mat-icon>
-      </a>
+      <ya-page-icon-button routerLink="/admin/databases" icon="account_tree" />
       <mat-icon class="icon14 sep">navigate_next</mat-icon>
       <a class="ya-link ya-header-link" [routerLink]="['/admin/databases', database.name]">
         {{ database.name }}

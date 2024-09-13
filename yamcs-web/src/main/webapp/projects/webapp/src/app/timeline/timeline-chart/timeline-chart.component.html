@@ -4,9 +4,9 @@
 
     @if (views$ | async; as views) {
       @if ((view$ | async) && mayControlTimeline()) {
-        <button mat-button [matMenuTriggerFor]="viewMenu">
-          {{ (view$ | async)?.name || "select view" }} ▾
-        </button>
+        <ya-page-button [matMenuTriggerFor]="viewMenu" dropdown="true">
+          {{ (view$ | async)?.name || "select view" }}
+        </ya-page-button>
       }
       <mat-menu #viewMenu="matMenu" class="ya-menu">
         @for (view of views; track view) {
@@ -24,26 +24,22 @@
 
     @if (mayControlTimeline()) {
       @if (!(view$ | async)) {
-        <a
-          mat-button
-          color="primary"
+        <ya-page-button
           routerLink="/timeline/views/create"
-          [queryParams]="{ c: yamcs.context }">
-          <mat-icon>add_circle_outline</mat-icon>
+          [queryParams]="{ c: yamcs.context }"
+          icon="add_circle_outline">
           Create view
-        </a>
+        </ya-page-button>
       }
       @if (view$ | async; as view) {
-        <button mat-button color="primary" (click)="openEditViewDialog(view)">
-          <mat-icon>settings</mat-icon>
+        <ya-page-button (click)="openEditViewDialog(view)" icon="settings">
           Edit view
-        </button>
+        </ya-page-button>
       }
       @if (view$ | async) {
-        <button mat-button color="primary" [matMenuTriggerFor]="itemMenu">
-          <mat-icon>add_circle_outline</mat-icon>
+        <ya-page-button [matMenuTriggerFor]="itemMenu" icon="add_circle_outline">
           Add item
-        </button>
+        </ya-page-button>
       }
       <mat-menu #itemMenu="matMenu" class="ya-menu" [overlapTrigger]="false">
         <button
@@ -62,10 +58,7 @@
         </button>
       </mat-menu>
       @if (view$ | async) {
-        <button mat-button color="primary" (click)="saveSnapshot()">
-          <mat-icon>photo_camera</mat-icon>
-          Save snapshot
-        </button>
+        <ya-page-button (click)="saveSnapshot()" icon="photo_camera">Save snapshot</ya-page-button>
       }
     }
   </app-instance-toolbar>

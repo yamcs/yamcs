@@ -1,9 +1,7 @@
 @if (thread$ | async; as thread) {
   <app-admin-page>
     <app-admin-toolbar>
-      <a mat-icon-button routerLink=".." color="primary">
-        <mat-icon>arrow_back</mat-icon>
-      </a>
+      <ya-page-icon-button routerLink=".." icon="arrow_back" />
       {{ thread.name }}
     </app-admin-toolbar>
     <div class="panel-content ya-link">

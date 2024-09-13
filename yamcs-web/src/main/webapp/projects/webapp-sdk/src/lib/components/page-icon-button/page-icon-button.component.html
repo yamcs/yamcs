@@ -1,0 +1,5 @@
+<button mat-icon-button [color]="color()" [disabled]="disabled()" (click)="onClick($event)">
+  <mat-icon [style.transform]="iconRotate90() ? 'rotate(90deg)' : 'none'">
+    {{ icon() }}
+  </mat-icon>
+</button>

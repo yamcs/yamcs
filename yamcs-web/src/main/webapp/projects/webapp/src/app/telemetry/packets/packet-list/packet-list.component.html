@@ -4,17 +4,13 @@
     <mat-menu #exportMenu="matMenu" class="ya-menu">
       <ya-download-menu-item [link]="downloadURL$ | async">Raw dump</ya-download-menu-item>
     </mat-menu>
-    <button
-      mat-button
+    <ya-page-button
       [matMenuTriggerFor]="exportMenu"
-      color="primary"
-      [disabled]="!(dataSource.packets$ | async)?.length">
-      <mat-icon>save_alt</mat-icon>
+      [disabled]="!(dataSource.packets$ | async)?.length"
+      icon="save_alt">
       Export
-    </button>
-    <button mat-icon-button matTooltip="Jump to now" color="primary" (click)="jumpToNow()">
-      <mat-icon>refresh</mat-icon>
-    </button>
+    </ya-page-button>
+    <ya-page-icon-button matTooltip="Jump to now" (click)="jumpToNow()" icon="refresh" />
   </app-instance-toolbar>
 
   <ya-detail-pane>

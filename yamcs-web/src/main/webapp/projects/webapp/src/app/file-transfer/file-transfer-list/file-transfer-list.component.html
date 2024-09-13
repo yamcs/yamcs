@@ -3,9 +3,9 @@
     File transfer&nbsp;&nbsp;&nbsp;&nbsp;
 
     @if (services().length) {
-      <button mat-button [matMenuTriggerFor]="serviceMenu">
-        {{ service()?.name || "select service" }} ▾
-      </button>
+      <ya-page-button [matMenuTriggerFor]="serviceMenu" dropdown="true">
+        {{ service()?.name || "select service" }}
+      </ya-page-button>
       <mat-menu #serviceMenu="matMenu" class="ya-menu">
         @for (service of services(); track service) {
           <button mat-menu-item (click)="switchService(service)">
@@ -19,16 +19,15 @@
       @if (
         mayControlFileTransfers() && (service.capabilities.download || service.capabilities.upload)
       ) {
-        <button mat-button color="primary" (click)="showCreateTransferDialog(service)">
-          <mat-icon>
-            {{
-              service.capabilities.download && service.capabilities.upload
-                ? "cloud"
-                : service.capabilities.upload
-                  ? "cloud_upload"
-                  : "cloud_download"
-            }}
-          </mat-icon>
+        <ya-page-button
+          (click)="showCreateTransferDialog(service)"
+          [icon]="
+            service.capabilities.download && service.capabilities.upload
+              ? 'cloud'
+              : service.capabilities.upload
+                ? 'cloud_upload'
+                : 'cloud_download'
+          ">
           New
           {{
             service.capabilities.download && service.capabilities.upload
@@ -37,7 +36,7 @@
                 ? "upload"
                 : "download"
           }}
-        </button>
+        </ya-page-button>
       }
     }
   </app-instance-toolbar>

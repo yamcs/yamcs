@@ -1,18 +1,18 @@
 <app-instance-page>
   <app-instance-toolbar>
     Bands &nbsp;&nbsp;&nbsp;
-    <a mat-button color="primary" routerLink="create" [queryParams]="{ c: yamcs.context }">
-      <mat-icon>add_circle_outline</mat-icon>
+    <ya-page-button
+      routerLink="create"
+      [queryParams]="{ c: yamcs.context }"
+      icon="add_circle_outline">
       Create band
-    </a>
-    <button
-      mat-button
-      color="primary"
+    </ya-page-button>
+    <ya-page-button
       [disabled]="!isGroupDeleteEnabled()"
-      (click)="deleteSelectedBands()">
-      <mat-icon>close</mat-icon>
+      (click)="deleteSelectedBands()"
+      icon="close">
       Delete
-    </button>
+    </ya-page-button>
   </app-instance-toolbar>
 
   <div class="panel-content">
