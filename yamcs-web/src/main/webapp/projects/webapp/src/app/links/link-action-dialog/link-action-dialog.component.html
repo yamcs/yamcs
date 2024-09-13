@@ -25,6 +25,8 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button class="ya-button" mat-dialog-close>CANCEL</button>
-  <button class="ya-button primary" (click)="sendRequest()" [disabled]="!form.valid">SUBMIT</button>
+  <ya-button mat-dialog-close>CANCEL</ya-button>
+  <ya-button appearance="primary" (click)="sendRequest()" [disabled]="!form.valid">
+    SUBMIT
+  </ya-button>
 </mat-dialog-actions>

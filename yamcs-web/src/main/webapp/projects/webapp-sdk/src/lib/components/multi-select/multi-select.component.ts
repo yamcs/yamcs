@@ -1,10 +1,11 @@
 import { AsyncPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input, OnChanges, forwardRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, forwardRef, input } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatDivider } from '@angular/material/divider';
 import { MatIcon } from '@angular/material/icon';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { BehaviorSubject } from 'rxjs';
+import { YaButton } from '../button/button.component';
 import { YaSelectOption } from '../select/select.component';
 
 @Component({
@@ -23,19 +24,17 @@ import { YaSelectOption } from '../select/select.component';
     MatIcon,
     MatMenu,
     MatMenuItem,
-    MatMenuTrigger
-],
+    MatMenuTrigger,
+    YaButton,
+  ],
 })
 export class YaMultiSelect implements OnChanges, ControlValueAccessor {
 
   @Input()
-  emptyOption: string = '-- select an option --';
-
-  @Input()
   options: YaSelectOption[] = [];
 
-  @Input()
-  icon: string;
+  icon = input<string>();
+  emptyOption = input<string>('-- select an option --');
 
   options$ = new BehaviorSubject<YaSelectOption[]>([]);
   selected$ = new BehaviorSubject<string[]>([]);

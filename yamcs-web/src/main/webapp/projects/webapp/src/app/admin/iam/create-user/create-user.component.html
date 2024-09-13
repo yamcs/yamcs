@@ -9,17 +9,23 @@
   <div class="form-content ya-form">
     <form [formGroup]="form" novalidate autocomplete="off">
       <label>
-        Username <span class="hint">(required)</span><br />
+        Username
+        <span class="hint">(required)</span>
+        <br />
         <input formControlName="name" type="text" />
       </label>
       <br />
       <label>
-        Display name <span class="hint">(optional)</span><br />
+        Display name
+        <span class="hint">(optional)</span>
+        <br />
         <input formControlName="displayName" type="text" />
       </label>
       <br />
       <label>
-        Email <span class="hint">(optional)</span><br />
+        Email
+        <span class="hint">(optional)</span>
+        <br />
         <input formControlName="email" type="text" />
       </label>
       <p>&nbsp;</p>
@@ -28,30 +34,29 @@
       </div>
       <br />
       <label>
-        Password <span class="hint">(optional)</span><br />
-        <span class="hint"
-          >User without a password may still be able to login if an external identity provider is
-          configured.</span
-        >
+        Password
+        <span class="hint">(optional)</span>
+        <br />
+        <span class="hint">
+          User without a password may still be able to login if an external identity provider is
+          configured.
+        </span>
         <input formControlName="password" type="password" />
       </label>
       <br />
       <label>
-        Password confirmation<br />
+        Password confirmation
+        <br />
         <input formControlName="passwordConfirmation" type="password" />
       </label>
     </form>
 
     <p>&nbsp;</p>
     <div class="action-bar">
-      <button class="ya-button" routerLink="..">Cancel</button>
-      <button
-        class="ya-button primary"
-        type="submit"
-        (click)="onConfirm()"
-        [disabled]="!form.valid">
+      <ya-button routerLink="..">Cancel</ya-button>
+      <ya-button appearance="primary" (click)="onConfirm()" [disabled]="!form.valid">
         CREATE
-      </button>
+      </ya-button>
     </div>
   </div>
 </app-admin-page>

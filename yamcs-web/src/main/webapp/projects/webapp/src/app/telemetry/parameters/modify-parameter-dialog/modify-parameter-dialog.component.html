@@ -1,15 +1,17 @@
 <mat-dialog-content>
-  <label>Color</label><br />
+  <label>Color</label>
+  <br />
   <app-color-palette
     #palette
     [selectedColor]="data.color"
     (select)="thickness.changeColor($event)" />
   <br />
-  <label>Thickness</label><br />
+  <label>Thickness</label>
+  <br />
   <app-thickness #thickness [selectedThickness]="data.strokeWidth" [color]="data.color" />
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button class="ya-button" mat-dialog-close>CANCEL</button>
-  <button class="ya-button primary" (click)="select()">OK</button>
+  <ya-button mat-dialog-close>CANCEL</ya-button>
+  <ya-button appearance="primary" (click)="select()">OK</ya-button>
 </mat-dialog-actions>

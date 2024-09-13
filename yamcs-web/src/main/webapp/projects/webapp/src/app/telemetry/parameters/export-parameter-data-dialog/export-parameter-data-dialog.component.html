@@ -3,32 +3,37 @@
 <mat-dialog-content class="ya-form">
   <form [formGroup]="form">
     <label>
-      Start <span class="hint">(optional)</span>
+      Start
+      <span class="hint">(optional)</span>
       <ya-date-time-input formControlName="start" />
     </label>
     <br />
     <label>
-      Stop <span class="hint">(optional)</span>
+      Stop
+      <span class="hint">(optional)</span>
       <ya-date-time-input formControlName="stop" />
     </label>
     <br />
     <label>
-      CSV column delimiter<br />
+      CSV column delimiter
+      <br />
       <ya-select formControlName="delimiter" [options]="delimiterOptions" />
     </label>
     <br />
     <label>
-      Interval (ms) <span class="hint">(optional)</span><br />
+      Interval (ms)
+      <span class="hint">(optional)</span>
+      <br />
       <input formControlName="interval" class="ya-input" type="text" />
     </label>
   </form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <ya-button mat-dialog-close>CANCEL</ya-button>
   <ya-download-button
     [link]="downloadURL$ | async"
-    [primary]="true"
+    appearance="primary"
     (click)="closeDialog()"
     [disabled]="!form.valid">
     DOWNLOAD

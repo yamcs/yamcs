@@ -183,7 +183,7 @@ a.ya-link:hover {
   display: flex;
 }
 
-.table-actions .ya-button {
+.table-actions ya-button {
   margin-left: 7px;
 }
 

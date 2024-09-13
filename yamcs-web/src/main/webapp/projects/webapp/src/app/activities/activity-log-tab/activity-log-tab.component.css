@@ -15,7 +15,7 @@
   display: flex;
 }
 
-.log-actions .ya-button {
+.log-actions ya-button {
   margin-right: 7px;
 }
 

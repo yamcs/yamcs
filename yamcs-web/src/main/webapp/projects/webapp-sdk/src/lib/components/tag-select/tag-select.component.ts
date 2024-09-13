@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
 import { MatIcon } from '@angular/material/icon';
 import { BehaviorSubject } from 'rxjs';
+import { YaButton } from '../button/button.component';
 import { YaLabel } from '../label/label.component';
 
 @Component({
@@ -20,8 +21,9 @@ import { YaLabel } from '../label/label.component';
     AsyncPipe,
     MatIcon,
     ReactiveFormsModule,
-    YaLabel
-],
+    YaButton,
+    YaLabel,
+  ],
 })
 export class YaTagSelect implements ControlValueAccessor {
 

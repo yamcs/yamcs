@@ -23,14 +23,14 @@
 <div class="footer">
   <mat-toolbar>
     <mat-toolbar-row>
-      <button class="ya-button" mat-dialog-close>Cancel</button>&nbsp;&nbsp;
-      <button
-        class="ya-button primary"
-        type="submit"
+      <ya-button mat-dialog-close>CANCEL</ya-button>
+      &nbsp;&nbsp;
+      <ya-button
+        appearance="primary"
         [disabled]="!(dirty$ | async) || !form.valid"
         (click)="doOnConfirm()">
         SAVE CHANGES
-      </button>
+      </ya-button>
     </mat-toolbar-row>
   </mat-toolbar>
 </div>

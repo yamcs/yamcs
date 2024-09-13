@@ -14,7 +14,8 @@
   </p>
   <form [formGroup]="formGroup" class="ya-form">
     <label>
-      Duration<br />
+      Duration
+      <br />
       <ya-select formControlName="duration" [options]="durationOptions" />
     </label>
     <br />
@@ -26,6 +27,6 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button class="ya-button" mat-dialog-close>CANCEL</button>
-  <button class="ya-button primary" (click)="shelve()" [disabled]="!formGroup.valid">OK</button>
+  <ya-button mat-dialog-close>CANCEL</ya-button>
+  <ya-button appearance="primary" (click)="shelve()" [disabled]="!formGroup.valid">OK</ya-button>
 </mat-dialog-actions>

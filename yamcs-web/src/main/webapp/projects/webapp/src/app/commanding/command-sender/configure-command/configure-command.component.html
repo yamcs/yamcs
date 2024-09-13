@@ -1,5 +1,5 @@
 <app-instance-page>
-  <app-instance-toolbar> Send a command </app-instance-toolbar>
+  <app-instance-toolbar>Send a command</app-instance-toolbar>
 
   <app-send-command-wizard-step step="2" />
 
@@ -41,7 +41,7 @@
     }
 
     @if (!(cleared$ | async)) {
-      <ya-warning-message> You're not cleared to send this command </ya-warning-message>
+      <ya-warning-message>You're not cleared to send this command</ya-warning-message>
     }
 
     @if (command$ | async; as command) {
@@ -60,10 +60,10 @@
               <td>{{ constraint.timeout || "-" }}</td>
               <td>
                 @if ((expr.result$ | async) === true) {
-                  <span class="evaluation valid"> satisfied </span>
+                  <span class="evaluation valid">satisfied</span>
                 }
                 @if ((expr.result$ | async) === false) {
-                  <span class="evaluation invalid"> not satisfied </span>
+                  <span class="evaluation invalid">not satisfied</span>
                 }
                 <app-live-expression
                   #expr
@@ -86,23 +86,23 @@
       [templateProvider]="templateProvider$ | async" />
     <p>&nbsp;</p>
     <mat-toolbar>
-      <button class="ya-button" (click)="goBack()">Cancel</button>
+      <ya-button (click)="goBack()">Cancel</ya-button>
       <span style="flex: 1 1 auto"></span>
       @if (config.twoStageCommanding) {
-        <mat-slide-toggle [formControl]="armControl" color="primary"> Arm </mat-slide-toggle>
+        <mat-slide-toggle [formControl]="armControl" color="primary">Arm</mat-slide-toggle>
       }
       &nbsp;&nbsp;&nbsp;&nbsp;
-      <button
-        class="ya-button primary"
+      <ya-button
+        appearance="primary"
+        icon="send"
         [disabled]="
           (config.twoStageCommanding && !armControl.value) ||
           !(cleared$ | async) ||
           !commandForm.form.valid
         "
         (click)="sendCommand()">
-        <mat-icon>send</mat-icon>
         Send
-      </button>
+      </ya-button>
       @if (showSchedule()) {
         &nbsp;
         <ya-icon-action

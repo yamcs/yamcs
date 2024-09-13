@@ -10,7 +10,7 @@
   <div class="footer">
     <mat-toolbar>
       <mat-toolbar-row>
-        <button class="ya-button" mat-dialog-close>CANCEL</button>
+        <ya-button mat-dialog-close>CANCEL</ya-button>
       </mat-toolbar-row>
     </mat-toolbar>
   </div>
@@ -30,7 +30,8 @@
         </div>
         @for (alias of command.alias || []; track alias) {
           <div>
-            {{ alias.namespace }}<br />
+            {{ alias.namespace }}
+            <br />
             <h2>{{ alias.name }}</h2>
           </div>
         }
@@ -86,11 +87,11 @@
   <div class="footer">
     <mat-toolbar>
       <mat-toolbar-row>
-        <button class="ya-button" mat-dialog-close>CANCEL</button>&nbsp;&nbsp;
-        <button class="ya-button primary" (click)="handleOK()" [disabled]="!commandForm.form.valid">
-          <!-- TODO: disabled throws a "ExpressionChangedAfterItHasBeenCheckedError", potentially needs fix -->
+        <ya-button mat-dialog-close>CANCEL</ya-button>
+        &nbsp;&nbsp;
+        <ya-button appearance="primary" (click)="handleOK()" [disabled]="!commandForm.form.valid">
           {{ okLabel }}
-        </button>
+        </ya-button>
       </mat-toolbar-row>
     </mat-toolbar>
   </div>

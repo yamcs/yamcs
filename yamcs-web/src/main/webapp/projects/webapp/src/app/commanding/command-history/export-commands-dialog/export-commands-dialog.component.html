@@ -13,17 +13,18 @@
     </label>
     <br />
     <label>
-      CSV column delimiter<br />
+      CSV column delimiter
+      <br />
       <ya-select formControlName="delimiter" [options]="delimiterOptions" />
     </label>
   </form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <ya-button mat-dialog-close>CANCEL</ya-button>
   <ya-download-button
     [link]="downloadURL$ | async"
-    [primary]="true"
+    appearance="primary"
     (click)="closeDialog()"
     [disabled]="!form.valid">
     DOWNLOAD
