@@ -39,13 +39,13 @@
     </table>
   }
   @if (!dataSource.data.length) {
-    <ya-empty-message> No rows to display </ya-empty-message>
+    <ya-empty-message>No rows to display</ya-empty-message>
   }
 
   <mat-paginator [pageSize]="10" [hidePageSize]="true" [showFirstLastButtons]="false" />
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button class="ya-button" mat-dialog-close>CANCEL</button>
-  <button class="ya-button primary" (click)="save()" [disabled]="selection.isEmpty()">ADD</button>
+  <ya-button mat-dialog-close>CANCEL</ya-button>
+  <ya-button appearance="primary" (click)="save()" [disabled]="selection.isEmpty()">ADD</ya-button>
 </mat-dialog-actions>

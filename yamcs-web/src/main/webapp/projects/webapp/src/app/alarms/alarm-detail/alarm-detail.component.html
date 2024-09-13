@@ -109,26 +109,16 @@
 @if (mayControl) {
   <div class="action-bar">
     @if (!alarm.shelveInfo && !alarm.acknowledged) {
-      <button class="ya-button" (click)="acknowledgeAlarm.emit(alarm)">
-        <mat-icon>notifications_off</mat-icon>
+      <ya-button (click)="acknowledgeAlarm.emit(alarm)" icon="notifications_off">
         ACKNOWLEDGE
-      </button>
+      </ya-button>
     }
     @if (!alarm.shelveInfo) {
-      <button class="ya-button" (click)="shelveAlarm.emit(alarm)">
-        <mat-icon>timer</mat-icon>
-        SHELVE
-      </button>
+      <ya-button (click)="shelveAlarm.emit(alarm)" icon="timer">SHELVE</ya-button>
     }
     @if (alarm.shelveInfo) {
-      <button class="ya-button" (click)="unshelveAlarm.emit(alarm)">
-        <mat-icon>timer_off</mat-icon>
-        UNSHELVE
-      </button>
+      <ya-button (click)="unshelveAlarm.emit(alarm)" icon="timer_off">UNSHELVE</ya-button>
     }
-    <button class="ya-button" (click)="clearAlarm.emit(alarm)">
-      <mat-icon>clear_all</mat-icon>
-      CLEAR
-    </button>
+    <ya-button (click)="clearAlarm.emit(alarm)" icon="clear_all">CLEAR</ya-button>
   </div>
 }

@@ -34,12 +34,11 @@
           <br />
           <mat-divider />
           <br />
-          <button
-            class="ya-button"
+          <ya-button
             [routerLink]="'/commanding/send' + selectedRecord?.commandName"
             [queryParams]="{ c: yamcs.context, template: selectedRecord?.id }">
             Resend
-          </button>
+          </ya-button>
         }
         <p>&nbsp;</p>
       </div>
@@ -59,14 +58,15 @@
             <div style="flex: 1 1 auto"></div>
 
             @if (showCommandExports()) {
-              <button
-                class="ya-button primary"
-                style="margin-right: 0"
+              <ya-button
+                appearance="primary"
+                class="no-margin"
                 [matMenuTriggerFor]="exportMenu"
-                [disabled]="!(dataSource.records$ | async)?.length">
-                <mat-icon>download</mat-icon>
-                Export ▾
-              </button>
+                [disabled]="!(dataSource.records$ | async)?.length"
+                dropdown="true"
+                icon="download">
+                Export
+              </ya-button>
             }
 
             <mat-menu
@@ -107,15 +107,12 @@
             @if (filterForm.value["interval"] === "CUSTOM") {
               <ya-date-time-input formControlName="customStart" />
               <ya-date-time-input formControlName="customStop" />
-              <button
-                (click)="applyCustomDates()"
-                class="ya-button"
-                [disabled]="filterForm.invalid">
+              <ya-button (click)="applyCustomDates()" [disabled]="filterForm.invalid">
                 Apply
-              </button>
+              </ya-button>
             }
             @if (filterForm.value["interval"] !== "CUSTOM") {
-              <button class="ya-button" (click)="jumpToNow()">Jump to now</button>
+              <ya-button (click)="jumpToNow()">Jump to now</ya-button>
             }
 
             @if (dataSource.loading$ | async) {
@@ -456,9 +453,9 @@
 
         <mat-toolbar>
           <span style="flex: 1 1 auto"></span>
-          <button [disabled]="!dataSource.hasMore()" class="ya-button" (click)="loadMoreData()">
-            Load More
-          </button>
+          <ya-button [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">
+            Load more
+          </ya-button>
           <span style="flex: 1 1 auto"></span>
         </mat-toolbar>
       </div>

@@ -1,6 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogActions, MatDialogClose, MatDialogContent, MatDialogTitle } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';
+import { YaButton } from '../button/button.component';
 
 @Component({
   standalone: true,
@@ -13,6 +14,7 @@ import { MatIcon } from '@angular/material/icon';
     MatDialogContent,
     MatDialogTitle,
     MatIcon,
+    YaButton,
   ],
 })
 export class YaHelpDialog {

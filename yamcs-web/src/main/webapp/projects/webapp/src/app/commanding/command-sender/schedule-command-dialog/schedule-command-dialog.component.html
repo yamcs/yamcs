@@ -6,12 +6,14 @@
   </div>
   <form [formGroup]="form" class="ya-form">
     <div class="label">
-      Execution time<br />
+      Execution time
+      <br />
       <ya-date-time-input formControlName="executionTime" [showMillis]="true" />
     </div>
     <hr class="half-break" />
     <div class="label">
-      Timeline tags <span class="hint">(optional)</span>
+      Timeline tags
+      <span class="hint">(optional)</span>
       <ya-help dialogTitle="Timeline Tags">
         Tags allow to categorise items per band. Bands only show items for which one of the tags is
         matching.
@@ -25,6 +27,6 @@
 <mat-dialog-actions align="end">
   <div style="flex: 1 1 auto"></div>
 
-  <button class="ya-button" mat-dialog-close>CANCEL</button>
-  <button class="ya-button primary" (click)="schedule()" [disabled]="!form.valid">SCHEDULE</button>
+  <ya-button mat-dialog-close>CANCEL</ya-button>
+  <ya-button appearance="primary" (click)="schedule()" [disabled]="!form.valid">SCHEDULE</ya-button>
 </mat-dialog-actions>

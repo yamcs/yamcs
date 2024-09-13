@@ -98,21 +98,19 @@
     <dd>
       @if (isChangeMissionDatabaseEnabled()) {
         <div style="padding-bottom: 5px">
-          <button
-            class="ya-button"
+          <ya-button
             style="margin-right: 5px"
             [disabled]="!(dirty$ | async)"
-            (click)="saveTextChanges()">
-            <mat-icon>save</mat-icon>
+            (click)="saveTextChanges()"
+            icon="save">
             Save
-          </button>
-          <button
-            class="ya-button"
+          </ya-button>
+          <ya-button
             [disabled]="!(overrides$ | async)?.textOverride"
-            (click)="revertText()">
-            <mat-icon>undo</mat-icon>
+            (click)="revertText()"
+            icon="undo">
             Restore MDB text
-          </button>
+          </ya-button>
         </div>
       }
       <div #text class="algorithm-text"></div>

@@ -16,5 +16,5 @@
     (keydown.enter)="addTag(); $event.preventDefault()"
     placeholder="my-tag"
     style="width: 120px" />
-  <button class="ya-button" (click)="addTag()" [disabled]="!control.value">Add</button>
+  <ya-button (click)="addTag()" [disabled]="!control.value">Add</ya-button>
 </div>

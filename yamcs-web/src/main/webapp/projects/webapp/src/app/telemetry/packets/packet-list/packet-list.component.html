@@ -78,12 +78,12 @@
           @if (filterForm.value["interval"] === "CUSTOM") {
             <ya-date-time-input formControlName="customStart" />
             <ya-date-time-input formControlName="customStop" />
-            <button (click)="applyCustomDates()" class="ya-button" [disabled]="filterForm.invalid">
+            <ya-button (click)="applyCustomDates()" [disabled]="filterForm.invalid">
               Apply
-            </button>
+            </ya-button>
           }
           @if (filterForm.value["interval"] !== "CUSTOM") {
-            <button class="ya-button" (click)="jumpToNow()">Jump to now</button>
+            <ya-button (click)="jumpToNow()">Jump to now</ya-button>
           }
           <ya-column-chooser #columnChooser [columns]="columns" preferenceKey="tmPackets" />
 
@@ -167,9 +167,7 @@
 
       <mat-toolbar>
         <span style="flex: 1 1 auto"></span>
-        <button [disabled]="!dataSource.hasMore()" class="ya-button" (click)="loadMoreData()">
-          Load More
-        </button>
+        <ya-button [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">Load more</ya-button>
         <span style="flex: 1 1 auto"></span>
       </mat-toolbar>
     </div>

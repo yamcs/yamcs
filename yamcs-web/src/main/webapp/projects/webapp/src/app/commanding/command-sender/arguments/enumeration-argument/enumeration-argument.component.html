@@ -12,12 +12,11 @@
 
   <ya-errors #err [controlName]="controlName" />
   <div class="control-group">
-    <ya-select [formControl]="formControl" [options]="selectOptions$ | async" />&nbsp;
-    <button
-      class="ya-button"
+    <ya-select [formControl]="formControl" [options]="selectOptions$ | async" />
+    &nbsp;
+    <ya-button
       matTooltip="Lookup enumeration state"
-      (click)="openSelectEnumerationDialog()">
-      <mat-icon>search</mat-icon>
-    </button>
+      (click)="openSelectEnumerationDialog()"
+      icon="search"></ya-button>
   </div>
 </div>

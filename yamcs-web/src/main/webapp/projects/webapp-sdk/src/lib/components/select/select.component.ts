@@ -3,6 +3,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatDivider } from '@angular/material/divider';
 import { MatIcon } from '@angular/material/icon';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
+import { YaButton } from '../button/button.component';
 import { YaOption } from '../option/option.component';
 
 export interface YaSelectOption {
@@ -27,7 +28,8 @@ export interface YaSelectOption {
     MatIcon,
     MatMenu,
     MatMenuItem,
-    MatMenuTrigger
+    MatMenuTrigger,
+    YaButton,
   ],
 })
 export class YaSelect implements ControlValueAccessor {

@@ -27,6 +27,7 @@ import { StorageUrlPipe } from '../public-api';
 import { YaBinaryInput } from './components/binary-input/binary-input.component';
 import { YaBreadcrumbTrail } from './components/breadcrumb/breadcrumb-trail.component';
 import { YaBreadcrumb } from './components/breadcrumb/breadcrumb.component';
+import { YaButton } from './components/button/button.component';
 import { YaColumnChooser } from './components/column-chooser/column-chooser.component';
 import { YaDateTimeInput } from './components/date-time-input/date-time-input.component';
 import { YaDetailPane } from './components/detail-pane/detail-pane.component';
@@ -151,6 +152,7 @@ const sharedComponents = [
   YaBinaryInput,
   YaBreadcrumb,
   YaBreadcrumbTrail,
+  YaButton,
   YaColumnChooser,
   YaDateTimeInput,
   YaDetailPane,

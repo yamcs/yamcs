@@ -46,9 +46,9 @@
   <mat-paginator [pageSize]="100" [hidePageSize]="true" [showFirstLastButtons]="true" />
   <div style="flex: 1 1 auto"></div>
 
-  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <ya-button mat-dialog-close>CANCEL</ya-button>
 
-  <button class="ya-button primary" [disabled]="selection.isEmpty()" (click)="applySelection()">
+  <ya-button appearance="primary" [disabled]="selection.isEmpty()" (click)="applySelection()">
     SELECT
-  </button>
+  </ya-button>
 </mat-dialog-actions>

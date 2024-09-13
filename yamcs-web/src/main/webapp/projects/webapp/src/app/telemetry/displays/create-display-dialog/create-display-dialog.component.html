@@ -18,7 +18,10 @@
         Name
         <input #filename type="text" formControlName="name" />
         @if (filenameForm.get("name")?.invalid) {
-          <span class="error-message">File name must end with <code>.par</code></span>
+          <span class="error-message">
+            File name must end with
+            <code>.par</code>
+          </span>
         }
       </label>
       <br />
@@ -31,13 +34,13 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <ya-button mat-dialog-close>CANCEL</ya-button>
   @if (page === 1) {
-    <button class="ya-button" (click)="selectType()" [disabled]="!typeForm.valid">NEXT »</button>
+    <ya-button (click)="selectType()" [disabled]="!typeForm.valid">NEXT »</ya-button>
   }
   @if (page === 2) {
-    <button class="ya-button primary" (click)="save()" [disabled]="!filenameForm.valid">
+    <ya-button appearance="primary" (click)="save()" [disabled]="!filenameForm.valid">
       SAVE
-    </button>
+    </ya-button>
   }
 </mat-dialog-actions>

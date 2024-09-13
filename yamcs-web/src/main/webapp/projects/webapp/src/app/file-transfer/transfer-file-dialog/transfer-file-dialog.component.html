@@ -107,10 +107,10 @@
           [value]="form.get('localFilenames')?.value" />
 
         @if (service.capabilities.upload) {
-          <button class="ya-button primary" [disabled]="!isUploadEnabled" (click)="startUpload()">
+          <ya-button appearance="primary" [disabled]="!isUploadEnabled" (click)="startUpload()">
             UPLOAD
             <mat-icon>chevron_right</mat-icon>
-          </button>
+          </ya-button>
         }
       </div>
 
@@ -187,13 +187,10 @@
 
       <div class="remote-column footer">
         @if (service.capabilities.download) {
-          <button
-            class="ya-button primary"
-            [disabled]="!isDownloadEnabled"
-            (click)="startDownload()">
+          <ya-button appearance="primary" [disabled]="!isDownloadEnabled" (click)="startDownload()">
             <mat-icon>chevron_left</mat-icon>
             DOWNLOAD
-          </button>
+          </ya-button>
         }
 
         @if (service.capabilities.download || service.capabilities.remotePath) {

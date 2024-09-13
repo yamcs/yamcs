@@ -21,8 +21,8 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button class="ya-button" mat-dialog-close>CANCEL</button>
-  <button class="ya-button primary" (click)="acknowledge()" [disabled]="!formGroup.valid">
+  <ya-button mat-dialog-close>CANCEL</ya-button>
+  <ya-button appearance="primary" (click)="acknowledge()" [disabled]="!formGroup.valid">
     OK
-  </button>
+  </ya-button>
 </mat-dialog-actions>

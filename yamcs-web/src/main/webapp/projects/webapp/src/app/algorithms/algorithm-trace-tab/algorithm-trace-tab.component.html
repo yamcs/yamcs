@@ -3,8 +3,10 @@
     @if (status.traceEnabled) {
       <div class="extra-bar-container">
         <div class="extra-bar">
-          <button class="ya-button" (click)="stopTrace()">Stop trace</button>&nbsp;
-          <button class="ya-button" (click)="refreshData()">Refresh</button>&nbsp;
+          <ya-button (click)="stopTrace()">Stop trace</ya-button>
+          &nbsp;
+          <ya-button (click)="refreshData()">Refresh</ya-button>
+          &nbsp;
           @if (section$ | async; as section) {
             <span class="separator" style="margin-left: 10px; margin-right: 10px"></span>
             <ya-text-action
@@ -54,8 +56,9 @@
                           [routerLink]="'/telemetry/parameters' + input.id.name"
                           [queryParams]="{ c: yamcs.context }"
                           class="secundary">
-                          {{ input.id.name }}</a
-                        >:
+                          {{ input.id.name }}
+                        </a>
+                        :
                         <ya-value [value]="input.engValue" />
                         @if (!last) {
                           <br />
@@ -71,8 +74,9 @@
                           [routerLink]="'/telemetry/parameters' + output.id.name"
                           [queryParams]="{ c: yamcs.context }"
                           class="secundary">
-                          {{ output.id.name }}</a
-                        >:
+                          {{ output.id.name }}
+                        </a>
+                        :
                         <ya-value [value]="output.engValue" />
                         @if (!last) {
                           <br />
@@ -91,26 +95,34 @@
             } @else {
               <ya-empty-message>
                 <p>Tracing has started.</p>
-                <p>This page does <strong>not</strong> update automatically.</p>
+                <p>
+                  This page does
+                  <strong>not</strong>
+                  update automatically.
+                </p>
                 <p>
                   Hit refresh, or check back at a later time when you think there should be trace
                   entries.
                 </p>
                 <p>
-                  <button class="ya-button primary" (click)="refreshData()">Refresh</button>
+                  <ya-button appearance="primary" (click)="refreshData()">Refresh</ya-button>
                 </p>
               </ya-empty-message>
             }
           } @else {
             <ya-empty-message>
               <p>Tracing has started.</p>
-              <p>This page does <strong>not</strong> update automatically.</p>
+              <p>
+                This page does
+                <strong>not</strong>
+                update automatically.
+              </p>
               <p>
                 Hit refresh, or check back at a later time when you think there should be trace
                 entries.
               </p>
               <p>
-                <button class="ya-button primary" (click)="refreshData()">Refresh</button>
+                <ya-button appearance="primary" (click)="refreshData()">Refresh</ya-button>
               </p>
             </ya-empty-message>
           }
@@ -131,26 +143,34 @@
             } @else {
               <ya-empty-message>
                 <p>Tracing has started.</p>
-                <p>This page does <strong>not</strong> update automatically.</p>
+                <p>
+                  This page does
+                  <strong>not</strong>
+                  update automatically.
+                </p>
                 <p>
                   Hit refresh, or check back at a later time when you think there should be trace
                   entries.
                 </p>
                 <p>
-                  <button class="ya-button primary" (click)="refreshData()">Refresh</button>
+                  <ya-button appearance="primary" (click)="refreshData()">Refresh</ya-button>
                 </p>
               </ya-empty-message>
             }
           } @else {
             <ya-empty-message>
               <p>Tracing has started.</p>
-              <p>This page does <strong>not</strong> update automatically.</p>
+              <p>
+                This page does
+                <strong>not</strong>
+                update automatically.
+              </p>
               <p>
                 Hit refresh, or check back at a later time when you think there should be trace
                 entries.
               </p>
               <p>
-                <button class="ya-button primary" (click)="refreshData()">Refresh</button>
+                <ya-button appearance="primary" (click)="refreshData()">Refresh</ya-button>
               </p>
             </ya-empty-message>
           }
@@ -160,7 +180,7 @@
       <ya-empty-message headerTitle="Trace">
         <p>The trace tool captures runs, inputs, outputs and log messages of this algorithm.</p>
         <p>
-          <button class="ya-button primary" (click)="startTrace()">Start trace</button>
+          <ya-button appearance="primary" (click)="startTrace()">Start trace</ya-button>
         </p>
       </ya-empty-message>
     }

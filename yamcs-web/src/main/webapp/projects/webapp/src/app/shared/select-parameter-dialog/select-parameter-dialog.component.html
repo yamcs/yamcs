@@ -18,8 +18,8 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button class="ya-button" mat-dialog-close>CANCEL</button>
-  <button class="ya-button primary" (click)="select()" [disabled]="!parameter.valid">
+  <ya-button mat-dialog-close>CANCEL</ya-button>
+  <ya-button appearance="primary" (click)="select()" [disabled]="!parameter.valid">
     {{ okLabel }}
-  </button>
+  </ya-button>
 </mat-dialog-actions>

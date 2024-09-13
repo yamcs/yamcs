@@ -9,11 +9,6 @@
   padding-right: 24px;
 }
 
-.ya-button.group {
-  border-left: 0;
-  margin-right: 0;
-}
-
 .query-container-and-error {
   width: 100%;
   display: flex;

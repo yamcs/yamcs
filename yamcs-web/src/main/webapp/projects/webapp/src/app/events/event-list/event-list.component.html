@@ -32,17 +32,16 @@
   @if (dataSource) {
     <div class="panel-content">
       <app-events-page-tabs>
-        <button class="ya-button text-only primary" (click)="clearQuery()" [disabled]="!isClearQueryEnabled()">
-          <mat-icon>clear</mat-icon>
+        <ya-button
+          appearance="text"
+          icon="clear"
+          (click)="clearQuery()"
+          [disabled]="!isClearQueryEnabled()">
           Clear query
-        </button>
-        <button
-          class="ya-button text-only primary"
-          style="margin-right: 0"
-          (click)="openSaveQueryDialog()">
-          <mat-icon>save</mat-icon>
+        </ya-button>
+        <ya-button appearance="text" icon="save" (click)="openSaveQueryDialog()">
           Save query
-        </button>
+        </ya-button>
       </app-events-page-tabs>
       <form [formGroup]="filterForm">
         <div class="filter-bar query" style="margin-top: 16px">
@@ -56,9 +55,9 @@
           @if (filterForm.value["interval"] === "CUSTOM") {
             <ya-date-time-input formControlName="customStart" />
             <ya-date-time-input formControlName="customStop" />
-            <button (click)="applyCustomDates()" class="ya-button" [disabled]="filterForm.invalid">
+            <ya-button (click)="applyCustomDates()" [disabled]="filterForm.invalid">
               Apply
-            </button>
+            </ya-button>
           }
           <ya-search-filter2
             #searchFilter
@@ -81,7 +80,7 @@
             formControlName="source"
             emptyOption="Any source" />
           @if (filterForm.value["interval"] !== "CUSTOM") {
-            <button class="ya-button" (click)="jumpToNow()">Jump to now</button>
+            <ya-button (click)="jumpToNow()">Jump to now</ya-button>
           }
           <mat-slide-toggle [disableRipple]="true" [formControl]="multilineControl">
             Multiline
@@ -145,19 +144,13 @@
             <ya-dots fontSize="16px" />
           </div>
         }
-        <button
-          class="ya-button text-only primary"
-          style="margin-right: 0"
-          (click)="exportEvents()">
-          <mat-icon>download</mat-icon>
-          Export CSV
-        </button>
+        <ya-button appearance="text" icon="download" (click)="exportEvents()">Export CSV</ya-button>
 
         <ya-column-chooser
           #columnChooser
           [columns]="columns"
           preferenceKey="events"
-          [text]="true"
+          appearance="text"
           icon="view_columns" />
       </div>
 
@@ -239,9 +232,7 @@
 
       <mat-toolbar>
         <span style="flex: 1 1 auto"></span>
-        <button [disabled]="!dataSource.hasMore()" class="ya-button" (click)="loadMoreData()">
-          Load More
-        </button>
+        <ya-button [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">Load more</ya-button>
         <span style="flex: 1 1 auto"></span>
       </mat-toolbar>
     </div>

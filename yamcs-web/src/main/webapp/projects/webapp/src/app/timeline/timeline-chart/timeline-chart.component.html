@@ -71,45 +71,25 @@
   </app-instance-toolbar>
 
   <div style="height: 24px; margin: 6px">
-    <button class="ya-button" (click)="pageLeft()">
-      <mat-icon>west</mat-icon>
-    </button>
-    <button
-      class="ya-button"
+    <ya-button (click)="pageLeft()" icon="west" />
+    <ya-button
       (mousedown)="toggleMove(-50)"
       (mouseup)="untoggleMove()"
-      (mouseleave)="untoggleMove()">
-      <mat-icon>chevron_left</mat-icon>
-    </button>
-    <button
-      class="ya-button"
+      (mouseleave)="untoggleMove()"
+      icon="chevron_left" />
+    <ya-button
       (mousedown)="toggleMove(50)"
       (mouseup)="untoggleMove()"
-      (mouseleave)="untoggleMove()">
-      <mat-icon>chevron_right</mat-icon>
-    </button>
-    <button class="ya-button" (click)="pageRight()">
-      <mat-icon>east</mat-icon>
-    </button>
+      (mouseleave)="untoggleMove()"
+      icon="chevron_right" />
+    <ya-button (click)="pageRight()" icon="east" />
     &nbsp;
-    <button class="ya-button" (click)="jumpToToday()">
-      <mat-icon>today</mat-icon>
-      Today
-    </button>
-    <button class="ya-button" (click)="jumpToNow()">
-      <mat-icon>my_location</mat-icon>
-    </button>
-    <button class="ya-button" (click)="openJumpToDialog()">
-      <mat-icon>directions</mat-icon>
-      Jump to...
-    </button>
+    <ya-button (click)="jumpToToday()" icon="today">Today</ya-button>
+    <ya-button (click)="jumpToNow()" icon="my_location" />
+    <ya-button (click)="openJumpToDialog()" icon="directions">Jump to...</ya-button>
     &nbsp;
-    <button class="ya-button" (click)="zoomIn()">
-      <mat-icon>add</mat-icon>
-    </button>
-    <button class="ya-button" (click)="zoomOut()">
-      <mat-icon>remove</mat-icon>
-    </button>
+    <ya-button (click)="zoomIn()" icon="add" />
+    <ya-button (click)="zoomOut()" icon="remove" />
   </div>
 
   <div #container class="timeline-container"></div>

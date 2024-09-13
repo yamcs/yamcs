@@ -16,7 +16,9 @@
           </div>
           <hr class="half-break" />
           <div class="label">
-            Interval (ms) <span class="hint">(optional)</span><br />
+            Interval (ms)
+            <span class="hint">(optional)</span>
+            <br />
             <input formControlName="interval" class="ya-input" type="text" />
           </div>
         </div>
@@ -24,12 +26,14 @@
       <mat-tab label="Format">
         <div style="margin-top: 1em">
           <div class="label">
-            CSV column delimiter<br />
+            CSV column delimiter
+            <br />
             <ya-select formControlName="delimiter" [options]="delimiterOptions" />
           </div>
           <hr class="half-break" />
           <div class="label">
-            Header<br />
+            Header
+            <br />
             <ya-select formControlName="header" [options]="headerOptions" />
           </div>
         </div>
@@ -39,10 +43,10 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button class="ya-button" mat-dialog-close>CANCEL</button>
+  <ya-button mat-dialog-close>CANCEL</ya-button>
   <ya-download-button
     [link]="downloadURL$ | async"
-    [primary]="true"
+    appearance="primary"
     (click)="closeDialog()"
     [disabled]="!form.valid">
     DOWNLOAD

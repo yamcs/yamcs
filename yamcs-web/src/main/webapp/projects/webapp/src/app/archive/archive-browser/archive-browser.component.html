@@ -39,74 +39,48 @@
 
   <div style="height: 24px; margin: 6px">
     <form [formGroup]="filterForm">
-      <button class="ya-button" (click)="pageLeft()">
-        <mat-icon>west</mat-icon>
-      </button>
-      <button
-        class="ya-button"
+      <ya-button (click)="pageLeft()" icon="west" />
+      <ya-button
         (mousedown)="toggleMove(-50)"
         (mouseup)="untoggleMove()"
-        (mouseleave)="untoggleMove()">
-        <mat-icon>chevron_left</mat-icon>
-      </button>
-      <button
-        class="ya-button"
+        (mouseleave)="untoggleMove()"
+        icon="chevron_left"></ya-button>
+      <ya-button
         (mousedown)="toggleMove(50)"
         (mouseup)="untoggleMove()"
-        (mouseleave)="untoggleMove()">
-        <mat-icon>chevron_right</mat-icon>
-      </button>
-      <button class="ya-button" (click)="pageRight()">
-        <mat-icon>east</mat-icon>
-      </button>
+        (mouseleave)="untoggleMove()"
+        icon="chevron_right"></ya-button>
+      <ya-button (click)="pageRight()" icon="east" />
       &nbsp;
-      <button class="ya-button" (click)="fitAll()" matTooltip="Show all archive data">
-        <mat-icon>fit_screen</mat-icon>
+      <ya-button (click)="fitAll()" matTooltip="Show all archive data" icon="fit_screen">
         Fit all
-      </button>
+      </ya-button>
       @if ((tool$ | async) === "range-select") {
-        <button
-          class="ya-button"
+        <ya-button
           (click)="fitSelection()"
           [disabled]="!(rangeSelection$ | async)"
-          matTooltip="Zoom to selected range">
-          <mat-icon>fit_screen</mat-icon>
+          matTooltip="Zoom to selected range"
+          icon="fit_screen">
           Fit selection
-        </button>
+        </ya-button>
       }
-      <button class="ya-button" (click)="jumpToToday()">
-        <mat-icon>today</mat-icon>
-        Today
-      </button>
-      <button class="ya-button" (click)="jumpToNow()">
-        <mat-icon>my_location</mat-icon>
-      </button>
-      <button class="ya-button" (click)="openJumpToDialog()">
-        <mat-icon>directions</mat-icon>
-        Jump to...
-      </button>
+      <ya-button (click)="jumpToToday()" icon="today">Today</ya-button>
+      <ya-button (click)="jumpToNow()" icon="my_location" />
+      <ya-button (click)="openJumpToDialog()" icon="directions">Jump to...</ya-button>
       &nbsp;
-      <button class="ya-button" (click)="zoomIn()">
-        <mat-icon>add</mat-icon>
-      </button>
-      <button class="ya-button" (click)="zoomOut()">
-        <mat-icon>remove</mat-icon>
-      </button>
+      <ya-button (click)="zoomIn()" icon="add" />
+      <ya-button (click)="zoomOut()" icon="remove" />
       &nbsp;
-      <button
-        class="ya-button"
-        [class.active]="(tool$ | async) === 'hand'"
+      <ya-button
+        [toggled]="(tool$ | async) === 'hand'"
         (click)="setTool('hand')"
-        matTooltip="Use pan tool">
-        <mat-icon>pan_tool</mat-icon>
-      </button>
-      <button
-        class="ya-button"
-        [class.active]="(tool$ | async) === 'range-select'"
+        matTooltip="Use pan tool"
+        icon="pan_tool" />
+      <ya-button
+        [toggled]="(tool$ | async) === 'range-select'"
         (click)="setTool('range-select')"
-        matTooltip="Use range selection tool">
-        <mat-icon>highlight_alt</mat-icon>
-      </button>
+        matTooltip="Use range selection tool"
+        icon="highlight_alt" />
 
       &nbsp;&nbsp;&nbsp;&nbsp;
       @for (option of legendOptions; track option) {

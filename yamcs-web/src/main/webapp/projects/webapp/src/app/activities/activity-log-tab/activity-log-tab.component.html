@@ -1,12 +1,8 @@
 <div class="log-actions">
-  <button class="ya-button" (click)="top.scrollIntoView()">
-    <mat-icon>vertical_align_top</mat-icon>
-    Jump to top
-  </button>
-  <button class="ya-button" (click)="bottom.scrollIntoView()">
-    <mat-icon>vertical_align_bottom</mat-icon>
+  <ya-button (click)="top.scrollIntoView()" icon="vertical_align_top">Jump to top</ya-button>
+  <ya-button (click)="bottom.scrollIntoView()" icon="vertical_align_bottom">
     Jump to bottom
-  </button>
+  </ya-button>
 </div>
 
 <div #logContainer class="log-container">

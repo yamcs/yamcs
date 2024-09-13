@@ -1,8 +1,4 @@
-<button
-  class="ya-button"
-  [class.primary]="primary"
-  (click)="triggerDownload()"
-  [disabled]="disabled">
+<ya-button [appearance]="appearance()" [disabled]="disabled()" (click)="triggerDownload()">
   <ng-content />
-</button>
-<a #hiddenLink [href]="link" style="display: none" download></a>
+</ya-button>
+<a #hiddenLink [href]="link()" style="display: none" download></a>
