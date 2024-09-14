@@ -6,15 +6,13 @@ import java.io.Serializable;
  * From XTCE: Holds a time to stop checking and optional time to start checking and whether window is relative to
  * command release or last verifier.
  * 
- * @author nm
- *
  */
 public class CheckWindow implements Serializable {
     private static final long serialVersionUID = 2L;
 
     public enum TimeWindowIsRelativeToType {
         COMMAND_RELEASE, LAST_VERIFIER;
-        
+
         static public TimeWindowIsRelativeToType fromXtce(String xtceAttr) {
             if ("timeLastVerifierPassed".equals(xtceAttr)) {
                 return TimeWindowIsRelativeToType.LAST_VERIFIER;
@@ -51,13 +49,20 @@ public class CheckWindow implements Serializable {
 
     public CheckWindow(long timeToStartChecking, long timeToStopChecking,
             TimeWindowIsRelativeToType timeWindowIsRelativeTo) {
-        super();
+        if (timeToStopChecking < timeToStartChecking) {
+            throw new IllegalArgumentException(
+                    "timeToStopChecking has to be greater or equal than timeToStartChecking");
+        }
+
+        if (timeToStopChecking <= 0) {
+            throw new IllegalArgumentException(
+                    "timeToStopChecking has to be strictly greater than 0");
+        }
+
         this.timeToStartChecking = timeToStartChecking;
         this.timeToStopChecking = timeToStopChecking;
         this.timeWindowIsRelativeTo = timeWindowIsRelativeTo;
     }
-
-
 
     public long getTimeToStartChecking() {
         return timeToStartChecking;
@@ -74,7 +79,6 @@ public class CheckWindow implements Serializable {
     public boolean hasStart() {
         return timeToStartChecking != -1;
     }
-
 
     public String toString() {
         return timeWindowIsRelativeTo + "[" + timeToStartChecking + "," + timeToStopChecking + "]";
