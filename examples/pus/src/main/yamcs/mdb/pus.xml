@@ -233,6 +233,8 @@
 						<CustomAlgorithm name="alg_verif_accepted" shortDescription="Verify the PUS acceptance">
 							<AncillaryDataSet>
 								<!--
+								    This is a javascript implementation of the accepted verifier. Note below a Java version that is simpler to use.
+								    
 									This is a Yamcs XTCE extension which says to only run the algorithm if these inputs are present.
 
 									Without this, the algorithm would run on receiving other packet because all packets (except time) have the subtype pus header parameter.
@@ -287,28 +289,16 @@
 						<CheckWindow timeToStopChecking="PT5S" timeWindowIsRelativeTo="commandRelease" />
 					</ReceivedVerifier>
 					<ExecutionVerifier name="Started">
-						<CustomAlgorithm name="alg_verif_started" shortDescription="Verify the PUS start">
-							<AncillaryDataSet>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">sentApid</AncillaryData>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">sentSeq</AncillaryData>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">rcvdApid</AncillaryData>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">rcvdSeq</AncillaryData>
-							</AncillaryDataSet>
-							<AlgorithmText language="JavaScript">
-								if(rcvdApid.value == sentApid.value &#38;&#38; rcvdSeq.value == sentSeq.value) {
-								   if(subtype.value == 3) {
-								       return true;
-								    } else if(subtype.value == 4) {
-								       return errorCode.value;
-								    }
-								}
+						<CustomAlgorithm name="alg_verif_started" shortDescription="Verify the PUS start">							
+							<AlgorithmText language="Java">
+								org.yamcs.pus.Pus1Verifier({stage: 3, template: "{errorCode}"})
 							</AlgorithmText>
 							<InputSet>
 								<InputParameterInstanceRef parameterRef="/yamcs/cmd/arg/apid" inputName="sentApid" />
 								<InputParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-seqcount" inputName="sentSeq" />
-								<InputParameterInstanceRef parameterRef="subtype" inputName="subtype" />
 								<InputParameterInstanceRef parameterRef="tc-ack-apid" inputName="rcvdApid" />
 								<InputParameterInstanceRef parameterRef="tc-ack-seq" inputName="rcvdSeq" />
+								<InputParameterInstanceRef parameterRef="subtype" inputName="subtype" />
 								<InputParameterInstanceRef parameterRef="tc-ack-start-failure-code" inputName="errorCode" />
 							</InputSet>
 						</CustomAlgorithm>
@@ -316,30 +306,17 @@
 					</ExecutionVerifier>
 					<CompleteVerifier name="Complete">
 						<CustomAlgorithm name="alg_verif_completed" shortDescription="Verify the PUS completion">
-							<AncillaryDataSet>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">sentApid</AncillaryData>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">sentSeq</AncillaryData>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">rcvdApid</AncillaryData>
-								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">rcvdSeq</AncillaryData>
-							</AncillaryDataSet>
-							<AlgorithmText language="JavaScript">
-								if(rcvdApid.value == sentApid.value &#38;&#38; rcvdSeq.value == sentSeq.value) {
-								   if(subtype.value == 7) {
-								       return true;
-								    } else if(subtype.value == 8) {
-								       return errorCode.value;
-								    }
-								}
+							<AlgorithmText language="Java">
+								org.yamcs.pus.Pus1Verifier({stage: 7, template: "the completion error code is {errorCode}"})
 							</AlgorithmText>
 							<InputSet>
 								<InputParameterInstanceRef parameterRef="/yamcs/cmd/arg/apid" inputName="sentApid" />
 								<InputParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-seqcount" inputName="sentSeq" />
-								<InputParameterInstanceRef parameterRef="subtype" inputName="subtype" />
 								<InputParameterInstanceRef parameterRef="tc-ack-apid" inputName="rcvdApid" />
 								<InputParameterInstanceRef parameterRef="tc-ack-seq" inputName="rcvdSeq" />
+								<InputParameterInstanceRef parameterRef="subtype" inputName="subtype" />
 								<InputParameterInstanceRef parameterRef="tc-ack-completion-failure-code" inputName="errorCode" />
 							</InputSet>
-
 						</CustomAlgorithm>
 						<CheckWindow timeToStopChecking="PT15S" timeWindowIsRelativeTo="commandRelease" />
 					</CompleteVerifier>

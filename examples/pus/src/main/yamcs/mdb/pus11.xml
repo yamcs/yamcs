@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SpaceSystem name="PUS11" xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
-	<Header validationStatus="Unknown" version="1.0" date="2020-07-01T16:48:10Z" />
+	<Header validationStatus="Unknown" version="1.0" date="2020-07-01T16:48:10Z">
+		<NoteSet>
+			<Note>Sample implementation of PUS11 Time-based scheduling</Note>
+		</NoteSet>		
+	</Header>
+
 	<CommandMetaData>
 		<ArgumentTypeSet>
 			<AggregateArgumentType name="request_id_type">

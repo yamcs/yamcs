@@ -30,7 +30,11 @@ ST[09] Time Management
   The time correlation does not know about the drift or how the time is generated.
 - The time packet is sent every 4 seconds and changing that frequency is not supported.
 
-ST[11] - time based schedule. To verify how time planned commands which have to contain the on-board time can be supported with Yamcs.
+ST[11] - time based schedule. Implemented the service in the simulator. TODO: The Yamcs command post-processor will be updated to generate the time based scheduled commands based on command attributes.
+
+ST[17] - test. Added a container based verifier.
+
+ST[20] -  on-board parameter management - TODO: fix the IndirectParameterRefEntry processing.
 
 TODO:
 
@@ -38,5 +42,7 @@ TODO:
 ST[06] - no special support planned in Yamcs but we have to verify that the way binary structures are communicated via PUS works with Yamcs.
 
 ST[15] - on-board storage and retrieval - to show how LOS recorded packets can be inserted into the Yamcs archive with the correct timestamps.
+
+ST[19] - similar support with PUS[11] - command attributes (event id) will be added to allow scheduling the command on-board for execution when events happen.
 
 ST[23] - file management - to augument the existing CFDP support in Yamcs with functionality for showing the list of files on the remote system.

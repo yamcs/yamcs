@@ -3,10 +3,8 @@ package org.yamcs.pus;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Map;
 
@@ -25,21 +23,13 @@ import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.ProcessorData;
 import org.yamcs.mdb.XtceTmExtractor;
-import org.yamcs.parameter.DoubleValue;
-import org.yamcs.parameter.FloatValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
-import org.yamcs.parameter.SInt32Value;
-import org.yamcs.parameter.SInt64Value;
-import org.yamcs.parameter.UInt32Value;
-import org.yamcs.parameter.UInt64Value;
-import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Event.EventSeverity;
+import org.yamcs.pus.MessageTemplate.ParameterValueResolver;
 import org.yamcs.time.TimeService;
-import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.PathElement;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -266,7 +256,7 @@ public class PusEventDecoder extends AbstractYamcsService {
 
     class EventFormatter {
         // Map to hold the templates with eventId and apid as keys
-        private Map<String, List<TemplatePart>> templates = new HashMap<>();
+        private Map<String, MessageTemplate> templates = new HashMap<>();
 
         public EventFormatter(String fileName) throws ConfigurationException {
             LoaderOptions loaderOptions = new LoaderOptions();
@@ -289,9 +279,9 @@ public class PusEventDecoder extends AbstractYamcsService {
                     String eventId = (String) map.get("eventId");
                     String template = (String) map.get("template");
 
-                    List<TemplatePart> templateList = parseTemplateParts(template);
+                    MessageTemplate stemplate = new MessageTemplate(template, mdb);
 
-                    templates.put(eventId, templateList);
+                    templates.put(eventId, stemplate);
                 } else {
                     throw new ConfigurationException(
                             "Error in file " + fileName + ": each list element must be a map.");
@@ -306,7 +296,7 @@ public class PusEventDecoder extends AbstractYamcsService {
         // Format method to replace the template parameters with actual values
         public String format(int apid, String eventId, ParameterValueList params) {
             String key = generateKey(eventId, apid);
-            List<TemplatePart> template = templates.get(key);
+            MessageTemplate template = templates.get(key);
 
             if (template == null) {
                 key = generateKey(eventId, null);
@@ -316,156 +306,23 @@ public class PusEventDecoder extends AbstractYamcsService {
             if (template == null) {
                 return null; // No template found
             }
+            return template.format(new ParameterValueResolver() {
 
-            StringBuilder result = new StringBuilder();
-            for (var tp : template) {
-                var s = tp.format(params);
-                if (s != null) {
-                    result.append(s);
-                }
-            }
-            return result.toString();
-        }
-
-        // Method to replace placeholders in the template with actual parameter values
-        private List<TemplatePart> parseTemplateParts(String template) {
-            List<TemplatePart> result = new ArrayList<>();
-            int start = 0;
-
-            while (start < template.length()) {
-                int openBrace = template.indexOf('{', start);
-                if (openBrace == -1) {
-                    // Add the remaining text as a TextTemplatePart
-                    result.add(new TextTemplatePart(template.substring(start)));
-                    break;
-                }
-
-                // Add any text before the open brace as a TextTemplatePart
-                if (openBrace > start) {
-                    result.add(new TextTemplatePart(template.substring(start, openBrace)));
-                }
-
-                int closeBrace = template.indexOf('}', openBrace);
-                if (closeBrace == -1) {
-                    // Unmatched '{' found; treat it as plain text
-                    result.add(new TextTemplatePart(template.substring(openBrace)));
-                    break;
-                }
-
-                // Extract the placeholder content between '{' and '}'
-                String placeholder = template.substring(openBrace + 1, closeBrace);
-                result.add(new ParameterTemplatePart(placeholder));
-
-                // Move the start position past the closing brace for the next iteration
-                start = closeBrace + 1;
-            }
-
-            return result;
-        }
-    }
-
-    interface TemplatePart {
-        String format(ParameterValueList params);
-    }
-
-    record TextTemplatePart(String text) implements TemplatePart {
-        @Override
-        public String format(ParameterValueList params) {
-            return text;
-        }
-    }
-
-    class ParameterTemplatePart implements TemplatePart {
-        Parameter para;
-        String paraName;
-        boolean raw;
-        PathElement[] path;
-        String format;
-
-        ParameterTemplatePart(String s) {
-            String[] a = s.split(";");
-            if (a.length > 1) {
-                this.format = a[1].trim();
-                s = a[0].trim();
-            }
-
-            if (s.endsWith(".raw")) {
-                this.raw = true;
-                s = s.substring(0, s.length() - 4);
-            }
-            var idx = s.indexOf('.');
-            if (idx == -1) {
-                this.paraName = s;
-            } else {
-                this.paraName = s.substring(0, idx);
-                this.path = AggregateUtil.parseReference(s.substring(idx + 1));
-            }
-
-            if (this.paraName.startsWith("/")) {
-                this.para = mdb.getParameter(this.paraName);
-                if (this.para == null) {
-                    throw new ConfigurationException("Cannot find parameter " + this.paraName);
-                }
-            }
-        }
-
-        @Override
-        public String format(ParameterValueList params) {
-            ParameterValue pv = null;
-            if (para != null) {
-                pv = params.getFirstInserted(para);
-            } else {
-                for (var pv1 : params) {
-                    if (paraName.equals(pv1.getParameter().getName())) {
-                        pv = pv1;
-                        break;
+                @Override
+                public ParameterValue resolve(String name) {
+                    for (var pv : params) {
+                        if (name.equals(pv.getParameter().getName())) {
+                            return pv;
+                        }
                     }
+                    return null;
                 }
-            }
-            if (pv == null) {
-                return null;
-            }
-            Value v = raw ? pv.getRawValue() : pv.getEngValue();
-            if (path != null) {
-                v = AggregateUtil.getMemberValue(v, path);
-            }
-            if (v == null) {
-                return null;
-            }
-            if (format != null) {
-                try {
-                    return format(v);
-                } catch (IllegalFormatException e) {
-                    log.warn("Invalid format {} for parameter {}: {}", format, paraName, e.getMessage());
-                    return v.toString();
+
+                @Override
+                public ParameterValue resolve(Parameter p) {             
+                    return params.getLastInserted(p);
                 }
-            } else {
-                return v.toString();
-            }
-        }
-
-        @Override
-        public String toString() {
-            return "ParameterTemplatePart [para=" + para + ", paraName=" + paraName + ", raw=" + raw + ", path="
-                    + Arrays.toString(path) + ", format=" + format + "]";
-        }
-
-        private String format(Value v) {
-            if (v instanceof FloatValue v1) {
-                return String.format(format, v1.getFloatValue());
-            } else if (v instanceof DoubleValue v1) {
-                return String.format(format, v1.getDoubleValue());
-            } else if (v instanceof SInt32Value v1) {
-                return String.format(format, v1.getSint32Value());
-            } else if (v instanceof SInt64Value v1) {
-                return String.format(format, v1.getSint64Value());
-            } else if (v instanceof UInt32Value v1) {
-                return String.format(format, v1.getUint32Value());
-            } else if (v instanceof UInt64Value v1) {
-                return String.format(format, v1.getUint64Value());
-            } else {
-                return v.toString();
-            }
+            });
         }
     }
 }
