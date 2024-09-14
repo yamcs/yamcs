@@ -3,21 +3,26 @@ package org.yamcs.algorithms;
 import java.util.Arrays;
 import java.util.List;
 
+import org.yamcs.commanding.VerificationResult;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.RawEngValue;
 
 /**
- * The result of the algorithm execution consists of:
+ * Describes the result of the algorithm execution, which consists of the following components:
  * <ul>
- * <li>a list of input parameter values - optional - the list of parameters which have been used as input to the
- * algorithm.</li>
- * <li>a list of output parameter values - these are {@link ParameterValue} which are then propagated to the Yamcs
- * clients.</li>
- * <li>a return value - this is not an output parameter; used for command verifiers</li>
+ * <li><b>Input Parameter Values (Optional)</b> - A list of parameters that were used as input to the algorithm.</li>
+ * <li><b>Output Parameter Values</b> - A list of {@link ParameterValue} objects that are propagated to Yamcs clients.
+ * </li>
+ * <li><b>Return Value</b> - This is not an output parameter but is specifically used for command verifiers (see the
+ * details below).</li>
  * </ul>
  * 
- * @author nm
- *
+ * <h3>Command Verifier Return Value</h3>
+ * <p>
+ * In older versions of Yamcs, the command verifier would return either a boolean value (True) indicating success or a
+ * String indicating failure. While this approach is still supported, the current preferred method is to use the custom
+ * {@link VerificationResult} class, which provides a more suitable representation of the verifier's result.
+ * </p>
  */
 public class AlgorithmExecutionResult {
     private final List<RawEngValue> inputValues;
