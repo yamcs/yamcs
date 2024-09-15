@@ -8,7 +8,7 @@
           </div>
         </td>
       }
-      <td style="width: 150px">{{ ack.name }}</td>
+      <td style="width: 150px">{{ ack.name?.replace("Acknowledge_", "") }}</td>
       <td style="width: 70px">{{ ack.status }}</td>
       <td>
         @switch (ack.status) {
