@@ -23,7 +23,7 @@ For commercial licensing please contact [Space Applications Services](https://ww
 
 ## Development Setup
 
-To work on the core components of Yamcs you need JDK11, Maven and npm.
+To work on the core components of Yamcs you need JDK17+, Maven and npm.
 
 Build Java jars:
 
