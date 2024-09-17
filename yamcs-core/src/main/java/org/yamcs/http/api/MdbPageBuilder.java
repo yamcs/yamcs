@@ -69,8 +69,10 @@ public class MdbPageBuilder<T extends NameDescription> {
             if (pos < spaceSystems.size()) {
                 page.addSpaceSystems(spaceSystems.subList(pos, spaceSystems.size()));
             }
-            int itemPos = pos - spaceSystems.size();
-            page.addItems(items.subList(itemPos, items.size()));
+            int itemPos = Math.max(0, pos - spaceSystems.size());
+            if (itemPos < items.size()) {
+                page.addItems(items.subList(itemPos, items.size()));
+            }
         } else {
             page.addSpaceSystems(spaceSystems);
             page.addItems(items);
