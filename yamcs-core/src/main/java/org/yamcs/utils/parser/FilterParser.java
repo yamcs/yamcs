@@ -20,8 +20,16 @@ public class FilterParser<T> implements FilterParserConstants {
 
     private static final HexFormat HEX = HexFormat.of();
 
+    // All available fields (lowercase)
     private Set<String> fields = new HashSet<String>();
 
+    // Fields that are part of the actual query (lowercase)
+    private Set<String> queryFields = new HashSet<String>();
+
+    // True if the query includes at least one text comparison
+    private boolean includesTextSearch;
+
+    // Resolvers by lowercase field
     private Map<String, BiFunction<T, String, String>> prefixResolvers = new HashMap<String, BiFunction<T, String, String>>();
     private Map<String, Function<T, String>> stringResolvers = new HashMap<String, Function<T, String>>();
     private Map<String, Function<T, Number>> numberResolvers = new HashMap<String, Function<T, Number>>();
@@ -29,37 +37,52 @@ public class FilterParser<T> implements FilterParserConstants {
     private Map<String, Function<T, byte[]>> binaryResolvers = new HashMap<String, Function<T, byte[]>>();
     private Map<String, Function<T, ? extends Enum<?>>> enumResolvers = new HashMap<String, Function<T, ? extends Enum<?>>>();
 
+    // Enum class by lowercase field
     private Map<String, Class<? extends Enum<?>>> enumClassByField = new HashMap<String, Class<? extends Enum<?>>>();
 
+    public boolean isQueryField(String field) {
+        return queryFields.contains(field.toLowerCase());
+    }
+
+    public boolean includesTextSearch() {
+       return includesTextSearch;
+    }
+
     public void addPrefixField(String field, BiFunction<T, String, String> resolver) {
-        fields.add(field);
-        prefixResolvers.put(field, resolver);
+        String lcField = field.toLowerCase();
+        fields.add(lcField);
+        prefixResolvers.put(lcField, resolver);
     }
 
     public void addStringField(String field, Function<T, String> resolver) {
-        fields.add(field);
-        stringResolvers.put(field, resolver);
+        String lcField = field.toLowerCase();
+        fields.add(lcField);
+        stringResolvers.put(lcField, resolver);
     }
 
     public <E extends Enum<?>> void addEnumField(String field, Class<E> enumClass, Function<T, E> resolver) {
-        fields.add(field);
-        enumResolvers.put(field, resolver);
-        enumClassByField.put(field, enumClass);
+        String lcField = field.toLowerCase();
+        fields.add(lcField);
+        enumResolvers.put(lcField, resolver);
+        enumClassByField.put(lcField, enumClass);
     }
 
     public void addNumberField(String field, Function<T, Number> resolver) {
-        fields.add(field);
-        numberResolvers.put(field, resolver);
+        String lcField = field.toLowerCase();
+        fields.add(lcField);
+        numberResolvers.put(lcField, resolver);
     }
 
     public void addBooleanField(String field, Function<T, Boolean> resolver) {
-        fields.add(field);
-        booleanResolvers.put(field, resolver);
+        String lcField = field.toLowerCase();
+        fields.add(lcField);
+        booleanResolvers.put(lcField, resolver);
     }
 
     public void addBinaryField(String field, Function<T, byte[]> resolver) {
-        fields.add(field);
-        binaryResolvers.put(field, resolver);
+        String lcField = field.toLowerCase();
+        fields.add(lcField);
+        binaryResolvers.put(lcField, resolver);
     }
 
     public BiFunction<T, String, String> getPrefixResolver(String field) {
@@ -308,28 +331,32 @@ public class FilterParser<T> implements FilterParserConstants {
     } else {
       ;
     }
-    if (comparator != null) {
-        if (!fields.contains(comparable)) {
+    String lcComparable = comparable.toLowerCase();
+    if (comparator == null) {
+        includesTextSearch = true;
+    } else {
+        queryFields.add(lcComparable);
+        if (!fields.contains(lcComparable)) {
             boolean prefixMatch = false;
             for (String prefix : prefixResolvers.keySet()) {
-                if (comparable.startsWith(prefix)) {
+                if (lcComparable.startsWith(prefix)) {
                     prefixMatch = true;
                     break;
                 }
             }
             if (!prefixMatch) {
-                {if (true) throw new UnknownFieldException(comparable, comparableToken, tokenImage);}
+                {if (true) throw new UnknownFieldException(lcComparable, comparableToken, tokenImage);}
             }
         }
 
-        Class<? extends Enum<?>> enumClass = enumClassByField.get(comparable);
+        Class<? extends Enum<?>> enumClass = enumClassByField.get(lcComparable);
         if (enumClass != null) {
             if (!value.equalsIgnoreCase("null") && findEnum(enumClass, value) == null) {
                 {if (true) throw new IncorrectTypeException(value, token, tokenImage);}
             }
         }
 
-        if (binaryResolvers.containsKey(comparable)) {
+        if (binaryResolvers.containsKey(lcComparable)) {
             if (!value.equalsIgnoreCase("null")) {
                 try {
                     binary = HEX.parseHex(value);
@@ -348,7 +375,7 @@ public class FilterParser<T> implements FilterParserConstants {
         }
     }
 
-    {if (true) return new Comparison(comparable, comparator, value, pattern, binary);}
+    {if (true) return new Comparison(lcComparable, comparator, value, pattern, binary);}
     throw new Error("Missing return statement in function");
   }
 
@@ -459,6 +486,154 @@ public class FilterParser<T> implements FilterParserConstants {
     finally { jj_save(5, xla); }
   }
 
+  private boolean jj_3R_18() {
+    if (jj_scan_token(RE_NOT_EQUAL_TO)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_17() {
+    if (jj_scan_token(RE_EQUAL_TO)) return true;
+    return false;
+  }
+
+  private boolean jj_3_5() {
+    if (jj_scan_token(NOT)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(2)) jj_scanpos = xsp;
+    if (jj_scan_token(LPAREN)) return true;
+    xsp = jj_scanpos;
+    if (jj_scan_token(2)) jj_scanpos = xsp;
+    if (jj_3R_5()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_8() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_5()) {
+    jj_scanpos = xsp;
+    if (jj_3R_21()) {
+    jj_scanpos = xsp;
+    if (jj_3R_22()) {
+    jj_scanpos = xsp;
+    if (jj_3R_23()) {
+    jj_scanpos = xsp;
+    if (jj_3R_24()) return true;
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_16() {
+    if (jj_scan_token(HAS)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_15() {
+    if (jj_scan_token(GREATER_THAN_OR_EQUAL_TO)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_14() {
+    if (jj_scan_token(LESS_THAN_OR_EQUAL_TO)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_13() {
+    if (jj_scan_token(GREATER_THAN)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_3() {
+    if (jj_scan_token(AND)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_12() {
+    if (jj_scan_token(LESS_THAN)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_11() {
+    if (jj_scan_token(NOT_EQUAL_TO)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_6() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_10()) {
+    jj_scanpos = xsp;
+    if (jj_3R_11()) {
+    jj_scanpos = xsp;
+    if (jj_3R_12()) {
+    jj_scanpos = xsp;
+    if (jj_3R_13()) {
+    jj_scanpos = xsp;
+    if (jj_3R_14()) {
+    jj_scanpos = xsp;
+    if (jj_3R_15()) {
+    jj_scanpos = xsp;
+    if (jj_3R_16()) {
+    jj_scanpos = xsp;
+    if (jj_3R_17()) {
+    jj_scanpos = xsp;
+    if (jj_3R_18()) return true;
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_10() {
+    if (jj_scan_token(EQUAL_TO)) return true;
+    return false;
+  }
+
+  private boolean jj_3_4() {
+    if (jj_scan_token(WS)) return true;
+    if (jj_scan_token(OR)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_4() {
+    if (jj_3R_8()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_20() {
+    if (jj_scan_token(QUOTED_STRING)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_19() {
+    if (jj_scan_token(STRING)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_7() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_19()) {
+    jj_scanpos = xsp;
+    if (jj_3R_20()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3_2() {
+    if (jj_scan_token(WS)) return true;
+    return false;
+  }
+
   private boolean jj_3_3() {
     if (jj_scan_token(WS)) return true;
     Token xsp;
@@ -516,154 +691,6 @@ public class FilterParser<T> implements FilterParserConstants {
 
   private boolean jj_3R_21() {
     if (jj_scan_token(NOT)) return true;
-    return false;
-  }
-
-  private boolean jj_3_5() {
-    if (jj_scan_token(NOT)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(2)) jj_scanpos = xsp;
-    if (jj_scan_token(LPAREN)) return true;
-    xsp = jj_scanpos;
-    if (jj_scan_token(2)) jj_scanpos = xsp;
-    if (jj_3R_5()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_8() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3_5()) {
-    jj_scanpos = xsp;
-    if (jj_3R_21()) {
-    jj_scanpos = xsp;
-    if (jj_3R_22()) {
-    jj_scanpos = xsp;
-    if (jj_3R_23()) {
-    jj_scanpos = xsp;
-    if (jj_3R_24()) return true;
-    }
-    }
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_18() {
-    if (jj_scan_token(RE_NOT_EQUAL_TO)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_17() {
-    if (jj_scan_token(RE_EQUAL_TO)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_3() {
-    if (jj_scan_token(AND)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_16() {
-    if (jj_scan_token(HAS)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_15() {
-    if (jj_scan_token(GREATER_THAN_OR_EQUAL_TO)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_14() {
-    if (jj_scan_token(LESS_THAN_OR_EQUAL_TO)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_13() {
-    if (jj_scan_token(GREATER_THAN)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_12() {
-    if (jj_scan_token(LESS_THAN)) return true;
-    return false;
-  }
-
-  private boolean jj_3_4() {
-    if (jj_scan_token(WS)) return true;
-    if (jj_scan_token(OR)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_11() {
-    if (jj_scan_token(NOT_EQUAL_TO)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_6() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_10()) {
-    jj_scanpos = xsp;
-    if (jj_3R_11()) {
-    jj_scanpos = xsp;
-    if (jj_3R_12()) {
-    jj_scanpos = xsp;
-    if (jj_3R_13()) {
-    jj_scanpos = xsp;
-    if (jj_3R_14()) {
-    jj_scanpos = xsp;
-    if (jj_3R_15()) {
-    jj_scanpos = xsp;
-    if (jj_3R_16()) {
-    jj_scanpos = xsp;
-    if (jj_3R_17()) {
-    jj_scanpos = xsp;
-    if (jj_3R_18()) return true;
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_10() {
-    if (jj_scan_token(EQUAL_TO)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_4() {
-    if (jj_3R_8()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_20() {
-    if (jj_scan_token(QUOTED_STRING)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_19() {
-    if (jj_scan_token(STRING)) return true;
-    return false;
-  }
-
-  private boolean jj_3_2() {
-    if (jj_scan_token(WS)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_7() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_19()) {
-    jj_scanpos = xsp;
-    if (jj_3R_20()) return true;
-    }
     return false;
   }
 

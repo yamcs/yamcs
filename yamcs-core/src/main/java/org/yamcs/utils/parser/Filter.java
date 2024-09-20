@@ -26,6 +26,24 @@ public abstract class Filter<T> {
         expression = parser.parse();
     }
 
+    /**
+     * True if the provided field is part of the parsed query.
+     * <p>
+     * This method should only be used after {@link #parse()} is called.
+     */
+    public boolean isQueryField(String field) {
+        return parser.isQueryField(field);
+    }
+
+    /**
+     * True if the parsed query includes at least one text search.
+     * <p>
+     * This method should only be used after {@link #parse()} is called.
+     */
+    public boolean includesTextSearch() {
+        return parser.includesTextSearch();
+    }
+
     protected void addPrefixField(String field, BiFunction<T, String, String> resolver) {
         parser.addPrefixField(field, resolver);
     }
@@ -54,15 +72,33 @@ public abstract class Filter<T> {
         if (expression == null) {
             return true;
         } else {
+            beforeItem(item);
             return matchAndExpression(expression, item);
         }
+    }
+
+    /**
+     * Called for each new item, before any comparisons.
+     * <p>
+     * The default implementation does nothing, concrete classes may override to hook any initialization logic.
+     */
+    public void beforeItem(T item) {
     }
 
     public String printExpression() {
         return expression.toString("  ");
     }
 
-    protected abstract boolean matchesLiteral(T item, String literal);
+    /**
+     * Implementatinos must search the provided item for the given literal in a manner that makes sense to the type of
+     * item. Search should be exact and case-insensitive.
+     * 
+     * @param item
+     *            Item to match
+     * @param lowercaseLiteral
+     *            A search string. Always lowercase.
+     */
+    protected abstract boolean matchesLiteral(T item, String lowercaseLiteral);
 
     private boolean matchOrExpression(OrExpression expression, T item) {
         for (UnaryExpression clause : expression.getClauses()) {
@@ -94,7 +130,7 @@ public abstract class Filter<T> {
 
     private boolean matchComparison(Comparison comparison, T item) {
         if (comparison.comparator == null) {
-            return matchesLiteral(item, comparison.comparable.toLowerCase());
+            return matchesLiteral(item, comparison.comparable);
         }
 
         var stringResolver = parser.getStringResolver(comparison.comparable);
