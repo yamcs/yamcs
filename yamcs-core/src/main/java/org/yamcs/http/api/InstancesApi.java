@@ -341,19 +341,19 @@ public class InstancesApi extends AbstractInstancesApi<Context> {
         } else if (pr.comparable.startsWith("label.")) {
             String labelKey = pr.comparable.substring(6);
             return ysi -> {
-                Map<String, ?> labels = ysi.getLabels();
+                var labels = ysi.getLabels();
                 if (labels == null) {
                     return false;
                 }
-                Object o = labels.get(labelKey);
-                if (o == null) {
+                var v = labels.get(labelKey);
+                if (v == null) {
                     return false;
                 }
                 switch (pr.comparator) {
                 case EQUAL_TO:
-                    return pr.value.equals(o);
+                    return pr.value.equalsIgnoreCase(v);
                 case NOT_EQUAL_TO:
-                    return !pr.value.equals(o);
+                    return !pr.value.equalsIgnoreCase(v);
                 default:
                     throw new IllegalStateException("Unknown operator " + pr.comparator);
                 }

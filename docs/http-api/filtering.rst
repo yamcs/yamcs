@@ -140,7 +140,7 @@ The following operators can be used in string field comparisons.
      - foo !~ "bat$"
      - The field `foo` does not end with the substring `bat`
 
-The operators `=~` and `!~` allow to match the field against the provide regular expression. The match is unanchored, so use the prefix `^` and the suffix `$` if you want to match the full field value.
+The operators `=~` and `!~` allow to match the field against the provided regular expression. The match is unanchored, so use the prefix `^` and the suffix `$` when you want to match the full field value.
 
 Regular expressions are case-sensitive. To enable case-insensitive matching, you can use an embedded flag expression:
 
@@ -161,7 +161,7 @@ The following operators can be used in number field comparisons:
 
    * - =
      - foo = 123.45
-     - The field `foo` equals `wombat`
+     - The field `foo` equals `123.45`
    * - !=
      - foo != 123.45
      - The field `foo` does not equal `123.45`

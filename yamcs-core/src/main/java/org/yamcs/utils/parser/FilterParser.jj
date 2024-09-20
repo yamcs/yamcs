@@ -26,8 +26,16 @@ public class FilterParser<T> {
 
     private static final HexFormat HEX = HexFormat.of();
 
+    // All available fields (lowercase)
     private Set<String> fields = new HashSet<String>();
 
+    // Fields that are part of the actual query (lowercase)
+    private Set<String> queryFields = new HashSet<String>();
+
+    // True if the query includes at least one text comparison
+    private boolean includesTextSearch;
+
+    // Resolvers by lowercase field
     private Map<String, BiFunction<T, String, String>> prefixResolvers = new HashMap<String, BiFunction<T, String, String>>();
     private Map<String, Function<T, String>> stringResolvers = new HashMap<String, Function<T, String>>();
     private Map<String, Function<T, Number>> numberResolvers = new HashMap<String, Function<T, Number>>();
@@ -35,37 +43,52 @@ public class FilterParser<T> {
     private Map<String, Function<T, byte[]>> binaryResolvers = new HashMap<String, Function<T, byte[]>>();
     private Map<String, Function<T, ? extends Enum<?>>> enumResolvers = new HashMap<String, Function<T, ? extends Enum<?>>>();
 
+    // Enum class by lowercase field
     private Map<String, Class<? extends Enum<?>>> enumClassByField = new HashMap<String, Class<? extends Enum<?>>>();
 
+    public boolean isQueryField(String field) {
+        return queryFields.contains(field.toLowerCase());
+    }
+
+    public boolean includesTextSearch() {
+       return includesTextSearch;
+    }
+
     public void addPrefixField(String field, BiFunction<T, String, String> resolver) {
-        fields.add(field);
-        prefixResolvers.put(field, resolver);
+        String lcField = field.toLowerCase();
+        fields.add(lcField);
+        prefixResolvers.put(lcField, resolver);
     }
 
     public void addStringField(String field, Function<T, String> resolver) {
-        fields.add(field);
-        stringResolvers.put(field, resolver);
+        String lcField = field.toLowerCase();
+        fields.add(lcField);
+        stringResolvers.put(lcField, resolver);
     }
 
     public <E extends Enum<?>> void addEnumField(String field, Class<E> enumClass, Function<T, E> resolver) {
-        fields.add(field);
-        enumResolvers.put(field, resolver);
-        enumClassByField.put(field, enumClass);
+        String lcField = field.toLowerCase();
+        fields.add(lcField);
+        enumResolvers.put(lcField, resolver);
+        enumClassByField.put(lcField, enumClass);
     }
 
     public void addNumberField(String field, Function<T, Number> resolver) {
-        fields.add(field);
-        numberResolvers.put(field, resolver);
+        String lcField = field.toLowerCase();
+        fields.add(lcField);
+        numberResolvers.put(lcField, resolver);
     }
 
     public void addBooleanField(String field, Function<T, Boolean> resolver) {
-        fields.add(field);
-        booleanResolvers.put(field, resolver);
+        String lcField = field.toLowerCase();
+        fields.add(lcField);
+        booleanResolvers.put(lcField, resolver);
     }
 
     public void addBinaryField(String field, Function<T, byte[]> resolver) {
-        fields.add(field);
-        binaryResolvers.put(field, resolver);
+        String lcField = field.toLowerCase();
+        fields.add(lcField);
+        binaryResolvers.put(lcField, resolver);
     }
 
     public BiFunction<T, String, String> getPrefixResolver(String field) {
@@ -230,28 +253,32 @@ Comparison comparison() :
     comparatorToken = token;
   }
   [<WS>] value = term() ] {
-    if (comparator != null) {
-        if (!fields.contains(comparable)) {
+    String lcComparable = comparable.toLowerCase();
+    if (comparator == null) {
+        includesTextSearch = true;
+    } else {
+        queryFields.add(lcComparable);
+        if (!fields.contains(lcComparable)) {
             boolean prefixMatch = false;
             for (String prefix : prefixResolvers.keySet()) {
-                if (comparable.startsWith(prefix)) {
+                if (lcComparable.startsWith(prefix)) {
                     prefixMatch = true;
                     break;
                 }
             }
             if (!prefixMatch) {
-                throw new UnknownFieldException(comparable, comparableToken, tokenImage);
+                throw new UnknownFieldException(lcComparable, comparableToken, tokenImage);
             }
         }
 
-        Class<? extends Enum<?>> enumClass = enumClassByField.get(comparable);
+        Class<? extends Enum<?>> enumClass = enumClassByField.get(lcComparable);
         if (enumClass != null) {
             if (!value.equalsIgnoreCase("null") && findEnum(enumClass, value) == null) {
                 throw new IncorrectTypeException(value, token, tokenImage);
             }
         }
 
-        if (binaryResolvers.containsKey(comparable)) {
+        if (binaryResolvers.containsKey(lcComparable)) {
             if (!value.equalsIgnoreCase("null")) {
                 try {
                     binary = HEX.parseHex(value);
@@ -270,7 +297,7 @@ Comparison comparison() :
         }
     }
 
-    return new Comparison(comparable, comparator, value, pattern, binary);
+    return new Comparison(lcComparable, comparator, value, pattern, binary);
   }
 }
 
