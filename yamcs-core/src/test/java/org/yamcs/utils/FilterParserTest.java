@@ -219,7 +219,7 @@ public class FilterParserTest {
     }
 
     @Test
-    public void testGlobalRestriction() throws ParseException {
+    public void testTextSearch() throws ParseException {
         var filter = new ItemFilter("wombat");
         assertEquals(asList(c), filterItems(filter));
 
@@ -292,6 +292,30 @@ public class FilterParserTest {
     @Test
     public void testHas() throws ParseException {
         var filter = new ItemFilter("name:wom");
+        assertEquals(asList(c), filterItems(filter));
+    }
+
+    @Test
+    public void testCaseInsensitiveFields() throws ParseException {
+        var filter = new ItemFilter("name:wom");
+        assertEquals(asList(c), filterItems(filter));
+
+        filter = new ItemFilter("nAme:wom");
+        assertEquals(asList(c), filterItems(filter));
+
+        filter = new ItemFilter("NAME:wom");
+        assertEquals(asList(c), filterItems(filter));
+    }
+
+    @Test
+    public void testCaseInsensitiveMatching() throws ParseException {
+        var filter = new ItemFilter("name:wom");
+        assertEquals(asList(c), filterItems(filter));
+
+        filter = new ItemFilter("name:wOm");
+        assertEquals(asList(c), filterItems(filter));
+
+        filter = new ItemFilter("wOmBat");
         assertEquals(asList(c), filterItems(filter));
     }
 

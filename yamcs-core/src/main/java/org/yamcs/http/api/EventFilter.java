@@ -13,14 +13,48 @@ import org.yamcs.yarch.protobuf.Db;
 
 public class EventFilter extends Filter<Tuple> {
 
+    private static final String FIELD_SEVERITY = "severity";
+    private static final String FIELD_MESSAGE = "message";
+    private static final String FIELD_SOURCE = "source";
+    private static final String FIELD_TYPE = "type";
+    private static final String FIELD_SEQ_NUMBER = "seqNumber";
+
+    private String lcMessage;
+    private String lcSource;
+    private String lcType;
+
     public EventFilter(String query) throws ParseException, UnknownFieldException {
         super(query);
-        addEnumField("severity", EventSeverity.class, this::getSeverity);
-        addStringField("message", this::getMessage);
-        addStringField("source", this::getSource);
-        addStringField("type", this::getType);
-        addNumberField("seqNumber", this::getSequenceNumber);
+        addEnumField(FIELD_SEVERITY, EventSeverity.class, this::getSeverity);
+        addStringField(FIELD_MESSAGE, this::getMessage);
+        addStringField(FIELD_SOURCE, this::getSource);
+        addStringField(FIELD_TYPE, this::getType);
+        addNumberField(FIELD_SEQ_NUMBER, this::getSequenceNumber);
         parse();
+    }
+
+    @Override
+    public void beforeItem(Tuple tuple) {
+        // Preload lowercase variants to boost non-field text search
+        // with multiple terms
+
+        // Reset previous state
+        lcMessage = null;
+        lcSource = null;
+        lcType = null;
+
+        if (includesTextSearch()) {
+            var event = (Db.Event) tuple.getColumn(BODY_COLUMN);
+            if (event.hasMessage()) {
+                lcMessage = event.getMessage().toLowerCase();
+            }
+            if (event.hasSource()) {
+                lcSource = event.getSource().toLowerCase();
+            }
+            if (event.hasType()) {
+                lcType = event.getType().toLowerCase();
+            }
+        }
     }
 
     private String getMessage(Tuple tuple) {
@@ -47,20 +81,9 @@ public class EventFilter extends Filter<Tuple> {
     }
 
     @Override
-    protected boolean matchesLiteral(Tuple tuple, String literal) {
-        var event = (Db.Event) tuple.getColumn(BODY_COLUMN);
-        if (event.getMessage().toLowerCase().contains(literal)) {
-            return true;
-        }
-
-        if (event.getSource().toLowerCase().contains(literal)) {
-            return true;
-        }
-
-        if (event.getType().toLowerCase().contains(literal)) {
-            return false;
-        }
-
-        return false;
+    protected boolean matchesLiteral(Tuple tuple, String lowercaseLiteral) {
+        return (lcMessage != null && lcMessage.contains(lowercaseLiteral))
+                || (lcSource != null && lcSource.contains(lowercaseLiteral))
+                || (lcType != null && lcType.contains(lowercaseLiteral));
     }
 }

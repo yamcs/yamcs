@@ -130,41 +130,37 @@ public class EventsApi extends AbstractEventsApi<Context> {
                 ? EventFilterFactory.create(request.getFilter())
                 : null;
 
-        if (request.getDryRun()) {
-            observer.complete(ListEventsResponse.getDefaultInstance());
-        } else {
-            var responseb = ListEventsResponse.newBuilder();
-            StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
+        var responseb = ListEventsResponse.newBuilder();
+        StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
 
-                Db.Event last;
-                int count;
+            Db.Event last;
+            int count;
 
-                @Override
-                public void onTuple(Stream stream, Tuple tuple) {
-                    if (filter != null && !filter.matches(tuple)) {
-                        return;
-                    }
-
-                    if (++count <= limit) {
-                        Db.Event incoming = (Db.Event) tuple.getColumn("body");
-                        var event = fromDbEvent(incoming);
-                        responseb.addEvents(event);
-                        responseb.addEvent(event);
-                        last = incoming;
-                    }
+            @Override
+            public void onTuple(Stream stream, Tuple tuple) {
+                if (filter != null && !filter.matches(tuple)) {
+                    return;
                 }
 
-                @Override
-                public void streamClosed(Stream stream) {
-                    if (count > limit) {
-                        var token = new EventPageToken(last.getGenerationTime(), last.getSource(),
-                                last.getSeqNumber());
-                        responseb.setContinuationToken(token.encodeAsString());
-                    }
-                    observer.complete(responseb.build());
+                if (++count <= limit) {
+                    Db.Event incoming = (Db.Event) tuple.getColumn("body");
+                    var event = fromDbEvent(incoming);
+                    responseb.addEvents(event);
+                    responseb.addEvent(event);
+                    last = incoming;
                 }
-            });
-        }
+            }
+
+            @Override
+            public void streamClosed(Stream stream) {
+                if (count > limit) {
+                    var token = new EventPageToken(last.getGenerationTime(), last.getSource(),
+                            last.getSeqNumber());
+                    responseb.setContinuationToken(token.encodeAsString());
+                }
+                observer.complete(responseb.build());
+            }
+        });
     }
 
     @Override

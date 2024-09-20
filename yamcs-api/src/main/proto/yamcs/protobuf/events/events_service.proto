@@ -131,13 +131,6 @@ message ListEventsRequest {
   //       - string
   //       -
   optional string filter = 11;
-
-  // If true, no events are returned. This option is currently used by
-  // yamcs-web to test the compilation of filter queries without hitting the
-  // Yamcs DB.
-  //
-  // Default: false
-  optional bool dryRun = 12;
 }
 
 message ListEventsResponse {
