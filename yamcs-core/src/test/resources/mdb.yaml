@@ -99,5 +99,9 @@ xtce-refsolver:
       args:
           file: "src/test/resources/xtce/refsolver3.xml"
           
+container-entry:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/container-entry.xml"   
                  
           
