@@ -489,9 +489,6 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         values.clear();
         page.iterator().forEachRemaining(values::add);
 
-        for (var v : values) {
-            System.out.println("v: " + Timestamps.toString(v.getGenerationTime()));
-        }
         assertEquals(16, values.size());
         pv0 = values.get(0);
         pv1 = values.get(1);
