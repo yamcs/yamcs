@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem name="ce" xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+	<Header validationStatus="unittest" version="1.0" date="2020-07-01T16:48:10Z" />
+	<TelemetryMetaData>
+	<ParameterTypeSet>
+		<IntegerParameterType name="uint8" signed="false">
+			<IntegerDataEncoding sizeInBits="8"/>
+		</IntegerParameterType>
+	</ParameterTypeSet>
+	<ParameterSet>
+		<Parameter parameterTypeRef="uint8" name="p1"/>
+		<Parameter parameterTypeRef="uint8" name="p2"/>		
+	</ParameterSet>
+	<ContainerSet>
+		<SequenceContainer name="sc1">
+			<EntryList>
+				<ParameterRefEntry parameterRef="p1"/>
+			</EntryList>
+		</SequenceContainer>
+		<SequenceContainer name="sc2">
+			<EntryList>
+				<ContainerRefEntry containerRef="sc1"/>
+				<ParameterRefEntry parameterRef="p2"/>
+			</EntryList>
+		</SequenceContainer>		
+	</ContainerSet>
+	</TelemetryMetaData>
+</SpaceSystem>

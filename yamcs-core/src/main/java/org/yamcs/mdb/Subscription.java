@@ -75,8 +75,8 @@ public class Subscription {
     }
 
     /**
-     * Called in the cases when seq is part of other containers through aggregation.
-     * The parent container will need to know the size of this one so we add all entries of seq.
+     * Called in the cases when seq is part of other containers through aggregation. The parent container will need to
+     * know the size of this one so we add all entries of seq.
      * 
      * @param seq
      */
@@ -99,12 +99,12 @@ public class Subscription {
     }
 
     public void addSequenceEntry(SequenceEntry se) {
-        addSequenceContainer(se.getSequenceContainer());
 
-        SubscribedContainer subscr = containers.get(se.getSequenceContainer());
+        SubscribedContainer subscr = addSequenceContainer(se.getSequenceContainer());
         subscr.addEntry(se);
 
         SequenceContainer sctmp = se.getSequenceContainer();
+
         // if this entry's location is relative to the previous one, then we have to add also that one in the list
         if (se.getReferenceLocation() == SequenceEntry.ReferenceLocationType.PREVIOUS_ENTRY) {
             if (se.getIndex() > 0) {
@@ -114,24 +114,27 @@ public class Subscription {
                 do {
                     sctmp = sctmp.getBaseContainer();
                 } while (sctmp != null && sctmp.getEntryList().size() == 0);
-
                 if (sctmp != null) {
                     addSequenceEntry(sctmp.getEntryList().get(sctmp.getEntryList().size() - 1));
                 }
             }
         }
-        if ((se.getRepeatEntry() != null) && (se.getRepeatEntry().getCount() instanceof DynamicIntegerValue)) {
-            addParameter(((DynamicIntegerValue) se.getRepeatEntry().getCount())
-                    .getParameterInstanceRef().getParameter());
+
+        if ((se.getRepeatEntry() != null) && (se.getRepeatEntry().getCount() instanceof DynamicIntegerValue div)) {
+            addParameter(div.getParameterInstanceRef().getParameter());
         }
-        if (se instanceof ArrayParameterEntry) {
-            ArrayParameterEntry ape = (ArrayParameterEntry) se;
+
+        if (se instanceof ArrayParameterEntry ape) {
             for (IntegerValue iv : ape.getSize()) {
                 if (iv instanceof DynamicIntegerValue) {
                     addParameter(((DynamicIntegerValue) iv).getParameterInstanceRef().getParameter());
                 }
             }
         }
+        if (se instanceof ContainerEntry ce) {
+            addSequenceContainer(ce.getRefContainer());
+        }
+
     }
 
     /**
