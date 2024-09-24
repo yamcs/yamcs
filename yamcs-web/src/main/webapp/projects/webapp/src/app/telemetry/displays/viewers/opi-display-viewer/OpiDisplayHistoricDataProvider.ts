@@ -1,5 +1,5 @@
 import { HistoricalDataProvider, NullablePoint, Widget } from '@yamcs/opi';
-import { BackfillingSubscription, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { BackfillingSubscription, ConfigService, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 import { DyDataSource } from '../../../../shared/parameter-plot/DyDataSource';
 import { PlotData } from '../../../../shared/parameter-plot/PlotBuffer';
@@ -17,8 +17,9 @@ export class OpiDisplayHistoricDataProvider implements HistoricalDataProvider {
     widget: Widget,
     private yamcs: YamcsService,
     synchronizer: Synchronizer,
+    configService: ConfigService,
   ) {
-    this.dataSource = new DyDataSource(yamcs, synchronizer);
+    this.dataSource = new DyDataSource(yamcs, synchronizer, configService);
     this.dataSource.extendRequestedRange = false;
     this.dataSource.resolution = 400;
     this.dataSource.addParameter({ qualifiedName: pvName });

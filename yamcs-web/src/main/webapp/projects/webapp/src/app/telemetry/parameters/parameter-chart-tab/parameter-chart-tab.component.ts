@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, ViewChild, input } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BackfillingSubscription, Parameter, Synchronizer, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { BackfillingSubscription, ConfigService, Parameter, Synchronizer, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { DyDataSource } from '../../../shared/parameter-plot/DyDataSource';
 import { ParameterPlotComponent } from '../../../shared/parameter-plot/parameter-plot.component';
@@ -43,6 +43,7 @@ export class ParameterChartTabComponent implements OnInit, OnDestroy {
     readonly yamcs: YamcsService,
     private dialog: MatDialog,
     private synchronizer: Synchronizer,
+    private configService: ConfigService,
   ) { }
 
   ngOnInit() {
@@ -50,7 +51,7 @@ export class ParameterChartTabComponent implements OnInit, OnDestroy {
     this.initializeOptions();
 
     const qualifiedName = this.qualifiedName();
-    this.dataSource = new DyDataSource(this.yamcs, this.synchronizer);
+    this.dataSource = new DyDataSource(this.yamcs, this.synchronizer, this.configService);
     this.parameter$ = this.yamcs.yamcsClient.getParameter(this.yamcs.instance!, qualifiedName);
     this.parameter$.then(parameter => {
       // Override qualified name for possible array or aggregate offsets

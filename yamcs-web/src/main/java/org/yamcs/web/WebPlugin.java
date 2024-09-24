@@ -31,6 +31,7 @@ public class WebPlugin extends AbstractPlugin implements CommandOptionListener {
 
     public static final String CONFIG_DISPLAY_BUCKET = "displayBucket";
     public static final String CONFIG_STACK_BUCKET = "stackBucket";
+    public static final String CONFIG_PARAMETER_ARCHIVE = "parameterArchive";
 
     /**
      * Allows access to the Admin Area.

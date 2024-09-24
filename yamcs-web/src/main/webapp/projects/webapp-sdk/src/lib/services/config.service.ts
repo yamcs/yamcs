@@ -86,6 +86,10 @@ export class ConfigService {
     return this.instanceConfig.stackBucket;
   }
 
+  isParameterArchiveEnabled() {
+    return this.instanceConfig.parameterArchive;
+  }
+
   getTag() {
     return this.websiteConfig.tag;
   }

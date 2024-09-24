@@ -260,3 +260,22 @@ instanceOptions:
       - Bucket where to find stacks.
       - If unset, defaults to the stack bucket specified globally
     type: STRING
+
+  parameterArchive:
+    title: Make use of Parameter Archive
+    description:
+      - Controls whether the Parameter Archive is used. This is a secondary
+        storage structure optimized for parameter querying.
+      - When disabled, parameter history is retrieved by re-extracting stored
+        packets on the fly.
+      - The default value of ``auto`` will use the Parameter Archive, if it
+        is available for the instance.
+      - If ``tmArchive`` is false, this option has no effect.
+      - This option does not currently apply to CSV exports which always
+        do replays (shall be addressed in a future version of Yamcs).
+    type: STRING
+    default: auto
+    choices:
+      - enabled
+      - disabled
+      - auto

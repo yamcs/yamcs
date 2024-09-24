@@ -1,6 +1,7 @@
 package org.yamcs.web.api;
 
 import static org.yamcs.web.WebPlugin.CONFIG_DISPLAY_BUCKET;
+import static org.yamcs.web.WebPlugin.CONFIG_PARAMETER_ARCHIVE;
 import static org.yamcs.web.WebPlugin.CONFIG_STACK_BUCKET;
 
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import org.yamcs.http.Context;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.InstancesApi;
 import org.yamcs.http.api.StreamFactory;
+import org.yamcs.parameterarchive.ParameterArchive;
 import org.yamcs.web.WebPlugin;
 import org.yamcs.web.db.Query;
 import org.yamcs.web.db.QueryDb;
@@ -60,6 +62,20 @@ public class WebApi extends AbstractWebApi<Context> {
             stackBucket = instanceConfig.getString(CONFIG_STACK_BUCKET);
         }
         b.setStackBucket(stackBucket);
+
+        boolean parameterArchive;
+        switch (instanceConfig.getString(CONFIG_PARAMETER_ARCHIVE, "auto")) {
+        case "enabled":
+            parameterArchive = true;
+            break;
+        case "disabled":
+            parameterArchive = false;
+            break;
+        default:
+            var service = yamcsInstance.getServices(ParameterArchive.class).iterator().next();
+            parameterArchive = service != null && service.isRunning();
+        }
+        b.setParameterArchive(parameterArchive);
 
         observer.complete(b.build());
     }
