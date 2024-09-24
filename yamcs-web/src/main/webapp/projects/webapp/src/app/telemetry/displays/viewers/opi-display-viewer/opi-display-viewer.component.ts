@@ -296,7 +296,8 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
   createHistoricalDataProvider(pvName: string, widget: Widget) {
     const { yamcs, synchronizer } = this;
     if (this.configService.getConfig().tmArchive) {
-      return new OpiDisplayHistoricDataProvider(pvName, widget, yamcs, synchronizer);
+      return new OpiDisplayHistoricDataProvider(
+        pvName, widget, yamcs, synchronizer, this.configService);
     }
   }
 

@@ -1,4 +1,4 @@
-import { NamedObjectId, ParameterSubscription, ParameterValue, Sample, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ConfigService, NamedObjectId, ParameterSubscription, ParameterValue, Sample, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { NamedParameterType } from './NamedParameterType';
 import { DyValueRange, PlotBuffer, PlotData } from './PlotBuffer';
@@ -45,7 +45,11 @@ export class DyDataSource {
 
   private idMapping: { [key: number]: NamedObjectId; };
 
-  constructor(private yamcs: YamcsService, synchronizer: Synchronizer) {
+  constructor(
+    private yamcs: YamcsService,
+    synchronizer: Synchronizer,
+    private configService: ConfigService,
+  ) {
     this.syncSubscription = synchronizer.sync(() => {
       if (this.plotBuffer.dirty && !this.loading$.getValue()) {
         const plotData = this.plotBuffer.snapshot();
@@ -115,6 +119,8 @@ export class DyDataSource {
           count: this.resolution,
           fields: ['time', 'n', 'avg', 'min', 'max'],
           gapTime: 300000,
+          source: this.configService.isParameterArchiveEnabled()
+            ? 'ParameterArchive' : 'replay',
         })
       );
     }

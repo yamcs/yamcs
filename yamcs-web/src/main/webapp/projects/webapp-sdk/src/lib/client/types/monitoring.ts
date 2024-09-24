@@ -203,6 +203,7 @@ export interface GetParameterValuesOptions {
   limit?: number;
   norepeat?: boolean;
   format?: 'csv';
+  source?: 'ParameterArchive' | 'replay';
   order?: 'asc' | 'desc';
 }
 
@@ -236,6 +237,7 @@ export interface GetParameterSamplesOptions {
   stop?: string;
   count?: number;
   gapTime?: number;
+  source?: 'ParameterArchive' | 'replay';
   order?: 'asc' | 'desc';
   fields?: Array<keyof Sample>;
 }

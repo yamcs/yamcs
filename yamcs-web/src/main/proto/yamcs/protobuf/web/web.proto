@@ -76,6 +76,9 @@ message InstanceConfiguration {
 
   // Bucket where to find stacks
   optional string stackBucket = 2;
+
+  // If true, make use of the Parameter Archive
+  optional bool parameterArchive = 3;
 }
 
 message ListQueriesRequest {

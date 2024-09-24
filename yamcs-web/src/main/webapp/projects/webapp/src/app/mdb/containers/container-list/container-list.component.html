@@ -54,7 +54,10 @@
         </ng-container>
         <ng-container matColumnDef="restrictionCriteria">
           <th mat-header-cell *matHeaderCellDef>Restriction criteria</th>
-          <td mat-cell *matCellDef="let container" class="mono">
+          <td
+            mat-cell
+            *matCellDef="let container"
+            [class.mono]="!!container.restrictionCriteriaExpression">
             {{ container.restrictionCriteriaExpression || "-" }}
           </td>
         </ng-container>

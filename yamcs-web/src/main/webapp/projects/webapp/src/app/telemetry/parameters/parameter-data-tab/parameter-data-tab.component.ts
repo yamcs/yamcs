@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, input } from '@a
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GetParameterValuesOptions, MessageService, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ConfigService, GetParameterValuesOptions, MessageService, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AlarmLevelComponent } from '../../../shared/alarm-level/alarm-level.component';
 import { HexComponent } from '../../../shared/hex/hex.component';
@@ -61,6 +61,7 @@ export class ParameterDataTabComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private clipboard: Clipboard,
     private messageService: MessageService,
+    private configService: ConfigService,
   ) { }
 
   ngOnInit() {
@@ -145,7 +146,10 @@ export class ParameterDataTabComponent implements OnInit, OnDestroy {
    */
   loadData() {
     this.updateURL();
-    const options: GetParameterValuesOptions = {};
+    const options: GetParameterValuesOptions = {
+      source: this.configService.isParameterArchiveEnabled()
+        ? 'ParameterArchive' : 'replay',
+    };
     if (this.validStart) {
       // When descending, Yamcs does not include start bound, so make sure
       // the user's indicated start is included.
@@ -168,7 +172,10 @@ export class ParameterDataTabComponent implements OnInit, OnDestroy {
    * practical problems.
    */
   loadMoreData() {
-    const options: GetParameterValuesOptions = {};
+    const options: GetParameterValuesOptions = {
+      source: this.configService.isParameterArchiveEnabled()
+        ? 'ParameterArchive' : 'replay',
+    };
     if (this.validStart) {
       // When descending, Yamcs does not include start bound, so make sure
       // the user's indicated start is included.

@@ -24,6 +24,7 @@ export interface TokenResponse {
 export interface InstanceConfig {
   displayBucket: string;
   stackBucket: string;
+  parameterArchive: boolean;
 }
 
 export interface GeneralInfo {
