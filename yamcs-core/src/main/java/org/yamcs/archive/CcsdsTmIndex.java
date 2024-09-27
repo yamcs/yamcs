@@ -3,6 +3,7 @@ package org.yamcs.archive;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -305,6 +306,26 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
         } catch (RocksDBException e) {
             log.error("Error when deleting records from the ccsdstmindex", e);
         }
+    }
+
+    public static List<Short> getApids(CcsdsTmIndex ccsdsTmIndex) throws RocksDBException {
+        List<Short> apids = new ArrayList<>();
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(ccsdsTmIndex.getYamcsInstance());
+        Tablespace tablespace = RdbStorageEngine.getInstance().getTablespace(ydb);
+        try (RocksIterator cur = tablespace.getRdb().newIterator()) {
+            Record ar;
+            short apid = 0;
+            while (true) {
+                cur.seek(Record.key(ccsdsTmIndex.tbsIndex, apid, Long.MAX_VALUE, Short.MAX_VALUE));
+                ar = new Record(cur.key(), cur.value());
+                apid = ar.apid();
+                if (apid == Short.MAX_VALUE) {
+                    break;
+                }
+                apids.add(apid);
+            }
+        }
+        return apids;
     }
 
     class CcsdsIndexIteratorAdapter implements IndexIterator {
