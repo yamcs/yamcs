@@ -7,7 +7,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +28,7 @@ import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.MediaType;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.ProcessorData;
 import org.yamcs.mdb.XtceTmExtractor;
@@ -55,7 +55,6 @@ import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.mdb.Mdb;
 import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -122,11 +121,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadPacket, request.getNameList());
         Set<String> nameSet = new HashSet<>(request.getNameList());
         if (nameSet.isEmpty()) {
-            for (String packetName : getTmPacketNames(instance, ctx.user)) {
-                if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, packetName)) {
-                    nameSet.add(packetName);
-                }
-            }
+            nameSet.addAll(getTmPacketNames(instance, ctx.user));
         }
         if (nameSet.isEmpty()) {
             // No permissions for any packet
@@ -566,15 +561,15 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
     /**
      * Get packet names this user has appropriate privileges for.
      */
-    private Collection<String> getTmPacketNames(String yamcsInstance, User user) {
-        Mdb mdb = MdbFactory.getInstance(yamcsInstance);
-        ArrayList<String> tl = new ArrayList<>();
-        for (SequenceContainer sc : mdb.getSequenceContainers()) {
+    private Set<String> getTmPacketNames(String yamcsInstance, User user) {
+        var mdb = MdbFactory.getInstance(yamcsInstance);
+        var result = new HashSet<String>();
+        for (var sc : mdb.getSequenceContainers()) {
             if (user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, sc.getQualifiedName())) {
-                tl.add(sc.getQualifiedName());
+                result.add(sc.getQualifiedName());
             }
         }
-        return tl;
+        return result;
     }
 
     /**
