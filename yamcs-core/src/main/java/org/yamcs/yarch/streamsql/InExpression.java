@@ -45,7 +45,7 @@ public class InExpression extends Expression {
         Set<Object> values = new HashSet<Object>();
         for (int i = 1; i < children.length; i++) {
             Object cvalue;
-            if (children[1] instanceof ValueExpression) {
+            if (children[i].isConstant()) {
                 cvalue = children[i].getConstantValue();
             } else {
                 CompiledExpression compexpr = children[i].compile();
