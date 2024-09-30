@@ -2,7 +2,6 @@ package org.yamcs.tctm.pus.services.filetransfer.thirteen;
 
 import java.util.Objects;
 
-import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.filetransfer.FileTransferId;
 import org.yamcs.protobuf.TransferDirection;
 

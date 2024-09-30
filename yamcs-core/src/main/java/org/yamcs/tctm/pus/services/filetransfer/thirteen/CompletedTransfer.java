@@ -1,7 +1,5 @@
 package org.yamcs.tctm.pus.services.filetransfer.thirteen;
 
-import javax.xml.crypto.Data;
-
 import org.yamcs.YamcsServer;
 import org.yamcs.filetransfer.FileTransfer;
 import org.yamcs.logging.Log;
