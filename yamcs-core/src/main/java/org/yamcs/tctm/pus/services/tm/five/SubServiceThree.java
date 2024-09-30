@@ -10,6 +10,7 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.logging.Log;
+import org.yamcs.protobuf.Event.EventSeverity;
 import org.yamcs.tctm.pus.services.PusSubService;
 import org.yamcs.tctm.pus.services.tm.PusTmCcsdsPacket;
 import org.yamcs.tctm.pus.services.tm.five.ServiceFive.Endianess;
@@ -23,13 +24,13 @@ public class SubServiceThree implements PusSubService {
     Log log;
 
     EventProducer eventProducer;
-    static String source = "Service: 5 | SubService: 3";
+    static String source = "s(5,3) | Medium Severity Events";
 
     public SubServiceThree(String yamcsInstance, YConfiguration subServiceSixConfig) {
         this.yamcsInstance = yamcsInstance;
         log = new Log(getClass(), yamcsInstance);
 
-        eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, this.getClass().getSimpleName(), 10);
+        eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, this.getClass().getSimpleName(), 120000);
         eventProducer.setSource(source);
     }
 
@@ -99,7 +100,7 @@ public class SubServiceThree implements PusSubService {
         }
 
         eventDec += " is thrown";
-        eventProducer.sendDistress(ServiceOne.CcsdsApid.fromValue(apid).name(), eventDec);
+        eventProducer.sendEvent(EventSeverity.DISTRESS, ServiceOne.CcsdsApid.fromValue(apid).name(), eventDec, tmPacket.getGenerationTime());
 
         ArrayList<TmPacket> pPkts = new ArrayList<>();
         pPkts.add(tmPacket);

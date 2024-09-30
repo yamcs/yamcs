@@ -10,6 +10,8 @@ public interface EventProducer {
     public abstract void setSeqNo(int sn);
 
     public abstract void sendEvent(EventSeverity severity, String type, String msg);
+    
+    public abstract void sendEvent(EventSeverity severity, String type, String msg, long gentime);
 
     public abstract void sendEvent(Event event);
 
