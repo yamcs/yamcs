@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.yamcs.examples</groupId>
     <artifactId>examples</artifactId>
-    <version>5.10.1-Pixxel.SNAPSHOT-2.16.1</version>
+    <version>5.10.1-Pixxel.SNAPSHOT-3.0.0</version>
   </parent>
 
   <artifactId>ccsds-frames</artifactId>

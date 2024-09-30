@@ -12,6 +12,15 @@ export interface MissionDatabase {
   parameterTypeCount: number;
 }
 
+export interface MdbVersion {
+  subsystemName: string;
+  version: string;
+}
+
+export interface MissionDatabaseVersion {
+  mdbVersion: MdbVersion[];
+}
+
 export interface NameDescription {
   name: string;
   qualifiedName: string;

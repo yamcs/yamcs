@@ -76,16 +76,7 @@ public abstract class AbstractEventProducer implements EventProducer {
         return classname.substring(idx + 1);
     }
 
-    @Override
-    public void sendEvent(EventSeverity severity, String type, String msg) {
-        if (logAllMessages) {
-            log.debug("event: {}; {}; {}", severity, type, msg);
-        }
-        Event.Builder eventb = newEvent().setSeverity(severity).setMessage(msg);
-        if (type != null) {
-            eventb.setType(type);
-        }
-        Event e = eventb.build();
+    public void publishEvent(Event e) {
         if (!repeatedEventReduction) {
             sendEvent(e);
         } else {
@@ -115,6 +106,32 @@ public abstract class AbstractEventProducer implements EventProducer {
                 lastRepeat = null;
             }
         }
+    }
+
+    @Override
+    public void sendEvent(EventSeverity severity, String type, String msg) {
+        if (logAllMessages) {
+            log.debug("event: {}; {}; {}", severity, type, msg);
+        }
+
+        Event.Builder eventb = newEvent().setSeverity(severity).setMessage(msg);
+        if (type != null) {
+            eventb.setType(type);
+        }
+        publishEvent(eventb.build());
+    }
+
+    @Override
+    public void sendEvent(EventSeverity severity, String type, String msg, long gentime) {
+        if (logAllMessages) {
+            log.debug("event: {}; {}; {}", severity, type, msg);
+        }
+
+        Event.Builder eventb = newEvent().setSeverity(severity).setMessage(msg).setGenerationTime(gentime);
+        if (type != null) {
+            eventb.setType(type);
+        }
+        publishEvent(eventb.build());
     }
 
     /**

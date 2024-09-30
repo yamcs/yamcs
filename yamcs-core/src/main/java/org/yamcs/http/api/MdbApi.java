@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -38,6 +39,7 @@ import org.yamcs.protobuf.Mdb.AlgorithmInfo;
 import org.yamcs.protobuf.Mdb.BatchGetParametersRequest;
 import org.yamcs.protobuf.Mdb.BatchGetParametersResponse;
 import org.yamcs.protobuf.Mdb.BatchGetParametersResponse.GetParameterResponse;
+import org.yamcs.protobuf.Mdb.MissionDatabaseVersion.MdbVersion;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Mdb.ContainerInfo;
 import org.yamcs.protobuf.Mdb.CreateParameterRequest;
@@ -49,6 +51,7 @@ import org.yamcs.protobuf.Mdb.GetAlgorithmRequest;
 import org.yamcs.protobuf.Mdb.GetCommandRequest;
 import org.yamcs.protobuf.Mdb.GetContainerRequest;
 import org.yamcs.protobuf.Mdb.GetMissionDatabaseRequest;
+import org.yamcs.protobuf.Mdb.GetMissionDatabaseVersionRequest;
 import org.yamcs.protobuf.Mdb.GetParameterRequest;
 import org.yamcs.protobuf.Mdb.GetParameterTypeRequest;
 import org.yamcs.protobuf.Mdb.GetSpaceSystemRequest;
@@ -66,6 +69,7 @@ import org.yamcs.protobuf.Mdb.ListSpaceSystemsRequest;
 import org.yamcs.protobuf.Mdb.ListSpaceSystemsResponse;
 import org.yamcs.protobuf.Mdb.MissionDatabase;
 import org.yamcs.protobuf.Mdb.MissionDatabaseItem;
+import org.yamcs.protobuf.Mdb.MissionDatabaseVersion;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
 import org.yamcs.protobuf.Mdb.SpaceSystemInfo;
@@ -117,6 +121,24 @@ public class MdbApi extends AbstractMdbApi<Context> {
         Mdb mdb = MdbFactory.getInstance(instance);
         MissionDatabase converted = toMissionDatabase(instance, mdb);
         observer.complete(converted);
+    }
+
+    public void getMissionDatabaseVersion(Context ctx, GetMissionDatabaseVersionRequest request,
+            Observer<MissionDatabaseVersion> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabaseVersion);
+
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        Mdb mdb = MdbFactory.getInstance(instance);
+
+        MissionDatabaseVersion.Builder responseb = MissionDatabaseVersion.newBuilder();
+        for (Map.Entry<String, String> vm: mdb.getMdbVersion().entrySet()) {
+            MdbVersion response = MdbVersion.newBuilder()
+                                            .setSubsytemName(vm.getKey())
+                                            .setVersion(vm.getValue())
+                                            .build();
+            responseb.addMdbVersion(response);
+        }
+        observer.complete(responseb.build());
     }
 
     @Override

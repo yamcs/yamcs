@@ -67,6 +67,11 @@ public class SystemPrivilege {
     public static final SystemPrivilege GetMissionDatabase = new SystemPrivilege("GetMissionDatabase");
 
     /**
+     * Allows to read the entire Mission Database.
+     */
+    public static final SystemPrivilege GetMissionDatabaseVersion = new SystemPrivilege("GetMissionDatabaseVersion");
+
+    /**
      * Allows to read activity state
      */
     public static final SystemPrivilege ReadActivities = new SystemPrivilege("ReadActivities");

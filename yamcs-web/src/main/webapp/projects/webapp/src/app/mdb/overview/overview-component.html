@@ -6,7 +6,10 @@
       <dl class="dl-horizontal no-lead">
         <dt>Parameters:</dt>
         <dd>
-          <a class="ya-link" routerLink="/mdb/parameters" [queryParams]="{ c: yamcs.context }">{{
+          <a 
+            class="ya-link"
+            routerLink="/mdb/parameters"
+            [queryParams]="{ c: yamcs.context }">{{
             mdb.parameterCount
           }}</a>
         </dd>
@@ -37,6 +40,16 @@
             mdb.algorithmCount
           }}</a>
         </dd>
+      </dl>
+    }
+    @if (mdbV$ | async; as mdbV) {
+      <dl class="dl-horizontal no-lead">
+        <dt>MDb Version:</dt>
+        <dd>
+          <div *ngFor="let v of mdbV.mdbVersion">
+            <b>{{ v.subsytemName }}:</b> v{{ v.version }}
+          </div>
+        </dd> 
       </dl>
     }
   </div>
