@@ -66,6 +66,9 @@ public class StreamTmPacketProvider extends AbstractProcessorService implements 
 
         for (String streamName : streams) {
             TmStreamConfigEntry sce = streamConfig.getTmEntry(streamName);
+            if (sce == null)
+                throw new ConfigurationException("Cannot find TM stream configuration for '" + streamName + "'");
+
             SequenceContainer rootContainer;
             rootContainer = sce.getRootContainer();
             if (rootContainer == null) {
