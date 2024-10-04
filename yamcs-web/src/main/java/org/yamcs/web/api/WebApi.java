@@ -122,7 +122,7 @@ public class WebApi extends AbstractWebApi<Context> {
                 UUID.randomUUID(),
                 request.getResource(),
                 name,
-                request.getShared() ? ctx.user.getId() : null,
+                request.getShared() ? null : ctx.user.getId(),
                 request.getQuery());
 
         var db = QueryDb.getInstance(instance);
