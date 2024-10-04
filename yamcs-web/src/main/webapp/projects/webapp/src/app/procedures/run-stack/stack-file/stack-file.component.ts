@@ -124,7 +124,7 @@ export class StackFileComponent implements OnDestroy {
     formBuilder: FormBuilder
   ) {
     this.bucket = configService.getStackBucket();
-    this.folderPerInstance = config.displayFolderPerInstance;
+    this.folderPerInstance = configService.getConfig().displayFolderPerInstance;
     this.storageClient = yamcs.createStorageClient();
 
     this.extraAcknowledgments = yamcs.getProcessor()?.acknowledgments ?? [];

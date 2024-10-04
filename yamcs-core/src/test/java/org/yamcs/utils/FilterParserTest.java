@@ -1,11 +1,12 @@
 package org.yamcs.utils;
 
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.yamcs.utils.StringConverter.hexStringToArray;
 
 import java.util.ArrayList;
-import java.util.HexFormat;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -17,19 +18,17 @@ import org.yamcs.utils.parser.UnknownFieldException;
 
 public class FilterParserTest {
 
-    private static final HexFormat HEX = HexFormat.of();
-
-    private Item a = new Item("round horn", EventSeverity.INFO, false, 1, HEX.parseHex("aabb"));
-    private Item b = new Item("wacky hippo", EventSeverity.WATCH, true, 2, HEX.parseHex("bbcc"));
-    private Item c = new Item("icy wombat", EventSeverity.WARNING, true, 3, HEX.parseHex("ccdd"));
-    private Item d = new Item("lush ghost", EventSeverity.DISTRESS, false, 4, HEX.parseHex("ddee"));
-    private Item e = new Item("rich sea", EventSeverity.CRITICAL, false, 5, HEX.parseHex("eeff"));
-    private Item f = new Item("heavy lake", null, false, 6, HEX.parseHex("ff00"));
+    private Item a = new Item("round horn", EventSeverity.INFO, false, 1, hexStringToArray("aabb"));
+    private Item b = new Item("wacky hippo", EventSeverity.WATCH, true, 2, hexStringToArray("bbcc"));
+    private Item c = new Item("icy wombat", EventSeverity.WARNING, true, 3, hexStringToArray("ccdd"));
+    private Item d = new Item("lush ghost", EventSeverity.DISTRESS, false, 4, hexStringToArray("ddee"));
+    private Item e = new Item("rich sea", EventSeverity.CRITICAL, false, 5, hexStringToArray("eeff"));
+    private Item f = new Item("heavy lake", null, false, 6, hexStringToArray("ff00"));
 
     private List<Item> allItems = asList(a, b, c, d, e, f);
 
     private List<Item> filterItems(ItemFilter filter) {
-        return allItems.stream().filter(filter::matches).toList();
+        return allItems.stream().filter(filter::matches).collect(toList());
     }
 
     @Test
@@ -68,25 +67,25 @@ public class FilterParserTest {
         var extendedItems = new ArrayList<>(allItems);
         extendedItems.add(nullString);
         filter = new ItemFilter("name = null");
-        assertEquals(asList(nullString), extendedItems.stream().filter(filter::matches).toList());
+        assertEquals(asList(nullString), extendedItems.stream().filter(filter::matches).collect(toList()));
 
         var nullBoolean = new Item("swift gopher", EventSeverity.INFO, null, 1, null);
         extendedItems = new ArrayList<>(allItems);
         extendedItems.add(nullBoolean);
         filter = new ItemFilter("animal = null");
-        assertEquals(asList(nullBoolean), extendedItems.stream().filter(filter::matches).toList());
+        assertEquals(asList(nullBoolean), extendedItems.stream().filter(filter::matches).collect(toList()));
 
         var nullNumber = new Item("swift gopher", EventSeverity.INFO, true, null, null);
         extendedItems = new ArrayList<>(allItems);
         extendedItems.add(nullNumber);
         filter = new ItemFilter("order = null");
-        assertEquals(asList(nullNumber), extendedItems.stream().filter(filter::matches).toList());
+        assertEquals(asList(nullNumber), extendedItems.stream().filter(filter::matches).collect(toList()));
 
         var nullBinary = new Item("swift gopher", EventSeverity.INFO, true, 1, null);
         extendedItems = new ArrayList<>(allItems);
         extendedItems.add(nullBinary);
         filter = new ItemFilter("binary = null");
-        assertEquals(asList(nullBinary), extendedItems.stream().filter(filter::matches).toList());
+        assertEquals(asList(nullBinary), extendedItems.stream().filter(filter::matches).collect(toList()));
     }
 
     @Test
@@ -263,29 +262,17 @@ public class FilterParserTest {
 
     @Test
     public void testMultilineAndComments() throws ParseException {
-        var filter = new ItemFilter("""
-                -wombat
-                wombat
-                """);
+        var filter = new ItemFilter("-wombat\nwombat\n");
         assertEquals(asList(), filterItems(filter));
 
-        filter = new ItemFilter("""
-                ---wombat
-                wombat
-                """);
+        filter = new ItemFilter("---wombat\nwombat\n");
         assertEquals(asList(c), filterItems(filter));
 
-        filter = new ItemFilter("""
-                -wombat
-                --wombat
-                """);
+        filter = new ItemFilter("-wombat\n--wombat\n");
         assertEquals(asList(a, b, d, e, f), filterItems(filter));
 
         // Intentional EOF instead of newline, following final line comment
-        filter = new ItemFilter("""
-                --nothing
-                --but
-                --comments""");
+        filter = new ItemFilter("--nothing\n--but\n--comments");
         assertEquals(allItems, filterItems(filter));
     }
 
@@ -325,7 +312,21 @@ public class FilterParserTest {
         assertEquals(asList(c), filterItems(filter));
     }
 
-    public static record Item(String name, EventSeverity severity, Boolean animal, Integer order, byte[] binary) {
+    public static class Item {
+        String name;
+        EventSeverity severity;
+        Boolean animal;
+        Integer order;
+        byte[] binary;
+
+        Item(String name, EventSeverity severity, Boolean animal, Integer order, byte[] binary) {
+            this.name = name;
+            this.severity = severity;
+            this.animal = animal;
+            this.order = order;
+            this.binary = binary;
+        }
+
         @Override
         public String toString() {
             return name;
@@ -336,11 +337,11 @@ public class FilterParserTest {
 
         public ItemFilter(String query) throws ParseException {
             super(query);
-            addStringField("name", item -> item.name());
-            addEnumField("severity", EventSeverity.class, item -> item.severity());
-            addBooleanField("animal", item -> item.animal());
-            addNumberField("order", item -> item.order());
-            addBinaryField("binary", item -> item.binary());
+            addStringField("name", item -> item.name);
+            addEnumField("severity", EventSeverity.class, item -> item.severity);
+            addBooleanField("animal", item -> item.animal);
+            addNumberField("order", item -> item.order);
+            addBinaryField("binary", item -> item.binary);
             addPrefixField("label.", (item, field) -> {
                 if (field.equals("label.name")) {
                     return item.name;
@@ -353,7 +354,7 @@ public class FilterParserTest {
 
         @Override
         protected boolean matchesLiteral(Item item, String literal) {
-            return item.name().toLowerCase().contains(literal);
+            return item.name.toLowerCase().contains(literal);
         }
     }
 }

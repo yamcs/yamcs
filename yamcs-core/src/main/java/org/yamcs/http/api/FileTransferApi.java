@@ -419,8 +419,8 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
                 request.hasServiceName() ? request.getServiceName() : null);
 
         Action<FileActionIdentifier> action = null;
-        if (ftService instanceof FileActionProvider fileActionProvider) {
-            action = fileActionProvider.getFileAction(request.getAction());
+        if (ftService instanceof FileActionProvider) {
+            action = ((FileActionProvider) ftService).getFileAction(request.getAction());
         }
         if (action == null) {
             throw new BadRequestException("Unknown action '" + request.getAction() + "'");
@@ -492,8 +492,8 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
             tib.setRemoteEntity(findRemoteEntityInfo(service, transfer.getRemoteEntityId()));
         }
 
-        if (transfer instanceof CfdpFileTransfer cfdpTransfer) {
-            CfdpTransactionId txid = cfdpTransfer.getTransactionId();
+        if (transfer instanceof CfdpFileTransfer) {
+            CfdpTransactionId txid = ((CfdpFileTransfer) transfer).getTransactionId();
             if (txid != null) {// queued transfers do not have a transaction id
                 tib.setTransactionId(toTransactionId(txid));
             }

@@ -674,13 +674,14 @@ public class XtceStaxReader extends AbstractStaxReader {
                 readEncoding(spaceSystem, typeBuilder);
             } else if (isEndElementWithName(ELEM_ABSOLUTE_TIME_PARAMETER_TYPE)) {
                 if (typeBuilder.getReferenceTime() == null) {
-                    if (!(typeBuilder.getEncoding() instanceof BinaryDataEncoding.Builder bdb)
-                            || bdb.getFromBinaryTransformAlgorithm() == null) {
-                            throw new XMLStreamException(
-                                    "AbsoluteTimeParameterType without a reference time  not supported "
-                                            + "(except if it used a BinaryDataEncoding with an algorithm "
-                                            + "which could produce directly an absolute time)",
-                                    xmlEvent.getLocation());
+                    if (!(typeBuilder.getEncoding() instanceof BinaryDataEncoding.Builder)
+                            || ((BinaryDataEncoding.Builder) typeBuilder.getEncoding())
+                                    .getFromBinaryTransformAlgorithm() == null) {
+                        throw new XMLStreamException(
+                                "AbsoluteTimeParameterType without a reference time  not supported "
+                                        + "(except if it used a BinaryDataEncoding with an algorithm "
+                                        + "which could produce directly an absolute time)",
+                                xmlEvent.getLocation());
                     }
                 }
                 return incompleteType;

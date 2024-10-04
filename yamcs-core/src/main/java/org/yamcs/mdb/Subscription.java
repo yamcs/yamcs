@@ -120,19 +120,20 @@ public class Subscription {
             }
         }
 
-        if ((se.getRepeatEntry() != null) && (se.getRepeatEntry().getCount() instanceof DynamicIntegerValue div)) {
-            addParameter(div.getParameterInstanceRef().getParameter());
+        if ((se.getRepeatEntry() != null) && (se.getRepeatEntry().getCount() instanceof DynamicIntegerValue)) {
+            addParameter(
+                    ((DynamicIntegerValue) se.getRepeatEntry().getCount()).getParameterInstanceRef().getParameter());
         }
 
-        if (se instanceof ArrayParameterEntry ape) {
-            for (IntegerValue iv : ape.getSize()) {
+        if (se instanceof ArrayParameterEntry) {
+            for (IntegerValue iv : ((ArrayParameterEntry) se).getSize()) {
                 if (iv instanceof DynamicIntegerValue) {
                     addParameter(((DynamicIntegerValue) iv).getParameterInstanceRef().getParameter());
                 }
             }
         }
-        if (se instanceof ContainerEntry ce) {
-            addSequenceContainer(ce.getRefContainer());
+        if (se instanceof ContainerEntry) {
+            addSequenceContainer(((ContainerEntry) se).getRefContainer());
         }
 
     }
@@ -167,7 +168,7 @@ public class Subscription {
      * @return set of containers subscribed
      */
     public Collection<SequenceContainer> getContainers() {
-        Set<SequenceContainer> r = new HashSet<SequenceContainer>();
+        Set<SequenceContainer> r = new HashSet<>();
         r.addAll(containers.keySet());
         return r;
     }

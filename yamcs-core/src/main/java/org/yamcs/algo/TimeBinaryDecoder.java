@@ -37,16 +37,13 @@ public class TimeBinaryDecoder extends AbstractDataDecoder {
         this.ctx = ctx;
         TimeDecoderType type = yc.getEnum("type", TimeDecoderType.class, TimeDecoderType.CUC);
 
-        timeDecoder = switch (type) {
-        case CUC -> {
+        if (type == TimeDecoderType.CUC) {
             int implicitPField = yc.getInt("implicitPField", -1);
             int implicitPFieldCont = yc.getInt("implicitPFieldCont", -1);
-            yield new CucTimeDecoder(implicitPField, implicitPFieldCont);
-        }
-        default -> {
+            timeDecoder = new CucTimeDecoder(implicitPField, implicitPFieldCont);
+        } else {
             throw new UnsupportedOperationException("unknown time decoder type " + type);
         }
-        };
         timeEpoch = yc.getEnum("epoch", TimeEpochs.class, TimeEpochs.GPS);
         if (yc.containsKey("tcoService")) {
             String tcoServiceName = yc.getString("tcoService");
@@ -65,12 +62,7 @@ public class TimeBinaryDecoder extends AbstractDataDecoder {
 
     @Override
     public Value extractRaw(DataEncoding de, BitBuffer buf) {
-        var suppl = new ByteSupplier() {
-            @Override
-            public byte getAsByte() {
-                return buf.getByte();
-            }
-        };
+        var suppl = (ByteSupplier) () -> buf.getByte();
 
         long t;
         if (tcoService != null) {

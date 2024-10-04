@@ -237,43 +237,43 @@ public class XtceToGpbAssembler {
             throw new IllegalStateException("Unexpected reference location " + e);
         }
 
-        if (e instanceof ContainerEntry ce) {
+        if (e instanceof ContainerEntry) {
             if (detail == DetailLevel.SUMMARY) {
-                b.setContainer(toContainerInfo(ce.getRefContainer(), DetailLevel.LINK));
+                b.setContainer(toContainerInfo(((ContainerEntry) e).getRefContainer(), DetailLevel.LINK));
             } else if (detail == DetailLevel.FULL) {
-                b.setContainer(toContainerInfo(ce.getRefContainer(), DetailLevel.FULL));
+                b.setContainer(toContainerInfo(((ContainerEntry) e).getRefContainer(), DetailLevel.FULL));
             }
-        } else if (e instanceof ParameterEntry pe) {
+        } else if (e instanceof ParameterEntry) {
             if (detail == DetailLevel.SUMMARY) {
-                b.setParameter(toParameterInfo(pe.getParameter(), DetailLevel.LINK));
+                b.setParameter(toParameterInfo(((ParameterEntry) e).getParameter(), DetailLevel.LINK));
             } else if (detail == DetailLevel.FULL) {
-                b.setParameter(toParameterInfo(pe.getParameter(), DetailLevel.FULL));
+                b.setParameter(toParameterInfo(((ParameterEntry) e).getParameter(), DetailLevel.FULL));
             }
-        } else if (e instanceof ArrayParameterEntry ae) {
+        } else if (e instanceof ArrayParameterEntry) {
             if (detail == DetailLevel.SUMMARY) {
-                b.setParameter(toParameterInfo(ae.getParameter(), DetailLevel.LINK));
+                b.setParameter(toParameterInfo(((ArrayParameterEntry) e).getParameter(), DetailLevel.LINK));
             } else if (detail == DetailLevel.FULL) {
-                b.setParameter(toParameterInfo(ae.getParameter(), DetailLevel.FULL));
+                b.setParameter(toParameterInfo(((ArrayParameterEntry) e).getParameter(), DetailLevel.FULL));
             }
             // TODO map dimensions info
-        } else if (e instanceof ArgumentEntry ae) {
-            b.setArgument(toArgumentInfo(ae.getArgument()));
-        } else if (e instanceof FixedValueEntry fe) {
+        } else if (e instanceof ArgumentEntry) {
+            b.setArgument(toArgumentInfo(((ArgumentEntry) e).getArgument()));
+        } else if (e instanceof FixedValueEntry) {
             FixedValueInfo.Builder feb = FixedValueInfo.newBuilder();
-            if (fe.getName() != null) {
-                feb.setName(fe.getName());
+            if (((FixedValueEntry) e).getName() != null) {
+                feb.setName(((FixedValueEntry) e).getName());
             }
-            if (fe.getSizeInBits() != -1) {
-                feb.setSizeInBits(fe.getSizeInBits());
+            if (((FixedValueEntry) e).getSizeInBits() != -1) {
+                feb.setSizeInBits(((FixedValueEntry) e).getSizeInBits());
             }
-            feb.setHexValue(StringConverter.arrayToHexString(fe.getBinaryValue()));
+            feb.setHexValue(StringConverter.arrayToHexString(((FixedValueEntry) e).getBinaryValue()));
             b.setFixedValue(feb.build());
-        } else if (e instanceof IndirectParameterRefEntry ipe) {
+        } else if (e instanceof IndirectParameterRefEntry) {
             IndirectParameterRefInfo.Builder ipeb = IndirectParameterRefInfo.newBuilder();
-            if (ipe.getAliasNameSpace() != null) {
-                ipeb.setAliasNamespace(ipe.getAliasNameSpace());
+            if (((IndirectParameterRefEntry) e).getAliasNameSpace() != null) {
+                ipeb.setAliasNamespace(((IndirectParameterRefEntry) e).getAliasNameSpace());
             }
-            ipeb.setParameter(toParameterInfo(ipe.getParameterRef()));
+            ipeb.setParameter(toParameterInfo(((IndirectParameterRefEntry) e).getParameterRef()));
         } else {
             throw new IllegalStateException("Unexpected entry " + e);
         }

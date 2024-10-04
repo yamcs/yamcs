@@ -3,7 +3,6 @@ package org.yamcs.utils.parser;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,6 +11,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.parser.ast.*;
 
 /** Token Manager. */

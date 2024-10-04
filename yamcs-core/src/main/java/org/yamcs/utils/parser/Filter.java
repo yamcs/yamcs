@@ -350,18 +350,18 @@ public abstract class Filter<T> {
             return 1;
         }
 
-        if (fieldValue instanceof Integer i) {
-            return Double.compare(i, comparand);
-        } else if (fieldValue instanceof Long l) {
-            return Double.compare(l, comparand);
-        } else if (fieldValue instanceof Double d) {
-            return Double.compare(d, comparand);
-        } else if (fieldValue instanceof Float f) {
-            return Double.compare(f, comparand);
-        } else if (fieldValue instanceof Short s) {
-            return Double.compare(s, comparand);
-        } else if (fieldValue instanceof Byte b) {
-            return Double.compare(b, comparand);
+        if (fieldValue instanceof Integer) {
+            return Double.compare((Integer) fieldValue, comparand);
+        } else if (fieldValue instanceof Long) {
+            return Double.compare((Long) fieldValue, comparand);
+        } else if (fieldValue instanceof Double) {
+            return Double.compare((Double) fieldValue, comparand);
+        } else if (fieldValue instanceof Float) {
+            return Double.compare((Float) fieldValue, comparand);
+        } else if (fieldValue instanceof Short) {
+            return Double.compare((Short) fieldValue, comparand);
+        } else if (fieldValue instanceof Byte) {
+            return Double.compare((Byte) fieldValue, comparand);
         } else {
             throw new IllegalArgumentException("Unexpected number class");
         }

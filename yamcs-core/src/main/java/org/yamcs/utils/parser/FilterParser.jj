@@ -10,7 +10,6 @@ package org.yamcs.utils.parser;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,12 +18,11 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.parser.ast.*;
 
 @SuppressWarnings({"serial", "unused"})
 public class FilterParser<T> {
-
-    private static final HexFormat HEX = HexFormat.of();
 
     // All available fields (lowercase)
     private Set<String> fields = new HashSet<String>();
@@ -281,7 +279,7 @@ Comparison comparison() :
         if (binaryResolvers.containsKey(lcComparable)) {
             if (!value.equalsIgnoreCase("null")) {
                 try {
-                    binary = HEX.parseHex(value);
+                    binary = StringConverter.hexStringToArray(value);
                 } catch (NumberFormatException e) {
                     throw new IncorrectTypeException(value, token, tokenImage);    
                 }

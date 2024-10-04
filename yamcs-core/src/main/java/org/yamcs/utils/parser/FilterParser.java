@@ -4,7 +4,6 @@ package org.yamcs.utils.parser;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,12 +12,11 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.parser.ast.*;
 
 @SuppressWarnings({"serial", "unused"})
 public class FilterParser<T> implements FilterParserConstants {
-
-    private static final HexFormat HEX = HexFormat.of();
 
     // All available fields (lowercase)
     private Set<String> fields = new HashSet<String>();
@@ -359,7 +357,7 @@ public class FilterParser<T> implements FilterParserConstants {
         if (binaryResolvers.containsKey(lcComparable)) {
             if (!value.equalsIgnoreCase("null")) {
                 try {
-                    binary = HEX.parseHex(value);
+                    binary = StringConverter.hexStringToArray(value);
                 } catch (NumberFormatException e) {
                     {if (true) throw new IncorrectTypeException(value, token, tokenImage);}
                 }
@@ -486,6 +484,16 @@ public class FilterParser<T> implements FilterParserConstants {
     finally { jj_save(5, xla); }
   }
 
+  private boolean jj_3R_22() {
+    if (jj_scan_token(MINUS)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_21() {
+    if (jj_scan_token(NOT)) return true;
+    return false;
+  }
+
   private boolean jj_3R_18() {
     if (jj_scan_token(RE_NOT_EQUAL_TO)) return true;
     return false;
@@ -542,13 +550,13 @@ public class FilterParser<T> implements FilterParserConstants {
     return false;
   }
 
-  private boolean jj_3R_13() {
-    if (jj_scan_token(GREATER_THAN)) return true;
+  private boolean jj_3R_3() {
+    if (jj_scan_token(AND)) return true;
     return false;
   }
 
-  private boolean jj_3R_3() {
-    if (jj_scan_token(AND)) return true;
+  private boolean jj_3R_13() {
+    if (jj_scan_token(GREATER_THAN)) return true;
     return false;
   }
 
@@ -681,16 +689,6 @@ public class FilterParser<T> implements FilterParserConstants {
 
   private boolean jj_3R_23() {
     if (jj_scan_token(LPAREN)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_22() {
-    if (jj_scan_token(MINUS)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_21() {
-    if (jj_scan_token(NOT)) return true;
     return false;
   }
 

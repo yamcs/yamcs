@@ -490,12 +490,12 @@ public class ArchiveClient {
             requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
         }
         for (var option : options) {
-            if (option instanceof ListOptions.FilterOption o) {
-                requestb.setFilter(o.filter);
-            } else if (option instanceof ListOptions.AscendingOption o) {
-                requestb.setOrder(o.ascending ? "asc" : "desc");
-            } else if (option instanceof ListOptions.LimitOption o) {
-                requestb.setLimit(o.limit);
+            if (option instanceof ListOptions.FilterOption) {
+                requestb.setFilter(((ListOptions.FilterOption) option).filter);
+            } else if (option instanceof ListOptions.AscendingOption) {
+                requestb.setOrder(((ListOptions.AscendingOption) option).ascending ? "asc" : "desc");
+            } else if (option instanceof ListOptions.LimitOption) {
+                requestb.setLimit(((ListOptions.LimitOption) option).limit);
             } else {
                 throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }
@@ -514,12 +514,12 @@ public class ArchiveClient {
             requestb.setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
         }
         for (StreamOption option : options) {
-            if (option instanceof StreamOptions.EventSourceOption o) {
-                for (String source : o.eventSources) {
+            if (option instanceof StreamOptions.EventSourceOption) {
+                for (String source : ((StreamOptions.EventSourceOption) option).eventSources) {
                     requestb.addSource(source);
                 }
-            } else if (option instanceof StreamOptions.FilterOption o) {
-                requestb.setFilter(o.filter);
+            } else if (option instanceof StreamOptions.FilterOption) {
+                requestb.setFilter(((StreamOptions.FilterOption) option).filter);
             } else {
                 throw new IllegalArgumentException("Unsupported option " + option.getClass());
             }

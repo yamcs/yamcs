@@ -573,7 +573,7 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
                     return state != TransferState.COMPLETED && state != TransferState.FAILED;
                 });
 
-                var stringStates = queryStates.stream().map(TransferState::name).toList();
+                var stringStates = queryStates.stream().map(TransferState::name).collect(Collectors.toList());
                 sqlb.whereColIn(COL_TRANSFER_STATE, stringStates);
 
             }
@@ -582,21 +582,21 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
             }
             if (filter.localEntityId != null) {
                 // The 1=1 clause is a trick because Yarch is being difficult about multiple lparens
-                sqlb.where("""
-                        (1=1 and
-                          (direction = 'UPLOAD' and sourceId = ?) or
-                          (direction = 'DOWNLOAD' and destinationId = ?)
-                        )
-                        """, filter.localEntityId, filter.localEntityId);
+                sqlb.where(
+                        "(1=1 and" +
+                                "  (direction = 'UPLOAD' and sourceId = ?) or" +
+                                "  (direction = 'DOWNLOAD' and destinationId = ?)" +
+                                ")",
+                        filter.localEntityId, filter.localEntityId);
             }
             if (filter.remoteEntityId != null) {
                 // The 1=1 clause is a trick because Yarch is being difficult about multiple lparens
-                sqlb.where("""
-                        (1=1 and
-                          (direction = 'UPLOAD' and destinationId = ?) or
-                          (direction = 'DOWNLOAD' and sourceId = ?)
-                        )
-                        """, filter.remoteEntityId, filter.remoteEntityId);
+                sqlb.where(
+                        "(1=1 and" +
+                                "  (direction = 'UPLOAD' and destinationId = ?) or" +
+                                "  (direction = 'DOWNLOAD' and sourceId = ?)" +
+                                ")",
+                        filter.remoteEntityId, filter.remoteEntityId);
             }
 
             sqlb.descend(filter.descending);
