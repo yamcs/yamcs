@@ -93,6 +93,7 @@ service IndexesApi {
   // Rebuild CCSDS TM Index
   rpc RebuildCcsdsIndex(RebuildCcsdsIndexRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
+      label: "Rebuild CCSDS Index"
       post: "/api/archive/{instance}:rebuildCcsdsIndex"
       body: "*"
     };

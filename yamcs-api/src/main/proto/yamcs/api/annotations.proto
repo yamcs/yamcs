@@ -11,7 +11,7 @@ option java_package = "org.yamcs.api";
 extend google.protobuf.ServiceOptions {
   // Short, human-friendly label describing this service.
   // This is a hint to programs that process proto
-  // definitions, such as for document generation.
+  // definitions (example: document generation).
   //
   // Example:
   //
@@ -74,6 +74,11 @@ message HttpRoute {
 
   // Human-friendly log message format.
   optional string log = 12;
+
+  // Optional method label. This is a hint to programs that process
+  // proto definitions (example: document generation), intended for
+  // when the camel-case method name does not give a good result.
+  optional string label = 13;
 }
 
 message WebSocketTopic {
@@ -82,6 +87,11 @@ message WebSocketTopic {
   optional bool deprecated = 2;
   
   repeated WebSocketTopic additional_bindings = 3;
+
+  // Optional method label. This is a hint to programs that process
+  // proto definitions (example: document generation), intended for
+  // when the camel-case method name does not give a good result.
+  optional string label = 4;
 }
 
 enum FieldBehavior {

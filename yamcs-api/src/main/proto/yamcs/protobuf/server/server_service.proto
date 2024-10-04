@@ -75,6 +75,7 @@ service ServerApi {
   // Get HTTP traffic
   rpc GetHttpTraffic(google.protobuf.Empty) returns (HttpTraffic) {
     option (yamcs.api.route) = {
+      label: "Get HTTP Traffic"
       get: "/api/http-traffic"
     };
   }
@@ -82,6 +83,7 @@ service ServerApi {
   // Receive HTTP traffic updates
   rpc SubscribeHttpTraffic(google.protobuf.Empty) returns (stream HttpTraffic) {
     option (yamcs.api.websocket) = {
+      label: "Subscribe HTTP Traffic"
       topic: "http-traffic"
     };
   }
