@@ -36,6 +36,7 @@ service PacketsApi {
       get: "/api/archive/{instance}/packets/{pname}/{gentime}/{seqnum}"
       additional_bindings {
         get: "/api/archive/{instance}/packets/{gentime}/{seqnum}"
+        deprecated: true
       }
     };
   }
@@ -50,6 +51,7 @@ service PacketsApi {
       get: "/api/archive/{instance}/packets/{pname}/{gentime}/{seqnum}:extract"
       additional_bindings {
         get: "/api/archive/{instance}/packets/{gentime}/{seqnum}:extract"
+        deprecated: true
       }
     };
   }
@@ -68,6 +70,7 @@ service PacketsApi {
       get: "/api/archive/{instance}/packets/{pname}/{gentime}/{seqnum}:export"
       additional_bindings {
         get: "/api/archive/{instance}/packets/{gentime}/{seqnum}:export"
+        deprecated: true
       }
     };
   }

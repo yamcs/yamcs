@@ -21,6 +21,7 @@ service MdbOverrideApi {
   // List MDB overrides
   rpc ListMdbOverrides(ListMdbOverridesRequest) returns (ListMdbOverridesResponse) {
     option (yamcs.api.route) = {
+      label: "List MDB Overrides"
       get: "/api/mdb-overrides/{instance}/{processor}"
     };
   }
@@ -51,6 +52,7 @@ service MdbOverrideApi {
       additional_bindings: {
         patch: "/api/mdb/{instance}/{processor}/parameters/{name*}"
         body: "*"
+        deprecated: true
       }
     };
   }
@@ -63,6 +65,7 @@ service MdbOverrideApi {
       additional_bindings: {
         patch: "/api/mdb/{instance}/{processor}/algorithms/{name*}"
         body: "*"
+        deprecated: true
       }
     };
   }
@@ -73,6 +76,7 @@ service MdbOverrideApi {
   // parameter, also when an override is essentially removed.
   rpc SubscribeMdbChanges(SubscribeMdbChangesRequest) returns (stream MdbOverrideInfo) {
     option (yamcs.api.websocket) = {
+      label: "Subscribe MDB Changes"
       topic: "mdb-changes"
     };
   }

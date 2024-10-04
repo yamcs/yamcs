@@ -47,6 +47,7 @@ service MdbApi {
   // the export.
   rpc ExportXtce(ExportXtceRequest) returns (yamcs.api.HttpBody) {
     option (yamcs.api.route) = {
+      label: "Export XTCE"
       get: "/api/mdb/{instance}/space-systems/{name*}:exportXTCE"
     };
   }

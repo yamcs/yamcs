@@ -15,6 +15,7 @@ service TableApi {
   // Execute SQL
   rpc ExecuteSql(ExecuteSqlRequest) returns (ResultSet) {
     option (yamcs.api.route) = {
+      label: "Execute SQL"
       post: "/api/archive/{instance}:executeSql"
       body: "*"
     };
@@ -23,6 +24,7 @@ service TableApi {
   // Execute streaming SQL
   rpc ExecuteStreamingSql(ExecuteSqlRequest) returns (stream ResultSet) {
     option (yamcs.api.route) = {
+      label: "Execute Streaming SQL"
       post: "/api/archive/{instance}:executeStreamingSql"
       body: "*"
     };

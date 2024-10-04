@@ -70,7 +70,8 @@ service QueuesApi {
     option (yamcs.api.route) = {
       get: "/api/processors/{instance}/{processor}/queues/{queue}/commands"
       additional_bindings: {
-      	get: "/api/processors/{instance}/{processor}/queues/{queue}/entries"
+        get: "/api/processors/{instance}/{processor}/queues/{queue}/entries"
+        deprecated: true
       }
     };
   }

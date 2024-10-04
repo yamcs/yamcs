@@ -49,6 +49,7 @@ service RocksDbApi {
   // Get a text-dump with general RocksDB info
   rpc DescribeRocksDb(google.protobuf.Empty) returns (yamcs.api.HttpBody) {
     option (yamcs.api.route) = {
+      label: "Describe RocksDB"
       get: "/api/archive/rocksdb:describe"
     };
   }
