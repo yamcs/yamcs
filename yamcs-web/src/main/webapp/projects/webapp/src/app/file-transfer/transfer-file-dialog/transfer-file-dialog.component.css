@@ -142,16 +142,8 @@ ya-breadcrumb-trail {
   float: right;
 }
 
-.footer input,
-.options-footer input,
-.footer select,
-.options-footer select {
-  margin: 2px 0 0;
-}
-
 .footer>button,
 .footer>input {
-  margin-top: 7px;
   flex-shrink: 1;
 }
 
