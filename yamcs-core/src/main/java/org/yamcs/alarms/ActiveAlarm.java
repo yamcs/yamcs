@@ -14,9 +14,6 @@ import org.yamcs.utils.TimeEncoding;
  * <p>
  * Note: generics parameter T can effectively be either {@link ParameterValue} or {@link Event}
  * 
- * 
- * @author nm
- *
  */
 public class ActiveAlarm<T> {
     static AtomicInteger counter = new AtomicInteger();
@@ -71,12 +68,16 @@ public class ActiveAlarm<T> {
     boolean shelved;
     private long shelveDuration;
 
-    public ActiveAlarm(T pv, boolean autoAck, boolean latching) {
+    ActiveAlarm(T pv, boolean autoAck, boolean latching, int id) {
         this.autoAcknowledge = autoAck;
         this.latching = latching;
 
         this.triggerValue = this.currentValue = this.setMostSevereValue(pv);
-        id = counter.getAndIncrement();
+        this.id = id;
+    }
+
+    public ActiveAlarm(T pv, boolean autoAck, boolean latching) {
+        this(pv, autoAck, latching, counter.getAndIncrement());
     }
 
     public boolean isAutoAcknowledge() {
@@ -108,7 +109,6 @@ public class ActiveAlarm<T> {
 
     /**
      * Trigger the alarm if not already triggered
-     * 
      */
     public synchronized void trigger() {
         if (!triggered) {
@@ -173,9 +173,13 @@ public class ActiveAlarm<T> {
     }
 
     public synchronized void shelve(String username, String message, long shelveDuration) {
+        shelve(TimeEncoding.getWallclockTime(), username, message, shelveDuration);
+    }
+
+    public synchronized void shelve(long shelveTime, String username, String message, long shelveDuration) {
         this.shelved = true;
         this.shelveEvent = new ChangeEvent(username, TimeEncoding.getWallclockTime(), message);
-        this.shelveTime = TimeEncoding.getWallclockTime();
+        this.shelveTime = shelveTime;
         this.shelveDuration = shelveDuration;
     }
 
@@ -263,8 +267,6 @@ public class ActiveAlarm<T> {
         return mostSevereValue;
     }
 
-
-
     public void incrementValueCount() {
         valueCount++;
     }
@@ -279,6 +281,10 @@ public class ActiveAlarm<T> {
 
     public int getViolations() {
         return violations;
+    }
+
+    void setViolations(int count) {
+        this.violations = count;
     }
 
     @Override
@@ -311,5 +317,9 @@ public class ActiveAlarm<T> {
         public String toString() {
             return "[username: " + username + " time: " + TimeEncoding.toString(time) + " message: " + message + "]";
         }
+    }
+
+    void setAcknowledged(boolean ack) {
+        this.acknowledged = ack;
     }
 }

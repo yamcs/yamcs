@@ -123,6 +123,9 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         });
     }
 
+    /**
+     * List the alarms including the old ones not active anymore
+     */
     @Override
     public void listAlarms(Context ctx, ListAlarmsRequest request, Observer<ListAlarmsResponse> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadAlarms);
@@ -209,6 +212,9 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         });
     }
 
+    /**
+     * List the active alarms
+     */
     @Override
     public void listProcessorAlarms(Context ctx, ListProcessorAlarmsRequest request,
             Observer<ListProcessorAlarmsResponse> observer) {

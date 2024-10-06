@@ -36,11 +36,16 @@ public class ProcessorConfig {
     boolean generateEvents = false;
     boolean checkCommandClearance = false;
     boolean checkParameterValidityRanges = true;
+
+    // if true, save at shutdown and load at startup the value of all parameters having the persistent flag set
     boolean persistParameters = false;
 
     // if set to true, subscribe by default to all containers that have the useAsArchivePartiton flag set
     // used to have nice statistics showing the number of each packet received for the realtime and replay processors
     boolean subscribeContainerArchivePartitions = true;
+
+    // if positive, the number of days to load the past alarms at startup
+    private double alarmLoadDays = 30;
 
     /**
      * If this is set to true, the {@link MetaCommandProcessor} will release commands without binary encoding if a
@@ -101,7 +106,7 @@ public class ProcessorConfig {
 
     public static Spec getSpec() {
         Spec spec = new Spec();
-        spec.addOption(CONFIG_KEY_ALARM, OptionType.ANY);
+        spec.addOption(CONFIG_KEY_ALARM, OptionType.MAP).withSpec(getAlarmSpec());
         spec.addOption(CONFIG_KEY_SUBSCRIBE_ALL, OptionType.BOOLEAN).withDefault(false);
         spec.addOption(CONFIG_KEY_PARAMETER_CACHE, OptionType.ANY);
         spec.addOption(CONFIG_KEY_TM_PROCESSOR, OptionType.MAP).withSpec(ContainerProcessingOptions.getSpec());
@@ -114,6 +119,20 @@ public class ProcessorConfig {
         spec.addOption(CONFIG_KEY_CHECK_PARAMETER_VALIDITY_RANGES, OptionType.ANY);
         spec.addOption(CONFIG_KEY_SUBSCRIBE_CONTAINER_ARCHPART, OptionType.BOOLEAN).withDefault(true);
         spec.addOption(CONFIG_KEY_PERSIST_PARAMETERS, OptionType.BOOLEAN).withDefault(false);
+
+        return spec;
+    }
+
+    public static Spec getAlarmSpec() {
+        Spec spec = new Spec();
+        spec.addOption("loadDays", OptionType.FLOAT).withDefault(30);
+        spec.addOption("parameterCheck", OptionType.BOOLEAN).withDefault(true);
+
+        spec.addOption("parameterServer", OptionType.STRING).withDefault("enabled");
+
+        spec.addOption("eventServer", OptionType.STRING).withDefault("enabled");
+        spec.addOption("eventAlarmMinViolations", OptionType.INTEGER).withDefault(1);
+
         return spec;
     }
 
@@ -145,16 +164,35 @@ public class ProcessorConfig {
 
         eventAlarmServerEnabled = "enabled".equalsIgnoreCase(alarmConfig.getString("eventServer", null));
         eventAlarmMinViolations = alarmConfig.getInt("eventAlarmMinViolations", eventAlarmMinViolations);
+        alarmLoadDays = alarmConfig.getDouble("alarmLoadDays", alarmLoadDays);
     }
 
+    /**
+     * Returns the maximum allowed size for a telecommand (TC) in bytes.
+     * 
+     * @return the maximum TC size
+     */
     public int getMaxCommandSize() {
         return maxTcSize;
     }
 
+    /**
+     * Returns the minimum number of violations required to trigger an event alarm.
+     * 
+     * @return the minimum number of event alarm violations
+     */
     public int getEventAlarmMinViolations() {
         return eventAlarmMinViolations;
     }
 
+    /**
+     * Returns whether event generation is enabled.
+     * <p>
+     * It refers to the events generated inside the processor (for example when encountering errors on processing
+     * packets) not events in general.
+     * 
+     * @return true if event generation is enabled, false otherwise
+     */
     public boolean generateEvents() {
         return generateEvents;
     }
@@ -163,14 +201,29 @@ public class ProcessorConfig {
         return containerProcOptions;
     }
 
+    /**
+     * Returns whether commands without associated containers are allowed.
+     * 
+     * @return true if containerless commands are allowed, false otherwise
+     */
     public boolean allowContainerlessCommands() {
         return allowContainerlessCommands;
     }
 
+    /**
+     * Returns whether command clearance checks are enabled.
+     * 
+     * @return true if command clearance checks are enabled, false otherwise
+     */
     public boolean checkCommandClearance() {
         return checkCommandClearance;
     }
 
+    /**
+     * Returns whether parameter validity range checks are enabled.
+     * 
+     * @return true if parameter validity range checks are enabled, false otherwise
+     */
     public boolean checkParameterValidityRanges() {
         return checkParameterValidityRanges;
     }
@@ -183,8 +236,31 @@ public class ProcessorConfig {
         this.subscribeContainerArchivePartitions = b;
     }
 
+    /**
+     * Returns whether parameter persistence is enabled, meaning parameter values will be saved at shutdown and loaded
+     * at startup.
+     * <p>
+     * If enabled, only parameters with the persistence flag set are saved
+     * 
+     * @return true if parameter persistence is enabled, false otherwise
+     */
     public boolean persistParameters() {
         return persistParameters;
+    }
+
+    /**
+     * Returns the number of past days of alarm data to load at startup.
+     * <p>
+     * If zero or negative, no alarms are loaded.
+     * 
+     * @return the number of days of alarm data to load
+     */
+    public double getAlarmLoadDays() {
+        return alarmLoadDays;
+    }
+
+    public void setAlarmLoadDays(double alarmLoadDays) {
+        this.alarmLoadDays = alarmLoadDays;
     }
 
     @Override
@@ -194,6 +270,6 @@ public class ProcessorConfig {
                 + maxTcSize + ", recordInitialValues=" + recordInitialValues + ", recordLocalValues="
                 + recordLocalValues + ", eventAlarmMinViolations=" + eventAlarmMinViolations + ", subscribeAll="
                 + subscribeAll + ", generateEvents=" + generateEvents + ", containerProcOptions=" + containerProcOptions
-                + ", parameterCacheConfig=" + parameterCacheConfig + "]";
+                + ", parameterCacheConfig=" + parameterCacheConfig + ", alarmLoadDays=" + alarmLoadDays + "]";
     }
 }

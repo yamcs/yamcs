@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.yamcs.ProcessorConfig;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
@@ -28,6 +29,7 @@ public class AlarmServerTest {
     Parameter p2 = new Parameter("p2");
     AlarmServer<Parameter, ParameterValue> alarmServer;
     ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
+    ProcessorConfig procConfig = new ProcessorConfig();
 
     @BeforeAll
     static public void setupBeforeClass() {
@@ -44,7 +46,8 @@ public class AlarmServerTest {
 
     @BeforeEach
     public void before() {
-        alarmServer = new AlarmServer<>("toto", timer);
+        procConfig.setAlarmLoadDays(-1);
+        alarmServer = new ParameterAlarmServer("toto", procConfig, timer);
     }
 
     @Test

@@ -8,15 +8,25 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ProcessorConfig;
 import org.yamcs.YamcsServer;
+import org.yamcs.mdb.Mdb;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.ParameterAlarmChecker;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Event.EventSeverity;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.parser.ParseException;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.protobuf.Db.Event;
+import org.yamcs.yarch.streamsql.StreamSqlException;
+import org.yamcs.yarch.streamsql.StreamSqlResult;
+import static org.yamcs.alarms.AlarmStreamer.*;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -31,9 +41,9 @@ import com.google.common.util.concurrent.AbstractService;
  * {@link ParameterAlarmChecker} or {@link EventAlarmServer}.
  * 
  */
-public class AlarmServer<S, T> extends AbstractService {
+public abstract class AlarmServer<S, T> extends AbstractService {
 
-    private Map<S, ActiveAlarm<T>> activeAlarms = new ConcurrentHashMap<>();
+    protected Map<S, ActiveAlarm<T>> activeAlarms = new ConcurrentHashMap<>();
 
     final String yamcsInstance;
     static private final Logger log = LoggerFactory.getLogger(AlarmServer.class);
@@ -42,10 +52,13 @@ public class AlarmServer<S, T> extends AbstractService {
     final private ScheduledThreadPoolExecutor timer;
     final TimeService timeService;
 
-    public AlarmServer(String yamcsInstance, ScheduledThreadPoolExecutor timer) {
+    public AlarmServer(String yamcsInstance, ProcessorConfig procConfig, ScheduledThreadPoolExecutor timer) {
         this.yamcsInstance = yamcsInstance;
         this.timer = timer;
         this.timeService = YamcsServer.getTimeService(yamcsInstance);
+        if (procConfig.getAlarmLoadDays() > 0) {
+            loadAlarmsFromDb(procConfig.getAlarmLoadDays());
+        }
     }
 
     /**
@@ -233,6 +246,7 @@ public class AlarmServer<S, T> extends AbstractService {
 
     @Override
     public void doStart() {
+        timer.execute(this::checkShelved);
         notifyStarted();
     }
 
@@ -314,18 +328,6 @@ public class AlarmServer<S, T> extends AbstractService {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private S getSubject(T value) {
-        if (value instanceof ParameterValue) {
-            return (S) ((ParameterValue) value).getParameter();
-        } else if (value instanceof Event) {
-            Event ev = (Event) value;
-            return (S) new EventId(ev.getSource(), ev.hasType() ? ev.getType() : null);
-        } else {
-            throw new IllegalArgumentException("Unknown object type " + value.getClass());
-        }
-    }
-
     static private String getName(Object subject) {
         if (subject instanceof Parameter) {
             return ((Parameter) subject).getQualifiedName();
@@ -381,4 +383,52 @@ public class AlarmServer<S, T> extends AbstractService {
     public void clearAll() {
         activeAlarms.clear();
     }
+
+    private void loadAlarmsFromDb(double numDays) {
+        Mdb mdb = MdbFactory.getInstance(yamcsInstance);
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+        String tblName = alarmTableName();
+        var table = ydb.getTable(tblName);
+        if (table == null) {
+            log.debug("Cannot load alarms since table {} does not exist", tblName);
+            return;
+        }
+        if (table.getColumnDefinition(getColNameLastEvent()) == null) {
+            log.debug("Cannot load alarms since table {} does not have the column {} (probably it is empty)", tblName,
+                    getColNameLastEvent());
+            return;
+        }
+        StreamSqlResult result = null;
+        try {
+            long startTime = timeService.getMissionTime() - (long) (numDays * 24 * 3600_000);
+            result = ydb.execute(
+                    "select * from " + tblName + " where " + CNAME_TRIGGER_TIME + " > ? AND " + getColNameLastEvent()
+                            + " != 'CLEARED'",
+                    startTime);
+
+            while (result.hasNext()) {
+                var tuple = result.next();
+                try {
+                    addActiveAlarmFromTuple(mdb, tuple);
+                } catch (Exception e) {
+                    log.warn("Unable to load active alarm from tuple {}: {}", tuple, e);
+                }
+            }
+
+        } catch (ParseException | StreamSqlException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (result != null) {
+                result.close();
+            }
+        }
+    }
+
+    protected abstract S getSubject(T value);
+
+    protected abstract void addActiveAlarmFromTuple(Mdb mdb, Tuple t);
+
+    protected abstract String alarmTableName();
+
+    protected abstract String getColNameLastEvent();
 }

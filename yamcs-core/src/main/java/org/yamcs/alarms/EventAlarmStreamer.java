@@ -10,8 +10,6 @@ import org.yamcs.yarch.protobuf.Db.Event;
 /**
  * Receives event alarms from the {@link AlarmServer} and sends them to the events_alarms stream to be recorded
  * 
- * @author nm
- *
  */
 public class EventAlarmStreamer extends AlarmStreamer<Event> {
 

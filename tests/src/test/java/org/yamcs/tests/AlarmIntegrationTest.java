@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,7 @@ import org.yamcs.protobuf.AlarmNotificationType;
 import org.yamcs.protobuf.AlarmSeverity;
 import org.yamcs.protobuf.AlarmType;
 import org.yamcs.protobuf.CreateEventRequest;
+import org.yamcs.protobuf.Event;
 import org.yamcs.protobuf.Event.EventSeverity;
 import org.yamcs.protobuf.EventAlarmData;
 import org.yamcs.protobuf.alarms.EditAlarmRequest;
@@ -29,45 +31,24 @@ import org.yamcs.protobuf.alarms.SubscribeGlobalStatusRequest;
 import org.yamcs.utils.TimeEncoding;
 
 public class AlarmIntegrationTest extends AbstractIntegrationTest {
-
     @Test
     public void testEventAlarms() throws Exception {
-        AlarmSubscription subscription = yamcsClient.createAlarmSubscription();
+        AlarmSubscription subscription = subscribeAlarms();
         MessageCaptor<AlarmData> captor = MessageCaptor.of(subscription);
 
-        SubscribeAlarmsRequest request = SubscribeAlarmsRequest.newBuilder()
-                .setInstance(yamcsInstance)
-                .setProcessor("realtime")
-                .build();
-        subscription.sendMessage(request);
-        subscription.awaitConfirmation();
-
-        CreateEventRequest createRequest = CreateEventRequest.newBuilder()
-                .setInstance(yamcsInstance)
-                .setSeverity("warning")
-                .setSource("IntegrationTest")
-                .setType("Event-Alarm-Test")
-                .setMessage("event1")
-                .build();
-        yamcsClient.createEvent(createRequest).get();
+        var event = createWarningEvent();
 
         AlarmData a1 = captor.expectTimely();
         EventAlarmData ea1 = a1.getEventDetail();
 
         assertEquals(EventSeverity.WARNING, ea1.getTriggerEvent().getSeverity());
-        assertEquals("IntegrationTest", ea1.getTriggerEvent().getSource());
-        assertEquals("Event-Alarm-Test", ea1.getTriggerEvent().getType());
-        assertEquals("event1", ea1.getTriggerEvent().getMessage());
+        assertEquals(event.getSource(), ea1.getTriggerEvent().getSource());
+        assertEquals(event.getType(), ea1.getTriggerEvent().getType());
+        assertEquals(event.getMessage(), ea1.getTriggerEvent().getMessage());
 
-        EditAlarmRequest ear = EditAlarmRequest.newBuilder()
-                .setInstance(yamcsInstance)
-                .setProcessor("realtime")
-                .setName(a1.getId().getNamespace() + "/" + a1.getId().getName())
-                .setSeqnum(a1.getSeqNum())
-                .setState("shelved")
-                .setComment("I will deal with this later")
-                .setShelveDuration(500).build();
-        yamcsClient.editAlarm(ear).get();
+        shelveAlarm(a1.getId().getNamespace() + "/" + a1.getId().getName(), a1.getSeqNum(), 500,
+                "I will deal with this later");
+
         AlarmData a2 = captor.expectTimely();
         assertEquals(AlarmNotificationType.SHELVED, a2.getNotificationType());
         assertTrue(a2.hasShelveInfo());
@@ -78,29 +59,16 @@ public class AlarmIntegrationTest extends AbstractIntegrationTest {
         assertEquals(AlarmNotificationType.UNSHELVED, a3.getNotificationType());
 
         // shelve it again
-        ear = EditAlarmRequest.newBuilder()
-                .setInstance(yamcsInstance)
-                .setProcessor("realtime")
-                .setName(a1.getId().getNamespace() + "/" + a1.getId().getName())
-                .setSeqnum(a1.getSeqNum())
-                .setState("shelved")
-                .setComment("I will deal with this later#2")
-                .build();
-        yamcsClient.editAlarm(ear).get();
+        shelveAlarm(a1.getId().getNamespace() + "/" + a1.getId().getName(), a1.getSeqNum(), -1,
+                "I will deal with this later#2");
+
         a2 = captor.expectTimely();
         assertEquals(AlarmNotificationType.SHELVED, a2.getNotificationType());
         a3 = captor.poll(2000);
         assertNull(a3);
 
-        ear = EditAlarmRequest.newBuilder()
-                .setInstance(yamcsInstance)
-                .setProcessor("realtime")
-                .setName(a1.getId().getNamespace() + "/" + a1.getId().getName())
-                .setSeqnum(a1.getSeqNum())
-                .setState("acknowledged")
-                .setComment("a nice ack explanation")
-                .build();
-        yamcsClient.editAlarm(ear).get();
+        acknowledgeAlarm(a1.getId().getNamespace() + "/" + a1.getId().getName(), a1.getSeqNum(),
+                "a nice ack explanation");
         AlarmData a4 = captor.expectTimely();
 
         assertEquals("a nice ack explanation", a4.getAcknowledgeInfo().getAcknowledgeMessage());
@@ -110,16 +78,8 @@ public class AlarmIntegrationTest extends AbstractIntegrationTest {
         assertEquals(1, lar.getAlarmsCount());
         assertEquals("a nice ack explanation", lar.getAlarms(0).getAcknowledgeInfo().getAcknowledgeMessage());
 
-        ear = EditAlarmRequest.newBuilder()
-                .setInstance(yamcsInstance)
-                .setProcessor("realtime")
-                .setName(a1.getId().getNamespace() + "/" + a1.getId().getName())
-                .setSeqnum(a1.getSeqNum())
-                .setState("cleared")
-                .setComment("a nice clear explanation")
-                .build();
-
-        yamcsClient.editAlarm(ear).get();
+        clearAlarm(a1.getId().getNamespace() + "/" + a1.getId().getName(), a1.getSeqNum(),
+                "a nice clear explanation");
 
         AlarmData a5 = captor.expectTimely();
         assertTrue(a5.hasClearInfo());
@@ -137,15 +97,8 @@ public class AlarmIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testParamAlarms() throws Exception {
-        AlarmSubscription subscription = yamcsClient.createAlarmSubscription();
+        AlarmSubscription subscription = subscribeAlarms();
         MessageCaptor<AlarmData> captor = MessageCaptor.of(subscription);
-
-        SubscribeAlarmsRequest request = SubscribeAlarmsRequest.newBuilder()
-                .setInstance(yamcsInstance)
-                .setProcessor("realtime")
-                .build();
-        subscription.sendMessage(request);
-        subscription.awaitConfirmation();
 
         packetGenerator.setGenerationTime(TimeEncoding.parse("2022-01-19T21:21:00"));
         // this generates a EnumerationPara1_10_2 WARNING and a FloatPara1_10_3 DISTRESS
@@ -269,4 +222,101 @@ public class AlarmIntegrationTest extends AbstractIntegrationTest {
 
     }
 
+    @Test
+    public void testAlarmPersistence() throws Exception {
+        createWarningEvent();
+        packetGenerator.setGenerationTime(TimeEncoding.parse("2024-10-05T10:24:00"));
+        packetGenerator.generate_PKT1_10(0, 3, 51);
+
+        var alarms0 = yamcsClient.listAlarms(yamcsInstance, "realtime").get().getAlarmsList();
+        assertEquals(3, alarms0.size());
+        yamcsClient.restartInstance(yamcsInstance).get();
+
+        var alarms1 = yamcsClient.listAlarms(yamcsInstance, "realtime").get().getAlarmsList();
+        assertEquals(3, alarms1.size());
+        alarms0 = sortAlarms(alarms0);
+        alarms1 = sortAlarms(alarms1);
+
+        for (int i = 0; i < alarms0.size(); i++) {
+            var a0 = alarms0.get(i);
+            var a1 = alarms1.get(i);
+            assertEquals(a0.getId(), a1.getId());
+            assertEquals(a0.getSeverity(), a1.getSeverity());
+            assertEquals(a0.getAcknowledged(), a1.getAcknowledged());
+            assertEquals(a0.getTriggerTime(), a1.getTriggerTime());
+
+            clearAlarm(a0.getId().getNamespace() + "/" + a1.getId().getName(), a0.getSeqNum(), "");
+        }
+    }
+
+    private List<AlarmData> sortAlarms(List<AlarmData> alarmList) {
+        var l = new ArrayList<>(alarmList);
+        l.sort((a, b) -> {
+            return a.getId().getName().compareTo(b.getId().getName());
+        });
+        return l;
+    }
+
+    AlarmSubscription subscribeAlarms() throws Exception {
+        AlarmSubscription subscription = yamcsClient.createAlarmSubscription();
+
+        SubscribeAlarmsRequest request = SubscribeAlarmsRequest.newBuilder()
+                .setInstance(yamcsInstance)
+                .setProcessor("realtime")
+                .build();
+        subscription.sendMessage(request);
+        subscription.awaitConfirmation();
+
+        return subscription;
+    }
+
+    Event createWarningEvent() throws Exception {
+        CreateEventRequest createRequest = CreateEventRequest.newBuilder()
+                .setInstance(yamcsInstance)
+                .setSeverity("warning")
+                .setSource("IntegrationTest")
+                .setType("Event-Alarm-Test")
+                .setMessage("event1")
+                .build();
+        return yamcsClient.createEvent(createRequest).get();
+    }
+
+    void clearAlarm(String name, int seq, String comment) throws Exception {
+        EditAlarmRequest ear = EditAlarmRequest.newBuilder()
+                .setInstance(yamcsInstance)
+                .setProcessor("realtime")
+                .setName(name)
+                .setSeqnum(seq)
+                .setState("cleared")
+                .setComment(comment)
+                .setShelveDuration(500).build();
+        yamcsClient.editAlarm(ear).get();
+    }
+
+    void acknowledgeAlarm(String name, int seq, String comment) throws Exception {
+        var earb = EditAlarmRequest.newBuilder()
+                .setInstance(yamcsInstance)
+                .setProcessor("realtime")
+                .setName(name)
+                .setSeqnum(seq)
+                .setState("acknowledged")
+                .setComment(comment);
+
+        yamcsClient.editAlarm(earb.build()).get();
+    }
+
+    void shelveAlarm(String name, int seq, long duration, String comment) throws Exception {
+        var earb = EditAlarmRequest.newBuilder()
+                .setInstance(yamcsInstance)
+                .setProcessor("realtime")
+                .setName(name)
+                .setSeqnum(seq)
+                .setState("shelved")
+                .setComment(comment);
+
+        if (duration > 0) {
+            earb.setShelveDuration(duration);
+        }
+        yamcsClient.editAlarm(earb.build()).get();
+    }
 }

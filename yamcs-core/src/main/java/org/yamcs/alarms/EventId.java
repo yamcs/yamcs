@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
  * This means if an alarm is active and an event is generated with the same (source,type) a new alarm will not be
  * created but the old one updated
  * 
- * @author nm
  */
 public class EventId {
 

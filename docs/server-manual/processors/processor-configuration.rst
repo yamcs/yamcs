@@ -34,6 +34,7 @@ Example of the ``realtime`` processor type configuration:
               parameterServer: enabled
               eventServer: enabled
               eventAlarmMinViolations: 1
+              loadDays: 30
           
           parameterCache:
               enabled: true
@@ -97,6 +98,10 @@ eventServer (string)
 eventAlarmMinViolations (integer)
     The number of occurrences of a specific event (identified by its source and type) required to raise an alarm. By default it is 1. Note that the parameters do not have this setting because it is part of the Mission Database definition.
 
+loadDays (float)
+    Specifies the number of days of past alarms to load at Yamcs startup. If the value is zero or negative, no alarms will be loaded.
+    This option has been introduced in Yamcs version 5.9.9 and 10.1.2. In earlier versions, triggered alarms were not reloaded into the alarm server during Yamcs startup.
+    Default: 30
 
 Parameter Cache options
 -----------------------

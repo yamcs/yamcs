@@ -12,6 +12,7 @@ Each processor is composed of a set of services with varying functionality.
 
     tm-processing
     command-processing
+    alarms
     processor-configuration    
     alarm-reporter
     algorithm-manager
