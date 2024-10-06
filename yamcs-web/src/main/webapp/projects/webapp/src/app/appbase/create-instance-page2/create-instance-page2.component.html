@@ -12,11 +12,11 @@
 @if (template$ | async; as template) {
   <div class="form-content ya-form">
     <form [formGroup]="form" novalidate>
-      <label>
+      <div class="label">
         Instance name
         <br />
         <input formControlName="name" type="text" />
-      </label>
+      </div>
       @for (v of template?.variables; track v) {
         <br />
         @if (v.choices) {

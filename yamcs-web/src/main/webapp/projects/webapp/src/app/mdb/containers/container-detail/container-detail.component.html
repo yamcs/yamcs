@@ -38,7 +38,7 @@
   <dt>Max interval</dt>
   <dd>
     @if (container.maxInterval) {
-      <span>{{ container.maxInterval | duration }}</span>
+      <span>{{ container.maxInterval | millisDuration }}</span>
     } @else {
       <span>-</span>
     }
