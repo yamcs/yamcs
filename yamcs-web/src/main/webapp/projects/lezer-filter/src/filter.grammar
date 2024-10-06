@@ -12,7 +12,7 @@ value {
 String[isolate] { string }
 Text[isolate] { text }
 
-Comparison { Comparable CompareOp value }
+Comparison { Minus? Comparable CompareOp value }
 Comparable[isolate] { text | string }
 
 CompareOp { "=" | "!=" | "<" | ">" | "<=" | ">=" | "=~" | "!~" | ":" }

@@ -3,9 +3,9 @@ import {LRParser} from "@lezer/lr"
 import {filterHighlighting} from "./highlight"
 export const parser = LRParser.deserialize({
   version: 14,
-  states: "#SQ`QPOOO!oQPO'#CfO#fQPO'#CgOOQO'#Cp'#CpO$]QPO'#CpO$eQPO'#ChOOQO'#Ck'#CkOOQO'#Cl'#ClQ`QPOOOOQO'#Cf'#CfOOQO'#Cg'#CgOOQO,59[,59[OOQO'#Cj'#CjO%SQPO,59SOOQO-E6j-E6jOOQO1G.n1G.n",
-  stateData: "%v~OcOSPOSQOSROS~OTROUROVROWROXSOePOfQOpUOqUOrUO~Og]Xh]Xi]Xj]Xk]Xl]Xm]Xn]Xo]X~OTYXUYXVYXWYXXYXaYXeYXfYXpYXqYXrYX~P!QOTZXUZXVZXWZXXZXaZXeZXfZXpZXqZXrZX~P!QOeXOfYO~Og[Oh[Oi[Oj[Ok[Ol[Om[On[Oo[O~OTROUROVROWROXSOeXOfYO~OTrqpWUPXVf~",
-  goto: "!WePPPPPPPPPPffnrvnyPPP!PUROW]RZSTVOWTTOWR]TQWOR^WSVOWR_]",
+  states: "#lQ`QPOOO!oQPO'#CfO#fQPO'#CgOOQO'#Cp'#CpO$]QPO'#CpO$eQPO'#ChOOQO'#Ck'#CkOOQO'#Cl'#ClQ`QPOOOOQO,59[,59[O$eQPO,59SOOQO'#Cj'#CjO%SQPO,59SOOQO-E6j-E6jO%SQPO1G.nOOQO'#Cf'#CfOOQO'#Cg'#CgO%cQPO'#CpOOQO1G.n1G.nOOQO7+$Y7+$Y",
+  stateData: "%v~OcOSPOSQOSROS~OTROUROVROWROXSOePOfQOpUOqUOrUO~Og]Xh]Xi]Xj]Xk]Xl]Xm]Xn]Xo]X~OTYXUYXVYXWYXXYXaYXeYXfYXpYXqYXrYX~P!QOTZXUZXVZXWZXXZXaZXeZXfZXpZXqZXrZX~P!QOePOfQO~OgZOhZOiZOjZOkZOlZOmZOnZOoZO~OTROUROVROWROXaOe_Of`O~OTrqpWUPXVf~",
+  goto: "!cePPPPPPPPPPffpt{p!RPPP!XWROW[^TXSaTVOWSTOWRYSQ[TR^YQWOR]WSVOWQb[Rc^",
   nodeNames: "⚠ LineComment ( ) Filter True False Null Number Minus String Text Comparison Comparable CompareOp LogicOp",
   maxTerm: 34,
   nodeProps: [

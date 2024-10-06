@@ -4,7 +4,9 @@
 }
 
 table {
-  margin-left: 18px;
+  padding-left: 18px;
+  padding-right: 18px;
+  background-color: #fafafa;
 }
 
 :host ::ng-deep tr.mat-mdc-row {
