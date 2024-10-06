@@ -85,7 +85,6 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
     protected static final String PARAM_RAWTYPE_STRING = "string";
     final protected SpreadsheetLoadContext ctx = new SpreadsheetLoadContext();
     protected Workbook workbook;
-    protected boolean enableXtceNameRestrictions = true;
 
     // sheet name -> column name -> column number
     protected Map<String, Map<String, Integer>> headers;
@@ -93,11 +92,11 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
     // current sheet header
     protected Map<String, Integer> h;
 
-    final static Pattern XTCE_ALLOWED_IN_NAME = Pattern.compile("[\\d\\w_-]+");
+    final static Pattern XTCE_ALLOWED_IN_NAME = Pattern.compile("[^./:\\[\\]\\s]+");
     final static int[] NOT_ALLOWED_IN_NAME;
 
     static {
-        NOT_ALLOWED_IN_NAME = new int[] { '.', '/', '[', ']' };
+        NOT_ALLOWED_IN_NAME = new int[] { '.', '/', ':', '[', ']' };
         Arrays.sort(NOT_ALLOWED_IN_NAME);
     }
 
@@ -222,8 +221,8 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
     }
 
     /**
-     * Temporary value holder for the enumeration definition; needed because enumerations are read before parameters, and
-     * reading sharing the same EPT among all parameters is not a good approach (think different alarm definitions)
+     * Temporary value holder for the enumeration definition; needed because enumerations are read before parameters,
+     * and reading sharing the same EPT among all parameters is not a good approach (think different alarm definitions)
      */
     public static class EnumerationDefinition {
         public final List<ValueEnumeration> values = new ArrayList<>();
@@ -350,18 +349,12 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
     }
 
     protected void validateNameType(String name) {
-        if (enableXtceNameRestrictions) {
-            if (!XTCE_ALLOWED_IN_NAME.matcher(name).matches()) {
-                throw new SpreadsheetLoadException(ctx,
-                        "Invalid name '" + name + "'; should only contain letters, digits, _, and -");
-            }
-        } else {
-            if (name.chars().anyMatch(x -> Arrays.binarySearch(NOT_ALLOWED_IN_NAME, x) >= 0)) {
-                String na = Arrays.stream(NOT_ALLOWED_IN_NAME).mapToObj(x -> Character.toString((char) x))
-                        .collect(Collectors.joining(", ", "\"", "\""));
-                throw new SpreadsheetLoadException(ctx,
-                        "Invalid name '" + name + "'; should not contain any of the following characters: " + na);
-            }
+        if (!XTCE_ALLOWED_IN_NAME.matcher(name).matches()) {
+            String na = Arrays.stream(NOT_ALLOWED_IN_NAME).mapToObj(x -> Character.toString((char) x))
+                    .collect(Collectors.joining(", ", "\"", "\""));
+            throw new SpreadsheetLoadException(ctx,
+                    "Invalid name '" + name + "'; should not contain whitespace or any of the following characters: "
+                            + na);
         }
     }
 

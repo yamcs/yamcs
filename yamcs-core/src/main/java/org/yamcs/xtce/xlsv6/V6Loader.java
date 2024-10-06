@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import org.yamcs.YConfiguration;
 import org.yamcs.mdb.ConditionParser;
 import org.yamcs.mdb.JavaExpressionCalibratorFactory;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.SpreadsheetLoadContext;
 import org.yamcs.mdb.SpreadsheetLoadException;
 import org.yamcs.utils.StringConverter;
@@ -101,7 +102,6 @@ import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumeration;
-import org.yamcs.mdb.Mdb;
 import org.yamcs.xtce.util.DoubleRange;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.NameReference.Type;
@@ -154,7 +154,6 @@ public class V6Loader extends V6LoaderBase {
 
     public V6Loader(YConfiguration config) {
         this(config.getString("file"));
-        enableXtceNameRestrictions = config.getBoolean("enableXtceNameRestrictions", true);
     }
 
     public V6Loader(String filename) {
