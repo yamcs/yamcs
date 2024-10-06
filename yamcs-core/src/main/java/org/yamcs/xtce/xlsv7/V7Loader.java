@@ -1,8 +1,8 @@
 package org.yamcs.xtce.xlsv7;
 
-import static org.yamcs.mdb.Mdb.YAMCS_CMDARG_SPACESYSTEM_NAME;
-import static org.yamcs.mdb.Mdb.YAMCS_CMDHIST_SPACESYSTEM_NAME;
-import static org.yamcs.mdb.Mdb.YAMCS_CMD_SPACESYSTEM_NAME;
+import static org.yamcs.xtce.XtceDb.YAMCS_CMDARG_SPACESYSTEM_NAME;
+import static org.yamcs.xtce.XtceDb.YAMCS_CMDHIST_SPACESYSTEM_NAME;
+import static org.yamcs.xtce.XtceDb.YAMCS_CMD_SPACESYSTEM_NAME;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -200,7 +200,6 @@ public class V7Loader extends V7LoaderBase {
 
     public V7Loader(YConfiguration config) {
         this(config.getString("file"));
-        enableXtceNameRestrictions = config.getBoolean("enableXtceNameRestrictions", true);
     }
 
     public V7Loader(String filename) {
@@ -739,7 +738,7 @@ public class V7Loader extends V7LoaderBase {
             memberList = parseAggregateExpr(engtype);
         } catch (org.yamcs.utils.parser.ParseException e) {
             throw new SpreadsheetLoadException(ctx,
-                    "Cannot parse aggregate type '" + engtype+"'");
+                    "Cannot parse aggregate type '" + engtype + "'");
         }
         for (AggrMember m : memberList) {
             validateNameType(m.name());
