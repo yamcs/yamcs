@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.yamcs.examples</groupId>
     <artifactId>examples</artifactId>
-    <version>5.9.9</version>
+    <version>5.9.10-SNAPSHOT</version>
   </parent>
 
   <artifactId>ccsds-frames</artifactId>
