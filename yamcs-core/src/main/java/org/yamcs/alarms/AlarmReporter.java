@@ -25,7 +25,9 @@ import org.yamcs.xtce.ParameterType;
 import org.yamcs.mdb.Mdb;
 
 /**
- * Generates alarm events for a processor, by subscribing to all relevant parameters.
+ * Generates events for parameters out of limits.
+ * <p>
+ * This was used when Yamcs did not have the {@link AlarmServer}. It may be removed in the future.
  */
 public class AlarmReporter extends AbstractProcessorService implements ProcessorService {
 

@@ -14,6 +14,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.alarms.AlarmServer;
+import org.yamcs.alarms.ParameterAlarmServer;
 import org.yamcs.alarms.ParameterAlarmStreamer;
 import org.yamcs.logging.Log;
 import org.yamcs.mdb.ParameterAlarmChecker;
@@ -87,7 +88,7 @@ public class ParameterProcessorManager extends AbstractService implements Parame
             alarmChecker = new ParameterAlarmChecker(this, proc.getProcessorData());
         }
         if (proc.hasAlarmServer()) {
-            parameterAlarmServer = new AlarmServer<>(proc.getInstance(), proc.getTimer());
+            parameterAlarmServer = new ParameterAlarmServer(proc.getInstance(), proc.getConfig(), proc.getTimer());
             alarmChecker.enableServer(parameterAlarmServer);
         }
 

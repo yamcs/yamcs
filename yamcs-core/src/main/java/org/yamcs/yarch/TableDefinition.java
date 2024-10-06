@@ -21,21 +21,18 @@ import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 import com.google.common.collect.BiMap;
 
 /**
- * A table definition consists of a (key,value) pair of tuple definitions. A
- * tuple has to contain all the columns from the key while it can contain only a
- * few of the columns from the value (basically it's a sparse table).
+ * A table definition consists of a (key,value) pair of tuple definitions. A tuple has to contain all the columns from
+ * the key while it can contain only a few of the columns from the value (basically it's a sparse table).
  * 
  * <p>
- * The key is encoded as a byte array of all the columns in order. The value is
- * encoded as a byte array of all the columns preceded by the id of their data type (1 byte) and their index (3 bytes).
+ * The key is encoded as a byte array of all the columns in order. The value is encoded as a byte array of all the
+ * columns preceded by the id of their data type (1 byte) and their index (3 bytes).
  * <p>
  * The secondary index key is encoded as a byte array of all the columns in order preceded by the id of their data type
  * with the first bit set to 1 for the columns present and 0 for the column not present (i.e. null).
  * <p>
  * A table can also be partitioned according to the partitioningSpec.
  * 
- * @author nm
- *
  */
 public class TableDefinition {
     static Logger log = LoggerFactory.getLogger(TableDefinition.class.getName());
@@ -166,9 +163,8 @@ public class TableDefinition {
     }
 
     /**
-     * time based partitions can be on the first column of the key (which has to
-     * be of type timestamp) value based partitions can be on any other
-     * mandatory column
+     * time based partitions can be on the first column of the key (which has to be of type timestamp) value based
+     * partitions can be on any other mandatory column
      * 
      * @param pspec
      */
@@ -254,9 +250,8 @@ public class TableDefinition {
     }
 
     /**
-     * Checks that the table definition is valid: - primary key not string,
-     * except for the last in the list (otherwise the binary sorting does not
-     * work properly)
+     * Checks that the table definition is valid: - primary key not string, except for the last in the list (otherwise
+     * the binary sorting does not work properly)
      * 
      * @throws StreamSqlException
      */
@@ -278,10 +273,9 @@ public class TableDefinition {
     }
 
     /**
-     * Generate a new table row by transforming the key part of the tuple into a byte array to be written to
-     * disk. The tuple must contain each column from the key and they are
-     * written in order (such that sorting is according to the definition of the
-     * primary key).
+     * Generate a new table row by transforming the key part of the tuple into a byte array to be written to disk. The
+     * tuple must contain each column from the key and they are written in order (such that sorting is according to the
+     * definition of the primary key).
      * <p>
      * In addition, it stores into the returned row all the values for the columns used in histograms or indices
      * 
@@ -316,8 +310,7 @@ public class TableDefinition {
     }
 
     /**
-     * adds all missing columns to the value part and serialises the table definition to
-     * disk
+     * adds all missing columns to the value part and serialises the table definition to disk
      */
     private synchronized void addMissingValueColumns(TupleDefinition tdef) {
         IndexedList<String, TableColumnDefinition> valueDef1 = new IndexedList<>(valueDef);
@@ -355,37 +348,22 @@ public class TableDefinition {
      * @param newName
      *            - new name of the column
      * 
-     *            public synchronized void renameColumn(String oldName, String newName) {
-     *            if (keyDef.hasKey(oldName)) {
-     *            keyDef.changeKey(oldName, newName);
-     *            } else if (valueDef.hasKey(oldName)) {
-     *            valueDef.changeKey(oldName, newName);
-     *            } else {
-     *            throw new IllegalArgumentException("no column named '" + oldName + "'");
-     *            }
+     *            public synchronized void renameColumn(String oldName, String newName) { if (keyDef.hasKey(oldName)) {
+     *            keyDef.changeKey(oldName, newName); } else if (valueDef.hasKey(oldName)) { valueDef.changeKey(oldName,
+     *            newName); } else { throw new IllegalArgumentException("no column named '" + oldName + "'"); }
      * 
-     *            if(secondaryIndexDef.hasKey(oldName)) {
-     *            keyDef.changeKey(oldName, newName);
-     *            }
+     *            if(secondaryIndexDef.hasKey(oldName)) { keyDef.changeKey(oldName, newName); }
      * 
-     *            if (oldName.equals(partitioningSpec.timeColumn)) {
-     *            PartitioningSpec newSpec = new PartitioningSpec(partitioningSpec.type, newName,
-     *            partitioningSpec.valueColumn);
-     *            newSpec.setTimePartitioningSchema(partitioningSpec.getTimePartitioningSchema());
-     *            partitioningSpec = newSpec;
-     *            } else if (oldName.equals(partitioningSpec.valueColumn)) {
-     *            PartitioningSpec newSpec = new PartitioningSpec(partitioningSpec.type, partitioningSpec.timeColumn,
-     *            newName);
-     *            newSpec.setTimePartitioningSchema(partitioningSpec.getTimePartitioningSchema());
-     *            partitioningSpec = newSpec;
-     *            }
+     *            if (oldName.equals(partitioningSpec.timeColumn)) { PartitioningSpec newSpec = new
+     *            PartitioningSpec(partitioningSpec.type, newName, partitioningSpec.valueColumn);
+     *            newSpec.setTimePartitioningSchema(partitioningSpec.getTimePartitioningSchema()); partitioningSpec =
+     *            newSpec; } else if (oldName.equals(partitioningSpec.valueColumn)) { PartitioningSpec newSpec = new
+     *            PartitioningSpec(partitioningSpec.type, partitioningSpec.timeColumn, newName);
+     *            newSpec.setTimePartitioningSchema(partitioningSpec.getTimePartitioningSchema()); partitioningSpec =
+     *            newSpec; }
      * 
-     *            int idx = histoColumns.indexOf(oldName);
-     *            if (idx != -1) {
-     *            histoColumns.set(idx, newName);
-     *            }
-     *            ydb.saveTableDefinition(this, keyDef.getList(), valueDef.getList());
-     *            }
+     *            int idx = histoColumns.indexOf(oldName); if (idx != -1) { histoColumns.set(idx, newName); }
+     *            ydb.saveTableDefinition(this, keyDef.getList(), valueDef.getList()); }
      */
 
     /**
@@ -429,8 +407,7 @@ public class TableDefinition {
     }
 
     /**
-     * get the enum value corresponding to a column, creating it if it does not
-     * exist
+     * get the enum value corresponding to a column, creating it if it does not exist
      * 
      * @return
      */
@@ -506,15 +483,14 @@ public class TableDefinition {
     }
 
     /**
-     * Transform the value part of the tuple into a byte array to be written on
-     * disk. Each column is preceded by a tag (the column index).
+     * Transform the value part of the tuple into a byte array to be written on disk. Each column is preceded by a tag
+     * (the column index).
      * <p>
-     * If there are columns in the tuple which are not in the valueDef, they are added and
-     * the TableDefinition is serialized on disk.
+     * If there are columns in the tuple which are not in the valueDef, they are added and the TableDefinition is
+     * serialized on disk.
      * <p>
      * Columns whose values are null are not serialized but their definition is still added to the table definition if
-     * not
-     * present already.
+     * not present already.
      * 
      * @param tuple
      * @param sertuple
@@ -616,6 +592,10 @@ public class TableDefinition {
         return keyDef.getIndex(cname) == 0;
     }
 
+    /**
+     * Returns the column definition for the given column or null if there is no such column
+     * 
+     */
     public TableColumnDefinition getColumnDefinition(String colName) {
         TableColumnDefinition tcd = keyDef.get(colName);
         if (tcd != null) {
