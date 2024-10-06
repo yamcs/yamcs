@@ -1,0 +1,7 @@
+# Single term
+
+-foo = 123
+
+==>
+
+Filter(Comparison(Minus, Comparable, CompareOp, Number))

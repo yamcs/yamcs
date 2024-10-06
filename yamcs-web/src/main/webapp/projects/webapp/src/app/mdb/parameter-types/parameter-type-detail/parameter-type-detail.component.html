@@ -30,6 +30,15 @@
     }
   </dd>
 
+  <dt>Units</dt>
+  <dd>
+    @if (parameterType.unitSet; as unitSet) {
+      {{ unitSet | units }}
+    } @else {
+      -
+    }
+  </dd>
+
   @if (parameterType.signed !== undefined) {
     <dt>Signed</dt>
     <dd>

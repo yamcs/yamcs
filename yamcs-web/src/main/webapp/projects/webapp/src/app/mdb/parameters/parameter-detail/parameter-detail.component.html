@@ -99,6 +99,15 @@
       }
     </dd>
 
+    <dt>Units</dt>
+    <dd>
+      @if (parameter.type?.unitSet; as unitSet) {
+        {{ unitSet | units }}
+      } @else {
+        -
+      }
+    </dd>
+
     @if (parameter.type?.signed !== undefined) {
       <dt>Signed</dt>
       <dd>

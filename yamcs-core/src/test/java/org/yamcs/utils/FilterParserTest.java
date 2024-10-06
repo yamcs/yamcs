@@ -131,6 +131,9 @@ public class FilterParserTest {
         filter = new ItemFilter("name != \"icy wombat\"");
         assertEquals(asList(a, b, d, e, f), filterItems(filter));
 
+        filter = new ItemFilter("-name = \"icy wombat\"");
+        assertEquals(asList(a, b, d, e, f), filterItems(filter));
+
         filter = new ItemFilter("NOT ( name = \"icy wombat\" )");
         assertEquals(asList(a, b, d, e, f), filterItems(filter));
 
