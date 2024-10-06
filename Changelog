@@ -1,3 +1,9 @@
+Version 5.10.2 released 6-Oct-2024
+- Improvement in command stacks: they are called simply "stacks" and allow interleaving commands with comments and steps allowing the operator to check the live value of defined parameters.
+- Added event filtering.
+- Alarm reloading - when Yamcs restarts it will reload the non-cleared alarms from the database such that they are active again.
+- Smaller tweaks and fixes.
+
 Version 5.10.1 released 1-Sept-2024
 - Activities: Execute known script files with (configurable) external program.
 - Small tweaks and fixes related to Parameter Archive and the web plugin.
