@@ -2,7 +2,7 @@
  ---------------
  UTC-TAI.history
  ---------------
- RELATIONSHIP BETWEEN TAI AND UTC, UNTIL 27 DECEMBER 2005
+ RELATIONSHIP BETWEEN TAI AND UTC
  ------------------------------------------------------------------------------- 
  Limits of validity(at 0h UTC)       TAI - UTC  
  
@@ -21,15 +21,15 @@
  1968  Feb.  1 - 1972  Jan.  1     4.213 170 0s +        ""
  1972  Jan.  1 -       Jul.  1    10s            
        Jul.  1 - 1973  Jan.  1    11s
- 1973  Jan.  1 - 1974  Jan.  1    12s	
- 1974  Jan.  1 - 1975  Jan.  1    13s	
- 1975  Jan.  1 - 1976  Jan.  1    14s	  
- 1976  Jan.  1 - 1977  Jan.  1    15s	    
+ 1973  Jan.  1 - 1974  Jan.  1    12s   
+ 1974  Jan.  1 - 1975  Jan.  1    13s   
+ 1975  Jan.  1 - 1976  Jan.  1    14s     
+ 1976  Jan.  1 - 1977  Jan.  1    15s       
  1977  Jan.  1 - 1978  Jan.  1    16s
- 1978  Jan.  1 - 1979  Jan.  1    17s	
- 1979  Jan.  1 - 1980  Jan.  1    18s	
- 1980  Jan.  1 - 1981  Jul.  1    19s	
- 1981  Jul.  1 - 1982  Jul.  1    20s	
+ 1978  Jan.  1 - 1979  Jan.  1    17s   
+ 1979  Jan.  1 - 1980  Jan.  1    18s   
+ 1980  Jan.  1 - 1981  Jul.  1    19s   
+ 1981  Jul.  1 - 1982  Jul.  1    20s   
  1982  Jul.  1 - 1983  Jul.  1    21s
  1983  Jul.  1 - 1985  Jul.  1    22s
  1985  Jul.  1 - 1988  Jan.  1    23s
@@ -44,7 +44,7 @@
  1999  Jan.  1.- 2006  Jan.  1    32s
  2006  Jan.  1.- 2009  Jan.  1    33s
  2009  Jan.  1.- 2012  Jul   1    34s
- 2012  Jul   1 - 2015  Jul   1    35s
- 2015  Jul   1 -                  36s
- 2017  Jan   1 -                  37s
+ 2012  Jul.  1 - 2015  Jul   1    35s
+ 2015  Jul.  1 - 2017  Jan   1    36s
+ 2017  Jan.  1 -                  37s
  ----------------------------------------------------------------------
