@@ -1,3 +1,10 @@
+Version 5.9.9 released 6-Oct-2024
+- Improvement in command stacks: they are called simply "stacks" and allow interleaving commands with comments and steps allowing the operator to check the live value of defined parameters.
+- Added event filtering.
+- Alarm reloading - when Yamcs restarts it will reload the non-cleared alarms such that they are active again.
+- Smaller tweaks and fixes
+
+
 Version 5.9.8 released 9-July-2024
 - small tweaks and fixes related to Parameter Archive, Frame valid/invalid counters, command dispatching, parameter link configuration.
 - updated yamcs-maven plugin to work with Java 22.
