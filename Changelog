@@ -1,3 +1,7 @@
+Version 5.10.3 released 7-Oct-2024
+- The alarm work done in 5.10.2 enabled by mistake the EventAlarmServer which used to be disabled by default. That causes Yamcs not to start in many configurations which used to work (including the Yamcs quickstart) due to missing the event_alarms_realtime. 
+  This version restores back the old behaviour - namely the EventAlarmServer is disabled by default. 
+
 Version 5.10.2 released 6-Oct-2024
 - Improvement in command stacks: they are called simply "stacks" and allow interleaving commands with comments and steps allowing the operator to check the live value of defined parameters.
 - Added event filtering.
