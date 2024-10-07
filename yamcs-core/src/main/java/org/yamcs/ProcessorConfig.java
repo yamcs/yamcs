@@ -127,10 +127,8 @@ public class ProcessorConfig {
         Spec spec = new Spec();
         spec.addOption("loadDays", OptionType.FLOAT).withDefault(30);
         spec.addOption("parameterCheck", OptionType.BOOLEAN).withDefault(true);
-
         spec.addOption("parameterServer", OptionType.STRING).withDefault("enabled");
-
-        spec.addOption("eventServer", OptionType.STRING).withDefault("enabled");
+        spec.addOption("eventServer", OptionType.STRING).withDefault("disabled");
         spec.addOption("eventAlarmMinViolations", OptionType.INTEGER).withDefault(1);
 
         return spec;
