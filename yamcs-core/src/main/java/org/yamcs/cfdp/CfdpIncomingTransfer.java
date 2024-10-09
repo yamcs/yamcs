@@ -339,6 +339,11 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     }
 
     private void processEofPacket(EofPacket packet) {
+        if (suspended) {
+            log.debug("TXID{} ignoring EOF packet {} while suspended", cfdpTransactionId, packet);
+            return;
+        }
+
         if (acknowledged) {
             sendPacket(getAckEofPacket(packet.getConditionCode()));
         }
@@ -445,9 +450,13 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
         finPacket = getFinishedPacket(code);
         this.inTxState = InTxState.FIN;
-        changeState(TransferState.CANCELLING);
+        if (code != ConditionCode.NO_ERROR) {
+            changeState(TransferState.CANCELLING);
+        }
 
-        sendFin();
+        if (!suspended) {
+            sendFin();
+        }
     }
 
     private void sendFin() {
@@ -548,6 +557,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             log.info("TXID{} transfer finished, resume ignored", cfdpTransactionId);
             return;
         }
+
         log.info("TXID{} resuming transfer", cfdpTransactionId);
 
         sendInfoEvent(ETYPE_TRANSFER_RESUMED, "transfer resumed");
