@@ -95,6 +95,11 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
      */
     final int nakLimit;
 
+    /**
+     * If true send EOF ACK even when suspended
+     */
+    final boolean ackEofWhileSuspended;
+
     int nakCount = 0;
     long lastNakSentTime = 0;
     long lastNakDataSize;
@@ -118,6 +123,9 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
     private boolean suspended = false;
 
+    // this will be set if the transfer is cancelled while suspended, either by user request or by EOF
+    ConditionCode cancelUponResume;
+
     // in case we start a transaction before receiving the metadata, this list will save the packets which will be
     // processed after we have the metadata
     List<CfdpPacket> queuedPackets = new ArrayList<>();
@@ -139,6 +147,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         this.nakTimeout = config.getInt("nakTimeout", 5000);
         this.nakLimit = config.getInt("nakLimit", -1);
         this.immediateNak = config.getBoolean("immediateNak", true);
+        this.ackEofWhileSuspended = config.getBoolean("ackEofWhileSuspended", true);
         var maxPduSize = config.getInt("maxPduSize", 512);
 
         if (!acknowledged) {
@@ -339,7 +348,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     }
 
     private void processEofPacket(EofPacket packet) {
-        if (acknowledged) {
+        if (acknowledged && (!suspended || ackEofWhileSuspended)) {
             sendPacket(getAckEofPacket(packet.getConditionCode()));
         }
 
@@ -350,7 +359,9 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         eofPacket = packet;
 
         if (eofPacket.getConditionCode() == ConditionCode.NO_ERROR) {
-            checkFileComplete();
+            if (!suspended) {
+                checkFileComplete();
+            }
         } else if (eofPacket.getConditionCode() == ConditionCode.CANCEL_REQUEST_RECEIVED) {
             pushError("Canceled by the Sender");
             complete(ConditionCode.CANCEL_REQUEST_RECEIVED);
@@ -359,7 +370,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             handleFault(eofPacket.getConditionCode());
         }
 
-        if (!acknowledged && inTxState == InTxState.RECEIVING_DATA) {
+        if (!acknowledged && inTxState == InTxState.RECEIVING_DATA && !suspended) {
             // start the checkTimer
             checkTimer.start(this::checkFileComplete, () -> {
                 log.warn("TXID{} check limit reached", cfdpTransactionId);
@@ -436,6 +447,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         if (inTxState == InTxState.FIN) {
             throw new IllegalStateException("already in FINISHED state");
         }
+        assert (!suspended);
 
         log.debug("TXID{} finishing with code {}", cfdpTransactionId, code);
         cancelInactivityTimer();
@@ -445,7 +457,9 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
         finPacket = getFinishedPacket(code);
         this.inTxState = InTxState.FIN;
-        changeState(TransferState.CANCELLING);
+        if (code != ConditionCode.NO_ERROR) {
+            changeState(TransferState.CANCELLING);
+        }
 
         sendFin();
     }
@@ -534,6 +548,9 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         sendInfoEvent(ETYPE_TRANSFER_SUSPENDED, "transfer suspended");
         changeState(TransferState.PAUSED);
         finTimer.cancel();
+        if (!acknowledged) {
+            checkTimer.cancel();
+        }
         suspended = true;
     }
 
@@ -543,29 +560,45 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             log.info("TXID{} resume called while not suspended, ignoring", cfdpTransactionId);
             return;
         }
+        suspended = false;
         if (inTxState == InTxState.COMPLETED) {
             // it is possible the transfer has finished while being suspended
             log.info("TXID{} transfer finished, resume ignored", cfdpTransactionId);
+            return;
+        }
+        if (cancelUponResume != null) {
+            cancel(cancelUponResume);
+            cancelUponResume = null;
             return;
         }
         log.info("TXID{} resuming transfer", cfdpTransactionId);
 
         sendInfoEvent(ETYPE_TRANSFER_RESUMED, "transfer resumed");
         if (inTxState == InTxState.RECEIVING_DATA) {
-            nakCount = 0;
-            sendOrScheduleNak();
+            checkFileComplete();
         } else if (inTxState == InTxState.FIN) {
             sendFin();
         }
+
+        if (!acknowledged && inTxState == InTxState.RECEIVING_DATA) {
+            // start the checkTimer
+            checkTimer.start(this::checkFileComplete, () -> {
+                log.warn("TXID{} check limit reached", cfdpTransactionId);
+                handleFault(ConditionCode.CHECK_LIMIT_REACHED);
+            });
+        }
         changeState(TransferState.RUNNING);
-        suspended = false;
     }
 
     @Override
     protected void cancel(ConditionCode code) {
         if (inTxState == InTxState.RECEIVING_DATA) {
             if (needsFinish) {
-                finish(code);
+                if (suspended) {
+                    cancelUponResume = code;
+                } else {
+                    finish(code);
+                }
             } else {
                 complete(code);
             }
