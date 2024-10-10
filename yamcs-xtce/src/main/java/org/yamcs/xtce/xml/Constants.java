@@ -7,6 +7,8 @@ public final class Constants {
     public static final String ATTR_INITIAL_VALUE = "initialValue";
     public static final String ATTR_SIZE_IN_BITS = "sizeInBits";
     public static final String ATTR_ENCODING = "encoding";
+    public static final String ATTR_ALIAS_NAME_SPACE = "aliasNameSpace";
+    
 
     public static final String ELEM_RELATIVE_TIME_PARAMETER_TYPE = "RelativeTimeParameterType";
     public static final String ELEM_ARRAY_PARAMETER_TYPE = "ArrayParameterType";
@@ -97,6 +99,7 @@ public final class Constants {
     public static final String ELEM_TERM = "Term";
     public static final String ELEM_SPLINE_POINT = "SplinePoint";
     public static final String ELEM_COUNT = "Count";
+    public static final String ELEM_PARAMETER_INSTANCE = "ParameterInstance";
     public static final String ELEM_PARAMETER_INSTANCE_REF = "ParameterInstanceRef";
     public static final String ELEM_ARGUMENT_INSTANCE_REF = "ArgumentInstanceRef";
     public static final String ELEM_STATIC_ALARM_RANGES = "StaticAlarmRanges";

@@ -2540,7 +2540,7 @@ public class XtceStaxReader extends AbstractStaxReader {
             } else if (isStartElementWithName(ELEM_STREAM_SEGMENT_ENTRY)) {
                 skipXtceSection(ELEM_STREAM_SEGMENT_ENTRY);
             } else if (isStartElementWithName(ELEM_INDIRECT_PARAMETER_REF_ENTRY)) {
-                skipXtceSection(ELEM_INDIRECT_PARAMETER_REF_ENTRY);
+                entry = readIndirectParameterRefEntry(spaceSystem);
             } else if (isStartElementWithName(ELEM_ARRAY_PARAMETER_REF_ENTRY)) {
                 entry = readArrayParameterRefEntry(spaceSystem);
             } else if (isStartElementWithName(ELEM_ARGUMENT_REF_ENTRY)) {
@@ -2559,6 +2559,34 @@ public class XtceStaxReader extends AbstractStaxReader {
             }
         }
 
+    }
+
+    private SequenceEntry readIndirectParameterRefEntry(SpaceSystem spaceSystem) throws XMLStreamException {
+        log.trace(ELEM_INDIRECT_PARAMETER_REF_ENTRY);
+        checkStartElementPreconditions();
+
+        String aliasNameSpace = readAttribute(ATTR_ALIAS_NAME_SPACE, xmlEvent.asStartElement(), null);
+
+        IndirectParameterRefEntry indirectParameterRefEntry = new IndirectParameterRefEntry(0, null, null, aliasNameSpace);
+        indirectParameterRefEntry.setLocation(SequenceEntry.ReferenceLocationType.PREVIOUS_ENTRY, 0); // default
+
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+
+            if (isStartElementWithName(ELEM_LOCATION_IN_CONTAINER_IN_BITS)) {
+                readLocationInContainerInBits(indirectParameterRefEntry);
+            } else if (isStartElementWithName(ELEM_PARAMETER_INSTANCE)) {
+                ParameterInstanceRef ref = readParameterInstanceRef(spaceSystem, null);
+                indirectParameterRefEntry.setParameterRef(ref);
+            } else if (isEndElementWithName(ELEM_INDIRECT_PARAMETER_REF_ENTRY)) {
+                if (indirectParameterRefEntry.getParameterRef() == null) {
+                    throw new XMLStreamException(ELEM_PARAMETER_INSTANCE + " not specified");
+                }
+                return indirectParameterRefEntry;
+            } else {
+                logUnknown();
+            }
+        }
     }
 
     private SequenceEntry readArrayParameterRefEntry(SpaceSystem spaceSystem) throws XMLStreamException {

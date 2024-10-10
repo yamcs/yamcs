@@ -104,4 +104,8 @@ container-entry:
       args:
           file: "src/test/resources/xtce/container-entry.xml"   
                  
+indirect-param-ref:
+    - type: xtce
+      args:
+          file: "../yamcs-xtce/src/test/resources/indirect-param.xml"
           
