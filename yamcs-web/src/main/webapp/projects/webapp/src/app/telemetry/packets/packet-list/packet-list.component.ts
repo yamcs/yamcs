@@ -47,6 +47,9 @@ export class PacketListComponent {
     { id: 'actions', label: '', alwaysVisible: true },
   ];
 
+  reducedValueColumns: string[] = ['icon', 'expand-aggray', 'entry', 'engValue'];
+  reducedContainerColumns: string[] = ['icon', 'containerName'];
+
   validStart: Date | null;
   validStop: Date | null;
 

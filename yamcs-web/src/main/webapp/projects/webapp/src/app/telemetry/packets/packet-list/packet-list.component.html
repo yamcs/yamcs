@@ -63,6 +63,8 @@
         <div class="block">
           <app-packet-detail-table
             [packet]="detailPacket"
+            [valueColumns]="reducedValueColumns"
+            [containerColumns]="reducedContainerColumns"
             (highlightBitRangeEvent)="onHighlightBitRange($event)"
             (clearHighlightedBitRangeEvent)="onClearHighlightedBitRange()"
             (selectBitRangeEvent)="onSelectBitRange($event)">

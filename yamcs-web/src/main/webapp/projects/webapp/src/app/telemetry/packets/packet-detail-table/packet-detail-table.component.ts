@@ -83,6 +83,8 @@ export class PacketDetailTableComponent {
   constructor(readonly yamcs: YamcsService) {}
 
   @Input() packet!: Packet;
+  @Input() valueColumns: string[] = ['icon', 'location', 'size', 'expand-aggray', 'entry', 'type', 'rawValue', 'engValue', 'actions'];
+  @Input() containerColumns: string[] = ['icon', 'containerName', 'type', 'rawValue', 'engValue', 'actions'];
 
   @Output() highlightBitRangeEvent = new EventEmitter<BitRange>();
   @Output() clearHighlightedBitRangeEvent = new EventEmitter<void>();
@@ -92,27 +94,6 @@ export class PacketDetailTableComponent {
 
   private allNodes: Node[] = [];
   dataSource = new MatTableDataSource<Node>();
-
-  displayedColumns = [
-    'icon',
-    'location',
-    'size',
-    'expand-aggray',
-    'entry',
-    'type',
-    'rawValue',
-    'engValue',
-    'actions',
-  ];
-
-  containerColumns = [
-    'icon',
-    'containerName',
-    'type',
-    'rawValue',
-    'engValue',
-    'actions',
-  ];
 
   typeOptions: YaSelectOption[] = [
     { id: 'ANY', label: 'Any type' },

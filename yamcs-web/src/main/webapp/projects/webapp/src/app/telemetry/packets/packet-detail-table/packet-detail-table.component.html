@@ -108,31 +108,31 @@
   <ng-container matColumnDef="type">
     <th mat-header-cell *matHeaderCellDef>Type</th>
     <td mat-cell *matCellDef="let node" class="mono vtop">
-      @if (node.type === "CONTAINER") {
-        container
-      }
-      @if (node.type === "SIMPLE_PARAMETER") {
-        {{ node.parameter.type.engType }}
-      }
-      @if (node.type === "AGGREGATE_PARAMETER") {
-        {{ node.parameter.type.engType }}
-      }
-      @if (node.type === "ARRAY_PARAMETER") {
-        {{
-          fillTypeWithValueDimension(node.parameter.type.engType, node.engValue?.arrayValue)
-        }}
-      }
-      @if (node.type === "SIMPLE_VALUE") {
-        {{ node.parameterType.engType }}
-      }
-      @if (node.type === "AGGREGATE_VALUE") {
-        {{ node.parameterType.engType }}
-      }
-      @if (node.type === "ARRAY_VALUE") {
-        {{
-          fillTypeWithValueDimension(node.parameterType.engType, node.engValue?.arrayValue)
-        }}
-      }
+        @if (node.type === "CONTAINER") {
+          container
+        }
+        @if (node.type === "SIMPLE_PARAMETER") {
+          {{ node.parameter.type.engType }}
+        }
+        @if (node.type === "AGGREGATE_PARAMETER") {
+          {{ node.parameter.type.engType }}
+        }
+        @if (node.type === "ARRAY_PARAMETER") {
+          {{
+            fillTypeWithValueDimension(node.parameter.type.engType, node.engValue?.arrayValue)
+          }}
+        }
+        @if (node.type === "SIMPLE_VALUE") {
+          {{ node.parameterType.engType }}
+        }
+        @if (node.type === "AGGREGATE_VALUE") {
+          {{ node.parameterType.engType }}
+        }
+        @if (node.type === "ARRAY_VALUE") {
+          {{
+            fillTypeWithValueDimension(node.parameterType.engType, node.engValue?.arrayValue)
+          }}
+        }
     </td>
   </ng-container>
   <ng-container matColumnDef="rawValue">
@@ -189,7 +189,7 @@
       }
     </td>
   </ng-container>
-  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-header-row *matHeaderRowDef="valueColumns"></tr>
   <tr
     mat-row
     *matRowDef="let node; columns: containerColumns; when: isContainer"
@@ -197,7 +197,7 @@
     (click)="toggleRow(node)"></tr>
   <tr
     mat-row
-    *matRowDef="let node; columns: displayedColumns; when: isNoContainer"
+    *matRowDef="let node; columns: valueColumns; when: isNoContainer"
     [class.expandable]="isExpandable(node)"
     (mouseover)="highlightBitRange(node)"
     (mouseout)="clearHighlightedBitRange()"
