@@ -21,7 +21,7 @@
 }
 
 .detail-content.hidden {
-  opacity: 0;
+  visibility: hidden;
 }
 
 .toggle-button {
