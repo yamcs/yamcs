@@ -72,8 +72,12 @@ public class WebApi extends AbstractWebApi<Context> {
             parameterArchive = false;
             break;
         default:
-            var service = yamcsInstance.getServices(ParameterArchive.class).iterator().next();
-            parameterArchive = service != null && service.isRunning();
+            var services = yamcsInstance.getServices(ParameterArchive.class);
+            if (services.isEmpty()) {
+                parameterArchive = false;
+            } else {
+                parameterArchive = services.iterator().next().isRunning();
+            }
         }
         b.setParameterArchive(parameterArchive);
 
