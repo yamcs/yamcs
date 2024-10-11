@@ -1,16 +1,38 @@
-.detail {
+.detail-pane {
   background-color: #fcfcfc;
   float: right;
   height: 100%;
   width: 450px;
-  overflow: auto;
+  overflow: hidden;
   border-left: 1px solid rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
   font: 400 12px / 20px Roboto, sans-serif;
+  position: relative;
+}
+
+.detail-pane.collapsed {
+  width: 60px;
+}
+
+.detail-content {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+}
+
+.detail-content.hidden {
+  opacity: 0;
+}
+
+.toggle-button {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  z-index: 1;
 }
 
 @media print {
-  .detail {
+  .detail-pane {
     display: none;
   }
 }
