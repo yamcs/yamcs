@@ -4,8 +4,10 @@ import { APP_INITIALIZER, EnvironmentProviders, provideExperimentalZonelessChang
 import { DateAdapter } from '@angular/material/core';
 import { MAT_TOOLTIP_DEFAULT_OPTIONS, MAT_TOOLTIP_DEFAULT_OPTIONS_FACTORY, MatTooltipDefaultOptions } from '@angular/material/tooltip';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { Router } from '@angular/router';
 import { UtcDateAdapter } from './components/date-time-input/UtcDateAdapter';
 import { ConfigService } from './services/config.service';
+import { SdkBridge } from './services/sdk-bridge.service';
 
 const matTooltipOptions: MatTooltipDefaultOptions = {
   ...MAT_TOOLTIP_DEFAULT_OPTIONS_FACTORY(),
@@ -56,6 +58,22 @@ export function provideConfigInitializer(): Provider[] {
       multi: true,
       deps: [ConfigService]
     },
+  ];
+}
+
+// Not intended for use in webcomponents
+export function provideSdkBridge(): Provider[] {
+  return [
+    {
+      provide: APP_INITIALIZER,
+      useFactory: (bridge: SdkBridge, router: Router) => {
+        return () => {
+          bridge.router = router;
+        };
+      },
+      multi: true,
+      deps: [SdkBridge, Router],
+    }
   ];
 }
 

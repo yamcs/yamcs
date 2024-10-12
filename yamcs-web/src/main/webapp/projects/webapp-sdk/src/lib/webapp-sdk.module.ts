@@ -45,6 +45,7 @@ import { YaHelp } from './components/help/help.component';
 import { YaHelpDialog } from './components/help/help.dialog';
 import { YaHexIntegerInput } from './components/hex-integer-input/hex-integer-input.component';
 import { YaHighlight } from './components/highlight/highlight.component';
+import { YaHref } from './components/href/href.directive';
 import { YaIconAction } from './components/icon-action/icon-action.component';
 import { YaInterval } from './components/interval/interval.component';
 import { YaLabel } from './components/label/label.component';
@@ -148,6 +149,7 @@ const directives = [
   PrintableDirective,
   SimpleTableDirective,
   TableDirective,
+  YaHref,
 ];
 
 const sharedComponents = [

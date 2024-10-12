@@ -21,6 +21,9 @@ export class ExtensionComponent implements AfterViewInit, OnChanges {
   @Input()
   extension: string;
 
+  @Input()
+  subroute: string;
+
   @ViewChild('customElementControlsHolder')
   customElementControlsHolder: ElementRef<HTMLDivElement>;
 
@@ -42,6 +45,7 @@ export class ExtensionComponent implements AfterViewInit, OnChanges {
     holder.innerHTML = `<${extension}></${extension}>`;
 
     const extensionEl = holder.childNodes.item(0);
+    (extensionEl as any).subroute = this.subroute;
     (extensionEl as any).extensionService = this.extensionService;
 
     const { nativeElement: controlsHolder } = this.customElementControlsHolder;

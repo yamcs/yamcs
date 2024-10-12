@@ -1,19 +1,28 @@
-import { Directive, Input } from '@angular/core';
+import { Directive, inject, Input } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ConfigService } from './services/config.service';
 import { ExtensionService } from './services/extension.service';
 import { MessageService } from './services/message.service';
+import { SdkBridge } from './services/sdk-bridge.service';
 import { YamcsService } from './services/yamcs.service';
 
 @Directive()
 export abstract class YamcsWebExtension {
 
   private _extensionService: ExtensionService;
+  sdkBridge = inject(SdkBridge);
+
+  @Input()
+  public subroute: string;
 
   @Input()
   get extensionService() { return this._extensionService; }
   set extensionService(extensionService: ExtensionService) {
     this._extensionService = extensionService;
+
+    // Configure bridge to use router of main webapp.
+    this.sdkBridge.router = extensionService.router;
+
     this.onExtensionInit();
   }
 
