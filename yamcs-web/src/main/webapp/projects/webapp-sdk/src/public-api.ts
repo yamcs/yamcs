@@ -28,6 +28,7 @@ export * from './lib/components/help/help.component';
 export * from './lib/components/help/help.dialog';
 export * from './lib/components/hex-integer-input/hex-integer-input.component';
 export * from './lib/components/highlight/highlight.component';
+export * from './lib/components/href/href.directive';
 export * from './lib/components/icon-action/icon-action.component';
 export * from './lib/components/interval/interval.component';
 export * from './lib/components/label/label.component';

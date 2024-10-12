@@ -3,6 +3,7 @@ import { ContextSwitchComponent } from './appbase/context-switch/context-switch.
 import { CreateInstancePage1Component } from './appbase/create-instance-page1/create-instance-page1.component';
 import { CreateInstancePage2Component } from './appbase/create-instance-page2/create-instance-page2.component';
 import { ExtensionComponent } from './appbase/extension/extension.component';
+import { extensionMatcher } from './appbase/extension/extension.matcher';
 import { ForbiddenComponent } from './appbase/forbidden/forbidden.component';
 import { HomeComponent } from './appbase/home/home.component';
 import { NotFoundComponent } from './appbase/not-found/not-found.component';
@@ -119,7 +120,7 @@ export const APP_ROUTES: Routes = [{
     runGuardsAndResolvers: 'always',
     component: InstancePageComponent,
     children: [{
-      path: ':extension',
+      matcher: extensionMatcher,
       component: ExtensionComponent,
     }]
   }, {
