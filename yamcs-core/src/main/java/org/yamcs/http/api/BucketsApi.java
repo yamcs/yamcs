@@ -23,6 +23,7 @@ import org.yamcs.protobuf.CreateBucketRequest;
 import org.yamcs.protobuf.DeleteBucketRequest;
 import org.yamcs.protobuf.DeleteObjectRequest;
 import org.yamcs.protobuf.GetBucketRequest;
+import org.yamcs.protobuf.GetObjectInfoRequest;
 import org.yamcs.protobuf.GetObjectRequest;
 import org.yamcs.protobuf.ListBucketsRequest;
 import org.yamcs.protobuf.ListBucketsResponse;
@@ -83,22 +84,6 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
         }
     }
 
-    private static BucketInfo toBucketInfo(Bucket bucket) throws IOException {
-        BucketProperties props = bucket.getProperties();
-        BucketInfo.Builder bucketb = BucketInfo.newBuilder()
-                .setName(bucket.getName())
-                .setMaxSize(props.getMaxSize())
-                .setMaxObjects(props.getMaxNumObjects())
-                .setCreated(TimeEncoding.toProtobufTimestamp(props.getCreated()))
-                .setNumObjects(props.getNumObjects())
-                .setSize(props.getSize());
-        if (bucket instanceof FileSystemBucket) {
-            FileSystemBucket fsBucket = (FileSystemBucket) bucket;
-            bucketb.setDirectory(fsBucket.getBucketRoot().toAbsolutePath().normalize().toString());
-        }
-        return bucketb.build();
-    }
-
     @Override
     public void createBucket(Context ctx, CreateBucketRequest request, Observer<BucketInfo> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ManageAnyBucket);
@@ -132,6 +117,25 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
             throw new InternalServerErrorException("Error when deleting bucket: " + e.getMessage(), e);
         }
         observer.complete(Empty.getDefaultInstance());
+    }
+
+    @Override
+    public void getObjectInfo(Context ctx, GetObjectInfoRequest request, Observer<ObjectInfo> observer) {
+        String bucketName = request.getBucketName();
+        checkReadBucketPrivilege(bucketName, ctx.user);
+
+        String objName = request.getObjectName();
+        Bucket bucket = verifyAndGetBucket(YamcsServer.GLOBAL_INSTANCE, bucketName, ctx.user);
+        try {
+            ObjectProperties props = bucket.findObject(objName);
+            if (props == null) {
+                throw new NotFoundException();
+            } else {
+                observer.complete(toObjectInfo(props));
+            }
+        } catch (IOException e) {
+            throw new InternalServerErrorException("Error when retrieving object: " + e.getMessage(), e);
+        }
     }
 
     @Override
@@ -228,13 +232,7 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
             }
 
             for (ObjectProperties props : objects) {
-                ObjectInfo oinfo = ObjectInfo.newBuilder()
-                        .setCreated(TimeEncoding.toProtobufTimestamp(props.getCreated()))
-                        .setName(props.getName())
-                        .setSize(props.getSize())
-                        .putAllMetadata(props.getMetadataMap())
-                        .build();
-                responseb.addObjects(oinfo);
+                responseb.addObjects(toObjectInfo(props));
             }
             observer.complete(responseb.build());
         } catch (IOException e) {
@@ -249,7 +247,7 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
         String bucketName = request.getBucketName();
         checkManageBucketPrivilege(bucketName, ctx.user);
 
-        String objName = request.getObjectName(); // TODO: will not parse ending / unless URI encoded
+        String objName = request.getObjectName();
         Bucket bucket = verifyAndGetBucket(instance, bucketName, ctx.user);
         try {
             ObjectProperties props = bucket.findObject(objName);
@@ -262,6 +260,31 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
             log.error("Error when retrieving object {} from bucket {} ", objName, bucket.getName(), e);
             throw new InternalServerErrorException("Error when retrieving object: " + e.getMessage());
         }
+    }
+
+    private static BucketInfo toBucketInfo(Bucket bucket) throws IOException {
+        BucketProperties props = bucket.getProperties();
+        BucketInfo.Builder bucketb = BucketInfo.newBuilder()
+                .setName(bucket.getName())
+                .setMaxSize(props.getMaxSize())
+                .setMaxObjects(props.getMaxNumObjects())
+                .setCreated(TimeEncoding.toProtobufTimestamp(props.getCreated()))
+                .setNumObjects(props.getNumObjects())
+                .setSize(props.getSize());
+        if (bucket instanceof FileSystemBucket) {
+            FileSystemBucket fsBucket = (FileSystemBucket) bucket;
+            bucketb.setDirectory(fsBucket.getBucketRoot().toAbsolutePath().normalize().toString());
+        }
+        return bucketb.build();
+    }
+
+    private static ObjectInfo toObjectInfo(ObjectProperties props) {
+        return ObjectInfo.newBuilder()
+                .setCreated(TimeEncoding.toProtobufTimestamp(props.getCreated()))
+                .setName(props.getName())
+                .setSize(props.getSize())
+                .putAllMetadata(props.getMetadataMap())
+                .build();
     }
 
     public static void checkReadBucketPrivilege(String bucketName, User user) throws HttpException {

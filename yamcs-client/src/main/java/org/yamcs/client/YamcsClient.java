@@ -651,11 +651,19 @@ public class YamcsClient {
             this.serverURL = serverURL;
         }
 
+        /**
+         * Deprecated: append any context to the server URL instead.
+         */
+        @Deprecated
         public Builder withContext(String context) {
             serverURL.setContext(context);
             return this;
         }
 
+        /**
+         * Deprecated: use either http:// or https:// on the server URL instead.
+         */
+        @Deprecated
         public Builder withTls(boolean tls) {
             serverURL.setTLS(tls);
             return this;
