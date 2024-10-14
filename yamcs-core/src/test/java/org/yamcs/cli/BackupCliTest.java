@@ -16,10 +16,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
+import org.yamcs.buckets.BucketManager;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.yarch.Bucket;
-import org.yamcs.yarch.BucketDatabase;
 import org.yamcs.yarch.rocksdb.RdbBucket;
 import org.yamcs.yarch.rocksdb.RdbBucketDatabase;
 import org.yamcs.yarch.rocksdb.Tablespace;
@@ -31,6 +30,7 @@ public class BackupCliTest extends AbstractCliTest {
     public static void createDb() throws IOException {
         RocksDB.loadLibrary();
         etcdata = createTmpEtcData();
+        BucketManager.setMockup();
     }
 
     @AfterAll
@@ -56,8 +56,8 @@ public class BackupCliTest extends AbstractCliTest {
         Tablespace tbl = new Tablespace("test");
         tbl.setCustomDataDir(dataDir + File.separator + "test.rdb");
         tbl.loadDb(false);
-        BucketDatabase bdb = new RdbBucketDatabase("test", tbl);
-        Bucket bucket = bdb.createBucket("mybucket");
+        var bdb = new RdbBucketDatabase("test", tbl);
+        var bucket = bdb.createBucket("mybucket");
         bucket.putObject("obj1", "binary", null, obj1);
         tbl.close();
 

@@ -7,12 +7,11 @@ import java.util.Map;
 import org.yamcs.Spec;
 import org.yamcs.Spec.NamedSpec;
 import org.yamcs.Spec.OptionType;
+import org.yamcs.buckets.Bucket;
 import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.security.User;
-import org.yamcs.yarch.Bucket;
-import org.yamcs.yarch.YarchDatabase;
 
 public class CommandStackExecutor implements ActivityExecutor {
 
@@ -84,10 +83,10 @@ public class CommandStackExecutor implements ActivityExecutor {
         var stackName = YConfiguration.getString(args, "stack");
         var processor = YamcsServer.getServer().getProcessor(yamcsInstance, processorName);
 
-        var yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
+        var bucketManager = YamcsServer.getServer().getBucketManager();
         Bucket bucket;
         try {
-            bucket = yarch.getBucket(bucketName);
+            bucket = bucketManager.getBucket(bucketName);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

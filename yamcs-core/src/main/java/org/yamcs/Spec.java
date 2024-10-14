@@ -209,23 +209,25 @@ public class Spec {
             }
         }
 
-        for (var whenCondition : whenConditions) {
+        var satisfiedWhenConditions = whenConditions.stream().filter(whenCondition -> {
             var arg = args.get(whenCondition.key);
-            if (arg != null && arg.equals(whenCondition.value)) {
-                var missing = whenCondition.requiredKeys.stream()
-                        .filter(key -> !args.containsKey(key))
-                        .collect(Collectors.toList());
-                if (!missing.isEmpty()) {
-                    var path = "".equals(parent) ? whenCondition.key : (parent + "->" + whenCondition.key);
-                    throw new ValidationException(ctx, String.format(
-                            "%s is %s but the following arguments are missing: %s",
-                            path, whenCondition.value, missing));
-                }
+            return arg != null && arg.equals(whenCondition.value);
+        }).toList();
+
+        for (var whenCondition : satisfiedWhenConditions) {
+            var missing = whenCondition.requiredKeys.stream()
+                    .filter(key -> !args.containsKey(key))
+                    .collect(Collectors.toList());
+            if (!missing.isEmpty()) {
+                var path = "".equals(parent) ? whenCondition.key : (parent + "->" + whenCondition.key);
+                throw new ValidationException(ctx, String.format(
+                        "%s is %s but the following arguments are missing: %s",
+                        path, whenCondition.value, missing));
             }
         }
 
         // Build a new set of args where defaults have been entered
-        // Makes this a linked hashmap to keep the defined order
+        // Make this a linked hashmap to keep the defined order
         var result = new LinkedHashMap<String, Object>();
 
         // Check the provided arguments
@@ -234,6 +236,15 @@ public class Spec {
             var path = "".equals(parent) ? argName : (parent + "->" + argName);
 
             var option = getOption(argName);
+            if (option == null) {
+                for (var whenCondition : satisfiedWhenConditions) {
+                    option = whenCondition.options.get(argName);
+                    if (option != null) {
+                        break;
+                    }
+                }
+            }
+
             if (option == null) {
                 if (allowUnknownKeys) {
                     result.put(argName, entry.getValue());
@@ -250,7 +261,12 @@ public class Spec {
             }
         }
 
-        for (var option : options.values()) {
+        var effectiveOptions = new ArrayList<>(options.values());
+        for (var whenCondition : satisfiedWhenConditions) {
+            effectiveOptions.addAll(whenCondition.options.values());
+        }
+
+        for (var option : effectiveOptions) {
             var specified = args.containsKey(option.name);
             for (var alias : aliases.entrySet()) {
                 if (alias.getValue().equals(option.name) && args.containsKey(alias.getKey())) {
@@ -266,6 +282,7 @@ public class Spec {
 
                 var defaultValue = option.validate(ctx, option.computeDefaultValue(), path,
                         true /* suppressWarnings */);
+
                 if (defaultValue != null) {
                     result.put(option.name, defaultValue);
                 }
@@ -520,12 +537,50 @@ public class Spec {
         private Spec spec;
         private String key;
         private Object value;
-        private List<String> requiredKeys = new ArrayList<>();
+        private Map<String, Option> options = new LinkedHashMap<>(0);
+        private List<String> requiredKeys = new ArrayList<>(0);
+        private List<List<String>> requiredOneOfGroups = new ArrayList<>(0);
+        private List<List<String>> requireTogetherGroups = new ArrayList<>(0);
+        private List<List<String>> mutuallyExclusiveGroups = new ArrayList<>(0);
 
         public WhenCondition(Spec spec, String key, Object value) {
             this.spec = spec;
             this.key = key;
             this.value = value;
+        }
+
+        /**
+         * Add an {@link Option} when the condition is satisfied.
+         * 
+         * @throws IllegalArgumentException
+         *             if an option with this name is already defined.
+         */
+        public Option addOption(String name, OptionType type) {
+            var option = new Option(spec, name, type);
+            options.put(name, option);
+            return option;
+        }
+
+        /**
+         * Apply options from the given spec into the current spec when the condition is satisfied.
+         *
+         * @throws IllegalArgumentException
+         *             if an option with the same name is already defined.
+         */
+        public WhenCondition mergeSpec(Spec spec) {
+            var parentSpec = this.spec;
+            for (var option : spec.options.values()) {
+                var copy = new Option(parentSpec, option);
+                options.put(option.name, copy);
+            }
+            parentSpec.requiredOneOfGroups.addAll(spec.requiredOneOfGroups);
+            parentSpec.requireTogetherGroups.addAll(spec.requireTogetherGroups);
+            parentSpec.mutuallyExclusiveGroups.addAll(spec.mutuallyExclusiveGroups);
+            return this;
+        }
+
+        public Collection<Option> getOptions() {
+            return options.values();
         }
 
         public WhenCondition requireAll(String... keys) {
@@ -534,6 +589,14 @@ public class Spec {
                 requiredKeys.add(key);
             }
             return this;
+        }
+
+        /**
+         * Specify a set of keys that must appear together. This check only applies as soon as at least one of these
+         * keys has been specified.
+         */
+        public void requireTogether(String... keys) {
+            requireTogetherGroups.add(Arrays.asList(keys));
         }
 
         public String getKey() {
@@ -571,6 +634,26 @@ public class Spec {
             this.parentSpec = parentSpec;
             this.name = name;
             this.type = type;
+        }
+
+        public Option(Spec parentSpec, Option original) {
+            this(parentSpec, original.name, original.type);
+            title = original.title;
+            if (original.description != null) {
+                description = new ArrayList<>(original.description);
+            }
+            required = original.required;
+            secret = original.secret;
+            hidden = original.hidden;
+            defaultValue = original.defaultValue;
+            elementType = original.elementType;
+            versionAdded = original.versionAdded;
+            deprecationMessage = original.deprecationMessage;
+            if (original.choices != null) {
+                choices = new ArrayList<>(original.choices);
+            }
+            spec = original.spec;
+            applySpecDefaults = original.applySpecDefaults;
         }
 
         public String getName() {
@@ -711,6 +794,14 @@ public class Spec {
          */
         public Option withChoices(Object... choices) {
             this.choices = Arrays.asList(choices);
+            return this;
+        }
+
+        /**
+         * Sets the allowed values of this option.
+         */
+        public Option withChoices(Collection<?> choices) {
+            this.choices = new ArrayList<>(choices);
             return this;
         }
 

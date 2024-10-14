@@ -1,9 +1,9 @@
 package org.yamcs.cfdp;
 
+import org.yamcs.buckets.Bucket;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.yarch.Bucket;
 
 public class QueuedCfdpOutgoingTransfer implements CfdpFileTransfer {
 

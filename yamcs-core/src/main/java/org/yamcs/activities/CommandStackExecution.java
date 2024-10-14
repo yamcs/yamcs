@@ -16,6 +16,7 @@ import org.yamcs.ErrorInCommand;
 import org.yamcs.Processor;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
+import org.yamcs.buckets.Bucket;
 import org.yamcs.cmdhistory.Attribute;
 import org.yamcs.cmdhistory.CommandHistoryConsumer;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
@@ -27,7 +28,6 @@ import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.security.User;
-import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.YarchDatabase;
 
 public class CommandStackExecution extends ActivityExecution {
@@ -60,7 +60,7 @@ public class CommandStackExecution extends ActivityExecution {
         var mdb = MdbFactory.getInstance(yamcsInstance);
         var histManager = processor.getCommandHistoryManager();
 
-        var bytes = bucket.getObject(stackName);
+        var bytes = bucket.getObjectAsync(stackName).get();
         var json = new String(bytes, StandardCharsets.UTF_8);
         var stack = CommandStack.fromJson(json, mdb);
 

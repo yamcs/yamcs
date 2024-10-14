@@ -4,21 +4,26 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.yamcs.YamcsServer;
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
+import org.yamcs.buckets.Bucket;
+import org.yamcs.buckets.BucketProperties;
+import org.yamcs.buckets.FileSystemBucket;
+import org.yamcs.buckets.ObjectProperties;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
-import org.yamcs.logging.Log;
 import org.yamcs.protobuf.AbstractBucketsApi;
 import org.yamcs.protobuf.BucketInfo;
+import org.yamcs.protobuf.BucketLocation;
 import org.yamcs.protobuf.CreateBucketRequest;
 import org.yamcs.protobuf.DeleteBucketRequest;
 import org.yamcs.protobuf.DeleteObjectRequest;
@@ -35,36 +40,41 @@ import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.yarch.Bucket;
-import org.yamcs.yarch.FileSystemBucket;
-import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.YarchDatabaseInstance;
-import org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties;
-import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 
 public class BucketsApi extends AbstractBucketsApi<Context> {
 
-    private static final Log log = new Log(BucketsApi.class);
-
     static final Pattern BUCKET_NAME_REGEXP = Pattern.compile("\\w[\\w\\-]+");
     static final Pattern OBJ_NAME_REGEXP = Pattern.compile("[ \\w\\s\\-\\./]+");
 
     @Override
     public void listBuckets(Context ctx, ListBucketsRequest request, Observer<ListBucketsResponse> observer) {
-        var instance = request.hasInstance() ? request.getInstance() : YamcsServer.GLOBAL_INSTANCE;
-        YarchDatabaseInstance yarch = getYarch(instance);
+        var bucketManager = YamcsServer.getServer().getBucketManager();
         try {
-            List<Bucket> buckets = yarch.listBuckets().stream()
+            List<Bucket> buckets = bucketManager.listBuckets().stream()
                     .filter(bucket -> mayReadBucket(bucket.getName(), ctx.user))
                     .collect(Collectors.toList());
-            ListBucketsResponse.Builder responseb = ListBucketsResponse.newBuilder();
+
+            var futures = new ArrayList<CompletableFuture<BucketInfo>>();
             for (Bucket bucket : buckets) {
-                responseb.addBuckets(toBucketInfo(bucket));
+                futures.add(bucket.getPropertiesAsync().thenApply(props -> {
+                    return toBucketInfo(bucket, props);
+                }));
             }
-            observer.complete(responseb.build());
+
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).whenComplete((res, err) -> {
+                if (err == null) {
+                    var responseb = ListBucketsResponse.newBuilder();
+                    for (var future : futures) {
+                        responseb.addBuckets(future.join());
+                    }
+                    observer.complete(responseb.build());
+                } else {
+                    observer.completeExceptionally(err.getCause());
+                }
+            });
         } catch (IOException e) {
             observer.completeExceptionally(e);
         }
@@ -72,16 +82,17 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
 
     @Override
     public void getBucket(Context ctx, GetBucketRequest request, Observer<BucketInfo> observer) {
-        var instance = request.hasInstance() ? request.getInstance() : YamcsServer.GLOBAL_INSTANCE;
         String bucketName = request.getBucketName();
 
         checkReadBucketPrivilege(bucketName, ctx.user);
-        Bucket b = verifyAndGetBucket(instance, bucketName, ctx.user);
-        try {
-            observer.complete(toBucketInfo(b));
-        } catch (IOException e) {
-            observer.completeExceptionally(e);
-        }
+        Bucket b = verifyAndGetBucket(bucketName, ctx.user);
+        b.getPropertiesAsync().whenComplete((props, err) -> {
+            if (err == null) {
+                observer.complete(toBucketInfo(b, props));
+            } else {
+                observer.completeExceptionally(err.getCause());
+            }
+        });
     }
 
     @Override
@@ -89,14 +100,19 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
         ctx.checkSystemPrivilege(SystemPrivilege.ManageAnyBucket);
 
         verifyBucketName(request.getName());
-        var instance = request.hasInstance() ? request.getInstance() : YamcsServer.GLOBAL_INSTANCE;
-        YarchDatabaseInstance yarch = getYarch(instance);
+        var bucketManager = YamcsServer.getServer().getBucketManager();
         try {
-            if (yarch.getBucket(request.getName()) != null) {
+            if (bucketManager.getBucket(request.getName()) != null) {
                 throw new BadRequestException("A bucket with the name '" + request.getName() + "' already exist");
             }
-            var b = yarch.createBucket(request.getName());
-            observer.complete(toBucketInfo(b));
+            var b = bucketManager.createBucket(request.getName());
+            b.getPropertiesAsync().whenComplete((props, err) -> {
+                if (err == null) {
+                    observer.complete(toBucketInfo(b, props));
+                } else {
+                    observer.completeExceptionally(err.getCause());
+                }
+            });
         } catch (IOException e) {
             throw new InternalServerErrorException("Error when creating bucket: " + e.getMessage(), e);
         }
@@ -106,13 +122,12 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
     public void deleteBucket(Context ctx, DeleteBucketRequest request, Observer<Empty> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ManageAnyBucket);
 
-        var instance = request.hasInstance() ? request.getInstance() : YamcsServer.GLOBAL_INSTANCE;
         String bucketName = request.getBucketName();
 
-        YarchDatabaseInstance yarch = getYarch(instance);
-        Bucket b = verifyAndGetBucket(instance, bucketName, ctx.user);
+        var bucketManager = YamcsServer.getServer().getBucketManager();
+        Bucket b = verifyAndGetBucket(bucketName, ctx.user);
         try {
-            yarch.deleteBucket(b.getName());
+            bucketManager.deleteBucket(b.getName());
         } catch (IOException e) {
             throw new InternalServerErrorException("Error when deleting bucket: " + e.getMessage(), e);
         }
@@ -125,53 +140,64 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
         checkReadBucketPrivilege(bucketName, ctx.user);
 
         String objName = request.getObjectName();
-        Bucket bucket = verifyAndGetBucket(YamcsServer.GLOBAL_INSTANCE, bucketName, ctx.user);
-        try {
-            ObjectProperties props = bucket.findObject(objName);
-            if (props == null) {
-                throw new NotFoundException();
+        Bucket bucket = verifyAndGetBucket(bucketName, ctx.user);
+        bucket.findObjectAsync(objName).whenComplete((props, err) -> {
+            if (err == null) {
+                if (props == null) {
+                    observer.completeExceptionally(new NotFoundException());
+                } else {
+                    observer.complete(toObjectInfo(props));
+                }
             } else {
-                observer.complete(toObjectInfo(props));
+                observer.completeExceptionally(new InternalServerErrorException(
+                        "Error when retrieving object: " + err.getMessage(), err));
             }
-        } catch (IOException e) {
-            throw new InternalServerErrorException("Error when retrieving object: " + e.getMessage(), e);
-        }
+        });
     }
 
     @Override
     public void getObject(Context ctx, GetObjectRequest request, Observer<HttpBody> observer) {
-        var instance = request.hasInstance() ? request.getInstance() : YamcsServer.GLOBAL_INSTANCE;
         String bucketName = request.getBucketName();
         checkReadBucketPrivilege(bucketName, ctx.user);
 
         String objName = request.getObjectName();
-        Bucket bucket = verifyAndGetBucket(instance, bucketName, ctx.user);
-        try {
-            ObjectProperties props = bucket.findObject(objName);
-            if (props == null) {
-                throw new NotFoundException();
+        Bucket bucket = verifyAndGetBucket(bucketName, ctx.user);
+
+        bucket.findObjectAsync(objName).whenComplete((props, err) -> {
+            if (err == null) {
+                if (props == null) {
+                    observer.completeExceptionally(new NotFoundException());
+                } else {
+                    bucket.getObjectAsync(objName).whenComplete((objData, err2) -> {
+                        if (err2 == null) {
+                            String contentType = props.contentType() != null
+                                    ? props.contentType()
+                                    : "application/octet-stream";
+
+                            HttpBody body = HttpBody.newBuilder()
+                                    .setContentType(contentType)
+                                    .setData(ByteString.copyFrom(objData))
+                                    .build();
+
+                            observer.complete(body);
+                        } else {
+                            observer.completeExceptionally(err2);
+                        }
+                    });
+                }
+            } else {
+                observer.completeExceptionally(new InternalServerErrorException(
+                        "Error when retrieving object: " + err.getMessage(), err));
             }
-            byte[] objData = bucket.getObject(objName);
-            String contentType = props.hasContentType() ? props.getContentType() : "application/octet-stream";
-
-            HttpBody body = HttpBody.newBuilder()
-                    .setContentType(contentType)
-                    .setData(ByteString.copyFrom(objData))
-                    .build();
-
-            observer.complete(body);
-        } catch (IOException e) {
-            throw new InternalServerErrorException("Error when retrieving object: " + e.getMessage(), e);
-        }
+        });
     }
 
     @Override
     public void uploadObject(Context ctx, UploadObjectRequest request, Observer<Empty> observer) {
-        var instance = request.hasInstance() ? request.getInstance() : YamcsServer.GLOBAL_INSTANCE;
         String bucketName = request.getBucketName();
 
         checkManageBucketPrivilege(bucketName, ctx.user);
-        Bucket bucket = verifyAndGetBucket(instance, bucketName, ctx.user);
+        Bucket bucket = verifyAndGetBucket(bucketName, ctx.user);
         HttpBody body = request.getData();
 
         String objectName;
@@ -186,91 +212,102 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
 
         String contentType = body.hasContentType() ? body.getContentType() : null;
         byte[] objectData = body.getData().toByteArray();
-        try {
-            bucket.putObject(objectName, contentType, body.getMetadataMap(), objectData);
-        } catch (IOException e) {
-            throw new InternalServerErrorException("Error when uploading object to bucket: " + e.getMessage(), e);
-        }
 
-        observer.complete(Empty.getDefaultInstance());
+        bucket.putObjectAsync(objectName, contentType, body.getMetadataMap(), objectData).whenComplete((res, err) -> {
+            if (err == null) {
+                observer.complete(Empty.getDefaultInstance());
+            } else {
+                observer.completeExceptionally(new InternalServerErrorException(
+                        "Error while uploading object to bucket: " + err.getMessage(), err));
+            }
+        });
     }
 
     @Override
     public void listObjects(Context ctx, ListObjectsRequest request, Observer<ListObjectsResponse> observer) {
-        var instance = request.hasInstance() ? request.getInstance() : YamcsServer.GLOBAL_INSTANCE;
         String bucketName = request.getBucketName();
 
         checkReadBucketPrivilege(bucketName, ctx.user);
-        Bucket b = verifyAndGetBucket(instance, bucketName, ctx.user);
-        try {
-            String delimiter = request.hasDelimiter() ? request.getDelimiter() : null;
-            String prefix = request.hasPrefix() ? request.getPrefix() : null;
+        Bucket b = verifyAndGetBucket(bucketName, ctx.user);
 
-            List<ObjectProperties> objects;
-            ListObjectsResponse.Builder responseb = ListObjectsResponse.newBuilder();
+        String delimiter = request.hasDelimiter() ? request.getDelimiter() : null;
+        String prefix = request.hasPrefix() ? request.getPrefix() : null;
 
-            if (delimiter == null) {
-                objects = b.listObjects(prefix);
-            } else {
-                int prefixLength = prefix != null ? prefix.length() : 0;
-                List<String> prefixes = new ArrayList<>();
-                objects = b.listObjects(prefix, op -> {
-                    String name = op.getName();
-                    int idx = name.indexOf(delimiter, prefixLength);
-                    if (idx != -1) {
-                        String pref = name.substring(0, idx + 1);
-                        if (prefixes.isEmpty() || !prefixes.get(prefixes.size() - 1).equals(pref)) {
-                            prefixes.add(pref);
-                        }
-                        return false;
-                    } else {
-                        return true;
+        CompletableFuture<List<ObjectProperties>> objectsFuture;
+        List<String> prefixes = new ArrayList<>();
+        if (delimiter == null) {
+            objectsFuture = b.listObjectsAsync(prefix);
+        } else {
+            int prefixLength = prefix != null ? prefix.length() : 0;
+            objectsFuture = b.listObjectsAsync(prefix, props -> {
+                String name = props.name();
+                int idx = name.indexOf(delimiter, prefixLength);
+                if (idx != -1) {
+                    String pref = name.substring(0, idx + 1);
+                    if (prefixes.isEmpty() || !prefixes.get(prefixes.size() - 1).equals(pref)) {
+                        prefixes.add(pref);
                     }
-                });
-                Collections.sort(prefixes);
-                responseb.addAllPrefixes(prefixes);
-            }
-
-            for (ObjectProperties props : objects) {
-                responseb.addObjects(toObjectInfo(props));
-            }
-            observer.complete(responseb.build());
-        } catch (IOException e) {
-            log.error("Error when retrieving object list from bucket {}", b.getName(), e);
-            throw new InternalServerErrorException("Error when retrieving object list: " + e.getMessage());
+                    return false;
+                } else {
+                    return true;
+                }
+            });
         }
+
+        objectsFuture.whenComplete((objects, err) -> {
+            if (err == null) {
+                Collections.sort(prefixes);
+                var responseb = ListObjectsResponse.newBuilder()
+                        .addAllPrefixes(prefixes);
+                for (var props : objects) {
+                    responseb.addObjects(toObjectInfo(props));
+                }
+                observer.complete(responseb.build());
+            } else {
+                observer.completeExceptionally(err);
+            }
+        });
     }
 
     @Override
     public void deleteObject(Context ctx, DeleteObjectRequest request, Observer<Empty> observer) {
-        var instance = request.hasInstance() ? request.getInstance() : YamcsServer.GLOBAL_INSTANCE;
         String bucketName = request.getBucketName();
         checkManageBucketPrivilege(bucketName, ctx.user);
 
         String objName = request.getObjectName();
-        Bucket bucket = verifyAndGetBucket(instance, bucketName, ctx.user);
-        try {
-            ObjectProperties props = bucket.findObject(objName);
-            if (props == null) {
-                throw new NotFoundException();
+        Bucket bucket = verifyAndGetBucket(bucketName, ctx.user);
+
+        bucket.findObjectAsync(objName).whenComplete((props, err) -> {
+            if (err == null) {
+                if (props == null) {
+                    observer.completeExceptionally(new NotFoundException());
+                } else {
+                    bucket.deleteObjectAsync(objName).whenComplete((res, err2) -> {
+                        if (err2 == null) {
+                            observer.complete(Empty.getDefaultInstance());
+                        } else {
+                            observer.completeExceptionally(new InternalServerErrorException(err2));
+                        }
+                    });
+                }
+            } else {
+                observer.completeExceptionally(err);
             }
-            bucket.deleteObject(objName);
-            observer.complete(Empty.getDefaultInstance());
-        } catch (IOException e) {
-            log.error("Error when retrieving object {} from bucket {} ", objName, bucket.getName(), e);
-            throw new InternalServerErrorException("Error when retrieving object: " + e.getMessage());
-        }
+        });
     }
 
-    private static BucketInfo toBucketInfo(Bucket bucket) throws IOException {
-        BucketProperties props = bucket.getProperties();
+    private static BucketInfo toBucketInfo(Bucket bucket, BucketProperties props) {
         BucketInfo.Builder bucketb = BucketInfo.newBuilder()
                 .setName(bucket.getName())
-                .setMaxSize(props.getMaxSize())
-                .setMaxObjects(props.getMaxNumObjects())
-                .setCreated(TimeEncoding.toProtobufTimestamp(props.getCreated()))
-                .setNumObjects(props.getNumObjects())
-                .setSize(props.getSize());
+                .setLocation(BucketLocation.newBuilder()
+                        .setName(bucket.getLocation().name())
+                        .setDescription(bucket.getLocation().description())
+                        .build())
+                .setMaxSize(props.maxSize())
+                .setMaxObjects(props.maxNumObjects())
+                .setCreated(TimeEncoding.toProtobufTimestamp(props.created()))
+                .setNumObjects(props.numObjects())
+                .setSize(props.size());
         if (bucket instanceof FileSystemBucket) {
             FileSystemBucket fsBucket = (FileSystemBucket) bucket;
             bucketb.setDirectory(fsBucket.getBucketRoot().toAbsolutePath().normalize().toString());
@@ -279,12 +316,18 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
     }
 
     private static ObjectInfo toObjectInfo(ObjectProperties props) {
-        return ObjectInfo.newBuilder()
-                .setCreated(TimeEncoding.toProtobufTimestamp(props.getCreated()))
-                .setName(props.getName())
-                .setSize(props.getSize())
-                .putAllMetadata(props.getMetadataMap())
-                .build();
+        var infob = ObjectInfo.newBuilder()
+                .setCreated(TimeEncoding.toProtobufTimestamp(props.created()))
+                .setName(props.name())
+                .setSize(props.size())
+                .putAllMetadata(props.metadata());
+
+        var contentType = props.contentType();
+        if (contentType != null) {
+            infob.setContentType(contentType);
+        }
+
+        return infob.build();
     }
 
     public static void checkReadBucketPrivilege(String bucketName, User user) throws HttpException {
@@ -320,14 +363,14 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
         return "user." + user.getName();
     }
 
-    static Bucket verifyAndGetBucket(String instance, String bucketName, User user) throws HttpException {
-        YarchDatabaseInstance yarch = getYarch(instance);
+    static Bucket verifyAndGetBucket(String bucketName, User user) throws HttpException {
+        var bucketManager = YamcsServer.getServer().getBucketManager();
         try {
-            Bucket bucket = yarch.getBucket(bucketName);
+            Bucket bucket = bucketManager.getBucket(bucketName);
             if (bucket == null) {
                 if (bucketName.equals(getUserBucketName(user))) {
                     try {
-                        bucket = yarch.createBucket(bucketName);
+                        bucket = bucketManager.createBucket(bucketName);
                     } catch (IOException e) {
                         throw new InternalServerErrorException("Error creating user bucket", e);
                     }
@@ -340,11 +383,6 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
         } catch (IOException e) {
             throw new InternalServerErrorException("Error while resolving bucket", e);
         }
-    }
-
-    static YarchDatabaseInstance getYarch(String instance) throws HttpException {
-        String yamcsInstance = InstancesApi.verifyInstance(instance, true);
-        return YarchDatabase.getInstance(yamcsInstance);
     }
 
     static void verifyObjectName(String objName) throws BadRequestException {

@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.yamcs.Spec.OptionType;
+import org.yamcs.buckets.BucketManager;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.ConsoleFormatter;
 import org.yamcs.logging.Log;
@@ -110,6 +111,7 @@ public class YamcsServer {
     private YConfiguration config;
     private Spec spec;
     private Map<ConfigScope, Map<String, Spec>> sectionSpecs = new HashMap<>();
+    private Map<ConfigScope, Map<String, Spec>> listSpecs = new HashMap<>();
 
     private Map<String, CommandOption> commandOptions = new ConcurrentHashMap<>();
     private Set<CommandOptionListener> commandOptionListeners = new CopyOnWriteArraySet<>();
@@ -120,6 +122,7 @@ public class YamcsServer {
     List<ReadyListener> readyListeners = new ArrayList<>();
 
     private SecurityStore securityStore;
+    private BucketManager bucketManager;
     private PluginManager pluginManager;
 
     private String serverId;
@@ -510,6 +513,17 @@ public class YamcsServer {
         return ysi;
     }
 
+    public BucketManager getBucketManager() {
+        return bucketManager;
+    }
+
+    /**
+     * Intended for unit tests only.
+     */
+    public void setBucketManager(BucketManager bucketManager) {
+        this.bucketManager = bucketManager;
+    }
+
     public PluginManager getPluginManager() {
         return pluginManager;
     }
@@ -527,7 +541,7 @@ public class YamcsServer {
     }
 
     /**
-     * Add the definition of an additional configuration section to a particulat configuration type
+     * Add the definition of an additional configuration section to a particular configuration type
      * 
      * @param scope
      *            the scope where this section belongs. When using file-based configuration this can be thought of as
@@ -542,8 +556,18 @@ public class YamcsServer {
         specs.put(key, spec);
     }
 
+    public void addConfigurationList(ConfigScope scope, String key, Spec spec) {
+        Map<String, Spec> specs = listSpecs.computeIfAbsent(scope, x -> new HashMap<>());
+        specs.put(key, spec);
+    }
+
     public Map<String, Spec> getConfigurationSections(ConfigScope scope) {
         Map<String, Spec> specs = sectionSpecs.get(scope);
+        return specs != null ? specs : Collections.emptyMap();
+    }
+
+    public Map<String, Spec> getConfigurationLists(ConfigScope scope) {
+        Map<String, Spec> specs = listSpecs.get(scope);
         return specs != null ? specs : Collections.emptyMap();
     }
 
@@ -1177,6 +1201,8 @@ public class YamcsServer {
 
         ManagementService.getInstance().init();
 
+        bucketManager = new BucketManager();
+
         pluginManager = new PluginManager();
         pluginManager.discoverPlugins();
 
@@ -1209,18 +1235,10 @@ public class YamcsServer {
         serviceSpec.addOption("name", OptionType.STRING);
         serviceSpec.addOption("enabledAtStartup", OptionType.BOOLEAN);
 
-        Spec bucketSpec = new Spec();
-        bucketSpec.addOption("name", OptionType.STRING).withRequired(true);
-        bucketSpec.addOption("path", OptionType.STRING);
-        bucketSpec.addOption("maxSize", OptionType.INTEGER);
-        bucketSpec.addOption("maxObjects", OptionType.INTEGER);
-
         spec = new Spec();
         spec.addOption("services", OptionType.LIST).withElementType(OptionType.MAP)
                 .withSpec(serviceSpec);
         spec.addOption("instances", OptionType.LIST).withElementType(OptionType.STRING);
-        spec.addOption("buckets", OptionType.LIST).withElementType(OptionType.MAP)
-                .withSpec(bucketSpec);
         spec.addOption("dataDir", OptionType.STRING).withDefault("yamcs-data");
         spec.addOption("cacheDir", OptionType.STRING).withDefault("cache");
         spec.addOption("incomingDir", OptionType.STRING).withDefault("yamcs-incoming")
@@ -1239,11 +1257,18 @@ public class YamcsServer {
                     .withApplySpecDefaults(true);
         });
 
+        Map<String, Spec> extraLists = getConfigurationLists(ConfigScope.YAMCS);
+        extraLists.forEach((key, listSpec) -> {
+            spec.addOption(key, OptionType.LIST)
+                    .withElementType(OptionType.MAP)
+                    .withSpec(listSpec);
+        });
+
         config = YConfiguration.getConfiguration("yamcs");
         config = spec.validate(config);
     }
 
-    public void start() throws PluginException {
+    public void start() throws IOException, PluginException {
         // Before starting anything, register a shutdown hook that will attempt graceful shutdown
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -1353,6 +1378,8 @@ public class YamcsServer {
         Path globalDir = options.dataDir.resolve(GLOBAL_INSTANCE);
         Files.createDirectories(globalDir);
         Files.createDirectories(instanceDefDir);
+
+        bucketManager.loadBuckets();
 
         if (config.containsKey("services")) {
             List<YConfiguration> services = config.getServiceConfigList("services");

@@ -7,10 +7,10 @@ import java.util.List;
 import org.yamcs.InitException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsService;
+import org.yamcs.buckets.Bucket;
 import org.yamcs.protobuf.EntityInfo;
 import org.yamcs.protobuf.FileTransferCapabilities;
 import org.yamcs.protobuf.FileTransferOption;
-import org.yamcs.yarch.Bucket;
 
 /**
  * The file transfer service defines an interface for implementing file transfers.

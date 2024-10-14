@@ -1,6 +1,6 @@
 package org.yamcs.cfdp;
 
-import org.yamcs.yarch.Bucket;
+import org.yamcs.buckets.Bucket;
 
 public class EntityConf {
     final long id;

@@ -1,7 +1,7 @@
 package org.yamcs.cfdp;
 
+import org.yamcs.buckets.Bucket;
 import org.yamcs.cfdp.pdu.CfdpPacket;
-import org.yamcs.yarch.Bucket;
 
 /**
  * A Put.request is a primitive that requests data delivery from a source to a destination

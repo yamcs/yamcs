@@ -11,8 +11,8 @@
         <dl class="dl-horizontal">
           <dt>Created</dt>
           <dd>{{ bucket.created | datetime | nvl: "-" }}</dd>
-          <dt>Storage engine</dt>
-          <dd>{{ bucket.directory ? "File System" : "RocksDB" }}</dd>
+          <dt>Location</dt>
+          <dd>{{ bucket.location.description }}</dd>
           @if (bucket.directory) {
             <dt>Directory</dt>
             <dd>{{ bucket.directory }}</dd>

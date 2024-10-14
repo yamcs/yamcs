@@ -290,6 +290,17 @@ message BucketInfo {
   // bucket is mapped to the file system. Therefore it is not
   // set for buckets that store objects in RocksDB.
   optional string directory = 7;
+
+  // Bucket location
+  optional BucketLocation location = 8;
+}
+
+message BucketLocation {
+  // Location name
+  optional string name = 1;
+
+  // Location description
+  optional string description = 2;
 }
 
 message ObjectInfo {
@@ -302,7 +313,11 @@ message ObjectInfo {
   // Size in bytes
   optional uint64 size = 3;
 
+  // Object metadata
   map<string, string> metadata = 4;
+
+  // Content type
+  optional string contentType = 5;
 }
 
 message ListBucketsRequest {

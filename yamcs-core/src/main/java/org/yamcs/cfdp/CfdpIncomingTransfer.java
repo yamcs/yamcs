@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -41,7 +42,6 @@ import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.rocksdb.protobuf.Tablespace;
 
 public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     private final FileSaveHandler fileSaveHandler;
@@ -318,10 +318,17 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             }
             fileSaveHandler.setObjectName(directoryListingResponse == null ? originalObjectName : null);
 
-            Tablespace.BucketProperties props = fileSaveHandler.getBucket().getProperties();
-            if (props.getMaxSize() - props.getSize() < fileSize) {
-                throw new IOException("File too big for bucket '" + getBucketName() + "' (" + fileSize + " bytes for "
-                        + (props.getMaxSize() - props.getSize()) + " available)");
+            try {
+                var props = fileSaveHandler.getBucket().getPropertiesAsync().get();
+                if (props.maxSize() - props.size() < fileSize) {
+                    throw new IOException(
+                            "File too big for bucket '" + getBucketName() + "' (" + fileSize + " bytes for "
+                                    + (props.maxSize() - props.size()) + " available)");
+                }
+            } catch (ExecutionException e) {
+                throw new IOException("Could not determine bucket properties", e.getCause());
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
 
             checkFileComplete();

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
 import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.buckets.BucketManager;
 import org.yamcs.cfdp.OngoingCfdpTransfer.FaultHandlingAction;
 import org.yamcs.cfdp.pdu.ConditionCode;
 import org.yamcs.events.EventProducerFactory;
@@ -25,8 +27,9 @@ public class ConfigTest {
     static String yamcsInstance = "cfdp-config-test";
 
     @BeforeAll
-    public static void beforeClass() throws StreamSqlException, ParseException {
+    public static void beforeClass() throws StreamSqlException, ParseException, IOException {
         EventProducerFactory.setMockup(false);
+        BucketManager.setMockup();
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         ydb.execute("create stream cfdp_in(pdu binary)");
         ydb.execute("create stream cfdp_out(pdu binary)");
