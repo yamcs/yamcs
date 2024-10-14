@@ -57,8 +57,8 @@ public class XtceTmProcessor extends AbstractProcessorService
         this.processor = null;
         this.mdb = mdb;
         log = new Log(getClass());
-        var pdata = new ProcessorData(getYamcsInstance(), "XTCEPROC", mdb, pconfig, Collections.emptyMap());
-        tmExtractor = new XtceTmExtractor(mdb,pdata);
+        var pdata = new ProcessorData(null, "XTCEPROC", mdb, pconfig, Collections.emptyMap());
+        tmExtractor = new XtceTmExtractor(mdb, pdata);
     }
 
     @Override
