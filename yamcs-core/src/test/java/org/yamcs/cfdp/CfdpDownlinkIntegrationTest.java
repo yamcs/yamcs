@@ -23,6 +23,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.buckets.Bucket;
+import org.yamcs.buckets.BucketManager;
 import org.yamcs.cfdp.pdu.AckPacket;
 import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
 import org.yamcs.cfdp.pdu.AckPacket.TransactionStatus;
@@ -44,7 +46,6 @@ import org.yamcs.protobuf.TransferInfo;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
@@ -75,15 +76,15 @@ public class CfdpDownlinkIntegrationTest {
     @BeforeAll
     public static void beforeClass() throws Exception {
         EventProducerFactory.setMockup(true);
+        BucketManager.setMockup();
         Path dataDir = Path.of(System.getProperty("java.io.tmpdir"), "yamcs-cfdp-data");
         FileUtils.deleteRecursivelyIfExists(dataDir);
         YConfiguration.setupTest("cfdp");
         YamcsServer.getServer().prepareStart();
         YamcsServer.getServer().start();
 
-        YarchDatabaseInstance yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
-
-        incomingBucket = yarch.getBucket("cfdpDown");
+        var bucketManager = YamcsServer.getServer().getBucketManager();
+        incomingBucket = bucketManager.getBucket("cfdpDown");
     }
 
     @AfterAll
@@ -330,7 +331,7 @@ public class CfdpDownlinkIntegrationTest {
         assertEquals(expectedReceiverState, sender.trsf.getTransferState());
 
         if (expectedReceiverState == TransferState.COMPLETED) {
-            byte[] recdata = incomingBucket.getObject(tinfo.getObjectName());
+            byte[] recdata = incomingBucket.getObjectAsync(tinfo.getObjectName()).get();
             assertArrayEquals(data, recdata);
         }
         assertFalse(sender.trsf.eofTimer.isActive());
@@ -392,7 +393,8 @@ public class CfdpDownlinkIntegrationTest {
             FilePutRequest putRequest = new FilePutRequest(15, 12, objName, objName, false, reliable, false, false,
                     incomingBucket, data);
 
-            trsf = new CfdpOutgoingTransfer(yamcsInstance, putRequest.getSourceId(), seqNum, TimeEncoding.getWallclockTime(),
+            trsf = new CfdpOutgoingTransfer(yamcsInstance, putRequest.getSourceId(), seqNum,
+                    TimeEncoding.getWallclockTime(),
                     myExecutor, putRequest, cfdpIn, config, null, null, null, eventProducer, this, null);
 
             cfdpOut.addSubscriber((stream, tuple) -> {

@@ -15,8 +15,8 @@ import org.yamcs.CommandOptionListener;
 import org.yamcs.Experimental;
 import org.yamcs.PluginException;
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
+import org.yamcs.buckets.Bucket;
 import org.yamcs.http.HttpServer;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
@@ -24,8 +24,6 @@ import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.templating.ParseException;
 import org.yamcs.web.api.WebApi;
-import org.yamcs.yarch.Bucket;
-import org.yamcs.yarch.YarchDatabase;
 
 public class WebPlugin extends AbstractPlugin implements CommandOptionListener {
 
@@ -135,11 +133,11 @@ public class WebPlugin extends AbstractPlugin implements CommandOptionListener {
     }
 
     private Bucket createBucketIfNotExists(String bucketName) throws PluginException {
-        var yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
+        var bucketManager = yamcs.getBucketManager();
         try {
-            var bucket = yarch.getBucket(bucketName);
+            var bucket = bucketManager.getBucket(bucketName);
             if (bucket == null) {
-                bucket = yarch.createBucket(bucketName);
+                bucket = bucketManager.createBucket(bucketName);
             }
             return bucket;
         } catch (IOException e) {

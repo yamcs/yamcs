@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.yamcs.YConfiguration;
+import org.yamcs.buckets.Bucket;
 import org.yamcs.cfdp.pdu.AckPacket;
 import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
 import org.yamcs.cfdp.pdu.AckPacket.TransactionStatus;
@@ -38,7 +39,6 @@ import org.yamcs.filetransfer.TransferMonitor;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.utils.StringConverter;
-import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
 
 public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {

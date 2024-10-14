@@ -14,7 +14,6 @@ import org.yamcs.logging.Log;
 import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeInterval;
-import org.yamcs.yarch.BucketDatabase;
 import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.HistogramIterator;
 import org.yamcs.yarch.ProtobufDatabase;
@@ -214,7 +213,7 @@ public class RdbStorageEngine implements StorageEngine {
     }
 
     @Override
-    public synchronized BucketDatabase getBucketDatabase(YarchDatabaseInstance ydb) throws YarchException {
+    public synchronized RdbBucketDatabase getBucketDatabase(YarchDatabaseInstance ydb) throws YarchException {
         String tablespaceName = ydb.getTablespaceName();
         String yamcsInstance = ydb.getYamcsInstance();
         RdbBucketDatabase bdb = bucketDbs.get(tablespaceName);

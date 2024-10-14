@@ -39,6 +39,7 @@ export class BucketListComponent implements AfterViewInit {
     'numObjects',
     'availObjects',
     'pctObjects',
+    'location',
     'actions',
   ];
 

@@ -4,15 +4,14 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import org.yamcs.YamcsServer;
+import org.yamcs.buckets.Bucket;
 import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.cfdp.DataFile;
 import org.yamcs.cfdp.FileDownloadRequests;
 import org.yamcs.logging.Log;
-import org.yamcs.yarch.Bucket;
-import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.YarchDatabaseInstance;
 
 public class FileSaveHandler {
 
@@ -59,10 +58,12 @@ public class FileSaveHandler {
         }
 
         try {
-            bucket.putObject(this.objectName, null, metadata, file.getData());
-        } catch (IOException e) {
-            throw new UncheckedIOException("Cannot save incoming file in bucket: " + objectName
-                    + (bucket != null ? " -> " + bucket.getName() : ""), e);
+            bucket.putObjectAsync(this.objectName, null, metadata, file.getData()).get();
+        } catch (ExecutionException e) {
+            throw new UncheckedIOException(new IOException("Cannot save incoming file in bucket: " + objectName
+                    + (bucket != null ? " -> " + bucket.getName() : ""), e.getCause()));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -73,9 +74,9 @@ public class FileSaveHandler {
             if (allowRemoteProvidedBucket) {
                 String[] split = name.split(":", 2);
                 if (split.length == 2) {
-                    YarchDatabaseInstance ydb = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
+                    var bucketManager = YamcsServer.getServer().getBucketManager();
 
-                    Bucket customBucket = ydb.getBucket(split[0]);
+                    Bucket customBucket = bucketManager.getBucket(split[0]);
                     if (customBucket != null) {
                         this.bucket = customBucket;
                         name = split[1];
@@ -95,14 +96,24 @@ public class FileSaveHandler {
 
         name = name.strip();
 
-        if (allowDownloadOverwrites || bucket.findObject(name) == null) {
+        if (allowDownloadOverwrites) {
             return name;
-        }
+        } else {
+            try {
+                if (bucket.findObjectAsync(name).get() == null) {
+                    return name;
+                }
 
-        for (int i = 1; i < maxExistingFileRenames; i++) {
-            String namei = name + "(" + i + ")";
-            if (bucket.findObject(namei) == null) {
-                return namei;
+                for (int i = 1; i < maxExistingFileRenames; i++) {
+                    String namei = name + "(" + i + ")";
+                    if (bucket.findObjectAsync(namei).get() == null) {
+                        return namei;
+                    }
+                }
+            } catch (ExecutionException e) {
+                throw new IOException("Failed to retrieve object", e.getCause());
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
 
@@ -145,9 +156,9 @@ public class FileSaveHandler {
         String bucketName = fileDownloadRequests.getBuckets().get(originatingTransactionId);
         fileDownloadRequests.removeTransfer(originatingTransactionId);
         if (bucketName != null) {
-            YarchDatabaseInstance ydb = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE); // Instance buckets?
+            var bucketManager = YamcsServer.getServer().getBucketManager();
             try {
-                bucket = ydb.getBucket(bucketName);
+                bucket = bucketManager.getBucket(bucketName);
             } catch (IOException e) {
                 throw new IOException("Recognised originating transaction id " + originatingTransactionId
                         + " from incoming transfer but bucket does not exist");

@@ -6,10 +6,12 @@ import static org.yamcs.yarch.rocksdb.RdbBucketDatabase.TYPE_OBJ_METADATA;
 import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 import org.rocksdb.RocksDBException;
@@ -17,27 +19,30 @@ import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.buckets.Bucket;
+import org.yamcs.buckets.BucketLocation;
+import org.yamcs.buckets.BucketProperties;
+import org.yamcs.buckets.ObjectProperties;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.yarch.Bucket;
-import org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties;
-import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
-import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectPropertiesOrBuilder;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
 public class RdbBucket implements Bucket {
+
+    private static final Logger log = LoggerFactory.getLogger(RdbBucket.class);
+    private static final BucketLocation LOCATION = new BucketLocation("db", "Yamcs DB");
+
     final int tbsIndex;
-    BucketProperties bucketProps;
+    org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties bucketProps;
     final Tablespace tablespace;
     final String yamcsInstance;
-    private static final Logger log = LoggerFactory.getLogger(RdbBucket.class);
 
-    public RdbBucket(String yamcsInstance, Tablespace tablespace, int tbsIndex, BucketProperties bucketProps)
-            throws IOException {
+    public RdbBucket(String yamcsInstance, Tablespace tablespace, int tbsIndex,
+            org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties bucketProps) {
         this.yamcsInstance = yamcsInstance;
         this.tbsIndex = tbsIndex;
         this.bucketProps = bucketProps;
@@ -45,14 +50,25 @@ public class RdbBucket implements Bucket {
     }
 
     @Override
+    public BucketLocation getLocation() {
+        return LOCATION;
+    }
+
+    @Override
+    public CompletableFuture<BucketProperties> getPropertiesAsync() {
+        var properties = getProperties();
+        return CompletableFuture.completedFuture(properties);
+    }
+
     public BucketProperties getProperties() {
-        return bucketProps;
+        return BucketProperties.fromYarch(bucketProps);
     }
 
     @Override
     public void setMaxSize(long maxSize) throws IOException {
         if (maxSize != bucketProps.getMaxSize()) {
-            BucketProperties updatedProps = BucketProperties.newBuilder().mergeFrom(bucketProps)
+            var updatedProps = org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.newBuilder()
+                    .mergeFrom(bucketProps)
                     .setMaxSize(maxSize)
                     .build();
             try {
@@ -66,7 +82,8 @@ public class RdbBucket implements Bucket {
     @Override
     public void setMaxObjects(int maxObjects) throws IOException {
         if (maxObjects != bucketProps.getMaxNumObjects()) {
-            BucketProperties updatedProps = BucketProperties.newBuilder().mergeFrom(bucketProps)
+            var updatedProps = org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.newBuilder()
+                    .mergeFrom(bucketProps)
                     .setMaxNumObjects(maxObjects)
                     .build();
             try {
@@ -78,9 +95,17 @@ public class RdbBucket implements Bucket {
     }
 
     @Override
-    public List<ObjectProperties> listObjects(String prefix, Predicate<ObjectPropertiesOrBuilder> p)
-            throws IOException {
+    public CompletableFuture<List<ObjectProperties>> listObjectsAsync(String prefix, Predicate<ObjectProperties> p) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return listObjects(prefix, p);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+    }
 
+    public List<ObjectProperties> listObjects(String prefix, Predicate<ObjectProperties> p) throws IOException {
         byte[] pb = prefix != null ? prefix.getBytes(StandardCharsets.UTF_8) : ByteArrayUtils.EMPTY;
 
         byte[] start = new byte[TBS_INDEX_SIZE + 1 + pb.length];
@@ -89,7 +114,7 @@ public class RdbBucket implements Bucket {
         System.arraycopy(pb, 0, start, TBS_INDEX_SIZE + 1, pb.length);
         List<ObjectProperties> r = new ArrayList<>();
         try (DbIterator it = tablespace.getRdb().newPrefixIterator(start)) {
-            ObjectProperties.Builder opb = ObjectProperties.newBuilder();
+            var opb = org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties.newBuilder();
             while (it.isValid()) {
                 byte[] k = it.key();
                 byte[] v = it.value();
@@ -97,9 +122,10 @@ public class RdbBucket implements Bucket {
                         StandardCharsets.UTF_8);
                 opb.mergeFrom(v);
                 opb.setName(objName);
-                if (p.test(opb)) {
-                    r.add(opb.build());
-                    opb = ObjectProperties.newBuilder();
+                var props = ObjectProperties.fromYarch(opb);
+                if (p.test(props)) {
+                    r.add(props);
+                    opb = org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties.newBuilder();
                 }
                 it.next();
             }
@@ -108,13 +134,24 @@ public class RdbBucket implements Bucket {
     }
 
     @Override
-    public synchronized void putObject(String objectName, String contentType,
-            Map<String, String> metadata, byte[] objectData) throws IOException {
+    public CompletableFuture<Void> putObjectAsync(String objectName, String contentType,
+            Map<String, String> metadata, byte[] objectData) {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                putObject(objectName, contentType, metadata, objectData);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+    }
+
+    public synchronized void putObject(String objectName, String contentType, Map<String, String> metadata,
+            byte[] objectData) throws IOException {
         if (objectName.isEmpty()) {
             throw new IllegalArgumentException("object name cannot be empty");
         }
         log.debug("Uploading object {} to bucket {}; contentType: {}", objectName, bucketProps.getName(), contentType);
-        ObjectProperties.Builder props = ObjectProperties.newBuilder();
+        var props = org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties.newBuilder();
         if (metadata != null) {
             props.putAllMetadata(metadata);
         }
@@ -126,13 +163,13 @@ public class RdbBucket implements Bucket {
 
         try (WriteBatch writeBatch = new WriteBatch();
                 WriteOptions writeOpts = new WriteOptions()) {
-            ObjectProperties oldProps = findObject(objectName);
+            var oldProps = findObject(objectName);
 
             byte[] mk = getKey(TYPE_OBJ_METADATA, objectName);
             byte[] dk = getKey(TYPE_OBJ_DATA, objectName);
             writeBatch.put(mk, props.build().toByteArray());
             writeBatch.put(dk, objectData);
-            long bsize = bucketProps.getSize() + props.getSize() - ((oldProps == null) ? 0 : oldProps.getSize());
+            long bsize = bucketProps.getSize() + props.getSize() - ((oldProps == null) ? 0 : oldProps.size());
             if (bsize > bucketProps.getMaxSize()) {
                 throw new IOException("Maximum bucket size " + bucketProps.getMaxSize() + " exceeded");
             }
@@ -141,7 +178,8 @@ public class RdbBucket implements Bucket {
                 throw new IOException(
                         "Maximum number of objects in the bucket " + bucketProps.getNumObjects() + " exceeded");
             }
-            BucketProperties bucketProps1 = BucketProperties.newBuilder().mergeFrom(bucketProps)
+            var bucketProps1 = org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.newBuilder()
+                    .mergeFrom(bucketProps)
                     .setNumObjects(numobj)
                     .setSize(bsize)
                     .build();
@@ -159,6 +197,16 @@ public class RdbBucket implements Bucket {
     }
 
     @Override
+    public CompletableFuture<ObjectProperties> findObjectAsync(String objectName) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return findObject(objectName);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+    }
+
     public ObjectProperties findObject(String objectName) throws IOException {
         byte[] k = getKey(TYPE_OBJ_METADATA, objectName);
         try {
@@ -166,7 +214,9 @@ public class RdbBucket implements Bucket {
             if (v == null) {
                 return null;
             }
-            return ObjectProperties.newBuilder().mergeFrom(v).setName(objectName).build();
+            var proto = org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties.newBuilder()
+                    .mergeFrom(v).setName(objectName).build();
+            return ObjectProperties.fromYarch(proto);
         } catch (InvalidProtocolBufferException e) {
             throw new DatabaseCorruptionException("Cannot decode data: " + e.toString(), e);
         } catch (RocksDBException e1) {
@@ -175,6 +225,16 @@ public class RdbBucket implements Bucket {
     }
 
     @Override
+    public CompletableFuture<byte[]> getObjectAsync(String objectName) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return getObject(objectName);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+    }
+
     public byte[] getObject(String objectName) throws IOException {
         try {
             byte[] k = getKey(TYPE_OBJ_DATA, objectName);
@@ -187,10 +247,21 @@ public class RdbBucket implements Bucket {
     }
 
     @Override
+    public CompletableFuture<Void> deleteObjectAsync(String objectName) {
+        return CompletableFuture.runAsync(() -> {
+            log.debug("Deleting {} from {}", objectName, bucketProps.getName());
+            try {
+                deleteObject(objectName);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+    }
+
     public synchronized void deleteObject(String objectName) throws IOException {
         log.debug("Deleting {} from {}", objectName, bucketProps.getName());
         try {
-            ObjectProperties props = findObject(objectName);
+            var props = findObject(objectName);
             if (props == null) {
                 throw new IOException("No object by name '" + objectName + "' found");
             }
@@ -200,8 +271,10 @@ public class RdbBucket implements Bucket {
                 byte[] dk = getKey(TYPE_OBJ_DATA, objectName);
                 writeBatch.delete(mk);
                 writeBatch.delete(dk);
-                BucketProperties bucketProps1 = BucketProperties.newBuilder().mergeFrom(bucketProps)
-                        .setNumObjects(bucketProps.getNumObjects() - 1).setSize(bucketProps.getSize() - props.getSize())
+                var bucketProps1 = org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.newBuilder()
+                        .mergeFrom(bucketProps)
+                        .setNumObjects(bucketProps.getNumObjects() - 1)
+                        .setSize(bucketProps.getSize() - props.size())
                         .build();
                 TablespaceRecord.Builder trb = TablespaceRecord.newBuilder().setType(Type.BUCKET)
                         .setBucketProperties(bucketProps1).setTbsIndex(tbsIndex);
@@ -239,7 +312,8 @@ public class RdbBucket implements Bucket {
         return k;
     }
 
-    private void saveUpdatedBucketProperties(BucketProperties updatedBucketProperties)
+    private void saveUpdatedBucketProperties(
+            org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties updatedBucketProperties)
             throws RocksDBException, IOException {
         try (WriteBatch writeBatch = new WriteBatch();
                 WriteOptions writeOpts = new WriteOptions()) {

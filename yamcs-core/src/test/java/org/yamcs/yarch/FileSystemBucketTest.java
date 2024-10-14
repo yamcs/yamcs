@@ -13,6 +13,7 @@ import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.yamcs.buckets.FileSystemBucket;
 import org.yamcs.utils.FileUtils;
 
 public class FileSystemBucketTest {

@@ -141,7 +141,7 @@ public class SpecTest {
     }
 
     @Test
-    public void testListofMapValidation() {
+    public void testListOfMapValidation() {
         assertThrows(ValidationException.class, () -> {
             Spec blaSpec = new Spec();
             blaSpec.addOption("subkey", OptionType.INTEGER);
@@ -491,5 +491,33 @@ public class SpecTest {
 
         var result = spec.validate(of("foo", "123.45"));
         assertEquals(123.45, result.get("foo"));
+    }
+
+    @Test
+    public void testConditionalMergeSpec() throws ValidationException {
+        var spec = new Spec();
+        spec.addOption("foo", OptionType.INTEGER);
+
+        var condition = spec.when("foo", 123);
+        var conditionSpec = new Spec();
+        conditionSpec.addOption("bar", OptionType.STRING);
+        condition.mergeSpec(conditionSpec);
+
+        condition = spec.when("foo", 456);
+        conditionSpec = new Spec();
+        conditionSpec.addOption("baz", OptionType.STRING);
+        condition.mergeSpec(conditionSpec);
+
+        var result = spec.validate(of("foo", 123, "bar", "test"));
+        assertEquals("test", result.get("bar"));
+        assertThrows(ValidationException.class, () -> {
+            spec.validate(of("foo", 123, "baz", "test"));
+        });
+
+        result = spec.validate(of("foo", 456, "baz", "test"));
+        assertEquals("test", result.get("baz"));
+        assertThrows(ValidationException.class, () -> {
+            spec.validate(of("foo", 456, "bar", "test"));
+        });
     }
 }

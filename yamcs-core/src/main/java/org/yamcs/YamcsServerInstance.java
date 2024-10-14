@@ -107,6 +107,12 @@ public class YamcsServerInstance extends YamcsInstanceService {
             spec.addOption(key, OptionType.MAP).withSpec(sectionSpec)
                     .withApplySpecDefaults(true);
         });
+        Map<String, Spec> extraLists = yamcs.getConfigurationLists(ConfigScope.YAMCS_INSTANCE);
+        extraLists.forEach((key, listSpec) -> {
+            spec.addOption(key, OptionType.LIST)
+                    .withElementType(OptionType.MAP)
+                    .withSpec(listSpec);
+        });
 
         return spec;
     }

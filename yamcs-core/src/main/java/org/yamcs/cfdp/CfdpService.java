@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -32,6 +33,7 @@ import org.yamcs.Spec.OptionType;
 import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.buckets.Bucket;
 import org.yamcs.cfdp.OngoingCfdpTransfer.FaultHandlingAction;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.ConditionCode;
@@ -70,7 +72,6 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.utils.parser.ParseException;
-import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Sequence;
 import org.yamcs.yarch.SqlBuilder;
@@ -285,7 +286,7 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
             throw new ConfigurationException("cannot find stream " + outStream);
         }
 
-        defaultIncomingBucket = getBucket(config.getString("incomingBucket"), true);
+        defaultIncomingBucket = getBucket(config.getString("incomingBucket"));
         // TODO: duplicate default values as specified in getSpec?
         allowRemoteProvidedBucket = config.getBoolean("allowRemoteProvidedBucket", false);
         allowRemoteProvidedSubdirectory = config.getBoolean("allowRemoteProvidedSubdirectory", false);
@@ -396,7 +397,7 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
                 }
                 Bucket bucket = null;
                 if (c.containsKey(BUCKET_OPT)) {
-                    bucket = getBucket(c.getString(BUCKET_OPT), c.getBoolean("global", true));
+                    bucket = getBucket(c.getString(BUCKET_OPT));
                 }
                 EntityConf ent = new EntityConf(id, name, bucket);
                 localEntities.put(name, ent);
@@ -412,7 +413,7 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
                 }
                 Bucket bucket = null;
                 if (c.containsKey(BUCKET_OPT)) {
-                    bucket = getBucket(c.getString(BUCKET_OPT), c.getBoolean("global", true));
+                    bucket = getBucket(c.getString(BUCKET_OPT));
                 }
                 EntityConf ent = new EntityConf(id, name, bucket);
                 remoteEntities.put(name, ent);
@@ -427,13 +428,12 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
         }
     }
 
-    private Bucket getBucket(String bucketName, boolean global) throws InitException {
-        YarchDatabaseInstance ydb = global ? YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE)
-                : YarchDatabase.getInstance(yamcsInstance);
+    private Bucket getBucket(String bucketName) throws InitException {
+        var bucketManager = YamcsServer.getServer().getBucketManager();
         try {
-            Bucket bucket = ydb.getBucket(bucketName);
+            Bucket bucket = bucketManager.getBucket(bucketName);
             if (bucket == null) {
-                bucket = ydb.createBucket(bucketName);
+                bucket = bucketManager.createBucket(bucketName);
             }
             return bucket;
         } catch (IOException e) {
@@ -944,7 +944,14 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
     public synchronized CfdpFileTransfer startUpload(String source, Bucket bucket, String objectName,
             String destination, final String destinationPath, TransferOptions options) throws IOException {
         byte[] objData;
-        objData = bucket.getObject(objectName);
+        try {
+            objData = bucket.getObjectAsync(objectName).get();
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e.getCause());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
+        }
         if (objData == null) {
             throw new InvalidRequestException("No object named '" + objectName + "' in bucket " + bucket.getName());
         }

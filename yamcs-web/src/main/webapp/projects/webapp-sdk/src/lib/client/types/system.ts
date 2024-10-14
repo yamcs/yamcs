@@ -365,12 +365,18 @@ export interface Service {
 
 export interface Bucket {
   name: string;
+  location: BucketLocation;
   size: number;
   maxSize: number;
   numObjects: number;
   maxObjects: number;
   created: string;
   directory?: string;
+}
+
+export interface BucketLocation {
+  name: string;
+  description: string;
 }
 
 export interface ListObjectsResponse {

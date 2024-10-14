@@ -12,6 +12,7 @@ import org.yamcs.YamcsServerInstance;
 import org.yamcs.actions.Action;
 import org.yamcs.actions.ActionHelper;
 import org.yamcs.api.Observer;
+import org.yamcs.buckets.Bucket;
 import org.yamcs.cfdp.CfdpFileTransfer;
 import org.yamcs.cfdp.CfdpTransactionId;
 import org.yamcs.client.storage.ObjectId;
@@ -52,9 +53,6 @@ import org.yamcs.protobuf.TransferInfo;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.yarch.Bucket;
-import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.protobuf.Empty;
 import com.google.protobuf.Struct;
@@ -156,11 +154,11 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
 
         String objectName = request.getObjectName();
 
-        YarchDatabaseInstance yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
+        var bucketManager = YamcsServer.getServer().getBucketManager();
 
         Bucket bucket;
         try {
-            bucket = yarch.getBucket(bucketName);
+            bucket = bucketManager.getBucket(bucketName);
         } catch (IOException e) {
             throw new InternalServerErrorException("Error while resolving bucket", e);
         }

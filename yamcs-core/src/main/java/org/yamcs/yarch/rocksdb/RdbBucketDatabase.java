@@ -7,10 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.rocksdb.RocksDBException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.yamcs.logging.Log;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.BucketDatabase;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
@@ -46,7 +44,6 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
  * </ol>
  * 
  * @author nm
- *
  */
 public class RdbBucketDatabase implements BucketDatabase {
     private final Tablespace tablespace;
@@ -59,15 +56,12 @@ public class RdbBucketDatabase implements BucketDatabase {
 
     final static long DEFAULT_MAX_BUCKET_SIZE = 100L * 1024 * 1024; // 100MB
     final static int DEFAULT_MAX_OBJECTS_PER_BUCKET = 1000;
-    private static final Logger log = LoggerFactory.getLogger(RdbBucketDatabase.class);
+    private static final Log log = new Log(RdbBucketDatabase.class);
 
     public RdbBucketDatabase(String yamcsInstance, Tablespace tablespace) throws RocksDBException, IOException {
         this.tablespace = tablespace;
         this.yamcsInstance = yamcsInstance;
-        loadBuckets();
-    }
 
-    private void loadBuckets() throws RocksDBException, IOException {
         List<TablespaceRecord> l = tablespace.filter(Type.BUCKET, yamcsInstance, x -> true);
         for (TablespaceRecord tr : l) {
             RdbBucket b = new RdbBucket(yamcsInstance, tablespace, tr.getTbsIndex(), tr.getBucketProperties());
@@ -110,7 +104,7 @@ public class RdbBucketDatabase implements BucketDatabase {
     }
 
     @Override
-    public List<Bucket> listBuckets() {
+    public List<RdbBucket> listBuckets() {
         synchronized (buckets) {
             return new ArrayList<>(buckets.values());
         }

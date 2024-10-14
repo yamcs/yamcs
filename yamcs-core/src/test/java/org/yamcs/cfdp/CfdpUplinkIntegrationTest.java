@@ -22,6 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.buckets.Bucket;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.YamcsClient;
@@ -39,7 +40,6 @@ import org.yamcs.protobuf.TransferInfo;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -71,10 +71,9 @@ public class CfdpUplinkIntegrationTest {
         YamcsServer.getServer().prepareStart();
         YamcsServer.getServer().start();
 
-        YarchDatabaseInstance yarch = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
-
-        incomingBucket = yarch.createBucket("cfdp-bucket-in");
-        outgoingBucket = yarch.createBucket("cfdp-bucket-out");
+        var bucketManager = YamcsServer.getServer().getBucketManager();
+        incomingBucket = bucketManager.createBucket("cfdp-bucket-in");
+        outgoingBucket = bucketManager.createBucket("cfdp-bucket-out");
     }
 
     @AfterAll
@@ -277,7 +276,7 @@ public class CfdpUplinkIntegrationTest {
 
         waitTransferFinished(receiver, tinfo.getId());
 
-        byte[] recdata = incomingBucket.getObject(receiver.trsf.getObjectName());
+        byte[] recdata = incomingBucket.getObjectAsync(receiver.trsf.getObjectName()).get();
         assertArrayEquals(data, recdata);
 
         // restore back the old value (otherwise the tests following this will be slow and even fail)
@@ -314,7 +313,7 @@ public class CfdpUplinkIntegrationTest {
             assertEquals(expectedReceiverState, rec.trsf.getTransferState());
 
             if (expectedReceiverState == TransferState.COMPLETED) {
-                byte[] recdata = incomingBucket.getObject(rec.trsf.getObjectName());
+                byte[] recdata = incomingBucket.getObjectAsync(rec.trsf.getObjectName()).get();
                 assertArrayEquals(data, recdata);
             }
         }
@@ -340,7 +339,7 @@ public class CfdpUplinkIntegrationTest {
     private byte[] createObject(String objName, int size) throws Exception {
         byte[] data = new byte[size];
         random.nextBytes(data);
-        outgoingBucket.putObject(objName, "bla", Collections.emptyMap(), data);
+        outgoingBucket.putObjectAsync(objName, "bla", Collections.emptyMap(), data);
 
         return data;
     }

@@ -3,25 +3,20 @@ package org.yamcs.yarch;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
-import org.yamcs.Spec.OptionType;
 import org.yamcs.management.ManagementService;
-import org.yamcs.utils.YObjectLoader;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 import org.yamcs.yarch.streamsql.ResultListener;
@@ -57,9 +52,6 @@ public class YarchDatabaseInstance {
     // the tablespace where the data from this yarch instance is stored
     String tablespaceName;
 
-    private BucketDatabase bucketDatabase;
-    private FileSystemBucketDatabase fileSystemBucketDatabase;
-
     final ManagementService managementService;
     TimePartitionSchema timePartitioningSchema;
     // yamcs instance name
@@ -79,10 +71,6 @@ public class YarchDatabaseInstance {
                 tablespaceName = instanceName;
             }
 
-            if (yconf.containsKey("bucketDatabase")) {
-                YConfiguration dbConfig = yconf.getConfig("bucketDatabase");
-                loadBucketDatabase(dbConfig);
-            }
             if (yconf.containsKey(PART_CONF_KEY)) {
                 String schema = yconf.getString(PART_CONF_KEY);
                 if (!"none".equalsIgnoreCase(schema)) {
@@ -92,73 +80,9 @@ public class YarchDatabaseInstance {
         } else {
             yconf = YConfiguration.getConfiguration("yamcs");
             tablespaceName = instanceName;
-
-            if (yconf.containsKey("bucketDatabase")) {
-                YConfiguration dbConfig = yconf.getConfig("bucketDatabase");
-                loadBucketDatabase(dbConfig);
-            }
         }
         migrateTableDefinitions();
         loadTables();
-
-        if (bucketDatabase == null) {
-            bucketDatabase = YarchDatabase.getDefaultStorageEngine().getBucketDatabase(this);
-        }
-        try {
-            fileSystemBucketDatabase = new FileSystemBucketDatabase(instanceName);
-        } catch (IOException e) {
-            throw new YarchException("Failed to load file-system based bucket database", e);
-        }
-
-        if (yconf.containsKey("buckets")) {
-            List<YConfiguration> bucketsConfig = yconf.getConfigList("buckets");
-            loadBuckets(bucketsConfig);
-        }
-    }
-
-    private BucketDatabase loadBucketDatabase(YConfiguration config) {
-        String clazz = config.getString("class");
-        Object args = config.get("args");
-        if (args == null) {
-            bucketDatabase = YObjectLoader.loadObject(clazz, instanceName);
-        } else {
-            bucketDatabase = YObjectLoader.loadObject(clazz, instanceName, args);
-        }
-        return bucketDatabase;
-    }
-
-    /**
-     * Loads pre-defined buckets. The buckets will be created if they do not exist yet. By using the <code>path</code>
-     * argument, it is possible to map a bucket to a random file system location instead of the default bucket storage
-     * engine of this Yarch instance.
-     */
-    private void loadBuckets(List<YConfiguration> configs) {
-        try {
-            for (YConfiguration config : configs) {
-                String name = config.getString("name");
-                Bucket bucket;
-                if (config.containsKey("path")) {
-                    Path path = Paths.get(config.getString("path"));
-                    bucket = addFileSystemBucket(name, path);
-                } else {
-                    bucket = getBucket(name);
-                    if (bucket == null) {
-                        log.info("Creating bucket {}", name);
-                        bucket = createBucket(name);
-                    }
-                }
-                if (config.containsKey("maxSize")) {
-                    long maxSize = config.getLong("maxSize");
-                    bucket.setMaxSize(maxSize);
-                }
-                if (config.containsKey("maxObjects")) {
-                    int maxObjects = config.getInt("maxObjects");
-                    bucket.setMaxObjects(maxObjects);
-                }
-            }
-        } catch (IOException e) {
-            throw new ConfigurationException("Failed to load buckets: " + e.getMessage(), e);
-        }
     }
 
     public PartitionManager getPartitionManager(TableDefinition tblDef) {
@@ -235,11 +159,11 @@ public class YarchDatabaseInstance {
 
                 f.renameTo(new File(oldTblDefs.getAbsolutePath() + File.separator + f.getName()));
             } catch (IOException e) {
-                log.warn("Got exception when reading the table definition from {}: ", f, e);
-                throw new YarchException("Got exception when reading the table definition from " + f + ": ", e);
+                log.warn("Exception while reading the table definition from {}: ", f, e);
+                throw new YarchException("Exception while reading the table definition from " + f + ": ", e);
             } catch (ClassNotFoundException e) {
-                log.warn("Got exception when reading the table definition from {}: ", f, e);
-                throw new YarchException("Got exception when reading the table definition from " + f + ": ", e);
+                log.warn("Exception while reading the table definition from {}: ", f, e);
+                throw new YarchException("Exception while reading the table definition from " + f + ": ", e);
             }
         }
     }
@@ -535,56 +459,6 @@ public class YarchDatabaseInstance {
         return timePartitioningSchema;
     }
 
-    public Bucket getBucket(String bucketName) throws IOException {
-        Bucket bucket = fileSystemBucketDatabase.getBucket(bucketName);
-        if (bucket != null) {
-            return bucket;
-        }
-
-        return bucketDatabase.getBucket(bucketName);
-    }
-
-    public Bucket createBucket(String bucketName) throws IOException {
-        return bucketDatabase.createBucket(bucketName);
-    }
-
-    /**
-     * Adds a bucket that maps to the file system. This is a transient operation that has to be done on each server
-     * restart.
-     * 
-     * @param bucketName
-     *            the name of the bucket
-     * @param location
-     *            the path to the bucket contents
-     * @return the created bucket
-     * @throws IOException
-     *             on I/O issues
-     */
-    public FileSystemBucket addFileSystemBucket(String bucketName, Path location) throws IOException {
-        return fileSystemBucketDatabase.registerBucket(bucketName, location);
-    }
-
-    public List<Bucket> listBuckets() throws IOException {
-        List<Bucket> buckets = new ArrayList<>(fileSystemBucketDatabase.listBuckets());
-        List<String> names = buckets.stream().map(b -> b.getName()).collect(Collectors.toList());
-
-        for (Bucket bucket : bucketDatabase.listBuckets()) {
-            if (!names.contains(bucket.getName())) {
-                buckets.add(bucket);
-            }
-        }
-
-        return buckets;
-    }
-
-    public void deleteBucket(String bucketName) throws IOException {
-        if (fileSystemBucketDatabase.getBucket(bucketName) != null) {
-            fileSystemBucketDatabase.deleteBucket(bucketName);
-        } else {
-            bucketDatabase.deleteBucket(bucketName);
-        }
-    }
-
     public Sequence getSequence(String name, boolean create) throws YarchException {
         return YarchDatabase.getDefaultStorageEngine().getSequence(this, name, create);
     }
@@ -598,11 +472,10 @@ public class YarchDatabaseInstance {
         spec.addOption(YarchDatabaseInstance.PART_CONF_KEY, OptionType.STRING)
                 .withChoices("none", "YYYY", "YYYY/MM", "YYYY/DOY")
                 .withDefault("none").withDescription(
-                        "Parition the tm, pp, events, alarms, cmdhistory tables and the parameter archive by time - "
-                                + "that means store the data corresponding to the time interval in a different RocksdDB database");
+                        "Parition the tm, pp, events, alarms, cmdhistory tables and the parameter archive by time. "
+                                + "This means storing the data corresponding to the time interval in a different RocksDB database");
 
         spec.addOption("tablespace", OptionType.STRING);
-
     }
 
     /**
@@ -624,5 +497,4 @@ public class YarchDatabaseInstance {
         }
         return timePartitioningSchema;
     }
-
 }
