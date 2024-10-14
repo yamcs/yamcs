@@ -101,7 +101,14 @@ service BucketsApi {
       }
     };
   }
-  
+
+  // Get object info
+  rpc GetObjectInfo(GetObjectInfoRequest) returns (ObjectInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/storage/buckets/{bucketName}/objectInfo/{objectName*}"
+    };
+  }
+
   // Upload an object
   //
   // .. rubric:: Simple upload
@@ -223,6 +230,14 @@ message GetObjectRequest {
   
   // Object name
   optional string objectName = 3;
+}
+
+message GetObjectInfoRequest {
+  // Bucket name
+  optional string bucketName = 1;
+
+  // Object name
+  optional string objectName = 2;
 }
 
 message DeleteObjectRequest {
