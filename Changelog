@@ -1,3 +1,6 @@
+Version 5.9.11 released 15-Oct-2024
+- Fixed export buttons and an error in the Packet Viewer
+
 Version 5.9.10 released 9-Oct-2024
 - The alarm work done in the previous release enabled by mistake the EventAlarmServer which used to be disabled by default. That causes Yamcs not to start in many configurations which used to work (including the quickstart) due to missing the event_alarms_realtime.
   This version restores back the old behaviour - namely the EventAlarmServer is disabled by default.
