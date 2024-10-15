@@ -1,3 +1,9 @@
+Version 5.10.4 released 15-Oct-2024
+- Changed the custom RocksDB library introduced in 5.10.0 to support CPUs as old as Intel Core 2.
+- Added support for XTCE IndirectParameterRefEntry
+- Fixed the export buttons
+- Fixed the Packet Viewer
+
 Version 5.10.3 released 7-Oct-2024
 - The alarm work done in 5.10.2 enabled by mistake the EventAlarmServer which used to be disabled by default. That causes Yamcs not to start in many configurations which used to work (including the Yamcs quickstart) due to missing the event_alarms_realtime. 
   This version restores back the old behaviour - namely the EventAlarmServer is disabled by default. 
