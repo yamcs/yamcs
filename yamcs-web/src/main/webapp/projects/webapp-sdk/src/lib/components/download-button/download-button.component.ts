@@ -19,7 +19,7 @@ export class YaDownloadButton {
   private hiddenLink: ElementRef;
 
   triggerDownload() {
-    if (!this.disabled) {
+    if (!this.disabled()) {
       this.hiddenLink.nativeElement.click();
     }
   }
