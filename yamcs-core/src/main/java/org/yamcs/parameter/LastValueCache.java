@@ -58,7 +58,7 @@ public class LastValueCache {
     }
 
     /**
-     * return the n'th newest value or null if no such a value exist. n has to be smaller or equal with 0.
+     * return the n'th newest value or null if no such a value exist. n has to be greater or equal with 0.
      * <p>
      * If n=0 it is equivalent with {@link LastValueCache#getValue(Parameter)}
      * <p>
@@ -70,12 +70,12 @@ public class LastValueCache {
      * @throws IllegalStateException
      *             if buffering is not enabled or the buffer capacity is smaller than -n+1
      */
-    public ParameterValue getValue(Parameter param, int n) {
-        if (n > 0) {
-            throw new IllegalArgumentException("n has to be negative:" + n);
+    public ParameterValue getValueFromEnd(Parameter param, int n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("n has to be positive:" + n);
         }
         if (param.getDataSource() == DataSource.CONSTANT) {
-            if (n < 0) {
+            if (n > 0) {
                 throw new IllegalArgumentException("Cannot request buffered data for constant prameters");
             } else {
                 return constants.get(param);
@@ -96,7 +96,7 @@ public class LastValueCache {
                 throw new IllegalStateException("Buffering enabled for " + param.getQualifiedName()
                         + " but it's capacity " + pb.capacity() + " is smaller than " + (n + 1));
             }
-            return pb.nth(n);
+            return pb.nthFromEnd(n);
         } finally {
             lock.readLock().unlock();
         }
@@ -258,13 +258,15 @@ public class LastValueCache {
         }
 
         /**
-         * Return the element end+n (n is negative)
+         * Return the element end-n (n is positive)
          * 
          */
-        public ParameterValue nth(int n) {
-            assert (n <= 0);
+        public ParameterValue nthFromEnd(int n) {
+            if (n < 0) {
+                throw new IllegalArgumentException("n has to be positive");
+            }
 
-            int k = end + n;
+            int k = end - n;
             if (k < 0) {
                 k += data.length;
             }

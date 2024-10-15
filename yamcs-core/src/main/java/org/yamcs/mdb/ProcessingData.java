@@ -15,13 +15,14 @@ import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterInstanceRef;
+import org.yamcs.xtce.ParameterInstanceRef.InstanceRelativeTo;
 import org.yamcs.xtce.ParameterOrArgumentRef;
 
 /**
  * This class holds live information used during a (XTCE) processing.
  * <p>
- * It is created when data is incoming and is used in a processing pipeline. For example when a packet is
- * received, the following pipeline is executed:
+ * It is created when data is incoming and is used in a processing pipeline. For example when a packet is received, the
+ * following pipeline is executed:
  * <ul>
  * <li>a new processing data object is instantiated containing an empty parameter list and a reference to the latest
  * parameter value cache</li>
@@ -33,8 +34,8 @@ import org.yamcs.xtce.ParameterOrArgumentRef;
  * <li>the parameter archive is populated</li>
  * </ul>
  * <p>
- * A processing can also start when receiving command history information (used as part of
- * command verification), when receiving processed parameters via the pp stream or periodically by algorithms.
+ * A processing can also start when receiving command history information (used as part of command verification), when
+ * receiving processed parameters via the pp stream or periodically by algorithms.
  * <p>
  * There will be different threads running in parallel, each with its own ProcessingData object but one object cannot be
  * shared with another thread.
@@ -50,14 +51,13 @@ import org.yamcs.xtce.ParameterOrArgumentRef;
  * execution. This list will only modify from within the pipeline (and is not visible outside) and all the data here is
  * considered "more recent" than the data from the tmParamsCache. At the end of the execution of the pipeline, the data
  * is moved from here to the tmParamsCache (i.e the processor lastValueCache)</li>
- * <li>cmdArgs - if the processing is part of a command, this stores the arguments of the command. Otherwise it is
- * null. The command arguments are not modified during the pipeline execution.</li>
- * <li>cmdParamsCache - this is similar with the tmParams but stores parameters that are contextualized to the
- * command. This includes command properties and command history parameters. The list can modify from outside the
- * pipeline.</li>
- * <li>cmdParams - stores the "current" delivery command parameters. It is initialised when command history
- * information is received. New elements can be added by algorithms producing command parameter values. A command
- * parameter is one whose datasource is {@link DataSource#COMMAND}.
+ * <li>cmdArgs - if the processing is part of a command, this stores the arguments of the command. Otherwise it is null.
+ * The command arguments are not modified during the pipeline execution.</li>
+ * <li>cmdParamsCache - this is similar with the tmParams but stores parameters that are contextualized to the command.
+ * This includes command properties and command history parameters. The list can modify from outside the pipeline.</li>
+ * <li>cmdParams - stores the "current" delivery command parameters. It is initialised when command history information
+ * is received. New elements can be added by algorithms producing command parameter values. A command parameter is one
+ * whose datasource is {@link DataSource#COMMAND}.
  * </ul>
  * 
  * 
@@ -164,11 +164,11 @@ public class ProcessingData {
     /**
      * Returns a parameter value associated to the parameter reference or null if none is found.
      * <p>
-     * The instance is according to XTCE rules: if tmParams/cmdParams contains multiple values for the parameter,
-     * then the oldest one (first inserted in the list) is instance 0, the next one is instance 1, etc.
+     * The instance is according to XTCE rules: if tmParams/cmdParams contains multiple values for the parameter, then
+     * the oldest one (first inserted in the list) is instance 0, the next one is instance 1, etc.
      * <p>
-     * The negative instances are retrieved from the cache: -1 is the latest value in tmParamsCache (the one
-     * which was added last), -2 is the previous one and so on.
+     * The negative instances are retrieved from the cache: -1 is the latest value in tmParamsCache (the one which was
+     * added last), -2 is the previous one and so on.
      * 
      * <p>
      * If {@code allowOld = true} and the tmParams/cmdParams does not contain a value for the parameter, then the
@@ -178,28 +178,63 @@ public class ProcessingData {
      * for the parameter.
      * 
      */
-    public ParameterValue getParameterInstance(ParameterInstanceRef pref, boolean allowOld) {
+    public ParameterValue getParameterInstance(ParameterInstanceRef pref) {
         Parameter param = pref.getParameter();
         if (param.isCommandParameter()) {
-            return get(cmdParams, cmdParamsCache, param, pref.getInstance(), allowOld);
+            return get(cmdParams, cmdParamsCache, param, pref.getInstance(), pref.getRelativeTo());
         } else {
-            return get(tmParams, tmParamsCache, param, pref.getInstance(), allowOld);
+            return get(tmParams, tmParamsCache, param, pref.getInstance(), pref.getRelativeTo());
         }
     }
 
-    private static ParameterValue get(ParameterValueList tmParams, LastValueCache tmParamsCache, Parameter param,
-            int instance, boolean allowOld) {
-        if (tmParams == null || tmParams.getFirstInserted(param) == null) {
-            if (!allowOld || tmParamsCache == null || instance > 0) {
+    private static ParameterValue get(ParameterValueList params, LastValueCache paramsCache, Parameter param,
+            int instance, InstanceRelativeTo instanceRelativeTo) {
+        switch (instanceRelativeTo) {
+        case CURRENT_ENTRY_WITHIN_PACKET -> {
+            // paramsCache not considered
+            if (params == null) {
                 return null;
             }
-            return tmParamsCache.getValue(param, instance);
-        } else {
-            if (instance >= 0) {
-                return tmParams.get(param, instance);
-            } else {
-                return tmParamsCache.getValue(param, instance + 1);
+            return params.getFromEnd(param, -instance);
+        }
+        case CURRENT_ENTRY_ACROSS_PACKETS -> {
+            int n = -instance;
+            if (params != null) {
+                var pv = params.getFromEnd(param, n);
+                if (pv != null) {
+                    return pv;
+                }
+                n -= params.count(param);
             }
+            if (paramsCache == null) {
+                return null;
+            }
+            return paramsCache.getValueFromEnd(param, n);
+
+        }
+        case PACKET_START_WITHIN_PACKET -> {
+            // paramsCache is not considered 
+            if (params == null || instance < 0) {
+                return null;
+            }
+            return params.get(param, instance);
+        }
+        case PACKET_START_ACROSS_PACKETS -> {
+            // this is from Yamcs before 5.10.4
+            if (params == null || params.getFirstInserted(param) == null) {
+                if (paramsCache == null || instance > 0) {
+                    return null;
+                }
+                return paramsCache.getValueFromEnd(param, -instance);
+            } else {
+                if (instance >= 0) {
+                    return params.get(param, instance);
+                } else {
+                    return paramsCache.getValueFromEnd(param, -instance - 1);
+                }
+            }
+        }
+        default -> throw new IllegalStateException("Unknown " + instanceRelativeTo);
         }
     }
 
@@ -226,12 +261,12 @@ public class ProcessingData {
         return cmdParams;
     }
 
-    public long resolveDynamicIntegerValue(DynamicIntegerValue div, boolean allowOld) throws XtceProcessingException {
+    public long resolveDynamicIntegerValue(DynamicIntegerValue div) throws XtceProcessingException {
         ParameterOrArgumentRef ref = div.getDynamicInstanceRef();
 
         RawEngValue pv = null;
         if (ref instanceof ParameterInstanceRef) {
-            pv = getParameterInstance((ParameterInstanceRef) ref, allowOld);
+            pv = getParameterInstance((ParameterInstanceRef) ref);
         } else if (ref instanceof ArgumentInstanceRef) {
             ArgumentInstanceRef argRef = (ArgumentInstanceRef) ref;
             Argument arg = cmdArgs.keySet().stream().filter(a -> a.getName().equals(argRef.getName())).findFirst()

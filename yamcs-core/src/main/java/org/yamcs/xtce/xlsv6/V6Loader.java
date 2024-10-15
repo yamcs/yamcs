@@ -81,6 +81,7 @@ import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.ParameterInstanceRef;
+import org.yamcs.xtce.ParameterInstanceRef.InstanceRelativeTo;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.RateInStream;
@@ -1978,6 +1979,7 @@ public class V6Loader extends V6LoaderBase {
                     inputParameterRefs.add(paraRefName);
                     NameReference paramRef = getParameterReference(spaceSystem, paraRefName);
                     final ParameterInstanceRef parameterInstance = new ParameterInstanceRef();
+                    parameterInstance.setRelativeTo(InstanceRelativeTo.PACKET_START_ACROSS_PACKETS);
                     paramRef.addResolvedAction(nd -> {
                         parameterInstance.setParameter((Parameter) nd);
                     });

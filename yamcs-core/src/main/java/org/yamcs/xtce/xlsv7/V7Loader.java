@@ -105,6 +105,7 @@ import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.ParameterInstanceRef;
+import org.yamcs.xtce.ParameterInstanceRef.InstanceRelativeTo;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.PathElement;
 import org.yamcs.xtce.PolynomialCalibrator;
@@ -2148,6 +2149,7 @@ public class V7Loader extends V7LoaderBase {
                         algorithm.setScope(Algorithm.Scope.COMMAND_VERIFICATION);
                     }
                     final ParameterInstanceRef parameterInstance = new ParameterInstanceRef();
+                    parameterInstance.setRelativeTo(InstanceRelativeTo.PACKET_START_ACROSS_PACKETS);
 
                     if (refName.startsWith(YAMCS_CMDARG_SPACESYSTEM_NAME)) {
                         // make a temporary parameter. The algorithm will be duplicated for each command and the

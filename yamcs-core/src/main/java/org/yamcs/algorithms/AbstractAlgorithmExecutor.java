@@ -125,7 +125,7 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
 
     public ParameterValue getInputParameter(ProcessingData processingData, ParameterInstanceRef pref) {
         ParameterValue pval = null;
-        pval = processingData.getParameterInstance(pref, firstUpdate);
+        pval = processingData.getParameterInstance(pref);
         if (pval == null) {
             return null;
         }

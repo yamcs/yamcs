@@ -144,7 +144,7 @@ public class DataEncodingEncoder {
         if (div != null) {
             long sizeInBits;
             try {
-                sizeInBits = pcontext.resolveDynamicIntegerValue(div, false);
+                sizeInBits = pcontext.resolveDynamicIntegerValue(div);
             } catch (XtceProcessingException e) {
                 throw new CommandEncodingException(pcontext, e.getMessage());
             }

@@ -18,8 +18,6 @@ import org.yamcs.xtce.Parameter;
  * <p>
  * Not thread safe
  * 
- * @author nm
- *
  */
 public class ParameterValueList implements Collection<ParameterValue> {
     static public final ParameterValueList EMPTY = new ParameterValueList();
@@ -235,8 +233,50 @@ public class ParameterValueList implements Collection<ParameterValue> {
     }
 
     /**
-     * Performs the given action for each value of the parameter p
-     * The values are considered in insertion order - oldest is first to be processed
+     * Returns the n'th instance of the parameter from the end or null if it does not exist
+     * <p>
+     * If n = 0 it is equivalent with {@link #getLastInserted(Parameter)}
+     * 
+     */
+    public ParameterValue getFromEnd(Parameter p, int n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("n must be non-negative");
+        }
+
+        int index = getHash(p) & (table.length - 1);
+        Entry e = table[index];
+        Entry lastMatch = null;
+
+        // Traverse the linked list and find the last entry for the given parameter
+        while (e != null) {
+            if (e.pv.getParameter() == p) {
+                lastMatch = e;
+            }
+            e = e.next;
+        }
+
+        if (lastMatch == null) {
+            return null; // No entry found for this parameter
+        }
+
+        // Now walk backwards from the last match
+        Entry current = lastMatch;
+        for (int i = 0; i < n; i++) {
+            do {
+                current = current.before;
+            } while (current != head && current.pv.getParameter() != p);
+
+            if (current == head) {
+                return null; // Less than n matches
+            }
+        }
+
+        return current.pv;
+    }
+
+    /**
+     * Performs the given action for each value of the parameter p The values are considered in insertion order - oldest
+     * is first to be processed
      * 
      * @param p
      * @param action
@@ -402,8 +442,7 @@ public class ParameterValueList implements Collection<ParameterValue> {
     }
 
     /**
-     * Return true if the list contains the exact same ParameterValue.
-     * That means exactly the same object.
+     * Return true if the list contains the exact same ParameterValue. That means exactly the same object.
      * 
      * @param o
      * @return

@@ -341,8 +341,10 @@ public class AlgorithmManager extends AbstractProcessorService
     private void enableBuffering(ActiveAlgorithm activeAlgo) {
         for (InputParameter inputPara : activeAlgo.getInputList()) {
             ParameterInstanceRef pref = inputPara.getParameterInstance();
-            if (pref != null && pref.getInstance() < 0) {
-                processor.getLastValueCache().enableBuffering(pref.getParameter(), -pref.getInstance() + 1);
+            if (pref != null && pref.requireOldValues()) {
+                if (pref.getInstance() < 0) {
+                    processor.getLastValueCache().enableBuffering(pref.getParameter(), -pref.getInstance() + 1);
+                } // else lastValueCache remembers anyway one value
             }
         }
     }

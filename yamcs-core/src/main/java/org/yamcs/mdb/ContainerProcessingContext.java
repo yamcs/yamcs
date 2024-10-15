@@ -54,12 +54,7 @@ public class ContainerProcessingContext {
      * @return the value found or null if not value has been found
      */
     public Value getValue(ParameterInstanceRef pir) {
-        // TBD maybe we should make this configurable
-        // allowOld = true means that processing parameters in this packet can depend on parameters not part of the
-        // packet - not a good idea but some people use that. Yamcs wasn't able to use old values but now it is
-        // able.
-        boolean allowOld = false;
-        ParameterValue pv = result.getParameterInstance(pir, allowOld);
+        ParameterValue pv = result.getParameterInstance(pir);
         if (pv == null) {
             return null;
         }
@@ -74,7 +69,7 @@ public class ContainerProcessingContext {
         if (iv instanceof FixedIntegerValue) {
             return ((FixedIntegerValue) iv).getValue();
         } else if (iv instanceof DynamicIntegerValue) {
-            return result.resolveDynamicIntegerValue((DynamicIntegerValue) iv, false);
+            return result.resolveDynamicIntegerValue((DynamicIntegerValue) iv);
         }
 
         throw new UnsupportedOperationException("values of type " + iv + " not implemented");

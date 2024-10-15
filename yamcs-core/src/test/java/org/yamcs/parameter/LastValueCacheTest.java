@@ -45,12 +45,12 @@ public class LastValueCacheTest {
         ParamBuffer pb = new ParamBuffer(3);
 
         pb.add(p1v0);
-        assertEquals(p1v0, pb.nth(0));
-        assertNull(pb.nth(-1));
+        assertEquals(p1v0, pb.nthFromEnd(0));
+        assertNull(pb.nthFromEnd(1));
 
         pb.add(p1v1);
-        assertEquals(p1v1, pb.nth(0));
-        assertEquals(p1v0, pb.nth(-1));
+        assertEquals(p1v1, pb.nthFromEnd(0));
+        assertEquals(p1v0, pb.nthFromEnd(1));
 
     }
 
@@ -75,16 +75,16 @@ public class LastValueCacheTest {
     public void test2() {
         assertThrows(IllegalStateException.class, () -> {
             LastValueCache lvc = new LastValueCache(Arrays.asList(p0v0));
-            lvc.getValue(p1, -1);
+            lvc.getValueFromEnd(p1, 1);
         });
     }
 
     @Test
     public void test3() {
-        assertThrows(IllegalStateException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             LastValueCache lvc = new LastValueCache(Arrays.asList(p0v0));
             lvc.enableBuffering(p1, 2);
-            lvc.getValue(p1, -2);
+            lvc.getValueFromEnd(p1, -2);
         });
     }
 
@@ -92,24 +92,24 @@ public class LastValueCacheTest {
     public void test4() {
         LastValueCache lvc = new LastValueCache(Arrays.asList(p0v0));
         lvc.enableBuffering(p1, 3);
-        assertNull(lvc.getValue(p1, -2));
+        assertNull(lvc.getValueFromEnd(p1, 2));
 
         lvc.add(p1v0);
         assertEquals(p1v0, lvc.getValue(p1));
-        assertEquals(p1v0, lvc.getValue(p1, 0));
-        assertNull(lvc.getValue(p1, -2));
+        assertEquals(p1v0, lvc.getValueFromEnd(p1, 0));
+        assertNull(lvc.getValueFromEnd(p1, 2));
 
         lvc.add(p1v1);
         lvc.add(p1v2);
-        assertEquals(p1v2, lvc.getValue(p1, 0));
-        assertEquals(p1v1, lvc.getValue(p1, -1));
-        assertEquals(p1v0, lvc.getValue(p1, -2));
+        assertEquals(p1v2, lvc.getValueFromEnd(p1, 0));
+        assertEquals(p1v1, lvc.getValueFromEnd(p1, 1));
+        assertEquals(p1v0, lvc.getValueFromEnd(p1, 2));
 
         lvc.enableBuffering(p1, 4);
         lvc.add(p1v3);
-        assertEquals(p1v3, lvc.getValue(p1, 0));
-        assertEquals(p1v2, lvc.getValue(p1, -1));
-        assertEquals(p1v1, lvc.getValue(p1, -2));
-        assertEquals(p1v0, lvc.getValue(p1, -3));
+        assertEquals(p1v3, lvc.getValueFromEnd(p1, 0));
+        assertEquals(p1v2, lvc.getValueFromEnd(p1, 1));
+        assertEquals(p1v1, lvc.getValueFromEnd(p1, 2));
+        assertEquals(p1v0, lvc.getValueFromEnd(p1, 3));
     }
 }

@@ -39,6 +39,7 @@ import org.yamcs.xtce.Algorithm.Scope;
 import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
 import org.yamcs.xtce.CommandVerifier.TerminationAction;
 import org.yamcs.xtce.FloatDataEncoding.Encoding;
+import org.yamcs.xtce.ParameterInstanceRef.InstanceRelativeTo;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 import org.yamcs.xtce.Significance.Levels;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
@@ -676,11 +677,11 @@ public class XtceStaxReader extends AbstractStaxReader {
                 if (typeBuilder.getReferenceTime() == null) {
                     if (!(typeBuilder.getEncoding() instanceof BinaryDataEncoding.Builder bdb)
                             || bdb.getFromBinaryTransformAlgorithm() == null) {
-                            throw new XMLStreamException(
-                                    "AbsoluteTimeParameterType without a reference time  not supported "
-                                            + "(except if it used a BinaryDataEncoding with an algorithm "
-                                            + "which could produce directly an absolute time)",
-                                    xmlEvent.getLocation());
+                        throw new XMLStreamException(
+                                "AbsoluteTimeParameterType without a reference time  not supported "
+                                        + "(except if it used a BinaryDataEncoding with an algorithm "
+                                        + "which could produce directly an absolute time)",
+                                xmlEvent.getLocation());
                     }
                 }
                 return incompleteType;
@@ -1541,6 +1542,7 @@ public class XtceStaxReader extends AbstractStaxReader {
                             xmlEvent.getLocation());
                 }
                 ParameterInstanceRef pref = readParameterInstanceRef(spaceSystem, null);
+                pref.setRelativeTo(InstanceRelativeTo.PACKET_START_ACROSS_PACKETS);
                 algo.addInput(new InputParameter(pref));
                 list.add(new MathOperation.Element(pref));
             } else if (isStartElementWithName("Operator")) {
@@ -2567,8 +2569,8 @@ public class XtceStaxReader extends AbstractStaxReader {
 
         String aliasNameSpace = readAttribute(ATTR_ALIAS_NAME_SPACE, xmlEvent.asStartElement(), null);
 
-        IndirectParameterRefEntry indirectParameterRefEntry = new IndirectParameterRefEntry(0, null, null, aliasNameSpace);
-        indirectParameterRefEntry.setLocation(SequenceEntry.ReferenceLocationType.PREVIOUS_ENTRY, 0); // default
+        IndirectParameterRefEntry indirectParameterRefEntry = new IndirectParameterRefEntry(0,
+                ReferenceLocationType.PREVIOUS_ENTRY, null, aliasNameSpace);
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -2843,7 +2845,7 @@ public class XtceStaxReader extends AbstractStaxReader {
 
         final ParameterInstanceRef instanceRef = new ParameterInstanceRef(useCalibrated);
         instanceRef.setInstance(instance);
-
+        instanceRef.setRelativeTo(InstanceRelativeTo.PACKET_START_WITHIN_PACKET);
         makeParameterReference(spaceSystem, paramRef, (para, path) -> {
             instanceRef.setParameter(para);
             instanceRef.setMemberPath(path);
@@ -4139,6 +4141,7 @@ public class XtceStaxReader extends AbstractStaxReader {
             inputParameter = new InputParameter(argRef, inputName);
         } else {
             ParameterInstanceRef instanceRef = readParameterInstanceRef(spaceSystem, null);
+            instanceRef.setRelativeTo(InstanceRelativeTo.PACKET_START_ACROSS_PACKETS);
             inputParameter = new InputParameter(instanceRef, inputName);
         }
 
