@@ -604,9 +604,8 @@ public class XtceAssembler {
         writeNameDescription(doc, ptype);
         writeUnitSet(doc, ptype.getUnitSet());
 
-        DataEncoding encoding = ptype.getEncoding();
-        if (encoding != null) {
-            writeDataEncoding(doc, encoding);
+        if (ptype.getEncoding() != null) {
+            writeDataEncoding(doc, ptype.getEncoding());
         }
 
         doc.writeEndElement();
@@ -628,9 +627,8 @@ public class XtceAssembler {
             doc.writeAttribute("offset", Double.toString(ptype.getOffset()));
         }
 
-        DataEncoding encoding = ptype.getEncoding();
-        if (encoding != null) {
-            writeDataEncoding(doc, encoding);
+        if (ptype.getEncoding() != null) {
+            writeDataEncoding(doc, ptype.getEncoding());
         }
         doc.writeEndElement();
 
@@ -713,7 +711,9 @@ public class XtceAssembler {
         doc.writeStartElement("StringArgumentType");
         writeNameDescription(doc, atype);
         writeUnitSet(doc, atype.getUnitSet());
-        writeDataEncoding(doc, atype.getEncoding());
+        if (atype.getEncoding() != null) {
+            writeDataEncoding(doc, atype.getEncoding());
+        }
         doc.writeEndElement();
     }
 
@@ -766,8 +766,9 @@ public class XtceAssembler {
         writeNameDescription(doc, atype);
         writeUnitSet(doc, atype.getUnitSet());
 
-        DataEncoding encoding = atype.getEncoding();
-        writeDataEncoding(doc, encoding);
+        if (atype.getEncoding() != null) {
+            writeDataEncoding(doc, atype.getEncoding());
+        }
 
         if (atype.getValidRange() != null) {
             doc.writeStartElement("ValidRangeSet");
@@ -815,30 +816,31 @@ public class XtceAssembler {
         }
         writeUnitSet(doc, atype.getUnitSet());
 
-        DataEncoding encoding = atype.getEncoding();
-        writeDataEncoding(doc, encoding);
+        if (atype.getEncoding() != null) {
+            writeDataEncoding(doc, atype.getEncoding());
+        }
 
         doc.writeEndElement();
     }
 
-    private void writeBooleanArgumentType(XMLStreamWriter doc, BooleanArgumentType ptype)
+    private void writeBooleanArgumentType(XMLStreamWriter doc, BooleanArgumentType atype)
             throws XMLStreamException {
         doc.writeStartElement("BooleanArgumentType");
-        if (ptype.getInitialValue() != null) {
-            if (ptype.getInitialValue()) {
-                doc.writeAttribute(ATTR_INITIAL_VALUE, ptype.getOneStringValue());
+        if (atype.getInitialValue() != null) {
+            if (atype.getInitialValue()) {
+                doc.writeAttribute(ATTR_INITIAL_VALUE, atype.getOneStringValue());
             } else {
-                doc.writeAttribute(ATTR_INITIAL_VALUE, ptype.getZeroStringValue());
+                doc.writeAttribute(ATTR_INITIAL_VALUE, atype.getZeroStringValue());
             }
         }
-        doc.writeAttribute("oneStringValue", ptype.getOneStringValue());
-        doc.writeAttribute("zeroStringValue", ptype.getZeroStringValue());
-        writeNameDescription(doc, ptype);
-        writeUnitSet(doc, ptype.getUnitSet());
+        doc.writeAttribute("oneStringValue", atype.getOneStringValue());
+        doc.writeAttribute("zeroStringValue", atype.getZeroStringValue());
+        writeNameDescription(doc, atype);
+        writeUnitSet(doc, atype.getUnitSet());
 
-        DataEncoding encoding = ptype.getEncoding();
-        writeDataEncoding(doc, encoding);
-
+        if (atype.getEncoding() != null) {
+            writeDataEncoding(doc, atype.getEncoding());
+        }
         doc.writeEndElement();
     }
 
@@ -851,8 +853,9 @@ public class XtceAssembler {
         writeNameDescription(doc, atype);
         writeUnitSet(doc, atype.getUnitSet());
 
-        DataEncoding encoding = atype.getEncoding();
-        writeDataEncoding(doc, encoding);
+        if (atype.getEncoding() != null) {
+            writeDataEncoding(doc, atype.getEncoding());
+        }
 
         doc.writeEndElement();
     }
@@ -866,17 +869,17 @@ public class XtceAssembler {
         writeNameDescription(doc, atype);
 
         writeUnitSet(doc, atype.getUnitSet());
-
-        doc.writeStartElement(ELEM_ENCODING);
-        if (atype.getScale() != 1) {
-            doc.writeAttribute("scale", Double.toString(atype.getScale()));
+        if (atype.getEncoding() != null) {
+            doc.writeStartElement(ELEM_ENCODING);
+            if (atype.getScale() != 1) {
+                doc.writeAttribute("scale", Double.toString(atype.getScale()));
+            }
+            if (atype.getOffset() != 0) {
+                doc.writeAttribute("offset", Double.toString(atype.getScale()));
+            }
+            writeDataEncoding(doc, atype.getEncoding());
+            doc.writeEndElement();// Encoding
         }
-        if (atype.getOffset() != 0) {
-            doc.writeAttribute("offset", Double.toString(atype.getScale()));
-        }
-
-        writeDataEncoding(doc, atype.getEncoding());
-        doc.writeEndElement();// Encoding
 
         writeReferenceTime(doc, atype.getReferenceTime());
         doc.writeEndElement();// AbsoluteTimeArgumentType
