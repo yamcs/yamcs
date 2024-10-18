@@ -203,8 +203,11 @@ public class LinkManager {
                     }
                     tcs.addLink(tcLink);
                 }
-                tcLink.setCommandHistoryPublisher(cmdHistPublisher);
             }
+            // the Yamcs gateway links will send ygw registered commands even if the isTcDataLinkImplemented
+            // returns false (because it does not want to send normal MDB binary commands)
+            // thats why we set the command history publisher so it can still update the command history
+            tcLink.setCommandHistoryPublisher(cmdHistPublisher);
         }
 
         if (link instanceof ParameterDataLink) {
