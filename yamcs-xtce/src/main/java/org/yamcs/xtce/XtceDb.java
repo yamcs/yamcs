@@ -801,20 +801,25 @@ public class XtceDb implements Serializable {
         }
     }
 
+    public void addMetaCommand(MetaCommand c) {
+        addMetaCommand(c, false);
+    }
+
     /**
      * Adds a new command definition to the XTCE db.
-     * <p>
-     * Note that this method is used to create commands on the fly.<br>
-     * The commands are not saved anywhere and they will not be available when this object is created with the
-     * XtceDbFactory.
+
      */
-    public void addMetaCommand(MetaCommand c) {
+    public void addMetaCommand(MetaCommand c, boolean addSpacesystem) {
         rwLock.writeLock().lock();
         try {
             String ssname = c.getSubsystemName();
             SpaceSystem ss = spaceSystems.get(ssname);
             if (ss == null) {
-                throw new IllegalArgumentException("No SpaceSystem by name '" + ssname + "'");
+                if (!addSpacesystem) {
+                    throw new IllegalArgumentException("No SpaceSystem by name '" + ssname + "'");
+                }
+                createAllSpaceSystems(ssname);
+                ss = spaceSystems.get(ssname);
             }
             ss.addMetaCommand(c);
             commands.put(c.getQualifiedName(), c);
