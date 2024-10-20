@@ -45,6 +45,14 @@
     (keyup)="fireChange({ standardizeInputs: false })"
     (change)="fireChange()"
     (paste)="processPaste($event)" />
+  @if (showNow) {
+    <ya-icon-action
+      class="no-print"
+      icon="timer"
+      [padding]="true"
+      (click)="setNow()"
+      matTooltip="Set to now" />
+  }
   @if (showClear) {
     <ya-icon-action
       class="no-print"

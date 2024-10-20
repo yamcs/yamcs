@@ -51,6 +51,9 @@ export class YaDateTimeInput implements AfterViewInit, ControlValueAccessor, Val
   @Input()
   showClear = false;
 
+  @Input()
+  showNow = false;
+
   @ViewChild('dayInput', { static: true })
   private dayInputComponent: ElementRef<HTMLInputElement>;
 
@@ -137,6 +140,7 @@ export class YaDateTimeInput implements AfterViewInit, ControlValueAccessor, Val
         if (pastedDate instanceof Date && !isNaN(pastedDate.getTime())) {
           event.preventDefault();
           this.writeValue(pastedDate.toISOString());
+          this.fireChange();
           return false;
         }
       } catch {
@@ -151,6 +155,12 @@ export class YaDateTimeInput implements AfterViewInit, ControlValueAccessor, Val
     this.minuteInputComponent.nativeElement.value = '';
     this.secondInputComponent.nativeElement.value = '';
     this.millisInputComponent.nativeElement.value = '';
+    this.fireChange();
+  }
+
+  setNow() {
+    const now = new Date().toISOString();
+    this.writeValue(now);
     this.fireChange();
   }
 

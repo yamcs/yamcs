@@ -1,6 +1,7 @@
 .date-time-input {
-  display: inline-block;
+  display: flex;
   position: relative;
+  align-items: center;
 }
 
 input {
@@ -29,7 +30,9 @@ input.day {
   cursor: pointer;
 }
 
-input.hh, input.mm, input.ss {
+input.hh,
+input.mm,
+input.ss {
   width: 40px !important;
   display: inline-block !important;
 }
@@ -39,7 +42,10 @@ input.sss {
   display: inline-block !important;
 }
 
-input.hh:not(:focus), input.mm:not(:focus), input.ss:not(:focus), input.sss:not(:focus) {
+input.hh:not(:focus),
+input.mm:not(:focus),
+input.ss:not(:focus),
+input.sss:not(:focus) {
   border-left-color: transparent;
 }
 
