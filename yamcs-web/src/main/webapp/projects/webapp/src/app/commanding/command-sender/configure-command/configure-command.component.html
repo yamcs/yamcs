@@ -4,8 +4,8 @@
   <app-send-command-wizard-step step="2" />
 
   <div class="form-content">
-    @if (command$ | async; as command) {
-      <dl class="dl-horizontal no-lead no-trail">
+    @if (command(); as command) {
+      <dl class="dl-horizontal no-lead">
         <dt>Command</dt>
         <dd>{{ command.qualifiedName | shortName }}</dd>
         <dt>System</dt>
@@ -44,46 +44,17 @@
       <ya-warning-message>You're not cleared to send this command</ya-warning-message>
     }
 
-    @if (command$ | async; as command) {
-      @if (command.constraint) {
-        <p>&nbsp;</p>
-        <h3>Constraints</h3>
-        <table yaDataTable>
-          <tr>
-            <th>Constraint</th>
-            <th>Timeout</th>
-            <th>Live Evaluation</th>
-          </tr>
-          @for (constraint of command.constraint; track constraint) {
-            <tr>
-              <td>{{ constraint.expression }}</td>
-              <td>{{ constraint.timeout || "-" }}</td>
-              <td>
-                @if ((expr.result$ | async) === true) {
-                  <span class="evaluation valid">satisfied</span>
-                }
-                @if ((expr.result$ | async) === false) {
-                  <span class="evaluation invalid">not satisfied</span>
-                }
-                <app-live-expression
-                  #expr
-                  [expression]="constraint.expression"
-                  [style.display]="'none'" />
-              </td>
-            </tr>
-          }
-        </table>
-      }
-    }
-
-    @if (commandForm.hasArguments$ | async) {
-      <p>&nbsp;</p>
-      <h3>Arguments</h3>
-    }
     <app-command-form
       #commandForm
-      [command]="command$ | async"
-      [templateProvider]="templateProvider$ | async" />
+      [command]="command()"
+      [templateProvider]="templateProvider$ | async">
+      <ng-container head>
+        <ya-stepper-step label="Constraints" [expanded]="true" [visible]="!!command()?.constraint">
+          <app-command-constraints [command]="command()" />
+        </ya-stepper-step>
+      </ng-container>
+    </app-command-form>
+
     <p>&nbsp;</p>
     <mat-toolbar>
       <ya-button (click)="goBack()">Cancel</ya-button>

@@ -11,6 +11,7 @@ export interface CommandStep {
   args: { [key: string]: any; };
   extra?: { [key: string]: Value; };
   advancement?: AdvancementParams;
+  stream?: string;
   comment?: string;
 }
 

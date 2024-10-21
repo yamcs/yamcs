@@ -10,6 +10,8 @@ import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.security.User;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.YarchDatabase;
 
 public class CommandExecutor implements ActivityExecutor {
 
@@ -62,6 +64,7 @@ public class CommandExecutor implements ActivityExecutor {
         activitySpec.addOption("command", OptionType.STRING).withRequired(true);
         activitySpec.addOption("args", OptionType.MAP).withSpec(Spec.ANY);
         activitySpec.addOption("extra", OptionType.MAP).withSpec(Spec.ANY);
+        activitySpec.addOption("stream", OptionType.STRING);
     }
 
     @Override
@@ -91,7 +94,13 @@ public class CommandExecutor implements ActivityExecutor {
         }
 
         var processor = YamcsServer.getServer().getProcessor(yamcsInstance, processorName);
+
+        Stream stream = null;
+        if (args.containsKey("stream")) {
+            var ydb = YarchDatabase.getInstance(yamcsInstance);
+            stream = ydb.getStream(yamcsInstance);
+        }
         return new CommandExecution(activityService, this,
-                activity, processor, commandName, commandArgs, commandExtra, caller);
+                activity, processor, commandName, commandArgs, commandExtra, stream, caller);
     }
 }

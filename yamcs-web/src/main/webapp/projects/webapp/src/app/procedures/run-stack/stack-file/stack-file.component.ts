@@ -668,7 +668,6 @@ export class StackFileComponent implements OnDestroy {
       panelClass: 'dialog-full-size',
       data: {
         okLabel: 'ADD TO STACK',
-        format: this.format
       }
     });
 
@@ -679,11 +678,12 @@ export class StackFileComponent implements OnDestroy {
           name: result.command.qualifiedName,
           args: result.args,
           comment: result.comment,
+          stream: result.stream,
           extra: result.extra,
         };
 
-        if (result.stackOptions.advancement) {
-          model.advancement = result.stackOptions.advancement;
+        if (result.advancement) {
+          model.advancement = result.advancement;
         }
 
         // Save with an alias, if so configured and the alias is available
@@ -735,7 +735,6 @@ export class StackFileComponent implements OnDestroy {
         data: {
           okLabel: 'UPDATE',
           entry,
-          format: this.format,
         }
       }).afterClosed().subscribe((result?: CommandResult) => {
         if (result) {
@@ -744,9 +743,9 @@ export class StackFileComponent implements OnDestroy {
             name: result.command.qualifiedName,
             args: result.args,
             comment: result.comment,
+            stream: result.stream,
             extra: result.extra,
-            command: result.command,
-            ...(result.stackOptions.advancement && { advancement: result.stackOptions.advancement })
+            advancement: result.advancement,
           };
 
           // Save with an alias, if so configured and the alias is available
@@ -762,6 +761,7 @@ export class StackFileComponent implements OnDestroy {
           }
 
           const changedEntry = new StackedCommandEntry(changedModel);
+          changedEntry.command = result.command;
 
           const entries = this.entries$.value;
           const idx = entries.indexOf(entry);

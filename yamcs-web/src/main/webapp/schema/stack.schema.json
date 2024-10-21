@@ -109,6 +109,10 @@
                     }
                   }
                 },
+                "stream": {
+                  "description": "Override automatic stream selection",
+                  "type": "string"
+                },
                 "advancement": {
                   "$ref": "#/definitions/advancement"
                 }

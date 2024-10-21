@@ -103,6 +103,10 @@ public class CommandStack {
             var comment = commandObject.get("comment").getAsString();
             command.setComment(comment);
         }
+        if (commandObject.has("stream")) {
+            var stream = commandObject.get("stream").getAsString();
+            command.setStream(stream);
+        }
         if (commandObject.has("advancement")) {
             var advancementObject = commandObject.get("advancement").getAsJsonObject();
             if (advancementObject.has("acknowledgment")) {

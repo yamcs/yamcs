@@ -1,0 +1,72 @@
+<ng-container [formGroup]="formGroup">
+  <div class="label">
+    Stream
+    <br />
+    <span class="hint">Override the stream on which the command should be sent out.</span>
+    <br />
+    <ya-select [options]="streamOptions$ | async" formControlName="stream" />
+  </div>
+
+  @if (commandOptions.length) {
+    <br />
+  }
+
+  @for (extra of commandOptions; track extra; let last = $last) {
+    @switch (extra.type) {
+      @case ("BOOLEAN") {
+        <div class="label">
+          {{ extra.verboseName || extra.id }}
+          <br />
+          @if (extra.help) {
+            <span class="hint" [innerHTML]="extra.help"></span>
+          }
+          <br />
+
+          <div class="label radio-group">
+            <label
+              class="radio"
+              [class.checked]="formGroup.controls['extra__' + extra.id].value === 'true'">
+              <input type="radio" [formControlName]="'extra__' + extra.id" value="true" />
+              true
+            </label>
+            <label
+              class="radio"
+              [class.checked]="formGroup.controls['extra__' + extra.id].value === 'false'">
+              <input type="radio" [formControlName]="'extra__' + extra.id" value="false" />
+              false
+            </label>
+          </div>
+        </div>
+      }
+      @case ("TIMESTAMP") {
+        <div class="label">
+          {{ extra.verboseName || extra.id }}
+          @if (extra.help) {
+            <ya-help [dialogTitle]="extra.verboseName || extra.id">
+              <div [innerHTML]="extra.help"></div>
+            </ya-help>
+          }
+          <ya-date-time-input
+            [formControlName]="'extra__' + extra.id"
+            [showMillis]="true"
+            [showClear]="true"
+            [showNow]="true" />
+        </div>
+      }
+      @default {
+        <div class="label">
+          {{ extra.verboseName || extra.id }}
+          @if (extra.help) {
+            <ya-help [dialogTitle]="extra.verboseName || extra.id">
+              <div [innerHTML]="extra.help"></div>
+            </ya-help>
+          }
+          <input type="text" [formControlName]="'extra__' + extra.id" />
+        </div>
+      }
+    }
+    @if (!last) {
+      <br />
+    }
+  }
+</ng-container>

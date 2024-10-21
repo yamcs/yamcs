@@ -1,0 +1,47 @@
+.stepper-step.hidden {
+  display: none;
+}
+
+.header {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding-left: 24px;
+}
+
+.header:hover {
+  background-color: #eee;
+}
+
+.header .bullet,
+.header .title {
+  height: calc(40px - 6px - 6px);
+  font-size: 15px;
+  line-height: calc(40px - 6px - 6px);
+}
+
+.header .bullet {
+  background-color: #d3d3d3;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.header .title {
+  margin-left: 20px;
+  padding: 6px 0px
+}
+
+.header.expanded .bullet {
+  background-color: rgba(0, 0, 0, 0.654);
+}
+
+.content-box {
+  border-left: 1px solid #d3d3d3;
+  padding-bottom: 12px;
+  margin-left: calc(24px + 3px);
+}
+
+.content {
+  padding-left: 24px;
+}

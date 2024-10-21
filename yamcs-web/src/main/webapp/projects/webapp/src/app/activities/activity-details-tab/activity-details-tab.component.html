@@ -27,7 +27,7 @@
       <dd></dd>
       @for (kv of activity.args | keyvalue; track kv) {
         <dt>&nbsp;&nbsp;{{ kv.key }}</dt>
-        <dd>{{ kv.value }}</dd>
+        <dd>{{ kv.value | printObj }}</dd>
       }
     </dl>
   </div>

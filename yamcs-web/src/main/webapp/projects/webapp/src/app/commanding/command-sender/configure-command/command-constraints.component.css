@@ -10,3 +10,11 @@
   background-color: #e6ffed;
   color: #00c752;
 }
+
+th {
+  white-space: nowrap;
+}
+
+p {
+  color: rgba(0, 0, 0, 0.654)
+}

@@ -9,6 +9,9 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.yamcs.StreamConfig;
+import org.yamcs.StreamConfig.StandardStreamType;
+import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
@@ -80,6 +83,15 @@ public class WebApi extends AbstractWebApi<Context> {
             }
         }
         b.setParameterArchive(parameterArchive);
+
+        // Make TC stream names directly available without API request. It can be used
+        // for populating combo boxes.
+        var streamConfig = StreamConfig.getInstance(yamcsInstance.getName());
+        streamConfig.getEntries().stream()
+                .filter(x -> x.getType() == StandardStreamType.TC)
+                .map(StreamConfigEntry::getName)
+                .sorted()
+                .forEach(b::addTcStreams);
 
         observer.complete(b.build());
     }

@@ -90,6 +90,10 @@ export class ConfigService {
     return this.instanceConfig.parameterArchive;
   }
 
+  getTcStreams() {
+    return this.instanceConfig.tcStreams ?? [];
+  }
+
   getTag() {
     return this.websiteConfig.tag;
   }

@@ -175,6 +175,7 @@ input.ng-invalid:not(.ng-pristine),
 .block {
   font-weight: normal;
   font-size: 12px;
+  color: rgba(0, 0, 0, 0.654);
 }
 
 .down {

@@ -1,106 +1,37 @@
-<form [formGroup]="form" class="ya-form" [class.showAll]="showAll$ | async">
-  <ng-container formGroupName="args">
-    @for (argument of arguments; track argument; let first = $first) {
-      @if (!first) {
-        <br />
-      }
-      <app-argument
-        [name]="argument.name"
-        [description]="argument.description"
-        [type]="argument.type"
-        [initialValue]="argument.initialValue"
-        [templateProvider]="templateProvider" />
-    }
+<form [formGroup]="form" class="ya-form">
+  <ya-stepper>
+    <ng-content select="[head]" />
 
-    @for (argument of argumentsWithInitial; track argument; let first = $first) {
-      @if (!first || arguments.length) {
-        <br class="hasInitial" />
-      }
-      <app-argument
-        [name]="argument.name"
-        [description]="argument.description"
-        [type]="argument.type"
-        [initialValue]="argument.initialValue"
+    <ya-stepper-step label="Arguments" [expanded]="true">
+      <app-command-arguments-form
+        [formGroup]="form"
         [templateProvider]="templateProvider"
-        class="hasInitial" />
+        [command]="command" />
+    </ya-stepper-step>
+
+    @if (showCommandOptions()) {
+      <ya-stepper-step label="Advanced options">
+        <app-command-options-form [formGroup]="form" [templateProvider]="templateProvider" />
+      </ya-stepper-step>
     }
 
-    @if (config.collapseInitializedArguments) {
-      @if (argumentsWithInitial.length && !(showAll$ | async)) {
-        @if (arguments.length) {
-          <br />
-        }
-        <ya-text-action (click)="showAll$.next(true)" icon="double_arrow">
-          Show {{ argumentsWithInitial.length }}
-          @if (argumentsWithInitial.length === 1) {
-            argument
-          } @else {
-            arguments
-          }
-          with defaults
-        </ya-text-action>
-      }
-    }
-  </ng-container>
+    @if (stackMode) {
+      <ya-stepper-step label="Stack comment">
+        <app-stack-comment-form [formGroup]="form" [templateProvider]="templateProvider" />
+      </ya-stepper-step>
 
-  @if (enableComment || (showCommandOptions() && commandOptions.length)) {
-    <p>&nbsp;</p>
-    <h3>Options</h3>
-  }
-
-  @if (showCommandOptions()) {
-    @for (extra of commandOptions; track extra) {
-      @switch (extra.type) {
-        @case ("BOOLEAN") {
-          <div class="label">
-            {{ extra.verboseName || extra.id }}
-            @if (extra.help) {
-              <ya-help [dialogTitle]="extra.verboseName || extra.id">
-                <div [innerHTML]="extra.help"></div>
-              </ya-help>
-            }
-            <br />
-            <input type="radio" [formControlName]="'extra__' + extra.id" value="true" />
-            true
-            <input type="radio" [formControlName]="'extra__' + extra.id" value="false" />
-            false
-          </div>
-        }
-        @case ("TIMESTAMP") {
-          <div class="label">
-            {{ extra.verboseName || extra.id }}
-            @if (extra.help) {
-              <ya-help [dialogTitle]="extra.verboseName || extra.id">
-                <div [innerHTML]="extra.help"></div>
-              </ya-help>
-            }
-            <ya-date-time-input
-              [formControlName]="'extra__' + extra.id"
-              [showMillis]="true"
-              [showClear]="true"
-              [showNow]="true" />
-          </div>
-        }
-        @default {
-          <div class="label">
-            {{ extra.verboseName || extra.id }}
-            @if (extra.help) {
-              <ya-help [dialogTitle]="extra.verboseName || extra.id">
-                <div [innerHTML]="extra.help"></div>
-              </ya-help>
-            }
-            <input type="text" [formControlName]="'extra__' + extra.id" />
-          </div>
-        }
-      }
-      <br />
+      <ya-stepper-step label="Stack advancement">
+        <app-stack-advancement-form
+          [formGroup]="form"
+          [templateProvider]="templateProvider"
+          [command]="command" />
+      </ya-stepper-step>
+    } @else {
+      <ya-stepper-step label="Comment">
+        <app-command-comment-form [formGroup]="form" [templateProvider]="templateProvider" />
+      </ya-stepper-step>
     }
-  }
-  @if (enableComment) {
-    <label>
-      Comment
-      <span class="hint">(optional)</span>
-      <textarea formControlName="comment" rows="3" style="width: 100%; resize: none"></textarea>
-    </label>
-  }
+
+    <ng-content select="[tail]" />
+  </ya-stepper>
 </form>

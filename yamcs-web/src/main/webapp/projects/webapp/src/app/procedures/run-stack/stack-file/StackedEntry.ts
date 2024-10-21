@@ -42,6 +42,7 @@ export class StackedCommandEntry extends AbstractStackedEntry<CommandStep> {
   get namespace() { return this.model.namespace; }
   get args() { return this.model.args; }
   get extra() { return this.model.extra; }
+  get stream() { return this.model.stream; }
   get advancement() { return this.model.advancement; }
 
   override clearOutputs(): void {
@@ -61,6 +62,7 @@ export class StackedCommandEntry extends AbstractStackedEntry<CommandStep> {
       namespace: this.namespace,
       args: { ...this.args },
       comment: this.comment,
+      stream: this.stream,
     });
     copiedEntry.command = this.command;
     if (this.extra) {

@@ -19,7 +19,7 @@
 @if (selectedCommand$ | async; as command) {
   <div class="wrapper">
     <div class="command-detail">
-      <div class="names">
+      <div class="names" style="margin-bottom: 0.5em">
         <div>
           @if (command.qualifiedName | spaceSystemName; as spaceSystem) {
             <ya-text-action [padding]="false" (click)="returnToList(spaceSystem)">
@@ -36,60 +36,11 @@
           </div>
         }
       </div>
-      <p>&nbsp;</p>
       <app-command-form
         #commandForm
         [command]="command"
         [templateProvider]="templateProvider"
-        [enableComment]="false" />
-      @if (format === "ycs") {
-        <form
-          [formGroup]="stackOptionsForm"
-          class="ya-form"
-          [ngClass]="this.stackOptionsForm.disabled && 'disabled'">
-          <p>&nbsp;</p>
-          <h3>Stack comment</h3>
-          <app-markdown-input formControlName="comment" />
-
-          <p>&nbsp;</p>
-          <h3>Stack advancement</h3>
-          <div class="label">
-            Advance when
-            <app-advance-ack-help
-              [verifiers]="verifierAcknowledgments"
-              [extra]="extraAcknowledgments" />
-            <br />
-            <div style="display: flex; align-items: flex-start">
-              <ya-select
-                #ackSelect
-                [options]="ackOptions"
-                formControlName="advancementAckDropDown"
-                emptyOption="Inherit" />
-              @if (stackOptionsForm.get("advancementAckDropDown")?.value === "custom") {
-                <input
-                  type="text"
-                  formControlName="advancementAckCustom"
-                  style="width: 200px; margin-left: -1px" />
-              }
-            </div>
-          </div>
-          <br />
-          <div class="label">
-            Wait (ms)
-            <ya-help dialogTitle="Wait time">
-              <p>Wait time before advancing to the next command in the stack.</p>
-              <p>This triggers after successful acknowledgment.</p>
-            </ya-help>
-            <br />
-            <input
-              type="number"
-              formControlName="advancementWait"
-              placeholder="Inherit"
-              step="1000"
-              min="0" />
-          </div>
-        </form>
-      }
+        [stackMode]="true" />
     </div>
   </div>
   <div class="footer">

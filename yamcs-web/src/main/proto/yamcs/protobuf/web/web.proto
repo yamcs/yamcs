@@ -79,6 +79,9 @@ message InstanceConfiguration {
 
   // If true, make use of the Parameter Archive
   optional bool parameterArchive = 3;
+
+  // Command-related streams
+  repeated string tcStreams = 4;
 }
 
 message ListQueriesRequest {

@@ -8,6 +8,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.security.User;
+import org.yamcs.yarch.Stream;
 
 public class CommandExecution extends ActivityExecution {
 
@@ -15,6 +16,7 @@ public class CommandExecution extends ActivityExecution {
     private String commandName;
     private Map<String, Object> args;
     private Map<String, Object> extra;
+    private Stream stream;
     private User user;
 
     public CommandExecution(
@@ -25,12 +27,14 @@ public class CommandExecution extends ActivityExecution {
             String commandName,
             Map<String, Object> args,
             Map<String, Object> extra,
+            Stream stream,
             User user) {
         super(activityService, executor, activity);
         this.processor = processor;
         this.commandName = commandName;
         this.args = args;
         this.extra = extra;
+        this.stream = stream;
         this.user = user;
     }
 
@@ -56,6 +60,10 @@ public class CommandExecution extends ActivityExecution {
                         .setValue(commandOption.coerceValue(v))
                         .build());
             });
+        }
+
+        if (stream != null) {
+            preparedCommand.setTcStream(stream);
         }
 
         cmdManager.sendCommand(user, preparedCommand);

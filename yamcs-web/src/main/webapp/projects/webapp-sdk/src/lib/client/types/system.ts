@@ -25,6 +25,7 @@ export interface InstanceConfig {
   displayBucket: string;
   stackBucket: string;
   parameterArchive: boolean;
+  tcStreams?: string[];
 }
 
 export interface GeneralInfo {
