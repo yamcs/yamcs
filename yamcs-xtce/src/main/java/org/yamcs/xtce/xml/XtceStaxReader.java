@@ -3483,14 +3483,6 @@ public class XtceStaxReader extends AbstractStaxReader {
         incompleteType.addReference(nr);
         spaceSystem.addUnresolvedReference(nr);
 
-        int dim;
-        if (hasAttribute("numberOfDimensions", element)) {
-            dim = readIntAttribute("numberOfDimensions", element);
-            typeBuilder.setNumberOfDimensions(dim);
-        } else {
-            dim = -1;
-        }
-
         String initialValue = readAttribute(ATTR_INITIAL_VALUE, xmlEvent.asStartElement(), null);
         if (initialValue != null) {
             typeBuilder.setInitialValue(initialValue);
@@ -3502,12 +3494,10 @@ public class XtceStaxReader extends AbstractStaxReader {
                 continue;
             } else if (isStartElementWithName(ELEM_DIMENSION_LIST)) {
                 List<IntegerValue> dimList = readDimensionList(spaceSystem);
-                dim = dimList.size();
                 typeBuilder.setSize(dimList);
             } else if (isEndElementWithName(ELEM_ARRAY_ARGUMENT_TYPE)) {
-                if (dim == -1) {
-                    throw new XMLStreamException("Neither numberOfDimensions (XTCE 1.1) attribute nor "
-                            + ELEM_DIMENSION_LIST + " (XTCE 1.2) element defined for the ArrayParameter "
+                if (typeBuilder.getSize() == null) {
+                    throw new XMLStreamException(ELEM_DIMENSION_LIST + " not defined for the ArrayArgumentType "
                             + typeBuilder.getName());
                 }
                 return incompleteType;

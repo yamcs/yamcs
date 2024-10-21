@@ -14,8 +14,6 @@ import com.google.gson.JsonParser;
  * An array of values of the type referenced in {@link #type} and have the number of array dimensions as specified in
  * {@link #numberOfDimensions}
  * 
- * @author nm
- *
  */
 public class ArrayDataType extends NameDescription implements DataType {
     private static final long serialVersionUID = 1L;
@@ -269,6 +267,10 @@ public class ArrayDataType extends NameDescription implements DataType {
             }
             this.dim = list;
             setNumberOfDimensions(dim.size());
+        }
+
+        public List<IntegerValue> getSize() {
+            return dim;
         }
 
         public T setNumberOfDimensions(int numberOfDimensions) {
