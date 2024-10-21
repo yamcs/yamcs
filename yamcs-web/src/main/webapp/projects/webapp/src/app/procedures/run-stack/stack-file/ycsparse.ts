@@ -34,6 +34,7 @@ function parseCommandEntry(entry: { [key: string]: any; }, commandOptions: Comma
     name: entry.name,
     namespace: entry.namespace,
     ...(entry.comment && { comment: entry.comment }),
+    ...(entry.stream && { stream: entry.stream }),
     ...(entry.arguments && { args: parseArguments(entry.arguments) }),
     ...(entry.extraOptions && { extra: parseExtraOptions(entry.extraOptions, commandOptions) }),
     ...(entry.advancement && { advancement: entry.advancement })

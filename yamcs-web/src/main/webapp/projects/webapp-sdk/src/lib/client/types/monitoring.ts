@@ -86,6 +86,7 @@ export interface IssueCommandOptions {
   sequenceNumber?: number;
   dryRun?: boolean;
   comment?: string;
+  stream?: string;
   extra?: { [key: string]: Value; };
 }
 

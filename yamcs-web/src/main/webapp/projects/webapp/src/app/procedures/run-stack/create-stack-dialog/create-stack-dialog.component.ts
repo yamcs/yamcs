@@ -37,7 +37,7 @@ export class CreateStackDialogComponent {
   }
 
   save() {
-    const format: "ycs" | "xml" = this.filenameForm.get('format')!.value;
+    const format: 'ycs' | 'xml' = this.filenameForm.get('format')!.value;
     const name: string = this.filenameForm.get('name')!.value.trim() + '.' + format;
 
     let path = this.data.path;

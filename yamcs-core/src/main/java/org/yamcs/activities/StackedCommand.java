@@ -18,7 +18,7 @@ public class StackedCommand {
     private MetaCommand meta;
     private Map<Argument, String> assignments = new LinkedHashMap<>();
     private Map<String, Object> extra = new LinkedHashMap<>();
-
+    private String stream;
     private String comment;
 
     public StackedCommand() {
@@ -79,6 +79,14 @@ public class StackedCommand {
 
     public String getComment() {
         return comment;
+    }
+
+    public void setStream(String stream) {
+        this.stream = stream;
+    }
+
+    public String getStream() {
+        return stream;
     }
 
     public void setExtra(String option, Object value) {

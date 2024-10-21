@@ -453,6 +453,10 @@ public class LinkManager {
         return linksByName.get(linkName);
     }
 
+    public Set<Stream> getCommandStreams() {
+        return tcStreamSubscribers.keySet();
+    }
+
     /**
      * What to do with invalid packets.
      */

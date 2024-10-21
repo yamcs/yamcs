@@ -41,33 +41,8 @@
 <div class="block-title" style="padding-top: 0">Constraints</div>
 <div class="block">
   @if (entry.command?.constraint; as constraints) {
-    <table yaDataTable>
-      <tr>
-        <th>Constraint</th>
-        <th>Timeout</th>
-        <th>Live Evaluation</th>
-      </tr>
-      @for (constraint of constraints; track constraint) {
-        <tr>
-          <td>{{ constraint.expression }}</td>
-          <td>{{ constraint.timeout || "-" }}</td>
-          <td>
-            @if ((expr.result$ | async) === true) {
-              <span class="evaluation valid">satisfied</span>
-            }
-            @if ((expr.result$ | async) === false) {
-              <span class="evaluation invalid">not satisfied</span>
-            }
-            <app-live-expression
-              #expr
-              [expression]="constraint.expression"
-              [style.display]="'none'" />
-          </td>
-        </tr>
-      }
-    </table>
-  }
-  @if (!entry.command?.constraint) {
+    <app-command-constraints [command]="entry.command" />
+  } @else {
     -
   }
 </div>

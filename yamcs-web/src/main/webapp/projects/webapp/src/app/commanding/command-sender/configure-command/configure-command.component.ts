@@ -1,35 +1,42 @@
 import { Location } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, input } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, input, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { MatStepperIcon, MatStepperModule } from '@angular/material/stepper';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Clearance, Command, CommandHistoryEntry, CommandOptionType, ConfigService, CreateTimelineItemRequest, MessageService, Value, WebappSdkModule, WebsiteConfig, YamcsService } from '@yamcs/webapp-sdk';
+import { Clearance, Command, CommandHistoryEntry, ConfigService, CreateTimelineItemRequest, MessageService, WebappSdkModule, WebsiteConfig, YamcsService, YaStepperStep } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
-import { LiveExpressionComponent } from '../../../shared/live-expression/live-expression.component';
 import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
 import { SignificanceLevelComponent } from '../../../shared/significance-level/significance-level.component';
-import { CommandFormComponent, TemplateProvider } from '../command-form/command-form.component';
+import { CommandFormComponent } from '../command-form/command-form.component';
+import { TemplateProvider } from '../command-form/TemplateProvider';
 import { ScheduleCommandDialogComponent } from '../schedule-command-dialog/schedule-command-dialog.component';
 import { SendCommandWizardStepComponent } from '../send-command-wizard-step/send-command-wizard-step.component';
+import { CommandConstraintsComponent } from './command-constraints.component';
+import { CommandHistoryTemplateProvider } from './CommandHistoryTemplateProvider';
 
 @Component({
   standalone: true,
   templateUrl: './configure-command.component.html',
-  styleUrl: './configure-command.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    CommandConstraintsComponent,
     CommandFormComponent,
-    InstanceToolbarComponent,
     InstancePageTemplateComponent,
-    LiveExpressionComponent,
+    InstanceToolbarComponent,
     MarkdownComponent,
+    MatIconModule,
+    MatStepperIcon,
+    MatStepperModule,
     SendCommandWizardStepComponent,
-    WebappSdkModule,
     SignificanceLevelComponent,
+    WebappSdkModule,
+    YaStepperStep,
   ],
 })
 export class ConfigureCommandComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -41,7 +48,7 @@ export class ConfigureCommandComponent implements OnInit, AfterViewInit, OnDestr
 
   config: WebsiteConfig;
 
-  command$ = new BehaviorSubject<Command | null>(null);
+  command = signal<Command | null>(null);
   templateProvider$ = new BehaviorSubject<TemplateProvider | null>(null);
   cleared$ = new BehaviorSubject<boolean>(true);
 
@@ -58,7 +65,6 @@ export class ConfigureCommandComponent implements OnInit, AfterViewInit, OnDestr
     private location: Location,
     configService: ConfigService,
     private authService: AuthService,
-    private changeDetection: ChangeDetectorRef,
     private dialog: MatDialog,
   ) {
     this.config = configService.getConfig();
@@ -83,7 +89,7 @@ export class ConfigureCommandComponent implements OnInit, AfterViewInit, OnDestr
       if (responses.length > 1) {
         template = responses[1];
       }
-      this.command$.next(command);
+      this.command.set(command);
       if (template) {
         this.templateProvider$.next(new CommandHistoryTemplateProvider(template));
       } else {
@@ -112,10 +118,6 @@ export class ConfigureCommandComponent implements OnInit, AfterViewInit, OnDestr
         }
       });
     }
-
-    this.commandForm.hasArguments$.subscribe(hasArguments => {
-      this.changeDetection.detectChanges();
-    });
   }
 
   goBack() {
@@ -125,16 +127,14 @@ export class ConfigureCommandComponent implements OnInit, AfterViewInit, OnDestr
   sendCommand() {
     this.armControl.setValue(false);
 
-    const args = this.commandForm.getAssignments();
-    const comment = this.commandForm.getComment();
-    const extra = this.commandForm.getExtraOptions();
-
     const qname = this.qualifiedName();
+    const commandConfig = this.commandForm.getResult();
 
     this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, qname, {
-      args,
-      comment,
-      extra,
+      args: commandConfig.args,
+      extra: commandConfig.extra,
+      stream: commandConfig.stream,
+      comment: commandConfig.comment,
     }).then(response => {
       this.router.navigate([
         '/commanding/send' + qname,
@@ -166,8 +166,7 @@ export class ConfigureCommandComponent implements OnInit, AfterViewInit, OnDestr
         this.armControl.setValue(false);
 
         const qname = this.qualifiedName();
-        const args = this.commandForm.getAssignments();
-        const extra = this.commandForm.getExtraOptions(true);
+        const commandConfig = this.commandForm.getResult(true);
 
         const options: CreateTimelineItemRequest = {
           type: 'ACTIVITY',
@@ -176,12 +175,13 @@ export class ConfigureCommandComponent implements OnInit, AfterViewInit, OnDestr
           start: scheduleOptions['executionTime'],
           tags: scheduleOptions['tags'],
           activityDefinition: {
-            "type": "COMMAND",
-            "args": {
-              "processor": this.yamcs.processor!,
-              "command": qname,
-              "args": args,
-              "extra": extra,
+            type: 'COMMAND',
+            args: {
+              processor: this.yamcs.processor!,
+              command: qname,
+              args: commandConfig.args,
+              extra: commandConfig.extra,
+              stream: commandConfig.stream,
             }
           },
         };
@@ -238,70 +238,5 @@ export class ConfigureCommandComponent implements OnInit, AfterViewInit, OnDestr
 
   ngOnDestroy() {
     this.connectionInfoSubscription?.unsubscribe();
-  }
-}
-
-export class CommandHistoryTemplateProvider implements TemplateProvider {
-
-  constructor(private entry: CommandHistoryEntry) {
-  }
-
-  getAssignment(argumentName: string) {
-    if (this.entry.assignments) {
-      for (const assignment of this.entry.assignments) {
-        if (assignment.name === argumentName) {
-          return assignment.value;
-        }
-      }
-    }
-  }
-
-  getOption(id: string, expectedType: CommandOptionType) {
-    for (const attr of (this.entry.attr || [])) {
-      if (attr.name === id) {
-        switch (expectedType) {
-          case 'BOOLEAN':
-            return this.getBooleanOption(attr.value);
-          case 'NUMBER':
-            return this.getNumberOption(attr.value);
-          case 'STRING':
-            return this.getStringOption(attr.value);
-          case 'TIMESTAMP':
-            return this.getTimestampOption(attr.value);
-        }
-      }
-    }
-  }
-
-  private getBooleanOption(value: Value) {
-    if (value.type === 'BOOLEAN') {
-      return value;
-    }
-  }
-
-  private getNumberOption(value: Value) {
-    switch (value.type) {
-      case 'SINT32':
-      case 'UINT32':
-      case 'SINT64':
-      case 'UINT64':
-        return value;
-    }
-  }
-
-  private getStringOption(value: Value) {
-    if (value.type === 'STRING') {
-      return value;
-    }
-  }
-
-  private getTimestampOption(value: Value) {
-    if (value.type === 'TIMESTAMP') {
-      return value;
-    }
-  }
-
-  getComment() {
-    // Don't copy
   }
 }

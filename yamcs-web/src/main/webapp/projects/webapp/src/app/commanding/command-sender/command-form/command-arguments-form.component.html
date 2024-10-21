@@ -1,0 +1,49 @@
+<ng-container [formGroup]="formGroup">
+  <div formGroupName="args" [class.showAll]="showAll$ | async">
+    @if (!(hasArguments$ | async)) {
+      No arguments
+    }
+
+    @for (argument of arguments; track argument; let first = $first) {
+      @if (!first) {
+        <br />
+      }
+      <app-argument
+        [name]="argument.name"
+        [description]="argument.description"
+        [type]="argument.type"
+        [initialValue]="argument.initialValue"
+        [templateProvider]="templateProvider" />
+    }
+
+    @for (argument of argumentsWithInitial; track argument; let first = $first) {
+      @if (!first || arguments.length) {
+        <br class="hasInitial" />
+      }
+      <app-argument
+        [name]="argument.name"
+        [description]="argument.description"
+        [type]="argument.type"
+        [initialValue]="argument.initialValue"
+        [templateProvider]="templateProvider"
+        class="hasInitial" />
+    }
+
+    @if (config.collapseInitializedArguments) {
+      @if (argumentsWithInitial.length && !(showAll$ | async)) {
+        @if (arguments.length) {
+          <br />
+        }
+        <ya-text-action (click)="showAll$.next(true)" icon="double_arrow">
+          Show {{ argumentsWithInitial.length }}
+          @if (argumentsWithInitial.length === 1) {
+            argument
+          } @else {
+            arguments
+          }
+          with defaults
+        </ya-text-action>
+      }
+    }
+  </div>
+</ng-container>

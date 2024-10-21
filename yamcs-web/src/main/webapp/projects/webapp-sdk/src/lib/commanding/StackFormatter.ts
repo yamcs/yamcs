@@ -91,6 +91,7 @@ export class StackFormatter {
           name: step.name,
           ...(step.namespace && { namespace: step.namespace }),
           ...(step.comment && { comment: step.comment }),
+          ...(step.stream && { stream: step.stream }),
           ...(step.extra && { extraOptions: this.getExtraOptionsJSON(step.extra) }),
           ...(step.args && { arguments: this.getCommandArgumentsJSON(step.args) }),
           ...(step.advancement && { advancement: step.advancement })

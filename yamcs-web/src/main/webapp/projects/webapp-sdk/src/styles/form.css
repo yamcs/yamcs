@@ -102,3 +102,27 @@
   font-weight: 400;
   letter-spacing: normal;
 }
+
+.ya-form div.radio-group input[type=radio] {
+  margin-top: -1px;
+  vertical-align: middle;
+}
+
+.ya-form div.radio-group .radio {
+  font-weight: normal;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  margin: 0;
+  border: 1px solid transparent;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.ya-form div.radio-group .radio:hover {
+  background-color: #f7f7f7;
+}
+
+.ya-form div.radio-group .radio.checked {
+  background-color: #f5f5f5;
+  border-color: #d3d3d3;
+}

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, input } from '@angular/core';
-import { Activity, MessageService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { Activity, MessageService, PrintObjPipe, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
@@ -7,6 +7,7 @@ import { BehaviorSubject } from 'rxjs';
   templateUrl: './activity-details-tab.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    PrintObjPipe,
     WebappSdkModule,
   ],
 })

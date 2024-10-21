@@ -1,0 +1,31 @@
+@if (command(); as command) {
+  <p>
+    Constraints are evaluated after the command is released from the assigned queue. The following
+    is an indication of the current constraint state.
+  </p>
+  <table yaDataTable>
+    <tr>
+      <th class="expand">Constraint</th>
+      <th>Timeout</th>
+      <th>Live evaluation</th>
+    </tr>
+    @for (constraint of command.constraint; track constraint) {
+      <tr>
+        <td>{{ constraint.expression }}</td>
+        <td style="white-space: nowrap">{{ (constraint.timeout | millisDuration) || "-" }}</td>
+        <td style="white-space: nowrap">
+          @if ((expr.result$ | async) === true) {
+            <span class="evaluation valid">satisfied</span>
+          }
+          @if ((expr.result$ | async) === false) {
+            <span class="evaluation invalid">not satisfied</span>
+          }
+          <app-live-expression
+            #expr
+            [expression]="constraint.expression"
+            [style.display]="'none'" />
+        </td>
+      </tr>
+    }
+  </table>
+}

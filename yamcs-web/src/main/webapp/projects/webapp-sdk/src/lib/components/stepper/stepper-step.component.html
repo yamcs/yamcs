@@ -1,0 +1,13 @@
+<div class="stepper-step" [class.hidden]="!visible()">
+  <div class="header" [class.expanded]="expanded()" (click)="toggle()">
+    <div class="bullet"></div>
+    <div class="title">{{ label() }}</div>
+  </div>
+  @if (expanded()) {
+    <div class="content-box">
+      <div class="content">
+        <ng-content />
+      </div>
+    </div>
+  }
+</div>

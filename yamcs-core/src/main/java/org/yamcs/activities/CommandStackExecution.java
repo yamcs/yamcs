@@ -19,6 +19,7 @@ import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.security.User;
 import org.yamcs.yarch.Bucket;
+import org.yamcs.yarch.YarchDatabase;
 
 public class CommandStackExecution extends ActivityExecution {
 
@@ -47,7 +48,8 @@ public class CommandStackExecution extends ActivityExecution {
         var yamcs = YamcsServer.getServer();
         var cmdManager = processor.getCommandingManager();
         var histManager = processor.getCommandHistoryManager();
-        var mdb = MdbFactory.getInstance(processor.getInstance());
+        var mdb = MdbFactory.getInstance(yamcsInstance);
+        var ydb = YarchDatabase.getInstance(yamcsInstance);
         var origin = InetAddress.getLocalHost().getHostName();
         var seq = 0;
 
@@ -89,6 +91,10 @@ public class CommandStackExecution extends ActivityExecution {
                         stackedCommand.getMetaCommand(), args, origin, seq++, user);
                 if (stackedCommand.getComment() != null) {
                     preparedCommand.setComment(stackedCommand.getComment());
+                }
+                if (stackedCommand.getStream() != null) {
+                    var stream = ydb.getStream(stackedCommand.getStream());
+                    preparedCommand.setTcStream(stream);
                 }
 
                 for (var entry : stackedCommand.getExtra().entrySet()) {
