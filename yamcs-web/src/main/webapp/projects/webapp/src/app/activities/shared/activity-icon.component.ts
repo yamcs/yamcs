@@ -5,6 +5,7 @@ import { Activity, WebappSdkModule } from '@yamcs/webapp-sdk';
   standalone: true,
   selector: 'app-activity-icon',
   templateUrl: './activity-icon.component.html',
+  styleUrl: './activity-icon.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     WebappSdkModule,

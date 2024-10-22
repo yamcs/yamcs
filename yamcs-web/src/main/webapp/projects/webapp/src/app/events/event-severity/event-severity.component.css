@@ -1,9 +1,15 @@
-.info, .watch, .warning, .distress, .critical, .severe, .error {
+.info,
+.watch,
+.warning,
+.distress,
+.critical,
+.severe,
+.error {
   display: inline-block;
   height: 5px;
   width: 29px;
   position: relative;
-  background-image: url('./level-sprite.png')
+  background-image: url('./event-levels.png')
 }
 
 .info {
@@ -26,7 +32,8 @@
   background-position: 0 -20px;
 }
 
-.severe, .error {
+.severe,
+.error {
   background-position: 0 -25px;
 }
 
@@ -36,7 +43,14 @@
 }
 
 @media print {
-  .info, .watch, .warning, .distress, .critical, .severe, .error {
+
+  .info,
+  .watch,
+  .warning,
+  .distress,
+  .critical,
+  .severe,
+  .error {
     print-color-adjust: exact;
   }
 }

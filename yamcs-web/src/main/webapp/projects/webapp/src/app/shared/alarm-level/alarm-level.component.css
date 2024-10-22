@@ -1,9 +1,14 @@
-.inlimits, .watch, .warning, .distress, .critical, .severe {
+.inlimits,
+.watch,
+.warning,
+.distress,
+.critical,
+.severe {
   display: inline-block;
   height: 5px;
   width: 29px;
   position: relative;
-  background-image: url('./level-sprite.png');
+  background-image: url('./alarm-levels.png');
 }
 
 .inlimits {
@@ -36,7 +41,13 @@
 }
 
 @media print {
-  .inlimits, .watch, .warning, .distress, .critical, .severe {
+
+  .inlimits,
+  .watch,
+  .warning,
+  .distress,
+  .critical,
+  .severe {
     print-color-adjust: exact;
   }
 }

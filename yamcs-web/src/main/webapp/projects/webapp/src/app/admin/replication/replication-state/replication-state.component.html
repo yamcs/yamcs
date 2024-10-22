@@ -1,6 +1,5 @@
-@if (connected === true) {
-  <mat-icon class="success"> check_circle </mat-icon>
-}
-@if (connected === false) {
-  <mat-icon class="down"> lens </mat-icon>
+@if (connected()) {
+  <mat-icon class="connected">check_circle</mat-icon>
+} @else {
+  <mat-icon class="disconnected">lens</mat-icon>
 }

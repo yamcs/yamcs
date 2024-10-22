@@ -42,11 +42,10 @@
                 @for (run of trace.runs; track run; let index = $index) {
                   <tr>
                     <td class="status">
-                      @if (!run.error) {
-                        <mat-icon class="success">check_circle</mat-icon>
-                      }
                       @if (run.error) {
-                        <mat-icon class="alert">error</mat-icon>
+                        <mat-icon class="error">error</mat-icon>
+                      } @else {
+                        <mat-icon class="ok">check_circle</mat-icon>
                       }
                     </td>
                     <td style="width: 200px">{{ run.time | datetime }}</td>

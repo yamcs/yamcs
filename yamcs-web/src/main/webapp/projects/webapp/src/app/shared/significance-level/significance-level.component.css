@@ -1,9 +1,14 @@
-.none, .watch, .warning, .distress, .critical, .severe {
+.none,
+.watch,
+.warning,
+.distress,
+.critical,
+.severe {
   display: inline-block;
   height: 5px;
   width: 29px;
   position: relative;
-  background-image: url('./level-sprite.png');
+  background-image: url('./significance-levels.png');
 }
 
 .none {
@@ -36,7 +41,13 @@
 }
 
 @media print {
-  .none, .watch, .warning, .distress, .critical, .severe {
+
+  .none,
+  .watch,
+  .warning,
+  .distress,
+  .critical,
+  .severe {
     print-color-adjust: exact;
   }
 }

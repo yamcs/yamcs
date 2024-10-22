@@ -60,3 +60,11 @@ table.logs td.message {
   visibility: hidden;
   line-height: 0;
 }
+
+.warning {
+  color: var(--y-warning-color) !important;
+}
+
+.error {
+  color: var(--y-error-color) !important;
+}

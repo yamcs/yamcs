@@ -65,7 +65,7 @@ div.entry div.in .body {
 
 div.entry div.out .body.err {
   background-color: #fcc;
-  color: crimson;
+  color: var(--y-error-color);
 }
 
 div.entry div.in .body.note {

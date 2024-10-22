@@ -17,7 +17,7 @@
 }
 
 .meta.error .item {
-  background-color: crimson;
+  background-color: var(--y-error-color);
   color: white;
 }
 

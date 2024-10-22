@@ -85,7 +85,7 @@ service AlarmsApi {
 }
 
 message ListAlarmsRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
   // The zero-based row number at which to start outputting results.
@@ -142,13 +142,13 @@ message SubscribeAlarmsRequest {
 }
 
 message EditAlarmRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
   
-  // Alarm name.
+  // Alarm name
   optional string name = 3;
   
   optional uint32 seqnum = 4;
@@ -166,13 +166,13 @@ message EditAlarmRequest {
 }
 
 message AcknowledgeAlarmRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
   
-  // Alarm name.
+  // Alarm name
   optional string alarm = 3;
   
   optional uint32 seqnum = 4;
@@ -182,13 +182,13 @@ message AcknowledgeAlarmRequest {
 }
 
 message ShelveAlarmRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
   
-  // Alarm name.
+  // Alarm name
   optional string alarm = 3;
   
   optional uint32 seqnum = 4;
@@ -202,55 +202,69 @@ message ShelveAlarmRequest {
 }
 
 message UnshelveAlarmRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
   
-  // Alarm name.
+  // Alarm name
   optional string alarm = 3;
   
   optional uint32 seqnum = 4;
 }
 
 message ClearAlarmRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
   
-  // Alarm name.
+  // Alarm name
   optional string alarm = 3;
   
   optional uint32 seqnum = 4;
   
-  // Message documenting the alarm change.
+  // Message documenting the alarm change
   optional string comment = 5;
 }
 
 message SubscribeGlobalStatusRequest {
+  // Yamcs instance name
   optional string instance = 1;
+
+  // Processor name
   optional string processor = 2;
 }
 
 message GlobalAlarmStatus {  
-  //the number of active unacknoleged alarms
+  // The number of active unacknowledged alarms
   optional int32 unacknowledgedCount = 1;
-  
-  //true if there is at least one unacknowledged alarm not OK (i.e. latest value of parameter still out of limits)
+
+  // True if there is at least one unacknowledged alarm not OK
+  // (i.e. latest value of parameter still out of limits)
   optional bool unacknowledgedActive = 2;
-  
-  
-  //the number of active ackonwledged alarms 
+
+  // Highest severity among all unacknowledged alarms
+  optional AlarmSeverity unacknowledgedSeverity = 7;
+
+  // The number of active acknowledged alarms
   optional int32 acknowledgedCount = 3;
-  
-  //true if there is at least one acknowledged alarm not OK (i.e. latest value of parameter still out of limits)
+
+  // True if there is at least one acknowledged alarm not OK
+  // (i.e. latest value of parameter still out of limits)
   optional bool acknowledgedActive = 4;
-  
-  //the number of shelved alarms
+
+  // Highest severity among all acknowledged alarms
+  optional AlarmSeverity acknowledgedSeverity = 8;
+
+  // The number of shelved alarms
   optional int32 shelvedCount = 5;
- //true if there is at least one shelved alarm not OK (i.e. latest value of parameter still out of limits)
+
+  // True if there is at least one shelved alarm not OK (i.e. latest value of parameter still out of limits)
   optional bool shelvedActive = 6;
+
+  // Highest severity among all shelved alarms
+  optional AlarmSeverity shelvedSeverity = 9;
 }

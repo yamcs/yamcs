@@ -1,3 +1,4 @@
+import { LowerCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { FaviconService, GlobalAlarmStatus, GlobalAlarmStatusSubscription, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -10,6 +11,7 @@ import { AuthService } from '../../core/services/AuthService';
   styleUrl: './alarm-label.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    LowerCasePipe,
     WebappSdkModule,
   ],
 })
@@ -29,9 +31,6 @@ export class AlarmLabelComponent implements OnDestroy {
   ) {
     this.connectionInfoSubscription = yamcs.connectionInfo$.subscribe(connectionInfo => {
       if (connectionInfo && connectionInfo.instance) {
-        /*if (this.instanceClient && this.instanceClient.instance !== connectionInfo.instance) {
-          this.clearAlarmSubscription();
-        }*/
         let context = connectionInfo.instance.name;
         if (connectionInfo.processor) {
           if (authService.getUser()!.hasSystemPrivilege('ReadAlarms')) {

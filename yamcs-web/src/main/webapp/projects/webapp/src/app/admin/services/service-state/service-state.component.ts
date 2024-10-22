@@ -5,6 +5,7 @@ import { Service, WebappSdkModule } from '@yamcs/webapp-sdk';
   standalone: true,
   selector: 'app-service-state',
   templateUrl: './service-state.component.html',
+  styleUrl: './service-state.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     WebappSdkModule,

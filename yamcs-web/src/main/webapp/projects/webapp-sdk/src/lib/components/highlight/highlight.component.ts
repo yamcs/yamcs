@@ -1,35 +1,31 @@
-import { AsyncPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { ChangeDetectionStrategy, Component, computed, inject, input, SecurityContext } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   standalone: true,
   selector: 'ya-highlight',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './highlight.component.html',
-  imports: [
-    AsyncPipe,
-  ],
 })
-export class YaHighlight implements OnChanges {
+export class YaHighlight {
 
-  @Input()
-  text: string;
+  private sanitizer = inject(DomSanitizer);
 
-  @Input()
-  term: string;
+  text = input<string>();
+  term = input<string>();
 
-  html$ = new BehaviorSubject<string>('');
-
-  ngOnChanges() {
-    if (!this.text || !this.term) {
-      this.html$.next(this.text);
+  html = computed(() => {
+    const text = this.text();
+    const term = this.term();
+    if (!text || !term) {
+      return text || '';
     } else {
-      const re = new RegExp('(' + this.escapeRegex(this.term) + ')', 'ig');
-      const html = this.text.replace(re, '<strong>$1</strong>');
-      this.html$.next(html);
+      const re = new RegExp('(' + this.escapeRegex(term) + ')', 'ig');
+      const html = text.replace(re, '<strong>$1</strong>');
+      const safeHtml = this.sanitizer.sanitize(SecurityContext.HTML, html);
+      return safeHtml || '';
     }
-  }
+  });
 
   private escapeRegex(pattern: string) {
     return pattern.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');

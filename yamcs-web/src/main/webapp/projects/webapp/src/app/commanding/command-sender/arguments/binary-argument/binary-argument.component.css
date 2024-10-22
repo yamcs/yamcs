@@ -1,5 +1,5 @@
 :host.ng-invalid:not(.ng-pristine) ::ng-deep input {
-  border-color: crimson !important;
+  border-color: var(--y-error-color) !important;
 }
 
 .label {

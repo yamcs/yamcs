@@ -13,7 +13,7 @@
 
 :host.error {
   background-color: #fcc;
-  color: crimson;
+  color: var(--y-error-color);
 }
 
 :host>mat-icon {

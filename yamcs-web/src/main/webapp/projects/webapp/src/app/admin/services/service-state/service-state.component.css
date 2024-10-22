@@ -1,0 +1,15 @@
+.starting {
+  color: lightgreen;
+}
+
+.running {
+  color: #00c752;
+}
+
+.failed {
+  color: var(--y-error-color);
+}
+
+.terminated {
+  color: lightgrey;
+}

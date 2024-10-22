@@ -1,5 +1,6 @@
 
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { MatTooltip } from '@angular/material/tooltip';
 
 @Component({
   standalone: true,
@@ -7,7 +8,9 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
   templateUrl: './alarm-level.component.html',
   styleUrl: './alarm-level.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [],
+  imports: [
+    MatTooltip,
+  ],
 })
 export class AlarmLevelComponent {
 

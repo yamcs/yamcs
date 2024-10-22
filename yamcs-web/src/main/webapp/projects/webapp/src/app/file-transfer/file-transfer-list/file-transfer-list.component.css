@@ -16,7 +16,7 @@ tr.item-detail td {
 }
 
 .error {
-  color: crimson;
+  color: var(--y-error-color);
 }
 
 .file-column {

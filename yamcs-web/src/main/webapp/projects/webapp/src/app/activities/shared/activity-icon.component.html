@@ -1,17 +1,17 @@
 @if (activity(); as activity) {
   @if (activity.status === "SUCCESSFUL") {
-    <mat-icon class="success" [matTooltip]="activity.status"> check_circle </mat-icon>
+    <mat-icon class="success" [matTooltip]="activity.status">check_circle</mat-icon>
   }
   @if (activity.status === "RUNNING") {
-    <mat-icon class="spin" [matTooltip]="activity.status"> cached </mat-icon>
+    <mat-icon class="spin" [matTooltip]="activity.status">cached</mat-icon>
   }
   @if (activity.status === "FAILED") {
-    <mat-icon class="alert" [matTooltip]="activity.status"> highlight_off </mat-icon>
+    <mat-icon class="failed" [matTooltip]="activity.status">highlight_off</mat-icon>
   }
   @if (activity.status === "CANCELLED" && !activity.stop) {
-    <mat-icon class="warning spin" [matTooltip]="activity.status"> cached </mat-icon>
+    <mat-icon class="warning spin" [matTooltip]="activity.status">cached</mat-icon>
   }
   @if (activity.status === "CANCELLED" && activity.stop) {
-    <mat-icon class="down" [matTooltip]="activity.status"> stop_circle </mat-icon>
+    <mat-icon class="cancelled" [matTooltip]="activity.status">stop_circle</mat-icon>
   }
 }

@@ -23,7 +23,6 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
-import { StorageUrlPipe } from '../public-api';
 import { YaBinaryInput } from './components/binary-input/binary-input.component';
 import { YaBreadcrumbTrail } from './components/breadcrumb/breadcrumb-trail.component';
 import { YaBreadcrumb } from './components/breadcrumb/breadcrumb.component';
@@ -100,9 +99,11 @@ import { OperatorPipe } from './pipes/operator.pipe';
 import { ParameterTypeForPathPipe } from './pipes/parameter-type-for-path.pipe';
 import { ParentsPipe } from './pipes/parents.pipe';
 import { PrintJsonPipe } from './pipes/print-json.pipe';
+import { PrintObjPipe } from './pipes/print-obj.pipe';
 import { ReversePipe } from './pipes/reverse.pipe';
 import { ShortNamePipe } from './pipes/short-name.pipe';
 import { SpaceSystemPipe } from './pipes/space-system.pipe';
+import { StorageUrlPipe } from './pipes/storage-url.pipe';
 import { ToValuePipe } from './pipes/to-value.pipe';
 import { UnitsPipe } from './pipes/units.pipe';
 import { ValuePipe } from './pipes/value.pipe';
@@ -135,6 +136,7 @@ const pipes = [
   ParameterTypeForPathPipe,
   ParentsPipe,
   PrintJsonPipe,
+  PrintObjPipe,
   ReversePipe,
   ShortNamePipe,
   SpaceSystemPipe,

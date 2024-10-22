@@ -17,5 +17,5 @@
 }
 
 .query-error {
-  color: crimson;
+  color: var(--y-error-color);
 }

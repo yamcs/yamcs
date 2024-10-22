@@ -1,0 +1,38 @@
+.completed {
+  color: #00c752;
+}
+
+.running {
+  animation: yspin 2s infinite linear;
+}
+
+.cancelling {
+  color: var(--y-warning-color);
+  animation: yspin 2s infinite linear;
+}
+
+.failed {
+  color: var(--y-error-color);
+}
+
+.paused {
+  animation: yblink 1s linear infinite;
+}
+
+@keyframes yblink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes yspin {
+  0% {
+    -webkit-transform: rotate(0deg) scaleX(-1);
+    transform: rotate(0deg) scaleX(-1);
+  }
+
+  100% {
+    -webkit-transform: rotate(359deg) scaleX(-1);
+    transform: rotate(359deg) scaleX(-1);
+  }
+}

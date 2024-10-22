@@ -78,10 +78,10 @@
           <mat-icon class="success" [matTooltip]="row.state">check_circle</mat-icon>
         }
         @if (row.state === "FAILED") {
-          <mat-icon class="alert" [matTooltip]="row.state">highlight_off</mat-icon>
+          <mat-icon class="failed" [matTooltip]="row.state">highlight_off</mat-icon>
         }
         @if (row.state === "OFFLINE") {
-          <mat-icon class="down" [matTooltip]="row.state">lens</mat-icon>
+          <mat-icon class="offline" [matTooltip]="row.state">lens</mat-icon>
         }
         @if (row.state === "INITIALIZING" || row.state === "STARTING" || row.state === "STOPPING") {
           <mat-icon class="spin" [matTooltip]="row.state">cached</mat-icon>

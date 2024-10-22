@@ -4,7 +4,9 @@
     Alarms
     @if (status$ | async; as status) {
       @if (status.unacknowledgedCount) {
-        <div class="count unacked">{{ status.unacknowledgedCount }} unacked</div>
+        <div class="count unacked" [ngClass]="status.unacknowledgedSeverity | lowercase">
+          {{ status.unacknowledgedCount }} unacked
+        </div>
       } @else if (status.acknowledgedCount) {
         <div class="count acked">{{ status.acknowledgedCount }} acked</div>
       }

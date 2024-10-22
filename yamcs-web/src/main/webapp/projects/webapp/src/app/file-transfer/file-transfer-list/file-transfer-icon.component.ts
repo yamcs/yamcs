@@ -5,6 +5,7 @@ import { Transfer, WebappSdkModule } from '@yamcs/webapp-sdk';
   standalone: true,
   selector: 'app-file-transfer-icon',
   templateUrl: './file-transfer-icon.component.html',
+  styleUrl: './file-transfer-icon.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     WebappSdkModule,
