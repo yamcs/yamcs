@@ -370,7 +370,7 @@ public class TableDefinition {
      * Adds a value to a enum and writes the table definition to disk
      * 
      */
-    private synchronized Short addEnumValue(String columnName, String value) {
+    private Short addEnumValue(String columnName, String value) {
         TableColumnDefinition tdef = getColumnDefinition(columnName);
 
         TableColumnDefinition tdef1 = new TableColumnDefinition(tdef);
@@ -422,7 +422,12 @@ public class TableDefinition {
 
         Short enumValue = tdef.getEnumIndex(value);
         if (enumValue == null) {
-            enumValue = addEnumValue(columnName, value);
+            synchronized (this) {
+                enumValue = tdef.getEnumIndex(value);
+                if (enumValue == null) {
+                    enumValue = addEnumValue(columnName, value);
+                }
+            }
         }
         return enumValue;
     }
