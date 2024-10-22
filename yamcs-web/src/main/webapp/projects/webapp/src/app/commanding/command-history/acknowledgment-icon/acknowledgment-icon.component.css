@@ -2,3 +2,35 @@
   line-height: 0;
   font-size: 0;
 }
+
+.scheduled {
+  color: lightgrey;
+}
+
+.ok {
+  color: #00c752;
+}
+
+.pending {
+  color: lightgrey;
+}
+
+.cancelled {
+  color: lightgrey;
+}
+
+.disabled {
+  color: lightgrey;
+}
+
+.timeout {
+  color: var(--y-error-color);
+}
+
+.failed {
+  color: var(--y-error-color);
+}
+
+.no-ack {
+  color: lightgrey;
+}

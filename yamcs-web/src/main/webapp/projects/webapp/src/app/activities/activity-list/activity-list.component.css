@@ -13,3 +13,7 @@
   font-size: 12px;
   padding-right: 6px;
 }
+
+.alert {
+  color: var(--y-error-color) !important;
+}

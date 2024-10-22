@@ -13,9 +13,26 @@
   padding-left: 10px;
 }
 
-.args td, .args th {
+.args td,
+.args th {
   border: none;
   font-size: 10px;
   line-height: 12px;
   font-family: 'Roboto Mono', monospace;
+}
+
+.spin {
+  animation: yspin 2s infinite linear;
+}
+
+@keyframes yspin {
+  0% {
+    -webkit-transform: rotate(0deg) scaleX(-1);
+    transform: rotate(0deg) scaleX(-1);
+  }
+
+  100% {
+    -webkit-transform: rotate(359deg) scaleX(-1);
+    transform: rotate(359deg) scaleX(-1);
+  }
 }

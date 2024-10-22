@@ -1,15 +1,21 @@
-:host {
-  line-height: 0;
-  font-size: 0;
+.success {
+  color: #00c752;
 }
 
-.pending {
+.warning {
+  color: var(--y-warning-color);
+}
+
+.failed {
+  color: var(--y-error-color);
+}
+
+.cancelled {
   color: lightgrey;
+}
+
+.spin {
   animation: yspin 2s infinite linear;
-}
-
-.not-pending {
-  color: lightgrey;
 }
 
 @keyframes yspin {

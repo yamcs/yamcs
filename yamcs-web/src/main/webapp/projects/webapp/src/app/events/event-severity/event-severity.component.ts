@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { WebappSdkModule } from '@yamcs/webapp-sdk';
+import { MatTooltip } from '@angular/material/tooltip';
 
 @Component({
   standalone: true,
@@ -8,7 +8,7 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   styleUrl: './event-severity.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    WebappSdkModule,
+    MatTooltip,
   ],
 })
 export class EventSeverityComponent {

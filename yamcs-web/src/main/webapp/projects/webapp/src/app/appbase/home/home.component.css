@@ -8,6 +8,38 @@ mat-toolbar-row {
   padding-left: 24px;
 }
 
-.spin {
+.status .spin {
   animation: yspin 2s infinite linear;
+}
+
+.status .success {
+  color: #00c752;
+}
+
+.status .warning {
+  color: var(--y-warning-color);
+}
+
+.status .failed {
+  color: var(--y-error-color);
+}
+
+.status .offline {
+  color: lightgrey;
+}
+
+.alert {
+  color: var(--y-error-color) !important;
+}
+
+@keyframes yspin {
+  0% {
+    -webkit-transform: rotate(0deg) scaleX(-1);
+    transform: rotate(0deg) scaleX(-1);
+  }
+
+  100% {
+    -webkit-transform: rotate(359deg) scaleX(-1);
+    transform: rotate(359deg) scaleX(-1);
+  }
 }

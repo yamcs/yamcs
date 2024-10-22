@@ -17,6 +17,8 @@ html {
 
   --y-background-color: #f7f7f7;
   --y-app-bar-background-color: #212121;
+  --y-warning-color: #ff8c00;
+  --y-error-color: #ff0000;
 }
 
 html.dark {

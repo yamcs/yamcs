@@ -518,36 +518,53 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         ScheduledFuture<?> future = timer.scheduleAtFixedRate(() -> {
             int unacknowledgedCount = 0;
             boolean unacknowledgedActive = false;
+            AlarmSeverity unacknowledgedSeverity = null;
             int acknowledgedCount = 0;
             boolean acknowledgedActive = false;
+            AlarmSeverity acknowledgedSeverity = null;
             int shelvedCount = 0;
             boolean shelvedActive = false;
+            AlarmSeverity shelvedSeverity = null;
 
-            for (AlarmServer<?, ?> alarmServer : alarmServers) {
-                for (ActiveAlarm<?> alarm : alarmServer.getActiveAlarms().values()) {
+            for (var alarmServer : alarmServers) {
+                for (var alarm : alarmServer.getActiveAlarms().values()) {
                     if (alarm.isTriggered() || !alarm.isAcknowledged()) {
+                        var severity = getAlarmSeverity(alarm);
                         if (alarm.isShelved()) {
                             shelvedCount++;
                             shelvedActive |= !alarm.isProcessOK();
+                            shelvedSeverity = getMostSevere(shelvedSeverity, severity);
                         } else if (alarm.isAcknowledged()) {
                             acknowledgedCount++;
                             acknowledgedActive |= !alarm.isProcessOK();
+                            acknowledgedSeverity = getMostSevere(acknowledgedSeverity, severity);
                         } else {
                             unacknowledgedCount++;
                             unacknowledgedActive |= !alarm.isProcessOK();
+                            unacknowledgedSeverity = getMostSevere(unacknowledgedSeverity, severity);
                         }
                     }
                 }
             }
 
-            GlobalAlarmStatus status = GlobalAlarmStatus.newBuilder()
+            var statusb = GlobalAlarmStatus.newBuilder()
                     .setUnacknowledgedCount(unacknowledgedCount)
                     .setUnacknowledgedActive(unacknowledgedActive)
                     .setAcknowledgedCount(acknowledgedCount)
                     .setAcknowledgedActive(acknowledgedActive)
                     .setShelvedCount(shelvedCount)
-                    .setShelvedActive(shelvedActive)
-                    .build();
+                    .setShelvedActive(shelvedActive);
+            if (unacknowledgedSeverity != null) {
+                statusb.setUnacknowledgedSeverity(unacknowledgedSeverity);
+            }
+            if (acknowledgedSeverity != null) {
+                statusb.setAcknowledgedSeverity(acknowledgedSeverity);
+            }
+            if (shelvedSeverity != null) {
+                statusb.setShelvedSeverity(shelvedSeverity);
+            }
+
+            var status = statusb.build();
 
             GlobalAlarmStatus oldStatus = oldStatusRef.get();
             if (!status.equals(oldStatus)) {
@@ -658,12 +675,12 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
         alarmb.setViolations(activeAlarm.getViolations());
         alarmb.setCount(activeAlarm.getValueCount());
+        alarmb.setSeverity(getAlarmSeverity(activeAlarm));
 
         if (activeAlarm.getMostSevereValue() instanceof ParameterValue) {
             alarmb.setType(AlarmType.PARAMETER);
             ParameterValue pv = (ParameterValue) activeAlarm.getMostSevereValue();
             alarmb.setId(getAlarmId(pv));
-            alarmb.setSeverity(getParameterAlarmSeverity(pv.getMonitoringResult()));
             ParameterValue triggerPv = (ParameterValue) activeAlarm.getTriggerValue();
             Timestamp triggerTime = TimeEncoding.toProtobufTimestamp(triggerPv.getGenerationTime());
             alarmb.setTriggerTime(triggerTime);
@@ -677,7 +694,6 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             alarmb.setType(AlarmType.EVENT);
             Db.Event ev = (Db.Event) activeAlarm.getMostSevereValue();
             alarmb.setId(getAlarmId(ev));
-            alarmb.setSeverity(getEventAlarmSeverity(ev.getSeverity()));
             Timestamp triggerTime = TimeEncoding.toProtobufTimestamp(ev.getGenerationTime());
             alarmb.setTriggerTime(triggerTime);
             if (detail) {
@@ -733,6 +749,28 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         }
         return alarmb.build();
 
+    }
+
+    private static AlarmSeverity getAlarmSeverity(ActiveAlarm<?> activeAlarm) {
+        if (activeAlarm.getMostSevereValue() instanceof ParameterValue) {
+            ParameterValue pv = (ParameterValue) activeAlarm.getMostSevereValue();
+            return getParameterAlarmSeverity(pv.getMonitoringResult());
+        } else if (activeAlarm.getMostSevereValue() instanceof Db.Event) {
+            Db.Event ev = (Db.Event) activeAlarm.getMostSevereValue();
+            return getEventAlarmSeverity(ev.getSeverity());
+        } else {
+            throw new IllegalArgumentException("Unexpected alarm type");
+        }
+    }
+
+    private static AlarmSeverity getMostSevere(AlarmSeverity a, AlarmSeverity b) {
+        if (a == null) {
+            return b;
+        } else if (b == null) {
+            return a;
+        }
+
+        return (a.getNumber() > b.getNumber()) ? a : b;
     }
 
     public static AlarmSeverity getParameterAlarmSeverity(MonitoringResult mr) {

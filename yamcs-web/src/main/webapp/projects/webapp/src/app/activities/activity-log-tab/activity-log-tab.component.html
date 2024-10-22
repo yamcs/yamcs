@@ -12,8 +12,8 @@
       <tr
         [class.activity]="log.source === 'ACTIVITY'"
         [class.service]="log.source === 'SERVICE'"
-        [class.WARNING]="log.level === 'WARNING'"
-        [class.ERROR]="log.level === 'ERROR'">
+        [class.warning]="log.level === 'WARNING'"
+        [class.error]="log.level === 'ERROR'">
         <td style="text-align: right" width="1">{{ index + 1 }}</td>
         <td class="time" style="white-space: nowrap" width="1">
           [{{ log.time | datetime: false }}]

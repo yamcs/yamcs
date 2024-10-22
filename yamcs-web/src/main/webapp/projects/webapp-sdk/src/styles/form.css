@@ -13,7 +13,7 @@
 
 .ya-form label.invalid,
 .ya-form div.label.invalid {
-  color: crimson;
+  color: var(--y-error-color);
 }
 
 .ya-form .control-group {
@@ -89,7 +89,7 @@
 }
 
 .ya-form .error-message {
-  color: crimson;
+  color: var(--y-error-color);
   font-weight: 400;
   font-size: 12px;
   line-height: 16px;

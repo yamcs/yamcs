@@ -1,12 +1,9 @@
 @if (service.state === "STARTING") {
-  <mat-icon style="color: lightgreen" [matTooltip]="service.state"> check_circle </mat-icon>
-}
-@if (service.state === "RUNNING") {
-  <mat-icon class="success" [matTooltip]="service.state"> check_circle </mat-icon>
-}
-@if (service.state === "STOPPING" || service.state === "FAILED") {
-  <mat-icon class="alert" [matTooltip]="service.state"> highlight_off </mat-icon>
-}
-@if (service.state === "TERMINATED" || service.state === "NEW") {
-  <mat-icon class="down" [matTooltip]="service.state"> lens </mat-icon>
+  <mat-icon class="starting" [matTooltip]="service.state">check_circle</mat-icon>
+} @else if (service.state === "RUNNING") {
+  <mat-icon class="running" [matTooltip]="service.state">check_circle</mat-icon>
+} @else if (service.state === "STOPPING" || service.state === "FAILED") {
+  <mat-icon class="failed" [matTooltip]="service.state">highlight_off</mat-icon>
+} @else if (service.state === "TERMINATED" || service.state === "NEW") {
+  <mat-icon class="terminated" [matTooltip]="service.state">lens</mat-icon>
 }

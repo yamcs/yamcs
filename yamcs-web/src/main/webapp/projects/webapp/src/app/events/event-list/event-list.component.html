@@ -171,13 +171,21 @@
         <ng-container cdkColumnDef="type">
           <th mat-header-cell *cdkHeaderCellDef>Type</th>
           <td mat-cell *cdkCellDef="let row">
-            {{ row.type || "-" }}
+            @if (row.type) {
+              <ya-highlight [text]="row.type" [term]="filterForm.value.filter" />
+            } @else {
+              -
+            }
           </td>
         </ng-container>
         <ng-container cdkColumnDef="source">
           <th mat-header-cell *cdkHeaderCellDef>Source</th>
           <td mat-cell *cdkCellDef="let row">
-            {{ row.source || "-" }}
+            @if (row.source) {
+              <ya-highlight [text]="row.source" [term]="filterForm.value.filter" />
+            } @else {
+              -
+            }
           </td>
         </ng-container>
         <ng-container cdkColumnDef="gentime">

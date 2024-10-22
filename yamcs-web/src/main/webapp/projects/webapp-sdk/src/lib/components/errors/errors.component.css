@@ -1,5 +1,5 @@
 .errmessage {
-  color: crimson;
+  color: var(--y-error-color);
   font-weight: 400;
   letter-spacing: normal;
   margin-left: 10px;

@@ -6,10 +6,13 @@ import { ParameterValue } from './monitoring';
 export interface GlobalAlarmStatus {
   unacknowledgedCount: number;
   unacknowledgedActive: boolean;
+  unacknowledgedSeverity?: string;
   acknowledgedCount: number;
   acknowledgedActive: boolean;
+  acknowledgedSeverity?: string;
   shelvedCount: number;
   shelvedActive: boolean;
+  shelvedSeverity?: string;
 }
 
 export interface SubscribeGlobalAlarmStatusRequest {

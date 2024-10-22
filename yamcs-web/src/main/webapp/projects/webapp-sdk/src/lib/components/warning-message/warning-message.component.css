@@ -1,6 +1,6 @@
 .panel {
   background-color: #fcc;
-  color: crimson;
+  color: var(--y-error-color);
   display: flex;
   align-items: center;
   margin-top: 1em;

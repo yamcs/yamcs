@@ -24,3 +24,11 @@ table.logs td {
 table.logs td.time {
   color: rgba(0, 0, 0, 0.35);
 }
+
+.status .ok {
+  color: #00c752;
+}
+
+.status .error {
+  color: var(--y-error-color);
+}

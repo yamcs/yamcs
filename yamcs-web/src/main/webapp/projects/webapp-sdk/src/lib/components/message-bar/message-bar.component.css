@@ -1,5 +1,5 @@
 .message-bar {
-  background-color: #ff4100 !important;
+  background-color: var(--y-error-color) !important;
   color: #fff !important;
   overflow: hidden;
   position: relative;
@@ -8,7 +8,7 @@
 }
 
 .message-bar.warning {
-  background-color: darkorange !important;
+  background-color: var(--y-warning-color) !important;
 }
 
 .mat-toolbar-row {
@@ -23,7 +23,7 @@
   position: absolute;
   top: 0;
   right: 0;
-  background-color: #ff4100;
+  background-color: var(--y-error-color);
   height: 48px;
   line-height: 48px;
 }
@@ -35,5 +35,5 @@
 }
 
 .message-bar.warning .actions {
-  background-color: darkorange !important;
+  background-color: var(--y-warning-color) !important;
 }

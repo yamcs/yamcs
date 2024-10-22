@@ -8,6 +8,7 @@ import { ListItem, StreamingParametersDataSource } from './streaming-parameters.
 @Component({
   standalone: true,
   templateUrl: './parameter-list-summary-tab.component.html',
+  styleUrl: './parameter-list-summary-tab.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     WebappSdkModule,

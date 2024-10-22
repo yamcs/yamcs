@@ -21,3 +21,15 @@
 .ya-data-table td.mat-mdc-cell.message {
   white-space: pre-wrap;
 }
+
+.WATCH td,
+.WARNING td {
+  color: var(--y-warning-color) !important;
+}
+
+.ERROR td,
+.DISTRESS td,
+.CRITICAL td,
+.SEVERE td {
+  color: var(--y-error-color) !important;
+}
