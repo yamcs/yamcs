@@ -134,4 +134,28 @@ public class ParameterIdDbTest {
         assertEquals(p1, pids[0].getPid());
         assertEquals(p2, pids[1].getPid());
     }
+
+    @Test
+    public void testSimpleToAggregate() throws Exception {
+        Value.Type vt = Value.Type.AGGREGATE;
+        ParameterIdDb pidDb = pdb("testSimpleToAggregate");
+
+        // first /test2/aggregate1 is a simple parameter
+        int p0 = pidDb.createAndGet("/test2/aggregate1", Value.Type.SINT32);
+
+        // but then it becomes an aggregate with two members
+        int p1 = pidDb.createAndGet("/test2/aggregate1.bp1", Value.Type.BOOLEAN);
+        int p2 = pidDb.createAndGet("/test2/aggregate1.bp2", Value.Type.BOOLEAN);
+        int aggp1 = pidDb.createAndGetAggrray("/test2/aggregate1", vt, vt, IntArray.wrap(p1, p2));
+
+        tablespace.close();
+        tablespace.loadDb(false);
+        pidDb = pdb("testSimpleToAggregate");
+
+        int p0_1 = pidDb.createAndGet("/test2/aggregate1", Value.Type.SINT32);
+        assertEquals(p0, p0_1);
+
+        int aggp3 = pidDb.createAndGetAggrray("/test2/aggregate1", vt, vt, IntArray.wrap(p1, p2));
+        assertEquals(aggp1, aggp3);
+    }
 }

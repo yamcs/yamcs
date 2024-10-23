@@ -38,7 +38,7 @@ public class ParameterIdDb {
     final String yamcsInstance;
 
     private int size = 0;
-    private Entry[] entries = new Entry[512];
+    private Entry[] entries;
 
     // hash tables for pid and fqn; the values are indexes in the entries array
     private int[] pidHtable;
@@ -58,7 +58,6 @@ public class ParameterIdDb {
         this.yamcsInstance = yamcsInstance;
 
         entries = new Entry[INITIAL_SIZE];
-
         pidHtable = new int[INITIAL_SIZE];
         fqnHtable = new int[INITIAL_SIZE];
         Arrays.fill(pidHtable, UNSET);
@@ -398,9 +397,8 @@ public class ParameterIdDb {
      * 
      * <p>
      * If a new value is encountered having more elements than the previous maximum, we do not want to create a new id
-     * for that parameter.
-     * We do however want to create a new id if the elements have a different type (and thus a[i] will have a different
-     * id)
+     * for that parameter. We do however want to create a new id if the elements have a different type (and thus a[i]
+     * will have a different id)
      * 
      * @param paramFqn
      *            - qualified name of the parameter
@@ -426,8 +424,7 @@ public class ParameterIdDb {
         } else {
             Entry e = entries[idx];
             while (e != null) {
-                if (paramFqn.equals(e.fqn)) {
-                    AggArrayEntry agge = (AggArrayEntry) e;
+                if (paramFqn.equals(e.fqn) && (e instanceof AggArrayEntry agge)) {
                     int c = IntArray.compare(agge.components, components);
                     if (c != -1) {
                         pid = e.pid;
