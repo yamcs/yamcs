@@ -26,7 +26,7 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
     }
 
     private LongValueSegment() {
-        super(FORMAT_ID_IntValueSegment);
+        super(FORMAT_ID_LongValueSegment);
     }
 
     @Override
