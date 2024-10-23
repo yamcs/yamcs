@@ -562,11 +562,18 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
      * Get packet names this user has appropriate privileges for.
      */
     private Set<String> getTmPacketNames(String yamcsInstance, User user) {
-        var mdb = MdbFactory.getInstance(yamcsInstance);
         var result = new HashSet<String>();
-        for (var sc : mdb.getSequenceContainers()) {
-            if (user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, sc.getQualifiedName())) {
-                result.add(sc.getQualifiedName());
+
+        var ydb = YarchDatabase.getInstance(yamcsInstance);
+        var tableDefinition = ydb.getTable(XtceTmRecorder.TABLE_NAME);
+        if (tableDefinition != null) {
+            BiMap<String, Short> enumValues = tableDefinition.getEnumValues(XtceTmRecorder.PNAME_COLUMN);
+            if (enumValues != null) {
+                for (var pname : enumValues.keySet()) {
+                    if (user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, pname)) {
+                        result.add(pname);
+                    }
+                }
             }
         }
         return result;
