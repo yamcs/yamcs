@@ -238,8 +238,13 @@ public class ParameterTypeProcessor {
                 long l = Long.decode(rawValue.getStringValue());
                 return doIntegerCalibration(processingData, ipt, l);
             } catch (NumberFormatException e) {
-                log.warn("{}: failed to parse string '{}' to long", ipt.getName(), rawValue.getStringValue());
-                return null;
+                try {
+                    long l = (long) Double.parseDouble(rawValue.getStringValue());
+                    return doIntegerCalibration(processingData, ipt, l);
+                } catch (NumberFormatException e2) {
+                    log.warn("{}: failed to parse string '{}' to long", ipt.getName(), rawValue.getStringValue());
+                    return null;
+                }
             }
         default:
             throw new IllegalStateException(
