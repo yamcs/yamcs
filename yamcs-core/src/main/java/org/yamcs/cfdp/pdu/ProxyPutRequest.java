@@ -6,15 +6,15 @@ import org.yamcs.utils.StringConverter;
 
 import java.nio.ByteBuffer;
 
-import static org.yamcs.cfdp.CfdpUtils.longToTrimmedBytes;
+import static org.yamcs.cfdp.CfdpUtils.longToBytesFixed;
 
 public class ProxyPutRequest extends ReservedMessageToUser {
     private final long destinationEntityId;
     private final String sourceFileName;
     private final String destinationFileName;
 
-    public ProxyPutRequest(long destinationEntityId, String sourceFileName, String destinationFileName) {
-        super(MessageType.PROXY_PUT_REQUEST, encode(destinationEntityId, sourceFileName, destinationFileName));
+    public ProxyPutRequest(long destinationEntityId, String sourceFileName, String destinationFileName, int entityIdLength) {
+        super(MessageType.PROXY_PUT_REQUEST, encode(destinationEntityId, sourceFileName, destinationFileName, entityIdLength));
         this.destinationEntityId = destinationEntityId;
         this.sourceFileName = sourceFileName;
         this.destinationFileName = destinationFileName;
@@ -29,9 +29,9 @@ public class ProxyPutRequest extends ReservedMessageToUser {
         this.destinationFileName = new String(LV.readLV(buffer).getValue());
     }
 
-    private static byte[] encode(long destinationEntityId, String sourceFileName, String destinationFileName) {
+    private static byte[] encode(long destinationEntityId, String sourceFileName, String destinationFileName, int entityIdLength) {
         return Bytes.concat(
-            new LV(longToTrimmedBytes(destinationEntityId)).getBytes(),
+            new LV(longToBytesFixed(destinationEntityId, entityIdLength)).getBytes(),
             new LV(sourceFileName).getBytes(),
             new LV(destinationFileName).getBytes()
         );
