@@ -1032,8 +1032,9 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
         booleanOptions.putAll(optionValues.booleanOptions);
 
         // Prepare request
+        int entityIdLength = config.getInt("entityIdLength");
         ArrayList<MessageToUser> messagesToUser = new ArrayList<>(
-                List.of(new ProxyPutRequest(destinationId, sourcePath, objectName)));
+                List.of(new ProxyPutRequest(destinationId, sourcePath, objectName, entityIdLength)));
 
         CfdpPacket.TransmissionMode transmissionMode = CfdpPacket.TransmissionMode.UNACKNOWLEDGED;
         if (Boolean.TRUE.equals(booleanOptions.get(RELIABLE_OPTION))) {
