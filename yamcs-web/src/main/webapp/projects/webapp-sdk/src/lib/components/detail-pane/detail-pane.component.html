@@ -1,3 +1,8 @@
-<div class="detail">
-  <ng-content />
+<div class="detail-pane" [class.collapsed]="collapsed">
+  <div class="detail-content" [class.hidden]="collapsed">
+    <ng-content></ng-content>
+  </div>
+  <button mat-icon-button class="toggle-button" (click)="toggleCollapsed()" matTooltip="{{ collapsed ? 'Expand' : 'Collapse' }} detail pane">
+    <mat-icon>{{ collapsed ? 'chevron_left' : 'chevron_right' }}</mat-icon>
+  </button>
 </div>
