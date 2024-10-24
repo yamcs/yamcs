@@ -28,6 +28,7 @@ public class ReedSolomonTest {
         byte[] parity = new byte[rsp.nroots];
         int nn = (1 << rsp.symsize) - 1;
         int ds = nn - rsp.nroots - rsp.pad;
+        System.out.println("ds: " + ds);
         for (int i = 0; i < n; i++) {
             byte[] orig_data = new byte[ds];
             fillRandom(orig_data, nn);
@@ -71,25 +72,5 @@ public class ReedSolomonTest {
             this.pad = pad;
         }
 
-    }
-
-    private String toString(byte[] a) {
-        if (a == null) {
-            return "null";
-        }
-        int iMax = a.length - 1;
-        if (iMax == -1) {
-            return "[]";
-        }
-
-        StringBuilder b = new StringBuilder();
-        b.append('[');
-        for (int i = 0;; i++) {
-            b.append(a[i] & 0xFF);
-            if (i == iMax) {
-                return b.append(']').toString();
-            }
-            b.append(", ");
-        }
     }
 }

@@ -42,9 +42,8 @@ public class ReedSolomon {
      *            in index form, the primitive element in the Galois field used to generate the Reed Solomon code
      *            generator polynomial.
      * @param gfpoly
-     *            the extended Galois field generator polynomial coefficients, with the 0th coefficient in the
-     *            low order bit. The polynomial must be primitive; if not, an IllegalArgumentException will be
-     *            thrown.
+     *            the extended Galois field generator polynomial coefficients, with the 0th coefficient in the low order
+     *            bit. The polynomial must be primitive; if not, an IllegalArgumentException will be thrown.
      * 
      * @param pad
      *            the number of leading symbols in the codeword that are implicitly padded to zero in a shortened code
@@ -126,6 +125,14 @@ public class ReedSolomon {
         }
     }
 
+    /**
+     * Generate the parity for the given data
+     * 
+     * @param data
+     *            - data to be encoded
+     * @param parity
+     *            - the resulting parity bytes
+     */
     public void encode(byte[] data, byte[] parity) {
         int i, j;
         byte feedback;
@@ -393,5 +400,9 @@ public class ReedSolomon {
 
     public int nroots() {
         return nroots;
+    }
+
+    public int blockSize() {
+        return nn;
     }
 }

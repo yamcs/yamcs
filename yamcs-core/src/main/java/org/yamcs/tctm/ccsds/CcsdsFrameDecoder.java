@@ -12,6 +12,7 @@ import org.yamcs.tctm.RawFrameDecoder;
 /**
  * 
  * decodes raw frame data according to according to CCSDS 131.0-B-3.
+ * <p>
  * Only Reed-Solomon and de-randomization supported.
  * 
  */
@@ -62,14 +63,16 @@ public class CcsdsFrameDecoder implements RawFrameDecoder {
                 throw new IllegalArgumentException("Bad length " + length + " (expected " + encodedFrameLength + ")");
             }
             try {
+                int n = rs.blockSize();
+                int k = n - rs.nroots();
                 for (int i = 0; i < interleavingDepth; i++) {
-                    byte[] d = new byte[256];
-                    for (int j = 0; j < length; j += interleavingDepth) {
-                        d[j] = data[offset + j];
+                    byte[] d = new byte[n];
+                    for (int j = 0; j < n; j++) {
+                        d[j] = data[offset + j * interleavingDepth + i];
                     }
                     rs.decode(d, null);
-                    for (int j = 0; j < length; j += interleavingDepth) {
-                        data[offset + j] = data[j];
+                    for (int j = 0; j < k; j++) {
+                        data[offset + j * interleavingDepth + i] = d[j];
                     }
                 }
 
