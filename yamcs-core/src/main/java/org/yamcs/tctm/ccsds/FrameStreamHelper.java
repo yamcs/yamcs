@@ -16,11 +16,9 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 /**
  * <p>
  * Saves frames into streams.
- * <p>Creates the streams if they don't already exist 
+ * <p>
+ * Creates the streams if they don't already exist
  * 
- * 
- * @author nm
- *
  */
 public class FrameStreamHelper {
 
@@ -31,6 +29,7 @@ public class FrameStreamHelper {
     final static String SCID_CNAME = "scid";
     final static String VCID_CNAME = "vcid";
     final static String DATA_CNAME = "data";
+    final static String ERROR_CNAME = "error";
 
     static TupleDefinition gftdef;
     static TupleDefinition bftdef;
@@ -49,6 +48,7 @@ public class FrameStreamHelper {
         bftdef.addColumn(new ColumnDefinition(SEQ_CNAME, DataType.INT));
         bftdef.addColumn(new ColumnDefinition(ERTIME_CNAME, DataType.HRES_TIMESTAMP));
         bftdef.addColumn(new ColumnDefinition(DATA_CNAME, DataType.BINARY));
+        bftdef.addColumn(new ColumnDefinition(ERROR_CNAME, DataType.STRING));
 
     }
     Stream goodFrameStream;
@@ -91,14 +91,16 @@ public class FrameStreamHelper {
         if (badFrameStream == null) {
             return;
         }
-
+        long rectime = TimeEncoding.getWallclockTime();
+        badFrameStream.emitTuple(
+                new Tuple(bftdef, Arrays.asList(rectime, seq, ertime, getData(data, offset, length), errMsg)));
     }
 
-    private byte[] getData(byte[]data, int offset, int length) {
-        if(offset==0 && length == data.length) {
+    private byte[] getData(byte[] data, int offset, int length) {
+        if (offset == 0 && length == data.length) {
             return data;
         } else {
-            return Arrays.copyOfRange(data, offset, offset+length);
+            return Arrays.copyOfRange(data, offset, offset + length);
         }
     }
 }
