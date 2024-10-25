@@ -74,7 +74,8 @@ import { YaWarningMessage } from './components/warning-message/warning-message.c
 import { DataTableDirective } from './directives/data-table.directive';
 import { SimpleTableDirective } from './directives/simple-table.directive';
 import { TableDirective } from './directives/table.directive';
-import { ActionLogFormatPipe } from './pipes/action-log-format.pipe';
+
+import { YaActionLogSummary } from './components/action-log-summary/action-log-summary.component';
 import { AliasPipe } from './pipes/alias.pipe';
 import { ArrayContainsPipe } from './pipes/array-contains.pipe';
 import { BasenamePipe } from './pipes/basename.pipe';
@@ -111,7 +112,6 @@ import { YaPrintZone } from './print/print-zone.component';
 import { PrintableDirective } from './print/printable.directive';
 
 const pipes = [
-  ActionLogFormatPipe,
   AliasPipe,
   ArrayContainsPipe,
   BasenamePipe,
@@ -155,6 +155,7 @@ const directives = [
 ];
 
 const sharedComponents = [
+  YaActionLogSummary,
   YaBinaryInput,
   YaBreadcrumb,
   YaBreadcrumbTrail,

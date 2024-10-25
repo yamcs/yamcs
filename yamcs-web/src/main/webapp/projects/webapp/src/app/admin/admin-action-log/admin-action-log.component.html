@@ -36,7 +36,7 @@
         </ng-container>
         <ng-container matColumnDef="summary">
           <td mat-cell *matCellDef="let row" style="width: 400px">
-            <span [innerHTML]="(row.item.summary | actionLogFormat) || '-'"></span>
+            <ya-action-log-summary [text]="row.item.summary" />
           </td>
         </ng-container>
         <ng-container matColumnDef="actions">

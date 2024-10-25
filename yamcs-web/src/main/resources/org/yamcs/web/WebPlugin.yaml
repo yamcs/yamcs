@@ -53,7 +53,7 @@ options:
     title: Static Root
     description:
       - Filesystem path where to locate the web files for the Yamcs Web Interface
-        (*.js, *.css, *.html, ...). If not specified, Yamcs will search the
+        (.js, .css, .html, ...). If not specified, Yamcs will search the
         classpath for these resources (preferred).
       - It should only be necessary to use this option when doing development work
         on the Yamcs Web Interface. It allows to run npm in watch mode for a
@@ -119,14 +119,14 @@ options:
         title: Secure attribute
         description:
           - Add a secure attribute
-          - This should be set to true when Yamcs is served over HTTPS
+          - This should be set to ``true`` when Yamcs is served over HTTPS
         type: BOOLEAN
         default: false
       sameSite:
         title: SameSite attribute
         description:
           - Configure the SameSite attribute
-          - This should be set to `strict` when Yamcs is served over HTTPS
+          - This should be set to ``strict`` when Yamcs is served over HTTPS
         type: STRING
         choices:
           - lax
