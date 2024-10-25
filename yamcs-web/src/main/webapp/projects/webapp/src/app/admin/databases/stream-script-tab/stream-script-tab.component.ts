@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { Stream, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { ChangeDetectionStrategy, Component, input, OnInit, SecurityContext, signal } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
+import { MessageService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import * as utils from '../utils';
 
 @Component({
@@ -16,18 +16,25 @@ import * as utils from '../utils';
     WebappSdkModule,
   ],
 })
-export class StreamScriptTabComponent {
+export class StreamScriptTabComponent implements OnInit {
 
-  stream$: Promise<Stream>;
+  database = input.required<string>();
+  stream = input.required<string>();
 
-  constructor(route: ActivatedRoute, yamcs: YamcsService) {
-    const parent = route.snapshot.parent!;
-    const database = parent.parent!.paramMap.get('database')!;
-    const name = parent.paramMap.get('stream')!;
-    this.stream$ = yamcs.yamcsClient.getStream(database, name);
+  sqlHtml = signal<string | null>(null);
+
+  constructor(
+    private messageService: MessageService,
+    private yamcs: YamcsService,
+    private sanitizer: DomSanitizer,
+  ) {
   }
 
-  formatSQL(sql: string) {
-    return utils.formatSQL(sql);
+  ngOnInit(): void {
+    this.yamcs.yamcsClient.getStream(this.database(), this.stream()).then(stream => {
+      const html = utils.formatSQL(stream.script);
+      const safeHtml = this.sanitizer.sanitize(SecurityContext.HTML, html);
+      this.sqlHtml.set(safeHtml);
+    }).catch(err => this.messageService.showError(err));
   }
 }

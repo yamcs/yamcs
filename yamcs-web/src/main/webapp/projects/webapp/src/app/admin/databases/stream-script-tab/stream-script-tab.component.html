@@ -1,5 +1,3 @@
-@if (stream$ | async; as stream) {
-  <div class="panel-content sql">
-    <code [innerHTML]="formatSQL(stream.script)"></code>
-  </div>
-}
+<div class="panel-content sql">
+  <code [innerHTML]="sqlHtml()"></code>
+</div>
