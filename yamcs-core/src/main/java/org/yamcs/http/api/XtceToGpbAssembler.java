@@ -3,7 +3,6 @@ package org.yamcs.http.api;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -823,11 +822,8 @@ public class XtceToGpbAssembler {
                         infob.addContextAlarm(toContextAlarmInfo(contextAlarm));
                     }
                 }
-                List<ValueEnumeration> sortedEnumerations = new ArrayList<>(ept.getValueEnumerationList());
-                Collections.sort(sortedEnumerations, (a, b) -> Long.compare(a.getValue(), b.getValue()));
-                for (ValueEnumeration xtceValue : sortedEnumerations) {
-                    infob.addEnumValue(toEnumValue(xtceValue));
-                }
+                var enumValues = toEnumValues(ept);
+                infob.addAllEnumValue(enumValues);
             } else if (parameterType instanceof AbsoluteTimeParameterType) {
                 AbsoluteTimeParameterType apt = (AbsoluteTimeParameterType) parameterType;
                 AbsoluteTimeInfo.Builder timeb = AbsoluteTimeInfo.newBuilder();
@@ -1165,6 +1161,13 @@ public class XtceToGpbAssembler {
             throw new IllegalStateException("Unexpected type " + bde.getType());
         }
         return result + ")";
+    }
+
+    public static List<Mdb.EnumValue> toEnumValues(EnumeratedParameterType ptype) {
+        return ptype.getValueEnumerationList().stream()
+                .sorted((a, b) -> Long.compare(a.getValue(), b.getValue()))
+                .map(XtceToGpbAssembler::toEnumValue)
+                .toList();
     }
 
     public static Mdb.EnumValue toEnumValue(ValueEnumeration xtceValue) {

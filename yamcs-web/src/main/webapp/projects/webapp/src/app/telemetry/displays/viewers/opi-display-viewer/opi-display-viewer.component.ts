@@ -87,11 +87,7 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
 
       const ids: NamedObjectId[] = [];
       for (const pvName of this.pvsByName.keys()) {
-        if (pvName.startsWith(OPS_DATASOURCE)) { // Legacy
-          ids.push({ namespace: OPS_NAMESPACE, name: pvName.substr(6) });
-        } else {
-          ids.push({ name: pvName });
-        }
+        ids.push(this.getIdForPvName(pvName));
       }
 
       if (ids.length) {
@@ -109,13 +105,23 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
           }
           if (data.info) {
             this.idInfo = data.info;
+            for (const key in data.info) {
+              const id = data.mapping[key];
+              const info = data.info[key];
+              const pv = this.getPVById(id);
+              if (pv) {
+                if (info.enumValues) {
+                  pv.labels = info.enumValues.map(x => x.label);
+                }
+                pv.writable = info.dataSource === 'LOCAL'
+                  || info.dataSource === 'EXTERNAL1'
+                  || info.dataSource === 'EXTERNAL2'
+                  || info.dataSource === 'EXTERNAL3';
+              }
+            }
           }
           for (const id of (data.invalid || [])) {
-            let pvName = id.name;
-            if (id.namespace === OPS_NAMESPACE) {
-              pvName = OPS_DATASOURCE + pvName;
-            }
-            const pv = this.display.getPV(pvName);
+            const pv = this.getPVById(id);
             if (pv) {
               pv.disconnected = true;
             }
@@ -136,6 +142,22 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
         });
       }
     }
+  }
+
+  private getIdForPvName(pvName: string) {
+    if (pvName.startsWith(OPS_DATASOURCE)) {
+      return { namespace: OPS_NAMESPACE, name: pvName.substring(OPS_DATASOURCE.length) };
+    } else {
+      return { name: pvName };
+    }
+  }
+
+  private getPVById(id: NamedObjectId) {
+    let pvName = id.name;
+    if (id.namespace === OPS_NAMESPACE) {
+      pvName = OPS_DATASOURCE + pvName;
+    }
+    return this.display.getPV(pvName);
   }
 
   private toSample(pval: ParameterValue, info: SubscribedParameterInfo): Sample {
@@ -293,6 +315,18 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
       this.pvsByName.delete(pv.name);
     }
     this.subscriptionDirty = true;
+  }
+
+  writeValue(pvName: string, value: any): void {
+    let parameter = pvName;
+    if (pvName.startsWith(OPS_DATASOURCE)) {
+      parameter = OPS_NAMESPACE + '/' + pvName.substring(OPS_DATASOURCE.length);
+    }
+    this.yamcs.yamcsClient.setParameterValue(this.yamcs.instance!, this.yamcs.processor!, parameter, {
+      type: 'STRING',
+      stringValue: String(value),
+    }).then(() => this.messageService.showInfo(`Parameter ${pvName} set to ${value}`))
+      .catch(err => this.messageService.showError(err));
   }
 
   createHistoricalDataProvider(pvName: string, widget: Widget) {
