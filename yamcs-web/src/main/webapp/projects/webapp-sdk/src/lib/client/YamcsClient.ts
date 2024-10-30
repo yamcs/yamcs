@@ -1266,11 +1266,32 @@ export default class YamcsClient implements HttpHandler {
   }
 
   async setParameterValue(instance: string, processorName: string, qualifiedName: string, value: Value) {
-    const url = `${this.apiUrl}/processors/${instance}/${processorName}/parameters${qualifiedName}`;
+    const encodedName = this.encodeParameterName(qualifiedName);
+    const url = `${this.apiUrl}/processors/${instance}/${processorName}/parameters${encodedName}`;
     return this.doFetch(url, {
       body: JSON.stringify(value),
       method: 'PUT',
     });
+  }
+
+  /**
+   * Returns a slash-prefixed parameter name for concatenating in a raw url path.
+   * The path segments are as pretty as we can make it, while also covering special
+   * characters.
+   */
+  private encodeParameterName(parameter: string) {
+    if (parameter.startsWith('/')) {
+      return parameter.split('/').map(part => encodeURIComponent(part)).join('/');
+    } else {
+      const idx = parameter.indexOf('/');
+      if (idx !== -1) {
+        const namespace = parameter.substring(0, idx);
+        const name = parameter.substring(idx + 1);
+        return '/' + encodeURIComponent(namespace) + '/' + encodeURIComponent(name);
+      } else { // Not expected, let the server handle it
+        return '/' + encodeURIComponent(parameter);
+      }
+    }
   }
 
   async getAlgorithmStatus(instance: string, processorName: string, qualifiedName: string) {

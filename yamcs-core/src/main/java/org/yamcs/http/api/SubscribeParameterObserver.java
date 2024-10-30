@@ -21,6 +21,7 @@ import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
+import org.yamcs.protobuf.Mdb.DataSourceType;
 import org.yamcs.protobuf.SubscribeParametersData;
 import org.yamcs.protobuf.SubscribeParametersRequest;
 import org.yamcs.protobuf.SubscribeParametersRequest.Action;
@@ -31,6 +32,7 @@ import org.yamcs.security.User;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.DataType;
+import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.util.DataTypeUtil;
 
 public class SubscribeParameterObserver implements Observer<SubscribeParametersRequest> {
@@ -162,18 +164,26 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
 
             infob.setParameter(parameter.getQualifiedName());
 
+            var dataSource = parameter.getDataSource().name();
+            if (dataSource != null) {
+                infob.setDataSource(DataSourceType.valueOf(parameter.getDataSource().name()));
+            }
+
             if (parameter.getParameterType() != null) {
                 DataType dtype = parameter.getParameterType();
                 if (parameterWithId.getPath() != null) {
                     dtype = DataTypeUtil.getMemberType(dtype, parameterWithId.getPath());
                 }
 
-                if (dtype instanceof BaseDataType) {
-                    var unitSet = ((BaseDataType) dtype).getUnitSet();
+                if (dtype instanceof BaseDataType baseDataType) {
+                    var unitSet = baseDataType.getUnitSet();
                     if (!unitSet.isEmpty()) {
                         var units = unitSet.get(0).getUnit();
                         infob.setUnits(units);
                     }
+                }
+                if (dtype instanceof EnumeratedParameterType ept) {
+                    infob.addAllEnumValues(XtceToGpbAssembler.toEnumValues(ept));
                 }
             }
         } catch (InvalidIdentification e) {

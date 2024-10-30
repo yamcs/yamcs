@@ -10,6 +10,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 import "yamcs/api/annotations.proto";
+import "yamcs/protobuf/mdb/mdb.proto";
 import "yamcs/protobuf/pvalue/pvalue.proto";
 import "yamcs/protobuf/yamcsManagement/yamcsManagement.proto";
 import "yamcs/protobuf/yamcs.proto";
@@ -273,6 +274,12 @@ message SubscribedParameterInfo {
 
   // Engineering units
   optional string units =  2;
+
+  // Data source
+  optional mdb.DataSourceType dataSource = 3;
+
+  // Enumeration states, in case this concerns an enumerated parameter
+  repeated mdb.EnumValue enumValues = 4;
 }
 
 // Request message for `GetProcessor`.
