@@ -3,7 +3,7 @@ import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ConfigService, EventSeverity, ExtraColumnInfo, GetEventsOptions, MessageService, ParseFilterSubscription, Synchronizer, WebappSdkModule, YaColumnInfo, YaSearchFilter2, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ConfigService, EventSeverity, ExtraColumnInfo, GetEventsOptions, MessageService, ParseFilterSubscription, Synchronizer, WebappSdkModule, YaColumnInfo, YaSearchFilter2, YaSelectOption, YamcsService, stringArrayAttribute, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
@@ -38,7 +38,7 @@ export class EventListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   filter = input<string>();
   severity = input<EventSeverity>();
-  source = input<string[]>();
+  source = input([], { transform: stringArrayAttribute });
   interval = input<string>();
   customStart = input<string>();
   customStop = input<string>();

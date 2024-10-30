@@ -106,6 +106,7 @@ export * from './lib/services/preference-store.service';
 export * from './lib/services/synchronizer.service';
 export * from './lib/services/yamcs.service';
 export * from './lib/TrackBySelectionModel';
+export * from './lib/transforms';
 export * from './lib/User';
 export * as utils from './lib/utils';
 export * as validators from './lib/validators';
