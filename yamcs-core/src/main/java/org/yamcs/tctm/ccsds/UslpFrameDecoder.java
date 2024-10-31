@@ -35,7 +35,7 @@ public class UslpFrameDecoder implements TransferFrameDecoder {
     public DownlinkTransferFrame decode(byte[] data, int offset, int length) throws TcTmException {
         log.trace("decoding frame buf length: {}, dataOffset: {} , dataLength: {}", data.length, offset, length);
 
-        int version = data[offset] >>4;
+        int version = (data[offset] & 0xFF) >> 4;
         if(version != 12) {
             throw new TcTmException("Bad frame version number " + version + "; expected 12 (USLP)");
         }
