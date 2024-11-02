@@ -9,6 +9,12 @@ public class ArgumentAssignment implements Serializable {
     final String argumentValue;
 
     public ArgumentAssignment(String argumentName, String argumentValue) {
+        if (argumentName == null) {
+            throw new NullPointerException("argumentName cannot be null");
+        }
+        if (argumentValue == null) {
+            throw new NullPointerException("argumentValue cannot be null");
+        }
         this.argumentName = argumentName;
         this.argumentValue = argumentValue;
     }
