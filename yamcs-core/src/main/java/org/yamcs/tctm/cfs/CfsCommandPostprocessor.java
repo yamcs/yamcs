@@ -52,15 +52,11 @@ public class CfsCommandPostprocessor implements CommandPostprocessor {
     final static int CHECKSUM_OFFSET = 7;
     final static int FC_OFFSET = 6;
     final static int MIN_CMD_LENGTH = 7;
-    final String yamcsInstance;
+    String yamcsInstance;
     private boolean swapChecksumFc = false;
     static Logger log = LoggerFactory.getLogger(CfsCommandPostprocessor.class);
     
-    public CfsCommandPostprocessor(String yamcsInstance) {
-        this.yamcsInstance = yamcsInstance;
-    }
-
-    public CfsCommandPostprocessor(String yamcsInstance, YConfiguration config) {
+    public void init(String yamcsInstance, YConfiguration config) {
         this.yamcsInstance = yamcsInstance;
         this.swapChecksumFc = config.getBoolean("swapChecksumFc", false);
     }

@@ -18,17 +18,12 @@ import org.yamcs.utils.TimeEncoding;
  * Link postprocessor for CSP 1.x commands (CubeSat Protocol)
  */
 public class CspCommandPostprocessor implements CommandPostprocessor {
-
     protected Log log = new Log(getClass());
 
     protected int maximumTcPacketLength = -1; // the maximum size of the CSP packets uplinked
     protected CommandHistoryPublisher commandHistory;
 
-    public CspCommandPostprocessor(String yamcsInstance) {
-        this(yamcsInstance, YConfiguration.emptyConfig());
-    }
-
-    public CspCommandPostprocessor(String yamcsInstance, YConfiguration config) {
+    public void init(String yamcsInstance, YConfiguration config) {
         maximumTcPacketLength = config.getInt("maximumTcPacketLength", -1);
     }
 

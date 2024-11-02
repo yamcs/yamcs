@@ -14,15 +14,11 @@ import org.yamcs.utils.ByteArrayUtils;
 public class GenericCommandPostprocessor implements CommandPostprocessor {
     static Logger log = LoggerFactory.getLogger(GenericCommandPostprocessor.class);
 
-    final ErrorDetectionWordCalculator errorDetectionCalculator;
+    ErrorDetectionWordCalculator errorDetectionCalculator;
 
     protected CommandHistoryPublisher commandHistoryListener;
 
-    public GenericCommandPostprocessor(String yamcsInstance) {
-        errorDetectionCalculator = null;
-    }
-
-    public GenericCommandPostprocessor(String yamcsInstance, YConfiguration config) {
+    public void init(String yamcsInstance, YConfiguration config) {
         if (config != null && config.containsKey(CONFIG_KEY_ERROR_DETECTION)) {
             errorDetectionCalculator = AbstractPacketPreprocessor.getErrorDetectionWordCalculator(config);
         } else {

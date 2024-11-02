@@ -22,11 +22,7 @@ public class PusCommandPostprocessor implements CommandPostprocessor {
 
     protected CommandHistoryPublisher commandHistoryListener;
 
-    public PusCommandPostprocessor(String yamcsInstance) {
-        this(yamcsInstance, null);
-    }
-
-    public PusCommandPostprocessor(String yamcsInstance, YConfiguration config) {
+    public void init(String yamcsInstance, YConfiguration config) {
         errorDetectionCalculator = AbstractPacketPreprocessor.getErrorDetectionWordCalculator(config);
     }
 

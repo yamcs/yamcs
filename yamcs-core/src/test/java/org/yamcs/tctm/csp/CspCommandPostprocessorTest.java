@@ -14,7 +14,7 @@ public class CspCommandPostprocessorTest {
     public void testCrc() {
         var packet = hexStringToArray("8E62250000");
 
-        var postprocessor = new CspCommandPostprocessor(null);
+        var postprocessor = new CspCommandPostprocessor();
         postprocessor.setCommandHistoryPublisher(new DummyCommandHistoryPublisher());
 
         var processed = postprocessor.process(new PreparedCommand(packet));

@@ -20,17 +20,13 @@ public class IssCommandPostprocessor implements CommandPostprocessor {
 
     protected int minimumTcPacketLength = -1; // the minimum size of the CCSDS packets uplinked
     protected int maximumTcPacketLength = -1; // the maximum size of the CCSDS packets uplinked
-    final ErrorDetectionWordCalculator errorDetectionCalculator;
+    ErrorDetectionWordCalculator errorDetectionCalculator;
     protected CcsdsSeqCountFiller seqFiller = new CcsdsSeqCountFiller();
 
     protected CommandHistoryPublisher commandHistory;
     boolean enforceEvenNumberOfBytes;
 
-    public IssCommandPostprocessor(String yamcsInstance) {
-        errorDetectionCalculator = new Running16BitChecksumCalculator();
-    }
-
-    public IssCommandPostprocessor(String yamcsInstance, YConfiguration config) {
+    public void init(String yamcsInstance, YConfiguration config) {
         minimumTcPacketLength = config.getInt("minimumTcPacketLength", -1);
         maximumTcPacketLength = config.getInt("maximumTcPacketLength", -1);
         enforceEvenNumberOfBytes = config.getBoolean("enforceEvenNumberOfBytes", false);
