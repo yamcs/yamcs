@@ -20,8 +20,6 @@ import org.yamcs.utils.ByteArrayUtils;
  *  16 bit = packet length (excluding primary header) minus 1
  * </pre>
  *
- * @author nm
- *
  */
 public class CcsdsPacket {
     protected ByteBuffer bb;
@@ -32,6 +30,10 @@ public class CcsdsPacket {
 
     public CcsdsPacket(ByteBuffer bb) {
         this.bb = bb;
+    }
+
+    public static CcsdsPacket wrap(byte[] pkt) {
+        return new CcsdsPacket(pkt);
     }
 
     public int getSecondaryHeaderFlag() {
@@ -101,32 +103,18 @@ public class CcsdsPacket {
         return (short) (bb.getShort(0) & 0x07FF);
     }
 
-    /* returns the length written in the ccsds header */
-    @Deprecated
-    public static int getCccsdsPacketLength(ByteBuffer bb) {
-        return getCcsdsPacketLength(bb);
-    }
 
     /* returns the length written in the ccsds header */
     public static int getCcsdsPacketLength(ByteBuffer bb) {
         return bb.getShort(4) & 0xFFFF;
     }
 
-    /* returns the length written in the ccsds header */
-    @Deprecated
-    public int getCccsdsPacketLength() {
-        return getCcsdsPacketLength();
-    }
 
     /* returns the length written in the ccsds header */
     public int getCcsdsPacketLength() {
         return getCcsdsPacketLength(bb);
     }
 
-    @Deprecated
-    public void setCccsdsPacketLength(short length) {
-        setCcsdsPacketLength(length);
-    }
 
     public void setCcsdsPacketLength(short length) {
         // return bb.getShort(4)&0xFFFF;
@@ -176,11 +164,6 @@ public class CcsdsPacket {
 
     public static short getAPID(byte[] packet) {
         return (short) (ByteArrayUtils.decodeUnsignedShort(packet, 0) & 0x07FF);
-    }
-
-    @Deprecated
-    public static int getCccsdsPacketLength(byte[] buf) {
-        return getCcsdsPacketLength(buf);
     }
 
     public static int getCcsdsPacketLength(byte[] buf) {
@@ -234,5 +217,7 @@ public class CcsdsPacket {
             }
         }
     }
+
+
 
 }
