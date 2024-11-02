@@ -349,6 +349,24 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
     }
 
     /**
+     * Returns the on-board time corresponding to the given on-board clock
+     * <p>
+     * If the coefficients are not computed yet, it will return Long.MIN_VALUE
+     * 
+     * @param scheduleTime
+     * @return
+     */
+    public long getObt(long scheduleTime) {
+        TcoCoefficients c = curCoefficients;
+
+        if (c == null) {
+            return Long.MIN_VALUE;
+        } else {
+            return c.getObt(Instant.get(scheduleTime));
+        }
+    }
+
+    /**
      * Set the generation time of the packet based on the computed coefficients.
      * <p>
      * If the coefficients are not valid, set the generation time to gentime = ert-delays and also set the flag
@@ -581,6 +599,13 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
             return obi0.plus(gradient * (obt - obt0) + offset);
         }
 
+        /**
+         * Returns the obt corresponding to the given Yamcs instant
+         */
+        long getObt(Instant instant) {
+            return (long) ((instant.deltaFrom(obi0) - offset) / gradient) + obt0;
+        }
+
         Tuple toTuple() {
             Tuple t = new Tuple(TDEF, Arrays.asList(obi0, obt0, gradient, offset));
             return t;
@@ -657,5 +682,6 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
 
         return tcb.build();
     }
+
 
 }
