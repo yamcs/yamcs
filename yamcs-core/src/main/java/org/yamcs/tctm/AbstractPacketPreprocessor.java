@@ -82,7 +82,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
 
     protected static final String CONFIG_KEY_ERROR_DETECTION = "errorDetection";
     protected static final String CONFIG_KEY_TIME_ENCODING = "timeEncoding";
-    protected static final String CONFIG_KEY_TCO_SERVICE = "tcoService";
+    public static final String CONFIG_KEY_TCO_SERVICE = "tcoService";
     protected static final String CONFIG_KEY_BYTE_ORDER = "byteOrder";
     protected static final String CONFIG_KEY_CHECK_SEQUENCE = "checkSequence";
 
