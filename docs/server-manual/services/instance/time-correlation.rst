@@ -92,7 +92,7 @@ Configuration Options
 ---------------------
 
 onboardDelay  (double)
-    the on-board delay in seconds used to compute the on-board transmission time from the earth reception time. The default value is 0 seconds.
+    The on-board delay in seconds. This is a fixed value estimating the time it takes for the time packet to leave the spacecraft. The default value is 0 seconds.
 
 useTofEstimator (boolean)
     Flag to enable or disable time of flight estimator service. The default value is false. Enable time of flight estimator service when it is required to dynamically compute the time of flight.
