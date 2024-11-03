@@ -4,12 +4,19 @@ import org.yamcs.parameter.StringValue;
 import org.yamcs.parameter.UInt64Value;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.ValueUtility;
+import org.yamcs.xtce.BooleanDataEncoding;
+import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding.Encoding;
+import org.yamcs.xtce.StringDataEncoding;
 
 /**
- * creates raw values according to the data encoding used
+ * Utility methods for DataEncodings:
+ * <ul>
+ * <li>create raw values according to the data encoding used</li>
+ * <li>return the type of the raw value according to the data encoding used</li>
+ * </ul>
  *
  */
 public class DataEncodingUtils {
@@ -65,7 +72,7 @@ public class DataEncodingUtils {
     static public Value getRawFloatValue(FloatDataEncoding fde, double value) {
         if (fde.getSizeInBits() <= 32
                 && (fde.getEncoding() == FloatDataEncoding.Encoding.IEEE754_1985
-                || fde.getEncoding() == FloatDataEncoding.Encoding.STRING)) {
+                        || fde.getEncoding() == FloatDataEncoding.Encoding.STRING)) {
             return ValueUtility.getFloatValue((float) value);
         } else {
             return ValueUtility.getDoubleValue(value);
@@ -90,4 +97,25 @@ public class DataEncodingUtils {
         }
     }
 
+    static public org.yamcs.protobuf.Yamcs.Value.Type rawValueType(DataEncoding de) {
+        if (de instanceof IntegerDataEncoding ide) {
+            if (ide.getEncoding() == Encoding.UNSIGNED) {
+                return ide.getSizeInBits() <= 32 ? org.yamcs.protobuf.Yamcs.Value.Type.UINT32
+                        : org.yamcs.protobuf.Yamcs.Value.Type.UINT64;
+            } else {
+                return ide.getSizeInBits() <= 32 ? org.yamcs.protobuf.Yamcs.Value.Type.SINT32
+                        : org.yamcs.protobuf.Yamcs.Value.Type.SINT64;
+            }
+        } else if (de instanceof FloatDataEncoding fde) {
+            return fde.getSizeInBits() <= 32
+                    ? org.yamcs.protobuf.Yamcs.Value.Type.FLOAT
+                    : org.yamcs.protobuf.Yamcs.Value.Type.DOUBLE;
+        } else if (de instanceof StringDataEncoding) {
+            return org.yamcs.protobuf.Yamcs.Value.Type.STRING;
+        } else if (de instanceof BooleanDataEncoding) {
+            return org.yamcs.protobuf.Yamcs.Value.Type.BOOLEAN;
+        } else {
+            return org.yamcs.protobuf.Yamcs.Value.Type.BINARY;
+        }
+    }
 }

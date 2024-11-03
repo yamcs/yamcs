@@ -36,8 +36,6 @@ import com.google.common.primitives.UnsignedLongs;
 
 /**
  * Contains various static methods to help work with XTCE {@link ParameterType}
- * 
- * @author nm
  *
  */
 public class ParameterTypeUtils {
@@ -262,4 +260,40 @@ public class ParameterTypeUtils {
             return ValueUtility.getDoubleValue(doubleValue);
         }
     }
+
+    /**
+     * returns the value type based on the parameter type
+     */
+    static org.yamcs.protobuf.Yamcs.Value.Type getValueType(ParameterType ptype) {
+        if (ptype instanceof IntegerParameterType ipt) {
+            if (ipt.isSigned()) {
+                return ipt.getSizeInBits() <= 32 ? org.yamcs.protobuf.Yamcs.Value.Type.SINT32
+                        : org.yamcs.protobuf.Yamcs.Value.Type.SINT64;
+            } else {
+                return ipt.getSizeInBits() <= 32 ? org.yamcs.protobuf.Yamcs.Value.Type.UINT32
+                        : org.yamcs.protobuf.Yamcs.Value.Type.UINT64;
+            }
+        } else if (ptype instanceof FloatParameterType fpt) {
+            if (fpt.getSizeInBits() <= 32) {
+                return org.yamcs.protobuf.Yamcs.Value.Type.FLOAT;
+            } else {
+                return org.yamcs.protobuf.Yamcs.Value.Type.DOUBLE;
+            }
+        } else if (ptype instanceof StringParameterType) {
+            return org.yamcs.protobuf.Yamcs.Value.Type.STRING;
+        } else if (ptype instanceof BooleanParameterType) {
+            return org.yamcs.protobuf.Yamcs.Value.Type.BOOLEAN;
+        } else if (ptype instanceof BinaryParameterType) {
+            return org.yamcs.protobuf.Yamcs.Value.Type.BINARY;
+        } else if (ptype instanceof EnumeratedParameterType) {
+            return org.yamcs.protobuf.Yamcs.Value.Type.ENUMERATED;
+        } else if (ptype instanceof ArrayParameterType) {
+            return org.yamcs.protobuf.Yamcs.Value.Type.ARRAY;
+        } else if (ptype instanceof AggregateParameterType) {
+            return org.yamcs.protobuf.Yamcs.Value.Type.AGGREGATE;
+        } else {
+            throw new IllegalStateException("Unknown parameter type '" + ptype + "'");
+        }
+    }
+
 }

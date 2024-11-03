@@ -184,8 +184,7 @@ public class ArrayValue extends Value {
     }
 
     /**
-     * Return the length of the flat array
-     * This is the product of the size of the individual dimensions.
+     * Return the length of the flat array This is the product of the size of the individual dimensions.
      * 
      * @return
      */
@@ -253,5 +252,9 @@ public class ArrayValue extends Value {
 
     public String toString() {
         return Arrays.toString(elements);
+    }
+
+    public boolean isEmpty() {
+        return flatSize(dim) == 0;
     }
 }

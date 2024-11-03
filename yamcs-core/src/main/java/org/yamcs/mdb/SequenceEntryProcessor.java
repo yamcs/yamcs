@@ -11,6 +11,7 @@ import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.AggregateDataType;
+import org.yamcs.xtce.ArrayDataType;
 import org.yamcs.xtce.ArrayParameterEntry;
 import org.yamcs.xtce.ArrayParameterType;
 import org.yamcs.xtce.BaseDataType;
@@ -137,15 +138,23 @@ public class SequenceEntryProcessor {
             size = pe.getSize();
         }
         int offset = pcontext.buffer.getPosition();
-        ArrayValue rv = extractArray((ArrayParameterType) pe.getParameter().getParameterType(),
-                size);
+        var aptype = (ArrayParameterType) pe.getParameter().getParameterType();
+        ArrayValue rv = extractArray(aptype, size);
 
         ContainerParameterValue pv = new ContainerParameterValue(pe.getParameter(),
                 pcontext.buffer.offset(), offset);
         pv.setRawValue(rv);
         pv.setBitSize(pcontext.buffer.getPosition() - offset);
-
-        pcontext.proccessorData.parameterTypeProcessor.calibrate(pcontext.result, pv);
+        if (rv.isEmpty()) {
+            var engValueType = ParameterTypeUtils.getValueType((ParameterType) aptype.getElementType());
+            if (rv.getElementType() == engValueType) {
+                pv.setEngValue(rv);
+            } else {
+                pv.setEngValue(new ArrayValue(rv.getDimensions(), engValueType));
+            }
+        } else {
+            pcontext.proccessorData.parameterTypeProcessor.calibrate(pcontext.result, pv);
+        }
 
         pv.setAcquisitionTime(pcontext.result.acquisitionTime);
         pv.setGenerationTime(pcontext.result.generationTime);
@@ -158,12 +167,27 @@ public class SequenceEntryProcessor {
     private ArrayValue extractArray(ArrayParameterType aptype, List<IntegerValue> size) {
         int[] isize = new int[size.size()];
         int max = pcontext.options.getMaxArraySize();
+        ParameterType elementType = (ParameterType) aptype.getElementType();
 
         for (int i = 0; i < size.size(); i++) {
             IntegerValue iv = size.get(i);
             long ds = pcontext.getIntegerValue(iv);
-            if (ds == 0) { // zero size array, just skip over it
-                return null;
+            if (ds == 0) { // zero size array
+                org.yamcs.protobuf.Yamcs.Value.Type rawValueType;
+                if (elementType instanceof AggregateDataType) {
+                    rawValueType = org.yamcs.protobuf.Yamcs.Value.Type.AGGREGATE;
+                } else if (elementType instanceof ArrayDataType) {
+                    rawValueType = org.yamcs.protobuf.Yamcs.Value.Type.ARRAY;
+                } else {
+                    var encoding = elementType.getEncoding();
+                    if (encoding == null) {
+                        throw new XtceProcessingException(
+                                "Encountered array parameter element'" + elementType.getName()
+                                        + " without an encoding");
+                    }
+                    rawValueType = DataEncodingUtils.rawValueType(encoding);
+                }
+                return new ArrayValue(isize, rawValueType);
             } else if (ds < 0) {
                 throw new XtceProcessingException(
                         "Negative array size " + ds + " encountered when processing array " + aptype.getName());
@@ -173,8 +197,6 @@ public class SequenceEntryProcessor {
             }
             isize[i] = (int) ds;
         }
-
-        ParameterType elementType = (ParameterType) aptype.getElementType();
 
         int ts = ArrayValue.flatSize(isize);
 

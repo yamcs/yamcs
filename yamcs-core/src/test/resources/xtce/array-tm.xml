@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xi="http://www.w3.org/2001/XInclude" name="ArrayTmTest"
+	shortDescription="Test of binary parameter and argument with variable size" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+	<TelemetryMetaData>
+		<ParameterTypeSet>
+			<IntegerParameterType name="uint32" signed="false">
+				<IntegerDataEncoding sizeInBits="32" encoding="unsigned"/>
+			</IntegerParameterType>
+			<FloatParameterType name="f64" sizeInBits="64">
+				<IntegerDataEncoding sizeInBits="32" encoding="unsigned"/>
+			</FloatParameterType>	
+			<AggregateParameterType name="aggrtype">
+				<MemberList>
+					<Member typeRef="uint32" name="m1"/>
+					<Member typeRef="uint32" name="m2"/>
+				</MemberList>
+			</AggregateParameterType>	
+			<ArrayParameterType arrayTypeRef="uint32" name="uint32arraytype">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ParameterInstanceRef parameterRef="n"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayParameterType>
+			<ArrayParameterType arrayTypeRef="f64" name="f64arraytype">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ParameterInstanceRef parameterRef="n"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayParameterType>
+			<ArrayParameterType arrayTypeRef="aggrtype" name="aggrarraytype">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ParameterInstanceRef parameterRef="n"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayParameterType>
+		</ParameterTypeSet>
+		<ParameterSet>
+			<Parameter parameterTypeRef="uint32" name="n"/>
+			<Parameter parameterTypeRef="uint32arraytype" name="array1"/>
+			<Parameter parameterTypeRef="f64arraytype" name="array2"/>
+			<Parameter parameterTypeRef="aggrarraytype" name="array3"/>
+		</ParameterSet>
+		<ContainerSet>
+			<SequenceContainer name="packet1">
+				<EntryList>
+					<ParameterRefEntry parameterRef="n"/>
+					<ArrayParameterRefEntry parameterRef="array1"/>
+				</EntryList>
+			</SequenceContainer>
+			<SequenceContainer name="packet2">
+				<EntryList>
+					<ParameterRefEntry parameterRef="n"/>
+					<ArrayParameterRefEntry parameterRef="array2"/>
+				</EntryList>
+			</SequenceContainer>
+			<SequenceContainer name="packet3">
+				<EntryList>
+					<ParameterRefEntry parameterRef="n"/>
+					<ArrayParameterRefEntry parameterRef="array3"/>
+				</EntryList>
+			</SequenceContainer>
+		</ContainerSet>
+	</TelemetryMetaData>
+</SpaceSystem>

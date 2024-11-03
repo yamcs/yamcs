@@ -68,6 +68,11 @@ ArrayArgCommandTest:
       args:
           file: "src/test/resources/xtce/array-arg.xml"
 
+ArrayTmTest:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/array-tm.xml"
+
 EnumArgCommandTest:
     - type: xtce
       args:
