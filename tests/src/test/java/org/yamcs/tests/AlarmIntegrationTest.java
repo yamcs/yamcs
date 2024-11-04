@@ -225,7 +225,7 @@ public class AlarmIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testAlarmPersistence() throws Exception {
         createWarningEvent();
-        packetGenerator.setGenerationTime(TimeEncoding.parse("2024-10-05T10:24:00"));
+        packetGenerator.setGenerationTime(TimeEncoding.getWallclockTime());
         packetGenerator.generate_PKT1_10(0, 3, 51);
 
         var alarms0 = yamcsClient.listAlarms(yamcsInstance, "realtime").get().getAlarmsList();
