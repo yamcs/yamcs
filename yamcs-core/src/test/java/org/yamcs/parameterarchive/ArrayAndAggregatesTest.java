@@ -2,6 +2,7 @@ package org.yamcs.parameterarchive;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -81,23 +82,30 @@ public class ArrayAndAggregatesTest {
 
     @Test
     public void testArray() throws Exception {
-        ParameterValue pv1 = getArrayPv(p1, 1000);
+        ParameterValue pv1 = getArrayPv(p1, 3, 1000);
         filler.addParameter(pv1).flush();
         ParameterId[] pids = pidDb.get("/test/p1[0]");
         assertEquals(1, pids.length);
         assertEquals(Type.FLOAT, pids[0].getEngType());
     }
 
-    private ParameterValue getArrayPv(Parameter p, long t) {
+    @Test
+    public void testEmptyArray() throws Exception {
+        ParameterValue pv1 = getArrayPv(p1, 0, 1000);
+        filler.addParameter(pv1).flush();
+        ParameterId[] pids = pidDb.get("/test/p1[0]");
+        assertNull(pids);
+    }
+
+    private ParameterValue getArrayPv(Parameter p, int n, long t) {
         ParameterValue pv = new ParameterValue(p);
         pv.setGenerationTime(t);
         pv.setAcquisitionTime(t);
 
-        ArrayValue av = new ArrayValue(new int[] { 3 }, Type.FLOAT);
-        av.setElementValue(0, ValueUtility.getFloatValue(0));
-        av.setElementValue(1, ValueUtility.getFloatValue(1));
-        av.setElementValue(2, ValueUtility.getFloatValue(2));
-
+        ArrayValue av = new ArrayValue(new int[] { n }, Type.FLOAT);
+        for (int i = 0; i < n; i++) {
+            av.setElementValue(i, ValueUtility.getFloatValue(i));
+        }
         pv.setEngValue(av);
         pv.setRawValue(av);
 

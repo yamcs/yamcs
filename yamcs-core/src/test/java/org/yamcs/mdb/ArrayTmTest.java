@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
+import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
@@ -102,6 +103,27 @@ public class ArrayTmTest {
     }
 
     @Test
+    public void testEmptyArray4() {
+        ByteBuffer bb = ByteBuffer.allocate(8);
+        bb.putInt(0);
+        ContainerProcessingResult cpr = processPacket(bb.array(), mdb.getSequenceContainer("/ArrayTmTest/packet4"));
+
+        ParameterValueList pvl = cpr.getParameterResult();
+        assertEquals(2, pvl.size());
+        ParameterValue pv = pvl.getFirstInserted(param("n"));
+        assertEquals(0, pv.getEngValue().getUint32Value());
+
+        pv = pvl.getFirstInserted(param("array4"));
+        ArrayValue ev = (ArrayValue) pv.getEngValue();
+        assertArrayEquals(new int[] { 0 }, ev.getDimensions());
+        assertEquals(Type.AGGREGATE, ev.getElementType());
+
+        ArrayValue rv = (ArrayValue) pv.getRawValue();
+        assertArrayEquals(new int[] { 0 }, rv.getDimensions());
+        assertEquals(Type.AGGREGATE, rv.getElementType());
+    }
+
+    @Test
     public void test1ElementArray() {
         org.yamcs.LoggingUtils.enableTracing();
         ByteBuffer bb = ByteBuffer.allocate(8);
@@ -115,6 +137,26 @@ public class ArrayTmTest {
         ArrayValue ev = (ArrayValue) pv.getEngValue();
         assertArrayEquals(new int[] { 1 }, ev.getDimensions());
         assertEquals(5, ev.getElementValue(0).getUint32Value());
+    }
+
+    @Test
+    public void test1ElementArray4() {
+        org.yamcs.LoggingUtils.enableTracing();
+        ByteBuffer bb = ByteBuffer.allocate(12);
+        bb.putInt(1);
+        bb.putInt(5);
+        bb.putInt(3);
+        ContainerProcessingResult cpr = processPacket(bb.array(), mdb.getSequenceContainer("/ArrayTmTest/packet4"));
+
+        ParameterValueList pvl = cpr.getParameterResult();
+        assertEquals(2, pvl.size());
+        ParameterValue pv = pvl.getFirstInserted(param("array4"));
+        ArrayValue ev = (ArrayValue) pv.getEngValue();
+        assertArrayEquals(new int[] { 1 }, ev.getDimensions());
+        AggregateValue aggrv = (AggregateValue) ev.getElementValue(0);
+
+        assertEquals(5, aggrv.getMemberValue("m1").getUint32Value());
+        assertEquals("trei", aggrv.getMemberValue("m2").getStringValue());
     }
 
     private Parameter param(String name) {

@@ -6,6 +6,15 @@
 			<IntegerParameterType name="uint32" signed="false">
 				<IntegerDataEncoding sizeInBits="32" encoding="unsigned"/>
 			</IntegerParameterType>
+			<EnumeratedParameterType name="enum1">
+				<IntegerDataEncoding sizeInBits="32" encoding="unsigned"/>
+				<EnumerationList>
+					<Enumeration value="0" label="zero" />
+					<Enumeration value="1" label="unu" />
+					<Enumeration value="2" label="doi" />
+					<Enumeration value="3" label="trei" />
+				</EnumerationList>
+			</EnumeratedParameterType>
 			<FloatParameterType name="f64" sizeInBits="64">
 				<IntegerDataEncoding sizeInBits="32" encoding="unsigned"/>
 			</FloatParameterType>	
@@ -14,7 +23,13 @@
 					<Member typeRef="uint32" name="m1"/>
 					<Member typeRef="uint32" name="m2"/>
 				</MemberList>
-			</AggregateParameterType>	
+			</AggregateParameterType>
+			<AggregateParameterType name="aggrtype_enum">
+				<MemberList>
+					<Member typeRef="uint32" name="m1"/>
+					<Member typeRef="enum1" name="m2"/>
+				</MemberList>
+			</AggregateParameterType>
 			<ArrayParameterType arrayTypeRef="uint32" name="uint32arraytype">
 				<DimensionList>
 					<Dimension>
@@ -60,12 +75,28 @@
 					</Dimension>
 				</DimensionList>
 			</ArrayParameterType>
+			<ArrayParameterType arrayTypeRef="aggrtype_enum" name="aggrarraytype_enum">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ParameterInstanceRef parameterRef="n"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayParameterType>
 		</ParameterTypeSet>
 		<ParameterSet>
 			<Parameter parameterTypeRef="uint32" name="n"/>
 			<Parameter parameterTypeRef="uint32arraytype" name="array1"/>
 			<Parameter parameterTypeRef="f64arraytype" name="array2"/>
 			<Parameter parameterTypeRef="aggrarraytype" name="array3"/>
+			<Parameter parameterTypeRef="aggrarraytype_enum" name="array4"/>
 		</ParameterSet>
 		<ContainerSet>
 			<SequenceContainer name="packet1">
@@ -84,6 +115,12 @@
 				<EntryList>
 					<ParameterRefEntry parameterRef="n"/>
 					<ArrayParameterRefEntry parameterRef="array3"/>
+				</EntryList>
+			</SequenceContainer>
+			<SequenceContainer name="packet4">
+				<EntryList>
+					<ParameterRefEntry parameterRef="n"/>
+					<ArrayParameterRefEntry parameterRef="array4"/>
 				</EntryList>
 			</SequenceContainer>
 		</ContainerSet>

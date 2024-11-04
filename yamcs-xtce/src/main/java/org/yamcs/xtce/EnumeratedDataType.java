@@ -141,7 +141,7 @@ public class EnumeratedDataType extends BaseDataType {
 
     @Override
     public Type getValueType() {
-        return Value.Type.STRING;
+        return Value.Type.ENUMERATED;
     }
 
     @Override

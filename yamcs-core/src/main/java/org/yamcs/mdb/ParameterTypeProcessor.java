@@ -71,8 +71,14 @@ public class ParameterTypeProcessor {
 
     private void doCalibrate(ProcessingData processingData, ParameterValue pval) {
         ParameterType ptype = pdata.getParameterType(pval.getParameter());
+        Value engValue;
 
-        Value engValue = doCalibrate(processingData, ptype, pval.getRawValue());
+        if (requireCalibration(ptype, pval.getRawValue())) {
+            engValue = doCalibrate(processingData, ptype, pval.getRawValue());
+        } else {
+            engValue = pval.getRawValue();
+        }
+
         if (engValue != null) {
             pval.setEngValue(engValue);
             if (checkValidityRanges) {
@@ -80,6 +86,53 @@ public class ParameterTypeProcessor {
             }
         } else {
             pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
+        }
+    }
+
+    private boolean requireCalibration(ParameterType ptype, Value rawValue) {
+        if (rawValue instanceof AggregateValue aggrv) {
+            if (ptype instanceof AggregateParameterType aggptype) {
+                for (Member m : aggptype.getMemberList()) {
+                    var v = aggrv.getMemberValue(m.getName());
+                    if (v == null) {
+                        return true;
+                    }
+                    if (requireCalibration((ParameterType) m.getType(), v)) {
+                        return true;
+                    }
+                }
+                return false;
+            } else {
+                return true;
+            }
+        } else if (rawValue instanceof ArrayValue arrv) {
+            if (ptype instanceof ArrayParameterType aptype) {
+                if (arrv.isEmpty()) {
+                    return aptype.getElementType().getValueType() != arrv.getElementType();
+                } else {
+                    // we assume here that all the elements of the array are of the same type
+                    return requireCalibration((ParameterType) aptype.getElementType(), arrv.getElementValue(0));
+                }
+            } else {
+                return true;
+            }
+        } else if ((ptype instanceof NumericParameterType nptype) && hasCalibrator(nptype)) {
+            return true;
+        } else {
+            return rawValue.getType() != ptype.getValueType();
+        }
+    }
+
+    private boolean hasCalibrator(NumericParameterType npt) {
+        DataEncoding encoding = npt.getEncoding();
+        if (encoding == null) {
+            return false;
+        }
+        if (encoding instanceof NumericDataEncoding) {
+            NumericDataEncoding nde = (NumericDataEncoding) encoding;
+            return nde.getContextCalibratorList() != null || nde.getDefaultCalibrator() != null;
+        } else {
+            return false;
         }
     }
 
@@ -217,9 +270,7 @@ public class ParameterTypeProcessor {
     }
 
     private Value calibrateInteger(ProcessingData processingData, IntegerParameterType ipt, Value rawValue) {
-        if (!hasCalibrator(ipt) && ipt.getValueType() == rawValue.getType()) {
-            return rawValue;
-        }
+
         switch (rawValue.getType()) {
         case SINT32:
             return doIntegerCalibration(processingData, ipt, rawValue.getSint32Value());
@@ -252,18 +303,6 @@ public class ParameterTypeProcessor {
         }
     }
 
-    private boolean hasCalibrator(NumericParameterType npt) {
-        DataEncoding encoding = npt.getEncoding();
-        if (encoding == null) {
-            return false;
-        }
-        if (encoding instanceof NumericDataEncoding) {
-            NumericDataEncoding nde = (NumericDataEncoding) encoding;
-            return nde.getContextCalibratorList() != null || nde.getDefaultCalibrator() != null;
-        } else {
-            return false;
-        }
-    }
 
     private Value doIntegerCalibration(ProcessingData processingData, IntegerParameterType ipt, long longValue) {
         CalibratorProc calibrator = pdata.getCalibrator(processingData, ipt.getEncoding());
@@ -295,9 +334,6 @@ public class ParameterTypeProcessor {
     }
 
     private Value calibrateFloat(ProcessingData processingData, FloatParameterType ptype, Value rawValue) {
-        if (!hasCalibrator(ptype) && ptype.getValueType() == rawValue.getType()) {
-            return rawValue;
-        }
         switch (rawValue.getType()) {
         case DOUBLE:
             return doFloatCalibration(processingData, ptype, rawValue.getDoubleValue());
@@ -476,15 +512,11 @@ public class ParameterTypeProcessor {
     }
 
     private Value calibrateArray(ProcessingData processingData, ArrayParameterType ptype, ArrayValue rawValue) {
-        ParameterType engValueType = (ParameterType) ptype.getElementType();
-        boolean hasCalibrator = (engValueType instanceof NumericParameterType)
-                && hasCalibrator((NumericParameterType) engValueType);
-        if (!hasCalibrator && rawValue.getElementType() == engValueType.getValueType()) {
-            return rawValue;
-        }
+        ParameterType engElementType = (ParameterType) ptype.getElementType();
+
         int fl = rawValue.flatLength();
         Value rv = rawValue.getElementValue(0);
-        Value ev = doCalibrate(processingData, engValueType, rv);
+        Value ev = doCalibrate(processingData, engElementType, rv);
         if (ev == null) {
             return null;
         }
@@ -493,7 +525,7 @@ public class ParameterTypeProcessor {
         for (int i = 1; i < fl; i++) {
             rv = rawValue.getElementValue(i);
             if (rv != null) {
-                ev = doCalibrate(processingData, engValueType, rv);
+                ev = doCalibrate(processingData, engElementType, rv);
                 if (ev != null) {
                     engValue.setElementValue(i, ev);
                 } else {

@@ -53,7 +53,7 @@ class BasicParameterList {
     // add the parameter to the list but also expand if it is an aggregate or array
     void add(ParameterValue pv) {
         String fqn = pv.getParameterQualifiedName();
-        if (pv.getEngValue() instanceof AggregateValue || pv.getEngValue() instanceof ArrayValue) {
+        if (pv.getEngValue() instanceof AggregateValue) {
             IntArray aggrray = new IntArray();
             add(fqn, pv, aggrray);
 
@@ -61,6 +61,16 @@ class BasicParameterList {
             Type rawType = (pv.getRawValue() == null) ? null : pv.getRawValue().getType();
 
             parameterIdMap.createAndGetAggrray(fqn, engType, rawType, aggrray);
+        } else if (pv.getEngValue() instanceof ArrayValue arrv) {
+            // for the moment we have no way to store empty arrays in the parameter archive, so we just skip over
+            if (!arrv.isEmpty()) {
+                IntArray aggrray = new IntArray();
+                add(fqn, pv, aggrray);
+                Type engType = pv.getEngValue().getType();
+                Type rawType = (pv.getRawValue() == null) ? null : pv.getRawValue().getType();
+
+                parameterIdMap.createAndGetAggrray(fqn, engType, rawType, aggrray);
+            }
         } else {
             add(fqn, pv, null);
         }

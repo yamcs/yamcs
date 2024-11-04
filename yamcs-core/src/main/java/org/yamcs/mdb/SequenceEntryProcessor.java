@@ -146,7 +146,7 @@ public class SequenceEntryProcessor {
         pv.setRawValue(rv);
         pv.setBitSize(pcontext.buffer.getPosition() - offset);
         if (rv.isEmpty()) {
-            var engValueType = ParameterTypeUtils.getValueType((ParameterType) aptype.getElementType());
+            var engValueType = aptype.getElementType().getValueType();
             if (rv.getElementType() == engValueType) {
                 pv.setEngValue(rv);
             } else {
