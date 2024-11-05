@@ -22,6 +22,7 @@ public class ScriptAlgorithmEngine implements AlgorithmEngine {
         scriptEngineManager.put("EventLog", new EventLogFunctions(algorithmManager.getYamcsInstance()));
         scriptEngineManager.put("Verifier", new VerifierFunctions());
         scriptEngineManager.put("Yamcs", new AlgorithmFunctions(algorithmManager.getProcessor(), context));
+        scriptEngineManager.put("Links", new LinksFunctions(algorithmManager.getYamcsInstance()));
 
         return new ScriptAlgorithmExecutorFactory(scriptEngineManager, language, libs);
 
