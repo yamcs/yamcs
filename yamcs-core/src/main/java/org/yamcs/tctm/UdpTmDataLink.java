@@ -27,15 +27,15 @@ import org.yamcs.YConfiguration;
  * </ul>
  */
 public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
-    private volatile long invalidDatagramCount = 0;
+    protected volatile long invalidDatagramCount = 0;
 
-    private DatagramSocket tmSocket;
-    private int port;
+    protected DatagramSocket tmSocket;
+    protected int port;
 
     static final int MAX_LENGTH = 1500;
-    DatagramPacket datagram;
-    int maxLength;
-    int initialBytesToStrip;
+    protected int maxLength;
+    protected int initialBytesToStrip;
+    protected DatagramPacket datagram;
 
     @Override
     public Spec getSpec() {
@@ -59,17 +59,13 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
         maxLength = config.getInt("maxLength", MAX_LENGTH);
         initialBytesToStrip = config.getInt("initialBytesToStrip", 0);
         datagram = new DatagramPacket(new byte[maxLength], maxLength);
-
     }
 
     @Override
     public void doStart() {
         if (!isDisabled()) {
             try {
-                tmSocket = new DatagramSocket(port);
-                Thread thread = new Thread(this);
-                thread.setName(getClass().getSimpleName() + "-" + linkName);
-                thread.start();
+                doEnable();
             } catch (SocketException e) {
                 notifyFailed(e);
                 return;
@@ -80,9 +76,7 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
 
     @Override
     public void doStop() {
-        if (tmSocket != null) {
-            tmSocket.close();
-        }
+        doDisable();
         notifyStopped();
     }
 
@@ -107,6 +101,7 @@ public class UdpTmDataLink extends AbstractTmDataLink implements Runnable {
 
         while (isRunning()) {
             try {
+
                 tmSocket.receive(datagram);
                 int pktLength = datagram.getLength() - initialBytesToStrip;
 
