@@ -1,6 +1,5 @@
 package org.yamcs.algorithms;
 
-import org.yamcs.YamcsServer;
 import org.yamcs.management.LinkManager;
 
 /**
@@ -12,9 +11,8 @@ public class LinksFunctions {
 
     private final LinkManager linkManager;
 
-    public LinksFunctions(String yamcsInstance) {
-        var ysi = YamcsServer.getServer().getInstance(yamcsInstance);
-        linkManager = ysi.getLinkManager();
+    public LinksFunctions(LinkManager linkManager) {
+        this.linkManager = linkManager;
     }
 
     public void enableLink(String linkName) {

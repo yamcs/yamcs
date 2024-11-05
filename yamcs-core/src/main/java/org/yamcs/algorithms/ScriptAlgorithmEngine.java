@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.script.ScriptEngineManager;
 
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 
 public class ScriptAlgorithmEngine implements AlgorithmEngine {
 
@@ -22,7 +23,15 @@ public class ScriptAlgorithmEngine implements AlgorithmEngine {
         scriptEngineManager.put("EventLog", new EventLogFunctions(algorithmManager.getYamcsInstance()));
         scriptEngineManager.put("Verifier", new VerifierFunctions());
         scriptEngineManager.put("Yamcs", new AlgorithmFunctions(algorithmManager.getProcessor(), context));
-        scriptEngineManager.put("Links", new LinksFunctions(algorithmManager.getYamcsInstance()));
+
+        // add the link manager functions but only if the link manager is present (some units tests will not have this)
+        var ysi = YamcsServer.getServer().getInstance(algorithmManager.getYamcsInstance());
+        if (ysi != null) {
+            var linkManager = ysi.getLinkManager();
+            if (linkManager != null) {
+                scriptEngineManager.put("Links", new LinksFunctions(linkManager));
+            }
+        }
 
         return new ScriptAlgorithmExecutorFactory(scriptEngineManager, language, libs);
 
