@@ -1,6 +1,11 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
+export interface StoredColumnInfo {
+  id: string;
+  visible: boolean;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -42,28 +47,25 @@ export class PreferenceStore {
 
   /**
    * Returns a column preference from local storage.
-   *
-   * To prevent broken or missing renamed columns, the preference
-   * is reset as soon as a deprecated column is detected.
    */
-  public getVisibleColumns(source: string, deprecated: string[] = []) {
+  public getStoredColumnInfo(source: string): StoredColumnInfo[] | undefined {
     const item = localStorage.getItem(`${this.prefix}${source}.cols`);
     if (item) {
-      const cols: string[] = JSON.parse(item);
-      for (const col of cols) {
-        for (const deprecatedCol of deprecated) {
-          if (col === deprecatedCol) {
-            localStorage.removeItem(`${this.prefix}${source}.cols`);
-            return;
-          }
+      const cols: any[] = JSON.parse(item);
+      for (let i = 0; i < cols.length; i++) {
+        const col = cols[i];
+
+        // In previous versions the type was a string[] of visible
+        // columns. This has since been revised
+        if (typeof col === 'string') {
+          cols[i] = { id: col, visible: true };
         }
       }
       return cols;
     }
   }
 
-  public setVisibleColumns(source: string, columns: string[]) {
+  public setVisibleColumns(source: string, columns: StoredColumnInfo[]) {
     localStorage.setItem(`${this.prefix}${source}.cols`, JSON.stringify(columns));
   }
-
 }

@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, input, Input, OnInit } from '@angul
 import { MatIcon } from '@angular/material/icon';
 import { MatMenu, MatMenuContent, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { BehaviorSubject } from 'rxjs';
-import { PreferenceStore } from '../../services/preference-store.service';
+import { PreferenceStore, StoredColumnInfo } from '../../services/preference-store.service';
 import { YaButton } from '../button/button.component';
 
 export interface YaColumnInfo {
@@ -50,23 +50,31 @@ export class YaColumnChooser implements OnInit {
     this.columns = columns;
 
     const preferenceKey = this.preferenceKey();
-    let preferredColumns: string[] = [];
+    const storedColumnsById = new Map<string, StoredColumnInfo>();
     if (preferenceKey) {
-      const storedDisplayedColumns = this.preferenceStore.getVisibleColumns(preferenceKey);
-      preferredColumns = (storedDisplayedColumns || []).filter(el => {
+      const storedColumnInfo = this.preferenceStore.getStoredColumnInfo(preferenceKey);
+      const storedColumns = (storedColumnInfo || []).filter(el => {
         // Filter out unknown columns
         for (const column of this.columns) {
-          if (column.id === el) {
+          if (column.id === el.id) {
             return true;
           }
         }
       });
+      for (const storedColumn of storedColumns) {
+        storedColumnsById.set(storedColumn.id, storedColumn);
+      }
     }
 
     // Keep a column if it's either from preferences, or is to be always visible.
     const displayedColumns: string[] = [];
     for (const column of this.columns) {
-      if (column.visible || column.alwaysVisible || preferredColumns.indexOf(column.id) !== -1) {
+      const storedColumn = storedColumnsById.get(column.id);
+      if (storedColumn) {
+        if (storedColumn.visible || column.alwaysVisible) {
+          displayedColumns.push(column.id);
+        }
+      } else if (column.visible || column.alwaysVisible) {
         displayedColumns.push(column.id);
       }
     }
@@ -79,23 +87,26 @@ export class YaColumnChooser implements OnInit {
     return displayedColumns && displayedColumns.indexOf(column.id) >= 0;
   }
 
-  writeValue(value: any) {
+  toggleColumn(column: YaColumnInfo) {
+    const newStoredColumns: StoredColumnInfo[] = [];
+    for (const c of this.columns) {
+      if (column.id === c.id && !this.isVisible(c)) {
+        newStoredColumns.push({ id: c.id, visible: true });
+      } else if (column.id !== c.id && this.isVisible(c)) {
+        newStoredColumns.push({ id: c.id, visible: true });
+      } else {
+        newStoredColumns.push({ id: c.id, visible: false });
+      }
+    }
+    this.writeValue(newStoredColumns);
+  }
+
+  private writeValue(value: StoredColumnInfo[]) {
     const preferenceKey = this.preferenceKey();
     if (preferenceKey) {
       this.preferenceStore.setVisibleColumns(preferenceKey, value);
     }
-    this.displayedColumns$.next(value);
-  }
-
-  toggleColumn(column: YaColumnInfo) {
-    const newDisplayedColumns = [];
-    for (const c of this.columns) {
-      if (column.id === c.id && !this.isVisible(c)) {
-        newDisplayedColumns.push(c.id);
-      } else if (column.id !== c.id && this.isVisible(c)) {
-        newDisplayedColumns.push(c.id);
-      }
-    }
-    this.writeValue(newDisplayedColumns);
+    const visibleIds = value.filter(v => v.visible).map(v => v.id);
+    this.displayedColumns$.next(visibleIds);
   }
 }
