@@ -1,4 +1,5 @@
 import { DataSource } from '@angular/cdk/table';
+import { ChangeDetectorRef } from '@angular/core';
 import { GetParametersOptions, NamedObjectId, Parameter, ParameterSubscription, ParameterValue, SpaceSystem, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
@@ -27,6 +28,7 @@ export class ParametersDataSource extends DataSource<ListItem> {
   constructor(
     private yamcs: YamcsService,
     private synchronizer: Synchronizer,
+    private changeDetection: ChangeDetectorRef,
   ) {
     super();
   }
@@ -71,6 +73,7 @@ export class ParametersDataSource extends DataSource<ListItem> {
       }
     }
     this.items$.next([...items]);
+    this.changeDetection.detectChanges();
   }
 
   private startSubscription(parameters: Parameter[]) {

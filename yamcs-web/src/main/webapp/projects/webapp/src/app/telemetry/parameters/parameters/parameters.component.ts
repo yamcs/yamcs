@@ -1,5 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
@@ -110,8 +110,9 @@ export class ParametersComponent implements AfterViewInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private synchronizer: Synchronizer,
+    changeDetection: ChangeDetectorRef,
   ) {
-    this.dataSource = new ParametersDataSource(this.yamcs, this.synchronizer);
+    this.dataSource = new ParametersDataSource(this.yamcs, this.synchronizer, changeDetection);
   }
 
   ngAfterViewInit() {

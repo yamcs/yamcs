@@ -1,4 +1,5 @@
 import { DataSource } from '@angular/cdk/table';
+import { ChangeDetectorRef } from '@angular/core';
 import { NamedObjectId, Parameter, ParameterSubscription, ParameterValue, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
@@ -26,6 +27,7 @@ export class StreamingParametersDataSource extends DataSource<ListItem> {
   constructor(
     private yamcs: YamcsService,
     private synchronizer: Synchronizer,
+    private changeDetection: ChangeDetectorRef,
   ) {
     super();
   }
@@ -61,7 +63,11 @@ export class StreamingParametersDataSource extends DataSource<ListItem> {
     for (const item of items) {
       item.pval = this.latestValues.get(item.name);
     }
+
     this.items$.next([...items]);
+
+    // Needed to show table updates in combination with trackBy
+    this.changeDetection.detectChanges();
   }
 
   private startSubscription(parameters: Parameter[]) {
@@ -85,6 +91,11 @@ export class StreamingParametersDataSource extends DataSource<ListItem> {
         }
         this.processDelivery(data.values || []);
         this.loading$.next(false);
+
+        // Quick emit, don't wait on sync tick
+        if (data.mapping) {
+          this.refreshTable();
+        }
       });
     }
   }

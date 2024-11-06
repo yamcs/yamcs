@@ -6,7 +6,11 @@
         <ya-dots />
       }
     </div>
-    <table mat-table class="ya-data-table expand" [dataSource]="dataSource">
+    <table
+      mat-table
+      class="ya-data-table expand"
+      [dataSource]="dataSource"
+      [trackBy]="tableTrackerFn">
       <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef>Name</th>
         <td mat-cell *matCellDef="let item">
@@ -48,8 +52,7 @@
                 <span>&#8593;</span>
               }
             </ya-expirable>
-          }
-          @if (!item.pval) {
+          } @else {
             <span>-</span>
           }
         </td>
