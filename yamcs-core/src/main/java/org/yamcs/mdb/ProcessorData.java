@@ -97,6 +97,10 @@ public class ProcessorData {
 
     }
 
+    public ProcessorData(String instance, String procName, Mdb mdb, ProcessorConfig config) {
+        this(instance, procName, mdb, config, Collections.emptyMap());
+    }
+
     public ProcessorData(String procName, Mdb mdb, ProcessorConfig config) {
         this(null, procName, mdb, config, Collections.emptyMap());
     }
