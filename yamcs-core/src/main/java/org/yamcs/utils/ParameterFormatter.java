@@ -7,10 +7,12 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
@@ -23,8 +25,6 @@ import com.csvreader.CsvWriter;
 /**
  * Formats in tab separated format parameters. The list of the possible parameters has to be known in advance.
  * 
- * @author nm
- *
  */
 public class ParameterFormatter implements Closeable {
 
@@ -145,24 +145,37 @@ public class ParameterFormatter implements Closeable {
      * @throws IOException
      */
     public void writeParameters(List<ParameterValueWithId> params) throws IOException {
-        long t = params.get(0).getParameterValue().getGenerationTime();
-        if ((timewindow == -1) || (t - lastLineInstant > timewindow)) {
-            writeParameters();
-            lastLineInstant = t;
 
-            if (!keepValues) {
-                for (Entry<NamedObjectId, ParameterValue> entry : subscribedParameters.entrySet()) {
-                    entry.setValue(null);
+        Set<NamedObjectId> alreadyAdded = new HashSet<>();
+
+        while (!params.isEmpty()) {
+            List<ParameterValueWithId> remaining = new ArrayList<>();
+            alreadyAdded.clear();
+            
+            long t = params.get(0).getParameterValue().getGenerationTime();
+            if ((timewindow == -1) || (t - lastLineInstant > timewindow)) {
+                writeParameters();
+                lastLineInstant = t;
+
+                if (!keepValues) {
+                    for (Entry<NamedObjectId, ParameterValue> entry : subscribedParameters.entrySet()) {
+                        entry.setValue(null);
+                    }
                 }
             }
-        }
 
-        for (int i = 0; i < params.size(); i++) {
-            ParameterValue pv = params.get(i).getParameterValue();
-            subscribedParameters.put(params.get(i).getId(), pv);
+            for (var pvwid: params) {
+                if(alreadyAdded.contains(pvwid.getId())) {
+                    remaining.add(pvwid);
+                } else {
+                    alreadyAdded.add(pvwid.getId());
+                    subscribedParameters.put(pvwid.getId(), pvwid.getParameterValue());    
+                }
+            }
+            linesReceived++;
+            ++unsavedLineCount;
+            params = remaining;
         }
-        linesReceived++;
-        ++unsavedLineCount;
     }
 
     protected void writeParameters() throws IOException {
