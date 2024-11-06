@@ -30,10 +30,10 @@ export class ParameterDataTabComponent implements OnInit, OnDestroy {
   qualifiedName = input.required<string>({ alias: 'parameter' });
 
   intervalOptions: YaSelectOption[] = [
-    { id: 'PT1H', label: 'Last Hour' },
-    { id: 'PT6H', label: 'Last 6 Hours' },
-    { id: 'P1D', label: 'Last 24 Hours' },
-    { id: 'NO_LIMIT', label: 'No Limit' },
+    { id: 'PT1H', label: 'Last hour' },
+    { id: 'PT6H', label: 'Last 6 hours' },
+    { id: 'P1D', label: 'Last 24 hours' },
+    { id: 'NO_LIMIT', label: 'No limit' },
     { id: 'CUSTOM', label: 'Custom' },
   ];
 
