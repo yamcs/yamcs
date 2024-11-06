@@ -231,7 +231,7 @@ public class MatchCriteriaEvaluatorFactory {
             } else {
                 return evaluatorList.stream()
                         .map(evaluator -> "(" + evaluator.toExpressionString() + ")")
-                        .collect(Collectors.joining(" and "));
+                        .collect(Collectors.joining(" && "));
             }
         }
     }
@@ -270,7 +270,7 @@ public class MatchCriteriaEvaluatorFactory {
             } else {
                 return evaluatorList.stream()
                         .map(evaluator -> "(" + evaluator.toExpressionString() + ")")
-                        .collect(Collectors.joining(" or "));
+                        .collect(Collectors.joining(" || "));
             }
         }
     }
