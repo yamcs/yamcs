@@ -592,4 +592,13 @@ public class TimeEncoding {
     public static Timestamp toProtobufTimestamp(Instant instant) {
         return taiUtcConverter.instantToProtobuf(instant);
     }
+
+    /**
+     * returns true if the {@link #setUp()} method has been called to load the leap second table.
+     * <p>
+     * If this method returns false, any call to the UTC conversion functions will throw a NullPointerException
+     */
+    public static boolean isSetUp() {
+        return taiUtcConverter != null;
+    }
 }

@@ -1,12 +1,11 @@
 package org.yamcs.algorithms;
 
-import java.time.Instant;
-
 import org.yamcs.Processor;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.logging.Log;
 import org.yamcs.mdb.ProcessorData;
+import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.DataEncoding;
@@ -82,7 +81,7 @@ public class AlgorithmFunctions {
     }
 
     public Instant processorTime() {
-        return Instant.ofEpochMilli(TimeEncoding.toUnixMillisec(processor.getCurrentTime()));
+        return Instant.get(processor.getCurrentTime());
     }
 
     private String getAlgoName() {

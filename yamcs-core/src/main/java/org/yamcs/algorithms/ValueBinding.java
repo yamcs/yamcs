@@ -1,17 +1,14 @@
 package org.yamcs.algorithms;
 
-import java.time.Instant;
-
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.RawEngValue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
-import org.yamcs.utils.TimeEncoding;
+import org.yamcs.time.Instant;
 
 /**
- * A ParameterValue as passed to an algorithm. Actual implementations are generated on-the-fly to walk around the issue
- * of Rhino that maps boxed primitives to JavaScript Objects instead of Numbers
+ * A ParameterValue as passed to an algorithm. Actual implementations are generated on-the-fly.
  */
 public abstract class ValueBinding {
     public long acquisitionTimeMillis;
@@ -33,11 +30,11 @@ public abstract class ValueBinding {
     }
 
     public Instant generationTime() {
-        return Instant.ofEpochMilli(TimeEncoding.toUnixMillisec(generationTimeMillis));
+        return Instant.get(generationTimeMillis);
     }
 
     public Instant acquisitionTime() {
-        return Instant.ofEpochMilli(TimeEncoding.toUnixMillisec(acquisitionTimeMillis));
+        return Instant.get(acquisitionTimeMillis);
     }
 
 }

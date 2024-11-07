@@ -65,7 +65,6 @@ public class AlgorithmManagerTest {
         assertNotNull(db.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2"));
 
         tmGenerator = new RefMdbPacketGenerator();
-        tmGenerator = new RefMdbPacketGenerator();
         Map<String, Object> jslib = new HashMap<>();
 
         jslib.put("JavaScript", Arrays.asList("mdb/algolib.js"));
@@ -561,6 +560,25 @@ public class AlgorithmManagerTest {
 
         algMgr.disableTracing(floatAddAlgo);
         assertNull(algMgr.getTrace(floatAddAlgo));
+    }
+
+    @Test
+    public void testTimestampOutput() throws InvalidIdentification, InterruptedException {
+        final ArrayList<ParameterValue> params = new ArrayList<>();
+        prm.addRequest(Arrays.asList(
+                prm.getParameter("/REFMDB/SUBSYS1/FloatPara1_1_2"),
+                prm.getParameter("/REFMDB/SUBSYS1/AlgoTestTimeJs1"),
+                prm.getParameter("/REFMDB/SUBSYS1/AlgoTestTimeJs2"),
+                prm.getParameter("/REFMDB/SUBSYS1/AlgoTestTimeJs3")),
+                (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
+
+        proc.start();
+        tmGenerator.generate_PKT1_1();
+        assertEquals(4, params.size());
+
+        assertEquals(params.get(0).getGenerationTime() + 1234, params.get(1).getEngValue().getTimestampValue());
+        assertEquals(params.get(0).getGenerationTime() + 2234, params.get(2).getEngValue().getTimestampValue());
+        assertEquals(params.get(0).getGenerationTime(), params.get(3).getEngValue().getTimestampValue());
     }
 
     void verifyEqual(ParameterValue pv, Parameter p, float v) {

@@ -157,7 +157,11 @@ public class Instant implements Comparable<Instant> {
 
     @Override
     public String toString() {
-        return "Instant [millis=" + millis + ", picos=" + picos + "]";
+        if (TimeEncoding.isSetUp()) {
+            return TimeEncoding.toString(this.millis);
+        } else {
+            return "Instant [millis=" + millis + ", picos=" + picos + "]";
+        }
     }
 
 }

@@ -5,8 +5,11 @@ import java.util.List;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.Value;
+import org.yamcs.time.Instant;
 import org.yamcs.utils.StringConverter;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
+import org.yamcs.xtce.AbsoluteTimeDataType;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.ArrayParameterType;
 import org.yamcs.xtce.BinaryDataType;
@@ -220,12 +223,21 @@ public class ParameterTypeUtils {
             } else {
                 return null;
             }
+        } else if (ptype instanceof AbsoluteTimeDataType) {
+            if (value instanceof Instant v) {
+                return ValueUtility.getTimestampValue(v.getMillis());
+            } else if (value instanceof String v) {
+                long t = TimeEncoding.parse(v);
+                return ValueUtility.getTimestampValue(t);
+            } else {
+                return null;
+            }
         } else {
             throw new IllegalStateException("Unknown parameter type '" + ptype + "'");
         }
     }
 
-    static Value getEngIntegerValue(IntegerParameterType ptype, Object value) {
+    public static Value getEngIntegerValue(IntegerParameterType ptype, Object value) {
         long longValue;
         if (value instanceof Number) {
             longValue = ((Number) value).longValue();
@@ -247,7 +259,7 @@ public class ParameterTypeUtils {
         }
     }
 
-    static Value getEngFloatValue(FloatParameterType ptype, Object value) {
+    public static Value getEngFloatValue(FloatParameterType ptype, Object value) {
         double doubleValue;
         if (value instanceof Number) {
             doubleValue = ((Number) value).doubleValue();

@@ -15,6 +15,7 @@ import javax.script.Invocable;
 import javax.script.ScriptException;
 
 import org.codehaus.janino.SimpleCompiler;
+import org.openjdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.commanding.ArgumentValue;
@@ -27,13 +28,23 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.RawEngValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.time.Instant;
+import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.ValueUtility;
+import org.yamcs.xtce.AbsoluteTimeDataType;
 import org.yamcs.xtce.BaseDataType;
+import org.yamcs.xtce.BinaryParameterType;
+import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataEncoding;
+import org.yamcs.xtce.EnumeratedParameterType;
+import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.InputParameter;
+import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
+import org.yamcs.xtce.StringParameterType;
 
 /**
  * Represents the execution context of one algorithm. An AlgorithmExecutor is reused upon each update of one or more of
@@ -260,7 +271,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         }
 
         if (binding.value != null) {
-            Value v = ParameterTypeUtils.getEngValue(ptype, binding.value);
+            Value v = getEngValue(ptype, binding.value);
             if (v == null) {
                 throw new InvalidAlgorithmOutputException(parameter, binding,
                         "Cannot convert algorithm output value "
@@ -429,11 +440,11 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             }
         } else if (v.getType() == Type.TIMESTAMP) {
             if (raw) {
-                source.append("  public String rawValue;\n");
-                return "    rawValue=org.yamcs.utils.TimeEncoding.toString(v.getRawValue().getTimestampValue());\n";
+                source.append("  public org.yamcs.time.Instant rawValue;\n");
+                return "    rawValue=org.yamcs.time.Instant.get(v.getRawValue().getTimestampValue());\n";
             } else {
-                source.append("  public String value;\n");
-                return "    value=org.yamcs.utils.TimeEncoding.toString(v.getEngValue().getTimestampValue());\n";
+                source.append("  public org.yamcs.time.Instant value;\n");
+                return "    value=org.yamcs.time.Instant.get(v.getEngValue().getTimestampValue());\n";
             }
         } else {
             throw new IllegalArgumentException("Unexpected value of type " + v.getType());
@@ -443,6 +454,54 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
     @Override
     public String toString() {
         return algorithmDef.getName() + " executor " + invocable;
+    }
+
+    public static Value getEngValue(ParameterType ptype, Object value) {
+        if (ptype instanceof IntegerParameterType) {
+            return ParameterTypeUtils.getEngIntegerValue((IntegerParameterType) ptype, value);
+        } else if (ptype instanceof FloatParameterType) {
+            return ParameterTypeUtils.getEngFloatValue((FloatParameterType) ptype, value);
+        } else if (ptype instanceof StringParameterType) {
+            if (value instanceof String) {
+                return ValueUtility.getStringValue((String) value);
+            } else {
+                return null;
+            }
+        } else if (ptype instanceof BooleanParameterType) {
+            if (value instanceof Boolean) {
+                return ValueUtility.getBooleanValue((Boolean) value);
+            } else {
+                return null;
+            }
+        } else if (ptype instanceof BinaryParameterType) {
+            if (value instanceof byte[]) {
+                return ValueUtility.getBinaryValue((byte[]) value);
+            } else {
+                return null;
+            }
+        } else if (ptype instanceof EnumeratedParameterType) {
+            if (value instanceof String) {
+                return ValueUtility.getStringValue((String) value);
+            } else {
+                return null;
+            }
+        } else if (ptype instanceof AbsoluteTimeDataType) {
+            if (value instanceof Instant v) {
+                return ValueUtility.getTimestampValue(v.getMillis());
+            } else if (value instanceof String v) {
+                long t = TimeEncoding.parse(v);
+                return ValueUtility.getTimestampValue(t);
+            } else if (value instanceof Double d) {
+                return ValueUtility.getTimestampValue(d.longValue());
+            } else if ((value instanceof ScriptObjectMirror som) && "Date".equals(som.getClassName())) {
+                long unixTime = ((Double) som.callMember("getTime")).longValue();
+                return ValueUtility.getTimestampValue(TimeEncoding.fromUnixMillisec(unixTime));
+            } else {
+                return null;
+            }
+        } else {
+            throw new IllegalStateException("Unknown parameter type '" + ptype + "'");
+        }
     }
 
 }
