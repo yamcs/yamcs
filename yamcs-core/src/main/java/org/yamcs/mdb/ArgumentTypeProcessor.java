@@ -196,18 +196,28 @@ public class ArgumentTypeProcessor {
 
     private Value decalibrateAbsoluteTime(AbsoluteTimeArgumentType atype, Value v) {
         if (v.getType() != Type.TIMESTAMP) {
-            throw new IllegalStateException(
+            throw new CommandEncodingException(pcontext,
                     "Unsupported value type '" + v.getType() + "' cannot be converted to timestamp");
         }
 
         ReferenceTime rtime = atype.getReferenceTime();
+        if (rtime == null) {
+            if (atype.getEncoding() instanceof BinaryDataEncoding) {
+                // we assume that the binary data encoding can convert the raw value directly
+                return v;
+            } else {
+                throw new CommandEncodingException(pcontext,
+                        "Cannot convert absolute time argument without a reference time");
+            }
+        }
+
         TimeEpoch epoch = rtime.getEpoch();
         long epochOffset = 0;
 
         if (epoch != null) {
             epochOffset = getEpochOffset(epoch, v.getTimestampValue());
         } else {
-            throw new IllegalStateException("Cannot convert absolute time argument without an epoch");
+            throw new CommandEncodingException(pcontext, "Cannot convert absolute time argument without an epoch");
         }
         DataEncoding enc = atype.getEncoding();
 
@@ -216,7 +226,7 @@ public class ArgumentTypeProcessor {
         } else if (enc instanceof IntegerDataEncoding) {
             return ValueUtility.getSint64Value(scaleInt(atype, epochOffset));
         } else {
-            throw new IllegalStateException("Cannot convert encode absolute time to " + enc + " encoding");
+            throw new CommandEncodingException(pcontext, "Cannot convert encode absolute time to " + enc + " encoding");
         }
     }
 
