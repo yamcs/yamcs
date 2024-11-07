@@ -60,6 +60,7 @@ import org.yamcs.protobuf.ListCommandsResponse;
 import org.yamcs.protobuf.StreamCommandsRequest;
 import org.yamcs.protobuf.SubscribeCommandsRequest;
 import org.yamcs.protobuf.UpdateCommandHistoryRequest;
+import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.StringConverter;
@@ -504,8 +505,18 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                             .setSequenceNumber(pc.getSequenceNumber())
                             .setCommandId(pc.getCommandId())
                             .setGenerationTime(TimeEncoding.toProtobufTimestamp(pc.getCommandId().getGenerationTime()))
-                            .addAllAssignments(pc.getAssignments())
-                            .addAllAttr(pc.getAttributes());
+                            .addAllAssignments(pc.getAssignments());
+
+                    // add a string value for the timestamps
+                    // external clients (python, web) cannot work with Yamcs times
+                    pc.getAttributes().forEach(a -> {
+                        var v = a.getValue();
+                        if (v.getType() == Value.Type.TIMESTAMP) {
+                            var v1 = v.toBuilder().setStringValue(TimeEncoding.toString(v.getTimestampValue()));
+                            a = a.toBuilder().setValue(v1).build();
+                        }
+                        entryb.addAttr(a);
+                    });
                     var aliasSet = pc.getMetaCommand().getAliasSet();
                     if (aliasSet != null) {
                         for (var alias : aliasSet.getAliases().entrySet()) {
