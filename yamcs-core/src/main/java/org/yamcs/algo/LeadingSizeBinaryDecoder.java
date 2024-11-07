@@ -2,6 +2,7 @@ package org.yamcs.algo;
 
 import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.mdb.AbstractDataDecoder;
+import org.yamcs.mdb.ContainerProcessingContext;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.utils.ValueUtility;
@@ -17,7 +18,7 @@ public class LeadingSizeBinaryDecoder extends AbstractDataDecoder {
     }
 
     @Override
-    public Value extractRaw(DataEncoding de, BitBuffer buffer) {
+    public Value extractRaw(DataEncoding de, ContainerProcessingContext pcontext, BitBuffer buffer) {
         int sizeInBytes = (int) buffer.getBits(sizeInBitsOfSizeTag);
 
         if (sizeInBytes > buffer.remainingBytes()) {

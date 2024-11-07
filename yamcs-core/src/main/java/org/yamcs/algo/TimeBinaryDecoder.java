@@ -7,10 +7,12 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.mdb.AbstractDataDecoder;
+import org.yamcs.mdb.ContainerProcessingContext;
 import org.yamcs.parameter.Value;
 import org.yamcs.tctm.AbstractPacketPreprocessor.TimeDecoderType;
 import org.yamcs.tctm.AbstractPacketPreprocessor.TimeEpochs;
 import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
+import org.yamcs.time.Instant;
 import org.yamcs.time.TimeCorrelationService;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.utils.ByteSupplier;
@@ -64,7 +66,7 @@ public class TimeBinaryDecoder extends AbstractDataDecoder {
     }
 
     @Override
-    public Value extractRaw(DataEncoding de, BitBuffer buf) {
+    public Value extractRaw(DataEncoding de, ContainerProcessingContext pcontext, BitBuffer buf) {
         var suppl = new ByteSupplier() {
             @Override
             public byte getAsByte() {
@@ -75,9 +77,8 @@ public class TimeBinaryDecoder extends AbstractDataDecoder {
         long t;
         if (tcoService != null) {
             long obt = timeDecoder.decodeRaw(suppl);
-            /// FIXME: change to getHistoricalTime once we have a way of knowing the processor time (which should be the
-            /// replay time during replay)
-            t = tcoService.getTime(obt).getMillis();
+            long acqTime = pcontext.getAcquisitionTime();
+            t = tcoService.getHistoricalTime(Instant.get(acqTime), obt).getMillis();
         } else {
             t = timeDecoder.decode(suppl);
         }

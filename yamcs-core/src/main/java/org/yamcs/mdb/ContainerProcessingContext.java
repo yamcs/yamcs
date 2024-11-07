@@ -82,4 +82,8 @@ public class ContainerProcessingContext {
     public ProcessorData getProcessorData() {
         return proccessorData;
     }
+
+    public long getAcquisitionTime() {
+        return result.acquisitionTime;
+    }
 }

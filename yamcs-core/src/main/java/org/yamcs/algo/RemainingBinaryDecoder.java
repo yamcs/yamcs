@@ -2,6 +2,7 @@ package org.yamcs.algo;
 
 import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.mdb.AbstractDataDecoder;
+import org.yamcs.mdb.ContainerProcessingContext;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.utils.ValueUtility;
@@ -38,7 +39,7 @@ public class RemainingBinaryDecoder extends AbstractDataDecoder {
     }
 
     @Override
-    public Value extractRaw(DataEncoding de, BitBuffer buffer) {
+    public Value extractRaw(DataEncoding de, ContainerProcessingContext pcontext, BitBuffer buffer) {
         var b = new byte[buffer.remainingBytes()];
         buffer.getByteArray(b);
         return ValueUtility.getBinaryValue(b);

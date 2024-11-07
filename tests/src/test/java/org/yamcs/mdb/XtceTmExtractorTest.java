@@ -811,7 +811,7 @@ public class XtceTmExtractorTest {
         }
 
         @Override
-        public Value extractRaw(DataEncoding de, BitBuffer buf) {
+        public Value extractRaw(DataEncoding de, ContainerProcessingContext pcontext, BitBuffer buf) {
             buf.setPosition(buf.getPosition() + 32);
             return ValueUtility.getBinaryValue(fixedValue);
         }

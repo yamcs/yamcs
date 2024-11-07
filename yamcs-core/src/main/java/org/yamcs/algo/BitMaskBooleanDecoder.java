@@ -2,6 +2,7 @@ package org.yamcs.algo;
 
 import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.mdb.AbstractDataDecoder;
+import org.yamcs.mdb.ContainerProcessingContext;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.utils.ValueUtility;
@@ -32,7 +33,7 @@ public class BitMaskBooleanDecoder extends AbstractDataDecoder {
     }
 
     @Override
-    public Value extractRaw(DataEncoding de, BitBuffer buffer) {
+    public Value extractRaw(DataEncoding de, ContainerProcessingContext pcontext, BitBuffer buffer) {
         var sizeInBits = de.getSizeInBits();
         if (sizeInBits < 0) {
             throw new IllegalArgumentException("Cannot decode boolean parameter. Size is not fixed");

@@ -21,12 +21,10 @@ import org.yamcs.xtce.IntegerDataEncoding.Encoding;
 import org.yamcs.xtce.StringDataEncoding;
 
 /**
- * Decodes TM data according to the specification of the DataEncoding
- * This is a generic catch all decoder, relies on specific custom decoders implementing
- * the DataDecoder interface when necessary.
+ * Decodes TM data according to the specification of the DataEncoding This is a generic catch all decoder, relies on
+ * specific custom decoders implementing the DataDecoder interface when necessary.
  * 
  * @see org.yamcs.mdb.DataDecoder
- *
  *
  */
 public class DataEncodingDecoder {
@@ -54,24 +52,22 @@ public class DataEncodingDecoder {
     }
 
     /**
-     * Extract the raw, uncalibrated parameter value from the buffer, using the
-     * provider context to find referenced parameter values for variable- sized
-     * objects.
+     * Extract the raw, uncalibrated parameter value from the buffer, using the provider context to find referenced
+     * parameter values for variable- sized objects.
      *
      * @param de
      *            the data encoding
      * @param pcontext
-     *            the processing context, or null if the context is
-     *            unknown
-     * @return the extracted value, or null if something went wrong - in this
-     *         case the parameter will be marked with aquisitionStatus = INVALID
+     *            the processing context, or null if the context is unknown
+     * @return the extracted value, or null if something went wrong - in this case the parameter will be marked with
+     *         aquisitionStatus = INVALID
      */
     public Value extractRaw(DataEncoding de,
             ContainerProcessingContext pcontext) {
 
         if (de.getFromBinaryTransformAlgorithm() != null) { // custom algorithm
             DataDecoder dd = pdata.getDataDecoder(de);
-            return dd.extractRaw(de, buffer);
+            return dd.extractRaw(de, pcontext, buffer);
         } else {
             Value rv;
             if (de instanceof IntegerDataEncoding) {
