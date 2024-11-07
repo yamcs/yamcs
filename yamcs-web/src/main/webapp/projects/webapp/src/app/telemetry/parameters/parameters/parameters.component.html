@@ -113,6 +113,16 @@
         </td>
       </ng-container>
 
+      <ng-container matColumnDef="rectime">
+        <th mat-header-cell *matHeaderCellDef>Reception time</th>
+        <td mat-cell *matCellDef="let item">
+          {{ (item.pval?.acquisitionTime | datetime) || "-" }}
+          @if (item.pval?.generationTime && item.pval?.acquisitionTime) {
+            ({{ item.pval.acquisitionTime | deltaWith: item.pval.generationTime }})
+          }
+        </td>
+      </ng-container>
+
       <ng-container matColumnDef="type">
         <th mat-header-cell *matHeaderCellDef>Type</th>
         <td mat-cell *matCellDef="let item">
