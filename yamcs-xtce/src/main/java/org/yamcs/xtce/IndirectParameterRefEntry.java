@@ -5,12 +5,10 @@ package org.yamcs.xtce;
  * telemetry streams.
  * The value of the parameter in ParameterInstance must use either the name of the Parameter or its alias.
  * If it's an alias name, the alias namespace is supplied as an attribute.
- * 
- * @author nm
  *
  */
 public class IndirectParameterRefEntry extends SequenceEntry {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
     private ParameterInstanceRef parameterRef;
     private String aliasNameSpace;
 
@@ -35,5 +33,10 @@ public class IndirectParameterRefEntry extends SequenceEntry {
 
     public void setAliasNameSpace(String aliasNameSpace) {
         this.aliasNameSpace = aliasNameSpace;
+    }
+
+    @Override
+    public String toString() {
+        return "IndirectParameterRefEntry [parameterRef=" + parameterRef + ", aliasNameSpace=" + aliasNameSpace + "]";
     }
 }

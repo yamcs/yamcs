@@ -136,6 +136,7 @@ public class ParameterInstanceRef extends ParameterOrArgumentRef {
         if (instance != 0) {
             sb.append("[" + instance + "]");
         }
+        sb.append("(relativeTo: "+relativeTo+")");
 
         return sb.toString();
     }

@@ -23,8 +23,8 @@ public class IndirectParameterRefBinaryDecodingTest {
 
     private static final String ID_QN = "/Example/id";
     private static final String[] PARAM_QNs = {
-        "/Example/example_param1",
-        "/Example/example_param2",
+            "/Example/example_param1",
+            "/Example/example_param2",
     };
 
     private Mdb mdb;
@@ -45,20 +45,42 @@ public class IndirectParameterRefBinaryDecodingTest {
         XtceTmExtractor extractor = new XtceTmExtractor(mdb);
         extractor.provideAll();
 
-        float[] paramValues = {1.23F, 4.56F};
+        float[] paramValues = { 1.23F, 4.56F };
         long now = TimeEncoding.getWallclockTime();
 
         for (int i = 0; i < 2; i++) {
             byte[] packet = createPacket(i + 1, paramValues[i]);
-            ParameterValueList result = 
-                extractor.processPacket(packet, now, now, 0).getParameterResult();
+            ParameterValueList result = extractor.processPacket(packet, now, now, 0).getParameterResult();
 
             assertEquals(2, result.getSize());
             assertEquals(i + 1, result.get(mdb.getParameter(ID_QN), 0).getEngValue().toLong());
-            assertEquals(paramValues[i], 
-                result.get(mdb.getParameter(PARAM_QNs[i]), 0).getEngValue().toDouble());
+            assertEquals(paramValues[i],
+                    result.get(mdb.getParameter(PARAM_QNs[i]), 0).getEngValue().toDouble());
 
         }
+    }
+
+    @Test
+    public void testProcessPacket2() throws IOException {
+        XtceTmExtractor extractor = new XtceTmExtractor(mdb);
+        extractor.provideAll();
+
+        float[] paramValues = { 1.23F, 4.56F };
+        long now = TimeEncoding.getWallclockTime();
+
+        byte[] packet = createPacket2(1, paramValues[0], 2, paramValues[1]);
+
+        ParameterValueList result = extractor
+                .processPacket(packet, now, now, 0, mdb.getSequenceContainer("/Example/id_value_pair2"))
+                .getParameterResult();
+        System.out.println("results: " + result);
+
+        assertEquals(4, result.getSize());
+        assertEquals(paramValues[0],
+                result.get(mdb.getParameter(PARAM_QNs[0]), 0).getEngValue().toDouble());
+        assertEquals(paramValues[1],
+                result.get(mdb.getParameter(PARAM_QNs[1]), 0).getEngValue().toDouble());
+
     }
 
     private byte[] createPacket(int id, float value) throws IOException {
@@ -67,6 +89,18 @@ public class IndirectParameterRefBinaryDecodingTest {
 
         out.writeInt(id);
         out.writeFloat(value);
+
+        return arrayStream.toByteArray();
+    }
+
+    private byte[] createPacket2(int id1, float value1, int id2, float value2) throws IOException {
+        ByteArrayOutputStream arrayStream = new ByteArrayOutputStream();
+        DataOutputStream out = new DataOutputStream(arrayStream);
+
+        out.writeInt(id1);
+        out.writeFloat(value1);
+        out.writeInt(id2);
+        out.writeFloat(value2);
 
         return arrayStream.toByteArray();
     }

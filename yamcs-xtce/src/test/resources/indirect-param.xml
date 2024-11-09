@@ -35,6 +35,18 @@
           </IndirectParameterRefEntry>
         </EntryList>
       </SequenceContainer>
+      <SequenceContainer name="id_value_pair2">
+        <EntryList>
+          <ParameterRefEntry parameterRef="id" />
+          <IndirectParameterRefEntry aliasNameSpace="test-ns-id">
+            <ParameterInstance parameterRef="id" />
+          </IndirectParameterRefEntry>
+           <ParameterRefEntry parameterRef="id" />
+          <IndirectParameterRefEntry aliasNameSpace="test-ns-id">
+            <ParameterInstance parameterRef="id" />
+          </IndirectParameterRefEntry>
+        </EntryList>
+      </SequenceContainer>
     </ContainerSet>
   </TelemetryMetaData>
 

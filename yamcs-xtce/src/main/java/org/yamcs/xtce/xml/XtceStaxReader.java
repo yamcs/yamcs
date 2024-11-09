@@ -2579,6 +2579,7 @@ public class XtceStaxReader extends AbstractStaxReader {
                 readLocationInContainerInBits(indirectParameterRefEntry);
             } else if (isStartElementWithName(ELEM_PARAMETER_INSTANCE)) {
                 ParameterInstanceRef ref = readParameterInstanceRef(spaceSystem, null);
+                ref.setRelativeTo(InstanceRelativeTo.CURRENT_ENTRY_WITHIN_PACKET);
                 indirectParameterRefEntry.setParameterRef(ref);
             } else if (isEndElementWithName(ELEM_INDIRECT_PARAMETER_REF_ENTRY)) {
                 if (indirectParameterRefEntry.getParameterRef() == null) {
