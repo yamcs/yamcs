@@ -618,43 +618,41 @@ public class ArrayParameterCache implements ParameterCache {
             Type type = v.getType();
 
             switch (type) {
-            case BOOLEAN:
-                ((BitSet) o).set(pos, v.getBooleanValue());
-                break;
-            case DOUBLE:
-                ((double[]) o)[pos] = v.getDoubleValue();
-                break;
-            case FLOAT:
-                ((float[]) o)[pos] = v.getFloatValue();
-                break;
-            case SINT32:
-                ((int[]) o)[pos] = v.getSint32Value();
-                break;
-            case UINT32:
-                ((int[]) o)[pos] = v.getUint32Value();
-                break;
-            case SINT64:
-                ((long[]) o)[pos] = v.getSint64Value();
-                break;
-            case UINT64:
-                ((long[]) o)[pos] = v.getUint64Value();
-                break;
-            case TIMESTAMP:
-                ((long[]) o)[pos] = v.getTimestampValue();
-                break;
-            case STRING:
-                ((Object[]) o)[pos] = v.getStringValue();
-                break;
-            case BINARY:
-                ((Object[]) o)[pos] = v.getBinaryValue();
-                break;
-            case AGGREGATE:
-            case ARRAY:
-            case ENUMERATED:
-                ((Object[]) o)[pos] = v;
-                break;
-            default:
-                throw new IllegalStateException("Uknnown type " + type);
+            case BOOLEAN -> ((BitSet) o).set(pos, v.getBooleanValue());
+            case DOUBLE -> ((double[]) o)[pos] = v.getDoubleValue();
+            case FLOAT -> ((float[]) o)[pos] = v.getFloatValue();
+            case SINT32 -> ((int[]) o)[pos] = v.getSint32Value();
+            case UINT32 -> ((int[]) o)[pos] = v.getUint32Value();
+            case SINT64 -> ((long[]) o)[pos] = v.getSint64Value();
+            case UINT64 -> ((long[]) o)[pos] = v.getUint64Value();
+            case TIMESTAMP -> ((long[]) o)[pos] = v.getTimestampValue();
+            case STRING -> {
+                Object[] objArray = (Object[]) o;
+                String stringValue = v.getStringValue();
+                if (pos > 0 && stringValue.equals(objArray[pos - 1])) {
+                    objArray[pos] = objArray[pos - 1];
+                } else {
+                    objArray[pos] = stringValue;
+                }
+            }
+            case BINARY -> {
+                Object[] objArray = (Object[]) o;
+                byte[] binaryValue = v.getBinaryValue();
+                if (pos > 0 && binaryValue.equals(objArray[pos - 1])) {
+                    objArray[pos] = objArray[pos - 1];
+                } else {
+                    objArray[pos] = binaryValue;
+                }
+            }
+            case AGGREGATE, ARRAY, ENUMERATED -> {
+                Object[] objArray = (Object[]) o;
+                if (pos > 0 && v.equals(objArray[pos - 1])) {
+                    objArray[pos] = objArray[pos - 1];
+                } else {
+                    objArray[pos] = v;
+                }
+            }
+            default -> throw new IllegalStateException("Unknown type " + type);
             }
         }
 
