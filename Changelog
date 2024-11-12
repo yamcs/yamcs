@@ -1,3 +1,8 @@
+Version 5.10.7 released 12-Nov-2024
+- Fixed IndirectParameterRefEntry bug not referencing the previous parameter id
+- Fixed replays causing memory leaks
+- Added a TimeBinaryEncoder that can encode timestamps into commands supporting time correlation (unlike the pure XTCE time encoding)
+
 Version 5.10.6 released 7-Nov-2024
 - Small tweaks and fixes related to: CFDP, web UI, algorithms
 
