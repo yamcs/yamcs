@@ -45,7 +45,7 @@ export function renderValue(value: Value): any {
       }
       return result;
     case 'ARRAY':
-      return value.arrayValue!.map(v => renderValue(v));
+      return (value.arrayValue || []).map(v => renderValue(v));
   }
 }
 

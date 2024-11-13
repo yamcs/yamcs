@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, Optional, SkipSelf, forwardRef } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, Optional, SkipSelf, forwardRef } from '@angular/core';
 import { AbstractControl, ControlContainer, FormArrayName, FormControl, FormGroup, FormGroupDirective, FormGroupName, UntypedFormArray, UntypedFormGroup } from '@angular/forms';
 import { ArgumentType, NamedObjectId, ParameterSubscription, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription, distinctUntilChanged } from 'rxjs';
@@ -78,20 +78,21 @@ export class ArrayArgumentComponent implements OnInit, OnDestroy {
     private formGroupName: FormGroupName,
     private yamcs: YamcsService,
     @Optional() private formArrayName: FormArrayName,
+    changeDetection: ChangeDetectorRef,
   ) {
     // Listen to any argument changes, they
     // may be referenced by a dynamic dimension.
     this.topLevelForm.valueChanges!.subscribe(() => {
       this.updateOwnDimensions();
-      this.formArray.updateValueAndValidity({
-        onlySelf: true
-      });
-    });
-    this.topLevelForm.statusChanges!.subscribe(() => {
-      this.updateOwnDimensions();
-      this.formArray.updateValueAndValidity({
-        onlySelf: true
-      });
+
+      // Ensure local validators are called
+      this.formArray.updateValueAndValidity({ onlySelf: true });
+
+      // Adjust valid state of ancestors
+      this.formArray.updateValueAndValidity({ emitEvent: false });
+
+      // Ensure form submit reflects any changes
+      changeDetection.detectChanges();
     });
   }
 
