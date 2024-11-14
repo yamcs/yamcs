@@ -271,6 +271,8 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
       this.frameInner.nativeElement.style.backgroundColor = backgroundColor;
 
       this.syncSubscription = this.synchronizer.sync(() => this.updateSubscription());
+      // Quick emit, don't wait on sync tick
+      this.updateSubscription();
     });
     return promise;
   }
