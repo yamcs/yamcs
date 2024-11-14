@@ -7,18 +7,18 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.Struct;
-import com.google.protobuf.util.JsonFormat;
 import org.yamcs.api.HttpBody;
 import org.yamcs.logging.Log;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Duration;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
+import com.google.protobuf.Struct;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Durations;
+import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.Timestamps;
 
 import io.netty.buffer.ByteBufInputStream;
@@ -49,7 +49,11 @@ public class HttpTranscoder {
         String body = ctx.getBodySpecifier();
         if (body != null && !ctx.isClientStreaming()) {
             if ("*".equals(body)) {
-                requestb = ctx.getBodyAsMessage(requestb);
+                if (requestPrototype.getDescriptorForType().equals(HttpBody.getDescriptor())) {
+                    return toHttpBody(ctx);
+                } else {
+                    requestb = ctx.getBodyAsMessage(requestb);
+                }
             } else {
                 FieldDescriptor field = requestPrototype.getDescriptorForType().findFieldByName(body);
                 if (field.getMessageType().equals(HttpBody.getDescriptor())) {
