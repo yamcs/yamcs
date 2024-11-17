@@ -41,8 +41,6 @@ import com.google.common.collect.ListMultimap;
  * In addition it can also provide updates on parameter expirations.
  * 
  * TODO: impose some subscription limits
- * 
- * @author nm
  *
  */
 public class ParameterWithIdRequestHelper implements ParameterConsumer {

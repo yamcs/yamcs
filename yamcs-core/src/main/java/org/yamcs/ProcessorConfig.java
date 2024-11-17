@@ -4,7 +4,6 @@ import org.yamcs.Spec.OptionType;
 import org.yamcs.logging.Log;
 import org.yamcs.mdb.ContainerProcessingOptions;
 import org.yamcs.mdb.MetaCommandProcessor;
-import org.yamcs.parameter.ParameterCacheConfig;
 
 /**
  * Configuration options for a processor
@@ -58,13 +57,11 @@ public class ProcessorConfig {
     boolean allowContainerlessCommands = false;
 
     final ContainerProcessingOptions containerProcOptions;
-    final ParameterCacheConfig parameterCacheConfig;
     static Log log = new Log(ProcessorConfig.class);
 
     public ProcessorConfig(YConfiguration config) {
 
         YConfiguration contProc = YConfiguration.emptyConfig();
-        YConfiguration pcacheConfig = YConfiguration.emptyConfig();
 
         if (config != null) {
             for (String key : config.getRoot().keySet()) {
@@ -73,7 +70,8 @@ public class ProcessorConfig {
                 } else if (CONFIG_KEY_SUBSCRIBE_ALL.equals(key)) {
                     subscribeAll = config.getBoolean(CONFIG_KEY_SUBSCRIBE_ALL);
                 } else if (CONFIG_KEY_PARAMETER_CACHE.equals(key)) {
-                    pcacheConfig = config.getConfig(key);
+                    log.warn(
+                            "Since version 5.11 parameter cache has been moved from the processor to the ParameterRetrievalService");
                 } else if (CONFIG_KEY_TM_PROCESSOR.equals(key)) {
                     contProc = config.getConfig(key);
                 } else if (CONFIG_KEY_RECORD_INITIAL_VALUES.equals(key)) {
@@ -100,8 +98,6 @@ public class ProcessorConfig {
             }
         }
         containerProcOptions = new ContainerProcessingOptions(contProc);
-        parameterCacheConfig = new ParameterCacheConfig(pcacheConfig, log);
-
     }
 
     public static Spec getSpec() {
@@ -139,7 +135,6 @@ public class ProcessorConfig {
      */
     public ProcessorConfig() {
         containerProcOptions = new ContainerProcessingOptions();
-        parameterCacheConfig = new ParameterCacheConfig();
     }
 
     private void parseAlarmConfig(YConfiguration alarmConfig) {
@@ -268,6 +263,6 @@ public class ProcessorConfig {
                 + maxTcSize + ", recordInitialValues=" + recordInitialValues + ", recordLocalValues="
                 + recordLocalValues + ", eventAlarmMinViolations=" + eventAlarmMinViolations + ", subscribeAll="
                 + subscribeAll + ", generateEvents=" + generateEvents + ", containerProcOptions=" + containerProcOptions
-                + ", parameterCacheConfig=" + parameterCacheConfig + ", alarmLoadDays=" + alarmLoadDays + "]";
+                + ", alarmLoadDays=" + alarmLoadDays + "]";
     }
 }

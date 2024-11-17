@@ -26,8 +26,6 @@ import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.XtceTmProcessor;
 import org.yamcs.parameter.LastValueCache;
-import org.yamcs.parameter.ParameterCache;
-import org.yamcs.parameter.ParameterCacheConfig;
 import org.yamcs.parameter.ParameterPersistence;
 import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterRequestManager;
@@ -621,14 +619,6 @@ public class Processor extends AbstractService {
 
     public void notifyStateChange() {
         propagateProcessorStateChange();
-    }
-
-    public ParameterCacheConfig getPameterCacheConfig() {
-        return config.parameterCacheConfig;
-    }
-
-    public ParameterCache getParameterCache() {
-        return parameterProcessorManager.getParameterCache();
     }
 
     /**

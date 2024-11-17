@@ -73,7 +73,6 @@ public class IndirectParameterRefBinaryDecodingTest {
         ParameterValueList result = extractor
                 .processPacket(packet, now, now, 0, mdb.getSequenceContainer("/Example/id_value_pair2"))
                 .getParameterResult();
-        System.out.println("results: " + result);
 
         assertEquals(4, result.getSize());
         assertEquals(paramValues[0],

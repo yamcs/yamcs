@@ -163,6 +163,7 @@ public class YarchReplay implements StreamSubscriber {
         boolean first = true;
         for (ReplayHandler rh : handlers.values()) {
             SqlBuilder selectCmd = rh.getSelectCmd();
+
             if (selectCmd != null) {
                 args.addAll(selectCmd.getQueryArguments());
                 if (first) {

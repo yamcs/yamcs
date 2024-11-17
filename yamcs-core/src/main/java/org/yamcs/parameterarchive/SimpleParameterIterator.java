@@ -2,6 +2,7 @@ package org.yamcs.parameterarchive;
 
 import java.util.NoSuchElementException;
 
+import org.yamcs.parameter.ParameterRetrievalOptions;
 import org.yamcs.utils.PeekingIterator;
 
 /**
@@ -14,14 +15,14 @@ import org.yamcs.utils.PeekingIterator;
  */
 public class SimpleParameterIterator implements ParameterIterator {
     final SegmentIterator segIt;
-    final ParameterRequest req;
+    final ParameterRetrievalOptions req;
     final ParameterId parameterId;
 
     PeekingIterator<TimedValue> pvsIt;
     TimedValue currentValue = null;
 
     public SimpleParameterIterator(ParameterArchive parchive, ParameterId parameterId, int parameterGroupId,
-            ParameterRequest req) {
+            ParameterRetrievalOptions req) {
         this.req = req;
         this.parameterId = parameterId;
         this.segIt = new SegmentIterator(parchive, parameterId, parameterGroupId, req);
@@ -55,8 +56,8 @@ public class SimpleParameterIterator implements ParameterIterator {
 
         currentValue = pvsIt.value();
         pvsIt.next();
-        if ((req.ascending && currentValue.instant >= req.stop) ||
-                (!req.ascending && currentValue.instant <= req.start)) {
+        if ((req.ascending() && currentValue.instant >= req.stop()) ||
+                (!req.ascending() && currentValue.instant <= req.start())) {
             currentValue = null;
             pvsIt = null;
             close();
@@ -69,8 +70,8 @@ public class SimpleParameterIterator implements ParameterIterator {
             var pvs = segIt.value();
             segIt.next();
 
-            pvsIt = req.ascending ? pvs.newAscendingIterator(req.getStart())
-                    : pvs.newDescendingIterator(req.getStop());
+            pvsIt = req.ascending() ? pvs.newAscendingIterator(req.start())
+                    : pvs.newDescendingIterator(req.stop());
             if (pvsIt.isValid()) {
                 break;
             }

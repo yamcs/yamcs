@@ -8,9 +8,11 @@ import org.yamcs.ProcessorFactory;
 import org.yamcs.archive.ReplayOptions;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.ServiceUnavailableException;
+import org.yamcs.http.api.AbstractPaginatedParameterRetrievalConsumer.PaginatedMultiParameterRetrievalConsumer;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
+import org.yamcs.parameterarchive.ConsumerAbortException;
 import org.yamcs.security.User;
 
 import com.google.common.util.concurrent.MoreExecutors;
@@ -30,7 +32,7 @@ public class ReplayFactory {
      * launches a replay will only return when the replay is done (either through success or through error)
      */
     public static ReplayWrapper replay(String instance, User user, ReplayOptions replayRequest,
-            ParameterReplayListener l) {
+            PaginatedMultiParameterRetrievalConsumer l) {
         int n = concurrentCount.incrementAndGet();
 
         if (n > MAX_CONCURRENT_REPLAYS) {
@@ -68,22 +70,23 @@ public class ReplayFactory {
     }
 
     private static class ReplayWrapper implements ParameterWithIdConsumer {
-        ParameterReplayListener wrappedListener;
+        PaginatedMultiParameterRetrievalConsumer wrappedListener;
         Processor processor;
 
-        ReplayWrapper(ParameterReplayListener l, Processor processor) {
+        ReplayWrapper(PaginatedMultiParameterRetrievalConsumer l, Processor processor) {
             this.wrappedListener = l;
             this.processor = processor;
-            processor.addListener(l, MoreExecutors.directExecutor());
+            // processor.addListener(l, MoreExecutors.directExecutor());
         }
 
         @Override
         public void update(int subscriptionId, List<ParameterValueWithId> params) {
-            if (!wrappedListener.isReplayAbortRequested()) {
-                wrappedListener.update(subscriptionId, params);
-            } else {
+            try {
+                wrappedListener.accept(params);
+            } catch (ConsumerAbortException e) {
                 processor.quit();
             }
         }
     }
+
 }

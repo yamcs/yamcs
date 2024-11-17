@@ -24,7 +24,7 @@ public class SortedTimeSegment extends BaseSegment {
     static final byte SUBFORMAT_ID_DELTAZG_VB = 2; // compressed with DeltaZigzag plus VarInt32
 
     public static final int VERSION = 0;
-    private long interval;
+    private final long interval;
     private SortedIntArray tsarray;
 
     public SortedTimeSegment(long interval) {

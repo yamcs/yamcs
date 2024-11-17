@@ -14,7 +14,11 @@ services:
       eofAckLimit: 1
       finAckTimeout: 500
       finAckLimit: 0
-      
+  - class: org.yamcs.parameter.ParameterRetrievalService
+    args:
+      parameterCache:
+          enabled: false
+
 mdb:
   - type: "emptyNode"
     spec: "CFDP"

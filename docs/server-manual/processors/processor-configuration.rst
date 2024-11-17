@@ -35,13 +35,7 @@ Example of the ``realtime`` processor type configuration:
               eventServer: enabled
               eventAlarmMinViolations: 1
               loadDays: 30
-          
-          parameterCache:
-              enabled: true
-              cacheAll: true
-              duration: 600
-              maxNumEntries: 4096
-          
+
           tmProcessor:
               ignoreOutOfContainerEntries: false
               expirationTolerance: 1.9
@@ -103,29 +97,6 @@ loadDays (float)
     This option has been introduced in Yamcs version 5.9.9 and 10.1.2. In earlier versions, triggered alarms were not reloaded into the alarm server during Yamcs startup.
     Default: 30
 
-Parameter Cache options
------------------------
-
-These options are defined under the config -> parameterCache.
-
-The processors can make use optionally of a parameter cache that stores the last values of parameters. The cache is used by Yamcs web to plot parameters which are not yet in the Parameter Archive.
-
-Note that regardless of this cache there is always a last value cache which holds only the last known value for each parameter. The last value cache cannot be disabled. 
-
-The parameter cache can cause huge amounts of memory (RAM) to be consumed. The current implementation :javadoc:`org.yamcs.parameter.ArrayParameterCache` tries to minimize the memory requirement by using arrays of primitive values instead of java objects but even then, the memory consumed can be significant. Updating the cache is also quite CPU intensive.
-
-enabled (boolean)
-    If true, the parameter cache will be enabled.
-            
-cacheAll (boolean)
-    If true, the cache will store all parameter value regardless if there is any user requesting them or not. If false, the values are added to the cache only for the parameters requested by a user. Once a parameter is added to the cache, its values are always cached. This option can be used to reduce the amount of memory used by the cache with the inconvenience that first time retrieving the values of one parameter will not have them in the cache. 
-    Note that the option `subscribeAll` above is somehow similar - if that is set to false, then only some parameters will be available for cache even if this option is set to true.
-
-duration: 600
-    How long in seconds the parameters should be kept in the cache. This value should be tuned according to the parameter archive consolidation interval.
-    
-maxNumEntries: 4096
-   How many values should be kept in cache for one parameter.
 
 
 TM (container) processing options

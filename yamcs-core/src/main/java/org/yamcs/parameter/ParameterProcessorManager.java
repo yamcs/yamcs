@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -56,8 +55,6 @@ public class ParameterProcessorManager extends AbstractService implements Parame
 
     public final Processor processor;
 
-    ParameterCache parameterCache;
-    ParameterCacheConfig cacheConfig;
     LastValueCache lastValueCache;
 
     // if all parameter shall be subscribed/processed
@@ -77,7 +74,6 @@ public class ParameterProcessorManager extends AbstractService implements Parame
         this.processor = proc;
         log = new Log(getClass(), proc.getInstance());
         log.setContext(proc.getName());
-        cacheConfig = proc.getPameterCacheConfig();
         shouldSubcribeAllParameters = proc.isSubscribeAll();
 
         this.lastValueCache = proc.getLastValueCache();
@@ -92,13 +88,6 @@ public class ParameterProcessorManager extends AbstractService implements Parame
             alarmChecker.enableServer(parameterAlarmServer);
         }
 
-        if (cacheConfig.enabled) {
-            parameterCache = new ArrayParameterCache(proc.getInstance(), cacheConfig);
-
-            // Populate any initial values
-            var pvs = proc.getLastValueCache().getValues();
-            parameterCache.update(pvs);
-        }
         prm = new ParameterRequestManager(this);
     }
 
@@ -266,9 +255,6 @@ public class ParameterProcessorManager extends AbstractService implements Parame
 
         prm.update(pvlist);
 
-        if (parameterCache != null) {
-            parameterCache.update(pvlist);
-        }
         lastValueCache.addAll(pvlist);
     }
 
@@ -310,26 +296,6 @@ public class ParameterProcessorManager extends AbstractService implements Parame
         return parameterAlarmServer;
     }
 
-    public boolean hasParameterCache() {
-        return parameterCache != null;
-    }
-
-    /**
-     * Get all the values from cache for a specific parameters
-     * 
-     * The parameter are returned in descending order (newest parameter is returned first). Note that you can only all
-     * this function if the {@link #hasParameterCache()} returns true.
-     * 
-     * @param param
-     * @return
-     */
-    public List<ParameterValue> getValuesFromCache(Parameter param) {
-        return parameterCache.getAllValues(param);
-    }
-
-    public ParameterCache getParameterCache() {
-        return parameterCache;
-    }
 
     void subscribeAllToProviders() {
         if (!subscribedAllParameters) {

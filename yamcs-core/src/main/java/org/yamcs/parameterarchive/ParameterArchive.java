@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDBException;
@@ -24,6 +25,7 @@ import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.parameterarchive.ParameterGroupIdDb.ParameterGroup;
+import org.yamcs.time.Instant;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.DatabaseCorruptionException;
@@ -109,6 +111,8 @@ public class ParameterArchive extends AbstractYamcsService {
     int maxSegmentSize;
     boolean sparseGroups;
     double minimumGroupOverlap;
+
+    AtomicLong coverageEnd = new AtomicLong(TimeEncoding.MIN_INSTANT);
 
     @Override
     public Spec getSpec() {
@@ -254,6 +258,7 @@ public class ParameterArchive extends AbstractYamcsService {
         YRDB rdb = tablespace.getRdb(p.partitionDir, false);
 
         ColumnFamilyHandle cfh = cfh(rdb, p);
+        long maxTime = Instant.MIN_INSTANT;
 
         try (WriteBatch writeBatch = new WriteBatch(); WriteOptions wo = new WriteOptions()) {
             for (PGSegment pgs : pgList) {
@@ -264,9 +269,12 @@ public class ParameterArchive extends AbstractYamcsService {
                 } else {
                     writeToBatch(rdb, cfh, writeBatch, pgs);
                 }
+                maxTime = Math.max(maxTime, pgs.getSegmentEnd());
             }
             rdb.write(wo, writeBatch);
         }
+        long m = maxTime;
+        coverageEnd.updateAndGet(current -> Math.max(current, m));
     }
 
     // write data to the archive using the merge operator.
@@ -638,6 +646,7 @@ public class ParameterArchive extends AbstractYamcsService {
             log.debug("Shutting down the realtime filler");
             realtimeFiller.shutDown();
         }
+
         var allPids = parameterIdDb.getAllPids();
         int pgTbsIndex = parameterIdDb.getParameterGroupIdDb().tbsIndex;
 
@@ -792,6 +801,10 @@ public class ParameterArchive extends AbstractYamcsService {
         }
     }
 
+    public long coverageEnd() {
+        return coverageEnd.get();
+    }
+
     /**
      * returns the interval (instant) where this instant could fit.
      * 
@@ -934,5 +947,6 @@ public class ParameterArchive extends AbstractYamcsService {
             return partitionDir;
         }
     }
+
 
 }

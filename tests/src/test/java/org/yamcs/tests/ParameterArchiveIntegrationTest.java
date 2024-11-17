@@ -11,12 +11,12 @@ import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.client.Page;
 import org.yamcs.client.archive.ArchiveClient;
 import org.yamcs.client.archive.ArchiveClient.ListOptions;
 import org.yamcs.client.archive.ArchiveClient.RangeOptions;
+import org.yamcs.parameter.ParameterRetrievalService;
 import org.yamcs.parameterarchive.ParameterArchive;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
@@ -30,11 +30,16 @@ import com.google.protobuf.util.Timestamps;
 public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
 
     private ArchiveClient archiveClient;
+    ParameterRetrievalService prs;
 
     @BeforeEach
     public void cleanParameterCache() {
-        Processor p = YamcsServer.getServer().getProcessor(yamcsInstance, "realtime");
-        p.getParameterCache().clear();
+        if (prs == null) {
+            var ysi = YamcsServer.getServer().getInstance(yamcsInstance);
+            List<ParameterRetrievalService> l = ysi.getServices(ParameterRetrievalService.class);
+            prs = l.get(0);
+        }
+        prs.getParameterCache().clear();
         archiveClient = yamcsClient.createArchiveClient(yamcsInstance);
     }
 
@@ -90,7 +95,6 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         engValue = pv.getEngValue();
         assertEquals(0.167291805148, engValue.getFloatValue(), 1e-5);
         assertEquals(2850, pv.getExpireMillis());
-
         page = archiveClient.listValues("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop,
                 ListOptions.limit(10)).get();
         values = new ArrayList<>();
@@ -144,14 +148,15 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(0, values.size());
 
         // ascending request combining archive with cache
-        start = Instant.parse("2015-01-02T11:59:50Z");
+        start = Instant.parse("2015-01-02T10:00:00Z");
         stop = Instant.parse("2015-01-03T11:59:00Z");
         page = archiveClient.listValues("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop,
-                ListOptions.ascending(true)).get();
+                ListOptions.ascending(true), ListOptions.limit(10000)).get();
         values = new ArrayList<>();
         page.iterator().forEachRemaining(values::add);
-        assertEquals(20, values.size());
-        t = TimeEncoding.parse("2015-01-02T11:59:50");
+
+        assertEquals(7210, values.size());
+        t = TimeEncoding.parse("2015-01-02T10:00:00");
         for (ParameterValue value : values) {
             assertEquals(t, TimeEncoding.fromProtobufTimestamp(value.getGenerationTime()));
             t += 1000;
@@ -187,7 +192,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         generatePkt13AndPps("2018-01-01T10:00:00", 2 * 3600);
 
         // first request before the consolidation, should return data from cache
-        Instant start = Instant.parse("2018-01-01T11:40:00Z");
+        Instant start = Instant.parse("2018-01-01T11:40:00.001Z");
         Instant stop = Instant.parse("2018-01-02T12:00:00Z");
 
         List<Range> ranges = archiveClient.getRanges("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop).get();
@@ -248,6 +253,11 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         r0 = ranges.get(0);
         assertEquals(7200 + 3600, r0.getCounts(0));
 
+    }
+
+    String toString(Range range) {
+        return Timestamps.toString(range.getStart()) + " - " + Timestamps.toString(range.getStop()) + ": "
+                + range.getCount();
     }
 
     @Test

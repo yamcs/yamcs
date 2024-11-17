@@ -26,11 +26,6 @@ realtime:
             parameterCheck: true
             parameterServer: enabled
             eventServer: enabled
-        parameterCache:
-            enabled: true
-            cacheAll: true
-            duration: 3600
-            maxNumEntries: 4096
         recordInitialValues: true
         recordLocalValues: true
 
@@ -41,9 +36,6 @@ Archive:
        - class: org.yamcs.tctm.ReplayService
     config:
         subscribeAll: true
-        parameterCache:
-            enabled: true
-            cacheAll: true
 
 #used for archive replays (to displays, etc)
 ArchiveWithPpExclusion:
@@ -54,11 +46,6 @@ ArchiveWithPpExclusion:
             excludeParameterGroups: ["IntegrationTest"]
     config:
         subscribeAll: true
-        parameterCache:
-            enabled: true
-            cacheAll: true
-
-
             
 #used for performing archive retrievals (e.g. parameter-extractor.sh)
 ArchiveRetrieval:
@@ -71,16 +58,8 @@ ArchiveRetrieval:
                       - mdb/algolib.js
                   python:
                       - mdb/algolib.py
-    config:
-        parameterCache:
-            enabled: false
-            
             
 #used for performing archive retrievals (e.g. parameter-extractor.sh)
 ParameterArchive:
     services :
         - class: org.yamcs.tctm.ReplayService
-    config:
-        parameterCache:
-            enabled: false
-            

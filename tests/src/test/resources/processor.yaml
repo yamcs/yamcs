@@ -28,25 +28,14 @@ realtime:
         alarm:
             parameterCheck: true
             parameterServer: enabled
-        parameterCache:
-            enabled: true
-            cacheAll: true
 
 
 Archive:
     services: 
         - class: org.yamcs.tctm.ReplayService
-    config:
-        parameterCache:
-            enabled: true
-            cacheAll: true
 
 #used for performing archive retrievals (e.g. parameter-extractor.sh)
 # we do not want cache in order to extract the minimum data necessary
 ArchiveRetrieval:
     services:
         - class: org.yamcs.tctm.ReplayService
-    config:
-        parameterCache:
-            enabled: false
-

@@ -19,8 +19,6 @@ import org.yamcs.utils.MutableLong;
 /**
  * builds ranges of parameters
  * 
- * @author nm
- *
  */
 public class ParameterRanger implements Consumer<ParameterValueArray> {
     private static final Logger log = LoggerFactory.getLogger(ParameterRanger.class);

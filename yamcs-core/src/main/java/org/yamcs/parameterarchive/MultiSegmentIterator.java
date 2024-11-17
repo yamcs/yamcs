@@ -11,6 +11,7 @@ import java.util.NoSuchElementException;
 
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
+import org.yamcs.parameter.ParameterRetrievalOptions;
 import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.DecodingException;
@@ -50,18 +51,18 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
     final RealtimeArchiveFiller rtfiller;
 
     public MultiSegmentIterator(ParameterArchive parchive, ParameterId[] pids, int parameterGroupId,
-            ParameterRequest req) {
+            ParameterRetrievalOptions req) {
         this.pids = pids;
         this.parameterGroupId = parameterGroupId;
         this.parchive = parchive;
-        this.start = req.start;
-        this.stop = req.stop;
-        this.ascending = req.isAscending();
-        this.retrieveEngValues = req.isRetrieveEngineeringValues();
-        this.retrieveRawValues = req.isRetrieveRawValues();
-        this.retrieveParameterStatus = req.isRetrieveParameterStatus();
+        this.start = req.start();
+        this.stop = req.stop();
+        this.ascending = req.ascending();
+        this.retrieveEngValues = req.retrieveEngValues();
+        this.retrieveRawValues = req.retrieveRawValues();
+        this.retrieveParameterStatus = req.retrieveParameterStatus();
 
-        partitions = parchive.getPartitions(getIntervalStart(start), getIntervalEnd(stop), req.ascending);
+        partitions = parchive.getPartitions(getIntervalStart(start), getIntervalEnd(stop), req.ascending());
         topIt = partitions.iterator();
 
         rtfiller = parchive.getRealtimeFiller();

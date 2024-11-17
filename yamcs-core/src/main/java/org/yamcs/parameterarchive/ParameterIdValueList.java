@@ -34,7 +34,9 @@ public class ParameterIdValueList {
         return values;
     }
     
-  
+    public long time() {
+        return instant;
+    }
 
     public long size() {
         return pids.size();

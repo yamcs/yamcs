@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 
 import org.rocksdb.RocksDBException;
 import org.yamcs.logging.Log;
+import org.yamcs.parameter.ParameterRetrievalOptions;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.utils.TimeEncoding;
@@ -51,8 +52,10 @@ public class MultiParameterRetrieval {
 
         for (int i = 0; i < mpvr.parameterIds.length; i++) {
             ParameterId paraId = mpvr.parameterIds[i];
-            ParameterRequest req = new ParameterRequest(mpvr.start, mpvr.stop, mpvr.ascending, mpvr.retrieveEngValues,
-                    mpvr.retrieveRawValues && paraId.hasRawValue(), mpvr.retrieveParamStatus);
+            ParameterRetrievalOptions req = ParameterRetrievalOptions.newBuilder().withStartStop(mpvr.start, mpvr.stop)
+                    .withAscending(mpvr.ascending).withRetrieveEngineeringValues(mpvr.retrieveEngValues)
+                    .withRetrieveRawValues(mpvr.retrieveRawValues && paraId.hasRawValue())
+                    .withRetrieveParameterStatus(mpvr.retrieveParamStatus).build();
 
             if (parameterGroupIds != null) {
                 queueIterator(queue, paraId, parameterGroupIds[i], req);
@@ -94,7 +97,7 @@ public class MultiParameterRetrieval {
     }
 
     private void queueIterator(PriorityQueue<ParameterIterator> queue,
-            ParameterId paraId, int pgid, ParameterRequest req) {
+            ParameterId paraId, int pgid, ParameterRetrievalOptions req) {
         ParameterIterator it;
         if (paraId.isSimple()) {
             it = new SimpleParameterIterator(parchive, paraId, pgid, req);

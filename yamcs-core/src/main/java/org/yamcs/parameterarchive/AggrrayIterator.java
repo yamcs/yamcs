@@ -2,6 +2,7 @@ package org.yamcs.parameterarchive;
 
 import java.util.NoSuchElementException;
 
+import org.yamcs.parameter.ParameterRetrievalOptions;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
 
@@ -13,7 +14,7 @@ import org.yamcs.protobuf.Pvalue.ParameterStatus;
  */
 public class AggrrayIterator implements ParameterIterator {
     final MultiSegmentIterator it;
-    final ParameterRequest req;
+    final ParameterRetrievalOptions req;
     final ParameterId parameterId;
     MultiParameterValueSegment currentSegment;
     int pos;
@@ -24,17 +25,17 @@ public class AggrrayIterator implements ParameterIterator {
     TimedValue currentValue;
 
     public AggrrayIterator(ParameterArchive parchive, ParameterId parameterId, int parameterGroupId,
-            ParameterRequest req) {
+            ParameterRetrievalOptions req) {
         ParameterIdDb pidDb = parchive.getParameterIdDb();
 
         members = pidDb.getAggarrayComponents(parameterId.getPid(), parameterGroupId);
         this.it = new MultiSegmentIterator(parchive, members, parameterGroupId, req);
         this.req = req;
         this.parameterId = parameterId;
-        if (req.isRetrieveEngineeringValues()) {
+        if (req.retrieveEngValues()) {
             engBuilder = new AggrrayBuilder(members);
         }
-        if (req.isRetrieveRawValues() && parameterId.hasRawValue()) {
+        if (req.retrieveRawValues() && parameterId.hasRawValue()) {
             rawBuilder = new AggrrayBuilder(members);
         }
 
@@ -47,10 +48,10 @@ public class AggrrayIterator implements ParameterIterator {
         currentSegment = it.value();
         SortedTimeSegment timeSegment = currentSegment.timeSegment;
 
-        if (req.isAscending()) {
-            pos = timeSegment.lowerBound(req.getStart());
+        if (req.ascending()) {
+            pos = timeSegment.lowerBound(req.start());
         } else {
-            pos = timeSegment.higherBound(req.getStop());
+            pos = timeSegment.higherBound(req.stop());
         }
         if (valid(timeSegment, pos) || advancePos()) {
             while (true) {
@@ -140,7 +141,7 @@ public class AggrrayIterator implements ParameterIterator {
     private boolean advancePos() {
         boolean validPosition = false;
         var timeSegment = currentSegment.timeSegment;
-        if (req.isAscending()) {
+        if (req.ascending()) {
             pos++;
             if (pos >= timeSegment.size()) {
                 it.next();
@@ -151,7 +152,7 @@ public class AggrrayIterator implements ParameterIterator {
                 } else {
                     finished();
                 }
-            } else if (timeSegment.getTime(pos) >= req.getStop()) {
+            } else if (timeSegment.getTime(pos) >= req.stop()) {
                 finished();
             } else {
                 validPosition = true;
@@ -167,7 +168,7 @@ public class AggrrayIterator implements ParameterIterator {
                 } else {
                     finished();
                 }
-            } else if (timeSegment.getTime(pos) <= req.getStart()) {
+            } else if (timeSegment.getTime(pos) <= req.start()) {
                 finished();
             } else {
                 validPosition = true;
@@ -198,10 +199,10 @@ public class AggrrayIterator implements ParameterIterator {
     }
 
     private boolean valid(SortedTimeSegment timeSegment, int pos) {
-        if (req.isAscending()) {
-            return pos < timeSegment.size() && timeSegment.getTime(pos) < req.getStop();
+        if (req.ascending()) {
+            return pos < timeSegment.size() && timeSegment.getTime(pos) < req.stop();
         } else {
-            return pos >= 0 && timeSegment.getTime(pos) > req.getStart();
+            return pos >= 0 && timeSegment.getTime(pos) > req.start();
         }
     }
 

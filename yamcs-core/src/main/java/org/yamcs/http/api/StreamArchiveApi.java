@@ -13,13 +13,15 @@ import java.util.Map.Entry;
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
 import org.yamcs.archive.ParameterRecorder;
-import org.yamcs.archive.ReplayOptions;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.MediaType;
+import org.yamcs.http.api.AbstractPaginatedParameterRetrievalConsumer.PaginatedMultiParameterRetrievalConsumer;
+import org.yamcs.http.api.AbstractPaginatedParameterRetrievalConsumer.PaginatedSingleParameterRetrievalConsumer;
 import org.yamcs.http.api.Downsampler.Sample;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
+import org.yamcs.parameter.ParameterRetrievalOptions;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.protobuf.AbstractStreamArchiveApi;
@@ -35,7 +37,6 @@ import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
-import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.utils.ParameterFormatter;
 import org.yamcs.utils.ParameterFormatter.Header;
@@ -50,6 +51,7 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.collect.BiMap;
 import com.google.protobuf.ByteString;
+import static org.yamcs.http.api.ParameterArchiveApi.isReplayAsked;
 
 public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
@@ -78,6 +80,9 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             Observer<ListParameterHistoryResponse> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
 
+        var ysi = InstancesApi.verifyInstanceObj(request.getInstance());
+        var prs = ParameterArchiveApi.getParameterRetrievalService(ysi);
+
         Mdb mdb = MdbFactory.getInstance(instance);
         String pathName = request.getName();
 
@@ -86,7 +91,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         long pos = request.hasPos() ? request.getPos() : 0;
         int limit = request.hasLimit() ? request.getLimit() : 100;
         boolean noRepeat = request.getNorepeat();
-        boolean descending = !request.getOrder().equals("asc");
+        boolean ascending = request.getOrder().equals("asc");
         int maxBytes = request.hasMaxBytes() ? request.getMaxBytes() : -1;
 
         long start = TimeEncoding.INVALID_INSTANT;
@@ -98,31 +103,32 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         if (request.hasStop()) {
             stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
         }
-
-        ReplayOptions rr = toParameterReplayRequest(p.getId(), start, stop, descending);
+        boolean replayRequested = request.hasSource() && isReplayAsked(request.getSource());
+        ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
+                .withStartStop(start, stop)
+                .withAscending(ascending)
+                .withRetrieveParameterStatus(false)
+                .withNorealtime(request.getNorealtime())
+                .withNoparchive(replayRequested)
+                .withNoreplay(!replayRequested)
+                .build();
 
         ListParameterHistoryResponse.Builder resultb = ListParameterHistoryResponse.newBuilder();
-        ParameterReplayListener replayListener = new ParameterReplayListener(pos, limit) {
+        PaginatedSingleParameterRetrievalConsumer replayListener = new PaginatedSingleParameterRetrievalConsumer(pos,
+                limit) {
             @Override
-            public void onParameterData(List<ParameterValueWithId> params) {
-                for (ParameterValueWithId pvalid : params) {
-                    resultb.addParameter(toGpb(pvalid, maxBytes));
-                }
-            }
-
-            @Override
-            public void replayFailed(Throwable t) {
-                observer.completeExceptionally(t);
-            }
-
-            @Override
-            public void replayFinished() {
-                observer.complete(resultb.build());
+            public void onParameterData(ParameterValueWithId pvalid) {
+                resultb.addParameter(toGpb(pvalid, maxBytes));
             }
         };
         replayListener.setNoRepeat(noRepeat);
 
-        ReplayFactory.replay(instance, ctx.user, rr, replayListener);
+        prs.retrieveSingle(p, opts, replayListener).thenRun(() -> {
+            observer.complete(resultb.build());
+        }).exceptionally(e -> {
+            observer.completeExceptionally(e);
+            return null;
+        });
     }
 
     public static ParameterValue toGpb(ParameterValueWithId pvalWithId, int maxBytes) {
@@ -156,6 +162,8 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
     public void getParameterSamples(Context ctx, GetParameterSamplesRequest request,
             Observer<TimeSeries> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
+        var ysi = InstancesApi.verifyInstanceObj(request.getInstance());
+        var prs = ParameterArchiveApi.getParameterRetrievalService(ysi);
 
         Mdb mdb = MdbFactory.getInstance(instance);
         Parameter p = MdbApi.verifyParameter(ctx, mdb, request.getName());
@@ -175,56 +183,65 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         if (request.hasStop()) {
             stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
         }
-        ReplayOptions repl = ReplayOptions.getAfapReplay(start, stop, false);
-        NamedObjectId id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
-        repl.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(id).build());
 
         int sampleCount = request.hasCount() ? request.getCount() : 500;
         Downsampler sampler = new Downsampler(start, stop, sampleCount);
         sampler.setUseRawValue(request.hasUseRawValue() && request.getUseRawValue());
         sampler.setGapTime(request.hasGapTime() ? request.getGapTime() : 120000);
 
-        ParameterReplayListener replayListener = new ParameterReplayListener() {
-            @Override
-            public void onParameterData(List<ParameterValueWithId> params) {
-                for (ParameterValueWithId pvalid : params) {
-                    sampler.process(pvalid.getParameterValue());
-                }
-            }
+        boolean replayRequested = request.hasSource() && isReplayAsked(request.getSource());
+        ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
+                .withStartStop(start, stop)
+                .withRetrieveParameterStatus(false)
+                .withNorealtime(request.getNorealtime())
+                .withNoparchive(replayRequested)
+                .withNoreplay(!replayRequested)
+                .build();
 
+        PaginatedSingleParameterRetrievalConsumer replayListener = new PaginatedSingleParameterRetrievalConsumer() {
             @Override
-            public void replayFinished() {
-                TimeSeries.Builder series = TimeSeries.newBuilder();
-                for (Sample s : sampler.collect()) {
-                    series.addSample(toGPBSample(s));
-                }
-                observer.complete(series.build());
-            }
-
-            @Override
-            public void replayFailed(Throwable t) {
-                observer.completeExceptionally(t);
+            public void onParameterData(ParameterValueWithId pvalid) {
+                sampler.process(pvalid.getParameterValue());
             }
         };
 
-        ReplayFactory.replay(instance, ctx.user, repl, replayListener);
+        NamedObjectId id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
+        prs.retrieveSingle(new ParameterWithId(p, id, null), opts, replayListener).thenRun(() -> {
+            TimeSeries.Builder series = TimeSeries.newBuilder();
+            for (Sample s : sampler.collect()) {
+                series.addSample(toGPBSample(s));
+            }
+            observer.complete(series.build());
+        }).exceptionally(e -> {
+            observer.completeExceptionally(e);
+            return null;
+        });
+
     }
 
     @Override
     public void streamParameterValues(Context ctx, StreamParameterValuesRequest request,
             Observer<ParameterData> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
+        var ysi = InstancesApi.verifyInstanceObj(request.getInstance());
+        var prs = ParameterArchiveApi.getParameterRetrievalService(ysi);
 
-        ReplayOptions repl = ReplayOptions.getAfapReplay();
-        List<NamedObjectId> ids = new ArrayList<>();
         Mdb mdb = MdbFactory.getInstance(instance);
 
+        var optsb = ParameterRetrievalOptions.newBuilder()
+                .withRetrieveParameterStatus(false)
+                .withNoparchive(true)
+                .withNorealtime(true)
+                .withNoreplay(false);
+
         if (request.hasStart()) {
-            repl.setRangeStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
+            optsb.withStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
         }
         if (request.hasStop()) {
-            repl.setRangeStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
+            optsb.withStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
+
+        List<ParameterWithId> pids = new ArrayList<>();
 
         for (NamedObjectId id : request.getIdsList()) {
             Parameter p = mdb.getParameter(id);
@@ -232,28 +249,25 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                 throw new BadRequestException("Invalid parameter name specified " + id);
             }
             ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
-            ids.add(id);
+            pids.add(new ParameterWithId(p, id, null));
         }
 
-        if (ids.isEmpty()) {
+        if (pids.isEmpty()) {
             for (Parameter p : mdb.getParameters()) {
                 if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
-                    ids.add(NamedObjectId.newBuilder().setName(p.getQualifiedName()).build());
+                    var id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
+                    pids.add(new ParameterWithId(p, id, null));
                 }
             }
         }
-        repl.setParameterRequest(ParameterReplayRequest.newBuilder()
-                .addAllNameFilter(ids)
-                .build());
 
         if (request.getTmLinksCount() > 0) {
-            repl.setPacketRequest(PacketReplayRequest.newBuilder()
+            optsb.withPacketReplayRequest(PacketReplayRequest.newBuilder()
                     .addAllTmLinks(request.getTmLinksList())
                     .build());
         }
 
-        var replayListener = new ParameterReplayListener() {
-
+        var replayListener = new PaginatedMultiParameterRetrievalConsumer() {
             @Override
             protected void onParameterData(List<ParameterValueWithId> params) {
                 ParameterData.Builder pd = ParameterData.newBuilder();
@@ -263,25 +277,22 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                 }
                 observer.next(pd.build());
             }
-
-            @Override
-            public void replayFinished() {
-                observer.complete();
-            }
-
-            @Override
-            public void replayFailed(Throwable t) {
-                observer.completeExceptionally(t);
-            }
         };
-        observer.setCancelHandler(replayListener::requestReplayAbortion);
 
-        ReplayFactory.replay(instance, ctx.user, repl, replayListener);
+        prs.retrieveMulti(pids, optsb.build(), replayListener).thenRun(() -> {
+            observer.complete();
+        }).exceptionally(e -> {
+            observer.completeExceptionally(e);
+            return null;
+        });
+
     }
 
     @Override
     public void exportParameterValues(Context ctx, ExportParameterValuesRequest request, Observer<HttpBody> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
+        var ysi = InstancesApi.verifyInstanceObj(request.getInstance());
+        var prs = ParameterArchiveApi.getParameterRetrievalService(ysi);
 
         List<NamedObjectId> ids = new ArrayList<>();
         Mdb mdb = MdbFactory.getInstance(instance);
@@ -297,10 +308,12 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         if (request.hasStop()) {
             stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
         }
+        List<ParameterWithId> pids = new ArrayList<>();
 
         for (String id : request.getParametersList()) {
             ParameterWithId paramWithId = MdbApi.verifyParameterWithId(ctx, mdb, id);
             ids.add(paramWithId.getId());
+            pids.add(paramWithId);
         }
         if (request.hasNamespace()) {
             namespace = request.getNamespace();
@@ -319,10 +332,14 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                 if (namespace != null) {
                     String alias = p.getAlias(namespace);
                     if (alias != null) {
-                        ids.add(NamedObjectId.newBuilder().setNamespace(namespace).setName(alias).build());
+                        var id = NamedObjectId.newBuilder().setNamespace(namespace).setName(alias).build();
+                        ids.add(id);
+                        pids.add(new ParameterWithId(p, id, null));
                     }
                 } else {
-                    ids.add(NamedObjectId.newBuilder().setName(p.getQualifiedName()).build());
+                    var id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
+                    ids.add(id);
+                    pids.add(new ParameterWithId(p, id, null));
                 }
             }
         } else if (ids.isEmpty()) {
@@ -333,15 +350,17 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                 if (namespace != null) {
                     String alias = p.getAlias(namespace);
                     if (alias != null) {
-                        ids.add(NamedObjectId.newBuilder().setNamespace(namespace).setName(alias).build());
+                        var id = NamedObjectId.newBuilder().setNamespace(namespace).setName(alias).build();
+                        ids.add(id);
+                        pids.add(new ParameterWithId(p, id, null));
                     }
                 } else {
-                    ids.add(NamedObjectId.newBuilder().setName(p.getQualifiedName()).build());
+                    var id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
+                    ids.add(id);
+                    pids.add(new ParameterWithId(p, id, null));
                 }
             }
         }
-        ReplayOptions repl = ReplayOptions.getAfapReplay(start, stop, !ascending);
-        repl.setParameterRequest(ParameterReplayRequest.newBuilder().addAllNameFilter(ids).build());
 
         String filename;
         if (request.hasFilename()) {
@@ -414,19 +433,26 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             pos = Math.max(0, pos);
             limit = request.getLimit();
         }
+
+        ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
+                .withStartStop(start, stop)
+                .withRetrieveParameterStatus(false)
+                .withAscending(ascending)
+                .withNoparchive(true)
+                .withNorealtime(true)
+                .withNoreplay(false)
+                .build();
+
         var listener = new CsvParameterStreamer(observer, pos, limit, filename, ids, addRaw, addMonitoring,
                 preserveLastValue, interval, columnDelimiter, header);
 
-        observer.setCancelHandler(listener::requestReplayAbortion);
-        ReplayFactory.replay(instance, ctx.user, repl, listener);
-    }
-
-    private static ReplayOptions toParameterReplayRequest(NamedObjectId parameterId, long start, long stop,
-            boolean descend) {
-
-        ReplayOptions repl = ReplayOptions.getAfapReplay(start, stop, descend);
-        repl.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(parameterId).build());
-        return repl;
+        prs.retrieveMulti(pids, opts, listener).thenRun(() -> {
+            listener.finished();
+        }).exceptionally(e -> {
+            listener.failed(e);
+            return null;
+        });
+        // observer.setCancelHandler(listener::requestReplayAbortion);
     }
 
     public static TimeSeries.Sample toGPBSample(Sample sample) {
@@ -445,7 +471,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         return b.build();
     }
 
-    private static class CsvParameterStreamer extends ParameterReplayListener {
+    private static class CsvParameterStreamer extends PaginatedMultiParameterRetrievalConsumer {
 
         Observer<HttpBody> observer;
         ParameterFormatter formatter;
@@ -488,13 +514,11 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             observer.next(body);
         }
 
-        @Override
-        public void replayFailed(Throwable t) {
+        public void failed(Throwable t) {
             observer.completeExceptionally(t);
         }
 
-        @Override
-        public void replayFinished() {
+        public void finished() {
             ByteString.Output data = ByteString.newOutput();
             formatter.updateWriter(data, StandardCharsets.UTF_8);
             try {
