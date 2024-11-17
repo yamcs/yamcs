@@ -16,6 +16,7 @@ import org.yamcs.management.LinkManager;
 import org.yamcs.mdb.DatabaseLoadException;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
+import org.yamcs.parameter.ParameterRetrievalService;
 import org.yamcs.protobuf.Mdb.MissionDatabase;
 import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.protobuf.YamcsInstance.InstanceState;
@@ -140,6 +141,12 @@ public class YamcsServerInstance extends YamcsInstanceService {
             // if required (even uninitialized)
             List<YConfiguration> serviceConfigs = config.getServiceConfigList("services");
             services = YamcsServer.createServices(name, serviceConfigs, log);
+            if (getServices(ParameterRetrievalService.class).isEmpty()) {
+                services.add(new ServiceWithConfig(new ParameterRetrievalService(),
+                        ParameterRetrievalService.class.getName(),
+                        "ParameterRetrievalService",
+                        YConfiguration.emptyConfig()));
+            }
 
             linkManager = new LinkManager(name);
 
@@ -359,7 +366,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
                     mdbproto.setConfigName(configName);
                 }
                 if (mdb != null) { // if the instance is in a failed state, it could be that it doesn't have a MDB
-                                      // (the failure might be due to the load of the MDB)
+                                   // (the failure might be due to the load of the MDB)
                     mdbproto.setName(mdb.getRootSpaceSystem().getName());
                     Header h = mdb.getRootSpaceSystem().getHeader();
                     if (h != null && h.getVersion() != null) {

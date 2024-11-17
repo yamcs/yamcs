@@ -1,8 +1,10 @@
 package org.yamcs.parameter;
 
+import java.util.AbstractSequentialList;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 
@@ -19,7 +21,7 @@ import org.yamcs.xtce.Parameter;
  * Not thread safe
  * 
  */
-public class ParameterValueList implements Collection<ParameterValue> {
+public class ParameterValueList extends AbstractSequentialList<ParameterValue> {
     static public final ParameterValueList EMPTY = new ParameterValueList();
 
     Entry[] table;
@@ -544,6 +546,11 @@ public class ParameterValueList implements Collection<ParameterValue> {
         return sb.toString();
     }
 
+    @Override
+    public ListIterator<ParameterValue> listIterator(int index) {
+        return new ListIter(index);
+    }
+
     static class Entry {
         final ParameterValue pv;
         // next value for the same parameter
@@ -586,6 +593,86 @@ public class ParameterValueList implements Collection<ParameterValue> {
 
         @Override
         public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private class ListIter implements ListIterator<ParameterValue> {
+        Entry current;
+        int expectedRmCount;
+        int index;
+
+        ListIter(int index) {
+            if (index < 0 || index > size) {
+                throw new IndexOutOfBoundsException("Index: " + index);
+            }
+            this.index = index;
+            this.expectedRmCount = rmCount;
+            this.current = head;
+            for (int i = 0; i < index; i++) {
+                current = current.after;
+            }
+        }
+
+        @Override
+        public boolean hasNext() {
+            return current.after != head;
+        }
+
+        @Override
+        public ParameterValue next() {
+            if (current.after == head) {
+                throw new NoSuchElementException();
+            }
+            if (rmCount != expectedRmCount) {
+                throw new ConcurrentModificationException();
+            }
+            current = current.after;
+            index++;
+            return current.pv;
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            return current != head;
+        }
+
+        @Override
+        public ParameterValue previous() {
+            if (current == head) {
+                throw new NoSuchElementException();
+            }
+            if (rmCount != expectedRmCount) {
+                throw new ConcurrentModificationException();
+            }
+            ParameterValue pv = current.pv;
+            current = current.before;
+            index--;
+            return pv;
+        }
+
+        @Override
+        public int nextIndex() {
+            return index;
+        }
+
+        @Override
+        public int previousIndex() {
+            return index - 1;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void set(ParameterValue pv) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void add(ParameterValue pv) {
             throw new UnsupportedOperationException();
         }
     }

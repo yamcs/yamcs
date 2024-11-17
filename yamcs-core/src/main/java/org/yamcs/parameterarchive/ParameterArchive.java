@@ -24,6 +24,7 @@ import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.parameterarchive.ParameterGroupIdDb.ParameterGroup;
+import org.yamcs.time.Instant;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.DatabaseCorruptionException;
@@ -254,6 +255,7 @@ public class ParameterArchive extends AbstractYamcsService {
         YRDB rdb = tablespace.getRdb(p.partitionDir, false);
 
         ColumnFamilyHandle cfh = cfh(rdb, p);
+        long maxTime = Instant.MIN_INSTANT;
 
         try (WriteBatch writeBatch = new WriteBatch(); WriteOptions wo = new WriteOptions()) {
             for (PGSegment pgs : pgList) {
@@ -263,6 +265,9 @@ public class ParameterArchive extends AbstractYamcsService {
                     writeToBatchVersion0(cfh, writeBatch, pgs);
                 } else {
                     writeToBatch(rdb, cfh, writeBatch, pgs);
+                }
+                if (pgs.getSegmentEnd() > maxTime) {
+                    maxTime = pgs.getSegmentEnd();
                 }
             }
             rdb.write(wo, writeBatch);
@@ -638,6 +643,7 @@ public class ParameterArchive extends AbstractYamcsService {
             log.debug("Shutting down the realtime filler");
             realtimeFiller.shutDown();
         }
+
         var allPids = parameterIdDb.getAllPids();
         int pgTbsIndex = parameterIdDb.getParameterGroupIdDb().tbsIndex;
 

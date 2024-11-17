@@ -24,9 +24,6 @@ import com.google.common.collect.Lists;
 
 /**
  * Retrieves values for one parameter combining parameter archive (for past data) and cache (for recent data).
- * 
- * 
- * @author nm
  *
  */
 public class SingleParameterRetriever {

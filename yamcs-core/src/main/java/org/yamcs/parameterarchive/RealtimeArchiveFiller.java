@@ -127,12 +127,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
         if (realtimeProcessor == null) {
             throw new ConfigurationException("No processor named '" + processorName + "' in instance " + yamcsInstance);
         }
-        if (realtimeProcessor.getParameterCache() != null) {
-            log.warn("Both realtime archive filler and parameter cache configured for processor {}."
-                    + "The parameter cache can be safely disabled (to save memory) by setting parameterCache->enabled "
-                    + "to false in processor.yaml",
-                    processorName);
-        }
+
         subscriptionId = realtimeProcessor.getParameterRequestManager().subscribeAll(this);
 
         log.debug("Starting executor for archive writing with {} threads", numThreads);

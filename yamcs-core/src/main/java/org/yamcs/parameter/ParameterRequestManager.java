@@ -34,7 +34,7 @@ public class ParameterRequestManager {
     private Map<Integer, ParameterConsumer> request2ParameterConsumerMap = new ConcurrentHashMap<>();
 
     // contains subscribe all
-    private SubscriptionArray subscribeAllConsumers = new SubscriptionArray();
+    private Map<Integer, ParameterConsumer> subscribeAllConsumers = new ConcurrentHashMap<>();
 
     private static AtomicInteger lastSubscriptionId = new AtomicInteger();
 
@@ -62,8 +62,7 @@ public class ParameterRequestManager {
         log.debug("new subscribeAll with subscriptionId {}", id);
         ppm.subscribeAllToProviders();
 
-        subscribeAllConsumers.add(id);
-        request2ParameterConsumerMap.put(id, consumer);
+        subscribeAllConsumers.put(id, consumer);
         return id;
     }
 
@@ -76,7 +75,7 @@ public class ParameterRequestManager {
      * @return
      */
     public boolean unsubscribeAll(int subscriptionId) {
-        return subscribeAllConsumers.remove(subscriptionId);
+        return subscribeAllConsumers.remove(subscriptionId) != null;
     }
 
     /**
@@ -315,6 +314,9 @@ public class ParameterRequestManager {
     public void update(ParameterValueList pvlist) {
         // build the customised lists for the subscribers and send it to them
         HashMap<Integer, ArrayList<ParameterValue>> subscription = new HashMap<>();
+        for (var consumer : subscribeAllConsumers.values()) {
+            consumer.updateItems(0, pvlist);
+        }
         updateSubscription(subscription, pvlist);
 
         for (Map.Entry<Integer, ArrayList<ParameterValue>> entry : subscription.entrySet()) {
@@ -358,20 +360,6 @@ public class ParameterRequestManager {
                     al = new ArrayList<>();
                     subscription.put(s, al);
                 }
-                al.add(pv);
-            }
-        }
-
-        // update the subscribeAll subscriptions
-        for (int id : subscribeAllConsumers.getArray()) {
-            ArrayList<ParameterValue> al = subscription.get(id);
-
-            if (al == null) {
-                al = new ArrayList<>();
-                subscription.put(id, al);
-            }
-
-            for (ParameterValue pv : currentDelivery) {
                 al.add(pv);
             }
         }
