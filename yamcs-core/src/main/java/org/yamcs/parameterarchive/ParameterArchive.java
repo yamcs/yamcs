@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDBException;
@@ -111,6 +112,8 @@ public class ParameterArchive extends AbstractYamcsService {
     boolean sparseGroups;
     double minimumGroupOverlap;
 
+    AtomicLong coverageEnd = new AtomicLong(TimeEncoding.MIN_INSTANT);
+    
     @Override
     public Spec getSpec() {
         Spec spec = new Spec();
@@ -266,12 +269,12 @@ public class ParameterArchive extends AbstractYamcsService {
                 } else {
                     writeToBatch(rdb, cfh, writeBatch, pgs);
                 }
-                if (pgs.getSegmentEnd() > maxTime) {
-                    maxTime = pgs.getSegmentEnd();
-                }
+                maxTime = Math.max(maxTime, pgs.getSegmentEnd());               
             }
             rdb.write(wo, writeBatch);
         }
+        long m = maxTime;
+        coverageEnd.updateAndGet(current -> Math.max(current, m));
     }
 
     // write data to the archive using the merge operator.
