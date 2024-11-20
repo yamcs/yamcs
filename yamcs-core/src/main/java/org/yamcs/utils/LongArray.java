@@ -5,9 +5,6 @@ import java.util.Arrays;
 /**
  * long array
  * 
- * 
- * @author nm
- *
  */
 public class LongArray {
 
@@ -115,18 +112,6 @@ public class LongArray {
             throw new IndexOutOfBoundsException("Index: " + pos + " length: " + length);
     }
 
-    public String toString() {
-        StringBuilder b = new StringBuilder();
-        int n = length - 1;
-
-        b.append('[');
-        for (int i = 0;; i++) {
-            b.append(a[i]);
-            if (i == n)
-                return b.append(']').toString();
-            b.append(", ");
-        }
-    }
 
     @Override
     public int hashCode() {
@@ -175,4 +160,18 @@ public class LongArray {
     public long[] array() {
         return a;
     }
+
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        int n = length - 1;
+
+        b.append('[');
+        for (int i = 0;; i++) {
+            b.append(a[i]);
+            if (i == n)
+                return b.append(']').toString();
+            b.append(", ");
+        }
+    }
+
 }

@@ -47,7 +47,6 @@ public class ParameterValueSegment {
         this.rawValueSegment = rawValueSegment;
         this.parameterStatusSegment = parameterStatusSegment;
         this.gaps = gaps;
-
     }
 
     /**
@@ -362,9 +361,15 @@ public class ParameterValueSegment {
 
     @Override
     public String toString() {
-        return "ParameterValueSegment[size: " + timeSegment.size() + ", start: "
-                + TimeEncoding.toString(getSegmentStart())
-                + ", end: " + TimeEncoding.toString(getSegmentEnd()) + "]";
+        return "ParameterValueSegment[pid:" + pid + ", timeSegmentSize: " + timeSegment.size() +
+                ", parameterStatusSegment.size: " + parameterStatusSegment.size() +
+                ", start: " + TimeEncoding.toString(getSegmentStart())
+                + ", end: " + TimeEncoding.toString(getSegmentEnd())
+                + "\ngaps: " + gaps
+                + "\nengValue:" + engValueSegment
+                + "\nrawValue:" + rawValueSegment
+                + "]";
+
     }
 
     class AscendingIterator implements PeekingIterator<TimedValue> {

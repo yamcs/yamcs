@@ -113,4 +113,9 @@ public class BooleanValueSegment extends BaseSegment implements ValueSegment {
     public int size() {
         return ba.size();
     }
+
+    @Override
+    public String toString() {
+        return "BooleanValueSegment [ba=" + ba + "]";
+    }
 }

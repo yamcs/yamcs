@@ -16,7 +16,7 @@ import org.yamcs.utils.TimeEncoding;
  * This class is used during the parameter archive buildup.
  * <p>
  * In Yamcs 5.10 the RocksDB merge operator has been introduced. The operator is responsible for merging multiple
- * segnemtns into an interval.
+ * segments into an interval.
  * <p>
  * Merging the time, engineering/raw values, and status segments is straightforward - they are just appended one after
  * the other.
@@ -317,11 +317,6 @@ public class PGSegment {
         this.frozen = true;
     }
 
-    public String toString() {
-        return "groupId: " + parameterGroupId + ", [" + TimeEncoding.toString(getSegmentStart()) + ", "
-                + TimeEncoding.toString(getSegmentEnd()) + "], size: " + size();
-    }
-
     /**
      * returns true if this segment contains the first value of this parameter for this interval
      */
@@ -338,5 +333,15 @@ public class PGSegment {
         for (var pvs : pvSegments) {
             pvs.makeWritable();
         }
+    }
+
+    public String toString() {
+        return "PGsegment[groupId: " + parameterGroupId + ", [" + TimeEncoding.toString(getSegmentStart()) + ", "
+                + TimeEncoding.toString(getSegmentEnd()) + "], size: " + size()
+                + ", segmentIdxInsideInterval: " + segmentIdxInsideInterval
+                + ", previousFullGaps: " + previousFullGaps
+                + ", currentFullGaps: " + currentFullGaps
+                + "\n timeSegment: " + timeSegment
+                + "]";
     }
 }

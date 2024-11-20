@@ -88,4 +88,10 @@ public class DoubleValueSegment extends BaseSegment implements ValueSegment {
     public int size() {
         return values.size();
     }
+
+    @Override
+    public String toString() {
+        return "DoubleValueSegment [values=" + values + "]";
+    }
+
 }

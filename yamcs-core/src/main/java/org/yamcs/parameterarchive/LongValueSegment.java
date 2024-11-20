@@ -25,6 +25,7 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
         this.numericType = getNumericType(type);
     }
 
+
     private LongValueSegment() {
         super(FORMAT_ID_LongValueSegment);
     }
@@ -140,6 +141,11 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
     @Override
     public int size() {
         return values.size();
+    }
+
+    @Override
+    public String toString() {
+        return "LongValueSegment [values=" + values + ", numericType=" + numericType + "]";
     }
 
 }

@@ -274,6 +274,7 @@ public class ParameterArchive extends AbstractYamcsService {
     // the merge operator will merge the segments into intervals
     private void writeToBatch(YRDB rdb, ColumnFamilyHandle cfh, WriteBatch writeBatch, PGSegment pgs)
             throws RocksDBException {
+        log.trace("Writing {}", pgs);
         int pgid = pgs.getParameterGroupId();
 
         var pgParams = getParameterGroupIdDb().getParameterGroup(pgid);
@@ -297,7 +298,8 @@ public class ParameterArchive extends AbstractYamcsService {
         }
         // and then the consolidated value segments
         for (var pvs : pgs.pvSegments) {
-
+            log.trace("Writing {}", pvs);
+           
             int parameterId = pvs.pid;
             if (orphans != null) {
                 orphans.remove(parameterId);
@@ -353,14 +355,14 @@ public class ParameterArchive extends AbstractYamcsService {
             }
 
             if (gaps != null) {
-                byte[] rawValue = SegmentEncoderDecoder.encodeGaps(pgs.segmentIdxInsideInterval, gaps);
+                byte[] gapsValue = SegmentEncoderDecoder.encodeGaps(pgs.segmentIdxInsideInterval, gaps);
                 if (pgs.isFirstInInterval()) {
-                    writeBatch.put(cfh, gapKey, rawValue);
+                    writeBatch.put(cfh, gapKey, gapsValue);
                 } else {
-                    writeBatch.merge(cfh, gapKey, rawValue);
+                    writeBatch.merge(cfh, gapKey, gapsValue);
                 }
             } else if (pgs.isFirstInInterval()) {
-                if (rdb.get(gapKey) != null) {
+                if (rdb.get(cfh, gapKey) != null) {
                     writeBatch.delete(cfh, gapKey);
                 }
             }
@@ -371,9 +373,9 @@ public class ParameterArchive extends AbstractYamcsService {
             for (int pid : orphans) {
                 var key = new SegmentKey(pid, pgid, pgs.getInterval(),
                         SegmentKey.TYPE_PARAMETER_STATUS);
-                byte[] rawKey = key.encode();
-                if (rdb.get(rawKey) != null) {
-                    writeBatch.delete(cfh, rawKey);
+                byte[] statusKey = key.encode();
+                if (rdb.get(cfh, statusKey) != null) {
+                    writeBatch.delete(cfh, statusKey);
 
                     key.type = SegmentKey.TYPE_RAW_VALUE;
                     writeBatch.delete(cfh, key.encode());

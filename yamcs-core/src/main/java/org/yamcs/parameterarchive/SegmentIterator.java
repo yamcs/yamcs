@@ -14,6 +14,7 @@ import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.SortedIntArray;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.rocksdb.AscendingRangeIterator;
 import org.yamcs.yarch.rocksdb.DbIterator;
 import org.yamcs.yarch.rocksdb.DescendingRangeIterator;
@@ -344,17 +345,37 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
                 SortedIntArray gaps = currentGaps == null || segStart != currentGapsSegmentStart ? null
                         : SegmentEncoderDecoder.decodeGaps(currentGaps);
 
+                checkConsistency(timeSegment, engValueSegment, rawValueSegment, parameterStatusSegment, gaps);
                 ParameterValueSegment pvs = new ParameterValueSegment(parameterId.getPid(), timeSegment,
                         engValueSegment, rawValueSegment, parameterStatusSegment, gaps);
                 return pvs;
-            } catch (
-
-            DecodingException e) {
+            } catch (DecodingException e) {
                 throw new DatabaseCorruptionException(e);
             } catch (RocksDBException | IOException e) {
                 throw new ParameterArchiveException("Failded extracting data from the parameter archive", e);
             }
 
+        }
+
+        /**
+         * Checks that the size of the engingeering raw and parameter status is the same and the size of the gaps with
+         * the size of the values is equal to the size of the timestamp segment.
+         */
+        private void checkConsistency(SortedTimeSegment timeSegment, ValueSegment engValueSegment,
+                ValueSegment rawValueSegment, ParameterStatusSegment parameterStatusSegment, SortedIntArray gaps) {
+
+            int timeSize = timeSegment.size();
+            int gapSize = gaps == null ? 0 : gaps.size();
+
+            if ((engValueSegment != null && engValueSegment.size() + gapSize != timeSize)
+                    || (rawValueSegment != null && rawValueSegment.size() + gapSize != timeSize)
+                    || (parameterStatusSegment != null && parameterStatusSegment.size() + gapSize != timeSize)) {
+                throw new DatabaseCorruptionException(
+                        "Size of the values segment + gaps does not match the size of the time segment.\n"
+                                + "If this is a database made with Yamcs versions 5.10.0 - 5.10.7, please rebuild the corrupted segment using the command:\n"
+                                + "yamcs parameter-archive rebuild " + TimeEncoding.toString(timeSegment.getInterval())
+                                + " " + TimeEncoding.toString(timeSegment.getSegmentEnd()));
+            }
         }
 
         boolean isValid() {

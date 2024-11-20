@@ -565,6 +565,33 @@ public abstract class ObjectSegment<E> extends BaseSegment {
         return true;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getClass().getSimpleName() + "[");
+
+        if (runLengthEncoded) {
+            for (int i = 0; i < rleCounts.size(); i++) {
+                E value = rleObjectList.get(i);
+                int count = rleCounts.get(i);
+                for (int j = 0; j < count; j++) {
+                    sb.append(value).append(", ");
+                }
+            }
+        } else {
+            for (E value : objectList) {
+                sb.append(value).append(", ");
+            }
+        }
+
+        // Remove the trailing comma and space, if any
+        if (sb.length() > 19) {
+            sb.setLength(sb.length() - 2);
+        }
+
+        sb.append("]");
+        return sb.toString();
+    }
 }
 
 /**

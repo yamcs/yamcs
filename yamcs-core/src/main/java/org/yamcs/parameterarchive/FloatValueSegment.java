@@ -111,4 +111,9 @@ public class FloatValueSegment extends BaseSegment implements ValueSegment {
         return values.size();
     }
 
+    @Override
+    public String toString() {
+        return "FloatValueSegment [values=" + values + "]";
+    }
+
 }

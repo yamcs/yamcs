@@ -227,4 +227,10 @@ public class IntValueSegment extends BaseSegment implements ValueSegment {
     public int hashCode() {
         return values.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return "IntValueSegment [signed=" + signed + ", values=" + values + "]";
+    }
+
 }

@@ -128,12 +128,6 @@ public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
         pgSegment4.addRecord(t3, IntArray.wrap(p1id, p2id), Arrays.asList(pv1_4, pv2_2));
         parchive.writeToArchive(pgSegment4);
 
-        // new segment with only p2
-        long t4 = TimeEncoding.parse("2017-01-01T00:00:00");
-        PGSegment pgSegment5 = new PGSegment(pg1.id, ParameterArchive.getIntervalStart(t3));
-        ParameterValue pv2_3 = getParameterValue(p2, t3, "pv2_2");
-        pgSegment5.addRecord(t4, IntArray.wrap(p2id), Arrays.asList(pv2_3));
-        parchive.writeToArchive(pgSegment5);
 
         // p1 ascending on 5 values from three segments (fourth one is empty)
         List<ParameterValueArray> l3a = retrieveSingleValueMultigroup(0, TimeEncoding.MAX_INSTANT, p1id,
@@ -461,6 +455,45 @@ public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
         checkEquals(l.get(5), 500, pv2_5);
         checkEquals(l.get(6), 600, pv2_6);
         checkEquals(l.get(7), 700, pv2_7);
+
+    }
+
+    @Test
+    public void testOrphanRemoval() throws Exception {
+        openDb("none", true, 0.5);
+        ParameterValue pv1_0 = getParameterValue(p1, 100, "pv1_0");
+        ParameterValue pv2_0 = getParameterValue(p2, 100, "pv2_0");
+        ParameterValue pv1_2 = getParameterValue(p1, 300, "pv1_2");
+        pv1_2.setAcquisitionStatus(AcquisitionStatus.INVALID);
+
+        int p1id = parchive.getParameterIdDb().createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType());
+        int p2id = parchive.getParameterIdDb().createAndGet(p2.getQualifiedName(), pv2_0.getEngValue().getType());
+
+        var pg1 = parchive.getParameterGroupIdDb().getGroup(IntArray.wrap(p1id, p2id));
+        var pg2 = parchive.getParameterGroupIdDb().getGroup(IntArray.wrap(p1id));
+
+        assertEquals(pg1.id, pg2.id);
+
+
+        PGSegment pgSegment1 = new PGSegment(pg1.id, 0);
+        pgSegment1.addRecord(100, IntArray.wrap(p1id, p2id), Arrays.asList(pv1_0, pv2_0));
+        parchive.writeToArchive(0, Arrays.asList(pgSegment1));
+
+        List<ParameterValueArray> l1a = retrieveSingleValueMultigroup(0, TimeEncoding.MAX_INSTANT, p1id,
+                new int[] { pg1.id }, true);
+        assertEquals(1, l1a.size());
+
+        PGSegment pgSegment2 = new PGSegment(pg1.id, 0);
+        pgSegment2.addRecord(100, IntArray.wrap(p2id), Arrays.asList(pv2_0));
+        parchive.writeToArchive(0, Arrays.asList(pgSegment2));
+
+        List<ParameterValueArray> l2a = retrieveSingleValueMultigroup(0, TimeEncoding.MAX_INSTANT, p1id,
+                new int[] { pg1.id }, true);
+        assertEquals(0, l2a.size());
+
+        List<ParameterValueArray> l3a = retrieveSingleValueMultigroup(0, TimeEncoding.MAX_INSTANT, p2id,
+                new int[] { pg1.id }, true);
+        assertEquals(1, l3a.size());
 
     }
 }
