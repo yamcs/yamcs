@@ -82,11 +82,26 @@ public abstract class AbstractTcTmParamLink extends AbstractLink
 
         // Instantiate
         try {
-            if (commandPostprocessorArgs != null) {
-                cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName, instance,
-                        commandPostprocessorArgs);
-            } else {
-                cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName, instance);
+            boolean initRequired = false;
+            try {
+                cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName);
+                initRequired = true;
+            } catch (ConfigurationException e) {
+                // Fallback to the current behaviour if no default constructor is found.
+                // TODO: remove after all postprocessors have been migrated to the init method
+                if (commandPostprocessorArgs != null) {
+                    cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName, instance,
+                            commandPostprocessorArgs);
+                } else {
+                    cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName, instance);
+                }
+            }
+
+            if (initRequired) {
+                if (commandPostprocessorArgs == null) {
+                    commandPostprocessorArgs = YConfiguration.emptyConfig();
+                }
+                cmdPostProcessor.init(instance, commandPostprocessorArgs);
             }
         } catch (ConfigurationException e) {
             log.error("Cannot instantiate the command postprocessor", e);
