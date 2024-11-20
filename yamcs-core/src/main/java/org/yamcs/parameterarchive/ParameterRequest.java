@@ -2,53 +2,32 @@ package org.yamcs.parameterarchive;
 
 /**
  * Contains retrieval options used when extracting parameters from the parameter archive.
- *
  */
-public class ParameterRequest {
-    final long start, stop;
-    
-    final boolean ascending;
-    final private boolean retrieveEngineeringValues;
-    final private boolean retrieveRawValues;
-    final private boolean retrieveParameterStatus;
-    
-    public ParameterRequest(long start, long stop, boolean ascending,
-            boolean retrieveEngineeringValues, boolean retrieveRawValues, boolean retrieveParameterStatus) {
-        this.start = start;
-        this.stop = stop;
-        this.ascending = ascending;
-        this.retrieveEngineeringValues = retrieveEngineeringValues;
-        this.retrieveRawValues = retrieveRawValues;
-        this.retrieveParameterStatus = retrieveParameterStatus;
-    }
- 
-    public boolean isAscending() {
-        return ascending;
-    }
-    
-    public long getStart() {
-        return start;
-    }
-    
-    public long getStop() {
-        return stop;
+public record ParameterRequest(
+        long start,
+        long stop,
+        boolean ascending,
+        boolean retrieveEngineeringValues,
+        boolean retrieveRawValues,
+        boolean retrieveParameterStatus) {
+
+    public ParameterRequest withUpdatedStart(long newStart) {
+        return new ParameterRequest(
+                newStart,
+                this.stop,
+                this.ascending,
+                this.retrieveEngineeringValues,
+                this.retrieveRawValues,
+                this.retrieveParameterStatus);
     }
 
-    public boolean isRetrieveRawValues() {
-        return retrieveRawValues;
-    }
-
-    public boolean isRetrieveEngineeringValues() {
-        return retrieveEngineeringValues;
-    }
-
-
-    public boolean isRetrieveParameterStatus() {
-        return retrieveParameterStatus;
-    }
-
-    public ParameterRequest copy() {
-        return new ParameterRequest(start, stop, ascending, retrieveEngineeringValues,
-                retrieveRawValues, retrieveParameterStatus);
+    public ParameterRequest withUpdatedStop(long newStop) {
+        return new ParameterRequest(
+                this.start,
+                newStop,
+                this.ascending,
+                this.retrieveEngineeringValues,
+                this.retrieveRawValues,
+                this.retrieveParameterStatus);
     }
 }

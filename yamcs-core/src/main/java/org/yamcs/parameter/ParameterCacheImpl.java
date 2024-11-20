@@ -8,7 +8,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
@@ -33,8 +32,6 @@ import org.yamcs.xtce.Parameter;
  * - a parameter will be put on the list to cache only if somebody has requested it.
  * - obviously first time when the parameter is requested, no value will be returned.
  * - however this will greatly reduce the cache size since only a few parameters are monitored in the displays
- * 
- * @author nm
  *
  */
 public class ParameterCacheImpl implements ParameterCache {
@@ -279,5 +276,11 @@ public class ParameterCacheImpl implements ParameterCache {
     @Override
     public void clear() {
         cache.clear();
+    }
+
+    @Override
+    public boolean caching(ParameterWithId pid) {
+        // TODO Auto-generated method stub
+        return false;
     }
 }

@@ -22,6 +22,7 @@ import org.yamcs.http.api.ParameterRanger.Range;
 import org.yamcs.logging.Log;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterCache;
+import org.yamcs.parameter.ParameterRetrievalService;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;
@@ -189,19 +190,14 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         sampler.setUseRawValue(useRawValue);
         sampler.setGapTime(request.hasGapTime() ? request.getGapTime() : 120000);
 
-        ParameterArchive parchive = getParameterArchive(ysi);
-
-        ParameterCache pcache = null;
-        if (!request.getNorealtime()) {
-            String processorName = request.hasProcessor() ? request.getProcessor() : DEFAULT_PROCESSOR;
-            Processor processor = ysi.getProcessor(processorName);
-            pcache = processor.getParameterCache();
-        }
-
+        ParameterRetrievalService retrievalService = getParameterRetrievalService(ysi);
         ParameterRequest pr = new ParameterRequest(start, stop, true, !useRawValue, useRawValue, true);
-        SingleParameterRetriever spdr = new SingleParameterRetriever(parchive, pcache, pid, pr);
         try {
-            spdr.retrieve(sampler);
+            if (request.getNorealtime()) {
+                retrievalService.retrieveScalarParameterArchive(pid, pr, sampler);
+            } else {
+                retrievalService.retrieveScalar(pid, pr, sampler);
+            }
         } catch (IOException e) {
             log.warn("Received exception during parameter retrieval", e);
             throw new InternalServerErrorException(e.toString());
@@ -237,25 +233,22 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         long minRange = request.hasMinRange() ? request.getMinRange() : -1;
         int maxValues = request.hasMaxValues() ? request.getMaxValues() : -1;
 
-        ParameterArchive parchive = getParameterArchive(ysi);
-
-        ParameterCache pcache = null;
-        if (!request.getNorealtime()) {
-            String processorName = request.hasProcessor() ? request.getProcessor() : DEFAULT_PROCESSOR;
-            Processor processor = ysi.getProcessor(processorName);
-            pcache = processor.getParameterCache();
-        }
 
         ParameterRanger ranger = new ParameterRanger(minGap, maxGap, minRange, maxValues);
 
+        ParameterRetrievalService retrievalService = getParameterRetrievalService(ysi);
         ParameterRequest pr = new ParameterRequest(start, stop, true, true, false, true);
-        SingleParameterRetriever spdr = new SingleParameterRetriever(parchive, pcache, pid, pr);
         try {
-            spdr.retrieve(ranger);
+            if (request.getNorealtime()) {
+                retrievalService.retrieveScalarParameterArchive(pid, pr, ranger);
+            } else {
+                retrievalService.retrieveScalar(pid, pr, ranger);
+            }
         } catch (IOException e) {
-            log.warn("Received exception during parameter retrieval ", e);
+            log.warn("Received exception during parameter retrieval", e);
             throw new InternalServerErrorException(e.toString());
         }
+
 
         Ranges.Builder ranges = Ranges.newBuilder();
         for (Range r : ranger.getRanges()) {
@@ -373,6 +366,16 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
         if (l.isEmpty()) {
             throw new BadRequestException("ParameterArchive not configured for this instance");
+        }
+
+        return l.get(0);
+    }
+
+    private ParameterRetrievalService getParameterRetrievalService(YamcsServerInstance ysi) throws BadRequestException {
+        List<ParameterRetrievalService> l = ysi.getServices(ParameterRetrievalService.class);
+
+        if (l.isEmpty()) {
+            throw new BadRequestException("ParameterRetrievalService not configured for this instance");
         }
 
         return l.get(0);

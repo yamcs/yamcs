@@ -29,7 +29,7 @@ public class SingleParameterRetrieval {
     final int[] parameterGroupIds;
 
     public SingleParameterRetrieval(ParameterArchive parchive, String parameterFqn, ParameterRequest spvr) {
-        this.req = spvr.copy();
+        this.req = spvr;
         this.parchive = parchive;
 
         pids = parchive.getParameterIdDb().get(parameterFqn);
@@ -95,7 +95,7 @@ public class SingleParameterRetrieval {
             Consumer<ParameterValueArray> consumer)
             throws RocksDBException, IOException {
 
-        PriorityQueue<SegmentIterator> queue = new PriorityQueue<>(new SegmentIteratorComparator(req.ascending));
+        PriorityQueue<SegmentIterator> queue = new PriorityQueue<>(new SegmentIteratorComparator(req.ascending()));
         try {
             for (int pgid : parameterGroupIds) {
                 SegmentIterator it = new SegmentIterator(parchive, pid, pgid, req);
@@ -126,23 +126,23 @@ public class SingleParameterRetrieval {
             Consumer<ParameterValueArray> consumer) {
         SortedTimeSegment timeSegment = pvs.timeSegment;
         int posStart, posStop;
-        if (pvr.ascending) {
-            posStart = timeSegment.search(pvr.start);
+        if (pvr.ascending()) {
+            posStart = timeSegment.search(pvr.start());
             if (posStart < 0) {
                 posStart = -posStart - 1;
             }
 
-            posStop = timeSegment.search(pvr.stop);
+            posStop = timeSegment.search(pvr.stop());
             if (posStop < 0) {
                 posStop = -posStop - 1;
             }
         } else {
-            posStop = timeSegment.search(pvr.stop);
+            posStop = timeSegment.search(pvr.stop());
             if (posStop < 0) {
                 posStop = -posStop - 2;
             }
 
-            posStart = timeSegment.search(pvr.start);
+            posStart = timeSegment.search(pvr.start());
             if (posStart < 0) {
                 posStart = -posStart - 2;
             }
@@ -152,7 +152,7 @@ public class SingleParameterRetrieval {
             return;
         }
 
-        ParameterValueArray pva = pvs.getRange(posStart, posStop, pvr.ascending, pvr.isRetrieveParameterStatus());
+        ParameterValueArray pva = pvs.getRange(posStart, posStop, pvr.ascending(), pvr.retrieveParameterStatus());
         if (pva != null) {
             consumer.accept(pva);
         }
@@ -220,7 +220,7 @@ public class SingleParameterRetrieval {
                     Arrays.fill(src, k, k + n, 0);
                     break;
                 }
-                if ((spvr.ascending && t0 <= t1) || (!spvr.ascending && t0 >= t1)) {
+                if ((spvr.ascending() && t0 <= t1) || (!spvr.ascending() && t0 >= t1)) {
                     mergedTimestamps[k] = t0;
                     src[k] = 0;
                     k++;
@@ -242,7 +242,7 @@ public class SingleParameterRetrieval {
                 rawValues = ValueArray.merge(src, mergedPva.rawValues, pva.rawValues);
             }
             ParameterStatus[] paramStatus = null;
-            if (spvr.isRetrieveParameterStatus()) {
+            if (spvr.retrieveParameterStatus()) {
                 paramStatus = (ParameterStatus[]) merge(src, mergedPva.paramStatus, pva.paramStatus);
             }
 

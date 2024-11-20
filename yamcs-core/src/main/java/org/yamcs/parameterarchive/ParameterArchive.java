@@ -113,7 +113,7 @@ public class ParameterArchive extends AbstractYamcsService {
     double minimumGroupOverlap;
 
     AtomicLong coverageEnd = new AtomicLong(TimeEncoding.MIN_INSTANT);
-    
+
     @Override
     public Spec getSpec() {
         Spec spec = new Spec();
@@ -269,7 +269,7 @@ public class ParameterArchive extends AbstractYamcsService {
                 } else {
                     writeToBatch(rdb, cfh, writeBatch, pgs);
                 }
-                maxTime = Math.max(maxTime, pgs.getSegmentEnd());               
+                maxTime = Math.max(maxTime, pgs.getSegmentEnd());
             }
             rdb.write(wo, writeBatch);
         }
@@ -801,6 +801,10 @@ public class ParameterArchive extends AbstractYamcsService {
         }
     }
 
+    public long coverageEnd() {
+        return coverageEnd.get();
+    }
+
     /**
      * returns the interval (instant) where this instant could fit.
      * 
@@ -943,5 +947,6 @@ public class ParameterArchive extends AbstractYamcsService {
             return partitionDir;
         }
     }
+
 
 }

@@ -761,4 +761,10 @@ public class ArrayParameterCache implements ParameterCache {
     public void clear() {
         tables.clear();
     }
+
+    @Override
+    public boolean caching(ParameterWithId pid) {
+        // TODO Auto-generated method stub
+        return false;
+    }
 }

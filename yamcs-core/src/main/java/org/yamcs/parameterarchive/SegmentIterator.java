@@ -74,19 +74,20 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
         this.parameterId = parameterId;
         this.parameterGroupId = parameterGroupId;
         this.parchive = parchive;
-        this.start = req.start;
-        this.stop = req.stop;
-        this.ascending = req.isAscending();
-        this.retrieveEngValues = req.isRetrieveEngineeringValues();
-        this.retrieveRawValues = (parameterId.getRawType() == null) ? false : req.isRetrieveRawValues();
-        this.retrieveParameterStatus = req.isRetrieveParameterStatus();
+        this.start = req.start();
+        this.stop = req.stop();
+        this.ascending = req.ascending();
+        this.retrieveEngValues = req.retrieveEngineeringValues();
+        this.retrieveRawValues = (parameterId.getRawType() == null) ? false : req.retrieveRawValues();
+        this.retrieveParameterStatus = req.retrieveParameterStatus();
 
         int pid = parameterId.getPid();
 
         rtfiller = parchive.getRealtimeFiller();
 
         if (retrieveEngValues || retrieveRawValues || retrieveParameterStatus) {
-            partitions = parchive.getPartitions(getIntervalStart(req.start), getIntervalEnd(req.stop), req.ascending);
+            partitions = parchive.getPartitions(getIntervalStart(req.start()), getIntervalEnd(req.stop()),
+                    req.ascending());
             topIt = partitions.iterator();
 
             if (rtfiller != null && !ascending) {

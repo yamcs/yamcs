@@ -55,8 +55,8 @@ public class SimpleParameterIterator implements ParameterIterator {
 
         currentValue = pvsIt.value();
         pvsIt.next();
-        if ((req.ascending && currentValue.instant >= req.stop) ||
-                (!req.ascending && currentValue.instant <= req.start)) {
+        if ((req.ascending() && currentValue.instant >= req.stop()) ||
+                (!req.ascending() && currentValue.instant <= req.start())) {
             currentValue = null;
             pvsIt = null;
             close();
@@ -69,8 +69,8 @@ public class SimpleParameterIterator implements ParameterIterator {
             var pvs = segIt.value();
             segIt.next();
 
-            pvsIt = req.ascending ? pvs.newAscendingIterator(req.getStart())
-                    : pvs.newDescendingIterator(req.getStop());
+            pvsIt = req.ascending() ? pvs.newAscendingIterator(req.start())
+                    : pvs.newDescendingIterator(req.stop());
             if (pvsIt.isValid()) {
                 break;
             }

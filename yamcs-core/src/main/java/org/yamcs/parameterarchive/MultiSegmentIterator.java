@@ -54,14 +54,14 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
         this.pids = pids;
         this.parameterGroupId = parameterGroupId;
         this.parchive = parchive;
-        this.start = req.start;
-        this.stop = req.stop;
-        this.ascending = req.isAscending();
-        this.retrieveEngValues = req.isRetrieveEngineeringValues();
-        this.retrieveRawValues = req.isRetrieveRawValues();
-        this.retrieveParameterStatus = req.isRetrieveParameterStatus();
+        this.start = req.start();
+        this.stop = req.stop();
+        this.ascending = req.ascending();
+        this.retrieveEngValues = req.retrieveEngineeringValues();
+        this.retrieveRawValues = req.retrieveRawValues();
+        this.retrieveParameterStatus = req.retrieveParameterStatus();
 
-        partitions = parchive.getPartitions(getIntervalStart(start), getIntervalEnd(stop), req.ascending);
+        partitions = parchive.getPartitions(getIntervalStart(start), getIntervalEnd(stop), req.ascending());
         topIt = partitions.iterator();
 
         rtfiller = parchive.getRealtimeFiller();

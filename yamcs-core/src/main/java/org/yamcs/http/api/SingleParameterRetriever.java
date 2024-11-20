@@ -41,8 +41,8 @@ public class SingleParameterRetriever {
     
     public void retrieve(Consumer<ParameterValueArray> consumer) throws IOException {
         ParameterRequest spvr1 = spvr;
-        if(cache!=null && !spvr.isAscending()) {//descending -> first retrieve from cache
-            List<ParameterValue> pvlist = cache.getAllValues(pid.getParameter(), spvr.getStart(), spvr.getStop());
+        if (cache != null && !spvr.ascending()) {// descending -> first retrieve from cache
+            List<ParameterValue> pvlist = cache.getAllValues(pid.getParameter(), spvr.start(), spvr.stop());
             if(pid.getPath()!=null) {
                 pvlist = extractMembers(pvlist, pid.getPath());
             }
@@ -55,8 +55,8 @@ public class SingleParameterRetriever {
                 });
             }
             if(lastTime.getLong()!=Long.MAX_VALUE) {
-                spvr1 = new ParameterRequest(lastTime.getLong(), spvr.getStop(), spvr.isAscending(), 
-                        spvr.isRetrieveEngineeringValues(), spvr.isRetrieveRawValues(), spvr.isRetrieveParameterStatus());
+                spvr1 = new ParameterRequest(lastTime.getLong(), spvr.stop(), spvr.ascending(),
+                        spvr.retrieveEngineeringValues(), spvr.retrieveRawValues(), spvr.retrieveParameterStatus());
             }
         }
         
@@ -72,14 +72,14 @@ public class SingleParameterRetriever {
             throw new IOException(e);
         }     
         
-        if(cache!=null && spvr.isAscending()) {//ascending -> send last values from cache
-            long start = spvr1.getStart();
+        if (cache != null && spvr.ascending()) {// ascending -> send last values from cache
+            long start = spvr1.start();
             
             if(lastTime.getLong()!=Long.MAX_VALUE) {
                 start = lastTime.getLong();
             }
             
-            List<ParameterValue> pvlist = cache.getAllValues(pid.getParameter(), start, spvr1.getStop());
+            List<ParameterValue> pvlist = cache.getAllValues(pid.getParameter(), start, spvr1.stop());
             if (pvlist != null) {
                 if(pid.getPath()!=null) {
                     pvlist = extractMembers(pvlist, pid.getPath());

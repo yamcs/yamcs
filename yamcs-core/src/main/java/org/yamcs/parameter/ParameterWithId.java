@@ -10,8 +10,6 @@ import org.yamcs.xtce.PathElement;
  * 
  * The subscription/request can point to an aggregate/array element.
  * 
- * @author nm
- *
  */
 public class ParameterWithId {
     final NamedObjectId id; // the id used by the client to subscribe
