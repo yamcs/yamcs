@@ -11,6 +11,7 @@ import java.util.NoSuchElementException;
 
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
+import org.yamcs.parameter.ParameterRetrievalOptions;
 import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.DecodingException;
@@ -50,7 +51,7 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
     final RealtimeArchiveFiller rtfiller;
 
     public MultiSegmentIterator(ParameterArchive parchive, ParameterId[] pids, int parameterGroupId,
-            ParameterRequest req) {
+            ParameterRetrievalOptions req) {
         this.pids = pids;
         this.parameterGroupId = parameterGroupId;
         this.parchive = parchive;

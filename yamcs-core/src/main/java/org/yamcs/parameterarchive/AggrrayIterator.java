@@ -2,6 +2,7 @@ package org.yamcs.parameterarchive;
 
 import java.util.NoSuchElementException;
 
+import org.yamcs.parameter.ParameterRetrievalOptions;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
 
@@ -13,7 +14,7 @@ import org.yamcs.protobuf.Pvalue.ParameterStatus;
  */
 public class AggrrayIterator implements ParameterIterator {
     final MultiSegmentIterator it;
-    final ParameterRequest req;
+    final ParameterRetrievalOptions req;
     final ParameterId parameterId;
     MultiParameterValueSegment currentSegment;
     int pos;
@@ -24,7 +25,7 @@ public class AggrrayIterator implements ParameterIterator {
     TimedValue currentValue;
 
     public AggrrayIterator(ParameterArchive parchive, ParameterId parameterId, int parameterGroupId,
-            ParameterRequest req) {
+            ParameterRetrievalOptions req) {
         ParameterIdDb pidDb = parchive.getParameterIdDb();
 
         members = pidDb.getAggarrayComponents(parameterId.getPid(), parameterGroupId);

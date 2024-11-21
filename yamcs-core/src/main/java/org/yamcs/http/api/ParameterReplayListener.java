@@ -176,7 +176,9 @@ public abstract class ParameterReplayListener extends Service.Listener implement
     protected void onParameterData(ParameterValueWithId pvwid) {
     }
 
-    public abstract void replayFinished();
+    public void replayFinished() {
+    }
 
-    public abstract void replayFailed(Throwable t);
+    public void replayFailed(Throwable t) {
+    }
 }

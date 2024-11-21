@@ -7,12 +7,12 @@ import java.util.function.Consumer;
 
 import org.rocksdb.RocksDBException;
 import org.yamcs.parameter.ParameterCache;
+import org.yamcs.parameter.ParameterRetrievalOptions;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.parameter.Value;
 import org.yamcs.parameter.ValueArray;
 import org.yamcs.parameterarchive.ParameterArchive;
-import org.yamcs.parameterarchive.ParameterRequest;
 import org.yamcs.parameterarchive.ParameterValueArray;
 import org.yamcs.parameterarchive.SingleParameterRetrieval;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
@@ -27,12 +27,12 @@ import com.google.common.collect.Lists;
  *
  */
 public class SingleParameterRetriever {
-    final ParameterRequest spvr;
+    final ParameterRetrievalOptions spvr;
     final ParameterArchive parchive;
     final ParameterCache cache;
     final ParameterWithId pid;
     
-    public SingleParameterRetriever(ParameterArchive parchive, ParameterCache cache, ParameterWithId pid, ParameterRequest spvr) {
+    public SingleParameterRetriever(ParameterArchive parchive, ParameterCache cache, ParameterWithId pid, ParameterRetrievalOptions spvr) {
         this.spvr = spvr;
         this.cache = cache;
         this.parchive = parchive;
@@ -40,7 +40,7 @@ public class SingleParameterRetriever {
     }
     
     public void retrieve(Consumer<ParameterValueArray> consumer) throws IOException {
-        ParameterRequest spvr1 = spvr;
+        ParameterRetrievalOptions spvr1 = spvr;
         if (cache != null && !spvr.ascending()) {// descending -> first retrieve from cache
             List<ParameterValue> pvlist = cache.getAllValues(pid.getParameter(), spvr.start(), spvr.stop());
             if(pid.getPath()!=null) {
@@ -55,7 +55,7 @@ public class SingleParameterRetriever {
                 });
             }
             if(lastTime.getLong()!=Long.MAX_VALUE) {
-                spvr1 = new ParameterRequest(lastTime.getLong(), spvr.stop(), spvr.ascending(),
+                spvr1 = new ParameterRetrievalOptions(lastTime.getLong(), spvr.stop(), spvr.ascending(),
                         spvr.retrieveEngineeringValues(), spvr.retrieveRawValues(), spvr.retrieveParameterStatus());
             }
         }

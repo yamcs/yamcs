@@ -10,6 +10,7 @@ import java.util.NoSuchElementException;
 
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
+import org.yamcs.parameter.ParameterRetrievalOptions;
 import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.DecodingException;
@@ -70,7 +71,7 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
     final RealtimeArchiveFiller rtfiller;
 
     public SegmentIterator(ParameterArchive parchive, ParameterId parameterId, int parameterGroupId,
-            ParameterRequest req) {
+            ParameterRetrievalOptions req) {
         this.parameterId = parameterId;
         this.parameterGroupId = parameterGroupId;
         this.parchive = parchive;

@@ -15,6 +15,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.rocksdb.RocksDBException;
 import org.yamcs.YConfiguration;
 import org.yamcs.parameter.ArrayValue;
+import org.yamcs.parameter.ParameterRetrievalOptions;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
@@ -84,7 +85,7 @@ public abstract class BaseParchiveTest {
             boolean retriveParamStatus) throws Exception {
         // ascending request on empty data
         SingleValueConsumer c = new SingleValueConsumer();
-        ParameterRequest spvr = new ParameterRequest(start, stop, ascending, retrieveEngValues, retrieveRawValues,
+        ParameterRetrievalOptions spvr = new ParameterRetrievalOptions(start, stop, ascending, retrieveEngValues, retrieveRawValues,
                 retriveParamStatus);
         SingleParameterRetrieval spdr = new SingleParameterRetrieval(parchive, parameterId,
                 new int[] { parameterGroupId }, spvr);
@@ -95,7 +96,7 @@ public abstract class BaseParchiveTest {
     List<ParameterValueArray> retrieveSingleValueMultigroup(long start, long stop, int parameterId,
             int[] parameterGroupIds, boolean ascending, boolean retrieveEng, boolean retrieveRaw,
             boolean retrieveStatus) throws RocksDBException, DecodingException, IOException {
-        ParameterRequest spvr = new ParameterRequest(start, stop, ascending, retrieveEng, retrieveRaw, retrieveStatus);
+        ParameterRetrievalOptions spvr = new ParameterRetrievalOptions(start, stop, ascending, retrieveEng, retrieveRaw, retrieveStatus);
 
         SingleParameterRetrieval spdr = new SingleParameterRetrieval(parchive, parameterId,
                 parameterGroupIds, spvr);

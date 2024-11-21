@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.parameter.ParameterRetrievalOptions;
 import org.yamcs.parameter.ValueArray;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
 
@@ -21,14 +22,14 @@ import org.yamcs.protobuf.Pvalue.ParameterStatus;
  * 
  */
 public class SingleParameterRetrieval {
-    final private ParameterRequest req;
+    final private ParameterRetrievalOptions req;
     final private ParameterArchive parchive;
     private final Logger log = LoggerFactory.getLogger(SingleParameterRetrieval.class);
     final ParameterId[] pids;
 
     final int[] parameterGroupIds;
 
-    public SingleParameterRetrieval(ParameterArchive parchive, String parameterFqn, ParameterRequest spvr) {
+    public SingleParameterRetrieval(ParameterArchive parchive, String parameterFqn, ParameterRetrievalOptions spvr) {
         this.req = spvr;
         this.parchive = parchive;
 
@@ -40,7 +41,7 @@ public class SingleParameterRetrieval {
     }
 
     SingleParameterRetrieval(ParameterArchive parchive, int parameterId, int[] parameterGroupIds,
-            ParameterRequest spvr) {
+            ParameterRetrievalOptions spvr) {
         this.req = spvr;
         this.parchive = parchive;
         ParameterId pid1 = parchive.getParameterIdDb().getParameterId(parameterId);
@@ -122,7 +123,7 @@ public class SingleParameterRetrieval {
 
     }
 
-    private void sendValuesFromSegment(ParameterId pid, ParameterValueSegment pvs, ParameterRequest pvr,
+    private void sendValuesFromSegment(ParameterId pid, ParameterValueSegment pvs, ParameterRetrievalOptions pvr,
             Consumer<ParameterValueArray> consumer) {
         SortedTimeSegment timeSegment = pvs.timeSegment;
         int posStart, posStop;
@@ -163,11 +164,11 @@ public class SingleParameterRetrieval {
      */
     static class SegmentMerger implements Consumer<ParameterValueArray> {
         final Consumer<ParameterValueArray> finalConsumer;
-        final ParameterRequest spvr;
+        final ParameterRetrievalOptions spvr;
         ParameterValueArray mergedPva;
         ParameterId pid;
 
-        public SegmentMerger(ParameterId pid, ParameterRequest spvr, Consumer<ParameterValueArray> finalConsumer) {
+        public SegmentMerger(ParameterId pid, ParameterRetrievalOptions spvr, Consumer<ParameterValueArray> finalConsumer) {
             this.finalConsumer = finalConsumer;
             this.spvr = spvr;
             this.pid = pid;
