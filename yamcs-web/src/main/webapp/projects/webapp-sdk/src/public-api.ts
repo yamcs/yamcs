@@ -100,6 +100,7 @@ export * from './lib/print/print.service';
 export * from './lib/print/Printable';
 export * from './lib/print/printable.directive';
 export * from './lib/providers';
+export * from './lib/services/appearance.service';
 export * from './lib/services/config.service';
 export * from './lib/services/extension.service';
 export * from './lib/services/favicon.service';

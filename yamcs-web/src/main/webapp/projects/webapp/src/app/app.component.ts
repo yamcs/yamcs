@@ -1,10 +1,9 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostBinding, OnDestroy, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { AuthInfo, ConfigService, ConnectionInfo, ExtensionService, PreferenceStore, SiteLink, User, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { AppearanceService, AuthInfo, ConfigService, ConnectionInfo, ExtensionService, PreferenceStore, SiteLink, User, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
-import { AppearanceService } from './core/services/AppearanceService';
 import { AuthService } from './core/services/AuthService';
 import { SelectInstanceDialogComponent } from './shared/select-instance-dialog/select-instance-dialog.component';
 

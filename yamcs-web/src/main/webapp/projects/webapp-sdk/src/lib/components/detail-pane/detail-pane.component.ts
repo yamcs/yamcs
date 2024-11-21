@@ -1,3 +1,4 @@
+import { AsyncPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
@@ -6,6 +7,9 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   templateUrl: './detail-pane.component.html',
   styleUrl: './detail-pane.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    AsyncPipe,
+  ],
 })
 export class YaDetailPane {
 }
