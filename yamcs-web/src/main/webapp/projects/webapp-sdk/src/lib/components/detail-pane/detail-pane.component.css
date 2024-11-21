@@ -1,12 +1,20 @@
+:host {
+  --panel-width: 450px;
+}
+
 .detail {
   background-color: #fcfcfc;
   float: right;
   height: 100%;
-  width: 450px;
+  width: var(--panel-width);
   overflow: auto;
   border-left: 1px solid rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
   font: 400 12px / 20px Roboto, sans-serif;
+}
+
+.detail.hidden {
+  display: none;
 }
 
 @media print {

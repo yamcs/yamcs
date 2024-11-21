@@ -12,15 +12,15 @@ export interface StoredColumnInfo {
 export class PreferenceStore {
 
   // Keys without prefix
-  preferences: { [key: string]: BehaviorSubject<any>; } = {};
+  private preferences: { [key: string]: BehaviorSubject<any>; } = {};
 
-  prefix = "yamcs.";
+  private prefix = 'yamcs.';
 
   constructor() {
-    this.addPreference$("sidebar", true);
+    this.addPreference$('sidebar', true);
   }
 
-  public addPreference$<Type>(key: string, defaultValue: Type): BehaviorSubject<Type> {
+  addPreference$<Type>(key: string, defaultValue: Type): BehaviorSubject<Type> {
     this.preferences[key] = new BehaviorSubject<Type>(defaultValue);
     let item = localStorage.getItem(this.prefix + key);
 
@@ -32,15 +32,15 @@ export class PreferenceStore {
     return this.preferences[key];
   }
 
-  public getPreference$(key: string): BehaviorSubject<any> {
+  getPreference$(key: string): BehaviorSubject<any> {
     return this.preferences[key];
   }
 
-  public getValue(key: string) {
+  getValue(key: string) {
     return this.preferences[key]?.getValue();
   }
 
-  public setValue<Type>(key: string, value: Type) {
+  setValue<Type>(key: string, value: Type) {
     this.preferences[key].next(value);
     localStorage.setItem(this.prefix + key, String(value));
   }
@@ -48,7 +48,7 @@ export class PreferenceStore {
   /**
    * Returns a column preference from local storage.
    */
-  public getStoredColumnInfo(source: string): StoredColumnInfo[] | undefined {
+  getStoredColumnInfo(source: string): StoredColumnInfo[] | undefined {
     const item = localStorage.getItem(`${this.prefix}${source}.cols`);
     if (item) {
       const cols: any[] = JSON.parse(item);
@@ -65,7 +65,7 @@ export class PreferenceStore {
     }
   }
 
-  public setVisibleColumns(source: string, columns: StoredColumnInfo[]) {
+  setVisibleColumns(source: string, columns: StoredColumnInfo[]) {
     localStorage.setItem(`${this.prefix}${source}.cols`, JSON.stringify(columns));
   }
 }

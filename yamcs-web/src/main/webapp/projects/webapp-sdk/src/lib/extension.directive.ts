@@ -22,6 +22,7 @@ export abstract class YamcsWebExtension {
 
     // Configure bridge to use router of main webapp.
     this.sdkBridge.router = extensionService.router;
+    this.sdkBridge.appearanceService = extensionService.appearanceService;
 
     this.onExtensionInit();
   }

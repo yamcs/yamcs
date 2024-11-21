@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
+import { AppearanceService } from './appearance.service';
 
 /**
  * Provides access to services from the main webapp.
@@ -14,4 +15,9 @@ export class SdkBridge {
    * The main webapp router
    */
   router: Router;
+
+  /**
+   * The main webapp appearance service
+   */
+  appearanceService: AppearanceService;
 }

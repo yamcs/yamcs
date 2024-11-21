@@ -6,6 +6,7 @@ mat-toolbar {
 
 mat-toolbar-row {
   padding-left: 24px;
+  align-items: center;
 }
 
 .hide {
@@ -14,4 +15,9 @@ mat-toolbar-row {
 
 .toolbar-text {
   font-size: 12px;
+}
+
+.icon-action {
+  display: flex;
+  align-items: center;
 }

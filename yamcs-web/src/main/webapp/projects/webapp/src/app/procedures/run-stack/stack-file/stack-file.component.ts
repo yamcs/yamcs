@@ -4,7 +4,7 @@ import { FormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AcknowledgmentInfo, AdvancementParams, Argument, Command, CommandHistoryRecord, CommandStep, CommandSubscription, ConfigService, CreateTimelineItemRequest, MessageService, NamedObjectId, ParameterSubscription, ParameterValue, StackFormatter, Step, StorageClient, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { AcknowledgmentInfo, AdvancementParams, AppearanceService, Argument, Command, CommandHistoryRecord, CommandStep, CommandSubscription, ConfigService, CreateTimelineItemRequest, MessageService, NamedObjectId, ParameterSubscription, ParameterValue, StackFormatter, Step, StorageClient, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ExtraAcknowledgmentsTableComponent } from '../../../commanding/command-history/extra-acknowledgments-table/extra-acknowledgments-table.component';
@@ -120,6 +120,7 @@ export class StackFileComponent implements OnDestroy {
     private configService: ConfigService,
     private messageService: MessageService,
     private sanitizer: DomSanitizer,
+    private appearanceService: AppearanceService,
     formBuilder: FormBuilder
   ) {
     this.bucket = configService.getStackBucket();

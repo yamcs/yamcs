@@ -53,7 +53,13 @@
               (click)="exitZenMode()"
               matTooltip="Exit zen mode" />
           }
-          <ya-icon-action class="icon-action" icon="menu" [matMenuTriggerFor]="moreMenu" />
+          @if (!(fullScreenMode$ | async)) {
+            <ya-icon-action
+              class="icon-action"
+              icon="monitor"
+              [matMenuTriggerFor]="moreMenu"
+              matTooltip="Show full screen options" />
+          }
         }
       }
     }
