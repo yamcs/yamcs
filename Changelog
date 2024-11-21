@@ -1,3 +1,10 @@
+Version 5.10.8 released 21-Nov-2024
+- Bug fix in the parameter archive: when rebuilding intervals with gaps, the gaps would not be properly encoded, causing errors in retrieval.
+  Implemented a consistency check which will inform if the parameter archive is corrupted and will suggest a rebuild of the specific interval.
+- Reorganize command form in collapsible sections
+- Allow privileged users to customize the stream when sending a command
+
+
 Version 5.10.7 released 12-Nov-2024
 - Fixed IndirectParameterRefEntry bug not referencing the previous parameter id
 - Fixed replays causing memory leaks
