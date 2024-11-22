@@ -2,10 +2,10 @@ import { Value } from '../client';
 import { AdvancementParams } from './AdvancementParams';
 import { ParameterCheck } from './ParameterCheck';
 
-export type Step = CheckStep | CommandStep;
+export type Step = CheckStep | CommandStep | TextStep;
 
 export interface CommandStep {
-  type: 'command',
+  type: 'command';
   name: string;
   namespace?: string;
   args: { [key: string]: any; };
@@ -16,7 +16,13 @@ export interface CommandStep {
 }
 
 export interface CheckStep {
-  type: 'check',
+  type: 'check';
   parameters: ParameterCheck[];
+  comment?: string;
+}
+
+export interface TextStep {
+  type: 'text';
+  text: string;
   comment?: string;
 }

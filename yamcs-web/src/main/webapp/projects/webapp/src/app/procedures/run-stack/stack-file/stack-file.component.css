@@ -63,6 +63,11 @@ div.entry div.in .body {
   font-family: 'Roboto Mono', monospace;
 }
 
+div.entry.text div.in .body {
+  background-color: inherit;
+  border-color: transparent;
+}
+
 div.entry div.out .body.err {
   background-color: #fcc;
   color: var(--y-error-color);

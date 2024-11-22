@@ -16,11 +16,13 @@ import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
 import { AdvanceAckHelpComponent } from '../advance-ack-help/advance-ack-help.component';
 import { EditCheckEntryDialogComponent } from '../edit-check-entry-dialog/edit-check-entry-dialog.component';
 import { CommandResult, EditCommandEntryDialogComponent } from '../edit-command-entry-dialog/edit-command-entry-dialog.component';
+import { EditTextEntryDialogComponent } from '../edit-text-entry-dialog/edit-text-entry-dialog.component';
 import { ScheduleStackDialogComponent } from '../schedule-stack-dialog/schedule-stack-dialog.component';
 import { StackedCheckEntryComponent } from '../stacked-check-entry/stacked-check-entry.component';
 import { StackedCommandDetailComponent } from '../stacked-command-detail/stacked-command-detail.component';
 import { StackedCommandEntryComponent } from '../stacked-command-entry/stacked-command-entry.component';
-import { NamedParameterValue, StackedCheckEntry, StackedCommandEntry, StackedEntry } from './StackedEntry';
+import { StackedTextEntryComponent } from '../stacked-text-entry/stacked-text-entry.component';
+import { NamedParameterValue, StackedCheckEntry, StackedCommandEntry, StackedEntry, StackedTextEntry } from './StackedEntry';
 import { parseXML } from './xmlparse';
 import { parseYCS } from './ycsparse';
 
@@ -30,7 +32,7 @@ const ACK_STOP = ['NOK', 'CANCELLED'];
 @Component({
   standalone: true,
   templateUrl: './stack-file.component.html',
-  styleUrl: './stack-file.component.css',
+  styleUrls: ['./stack-file.component.css', './toc.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AdvanceAckHelpComponent,
@@ -41,6 +43,7 @@ const ACK_STOP = ['NOK', 'CANCELLED'];
     StackedCheckEntryComponent,
     StackedCommandDetailComponent,
     StackedCommandEntryComponent,
+    StackedTextEntryComponent,
     WebappSdkModule,
     YamcsAcknowledgmentsTableComponent,
   ],
@@ -308,6 +311,8 @@ export class StackFileComponent implements OnDestroy {
               entries.push(new StackedCheckEntry(ycsEntry));
             } else if (ycsEntry.type === 'command') {
               entries.push(new StackedCommandEntry(ycsEntry));
+            } else if (ycsEntry.type === 'text') {
+              entries.push(new StackedTextEntry(ycsEntry));
             }
           }
 
@@ -541,6 +546,10 @@ export class StackFileComponent implements OnDestroy {
       entry.executionNumber = executionNumber;
       this.entries$.next([...this.entries$.value]); // Refresh subject
       this.continueRunning(entry);
+    } else if (entry instanceof StackedTextEntry) {
+      entry.executionNumber = executionNumber;
+      this.entries$.next([...this.entries$.value]); // Refresh subject
+      this.continueRunning(entry);
     }
   }
 
@@ -717,6 +726,35 @@ export class StackFileComponent implements OnDestroy {
     });
   }
 
+  addTextEntry() {
+    this.dialog.open(EditTextEntryDialogComponent, {
+      autoFocus: false,
+      width: '800px',
+      data: {
+        edit: false,
+      },
+    }).afterClosed().subscribe((result?: string) => {
+      if (result) {
+        const entry = new StackedTextEntry({
+          type: 'text',
+          text: result,
+        });
+
+        const relto = this.selectedEntry$.value;
+        if (relto) {
+          const entries = this.entries$.value;
+          const idx = entries.indexOf(relto);
+          entries.splice(idx + 1, 0, entry);
+          this.entries$.next([...this.entries$.value]);
+        } else {
+          this.entries$.next([... this.entries$.value, entry]);
+        }
+        this.selectEntry(entry);
+        this.dirty$.next(true);
+      }
+    });
+  }
+
   editSelectedEntry() {
     const entry = this.selectedEntry$.value!;
     this.editEntry(entry);
@@ -797,6 +835,30 @@ export class StackFileComponent implements OnDestroy {
           this.selectEntry(changedEntry);
           this.dirty$.next(true);
           this.updateParameterSubscription();
+        }
+      });
+    } else if (entry instanceof StackedTextEntry) {
+      this.dialog.open(EditTextEntryDialogComponent, {
+        autoFocus: false,
+        width: '800px',
+        data: {
+          edit: true,
+          entry,
+        }
+      }).afterClosed().subscribe((result?: string) => {
+        if (result) {
+          const changedEntry = new StackedTextEntry({
+            type: 'text',
+            text: result,
+          });
+
+          const entries = this.entries$.value;
+          const idx = entries.indexOf(entry);
+          entries.splice(idx, 1, changedEntry);
+          this.entries$.next([...this.entries$.value]);
+
+          this.selectEntry(changedEntry);
+          this.dirty$.next(true);
         }
       });
     }
