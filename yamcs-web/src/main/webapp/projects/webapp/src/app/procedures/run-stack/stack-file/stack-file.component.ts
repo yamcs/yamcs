@@ -504,6 +504,7 @@ export class StackFileComponent implements OnDestroy {
       return this.yamcs.yamcsClient.issueCommandForNamespace(instance!, processor!, namespace, entry.name, {
         sequenceNumber: executionNumber,
         args: entry.args,
+        stream: entry.stream,
         extra: entry.extra,
       }).then(response => {
         entry.executionNumber = executionNumber;
