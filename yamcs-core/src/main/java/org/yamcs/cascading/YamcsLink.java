@@ -41,6 +41,8 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
     private String username;
     private char[] password;
 
+    volatile boolean connected = false;
+
     @Override
     public void init(String instance, String name, YConfiguration config) {
         super.init(instance, name, config);
@@ -202,11 +204,11 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
 
     @Override
     public Status connectionStatus() {
-        WebSocketClient wsclient = yclient.getWebSocketClient();
-        if (wsclient == null) {
-            return Status.UNAVAIL;
-        }
-        return wsclient.isConnected() ? Status.OK : Status.UNAVAIL;
+        return connected ? Status.OK : Status.UNAVAIL;
+    }
+
+    public boolean isConnected() {
+        return connected;
     }
 
     @Override
@@ -328,6 +330,7 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
 
     @Override
     public void connected() {
+        connected = true;
         log.debug("Connected to upstream Yamcs server");
     }
 
@@ -338,6 +341,7 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
 
     @Override
     public void disconnected() {
+        connected = false;
         if (isRunningAndEnabled()) {
             log.warn("Disconnected from upstream Yamcs server");
             timer.schedule(() -> connectToUpstream(), reconnectionDelay, TimeUnit.MILLISECONDS);

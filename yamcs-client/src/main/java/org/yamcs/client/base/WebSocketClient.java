@@ -291,6 +291,9 @@ public class WebSocketClient {
         return group.shutdownGracefully(0, 5, TimeUnit.SECONDS);
     }
 
+    /**
+     * Returns true if the TCP connection is opened (even before the websocket handshake has been established FIXME) 
+     */
     public boolean isConnected() {
         return nettyChannel != null && nettyChannel.isOpen();
     }

@@ -171,7 +171,6 @@ public class YamcsTcLink extends AbstractTcDataLink {
         String upstreamCmdName;
         String pcfqn = pc.getMetaCommand().getQualifiedName();
 
-
         if (data.getCommandType() == CommandMapData.CommandType.DEFAULT) {
             upstreamCmdName = pcfqn;
         } else {
@@ -264,7 +263,6 @@ public class YamcsTcLink extends AbstractTcDataLink {
         return reqArgs;
     }
 
-
     private CommandInfo getUpstreamCmd(String upstreamCmdName) {
         CommandInfo cinfo = upstreamCmdCache.get(upstreamCmdName);
         if (cinfo == null) {
@@ -354,8 +352,8 @@ public class YamcsTcLink extends AbstractTcDataLink {
         if (cmdSubscription != null && !cmdSubscription.isDone()) {
             return;
         }
-        WebSocketClient wsclient = parentLink.getClient().getWebSocketClient();
-        if (wsclient.isConnected()) {
+
+        if (parentLink.isConnected()) {
             subscribeCommanding();
         }
     }
