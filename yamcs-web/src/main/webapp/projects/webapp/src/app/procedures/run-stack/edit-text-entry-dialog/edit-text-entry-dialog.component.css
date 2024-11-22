@@ -1,0 +1,12 @@
+.text-container {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  margin-top: 12px;
+  height: 300px;
+}
+
+.preview-container {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: #fafafa;
+  margin-top: 12px;
+  height: 300px;
+}

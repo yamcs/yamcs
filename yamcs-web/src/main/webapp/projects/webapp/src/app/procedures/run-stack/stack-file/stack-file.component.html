@@ -31,6 +31,10 @@
         <mat-icon>speed</mat-icon>
         Check
       </a>
+      <a mat-menu-item (click)="addTextEntry()">
+        <mat-icon>notes</mat-icon>
+        Text
+      </a>
     </mat-menu>
     <ya-page-icon-button
       matTooltip="Edit the selected step"
@@ -200,6 +204,7 @@
             cdkDrag
             cdkDragBoundary="#drag-boundary"
             class="entry"
+            [class.text]="entry.type === 'text'"
             [class.selected]="entry === (selectedEntry$ | async)"
             (click)="selectEntry(entry)"
             (dblclick)="editEntry(entry)">
@@ -218,6 +223,8 @@
                   <app-stacked-check-entry [entry]="entry" [pvals]="pvals$ | async" />
                 } @else if (entry.type === "command") {
                   <app-stacked-command-entry [entry]="entry" />
+                } @else if (entry.type === "text") {
+                  <app-stacked-text-entry [entry]="entry" />
                 }
 
                 @if (entry.comment) {

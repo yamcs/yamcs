@@ -31,7 +31,8 @@
             "type": "string",
             "enum": [
               "check",
-              "command"
+              "command",
+              "text"
             ]
           },
           "comment": {
@@ -43,6 +44,38 @@
           "type"
         ],
         "allOf": [
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "check"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "parameters": {
+                  "type": "array",
+                  "description": "Parameters to check",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "parameter": {
+                        "type": "string",
+                        "description": "Qualified parameter name"
+                      }
+                    },
+                    "required": [
+                      "parameter"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "parameters"
+              ]
+            }
+          },
           {
             "if": {
               "properties": {
@@ -126,31 +159,19 @@
             "if": {
               "properties": {
                 "type": {
-                  "const": "check"
+                  "const": "text"
                 }
               }
             },
             "then": {
               "properties": {
-                "parameters": {
-                  "type": "array",
-                  "description": "Parameters to check",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "parameter": {
-                        "type": "string",
-                        "description": "Qualified parameter name"
-                      }
-                    },
-                    "required": [
-                      "parameter"
-                    ]
-                  }
+                "text": {
+                  "type": "string",
+                  "description": "Text in Markdown format"
                 }
               },
               "required": [
-                "parameters"
+                "text"
               ]
             }
           }

@@ -1,6 +1,6 @@
-import { CheckStep, Command, CommandHistoryRecord, CommandStep, ParameterValue, Step } from '@yamcs/webapp-sdk';
+import { CheckStep, Command, CommandHistoryRecord, CommandStep, ParameterValue, Step, TextStep } from '@yamcs/webapp-sdk';
 
-export type StackedEntry = StackedCheckEntry | StackedCommandEntry;
+export type StackedEntry = StackedCheckEntry | StackedCommandEntry | StackedTextEntry;
 
 abstract class AbstractStackedEntry<T extends Step> {
   model: T;
@@ -105,6 +105,24 @@ export class StackedCheckEntry extends AbstractStackedEntry<CheckStep> {
       type: 'check',
       parameters: this.parameters.map(p => ({ ...p })),
       comment: this.comment,
+    });
+  }
+}
+
+export class StackedTextEntry extends AbstractStackedEntry<TextStep> {
+
+  type: 'text' = 'text';
+
+  constructor(model: TextStep) {
+    super(model);
+  }
+
+  get text() { return this.model.text; }
+
+  override copy() {
+    return new StackedTextEntry({
+      type: 'text',
+      text: this.text,
     });
   }
 }
