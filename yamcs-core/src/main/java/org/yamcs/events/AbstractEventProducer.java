@@ -38,7 +38,6 @@ public abstract class AbstractEventProducer implements EventProducer {
         this.seqNo.set(sn);
     }
 
-
     @Override
     public void sendInfo(String msg) {
         sendInfo(getInvokingClass(), msg);
@@ -89,31 +88,35 @@ public abstract class AbstractEventProducer implements EventProducer {
         if (!repeatedEventReduction) {
             sendEvent(e);
         } else {
-            if (originalEvent == null) {
-                sendEvent(e);
-                originalEvent = e;
-            } else if (isRepeat(e)) {
-                if (flusher == null) { // Prevent buffering repeated events forever
-                    flusher = new Timer(true);
-                    flusher.scheduleAtFixedRate(new TimerTask() {
-                        @Override
-                        public void run() {
-                            flushEventBuffer(false);
-                        }
-                    }, repeatedEventTimeout, repeatedEventTimeout);
-                }
-                lastRepeat = e;
-                repeatCounter++;
-            } else { // No more repeats
-                if (flusher != null) {
-                    flusher.cancel();
-                    flusher = null;
-                }
-                flushEventBuffer(true);
-                sendEvent(e);
-                originalEvent = e;
-                lastRepeat = null;
+            sendEventWithRepeatReduction(e);
+        }
+    }
+
+    private synchronized void sendEventWithRepeatReduction(Event e) {
+        if (originalEvent == null) {
+            sendEvent(e);
+            originalEvent = e;
+        } else if (isRepeat(e)) {
+            if (flusher == null) { // Prevent buffering repeated events forever
+                flusher = new Timer(true);
+                flusher.scheduleAtFixedRate(new TimerTask() {
+                    @Override
+                    public void run() {
+                        flushEventBuffer(false);
+                    }
+                }, repeatedEventTimeout, repeatedEventTimeout);
             }
+            lastRepeat = e;
+            repeatCounter++;
+        } else { // No more repeats
+            if (flusher != null) {
+                flusher.cancel();
+                flusher = null;
+            }
+            flushEventBuffer(true);
+            sendEvent(e);
+            originalEvent = e;
+            lastRepeat = null;
         }
     }
 
