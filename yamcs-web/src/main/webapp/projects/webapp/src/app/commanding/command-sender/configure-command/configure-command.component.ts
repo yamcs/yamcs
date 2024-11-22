@@ -132,9 +132,9 @@ export class ConfigureCommandComponent implements OnInit, AfterViewInit, OnDestr
 
     this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, qname, {
       args: commandConfig.args,
-      extra: commandConfig.extra,
       stream: commandConfig.stream,
       comment: commandConfig.comment,
+      extra: commandConfig.extra,
     }).then(response => {
       this.router.navigate([
         '/commanding/send' + qname,
