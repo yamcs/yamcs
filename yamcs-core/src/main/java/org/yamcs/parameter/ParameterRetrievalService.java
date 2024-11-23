@@ -138,7 +138,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
 
 
     public void retrieve(ParameterWithId requestedParamWithId, ParameterRetrievalOptions opts,
-            ParameterReplayListener replayListener) throws IOException {
+            ParameterReplayListener replayListener) {
         MultipleParameterRequest mpvr;
         ParameterIdDb piddb = parchive.getParameterIdDb();
         String qn = requestedParamWithId.getQualifiedName();
@@ -156,11 +156,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
         // mpvr.setLimit(limit);
 
         ParameterCache pcache = null;
-        if (!opts.getNorealtime()) {
-            String processorName = request.hasProcessor() ? request.getProcessor() : DEFAULT_PROCESSOR;
-            Processor processor = ysi.getProcessor(processorName);
-            pcache = processor.getParameterCache();
-        }
+
 
     };
 

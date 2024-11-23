@@ -1,7 +1,6 @@
 package org.yamcs.http.api;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
@@ -21,7 +20,6 @@ import org.yamcs.logging.Log;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterRetrievalOptions;
 import org.yamcs.parameter.ParameterRetrievalService;
-import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.parameterarchive.BackFillerListener;
@@ -50,7 +48,6 @@ import org.yamcs.protobuf.SubscribeBackfillingData;
 import org.yamcs.protobuf.SubscribeBackfillingData.BackfillFinishedInfo;
 import org.yamcs.protobuf.SubscribeBackfillingRequest;
 import org.yamcs.security.SystemPrivilege;
-import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
@@ -180,14 +177,16 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         sampler.setUseRawValue(useRawValue);
         sampler.setGapTime(request.hasGapTime() ? request.getGapTime() : 120000);
 
-        ParameterRetrievalService retrievalService = getParameterRetrievalService(ysi);
-        ParameterRetrievalOptions pr = new ParameterRetrievalOptions(start, stop, true, !useRawValue, useRawValue, true);
+        ParameterRetrievalService prs = getParameterRetrievalService(ysi);
+        ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
+                .withStartStop(start, stop)
+                .withAscending(true)
+                .withRetrieveRawValues(useRawValue)
+                .withRetrieveEngineeringValues(!useRawValue)
+                .withNorealtime(request.getNorealtime())
+                .build();
         try {
-            if (request.getNorealtime()) {
-                retrievalService.retrieveScalarParameterArchive(pid, pr, sampler);
-            } else {
-                retrievalService.retrieveScalar(pid, pr, sampler);
-            }
+            prs.retrieveScalar(pid, opts, sampler);
         } catch (IOException e) {
             log.warn("Received exception during parameter retrieval", e);
             throw new InternalServerErrorException(e.toString());
@@ -227,13 +226,14 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         ParameterRanger ranger = new ParameterRanger(minGap, maxGap, minRange, maxValues);
 
         ParameterRetrievalService prs = getParameterRetrievalService(ysi);
-        ParameterRetrievalOptions pr = new ParameterRetrievalOptions(start, stop, true, true, false, true);
+        ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
+                .withStartStop(start, stop)
+                .withRetrieveParameterStatus(false)
+                .withNorealtime(request.getNorealtime())
+                .build();
+
         try {
-            if (request.getNorealtime()) {
-                prs.retrieveScalarParameterArchive(pid, pr, ranger);
-            } else {
-                prs.retrieveScalar(pid, pr, ranger);
-            }
+                prs.retrieveScalarParameterArchive(pid, opts, ranger);
         } catch (IOException e) {
             log.warn("Received exception during parameter retrieval", e);
             throw new InternalServerErrorException(e.toString());
@@ -280,7 +280,12 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
                 stop = token.time;
             }
         }
-        ParameterRetrievalOptions opts = new ParameterRetrievalOptions(start, stop, ascending, true, true, true);
+        ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
+                .withStartStop(start, stop)
+                .withAscending(ascending)
+                .withRetrieveParameterStatus(false)
+                .withNorealtime(request.getNorealtime())
+                .build();
 
         ParameterRetrievalService prs = getParameterRetrievalService(ysi);
 
@@ -300,13 +305,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         };
 
         replayListener.setNoRepeat(request.getNorepeat());
-
-        try {
-            prs.retrieve(requestedParamWithId, opts, replayListener);
-        } catch (IOException e) {
-            throw new InternalServerErrorException(e);
-        }
-
+        prs.retrieve(requestedParamWithId, opts, replayListener);
         observer.complete(resultb.build());
     }
 
@@ -320,7 +319,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         return l.get(0);
     }
 
-    private ParameterRetrievalService getParameterRetrievalService(YamcsServerInstance ysi) throws BadRequestException {
+    static ParameterRetrievalService getParameterRetrievalService(YamcsServerInstance ysi) throws BadRequestException {
         List<ParameterRetrievalService> l = ysi.getServices(ParameterRetrievalService.class);
 
         if (l.isEmpty()) {

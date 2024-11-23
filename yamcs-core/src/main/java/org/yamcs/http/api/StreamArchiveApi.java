@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.yamcs.YamcsServerInstance;
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
 import org.yamcs.archive.ParameterRecorder;
@@ -20,6 +21,7 @@ import org.yamcs.http.MediaType;
 import org.yamcs.http.api.Downsampler.Sample;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
+import org.yamcs.parameter.ParameterRetrievalOptions;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.protobuf.AbstractStreamArchiveApi;
@@ -78,6 +80,9 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             Observer<ListParameterHistoryResponse> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
 
+        var ysi = InstancesApi.verifyInstanceObj(request.getInstance());
+        var prs = ParameterArchiveApi.getParameterRetrievalService(ysi);
+
         Mdb mdb = MdbFactory.getInstance(instance);
         String pathName = request.getName();
 
@@ -86,8 +91,9 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         long pos = request.hasPos() ? request.getPos() : 0;
         int limit = request.hasLimit() ? request.getLimit() : 100;
         boolean noRepeat = request.getNorepeat();
-        boolean descending = !request.getOrder().equals("asc");
+        boolean ascending = request.getOrder().equals("asc");
         int maxBytes = request.hasMaxBytes() ? request.getMaxBytes() : -1;
+
 
         long start = TimeEncoding.INVALID_INSTANT;
         if (request.hasStart()) {
@@ -99,7 +105,14 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
         }
 
-        ReplayOptions rr = toParameterReplayRequest(p.getId(), start, stop, descending);
+        ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
+                .withStartStop(start, stop)
+                .withAscending(ascending)
+                .withRetrieveParameterStatus(false)
+                .withNorealtime(request.getNorealtime())
+                .build();
+
+        ReplayOptions rr = toParameterReplayRequest(p.getId(), start, stop, ascending);
 
         ListParameterHistoryResponse.Builder resultb = ListParameterHistoryResponse.newBuilder();
         ParameterReplayListener replayListener = new ParameterReplayListener(pos, limit) {
@@ -121,6 +134,9 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             }
         };
         replayListener.setNoRepeat(noRepeat);
+
+
+        prs.retrieve(p, opts, replayListener);
 
         ReplayFactory.replay(instance, ctx.user, rr, replayListener);
     }
@@ -183,6 +199,12 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         Downsampler sampler = new Downsampler(start, stop, sampleCount);
         sampler.setUseRawValue(request.hasUseRawValue() && request.getUseRawValue());
         sampler.setGapTime(request.hasGapTime() ? request.getGapTime() : 120000);
+
+        ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
+                .withStartStop(start, stop)
+                .withRetrieveParameterStatus(false)
+                .withNorealtime(request.getNorealtime())
+                .build();
 
         ParameterReplayListener replayListener = new ParameterReplayListener() {
             @Override
@@ -251,6 +273,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                     .addAllTmLinks(request.getTmLinksList())
                     .build());
         }
+
 
         var replayListener = new ParameterReplayListener() {
 

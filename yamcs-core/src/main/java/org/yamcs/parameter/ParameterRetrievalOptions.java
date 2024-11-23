@@ -9,15 +9,17 @@ public record ParameterRetrievalOptions(
         boolean ascending,
         boolean retrieveEngineeringValues,
         boolean retrieveRawValues,
-        boolean retrieveParameterStatus) {
+        boolean retrieveParameterStatus,
+        boolean norealtime) {
 
     public static class Builder {
         private long start;
         private long stop;
-        private boolean ascending;
-        private boolean retrieveEngineeringValues;
-        private boolean retrieveRawValues;
-        private boolean retrieveParameterStatus;
+        private boolean ascending = true;
+        private boolean retrieveEngineeringValues = true;
+        private boolean retrieveRawValues = true;
+        private boolean retrieveParameterStatus = true;
+        private boolean norealtime = false;
 
         public Builder withStartStop(long start, long stop) {
             this.start = start;
@@ -27,6 +29,11 @@ public record ParameterRetrievalOptions(
 
         public Builder withAscending(boolean ascending) {
             this.ascending = ascending;
+            return this;
+        }
+
+        public Builder withNorealtime(boolean norealtime) {
+            this.norealtime = norealtime;
             return this;
         }
 
@@ -48,7 +55,8 @@ public record ParameterRetrievalOptions(
         public ParameterRetrievalOptions build() {
             return new ParameterRetrievalOptions(
                     start, stop, ascending,
-                    retrieveEngineeringValues, retrieveRawValues, retrieveParameterStatus);
+                    retrieveEngineeringValues, retrieveRawValues, retrieveParameterStatus,
+                    norealtime);
         }
     }
 
@@ -67,5 +75,9 @@ public record ParameterRetrievalOptions(
 
     public ParameterRetrievalOptions withUpdatedStop(long newStop) {
         return this.toBuilder().withStartStop(this.start, newStop).build();
+    }
+
+    public static Builder newBuilder() {
+        return new Builder();
     }
 }
