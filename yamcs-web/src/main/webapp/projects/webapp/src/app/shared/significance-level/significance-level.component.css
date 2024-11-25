@@ -1,38 +1,65 @@
-.none,
-.watch,
-.warning,
-.distress,
-.critical,
-.severe {
+svg {
   display: inline-block;
-  height: 5px;
-  width: 29px;
-  position: relative;
-  background-image: url('./significance-levels.png');
 }
 
-.none {
-  background-position: 0 0;
+.none .r1,
+.none .r2,
+.none .r3,
+.none .r4,
+.none .r5 {
+  fill: #ccc;
 }
 
-.watch {
-  background-position: 0 -5px;
+.watch .r1 {
+  fill: #ff8c00;
 }
 
-.warning {
-  background-position: 0 -10px;
+.watch .r2,
+.watch .r3,
+.watch .r4,
+.watch .r5 {
+  fill: #ccc;
 }
 
-.distress {
-  background-position: 0 -15px;
+.warning .r1,
+.warning .r2 {
+  fill: #ff8c00;
 }
 
-.critical {
-  background-position: 0 -20px;
+.warning .r3,
+.warning .r4,
+.warning .r5 {
+  fill: #ccc;
 }
 
-.severe {
-  background-position: 0 -25px;
+.distress .r1,
+.distress .r2,
+.distress .r3 {
+  fill: #f00;
+}
+
+.distress .r4,
+.distress .r5 {
+  fill: #ccc;
+}
+
+.critical .r1,
+.critical .r2,
+.critical .r3,
+.critical .r4 {
+  fill: #f00;
+}
+
+.critical .r5 {
+  fill: #ccc;
+}
+
+.severe .r1,
+.severe .r2,
+.severe .r3,
+.severe .r4,
+.severe .r5 {
+  fill: #f00;
 }
 
 .grayscale {
@@ -41,13 +68,7 @@
 }
 
 @media print {
-
-  .none,
-  .watch,
-  .warning,
-  .distress,
-  .critical,
-  .severe {
+  svg {
     print-color-adjust: exact;
   }
 }

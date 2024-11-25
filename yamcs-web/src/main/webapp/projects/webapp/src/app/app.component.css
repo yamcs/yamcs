@@ -1,3 +1,8 @@
+:host {
+  --logo-width: 83px;
+  --logo-height: 35px;
+}
+
 mat-toolbar-row {
   height: 48px;
   box-shadow: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.26);
@@ -37,6 +42,13 @@ mat-toolbar-row {
 
 .logo-wrapper.nosidebar {
   padding-left: 24px;
+}
+
+.logo-wrapper img {
+  max-height: var(--logo-height);
+  max-width: var(--logo-width);
+  height: auto;
+  width: auto;
 }
 
 .logo-wrapper:hover img {
