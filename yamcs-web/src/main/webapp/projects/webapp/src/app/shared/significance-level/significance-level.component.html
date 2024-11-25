@@ -1,20 +1,36 @@
 @switch (level) {
   @case ("WATCH") {
-    <div class="watch" matTooltip="Watch" [class.grayscale]="grayscale"></div>
+    <ng-container *ngTemplateOutlet="img; context: { level: 'watch', tooltip: 'Watch' }" />
   }
   @case ("WARNING") {
-    <div class="warning" matTooltip="Warning" [class.grayscale]="grayscale"></div>
+    <ng-container *ngTemplateOutlet="img; context: { level: 'warning', tooltip: 'Warning' }" />
   }
   @case ("DISTRESS") {
-    <div class="distress" matTooltip="Distress" [class.grayscale]="grayscale"></div>
+    <ng-container *ngTemplateOutlet="img; context: { level: 'distress', tooltip: 'Distress' }" />
   }
   @case ("CRITICAL") {
-    <div class="critical" matTooltip="Critical" [class.grayscale]="grayscale"></div>
+    <ng-container *ngTemplateOutlet="img; context: { level: 'critical', tooltip: 'Critical' }" />
   }
   @case ("SEVERE") {
-    <div class="severe" matTooltip="Severe" [class.grayscale]="grayscale"></div>
+    <ng-container *ngTemplateOutlet="img; context: { level: 'severe', tooltip: 'Severe' }" />
   }
   @default {
-    <div class="none" [class.grayscale]="grayscale"></div>
+    <ng-container *ngTemplateOutlet="img; context: { level: 'none' }" />
   }
 }
+
+<ng-template #img let-level="level" let-tooltip="tooltip">
+  <svg
+    width="29"
+    height="5"
+    viewBox="0 0 58 10"
+    [ngClass]="level"
+    [class.grayscale]="grayscale"
+    [matTooltip]="tooltip">
+    <rect x="0" width="10" height="10" class="r1" />
+    <rect x="12" width="10" height="10" class="r2" />
+    <rect x="24" width="10" height="10" class="r3" />
+    <rect x="36" width="10" height="10" class="r4" />
+    <rect x="48" width="10" height="10" class="r5" />
+  </svg>
+</ng-template>

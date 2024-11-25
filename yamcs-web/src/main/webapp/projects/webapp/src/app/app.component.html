@@ -10,7 +10,7 @@
       </div>
     }
     <a class="logo-wrapper" routerLink="/">
-      <img src="yamcs.png" />
+      <img src="yamcs@2x.png" />
     </a>
     @if (connectionInfo$ | async; as connectionInfo) {
       <button mat-button (click)="openInstanceDialog()">
@@ -52,7 +52,8 @@
         <a mat-menu-item [href]="link.url" [target]="link.external ? '_blank' : '_self'">
           Go to {{ link.label }}
           @if (link.external) {
-            &nbsp;<mat-icon class="icon16">open_in_new</mat-icon>
+            &nbsp;
+            <mat-icon class="icon16">open_in_new</mat-icon>
           }
         </a>
       }

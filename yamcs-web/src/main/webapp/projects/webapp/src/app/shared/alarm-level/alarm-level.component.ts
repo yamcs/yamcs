@@ -1,4 +1,5 @@
 
+import { NgClass, NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MatTooltip } from '@angular/material/tooltip';
 
@@ -10,6 +11,8 @@ import { MatTooltip } from '@angular/material/tooltip';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatTooltip,
+    NgClass,
+    NgTemplateOutlet,
   ],
 })
 export class AlarmLevelComponent {
