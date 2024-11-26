@@ -1,0 +1,66 @@
+<app-entry-label icon="checklist_rtl" text="Verify:" />
+@if (entry(); as entry) {
+  <table
+    mat-table
+    [dataSource]="dataSource"
+    class="ya-data-table no-frame"
+    [trackBy]="tableTrackerFn">
+    <ng-container matColumnDef="expression">
+      <td mat-cell *matCellDef="let item" style="width: 400px">
+        {{ item.parameter }}
+        @switch (item.operator) {
+          @case ("eq") {
+            =
+          }
+          @case ("neq") {
+            !=
+          }
+          @case ("lt") {
+            &lt;
+          }
+          @case ("lte") {
+            &lt;=
+          }
+          @case ("gt") {
+            &gt;
+          }
+          @case ("gte") {
+            &gt;=
+          }
+        }
+        {{ item.value }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="evaluation">
+      <td mat-cell *matCellDef="let item" style="width: 80px">
+        @if (expr.result() === true) {
+          <span class="evaluation valid">satisfied</span>
+        } @else {
+          <span class="evaluation invalid">not satisfied</span>
+        }
+        <app-live-expression #expr [expression]="item.expression" style="display: none" />
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="value">
+      <td mat-cell *matCellDef="let item">
+        @if (item.pval?.engValue; as value) {
+          <ya-expirable [pval]="item.pval">
+            {{ item.pval.engValue | value }}
+            @if (item.pval.rangeCondition === "LOW") {
+              <span>&#8595;</span>
+            }
+            @if (item.pval.rangeCondition === "HIGH") {
+              <span>&#8593;</span>
+            }
+          </ya-expirable>
+        } @else {
+          -
+        }
+      </td>
+    </ng-container>
+
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+  </table>
+}

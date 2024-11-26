@@ -102,6 +102,14 @@ export class StackFormatter {
           ...(step.comment && { comment: step.comment }),
           parameters: [...step.parameters],
         });
+      } else if (step.type === 'verify') {
+        root['steps'].push({
+          type: step.type,
+          condition: [...step.condition],
+          ...(step.delay && { delay: step.delay }),
+          ...(step.timeout && { timeout: step.timeout }),
+          ...(step.comment && { comment: step.comment }),
+        });
       } else if (step.type === 'text') {
         root['steps'].push({
           type: step.type,

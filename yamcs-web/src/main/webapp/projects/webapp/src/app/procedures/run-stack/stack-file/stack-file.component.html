@@ -8,8 +8,8 @@
     &nbsp;&nbsp;&nbsp;
     <ya-page-button
       matTooltip="Save stack"
-      (click)="saveStack()"
-      [disabled]="!format || !(dirty$ | async)"
+      (click)="stackFileService.saveStack()"
+      [disabled]="!(stackFileService.dirty$ | async)"
       icon="save">
       Save
     </ya-page-button>
@@ -23,17 +23,23 @@
       Add step
     </ya-page-button>
     <mat-menu class="ya-menu" #addEntryMenu="matMenu">
-      <a mat-menu-item (click)="addCommandEntry()">
-        <mat-icon>rss_feed</mat-icon>
-        Command
-      </a>
-      <a mat-menu-item (click)="addCheckEntry()">
-        <mat-icon>speed</mat-icon>
-        Check
-      </a>
       <a mat-menu-item (click)="addTextEntry()">
         <mat-icon>notes</mat-icon>
-        Text
+        Display text
+      </a>
+      <mat-divider />
+      <a mat-menu-item (click)="addCheckEntry()">
+        <mat-icon>toll</mat-icon>
+        List parameters
+      </a>
+      <a mat-menu-item (click)="addVerifyEntry()">
+        <mat-icon>checklist_rtl</mat-icon>
+        Verify parameters
+      </a>
+      <mat-divider />
+      <a mat-menu-item (click)="addCommandEntry()">
+        <mat-icon>rss_feed</mat-icon>
+        Send command
       </a>
     </mat-menu>
     <ya-page-icon-button
@@ -69,7 +75,7 @@
       icon="stop" />
     <ya-page-icon-button
       matTooltip="Clear all outputs"
-      [disabled]="!format || (running$ | async) || !(hasOutputs$ | async)"
+      [disabled]="!format || (running$ | async) || !(hasState$ | async)"
       (click)="clearOutputs()"
       icon="refresh" />
     <ya-page-icon-button
@@ -96,17 +102,6 @@
       icon="open_in_new">
       Export
     </ya-page-button>
-    @if (format === "xml") {
-      <mat-divider vertical style="height: 100%" />
-      <ya-page-button
-        color="warn"
-        matTooltip="Convert to the newer format"
-        [disabled]="!format || converting"
-        (click)="convertToJSON()"
-        icon="auto_awesome">
-        Convert to *.ycs file
-      </ya-page-button>
-    }
     <mat-menu class="ya-menu" #exportMenu="matMenu">
       <a mat-menu-item [href]="jsonBlobUrl" [download]="(filename | basename) + '.ycs'">
         <mat-icon>data_object</mat-icon>
@@ -124,7 +119,7 @@
 
   <ya-detail-pane>
     @if (selectedEntry$ | async; as selectedEntry) {
-      <ya-detail-toolbar>Command Info</ya-detail-toolbar>
+      <ya-detail-toolbar>Command info</ya-detail-toolbar>
       <div style="padding: 0 16px">
         <app-stacked-command-detail [entry]="selectedEntry" />
         <p>&nbsp;</p>
@@ -134,52 +129,12 @@
     }
   </ya-detail-pane>
 
-  <div class="panel-wrapper">
-    @if (format === "ycs") {
-      <form
-        [formGroup]="stackOptionsForm"
-        class="ya-form panel-content stack-options"
-        [ngClass]="this.stackOptionsForm.disabled && 'disabled'">
-        <div class="label">
-          Advance when
-          <app-advance-ack-help [extra]="extraAcknowledgments" />
-          <br />
-          <div style="display: flex; align-items: flex-start">
-            <ya-select
-              #ackSelect
-              [options]="ackOptions"
-              icon="check_circle_outline"
-              formControlName="advancementAckDropDown" />
-            @if (stackOptionsForm.get("advancementAckDropDown")?.value === "custom") {
-              <input
-                type="text"
-                formControlName="advancementAckCustom"
-                style="width: 200px; margin-left: -1px" />
-            }
-          </div>
-        </div>
-        <div class="label">
-          Wait (ms)
-          <ya-help dialogTitle="Wait time">
-            <p>Wait time before advancing to the next command in the stack.</p>
-            <p>This triggers after successful acknowledgment.</p>
-          </ya-help>
-          <br />
-          <input
-            type="number"
-            formControlName="advancementWait"
-            placeholder="0"
-            step="1000"
-            min="0"
-            style="width: 120px" />
-        </div>
-        <div style="flex: 1 1 auto"></div>
-        @if (running$ | async) {
-          <ya-dots />
-        }
-      </form>
-      <mat-divider horizontal />
-    }
+  <div class="main-pane" [class.with-info-pane]="true">
+    <app-stack-file-page-tabs [objectName]="objectName">
+      @if (running$ | async) {
+        <ya-dots />
+      }
+    </app-stack-file-page-tabs>
 
     @if (loaded && !format) {
       <ya-empty-message>
@@ -197,14 +152,14 @@
       </ya-empty-message>
     }
 
-    <div #entryParent class="panel-content" cdkDropList (cdkDropListDropped)="handleDrop($event)">
+    <div #entryParent class="tab-content" cdkDropList (cdkDropListDropped)="handleDrop($event)">
       <div id="drag-boundary">
         @for (entry of entries$ | async; track entry) {
           <div
             cdkDrag
             cdkDragBoundary="#drag-boundary"
             class="entry"
-            [class.text]="entry.type === 'text'"
+            [class.display-text]="entry.type === 'text'"
             [class.selected]="entry === (selectedEntry$ | async)"
             (click)="selectEntry(entry)"
             (dblclick)="editEntry(entry)">
@@ -225,6 +180,8 @@
                   <app-stacked-command-entry [entry]="entry" />
                 } @else if (entry.type === "text") {
                   <app-stacked-text-entry [entry]="entry" />
+                } @else if (entry.type === "verify") {
+                  <app-stacked-verify-entry [entry]="entry" [pvals]="pvals$ | async" />
                 }
 
                 @if (entry.comment) {
@@ -260,6 +217,8 @@
                         </tr>
                       }
                     </table>
+                  } @else if (entry.type === "verify") {
+                    <app-verify-table [entry]="entry" />
                   }
                 </div>
               </div>

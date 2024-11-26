@@ -1,12 +1,9 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { FormBuilder, UntypedFormGroup } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, OnInit, SecurityContext, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
-import { AcknowledgmentInfo, AdvancementParams, AppearanceService, Argument, Command, CommandHistoryRecord, CommandStep, CommandSubscription, ConfigService, CreateTimelineItemRequest, MessageService, NamedObjectId, ParameterSubscription, ParameterValue, StackFormatter, Step, StorageClient, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
-import { BehaviorSubject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { AppearanceService, CommandHistoryRecord, CommandStep, CommandSubscription, ConfigService, CreateTimelineItemRequest, MessageService, NamedObjectId, ParameterSubscription, ParameterValue, StackFormatter, Step, utils, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { BehaviorSubject, delay, filter, first, Observable, Subscription, timeout, TimeoutError } from 'rxjs';
 import { ExtraAcknowledgmentsTableComponent } from '../../../commanding/command-history/extra-acknowledgments-table/extra-acknowledgments-table.component';
 import { YamcsAcknowledgmentsTableComponent } from '../../../commanding/command-history/yamcs-acknowledgments-table/yamcs-acknowledgments-table.component';
 import { AuthService } from '../../../core/services/AuthService';
@@ -17,22 +14,22 @@ import { AdvanceAckHelpComponent } from '../advance-ack-help/advance-ack-help.co
 import { EditCheckEntryDialogComponent } from '../edit-check-entry-dialog/edit-check-entry-dialog.component';
 import { CommandResult, EditCommandEntryDialogComponent } from '../edit-command-entry-dialog/edit-command-entry-dialog.component';
 import { EditTextEntryDialogComponent } from '../edit-text-entry-dialog/edit-text-entry-dialog.component';
+import { EditVerifyEntryDialogComponent } from '../edit-verify-entry-dialog/edit-verify-entry-dialog.component';
 import { ScheduleStackDialogComponent } from '../schedule-stack-dialog/schedule-stack-dialog.component';
+import { StackFilePageTabsComponent } from '../stack-file-page-tabs/stack-file-page-tabs.component';
 import { StackedCheckEntryComponent } from '../stacked-check-entry/stacked-check-entry.component';
 import { StackedCommandDetailComponent } from '../stacked-command-detail/stacked-command-detail.component';
 import { StackedCommandEntryComponent } from '../stacked-command-entry/stacked-command-entry.component';
 import { StackedTextEntryComponent } from '../stacked-text-entry/stacked-text-entry.component';
-import { NamedParameterValue, StackedCheckEntry, StackedCommandEntry, StackedEntry, StackedTextEntry } from './StackedEntry';
-import { parseXML } from './xmlparse';
-import { parseYCS } from './ycsparse';
-
-const ACK_CONTINUE = ['OK', 'DISABLED'];
-const ACK_STOP = ['NOK', 'CANCELLED'];
+import { StackedVerifyEntryComponent } from '../stacked-verify-entry/stacked-verify-entry.component';
+import { VerifyTableComponent } from '../verify-table/verify-table.component';
+import { NamedParameterValue, StackedCheckEntry, StackedCommandEntry, StackedEntry, StackedTextEntry, StackedVerifyEntry } from './StackedEntry';
+import { StackFileService } from './StackFileService';
 
 @Component({
   standalone: true,
   templateUrl: './stack-file.component.html',
-  styleUrls: ['./stack-file.component.css', './toc.css'],
+  styleUrl: './stack-file.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AdvanceAckHelpComponent,
@@ -44,35 +41,29 @@ const ACK_STOP = ['NOK', 'CANCELLED'];
     StackedCommandDetailComponent,
     StackedCommandEntryComponent,
     StackedTextEntryComponent,
+    StackedVerifyEntryComponent,
+    StackFilePageTabsComponent,
+    VerifyTableComponent,
     WebappSdkModule,
     YamcsAcknowledgmentsTableComponent,
   ],
 })
-export class StackFileComponent implements OnDestroy {
-  private storageClient: StorageClient;
+export class StackFileComponent implements OnInit, OnDestroy {
 
+  @Input()
   objectName: string;
+
   filename: string;
   folderLink: string;
-
-  dirty$ = new BehaviorSubject<boolean>(false);
-  entries$ = new BehaviorSubject<StackedEntry[]>([]);
-  hasOutputs$ = this.entries$.pipe(
-    map(entries => {
-      for (const entry of entries) {
-        if (entry.hasOutputs()) {
-          return true;
-        }
-      }
-      return false;
-    })
-  );
 
   running$ = new BehaviorSubject<boolean>(false);
   runningStack = false;
 
   private parameterSubscription: ParameterSubscription;
   private commandSubscription: CommandSubscription;
+  private stepScopedSubscriptions: Subscription[] = [];
+  entries$: BehaviorSubject<StackedEntry[]>;
+  hasState$: Observable<boolean>;
   selectedEntry$ = new BehaviorSubject<StackedEntry | null>(null);
   clipboardEntry$ = new BehaviorSubject<StackedEntry | null>(null);
   private commandHistoryRecords = new Map<string, CommandHistoryRecord>();
@@ -90,25 +81,8 @@ export class StackFileComponent implements OnDestroy {
   jsonBlobUrl: SafeResourceUrl;
   xmlBlobUrl: SafeResourceUrl;
 
-  converting = false;
-
-  // Configuration of command ack to accept to execute the following
-  private advancement: AdvancementParams = {
-    acknowledgment: 'Acknowledge_Queued',
-    wait: 0,
-  };
-
   private nextCommandDelayTimeout: number;
   private nextEntryScheduled = false;
-
-  stackOptionsForm: UntypedFormGroup;
-  extraAcknowledgments: AcknowledgmentInfo[];
-  ackOptions: YaSelectOption[] = [
-    { id: 'Acknowledge_Queued', label: 'Queued' },
-    { id: 'Acknowledge_Released', label: 'Released' },
-    { id: 'Acknowledge_Sent', label: 'Sent' },
-    { id: 'CommandComplete', label: 'Completed' },
-  ];
 
   idMapping: { [key: number]: NamedObjectId; } = {};
   pvals$ = new BehaviorSubject<{ [key: string]: ParameterValue; }>({});
@@ -116,41 +90,17 @@ export class StackFileComponent implements OnDestroy {
   constructor(
     private dialog: MatDialog,
     readonly yamcs: YamcsService,
-    private route: ActivatedRoute,
-    private router: Router,
     private title: Title,
     private authService: AuthService,
     private configService: ConfigService,
     private messageService: MessageService,
     private sanitizer: DomSanitizer,
-    private appearanceService: AppearanceService,
-    formBuilder: FormBuilder
+    readonly appearanceService: AppearanceService,
+    readonly stackFileService: StackFileService,
   ) {
     this.bucket = configService.getStackBucket();
-    this.storageClient = yamcs.createStorageClient();
-
-    this.extraAcknowledgments = yamcs.getProcessor()?.acknowledgments ?? [];
-    let first = true;
-    for (const ack of this.extraAcknowledgments) {
-      this.ackOptions.push({
-        id: ack.name,
-        label: ack.name.replace('Acknowledge_', ''),
-        group: first,
-      });
-      first = false;
-    }
-
-    this.ackOptions.push({
-      id: 'custom',
-      label: 'Custom',
-      group: true,
-    });
-
-    this.stackOptionsForm = formBuilder.group({
-      advancementAckDropDown: ['', []],
-      advancementAckCustom: ['', []],
-      advancementWait: ['', []],
-    });
+    this.entries$ = stackFileService.entries$;
+    this.hasState$ = stackFileService.hasState$;
 
     this.parameterSubscription = yamcs.yamcsClient.createParameterSubscription({
       instance: yamcs.instance!,
@@ -175,21 +125,36 @@ export class StackFileComponent implements OnDestroy {
         this.pvals$.next(pvals);
       }
     });
-
-    this.initStackFile();
   }
 
-  private initStackFile() {
-    const initialObject = this.getObjectNameFromUrl();
-
-    this.loadFile(initialObject);
-
-    if (this.format !== 'ycs') {
-      this.stackOptionsForm.disable();
+  ngOnInit(): void {
+    const idx = this.objectName.lastIndexOf('/');
+    if (idx === -1) {
+      this.folderLink = '/procedures/stacks/browse/';
+      this.filename = this.objectName;
     } else {
-      this.stackOptionsForm.enable();
-      this.stackOptionsForm.valueChanges.subscribe(this.stackOptionsFormCallback);
+      const folderName = this.objectName.substring(0, idx);
+      this.folderLink = '/procedures/stacks/browse/' + folderName;
+      this.filename = this.objectName.substring(idx + 1);
     }
+
+    this.title.setTitle(this.filename);
+
+    const format = utils.getExtension(utils.getFilename(this.objectName))?.toLowerCase();
+    if (format === 'ycs' || format === 'xml') {
+      this.format = format;
+    } else {
+      this.loaded = true;
+      return;
+    }
+
+    const entries = this.stackFileService.entries;
+
+    // Update the page
+    this.stackFileService.updateEntries(entries);
+    this.selectedEntry$.next(entries.length ? entries[0] : null);
+    this.updateParameterSubscription();
+    this.loaded = true;
 
     this.commandSubscription = this.yamcs.yamcsClient.createCommandSubscription({
       instance: this.yamcs.instance!,
@@ -208,7 +173,7 @@ export class StackFileComponent implements OnDestroy {
       // Try to find a with matching id. If it's there
       // update it. If not: no problem, the link will be made when
       // handling the command response.
-      for (const entry of this.entries$.value) {
+      for (const entry of this.stackFileService.entries$.value) {
         if ((entry instanceof StackedCommandEntry) && entry.id === id) {
           entry.record = rec;
           break;
@@ -218,198 +183,29 @@ export class StackFileComponent implements OnDestroy {
       // Continue running entries
       const currentEntry = this.selectedEntry$.value;
       if (currentEntry && (currentEntry instanceof StackedCommandEntry)) {
-        if (currentEntry instanceof StackedCommandEntry) {
-          this.checkAckContinueRunning(currentEntry, rec);
-        }
+        this.checkAckContinueRunning(currentEntry, rec);
       }
     });
   }
-
-  private stackOptionsFormCallback = (result: any) => {
-    if (!this.loaded) {
-      return;
-    }
-
-    this.advancement = {
-      acknowledgment: result.advancementAckDropDown !== 'custom'
-        ? result.advancementAckDropDown : result.advancementAckCustom,
-      wait: result.advancementWait ?? 0,
-    };
-
-    if (result.advancementAckDropDown !== 'custom') {
-      this.stackOptionsForm.patchValue({
-        'advancementAckCustom': undefined,
-      }, { emitEvent: false });
-    }
-
-    this.dirty$.next(true);
-  };
 
   handleDrop(event: CdkDragDrop<Step[]>) {
     if (event.previousIndex !== event.currentIndex) {
       moveItemInArray(this.entries$.value, event.previousIndex, event.currentIndex);
-      this.entries$.next([...this.entries$.value]);
-      this.dirty$.next(true);
-    }
-  }
-
-  private getObjectNameFromUrl() {
-    const url = this.route.snapshot.url;
-    let objectName = '';
-    for (const segment of url) {
-      if (objectName) {
-        objectName += '/';
-      }
-      objectName += segment.path;
-    }
-    return objectName;
-  }
-
-  private async loadFile(objectName: string) {
-    this.objectName = objectName;
-    const idx = this.objectName.lastIndexOf('/');
-    if (idx === -1) {
-      this.folderLink = '/procedures/stacks/browse/';
-      this.filename = this.objectName;
-    } else {
-      const folderName = this.objectName.substring(0, idx);
-      this.folderLink = '/procedures/stacks/browse/' + folderName;
-      this.filename = this.objectName.substring(idx + 1);
-    }
-
-    this.title.setTitle(this.filename);
-
-    const format = utils.getExtension(utils.getFilename(objectName))?.toLowerCase();
-    if (format === 'ycs' || format === 'xml') {
-      this.format = format;
-    } else {
-      this.loaded = true;
-      return;
-    }
-
-    const response = await this.storageClient.getObject(this.bucket, objectName).catch(err => {
-      if (err.statusCode === 404 && format === 'xml') {
-        this.router.navigate([objectName.replace(/\.xml$/i, '.ycs')], {
-          queryParamsHandling: 'preserve',
-          relativeTo: this.route.parent,
-        }).then(() => this.initStackFile());
-      } else {
-        this.messageService.showError(`Failed to load stack file: ${objectName}`);
-      }
-    });
-
-    if (response?.ok) {
-      const text = await response.text();
-      const entries: StackedEntry[] = [];
-
-      switch (this.format) {
-        case 'ycs':
-          let ycsEntries: Step[];
-          [ycsEntries, this.advancement] = parseYCS(text, this.configService.getCommandOptions());
-          for (const ycsEntry of ycsEntries) {
-            if (ycsEntry.type === 'check') {
-              entries.push(new StackedCheckEntry(ycsEntry));
-            } else if (ycsEntry.type === 'command') {
-              entries.push(new StackedCommandEntry(ycsEntry));
-            } else if (ycsEntry.type === 'text') {
-              entries.push(new StackedTextEntry(ycsEntry));
-            }
-          }
-
-          const match = this.ackOptions.find(el => el.id === this.advancement.acknowledgment);
-          const ackDefault = match ? match.id : 'custom';
-
-          this.stackOptionsForm.setValue({
-            advancementAckDropDown: ackDefault,
-            advancementAckCustom: ackDefault === 'custom' ? this.advancement.acknowledgment : '',
-            advancementWait: this.advancement.wait,
-          });
-          break;
-        case 'xml':
-          const xmlModels = parseXML(text, this.configService.getCommandOptions());
-          for (const xmlModel of xmlModels) {
-            entries.push(new StackedCommandEntry(xmlModel));
-          }
-          break;
-      }
-
-      const commandEntries = entries.filter(entry => entry instanceof StackedCommandEntry);
-
-      // Enrich entries with MDB info, it's used in the detail panel
-      const promises = [];
-      const instance = this.yamcs.instance!;
-      for (const entry of commandEntries) {
-        const namespace = entry.namespace ?? null;
-        const name = entry.name;
-        promises.push(this.yamcs.yamcsClient.getCommandForNamespace(instance, namespace, name).then(command => {
-          entry.command = command;
-        }));
-      }
-
-      // Wait on all definition requests to arrive
-      for (const promise of promises) {
-        try {
-          await promise;
-        } catch {
-          // For now, don't care
-        }
-      }
-
-      // Convert enum values to labels. This provides some resilience to MDB changes
-      // where a numeric parameter becomes an enumeration.
-      for (const entry of commandEntries) {
-        if (entry.command) {
-          for (const argumentName in entry.args) {
-            const argument = this.getArgument(argumentName, entry.command);
-            if (argument?.type.engType === 'enumeration') {
-              let match = false;
-              for (const enumValue of argument.type.enumValue || []) {
-                if (enumValue.label === entry.args[argumentName]) {
-                  match = true;
-                  break;
-                }
-              }
-              if (!match) {
-                for (const enumValue of argument.type.enumValue || []) {
-                  if (String(enumValue.value) === String(entry.args[argumentName])) {
-                    entry.args[argumentName] = enumValue.label;
-                    match = true;
-                    break;
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-
-      // Convert arrays/aggregates from JSON to JavaScript
-      if (this.format === 'xml') {
-        for (const entry of commandEntries) {
-          if (entry.command) {
-            for (const argumentName in entry.args) {
-              if (this.isComplex(argumentName, entry.command)) {
-                entry.args[argumentName] = JSON.parse(entry.args[argumentName]);
-              }
-            }
-          }
-        }
-      }
-
-      // Only now, update the page
-      this.entries$.next(entries);
-      this.selectedEntry$.next(entries.length ? entries[0] : null);
-      this.updateParameterSubscription();
-      this.loaded = true;
+      this.stackFileService.updateEntries([...this.entries$.value]);
+      this.stackFileService.markDirty();
     }
   }
 
   private updateParameterSubscription() {
     const parameters = new Set<string>();
-    for (const entry of this.entries$.value) {
+    for (const entry of this.stackFileService.entries$.value) {
       if (entry.type === 'check') {
         for (const check of entry.parameters) {
           parameters.add(check.parameter);
+        }
+      } else if (entry.type === 'verify') {
+        for (const comparison of entry.condition) {
+          parameters.add(comparison.parameter);
         }
       }
     }
@@ -417,42 +213,18 @@ export class StackFileComponent implements OnDestroy {
     const ids: NamedObjectId[] = [];
     parameters.forEach(p => ids.push({ 'name': p }));
 
-    this.parameterSubscription.sendMessage({
-      action: 'REPLACE',
-      instance: this.yamcs.instance!,
-      processor: this.yamcs.processor!,
-      abortOnInvalid: false,
-      sendFromCache: true,
-      updateOnExpiration: true,
-      id: ids,
+    // Ensure the initial reply is already received
+    this.parameterSubscription.addReplyListener(() => {
+      this.parameterSubscription.sendMessage({
+        action: 'REPLACE',
+        instance: this.yamcs.instance!,
+        processor: this.yamcs.processor!,
+        abortOnInvalid: false,
+        sendFromCache: true,
+        updateOnExpiration: true,
+        id: ids,
+      });
     });
-  }
-
-  private isComplex(argumentName: string, info: Command): boolean {
-    for (const argument of (info.argument || [])) {
-      if (argument.name === argumentName) {
-        return argument.type.engType === 'aggregate'
-          || argument.type.engType.endsWith('[]');
-      }
-    }
-    if (info.baseCommand) {
-      return this.isComplex(argumentName, info.baseCommand);
-    } else {
-      return false;
-    }
-  }
-
-  private getArgument(argumentName: string, info: Command): Argument | null {
-    for (const argument of (info.argument || [])) {
-      if (argument.name === argumentName) {
-        return argument;
-      }
-    }
-    if (info.baseCommand) {
-      return this.getArgument(argumentName, info.baseCommand);
-    } else {
-      return null;
-    }
   }
 
   selectEntry(entry: StackedEntry) {
@@ -465,16 +237,11 @@ export class StackFileComponent implements OnDestroy {
       const idx = this.entries$.value.indexOf(entry);
       if (idx !== -1) {
         this.entries$.value.splice(idx, 1);
-        this.entries$.next([...this.entries$.value]);
         this.selectedEntry$.next(null);
-        this.dirty$.next(true);
+        this.stackFileService.updateEntries([...this.entries$.value]);
+        this.stackFileService.markDirty();
       }
     }
-  }
-
-  clearSelectedOutputs() {
-    const entry = this.selectedEntry$.value;
-    entry?.clearOutputs();
   }
 
   clearOutputs() {
@@ -482,14 +249,11 @@ export class StackFileComponent implements OnDestroy {
       entry.clearOutputs();
     }
     this.executionCounter = 0;
-    this.entries$.next([...this.entries$.value]);
+    this.stackFileService.logs$.next([]);
+    this.stackFileService.updateEntries([...this.entries$.value]);
     if (this.entries$.value.length) {
       this.selectEntry(this.entries$.value[0]);
     }
-  }
-
-  hasPendingChanges() {
-    return this.dirty$.value;
   }
 
   async runSelection() {
@@ -505,6 +269,7 @@ export class StackFileComponent implements OnDestroy {
   private async runEntry(entry: StackedEntry) {
     const executionNumber = ++this.executionCounter;
     const { instance, processor } = this.yamcs;
+    entry.clearOutputs();
     if (entry instanceof StackedCommandEntry) {
       const namespace = entry.namespace ?? null;
       return this.yamcs.yamcsClient.issueCommandForNamespace(instance!, processor!, namespace, entry.name, {
@@ -516,6 +281,9 @@ export class StackFileComponent implements OnDestroy {
         entry.executionNumber = executionNumber;
         entry.executing = true;
         entry.id = response.id;
+
+        const logMessage = `Sending command ${entry}`;
+        this.stackFileService.addLogEntry(executionNumber, logMessage);
 
         // It's possible the WebSocket received data before we
         // get our response.
@@ -531,8 +299,12 @@ export class StackFileComponent implements OnDestroy {
         this.stopRun();
       }).finally(() => {
         // Refresh subject, to be sure
-        this.entries$.next([...this.entries$.value]);
+        this.stackFileService.updateEntries([...this.entries$.value]);
       });
+    } else if (entry instanceof StackedVerifyEntry) {
+      entry.executionNumber = executionNumber;
+      entry.executing = true;
+      await this.runVerifyEntry(entry);
     } else if (entry instanceof StackedCheckEntry) {
       const pvals: NamedParameterValue[] = [];
       for (const check of entry.parameters) {
@@ -544,13 +316,51 @@ export class StackFileComponent implements OnDestroy {
       }
       entry.pvals = pvals;
       entry.executionNumber = executionNumber;
-      this.entries$.next([...this.entries$.value]); // Refresh subject
+      this.stackFileService.updateEntries([...this.entries$.value]); // Refresh subject
       this.continueRunning(entry);
     } else if (entry instanceof StackedTextEntry) {
       entry.executionNumber = executionNumber;
-      this.entries$.next([...this.entries$.value]); // Refresh subject
+      this.stackFileService.updateEntries([...this.entries$.value]); // Refresh subject
       this.continueRunning(entry);
     }
+  }
+
+  private async runVerifyEntry(entry: StackedVerifyEntry) {
+    const logMessage = `Verifying ${entry}`;
+    this.stackFileService.addLogEntry(entry.executionNumber!, logMessage);
+
+    let pipeline = this.pvals$.pipe();
+
+    if (entry.delay && entry.delay > 0) {
+      pipeline = pipeline.pipe(delay(entry.delay));
+    }
+    pipeline = pipeline.pipe(
+      filter(pvals => this.testVerifyEntry(entry)),
+      first(),  // Unsubscribe when test succeeds)
+    );
+    if (entry.timeout && entry.timeout > 0) {
+      const delay = Math.max(0, entry.delay || 0);
+      pipeline = pipeline.pipe(
+        timeout(delay + entry.timeout),
+      );
+    }
+    const subscription = pipeline.subscribe({
+      next: () => this.continueRunning(entry),
+      error: err => {
+        if (err instanceof TimeoutError) {
+          entry.executing = false;
+          entry.err = err.message || String(err);
+          this.stopRun();
+        }
+      },
+    });
+    this.stepScopedSubscriptions.push(subscription);
+  }
+
+  private testVerifyEntry(entry: StackedVerifyEntry) {
+    const result = entry.test(this.pvals$.value);
+    this.stackFileService.updateEntries([...this.entries$.value]); // Refresh subject
+    return result;
   }
 
   runFromSelection() {
@@ -573,15 +383,17 @@ export class StackFileComponent implements OnDestroy {
       return;
     }
 
-    let acceptingAck = entry.advancement?.acknowledgment || this.advancement.acknowledgment!;
-    let delay = entry.advancement?.wait ?? this.advancement.wait!;
+    const { advancement: stackAdvancement } = this.stackFileService;
+
+    let acceptingAck = entry.advancement?.acknowledgment || stackAdvancement.acknowledgment!;
+    let delay = entry.advancement?.wait ?? stackAdvancement.wait!;
 
     if (entry.id === record.id) {
       let ack = record.acksByName[acceptingAck];
       if (ack && ack.status) {
-        if (ACK_CONTINUE.includes(ack.status)) {
+        if (ack.status === 'OK' || ack.status === 'DISABLED') {
           this.continueRunning(entry, delay);
-        } else if (ACK_STOP.includes(ack.status)) {
+        } else if (ack.status === 'NOK' || ack.status === 'CANCELLED') {
           entry.executing = false;
           // Stop execution
           this.stopRun();
@@ -606,17 +418,30 @@ export class StackFileComponent implements OnDestroy {
   }
 
   stopRun() {
+    this.clearStepScopedSubscriptions();
     this.running$.next(false);
     this.runningStack = false;
-    for (const entry of this.entries$.value) {
+    for (const entry of this.stackFileService.entries$.value) {
       entry.executing = false;
+      if (entry instanceof StackedVerifyEntry) {
+        for (const pval of entry.pvals || []) {
+          if (pval?.status && pval.status() === 'pending') {
+            pval.status.set('cancelled');
+          }
+        }
+      }
     }
     window.clearTimeout(this.nextCommandDelayTimeout);
     this.nextEntryScheduled = false;
   }
 
+  private clearStepScopedSubscriptions() {
+    this.stepScopedSubscriptions.forEach(s => s.unsubscribe());
+    this.stepScopedSubscriptions.length = 0;
+  }
+
   private advanceSelection(entry: StackedEntry) {
-    const entries = this.entries$.value;
+    const entries = this.stackFileService.entries$.value;
     const idx = entries.indexOf(entry);
     if (idx < entries.length - 1) {
       const nextEntry = entries[idx + 1];
@@ -657,12 +482,42 @@ export class StackFileComponent implements OnDestroy {
           const entries = this.entries$.value;
           const idx = entries.indexOf(relto);
           entries.splice(idx + 1, 0, entry);
-          this.entries$.next([...this.entries$.value]);
+          this.stackFileService.updateEntries([...this.entries$.value]);
         } else {
-          this.entries$.next([... this.entries$.value, entry]);
+          this.stackFileService.updateEntries([...this.entries$.value, entry]);
         }
         this.selectEntry(entry);
-        this.dirty$.next(true);
+        this.stackFileService.markDirty();
+        this.updateParameterSubscription();
+      }
+    });
+  }
+
+  addVerifyEntry() {
+    this.dialog.open(EditVerifyEntryDialogComponent, {
+      autoFocus: false,
+      width: '800px',
+      data: {
+        edit: false,
+      },
+    }).afterClosed().subscribe((result?: any) => {
+      if (result) {
+        const entry = new StackedVerifyEntry({
+          type: 'verify',
+          ...result,
+        });
+
+        const relto = this.selectedEntry$.value;
+        if (relto) {
+          const entries = this.entries$.value;
+          const idx = entries.indexOf(relto);
+          entries.splice(idx + 1, 0, entry);
+          this.stackFileService.updateEntries([...this.entries$.value]);
+        } else {
+          this.stackFileService.updateEntries([...this.entries$.value, entry]);
+        }
+        this.selectEntry(entry);
+        this.stackFileService.markDirty();
         this.updateParameterSubscription();
       }
     });
@@ -716,12 +571,12 @@ export class StackFileComponent implements OnDestroy {
           const entries = this.entries$.value;
           const idx = entries.indexOf(relto);
           entries.splice(idx + 1, 0, entry);
-          this.entries$.next([...this.entries$.value]);
+          this.stackFileService.updateEntries([...this.entries$.value]);
         } else {
-          this.entries$.next([... this.entries$.value, entry]);
+          this.stackFileService.updateEntries([...this.entries$.value, entry]);
         }
         this.selectEntry(entry);
-        this.dirty$.next(true);
+        this.stackFileService.markDirty();
       }
     });
   }
@@ -745,12 +600,12 @@ export class StackFileComponent implements OnDestroy {
           const entries = this.entries$.value;
           const idx = entries.indexOf(relto);
           entries.splice(idx + 1, 0, entry);
-          this.entries$.next([...this.entries$.value]);
+          this.stackFileService.updateEntries([...this.entries$.value]);
         } else {
-          this.entries$.next([... this.entries$.value, entry]);
+          this.stackFileService.updateEntries([...this.entries$.value, entry]);
         }
         this.selectEntry(entry);
-        this.dirty$.next(true);
+        this.stackFileService.markDirty();
       }
     });
   }
@@ -806,10 +661,10 @@ export class StackFileComponent implements OnDestroy {
           const entries = this.entries$.value;
           const idx = entries.indexOf(entry);
           entries.splice(idx, 1, changedEntry);
-          this.entries$.next([...this.entries$.value]);
+          this.stackFileService.updateEntries([...this.entries$.value]);
 
           this.selectEntry(changedEntry);
-          this.dirty$.next(true);
+          this.stackFileService.markDirty();
         }
       });
     } else if (entry instanceof StackedCheckEntry) {
@@ -830,10 +685,10 @@ export class StackFileComponent implements OnDestroy {
           const entries = this.entries$.value;
           const idx = entries.indexOf(entry);
           entries.splice(idx, 1, changedEntry);
-          this.entries$.next([...this.entries$.value]);
+          this.stackFileService.updateEntries([...this.entries$.value]);
 
           this.selectEntry(changedEntry);
-          this.dirty$.next(true);
+          this.stackFileService.markDirty();
           this.updateParameterSubscription();
         }
       });
@@ -855,10 +710,35 @@ export class StackFileComponent implements OnDestroy {
           const entries = this.entries$.value;
           const idx = entries.indexOf(entry);
           entries.splice(idx, 1, changedEntry);
-          this.entries$.next([...this.entries$.value]);
+          this.stackFileService.updateEntries([...this.entries$.value]);
 
           this.selectEntry(changedEntry);
-          this.dirty$.next(true);
+          this.stackFileService.markDirty();
+        }
+      });
+    } else if (entry instanceof StackedVerifyEntry) {
+      this.dialog.open(EditVerifyEntryDialogComponent, {
+        autoFocus: false,
+        width: '800px',
+        data: {
+          edit: true,
+          entry,
+        }
+      }).afterClosed().subscribe((result?: any) => {
+        if (result) {
+          const changedEntry = new StackedVerifyEntry({
+            type: 'verify',
+            ...result,
+          });
+
+          const entries = this.entries$.value;
+          const idx = entries.indexOf(entry);
+          entries.splice(idx, 1, changedEntry);
+          this.stackFileService.updateEntries([...this.entries$.value]);
+
+          this.selectEntry(changedEntry);
+          this.stackFileService.markDirty();
+          this.updateParameterSubscription();
         }
       });
     }
@@ -874,9 +754,9 @@ export class StackFileComponent implements OnDestroy {
     const entries = this.entries$.value;
     const idx = entries.indexOf(entry);
     entries.splice(idx, 1);
-    this.entries$.next([...this.entries$.value]);
+    this.stackFileService.updateEntries([...this.entries$.value]);
 
-    this.dirty$.next(true);
+    this.stackFileService.markDirty();
   }
 
   copySelectedEntry() {
@@ -894,12 +774,12 @@ export class StackFileComponent implements OnDestroy {
         const entries = this.entries$.value;
         const idx = entries.indexOf(relto);
         entries.splice(idx + 1, 0, copiedEntry);
-        this.entries$.next([...this.entries$.value]);
+        this.stackFileService.updateEntries([...this.entries$.value]);
       } else {
-        this.entries$.next([... this.entries$.value, copiedEntry]);
+        this.stackFileService.updateEntries([...this.entries$.value, copiedEntry]);
       }
       this.selectEntry(copiedEntry);
-      this.dirty$.next(true);
+      this.stackFileService.markDirty();
     }
   }
 
@@ -940,89 +820,22 @@ export class StackFileComponent implements OnDestroy {
     });
   }
 
-  saveStack() {
-    const modelEntries = this.entries$.value.map(e => e.model);
-    let file;
-    switch (this.format) {
-      case 'ycs':
-        file = new StackFormatter(modelEntries, { advancement: this.advancement }).toJSON();
-        break;
-      case 'xml':
-        file = new StackFormatter(modelEntries, { advancement: this.advancement }).toXML();
-        break;
-    }
-    const type = (this.format === 'xml') ? 'application/xml' : 'application/json';
-    const blob = new Blob([file], { type });
-    return this.storageClient.uploadObject(this.bucket, this.objectName, blob).then(() => {
-      this.dirty$.next(false);
-    });
-  }
-
   setExportURLs() {
     const entryModels = this.entries$.value.map(e => e.model);
-    const formatter = new StackFormatter(entryModels, { advancement: this.advancement });
+    const formatter = new StackFormatter(entryModels, {
+      advancement: this.stackFileService.advancement,
+    });
 
     const jsonBlob = new Blob([formatter.toJSON()], { type: 'application/json' });
-    this.jsonBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(jsonBlob));
+    this.jsonBlobUrl = this.sanitizer.sanitize(SecurityContext.URL, URL.createObjectURL(jsonBlob))!;
 
     const xmlBlob = new Blob([formatter.toXML()], { type: 'application/xml' });
-    this.xmlBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(xmlBlob));
-  }
-
-  async convertToJSON() {
-    if (this.converting) {
-      return;
-    }
-
-    if (confirm(`Are you sure you want to convert '${this.objectName}' to the new format?\nThis will delete the original XML file.`)) {
-      this.converting = true;
-
-      if (this.dirty$.value) {
-        await this.saveStack();
-      }
-
-      const entryModels = this.entries$.value.map(e => e.model);
-      StackFileComponent.convertToJSON(
-        this.messageService,
-        this.storageClient,
-        this.bucket,
-        this.objectName,
-        entryModels,
-        { advancement: this.advancement },
-      ).then((jsonObjectName) => {
-        this.router.navigate([jsonObjectName + '.ycs'], {
-          queryParamsHandling: 'preserve',
-          relativeTo: this.route.parent,
-        }).then(() => this.initStackFile());
-      }).finally(() => this.converting = false);
-    }
-  }
-
-  static async convertToJSON(
-    messageService: MessageService,
-    storageClient: StorageClient,
-    bucket: string,
-    objectName: string,
-    entries: Step[],
-    stackOptions: { advancement?: AdvancementParams; }
-  ) {
-    const formatter = new StackFormatter(entries, stackOptions);
-    const blob = new Blob([formatter.toJSON()], { type: 'application/json' });
-    const jsonObjectName = utils.getBasename(objectName);
-
-    if (!jsonObjectName) {
-      messageService.showError('Failed to convert stack');
-      console.error('Failed to convert stack due to objectName');
-      return;
-    }
-    await storageClient.uploadObject(bucket, jsonObjectName + '.ycs', blob);
-    await storageClient.deleteObject(bucket, objectName);
-    return jsonObjectName;
+    this.xmlBlobUrl = this.sanitizer.sanitize(SecurityContext.URL, URL.createObjectURL(xmlBlob))!;
   }
 
   ngOnDestroy() {
+    this.clearStepScopedSubscriptions();
     this.parameterSubscription?.cancel();
     this.commandSubscription?.cancel();
-    this.stackOptionsForm.reset();
   }
 }

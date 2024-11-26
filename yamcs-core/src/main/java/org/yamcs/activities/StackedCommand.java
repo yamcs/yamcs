@@ -10,7 +10,7 @@ import org.yamcs.xtce.MetaCommand;
 /**
  * Keep track of the lifecycle of a stacked command.
  */
-public class StackedCommand {
+public class StackedCommand implements Step {
 
     private String acknowledgment;
     // -1 means: inherit from stack

@@ -1,0 +1,35 @@
+<app-instance-page>
+  <app-instance-toolbar>
+    <ya-page-icon-button
+      [routerLink]="folderLink()"
+      [queryParams]="{ c: yamcs.context }"
+      icon="arrow_back" />
+    {{ objectName() | basename }}
+    &nbsp;&nbsp;&nbsp;
+    <ya-page-button
+      matTooltip="Save stack"
+      (click)="stackFileService.saveStack()"
+      [disabled]="!(stackFileService.dirty$ | async)"
+      icon="save">
+      Save
+    </ya-page-button>
+  </app-instance-toolbar>
+
+  <div class="main-pane">
+    <app-stack-file-page-tabs [objectName]="objectName()" />
+
+    <div class="tab-content">
+      <table class="mono" style="width: 100%">
+        @for (log of stackFileService.logs$ | async; track log) {
+          <tr>
+            <td style="text-align: right" width="1">[{{ log.executionNumber }}]</td>
+            <td class="time" style="white-space: nowrap" width="1">
+              [{{ log.time | datetime: false }}]
+            </td>
+            <td class="message">{{ log.text }}</td>
+          </tr>
+        }
+      </table>
+    </div>
+  </div>
+</app-instance-page>

@@ -14,10 +14,8 @@ import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/insta
 import { CreateStackDialogComponent } from '../create-stack-dialog/create-stack-dialog.component';
 import { CreateStackFolderDialogComponent } from '../create-stack-folder-dialog/create-stack-folder-dialog.component';
 import { RenameStackDialogComponent } from '../rename-stack-dialog/rename-stack-dialog.component';
-import { StackFileComponent } from '../stack-file/stack-file.component';
 
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
-import { parseXML } from '../stack-file/xmlparse';
 
 @Component({
   standalone: true,
@@ -190,26 +188,6 @@ export class StackFolderComponent implements OnDestroy {
     Promise.all(uploadPromises)
       .then(() => this.loadCurrentFolder())
       .catch(err => this.messageService.showError(err));
-  }
-
-  convertToJSON(event: MouseEvent, name: string) {
-    if (this.converting) {
-      return;
-    }
-    if (event.shiftKey || confirm(`Are you sure you want to convert '${name}' to the new format?\nThis wil delete the original XML file.\n(Press shift if you do not want to show this dialog)`)) {
-      this.converting = true;
-      this.storageClient.getObject(this.bucket, name).then(async response => {
-        if (response.ok) {
-          const text = await response.text();
-          const entries = parseXML(text, this.configService.getCommandOptions());
-          await StackFileComponent.convertToJSON(this.messageService, this.storageClient, this.bucket, name, entries, {});
-          this.loadCurrentFolder();
-        } else {
-          this.messageService.showError("Failed to load '" + name + "' for conversion");
-        }
-      }).finally(() => { this.converting = false; });
-
-    }
   }
 
   private getCurrentPath() {

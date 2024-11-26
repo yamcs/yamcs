@@ -1,0 +1,18 @@
+@if (comparison.status) {
+  @switch (comparison.status()) {
+    @case ("ok") {
+      <mat-icon matTooltip="Condition satisfied" class="icon16 ok">check_circle_outline</mat-icon>
+    }
+    @case ("pending") {
+      <mat-icon matTooltip="Verifying condition" class="icon16 pending">sync</mat-icon>
+    }
+    @case ("nok") {
+      <mat-icon matTooltip="Condition not satisfied" class="icon16 failed">highlight_off</mat-icon>
+    }
+    @case ("cancelled") {
+      <mat-icon matTooltip="Verification cancelled" class="icon16 cancelled">block</mat-icon>
+    }
+  }
+} @else {
+  <mat-icon matTooltip="Unknown" class="icon16 nvl">lens</mat-icon>
+}

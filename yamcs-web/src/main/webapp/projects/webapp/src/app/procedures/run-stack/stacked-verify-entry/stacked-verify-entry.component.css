@@ -1,0 +1,31 @@
+:host {
+  display: block;
+  position: relative;
+}
+
+table {
+  padding-left: 18px;
+  padding-right: 18px;
+  background-color: #fafafa;
+}
+
+:host ::ng-deep tr.mat-mdc-row {
+  background: #fafafa;
+}
+
+:host ::ng-deep td:first-child {
+  padding-left: 0 !important;
+}
+
+.evaluation {
+  font-family: 'Roboto Mono', monospace;
+  background-color: #ffeef0;
+  color: red;
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+.evaluation.valid {
+  background-color: #e6ffed;
+  color: #00c752;
+}

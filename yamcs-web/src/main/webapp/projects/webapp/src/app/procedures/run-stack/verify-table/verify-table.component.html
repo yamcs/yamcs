@@ -1,0 +1,15 @@
+<table>
+  @for (namedPval of entry.pvals; track namedPval) {
+    <tr>
+      <td style="width: 16px">
+        <div style="display: flex; align-items: center">
+          <app-verify-icon [comparison]="namedPval" />
+        </div>
+      </td>
+      <td style="padding-right: 20px">
+        {{ namedPval.parameter }}
+      </td>
+      <td>{{ (namedPval.pval?.engValue | value) ?? "-" }}</td>
+    </tr>
+  }
+</table>

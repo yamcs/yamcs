@@ -12,7 +12,7 @@ import com.google.gson.JsonObject;
 
 public class CommandStack {
 
-    private List<StackedCommand> commands = new ArrayList<>();
+    private List<Step> steps = new ArrayList<>();
     private String acknowledgment = CommandHistoryPublisher.AcknowledgeQueued_KEY;
     private int waitTime = 0;
 
@@ -32,12 +32,12 @@ public class CommandStack {
         this.waitTime = waitTime;
     }
 
-    public void addCommand(StackedCommand command) {
-        commands.add(command);
+    public void addStep(Step step) {
+        steps.add(step);
     }
 
-    public List<StackedCommand> getCommands() {
-        return commands;
+    public List<Step> getSteps() {
+        return steps;
     }
 
     public static CommandStack fromJson(String json, Mdb mdb) throws CommandStackParseException {
@@ -63,19 +63,66 @@ public class CommandStack {
         if (stackObject.has("steps")) { // v2
             for (var stepEl : stackObject.getAsJsonArray("steps")) {
                 var stepObject = stepEl.getAsJsonObject();
-                if (stepObject.get("type").getAsString().equals("command")) {
+                var stepType = stepObject.get("type").getAsString();
+                if (stepType.equals("command")) {
                     var command = parseCommand(mdb, stepObject);
-                    stack.addCommand(command);
+                    stack.addStep(command);
+                } else if (stepType.equals("verify")) {
+                    var verify = parseVerify(mdb, stepObject);
+                    stack.addStep(verify);
                 }
             }
         } else if (stackObject.has("commands")) { // v1
             for (var commandEl : stackObject.getAsJsonArray("commands")) {
                 var command = parseCommand(mdb, commandEl.getAsJsonObject());
-                stack.addCommand(command);
+                stack.addStep(command);
             }
         }
 
         return stack;
+    }
+
+    private static StackedVerify parseVerify(Mdb mdb, JsonObject verifyObject) throws CommandStackParseException {
+        var stackedVerify = new StackedVerify();
+
+        if (verifyObject.has("condition")) {
+            var comparisonsArray = verifyObject.get("condition").getAsJsonArray();
+            for (var comparisonEl : comparisonsArray) {
+                var comparisonObject = comparisonEl.getAsJsonObject();
+
+                var parameterName = comparisonObject.get("parameter").getAsString();
+                var parameter = mdb.getParameter(parameterName);
+                if (parameter == null) {
+                    throw new CommandStackParseException(
+                            "Parameter " + parameterName + " does not exist in MDB");
+                }
+
+                var operator = comparisonObject.get("operator").getAsString();
+
+                Object value;
+                var jsonValue = comparisonObject.get("value").getAsJsonPrimitive();
+                if (jsonValue.isBoolean()) {
+                    value = jsonValue.getAsBoolean();
+                } else if (jsonValue.isNumber()) {
+                    value = jsonValue.getAsNumber();
+                } else if (jsonValue.isString()) {
+                    value = jsonValue.getAsString();
+                } else {
+                    throw new CommandStackParseException("Unexpected comparand of class " + jsonValue.getClass());
+                }
+
+                stackedVerify.addComparison(parameter, operator, value);
+            }
+        }
+
+        if (verifyObject.has("delay")) {
+            stackedVerify.setDelay(verifyObject.get("delay").getAsLong());
+        }
+        if (verifyObject.has("timeout")) {
+            stackedVerify.setTimeout(verifyObject.get("timeout").getAsLong());
+        }
+
+        return stackedVerify;
     }
 
     private static StackedCommand parseCommand(Mdb mdb, JsonObject commandObject) throws CommandStackParseException {
