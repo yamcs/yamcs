@@ -1,0 +1,86 @@
+<h2 mat-dialog-title>Step: Verify parameters</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="ya-form">
+    <ya-stepper>
+      <ya-stepper-step label="Parameters" [expanded]="true">
+        <div class="label">
+          <table class="condition-table" formArrayName="condition">
+            @for (
+              comparison of comparisonGroups;
+              track comparison;
+              let i = $index;
+              let first = $first;
+              let last = $last
+            ) {
+              <tr [formGroupName]="i">
+                <td style="width: 70%">
+                  <app-parameter-input formControlName="parameter" />
+                </td>
+                <td style="white-space: nowrap">
+                  <ya-select class="operator" formControlName="operator">
+                    <ya-option id="eq" label="=" />
+                    <ya-option id="neq" label="!=" />
+                    <ya-option id="lt" label="&lt;" />
+                    <ya-option id="lte" label="&lt;=" />
+                    <ya-option id="gt" label="&gt;" />
+                    <ya-option id="gte" label="&gt;=" />
+                  </ya-select>
+                </td>
+                <td style="width: 30%">
+                  <input type="text" formControlName="value" />
+                </td>
+                <td style="white-space: nowrap">
+                  <ya-icon-action
+                    icon="keyboard_arrow_down"
+                    [disabled]="last"
+                    (click)="moveComparisonGroupDown(i)" />
+                  <ya-icon-action
+                    icon="keyboard_arrow_up"
+                    [disabled]="first"
+                    (click)="moveComparisonGroupUp(i)" />
+                  <ya-text-action icon="delete" (click)="removeComparisonGroup(i)">
+                    DELETE
+                  </ya-text-action>
+                </td>
+              </tr>
+            }
+            <tr>
+              <td colspan="1">
+                <ya-button icon="add_circle_outline" (click)="addComparisonGroup()">
+                  &nbsp;Add
+                </ya-button>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </ya-stepper-step>
+
+      <ya-stepper-step label="Timing">
+        <div class="label">
+          Delay (milliseconds)
+          <input type="number" formControlName="delay" />
+          <span class="hint">Initial delay before verifying the condition</span>
+        </div>
+        <br />
+        <div class="label">
+          Timeout (milliseconds)
+          <input type="number" formControlName="timeout" />
+          <span class="hint">Maximum wait time before aborting the verification</span>
+        </div>
+      </ya-stepper-step>
+
+      <ya-stepper-step label="Comment">
+        <app-markdown-input formControlName="comment" />
+      </ya-stepper-step>
+    </ya-stepper>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <div style="flex: 1 1 auto"></div>
+  <ya-button mat-dialog-close>CANCEL</ya-button>
+  <ya-button appearance="primary" (click)="save()" [disabled]="!form.valid">
+    {{ data.edit ? "UPDATE" : "ADD TO STACK" }}
+  </ya-button>
+</mat-dialog-actions>

@@ -1,7 +1,34 @@
-.panel-wrapper {
-  position: relative;
+:host ::ng-deep h1,
+:host ::ng-deep h2,
+:host ::ng-deep h3,
+:host ::ng-deep h4,
+:host ::ng-deep h5,
+:host ::ng-deep h6 {
+  margin-top: 0;
+  line-height: 1em;
+}
+
+.main-pane {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px;
+}
+
+.main-pane.with-info-pane {
+  right: 450px;
+}
+
+.tab-content {
+  position: absolute;
+  top: calc(24px + 36px);
+  bottom: 0;
+  left: 0;
+  right: 0;
   overflow: auto;
-  height: 100%;
+  padding: 24px;
 }
 
 .ya-data-table td {
@@ -34,7 +61,7 @@ div.entry.selected div.out {
 div.entry .seq {
   width: 64px;
   text-align: right;
-  padding-top: 5px;
+  padding-top: 0;
   padding-right: 10px;
   user-select: none;
   -webkit-user-select: none;
@@ -57,13 +84,17 @@ div.entry .body {
   padding: 5px;
 }
 
+div.entry.display-text .body {
+  padding: 0;
+}
+
 div.entry div.in .body {
   background-color: #fafafa;
   border: 1px solid rgb(224, 224, 224);
   font-family: 'Roboto Mono', monospace;
 }
 
-div.entry.text div.in .body {
+div.entry.display-text div.in .body {
   background-color: inherit;
   border-color: transparent;
 }
@@ -73,29 +104,7 @@ div.entry div.out .body.err {
   color: var(--y-error-color);
 }
 
-div.entry div.in .body.note {
-  background-color: lightyellow;
-}
-
 .cdk-drag-placeholder {
-  opacity: 0.6;
-}
-
-
-form.stack-options {
-  line-height: 0;
-  display: flex;
-  align-items: flex-start;
-}
-
-.stack-options .label {
-  display: inline-block;
-  width: unset;
-  margin-right: 1em;
-  margin-top: 0;
-}
-
-.disabled .label {
   opacity: 0.6;
 }
 
@@ -112,6 +121,6 @@ form.stack-options {
   font-weight: 500;
 }
 
-.comment .title .text {
+.comment .title .display-text {
   margin-left: 5px;
 }

@@ -5,10 +5,10 @@ import { CanDeactivateFn } from '@angular/router';
 import { ConfigService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Observer, of } from 'rxjs';
 import { AuthService } from '../../../core/services/AuthService';
-import { StackFileComponent } from '../stack-file/stack-file.component';
+import { StackFileService } from '../stack-file/StackFileService';
 import { StackFilePageDirtyDialog } from './stack-file-dirty-guard-dialog.component';
 
-export const stackFilePageDirtyGuardFn: CanDeactivateFn<StackFileComponent> = (component: StackFileComponent) => {
+export const stackFilePageDirtyGuardFn: CanDeactivateFn<unknown> = (component: unknown) => {
   return inject(StackFilePageDirtyGuard).canDeactivate(component);
 };
 
@@ -26,11 +26,12 @@ export class StackFilePageDirtyGuard {
     private dialog: MatDialog,
     private authService: AuthService,
     configService: ConfigService,
+    private stackFileService: StackFileService,
   ) {
     this.bucket = configService.getStackBucket();
   }
 
-  canDeactivate(component: StackFileComponent) {
+  canDeactivate(component: unknown) {
     // Copy the result of the first triggered dialog
     if (this.dialogOpen$.value) {
       return new Observable((observer: Observer<boolean>) => {
@@ -47,7 +48,7 @@ export class StackFilePageDirtyGuard {
       });
     }
 
-    if (component.hasPendingChanges() && this.mayManageStacks()) {
+    if (this.stackFileService.dirty$.value && this.mayManageStacks()) {
       return new Observable((observer: Observer<boolean>) => {
         this.dialogOpen$.next(true);
         this.dialogRef = this.dialog.open(StackFilePageDirtyDialog, {

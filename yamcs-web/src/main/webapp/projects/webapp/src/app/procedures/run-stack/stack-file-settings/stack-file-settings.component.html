@@ -1,0 +1,61 @@
+<app-instance-page>
+  <app-instance-toolbar>
+    <ya-page-icon-button
+      [routerLink]="folderLink()"
+      [queryParams]="{ c: yamcs.context }"
+      icon="arrow_back" />
+    {{ objectName() | basename }}
+    &nbsp;&nbsp;&nbsp;
+    <ya-page-button
+      matTooltip="Save stack"
+      (click)="stackFileService.saveStack()"
+      [disabled]="!(stackFileService.dirty$ | async)"
+      icon="save">
+      Save
+    </ya-page-button>
+  </app-instance-toolbar>
+
+  <div class="main-pane">
+    <app-stack-file-page-tabs [objectName]="objectName()" />
+
+    <div class="tab-content">
+      <form [formGroup]="stackOptionsForm" class="ya-form">
+        <h3>Commanding</h3>
+        <div class="label">
+          Advance when
+          <app-advance-ack-help [extra]="extraAcknowledgments" />
+          <br />
+          <div style="display: flex; align-items: flex-start">
+            <ya-select
+              #ackSelect
+              [options]="ackOptions"
+              icon="check_circle_outline"
+              formControlName="advancementAckDropDown" />
+            @if (stackOptionsForm.get("advancementAckDropDown")?.value === "custom") {
+              <input
+                type="text"
+                formControlName="advancementAckCustom"
+                style="width: 200px; margin-left: -1px" />
+            }
+          </div>
+        </div>
+        <br />
+        <div class="label">
+          Wait (ms)
+          <ya-help dialogTitle="Wait time">
+            <p>Wait time before advancing to the next command in the stack.</p>
+            <p>This triggers after successful acknowledgment.</p>
+          </ya-help>
+          <br />
+          <input
+            type="number"
+            formControlName="advancementWait"
+            placeholder="0"
+            step="1000"
+            min="0"
+            style="width: 120px" />
+        </div>
+      </form>
+    </div>
+  </div>
+</app-instance-page>

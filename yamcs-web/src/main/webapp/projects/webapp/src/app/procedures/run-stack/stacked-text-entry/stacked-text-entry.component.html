@@ -1,3 +1,3 @@
 @if (entry(); as entry) {
-  <app-markdown [text]="entry.text" />
+  <app-markdown [text]="entry.renderedText()" />
 }

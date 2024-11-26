@@ -1,0 +1,37 @@
+:host {
+  line-height: 0;
+  font-size: 0;
+}
+
+.ok {
+  color: #00c752;
+}
+
+.pending {
+  color: grey;
+  animation: yspin 2s infinite linear;
+}
+
+.cancelled {
+  color: grey;
+}
+
+.failed {
+  color: var(--y-error-color);
+}
+
+.nvl {
+  color: grey;
+}
+
+@keyframes yspin {
+  0% {
+    -webkit-transform: rotate(0deg) scaleX(-1);
+    transform: rotate(0deg) scaleX(-1);
+  }
+
+  100% {
+    -webkit-transform: rotate(359deg) scaleX(-1);
+    transform: rotate(359deg) scaleX(-1);
+  }
+}

@@ -1,4 +1,4 @@
-import { AdvancementParams, CheckStep, CommandOption, CommandStep, Step, TextStep, Value } from '@yamcs/webapp-sdk';
+import { AdvancementParams, CheckStep, CommandOption, CommandStep, Step, TextStep, Value, VerifyStep } from '@yamcs/webapp-sdk';
 
 export function parseYCS(json: string, commandOptions: CommandOption[]) {
   const steps: Step[] = [];
@@ -12,6 +12,8 @@ export function parseYCS(json: string, commandOptions: CommandOption[]) {
         steps.push(parseCommandEntry(step, commandOptions));
       } else if (step.type === 'text') {
         steps.push(parseTextEntry(step));
+      } else if (step.type === 'verify') {
+        steps.push(parseVerifyEntry(step));
       } else {
         console.warn(`Unexpected entry of type '${step.type}'`);
       }
@@ -47,6 +49,11 @@ function parseCommandEntry(entry: { [key: string]: any; }, commandOptions: Comma
 function parseCheckEntry(entry: { [key: string]: any; }) {
   // No transformations
   return entry as CheckStep;
+}
+
+function parseVerifyEntry(entry: { [key: string]: any; }) {
+  // No transformations
+  return entry as VerifyStep;
 }
 
 function parseTextEntry(entry: { [key: string]: any; }) {

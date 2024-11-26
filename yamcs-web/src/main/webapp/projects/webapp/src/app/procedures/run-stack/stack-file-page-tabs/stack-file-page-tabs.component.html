@@ -1,0 +1,37 @@
+<nav mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
+  <a
+    mat-tab-link
+    [routerLink]="'/procedures/stacks/files/' + objectName()"
+    routerLinkActive
+    [routerLinkActiveOptions]="{ exact: true }"
+    #rla="routerLinkActive"
+    [active]="rla.isActive"
+    [queryParams]="{ c: yamcs.context }">
+    Steps
+  </a>
+  <a
+    mat-tab-link
+    [routerLink]="'/procedures/stacks/files/' + objectName() + '/-/log'"
+    routerLinkActive
+    #rlb="routerLinkActive"
+    [active]="rlb.isActive"
+    [queryParams]="{ c: yamcs.context }">
+    Log
+  </a>
+  <a
+    mat-tab-link
+    [routerLink]="'/procedures/stacks/files/' + objectName() + '/-/settings'"
+    routerLinkActive
+    #rlc="routerLinkActive"
+    [active]="rlc.isActive"
+    [queryParams]="{ c: yamcs.context }">
+    Settings
+  </a>
+  <span style="flex: 1 1 auto"></span>
+  <div style="align-self: center">
+    <ng-content />
+  </div>
+</nav>
+<mat-tab-nav-panel #tabPanel>
+  <router-outlet />
+</mat-tab-nav-panel>

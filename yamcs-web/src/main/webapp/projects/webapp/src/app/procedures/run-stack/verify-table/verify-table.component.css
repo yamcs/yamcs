@@ -1,0 +1,21 @@
+table {
+  width: auto;
+}
+
+table td {
+  border: none;
+  padding: 0;
+}
+
+table td:not(:first-child) {
+  padding-left: 10px;
+}
+
+table td {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+table td {
+  color: rgba(0, 0, 0, .654);
+}

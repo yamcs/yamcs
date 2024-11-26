@@ -14,10 +14,10 @@
         <td>{{ constraint.expression }}</td>
         <td style="white-space: nowrap">{{ (constraint.timeout | millisDuration) || "-" }}</td>
         <td style="white-space: nowrap">
-          @if ((expr.result$ | async) === true) {
+          @if (expr.result() === true) {
             <span class="evaluation valid">satisfied</span>
           }
-          @if ((expr.result$ | async) === false) {
+          @if (expr.result() === false) {
             <span class="evaluation invalid">not satisfied</span>
           }
           <app-live-expression

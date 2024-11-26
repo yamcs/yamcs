@@ -6,6 +6,7 @@ export * from './lib/commanding/CommandHistoryRecord';
 export * from './lib/commanding/ParameterCheck';
 export * from './lib/commanding/StackFormatter';
 export * from './lib/commanding/Step';
+export * from './lib/commanding/VerifyComparison';
 export * from './lib/components/action-log-summary/action-log-summary.component';
 export * from './lib/components/binary-input/binary-input.component';
 export * from './lib/components/breadcrumb/breadcrumb-trail.component';

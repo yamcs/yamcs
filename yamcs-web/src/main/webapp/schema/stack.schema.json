@@ -32,7 +32,8 @@
             "enum": [
               "check",
               "command",
-              "text"
+              "text",
+              "verify"
             ]
           },
           "comment": {
@@ -172,6 +173,71 @@
               },
               "required": [
                 "text"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "type": {
+                  "const": "verify"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "condition": {
+                  "type": "array",
+                  "description": "Comparisons to verify (all must be satisfied)",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "parameter": {
+                        "type": "string",
+                        "description": "Qualified parameter name"
+                      },
+                      "operator": {
+                        "type": "string",
+                        "description": "Comparison operator",
+                        "enum": [
+                          "eq",
+                          "neq",
+                          "le",
+                          "lte",
+                          "gt",
+                          "gte"
+                        ]
+                      },
+                      "value": {
+                        "type": [
+                          "array",
+                          "boolean",
+                          "number",
+                          "object",
+                          "string"
+                        ],
+                        "description": "Value to compare against"
+                      }
+                    },
+                    "required": [
+                      "parameter",
+                      "operator",
+                      "value"
+                    ]
+                  }
+                },
+                "delay": {
+                  "type": "integer",
+                  "description": "Wait time before starting to check (in milliseconds)",
+                  "default": 0
+                },
+                "timeout": {
+                  "type": "integer",
+                  "description": "How long before the verification is considered unsuccessful (in milliseconds)"
+                }
+              },
+              "required": [
+                "condition"
               ]
             }
           }

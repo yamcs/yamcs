@@ -1,24 +1,20 @@
-import { AsyncPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormulaCompiler } from '@yamcs/opi';
 import { NamedObjectId, ParameterSubscription, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 @Component({
   standalone: true,
   selector: 'app-live-expression',
-  template: '{{ result$ | async }}',
+  template: '{{ result() }}',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AsyncPipe,
-  ],
 })
 export class LiveExpressionComponent implements OnInit, OnDestroy {
 
   @Input()
   expression: string;
 
-  result$ = new BehaviorSubject<any>(null);
+  result = signal<any>(null);
 
   private subscription: ParameterSubscription;
   private dirty = false;
@@ -60,22 +56,22 @@ export class LiveExpressionComponent implements OnInit, OnDestroy {
           }
         }
 
-        if (this.result$.value === null) { // First value: fast page update
+        if (this.result() === null) { // First value: fast page update
           const output = script.execute();
-          this.result$.next(output);
+          this.result.set(output);
         } else { // Throttle follow-on updates
           this.dirty = true;
         }
       });
     } else {
       const output = script.execute();
-      this.result$.next(output);
+      this.result.set(output);
     }
 
-    this.syncSubscription = this.synchronizer.sync(() => {
+    this.syncSubscription = this.synchronizer.syncFast(() => {
       if (this.dirty) {
         const output = script.execute();
-        this.result$.next(output);
+        this.result.set(output);
         this.dirty = false;
       }
     });

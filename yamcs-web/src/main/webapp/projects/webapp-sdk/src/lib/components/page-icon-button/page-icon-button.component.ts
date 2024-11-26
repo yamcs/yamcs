@@ -22,7 +22,9 @@ export class YaPageIconButton {
   click = output<MouseEvent>();
 
   onClick(event: MouseEvent) {
-    this.click.emit(event);
+    if (!this.disabled()) {
+      this.click.emit(event);
+    }
     event.stopPropagation();
   }
 }

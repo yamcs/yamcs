@@ -1,0 +1,18 @@
+.condition-table {
+  width: 100%;
+}
+
+.condition-table td:first-child {
+  margin-left: 0;
+  padding-left: 0
+}
+
+
+:host ::ng-deep .condition-table input {
+  margin: 0 !important;
+}
+
+:host ::ng-deep ya-select.operator ya-button {
+  margin-top: 0;
+  width: 100%;
+}
