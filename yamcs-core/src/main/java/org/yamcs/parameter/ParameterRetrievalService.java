@@ -3,12 +3,15 @@ package org.yamcs.parameter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.function.Consumer;
 
 import org.rocksdb.RocksDBException;
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.InitException;
-import org.yamcs.Processor;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.http.api.ParameterReplayListener;
@@ -42,11 +45,17 @@ public class ParameterRetrievalService extends AbstractYamcsService {
     String procName = DEFAULT_PROCESSOR;
     ParameterCache pcache;
     ParameterArchive parchive;
-
+    ExecutorService executor;
+    
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         super.init(yamcsInstance, serviceName, config);
         this.procName = config.getString("processor", DEFAULT_PROCESSOR);
+        
+        int parallelRetrievals = config.getInt("parallelRetrievals", 2);
+        this.executor = createExecutor(parallelRetrievals);
     }
+
+   
 
     @Override
     protected void doStart() {
@@ -58,6 +67,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
 
     @Override
     protected void doStop() {
+        executor.shutdown();
         notifyStopped();
     }
 
@@ -253,5 +263,20 @@ public class ParameterRetrievalService extends AbstractYamcsService {
             pv1 = pv;
         }
         replayListener.update(new ParameterValueWithId(pv1, pid.getId()));
+    }
+    
+    
+    private ExecutorService createExecutor(int numThreads) {
+        return Executors.newFixedThreadPool(numThreads, new ThreadFactory() {
+            private int count = 1;
+
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r);
+                thread.setName("ParameterRetrievalService-" + count++);
+                return thread;
+            }
+        });
+
     }
 }
