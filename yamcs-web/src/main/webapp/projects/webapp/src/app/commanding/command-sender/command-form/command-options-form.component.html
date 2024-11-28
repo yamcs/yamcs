@@ -4,7 +4,7 @@
     <br />
     <span class="hint">Override the stream on which the command should be sent out.</span>
     <br />
-    <ya-select [options]="streamOptions$ | async" formControlName="stream" />
+    <ya-select [options]="streamOptions$ | async" formControlName="stream" [showClear]="true" />
   </div>
 
   @if (commandOptions.length) {
