@@ -1,15 +1,16 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DownloadPacketsOptions, GetPacketsOptions, MessageService, Packet, Synchronizer, WebappSdkModule, YaColumnInfo, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { BitRange, DownloadPacketsOptions, ExtractPacketResponse, GetPacketsOptions, MessageService, Packet, Synchronizer, WebappSdkModule, YaColumnInfo, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { HexComponent } from '../../../shared/hex/hex.component';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { PacketDownloadLinkPipe } from './packet-download-link.pipe';
 import { PacketsDataSource } from './packets.datasource';
+import { PacketDetailTableComponent } from '../packet-detail-table/packet-detail-table.component';
 
 const defaultInterval = 'PT1H';
 
@@ -24,9 +25,16 @@ const defaultInterval = 'PT1H';
     InstancePageTemplateComponent,
     PacketDownloadLinkPipe,
     WebappSdkModule,
+    PacketDetailTableComponent,
   ],
 })
 export class PacketListComponent {
+
+  @ViewChild(HexComponent)
+  private hex: HexComponent;
+
+  @ViewChild(PacketDetailTableComponent)
+  private packetDetailTable: PacketDetailTableComponent;
 
   columns: YaColumnInfo[] = [
     { id: 'packetName', label: 'Packet name', alwaysVisible: true },
@@ -38,6 +46,9 @@ export class PacketListComponent {
     { id: 'size', label: 'Size', visible: true },
     { id: 'actions', label: '', alwaysVisible: true },
   ];
+
+  reducedValueColumns: string[] = ['icon', 'expand-aggray', 'entry', 'engValue'];
+  reducedContainerColumns: string[] = ['icon', 'containerName'];
 
   validStart: Date | null;
   validStop: Date | null;
@@ -300,6 +311,13 @@ export class PacketListComponent {
   selectPacket(packet: Packet) {
     this.fetchPacket(packet).then(packetDetail => {
       this.detailPacket$.next(packetDetail);
+      if (this.packetDetailTable) {
+        this.yamcs.yamcsClient.extractPacket(this.yamcs.instance!, packet.id.name, packet.generationTime, packet.sequenceNumber)
+          .then((extractResponse: ExtractPacketResponse) => {
+            this.packetDetailTable.processResponse(extractResponse);
+          })
+          .catch(err => this.messageService.showError(err));
+      }
     }).catch(err => this.messageService.showError(err));
   }
 
@@ -331,5 +349,17 @@ export class PacketListComponent {
         && packet.sequenceNumber === detail.sequenceNumber;
     }
     return false;
+  }
+
+  onHighlightBitRange(event: BitRange) {
+    this.hex?.setHighlight(event);
+  }
+
+  onClearHighlightedBitRange() {
+    this.hex?.setHighlight(null);
+  }
+
+  onSelectBitRange(event: BitRange) {
+    this.hex?.setSelection(event);
   }
 }
