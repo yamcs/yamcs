@@ -3,7 +3,9 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatDivider } from '@angular/material/divider';
 import { MatIcon } from '@angular/material/icon';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
+import { MatTooltip } from '@angular/material/tooltip';
 import { YaButton } from '../button/button.component';
+import { YaIconAction } from '../icon-action/icon-action.component';
 import { YaOption } from '../option/option.component';
 
 export interface YaSelectOption {
@@ -29,13 +31,16 @@ export interface YaSelectOption {
     MatMenu,
     MatMenuItem,
     MatMenuTrigger,
+    MatTooltip,
     YaButton,
+    YaIconAction,
   ],
 })
 export class YaSelect implements ControlValueAccessor {
 
   icon = input<string>();
   emptyOption = input<string>('-- select an option --');
+  showClear = input<boolean>(false);
 
   // Options are allowed to be provided as children, or
   // in a single attribute.
@@ -68,6 +73,10 @@ export class YaSelect implements ControlValueAccessor {
       return value === id || value === null;
     }
     return value === id;
+  }
+
+  clearValue() {
+    this.writeValue(null);
   }
 
   writeValue(value: any) {

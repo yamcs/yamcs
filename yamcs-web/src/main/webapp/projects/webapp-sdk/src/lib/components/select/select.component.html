@@ -5,6 +5,15 @@
     <span style="color: grey">{{ emptyOption() }}</span>
   }
 </ya-button>
+@if (showClear()) {
+  <ya-icon-action
+    class="no-print"
+    icon="clear"
+    [padding]="true"
+    [disabled]="!label()"
+    (click)="clearValue()"
+    matTooltip="Clear value" />
+}
 
 <mat-menu #selMenu="matMenu" yPosition="below" class="ya-menu" [overlapTrigger]="false">
   @for (option of options(); track option) {
