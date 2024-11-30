@@ -52,8 +52,10 @@ public class MultiParameterRetrieval {
 
         for (int i = 0; i < mpvr.parameterIds.length; i++) {
             ParameterId paraId = mpvr.parameterIds[i];
-            ParameterRetrievalOptions req = new ParameterRetrievalOptions(mpvr.start, mpvr.stop, mpvr.ascending, mpvr.retrieveEngValues,
-                    mpvr.retrieveRawValues && paraId.hasRawValue(), mpvr.retrieveParamStatus);
+            ParameterRetrievalOptions req = ParameterRetrievalOptions.newBuilder().withStartStop(mpvr.start, mpvr.stop)
+                    .withAscending(mpvr.ascending).withRetrieveEngineeringValues(mpvr.retrieveEngValues)
+                    .withRetrieveRawValues(mpvr.retrieveRawValues && paraId.hasRawValue())
+                    .withRetrieveParameterStatus(mpvr.retrieveParamStatus).build();
 
             if (parameterGroupIds != null) {
                 queueIterator(queue, paraId, parameterGroupIds[i], req);

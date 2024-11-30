@@ -10,7 +10,6 @@ import org.yamcs.parameter.ParameterRetrievalOptions;
 import org.yamcs.protobuf.ArchiveParameterSegmentInfo;
 import org.yamcs.utils.TimeEncoding;
 
-
 public class ParameterInfoRetrieval {
     final private ParameterArchive parchive;
     private final Logger log = LoggerFactory.getLogger(ParameterInfoRetrieval.class);
@@ -42,8 +41,11 @@ public class ParameterInfoRetrieval {
     private void retrieveInfo(int parameterGroupId, Consumer<ArchiveParameterSegmentInfo> consumer)
             throws RocksDBException, IOException {
 
-        ParameterRetrievalOptions req = new ParameterRetrievalOptions(start, stop, true, false, false, false);
-
+        ParameterRetrievalOptions req = ParameterRetrievalOptions.newBuilder().withStartStop(start, stop)
+                .withAscending(true)
+                .withRetrieveEngineeringValues(false)
+                .withRetrieveRawValues(false)
+                .withRetrieveParameterStatus(false).build();
 
         try (SegmentIterator it = new SegmentIterator(parchive, parameterId, parameterGroupId, req)) {
             while (it.isValid()) {

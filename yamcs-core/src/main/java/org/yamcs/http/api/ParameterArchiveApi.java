@@ -14,6 +14,7 @@ import org.yamcs.http.Context;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
+import org.yamcs.http.api.AbstractPaginatedParameterRetrievalConsumer.PaginatedSingleParameterRetrievalConsumer;
 import org.yamcs.http.api.Downsampler.Sample;
 import org.yamcs.http.api.ParameterRanger.Range;
 import org.yamcs.logging.Log;
@@ -185,19 +186,24 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
                 .withRetrieveEngineeringValues(!useRawValue)
                 .withNorealtime(request.getNorealtime())
                 .build();
-        try {
-            prs.retrieveScalar(pid, opts, sampler);
-        } catch (IOException e) {
-            log.warn("Received exception during parameter retrieval", e);
-            throw new InternalServerErrorException(e.toString());
-        }
+        prs.retrieveScalar(pid, opts, sampler)
+                .thenRun(() -> {
 
-        TimeSeries.Builder series = TimeSeries.newBuilder();
-        for (Sample s : sampler.collect()) {
-            series.addSample(StreamArchiveApi.toGPBSample(s));
-        }
+                    TimeSeries.Builder series = TimeSeries.newBuilder();
+                    for (Sample s : sampler.collect()) {
+                        series.addSample(StreamArchiveApi.toGPBSample(s));
+                    }
 
-        observer.complete(series.build());
+                    observer.complete(series.build());
+
+                    prs.retrieveScalar(pid, opts, sampler);
+                })
+                .exceptionally(e -> {
+                    log.warn("Received exception during parameter retrieval", e);
+                    observer.completeExceptionally(new InternalServerErrorException(e.toString()));
+                    return null;
+                });
+
     }
 
     @Override
@@ -222,7 +228,6 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         long minRange = request.hasMinRange() ? request.getMinRange() : -1;
         int maxValues = request.hasMaxValues() ? request.getMaxValues() : -1;
 
-
         ParameterRanger ranger = new ParameterRanger(minGap, maxGap, minRange, maxValues);
 
         ParameterRetrievalService prs = getParameterRetrievalService(ysi);
@@ -232,20 +237,20 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
                 .withNorealtime(request.getNorealtime())
                 .build();
 
-        try {
-                prs.retrieveScalarParameterArchive(pid, opts, ranger);
-        } catch (IOException e) {
-            log.warn("Received exception during parameter retrieval", e);
-            throw new InternalServerErrorException(e.toString());
-        }
+        prs.retrieveScalar(pid, opts, ranger)
+                .thenRun(() -> {
+                    Ranges.Builder ranges = Ranges.newBuilder();
+                    for (Range r : ranger.getRanges()) {
+                        ranges.addRange(toGPBRange(r));
+                    }
+                    observer.complete(ranges.build());
+                })
+                .exceptionally(e -> {
+                    log.warn("Received exception during parameter retrieval", e);
+                    observer.completeExceptionally(new InternalServerErrorException(e.toString()));
+                    return null;
+                });
 
-
-        Ranges.Builder ranges = Ranges.newBuilder();
-        for (Range r : ranger.getRanges()) {
-            ranges.addRange(toGPBRange(r));
-        }
-
-        observer.complete(ranges.build());
     }
 
     @Override
@@ -292,7 +297,8 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         ListParameterHistoryResponse.Builder resultb = ListParameterHistoryResponse.newBuilder();
         final int fLimit = limit + 1; // one extra to detect continuation token
 
-        ParameterReplayListener replayListener = new ParameterReplayListener(0, fLimit) {
+        PaginatedSingleParameterRetrievalConsumer replayListener = new PaginatedSingleParameterRetrievalConsumer(0,
+                fLimit) {
             @Override
             public void onParameterData(ParameterValueWithId pvwid) {
                 if (resultb.getParameterCount() < fLimit - 1) {
@@ -305,7 +311,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         };
 
         replayListener.setNoRepeat(request.getNorepeat());
-        prs.retrieve(requestedParamWithId, opts, replayListener);
+        prs.retrieveSingle(requestedParamWithId, opts, replayListener);
         observer.complete(resultb.build());
     }
 
@@ -328,7 +334,6 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
         return l.get(0);
     }
-
 
     private boolean isReplayAsked(String source) throws HttpException {
         if (source.equalsIgnoreCase("ParameterArchive")) {

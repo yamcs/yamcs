@@ -10,7 +10,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.yamcs.YamcsServerInstance;
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
 import org.yamcs.archive.ParameterRecorder;
@@ -18,6 +17,7 @@ import org.yamcs.archive.ReplayOptions;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.MediaType;
+import org.yamcs.http.api.AbstractPaginatedParameterRetrievalConsumer.PaginatedMultiParameterRetrievalConsumer;
 import org.yamcs.http.api.Downsampler.Sample;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
@@ -115,7 +115,8 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         ReplayOptions rr = toParameterReplayRequest(p.getId(), start, stop, ascending);
 
         ListParameterHistoryResponse.Builder resultb = ListParameterHistoryResponse.newBuilder();
-        ParameterReplayListener replayListener = new ParameterReplayListener(pos, limit) {
+        PaginatedMultiParameterRetrievalConsumer replayListener = new PaginatedMultiParameterRetrievalConsumer(pos,
+                limit) {
             @Override
             public void onParameterData(List<ParameterValueWithId> params) {
                 for (ParameterValueWithId pvalid : params) {
@@ -136,9 +137,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         replayListener.setNoRepeat(noRepeat);
 
 
-        prs.retrieve(p, opts, replayListener);
-
-        ReplayFactory.replay(instance, ctx.user, rr, replayListener);
+        prs.retrieveMulti(p, opts, replayListener);
     }
 
     public static ParameterValue toGpb(ParameterValueWithId pvalWithId, int maxBytes) {
@@ -172,6 +171,8 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
     public void getParameterSamples(Context ctx, GetParameterSamplesRequest request,
             Observer<TimeSeries> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
+        var ysi = InstancesApi.verifyInstanceObj(request.getInstance());
+        var prs = ParameterArchiveApi.getParameterRetrievalService(ysi);
 
         Mdb mdb = MdbFactory.getInstance(instance);
         Parameter p = MdbApi.verifyParameter(ctx, mdb, request.getName());
@@ -206,7 +207,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                 .withNorealtime(request.getNorealtime())
                 .build();
 
-        ParameterReplayListener replayListener = new ParameterReplayListener() {
+        PaginatedMultiParameterRetrievalConsumer replayListener = new PaginatedMultiParameterRetrievalConsumer() {
             @Override
             public void onParameterData(List<ParameterValueWithId> params) {
                 for (ParameterValueWithId pvalid : params) {
@@ -229,13 +230,16 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             }
         };
 
-        ReplayFactory.replay(instance, ctx.user, repl, replayListener);
+        // prs.retrieveMulti(p, opts, replayListener);
+        // ReplayFactory.replay(instance, ctx.user, repl, replayListener);
     }
 
     @Override
     public void streamParameterValues(Context ctx, StreamParameterValuesRequest request,
             Observer<ParameterData> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
+        var ysi = InstancesApi.verifyInstanceObj(request.getInstance());
+        var prs = ParameterArchiveApi.getParameterRetrievalService(ysi);
 
         ReplayOptions repl = ReplayOptions.getAfapReplay();
         List<NamedObjectId> ids = new ArrayList<>();
@@ -275,7 +279,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         }
 
 
-        var replayListener = new ParameterReplayListener() {
+        var replayListener = new PaginatedMultiParameterRetrievalConsumer() {
 
             @Override
             protected void onParameterData(List<ParameterValueWithId> params) {
@@ -297,14 +301,17 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                 observer.completeExceptionally(t);
             }
         };
-        observer.setCancelHandler(replayListener::requestReplayAbortion);
+        prs.retrieveMulti(null, null, replayListener);
+        // observer.setCancelHandler(replayListener::requestReplayAbortion);
 
-        ReplayFactory.replay(instance, ctx.user, repl, replayListener);
+        // ReplayFactory.replay(instance, ctx.user, repl, replayListener);
     }
 
     @Override
     public void exportParameterValues(Context ctx, ExportParameterValuesRequest request, Observer<HttpBody> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
+        var ysi = InstancesApi.verifyInstanceObj(request.getInstance());
+        var prs = ParameterArchiveApi.getParameterRetrievalService(ysi);
 
         List<NamedObjectId> ids = new ArrayList<>();
         Mdb mdb = MdbFactory.getInstance(instance);
@@ -440,8 +447,9 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         var listener = new CsvParameterStreamer(observer, pos, limit, filename, ids, addRaw, addMonitoring,
                 preserveLastValue, interval, columnDelimiter, header);
 
-        observer.setCancelHandler(listener::requestReplayAbortion);
-        ReplayFactory.replay(instance, ctx.user, repl, listener);
+        prs.retrieveMulti(null, null, listener);
+        // observer.setCancelHandler(listener::requestReplayAbortion);
+        // ReplayFactory.replay(instance, ctx.user, repl, listener);
     }
 
     private static ReplayOptions toParameterReplayRequest(NamedObjectId parameterId, long start, long stop,
@@ -468,7 +476,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         return b.build();
     }
 
-    private static class CsvParameterStreamer extends ParameterReplayListener {
+    private static class CsvParameterStreamer extends PaginatedMultiParameterRetrievalConsumer {
 
         Observer<HttpBody> observer;
         ParameterFormatter formatter;

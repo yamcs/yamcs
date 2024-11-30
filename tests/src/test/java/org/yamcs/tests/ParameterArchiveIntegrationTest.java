@@ -34,7 +34,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
     @BeforeEach
     public void cleanParameterCache() {
         Processor p = YamcsServer.getServer().getProcessor(yamcsInstance, "realtime");
-        p.getParameterCache().clear();
+        // p.getParameterCache().clear();
         archiveClient = yamcsClient.createArchiveClient(yamcsInstance);
     }
 

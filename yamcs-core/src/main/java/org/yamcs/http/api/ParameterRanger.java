@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.parameter.ParameterRetrievalConsumer;
 import org.yamcs.parameter.Value;
 import org.yamcs.parameter.ValueArray;
 import org.yamcs.parameterarchive.ParameterValueArray;
@@ -22,7 +22,7 @@ import org.yamcs.utils.MutableLong;
  * @author nm
  *
  */
-public class ParameterRanger implements Consumer<ParameterValueArray> {
+public class ParameterRanger implements ParameterRetrievalConsumer<ParameterValueArray> {
     private static final Logger log = LoggerFactory.getLogger(ParameterRanger.class);
     static final int MAX_RANGES = 500;
     static final int MAX_VALUES = 100;
