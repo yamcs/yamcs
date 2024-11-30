@@ -8,7 +8,7 @@
     &nbsp;&nbsp;&nbsp;
     <ya-page-button
       matTooltip="Save stack"
-      (click)="stackFileService.saveStack()"
+      (clicked)="stackFileService.saveStack()"
       [disabled]="!(stackFileService.dirty$ | async)"
       icon="save">
       Save

@@ -3,11 +3,16 @@
     Command history &nbsp;&nbsp;&nbsp;
 
     @if (!(dataSource.streaming$ | async)) {
-      <ya-page-button (click)="startStreaming()" icon="play_arrow">Start streaming</ya-page-button>
+      <ya-page-button (clicked)="startStreaming()" icon="play_arrow">
+        Start streaming
+      </ya-page-button>
     }
 
     @if (dataSource.streaming$ | async) {
-      <ya-page-button matTooltip="Pause streaming commands" (click)="stopStreaming()" icon="pause">
+      <ya-page-button
+        matTooltip="Pause streaming commands"
+        (clicked)="stopStreaming()"
+        icon="pause">
         Stop streaming
       </ya-page-button>
     }
@@ -15,7 +20,7 @@
     <ya-page-icon-button
       matTooltip="Jump to now"
       color="primary"
-      (click)="jumpToNow()"
+      (clicked)="jumpToNow()"
       icon="refresh" />
   </app-instance-toolbar>
 

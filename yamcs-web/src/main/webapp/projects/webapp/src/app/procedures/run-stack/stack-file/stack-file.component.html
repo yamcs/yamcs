@@ -8,7 +8,7 @@
     &nbsp;&nbsp;&nbsp;
     <ya-page-button
       matTooltip="Save stack"
-      (click)="stackFileService.saveStack()"
+      (clicked)="stackFileService.saveStack()"
       [disabled]="!(stackFileService.dirty$ | async)"
       icon="save">
       Save
@@ -45,49 +45,49 @@
     <ya-page-icon-button
       matTooltip="Edit the selected step"
       [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
-      (click)="editSelectedEntry()"
+      (clicked)="editSelectedEntry()"
       icon="edit" />
     <ya-page-icon-button
       matTooltip="Cut the selected step"
       [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
-      (click)="cutSelectedEntry()"
+      (clicked)="cutSelectedEntry()"
       icon="content_cut" />
     <ya-page-icon-button
       matTooltip="Copy the selected step"
       [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
-      (click)="copySelectedEntry()"
+      (clicked)="copySelectedEntry()"
       icon="content_copy" />
     <ya-page-icon-button
       matTooltip="Paste entry from the clipboard"
       [disabled]="!format || (running$ | async) || !(clipboardEntry$ | async)"
-      (click)="pasteEntry()"
+      (clicked)="pasteEntry()"
       icon="content_paste" />
     <mat-divider vertical style="height: 100%" />
     <ya-page-icon-button
       matTooltip="Run the selected step"
       [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
-      (click)="runSelection()"
+      (clicked)="runSelection()"
       icon="play_arrow" />
     <ya-page-icon-button
       matTooltip="Stop current execution"
       [disabled]="!format || !(running$ | async)"
-      (click)="stopRun()"
+      (clicked)="stopRun()"
       icon="stop" />
     <ya-page-icon-button
       matTooltip="Clear all outputs"
       [disabled]="!format || (running$ | async) || !(hasState$ | async)"
-      (click)="clearOutputs()"
+      (clicked)="clearOutputs()"
       icon="refresh" />
     <ya-page-icon-button
       matTooltip="Run all from selected step"
       [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
-      (click)="runFromSelection()"
+      (clicked)="runFromSelection()"
       icon="playlist_play" />
     <mat-divider vertical style="height: 100%" />
     @if (showSchedule()) {
       <ya-page-button
         matTooltip="Run stack at a later time"
-        (click)="openScheduleStackDialog()"
+        (clicked)="openScheduleStackDialog()"
         [disabled]="!loaded || format !== 'ycs' || !entries$.value.length"
         icon="schedule">
         Schedule
@@ -98,7 +98,7 @@
       matTooltip="Export stack"
       [matMenuTriggerFor]="exportMenu"
       [disabled]="!format"
-      (click)="setExportURLs()"
+      (clicked)="setExportURLs()"
       icon="open_in_new">
       Export
     </ya-page-button>

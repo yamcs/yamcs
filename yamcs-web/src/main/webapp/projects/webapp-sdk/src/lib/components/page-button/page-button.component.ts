@@ -20,12 +20,11 @@ export class YaPageButton {
   dropdown = input(false, { transform: booleanAttribute });
   color = input<string>('primary');
 
-  click = output<MouseEvent>();
+  clicked = output<MouseEvent>();
 
   onClick(event: MouseEvent) {
     if (!this.disabled()) {
-      this.click.emit(event);
+      this.clicked.emit(event);
     }
-    event.stopPropagation();
   }
 }

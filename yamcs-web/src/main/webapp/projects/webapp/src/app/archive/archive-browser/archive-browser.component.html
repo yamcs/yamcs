@@ -2,7 +2,7 @@
   <app-instance-toolbar>
     Archive browser &nbsp;&nbsp;&nbsp;
     <ya-page-button
-      (click)="replayRange()"
+      (clicked)="replayRange()"
       [disabled]="!(rangeSelection$ | async)"
       icon="video_settings">
       Replay range
@@ -11,7 +11,7 @@
     @if (processor$ | async; as processor) {
       @if (processor.replayRequest; as replayRequest) {
         <ya-page-button
-          (click)="enableLoop(processor, replayRequest.endAction !== 'LOOP')"
+          (clicked)="enableLoop(processor, replayRequest.endAction !== 'LOOP')"
           [disabled]="!replayRequest.start || !replayRequest.stop"
           [icon]="replayRequest.endAction === 'LOOP' ? 'repeat_on' : 'repeat'">
           Repeat: {{ replayRequest.endAction === "LOOP" ? "on" : "off" }}
@@ -20,7 +20,7 @@
     }
 
     <ya-page-button
-      (click)="downloadDump()"
+      (clicked)="downloadDump()"
       [disabled]="!(rangeSelection$ | async)"
       icon="file_download">
       Download dump

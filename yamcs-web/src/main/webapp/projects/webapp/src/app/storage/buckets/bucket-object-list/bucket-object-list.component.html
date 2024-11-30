@@ -4,19 +4,21 @@
     {{ name }}
 
     &nbsp;&nbsp;&nbsp;
-    <ya-page-button (click)="uploader.click()" icon="file_upload">
+    <ya-page-button (clicked)="uploader.click()" icon="file_upload">
       Upload files
       <input #uploader type="file" hidden multiple (change)="uploadObjects()" />
     </ya-page-button>
-    <ya-page-button (click)="createFolder()" icon="create_new_folder">Create folder</ya-page-button>
+    <ya-page-button (clicked)="createFolder()" icon="create_new_folder">
+      Create folder
+    </ya-page-button>
     <ya-page-button
-      (click)="deleteSelectedObjects()"
+      (clicked)="deleteSelectedObjects()"
       [disabled]="!selection.hasValue()"
       icon="delete">
       Delete
     </ya-page-button>
     <ya-page-button
-      (click)="togglePreview()"
+      (clicked)="togglePreview()"
       [icon]="(showPreview$ | async) ? 'image_not_supported' : 'image'">
       Preview panel
     </ya-page-button>

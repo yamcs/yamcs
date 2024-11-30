@@ -32,7 +32,7 @@
         </ya-page-button>
       }
       @if (view$ | async; as view) {
-        <ya-page-button (click)="openEditViewDialog(view)" icon="settings">
+        <ya-page-button (clicked)="openEditViewDialog(view)" icon="settings">
           Edit view
         </ya-page-button>
       }
@@ -58,7 +58,9 @@
         </button>
       </mat-menu>
       @if (view$ | async) {
-        <ya-page-button (click)="saveSnapshot()" icon="photo_camera">Save snapshot</ya-page-button>
+        <ya-page-button (clicked)="saveSnapshot()" icon="photo_camera">
+          Save snapshot
+        </ya-page-button>
       }
     }
   </app-instance-toolbar>

@@ -5,12 +5,15 @@
       Links / {{ link.name }}
       &nbsp;&nbsp;&nbsp;
       @if (mayControlLinks()) {
-        <ya-page-button [disabled]="!link.disabled" (click)="enableLink(link.name)" icon="link">
+        <ya-page-button [disabled]="!link.disabled" (clicked)="enableLink(link.name)" icon="link">
           Enable
         </ya-page-button>
       }
       @if (mayControlLinks()) {
-        <ya-page-button [disabled]="link.disabled" (click)="disableLink(link.name)" icon="link_off">
+        <ya-page-button
+          [disabled]="link.disabled"
+          (clicked)="disableLink(link.name)"
+          icon="link_off">
           Disable
         </ya-page-button>
       }

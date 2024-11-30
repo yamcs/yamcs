@@ -2,20 +2,22 @@
   <app-instance-toolbar>
     Events &nbsp;&nbsp;&nbsp;
     @if (mayWriteEvents()) {
-      <ya-page-button (click)="createEvent()" icon="add_circle_outline">
+      <ya-page-button (clicked)="createEvent()" icon="add_circle_outline">
         Create event
       </ya-page-button>
     }
 
     @if (dataSource.streaming$ | async) {
-      <ya-page-button matTooltip="Pause streaming events" (click)="stopStreaming()" icon="pause">
+      <ya-page-button matTooltip="Pause streaming events" (clicked)="stopStreaming()" icon="pause">
         Stop streaming
       </ya-page-button>
     } @else {
-      <ya-page-button (click)="startStreaming()" icon="play_arrow">Start streaming</ya-page-button>
+      <ya-page-button (clicked)="startStreaming()" icon="play_arrow">
+        Start streaming
+      </ya-page-button>
     }
 
-    <ya-page-icon-button matTooltip="Jump to now" (click)="jumpToNow()" icon="refresh" />
+    <ya-page-icon-button matTooltip="Jump to now" (clicked)="jumpToNow()" icon="refresh" />
   </app-instance-toolbar>
 
   @if (dataSource) {

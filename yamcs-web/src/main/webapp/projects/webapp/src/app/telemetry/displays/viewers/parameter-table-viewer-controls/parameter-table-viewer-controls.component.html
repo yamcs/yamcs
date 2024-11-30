@@ -3,40 +3,43 @@
     @if (mayManageDisplays()) {
       <ya-page-button
         [disabled]="!(viewer.hasUnsavedChanges$ | async)"
-        (click)="save()"
+        (clicked)="save()"
         icon="save">
         SAVE
       </ya-page-button>
     }
     @if (!(viewer.paused$ | async)) {
-      <ya-page-button (click)="viewer.pause()" matTooltip="Pause value updates" icon="pause">
+      <ya-page-button (clicked)="viewer.pause()" matTooltip="Pause value updates" icon="pause">
         PAUSE
       </ya-page-button>
     }
     @if (viewer.paused$ | async) {
       <ya-page-button
-        (click)="viewer.unpause()"
+        (clicked)="viewer.unpause()"
         matTooltip="Unpause value updates"
         icon="play_arrow">
         UNPAUSE
       </ya-page-button>
     }
-    <ya-page-button (click)="addParameter()" icon="playlist_add">ADD</ya-page-button>
+    <ya-page-button (clicked)="addParameter()" icon="playlist_add">ADD</ya-page-button>
     @if (!model.scroll) {
       <ya-page-button
-        (click)="viewer.delete()"
+        (clicked)="viewer.delete()"
         [disabled]="viewer.selection.isEmpty()"
         icon="delete">
         DELETE
       </ya-page-button>
     }
     @if (!model.scroll) {
-      <ya-page-button (click)="viewer.enableScrollView()" icon="view_headline" iconRotate90="true">
+      <ya-page-button
+        (clicked)="viewer.enableScrollView()"
+        icon="view_headline"
+        iconRotate90="true">
         SCROLL VIEW
       </ya-page-button>
     }
     @if (model.scroll) {
-      <ya-page-button (click)="viewer.enableStandardView()" icon="view_headline">
+      <ya-page-button (clicked)="viewer.enableStandardView()" icon="view_headline">
         STANDARD VIEW
       </ya-page-button>
     }
@@ -47,7 +50,7 @@
     </mat-menu>
     <ya-page-button
       [matMenuTriggerFor]="moreMenu"
-      (click)="$event.stopPropagation()"
+      (clicked)="$event.stopPropagation()"
       icon="more_vert" />
   }
 }

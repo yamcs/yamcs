@@ -43,7 +43,7 @@
     &nbsp;&nbsp;&nbsp;
     @if (mayControlAlarms()) {
       <ya-page-button
-        (click)="acknowledgeAlarms(selection.selected)"
+        (clicked)="acknowledgeAlarms(selection.selected)"
         [disabled]="!selection.hasValue()"
         icon="notifications_off">
         Acknowledge
@@ -51,7 +51,7 @@
     }
     @if (mayControlAlarms()) {
       <ya-page-button
-        (click)="shelveAlarms(selection.selected)"
+        (clicked)="shelveAlarms(selection.selected)"
         [disabled]="!selection.hasValue()"
         icon="timer">
         Shelve

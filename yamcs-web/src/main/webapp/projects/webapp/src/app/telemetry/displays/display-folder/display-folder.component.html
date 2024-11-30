@@ -2,24 +2,24 @@
   <app-instance-toolbar>
     Displays &nbsp;&nbsp;&nbsp;
     @if (mayManageDisplays()) {
-      <ya-page-button (click)="createDisplay()" icon="add_circle_outline">
+      <ya-page-button (clicked)="createDisplay()" icon="add_circle_outline">
         Create display
       </ya-page-button>
     }
     @if (mayManageDisplays()) {
-      <ya-page-button (click)="uploader.click()" icon="file_upload">
+      <ya-page-button (clicked)="uploader.click()" icon="file_upload">
         Upload files
         <input #uploader type="file" hidden multiple (change)="uploadFiles()" />
       </ya-page-button>
     }
     @if (mayManageDisplays()) {
-      <ya-page-button (click)="createFolder()" icon="create_new_folder">
+      <ya-page-button (clicked)="createFolder()" icon="create_new_folder">
         Create folder
       </ya-page-button>
     }
     @if (mayManageDisplays()) {
       <ya-page-button
-        (click)="deleteSelectedDisplays()"
+        (clicked)="deleteSelectedDisplays()"
         [disabled]="!selection.hasValue()"
         icon="delete">
         Delete

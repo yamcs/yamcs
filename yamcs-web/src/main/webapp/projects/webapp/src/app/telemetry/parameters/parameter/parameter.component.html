@@ -16,7 +16,7 @@
       <ya-title-copy [text]="parameter.qualifiedName + ((offset$ | async) || '')" />
       &nbsp;&nbsp;&nbsp;
       @if (isWritable() && maySetParameter() && !(offset$ | async)) {
-        <ya-page-button (click)="setParameter()" icon="edit">Set value</ya-page-button>
+        <ya-page-button (clicked)="setParameter()" icon="edit">Set value</ya-page-button>
       }
       @if (mayReadMissionDatabase()) {
         <ya-page-button

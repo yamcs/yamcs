@@ -2,13 +2,13 @@
   <app-storage-toolbar>
     Storage &nbsp;&nbsp;&nbsp;
     @if (mayManageBuckets()) {
-      <ya-page-button (click)="createBucket()" icon="add_circle_outline">
+      <ya-page-button (clicked)="createBucket()" icon="add_circle_outline">
         Create bucket
       </ya-page-button>
     }
     @if (mayManageBuckets()) {
       <ya-page-button
-        (click)="deleteSelectedBuckets()"
+        (clicked)="deleteSelectedBuckets()"
         [disabled]="!selection.hasValue()"
         icon="delete">
         Delete
