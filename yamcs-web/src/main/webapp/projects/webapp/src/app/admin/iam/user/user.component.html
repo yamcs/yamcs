@@ -7,7 +7,7 @@
       <ya-page-button routerLink="edit" icon="edit">Edit user</ya-page-button>
       <ya-page-button
         [disabled]="user.identities?.length"
-        (click)="showChangeUserPasswordDialog()"
+        (clicked)="showChangeUserPasswordDialog()"
         icon="account_box">
         Change password
       </ya-page-button>

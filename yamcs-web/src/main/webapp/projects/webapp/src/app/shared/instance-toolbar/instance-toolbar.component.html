@@ -10,7 +10,7 @@
           @if (processor.replay && processor.replayState === "RUNNING") {
             <ya-page-button
               (menuOpened)="switchProcessorMenuOpened()"
-              (click)="pauseReplay()"
+              (clicked)="pauseReplay()"
               icon="pause">
               PAUSE REPLAY
             </ya-page-button>
@@ -18,7 +18,7 @@
           @if (processor.replay && processor.replayState !== "RUNNING") {
             <ya-page-button
               (menuOpened)="switchProcessorMenuOpened()"
-              (click)="resumeReplay()"
+              (clicked)="resumeReplay()"
               icon="play_arrow">
               PLAY
             </ya-page-button>

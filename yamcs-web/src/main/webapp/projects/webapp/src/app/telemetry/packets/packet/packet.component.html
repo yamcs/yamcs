@@ -7,8 +7,8 @@
         icon="arrow_back" />
       {{ packet.id.name }} / {{ packet.generationTime }} / {{ packet.sequenceNumber }}
       &nbsp;&nbsp;&nbsp;
-      <ya-page-button (click)="expandAll()" icon="unfold_more">Expand all</ya-page-button>
-      <ya-page-button (click)="collapseAll()" icon="unfold_less">Collapse all</ya-page-button>
+      <ya-page-button (clicked)="expandAll()" icon="unfold_more">Expand all</ya-page-button>
+      <ya-page-button (clicked)="collapseAll()" icon="unfold_less">Collapse all</ya-page-button>
     </app-instance-toolbar>
     <ya-detail-pane>
       <ya-detail-toolbar>

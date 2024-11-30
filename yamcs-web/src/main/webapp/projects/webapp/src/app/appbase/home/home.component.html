@@ -11,7 +11,7 @@
     @if (mayControlServices()) {
       <ya-page-button
         [disabled]="!isGroupStartEnabled()"
-        (click)="startSelectedInstances()"
+        (clicked)="startSelectedInstances()"
         icon="play_arrow">
         Start
       </ya-page-button>
@@ -19,7 +19,7 @@
     @if (mayControlServices()) {
       <ya-page-button
         [disabled]="!isGroupStopEnabled()"
-        (click)="stopSelectedInstances()"
+        (clicked)="stopSelectedInstances()"
         icon="stop">
         Stop
       </ya-page-button>
@@ -27,7 +27,7 @@
     @if (mayControlServices()) {
       <ya-page-button
         [disabled]="!isGroupRestartEnabled()"
-        (click)="restartSelectedInstances()"
+        (clicked)="restartSelectedInstances()"
         icon="sync_problem">
         Restart
       </ya-page-button>

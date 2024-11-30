@@ -1,6 +1,9 @@
 @if (initialized$ | async) {
   @if (mayManageDisplays()) {
-    <ya-page-button [disabled]="!(viewer.hasUnsavedChanges$ | async)" (click)="save()" icon="save">
+    <ya-page-button
+      [disabled]="!(viewer.hasUnsavedChanges$ | async)"
+      (clicked)="save()"
+      icon="save">
       SAVE
     </ya-page-button>
   }

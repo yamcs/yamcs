@@ -5,7 +5,7 @@
     @if (mayControlActivities()) {
       <ya-page-button
         [disabled]="!isGroupCancelEnabled()"
-        (click)="cancelSelectedActivities()"
+        (clicked)="cancelSelectedActivities()"
         icon="cancel">
         Cancel
       </ya-page-button>

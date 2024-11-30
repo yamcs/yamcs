@@ -4,15 +4,17 @@
       <ya-page-icon-button routerLink=".." [queryParams]="{ c: yamcs.context }" icon="arrow_back" />
       Activity details &nbsp;&nbsp;&nbsp;
       @if (activity.type === "MANUAL" && activity.status === "RUNNING" && mayControlActivities()) {
-        <ya-page-button (click)="setSuccessful(activity)" icon="thumb_up">
+        <ya-page-button (clicked)="setSuccessful(activity)" icon="thumb_up">
           Set successful
         </ya-page-button>
-        <ya-page-button (click)="setFailed(activity)" icon="thumb_down">Set failed</ya-page-button>
+        <ya-page-button (clicked)="setFailed(activity)" icon="thumb_down">
+          Set failed
+        </ya-page-button>
       }
       @if (mayControlActivities()) {
         <ya-page-button
           [disabled]="!!activity.stop"
-          (click)="cancelActivity(activity)"
+          (clicked)="cancelActivity(activity)"
           icon="cancel">
           Cancel
         </ya-page-button>

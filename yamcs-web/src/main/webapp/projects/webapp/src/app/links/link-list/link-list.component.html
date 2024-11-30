@@ -2,13 +2,16 @@
   <app-instance-toolbar>
     Links &nbsp;&nbsp;&nbsp;
     @if (mayControlLinks()) {
-      <ya-page-button (click)="enableSelectedLinks()" [disabled]="!allowGroupEnable()" icon="link">
+      <ya-page-button
+        (clicked)="enableSelectedLinks()"
+        [disabled]="!allowGroupEnable()"
+        icon="link">
         Enable
       </ya-page-button>
     }
     @if (mayControlLinks()) {
       <ya-page-button
-        (click)="disableSelectedLinks()"
+        (clicked)="disableSelectedLinks()"
         [disabled]="!allowGroupDisable()"
         icon="link_off">
         Disable

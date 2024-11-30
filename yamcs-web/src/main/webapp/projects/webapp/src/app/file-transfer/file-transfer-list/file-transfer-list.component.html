@@ -20,7 +20,7 @@
         mayControlFileTransfers() && (service.capabilities.download || service.capabilities.upload)
       ) {
         <ya-page-button
-          (click)="showCreateTransferDialog(service)"
+          (clicked)="showCreateTransferDialog(service)"
           [icon]="
             service.capabilities.download && service.capabilities.upload
               ? 'cloud'
