@@ -49,7 +49,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<nettyVersion>4.1.94.Final</nettyVersion>
-		<protobufVersion>3.19.6</protobufVersion>
+		<protobufVersion>3.25.5</protobufVersion>
 		<rocksdbVersion>9.4.0.11</rocksdbVersion>
 		<slf4jVersion>2.0.9</slf4jVersion>
 	</properties>
