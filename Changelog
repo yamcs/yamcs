@@ -1,3 +1,7 @@
+Version 5.10.9 released 1-Dec-2024
+- Add stack step to insert arbitrary text
+- Add stack step to insert telemetry verifications
+
 Version 5.10.8 released 21-Nov-2024
 - Bug fix in the parameter archive: when rebuilding intervals with gaps, the gaps would not be properly encoded, causing errors in retrieval.
   Implemented a consistency check which will inform if the parameter archive is corrupted and will suggest a rebuild of the specific interval.
