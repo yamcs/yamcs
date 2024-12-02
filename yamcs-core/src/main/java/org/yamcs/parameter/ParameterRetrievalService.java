@@ -3,6 +3,7 @@ package org.yamcs.parameter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -21,7 +22,6 @@ import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.archive.ReplayOptions;
-import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.parameterarchive.MultiParameterRetrieval;
 import org.yamcs.parameterarchive.MultipleParameterRequest;
 import org.yamcs.parameterarchive.ParameterArchive;
@@ -31,15 +31,13 @@ import org.yamcs.parameterarchive.ParameterIdValueList;
 import org.yamcs.parameterarchive.ParameterValueArray;
 import org.yamcs.parameterarchive.SingleParameterRetrieval;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.time.Instant;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.MutableLong;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.Service.Listener;
-import com.google.common.util.concurrent.Service.State;
 
 /**
  * Combines retrieval from different sources:
@@ -166,10 +164,18 @@ public class ParameterRetrievalService extends AbstractYamcsService {
 
     }
 
-    TimeAndCount retrieveScalarReplayOrCache(ParameterWithId pid, ParameterRetrievalOptions request,
-            Consumer<ParameterValueArray> consumer) {
+    TimeAndCount retrieveScalarReplayOrCache(ParameterWithId pid, ParameterRetrievalOptions opts,
+            Consumer<ParameterValueArray> consumer) throws Exception {
 
-        return null;
+        return replay(Collections.singletonList(pid), opts, new Consumer<List<ParameterValueWithId>>() {
+            
+            @Override
+            public void accept(List<ParameterValueWithId> pvList) {
+                for(var pv: pvList) {
+                    consumer.accept(toScalarPva(pv.getParameterValue(), opts));
+                }
+            }      
+        });        
     }
 
     private TimeAndCount retrieveScalarParameterArchive(ParameterWithId pid, ParameterRetrievalOptions request,
@@ -189,16 +195,16 @@ public class ParameterRetrievalService extends AbstractYamcsService {
         return tc;
     }
 
-    private CompletableFuture<Void> replay(List<ParameterWithId> paramList,
-            Consumer<List<ParameterValueWithId>> consumer) {
-        ReplayOptions replayOpts = new ReplayOptions();
-        CompletableFuture<Void> cf = new CompletableFuture<Void>();
-
+    private TimeAndCount replay(List<ParameterWithId> paramList,  ParameterRetrievalOptions opts,
+            Consumer<List<ParameterValueWithId>> consumer) throws Exception {
+        ReplayOptions replayOpts = ReplayOptions.getAfapReplay(opts.start(), opts.stop(), !opts.ascending());
+        
+        TimeAndCount tc = new TimeAndCount(Instant.MIN_INSTANT, 0);
+        
         Map<Parameter, List<NamedObjectId>> params = paramList.stream()
                 .collect(Collectors.groupingBy(
                         ParameterWithId::getParameter,
                         Collectors.mapping(ParameterWithId::getId, Collectors.toList())));
-        try {
             Processor processor = ProcessorFactory.create(yamcsInstance, "api_replay" + count.incrementAndGet(),
                     "ArchiveRetrieval", "internal", replayOpts);
 
@@ -211,6 +217,11 @@ public class ParameterRetrievalService extends AbstractYamcsService {
                     for (ParameterValue pv : pvalues) {
                         var ids = params.get(pv.getParameter());
                         if (ids != null) {
+                            if(opts.ascending()) {
+                                tc.time = Math.max(pv.getGenerationTime(), tc.time);
+                            } else {
+                                tc.time = Math.min(pv.getGenerationTime(), tc.time);
+                            }
                             for (var id : ids) {
                                 pvaluesWithIds.add(new ParameterValueWithId(pv, id));
                             }
@@ -221,22 +232,10 @@ public class ParameterRetrievalService extends AbstractYamcsService {
             };
             processor.getParameterRequestManager().addRequest(params.keySet(), prmConsumer);
 
-            processor.addListener(new Listener() {
-                @Override
-                public void terminated(State from) {
-                    cf.complete(null);
-                }
-
-                @Override
-                public void failed(State from, Throwable failure) {
-                    cf.completeExceptionally(failure);
-                }
-            }, MoreExecutors.directExecutor());
-        } catch (Exception e) {
-            cf.completeExceptionally(new InternalServerErrorException("Exception creating the replay", e));
-        }
-        
-        return cf;
+            processor.awaitRunning();
+            processor.awaitTerminated();
+            
+            return tc;
     }
 
     private void retrieveParameterData(ParameterArchive parchive, ParameterCache pcache, ParameterWithId pid,
@@ -326,6 +325,17 @@ public class ParameterRetrievalService extends AbstractYamcsService {
         consumer.accept(new ParameterValueWithId(pv1, pid.getId()));
     }
 
+    
+    private ParameterValueArray toScalarPva(ParameterValue pv, ParameterRetrievalOptions opts) {
+        long[] timestamps = new long[] {pv.getGenerationTime()};
+        ValueArray engValues = null;
+        ValueArray rawValues = null;
+        org.yamcs.protobuf.Pvalue.ParameterStatus[] paramStatus = new org.yamcs.protobuf.Pvalue.ParameterStatus[] {pv.getStatus().toProtoBuf()};
+                 
+        return new ParameterValueArray(timestamps, engValues, rawValues, paramStatus);
+    }
+    
+    
     private ExecutorService createExecutor(int numThreads) {
         return Executors.newFixedThreadPool(numThreads, new ThreadFactory() {
             private int count = 1;
