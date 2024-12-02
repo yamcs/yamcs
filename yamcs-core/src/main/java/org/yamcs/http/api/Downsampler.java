@@ -5,9 +5,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 
 import org.yamcs.logging.Log;
-import org.yamcs.parameter.ParameterRetrievalConsumer;
 import org.yamcs.parameter.Value;
 import org.yamcs.parameter.ValueArray;
 import org.yamcs.parameterarchive.ParameterValueArray;
@@ -23,7 +23,7 @@ import org.yamcs.utils.UnsignedLong;
  * The output is not a bunch of parameter values, but instead a range of values limited to n, which should be fit for
  * inclusion in plots.
  */
-public class Downsampler implements ParameterRetrievalConsumer<ParameterValueArray> {
+public class Downsampler implements Consumer<ParameterValueArray> {
 
     private static final Log log = new Log(Downsampler.class);
     private static final int DEFAULT_SAMPLE_COUNT = 500;

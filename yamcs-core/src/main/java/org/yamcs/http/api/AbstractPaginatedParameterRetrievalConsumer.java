@@ -2,8 +2,8 @@ package org.yamcs.http.api;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
-import org.yamcs.parameter.ParameterRetrievalConsumer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.Value;
@@ -53,7 +53,7 @@ public abstract class AbstractPaginatedParameterRetrievalConsumer {
     }
 
     static abstract class PaginatedSingleParameterRetrievalConsumer extends AbstractPaginatedParameterRetrievalConsumer
-            implements ParameterRetrievalConsumer<ParameterValueWithId> {
+            implements Consumer<ParameterValueWithId> {
         public PaginatedSingleParameterRetrievalConsumer(long pos, int limit) {
             super(pos, limit);
         }
@@ -115,7 +115,7 @@ public abstract class AbstractPaginatedParameterRetrievalConsumer {
     }
 
     static abstract class PaginatedMultiParameterRetrievalConsumer extends AbstractPaginatedParameterRetrievalConsumer
-            implements ParameterRetrievalConsumer<List<ParameterValueWithId>> {
+            implements Consumer<List<ParameterValueWithId>> {
         public PaginatedMultiParameterRetrievalConsumer(long pos, int limit) {
             super(pos, limit);
         }
