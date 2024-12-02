@@ -1,19 +1,27 @@
 package org.yamcs.parameter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.rocksdb.RocksDBException;
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.InitException;
+import org.yamcs.Processor;
+import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.archive.ReplayOptions;
+import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.parameterarchive.MultiParameterRetrieval;
 import org.yamcs.parameterarchive.MultipleParameterRequest;
 import org.yamcs.parameterarchive.ParameterArchive;
@@ -22,10 +30,16 @@ import org.yamcs.parameterarchive.ParameterIdDb;
 import org.yamcs.parameterarchive.ParameterIdValueList;
 import org.yamcs.parameterarchive.ParameterValueArray;
 import org.yamcs.parameterarchive.SingleParameterRetrieval;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.MutableLong;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.Parameter;
+
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.Service.Listener;
+import com.google.common.util.concurrent.Service.State;
 
 /**
  * Combines retrieval from different sources:
@@ -45,6 +59,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
     ParameterArchive parchive;
     ParameterCacheConfig cacheConfig;
     ExecutorService executor;
+    static AtomicInteger count = new AtomicInteger();
 
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         super.init(yamcsInstance, serviceName, config);
@@ -83,7 +98,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
      * Retrieves a single scalar parameter or aggregate/array member.
      */
     public CompletableFuture<Void> retrieveScalar(ParameterWithId pid, ParameterRetrievalOptions opts,
-            ParameterRetrievalConsumer<ParameterValueArray> consumer) {
+            Consumer<ParameterValueArray> consumer) {
         var cf = new CompletableFuture<Void>();
         executor.submit(() -> {
             try {
@@ -116,10 +131,8 @@ public class ParameterRetrievalService extends AbstractYamcsService {
                         retrieveScalarParameterArchive(pid, opts, consumer);
                     }
                 }
-                consumer.finished();
                 cf.complete(null);
             } catch (Exception e) {
-                consumer.failed(e);
                 cf.completeExceptionally(e);
             }
         });
@@ -127,7 +140,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
     }
 
     public void retrieveSingle(ParameterWithId requestedParamWithId, ParameterRetrievalOptions opts,
-            ParameterRetrievalConsumer<ParameterValueWithId> consumer) {
+            Consumer<ParameterValueWithId> consumer) {
         MultipleParameterRequest mpvr;
         ParameterIdDb piddb = parchive.getParameterIdDb();
         String qn = requestedParamWithId.getQualifiedName();
@@ -149,17 +162,18 @@ public class ParameterRetrievalService extends AbstractYamcsService {
     };
 
     public void retrieveMulti(ParameterWithId requestedParamWithId, ParameterRetrievalOptions opts,
-            ParameterRetrievalConsumer<List<ParameterValueWithId>> consumer) {
+            Consumer<List<ParameterValueWithId>> consumer) {
 
     }
 
     TimeAndCount retrieveScalarReplayOrCache(ParameterWithId pid, ParameterRetrievalOptions request,
-            ParameterRetrievalConsumer<ParameterValueArray> consumer) {
+            Consumer<ParameterValueArray> consumer) {
+
         return null;
     }
 
     private TimeAndCount retrieveScalarParameterArchive(ParameterWithId pid, ParameterRetrievalOptions request,
-            ParameterRetrievalConsumer<ParameterValueArray> consumer) throws IOException {
+            Consumer<ParameterValueArray> consumer) throws IOException {
         SingleParameterRetrieval spar = new SingleParameterRetrieval(parchive, pid.getQualifiedName(), request);
         TimeAndCount tc = new TimeAndCount(Long.MAX_VALUE, 0);
         try {
@@ -175,18 +189,58 @@ public class ParameterRetrievalService extends AbstractYamcsService {
         return tc;
     }
 
-    static final class TimeAndCount {
-        long time;
-        int count;
+    private CompletableFuture<Void> replay(List<ParameterWithId> paramList,
+            Consumer<List<ParameterValueWithId>> consumer) {
+        ReplayOptions replayOpts = new ReplayOptions();
+        CompletableFuture<Void> cf = new CompletableFuture<Void>();
 
-        public TimeAndCount(long time, int count) {
-            this.time = time;
-            this.count = count;
+        Map<Parameter, List<NamedObjectId>> params = paramList.stream()
+                .collect(Collectors.groupingBy(
+                        ParameterWithId::getParameter,
+                        Collectors.mapping(ParameterWithId::getId, Collectors.toList())));
+        try {
+            Processor processor = ProcessorFactory.create(yamcsInstance, "api_replay" + count.incrementAndGet(),
+                    "ArchiveRetrieval", "internal", replayOpts);
+
+            ParameterConsumer prmConsumer = new ParameterConsumer() {
+
+                @Override
+                public void updateItems(int subscriptionId, List<ParameterValue> pvalues) {
+                    List<ParameterValueWithId> pvaluesWithIds = new ArrayList<>(params.size());
+
+                    for (ParameterValue pv : pvalues) {
+                        var ids = params.get(pv.getParameter());
+                        if (ids != null) {
+                            for (var id : ids) {
+                                pvaluesWithIds.add(new ParameterValueWithId(pv, id));
+                            }
+                        }
+                    }
+                    consumer.accept(pvaluesWithIds);
+                }
+            };
+            processor.getParameterRequestManager().addRequest(params.keySet(), prmConsumer);
+
+            processor.addListener(new Listener() {
+                @Override
+                public void terminated(State from) {
+                    cf.complete(null);
+                }
+
+                @Override
+                public void failed(State from, Throwable failure) {
+                    cf.completeExceptionally(failure);
+                }
+            }, MoreExecutors.directExecutor());
+        } catch (Exception e) {
+            cf.completeExceptionally(new InternalServerErrorException("Exception creating the replay", e));
         }
+        
+        return cf;
     }
 
     private void retrieveParameterData(ParameterArchive parchive, ParameterCache pcache, ParameterWithId pid,
-            MultipleParameterRequest mpvr, ParameterRetrievalConsumer<ParameterValueWithId> consumer)
+            MultipleParameterRequest mpvr, Consumer<ParameterValueWithId> consumer)
             throws RocksDBException, DecodingException, IOException {
 
         MutableLong lastParameterTime = new MutableLong(TimeEncoding.INVALID_INSTANT);
@@ -223,7 +277,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
 
     // send data from cache with timestamps in (start, stop) if ascending or (start, stop] if descending interval
     private void sendFromCache(ParameterWithId pid, ParameterCache pcache, boolean ascending, long start,
-            long stop, ParameterRetrievalConsumer<ParameterValueWithId> consumer) {
+            long stop, Consumer<ParameterValueWithId> consumer) {
         List<ParameterValue> pvlist = pcache.getAllValues(pid.getParameter());
 
         if (pvlist == null) {
@@ -254,7 +308,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
     }
 
     private void sendToConsumer(ParameterValue pv, ParameterWithId pid,
-            ParameterRetrievalConsumer<ParameterValueWithId> consumer) {
+            Consumer<ParameterValueWithId> consumer) {
         ParameterValue pv1;
         if (pid.getPath() != null) {
             try {
@@ -283,6 +337,15 @@ public class ParameterRetrievalService extends AbstractYamcsService {
                 return thread;
             }
         });
+    }
 
+    static final class TimeAndCount {
+        long time;
+        int count;
+
+        public TimeAndCount(long time, int count) {
+            this.time = time;
+            this.count = count;
+        }
     }
 }
