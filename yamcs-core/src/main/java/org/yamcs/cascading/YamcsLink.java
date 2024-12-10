@@ -191,6 +191,8 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
                 .withDescription("The mapping of commands and arguments between downstream and upstream.");
         spec.addOption("failCommandIfNoMappingMatches", OptionType.BOOLEAN).withDefault(false)
                 .withDescription("Fail the command if no mapping matches");
+        spec.addOption("commandPostprocessorClassName", OptionType.STRING);
+        spec.addOption("commandPostprocessorArgs", OptionType.MAP).withSpec(Spec.ANY);
 
         /*
          * EV
