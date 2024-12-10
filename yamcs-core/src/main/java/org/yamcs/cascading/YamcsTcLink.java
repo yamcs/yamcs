@@ -122,6 +122,12 @@ public class YamcsTcLink extends AbstractTcDataLink {
             log.warn(msg);
             return true;
         }
+        byte[] cmdBinary = postprocess(pc);
+        if (cmdBinary == null) {
+            // the post-processor must have failed the command
+            return true;
+        }
+
         CommandBuilder cb = procClient.prepareCommand(data.getUpstreamPath());
         cb.withOrigin(cmdOrigin);
         long count = tcCount.getAndIncrement();
@@ -137,7 +143,7 @@ public class YamcsTcLink extends AbstractTcDataLink {
         for (ArgumentInfo entry : args) {
             if (entry.getName().equals(data.getUpstreamArgumentName())) {
                 found = true;
-                cb.withArgument(data.getUpstreamArgumentName(), pc.getBinary());
+                cb.withArgument(data.getUpstreamArgumentName(), cmdBinary);
             } else if (!entry.hasInitialValue()) {
                 log.warn("The upstream command requires a value also for argument '{}'", entry.getName());
             }
