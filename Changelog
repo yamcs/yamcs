@@ -1,3 +1,6 @@
+Version 5.9.12 released 10-Dec-2025
+- Cascading: allow specifying a post-processor to be used by the embedded binary commands
+
 Version 5.9.11 released 15-Oct-2024
 - Fixed export buttons and an error in the Packet Viewer
 
