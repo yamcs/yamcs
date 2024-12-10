@@ -34,6 +34,7 @@ dataLinks:
     #password: "password"
     upstreamName: "YUP"
     upstreamInstance: "upstream"
+    commandPostprocessorClassName: org.yamcs.examples.cascading.MyCommandPostprocessor
     commandMapping:
       - type: "DIRECT"
         local: "/YSS/DOWNSTREAM_DIRECT/SWITCH_VOLTAGE_OFF_WITH_DIFFERENT_NAME"
