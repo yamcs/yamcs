@@ -226,7 +226,7 @@ export interface Argument {
 
 export interface ArgumentType {
   engType: string;
-  dataEncoding: DataEncoding;
+  dataEncoding?: DataEncoding;
   unitSet: UnitInfo[];
   enumValue: EnumValue[];
   signed?: boolean;

@@ -104,10 +104,10 @@
               }
             </td>
             <td>{{ argument.type.signed ?? "-" }}</td>
-            <td>{{ argument.type.dataEncoding.encoding || "-" }}</td>
-            <td>{{ argument.type.dataEncoding.sizeInBits | nvl: "-" }}</td>
+            <td>{{ argument.type.dataEncoding?.encoding || "-" }}</td>
+            <td>{{ argument.type.dataEncoding?.sizeInBits | nvl: "-" }}</td>
             <td>
-              {{ argument.type.dataEncoding.littleEndian ? "Little Endian" : "Big Endian" }}
+              {{ argument.type.dataEncoding?.littleEndian ? "Little Endian" : "Big Endian" }}
             </td>
             <td>
               @if (argument.type.rangeMin || argument.type.rangeMax) {
@@ -237,7 +237,7 @@
             @if (entry.argument) {
               <td>Argument</td>
               <td>{{ entry.argument.name }}</td>
-              <td>{{ entry.argument.type.dataEncoding.sizeInBits }}</td>
+              <td>{{ entry.argument.type.dataEncoding?.sizeInBits ?? "-" }}</td>
             } @else if (entry.parameter) {
               <td>Parameter</td>
               <td>
