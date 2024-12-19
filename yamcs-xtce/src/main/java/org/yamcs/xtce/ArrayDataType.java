@@ -261,12 +261,13 @@ public class ArrayDataType extends NameDescription implements DataType {
             return self();
         }
 
-        public void setSize(List<IntegerValue> list) {
+        public T setSize(List<IntegerValue> list) {
             if (list.isEmpty()) {
                 throw new IllegalArgumentException("Dimension sizes cannot be empty");
             }
             this.dim = list;
             setNumberOfDimensions(dim.size());
+            return self();
         }
 
         public List<IntegerValue> getSize() {
