@@ -101,7 +101,9 @@ export class AggregateArgumentComponent implements OnInit {
         }
 
         const control = new UntypedFormControl(initialValue);
-        formGroup.setControl(member.name, control);
+        formGroup.setControl(member.name, control, {
+          emitEvent: false, // Don't trigger event for each added member control
+        });
       }
 
       this.memberInitialValues.push(initialValue);
