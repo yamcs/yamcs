@@ -1,3 +1,7 @@
 .hide {
   display: none;
 }
+
+td {
+  cursor: pointer;
+}

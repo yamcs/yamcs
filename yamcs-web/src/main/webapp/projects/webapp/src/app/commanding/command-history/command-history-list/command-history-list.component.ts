@@ -2,9 +2,8 @@ import { Clipboard } from '@angular/cdk/clipboard';
 import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { Title } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
-import { CommandHistoryRecord, ConfigService, GetCommandHistoryOptions, MessageService, PrintService, Synchronizer, User, WebappSdkModule, WebsiteConfig, YaColumnChooser, YaColumnInfo, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ActivatedRoute } from '@angular/router';
+import { BaseComponent, CommandHistoryRecord, ConfigService, GetCommandHistoryOptions, PrintService, User, WebappSdkModule, WebsiteConfig, YaColumnChooser, YaColumnInfo, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/AuthService';
@@ -40,7 +39,7 @@ const defaultInterval = 'PT1H';
     TransmissionConstraintsIconComponent,
   ],
 })
-export class CommandHistoryListComponent implements OnInit, AfterViewInit, OnDestroy {
+export class CommandHistoryListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
 
   selectedRecord$ = new BehaviorSubject<CommandHistoryRecord | null>(null);
 
@@ -92,20 +91,17 @@ export class CommandHistoryListComponent implements OnInit, AfterViewInit, OnDes
     readonly yamcs: YamcsService,
     configService: ConfigService,
     authService: AuthService,
-    private messageService: MessageService,
-    private router: Router,
     private route: ActivatedRoute,
     private printService: PrintService,
-    title: Title,
-    synchronizer: Synchronizer,
     private clipboard: Clipboard,
     private dialog: MatDialog,
   ) {
+    super();
+    this.setTitle('Command history');
     this.config = configService.getConfig();
     this.user = authService.getUser()!;
-    title.setTitle('Command history');
 
-    this.dataSource = new CommandHistoryDataSource(this.yamcs, synchronizer);
+    this.dataSource = new CommandHistoryDataSource(this.yamcs, this.synchronizer);
   }
 
   ngOnInit(): void {
@@ -309,6 +305,7 @@ export class CommandHistoryListComponent implements OnInit, AfterViewInit, OnDes
 
   selectRecord(rec: CommandHistoryRecord) {
     this.selectedRecord$.next(rec);
+    this.openDetailPane();
   }
 
   printReport() {

@@ -58,3 +58,7 @@ tr.item-detail td {
 tr.item-detail:not(.expanded) {
   display: none;
 }
+
+tr td {
+  cursor: pointer;
+}

@@ -13,3 +13,7 @@
   overflow: auto;
   height: 100%;
 }
+
+.table-wrapper tr {
+  cursor: pointer;
+}

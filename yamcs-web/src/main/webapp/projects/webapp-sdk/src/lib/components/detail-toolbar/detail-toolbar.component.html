@@ -1,3 +1,11 @@
 <mat-toolbar class="detail-toolbar">
   <ng-content />
+  @if (!alwaysOpen()) {
+    <span style="flex: 1 1 auto"></span>
+    <ya-icon-action
+      class="icon-action"
+      icon="close"
+      matTooltip="Close pane"
+      (click)="closeDetailPane()" />
+  }
 </mat-toolbar>

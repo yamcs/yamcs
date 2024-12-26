@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { ParameterValue, WebappSdkModule } from '@yamcs/webapp-sdk';
+import { BaseComponent, ParameterValue, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { AlarmLevelComponent } from '../../../shared/alarm-level/alarm-level.component';
 import { ParameterDataDataSource } from '../parameter-data-tab/parameter-data.datasource';
 
@@ -7,13 +7,14 @@ import { ParameterDataDataSource } from '../parameter-data-tab/parameter-data.da
   standalone: true,
   selector: 'app-parameter-values-table',
   templateUrl: './parameter-values-table.component.html',
+  styleUrl: './parameter-values-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AlarmLevelComponent,
     WebappSdkModule,
   ],
 })
-export class ParameterValuesTableComponent {
+export class ParameterValuesTableComponent extends BaseComponent {
 
   @Input()
   dataSource: ParameterDataDataSource;
@@ -31,4 +32,9 @@ export class ParameterValuesTableComponent {
     'acquisitionStatus',
     'actions',
   ];
+
+  selectValue(value: ParameterValue) {
+    this.selectedValue.emit(value);
+    this.openDetailPane();
+  }
 }

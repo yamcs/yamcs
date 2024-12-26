@@ -2,4 +2,10 @@ mat-toolbar {
   background-color: #fcfcfc;
   font-style: normal;
   font-weight: normal;
+  align-items: center;
+}
+
+.icon-action {
+  display: flex;
+  align-items: center;
 }

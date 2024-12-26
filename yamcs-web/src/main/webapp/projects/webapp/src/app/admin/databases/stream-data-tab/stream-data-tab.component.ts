@@ -1,7 +1,7 @@
 import { CdkColumnDef } from '@angular/cdk/table';
 import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, QueryList, ViewChildren } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { StreamData, Synchronizer, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { BaseComponent, StreamData, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { ColumnValuePipe } from '../shared/column-value.pipe';
 import { StreamDataComponent } from '../stream-data/stream-data.component';
@@ -18,7 +18,7 @@ import { StreamDataDataSource } from './stream-data.datasource';
     StreamDataComponent,
   ],
 })
-export class StreamDataTabComponent implements AfterViewInit, OnDestroy {
+export class StreamDataTabComponent extends BaseComponent implements AfterViewInit, OnDestroy {
 
   dataSource: StreamDataDataSource;
 
@@ -31,11 +31,12 @@ export class StreamDataTabComponent implements AfterViewInit, OnDestroy {
 
   selectedStreamData$ = new BehaviorSubject<StreamData | null>(null);
 
-  constructor(route: ActivatedRoute, yamcs: YamcsService, synchronizer: Synchronizer) {
+  constructor(route: ActivatedRoute, yamcs: YamcsService) {
+    super();
     const parent = route.snapshot.parent!;
     const database = parent.parent!.paramMap.get('database')!;
     const name = parent.paramMap.get('stream')!;
-    this.dataSource = new StreamDataDataSource(yamcs, synchronizer, database, name);
+    this.dataSource = new StreamDataDataSource(yamcs, this.synchronizer, database, name);
     this.availableColumns$ = this.dataSource.columns$;
   }
 
@@ -56,6 +57,7 @@ export class StreamDataTabComponent implements AfterViewInit, OnDestroy {
 
   selectStreamData(streamData: StreamData) {
     this.selectedStreamData$.next(streamData);
+    this.openDetailPane();
   }
 
   ngOnDestroy() {

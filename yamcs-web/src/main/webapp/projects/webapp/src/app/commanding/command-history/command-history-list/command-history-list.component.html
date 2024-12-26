@@ -26,7 +26,7 @@
 
   <ya-detail-pane>
     @if (selectedRecord$ | async; as selectedRecord) {
-      <ya-detail-toolbar>Command Detail</ya-detail-toolbar>
+      <ya-detail-toolbar>Command detail</ya-detail-toolbar>
       <div style="padding: 0 16px">
         <app-command-detail2 [command]="selectedRecord" />
         @if (showResend()) {
@@ -362,8 +362,8 @@
                   </button>
                   <mat-divider />
                 }
-                <button mat-menu-item (click)="copyHex(item)">Copy Hex</button>
-                <button mat-menu-item (click)="copyBinary(item)">Copy Binary</button>
+                <button mat-menu-item (click)="copyHex(item)">Copy hex</button>
+                <button mat-menu-item (click)="copyBinary(item)">Copy binary</button>
                 @if (showCommandExports()) {
                   <mat-divider />
                   <ya-download-menu-item [link]="item | commandDownloadLink">

@@ -9,6 +9,7 @@ export class AppearanceService implements OnDestroy {
 
   public fullScreenMode$ = new BehaviorSubject<boolean>(false);
   public zenMode$ = new BehaviorSubject<boolean>(false);
+  public detailPane$ = new BehaviorSubject<boolean>(false);
 
   private fullScreenChangeListener = () => {
     if (this.document.fullscreenElement) {

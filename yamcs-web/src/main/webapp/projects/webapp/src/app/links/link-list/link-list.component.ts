@@ -1,10 +1,9 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { Title } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
-import { ActionInfo, LinkEvent, LinkSubscription, MessageService, WebappSdkModule, YaColumnInfo, YamcsService } from '@yamcs/webapp-sdk';
+import { ActivatedRoute } from '@angular/router';
+import { ActionInfo, BaseComponent, LinkEvent, LinkSubscription, WebappSdkModule, YaColumnInfo, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
@@ -29,7 +28,7 @@ import { LinkItem } from './model';
     WebappSdkModule,
   ],
 })
-export class LinkListComponent implements AfterViewInit, OnDestroy {
+export class LinkListComponent extends BaseComponent implements AfterViewInit, OnDestroy {
 
   filterControl = new UntypedFormControl();
 
@@ -58,14 +57,11 @@ export class LinkListComponent implements AfterViewInit, OnDestroy {
   constructor(
     readonly yamcs: YamcsService,
     private authService: AuthService,
-    title: Title,
-    private changeDetection: ChangeDetectorRef,
     private route: ActivatedRoute,
-    private router: Router,
-    private messageService: MessageService,
     private linkService: LinkService,
   ) {
-    title.setTitle('Links');
+    super();
+    this.setTitle('Links');
 
     this.dataSource.filterPredicate = (item, filter) => {
       return item.link.name.toLowerCase().indexOf(filter) >= 0
@@ -286,6 +282,7 @@ export class LinkListComponent implements AfterViewInit, OnDestroy {
       this.selection.clear();
     }
     this.selection.toggle(row);
+    this.openDetailPane();
   }
 
   enableSelectedLinks() {

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Record, Table, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { BaseComponent, Record, Table, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { RecordComponent } from '../record/record.component';
 import { ColumnValuePipe } from '../shared/column-value.pipe';
@@ -16,7 +16,7 @@ import { ColumnValuePipe } from '../shared/column-value.pipe';
     WebappSdkModule,
   ],
 })
-export class TableDataTabComponent {
+export class TableDataTabComponent extends BaseComponent {
 
   table$: Promise<Table>;
   records$: Promise<Record[]>;
@@ -24,6 +24,7 @@ export class TableDataTabComponent {
   selectedRecord$ = new BehaviorSubject<Record | null>(null);
 
   constructor(route: ActivatedRoute, yamcs: YamcsService) {
+    super();
     const parent = route.snapshot.parent!;
     const database = parent.parent!.paramMap.get('database')!;
     const name = parent.paramMap.get('table')!;
@@ -33,5 +34,6 @@ export class TableDataTabComponent {
 
   selectRecord(record: Record) {
     this.selectedRecord$.next(record);
+    this.openDetailPane();
   }
 }

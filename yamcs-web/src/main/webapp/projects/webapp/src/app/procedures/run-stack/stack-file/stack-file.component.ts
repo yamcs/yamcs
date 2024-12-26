@@ -18,7 +18,6 @@ import { EditVerifyEntryDialogComponent } from '../edit-verify-entry-dialog/edit
 import { ScheduleStackDialogComponent } from '../schedule-stack-dialog/schedule-stack-dialog.component';
 import { StackFilePageTabsComponent } from '../stack-file-page-tabs/stack-file-page-tabs.component';
 import { StackedCheckEntryComponent } from '../stacked-check-entry/stacked-check-entry.component';
-import { StackedCommandDetailComponent } from '../stacked-command-detail/stacked-command-detail.component';
 import { StackedCommandEntryComponent } from '../stacked-command-entry/stacked-command-entry.component';
 import { StackedTextEntryComponent } from '../stacked-text-entry/stacked-text-entry.component';
 import { StackedVerifyEntryComponent } from '../stacked-verify-entry/stacked-verify-entry.component';
@@ -38,7 +37,6 @@ import { StackFileService } from './StackFileService';
     InstanceToolbarComponent,
     MarkdownComponent,
     StackedCheckEntryComponent,
-    StackedCommandDetailComponent,
     StackedCommandEntryComponent,
     StackedTextEntryComponent,
     StackedVerifyEntryComponent,

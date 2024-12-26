@@ -10,13 +10,13 @@
       <ya-page-button (clicked)="expandAll()" icon="unfold_more">Expand all</ya-page-button>
       <ya-page-button (clicked)="collapseAll()" icon="unfold_less">Collapse all</ya-page-button>
     </app-instance-toolbar>
-    <ya-detail-pane>
-      <ya-detail-toolbar>
+    <ya-detail-pane [alwaysOpen]="true">
+      <ya-detail-toolbar [alwaysOpen]="true">
         Hex view
         <span style="flex: 1 1 auto"></span>
         <ya-more>
-          <button mat-menu-item (click)="copyHex(packet.packet)">Copy Hex</button>
-          <button mat-menu-item (click)="copyBinary(packet.packet)">Copy Binary</button>
+          <button mat-menu-item (click)="copyHex(packet.packet)">Copy hex</button>
+          <button mat-menu-item (click)="copyBinary(packet.packet)">Copy binary</button>
         </ya-more>
       </ya-detail-toolbar>
       <div style="padding: 0 16px">

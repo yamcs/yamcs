@@ -2,9 +2,8 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@a
 import { UntypedFormControl } from '@angular/forms';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { Title } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Route, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { ActivatedRoute } from '@angular/router';
+import { BaseComponent, Route, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
 import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
@@ -22,7 +21,7 @@ import { RouteDetailComponent } from '../route-detail/route-detail.component';
     WebappSdkModule,
   ],
 })
-export class RouteListComponent implements AfterViewInit {
+export class RouteListComponent extends BaseComponent implements AfterViewInit {
 
   filterControl = new UntypedFormControl();
 
@@ -44,11 +43,10 @@ export class RouteListComponent implements AfterViewInit {
 
   constructor(
     private yamcs: YamcsService,
-    title: Title,
     private route: ActivatedRoute,
-    private router: Router,
   ) {
-    title.setTitle('API routes');
+    super();
+    this.setTitle('API routes');
     this.dataSource.filterPredicate = (rec, filter) => {
       return rec.url.toLowerCase().indexOf(filter) >= 0 ||
         rec.description.toLowerCase().indexOf(filter) >= 0;
@@ -81,6 +79,7 @@ export class RouteListComponent implements AfterViewInit {
 
   selectRoute(route: Route) {
     this.selectedRoute$.next(route);
+    this.openDetailPane();
   }
 
   private updateURL() {

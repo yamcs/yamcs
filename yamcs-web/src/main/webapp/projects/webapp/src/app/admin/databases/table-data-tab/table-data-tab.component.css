@@ -14,11 +14,15 @@
   box-sizing: border-box;
 }
 
-.data-table-wrapper th, .data-table-wrapper td {
+.data-table-wrapper th,
+.data-table-wrapper td {
   white-space: nowrap;
+}
+
+.data-table-wrapper td {
+  cursor: pointer;
 }
 
 .data-table-wrapper tr:hover td {
   background: #fafafa;
-  cursor: pointer;
 }
