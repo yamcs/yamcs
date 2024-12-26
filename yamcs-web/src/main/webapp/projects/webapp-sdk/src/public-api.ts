@@ -1,4 +1,5 @@
 export * from './lib/BitRange';
+export * from './lib/abc/BaseComponent';
 export * from './lib/client';
 export * from './lib/commanding/Acknowledgment';
 export * from './lib/commanding/AdvancementParams';

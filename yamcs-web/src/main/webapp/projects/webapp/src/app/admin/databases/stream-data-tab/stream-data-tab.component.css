@@ -14,7 +14,8 @@
   box-sizing: border-box;
 }
 
-.data-table-wrapper th, .data-table-wrapper td {
+.data-table-wrapper th,
+.data-table-wrapper td {
   white-space: nowrap;
 }
 

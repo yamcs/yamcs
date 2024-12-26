@@ -13,8 +13,8 @@
   <div class="block-title">
     Unprocessed binary
     <ya-more icon="more_horiz">
-      <button mat-menu-item (click)="copyHex(command.unprocessedBinary)">Copy Hex</button>
-      <button mat-menu-item (click)="copyBinary(command.unprocessedBinary)">Copy Binary</button>
+      <button mat-menu-item (click)="copyHex(command.unprocessedBinary)">Copy hex</button>
+      <button mat-menu-item (click)="copyBinary(command.unprocessedBinary)">Copy binary</button>
     </ya-more>
   </div>
   <div class="block no-print" style="margin-top: 4px">
@@ -29,8 +29,8 @@
   <div class="block-title">
     Binary
     <ya-more icon="more_horiz">
-      <button mat-menu-item (click)="copyHex(command.binary)">Copy Hex</button>
-      <button mat-menu-item (click)="copyBinary(command.binary)">Copy Binary</button>
+      <button mat-menu-item (click)="copyHex(command.binary)">Copy hex</button>
+      <button mat-menu-item (click)="copyBinary(command.binary)">Copy binary</button>
     </ya-more>
   </div>
   <div class="block no-print" style="margin-top: 4px">
@@ -78,8 +78,8 @@
       {{ extra.name }}
       @if (extra.value.type === "BINARY") {
         <ya-more icon="more_horiz">
-          <button mat-menu-item (click)="copyHex(extra.value.binaryValue!)">Copy Hex</button>
-          <button mat-menu-item (click)="copyBinary(extra.value.binaryValue!)">Copy Binary</button>
+          <button mat-menu-item (click)="copyHex(extra.value.binaryValue!)">Copy hex</button>
+          <button mat-menu-item (click)="copyBinary(extra.value.binaryValue!)">Copy binary</button>
         </ya-more>
       }
     </div>
@@ -120,8 +120,8 @@
     Return value
     @if (value.type === "BINARY") {
       <ya-more icon="more_horiz">
-        <button mat-menu-item (click)="copyHex(value.binaryValue!)">Copy Hex</button>
-        <button mat-menu-item (click)="copyBinary(value.binaryValue!)">Copy Binary</button>
+        <button mat-menu-item (click)="copyHex(value.binaryValue!)">Copy hex</button>
+        <button mat-menu-item (click)="copyBinary(value.binaryValue!)">Copy binary</button>
       </ya-more>
     }
   </div>

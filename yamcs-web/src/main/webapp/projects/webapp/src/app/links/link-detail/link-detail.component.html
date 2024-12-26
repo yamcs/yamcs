@@ -56,12 +56,12 @@
 @if (mayControlLinks()) {
   <div class="action-bar">
     @if (link.status === "DISABLED") {
-      <ya-button (click)="enableLink()">ENABLE LINK</ya-button>
+      <ya-button (click)="enableLink()">Enable link</ya-button>
     }
     @if (link.status !== "DISABLED") {
-      <ya-button (click)="disableLink()">DISABLE LINK</ya-button>
+      <ya-button (click)="disableLink()">Disable link</ya-button>
     }
-    <ya-button [matMenuTriggerFor]="moreActions" dropdown="true">MORE</ya-button>
+    <ya-button [matMenuTriggerFor]="moreActions" dropdown="true">More</ya-button>
     <mat-menu #moreActions class="ya-menu" yPosition="below" [overlapTrigger]="false">
       <ng-template matMenuContent>
         <button mat-menu-item (click)="resetCounters()">Reset counters</button>

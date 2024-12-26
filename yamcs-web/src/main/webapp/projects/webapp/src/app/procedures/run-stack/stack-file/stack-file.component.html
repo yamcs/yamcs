@@ -117,19 +117,7 @@
     </mat-menu>
   </app-instance-toolbar>
 
-  <ya-detail-pane>
-    @if (selectedEntry$ | async; as selectedEntry) {
-      <ya-detail-toolbar>Command info</ya-detail-toolbar>
-      <div style="padding: 0 16px">
-        <app-stacked-command-detail [entry]="selectedEntry" />
-        <p>&nbsp;</p>
-      </div>
-    } @else {
-      <ya-detail-toolbar>Select a step</ya-detail-toolbar>
-    }
-  </ya-detail-pane>
-
-  <div class="main-pane" [class.with-info-pane]="true">
+  <div class="main-pane">
     <app-stack-file-page-tabs [objectName]="objectName">
       @if (running$ | async) {
         <ya-dots />

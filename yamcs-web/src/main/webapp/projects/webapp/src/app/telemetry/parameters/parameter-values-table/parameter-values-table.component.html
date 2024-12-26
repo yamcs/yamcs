@@ -47,7 +47,7 @@
     <tr
       mat-row
       *matRowDef="let row; columns: displayedColumns"
-      (click)="selectedValue.emit(row)"
+      (click)="selectValue(row)"
       [class.selected]="(selectedValue | async) === row"></tr>
   </table>
 }

@@ -1,9 +1,8 @@
 import { Clipboard } from '@angular/cdk/clipboard';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { Title } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
-import { DownloadPacketsOptions, GetPacketsOptions, MessageService, Packet, Synchronizer, WebappSdkModule, YaColumnInfo, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ActivatedRoute } from '@angular/router';
+import { BaseComponent, DownloadPacketsOptions, GetPacketsOptions, Packet, WebappSdkModule, YaColumnInfo, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { HexComponent } from '../../../shared/hex/hex.component';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
@@ -26,7 +25,7 @@ const defaultInterval = 'PT1H';
     WebappSdkModule,
   ],
 })
-export class PacketListComponent {
+export class PacketListComponent extends BaseComponent {
 
   columns: YaColumnInfo[] = [
     { id: 'packetName', label: 'Packet name', alwaysVisible: true },
@@ -84,16 +83,13 @@ export class PacketListComponent {
 
   constructor(
     readonly yamcs: YamcsService,
-    private router: Router,
     private route: ActivatedRoute,
-    title: Title,
-    synchronizer: Synchronizer,
     private clipboard: Clipboard,
-    private messageService: MessageService,
   ) {
-    title.setTitle('Packets');
+    super();
+    this.setTitle('Packets');
 
-    this.dataSource = new PacketsDataSource(this.yamcs, synchronizer);
+    this.dataSource = new PacketsDataSource(this.yamcs, this.synchronizer);
 
     yamcs.yamcsClient.getPacketNames(yamcs.instance!).then(message => {
       for (const name of message.packets || []) {
@@ -300,6 +296,7 @@ export class PacketListComponent {
   selectPacket(packet: Packet) {
     this.fetchPacket(packet).then(packetDetail => {
       this.detailPacket$.next(packetDetail);
+      this.openDetailPane();
     }).catch(err => this.messageService.showError(err));
   }
 

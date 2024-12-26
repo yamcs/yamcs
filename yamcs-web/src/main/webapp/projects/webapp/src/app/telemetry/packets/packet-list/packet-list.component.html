@@ -15,7 +15,7 @@
 
   <ya-detail-pane>
     @if (detailPacket$ | async; as detailPacket) {
-      <ya-detail-toolbar>Packet Detail</ya-detail-toolbar>
+      <ya-detail-toolbar>Packet detail</ya-detail-toolbar>
       <div style="padding: 0 16px">
         <div class="block-title">Packet name</div>
         <div class="block">
@@ -48,8 +48,8 @@
         <div class="block-title">
           Data
           <ya-more icon="more_horiz">
-            <button mat-menu-item (click)="copyHex(detailPacket)">Copy Hex</button>
-            <button mat-menu-item (click)="copyBinary(detailPacket)">Copy Binary</button>
+            <button mat-menu-item (click)="copyHex(detailPacket)">Copy hex</button>
+            <button mat-menu-item (click)="copyBinary(detailPacket)">Copy binary</button>
             <mat-divider />
             <ya-download-menu-item [link]="detailPacket | packetDownloadLink">
               Download
@@ -143,8 +143,8 @@
           <td mat-cell *matCellDef="let packet">
             <ya-text-action icon="output" (click)="extractPacket(packet)">Extract</ya-text-action>
             <ya-more>
-              <button mat-menu-item (click)="copyHex(packet)">Copy Hex</button>
-              <button mat-menu-item (click)="copyBinary(packet)">Copy Binary</button>
+              <button mat-menu-item (click)="copyHex(packet)">Copy hex</button>
+              <button mat-menu-item (click)="copyBinary(packet)">Copy binary</button>
               <mat-divider />
               <ya-download-menu-item [link]="packet | packetDownloadLink">
                 Download

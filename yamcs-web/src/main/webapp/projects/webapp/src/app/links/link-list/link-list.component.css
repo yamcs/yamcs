@@ -14,6 +14,10 @@
   height: 100%;
 }
 
+.table-wrapper td {
+  cursor: pointer;
+}
+
 tr.disabled td,
 tr.disabled td a {
   font-style: italic;

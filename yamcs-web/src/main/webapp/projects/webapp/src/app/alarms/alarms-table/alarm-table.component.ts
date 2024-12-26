@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Alarm, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { Alarm, BaseComponent, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { AgoComponent } from '../../shared/ago/ago.component';
 import { AlarmLevelComponent } from '../../shared/alarm-level/alarm-level.component';
 import { AlarmStateIconComponent } from '../alarm-state-icon/alarm-state-icon.component';
@@ -18,7 +18,7 @@ import { AlarmsDataSource } from '../alarms.datasource';
     WebappSdkModule,
   ],
 })
-export class AlarmsTableComponent {
+export class AlarmsTableComponent extends BaseComponent {
 
   displayedColumns = [
     'state',
@@ -58,6 +58,7 @@ export class AlarmsTableComponent {
   };
 
   constructor(readonly yamcs: YamcsService) {
+    super();
   }
 
   toggleOne(row: Alarm) {
@@ -65,6 +66,7 @@ export class AlarmsTableComponent {
       this.selection.clear();
     }
     this.selection.toggle(row);
+    this.openDetailPane();
   }
 
   hideAlarm(alarm: Alarm) {

@@ -17,10 +17,6 @@
   padding: 24px;
 }
 
-.main-pane.with-info-pane {
-  right: 450px;
-}
-
 .tab-content {
   position: absolute;
   top: calc(24px + 36px);

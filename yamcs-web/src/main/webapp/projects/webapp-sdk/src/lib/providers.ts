@@ -6,6 +6,7 @@ import { MAT_TOOLTIP_DEFAULT_OPTIONS, MAT_TOOLTIP_DEFAULT_OPTIONS_FACTORY, MatTo
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { UtcDateAdapter } from './components/date-time-input/UtcDateAdapter';
+import { AppearanceService } from './services/appearance.service';
 import { ConfigService } from './services/config.service';
 import { SdkBridge } from './services/sdk-bridge.service';
 
@@ -56,7 +57,7 @@ export function provideConfigInitializer(): Provider[] {
         return () => configService.loadWebsiteConfig();
       },
       multi: true,
-      deps: [ConfigService]
+      deps: [ConfigService],
     },
   ];
 }
@@ -66,14 +67,15 @@ export function provideSdkBridge(): Provider[] {
   return [
     {
       provide: APP_INITIALIZER,
-      useFactory: (bridge: SdkBridge, router: Router) => {
+      useFactory: (sdkBridge: SdkBridge, router: Router, appearanceService: AppearanceService) => {
         return () => {
-          bridge.router = router;
+          sdkBridge.router = router;
+          sdkBridge.appearanceService = appearanceService;
         };
       },
       multi: true,
-      deps: [SdkBridge, Router],
-    }
+      deps: [SdkBridge, Router, AppearanceService],
+    },
   ];
 }
 

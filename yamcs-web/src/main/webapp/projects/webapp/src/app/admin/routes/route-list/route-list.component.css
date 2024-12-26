@@ -21,3 +21,7 @@
 .mat-mdc-row {
   cursor: pointer;
 }
+
+.ya-data-table td {
+  cursor: pointer;
+}

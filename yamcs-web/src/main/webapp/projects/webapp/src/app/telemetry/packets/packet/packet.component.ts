@@ -1,9 +1,8 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewChild, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, ViewChild, input } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
-import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { BitRange, Container, ExtractPacketResponse, ExtractedParameter, MessageService, Packet, Parameter, ParameterType, Value, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { BaseComponent, BitRange, Container, ExtractPacketResponse, ExtractedParameter, Packet, Parameter, ParameterType, Value, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { HexComponent } from '../../../shared/hex/hex.component';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
@@ -89,7 +88,7 @@ export type Node = ContainerNode
     WebappSdkModule,
   ],
 })
-export class PacketComponent implements OnInit {
+export class PacketComponent extends BaseComponent implements OnInit {
 
   packetName = input.required<string>({ alias: 'packet' });
 
@@ -137,19 +136,18 @@ export class PacketComponent implements OnInit {
   ];
 
   constructor(
-    private title: Title,
     readonly route: ActivatedRoute,
     readonly yamcs: YamcsService,
-    private messageService: MessageService,
     private clipboard: Clipboard,
-    private changeDetection: ChangeDetectorRef,
-  ) { }
+  ) {
+    super();
+  }
 
   ngOnInit(): void {
     const pname = this.packetName();
     const gentime = this.route.snapshot.paramMap.get('gentime')!;
     const seqno = Number(this.route.snapshot.paramMap.get('seqno')!);
-    this.title.setTitle(pname);
+    this.setTitle(pname);
 
     this.yamcs.yamcsClient.getPacket(this.yamcs.instance!, pname, gentime, seqno)
       .then(packet => this.packet$.next(packet))
