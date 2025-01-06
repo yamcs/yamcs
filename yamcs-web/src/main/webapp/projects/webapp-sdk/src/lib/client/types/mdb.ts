@@ -333,9 +333,10 @@ export interface AlgorithmTextOverride {
 }
 
 export interface InputParameter {
-  parameter: Parameter;
+  parameter?: Parameter;
+  parameterInstance?: number;
+  argument?: Argument;
   inputName: string;
-  parameterInstance: number;
   mandatory: boolean;
 }
 
