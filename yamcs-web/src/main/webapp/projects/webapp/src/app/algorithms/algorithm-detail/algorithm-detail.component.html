@@ -171,7 +171,8 @@
       <table yaDataTable>
         <tr>
           <th>Input name</th>
-          <th>Parameter</th>
+          <th>Type</th>
+          <th>Ref</th>
           <th>Instance</th>
           <th>Mandatory</th>
         </tr>
@@ -179,14 +180,29 @@
           <tr>
             <td>{{ inputParameter.inputName || "-" }}</td>
             <td>
-              <a
-                [routerLink]="'/telemetry/parameters' + inputParameter.parameter.qualifiedName"
-                [queryParams]="{ c: yamcs.context }">
-                {{ inputParameter.parameter.qualifiedName }}
-              </a>
+              @if (inputParameter.parameter) {
+                Parameter
+              } @else if (inputParameter.argument) {
+                Argument
+              } @else {
+                Unknown
+              }
+            </td>
+            <td>
+              @if (inputParameter.parameter) {
+                <a
+                  [routerLink]="'/telemetry/parameters' + inputParameter.parameter.qualifiedName"
+                  [queryParams]="{ c: yamcs.context }">
+                  {{ inputParameter.parameter.qualifiedName }}
+                </a>
+              } @else if (inputParameter.argument) {
+                {{ inputParameter.argument.name }}
+              } @else {
+                -
+              }
             </td>
             <td style="text-align: center">
-              {{ inputParameter.parameterInstance }}
+              {{ inputParameter.parameterInstance ?? "-" }}
             </td>
             <td style="text-align: center">
               {{ inputParameter.mandatory ? "Yes" : "No" }}
@@ -216,9 +232,9 @@
             <td>{{ outputParameter.outputName || "-" }}</td>
             <td>
               <a
-                [routerLink]="'/telemetry/parameters' + outputParameter.parameter.qualifiedName"
+                [routerLink]="'/telemetry/parameters' + outputParameter.parameter!.qualifiedName"
                 [queryParams]="{ c: yamcs.context }">
-                {{ outputParameter.parameter.qualifiedName }}
+                {{ outputParameter.parameter!.qualifiedName }}
               </a>
             </td>
           </tr>
