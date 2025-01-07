@@ -15,6 +15,7 @@ import org.yamcs.tctm.CommandPostprocessor;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
 
 public class PusCommandPostprocessor implements CommandPostprocessor {
+    public static final String CCSDS_SEQCOUNT_PARA_NAME = "ccsds-seqcount";
     static Logger log = LoggerFactory.getLogger(PusCommandPostprocessor.class);
 
     ErrorDetectionWordCalculator errorDetectionCalculator;
@@ -39,7 +40,7 @@ public class PusCommandPostprocessor implements CommandPostprocessor {
         bb.putShort(4, (short) (binary.length - 7)); // write packet length
         int seqCount = seqFiller.fill(binary); // write sequence count
 
-        commandHistoryListener.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
+        commandHistoryListener.publish(pc.getCommandId(), CCSDS_SEQCOUNT_PARA_NAME, seqCount);
         if (hasCrc) {
             int pos = binary.length - 2;
             try {
