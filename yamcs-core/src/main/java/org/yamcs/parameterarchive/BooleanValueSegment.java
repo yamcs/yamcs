@@ -12,7 +12,7 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.utils.VarIntUtil;
 
 /**
- * Boolean value sgement uses a boolean array backed by a long[] to represent the boolean values as a set of bits
+ * Boolean value segment uses a boolean array backed by a long[] to represent the boolean values as a set of bits
  * 
  */
 public class BooleanValueSegment extends BaseSegment implements ValueSegment {
