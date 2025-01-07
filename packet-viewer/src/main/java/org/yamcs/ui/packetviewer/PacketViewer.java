@@ -827,7 +827,8 @@ public class PacketViewer extends JFrame implements ActionListener,
         var clientBuilder = YamcsClient.newBuilder(connectData.serverUrl)
                 .withConnectionAttempts(10)
                 .withUserAgent("PacketViewer")
-                .withVerifyTls(false);
+                .withVerifyTls(false)
+                .withMaxResponseLength(50 * 1024 * 1024);
 
         if (connectData.authType == AuthType.BASIC_AUTH && connectData.username != null) {
             clientBuilder.withCredentials(new BasicAuthCredentials(connectData.username, connectData.password));
